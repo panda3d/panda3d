@@ -53,7 +53,7 @@ idf_input_string(istream &in, string &str) {
  */
 void
 idf_output_string(ostream &out, const char *str, char whitespace) {
-  if (str == (const char *)NULL) {
+  if (str == (const char *)nullptr) {
     out << "0 ";
   } else {
     out << strlen(str) << whitespace;

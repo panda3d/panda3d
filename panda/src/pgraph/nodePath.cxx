@@ -90,7 +90,7 @@ NodePath(const NodePath &parent, PandaNode *child_node,
          Thread *current_thread) :
   _error_type(ET_fail)
 {
-  nassertv(child_node != (PandaNode *)NULL);
+  nassertv(child_node != (PandaNode *)nullptr);
   int pipeline_stage = current_thread->get_pipeline_stage();
 
   if (parent.is_empty()) {
@@ -102,9 +102,9 @@ NodePath(const NodePath &parent, PandaNode *child_node,
     _head = PandaNode::get_component(parent._head, child_node, pipeline_stage,
                                      current_thread);
   }
-  nassertv(_head != (NodePathComponent *)NULL);
+  nassertv(_head != (NodePathComponent *)nullptr);
 
-  if (_head != (NodePathComponent *)NULL) {
+  if (_head != (NodePathComponent *)nullptr) {
     _error_type = ET_ok;
   }
   _backup_key = 0;
@@ -145,7 +145,7 @@ get_num_nodes(Thread *current_thread) const {
  */
 PandaNode *NodePath::
 get_node(int index, Thread *current_thread) const {
-  nassertr(index >= 0 && index < get_num_nodes(), NULL);
+  nassertr(index >= 0 && index < get_num_nodes(), nullptr);
 
   int pipeline_stage = current_thread->get_pipeline_stage();
 
@@ -153,14 +153,14 @@ get_node(int index, Thread *current_thread) const {
   while (index > 0) {
     // If this assertion fails, the index was out of range; the component's
     // length must have been invalid.
-    nassertr(comp != (NodePathComponent *)NULL, NULL);
+    nassertr(comp != (NodePathComponent *)nullptr, nullptr);
     comp = comp->get_next(pipeline_stage, current_thread);
     index--;
   }
 
   // If this assertion fails, the index was out of range; the component's
   // length must have been invalid.
-  nassertr(comp != (NodePathComponent *)NULL, NULL);
+  nassertr(comp != (NodePathComponent *)nullptr, nullptr);
   return comp->get_node();
 }
 
@@ -181,14 +181,14 @@ get_ancestor(int index, Thread *current_thread) const {
   while (index > 0) {
     // If this assertion fails, the index was out of range; the component's
     // length must have been invalid.
-    nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
+    nassertr(comp != (NodePathComponent *)nullptr, NodePath::fail());
     comp = comp->get_next(pipeline_stage, current_thread);
     index--;
   }
 
   // If this assertion fails, the index was out of range; the component's
   // length must have been invalid.
-  nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
+  nassertr(comp != (NodePathComponent *)nullptr, NodePath::fail());
 
   NodePath result;
   result._head = comp;
@@ -210,7 +210,7 @@ get_top(Thread *current_thread) const {
   NodePathComponent *comp = _head;
   while (!comp->is_top_node(pipeline_stage, current_thread)) {
     comp = comp->get_next(pipeline_stage, current_thread);
-    nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
+    nassertr(comp != (NodePathComponent *)nullptr, NodePath::fail());
   }
 
   NodePath top;
@@ -284,7 +284,7 @@ get_sort(Thread *current_thread) const {
 
   PandaNode *parent = _head->get_next(pipeline_stage, current_thread)->get_node();
   PandaNode *child = node();
-  nassertr(parent != (PandaNode *)NULL && child != (PandaNode *)NULL, 0);
+  nassertr(parent != (PandaNode *)nullptr && child != (PandaNode *)nullptr, 0);
   int child_index = parent->find_child(child);
   if (child_index != -1) {
     return parent->get_child_sort(child_index);
@@ -325,7 +325,7 @@ find(const string &path) const {
 NodePath NodePath::
 find_path_to(PandaNode *node) const {
   nassertr_always(!is_empty(), fail());
-  nassertr(node != (PandaNode *)NULL, fail());
+  nassertr(node != (PandaNode *)nullptr, fail());
 
   NodePathCollection col;
   FindApproxPath approx_path;
@@ -362,7 +362,7 @@ find_all_paths_to(PandaNode *node) const {
   NodePathCollection col;
   nassertr_always(!is_empty(), col);
   nassertr(verify_complete(), col);
-  nassertr(node != (PandaNode *)NULL, col);
+  nassertr(node != (PandaNode *)nullptr, col);
   FindApproxPath approx_path;
   approx_path.add_match_many(0);
   approx_path.add_match_pointer(node, 0);
@@ -472,7 +472,7 @@ instance_to(const NodePath &other, int sort, Thread *current_thread) const {
 
   // First, we'll attach to NULL, to guarantee we get a brand new instance.
   int pipeline_stage = current_thread->get_pipeline_stage();
-  new_instance._head = PandaNode::attach(NULL, node(), sort, pipeline_stage,
+  new_instance._head = PandaNode::attach(nullptr, node(), sort, pipeline_stage,
                                          current_thread);
 
   // Now, we'll reparent the new instance to the target node.
@@ -534,7 +534,7 @@ copy_to(const NodePath &other, int sort, Thread *current_thread) const {
 
   PandaNode *source_node = node();
   PT(PandaNode) copy_node = source_node->copy_subgraph(current_thread);
-  nassertr(copy_node != (PandaNode *)NULL, fail());
+  nassertr(copy_node != (PandaNode *)nullptr, fail());
 
   copy_node->reset_prev_transform(current_thread);
 
@@ -557,7 +557,7 @@ NodePath NodePath::
 attach_new_node(PandaNode *node, int sort, Thread *current_thread) const {
   nassertr(verify_complete(current_thread), NodePath::fail());
   nassertr(_error_type == ET_ok, NodePath::fail());
-  nassertr(node != (PandaNode *)NULL, NodePath::fail());
+  nassertr(node != (PandaNode *)nullptr, NodePath::fail());
 
   NodePath new_path(*this);
   int pipeline_stage = current_thread->get_pipeline_stage();
@@ -666,7 +666,7 @@ output(ostream &out) const {
     break;
   }
 
-  if (_head == (NodePathComponent *)NULL) {
+  if (_head == (NodePathComponent *)nullptr) {
     out << "(empty)";
   } else {
     _head->output(out);
@@ -705,7 +705,7 @@ get_state(const NodePath &other, Thread *current_thread) const {
 #endif
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)nullptr) {
     if (allow_unrelated_wrt) {
       pgraph_cat.debug()
         << *this << " is not related to " << other << "\n";
@@ -777,7 +777,7 @@ get_transform(const NodePath &other, Thread *current_thread) const {
 #endif
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)nullptr) {
     if (allow_unrelated_wrt) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
@@ -793,10 +793,10 @@ get_transform(const NodePath &other, Thread *current_thread) const {
   CPT(TransformState) a_transform, b_transform;
 
   a_transform = r_get_partial_transform(_head, a_count, current_thread);
-  if (a_transform != (TransformState *)NULL) {
+  if (a_transform != (TransformState *)nullptr) {
     b_transform = r_get_partial_transform(other._head, b_count, current_thread);
   }
-  if (b_transform == (TransformState *)NULL) {
+  if (b_transform == (TransformState *)nullptr) {
     // If either path involved a node with a net_transform RenderEffect
     // applied, we have to go all the way up to the root to get the right
     // answer.
@@ -864,7 +864,7 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
 #endif
 
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)NULL) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)nullptr) {
     if (allow_unrelated_wrt) {
       pgraph_cat.debug()
         << *this << " is not related to " << other << "\n";
@@ -1998,7 +1998,7 @@ get_color() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
     if (ca->get_color_type() == ColorAttrib::T_flat) {
       return ca->get_color();
@@ -2043,7 +2043,7 @@ compose_color_scale(const LVecBase4 &scale, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
@@ -2073,7 +2073,7 @@ set_color_scale(const LVecBase4 &scale, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
@@ -2115,7 +2115,7 @@ set_alpha_scale(PN_stdfloat scale, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
@@ -2141,7 +2141,7 @@ set_all_color_scale(PN_stdfloat scale, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
@@ -2167,7 +2167,7 @@ get_color_scale() const {
   nassertr_always(!is_empty(), ident_scale);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
     return csa->get_scale();
   }
@@ -2186,11 +2186,11 @@ set_light(const NodePath &light, int priority) {
   nassertv_always(!is_empty());
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
-    if (light_obj != (Light *)NULL) {
+    if (light_obj != (Light *)nullptr) {
       // It's an actual Light object.
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         priority = max(priority,
                        node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
@@ -2216,7 +2216,7 @@ set_light(const NodePath &light, int priority) {
 
       const RenderEffect *effect =
         node()->get_effect(PolylightEffect::get_class_type());
-      if (effect != (const RenderEffect *)NULL) {
+      if (effect != (const RenderEffect *)nullptr) {
         const PolylightEffect *ple = DCAST(PolylightEffect, effect);
 
         // Modify the existing PolylightEffect to add the indicated light.
@@ -2264,10 +2264,10 @@ set_light_off(const NodePath &light, int priority) {
 
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
-    if (light_obj != (Light *)NULL) {
+    if (light_obj != (Light *)nullptr) {
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         priority = max(priority,
                        node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
@@ -2310,10 +2310,10 @@ clear_light(const NodePath &light) {
 
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
-    if (light_obj != (Light *)NULL) {
+    if (light_obj != (Light *)nullptr) {
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
         la = DCAST(LightAttrib, la->remove_on_light(light));
         la = DCAST(LightAttrib, la->remove_off_light(light));
@@ -2331,7 +2331,7 @@ clear_light(const NodePath &light) {
     } else if (light.node()->is_of_type(PolylightNode::get_class_type())) {
       const RenderEffect *effect =
         node()->get_effect(PolylightEffect::get_class_type());
-      if (effect != (const RenderEffect *)NULL) {
+      if (effect != (const RenderEffect *)nullptr) {
         CPT(PolylightEffect) ple = DCAST(PolylightEffect, effect);
         ple = DCAST(PolylightEffect, ple->remove_light(light));
         node()->set_effect(ple);
@@ -2353,10 +2353,10 @@ has_light(const NodePath &light) const {
 
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
-    if (light_obj != (Light *)NULL) {
+    if (light_obj != (Light *)nullptr) {
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         return la->has_on_light(light);
       }
@@ -2365,7 +2365,7 @@ has_light(const NodePath &light) const {
     } else if (light.node()->is_of_type(PolylightNode::get_class_type())) {
       const RenderEffect *effect =
         node()->get_effect(PolylightEffect::get_class_type());
-      if (effect != (const RenderEffect *)NULL) {
+      if (effect != (const RenderEffect *)nullptr) {
         const PolylightEffect *ple = DCAST(PolylightEffect, effect);
         return ple->has_light(light);
       }
@@ -2387,7 +2387,7 @@ has_light_off() const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(LightAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const LightAttrib *la = DCAST(LightAttrib, attrib);
     return la->has_all_off();
   }
@@ -2408,10 +2408,10 @@ has_light_off(const NodePath &light) const {
   nassertr_always(!is_empty(), false);
   if (!light.is_empty()) {
     Light *light_obj = light.node()->as_light();
-    if (light_obj != (Light *)NULL) {
+    if (light_obj != (Light *)nullptr) {
       const RenderAttrib *attrib =
         node()->get_attrib(LightAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         return la->has_off_light(light);
       }
@@ -2434,7 +2434,7 @@ set_clip_plane(const NodePath &clip_plane, int priority) {
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
       node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != (const RenderAttrib *)nullptr) {
       priority = max(priority,
                      node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
@@ -2482,7 +2482,7 @@ set_clip_plane_off(const NodePath &clip_plane, int priority) {
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
       node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != (const RenderAttrib *)nullptr) {
       priority = max(priority,
                      node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
@@ -2523,7 +2523,7 @@ clear_clip_plane(const NodePath &clip_plane) {
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
       node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != (const RenderAttrib *)nullptr) {
       CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, attrib);
       la = DCAST(ClipPlaneAttrib, la->remove_on_plane(clip_plane));
       la = DCAST(ClipPlaneAttrib, la->remove_off_plane(clip_plane));
@@ -2553,7 +2553,7 @@ has_clip_plane(const NodePath &clip_plane) const {
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
       node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != (const RenderAttrib *)nullptr) {
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       return la->has_on_plane(clip_plane);
     }
@@ -2574,7 +2574,7 @@ has_clip_plane_off() const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
     return la->has_all_off();
   }
@@ -2593,7 +2593,7 @@ has_clip_plane_off(const NodePath &clip_plane) const {
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
       node()->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (attrib != (const RenderAttrib *)NULL) {
+    if (attrib != (const RenderAttrib *)nullptr) {
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       return la->has_off_plane(clip_plane);
     }
@@ -2615,7 +2615,7 @@ set_occluder(const NodePath &occluder) {
   if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
     const RenderEffect *effect =
       node()->get_effect(OccluderEffect::get_class_type());
-    if (effect != (const RenderEffect *)NULL) {
+    if (effect != (const RenderEffect *)nullptr) {
       const OccluderEffect *la = DCAST(OccluderEffect, effect);
 
       // Modify the existing OccluderEffect to add the indicated occluder.
@@ -2651,7 +2651,7 @@ clear_occluder(const NodePath &occluder) {
   if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
     const RenderEffect *effect =
       node()->get_effect(OccluderEffect::get_class_type());
-    if (effect != (const RenderEffect *)NULL) {
+    if (effect != (const RenderEffect *)nullptr) {
       CPT(OccluderEffect) la = DCAST(OccluderEffect, effect);
       la = DCAST(OccluderEffect, la->remove_on_occluder(occluder));
 
@@ -2679,7 +2679,7 @@ has_occluder(const NodePath &occluder) const {
   if (!occluder.is_empty() && occluder.node()->is_of_type(OccluderNode::get_class_type())) {
     const RenderEffect *effect =
       node()->get_effect(OccluderEffect::get_class_type());
-    if (effect != (const RenderEffect *)NULL) {
+    if (effect != (const RenderEffect *)nullptr) {
       const OccluderEffect *la = DCAST(OccluderEffect, effect);
       return la->has_on_occluder(occluder);
     }
@@ -2824,7 +2824,7 @@ get_bin_name() const {
   nassertr_always(!is_empty(), string());
   const RenderAttrib *attrib =
     node()->get_attrib(CullBinAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_bin_name();
   }
@@ -2842,7 +2842,7 @@ get_bin_draw_order() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(CullBinAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_draw_order();
   }
@@ -2878,7 +2878,7 @@ set_texture(TextureStage *stage, Texture *tex, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
     int sg_priority = node()->get_state()->get_override(TextureAttrib::get_class_slot());
 
@@ -2928,7 +2928,7 @@ set_texture(TextureStage *stage, Texture *tex, const SamplerState &sampler, int 
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
     int sg_priority = node()->get_state()->get_override(TextureAttrib::get_class_slot());
 
@@ -2966,7 +2966,7 @@ set_texture_off(TextureStage *stage, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
     int sg_priority = node()->get_state()->get_override(TextureAttrib::get_class_slot());
 
@@ -3004,7 +3004,7 @@ clear_texture(TextureStage *stage) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     CPT(TextureAttrib) tsa = DCAST(TextureAttrib, attrib);
     tsa = DCAST(TextureAttrib, tsa->remove_on_stage(stage));
     tsa = DCAST(TextureAttrib, tsa->remove_off_stage(stage));
@@ -3027,7 +3027,7 @@ clear_texture(TextureStage *stage) {
  */
 bool NodePath::
 has_texture() const {
-  return get_texture() != (Texture *)NULL;
+  return get_texture() != (Texture *)nullptr;
 }
 
 /**
@@ -3042,7 +3042,7 @@ has_texture(TextureStage *stage) const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_on_stage(stage);
   }
@@ -3061,7 +3061,7 @@ has_texture_off() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_all_off();
   }
@@ -3081,7 +3081,7 @@ has_texture_off(TextureStage *stage) const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_off_stage(stage);
   }
@@ -3099,15 +3099,15 @@ has_texture_off(TextureStage *stage) const {
  */
 Texture *NodePath::
 get_texture() const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->get_texture();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -3116,15 +3116,15 @@ get_texture() const {
  */
 Texture *NodePath::
 get_texture(TextureStage *stage) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->get_on_texture(stage);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -3153,7 +3153,7 @@ get_texture_sampler(TextureStage *stage) const {
   nassertr_always(!is_empty(), SamplerState::get_default());
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_slot());
-  nassertr_always(attrib != NULL, SamplerState::get_default());
+  nassertr_always(attrib != nullptr, SamplerState::get_default());
 
   const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
   return ta->get_on_sampler(stage);
@@ -3168,7 +3168,7 @@ set_shader(const Shader *sha, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
@@ -3185,7 +3185,7 @@ set_shader(const Shader *sha, int priority) {
  */
 void NodePath::
 set_shader_off(int priority) {
-  set_shader(NULL, priority);
+  set_shader(nullptr, priority);
 }
 
 /**
@@ -3197,7 +3197,7 @@ set_shader_auto(int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
@@ -3218,7 +3218,7 @@ set_shader_auto(BitMask32 shader_switch, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
@@ -3238,7 +3238,7 @@ clear_shader() {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader());
   }
@@ -3249,14 +3249,14 @@ clear_shader() {
  */
 const Shader *NodePath::
 get_shader() const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     return sa->get_shader();
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -3326,7 +3326,7 @@ get_instance_count() const {
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
 
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     return sa->get_instance_count();
   }
@@ -3343,7 +3343,7 @@ clear_shader_input(CPT_InternalName id) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader_input(id));
   }
@@ -3360,7 +3360,7 @@ set_instance_count(int instance_count) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(ShaderAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->set_instance_count(instance_count));
   } else {
@@ -3380,7 +3380,7 @@ set_tex_transform(TextureStage *stage, const TransformState *transform) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
 
     // Modify the existing TexMatrixAttrib to add the indicated stage.
@@ -3410,7 +3410,7 @@ clear_tex_transform(TextureStage *stage) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, attrib);
     tma = DCAST(TexMatrixAttrib, tma->remove_stage(stage));
 
@@ -3433,7 +3433,7 @@ has_tex_transform(TextureStage *stage) const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->has_stage(stage);
   }
@@ -3448,11 +3448,11 @@ has_tex_transform(TextureStage *stage) const {
  */
 CPT(TransformState) NodePath::
 get_tex_transform(TextureStage *stage) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->get_transform(stage);
   }
@@ -3472,7 +3472,7 @@ set_tex_transform(const NodePath &other, TextureStage *stage, const TransformSta
   CPT(RenderState) state = get_state(other);
   const RenderAttrib *attrib =
     state->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
 
     // Modify the existing TexMatrixAttrib to add the indicated stage.
@@ -3508,7 +3508,7 @@ get_tex_transform(const NodePath &other, TextureStage *stage) const {
   CPT(RenderState) state = get_state(other);
   const RenderAttrib *attrib =
     state->get_attrib(TexMatrixAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->get_transform(stage);
   }
@@ -3529,7 +3529,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
 
   CPT(TexGenAttrib) tga;
 
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     tga = DCAST(TexGenAttrib, attrib);
@@ -3556,7 +3556,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
 
   CPT(TexGenAttrib) tga;
 
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     tga = DCAST(TexGenAttrib, attrib);
@@ -3588,7 +3588,7 @@ clear_tex_gen(TextureStage *stage) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexGenAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     CPT(TexGenAttrib) tga = DCAST(TexGenAttrib, attrib);
     tga = DCAST(TexGenAttrib, tga->remove_stage(stage));
 
@@ -3611,7 +3611,7 @@ has_tex_gen(TextureStage *stage) const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexGenAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
     return tga->has_stage(stage);
   }
@@ -3629,7 +3629,7 @@ get_tex_gen(TextureStage *stage) const {
 
   const RenderAttrib *attrib =
     node()->get_attrib(TexGenAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
     return tga->get_mode(stage);
   }
@@ -3658,7 +3658,7 @@ set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
 
   CPT(TexProjectorEffect) tpe;
 
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     tpe = DCAST(TexProjectorEffect, effect);
 
   } else {
@@ -3677,7 +3677,7 @@ clear_tex_projector(TextureStage *stage) {
 
   const RenderEffect *effect =
     node()->get_effect(TexProjectorEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     CPT(TexProjectorEffect) tpe = DCAST(TexProjectorEffect, effect);
     tpe = DCAST(TexProjectorEffect, tpe->remove_stage(stage));
 
@@ -3709,7 +3709,7 @@ has_tex_projector(TextureStage *stage) const {
 
   const RenderEffect *effect =
     node()->get_effect(TexProjectorEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
     return tpe->has_stage(stage);
   }
@@ -3728,7 +3728,7 @@ get_tex_projector_from(TextureStage *stage) const {
 
   const RenderEffect *effect =
     node()->get_effect(TexProjectorEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
     return tpe->get_from(stage);
   }
@@ -3747,7 +3747,7 @@ get_tex_projector_to(TextureStage *stage) const {
 
   const RenderEffect *effect =
     node()->get_effect(TexProjectorEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
     return tpe->get_to(stage);
   }
@@ -3886,7 +3886,7 @@ find_all_texcoords(const string &name) const {
  */
 Texture *NodePath::
 find_texture(const string &name) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   GlobPattern glob(name);
   return r_find_texture(node(), get_net_state(), glob);
 }
@@ -3898,7 +3898,7 @@ find_texture(const string &name) const {
  */
 Texture *NodePath::
 find_texture(TextureStage *stage) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   return r_find_texture(node(), stage);
 }
 
@@ -3968,7 +3968,7 @@ find_all_textures(TextureStage *stage) const {
  */
 TextureStage *NodePath::
 find_texture_stage(const string &name) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   GlobPattern glob(name);
   return r_find_texture_stage(node(), get_net_state(), glob);
 }
@@ -4035,7 +4035,7 @@ find_all_texture_stages(const string &name) const {
  */
 Material *NodePath::
 find_material(const string &name) const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   GlobPattern glob(name);
   return r_find_material(node(), get_net_state(), glob);
 }
@@ -4090,7 +4090,7 @@ find_all_materials(const string &name) const {
 void NodePath::
 set_material(Material *mat, int priority) {
   nassertv_always(!is_empty());
-  nassertv(mat != NULL);
+  nassertv(mat != nullptr);
   node()->set_attrib(MaterialAttrib::make(mat), priority);
 }
 
@@ -4125,7 +4125,7 @@ has_material() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(MaterialAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const MaterialAttrib *ma = DCAST(MaterialAttrib, attrib);
     return !ma->is_off();
   }
@@ -4143,15 +4143,15 @@ has_material() const {
  */
 PT(Material) NodePath::
 get_material() const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   const RenderAttrib *attrib =
     node()->get_attrib(MaterialAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const MaterialAttrib *ma = DCAST(MaterialAttrib, attrib);
     return ma->get_material();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -4198,7 +4198,7 @@ has_fog() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return !fa->is_off();
   }
@@ -4217,7 +4217,7 @@ has_fog_off() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return fa->is_off();
   }
@@ -4233,15 +4233,15 @@ has_fog_off() const {
  */
 Fog *NodePath::
 get_fog() const {
-  nassertr_always(!is_empty(), NULL);
+  nassertr_always(!is_empty(), nullptr);
   const RenderAttrib *attrib =
     node()->get_attrib(FogAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return fa->get_fog();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -4356,7 +4356,7 @@ get_render_mode() const {
   nassertr_always(!is_empty(), RenderModeAttrib::M_unchanged);
   const RenderAttrib *attrib =
     node()->get_attrib(RenderModeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_mode();
   }
@@ -4373,7 +4373,7 @@ get_render_mode_thickness() const {
   nassertr_always(!is_empty(), 0.0f);
   const RenderAttrib *attrib =
     node()->get_attrib(RenderModeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_thickness();
   }
@@ -4390,7 +4390,7 @@ get_render_mode_perspective() const {
   nassertr_always(!is_empty(), 0.0f);
   const RenderAttrib *attrib =
     node()->get_attrib(RenderModeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_perspective();
   }
@@ -4451,7 +4451,7 @@ get_two_sided() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(CullFaceAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, attrib);
     return (cfa->get_actual_mode() == CullFaceAttrib::M_cull_none);
   }
@@ -4508,7 +4508,7 @@ get_depth_test() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(DepthTestAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const DepthTestAttrib *dta = DCAST(DepthTestAttrib, attrib);
     return (dta->get_mode() != DepthTestAttrib::M_none);
   }
@@ -4565,7 +4565,7 @@ get_depth_write() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
     node()->get_attrib(DepthWriteAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const DepthWriteAttrib *dta = DCAST(DepthWriteAttrib, attrib);
     return (dta->get_mode() != DepthWriteAttrib::M_off);
   }
@@ -4619,7 +4619,7 @@ get_depth_offset() const {
   nassertr_always(!is_empty(), 0);
   const RenderAttrib *attrib =
     node()->get_attrib(DepthOffsetAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const DepthOffsetAttrib *doa = DCAST(DepthOffsetAttrib, attrib);
     return doa->get_offset();
   }
@@ -4853,7 +4853,7 @@ get_transparency() const {
   nassertr_always(!is_empty(), TransparencyAttrib::M_none);
   const RenderAttrib *attrib =
     node()->get_attrib(TransparencyAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TransparencyAttrib *ta = DCAST(TransparencyAttrib, attrib);
     return ta->get_mode();
   }
@@ -4909,7 +4909,7 @@ get_logic_op() const {
   nassertr_always(!is_empty(), LogicOpAttrib::O_none);
   const RenderAttrib *attrib =
     node()->get_attrib(LogicOpAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const LogicOpAttrib *ta = DCAST(LogicOpAttrib, attrib);
     return ta->get_operation();
   }
@@ -4958,7 +4958,7 @@ get_antialias() const {
   nassertr_always(!is_empty(), AntialiasAttrib::M_none);
   const RenderAttrib *attrib =
     node()->get_attrib(AntialiasAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const AntialiasAttrib *ta = DCAST(AntialiasAttrib, attrib);
     return ta->get_mode();
   }
@@ -4997,7 +4997,7 @@ set_audio_volume(PN_stdfloat volume, int priority) {
 
   const RenderAttrib *attrib =
     node()->get_attrib(AudioVolumeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     priority = max(priority,
                    node()->get_state()->get_override(AudioVolumeAttrib::get_class_slot()));
     CPT(AudioVolumeAttrib) ava = DCAST(AudioVolumeAttrib, attrib);
@@ -5035,7 +5035,7 @@ PN_stdfloat NodePath::
 get_audio_volume() const {
   const RenderAttrib *attrib =
     node()->get_attrib(AudioVolumeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const AudioVolumeAttrib *ava = DCAST(AudioVolumeAttrib, attrib);
     return ava->get_volume();
   }
@@ -5051,9 +5051,9 @@ PN_stdfloat NodePath::
 get_net_audio_volume() const {
   CPT(RenderState) net_state = get_net_state();
   const RenderAttrib *attrib = net_state->get_attrib(AudioVolumeAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const AudioVolumeAttrib *ava = DCAST(AudioVolumeAttrib, attrib);
-    if (ava != (const AudioVolumeAttrib *)NULL) {
+    if (ava != (const AudioVolumeAttrib *)nullptr) {
       return ava->get_volume();
     }
   }
@@ -5072,7 +5072,7 @@ get_hidden_ancestor(DrawMask camera_mask, Thread *current_thread) const {
 
   NodePathComponent *comp;
   for (comp = _head;
-       comp != (NodePathComponent *)NULL;
+       comp != (NodePathComponent *)nullptr;
        comp = comp->get_next(pipeline_stage, current_thread)) {
     PandaNode *node = comp->get_node();
     if (node->is_overall_hidden() ||
@@ -5143,11 +5143,11 @@ unstash_all(Thread *current_thread) {
 NodePath NodePath::
 get_stashed_ancestor(Thread *current_thread) const {
   NodePathComponent *comp = _head;
-  if (comp != (NodePathComponent *)NULL) {
+  if (comp != (NodePathComponent *)nullptr) {
     int pipeline_stage = current_thread->get_pipeline_stage();
     NodePathComponent *next = comp->get_next(pipeline_stage, current_thread);
 
-    while (next != (NodePathComponent *)NULL) {
+    while (next != (NodePathComponent *)nullptr) {
       PandaNode *node = comp->get_node();
       PandaNode *parent_node = next->get_node();
 
@@ -5237,19 +5237,19 @@ verify_complete(Thread *current_thread) const {
   PStatTimer timer(_verify_complete_pcollector);
 
   const NodePathComponent *comp = _head;
-  nassertr(comp != (const NodePathComponent *)NULL, false);
+  nassertr(comp != (const NodePathComponent *)nullptr, false);
 
   int pipeline_stage = current_thread->get_pipeline_stage();
 
   PandaNode *node = comp->get_node();
-  nassertr(node != (const PandaNode *)NULL, false);
+  nassertr(node != (const PandaNode *)nullptr, false);
   int length = comp->get_length(pipeline_stage, current_thread);
 
   comp = comp->get_next(pipeline_stage, current_thread);
   length--;
-  while (comp != (const NodePathComponent *)NULL) {
+  while (comp != (const NodePathComponent *)nullptr) {
     PandaNode *next_node = comp->get_node();
-    nassertr(next_node != (const PandaNode *)NULL, false);
+    nassertr(next_node != (const PandaNode *)nullptr, false);
 
     if (node->find_parent(next_node) < 0) {
       pgraph_cat.warning()
@@ -5654,7 +5654,7 @@ encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
   DatagramBuffer buffer;
   BamWriter local_writer;
   bool used_local_writer = false;
-  if (writer == NULL) {
+  if (writer == nullptr) {
     // Create our own writer.
 
     if (!buffer.write_header(_bam_header)) {
@@ -5683,20 +5683,20 @@ encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
   dg.add_int32(num_nodes);
 
   if (!buffer.put_datagram(dg)) {
-    writer->set_target(NULL);
+    writer->set_target(nullptr);
     return false;
   }
 
   // Now write the nodes, one at a time.
   for (int i = 0; i < num_nodes; ++i) {
     PandaNode *node = get_node(num_nodes - i - 1);
-    nassertr(node != NULL, false);
+    nassertr(node != nullptr, false);
     if (!writer->write_object(node)) {
-      writer->set_target(NULL);
+      writer->set_target(nullptr);
       return false;
     }
   }
-  writer->set_target(NULL);
+  writer->set_target(nullptr);
 
   buffer.swap_data(data);
   return true;
@@ -5713,7 +5713,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   DatagramBuffer buffer(move(data));
 
   BamReader local_reader;
-  if (reader == NULL) {
+  if (reader == nullptr) {
     // Create a local reader.
 
     string head;
@@ -5748,14 +5748,14 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
     for (int i = 0; i < num_nodes; ++i) {
       TypedWritable *object = reader->read_object();
 
-      if (object == (TypedWritable *)NULL ||
+      if (object == (TypedWritable *)nullptr ||
           !object->is_of_type(PandaNode::get_class_type())) {
-        reader->set_source(NULL);
+        reader->set_source(nullptr);
         return NodePath::fail();
       }
 
       if (!reader->resolve()) {
-        reader->set_source(NULL);
+        reader->set_source(nullptr);
         return NodePath::fail();
       }
 
@@ -5764,7 +5764,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
     }
   }
 
-  reader->set_source(NULL);
+  reader->set_source(nullptr);
 
   return result;
 }
@@ -5780,7 +5780,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
 NodePathComponent *NodePath::
 find_common_ancestor(const NodePath &a, const NodePath &b,
                      int &a_count, int &b_count, Thread *current_thread) {
-  nassertr(!a.is_empty() && !b.is_empty(), NULL);
+  nassertr(!a.is_empty() && !b.is_empty(), nullptr);
   NodePathComponent *ac = a._head;
   NodePathComponent *bc = b._head;
   a_count = 0;
@@ -5790,12 +5790,12 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
 
   // Shorten up the longer one until they are the same length.
   while (ac->get_length(pipeline_stage, current_thread) > bc->get_length(pipeline_stage, current_thread)) {
-    nassertr(ac != (NodePathComponent *)NULL, NULL);
+    nassertr(ac != (NodePathComponent *)nullptr, nullptr);
     ac = ac->get_next(pipeline_stage, current_thread);
     a_count++;
   }
   while (bc->get_length(pipeline_stage, current_thread) > ac->get_length(pipeline_stage, current_thread)) {
-    nassertr(bc != (NodePathComponent *)NULL, NULL);
+    nassertr(bc != (NodePathComponent *)nullptr, nullptr);
     bc = bc->get_next(pipeline_stage, current_thread);
     b_count++;
   }
@@ -5803,8 +5803,8 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
   // Now shorten them both up until we reach the same component.
   while (ac != bc) {
     // These shouldn't go to NULL unless they both go there together.
-    nassertr(ac != (NodePathComponent *)NULL, NULL);
-    nassertr(bc != (NodePathComponent *)NULL, NULL);
+    nassertr(ac != (NodePathComponent *)nullptr, nullptr);
+    nassertr(bc != (NodePathComponent *)nullptr, nullptr);
     ac = ac->get_next(pipeline_stage, current_thread);
     a_count++;
     bc = bc->get_next(pipeline_stage, current_thread);
@@ -5820,7 +5820,7 @@ find_common_ancestor(const NodePath &a, const NodePath &b,
  */
 CPT(RenderState) NodePath::
 r_get_net_state(NodePathComponent *comp, Thread *current_thread) const {
-  if (comp == (NodePathComponent *)NULL) {
+  if (comp == (NodePathComponent *)nullptr) {
     return RenderState::make_empty();
   } else {
     CPT(RenderState) state = comp->get_node()->get_state(current_thread);
@@ -5837,7 +5837,7 @@ r_get_net_state(NodePathComponent *comp, Thread *current_thread) const {
 CPT(RenderState) NodePath::
 r_get_partial_state(NodePathComponent *comp, int n,
                     Thread *current_thread) const {
-  if (n == 0 || comp == (NodePathComponent *)NULL) {
+  if (n == 0 || comp == (NodePathComponent *)nullptr) {
     return RenderState::make_empty();
   } else {
     CPT(RenderState) state = comp->get_node()->get_state(current_thread);
@@ -5852,7 +5852,7 @@ r_get_partial_state(NodePathComponent *comp, int n,
  */
 CPT(TransformState) NodePath::
 r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
-  if (comp == (NodePathComponent *)NULL) {
+  if (comp == (NodePathComponent *)nullptr) {
     return TransformState::make_identity();
   } else {
     PandaNode *node = comp->get_node();
@@ -5885,18 +5885,18 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
 CPT(TransformState) NodePath::
 r_get_partial_transform(NodePathComponent *comp, int n,
                         Thread *current_thread) const {
-  if (n == 0 || comp == (NodePathComponent *)NULL) {
+  if (n == 0 || comp == (NodePathComponent *)nullptr) {
     return TransformState::make_identity();
   } else {
     PandaNode *node = comp->get_node();
     PandaNode::CDReader node_cdata(node->_cycler, current_thread);
     if (node_cdata->_effects->has_adjust_transform()) {
-      return NULL;
+      return nullptr;
     }
     int pipeline_stage = current_thread->get_pipeline_stage();
     CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread);
-    if (partial == (const TransformState *)NULL) {
-      return NULL;
+    if (partial == (const TransformState *)nullptr) {
+      return nullptr;
     }
     if (node_cdata->_transform->is_identity()) {
       return partial;
@@ -5912,7 +5912,7 @@ r_get_partial_transform(NodePathComponent *comp, int n,
  */
 CPT(TransformState) NodePath::
 r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const {
-  if (comp == (NodePathComponent *)NULL) {
+  if (comp == (NodePathComponent *)nullptr) {
     return TransformState::make_identity();
   } else {
     CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
@@ -5928,7 +5928,7 @@ r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const 
  */
 CPT(TransformState) NodePath::
 r_get_partial_prev_transform(NodePathComponent *comp, int n, Thread *current_thread) const {
-  if (n == 0 || comp == (NodePathComponent *)NULL) {
+  if (n == 0 || comp == (NodePathComponent *)nullptr) {
     return TransformState::make_identity();
   } else {
     CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
@@ -5989,9 +5989,9 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
 
   int num_levels_remaining = _max_search_depth;
 
-  FindApproxLevelEntry *deleted_entries = NULL;
+  FindApproxLevelEntry *deleted_entries = nullptr;
 
-  while (num_levels_remaining > 0 && level != NULL) {
+  while (num_levels_remaining > 0 && level != nullptr) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << "find_matches pass: " << result << ", "
@@ -6001,27 +6001,27 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
 
     num_levels_remaining--;
 
-    FindApproxLevelEntry *next_level = NULL;
+    FindApproxLevelEntry *next_level = nullptr;
 
     // For each node in the current level, build up the set of possible
     // matches in the next level.
     FindApproxLevelEntry *entry = level;
-    while (entry != (FindApproxLevelEntry *)NULL) {
+    while (entry != (FindApproxLevelEntry *)nullptr) {
       if (entry->consider_node(result, next_level, max_matches, 0)) {
         // If we found the requisite number of matches, we can stop.  Delete
         // all remaining entries and return immediately.
 
-        while (entry != (FindApproxLevelEntry *)NULL) {
+        while (entry != (FindApproxLevelEntry *)nullptr) {
           FindApproxLevelEntry *next = entry->_next;
           delete entry;
           entry = next;
         }
-        while (next_level != (FindApproxLevelEntry *)NULL) {
+        while (next_level != (FindApproxLevelEntry *)nullptr) {
           FindApproxLevelEntry *next = next_level->_next;
           delete next_level;
           next_level = next;
         }
-        while (deleted_entries != (FindApproxLevelEntry *)NULL) {
+        while (deleted_entries != (FindApproxLevelEntry *)nullptr) {
           FindApproxLevelEntry *next = deleted_entries->_next;
           delete deleted_entries;
           deleted_entries = next;
@@ -6042,7 +6042,7 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
 
     // Make sure the remaining entries from this level are added to the delete
     // chain.
-    while (entry != (FindApproxLevelEntry *)NULL) {
+    while (entry != (FindApproxLevelEntry *)nullptr) {
       FindApproxLevelEntry *next = entry->_next;
       entry->_next = deleted_entries;
       deleted_entries = entry;
@@ -6054,7 +6054,7 @@ find_matches(NodePathCollection &result, FindApproxLevelEntry *level,
   }
 
   // Now it's safe to delete all entries on the delete chain.
-  while (deleted_entries != (FindApproxLevelEntry *)NULL) {
+  while (deleted_entries != (FindApproxLevelEntry *)nullptr) {
     FindApproxLevelEntry *next = deleted_entries->_next;
     delete deleted_entries;
     deleted_entries = next;
@@ -6231,7 +6231,7 @@ r_find_texture(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
   if (node->is_geom_node()) {
     GeomNode *gnode;
-    DCAST_INTO_R(gnode, node, NULL);
+    DCAST_INTO_R(gnode, node, nullptr);
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
@@ -6241,11 +6241,11 @@ r_find_texture(PandaNode *node, const RenderState *state,
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
           Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
-          if (texture != (Texture *)NULL) {
+          if (texture != (Texture *)nullptr) {
             if (glob.matches(texture->get_name())) {
               return texture;
             }
@@ -6263,12 +6263,12 @@ r_find_texture(PandaNode *node, const RenderState *state,
     CPT(RenderState) next_state = state->compose(child->get_state());
 
     Texture *result = r_find_texture(child, next_state, glob);
-    if (result != (Texture *)NULL) {
+    if (result != (Texture *)nullptr) {
       return result;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -6289,11 +6289,11 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
           Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
-          if (texture != (Texture *)NULL) {
+          if (texture != (Texture *)nullptr) {
             textures.insert(texture);
           }
         }
@@ -6319,7 +6319,7 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
   // Look for a TextureAttrib on the node.
   const RenderAttrib *attrib =
     node->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     if (ta->has_on_stage(stage)) {
       return ta->get_on_texture(stage);
@@ -6328,7 +6328,7 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
 
   if (node->is_geom_node()) {
     GeomNode *gnode;
-    DCAST_INTO_R(gnode, node, NULL);
+    DCAST_INTO_R(gnode, node, nullptr);
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
@@ -6337,7 +6337,7 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         if (ta->has_on_stage(stage)) {
           return ta->get_on_texture(stage);
@@ -6353,12 +6353,12 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
     PandaNode *child = cr.get_child(i);
 
     Texture *result = r_find_texture(child, stage);
-    if (result != (Texture *)NULL) {
+    if (result != (Texture *)nullptr) {
       return result;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -6370,7 +6370,7 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
   // Look for a TextureAttrib on the node.
   const RenderAttrib *attrib =
     node->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     if (ta->has_on_stage(stage)) {
       textures.insert(ta->get_on_texture(stage));
@@ -6388,7 +6388,7 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         if (ta->has_on_stage(stage)) {
           textures.insert(ta->get_on_texture(stage));
@@ -6414,7 +6414,7 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
                      const GlobPattern &glob) const {
   if (node->is_geom_node()) {
     GeomNode *gnode;
-    DCAST_INTO_R(gnode, node, NULL);
+    DCAST_INTO_R(gnode, node, nullptr);
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
@@ -6424,11 +6424,11 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
           TextureStage *texture_stage = ta->get_on_stage(i);
-          if (texture_stage != (TextureStage *)NULL) {
+          if (texture_stage != (TextureStage *)nullptr) {
             if (glob.matches(texture_stage->get_name())) {
               return texture_stage;
             }
@@ -6446,12 +6446,12 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
     CPT(RenderState) next_state = state->compose(child->get_state());
 
     TextureStage *result = r_find_texture_stage(child, next_state, glob);
-    if (result != (TextureStage *)NULL) {
+    if (result != (TextureStage *)nullptr) {
       return result;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -6472,11 +6472,11 @@ r_find_all_texture_stages(PandaNode *node, const RenderState *state,
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
           TextureStage *texture_stage = ta->get_on_stage(i);
-          if (texture_stage != (TextureStage *)NULL) {
+          if (texture_stage != (TextureStage *)nullptr) {
             texture_stages.insert(texture_stage);
           }
         }
@@ -6502,7 +6502,7 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
   // Look for a TextureAttrib on the state.
   const RenderAttrib *attrib =
     node->get_attrib(TextureAttrib::get_class_slot());
-  if (attrib != (const RenderAttrib *)NULL) {
+  if (attrib != (const RenderAttrib *)nullptr) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
     if (new_attrib != ta) {
@@ -6521,7 +6521,7 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
         state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
         if (new_attrib != ta) {
@@ -6549,7 +6549,7 @@ r_find_material(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
   if (node->is_geom_node()) {
     GeomNode *gnode;
-    DCAST_INTO_R(gnode, node, NULL);
+    DCAST_INTO_R(gnode, node, nullptr);
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
@@ -6559,11 +6559,11 @@ r_find_material(PandaNode *node, const RenderState *state,
       // Look for a MaterialAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(MaterialAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
         if (!ta->is_off()) {
           Material *material = ta->get_material();
-          if (material != (Material *)NULL) {
+          if (material != (Material *)nullptr) {
             if (glob.matches(material->get_name())) {
               return material;
             }
@@ -6581,12 +6581,12 @@ r_find_material(PandaNode *node, const RenderState *state,
     CPT(RenderState) next_state = state->compose(child->get_state());
 
     Material *result = r_find_material(child, next_state, glob);
-    if (result != (Material *)NULL) {
+    if (result != (Material *)nullptr) {
       return result;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -6607,11 +6607,11 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
       // Look for a MaterialAttrib on the state.
       const RenderAttrib *attrib =
         geom_state->get_attrib(MaterialAttrib::get_class_slot());
-      if (attrib != (const RenderAttrib *)NULL) {
+      if (attrib != (const RenderAttrib *)nullptr) {
         const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
         if (!ta->is_off()) {
           Material *material = ta->get_material();
-          if (material != (Material *)NULL) {
+          if (material != (Material *)nullptr) {
             materials.insert(material);
           }
         }
@@ -6638,9 +6638,9 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   PandaNode *root = DCAST(PandaNode, manager->get_root_node());
 
   // We have no root node to measure from.
-  if (root == (PandaNode *)NULL || root == node()) {
+  if (root == (PandaNode *)nullptr || root == node()) {
     manager->write_pointer(dg, node());
-    manager->write_pointer(dg, NULL);
+    manager->write_pointer(dg, nullptr);
     return;
   }
 
@@ -6650,7 +6650,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   // Record the chain of nodes from the root to this node.
   pvector<PandaNode *> path;
   NodePathComponent *comp = _head;
-  while (comp != NULL) {
+  while (comp != nullptr) {
     PandaNode *node = comp->get_node();
     path.push_back(node);
 
@@ -6661,10 +6661,10 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
     comp = comp->get_next(pipeline_stage, current_thread);
   }
 
-  if (comp == (NodePathComponent *)NULL) {
+  if (comp == (NodePathComponent *)nullptr) {
     // We did not encounter the root node.  Not much we can do.
     manager->write_pointer(dg, node());
-    manager->write_pointer(dg, NULL);
+    manager->write_pointer(dg, nullptr);
     return;
   }
 
@@ -6672,7 +6672,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   for (int i = path.size() - 1; i >= 0; --i) {
     manager->write_pointer(dg, path[i]);
   }
-  manager->write_pointer(dg, NULL);
+  manager->write_pointer(dg, nullptr);
 }
 
 /**
@@ -6685,7 +6685,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
   if (node.is_null()) {
     // An empty NodePath.
-    _head = (NodePathComponent *)NULL;
+    _head = (NodePathComponent *)nullptr;
     return pi;
   }
 
@@ -6702,7 +6702,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   }
 
   // Build up the chain of NodePathComponents leading up to this node.
-  while (p_list[pi] != NULL) {
+  while (p_list[pi] != nullptr) {
     PT(PandaNode) node = DCAST(PandaNode, p_list[pi++]);
 
     LightReMutexHolder holder(node->_paths_lock);

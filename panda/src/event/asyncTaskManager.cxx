@@ -22,7 +22,7 @@
 #include "config_event.h"
 #include <algorithm>
 
-AsyncTaskManager *AsyncTaskManager::_global_ptr = NULL;
+AsyncTaskManager *AsyncTaskManager::_global_ptr = nullptr;
 
 TypeHandle AsyncTaskManager::_type_handle;
 
@@ -114,7 +114,7 @@ get_num_task_chains() const {
 AsyncTaskChain *AsyncTaskManager::
 get_task_chain(int n) const {
   MutexHolder holder(_lock);
-  nassertr(n >= 0 && n < (int)_task_chains.size(), NULL);
+  nassertr(n >= 0 && n < (int)_task_chains.size(), nullptr);
   return _task_chains[n];
 }
 
@@ -196,19 +196,19 @@ add(AsyncTask *task) {
       }
     }
 
-    nassertv(task->_manager == NULL &&
+    nassertv(task->_manager == nullptr &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
 
     _lock.unlock();
     task->upon_birth(this);
     _lock.lock();
-    nassertv(task->_manager == NULL &&
+    nassertv(task->_manager == nullptr &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
 
     AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
-    if (chain == (AsyncTaskChain *)NULL) {
+    if (chain == (AsyncTaskChain *)nullptr) {
       task_cat.warning()
         << "Creating implicit AsyncTaskChain " << task->_chain_name
         << " for " << get_type() << " " << get_name() << "\n";
@@ -257,7 +257,7 @@ find_task(const string &name) const {
     return (*tbni);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -576,7 +576,7 @@ do_find_task_chain(const string &name) {
     return (*tci);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -639,7 +639,7 @@ do_output(ostream &out) const {
  */
 void AsyncTaskManager::
 make_global_ptr() {
-  nassertv(_global_ptr == (AsyncTaskManager *)NULL);
+  nassertv(_global_ptr == (AsyncTaskManager *)nullptr);
 
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();

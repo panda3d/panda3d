@@ -162,7 +162,7 @@ void PipeStreamBuf::write_chars(const char* start, int length, bool flush) {
  */
 void PipeStreamBuf::
 init_pipe() {
-  _pipe = NULL;
+  _pipe = nullptr;
 }
 
 /**
@@ -170,7 +170,7 @@ init_pipe() {
  */
 bool PipeStreamBuf::
 is_open() const {
-  return _pipe != NULL;
+  return _pipe != nullptr;
 }
 
 /**
@@ -179,7 +179,7 @@ is_open() const {
  */
 bool PipeStreamBuf::
 eof_pipe() const {
-  return (_pipe == NULL) && feof(_pipe);
+  return (_pipe == nullptr) && feof(_pipe);
 }
 
 /**
@@ -193,7 +193,7 @@ bool PipeStreamBuf::
 open_pipe(const string &cmd) {
   const char *typ = (_dir == Output)?"w":"r";
   _pipe = popen(cmd.c_str(), typ);
-  return (_pipe != NULL);
+  return (_pipe != nullptr);
 }
 
 /**
@@ -201,9 +201,9 @@ open_pipe(const string &cmd) {
  */
 void PipeStreamBuf::
 close_pipe() {
-  if (_pipe != NULL) {
+  if (_pipe != nullptr) {
     fclose(_pipe);
-    _pipe = NULL;
+    _pipe = nullptr;
   }
 }
 
@@ -289,7 +289,7 @@ open_pipe(const string &cmd) {
   SECURITY_ATTRIBUTES saAttr;
   saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
   saAttr.bInheritHandle = TRUE;
-  saAttr.lpSecurityDescriptor = NULL;
+  saAttr.lpSecurityDescriptor = nullptr;
   if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)) {
 #ifndef NDEBUG
     cerr << "Unable to create output pipe\n";
@@ -391,7 +391,7 @@ read_pipe(char *data, size_t len) {
     return 0;
   }
   DWORD dwRead;
-  if (!ReadFile(_child_out, data, len, &dwRead, NULL)) {
+  if (!ReadFile(_child_out, data, len, &dwRead, nullptr)) {
     close_pipe();
     return 0;
   }

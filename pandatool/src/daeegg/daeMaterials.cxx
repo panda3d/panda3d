@@ -45,7 +45,7 @@ DaeMaterials(const FCDGeometryInstance* geometry_instance) {
  * Adds a material instance.  Normally automatically done by constructor.
  */
 void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
-  nassertv(instance != NULL);
+  nassertv(instance != nullptr);
   const string semantic (FROM_FSTRING(instance->GetSemantic()));
   if (_materials.count(semantic) > 0) {
     daeegg_cat.warning() << "Ignoring duplicate material with semantic " << semantic << endl;
@@ -56,7 +56,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   // Load in the uvsets
   for (size_t vib = 0; vib < instance->GetVertexInputBindingCount(); ++vib) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
-    assert(mivib != NULL);
+    assert(mivib != nullptr);
     PT(DaeVertexInputBinding) bvi = new DaeVertexInputBinding();
     bvi->_input_set = mivib->inputSet;
 #if FCOLLADA_VERSION >= 0x00030005
@@ -74,12 +74,12 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   PT_EggMaterial egg_material = new EggMaterial(semantic);
   pvector<PT_EggTexture> egg_textures;
   const FCDEffect* effect = instance->GetMaterial()->GetEffect();
-  if (effect == NULL) {
+  if (effect == nullptr) {
     daeegg_cat.debug() << "Ignoring material (semantic: " << semantic << ") without assigned effect" << endl;
   } else {
     // Grab the common profile effect
     const FCDEffectStandard* effect_common = (FCDEffectStandard *)effect->FindProfile(FUDaeProfileType::COMMON);
-    if (effect_common == NULL) {
+    if (effect_common == nullptr) {
       daeegg_cat.info() << "Ignoring effect referenced by material with semantic " << semantic
                          << " because it has no common profile" << endl;
     } else {
@@ -124,7 +124,7 @@ void DaeMaterials::
 process_texture_bucket(const string semantic, const FCDEffectStandard* effect_common, FUDaeTextureChannel::Channel bucket, EggTexture::EnvType envtype, EggTexture::Format format) {
   for (size_t tx = 0; tx < effect_common->GetTextureCount(bucket); ++tx) {
     const FCDImage* image = effect_common->GetTexture(bucket, tx)->GetImage();
-    if (image == NULL) {
+    if (image == nullptr) {
       daeegg_cat.warning() << "Texture references a nonexisting image!" << endl;
     } else {
       const FCDEffectParameterSampler* sampler = effect_common->GetTexture(bucket, tx)->GetSampler();
@@ -145,7 +145,7 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
       PT_EggTexture egg_texture = new EggTexture(FROM_FSTRING(image->GetDaeId()), texpath.to_os_generic());
       // Find a set of UV coordinates
       const FCDEffectParameterInt* uvset = effect_common->GetTexture(bucket, tx)->GetSet();
-      if (uvset != NULL) {
+      if (uvset != nullptr) {
         daeegg_cat.debug() << "Texture has uv name '" << FROM_FSTRING(uvset->GetSemantic()) << "'\n";
         string uvset_semantic (FROM_FSTRING(uvset->GetSemantic()));
 
@@ -158,7 +158,7 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
         }
       }
       // Apply sampler stuff
-      if (sampler != NULL) {
+      if (sampler != nullptr) {
         egg_texture->set_texture_type(convert_texture_type(sampler->GetSamplerType()));
         egg_texture->set_wrap_u(convert_wrap_mode(sampler->GetWrapS()));
         if (sampler->GetSamplerType() != FCDEffectParameterSampler::SAMPLER1D) {
@@ -187,12 +187,12 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
  */
 void DaeMaterials::
 process_extra(const string semantic, const FCDExtra* extra) {
-  if (extra == NULL) return;
+  if (extra == nullptr) return;
   const FCDEType* etype = extra->GetDefaultType();
-  if (etype == NULL) return;
+  if (etype == nullptr) return;
   for (size_t et = 0; et < etype->GetTechniqueCount(); ++et) {
     const FCDENode* enode = ((const FCDENode*)(etype->GetTechnique(et)))->FindChildNode("double_sided");
-    if (enode != NULL) {
+    if (enode != nullptr) {
       string content = trim(enode->GetContent());
       if (content == "1" || content == "true") {
         _materials[semantic]->_double_sided = true;

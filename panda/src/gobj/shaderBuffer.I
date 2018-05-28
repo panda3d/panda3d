@@ -58,7 +58,7 @@ get_usage_hint() const {
 INLINE const unsigned char *ShaderBuffer::
 get_initial_data() const {
   if (_initial_data.empty()) {
-    return NULL;
+    return nullptr;
   } else {
     return &_initial_data[0];
   }

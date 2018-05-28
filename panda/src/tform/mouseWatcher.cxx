@@ -62,12 +62,12 @@ MouseWatcher(const string &name) :
 
   _has_mouse = false;
   _internal_suppress = 0;
-  _preferred_region = (MouseWatcherRegion *)NULL;
-  _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+  _preferred_region = (MouseWatcherRegion *)nullptr;
+  _preferred_button_down_region = (MouseWatcherRegion *)nullptr;
   _button_down = false;
-  _eh = (EventHandler *)NULL;
-  _display_region = (DisplayRegion *)NULL;
-  _button_down_display_region = (DisplayRegion *)NULL;
+  _eh = (EventHandler *)nullptr;
+  _display_region = (DisplayRegion *)nullptr;
+  _button_down_display_region = (DisplayRegion *)nullptr;
 
   _frame.set(-1.0f, 1.0f, -1.0f, 1.0f);
 
@@ -109,13 +109,13 @@ remove_region(MouseWatcherRegion *region) {
 
   remove_region_from(_current_regions, region);
   if (region == _preferred_region) {
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)nullptr) {
       exit_region(_preferred_region, MouseWatcherParameter());
     }
-    _preferred_region = (MouseWatcherRegion *)NULL;
+    _preferred_region = (MouseWatcherRegion *)nullptr;
   }
   if (region == _preferred_button_down_region) {
-    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+    _preferred_button_down_region = (MouseWatcherRegion *)nullptr;
   }
 
   return MouseWatcherBase::do_remove_region(region);
@@ -190,13 +190,13 @@ remove_group(MouseWatcherGroup *group) {
   set_current_regions(only_a);
 
   if (has_region_in(both, _preferred_region)) {
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)nullptr) {
       exit_region(_preferred_region, MouseWatcherParameter());
     }
-    _preferred_region = (MouseWatcherRegion *)NULL;
+    _preferred_region = (MouseWatcherRegion *)nullptr;
   }
   if (has_region_in(both, _preferred_button_down_region)) {
-    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+    _preferred_button_down_region = (MouseWatcherRegion *)nullptr;
   }
 
 #ifndef NDEBUG
@@ -268,13 +268,13 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
     any_new_current_regions = true;
 
     if (has_region_in(both, _preferred_region)) {
-      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      if (_preferred_region != (MouseWatcherRegion *)nullptr) {
         exit_region(_preferred_region, MouseWatcherParameter());
       }
-      _preferred_region = (MouseWatcherRegion *)NULL;
+      _preferred_region = (MouseWatcherRegion *)nullptr;
     }
     if (has_region_in(both, _preferred_button_down_region)) {
-      _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+      _preferred_button_down_region = (MouseWatcherRegion *)nullptr;
     }
   }
 
@@ -343,7 +343,7 @@ get_num_groups() const {
 MouseWatcherGroup *MouseWatcher::
 get_group(int n) const {
   LightMutexHolder holder(_lock);
-  nassertr(n >= 0 && n < (int)_groups.size(), NULL);
+  nassertr(n >= 0 && n < (int)_groups.size(), nullptr);
   return _groups[n];
 }
 
@@ -584,7 +584,7 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
 MouseWatcherRegion *MouseWatcher::
 get_preferred_region(const MouseWatcher::Regions &regions) {
   if (regions.empty()) {
-    return (MouseWatcherRegion *)NULL;
+    return (MouseWatcherRegion *)nullptr;
   }
 
   Regions::const_iterator ri;
@@ -689,15 +689,15 @@ set_current_regions(MouseWatcher::Regions &regions) {
     if (_button_down && new_preferred_region != _preferred_button_down_region) {
       // If the button's being held down, we're only allowed to select the
       // preferred button down region.
-      new_preferred_region = (MouseWatcherRegion *)NULL;
+      new_preferred_region = (MouseWatcherRegion *)nullptr;
     }
 
     if (new_preferred_region != _preferred_region) {
-      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      if (_preferred_region != (MouseWatcherRegion *)nullptr) {
         exit_region(_preferred_region, param);
       }
       _preferred_region = new_preferred_region;
-      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      if (_preferred_region != (MouseWatcherRegion *)nullptr) {
         enter_region(_preferred_region, param);
       }
     }
@@ -729,10 +729,10 @@ clear_current_regions() {
 
     _current_regions.clear();
 
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)nullptr) {
       _preferred_region->exit_region(param);
       throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
-      _preferred_region = (MouseWatcherRegion *)NULL;
+      _preferred_region = (MouseWatcherRegion *)nullptr;
     }
   }
 }
@@ -859,7 +859,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
     return;
   }
 #ifndef NDEBUG
-  if (region != (MouseWatcherRegion *)NULL) {
+  if (region != (MouseWatcherRegion *)nullptr) {
     region->test_ref_count_integrity();
   }
 #endif
@@ -880,7 +880,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
       string cmd = pattern.substr(p + 1, 1);
       p++;
       if (cmd == "r") {
-        if (region != (MouseWatcherRegion *)NULL) {
+        if (region != (MouseWatcherRegion *)nullptr) {
           event += region->get_name();
         }
 
@@ -916,7 +916,7 @@ move() {
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
-  if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
+  if (_preferred_button_down_region != (MouseWatcherRegion *)nullptr) {
     _preferred_button_down_region->move(param);
   }
 }
@@ -942,7 +942,7 @@ press(ButtonHandle button, bool keyrepeat) {
     }
     _button_down = true;
 
-    if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_button_down_region != (MouseWatcherRegion *)nullptr) {
       _preferred_button_down_region->press(param);
       if (keyrepeat) {
         throw_event_pattern(_button_repeat_pattern,
@@ -956,7 +956,7 @@ press(ButtonHandle button, bool keyrepeat) {
   } else {
     // It's a keyboard button; therefore, send the event to every region that
     // wants keyboard buttons, regardless of the mouse position.
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)nullptr) {
       // Our current region, the one under the mouse, always get all the
       // keyboard events, even if it doesn't set its keyboard flag.
       _preferred_region->press(param);
@@ -992,7 +992,7 @@ release(ButtonHandle button) {
     // There is some danger of losing button-up events here.  If more than one
     // button goes down together, we won't detect both of the button-up events
     // properly.
-    if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_button_down_region != (MouseWatcherRegion *)nullptr) {
       param.set_outside(_preferred_button_down_region != _preferred_region);
       _preferred_button_down_region->release(param);
       throw_event_pattern(_button_up_pattern,
@@ -1000,12 +1000,12 @@ release(ButtonHandle button) {
     }
 
     _button_down = false;
-    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
+    _preferred_button_down_region = (MouseWatcherRegion *)nullptr;
 
   } else {
     // It's a keyboard button; therefore, send the event to every region that
     // wants keyboard buttons, regardless of the mouse position.
-    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)nullptr) {
       _preferred_region->release(param);
     }
 
@@ -1302,7 +1302,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
       move();
     }
 
-    if (_display_region != (DisplayRegion *)NULL) {
+    if (_display_region != (DisplayRegion *)nullptr) {
       // If we've got a display region, constrain the mouse to it.
       if (constrain_display_region(_display_region, f, p, current_thread)) {
         set_mouse(f, p);
@@ -1348,7 +1348,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   // If the mouse is over a particular region, or still considered owned by a
   // region because of a recent button-down event, that region determines
   // whether we suppress events below us.
-  if (_preferred_region != (MouseWatcherRegion *)NULL) {
+  if (_preferred_region != (MouseWatcherRegion *)nullptr) {
     _internal_suppress |= _preferred_region->get_suppress_flags();
   }
 
@@ -1547,9 +1547,9 @@ constrain_display_region(DisplayRegion *display_region,
                          LVecBase2 &f, LVecBase2 &p,
                          Thread *current_thread) {
   if (!_button_down) {
-    _button_down_display_region = NULL;
+    _button_down_display_region = nullptr;
   }
-  if (_button_down_display_region != NULL) {
+  if (_button_down_display_region != nullptr) {
     // If the button went down over this DisplayRegion, we consider the button
     // within the same DisplayRegion until it is released (even if it wanders
     // outside the borders).
@@ -1574,7 +1574,7 @@ constrain_display_region(DisplayRegion *display_region,
   PN_stdfloat x = (f[0] + 1.0f) / 2.0f;
   PN_stdfloat y = (f[1] + 1.0f) / 2.0f;
 
-  if (_button_down_display_region == NULL &&
+  if (_button_down_display_region == nullptr &&
       (x < left || x >= right || y < bottom || y >= top)) {
     // The mouse is outside the display region.
     return false;

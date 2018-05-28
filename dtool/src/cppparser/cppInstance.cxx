@@ -35,10 +35,10 @@ CPPInstance(CPPType *type, const string &name, int storage_class) :
   _type(type),
   _ident(new CPPIdentifier(name)),
   _storage_class(storage_class),
-  _alignment(NULL),
+  _alignment(nullptr),
   _bit_width(-1)
 {
-  _initializer = NULL;
+  _initializer = nullptr;
 }
 
 /**
@@ -50,10 +50,10 @@ CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
   _type(type),
   _ident(ident),
   _storage_class(storage_class),
-  _alignment(NULL),
+  _alignment(nullptr),
   _bit_width(-1)
 {
-  _initializer = NULL;
+  _initializer = nullptr;
 }
 
 /**
@@ -65,17 +65,17 @@ CPPInstance::
 CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
             const CPPFile &file) :
   CPPDeclaration(file),
-  _alignment(NULL)
+  _alignment(nullptr)
 {
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
-  ii->_ident = NULL;
+  ii->_ident = nullptr;
   _storage_class = storage_class;
-  _initializer = NULL;
+  _initializer = nullptr;
   _bit_width = ii->_bit_width;
 
   CPPParameterList *params = ii->get_initializer();
-  if (params != (CPPParameterList *)NULL) {
+  if (params != (CPPParameterList *)nullptr) {
     // In this case, the instance has a parameter-list initializer, e.g.: int
     // foo(0); We really should save this initializer in the instance object.
     // But we don't for now, since no one really cares about initializers
@@ -102,7 +102,7 @@ CPPInstance(const CPPInstance &copy) :
   _alignment(copy._alignment),
   _bit_width(copy._bit_width)
 {
-  assert(_type != NULL);
+  assert(_type != nullptr);
 }
 
 /**
@@ -150,17 +150,17 @@ operator == (const CPPInstance &other) const {
 
   // We *do* care about the identifier.  We need to differentiate types of
   // function variables, among possibly other things, based on the identifier.
-  if ((_ident == NULL && other._ident != NULL) ||
-      (_ident != NULL && other._ident == NULL) ||
-      (_ident != NULL && other._ident != NULL && *_ident != *other._ident))
+  if ((_ident == nullptr && other._ident != nullptr) ||
+      (_ident != nullptr && other._ident == nullptr) ||
+      (_ident != nullptr && other._ident != nullptr && *_ident != *other._ident))
   {
     return false;
   }
 
   // We similarly care about the initializer.
-  if ((_initializer == NULL && other._initializer != NULL) ||
-      (_initializer != NULL && other._initializer == NULL) ||
-      (_initializer != NULL && other._initializer != NULL &&
+  if ((_initializer == nullptr && other._initializer != nullptr) ||
+      (_initializer != nullptr && other._initializer == nullptr) ||
+      (_initializer != nullptr && other._initializer != nullptr &&
        *_initializer != *other._initializer))
   {
     return false;
@@ -194,23 +194,23 @@ operator < (const CPPInstance &other) const {
 
   // We *do* care about the identifier.  We need to differentiate types of
   // function variables, among possibly other things, based on the identifier.
-  if ((_ident == NULL && other._ident != NULL) ||
-      (_ident != NULL && other._ident == NULL) ||
-      (_ident != NULL && other._ident != NULL && *_ident != *other._ident))
+  if ((_ident == nullptr && other._ident != nullptr) ||
+      (_ident != nullptr && other._ident == nullptr) ||
+      (_ident != nullptr && other._ident != nullptr && *_ident != *other._ident))
   {
-    if (_ident == NULL || other._ident == NULL) {
+    if (_ident == nullptr || other._ident == nullptr) {
       return _ident < other._ident;
     }
     return *_ident < *other._ident;
   }
 
   // We similarly care about the initializer.
-  if ((_initializer == NULL && other._initializer != NULL) ||
-      (_initializer != NULL && other._initializer == NULL) ||
-      (_initializer != NULL && other._initializer != NULL &&
+  if ((_initializer == nullptr && other._initializer != nullptr) ||
+      (_initializer != nullptr && other._initializer == nullptr) ||
+      (_initializer != nullptr && other._initializer != nullptr &&
        *_initializer != *other._initializer))
   {
-    if (_initializer == NULL || other._initializer == NULL) {
+    if (_initializer == nullptr || other._initializer == nullptr) {
       return _initializer < other._initializer;
     }
     return *_initializer < *other._initializer;
@@ -226,12 +226,12 @@ operator < (const CPPInstance &other) const {
  */
 void CPPInstance::
 set_initializer(CPPExpression *initializer) {
-  if (_type->as_function_type() != (CPPFunctionType *)NULL) {
+  if (_type->as_function_type() != (CPPFunctionType *)nullptr) {
     // This is a function declaration.
     _storage_class &= ~(SC_pure_virtual | SC_defaulted | SC_deleted);
-    _initializer = (CPPExpression *)NULL;
+    _initializer = (CPPExpression *)nullptr;
 
-    if (initializer != (CPPExpression *)NULL) {
+    if (initializer != (CPPExpression *)nullptr) {
       if (initializer->_type == CPPExpression::T_integer) { // = 0
         _storage_class |= SC_pure_virtual;
 
@@ -270,7 +270,7 @@ set_alignment(CPPExpression *const_expr) {
  */
 bool CPPInstance::
 is_scoped() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return false;
   } else {
     return _ident->is_scoped();
@@ -283,7 +283,7 @@ is_scoped() const {
 CPPScope *CPPInstance::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
           CPPPreprocessor *error_sink) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return current_scope;
   } else {
     return _ident->get_scope(current_scope, global_scope, error_sink);
@@ -295,7 +295,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
  */
 string CPPInstance::
 get_simple_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   } else {
     return _ident->get_simple_name();
@@ -307,7 +307,7 @@ get_simple_name() const {
  */
 string CPPInstance::
 get_local_name(CPPScope *scope) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   } else {
     return _ident->get_local_name(scope);
@@ -319,7 +319,7 @@ get_local_name(CPPScope *scope) const {
  */
 string CPPInstance::
 get_fully_scoped_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   } else {
     return _ident->get_fully_scoped_name();
@@ -334,12 +334,12 @@ get_fully_scoped_name() const {
 void CPPInstance::
 check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
   CPPScope *scope = get_scope(current_scope, global_scope);
-  if (scope == NULL) {
+  if (scope == nullptr) {
     scope = current_scope;
   }
 
   CPPFunctionType *func = _type->as_function_type();
-  if (func != NULL) {
+  if (func != nullptr) {
     string method_name = get_local_name(scope);
     string class_name = scope->get_local_name();
 
@@ -359,7 +359,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
           CPPType *param_type = params->_parameters[0]->_type;
           CPPReferenceType *ref_type = param_type->as_reference_type();
 
-          if (ref_type != NULL) {
+          if (ref_type != nullptr) {
             param_type = ref_type->_pointing_at->remove_cv();
 
             if (class_name == param_type->get_simple_name()) {
@@ -404,7 +404,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
             CPPPreprocessor *error_sink) const {
 
   if (!is_template()) {
-    if (error_sink != NULL) {
+    if (error_sink != nullptr) {
       error_sink->warning("Ignoring template parameters for instance " +
                           _ident->get_local_name());
     }
@@ -434,7 +434,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
     // change the name.
     inst = new CPPInstance(*this);
   }
-  assert(inst != NULL);
+  assert(inst != nullptr);
   inst->_ident = inst->_ident->substitute_decl(subst, current_scope, global_scope);
   if (inst->_ident == _ident) {
     inst->_ident = new CPPIdentifier(*inst->_ident);
@@ -442,7 +442,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
   inst->_ident->_names.back().set_templ
     (new CPPTemplateParameterList(*actual_params));
 
-  inst->_template_scope = NULL;
+  inst->_template_scope = nullptr;
 
   ((CPPInstance *)this)->_instantiations.insert(Instantiations::value_type(actual_params, inst));
   return inst;
@@ -455,10 +455,10 @@ instantiate(const CPPTemplateParameterList *actual_params,
  */
 bool CPPInstance::
 is_fully_specified() const {
-  if (_ident != NULL && !_ident->is_fully_specified()) {
+  if (_ident != nullptr && !_ident->is_fully_specified()) {
     return false;
   }
-  if (_initializer != NULL && !_initializer->is_fully_specified()) {
+  if (_initializer != nullptr && !_initializer->is_fully_specified()) {
     return false;
   }
   return CPPDeclaration::is_fully_specified() &&
@@ -482,11 +482,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     _type->substitute_decl(subst, current_scope, global_scope);
   rep->_type = new_type->as_type();
 
-  if (rep->_type == NULL) {
+  if (rep->_type == nullptr) {
     rep->_type = _type;
   }
 
-  if (_initializer != NULL) {
+  if (_initializer != nullptr) {
     rep->_initializer =
       _initializer->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
@@ -517,7 +517,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 void CPPInstance::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete,
        int num_default_parameters) const {
-  assert(_type != NULL);
+  assert(_type != nullptr);
 
   if (_type->is_parameter_expr()) {
     // In this case, the whole thing is really an expression, and not an
@@ -532,7 +532,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
     indent(out, indent_level);
   }
 
-  if (_alignment != NULL) {
+  if (_alignment != nullptr) {
     out << "alignas(" << *_alignment << ") ";
   }
 
@@ -571,7 +571,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   }
 
   string name;
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     name = _ident->get_local_name(scope);
   }
   if (_storage_class & SC_parameter_pack) {
@@ -600,7 +600,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
   if (_storage_class & SC_deleted) {
     out << " = delete";
   }
-  if (_initializer != NULL) {
+  if (_initializer != nullptr) {
     out << " = " << *_initializer;
   }
 }

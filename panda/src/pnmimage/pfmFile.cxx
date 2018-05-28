@@ -118,7 +118,7 @@ read(const Filename &fullpath) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     // No such file.
     pnmimage_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -147,7 +147,7 @@ read(const Filename &fullpath) {
 bool PfmFile::
 read(istream &in, const Filename &fullpath) {
   PNMReader *reader = make_reader(&in, false, fullpath);
-  if (reader == (PNMReader *)NULL) {
+  if (reader == (PNMReader *)nullptr) {
     clear();
     return false;
   }
@@ -163,7 +163,7 @@ bool PfmFile::
 read(PNMReader *reader) {
   clear();
 
-  if (reader == NULL) {
+  if (reader == nullptr) {
     return false;
   }
 
@@ -230,7 +230,7 @@ write(ostream &out, const Filename &fullpath) {
   }
 
   PNMWriter *writer = make_writer(&out, false, fullpath);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == (PNMWriter *)nullptr) {
     return false;
   }
 
@@ -244,7 +244,7 @@ write(ostream &out, const Filename &fullpath) {
  */
 bool PfmFile::
 write(PNMWriter *writer) {
-  if (writer == NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -1816,7 +1816,7 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
     break;
 
   default:
-    nassertr(false, NULL);
+    nassertr(false, nullptr);
   }
 
   // Rotate the bounding volume back into the original space of the screen.

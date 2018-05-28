@@ -44,7 +44,7 @@ ReMutexHolder(const ReMutex &mutex, Thread *current_thread) {
 INLINE ReMutexHolder::
 ReMutexHolder(ReMutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (ReMutex *)NULL) {
+  if (mutex == (ReMutex *)nullptr) {
     mutex = new ReMutex;
   }
   _mutex = mutex;

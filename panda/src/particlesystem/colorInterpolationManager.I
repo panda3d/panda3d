@@ -231,7 +231,7 @@ get_segment(const int seg_id) {
     if( seg_id == (*iter)->get_id() )
       return (*iter);
 
-  return NULL;
+  return nullptr;
 }
 
 /**

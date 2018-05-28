@@ -28,9 +28,9 @@ MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
   Namable(name),
   _allow_recursion(allow_recursion),
   _lightweight(lightweight),
-  _locking_thread(NULL),
+  _locking_thread(nullptr),
   _lock_count(0),
-  _deleted_name(NULL),
+  _deleted_name(nullptr),
   _cvar_impl(*get_global_lock())
 {
 #ifndef SIMPLE_THREADS
@@ -45,7 +45,7 @@ MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
  */
 MutexDebug::
 ~MutexDebug() {
-  nassertv(_locking_thread == NULL && _lock_count == 0);
+  nassertv(_locking_thread == nullptr && _lock_count == 0);
 
   // If the config variable says to, allocate (and leak) a string name for the
   // mutex, so we can report which mutex it is that has destructed after the
@@ -86,7 +86,7 @@ void MutexDebug::
 output_with_holder(ostream &out) const {
   _global_lock->lock();
   output(out);
-  if (_locking_thread != (Thread *)NULL) {
+  if (_locking_thread != (Thread *)nullptr) {
     out << " (held by " << *_locking_thread << ")\n";
   }
   _global_lock->unlock();
@@ -125,7 +125,7 @@ do_lock(Thread *current_thread) {
   nassertd(_lock_count != -100) {
     pipeline_cat.error()
       << "Destructed mutex: " << (void *)this << "\n";
-    if (name_deleted_mutexes && _deleted_name != NULL) {
+    if (name_deleted_mutexes && _deleted_name != nullptr) {
       pipeline_cat.error()
         << _deleted_name << "\n";
     } else {
@@ -135,7 +135,7 @@ do_lock(Thread *current_thread) {
     return;
   }
 
-  if (_locking_thread == (Thread *)NULL) {
+  if (_locking_thread == (Thread *)nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -178,7 +178,7 @@ do_lock(Thread *current_thread) {
 
       // Check for deadlock.
       MutexDebug *next_mutex = this;
-      while (next_mutex != NULL) {
+      while (next_mutex != nullptr) {
         if (next_mutex->_locking_thread == current_thread) {
           // Whoops, the thread is blocked on me!  Deadlock!
           report_deadlock(current_thread);
@@ -186,7 +186,7 @@ do_lock(Thread *current_thread) {
           return;
         }
         Thread *next_thread = next_mutex->_locking_thread;
-        if (next_thread == NULL) {
+        if (next_thread == nullptr) {
           // Looks like this mutex isn't actually locked, which means the last
           // thread isn't really blocked--it just hasn't woken up yet to
           // discover that.  In any case, no deadlock.
@@ -209,7 +209,7 @@ do_lock(Thread *current_thread) {
           << *_locking_thread << ")\n";
       }
 
-      while (_locking_thread != (Thread *)NULL) {
+      while (_locking_thread != (Thread *)nullptr) {
         thread_cat.debug()
           << *current_thread << " still blocking on " << *this << " (held by "
           << *_locking_thread << ")\n";
@@ -221,7 +221,7 @@ do_lock(Thread *current_thread) {
           << *current_thread << " acquired " << *this << "\n";
       }
 
-      current_thread->_blocked_on_mutex = NULL;
+      current_thread->_blocked_on_mutex = nullptr;
 
       _locking_thread = current_thread;
       ++_lock_count;
@@ -241,7 +241,7 @@ do_try_lock(Thread *current_thread) {
   nassertd(_lock_count != -100) {
     pipeline_cat.error()
       << "Destructed mutex: " << (void *)this << "\n";
-    if (name_deleted_mutexes && _deleted_name != NULL) {
+    if (name_deleted_mutexes && _deleted_name != nullptr) {
       pipeline_cat.error()
         << _deleted_name << "\n";
     } else {
@@ -252,7 +252,7 @@ do_try_lock(Thread *current_thread) {
   }
 
   bool acquired = true;
-  if (_locking_thread == (Thread *)NULL) {
+  if (_locking_thread == (Thread *)nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -307,7 +307,7 @@ do_unlock() {
   nassertd(_lock_count != -100) {
     pipeline_cat.error()
       << "Destructed mutex: " << (void *)this << "\n";
-    if (name_deleted_mutexes && _deleted_name != NULL) {
+    if (name_deleted_mutexes && _deleted_name != nullptr) {
       pipeline_cat.error()
         << _deleted_name << "\n";
     } else {
@@ -350,7 +350,7 @@ do_unlock() {
   --_lock_count;
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
-    _locking_thread = (Thread *)NULL;
+    _locking_thread = (Thread *)nullptr;
 
     if (_lightweight) {
       if (!_missed_threads.empty()) {
@@ -415,7 +415,7 @@ report_deadlock(Thread *current_thread) {
   MutexDebug *next_mutex = this;
   Thread *next_thread = next_mutex->_locking_thread;
   next_mutex = next_thread->_blocked_on_mutex;
-  while (next_mutex != NULL) {
+  while (next_mutex != nullptr) {
     thread_cat.error()
       << *next_thread << " is blocked waiting on "
       << *next_mutex << " which is held by "

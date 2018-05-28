@@ -32,7 +32,7 @@
  */
 void CLwoPolygons::
 add_ptags(const LwoPolygonTags *lwo_ptags, const LwoTags *tags) {
-  if (_tags != (LwoTags *)NULL && _tags != tags) {
+  if (_tags != (LwoTags *)nullptr && _tags != tags) {
     nout << "Multiple Tags fields in effect on the same polygons.\n";
   }
   _tags = tags;
@@ -82,31 +82,31 @@ add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad) {
  */
 CLwoSurface *CLwoPolygons::
 get_surface(int polygon_index) const {
-  if (_surf_ptags == (LwoPolygonTags *)NULL) {
+  if (_surf_ptags == (LwoPolygonTags *)nullptr) {
     // No surface definitions.
-    return (CLwoSurface *)NULL;
+    return (CLwoSurface *)nullptr;
   }
 
   if (!_surf_ptags->has_tag(polygon_index)) {
     // The polygon isn't tagged.
-    return (CLwoSurface *)NULL;
+    return (CLwoSurface *)nullptr;
   }
 
   int tag_index = _surf_ptags->get_tag(polygon_index);
-  if (_tags == (LwoTags *)NULL || tag_index < 0 ||
+  if (_tags == (LwoTags *)nullptr || tag_index < 0 ||
       tag_index >= _tags->get_num_tags()) {
     // The tag index is out-of-bounds.
     nout << "Invalid polygon tag index " << tag_index << "\n";
-    return (CLwoSurface *)NULL;
+    return (CLwoSurface *)nullptr;
   }
 
   string tag = _tags->get_tag(tag_index);
 
   // Now look up the surface name in the header.
   CLwoSurface *surface = _converter->get_surface(tag);
-  if (surface == (CLwoSurface *)NULL) {
+  if (surface == (CLwoSurface *)nullptr) {
     nout << "Unknown surface " << tag << "\n";
-    return (CLwoSurface *)NULL;
+    return (CLwoSurface *)nullptr;
   }
 
   return surface;
@@ -182,8 +182,8 @@ make_egg() {
  */
 void CLwoPolygons::
 connect_egg() {
-  nassertv(_points->_layer->_egg_group != (EggGroup *)NULL);
-  nassertv(_egg_group != (EggGroup *)NULL);
+  nassertv(_points->_layer->_egg_group != (EggGroup *)nullptr);
+  nassertv(_egg_group != (EggGroup *)nullptr);
   _points->_layer->_egg_group->steal_children(*_egg_group);
 }
 
@@ -236,7 +236,7 @@ make_faces() {
         egg_vertex->set_pos(pos);
 
         // Does the vertex used named UV's?
-        if (surface != (CLwoSurface *)NULL && surface->has_named_uvs()) {
+        if (surface != (CLwoSurface *)nullptr && surface->has_named_uvs()) {
           string uv_name = surface->get_uv_name();
           LPoint2 uv;
           if (get_uv(uv_name, pindex, vindex, uv)) {
@@ -256,7 +256,7 @@ make_faces() {
     }
 
     if (is_valid) {
-      if (surface != (CLwoSurface *)NULL) {
+      if (surface != (CLwoSurface *)nullptr) {
         surface->apply_properties(egg_prim, egg_vertices, smooth_angle);
       }
 

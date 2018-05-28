@@ -54,7 +54,7 @@ private:
 public:
   Person() {}
   Person(const string &name, const sex Gender) :
-     _name(name), myGender(Gender), _bro((Person*)NULL), _sis((Person*)NULL) {
+     _name(name), myGender(Gender), _bro((Person*)nullptr), _sis((Person*)nullptr) {
 
   }
   virtual ~Person() {

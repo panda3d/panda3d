@@ -26,8 +26,8 @@ CVSCopy() {
   _key_filename = "Sources.pp";
   _cvs_binary = "cvs";
   _user_aborted = false;
-  _model_dir = (CVSSourceDirectory *)NULL;
-  _map_dir = (CVSSourceDirectory *)NULL;
+  _model_dir = (CVSSourceDirectory *)nullptr;
+  _map_dir = (CVSSourceDirectory *)nullptr;
 
   clear_runlines();
   add_runline("[opts] file [file ... ]");
@@ -73,7 +73,7 @@ CVSCopy() {
      "is the ppremake convention, \"Sources.pp\".  Other likely candidates "
      "are \"CVS\" to search a CVS hierarchy, or \".\" to include "
      "all subdirectories indiscriminately.",
-     &CVSCopy::dispatch_filename, NULL, &_key_filename);
+     &CVSCopy::dispatch_filename, nullptr, &_key_filename);
 
   add_option
     ("nc", "", 80,
@@ -85,7 +85,7 @@ CVSCopy() {
     ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
-     &CVSCopy::dispatch_string, NULL, &_cvs_binary);
+     &CVSCopy::dispatch_string, nullptr, &_cvs_binary);
 }
 
 /**
@@ -212,7 +212,7 @@ post_command_line() {
   }
 
   _model_dir = _tree.find_directory(_model_dirname);
-  if (_model_dir == (CVSSourceDirectory *)NULL) {
+  if (_model_dir == (CVSSourceDirectory *)nullptr) {
     if (_got_model_dirname) {
       nout << "Warning: model directory " << _model_dirname
            << " is not within the source hierarchy.\n";
@@ -222,7 +222,7 @@ post_command_line() {
   if (_got_map_dirname) {
     _map_dir = _tree.find_directory(_map_dirname);
 
-    if (_map_dir == (CVSSourceDirectory *)NULL) {
+    if (_map_dir == (CVSSourceDirectory *)nullptr) {
       nout << "Warning: map directory " << _map_dirname
            << " is not within the source hierarchy.\n";
     }
@@ -230,7 +230,7 @@ post_command_line() {
   } else {
     _map_dir = _tree.find_relpath("src/maps");
 
-    if (_map_dir == (CVSSourceDirectory *)NULL) {
+    if (_map_dir == (CVSSourceDirectory *)nullptr) {
       nout << "Warning: no directory " << _tree.get_root_dirname()
            << "/src/maps.\n";
       _map_dir = _model_dir;

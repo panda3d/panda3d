@@ -29,8 +29,8 @@ BamCacheRecord() :
   _recorded_time(0),
   _record_size(0),
   _source_timestamp(0),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(0)
 {
 }
@@ -46,8 +46,8 @@ BamCacheRecord(const Filename &source_pathname,
   _recorded_time(0),
   _record_size(0),
   _source_timestamp(0),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(0)
 {
 }
@@ -62,8 +62,8 @@ BamCacheRecord(const BamCacheRecord &copy) :
   _recorded_time(copy._recorded_time),
   _record_size(copy._record_size),
   _source_timestamp(copy._source_timestamp),
-  _ptr(NULL),
-  _ref_ptr(NULL),
+  _ptr(nullptr),
+  _ref_ptr(nullptr),
   _record_access_time(copy._record_access_time)
 {
 }
@@ -93,7 +93,7 @@ dependents_unchanged() const {
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
     PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-    if (file == (VirtualFile *)NULL) {
+    if (file == (VirtualFile *)nullptr) {
       // No such file.
       if (dfile._timestamp != 0) {
         if (util_cat.is_debug()) {
@@ -153,7 +153,7 @@ add_dependent_file(const Filename &pathname) {
   dfile._pathname.make_absolute();
 
   PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     // No such file.
     dfile._timestamp = 0;
     dfile._size = 0;
@@ -231,7 +231,7 @@ format_timestamp(time_t timestamp) {
     return "  (no date) ";
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm atm;
 #ifdef _WIN32
   localtime_s(&atm, &timestamp);

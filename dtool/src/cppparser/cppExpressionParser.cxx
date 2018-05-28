@@ -22,7 +22,7 @@ CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope) :
   _current_scope(current_scope),
   _global_scope(global_scope)
 {
-  _expr = NULL;
+  _expr = nullptr;
 }
 
 /**
@@ -69,7 +69,7 @@ parse_expr(const string &expr, const CPPPreprocessor &filepos) {
  */
 void CPPExpressionParser::
 output(ostream &out) const {
-  if (_expr == NULL) {
+  if (_expr == nullptr) {
     out << "(null expr)";
   } else {
     out << *_expr;

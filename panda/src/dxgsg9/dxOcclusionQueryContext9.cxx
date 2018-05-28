@@ -25,7 +25,7 @@ TypeHandle DXOcclusionQueryContext9::_type_handle;
 DXOcclusionQueryContext9::
 ~DXOcclusionQueryContext9() {
   _query->Release();
-  _query = NULL;
+  _query = nullptr;
 }
 
 /**

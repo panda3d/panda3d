@@ -32,7 +32,7 @@ public:
   bool operator < (const CPPNameComponent &other) const;
 
   string get_name() const;
-  string get_name_with_templ(CPPScope *scope = (CPPScope *)NULL) const;
+  string get_name_with_templ(CPPScope *scope = (CPPScope *)nullptr) const;
   CPPTemplateParameterList *get_templ() const;
   bool empty() const;
   bool has_templ() const;

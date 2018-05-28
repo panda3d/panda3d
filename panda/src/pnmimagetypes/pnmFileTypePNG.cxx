@@ -162,19 +162,19 @@ PNMFileTypePNG::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
-  _png = NULL;
-  _info = NULL;
+  _png = nullptr;
+  _info = nullptr;
   _is_valid = false;
 
-  _png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
+  _png = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr,
                                 png_error, png_warning);
-  if (_png == NULL) {
+  if (_png == nullptr) {
     return;
   }
 
   _info = png_create_info_struct(_png);
-  if (_info == NULL) {
-    png_destroy_read_struct(&_png, NULL, NULL);
+  if (_info == nullptr) {
+    png_destroy_read_struct(&_png, nullptr, nullptr);
     return;
   }
 
@@ -201,7 +201,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   double gamma;
 
   png_get_IHDR(_png, _info, &width, &height,
-               &bit_depth, &color_type, NULL, NULL, NULL);
+               &bit_depth, &color_type, nullptr, nullptr, nullptr);
 
   // Look for an sRGB chunk.
   if (png_get_sRGB(_png, _info, &srgb_intent) == PNG_INFO_sRGB) {
@@ -403,7 +403,7 @@ read_data(xel *array, xelval *alpha_data) {
 
   PANDA_FREE_ARRAY(rows);
 
-  png_read_end(_png, NULL);
+  png_read_end(_png, nullptr);
 
   return _y_size;
 }
@@ -414,7 +414,7 @@ read_data(xel *array, xelval *alpha_data) {
 void PNMFileTypePNG::Reader::
 free_png() {
   if (_is_valid) {
-    png_destroy_read_struct(&_png, &_info, NULL);
+    png_destroy_read_struct(&_png, &_info, nullptr);
     _is_valid = false;
   }
 }
@@ -456,7 +456,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Reader *self = (Reader *)png_get_io_ptr(png_ptr);
-  if (self == (Reader *)NULL) {
+  if (self == (Reader *)nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()
@@ -474,19 +474,19 @@ PNMFileTypePNG::Writer::
 Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
-  _png = NULL;
-  _info = NULL;
+  _png = nullptr;
+  _info = nullptr;
   _is_valid = false;
 
-  _png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+  _png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr,
                                  png_error, png_warning);
-  if (_png == NULL) {
+  if (_png == nullptr) {
     return;
   }
 
   _info = png_create_info_struct(_png);
-  if (_info == NULL) {
-    png_destroy_write_struct(&_png, NULL);
+  if (_info == nullptr) {
+    png_destroy_write_struct(&_png, nullptr);
     return;
   }
 
@@ -610,7 +610,7 @@ write_data(xel *array, xelval *alpha_data) {
           if (has_alpha()) {
             pnmimage_png_cat.debug()
               << "palette contains " << num_alpha << " transparent entries.\n";
-            png_set_tRNS(_png, _info, png_trans, num_alpha, NULL);
+            png_set_tRNS(_png, _info, png_trans, num_alpha, nullptr);
           }
         } else {
           pnmimage_png_cat.debug()
@@ -828,7 +828,7 @@ write_data(xel *array, xelval *alpha_data) {
   }
   PANDA_FREE_ARRAY(row);
 
-  png_write_end(_png, NULL);
+  png_write_end(_png, nullptr);
 
   return _y_size;
 }
@@ -918,7 +918,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Writer *self = (Writer *)png_get_io_ptr(png_ptr);
-  if (self == (Writer *)NULL) {
+  if (self == (Writer *)nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()

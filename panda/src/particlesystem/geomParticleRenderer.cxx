@@ -105,7 +105,7 @@ resize_pool(int new_size) {
 
   int i;
   for (i = 0; i < new_size; i++) {
-    _node_vector.push_back(NULL);
+    _node_vector.push_back(nullptr);
   }
 
   _pool_size = new_size;
@@ -122,7 +122,7 @@ kill_nodes() {
   PandaNode *render_node = get_render_node();
   for (; vec_iter != _node_vector.end(); vec_iter++) {
     PandaNode *node = *vec_iter;
-    if (node != (PandaNode *)NULL) {
+    if (node != (PandaNode *)nullptr) {
       render_node->remove_child(node);
     }
   }
@@ -136,7 +136,7 @@ kill_nodes() {
 
 void GeomParticleRenderer::
 birth_particle(int index) {
-  if (_node_vector[index] == (PandaNode *)NULL) {
+  if (_node_vector[index] == (PandaNode *)nullptr) {
     PandaNode *node = new PandaNode("");
     get_render_node()->add_child(node);
     node->add_child(_geom_node);
@@ -150,9 +150,9 @@ birth_particle(int index) {
 
 void GeomParticleRenderer::
 kill_particle(int index) {
-  if (_node_vector[index] != (PandaNode *)NULL) {
+  if (_node_vector[index] != (PandaNode *)nullptr) {
     get_render_node()->remove_child(_node_vector[index]);
-    _node_vector[index] = (PandaNode *)NULL;
+    _node_vector[index] = (PandaNode *)nullptr;
   }
 }
 
@@ -179,11 +179,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     if (cur_particle->get_alive()) {
       // living particle
-      if (cur_node == (PandaNode *)NULL) {
+      if (cur_node == (PandaNode *)nullptr) {
         birth_particle(i);
         cur_node = *cur_node_iter;
       }
-      nassertv(cur_node != (PandaNode *)NULL);
+      nassertv(cur_node != (PandaNode *)nullptr);
 
       cur_node->set_state(_render_state);
 

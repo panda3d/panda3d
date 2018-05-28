@@ -27,7 +27,7 @@ set_used_length(size_t size) {
     if (_used_length > 0) {
       memcpy(new_buf, _buffer, _used_length);
     }
-    if (_buffer != NULL) {
+    if (_buffer != nullptr) {
       delete[] _buffer;
     }
     _buffer = new_buf;

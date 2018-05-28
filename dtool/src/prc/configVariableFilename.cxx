@@ -28,7 +28,7 @@ reload_cache() {
   // We check again for cache validity since another thread may have beaten
   // us to the punch while we were waiting for the lock.
   if (!is_cache_valid(_local_modified)) {
-    nassertv(_core != (ConfigVariableCore *)NULL);
+    nassertv(_core != (ConfigVariableCore *)nullptr);
 
     const ConfigDeclaration *decl = _core->get_declaration(0);
     const ConfigPage *page = decl->get_page();

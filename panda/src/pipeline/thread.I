@@ -84,7 +84,7 @@ set_min_pipeline_stage(int min_pipeline_stage) {
  */
 INLINE Thread *Thread::
 get_main_thread() {
-  if (_main_thread == (Thread *)NULL) {
+  if (_main_thread == (Thread *)nullptr) {
     init_main_thread();
   }
   return _main_thread;
@@ -98,7 +98,7 @@ get_main_thread() {
  */
 INLINE Thread *Thread::
 get_external_thread() {
-  if (_external_thread == (Thread *)NULL) {
+  if (_external_thread == (Thread *)nullptr) {
     init_external_thread();
   }
   return _external_thread;
@@ -121,7 +121,7 @@ get_current_thread() {
   return get_main_thread();
 #else  // HAVE_THREADS
   Thread *thread = ThreadImpl::get_current_thread();
-  if (thread == (Thread *)NULL) {
+  if (thread == (Thread *)nullptr) {
     return Thread::get_external_thread();
   }
   return thread;

@@ -28,7 +28,7 @@ RenderAttribRegistry() {
 
   // Reserve slot 0 for TypeHandle::none(), and for types that exceed
   // max_slots.
-  _registry.push_back(RegistryNode(TypeHandle::none(), 0, NULL));
+  _registry.push_back(RegistryNode(TypeHandle::none(), 0, nullptr));
 }
 
 /**
@@ -86,7 +86,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   // it even if the state cache is disabled, because we can't read the
   // state_cache config variable yet at this time.  It probably doesn't hurt
   // to have these 32 entries around in the attrib cache.
-  if (default_attrib != (RenderAttrib *)NULL) {
+  if (default_attrib != (RenderAttrib *)nullptr) {
     default_attrib->calc_hash();
 
     if (default_attrib->_saved_entry == -1) {

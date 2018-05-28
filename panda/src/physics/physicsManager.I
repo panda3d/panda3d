@@ -16,7 +16,7 @@
  */
 INLINE void PhysicsManager::
 attach_physical(Physical *p) {
-  nassertv(p && p->_physics_manager == NULL);
+  nassertv(p && p->_physics_manager == nullptr);
   p->_physics_manager = this;
   PhysicalsVector::iterator found;
   found = find(_physicals.begin(), _physicals.end(), p);

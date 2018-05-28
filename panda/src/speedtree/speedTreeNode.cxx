@@ -247,7 +247,7 @@ get_instance_list(const STTree *tree) const {
   Trees::const_iterator ti = _trees.find(&ilist);
   if (ti == _trees.end()) {
     // The tree was not already present.
-    static InstanceList empty_list((STTree *)NULL);
+    static InstanceList empty_list((STTree *)nullptr);
     return empty_list;
   }
 
@@ -408,7 +408,7 @@ add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
   }
 
   PT(VirtualFile) file = vfs->get_file(fullpath);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     // No such file.
     speedtree_cat.error()
       << "Could not find " << stf_filename << "\n";
@@ -441,7 +441,7 @@ add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
 bool SpeedTreeNode::
 add_from_stf(istream &in, const Filename &pathname,
              const LoaderOptions &options, Loader *loader) {
-  if (loader == NULL) {
+  if (loader == nullptr) {
     loader = Loader::get_global_ptr();
   }
   string os_filename;
@@ -470,7 +470,7 @@ add_from_stf(istream &in, const Filename &pathname,
       // search the model-path if necessary).
       PT(PandaNode) srt_root = loader->load_sync(srt_filename);
 
-      if (srt_root != NULL) {
+      if (srt_root != nullptr) {
         NodePath srt(srt_root);
         NodePath srt_np = srt.find("**/+SpeedTreeNode");
         if (!srt_np.is_empty()) {
@@ -499,7 +499,7 @@ add_from_stf(istream &in, const Filename &pathname,
         in >> height_min >> height_max >> slope_min >> slope_max;
       }
 
-      if (tree != NULL) {
+      if (tree != nullptr) {
         add_instance(tree, STTransform(pos, rad_2_deg(rotate), scale));
       }
     }
@@ -552,10 +552,10 @@ setup_terrain(const Filename &terrain_file) {
  */
 void SpeedTreeNode::
 set_terrain(STTerrain *terrain) {
-  _terrain = NULL;
+  _terrain = nullptr;
   _needs_repopulate = true;
 
-  if (terrain == (STTerrain *)NULL) {
+  if (terrain == (STTerrain *)nullptr) {
     return;
   }
 
@@ -608,7 +608,7 @@ snap_to_terrain() {
     InstanceList *instance_list = (*ti);
 
     int num_instances = instance_list->get_num_instances();
-    if (_terrain != (STTerrain *)NULL) {
+    if (_terrain != (STTerrain *)nullptr) {
       for (int i = 0; i < num_instances; ++i) {
         STTransform trans = instance_list->get_instance(i);
         LPoint3 pos = trans.get_pos();
@@ -817,7 +817,7 @@ combine_with(PandaNode *other) {
 
     // But, not if they both have a terrain set.
     if (has_terrain() && gother->has_terrain()) {
-      return NULL;
+      return nullptr;
 
     } else if (gother->has_terrain()) {
       set_terrain(gother->get_terrain());
@@ -884,7 +884,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PStatTimer timer(_cull_speedtree_pcollector);
 
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, trav->get_gsg());
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, true);
+  nassertr(gsg != (GraphicsStateGuardian *)nullptr, true);
   if (!validate_api(gsg)) {
     return false;
   }
@@ -918,7 +918,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // to disable textures.
   bool show_textures = true;
   const TextureAttrib *ta = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
-  if (ta != (TextureAttrib *)NULL) {
+  if (ta != (TextureAttrib *)nullptr) {
     show_textures = !ta->has_all_off();
   }
   _forest_render.EnableTexturing(show_textures);
@@ -929,19 +929,19 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // direction and color to SpeedTree.  We also accumulate the ambient light
   // colors.
   LColor ambient_color(0.0f, 0.0f, 0.0f, 0.0f);
-  DirectionalLight *dlight = NULL;
+  DirectionalLight *dlight = nullptr;
   NodePath dlight_np;
   LColor diffuse_color;
 
   int diffuse_priority = 0;
   const LightAttrib *la = DCAST(LightAttrib, state->get_attrib(LightAttrib::get_class_slot()));
-  if (la != (LightAttrib *)NULL) {
+  if (la != (LightAttrib *)nullptr) {
     for (int i = 0; i < la->get_num_on_lights(); ++i) {
       NodePath light = la->get_on_light(i);
       if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
         // A directional light.
         DirectionalLight *light_obj = DCAST(DirectionalLight, light.node());
-        if (dlight == NULL || light_obj->get_priority() > dlight->get_priority()) {
+        if (dlight == nullptr || light_obj->get_priority() > dlight->get_priority()) {
           // Here's the most important directional light.
           dlight = light_obj;
           dlight_np = light;
@@ -954,7 +954,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     }
   }
 
-  if (dlight != (DirectionalLight *)NULL) {
+  if (dlight != (DirectionalLight *)nullptr) {
     CPT(TransformState) transform = dlight_np.get_transform(trav->get_scene()->get_scene_root().get_parent());
     LVector3 dir = dlight->get_direction() * transform->get_mat();
     dir.normalize();
@@ -1021,7 +1021,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     // node, so that we can make the appropriate calls into SpeedTree to
     // render the forest during the actual draw.
     CullableObject *object =
-      new CullableObject(NULL, data._state,
+      new CullableObject(nullptr, data._state,
                          TransformState::make_identity());
     object->set_draw_callback(new DrawCallback(this));
     trav->get_cull_handler()->record_object(object, trav);
@@ -1119,7 +1119,7 @@ write(ostream &out, int indent_level) const {
 void SpeedTreeNode::
 write_error(ostream &out) {
   const char *error = SpeedTree::CCore::GetError();
-  if (error != (const char *)NULL) {
+  if (error != (const char *)nullptr) {
     out << error;
   }
   out << "\n";
@@ -1281,7 +1281,7 @@ update_terrain_cells() {
   int num_cells = (int)cells.size();
   for (int ci = 0; ci < num_cells; ++ci) {
     SpeedTree::CTerrainCell *cell = cells[ci];
-    nassertv(cell != NULL && cell->GetVbo() != NULL);
+    nassertv(cell != nullptr && cell->GetVbo() != nullptr);
     int cell_yi = cell->Row();
     int cell_xi = cell->Col();
     // cerr << "populating cell " << cell_xi << " " << cell_yi << "\n";
@@ -1308,7 +1308,7 @@ update_terrain_cells() {
 bool SpeedTreeNode::
 validate_api(GraphicsStateGuardian *gsg) {
   GraphicsPipe *pipe = gsg->get_pipe();
-  nassertr(pipe != (GraphicsPipe *)NULL, true);
+  nassertr(pipe != (GraphicsPipe *)nullptr, true);
 
 #if defined(SPEEDTREE_OPENGL)
   static const string compiled_api = "OpenGL";
@@ -1387,7 +1387,7 @@ draw_callback(CallbackData *data) {
       write_error(speedtree_cat.warning());
 
       // Clear the terrain so we don't keep spamming error messages.
-      _terrain = NULL;
+      _terrain = nullptr;
     }
   }
 
@@ -1720,9 +1720,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_trees = scan.get_uint32();
   _trees.reserve(num_trees);
   for (int i = 0; i < num_trees; i++) {
-    InstanceList *instance_list = new InstanceList(NULL);
+    InstanceList *instance_list = new InstanceList(nullptr);
     instance_list->fillin(scan, manager);
-    if (instance_list->get_tree() == (STTree *)NULL) {
+    if (instance_list->get_tree() == (STTree *)nullptr) {
       // The tree wasn't successfully loaded.  Don't keep it.
       delete instance_list;
     } else {
@@ -1799,7 +1799,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   Loader *loader = Loader::get_global_ptr();
   PT(PandaNode) srt_root = loader->load_sync(srt_filename);
 
-  if (srt_root != NULL) {
+  if (srt_root != nullptr) {
     NodePath srt(srt_root);
     NodePath srt_np = srt.find("**/+SpeedTreeNode");
     if (!srt_np.is_empty()) {

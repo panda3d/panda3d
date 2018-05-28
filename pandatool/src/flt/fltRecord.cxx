@@ -69,7 +69,7 @@ get_num_children() const {
  */
 FltRecord *FltRecord::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), (FltRecord *)nullptr);
   return _children[n];
 }
 
@@ -104,7 +104,7 @@ get_num_subfaces() const {
  */
 FltRecord *FltRecord::
 get_subface(int n) const {
-  nassertr(n >= 0 && n < (int)_subfaces.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_subfaces.size(), (FltRecord *)nullptr);
   return _subfaces[n];
 }
 
@@ -139,7 +139,7 @@ get_num_extensions() const {
  */
 FltRecord *FltRecord::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < (int)_extensions.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_extensions.size(), (FltRecord *)nullptr);
   return _extensions[n];
 }
 
@@ -178,7 +178,7 @@ get_num_ancillary() const {
  */
 FltRecord *FltRecord::
 get_ancillary(int n) const {
-  nassertr(n >= 0 && n < (int)_ancillary.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_ancillary.size(), (FltRecord *)nullptr);
   return _ancillary[n];
 }
 

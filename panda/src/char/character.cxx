@@ -359,12 +359,12 @@ find_joint(const string &name) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     PartGroup *part = get_bundle(i)->find_child(name);
-    if (part != (PartGroup *)NULL && part->is_character_joint()) {
+    if (part != (PartGroup *)nullptr && part->is_character_joint()) {
       return DCAST(CharacterJoint, part);
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -377,13 +377,13 @@ find_slider(const string &name) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     PartGroup *part = get_bundle(i)->find_child(name);
-    if (part != (PartGroup *)NULL &&
+    if (part != (PartGroup *)nullptr &&
         part->is_of_type(CharacterSlider::get_class_type())) {
       return DCAST(CharacterSlider, part);
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -644,7 +644,7 @@ r_merge_bundles(Character::JointMap &joint_map,
 
       // Since the old_joint will be getting dropped, reset its character
       // reference.
-      old_joint->_character = NULL;
+      old_joint->_character = nullptr;
 
       // Copy any _net_transform and _local_transform operations to the new
       // joint.
@@ -929,8 +929,8 @@ CPT(TransformTable) Character::
 redirect_transform_table(const TransformTable *source,
                          const Character::JointMap &joint_map,
                          Character::GeomJointMap &gjmap) {
-  if (source == (TransformTable *)NULL) {
-    return NULL;
+  if (source == (TransformTable *)nullptr) {
+    return nullptr;
   }
 
   PT(TransformTable) dest = new TransformTable(*source);
@@ -939,7 +939,7 @@ redirect_transform_table(const TransformTable *source,
   for (int i = 0; i < num_transforms; ++i) {
     const VertexTransform *vt = dest->get_transform(i);
     PT(JointVertexTransform) new_jvt = redirect_joint(vt, joint_map, gjmap);
-    if (new_jvt != (JointVertexTransform *)NULL) {
+    if (new_jvt != (JointVertexTransform *)nullptr) {
       dest->set_transform(i, new_jvt);
     }
   }
@@ -955,8 +955,8 @@ CPT(TransformBlendTable) Character::
 redirect_transform_blend_table(const TransformBlendTable *source,
                                const Character::JointMap &joint_map,
                                Character::GeomJointMap &gjmap) {
-  if (source == (TransformBlendTable *)NULL) {
-    return NULL;
+  if (source == (TransformBlendTable *)nullptr) {
+    return nullptr;
   }
 
   PT(TransformBlendTable) dest = new TransformBlendTable(*source);
@@ -968,7 +968,7 @@ redirect_transform_blend_table(const TransformBlendTable *source,
     for (int j = 0; j < num_transforms; ++j) {
       const VertexTransform *vt = blend.get_transform(j);
       PT(JointVertexTransform) new_jvt = redirect_joint(vt, joint_map, gjmap);
-      if (new_jvt != (JointVertexTransform *)NULL) {
+      if (new_jvt != (JointVertexTransform *)nullptr) {
         blend.set_transform(j, new_jvt);
       }
     }
@@ -985,8 +985,8 @@ redirect_transform_blend_table(const TransformBlendTable *source,
 CPT(SliderTable) Character::
 redirect_slider_table(const SliderTable *source,
                       Character::GeomSliderMap &gsmap) {
-  if (source == (SliderTable *)NULL) {
-    return NULL;
+  if (source == (SliderTable *)nullptr) {
+    return nullptr;
   }
 
   PT(SliderTable) dest = new SliderTable(*source);
@@ -995,7 +995,7 @@ redirect_slider_table(const SliderTable *source,
   for (int i = 0; i < num_sliders; ++i) {
     const VertexSlider *vs = dest->get_slider(i);
     PT(CharacterVertexSlider) new_cvs = redirect_slider(vs, gsmap);
-    if (new_cvs != (CharacterVertexSlider *)NULL) {
+    if (new_cvs != (CharacterVertexSlider *)nullptr) {
       dest->set_slider(i, new_cvs);
     }
   }
@@ -1057,7 +1057,7 @@ redirect_slider(const VertexSlider *vs, Character::GeomSliderMap &gsmap) {
   if (vs->is_of_type(CharacterVertexSlider::get_class_type())) {
     const CharacterVertexSlider *cvs = DCAST(CharacterVertexSlider, vs);
     CharacterSlider *slider = find_slider(cvs->get_char_slider()->get_name());
-    if (slider != (CharacterSlider *)NULL) {
+    if (slider != (CharacterSlider *)nullptr) {
       new_cvs = new CharacterVertexSlider(slider);
     }
   }
@@ -1081,7 +1081,7 @@ r_clear_joint_characters(PartGroup *part) {
     // listed within more than one Character node, but it can only point back
     // to one of them.
     if (joint->get_character() == this) {
-      joint->set_character(NULL);
+      joint->set_character(nullptr);
     }
   }
 

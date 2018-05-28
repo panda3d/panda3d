@@ -38,7 +38,7 @@ BinToC() :
   add_option
     ("n", "name", 0,
      "Specify the name of the table that is generated.",
-     &BinToC::dispatch_string, NULL, &_table_name);
+     &BinToC::dispatch_string, nullptr, &_table_name);
 
   add_option
     ("static", "", 0,

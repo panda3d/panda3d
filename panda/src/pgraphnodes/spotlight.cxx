@@ -123,7 +123,7 @@ write(ostream &out, int indent_level) const {
   }
 
   Lens *lens = get_lens();
-  if (lens != (Lens *)NULL) {
+  if (lens != (Lens *)nullptr) {
     lens->write(out, indent_level + 2);
   }
 }
@@ -214,12 +214,12 @@ bind(GraphicsStateGuardianBase *gsg, const NodePath &light, int light_id) {
 void Spotlight::
 fill_viz_geom(GeomNode *viz_geom) {
   Lens *lens = get_lens();
-  if (lens == (Lens *)NULL) {
+  if (lens == (Lens *)nullptr) {
     return;
   }
 
   PT(Geom) geom = lens->make_geometry();
-  if (geom == (Geom *)NULL) {
+  if (geom == (Geom *)nullptr) {
     return;
   }
 

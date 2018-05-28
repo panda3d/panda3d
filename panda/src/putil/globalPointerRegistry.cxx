@@ -34,7 +34,7 @@ ns_get_pointer(TypeHandle type) const {
   Pointers::const_iterator pi;
   pi = _pointers.find(type);
   if (pi == _pointers.end()) {
-    return (void *)NULL;
+    return (void *)nullptr;
   }
 
   return (*pi).second;
@@ -51,7 +51,7 @@ ns_store_pointer(TypeHandle type, void *ptr) {
     util_cat->error()
       << "GlobalPointerRegistry::store_pointer() called on empty TypeHandle\n";
   }
-  if (ptr == (void *)NULL) {
+  if (ptr == (void *)nullptr) {
     util_cat->error()
       << "Invalid attempt to store a NULL pointer for " << type << "\n";
     clear_pointer(type);

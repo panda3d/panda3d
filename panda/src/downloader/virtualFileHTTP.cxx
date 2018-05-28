@@ -121,7 +121,7 @@ is_regular_file() const {
 istream *VirtualFileHTTP::
 open_read_file(bool auto_unwrap) const {
   if (_status_only) {
-    return NULL;
+    return nullptr;
   }
 
   // We pre-download the file into a StringStream, then return a buffer to
@@ -130,7 +130,7 @@ open_read_file(bool auto_unwrap) const {
   StringStream *strstream = new StringStream;
   if (!fetch_file(strstream)) {
     delete strstream;
-    return NULL;
+    return nullptr;
   }
 
   return return_file(strstream, auto_unwrap);
@@ -178,7 +178,7 @@ return_file(istream *buffer_stream, bool auto_unwrap) const {
 
   istream *result = buffer_stream;
 #ifdef HAVE_ZLIB
-  if (result != (istream *)NULL && do_unwrap) {
+  if (result != (istream *)nullptr && do_unwrap) {
     // We have to slip in a layer to decompress the file on the fly.
     IDecompressStream *wrapper = new IDecompressStream(result, true);
     result = wrapper;

@@ -259,7 +259,7 @@ reencode_text(const string &text, TextEncoder::Encoding from,
 INLINE bool TextEncoder::
 unicode_isalpha(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_upper ||
@@ -273,7 +273,7 @@ unicode_isalpha(int character) {
 INLINE bool TextEncoder::
 unicode_isdigit(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     // The digits aren't actually listed in the map.
     return (character >= '0' && character <= '9');
   }
@@ -288,7 +288,7 @@ unicode_isdigit(int character) {
 INLINE bool TextEncoder::
 unicode_ispunct(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     // Some punctuation marks aren't listed in the map.
     return (character >= 0 && character < 128 && ispunct(character));
   }
@@ -302,7 +302,7 @@ unicode_ispunct(int character) {
 INLINE bool TextEncoder::
 unicode_isupper(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_upper;
@@ -332,7 +332,7 @@ unicode_isspace(int character) {
 INLINE bool TextEncoder::
 unicode_islower(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     return false;
   }
   return entry->_char_type == UnicodeLatinMap::CT_lower;
@@ -345,7 +345,7 @@ unicode_islower(int character) {
 INLINE int TextEncoder::
 unicode_toupper(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     return character;
   }
   return entry->_toupper_character;
@@ -358,7 +358,7 @@ unicode_toupper(int character) {
 INLINE int TextEncoder::
 unicode_tolower(int character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
-  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+  if (entry == (const UnicodeLatinMap::Entry *)nullptr) {
     return character;
   }
   return entry->_tolower_character;

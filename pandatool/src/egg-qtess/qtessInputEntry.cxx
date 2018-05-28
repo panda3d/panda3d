@@ -222,7 +222,7 @@ match(QtessSurface *surface) {
         // Similarly for type "matchUU".  This indicates that all the surfaces
         // that match this one must all share the U-tesselation with whichever
         // surface first matched against the first node name.
-        if (nni == _node_names.begin() && _constrain_u==NULL) {
+        if (nni == _node_names.begin() && _constrain_u==nullptr) {
           // This is the lucky surface that dominates!
           _constrain_u = surface;
         } else {
@@ -237,7 +237,7 @@ match(QtessSurface *surface) {
       case T_match_vv:
       case T_match_vu:
         // Ditto for "matchVV".
-        if (nni == _node_names.begin() && _constrain_v==NULL) {
+        if (nni == _node_names.begin() && _constrain_v==nullptr) {
           // This is the lucky surface that dominates!
           _constrain_v = surface;
         } else {

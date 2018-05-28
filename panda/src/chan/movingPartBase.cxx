@@ -29,7 +29,7 @@ MovingPartBase::
 MovingPartBase(PartGroup *parent, const string &name) :
   PartGroup(parent, name),
   _num_effective_channels(0),
-  _effective_control(NULL)
+  _effective_control(nullptr)
 {
 }
 
@@ -39,7 +39,7 @@ MovingPartBase(PartGroup *parent, const string &name) :
 MovingPartBase::
 MovingPartBase() :
   _num_effective_channels(0),
-  _effective_control(NULL)
+  _effective_control(nullptr)
 {
 }
 
@@ -49,7 +49,7 @@ MovingPartBase() :
  */
 bool MovingPartBase::
 clear_forced_channel() {
-  if (_forced_channel != (AnimChannelBase *)NULL) {
+  if (_forced_channel != (AnimChannelBase *)nullptr) {
     _forced_channel.clear();
     return true;
   }
@@ -117,10 +117,10 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
   // See if any of the channel values have changed since last time.
 
   if (!needs_update) {
-    if (_forced_channel != (AnimChannelBase *)NULL) {
+    if (_forced_channel != (AnimChannelBase *)nullptr) {
       needs_update = _forced_channel->has_changed(0, 0.0, 0, 0.0);
 
-    } else if (_effective_control != (AnimControl *)NULL) {
+    } else if (_effective_control != (AnimControl *)nullptr) {
       const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
       needs_update = _effective_control->channel_has_changed(_effective_channel, cdata->_frame_blend_flag);
 
@@ -132,12 +132,12 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
            ++bci) {
         AnimControl *control = (*bci).first;
 
-        AnimChannelBase *channel = NULL;
+        AnimChannelBase *channel = nullptr;
         int channel_index = control->get_channel_index();
         if (channel_index >= 0 && channel_index < (int)_channels.size()) {
           channel = _channels[channel_index];
         }
-        if (channel != (AnimChannelBase*)NULL) {
+        if (channel != (AnimChannelBase*)nullptr) {
           needs_update = control->channel_has_changed(channel, cdata->_frame_blend_flag);
         }
       }
@@ -199,7 +199,7 @@ pick_channel_index(plist<int> &holes, int &next) const {
     int hole = (*ii);
     nassertv(hole >= 0 && hole < next);
     if (hole < (int)_channels.size() ||
-        _channels[hole] != (AnimChannelBase *)NULL) {
+        _channels[hole] != (AnimChannelBase *)nullptr) {
       // We can't accept this hole; we're using it!
       holes.erase(ii);
     }
@@ -210,7 +210,7 @@ pick_channel_index(plist<int> &holes, int &next) const {
   if (next < (int)_channels.size()) {
     int i;
     for (i = next; i < (int)_channels.size(); i++) {
-      if (_channels[i] == (AnimChannelBase*)NULL) {
+      if (_channels[i] == (AnimChannelBase*)nullptr) {
         // Here's a hole we do have.
         holes.push_back(i);
       }
@@ -238,7 +238,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
   }
 
   if (chan_cat.is_debug()) {
-    if (anim == (AnimGroup *)NULL) {
+    if (anim == (AnimGroup *)nullptr) {
       chan_cat.debug()
         << "binding " << *this << " to NULL, is_included = "
         << is_included << "\n";
@@ -249,13 +249,13 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
     }
   }
   while ((int)_channels.size() <= channel_index) {
-    _channels.push_back((AnimChannelBase*)NULL);
+    _channels.push_back((AnimChannelBase*)nullptr);
   }
 
-  nassertv(_channels[channel_index] == (AnimChannelBase*)NULL);
+  nassertv(_channels[channel_index] == (AnimChannelBase*)nullptr);
 
   if (is_included) {
-    if (anim == (AnimGroup*)NULL) {
+    if (anim == (AnimGroup*)nullptr) {
       // If we're binding to the NULL anim, it means actually to create a
       // default AnimChannel that just returns the part's initial value.
       _channels[channel_index] = make_default_channel();
@@ -303,12 +303,12 @@ find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
  */
 void MovingPartBase::
 determine_effective_channels(const CycleData *root_cdata) {
-  _effective_control = NULL;
-  _effective_channel = NULL;
+  _effective_control = nullptr;
+  _effective_channel = nullptr;
   _num_effective_channels = 0;
 
-  AnimControl *effective_control = NULL;
-  AnimChannelBase *effective_channel = NULL;
+  AnimControl *effective_control = nullptr;
+  AnimChannelBase *effective_channel = nullptr;
   int num_effective_channels = 0;
 
   const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
@@ -319,7 +319,7 @@ determine_effective_channels(const CycleData *root_cdata) {
     AnimControl *control = (*cbi).first;
     int channel_index = control->get_channel_index();
     if (channel_index >= 0 && channel_index < (int)_channels.size()) {
-      if (_channels[channel_index] != (AnimChannelBase *)NULL) {
+      if (_channels[channel_index] != (AnimChannelBase *)nullptr) {
         effective_control = control;
         effective_channel = _channels[channel_index];
         ++num_effective_channels;

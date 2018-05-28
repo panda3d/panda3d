@@ -112,11 +112,11 @@ done_entity() {
 
     if (_flags & PF_closed) {
       // it's closed; create a polygon.
-      nassertv(_layer!=NULL);
+      nassertv(_layer!=nullptr);
       ((DXFToEggLayer *)_layer)->add_polygon(this);
     } else {
       // It's open; create a series of line segments.
-      nassertv(_layer!=NULL);
+      nassertv(_layer!=nullptr);
       ((DXFToEggLayer *)_layer)->add_line(this);
     }
 
@@ -130,7 +130,7 @@ done_entity() {
     _verts.push_back(DXFVertex(_q));
     _verts.push_back(DXFVertex(_p));
 
-    nassertv(_layer!=NULL);
+    nassertv(_layer!=nullptr);
     ((DXFToEggLayer *)_layer)->add_polygon(this);
   }
 }

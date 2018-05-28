@@ -61,35 +61,35 @@ P3D_initialize(int api_version, const char *contents_filename,
   }
   ACQUIRE_LOCK(_api_lock);
 
-  if (contents_filename == NULL){
+  if (contents_filename == nullptr){
     contents_filename = "";
   }
 
-  if (host_url == NULL){
+  if (host_url == nullptr){
     host_url = "";
   }
 
-  if (platform == NULL) {
+  if (platform == nullptr) {
     platform = "";
   }
 
-  if (log_directory == NULL) {
+  if (log_directory == nullptr) {
     log_directory = "";
   }
 
-  if (log_basename == NULL) {
+  if (log_basename == nullptr) {
     log_basename = "";
   }
 
-  if (api_version < 12 || root_dir == NULL) {
+  if (api_version < 12 || root_dir == nullptr) {
     root_dir = "";
   }
 
-  if (api_version < 16 || host_dir == NULL) {
+  if (api_version < 16 || host_dir == nullptr) {
     host_dir = "";
   }
 
-  if (api_version < 17 || start_dir == NULL) {
+  if (api_version < 17 || start_dir == nullptr) {
     start_dir = "";
   }
 
@@ -116,10 +116,10 @@ P3D_set_plugin_version(int major, int minor, int sequence,
                        const char *coreapi_timestamp_str,
                        const char *coreapi_set_ver) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (distributor == NULL) {
+  if (distributor == nullptr) {
     distributor = "";
   }
-  if (coreapi_host_url == NULL) {
+  if (coreapi_host_url == nullptr) {
     coreapi_host_url = "";
   }
 
@@ -133,10 +133,10 @@ P3D_set_plugin_version(int major, int minor, int sequence,
   } else {
     // Passing a time_t causes problems with disagreements about word size, so
     // since version 15 we pass it as a string.
-    coreapi_timestamp = strtoul(coreapi_timestamp_str, NULL, 10);
+    coreapi_timestamp = strtoul(coreapi_timestamp_str, nullptr, 10);
   }
 
-  if (inst_mgr->get_api_version() < 14 || coreapi_set_ver == NULL) {
+  if (inst_mgr->get_api_version() < 14 || coreapi_set_ver == nullptr) {
     // Prior to version 14 this parameter was absent.
     coreapi_set_ver = "";
   }
@@ -150,7 +150,7 @@ P3D_set_plugin_version(int major, int minor, int sequence,
 void
 P3D_set_super_mirror(const char *super_mirror_url) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (super_mirror_url == NULL) {
+  if (super_mirror_url == nullptr) {
     super_mirror_url = "";
   }
 
@@ -177,7 +177,7 @@ bool
 P3D_instance_start(P3D_instance *instance, bool is_local,
                    const char *p3d_filename, int p3d_offset) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (p3d_filename == NULL) {
+  if (p3d_filename == nullptr) {
     p3d_filename = "";
   }
   ACQUIRE_LOCK(_api_lock);
@@ -190,7 +190,7 @@ P3D_instance_start(P3D_instance *instance, bool is_local,
 
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
-  if (inst != NULL) {
+  if (inst != nullptr) {
     // We don't actually start it immediately; the instance will have to
     // download the p3d url and read it, reading the python version, before it
     // can start.
@@ -204,14 +204,14 @@ P3D_instance_start(P3D_instance *instance, bool is_local,
 int
 P3D_instance_start_stream(P3D_instance *instance, const char *p3d_url) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (p3d_url == NULL) {
+  if (p3d_url == nullptr) {
     p3d_url = "";
   }
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   int result = -1;
-  if (inst != NULL) {
+  if (inst != nullptr) {
     result = inst_mgr->make_p3d_stream(inst, p3d_url);
   }
   RELEASE_LOCK(_api_lock);
@@ -224,7 +224,7 @@ P3D_instance_finish(P3D_instance *instance) {
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
-  if (inst != NULL) {
+  if (inst != nullptr) {
     inst_mgr->finish_instance(inst);
   }
   RELEASE_LOCK(_api_lock);
@@ -243,7 +243,7 @@ P3D_instance_setup_window(P3D_instance *instance,
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
-  if (inst != NULL) {
+  if (inst != nullptr) {
     inst->set_wparams(wparams);
   }
   RELEASE_LOCK(_api_lock);
@@ -356,7 +356,7 @@ P3D_object_eval(P3D_object *object, const char *expression) {
 void
 P3D_object_incref(P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (object != NULL) {
+  if (object != nullptr) {
     ACQUIRE_LOCK(_api_lock);
     P3D_OBJECT_INCREF(object);
     RELEASE_LOCK(_api_lock);
@@ -366,7 +366,7 @@ P3D_object_incref(P3D_object *object) {
 void
 P3D_object_decref(P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  if (object != NULL) {
+  if (object != nullptr) {
     ACQUIRE_LOCK(_api_lock);
     P3D_OBJECT_DECREF(object);
     RELEASE_LOCK(_api_lock);
@@ -461,8 +461,8 @@ P3D_instance_get_panda_script_object(P3D_instance *instance) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
-  P3D_object *result = NULL;
-  if (inst != NULL) {
+  P3D_object *result = nullptr;
+  if (inst != nullptr) {
     result = inst->get_panda_script_object();
   }
 
@@ -478,7 +478,7 @@ P3D_instance_set_browser_script_object(P3D_instance *instance,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
-  if (inst != NULL) {
+  if (inst != nullptr) {
     inst->set_browser_script_object(object);
   }
 
@@ -493,8 +493,8 @@ P3D_instance_get_request(P3D_instance *instance) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
-  P3D_request *result = NULL;
-  if (inst != NULL) {
+  P3D_request *result = nullptr;
+  if (inst != nullptr) {
     result = inst->get_request();
   }
 
@@ -509,7 +509,7 @@ P3D_check_request(double timeout) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_instance *inst = inst_mgr->check_request();
 
-  if (inst != NULL || timeout <= 0.0) {
+  if (inst != nullptr || timeout <= 0.0) {
     RELEASE_LOCK(_api_lock);
     return inst;
   }
@@ -518,7 +518,7 @@ P3D_check_request(double timeout) {
   int stop_tick = int(GetTickCount() + timeout * 1000.0);
 #else
   struct timeval stop_time;
-  gettimeofday(&stop_time, NULL);
+  gettimeofday(&stop_time, nullptr);
 
   int seconds = (int)floor(timeout);
   stop_time.tv_sec += seconds;
@@ -535,7 +535,7 @@ P3D_check_request(double timeout) {
   ACQUIRE_LOCK(_api_lock);
   inst = inst_mgr->check_request();
 
-  while (inst == NULL && inst_mgr->get_num_instances() != 0) {
+  while (inst == nullptr && inst_mgr->get_num_instances() != 0) {
 #ifdef _WIN32
     int remaining_ticks = stop_tick - GetTickCount();
     if (remaining_ticks <= 0) {
@@ -544,7 +544,7 @@ P3D_check_request(double timeout) {
     timeout = remaining_ticks * 0.001;
 #else
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     struct timeval remaining;
     remaining.tv_sec = stop_time.tv_sec - now.tv_sec;
@@ -574,7 +574,7 @@ void
 P3D_request_finish(P3D_request *request, bool handled) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  if (request != (P3D_request *)NULL) {
+  if (request != (P3D_request *)nullptr) {
     P3DInstance::finish_request(request, handled);
   }
   RELEASE_LOCK(_api_lock);
@@ -593,7 +593,7 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
-  if (inst != NULL) {
+  if (inst != nullptr) {
     result = inst->
       feed_url_stream(unique_id, result_code, http_status_code,
                       total_expected_data,
@@ -613,7 +613,7 @@ P3D_instance_handle_event(P3D_instance *instance,
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
-  if (inst != NULL) {
+  if (inst != nullptr) {
     result = inst->handle_event(*event);
   }
 

@@ -17,7 +17,7 @@
 INLINE bool AnimControlCollection::
 play(const string &anim_name) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   _last_started_control = control;
@@ -31,7 +31,7 @@ play(const string &anim_name) {
 INLINE bool AnimControlCollection::
 play(const string &anim_name, double from, double to) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   _last_started_control = control;
@@ -45,7 +45,7 @@ play(const string &anim_name, double from, double to) {
 INLINE bool AnimControlCollection::
 loop(const string &anim_name, bool restart) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   _last_started_control = control;
@@ -59,7 +59,7 @@ loop(const string &anim_name, bool restart) {
 INLINE bool AnimControlCollection::
 loop(const string &anim_name, bool restart, double from, double to) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   _last_started_control = control;
@@ -73,7 +73,7 @@ loop(const string &anim_name, bool restart, double from, double to) {
 INLINE bool AnimControlCollection::
 stop(const string &anim_name) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   control->stop();
@@ -87,7 +87,7 @@ stop(const string &anim_name) {
 INLINE bool AnimControlCollection::
 pose(const string &anim_name, double frame) {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   _last_started_control = control;
@@ -102,7 +102,7 @@ pose(const string &anim_name, double frame) {
 INLINE int AnimControlCollection::
 get_frame(const string &anim_name) const {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return 0;
   }
   return control->get_frame();
@@ -113,7 +113,7 @@ get_frame(const string &anim_name) const {
  */
 INLINE int AnimControlCollection::
 get_frame() const {
-  if (_last_started_control == (AnimControl *)NULL) {
+  if (_last_started_control == (AnimControl *)nullptr) {
     return 0;
   }
   return _last_started_control->get_frame();
@@ -125,7 +125,7 @@ get_frame() const {
 INLINE bool AnimControlCollection::
 is_playing(const string &anim_name) const {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return false;
   }
   return control->is_playing();
@@ -137,7 +137,7 @@ is_playing(const string &anim_name) const {
  */
 INLINE bool AnimControlCollection::
 is_playing() const {
-  if (_last_started_control == (AnimControl *)NULL) {
+  if (_last_started_control == (AnimControl *)nullptr) {
     return false;
   }
   return _last_started_control->is_playing();
@@ -150,7 +150,7 @@ is_playing() const {
 INLINE int AnimControlCollection::
 get_num_frames(const string &anim_name) const {
   AnimControl *control = find_anim(anim_name);
-  if (control == (AnimControl *)NULL) {
+  if (control == (AnimControl *)nullptr) {
     return 0;
   }
   return control->get_num_frames();
@@ -161,7 +161,7 @@ get_num_frames(const string &anim_name) const {
  */
 INLINE int AnimControlCollection::
 get_num_frames() const {
-  if (_last_started_control == (AnimControl *)NULL) {
+  if (_last_started_control == (AnimControl *)nullptr) {
     return 0;
   }
   return _last_started_control->get_num_frames();

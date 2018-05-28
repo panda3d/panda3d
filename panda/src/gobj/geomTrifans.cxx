@@ -127,7 +127,7 @@ decompose_impl() const {
     ++li;
   }
 
-  nassertr(vi == num_vertices, NULL);
+  nassertr(vi == num_vertices, nullptr);
 
   return triangles.p();
 }
@@ -139,8 +139,8 @@ CPT(GeomVertexArrayData) GeomTrifans::
 rotate_impl() const {
   // Actually, we can't rotate fans without chaging the winding order.  It's
   // an error to define a flat shade model for a GeomTrifan.
-  nassertr(false, NULL);
-  return NULL;
+  nassertr(false, nullptr);
+  return nullptr;
 }
 
 /**

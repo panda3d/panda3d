@@ -63,19 +63,19 @@ public:
                                const cppyyltype &pos);
   virtual void add_enum_value(CPPInstance *inst);
   virtual void define_typedef_type(CPPTypedefType *type,
-                                   CPPPreprocessor *error_sink = NULL);
+                                   CPPPreprocessor *error_sink = nullptr);
   virtual void define_extension_type(CPPExtensionType *type,
-                                     CPPPreprocessor *error_sink = NULL);
+                                     CPPPreprocessor *error_sink = nullptr);
   virtual void define_namespace(CPPNamespace *scope);
   virtual void add_using(CPPUsing *using_decl, CPPScope *global_scope,
-                         CPPPreprocessor *error_sink = NULL);
+                         CPPPreprocessor *error_sink = nullptr);
 
   virtual bool is_fully_specified() const;
 
   CPPScope *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
   CPPScope *
   substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -98,7 +98,7 @@ public:
                                 bool recurse = true) const;
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
 
   virtual void output(ostream &out, CPPScope *scope) const;
@@ -113,7 +113,7 @@ private:
                        CPPScope *global_scope) const;
 
   void handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-                          CPPPreprocessor *error_sink = NULL);
+                          CPPPreprocessor *error_sink = nullptr);
 
 public:
   typedef vector<CPPDeclaration *> Declarations;
@@ -159,7 +159,7 @@ private:
 
 inline ostream &
 operator << (ostream &out, const CPPScope &scope) {
-  scope.output(out, (CPPScope *)NULL);
+  scope.output(out, (CPPScope *)nullptr);
   return out;
 }
 

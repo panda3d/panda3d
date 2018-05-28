@@ -40,7 +40,7 @@ public:
     INLINE Joint(EggGroup *group, const FCDSceneNode *scene_node) :
       _group(group),
       _scene_node(scene_node),
-      _character(NULL),
+      _character(nullptr),
       _bind_pose(LMatrix4d::ident_mat()) {}
 
     LMatrix4d _bind_pose;

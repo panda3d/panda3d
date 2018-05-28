@@ -18,7 +18,7 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   v->updated=1;
 
   /* lights */
-  c->first_light=NULL;
+  c->first_light=nullptr;
   c->ambient_light_model=gl_V4_New(0.2, 0.2, 0.2, 1.0f);
   c->local_light_model=0;
   c->lighting_enabled=0;
@@ -50,7 +50,7 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   c->cull_face_enabled=0;
   
   /* specular buffer */
-  c->specbuf_first = NULL;
+  c->specbuf_first = nullptr;
   c->specbuf_used_counter = 0;
   c->specbuf_num_buffers = 0;
 

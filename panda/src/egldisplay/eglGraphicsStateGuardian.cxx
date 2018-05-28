@@ -40,7 +40,7 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _visuals=0;
   _fbconfig=0;
 
-  if (share_with != (eglGraphicsStateGuardian *)NULL) {
+  if (share_with != (eglGraphicsStateGuardian *)nullptr) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
@@ -51,15 +51,15 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 eglGraphicsStateGuardian::
 ~eglGraphicsStateGuardian() {
-  if (_visuals != (XVisualInfo *)NULL) {
+  if (_visuals != (XVisualInfo *)nullptr) {
     XFree(_visuals);
   }
-  if (_context != (EGLContext)NULL) {
+  if (_context != (EGLContext)nullptr) {
     if (!eglDestroyContext(_egl_display, _context)) {
       egldisplay_cat.error() << "Failed to destroy EGL context: "
         << get_egl_error_string(eglGetError()) << "\n";
     }
-    _context = (EGLContext)NULL;
+    _context = (EGLContext)nullptr;
   }
 }
 
@@ -157,7 +157,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // First get the number of matching configurations, so we know how much
   // memory to allocate.
   int num_configs = 0, returned_configs;
-  if (!eglChooseConfig(_egl_display, attrib_list, NULL, num_configs, &returned_configs) || returned_configs <= 0) {
+  if (!eglChooseConfig(_egl_display, attrib_list, nullptr, num_configs, &returned_configs) || returned_configs <= 0) {
     egldisplay_cat.error() << "eglChooseConfig failed: "
       << get_egl_error_string(eglGetError()) << "\n";
     return;
@@ -218,7 +218,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
     _context = eglCreateContext(_egl_display, _fbconfig, _share_context, context_attribs);
 #else
-    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, NULL);
+    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, nullptr);
 #endif
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {

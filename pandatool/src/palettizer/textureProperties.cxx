@@ -38,8 +38,8 @@ TextureProperties() {
   _magfilter = EggTexture::FT_unspecified;
   _quality_level = EggTexture::QL_unspecified;
   _anisotropic_degree = 0;
-  _color_type = (PNMFileType *)NULL;
-  _alpha_type = (PNMFileType *)NULL;
+  _color_type = (PNMFileType *)nullptr;
+  _alpha_type = (PNMFileType *)nullptr;
 }
 
 /**
@@ -222,7 +222,7 @@ update_properties(const TextureProperties &other) {
 
   _anisotropic_degree = other._anisotropic_degree;
 
-  if (_color_type == (PNMFileType *)NULL) {
+  if (_color_type == (PNMFileType *)nullptr) {
     _color_type = other._color_type;
     _alpha_type = other._alpha_type;
   }
@@ -445,7 +445,7 @@ fully_define() {
     break;
   }
 
-  if (_color_type == (PNMFileType *)NULL) {
+  if (_color_type == (PNMFileType *)nullptr) {
     _color_type = pal->_color_type;
     _alpha_type = pal->_alpha_type;
   }
@@ -501,7 +501,7 @@ operator < (const TextureProperties &other) const {
   if (_color_type != other._color_type) {
     return _color_type < other._color_type;
   }
-  if (_color_type != (PNMFileType *)NULL) {
+  if (_color_type != (PNMFileType *)nullptr) {
     if (_alpha_type != other._alpha_type) {
       return _alpha_type < other._alpha_type;
     }
@@ -520,7 +520,7 @@ operator == (const TextureProperties &other) const {
           _quality_level == other._quality_level &&
           _anisotropic_degree == other._anisotropic_degree &&
           _color_type == other._color_type &&
-          (_color_type == (PNMFileType *)NULL ||
+          (_color_type == (PNMFileType *)nullptr ||
            _alpha_type == other._alpha_type));
 }
 
@@ -670,10 +670,10 @@ get_quality_level_string(EggTexture::QualityLevel quality_level) {
  */
 string TextureProperties::
 get_type_string(PNMFileType *color_type, PNMFileType *alpha_type) {
-  if (color_type == (PNMFileType *)NULL) {
+  if (color_type == (PNMFileType *)nullptr) {
     return "";
   }
-  if (alpha_type == (PNMFileType *)NULL) {
+  if (alpha_type == (PNMFileType *)nullptr) {
     return "c";
   }
   return "a";
@@ -781,12 +781,12 @@ int TextureProperties::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != (TypedWritable *)nullptr) {
     DCAST_INTO_R(_color_type, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != (TypedWritable *)nullptr) {
     DCAST_INTO_R(_alpha_type, p_list[index], index);
   }
   index++;

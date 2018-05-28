@@ -24,7 +24,7 @@ main(int argc, char *argv[]) {
 #endif
 
   for (int i = 1; i < argc; ++i) {
-    char *endptr = NULL;
+    char *endptr = nullptr;
     double result = pstrtod(argv[i], &endptr);
     cerr << "pstrtod - " << argv[i] << " : " << result << " : " << endptr << "\n";
     result = strtod(argv[i], &endptr);

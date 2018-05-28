@@ -166,7 +166,7 @@ PUBLISHED:
   MAKE_PROPERTY2(z_order, has_z_order, get_z_order, set_z_order, clear_z_order);
 
   void set_parent_window(size_t parent);
-  INLINE void set_parent_window(WindowHandle *parent_window = NULL);
+  INLINE void set_parent_window(WindowHandle *parent_window = nullptr);
   INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();

@@ -128,7 +128,7 @@ get_bin_name(int, const EggNode *) {
  */
 PT(EggBin) EggBinMaker::
 make_bin(int, const EggNode *, EggGroup *collapse_from) {
-  if (collapse_from == (EggGroup *)NULL) {
+  if (collapse_from == (EggGroup *)nullptr) {
     return new EggBin;
   } else {
     return new EggBin(*collapse_from);
@@ -243,7 +243,7 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
 
   if (group->empty() &&
       bins.size() == 1 &&
-      group->get_parent() != NULL &&
+      group->get_parent() != nullptr &&
       group->is_of_type(EggGroup::get_class_type())) {
     const Nodes &nodes = bins.front();
     nassertv(!nodes.empty());
@@ -268,7 +268,7 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
       const Nodes &nodes = (*bi);
       nassertv(!nodes.empty());
       int bin_number = get_bin_number(nodes.front());
-      PT(EggBin) bin = make_bin(bin_number, nodes.front(), NULL);
+      PT(EggBin) bin = make_bin(bin_number, nodes.front(), nullptr);
       setup_bin(bin, nodes);
 
       group->add_child(bin);

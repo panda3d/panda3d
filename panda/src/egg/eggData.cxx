@@ -70,14 +70,14 @@ read(Filename filename, string display_name) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   PT(VirtualFile) vfile = vfs->get_file(filename);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     egg_cat.error() << "Could not find " << display_name << "\n";
     return false;
   }
   set_egg_timestamp(vfile->get_timestamp());
 
   istream *file = vfile->open_read_file(true);
-  if (file == (istream *)NULL) {
+  if (file == (istream *)nullptr) {
     egg_cat.error() << "Unable to open " << display_name << "\n";
     return false;
   }
@@ -158,7 +158,7 @@ merge(EggData &other) {
 bool EggData::
 load_externals(const DSearchPath &searchpath) {
   return
-    r_load_externals(searchpath, get_coordinate_system(), NULL);
+    r_load_externals(searchpath, get_coordinate_system(), nullptr);
 }
 
 /**
@@ -211,7 +211,7 @@ write_egg(Filename filename) {
   filename.set_text();
   vfs->delete_file(filename);
   ostream *file = vfs->open_write_file(filename, true, true);
-  if (file == (ostream *)NULL) {
+  if (file == (ostream *)nullptr) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;
   }

@@ -195,7 +195,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       // used, but it instead uses specially named variables.  A bit of
       // guesswork is involved here; Cg seems to mostly use the semantics as
       // attribute names in GLSL, with a few exceptions.
-      const char *attribname = NULL;
+      const char *attribname = nullptr;
       switch (res) {
       case CG_POSITION0:
         attribname = "cg_Vertex";
@@ -519,7 +519,7 @@ issue_parameters(int altered) {
       Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
       const Shader::ShaderPtrData *ptr_data =_glgsg->fetch_ptr_parameter(spec);
-      if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
+      if (ptr_data == nullptr){ //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
@@ -736,7 +736,7 @@ update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
 
   int i = 0;
-  if (table != NULL) {
+  if (table != nullptr) {
     int num_transforms = min(_transform_table_size, (long)table->get_num_transforms());
     for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
@@ -764,7 +764,7 @@ update_slider_table(const SliderTable *table) {
   float *sliders = (float *)alloca(_slider_table_size * 4);
   memset(sliders, 0, _slider_table_size * 4);
 
-  if (table != NULL) {
+  if (table != nullptr) {
     int num_sliders = min(_slider_table_size, (long)table->get_num_sliders());
     for (int i = 0; i < num_sliders; ++i) {
       sliders[i] = table->get_slider(i)->get_slider();
@@ -1111,7 +1111,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
-    if (tc == (TextureContext*)NULL) {
+    if (tc == (TextureContext*)nullptr) {
       continue;
     }
 

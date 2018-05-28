@@ -80,7 +80,7 @@ is_regular_file(const Filename &file) const {
 
   //express_cat.error() << "is_regular_file " << file << " - " << asset << "\n";
 
-  if (asset == NULL) {
+  if (asset == nullptr) {
     return false;
   }
   AAsset_close(asset);
@@ -107,7 +107,7 @@ read_file(const Filename &file, bool do_uncompress,
 
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_STREAMING);
-  if (asset == (AAsset *)NULL) {
+  if (asset == (AAsset *)nullptr) {
     express_cat.info()
       << "Unable to read " << file << "\n";
     return false;
@@ -144,8 +144,8 @@ istream *VirtualFileMountAndroidAsset::
 open_read_file(const Filename &file) const {
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
-  if (asset == (AAsset *)NULL) {
-    return NULL;
+  if (asset == (AAsset *)nullptr) {
+    return nullptr;
   }
 
   AssetStream *stream = new AssetStream(asset);
@@ -229,14 +229,14 @@ get_system_info(const Filename &file, SubfileInfo &info) {
 bool VirtualFileMountAndroidAsset::
 scan_directory(vector_string &contents, const Filename &dir) const {
   AAssetDir *asset_dir = AAssetManager_openDir(_asset_mgr, dir.c_str());
-  if (asset_dir == NULL) {
+  if (asset_dir == nullptr) {
     return false;
   }
 
   // Note: this returns the full path.
   const char *fullpath = AAssetDir_getNextFileName(asset_dir);
 
-  while (fullpath != NULL) {
+  while (fullpath != nullptr) {
     express_cat.error() << fullpath << "\n"; // DEBUG
     // Determine the basename and add it to the vector.
     Filename fname (fullpath);

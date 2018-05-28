@@ -24,7 +24,7 @@ get_string() {
   // First, get the length of the string
   uint16_t s_len = get_uint16();
 
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != (const Datagram *)nullptr, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -43,7 +43,7 @@ get_string32() {
   // First, get the length of the string
   uint32_t s_len = get_uint32();
 
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != (const Datagram *)nullptr, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -59,7 +59,7 @@ get_string32() {
  */
 string DatagramIterator::
 get_z_string() {
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != (const Datagram *)nullptr, "");
 
   // First, determine the length of the string.
   const char *ptr = (const char *)_datagram->get_data();
@@ -82,7 +82,7 @@ get_z_string() {
  */
 string DatagramIterator::
 get_fixed_string(size_t size) {
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != (const Datagram *)nullptr, "");
   nassertr(_current_index + size <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -102,7 +102,7 @@ get_wstring() {
   // First, get the length of the string
   uint32_t s_len = get_uint32();
 
-  nassertr(_datagram != (const Datagram *)NULL, wstring());
+  nassertr(_datagram != (const Datagram *)nullptr, wstring());
   nassertr(_current_index + s_len * 2 <= _datagram->get_length(), wstring());
 
   wstring result;
@@ -122,7 +122,7 @@ get_wstring() {
 vector_uchar DatagramIterator::
 extract_bytes(size_t size) {
   nassertr((int)size >= 0, vector_uchar());
-  nassertr(_datagram != (const Datagram *)NULL, vector_uchar());
+  nassertr(_datagram != (const Datagram *)nullptr, vector_uchar());
   nassertr(_current_index + size <= _datagram->get_length(), vector_uchar());
 
   const unsigned char *ptr = (const unsigned char *)_datagram->get_data();
@@ -142,7 +142,7 @@ extract_bytes(size_t size) {
 size_t DatagramIterator::
 extract_bytes(unsigned char *into, size_t size) {
   nassertr((int)size >= 0, 0);
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != (const Datagram *)nullptr, 0);
   nassertr(_current_index + size <= _datagram->get_length(), 0);
 
   const char *ptr = (const char *)_datagram->get_data();

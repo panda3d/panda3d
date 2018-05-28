@@ -124,7 +124,7 @@ remove_physical(size_t index) {
 
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
-  (*remove)->_physical_node = (PhysicalNode *) NULL;
+  (*remove)->_physical_node = (PhysicalNode *) nullptr;
 
   _physicals.erase(remove);
 }

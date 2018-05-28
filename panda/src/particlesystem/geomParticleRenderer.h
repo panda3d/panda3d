@@ -26,7 +26,7 @@
 class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   explicit GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
-                                PandaNode *geom_node = (PandaNode *) NULL);
+                                PandaNode *geom_node = (PandaNode *) nullptr);
   GeomParticleRenderer(const GeomParticleRenderer& copy);
   virtual ~GeomParticleRenderer();
 

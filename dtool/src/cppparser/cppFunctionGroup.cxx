@@ -40,7 +40,7 @@ CPPFunctionGroup::
  */
 CPPType *CPPFunctionGroup::
 get_return_type() const {
-  CPPType *return_type = NULL;
+  CPPType *return_type = nullptr;
 
   if (!_instances.empty()) {
     Instances::const_iterator ii = _instances.begin();
@@ -48,7 +48,7 @@ get_return_type() const {
     ++ii;
     while (ii != _instances.end()) {
       if ((*ii)->_type->as_function_type()->_return_type != return_type) {
-        return (CPPType *)NULL;
+        return (CPPType *)nullptr;
       }
       ++ii;
     }

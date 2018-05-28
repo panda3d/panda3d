@@ -44,10 +44,10 @@ run() {
   }
 
   PT(IffChunk) chunk = in.get_chunk();
-  if (chunk == (IffChunk *)NULL) {
+  if (chunk == (IffChunk *)nullptr) {
     nout << "Unable to read file.\n";
   } else {
-    while (chunk != (IffChunk *)NULL) {
+    while (chunk != (IffChunk *)nullptr) {
       chunk->write(cout, 0);
       chunk = in.get_chunk();
     }

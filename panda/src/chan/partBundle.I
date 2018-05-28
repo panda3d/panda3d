@@ -43,7 +43,7 @@ set_anim_preload(AnimPreloadTable *anim_preload) {
  */
 INLINE void PartBundle::
 clear_anim_preload() {
-  _anim_preload = NULL;
+  _anim_preload = nullptr;
 }
 
 /**
@@ -165,7 +165,7 @@ get_num_nodes() const {
  */
 INLINE PartBundleNode *PartBundle::
 get_node(int n) const {
-  nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nodes.size(), nullptr);
   return _nodes[n];
 }
 

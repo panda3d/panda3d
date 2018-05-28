@@ -167,7 +167,7 @@ inspect_tree(EggNode *egg_node) {
  */
 void AnimBundleMaker::
 build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
-  AnimGroup *this_node = NULL;
+  AnimGroup *this_node = nullptr;
 
   // First, scan the children of egg_table for anim data tables.  If any of
   // them is named "xform", it's a special case--this one stands for the
@@ -176,7 +176,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
   EggTable::const_iterator ci;
   for (ci = egg_table->begin(); ci != egg_table->end(); ++ci) {
     if ((*ci)->get_name() == "xform") {
-      if (this_node == NULL) {
+      if (this_node == nullptr) {
         this_node = create_xfm_channel((*ci), egg_table->get_name(), parent);
       } else {
         egg2pg_cat.warning()
@@ -187,7 +187,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
   }
 
   // If none of them were named "xform", just create a plain old AnimGroup.
-  if (this_node == NULL) {
+  if (this_node == nullptr) {
     this_node = new AnimGroup(parent, egg_table->get_name());
   }
 
@@ -251,7 +251,7 @@ create_xfm_channel(EggNode *egg_node, const string &name,
   egg2pg_cat.warning()
     << "Inappropriate node named xform under node "
     << name << "\n";
-  return NULL;
+  return nullptr;
 }
 
 

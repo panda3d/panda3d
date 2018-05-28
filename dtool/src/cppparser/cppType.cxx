@@ -36,7 +36,7 @@ CPPType::
 CPPType(const CPPFile &file) :
   CPPDeclaration(file)
 {
-  _declaration = (CPPTypeDeclaration *)NULL;
+  _declaration = (CPPTypeDeclaration *)nullptr;
 
   // This is set true by interrogate when the "forcetype" keyword is used.
   _forcetype = false;
@@ -143,11 +143,11 @@ is_parameter_expr() const {
 bool CPPType::
 is_enum() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_enum();
   }
   const CPPExtensionType *ext_type = as_extension_type();
-  if (ext_type != NULL) {
+  if (ext_type != nullptr) {
     return ext_type->_type == CPPExtensionType::T_enum ||
            ext_type->_type == CPPExtensionType::T_enum_struct ||
            ext_type->_type == CPPExtensionType::T_enum_class;
@@ -161,7 +161,7 @@ is_enum() const {
 bool CPPType::
 is_const() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_const();
   }
   return get_subtype() == ST_const;
@@ -173,7 +173,7 @@ is_const() const {
 bool CPPType::
 is_reference() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_reference();
   }
   return get_subtype() == ST_reference;
@@ -186,11 +186,11 @@ is_reference() const {
 bool CPPType::
 is_pointer() const {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     return td_type->_type->is_pointer();
   }
   const CPPConstType *const_type = as_const_type();
-  if (const_type != NULL) {
+  if (const_type != nullptr) {
     return const_type->_wrapped_around->is_pointer();
   }
   return get_subtype() == ST_pointer;
@@ -203,7 +203,7 @@ is_pointer() const {
 CPPType *CPPType::
 remove_const() {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     CPPType *unwrapped = td_type->_type->remove_const();
     if (unwrapped != td_type->_type) {
       return unwrapped;
@@ -212,7 +212,7 @@ remove_const() {
     }
   }
   const CPPConstType *const_type = as_const_type();
-  if (const_type != NULL) {
+  if (const_type != nullptr) {
     return const_type->_wrapped_around->remove_const();
   }
   return this;
@@ -224,7 +224,7 @@ remove_const() {
 CPPType *CPPType::
 remove_reference() {
   const CPPTypedefType *td_type = as_typedef_type();
-  if (td_type != NULL) {
+  if (td_type != nullptr) {
     CPPType *unwrapped = td_type->_type->remove_reference();
     if (unwrapped != td_type->_type) {
       return unwrapped;
@@ -233,7 +233,7 @@ remove_reference() {
     }
   }
   const CPPReferenceType *ref_type = as_reference_type();
-  if (ref_type != NULL) {
+  if (ref_type != nullptr) {
     return ref_type->_pointing_at;
   }
   return this;

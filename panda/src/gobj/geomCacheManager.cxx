@@ -16,7 +16,7 @@
 #include "lightMutexHolder.h"
 #include "clockObject.h"
 
-GeomCacheManager *GeomCacheManager::_global_ptr = NULL;
+GeomCacheManager *GeomCacheManager::_global_ptr = nullptr;
 
 PStatCollector GeomCacheManager::_geom_cache_size_pcollector("Geom cache size");
 PStatCollector GeomCacheManager::_geom_cache_active_pcollector("Geom cache size:Active");
@@ -62,7 +62,7 @@ flush() {
  */
 GeomCacheManager *GeomCacheManager::
 get_global_ptr() {
-  if (_global_ptr == (GeomCacheManager *)NULL) {
+  if (_global_ptr == (GeomCacheManager *)nullptr) {
     _global_ptr = new GeomCacheManager;
   }
   return _global_ptr;

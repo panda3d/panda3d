@@ -18,7 +18,7 @@
  */
 INLINE ShaderAttrib::
 ShaderAttrib() :
-  _shader(NULL),
+  _shader(nullptr),
   _shader_priority(0),
   _auto_shader(false),
   _has_shader(false),

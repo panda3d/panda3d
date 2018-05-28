@@ -75,9 +75,9 @@ P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream_ptr;
 P3D_instance_handle_event_func *P3D_instance_handle_event_ptr;
 
 #ifdef _WIN32
-static HMODULE module = NULL;
+static HMODULE module = nullptr;
 #else
-static void *module = NULL;
+static void *module = nullptr;
 #endif
 
 static bool plugin_loaded = false;
@@ -139,11 +139,11 @@ load_plugin(const string &p3d_plugin_filename,
   string filename = p3d_plugin_filename;
 
 #ifdef _WIN32
-  assert(module == NULL);
+  assert(module == nullptr);
 
   if (filename.empty()) {
     // If no filename is supplied, look within our existing address space.
-    module = GetModuleHandle(NULL);
+    module = GetModuleHandle(nullptr);
     dso_needs_unload = false;
 
   } else {
@@ -168,7 +168,7 @@ load_plugin(const string &p3d_plugin_filename,
     dso_needs_unload = true;
   }
 
-  if (module == NULL) {
+  if (module == nullptr) {
     // Couldn't load the DLL.
     logfile
       << "Couldn't load " << filename << ", error = "
@@ -180,16 +180,16 @@ load_plugin(const string &p3d_plugin_filename,
 
 #else  // _WIN32
   // Posix case.
-  assert(module == NULL);
+  assert(module == nullptr);
   if (filename.empty()) {
-    module = dlopen(NULL, RTLD_LAZY | RTLD_LOCAL);
+    module = dlopen(nullptr, RTLD_LAZY | RTLD_LOCAL);
   } else {
     module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_LOCAL);
   }
-  if (module == NULL) {
+  if (module == nullptr) {
     // Couldn't load the .so.
     const char *message = dlerror();
-    if (message == (char *)NULL) {
+    if (message == (char *)nullptr) {
       message = "No error";
     }
     logfile << "Couldn't load " << filename << ": " << message << "\n";
@@ -276,45 +276,45 @@ init_plugin(const string &contents_filename, const string &host_url,
             const string &start_dir, ostream &logfile) {
 
   // Ensure that all of the function pointers have been found.
-  if (P3D_initialize_ptr == NULL ||
-      P3D_finalize_ptr == NULL ||
-      P3D_set_plugin_version_ptr == NULL ||
-      P3D_set_super_mirror_ptr == NULL ||
-      P3D_new_instance_ptr == NULL ||
-      P3D_instance_start_ptr == NULL ||
-      P3D_instance_start_stream_ptr == NULL ||
-      P3D_instance_finish_ptr == NULL ||
-      P3D_instance_setup_window_ptr == NULL ||
+  if (P3D_initialize_ptr == nullptr ||
+      P3D_finalize_ptr == nullptr ||
+      P3D_set_plugin_version_ptr == nullptr ||
+      P3D_set_super_mirror_ptr == nullptr ||
+      P3D_new_instance_ptr == nullptr ||
+      P3D_instance_start_ptr == nullptr ||
+      P3D_instance_start_stream_ptr == nullptr ||
+      P3D_instance_finish_ptr == nullptr ||
+      P3D_instance_setup_window_ptr == nullptr ||
 
-      P3D_object_get_type_ptr == NULL ||
-      P3D_object_get_bool_ptr == NULL ||
-      P3D_object_get_int_ptr == NULL ||
-      P3D_object_get_float_ptr == NULL ||
-      P3D_object_get_string_ptr == NULL ||
-      P3D_object_get_repr_ptr == NULL ||
-      P3D_object_get_property_ptr == NULL ||
-      P3D_object_set_property_ptr == NULL ||
-      P3D_object_has_method_ptr == NULL ||
-      P3D_object_call_ptr == NULL ||
-      P3D_object_eval_ptr == NULL ||
-      P3D_object_incref_ptr == NULL ||
-      P3D_object_decref_ptr == NULL ||
+      P3D_object_get_type_ptr == nullptr ||
+      P3D_object_get_bool_ptr == nullptr ||
+      P3D_object_get_int_ptr == nullptr ||
+      P3D_object_get_float_ptr == nullptr ||
+      P3D_object_get_string_ptr == nullptr ||
+      P3D_object_get_repr_ptr == nullptr ||
+      P3D_object_get_property_ptr == nullptr ||
+      P3D_object_set_property_ptr == nullptr ||
+      P3D_object_has_method_ptr == nullptr ||
+      P3D_object_call_ptr == nullptr ||
+      P3D_object_eval_ptr == nullptr ||
+      P3D_object_incref_ptr == nullptr ||
+      P3D_object_decref_ptr == nullptr ||
 
-      P3D_make_class_definition_ptr == NULL ||
-      P3D_new_undefined_object_ptr == NULL ||
-      P3D_new_none_object_ptr == NULL ||
-      P3D_new_bool_object_ptr == NULL ||
-      P3D_new_int_object_ptr == NULL ||
-      P3D_new_float_object_ptr == NULL ||
-      P3D_new_string_object_ptr == NULL ||
-      P3D_instance_get_panda_script_object_ptr == NULL ||
-      P3D_instance_set_browser_script_object_ptr == NULL ||
+      P3D_make_class_definition_ptr == nullptr ||
+      P3D_new_undefined_object_ptr == nullptr ||
+      P3D_new_none_object_ptr == nullptr ||
+      P3D_new_bool_object_ptr == nullptr ||
+      P3D_new_int_object_ptr == nullptr ||
+      P3D_new_float_object_ptr == nullptr ||
+      P3D_new_string_object_ptr == nullptr ||
+      P3D_instance_get_panda_script_object_ptr == nullptr ||
+      P3D_instance_set_browser_script_object_ptr == nullptr ||
 
-      P3D_instance_get_request_ptr == NULL ||
-      P3D_check_request_ptr == NULL ||
-      P3D_request_finish_ptr == NULL ||
-      P3D_instance_feed_url_stream_ptr == NULL ||
-      P3D_instance_handle_event_ptr == NULL) {
+      P3D_instance_get_request_ptr == nullptr ||
+      P3D_check_request_ptr == nullptr ||
+      P3D_request_finish_ptr == nullptr ||
+      P3D_instance_feed_url_stream_ptr == nullptr ||
+      P3D_instance_handle_event_ptr == nullptr) {
 
     logfile
       << "Some function pointers not found:"
@@ -411,55 +411,55 @@ unload_plugin(ostream &logfile) {
 static void
 unload_dso() {
   if (dso_needs_unload) {
-    assert(module != NULL);
+    assert(module != nullptr);
 #ifdef _WIN32
     FreeLibrary(module);
 #else
     dlclose(module);
 #endif
-    module = NULL;
+    module = nullptr;
     dso_needs_unload = false;
   }
 
-  P3D_initialize_ptr = NULL;
-  P3D_finalize_ptr = NULL;
-  P3D_set_plugin_version_ptr = NULL;
-  P3D_set_super_mirror_ptr = NULL;
-  P3D_new_instance_ptr = NULL;
-  P3D_instance_start_ptr = NULL;
-  P3D_instance_start_stream_ptr = NULL;
-  P3D_instance_finish_ptr = NULL;
-  P3D_instance_setup_window_ptr = NULL;
+  P3D_initialize_ptr = nullptr;
+  P3D_finalize_ptr = nullptr;
+  P3D_set_plugin_version_ptr = nullptr;
+  P3D_set_super_mirror_ptr = nullptr;
+  P3D_new_instance_ptr = nullptr;
+  P3D_instance_start_ptr = nullptr;
+  P3D_instance_start_stream_ptr = nullptr;
+  P3D_instance_finish_ptr = nullptr;
+  P3D_instance_setup_window_ptr = nullptr;
 
-  P3D_object_get_type_ptr = NULL;
-  P3D_object_get_bool_ptr = NULL;
-  P3D_object_get_int_ptr = NULL;
-  P3D_object_get_float_ptr = NULL;
-  P3D_object_get_string_ptr = NULL;
-  P3D_object_get_repr_ptr = NULL;
-  P3D_object_get_property_ptr = NULL;
-  P3D_object_set_property_ptr = NULL;
-  P3D_object_has_method_ptr = NULL;
-  P3D_object_call_ptr = NULL;
-  P3D_object_eval_ptr = NULL;
-  P3D_object_incref_ptr = NULL;
-  P3D_object_decref_ptr = NULL;
+  P3D_object_get_type_ptr = nullptr;
+  P3D_object_get_bool_ptr = nullptr;
+  P3D_object_get_int_ptr = nullptr;
+  P3D_object_get_float_ptr = nullptr;
+  P3D_object_get_string_ptr = nullptr;
+  P3D_object_get_repr_ptr = nullptr;
+  P3D_object_get_property_ptr = nullptr;
+  P3D_object_set_property_ptr = nullptr;
+  P3D_object_has_method_ptr = nullptr;
+  P3D_object_call_ptr = nullptr;
+  P3D_object_eval_ptr = nullptr;
+  P3D_object_incref_ptr = nullptr;
+  P3D_object_decref_ptr = nullptr;
 
-  P3D_make_class_definition_ptr = NULL;
-  P3D_new_undefined_object_ptr = NULL;
-  P3D_new_none_object_ptr = NULL;
-  P3D_new_bool_object_ptr = NULL;
-  P3D_new_int_object_ptr = NULL;
-  P3D_new_float_object_ptr = NULL;
-  P3D_new_string_object_ptr = NULL;
-  P3D_instance_get_panda_script_object_ptr = NULL;
-  P3D_instance_set_browser_script_object_ptr = NULL;
+  P3D_make_class_definition_ptr = nullptr;
+  P3D_new_undefined_object_ptr = nullptr;
+  P3D_new_none_object_ptr = nullptr;
+  P3D_new_bool_object_ptr = nullptr;
+  P3D_new_int_object_ptr = nullptr;
+  P3D_new_float_object_ptr = nullptr;
+  P3D_new_string_object_ptr = nullptr;
+  P3D_instance_get_panda_script_object_ptr = nullptr;
+  P3D_instance_set_browser_script_object_ptr = nullptr;
 
-  P3D_instance_get_request_ptr = NULL;
-  P3D_check_request_ptr = NULL;
-  P3D_request_finish_ptr = NULL;
-  P3D_instance_feed_url_stream_ptr = NULL;
-  P3D_instance_handle_event_ptr = NULL;
+  P3D_instance_get_request_ptr = nullptr;
+  P3D_check_request_ptr = nullptr;
+  P3D_request_finish_ptr = nullptr;
+  P3D_instance_feed_url_stream_ptr = nullptr;
+  P3D_instance_handle_event_ptr = nullptr;
 
   plugin_loaded = false;
 }

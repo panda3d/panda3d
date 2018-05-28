@@ -284,7 +284,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
     _num_nodes_with_attribs++;
     const RenderAttrib *attrib =
       node->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (RenderAttrib *)NULL) {
+    if (attrib != (RenderAttrib *)nullptr) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
@@ -336,7 +336,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(GeomNode *geom_node) {
-  nassertv(geom_node != (GeomNode *)NULL);
+  nassertv(geom_node != (GeomNode *)nullptr);
 
   ++_num_geom_nodes;
 
@@ -351,7 +351,7 @@ collect_statistics(GeomNode *geom_node) {
 
     const RenderAttrib *attrib =
       geom_state->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (RenderAttrib *)NULL) {
+    if (attrib != (RenderAttrib *)nullptr) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
@@ -477,7 +477,7 @@ collect_statistics(const Geom *geom) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(Texture *texture) {
-  nassertv(texture != (Texture *)NULL);
+  nassertv(texture != (Texture *)nullptr);
 
   Textures::iterator ti = _textures.find(texture);
   if (ti == _textures.end()) {
@@ -506,7 +506,7 @@ collect_statistics(Texture *texture) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(const GeomVertexArrayData *vadata) {
-  nassertv(vadata != NULL);
+  nassertv(vadata != nullptr);
   bool inserted = _vadatas.insert(vadata).second;
   if (inserted) {
     // This is the first time we've encountered this vertex array.
@@ -523,7 +523,7 @@ collect_statistics(const GeomVertexArrayData *vadata) {
  */
 void SceneGraphAnalyzer::
 collect_prim_statistics(const GeomVertexArrayData *vadata) {
-  nassertv(vadata != NULL);
+  nassertv(vadata != nullptr);
   bool inserted = _prim_vadatas.insert(vadata).second;
   if (inserted) {
     // This is the first time we've encountered this vertex array.

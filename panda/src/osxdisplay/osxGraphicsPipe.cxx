@@ -34,7 +34,7 @@ Boolean GetDictionaryBoolean(CFDictionaryRef theDict, const void* key) {
   Boolean value = false;
   CFBooleanRef boolRef;
   boolRef = (CFBooleanRef)CFDictionaryGetValue(theDict, key);
-  if (boolRef != NULL)
+  if (boolRef != nullptr)
     value = CFBooleanGetValue(boolRef);
   return value;
 }
@@ -44,7 +44,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key) {
   long value = 0;
   CFNumberRef numRef;
   numRef = (CFNumberRef)CFDictionaryGetValue(theDict, key);
-  if (numRef != NULL)
+  if (numRef != nullptr)
     CFNumberGetValue(numRef, kCFNumberLongType, &value);
   return value;
 }
@@ -94,7 +94,7 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
   unsigned int numberOfAvailableModes = CFArrayGetCount(availableModes);
 
   // creat mutable array to hold the display modes we are interested int.
-  CFMutableArrayRef usefulModes = CFArrayCreateMutable(kCFAllocatorDefault, numberOfAvailableModes, NULL);
+  CFMutableArrayRef usefulModes = CFArrayCreateMutable(kCFAllocatorDefault, numberOfAvailableModes, nullptr);
 
   // get the current bits per pixel.
   long currentModeBitsPerPixel = GetModeBitsPerPixel(CGDisplayCurrentMode(display));
@@ -152,7 +152,7 @@ CFArrayRef GSCGDisplayAvailableModesUsefulForOpenGL(CGDirectDisplayID display) {
   // now sort the useful mode array, using the comparison callback.
   CFArraySortValues( usefulModes,
     CFRangeMake(0, CFArrayGetCount(usefulModes)),
-    (CFComparatorFunction) CompareModes, NULL);
+    (CFComparatorFunction) CompareModes, nullptr);
   // return the CFArray of the useful display modes.
   return usefulModes;
 }
@@ -250,7 +250,7 @@ create_cg_image(const PNMImage &pnm_image) {
   bool has_alpha;
   bool is_grayscale;
 
-  CFStringRef color_space_name = NULL;
+  CFStringRef color_space_name = nullptr;
   switch (pnm_image.get_color_type()) {
   case PNMImage::CT_grayscale:
     color_space_name = kCGColorSpaceGenericGray;
@@ -278,13 +278,13 @@ create_cg_image(const PNMImage &pnm_image) {
 
   case PNMImage::CT_invalid:
     // Shouldn't get here.
-    nassertr(false, NULL);
+    nassertr(false, nullptr);
     break;
   }
-  nassertr(color_space_name != NULL, NULL);
+  nassertr(color_space_name != nullptr, nullptr);
 
   CGColorSpaceRef color_space = CGColorSpaceCreateWithName(color_space_name);
-  nassertr(color_space != NULL, NULL);
+  nassertr(color_space != nullptr, nullptr);
 
   CGBitmapInfo bitmap_info = 0;
 #ifdef PGM_BIGGRAYS
@@ -312,17 +312,17 @@ create_cg_image(const PNMImage &pnm_image) {
       }
     }
   }
-  nassertr((void *)dp == (void *)(char_array + num_bytes), NULL);
+  nassertr((void *)dp == (void *)(char_array + num_bytes), nullptr);
 
   CGDataProviderRef provider =
-    CGDataProviderCreateWithData(NULL, char_array, num_bytes, release_data);
-  nassertr(provider != NULL, NULL);
+    CGDataProviderCreateWithData(nullptr, char_array, num_bytes, release_data);
+  nassertr(provider != nullptr, nullptr);
 
   CGImageRef image = CGImageCreate
     (width, height, bits_per_component, bits_per_pixel, bytes_per_row,
      color_space, bitmap_info, provider,
-     NULL, false, kCGRenderingIntentDefault);
-  nassertr(image != NULL, NULL);
+     nullptr, false, kCGRenderingIntentDefault);
+  nassertr(image != nullptr, nullptr);
 
   CGColorSpaceRelease(color_space);
   CGDataProviderRelease(provider);
@@ -354,12 +354,12 @@ make_output(const string &name,
             int retry,
             bool &precertify) {
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   osxGraphicsStateGuardian *osxgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(osxgsg, gsg, NULL);
+    DCAST_INTO_R(osxgsg, gsg, nullptr);
   }
 
   // First thing to try: an osxGraphicsWindow
@@ -372,15 +372,15 @@ make_output(const string &name,
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
     WindowHandle *window_handle = win_prop.get_parent_window();
-    if (window_handle != NULL) {
+    if (window_handle != nullptr) {
       osxdisplay_cat.info()
         << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
       WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-      if (os_handle != NULL &&
+      if (os_handle != nullptr &&
           os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
                                     flags, gsg, host);
@@ -394,9 +394,9 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
-    if (!osx_support_gl_buffer || !gl_support_fbo || host == NULL ||
+    if (!osx_support_gl_buffer || !gl_support_fbo || host == nullptr ||
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -404,13 +404,13 @@ make_output(const string &name,
       if (fb_prop.get_indexed_color() ||
           fb_prop.get_back_buffers() > 0 ||
           fb_prop.get_accum_bits() > 0) {
-        return NULL;
+        return nullptr;
       }
     }
-    if (osxgsg != NULL && osxgsg->is_valid() && !osxgsg->needs_reset()) {
+    if (osxgsg != nullptr && osxgsg->is_valid() && !osxgsg->needs_reset()) {
       if (!osxgsg->_supports_framebuffer_object ||
-          osxgsg->_glDrawBuffers == NULL) {
-        return NULL;
+          osxgsg->_glDrawBuffers == nullptr) {
+        return nullptr;
       } else if (fb_prop.is_basic()) {
         // Early success - if we are sure that this buffer WILL meet specs, we
         // can precertify it.
@@ -429,14 +429,14 @@ make_output(const string &name,
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_every)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new osxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -447,5 +447,5 @@ make_output(const string &name,
  */
 PT(GraphicsStateGuardian) osxGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return new osxGraphicsStateGuardian(engine, this, NULL);
+  return new osxGraphicsStateGuardian(engine, this, nullptr);
 }

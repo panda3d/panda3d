@@ -93,7 +93,7 @@ INLINE EventParameter::
  */
 INLINE bool EventParameter::
 is_empty() const {
-  return (_ptr == (TypedWritableReferenceCount *)NULL);
+  return (_ptr == (TypedWritableReferenceCount *)nullptr);
 }
 
 /**
@@ -205,7 +205,7 @@ is_typed_ref_count() const {
  */
 INLINE TypedReferenceCount *EventParameter::
 get_typed_ref_count_value() const {
-  nassertr(is_typed_ref_count(), NULL);
+  nassertr(is_typed_ref_count(), nullptr);
   return ((const EventStoreTypedRefCount *)_ptr.p())->get_value();
 }
 

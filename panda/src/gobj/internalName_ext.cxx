@@ -27,8 +27,8 @@ make(PyUnicodeObject *str) {
     // Not an interned string; don't bother.
     Py_ssize_t len = 0;
     const char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
-    if (c_str == NULL) {
-      return NULL;
+    if (c_str == nullptr) {
+      return nullptr;
     }
 
     string name(c_str, len);

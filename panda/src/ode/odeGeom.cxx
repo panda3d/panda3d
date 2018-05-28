@@ -202,5 +202,5 @@ convert_to_quad_tree_space() const {
 
 OdeGeom::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }

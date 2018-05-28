@@ -146,7 +146,7 @@ is_planar() const {
 PT(EggPolygon) EggPolygon::
 triangulate_in_place(bool convex_also) {
   EggGroupNode *parent = get_parent();
-  nassertr(parent != (EggGroupNode *)NULL, this);
+  nassertr(parent != (EggGroupNode *)nullptr, this);
 
   PT(EggPolygon) save_me = this;
   parent->remove_child(this);

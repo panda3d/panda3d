@@ -64,7 +64,7 @@ output(ostream &out) const {
  */
 DisplayInformation::
 ~DisplayInformation() {
-  if (_display_mode_array != NULL) {
+  if (_display_mode_array != nullptr) {
     delete[] _display_mode_array;
   }
 }
@@ -94,7 +94,7 @@ DisplayInformation() {
   window_height = 0;
   window_bits_per_pixel = 0;
   total_display_modes = 0;
-  display_mode_array = NULL;
+  display_mode_array = nullptr;
   video_memory = 0;
   texture_memory = 0;
   physical_memory = 0;

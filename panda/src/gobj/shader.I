@@ -205,7 +205,7 @@ operator == (const ShaderCaps &other) const {
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData() :
-  _ptr(NULL),
+  _ptr(nullptr),
   _type(SPT_unknown),
   _updated(true),
   _size(0)

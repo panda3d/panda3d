@@ -78,7 +78,7 @@ remove_node(PartBundleNode *node) {
  */
 void CharacterJointBundle::
 r_set_character(PartGroup *group, Character *character) {
-  if (group == (PartGroup *)NULL) {
+  if (group == (PartGroup *)nullptr) {
     // This might happen if we are in the middle of reading the Character's
     // hierarchy from the bam file.
     return;

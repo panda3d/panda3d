@@ -139,7 +139,7 @@ get_texcoord_name() const {
  */
 INLINE InternalName *TextureStage::
 get_tangent_name() const {
-  if (_texcoord_name->get_parent() == NULL) {
+  if (_texcoord_name->get_parent() == nullptr) {
     return InternalName::get_tangent();
   } else {
     return InternalName::get_tangent_name(_texcoord_name->get_basename());
@@ -152,7 +152,7 @@ get_tangent_name() const {
  */
 INLINE InternalName *TextureStage::
 get_binormal_name() const {
-  if (_texcoord_name->get_parent() == NULL) {
+  if (_texcoord_name->get_parent() == nullptr) {
     return InternalName::get_binormal();
   } else {
     return InternalName::get_binormal_name(_texcoord_name->get_basename());
@@ -659,7 +659,7 @@ operator < (const TextureStage &other) const {
  */
 INLINE TextureStage *TextureStage::
 get_default() {
-  if (_default_stage == (TextureStage *)NULL) {
+  if (_default_stage == (TextureStage *)nullptr) {
     _default_stage = new TextureStage("default");
   }
   return _default_stage;

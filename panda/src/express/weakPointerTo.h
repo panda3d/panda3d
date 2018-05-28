@@ -30,7 +30,7 @@ class WeakPointerTo : public WeakPointerToBase<T> {
 public:
   typedef TYPENAME WeakPointerToBase<T>::To To;
 PUBLISHED:
-  INLINE WeakPointerTo(To *ptr = (To *)NULL);
+  INLINE WeakPointerTo(To *ptr = (To *)nullptr);
   INLINE WeakPointerTo(const PointerTo<T> &copy);
   INLINE WeakPointerTo(const WeakPointerTo<T> &copy);
 
@@ -66,7 +66,7 @@ class WeakConstPointerTo : public WeakPointerToBase<T> {
 public:
   typedef TYPENAME WeakPointerToBase<T>::To To;
 PUBLISHED:
-  INLINE WeakConstPointerTo(const To *ptr = (const To *)NULL);
+  INLINE WeakConstPointerTo(const To *ptr = (const To *)nullptr);
   INLINE WeakConstPointerTo(const PointerTo<T> &copy);
   INLINE WeakConstPointerTo(const ConstPointerTo<T> &copy);
   INLINE WeakConstPointerTo(const WeakPointerTo<T> &copy);

@@ -77,5 +77,5 @@ write(ostream &out, unsigned int indent) const {
 
 OdeBody::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }

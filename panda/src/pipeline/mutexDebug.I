@@ -142,7 +142,7 @@ debug_is_locked() const {
  */
 INLINE MutexTrueImpl *MutexDebug::
 get_global_lock() {
-  if (_global_lock == (MutexTrueImpl *)NULL) {
+  if (_global_lock == (MutexTrueImpl *)nullptr) {
     _global_lock = new MutexTrueImpl;
   }
   return _global_lock;

@@ -29,13 +29,13 @@ LoaderOptions(int flags) :
   static ConfigVariableBool *preload_textures;
   static ConfigVariableBool *preload_simple_textures;
   static ConfigVariableBool *compressed_textures;
-  if (preload_textures == NULL) {
+  if (preload_textures == nullptr) {
     preload_textures = new ConfigVariableBool("preload-textures", true);
   }
-  if (preload_simple_textures == NULL) {
+  if (preload_simple_textures == nullptr) {
     preload_simple_textures = new ConfigVariableBool("preload-simple-textures", false);
   }
-  if (compressed_textures == NULL) {
+  if (compressed_textures == nullptr) {
     compressed_textures = new ConfigVariableBool("compressed-textures", false);
   }
 

@@ -70,7 +70,7 @@ operator = (const SubfileInfo &copy) {
  */
 INLINE bool SubfileInfo::
 is_empty() const {
-  return _file == (FileReference *)NULL;
+  return _file == (FileReference *)nullptr;
 }
 
 /**
@@ -86,7 +86,7 @@ get_file() const {
  */
 INLINE const Filename &SubfileInfo::
 get_filename() const {
-  if (_file != (FileReference *)NULL) {
+  if (_file != (FileReference *)nullptr) {
     return _file->get_filename();
   }
   static const Filename empty_filename;

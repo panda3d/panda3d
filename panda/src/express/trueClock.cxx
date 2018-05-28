@@ -17,7 +17,7 @@
 
 #include <math.h>  // for fabs()
 
-TrueClock *TrueClock::_global_ptr = NULL;
+TrueClock *TrueClock::_global_ptr = nullptr;
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 
@@ -501,7 +501,7 @@ get_long_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, (struct timezone *)nullptr);
 #endif
 
   if (result < 0) {
@@ -527,7 +527,7 @@ get_short_raw_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, (struct timezone *)nullptr);
 #endif
 
   if (result < 0) {
@@ -561,7 +561,7 @@ TrueClock() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, (struct timezone *)nullptr);
 #endif
 
   if (result < 0) {

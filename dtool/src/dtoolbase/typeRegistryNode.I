@@ -16,7 +16,7 @@
  */
 INLINE TypeRegistryNode::Inherit::
 Inherit() {
-  _top = (TypeRegistryNode *)NULL;
+  _top = (TypeRegistryNode *)nullptr;
   _mask = 0;
   _bits = 0;
 }

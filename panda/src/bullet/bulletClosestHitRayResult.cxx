@@ -78,7 +78,7 @@ PandaNode *BulletClosestHitRayResult::
 get_node() const {
 
   const btCollisionObject *objectPtr = m_collisionObject;
-  return (objectPtr) ? (PandaNode *)objectPtr->getUserPointer() : NULL;
+  return (objectPtr) ? (PandaNode *)objectPtr->getUserPointer() : nullptr;
 }
 
 /**

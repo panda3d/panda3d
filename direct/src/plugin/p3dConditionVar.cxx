@@ -28,7 +28,7 @@ P3DConditionVar() {
   InitializeCriticalSection(&_lock);
 
   // Create an auto-reset event.
-  _event_signal = CreateEvent(NULL, false, false, NULL);
+  _event_signal = CreateEvent(nullptr, false, false, nullptr);
 
 #else  // _WIN32
   pthread_mutexattr_t attr;
@@ -38,7 +38,7 @@ P3DConditionVar() {
   pthread_mutexattr_destroy(&attr);
   assert(result == 0);
 
-  result = pthread_cond_init(&_cvar, NULL);
+  result = pthread_cond_init(&_cvar, nullptr);
   assert(result == 0);
 
 #endif  // _WIN32
@@ -115,7 +115,7 @@ wait(double timeout) {
 #else  // _WIN32
 
   struct timeval now;
-  gettimeofday(&now, NULL);
+  gettimeofday(&now, nullptr);
 
   // Convert from timeval to timespec
   struct timespec ts;

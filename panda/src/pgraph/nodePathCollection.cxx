@@ -229,7 +229,7 @@ find_all_matches(const string &path) const {
   FindApproxPath approx_path;
   if (approx_path.add_string(path)) {
     if (!is_empty()) {
-      FindApproxLevelEntry *level = NULL;
+      FindApproxLevelEntry *level = nullptr;
       for (int i = 0; i < get_num_paths(); i++) {
         FindApproxLevelEntry *start =
           new FindApproxLevelEntry(get_path(i), approx_path);

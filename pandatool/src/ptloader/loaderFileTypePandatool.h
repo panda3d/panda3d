@@ -29,7 +29,7 @@ class EggToSomethingConverter;
 class EXPCL_PTLOADER LoaderFileTypePandatool : public LoaderFileType {
 public:
   LoaderFileTypePandatool(SomethingToEggConverter *loader,
-                          EggToSomethingConverter *saver = NULL);
+                          EggToSomethingConverter *saver = nullptr);
   virtual ~LoaderFileTypePandatool();
 
   virtual string get_name() const;

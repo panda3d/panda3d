@@ -280,9 +280,9 @@ DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
  */
 DXFFile::
 DXFFile() {
-  _in = NULL;
+  _in = nullptr;
   _owns_in = false;
-  _layer = NULL;
+  _layer = nullptr;
   reset_entity();
   _color_index = -1;
 }
@@ -308,7 +308,7 @@ process(Filename filename) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  if (in == (istream *)nullptr) {
     return;
   }
   process(in, true);
@@ -620,7 +620,7 @@ change_section(Section new_section) {
  */
 void DXFFile::
 change_layer(const string &layer_name) {
-  if (_layer == NULL || _layer->get_name() != layer_name) {
+  if (_layer == nullptr || _layer->get_name() != layer_name) {
     _layer = _layers.get_layer(layer_name, this);
   }
 }

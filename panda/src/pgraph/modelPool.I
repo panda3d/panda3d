@@ -33,7 +33,7 @@ has_model(const Filename &filename) {
  */
 INLINE bool ModelPool::
 verify_model(const Filename &filename) {
-  return load_model(filename) != (ModelRoot *)NULL;
+  return load_model(filename) != (ModelRoot *)nullptr;
 }
 
 /**

@@ -125,10 +125,10 @@ munge_data_impl(const GeomVertexData *data) {
 
   } else if (hardware_animated_vertices &&
              animation.get_animation_type() == AT_panda &&
-             new_data->get_slider_table() == (SliderTable *)NULL) {
+             new_data->get_slider_table() == (SliderTable *)nullptr) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
-    if (table != (TransformBlendTable *)NULL &&
+    if (table != (TransformBlendTable *)nullptr &&
         table->get_num_transforms() != 0 &&
         table->get_max_simultaneous_transforms() <=
         get_gsg()->get_max_vertex_transforms()) {

@@ -156,7 +156,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
 bool NurbsCurveInterface::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
-  nassertr(nurbs != (NurbsCurveInterface *)NULL, false);
+  nassertr(nurbs != (NurbsCurveInterface *)nullptr, false);
 
   nurbs->remove_all_cvs();
   nurbs->set_order(get_order());

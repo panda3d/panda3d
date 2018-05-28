@@ -124,7 +124,7 @@ get_num_types() const {
  */
 LoaderFileType *LoaderFileTypeRegistry::
 get_type(int n) const {
-  nassertr(n >= 0 && n < (int)_types.size(), NULL);
+  nassertr(n >= 0 && n < (int)_types.size(), nullptr);
   return _types[n];
 }
 
@@ -154,11 +154,11 @@ get_type_from_extension(const string &extension) {
       loader_cat->info()
         << "loading file type module: " << name << endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-      if (tmp == (void *)NULL) {
+      if (tmp == (void *)nullptr) {
         loader_cat->warning()
           << "Unable to load " << dlname.to_os_specific() << ": "
           << load_dso_error() << endl;
-        return NULL;
+        return nullptr;
       } else if (loader_cat.is_debug()) {
         loader_cat.debug()
           << "done loading file type module: " << name << endl;
@@ -172,7 +172,7 @@ get_type_from_extension(const string &extension) {
   if (ei == _extensions.end()) {
     // Nothing matches that extension, even after we've checked for a deferred
     // type description.
-    return NULL;
+    return nullptr;
   }
 
   return (*ei).second;
@@ -231,7 +231,7 @@ write(ostream &out, int indent_level) const {
  */
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (LoaderFileTypeRegistry *)NULL) {
+  if (_global_ptr == (LoaderFileTypeRegistry *)nullptr) {
     _global_ptr = new LoaderFileTypeRegistry;
   }
   return _global_ptr;

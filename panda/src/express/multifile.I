@@ -35,7 +35,7 @@ set_multifile_name(const Filename &multifile_name) {
  */
 INLINE bool Multifile::
 is_read_valid() const {
-  return (_read != (IStreamWrapper *)NULL);
+  return (_read != (IStreamWrapper *)nullptr);
 }
 
 /**
@@ -44,7 +44,7 @@ is_read_valid() const {
  */
 INLINE bool Multifile::
 is_write_valid() const {
-  return (_write != (ostream *)NULL && !_write->fail());
+  return (_write != (ostream *)nullptr && !_write->fail());
 }
 
 /**
@@ -354,11 +354,11 @@ Subfile() {
   _data_start = 0;
   _data_length = 0;
   _timestamp = 0;
-  _source = (istream *)NULL;
+  _source = (istream *)nullptr;
   _flags = 0;
   _compression_level = 0;
 #ifdef HAVE_OPENSSL
-  _pkey = NULL;
+  _pkey = nullptr;
 #endif
 }
 

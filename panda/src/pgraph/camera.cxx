@@ -153,7 +153,7 @@ get_tag_state(const string &tag_state) const {
  */
 void Camera::
 set_aux_scene_data(const NodePath &node_path, AuxSceneData *data) {
-  if (data == (AuxSceneData *)NULL) {
+  if (data == (AuxSceneData *)nullptr) {
     clear_aux_scene_data(node_path);
   } else {
     _aux_data[node_path] = data;
@@ -188,7 +188,7 @@ get_aux_scene_data(const NodePath &node_path) const {
     return (*ai).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**

@@ -110,7 +110,7 @@ INLINE GraphicsOutputBase *LightLensNode::
 get_shadow_buffer(GraphicsStateGuardianBase *gsg) {
   ShadowBuffers::iterator it = _sbuffers.find(gsg);
   if (it == _sbuffers.end()) {
-    return NULL;
+    return nullptr;
   } else {
     return (*it).second;
   }

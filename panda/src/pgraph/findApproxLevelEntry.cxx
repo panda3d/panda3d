@@ -40,7 +40,7 @@ output(ostream &out) const {
 void FindApproxLevelEntry::
 write_level(ostream &out, int indent_level) const {
   for (const FindApproxLevelEntry *entry = this;
-       entry != (const FindApproxLevelEntry *)NULL;
+       entry != (const FindApproxLevelEntry *)nullptr;
        entry = entry->_next) {
     indent(out, indent_level);
     out << *entry << "\n";
@@ -92,7 +92,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
   }
 
   PandaNode *this_node = _node_path.node();
-  nassertr(this_node != (PandaNode *)NULL, false);
+  nassertr(this_node != (PandaNode *)nullptr, false);
 
   bool stashed_only = next_is_stashed(increment);
 

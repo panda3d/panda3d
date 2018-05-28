@@ -125,7 +125,7 @@ template class EXPORT_THIS Extension<CPTA_int>;
 
 template<class T>
 INLINE const char *_get_format_code(const T *) {
-  return NULL;
+  return nullptr;
 }
 
 define_format_code("c", char);

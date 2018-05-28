@@ -370,7 +370,7 @@ get_merge_externals() const {
  */
 INLINE void SomethingToEggConverter::
 clear_egg_data() {
-  set_egg_data((EggData *)NULL);
+  set_egg_data((EggData *)nullptr);
 }
 
 /**

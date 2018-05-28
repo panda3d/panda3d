@@ -27,7 +27,7 @@ FltRecordReader(istream &in) :
 {
   _opcode = FO_none;
   _record_length = 0;
-  _iterator = (DatagramIterator *)NULL;
+  _iterator = (DatagramIterator *)nullptr;
   _state = S_begin;
   _next_error = FE_ok;
   _next_opcode = FO_none;
@@ -42,9 +42,9 @@ FltRecordReader(istream &in) :
  */
 FltRecordReader::
 ~FltRecordReader() {
-  if (_iterator != (DatagramIterator *)NULL) {
+  if (_iterator != (DatagramIterator *)nullptr) {
     delete _iterator;
-    _iterator = (DatagramIterator *)NULL;
+    _iterator = (DatagramIterator *)nullptr;
   }
 }
 
@@ -101,9 +101,9 @@ advance(bool ok_eof) {
     assert(!flt_error_abort);
     return FE_read_error;
   }
-  if (_iterator != (DatagramIterator *)NULL) {
+  if (_iterator != (DatagramIterator *)nullptr) {
     delete _iterator;
-    _iterator = (DatagramIterator *)NULL;
+    _iterator = (DatagramIterator *)nullptr;
   }
 
   if (_next_error == FE_end_of_file) {

@@ -610,7 +610,7 @@ format_timestamp(bool record_timestamp, time_t timestamp) {
     return "  (no date) ";
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm *tm_p = localtime(&timestamp);
 
   if (timestamp > now || (now - timestamp > 86400 * 365)) {
@@ -635,7 +635,7 @@ list_files(const vector_string &params) {
   // So this is the only place where we accept a .pz/.gz compressed .mf.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(multifile_name, true);
-  if (istr == NULL) {
+  if (istr == nullptr) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }

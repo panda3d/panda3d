@@ -20,9 +20,9 @@
  */
 BioStreamPtr::
 ~BioStreamPtr() {
-  if (_stream != (BioStream *)NULL) {
+  if (_stream != (BioStream *)nullptr) {
     delete _stream;
-    _stream = (BioStream *)NULL;
+    _stream = (BioStream *)nullptr;
   }
 }
 

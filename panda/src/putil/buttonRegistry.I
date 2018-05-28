@@ -27,7 +27,7 @@ RegistryNode(ButtonHandle handle, ButtonHandle alias, const string &name) :
  */
 INLINE ButtonRegistry *ButtonRegistry::
 ptr() {
-  if (_global_pointer == (ButtonRegistry *)NULL) {
+  if (_global_pointer == (ButtonRegistry *)nullptr) {
     init_global_pointer();
   }
   return _global_pointer;
@@ -39,7 +39,7 @@ ptr() {
 INLINE string ButtonRegistry::
 get_name(ButtonHandle button) const {
   RegistryNode *rnode = look_up(button);
-  nassertr(rnode != (RegistryNode *)NULL, "");
+  nassertr(rnode != (RegistryNode *)nullptr, "");
   return rnode->_name;
 }
 
@@ -50,6 +50,6 @@ get_name(ButtonHandle button) const {
 INLINE ButtonHandle ButtonRegistry::
 get_alias(ButtonHandle button) const {
   RegistryNode *rnode = look_up(button);
-  nassertr(rnode != (RegistryNode *)NULL, ButtonHandle::none());
+  nassertr(rnode != (RegistryNode *)nullptr, ButtonHandle::none());
   return rnode->_alias;
 }

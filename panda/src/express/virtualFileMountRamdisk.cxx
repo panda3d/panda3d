@@ -35,7 +35,7 @@ has_file(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  return (f != NULL);
+  return (f != nullptr);
 }
 
 /**
@@ -48,7 +48,7 @@ create_file(const Filename &file) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  return (f != NULL);
+  return (f != nullptr);
 }
 
 /**
@@ -61,7 +61,7 @@ delete_file(const Filename &file) {
   _lock.lock();
   PT(FileBase) f = _root.do_delete_file(file);
   _lock.unlock();
-  return (f != NULL);
+  return (f != nullptr);
 }
 
 /**
@@ -74,7 +74,7 @@ bool VirtualFileMountRamdisk::
 rename_file(const Filename &orig_filename, const Filename &new_filename) {
   _lock.lock();
   PT(FileBase) orig_fb = _root.do_find_file(orig_filename);
-  if (orig_fb == NULL) {
+  if (orig_fb == nullptr) {
     _lock.unlock();
     return false;
   }
@@ -83,7 +83,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
     // Rename the directory.
     Directory *orig_d = DCAST(Directory, orig_fb);
     PT(Directory) new_d = _root.do_make_directory(new_filename);
-    if (new_d == NULL || !new_d->_files.empty()) {
+    if (new_d == nullptr || !new_d->_files.empty()) {
       _lock.unlock();
       return false;
     }
@@ -102,7 +102,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
   // Rename the file.
   File *orig_f = DCAST(File, orig_fb);
   PT(File) new_f = _root.do_create_file(new_filename);
-  if (new_f == NULL) {
+  if (new_f == nullptr) {
     _lock.unlock();
     return false;
   }
@@ -129,7 +129,7 @@ bool VirtualFileMountRamdisk::
 copy_file(const Filename &orig_filename, const Filename &new_filename) {
   _lock.lock();
   PT(FileBase) orig_fb = _root.do_find_file(orig_filename);
-  if (orig_fb == NULL || orig_fb->is_directory()) {
+  if (orig_fb == nullptr || orig_fb->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -137,7 +137,7 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
   // Copy the file.
   File *orig_f = DCAST(File, orig_fb);
   PT(File) new_f = _root.do_create_file(new_filename);
-  if (new_f == NULL) {
+  if (new_f == nullptr) {
     _lock.unlock();
     return false;
   }
@@ -164,7 +164,7 @@ make_directory(const Filename &file) {
   _lock.lock();
   PT(Directory) f = _root.do_make_directory(file);
   _lock.unlock();
-  return (f != NULL);
+  return (f != nullptr);
 }
 
 /**
@@ -176,7 +176,7 @@ is_directory(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  return (f != NULL && f->is_directory());
+  return (f != nullptr && f->is_directory());
 }
 
 /**
@@ -188,7 +188,7 @@ is_regular_file(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  return (f != NULL && !f->is_directory());
+  return (f != nullptr && !f->is_directory());
 }
 
 /**
@@ -210,8 +210,8 @@ open_read_file(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)NULL || f->is_directory()) {
-    return NULL;
+  if (f == (FileBase *)nullptr || f->is_directory()) {
+    return nullptr;
   }
 
   File *f2 = DCAST(File, f);
@@ -228,8 +228,8 @@ open_write_file(const Filename &file, bool truncate) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)NULL) {
-    return NULL;
+  if (f == (File *)nullptr) {
+    return nullptr;
   }
 
   if (truncate) {
@@ -241,7 +241,7 @@ open_write_file(const Filename &file, bool truncate) {
     // second, since the timer only has a one second precision. The proper
     // solution to fix this would be to switch to a higher precision
     // timer everywhere.
-    f->_timestamp = max(f->_timestamp + 1, time(NULL));
+    f->_timestamp = max(f->_timestamp + 1, time(nullptr));
   }
 
   return new OSubStream(&f->_wrapper, 0, 0);
@@ -257,8 +257,8 @@ open_append_file(const Filename &file) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)NULL) {
-    return NULL;
+  if (f == (File *)nullptr) {
+    return nullptr;
   }
 
   return new OSubStream(&f->_wrapper, 0, 0, true);
@@ -274,8 +274,8 @@ open_read_write_file(const Filename &file, bool truncate) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)NULL) {
-    return NULL;
+  if (f == (File *)nullptr) {
+    return nullptr;
   }
 
   if (truncate) {
@@ -283,7 +283,7 @@ open_read_write_file(const Filename &file, bool truncate) {
     f->_data.str(string());
 
     // See open_write_file
-    f->_timestamp = max(f->_timestamp + 1, time(NULL));
+    f->_timestamp = max(f->_timestamp + 1, time(nullptr));
   }
 
   return new SubStream(&f->_wrapper, 0, 0);
@@ -299,8 +299,8 @@ open_read_append_file(const Filename &file) {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)NULL || f->is_directory()) {
-    return NULL;
+  if (f == (FileBase *)nullptr || f->is_directory()) {
+    return nullptr;
   }
 
   File *f2 = DCAST(File, f);
@@ -317,7 +317,7 @@ get_file_size(const Filename &file, istream *stream) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)NULL || f->is_directory()) {
+  if (f == (FileBase *)nullptr || f->is_directory()) {
     return 0;
   }
 
@@ -334,7 +334,7 @@ get_file_size(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)NULL || f->is_directory()) {
+  if (f == (FileBase *)nullptr || f->is_directory()) {
     return 0;
   }
 
@@ -374,7 +374,7 @@ bool VirtualFileMountRamdisk::
 scan_directory(vector_string &contents, const Filename &dir) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(dir);
-  if (f == (FileBase *)NULL || !f->is_directory()) {
+  if (f == (FileBase *)nullptr || !f->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -395,7 +395,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
                                      const string &new_contents) {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  if (f == (FileBase *)NULL || f->is_directory()) {
+  if (f == (FileBase *)nullptr || f->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -405,7 +405,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
   orig_contents = f2->_data.str();
   if (orig_contents == old_contents) {
     f2->_data.str(new_contents);
-    f2->_timestamp = time(NULL);
+    f2->_timestamp = time(nullptr);
     retval = true;
   }
 
@@ -420,7 +420,7 @@ bool VirtualFileMountRamdisk::
 atomic_read_contents(const Filename &file, string &contents) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  if (f == (FileBase *)NULL || f->is_directory()) {
+  if (f == (FileBase *)nullptr || f->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -479,7 +479,7 @@ do_find_file(const string &filename) const {
     if (fi != _files.end()) {
       return (*fi);
     }
-    return NULL;
+    return nullptr;
   }
 
   // A nested directory.  Search for the directory name, then recurse.
@@ -495,7 +495,7 @@ do_find_file(const string &filename) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -516,7 +516,7 @@ do_create_file(const string &filename) {
         return DCAST(File, file.p());
       }
       // Cannot create: a directory by the same name already exists.
-      return NULL;
+      return nullptr;
     }
 
     // Create a new file.
@@ -526,7 +526,7 @@ do_create_file(const string &filename) {
     }
     PT(File) file = new File(filename);
     _files.insert(file.p());
-    _timestamp = time(NULL);
+    _timestamp = time(nullptr);
     return file;
   }
 
@@ -543,7 +543,7 @@ do_create_file(const string &filename) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -564,7 +564,7 @@ do_make_directory(const string &filename) {
         return DCAST(Directory, file.p());
       }
       // Cannot create: a file by the same name already exists.
-      return NULL;
+      return nullptr;
     }
 
     // Create a new directory.
@@ -574,7 +574,7 @@ do_make_directory(const string &filename) {
     }
     PT(Directory) file = new Directory(filename);
     _files.insert(file.p());
-    _timestamp = time(NULL);
+    _timestamp = time(nullptr);
     return file;
   }
 
@@ -591,7 +591,7 @@ do_make_directory(const string &filename) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -612,14 +612,14 @@ do_delete_file(const string &filename) {
         Directory *dir = DCAST(Directory, file.p());
         if (!dir->_files.empty()) {
           // Can't delete a nonempty directory.
-          return NULL;
+          return nullptr;
         }
       }
       _files.erase(fi);
-      _timestamp = time(NULL);
+      _timestamp = time(nullptr);
       return file;
     }
-    return NULL;
+    return nullptr;
   }
 
   // A nested directory.  Search for the directory name, then recurse.
@@ -635,7 +635,7 @@ do_delete_file(const string &filename) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**

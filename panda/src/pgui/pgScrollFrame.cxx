@@ -30,8 +30,8 @@ PGScrollFrame(const string &name) : PGVirtualFrame(name)
   _virtual_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
   _manage_pieces = false;
   _auto_hide = false;
-  _horizontal_slider = NULL;
-  _vertical_slider = NULL;
+  _horizontal_slider = nullptr;
+  _vertical_slider = nullptr;
 }
 
 /**
@@ -39,8 +39,8 @@ PGScrollFrame(const string &name) : PGVirtualFrame(name)
  */
 PGScrollFrame::
 ~PGScrollFrame() {
-  set_horizontal_slider(NULL);
-  set_vertical_slider(NULL);
+  set_horizontal_slider(nullptr);
+  set_vertical_slider(nullptr);
 }
 
 /**
@@ -143,13 +143,13 @@ setup(PN_stdfloat width, PN_stdfloat height,
   set_virtual_frame(left, right, bottom, top);
 
   // Remove the slider nodes created by a previous call to setup(), if any.
-  if (_horizontal_slider != (PGSliderBar *)NULL) {
+  if (_horizontal_slider != (PGSliderBar *)nullptr) {
     remove_child(_horizontal_slider);
-    set_horizontal_slider(NULL);
+    set_horizontal_slider(nullptr);
   }
-  if (_vertical_slider != (PGSliderBar *)NULL) {
+  if (_vertical_slider != (PGSliderBar *)nullptr) {
     remove_child(_vertical_slider);
-    set_vertical_slider(NULL);
+    set_vertical_slider(nullptr);
   }
 
   // Create new slider bars.
@@ -185,7 +185,7 @@ remanage() {
 
   bool got_horizontal = false;
   PN_stdfloat horizontal_width = 0.0f;
-  if (_horizontal_slider != (PGSliderBar *)NULL) {
+  if (_horizontal_slider != (PGSliderBar *)nullptr) {
     got_horizontal = true;
     const LVecBase4 &slider_frame = _horizontal_slider->get_frame();
     horizontal_width = slider_frame[3] - slider_frame[2];
@@ -193,7 +193,7 @@ remanage() {
 
   bool got_vertical = false;
   PN_stdfloat vertical_width = 0.0f;
-  if (_vertical_slider != (PGSliderBar *)NULL) {
+  if (_vertical_slider != (PGSliderBar *)nullptr) {
     got_vertical = true;
     const LVecBase4 &slider_frame = _vertical_slider->get_frame();
     vertical_width = slider_frame[1] - slider_frame[0];
@@ -235,7 +235,7 @@ remanage() {
     }
 
     // Now show or hide the sliders appropriately.
-    if (_horizontal_slider != (PGSliderBar *)NULL) {
+    if (_horizontal_slider != (PGSliderBar *)nullptr) {
       if (got_horizontal) {
         _horizontal_slider->set_overall_hidden(false);
       } else {
@@ -244,7 +244,7 @@ remanage() {
         horizontal_width = 0.0f;
       }
     }
-    if (_vertical_slider != (PGSliderBar *)NULL) {
+    if (_vertical_slider != (PGSliderBar *)nullptr) {
       if (got_vertical) {
         _vertical_slider->set_overall_hidden(false);
       } else {
@@ -350,10 +350,10 @@ recompute_clip() {
 
   set_clip_frame(clip);
 
-  if (_horizontal_slider != (PGSliderBar *)NULL) {
+  if (_horizontal_slider != (PGSliderBar *)nullptr) {
     _horizontal_slider->set_page_size((clip[1] - clip[0]) / (_virtual_frame[1] - _virtual_frame[0]));
   }
-  if (_vertical_slider != (PGSliderBar *)NULL) {
+  if (_vertical_slider != (PGSliderBar *)nullptr) {
     _vertical_slider->set_page_size((clip[3] - clip[2]) / (_virtual_frame[3] - _virtual_frame[2]));
   }
 }
@@ -390,7 +390,7 @@ interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max,
                    PGSliderBar *slider_bar) {
   LightReMutexHolder holder(_lock);
   PN_stdfloat t = 0.0f;
-  if (slider_bar != (PGSliderBar *)NULL) {
+  if (slider_bar != (PGSliderBar *)nullptr) {
     t = slider_bar->get_ratio();
   }
 

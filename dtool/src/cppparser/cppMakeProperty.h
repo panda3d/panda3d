@@ -92,7 +92,7 @@ public:
                   CPPScope *current_scope, const CPPFile &file);
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
 
   virtual void output(ostream &out, int indent_level, CPPScope *scope,

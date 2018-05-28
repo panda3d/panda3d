@@ -225,7 +225,7 @@ setup() {
   }
   _total_bytes = _element_stride * _num_elements;
 
-  if (_packer != NULL) {
+  if (_packer != nullptr) {
     delete _packer;
   }
 

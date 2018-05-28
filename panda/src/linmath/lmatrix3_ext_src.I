@@ -21,8 +21,8 @@ __reduce__(PyObject *self) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
   PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *result = Py_BuildValue("(O(fffffffff))", this_class,

@@ -128,7 +128,7 @@ get_num_transforms() const {
  */
 INLINE const VertexTransform *TransformBlend::
 get_transform(size_t n) const {
-  nassertr(n < _entries.size(), NULL);
+  nassertr(n < _entries.size(), nullptr);
   return _entries[n]._transform;
 }
 

@@ -88,7 +88,7 @@ convert_file(const Filename &filename) {
   clear_error();
 
   VrmlScene *scene = parse_vrml(filename);
-  if (scene == (VrmlScene *)NULL) {
+  if (scene == (VrmlScene *)nullptr) {
     return false;
   }
 
@@ -127,8 +127,8 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
   switch (vrml._type) {
   case SFNodeRef::T_def:
     // If this is a node definition, add it to the map.
-    nassertv(vrml._name != NULL);
-    nassertv(vrml._p != NULL);
+    nassertv(vrml._name != nullptr);
+    nassertv(vrml._p != nullptr);
     /*
       This happens too often to bother yelling about it.
     ni = nodes.find(vrml._name);
@@ -142,7 +142,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
 
   case SFNodeRef::T_use:
     // If it's a reference, resolve it.
-    nassertv(vrml._name != NULL);
+    nassertv(vrml._name != nullptr);
     ni = nodes.find(vrml._name);
     if (ni == nodes.end()) {
       cerr << "Unknown node reference: " << vrml._name << "\n";
@@ -161,7 +161,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
   }
 
   VrmlNode *node = vrml._p;
-  if (node != NULL) {
+  if (node != nullptr) {
     VrmlNode::Fields::iterator fi;
     for (fi = node->_fields.begin(); fi != node->_fields.end(); ++fi) {
       if ((*fi)._type->type == SFNODE) {
@@ -185,7 +185,7 @@ void VRMLToEggConverter::
 vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,
           const LMatrix4d &net_transform) {
   const VrmlNode *node = vrml._p;
-  if (node != NULL) {
+  if (node != nullptr) {
     // Now add it to the egg file at this point.
     if (strcmp(node->_type->getName(), "Group") == 0) {
       vrml_grouping_node(vrml, egg, net_transform,
@@ -213,9 +213,9 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
                    (const VrmlNode *node, EggGroup *group,
                     const LMatrix4d &net_transform)) {
   const VrmlNode *node = vrml._p;
-  nassertv(node != NULL);
+  nassertv(node != nullptr);
   string name;
-  if (vrml._name != NULL) {
+  if (vrml._name != nullptr) {
     name = vrml._name;
   }
 
@@ -369,7 +369,7 @@ vrml_shape(const VrmlNode *node, EggGroup *group,
            const LMatrix4d &net_transform) {
   const VrmlNode *geometry = node->get_value("geometry")._sfnode._p;
 
-  if (geometry != NULL) {
+  if (geometry != nullptr) {
     VRMLAppearance appearance(node->get_value("appearance")._sfnode._p);
 
     if (strcmp(geometry->_type->getName(), "IndexedFaceSet") == 0) {

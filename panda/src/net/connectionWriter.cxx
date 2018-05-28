@@ -91,7 +91,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads,
  */
 ConnectionWriter::
 ~ConnectionWriter() {
-  if (_manager != (ConnectionManager *)NULL) {
+  if (_manager != (ConnectionManager *)nullptr) {
     _manager->remove_writer(this);
   }
 
@@ -142,7 +142,7 @@ get_current_queue_size() const {
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection, bool block) {
   nassertr(!_shutdown, false);
-  nassertr(connection != (Connection *)NULL, false);
+  nassertr(connection != (Connection *)nullptr, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_TCP::get_class_type()), false);
 
   NetDatagram copy(datagram);
@@ -177,7 +177,7 @@ bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection,
      const NetAddress &address, bool block) {
   nassertr(!_shutdown, false);
-  nassertr(connection != (Connection *)NULL, false);
+  nassertr(connection != (Connection *)nullptr, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_UDP::get_class_type()), false);
 
   if ((int)datagram.get_length() > maximum_udp_datagram) {
@@ -309,7 +309,7 @@ shutdown() {
  */
 void ConnectionWriter::
 clear_manager() {
-  _manager = (ConnectionManager *)NULL;
+  _manager = (ConnectionManager *)nullptr;
   shutdown();
 }
 

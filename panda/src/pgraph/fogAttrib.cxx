@@ -128,7 +128,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
 
   TypedWritable *fog = p_list[pi++];
-  if (fog != (TypedWritable *)NULL) {
+  if (fog != (TypedWritable *)nullptr) {
     _fog = DCAST(Fog, fog);
   }
 

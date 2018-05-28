@@ -16,7 +16,7 @@
  */
 INLINE bool VirtualFileSystem::
 exists(const Filename &filename) const {
-  return get_file(filename, true) != (VirtualFile *)NULL;
+  return get_file(filename, true) != (VirtualFile *)nullptr;
 }
 
 /**
@@ -26,7 +26,7 @@ exists(const Filename &filename) const {
 INLINE bool VirtualFileSystem::
 is_directory(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
-  return (file != (VirtualFile *)NULL && file->is_directory());
+  return (file != (VirtualFile *)nullptr && file->is_directory());
 }
 
 /**
@@ -36,7 +36,7 @@ is_directory(const Filename &filename) const {
 INLINE bool VirtualFileSystem::
 is_regular_file(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
-  return (file != (VirtualFile *)NULL && file->is_regular_file());
+  return (file != (VirtualFile *)nullptr && file->is_regular_file());
 }
 
 /**
@@ -48,8 +48,8 @@ is_regular_file(const Filename &filename) const {
 INLINE PT(VirtualFileList) VirtualFileSystem::
 scan_directory(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == (VirtualFile *)nullptr) {
+    return nullptr;
   }
 
   return file->scan_directory();
@@ -61,7 +61,7 @@ scan_directory(const Filename &filename) const {
 INLINE void VirtualFileSystem::
 ls(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     express_cat.info()
       << "Not found: " << filename << "\n";
   } else {
@@ -76,7 +76,7 @@ ls(const Filename &filename) const {
 INLINE void VirtualFileSystem::
 ls_all(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     express_cat.info()
       << "Not found: " << filename << "\n";
   } else {
@@ -126,7 +126,7 @@ write_file(const Filename &filename, const string &data, bool auto_wrap) {
 INLINE bool VirtualFileSystem::
 read_file(const Filename &filename, string &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
-  return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
+  return (file != (VirtualFile *)nullptr && file->read_file(result, auto_unwrap));
 }
 
 /**
@@ -142,7 +142,7 @@ read_file(const Filename &filename, string &result, bool auto_unwrap) const {
 INLINE bool VirtualFileSystem::
 read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
-  return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
+  return (file != (VirtualFile *)nullptr && file->read_file(result, auto_unwrap));
 }
 
 /**
@@ -155,5 +155,5 @@ read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_un
 INLINE bool VirtualFileSystem::
 write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap) {
   PT(VirtualFile) file = create_file(filename);
-  return (file != (VirtualFile *)NULL && file->write_file(data, data_size, auto_wrap));
+  return (file != (VirtualFile *)nullptr && file->write_file(data, data_size, auto_wrap));
 }

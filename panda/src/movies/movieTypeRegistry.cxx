@@ -17,7 +17,7 @@
 #include "config_putil.h"
 #include "load_dso.h"
 
-MovieTypeRegistry *MovieTypeRegistry::_global_ptr = NULL;
+MovieTypeRegistry *MovieTypeRegistry::_global_ptr = nullptr;
 
 /**
  * Obtains a MovieVideo that references a file.
@@ -104,7 +104,7 @@ load_audio_types() {
         movies_cat.info()
           << "loading audio type module: " << name << endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-        if (tmp == (void *)NULL) {
+        if (tmp == (void *)nullptr) {
           movies_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
             << ": " << load_dso_error() << endl;
@@ -220,7 +220,7 @@ load_video_types() {
         movies_cat.info()
           << "loading video type module: " << name << endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-        if (tmp == (void *)NULL) {
+        if (tmp == (void *)nullptr) {
           movies_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
             << ": " << load_dso_error() << endl;
@@ -261,7 +261,7 @@ load_movie_library(const string &name) {
     << "loading video type module: " << name << endl;
   void *tmp = load_dso(get_plugin_path().get_value(), dlname);
 
-  if (tmp == (void *)NULL) {
+  if (tmp == (void *)nullptr) {
     movies_cat.warning()
       << "Unable to load " << dlname.to_os_specific()
       << ": " << load_dso_error() << endl;

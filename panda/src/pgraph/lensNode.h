@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PGRAPH LensNode : public PandaNode {
 PUBLISHED:
-  explicit LensNode(const string &name, Lens *lens = NULL);
+  explicit LensNode(const string &name, Lens *lens = nullptr);
 
 protected:
   LensNode(const LensNode &copy);

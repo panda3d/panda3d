@@ -371,7 +371,7 @@ do_read_one(Texture::CData *cdata,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != (BamCacheRecord *)nullptr) {
     record->add_dependent_file(fullpath);
   }
 
@@ -479,7 +479,7 @@ register_with_read_factory() {
  */
 OpenCVTexture::VideoStream::
 VideoStream() :
-  _capture(NULL),
+  _capture(nullptr),
   _camera_index(-1),
   _next_frame(0)
 {
@@ -490,7 +490,7 @@ VideoStream() :
  */
 OpenCVTexture::VideoStream::
 VideoStream(const OpenCVTexture::VideoStream &copy) :
-  _capture(NULL),
+  _capture(nullptr),
   _camera_index(-1)
 {
   // Rather than copying the _capture pointer, we must open a new stream that
@@ -541,7 +541,7 @@ get_frame_data(int frame,
 
   _next_frame = frame + 1;
   IplImage *image = cvQueryFrame(_capture);
-  if (image == NULL) {
+  if (image == nullptr) {
     return false;
   }
 
@@ -583,7 +583,7 @@ read(const Filename &filename) {
 
   string os_specific = filename.to_os_specific();
   _capture = cvCaptureFromFile(os_specific.c_str());
-  if (_capture == NULL) {
+  if (_capture == nullptr) {
     return false;
   }
   _filename = filename;
@@ -599,7 +599,7 @@ from_camera(int camera_index) {
   clear();
 
   _capture = cvCaptureFromCAM(camera_index);
-  if (_capture == NULL) {
+  if (_capture == nullptr) {
     return false;
   }
   _camera_index = camera_index;
@@ -611,9 +611,9 @@ from_camera(int camera_index) {
  */
 void OpenCVTexture::VideoStream::
 clear() {
-  if (_capture != NULL) {
+  if (_capture != nullptr) {
     cvReleaseCapture(&_capture);
-    _capture = NULL;
+    _capture = nullptr;
   }
   _filename = Filename();
   _camera_index = -1;

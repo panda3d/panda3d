@@ -59,7 +59,7 @@ get_num_atomics() const {
  */
 DCAtomicField *DCMolecularField::
 get_atomic(int n) const {
-  nassertr(n >= 0 && n < (int)_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_fields.size(), nullptr);
   return _fields[n];
 }
 
@@ -161,7 +161,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 DCPackerInterface *DCMolecularField::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_fields.size(), nullptr);
   return _nested_fields[n];
 }
 

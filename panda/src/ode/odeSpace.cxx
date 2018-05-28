@@ -31,8 +31,8 @@ dJointGroupID OdeSpace::_static_auto_collide_joint_group;
 OdeSpace::
 OdeSpace(dSpaceID id) :
   _id(id) {
-  _auto_collide_world = NULL;
-  _auto_collide_joint_group = NULL;
+  _auto_collide_world = nullptr;
+  _auto_collide_joint_group = nullptr;
 }
 
 OdeSpace::
@@ -101,7 +101,7 @@ write(ostream &out, unsigned int indent) const {
 
 OdeSpace::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }
 
 void OdeSpace::
@@ -116,10 +116,10 @@ set_auto_collide_joint_group(OdeJointGroup &joint_group) {
 
 void OdeSpace::
 auto_collide() {
-  if (_auto_collide_world == NULL) {
+  if (_auto_collide_world == nullptr) {
     odespace_cat.error() << "No collide world has been set!\n";
   } else {
-    nassertv(_id != NULL);
+    nassertv(_id != nullptr);
     _static_auto_collide_space = this;
     _static_auto_collide_world = _auto_collide_world;
     _static_auto_collide_joint_group = _auto_collide_joint_group;
@@ -140,7 +140,7 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
   int surface1 = _static_auto_collide_space->get_surface_type(o1);
   int surface2 = _static_auto_collide_space->get_surface_type(o2);
 
-  nassertv(_static_auto_collide_world != NULL);
+  nassertv(_static_auto_collide_world != nullptr);
   sSurfaceParams collide_params;
   collide_params = _static_auto_collide_world->get_surface(surface1, surface2);
 

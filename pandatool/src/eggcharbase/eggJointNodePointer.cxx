@@ -28,7 +28,7 @@ EggJointNodePointer::
 EggJointNodePointer(EggObject *object) {
   _joint = DCAST(EggGroup, object);
 
-  if (_joint != (EggGroup *)NULL && _joint->is_joint()) {
+  if (_joint != (EggGroup *)nullptr && _joint->is_joint()) {
     // Quietly insist that the joint has a transform, for neatness.  If it
     // does not, give it the identity transform.
     if (!_joint->has_transform()) {
@@ -83,10 +83,10 @@ set_frame(int n, const LMatrix4d &mat) {
  */
 void EggJointNodePointer::
 do_finish_reparent(EggJointPointer *new_parent) {
-  if (new_parent == (EggJointPointer *)NULL) {
+  if (new_parent == (EggJointPointer *)nullptr) {
     // No new parent; unparent the joint.
     EggGroupNode *egg_parent = _joint->get_parent();
-    if (egg_parent != (EggGroupNode *)NULL) {
+    if (egg_parent != (EggGroupNode *)nullptr) {
       egg_parent->remove_child(_joint.p());
       egg_parent->steal_children(*_joint);
     }
@@ -107,7 +107,7 @@ do_finish_reparent(EggJointPointer *new_parent) {
  */
 void EggJointNodePointer::
 move_vertices_to(EggJointPointer *new_joint) {
-  if (new_joint == (EggJointPointer *)NULL) {
+  if (new_joint == (EggJointPointer *)nullptr) {
     _joint->unref_all_vertices();
 
   } else {
@@ -150,7 +150,7 @@ do_rebuild(EggCharacterDb &db) {
  */
 void EggJointNodePointer::
 expose(EggGroup::DCSType dcs_type) {
-  if (_joint != (EggGroup *)NULL) {
+  if (_joint != (EggGroup *)nullptr) {
     _joint->set_dcs_type(dcs_type);
   }
 }
@@ -161,7 +161,7 @@ expose(EggGroup::DCSType dcs_type) {
  */
 void EggJointNodePointer::
 apply_default_pose(EggJointPointer *source_joint, int frame) {
-  if (_joint != (EggGroup *)NULL) {
+  if (_joint != (EggGroup *)nullptr) {
     LMatrix4d pose;
     if (frame >= 0 && frame < source_joint->get_num_frames()) {
       pose = source_joint->get_frame(frame);
@@ -180,7 +180,7 @@ apply_default_pose(EggJointPointer *source_joint, int frame) {
  */
 bool EggJointNodePointer::
 has_vertices() const {
-  if (_joint != (EggGroup *)NULL) {
+  if (_joint != (EggGroup *)nullptr) {
     return (_joint->vref_size() != 0) || _joint->joint_has_primitives();
   }
 

@@ -73,7 +73,7 @@ get_num_elements() const {
  */
 DCParameter *DCAtomicField::
 get_element(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_elements.size(), nullptr);
   return _elements[n];
 }
 
@@ -127,7 +127,7 @@ DCSubatomicType DCAtomicField::
 get_element_type(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
   DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
-  nassertr(simple_parameter != (DCSimpleParameter *)NULL, ST_invalid);
+  nassertr(simple_parameter != (DCSimpleParameter *)nullptr, ST_invalid);
   return simple_parameter->get_type();
 }
 
@@ -143,7 +143,7 @@ int DCAtomicField::
 get_element_divisor(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), 1);
   DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
-  nassertr(simple_parameter != (DCSimpleParameter *)NULL, 1);
+  nassertr(simple_parameter != (DCSimpleParameter *)nullptr, 1);
   return simple_parameter->get_divisor();
 }
 
@@ -207,7 +207,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 DCPackerInterface *DCAtomicField::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_elements.size(), nullptr);
   return _elements[n];
 }
 

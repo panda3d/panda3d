@@ -31,7 +31,7 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _thread_index(thread_index),
   _collector_index(collector_index)
 {
-  _widget = NULL;
+  _widget = nullptr;
   if (use_fullname) {
     _text = _monitor->get_client_data()->get_collector_fullname(_collector_index);
   } else {

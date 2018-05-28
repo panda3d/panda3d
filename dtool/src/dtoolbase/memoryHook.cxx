@@ -256,7 +256,7 @@ heap_alloc_single(size_t size) {
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)NULL) {
+  while (alloc == (void *)nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.lock();
@@ -333,7 +333,7 @@ heap_alloc_array(size_t size) {
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)NULL) {
+  while (alloc == (void *)nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.lock();
@@ -387,7 +387,7 @@ heap_realloc_array(void *ptr, size_t size) {
   alloc1 = call_realloc(alloc1, inflated_size);
 #endif
 
-  while (alloc1 == (void *)NULL) {
+  while (alloc1 == (void *)nullptr) {
     alloc_fail(inflated_size);
 
     // Recover the original pointer.
@@ -517,16 +517,16 @@ mmap_alloc(size_t size, bool allow_exec) {
 #ifdef WIN32
 
   // Windows case.
-  void *ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE,
+  void *ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE,
                            allow_exec ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
-  if (ptr == (void *)NULL) {
+  if (ptr == (void *)nullptr) {
     DWORD err = GetLastError();
     cerr << "Couldn't allocate memory page of size " << size << ": ";
 
     PVOID buffer;
     DWORD length =
       FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                    NULL, err, 0, (LPTSTR)&buffer, 0, NULL);
+                    nullptr, err, 0, (LPTSTR)&buffer, 0, nullptr);
     if (length != 0) {
       cerr << (char *)buffer << "\n";
     } else {
@@ -545,7 +545,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   if (allow_exec) {
     prot |= PROT_EXEC;
   }
-  void *ptr = mmap(NULL, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
+  void *ptr = mmap(nullptr, size, prot, MAP_PRIVATE | MAP_ANON, -1, 0);
   if (ptr == (void *)-1) {
     perror("mmap");
     abort();

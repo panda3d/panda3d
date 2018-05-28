@@ -22,8 +22,8 @@ BulletContact BulletContactResult::_empty;
 BulletContact::
 BulletContact() : _mp(_empty) {
 
-  _node0 = NULL;
-  _node1 = NULL;
+  _node0 = nullptr;
+  _node1 = nullptr;
 }
 
 /**
@@ -47,8 +47,8 @@ BulletContactResult::
 BulletContactResult() : btCollisionWorld::ContactResultCallback() {
 
 #if BT_BULLET_VERSION >= 281
-  _filter_cb = NULL;
-  _filter_proxy = NULL;
+  _filter_cb = nullptr;
+  _filter_proxy = nullptr;
   _filter_set = false;
 #endif
 }
@@ -96,8 +96,8 @@ addSingleResult(btManifoldPoint &mp,
   BulletContact contact;
 
   contact._mp = BulletManifoldPoint(mp);
-  contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : NULL;
-  contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : NULL;
+  contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : nullptr;
+  contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : nullptr;
   contact._part_id0 = part_id0;
   contact._part_id1 = part_id1;
   contact._idx0 = idx0;
@@ -119,8 +119,8 @@ addSingleResult(btManifoldPoint &mp,
   BulletContact contact;
 
   contact._mp = BulletManifoldPoint(mp);
-  contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : NULL;
-  contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : NULL;
+  contact._node0 = obj0 ? (PandaNode *)obj0->getUserPointer() : nullptr;
+  contact._node1 = obj1 ? (PandaNode *)obj1->getUserPointer() : nullptr;
   contact._part_id0 = part_id0;
   contact._part_id1 = part_id1;
   contact._idx0 = idx0;

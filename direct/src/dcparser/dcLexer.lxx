@@ -35,7 +35,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *input_p = NULL;
+static istream *input_p = nullptr;
 
 // This is the name of the dc file we're parsing.  We keep it so we
 // can print it out for error messages.
@@ -129,7 +129,7 @@ dcyywarning(const string &msg) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  nassertv(input_p != NULL);
+  nassertv(input_p != nullptr);
   if (*input_p) {
     input_p->read(buffer, max_size);
     result = input_p->gcount();
@@ -150,7 +150,7 @@ input_chars(char *buffer, int &result, int max_size) {
 
       // Truncate it at the newline.
       char *end = strchr(current_line, '\n');
-      if (end != NULL) {
+      if (end != nullptr) {
         *end = '\0';
       }
     }
@@ -733,9 +733,9 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   dcyylval.str = dcyytext;
 
-  if (dc_file != (DCFile *)NULL) {
+  if (dc_file != (DCFile *)nullptr) {
     const DCKeyword *keyword = dc_file->get_keyword_by_name(dcyylval.str);
-    if (keyword != (DCKeyword *)NULL) {
+    if (keyword != (DCKeyword *)nullptr) {
       dcyylval.u.keyword = keyword;
       return KEYWORD;
     }

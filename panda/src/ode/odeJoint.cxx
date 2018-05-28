@@ -120,7 +120,7 @@ write(ostream &out, unsigned int indent) const {
 
 OdeJoint::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }
 
 OdeBallJoint OdeJoint::

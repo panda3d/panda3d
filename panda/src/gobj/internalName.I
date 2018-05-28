@@ -75,8 +75,8 @@ get_basename() const {
  */
 INLINE PT(InternalName) InternalName::
 get_root() {
-  if (_root == (InternalName *)NULL) {
-    _root = new InternalName(NULL, "");
+  if (_root == (InternalName *)nullptr) {
+    _root = new InternalName(nullptr, "");
   }
   return _root;
 }
@@ -86,7 +86,7 @@ get_root() {
  */
 INLINE PT(InternalName) InternalName::
 get_error() {
-  if (_error == (InternalName *)NULL) {
+  if (_error == (InternalName *)nullptr) {
     _error = InternalName::make("error");
   }
   return _error;
@@ -98,7 +98,7 @@ get_error() {
  */
 INLINE PT(InternalName) InternalName::
 get_vertex() {
-  if (_vertex == (InternalName *)NULL) {
+  if (_vertex == (InternalName *)nullptr) {
     _vertex = InternalName::make("vertex");
   }
   return _vertex;
@@ -110,7 +110,7 @@ get_vertex() {
  */
 INLINE PT(InternalName) InternalName::
 get_normal() {
-  if (_normal == (InternalName *)NULL) {
+  if (_normal == (InternalName *)nullptr) {
     _normal = InternalName::make("normal");
   }
   return _normal;
@@ -124,7 +124,7 @@ get_normal() {
  */
 INLINE PT(InternalName) InternalName::
 get_tangent() {
-  if (_tangent == (InternalName *)NULL) {
+  if (_tangent == (InternalName *)nullptr) {
     _tangent = InternalName::make("tangent");
   }
   return _tangent;
@@ -149,7 +149,7 @@ get_tangent_name(const string &name) {
  */
 INLINE PT(InternalName) InternalName::
 get_binormal() {
-  if (_binormal == (InternalName *)NULL) {
+  if (_binormal == (InternalName *)nullptr) {
     _binormal = InternalName::make("binormal");
   }
   return _binormal;
@@ -172,7 +172,7 @@ get_binormal_name(const string &name) {
  */
 INLINE PT(InternalName) InternalName::
 get_texcoord() {
-  if (_texcoord == (InternalName *)NULL) {
+  if (_texcoord == (InternalName *)nullptr) {
     _texcoord = InternalName::make("texcoord");
   }
   return _texcoord;
@@ -195,7 +195,7 @@ get_texcoord_name(const string &name) {
  */
 INLINE PT(InternalName) InternalName::
 get_color() {
-  if (_color == (InternalName *)NULL) {
+  if (_color == (InternalName *)nullptr) {
     _color = InternalName::make("color");
   }
   return _color;
@@ -208,7 +208,7 @@ get_color() {
  */
 INLINE PT(InternalName) InternalName::
 get_rotate() {
-  if (_rotate == (InternalName *)NULL) {
+  if (_rotate == (InternalName *)nullptr) {
     _rotate = InternalName::make("rotate");
   }
   return _rotate;
@@ -221,7 +221,7 @@ get_rotate() {
  */
 INLINE PT(InternalName) InternalName::
 get_size() {
-  if (_size == (InternalName *)NULL) {
+  if (_size == (InternalName *)nullptr) {
     _size = InternalName::make("size");
   }
   return _size;
@@ -235,7 +235,7 @@ get_size() {
  */
 INLINE PT(InternalName) InternalName::
 get_aspect_ratio() {
-  if (_aspect_ratio == (InternalName *)NULL) {
+  if (_aspect_ratio == (InternalName *)nullptr) {
     _aspect_ratio = InternalName::make("aspect_ratio");
   }
   return _aspect_ratio;
@@ -249,7 +249,7 @@ get_aspect_ratio() {
  */
 INLINE PT(InternalName) InternalName::
 get_transform_blend() {
-  if (_transform_blend == (InternalName *)NULL) {
+  if (_transform_blend == (InternalName *)nullptr) {
     _transform_blend = InternalName::make("transform_blend");
   }
   return _transform_blend;
@@ -266,7 +266,7 @@ get_transform_blend() {
  */
 INLINE PT(InternalName) InternalName::
 get_transform_weight() {
-  if (_transform_weight == (InternalName *)NULL) {
+  if (_transform_weight == (InternalName *)nullptr) {
     _transform_weight = InternalName::make("transform_weight");
   }
   return _transform_weight;
@@ -282,7 +282,7 @@ get_transform_weight() {
  */
 INLINE PT(InternalName) InternalName::
 get_transform_index() {
-  if (_transform_index == (InternalName *)NULL) {
+  if (_transform_index == (InternalName *)nullptr) {
     _transform_index = InternalName::make("transform_index");
   }
   return _transform_index;
@@ -312,7 +312,7 @@ get_morph(InternalName *column, const string &slider) {
  */
 INLINE PT(InternalName) InternalName::
 get_index() {
-  if (_index == (InternalName *)NULL) {
+  if (_index == (InternalName *)nullptr) {
     _index = InternalName::make("index");
   }
   return _index;
@@ -324,7 +324,7 @@ get_index() {
  */
 INLINE PT(InternalName) InternalName::
 get_world() {
-  if (_world == (InternalName *)NULL) {
+  if (_world == (InternalName *)nullptr) {
     _world = InternalName::make("world");
   }
   return _world;
@@ -336,7 +336,7 @@ get_world() {
  */
 INLINE PT(InternalName) InternalName::
 get_camera() {
-  if (_camera == (InternalName *)NULL) {
+  if (_camera == (InternalName *)nullptr) {
     _camera = InternalName::make("camera");
   }
   return _camera;
@@ -348,7 +348,7 @@ get_camera() {
  */
 INLINE PT(InternalName) InternalName::
 get_model() {
-  if (_model == (InternalName *)NULL) {
+  if (_model == (InternalName *)nullptr) {
     _model = InternalName::make("model");
   }
   return _model;
@@ -360,7 +360,7 @@ get_model() {
  */
 INLINE PT(InternalName) InternalName::
 get_view() {
-  if (_view == (InternalName *)NULL) {
+  if (_view == (InternalName *)nullptr) {
     _view = InternalName::make("view");
   }
   return _view;

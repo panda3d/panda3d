@@ -24,7 +24,7 @@ void ParamTextureSampler::
 output(ostream &out) const {
   out << "texture ";
 
-  if (_texture != (Texture *)NULL) {
+  if (_texture != (Texture *)nullptr) {
     out << _texture->get_name();
   } else {
     out << "(empty)";
@@ -99,7 +99,7 @@ void ParamTextureImage::
 output(ostream &out) const {
   out << "texture ";
 
-  if (_texture != (Texture *)NULL) {
+  if (_texture != (Texture *)nullptr) {
     out << _texture->get_name();
   } else {
     out << "(empty)";

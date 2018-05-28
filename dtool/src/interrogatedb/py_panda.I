@@ -68,28 +68,28 @@ DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_c
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(const T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
-  nassertr(known_class != NULL, NULL);
+  nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
 }
 
@@ -180,7 +180,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(double value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
-  if (value == (const char *)NULL) {
+  if (value == (const char *)nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -193,7 +193,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const wchar_t *value) {
-  if (value == (const wchar_t *)NULL) {
+  if (value == (const wchar_t *)nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -214,7 +214,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring &value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
-  if (value == (const std::string *)NULL) {
+  if (value == (const std::string *)nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -227,7 +227,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value) {
-  if (value == (const std::wstring *)NULL) {
+  if (value == (const std::wstring *)nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -266,7 +266,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value) {
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value) {
-  if (value == (Py_buffer *)NULL) {
+  if (value == (Py_buffer *)nullptr) {
     return value;
   } else {
     return PyMemoryView_FromBuffer(value);

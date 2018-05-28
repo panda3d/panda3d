@@ -28,7 +28,7 @@ class ThreadSafePointerTo : public ThreadSafePointerToBase<T> {
 public:
   typedef TYPENAME ThreadSafePointerToBase<T>::To To;
 PUBLISHED:
-  INLINE ThreadSafePointerTo(To *ptr = (To *)NULL);
+  INLINE ThreadSafePointerTo(To *ptr = (To *)nullptr);
   INLINE ThreadSafePointerTo(const ThreadSafePointerTo<T> &copy);
   INLINE ~ThreadSafePointerTo();
 
@@ -73,7 +73,7 @@ class ThreadSafeConstPointerTo : public ThreadSafePointerToBase<T> {
 public:
   typedef TYPENAME ThreadSafePointerToBase<T>::To To;
 PUBLISHED:
-  INLINE ThreadSafeConstPointerTo(const To *ptr = (const To *)NULL);
+  INLINE ThreadSafeConstPointerTo(const To *ptr = (const To *)nullptr);
   INLINE ThreadSafeConstPointerTo(const ThreadSafePointerTo<T> &copy);
   INLINE ThreadSafeConstPointerTo(const ThreadSafeConstPointerTo<T> &copy);
   INLINE ~ThreadSafeConstPointerTo();

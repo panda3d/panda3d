@@ -52,7 +52,7 @@ make_new(PPInstance *inst, P3D_object *p3d_object) {
  */
 void PPPandaObject::
 set_p3d_object(P3D_object *p3d_object) {
-  if (p3d_object != NULL) {
+  if (p3d_object != nullptr) {
     P3D_OBJECT_INCREF(p3d_object);
   }
   P3D_OBJECT_XDECREF(_p3d_object);
@@ -67,7 +67,7 @@ set_p3d_object(P3D_object *p3d_object) {
 void PPPandaObject::
 construct(PPInstance *inst, P3D_object *p3d_object) {
   _instance = inst;
-  _p3d_object = NULL;
+  _p3d_object = nullptr;
   set_p3d_object(p3d_object);
 }
 
@@ -76,8 +76,8 @@ construct(PPInstance *inst, P3D_object *p3d_object) {
  */
 void PPPandaObject::
 invalidate() {
-  _instance = NULL;
-  set_p3d_object(NULL);
+  _instance = nullptr;
+  set_p3d_object(nullptr);
 }
 
 /**
@@ -87,7 +87,7 @@ bool PPPandaObject::
 has_method(NPIdentifier name) {
   string method_name = identifier_to_string(name);
   // nout << this << ".has_method(" << method_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -114,7 +114,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
        NPVariant *result) {
   string method_name = identifier_to_string(name);
   // nout << this << ".invoke(" << method_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -132,7 +132,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
   }
   delete[] p3dargs;
 
-  if (value == NULL) {
+  if (value == nullptr) {
     // No such method, or some problem with the parameters.
     return false;
   }
@@ -151,7 +151,7 @@ bool PPPandaObject::
 invoke_default(const NPVariant *args, uint32_t argCount,
                NPVariant *result) {
   // nout << this << ".invoke_default()\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -169,7 +169,7 @@ invoke_default(const NPVariant *args, uint32_t argCount,
   }
   delete[] p3dargs;
 
-  if (value == NULL) {
+  if (value == nullptr) {
     // No such method, or some problem with the parameters.
     return false;
   }
@@ -187,7 +187,7 @@ bool PPPandaObject::
 has_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   // nout << this << ".has_property(" << property_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -215,14 +215,14 @@ get_property(NPIdentifier name, NPVariant *result) {
 
   string property_name = identifier_to_string(name);
   // nout << this << ".get_property(" << property_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     VOID_TO_NPVARIANT(*result);
     return true;
   }
 
   P3D_object *value = P3D_OBJECT_GET_PROPERTY(_p3d_object, property_name.c_str());
-  if (value == NULL) {
+  if (value == nullptr) {
     // No such property.
     VOID_TO_NPVARIANT(*result);
     return true;
@@ -242,7 +242,7 @@ bool PPPandaObject::
 set_property(NPIdentifier name, const NPVariant *value) {
   string property_name = identifier_to_string(name);
   // nout << this << ".set_property(" << property_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -262,13 +262,13 @@ bool PPPandaObject::
 remove_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   // nout << this << ".remove_property(" << property_name << ")\n";
-  if (_p3d_object == NULL) {
+  if (_p3d_object == nullptr) {
     // Not powered up yet.
     return false;
   }
 
   bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(),
-                                        true, NULL);
+                                        true, nullptr);
   return result;
 }
 
@@ -281,7 +281,7 @@ enumerate(NPIdentifier **value, uint32_t *count) {
   // nout << this << ".enumerate()\n"; TODO: Not implemented yet.
 
   // Note that the array of values must be allocated here with NPN_MemAlloc().
-  *value = NULL;
+  *value = nullptr;
   *count = 0;
   return false;
 }
@@ -294,7 +294,7 @@ string PPPandaObject::
 identifier_to_string(NPIdentifier ident) {
   if (browser->identifierisstring(ident)) {
     NPUTF8 *result = browser->utf8fromidentifier(ident);
-    if (result != NULL) {
+    if (result != nullptr) {
       string strval(result);
       browser->memfree(result);
       return strval;

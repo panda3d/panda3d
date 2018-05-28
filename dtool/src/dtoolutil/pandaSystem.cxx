@@ -15,7 +15,7 @@
 #include "pandaVersion.h"
 #include "dtool_platform.h"
 
-PandaSystem *PandaSystem::_global_ptr = NULL;
+PandaSystem *PandaSystem::_global_ptr = nullptr;
 TypeHandle PandaSystem::_type_handle;
 
 /**
@@ -432,7 +432,7 @@ write(ostream &out) const {
  */
 PandaSystem *PandaSystem::
 get_global_ptr() {
-  if (_global_ptr == (PandaSystem *)NULL) {
+  if (_global_ptr == (PandaSystem *)nullptr) {
     _global_ptr = new PandaSystem;
   }
 

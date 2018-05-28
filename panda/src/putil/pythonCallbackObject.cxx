@@ -111,7 +111,7 @@ do_callback(CallbackData *cbdata) {
  */
 void PythonCallbackObject::
 do_python_callback(CallbackData *cbdata) {
-  nassertv(cbdata != NULL);
+  nassertv(cbdata != nullptr);
 
   // Wrap the cbdata up in a Python object, then put it in a tuple, for the
   // argument list.
@@ -124,7 +124,7 @@ do_python_callback(CallbackData *cbdata) {
   PyObject *result = PythonThread::call_python_func(_function, args);
   Py_DECREF(args);
 
-  if (result == (PyObject *)NULL) {
+  if (result == (PyObject *)nullptr) {
     if (PyErr_Occurred() != PyExc_SystemExit) {
       util_cat.error()
         << "Exception occurred in " << *this << "\n";

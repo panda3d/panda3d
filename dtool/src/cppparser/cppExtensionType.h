@@ -42,7 +42,7 @@ public:
                    const CPPFile &file);
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
 
   virtual bool is_incomplete() const;

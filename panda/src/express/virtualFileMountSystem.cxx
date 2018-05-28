@@ -167,7 +167,7 @@ open_read_file(const Filename &file) const {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -176,7 +176,7 @@ open_read_file(const Filename &file) const {
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
     close_read_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -193,7 +193,7 @@ open_write_file(const Filename &file, bool truncate) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -202,7 +202,7 @@ open_write_file(const Filename &file, bool truncate) {
   if (!pathname.open_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
     close_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -219,7 +219,7 @@ open_append_file(const Filename &file) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -228,7 +228,7 @@ open_append_file(const Filename &file) {
   if (!pathname.open_append(*stream)) {
     // Couldn't open the file for some reason.
     close_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -245,7 +245,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -254,7 +254,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   if (!pathname.open_read_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
     close_read_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -271,7 +271,7 @@ open_read_append_file(const Filename &file) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -280,7 +280,7 @@ open_read_append_file(const Filename &file) {
   if (!pathname.open_read_append(*stream)) {
     // Couldn't open the file for some reason.
     close_read_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -385,7 +385,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -402,7 +402,7 @@ atomic_read_contents(const Filename &file, string &contents) const {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32

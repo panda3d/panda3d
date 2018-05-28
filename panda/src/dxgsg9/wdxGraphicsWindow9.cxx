@@ -83,7 +83,7 @@ make_current() {
 bool wdxGraphicsWindow9::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == (GraphicsStateGuardian *)nullptr) {
     return false;
   }
 
@@ -126,7 +126,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void wdxGraphicsWindow9::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -149,7 +149,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void wdxGraphicsWindow9::
 end_flip() {
-  if (_dxgsg != (DXGraphicsStateGuardian9 *)NULL && is_active()) {
+  if (_dxgsg != (DXGraphicsStateGuardian9 *)nullptr && is_active()) {
     _dxgsg->show_frame();
   }
   WinGraphicsWindow::end_flip();
@@ -234,11 +234,11 @@ close_window() {
       << "wdxGraphicsWindow9::close_window() " << this << "\n";
   }
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != (GraphicsStateGuardian *)nullptr) {
     _gsg.clear();
   }
 
-  DXGraphicsStateGuardian9::set_cg_device(NULL);
+  DXGraphicsStateGuardian9::set_cg_device(nullptr);
 
   _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
@@ -291,7 +291,7 @@ open_window() {
   // case just create an additional swapchain for this window
 
   while (true) {
-    if (_dxgsg->get_pipe()->get_device() == NULL || discard_device) {
+    if (_dxgsg->get_pipe()->get_device() == nullptr || discard_device) {
       wdxdisplay9_cat.debug() << "device is null or fullscreen\n";
 
       // If device exists, free it
@@ -370,7 +370,7 @@ fullscreen_restored(WindowProperties &properties) {
   // as soon as the window is restored, even though BeginScene() says we can.
   // Instead, we have to wait until TestCooperativeLevel() lets us in.  We
   // need to set a flag so we can handle this special case in begin_frame().
-  if (_dxgsg != NULL) {
+  if (_dxgsg != nullptr) {
     _awaiting_restore = true;
   }
 }
@@ -384,7 +384,7 @@ handle_reshape() {
   GdiFlush();
   WinGraphicsWindow::handle_reshape();
 
-  if (_dxgsg != NULL && _dxgsg->_d3d_device != NULL) {
+  if (_dxgsg != nullptr && _dxgsg->_d3d_device != nullptr) {
     // create the new resized rendertargets
     WindowProperties props = get_properties();
     int x_size = props.get_x_size();
@@ -539,7 +539,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   PRINT_REFCNT(wdxdisplay9, _d3d9);
 
-  nassertr(_d3d9 != NULL, false);
+  nassertr(_d3d9 != nullptr, false);
   nassertr(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION, false);
 
   bool do_sync = sync_video;
@@ -601,7 +601,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   while (supported_multisamples > 1){
     // need to check both rendertarget and zbuffer fmts
     hr = _d3d9->CheckDeviceMultiSampleType(adapter, D3DDEVTYPE_HAL, display._display_mode.Format,
-                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), NULL);
+                                           is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), nullptr);
     if (FAILED(hr)) {
       supported_multisamples--;
       continue;
@@ -609,7 +609,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
     if (display._presentation_params.EnableAutoDepthStencil) {
       hr = _d3d9->CheckDeviceMultiSampleType(adapter, D3DDEVTYPE_HAL, display._presentation_params.AutoDepthStencilFormat,
-                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), NULL);
+                                             is_fullscreen(), D3DMULTISAMPLE_TYPE(supported_multisamples), nullptr);
       if (FAILED(hr)) {
         supported_multisamples--;
         continue;
@@ -886,7 +886,7 @@ choose_device() {
       << " Revision: 0x" << adapter_info.Revision << dec << endl;
 
     HMONITOR _monitor = dxpipe->__d3d9->GetAdapterMonitor(i);
-    if (_monitor == NULL) {
+    if (_monitor == nullptr) {
       wdxdisplay9_cat.info()
         << "D3D9 Adapter[" << i << "]: seems to be disabled, skipping it\n";
       continue;
@@ -968,14 +968,14 @@ choose_device() {
 bool wdxGraphicsWindow9::
 consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
-  nassertr(dxpipe != NULL, false);
+  nassertr(dxpipe != nullptr, false);
   WindowProperties properties = get_properties();
   DWORD dwRenderWidth = properties.get_x_size();
   DWORD dwRenderHeight = properties.get_y_size();
   HRESULT hr;
   LPDIRECT3D9 _d3d9 = dxpipe->__d3d9;
 
-  nassertr(_dxgsg != NULL, false);
+  nassertr(_dxgsg != nullptr, false);
   _wcontext._d3d9 = _d3d9;
   _wcontext._is_dx9_1 = dxpipe->__is_dx9_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
@@ -1123,7 +1123,7 @@ bool wdxGraphicsWindow9::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
   bool retval = true;
 
-  DXScreenData *screen = NULL;
+  DXScreenData *screen = nullptr;
   D3DPRESENT_PARAMETERS d3dpp;
   memcpy(&d3dpp, &_wcontext._presentation_params, sizeof(D3DPRESENT_PARAMETERS));
   _wcontext._presentation_params.BackBufferWidth = new_xsize;
@@ -1184,7 +1184,7 @@ init_resized_window() {
   DWORD newHeight = _wcontext._presentation_params.BackBufferHeight;
 
   nassertv((newWidth != 0) && (newHeight != 0));
-  nassertv(_wcontext._window != NULL);
+  nassertv(_wcontext._window != nullptr);
 
   if (_wcontext._presentation_params.Windowed) {
     POINT ul, lr;
@@ -1207,7 +1207,7 @@ init_resized_window() {
   }
 
   // clear window to black ASAP
-  nassertv(_wcontext._window != NULL);
+  nassertv(_wcontext._window != nullptr);
   ClearToBlack(_wcontext._window, get_properties());
 
   // clear textures and VB's out of video&AGP mem, so cache is reset
@@ -1229,19 +1229,19 @@ init_resized_window() {
 
   flags = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
   clear_color = 0x00000000;
-  hr = _wcontext._d3d_device-> Clear (0, NULL, flags, clear_color, 0.0f, 0);
+  hr = _wcontext._d3d_device-> Clear (0, nullptr, flags, clear_color, 0.0f, 0);
   if (FAILED(hr)) {
     wdxdisplay9_cat.error()
       << "Clear failed for device"
       << D3DERRORSTRING(hr);
   }
-  hr = _wcontext._d3d_device-> Present (NULL, NULL, NULL, NULL);
+  hr = _wcontext._d3d_device-> Present (nullptr, nullptr, nullptr, nullptr);
   if (FAILED(hr)) {
     wdxdisplay9_cat.error()
       << "Present failed for device"
       << D3DERRORSTRING(hr);
   }
-  hr = _wcontext._d3d_device-> Clear (0, NULL, flags, clear_color, 0.0f, 0);
+  hr = _wcontext._d3d_device-> Clear (0, nullptr, flags, clear_color, 0.0f, 0);
   if (FAILED(hr)) {
     wdxdisplay9_cat.error()
       << "Clear failed for device"

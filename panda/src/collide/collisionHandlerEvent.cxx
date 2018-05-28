@@ -50,7 +50,7 @@ begin_group() {
  */
 void CollisionHandlerEvent::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != (CollisionEntry *)nullptr);
 
   // Record this particular entry for later.  This will keep track of all the
   // unique pairs of nodenode intersections.

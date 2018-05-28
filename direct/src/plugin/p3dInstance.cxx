@@ -99,22 +99,22 @@ P3DInstance(P3D_request_ready_func *func,
             int argc, const char *argv[], void *user_data) :
   _func(func)
 {
-  _dom_object = NULL;
+  _dom_object = nullptr;
   _main_object = new P3DMainObject;
   _main_object->set_instance(this);
   _user_data = user_data;
   _request_pending = false;
   _total_time_reports = 0;
-  _temp_p3d_filename = NULL;
-  _image_package = NULL;
+  _temp_p3d_filename = nullptr;
+  _image_package = nullptr;
   _current_background_image = IT_none;
   _current_button_image = IT_none;
   _got_fparams = false;
   _got_wparams = false;
   _p3d_trusted = false;
-  _xpackage = NULL;
-  _certlist_package = NULL;
-  _p3dcert_package = NULL;
+  _xpackage = nullptr;
+  _certlist_package = nullptr;
+  _p3dcert_package = nullptr;
 
   _fparams.set_tokens(tokens, num_tokens);
   _fparams.set_args(argc, argv);
@@ -141,10 +141,10 @@ P3DInstance(P3D_request_ready_func *func,
   }
   _auth_button_clicked = false;
   _failed = false;
-  _session = NULL;
-  _auth_session = NULL;
-  _panda3d_package = NULL;
-  _splash_window = NULL;
+  _session = nullptr;
+  _auth_session = nullptr;
+  _panda3d_package = nullptr;
+  _splash_window = nullptr;
   _instance_window_opened = false;
   _instance_window_attached = false;
   _stuff_to_download = false;
@@ -163,18 +163,18 @@ P3DInstance(P3D_request_ready_func *func,
 #ifdef __APPLE__
   _shared_fd = -1;
   _shared_mmap_size = 0;
-  _swbuffer = NULL;
-  _reversed_buffer = NULL;
-  _buffer_data = NULL;
-  _data_provider = NULL;
-  _buffer_color_space = NULL;
-  _buffer_image = NULL;
+  _swbuffer = nullptr;
+  _reversed_buffer = nullptr;
+  _buffer_data = nullptr;
+  _data_provider = nullptr;
+  _buffer_color_space = nullptr;
+  _buffer_image = nullptr;
 
   // We have to start with _mouse_active true; firefox doesn't send activate
   // events.
   _mouse_active = true;
   _modifiers = 0;
-  _frame_timer = NULL;
+  _frame_timer = nullptr;
 #endif  // __APPLE__
 
   // Set some initial properties.
@@ -219,7 +219,7 @@ P3DInstance(P3D_request_ready_func *func,
   time_t timestamp = inst_mgr->get_coreapi_timestamp();
   _main_object->set_int_property("coreapiTimestamp", (int)timestamp);
   const char *timestamp_string = ctime(&timestamp);
-  if (timestamp_string == NULL) {
+  if (timestamp_string == nullptr) {
     timestamp_string = "";
   }
   _main_object->set_string_property("coreapiTimestampString", timestamp_string);
@@ -239,7 +239,7 @@ P3DInstance(P3D_request_ready_func *func,
   // contents.
   P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
   _image_package = host->get_package("images", "", "", "");
-  if (_image_package != NULL) {
+  if (_image_package != nullptr) {
     _image_package->add_instance(this);
   }
 
@@ -261,27 +261,27 @@ P3DInstance(P3D_request_ready_func *func,
  */
 P3DInstance::
 ~P3DInstance() {
-  assert(_session == NULL);
+  assert(_session == nullptr);
   cleanup();
 
-  if (_dom_object != NULL) {
+  if (_dom_object != nullptr) {
     P3D_OBJECT_DECREF(_dom_object);
-    _dom_object = NULL;
+    _dom_object = nullptr;
   }
 
-  if (_main_object != NULL) {
+  if (_main_object != nullptr) {
     nout << "panda_script_object ref = "
          << _main_object->_ref_count << "\n";
-    _main_object->set_instance(NULL);
+    _main_object->set_instance(nullptr);
     P3D_OBJECT_DECREF(_main_object);
-    _main_object = NULL;
+    _main_object = nullptr;
   }
 
   Downloads::iterator di;
   for (di = _downloads.begin(); di != _downloads.end(); ++di) {
     P3DDownload *download = (*di).second;
     if (download->get_instance() == this) {
-      download->set_instance(NULL);
+      download->set_instance(nullptr);
     }
     p3d_unref_delete(download);
   }
@@ -300,10 +300,10 @@ void P3DInstance::
 cleanup() {
   _failed = true;
 
-  if (_auth_session != NULL) {
+  if (_auth_session != nullptr) {
     _auth_session->shutdown(false);
     p3d_unref_delete(_auth_session);
-    _auth_session = NULL;
+    _auth_session = nullptr;
   }
 
   for (int i = 0; i < (int)IT_num_image_types; ++i) {
@@ -316,47 +316,47 @@ cleanup() {
     (*pi)->remove_instance(this);
   }
   _packages.clear();
-  if (_image_package != NULL) {
+  if (_image_package != nullptr) {
     _image_package->remove_instance(this);
-    _image_package = NULL;
+    _image_package = nullptr;
   }
 
-  if (_certlist_package != NULL) {
+  if (_certlist_package != nullptr) {
     _certlist_package->remove_instance(this);
-    _certlist_package = NULL;
+    _certlist_package = nullptr;
   }
 
-  if (_p3dcert_package != NULL) {
+  if (_p3dcert_package != nullptr) {
     _p3dcert_package->remove_instance(this);
-    _p3dcert_package = NULL;
+    _p3dcert_package = nullptr;
   }
 
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     delete _splash_window;
-    _splash_window = NULL;
+    _splash_window = nullptr;
   }
 
-  if (_temp_p3d_filename != NULL) {
+  if (_temp_p3d_filename != nullptr) {
     delete _temp_p3d_filename;
-    _temp_p3d_filename = NULL;
+    _temp_p3d_filename = nullptr;
   }
 
-  if (_xpackage != NULL) {
+  if (_xpackage != nullptr) {
     delete _xpackage;
-    _xpackage = NULL;
+    _xpackage = nullptr;
   }
 
 #ifdef __APPLE__
-  if (_frame_timer != NULL) {
+  if (_frame_timer != nullptr) {
     CFRunLoopTimerInvalidate(_frame_timer);
     CFRelease(_frame_timer);
-    _frame_timer = NULL;
+    _frame_timer = nullptr;
   }
 
   free_swbuffer();
 #endif
 
-  TiXmlDocument *doc = NULL;
+  TiXmlDocument *doc = nullptr;
   ACQUIRE_LOCK(_request_lock);
   RawRequests::iterator ri;
   for (ri = _raw_requests.begin(); ri != _raw_requests.end(); ++ri) {
@@ -404,7 +404,7 @@ set_p3d_url(const string &p3d_url) {
   determine_p3d_basename(p3d_url);
 
   // Make a temporary file to receive the instance data.
-  assert(_temp_p3d_filename == NULL);
+  assert(_temp_p3d_filename == nullptr);
   _temp_p3d_filename = new P3DTemporaryFile(".p3d");
   _stuff_to_download = true;
 
@@ -416,7 +416,7 @@ set_p3d_url(const string &p3d_url) {
 #ifdef _WIN32
   _start_dl_tick = GetTickCount();
 #else
-  gettimeofday(&_start_dl_timeval, NULL);
+  gettimeofday(&_start_dl_timeval, nullptr);
 #endif
   _show_dl_instance_progress = false;
 
@@ -445,7 +445,7 @@ make_p3d_stream(const string &p3d_url) {
   determine_p3d_basename(p3d_url);
 
   // Make a temporary file to receive the instance data.
-  assert(_temp_p3d_filename == NULL);
+  assert(_temp_p3d_filename == nullptr);
   _temp_p3d_filename = new P3DTemporaryFile(".p3d");
   _stuff_to_download = true;
 
@@ -457,7 +457,7 @@ make_p3d_stream(const string &p3d_url) {
 #ifdef _WIN32
   _start_dl_tick = GetTickCount();
 #else
-  gettimeofday(&_start_dl_timeval, NULL);
+  gettimeofday(&_start_dl_timeval, nullptr);
 #endif
   _show_dl_instance_progress = false;
 
@@ -505,7 +505,7 @@ set_wparams(const P3DWindowParams &wparams) {
 
   if (_wparams.get_window_type() != P3D_WT_hidden) {
     // Update or create the splash window.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_wparams(_wparams);
     } else {
       make_splash_window();
@@ -526,13 +526,13 @@ set_wparams(const P3DWindowParams &wparams) {
     int x_size = _wparams.get_win_width();
     int y_size = _wparams.get_win_height();
     if (x_size != 0 && y_size != 0) {
-      if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
+      if (_swbuffer == nullptr || _swbuffer->get_x_size() != x_size ||
           _swbuffer->get_y_size() != y_size) {
         // We need to open a new shared buffer.
         alloc_swbuffer();
       }
 
-      if (_swbuffer == NULL) {
+      if (_swbuffer == nullptr) {
         nout << "Could not open swbuffer\n";
       }
     }
@@ -540,7 +540,7 @@ set_wparams(const P3DWindowParams &wparams) {
   }
 
   // Update the instance in the sub-process.
-  if (_session != NULL) {
+  if (_session != nullptr) {
     TiXmlDocument *doc = new TiXmlDocument;
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "setup_window");
@@ -582,11 +582,11 @@ set_browser_script_object(P3D_object *browser_script_object) {
   if (browser_script_object != _dom_object) {
     P3D_OBJECT_XDECREF(_dom_object);
     _dom_object = browser_script_object;
-    if (_dom_object != NULL) {
+    if (_dom_object != nullptr) {
       P3D_OBJECT_INCREF(_dom_object);
     }
 
-    if (_session != NULL) {
+    if (_session != nullptr) {
       send_browser_script_object();
     }
   }
@@ -596,12 +596,12 @@ set_browser_script_object(P3D_object *browser_script_object) {
   _origin_protocol.clear();
   _origin_hostname.clear();
   _origin_port.clear();
-  if (_dom_object != NULL) {
+  if (_dom_object != nullptr) {
     P3D_object *location = P3D_OBJECT_GET_PROPERTY(_dom_object, "location");
-    if (location != NULL) {
+    if (location != nullptr) {
       P3D_object *protocol = P3D_OBJECT_GET_PROPERTY(location, "protocol");
-      if (protocol != NULL) {
-        int size = P3D_OBJECT_GET_STRING(protocol, NULL, 0);
+      if (protocol != nullptr) {
+        int size = P3D_OBJECT_GET_STRING(protocol, nullptr, 0);
         char *buffer = new char[size];
         P3D_OBJECT_GET_STRING(protocol, buffer, size);
         _origin_protocol = string(buffer, size);
@@ -610,8 +610,8 @@ set_browser_script_object(P3D_object *browser_script_object) {
       }
 
       P3D_object *hostname = P3D_OBJECT_GET_PROPERTY(location, "hostname");
-      if (hostname != NULL) {
-        int size = P3D_OBJECT_GET_STRING(hostname, NULL, 0);
+      if (hostname != nullptr) {
+        int size = P3D_OBJECT_GET_STRING(hostname, nullptr, 0);
         char *buffer = new char[size];
         P3D_OBJECT_GET_STRING(hostname, buffer, size);
         _origin_hostname = string(buffer, size);
@@ -620,8 +620,8 @@ set_browser_script_object(P3D_object *browser_script_object) {
       }
 
       P3D_object *port = P3D_OBJECT_GET_PROPERTY(location, "port");
-      if (port != NULL) {
-        int size = P3D_OBJECT_GET_STRING(port, NULL, 0);
+      if (port != nullptr) {
+        int size = P3D_OBJECT_GET_STRING(port, nullptr, 0);
         char *buffer = new char[size];
         P3D_OBJECT_GET_STRING(port, buffer, size);
         _origin_port = string(buffer, size);
@@ -676,14 +676,14 @@ get_request() {
   if (_baked_requests.empty()) {
     // No requests ready.
     _request_pending = false;
-    return NULL;
+    return nullptr;
   }
 
   P3D_request *request = _baked_requests.front();
   _baked_requests.pop_front();
   _request_pending = !_baked_requests.empty();
 
-  if (request != NULL) {
+  if (request != nullptr) {
     switch (request->_request_type) {
     case P3D_RT_notify:
       {
@@ -691,7 +691,7 @@ get_request() {
         string message = request->_request._notify._message;
         string expression = _fparams.lookup_token(message);
         nout << "notify: " << message << " " << expression << "\n";
-        if (!expression.empty() && _dom_object != NULL) {
+        if (!expression.empty() && _dom_object != nullptr) {
           P3D_object *result = P3D_OBJECT_EVAL(_dom_object, expression.c_str());
           P3D_OBJECT_XDECREF(result);
         }
@@ -702,13 +702,13 @@ get_request() {
       {
         // We also send an implicit message when Python requests itself to
         // shutdown.
-        _main_object->set_pyobj(NULL);
+        _main_object->set_pyobj(nullptr);
         _main_object->set_string_property("status", "stopped");
 
         string message = "onpythonstop";
         string expression = _fparams.lookup_token(message);
         nout << "notify: " << message << " " << expression << "\n";
-        if (!expression.empty() && _dom_object != NULL) {
+        if (!expression.empty() && _dom_object != nullptr) {
           P3D_object *result = P3D_OBJECT_EVAL(_dom_object, expression.c_str());
           P3D_OBJECT_XDECREF(result);
         }
@@ -730,13 +730,13 @@ get_request() {
         const char *host_url = request->_request._forget_package._host_url;
         const char *package_name = request->_request._forget_package._package_name;
         const char *package_version = request->_request._forget_package._package_version;
-        if (package_version == NULL) {
+        if (package_version == nullptr) {
           package_version = "";
         }
 
         P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
         P3DHost *host = inst_mgr->get_host(host_url);
-        if (package_name != NULL) {
+        if (package_name != nullptr) {
           P3DPackage *package = host->get_package(package_name, package_version, _session_platform, "");
           host->forget_package(package);
         } else {
@@ -769,7 +769,7 @@ void P3DInstance::
 bake_requests() {
   while (true) {
     // Get the latest request from the read thread.
-    TiXmlDocument *doc = NULL;
+    TiXmlDocument *doc = nullptr;
     ACQUIRE_LOCK(_request_lock);
     if (!_raw_requests.empty()) {
       doc = _raw_requests.front();
@@ -777,18 +777,18 @@ bake_requests() {
     }
     RELEASE_LOCK(_request_lock);
 
-    if (doc == NULL) {
+    if (doc == nullptr) {
       // No more requests to process right now.
       return;
     }
 
     // Now we've got a request in XML form; convert it to P3D_request form.
     TiXmlElement *xrequest = doc->FirstChildElement("request");
-    assert(xrequest != (TiXmlElement *)NULL);
+    assert(xrequest != (TiXmlElement *)nullptr);
     P3D_request *request = make_p3d_request(xrequest);
     delete doc;
 
-    if (request != NULL) {
+    if (request != nullptr) {
       _baked_requests.push_back(request);
     }
   }
@@ -812,7 +812,7 @@ add_raw_request(TiXmlDocument *doc) {
   // Tell the world we've got a new request.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->signal_request_ready(this);
-  if (_session != NULL) {
+  if (_session != nullptr) {
     _session->signal_request_ready(this);
   }
 }
@@ -824,7 +824,7 @@ add_raw_request(TiXmlDocument *doc) {
  */
 void P3DInstance::
 add_baked_request(P3D_request *request) {
-  assert(request->_instance == NULL);
+  assert(request->_instance == nullptr);
   request->_instance = this;
   ref();
 
@@ -843,14 +843,14 @@ add_baked_request(P3D_request *request) {
  */
 void P3DInstance::
 finish_request(P3D_request *request, bool handled) {
-  assert(request != NULL);
-  if (request->_instance == NULL) {
+  assert(request != nullptr);
+  if (request->_instance == nullptr) {
     nout << "Ignoring empty request " << request << "\n";
     return;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (inst_mgr->validate_instance(request->_instance) == NULL) {
+  if (inst_mgr->validate_instance(request->_instance) == nullptr) {
     // nout << "Ignoring unknown request " << request << "\n";
     return;
   }
@@ -860,31 +860,31 @@ finish_request(P3D_request *request, bool handled) {
     break;
 
   case P3D_RT_get_url:
-    if (request->_request._get_url._url != NULL) {
+    if (request->_request._get_url._url != nullptr) {
       free((char *)request->_request._get_url._url);
-      request->_request._get_url._url = NULL;
+      request->_request._get_url._url = nullptr;
     }
     break;
 
   case P3D_RT_notify:
-    if (request->_request._notify._message != NULL) {
+    if (request->_request._notify._message != nullptr) {
       free((char *)request->_request._notify._message);
-      request->_request._notify._message = NULL;
+      request->_request._notify._message = nullptr;
     }
     break;
 
   case P3D_RT_forget_package:
-    if (request->_request._forget_package._host_url != NULL) {
+    if (request->_request._forget_package._host_url != nullptr) {
       free((char *)request->_request._forget_package._host_url);
-      request->_request._forget_package._host_url = NULL;
+      request->_request._forget_package._host_url = nullptr;
     }
-    if (request->_request._forget_package._package_name != NULL) {
+    if (request->_request._forget_package._package_name != nullptr) {
       free((char *)request->_request._forget_package._package_name);
-      request->_request._forget_package._package_name = NULL;
+      request->_request._forget_package._package_name = nullptr;
     }
-    if (request->_request._forget_package._package_version != NULL) {
+    if (request->_request._forget_package._package_version != nullptr) {
       free((char *)request->_request._forget_package._package_version);
-      request->_request._forget_package._package_version = NULL;
+      request->_request._forget_package._package_version = nullptr;
     }
     break;
 
@@ -893,7 +893,7 @@ finish_request(P3D_request *request, bool handled) {
   }
 
   p3d_unref_delete(((P3DInstance *)request->_instance));
-  request->_instance = NULL;
+  request->_instance = nullptr;
 
   delete request;
 }
@@ -925,7 +925,7 @@ feed_url_stream(int unique_id,
   if (!download_ok || download->get_download_finished()) {
     // All done.
     if (download->get_instance() == this) {
-      download->set_instance(NULL);
+      download->set_instance(nullptr);
     }
     _downloads.erase(di);
     p3d_unref_delete(download);
@@ -941,7 +941,7 @@ feed_url_stream(int unique_id,
 bool P3DInstance::
 handle_event(const P3D_event_data &event) {
   bool retval = false;
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     if (_splash_window->handle_event(event)) {
       retval = true;
     }
@@ -970,7 +970,7 @@ handle_event(const P3D_event_data &event) {
  */
 const string &P3DInstance::
 get_log_pathname() const {
-  if (_session != NULL) {
+  if (_session != nullptr) {
     return _session->_log_pathname;
   }
   return _log_pathname;
@@ -1053,16 +1053,16 @@ remove_package(P3DPackage *package) {
     _downloading_packages.erase(pi);
   }
   if (package == _image_package) {
-    _image_package = NULL;
+    _image_package = nullptr;
   }
   if (package == _certlist_package) {
-    _certlist_package = NULL;
+    _certlist_package = nullptr;
   }
   if (package == _p3dcert_package) {
-    _p3dcert_package = NULL;
+    _p3dcert_package = nullptr;
   }
   if (package == _panda3d_package) {
-    _panda3d_package = NULL;
+    _panda3d_package = nullptr;
   }
 
   set_failed();
@@ -1170,7 +1170,7 @@ start_download(P3DDownload *download, bool add_request) {
   // is true in order to ask the plugin for the stream.
   if (add_request) {
     P3D_request *request = new P3D_request;
-    request->_instance = NULL;
+    request->_instance = nullptr;
     request->_request_type = P3D_RT_get_url;
     request->_request._get_url._url = strdup(download->get_url().c_str());
     request->_request._get_url._unique_id = download_id;
@@ -1227,7 +1227,7 @@ request_stop_main_thread() {
   if (add_request) {
     _requested_stop = true;
     P3D_request *request = new P3D_request;
-    request->_instance = NULL;
+    request->_instance = nullptr;
     request->_request_type = P3D_RT_stop;
     add_baked_request(request);
   }
@@ -1240,7 +1240,7 @@ request_stop_main_thread() {
 void P3DInstance::
 request_refresh() {
   P3D_request *request = new P3D_request;
-  request->_instance = NULL;
+  request->_instance = nullptr;
   request->_request_type = P3D_RT_refresh;
   add_baked_request(request);
 }
@@ -1251,7 +1251,7 @@ request_refresh() {
 void P3DInstance::
 request_callback(P3D_callback_func *func, void *data) {
   P3D_request *request = new P3D_request;
-  request->_instance = NULL;
+  request->_instance = nullptr;
   request->_request_type = P3D_RT_callback;
   request->_request._callback._func = func;
   request->_request._callback._data = data;
@@ -1335,7 +1335,7 @@ splash_button_clicked_main_thread() {
 
   if (!_p3d_trusted) {
     auth_button_clicked();
-  } else if (_session == NULL) {
+  } else if (_session == nullptr) {
     play_button_clicked();
   } else {
     nout << "Ignoring click for already-started instance\n";
@@ -1349,10 +1349,10 @@ splash_button_clicked_main_thread() {
 void P3DInstance::
 auth_button_clicked() {
   // Delete the previous session and create a new one.
-  if (_auth_session != NULL) {
+  if (_auth_session != nullptr) {
     _auth_session->shutdown(false);
     p3d_unref_delete(_auth_session);
-    _auth_session = NULL;
+    _auth_session = nullptr;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -1366,7 +1366,7 @@ auth_button_clicked() {
  */
 void P3DInstance::
 play_button_clicked() {
-  if (_session == NULL && _p3d_trusted) {
+  if (_session == nullptr && _p3d_trusted) {
     set_button_image(IT_none);
     if (!_download_started) {
       // Now we initiate the download.
@@ -1754,12 +1754,12 @@ check_p3d_signature() {
   }
 
   // Check the list of pre-approved certificates.
-  if (_certlist_package == NULL) {
+  if (_certlist_package == nullptr) {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
     _certlist_package = host->get_package("certlist", "", "", "");
-    if (_certlist_package != NULL) {
+    if (_certlist_package != nullptr) {
       _certlist_package->add_instance(this);
     }
 
@@ -1791,12 +1791,12 @@ mark_p3d_untrusted() {
     return;
   }
 
-  if (_p3dcert_package == NULL) {
+  if (_p3dcert_package == nullptr) {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
     _p3dcert_package = host->get_package("p3dcert", "", "", "");
-    if (_p3dcert_package != NULL) {
+    if (_p3dcert_package != nullptr) {
       _p3dcert_package->add_instance(this);
     }
 
@@ -1883,14 +1883,14 @@ scan_app_desc_file(TiXmlDocument *doc) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xpackage = doc->FirstChildElement("package");
-  if (xpackage == NULL) {
+  if (xpackage == nullptr) {
     return;
   }
-  assert(_xpackage == NULL);
+  assert(_xpackage == nullptr);
   _xpackage = (TiXmlElement *)xpackage->Clone();
 
   TiXmlElement *xconfig = _xpackage->FirstChildElement("config");
-  if (xconfig != NULL) {
+  if (xconfig != nullptr) {
     int hidden = 0;
     if (xconfig->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
       if (hidden != 0) {
@@ -1899,27 +1899,27 @@ scan_app_desc_file(TiXmlDocument *doc) {
     }
 
     const char *log_basename = xconfig->Attribute("log_basename");
-    if (log_basename != NULL) {
+    if (log_basename != nullptr) {
       _log_basename = log_basename;
     }
 
     const char *prc_name = xconfig->Attribute("prc_name");
-    if (prc_name != NULL) {
+    if (prc_name != nullptr) {
       _prc_name = prc_name;
     }
 
     const char *start_dir = xconfig->Attribute("start_dir");
-    if (start_dir != NULL) {
+    if (start_dir != nullptr) {
       _start_dir = start_dir;
     }
 
     const char *run_origin = xconfig->Attribute("run_origin");
-    if (run_origin != NULL) {
+    if (run_origin != nullptr) {
       _matches_run_origin = check_matches_origin(run_origin);
     }
 
     const char *script_origin = xconfig->Attribute("script_origin");
-    if (script_origin != NULL) {
+    if (script_origin != nullptr) {
       _matches_script_origin = check_matches_origin(script_origin);
     }
 
@@ -1987,24 +1987,24 @@ scan_app_desc_file(TiXmlDocument *doc) {
 void P3DInstance::
 add_panda3d_package() {
   assert(!_packages_specified);
-  assert(_panda3d_package == NULL);
-  if (_xpackage == NULL) {
+  assert(_panda3d_package == nullptr);
+  if (_xpackage == nullptr) {
     return;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
-  while (xrequires != NULL) {
+  while (xrequires != nullptr) {
     const char *name = xrequires->Attribute("name");
     const char *host_url = xrequires->Attribute("host");
-    if (name != NULL && host_url != NULL && strcmp(name, "panda3d") == 0) {
+    if (name != nullptr && host_url != nullptr && strcmp(name, "panda3d") == 0) {
       const char *version = xrequires->Attribute("version");
-      if (version == NULL) {
+      if (version == nullptr) {
         version = "";
       }
       const char *seq = xrequires->Attribute("seq");
-      if (seq == NULL) {
+      if (seq == nullptr) {
         seq = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
@@ -2026,23 +2026,23 @@ add_panda3d_package() {
 void P3DInstance::
 add_packages() {
   assert(!_packages_specified);
-  if (_xpackage == NULL) {
+  if (_xpackage == nullptr) {
     return;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
-  while (xrequires != NULL) {
+  while (xrequires != nullptr) {
     const char *name = xrequires->Attribute("name");
     const char *host_url = xrequires->Attribute("host");
-    if (name != NULL && host_url != NULL) {
+    if (name != nullptr && host_url != nullptr) {
       const char *version = xrequires->Attribute("version");
-      if (version == NULL) {
+      if (version == nullptr) {
         version = "";
       }
       const char *seq = xrequires->Attribute("seq");
-      if (seq == NULL) {
+      if (seq == nullptr) {
         seq = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
@@ -2074,17 +2074,17 @@ add_packages() {
 string P3DInstance::
 find_alt_host_url(const string &host_url, const string &alt_host) {
   TiXmlElement *xhost = _xpackage->FirstChildElement("host");
-  while (xhost != NULL) {
+  while (xhost != nullptr) {
     const char *url = xhost->Attribute("url");
-    if (url != NULL && host_url == url) {
+    if (url != nullptr && host_url == url) {
       // This matches the host.  Now do we have a matching alt_host keyword
       // for this host?
       TiXmlElement *xalt_host = xhost->FirstChildElement("alt_host");
-      while (xalt_host != NULL) {
+      while (xalt_host != nullptr) {
         const char *keyword = xalt_host->Attribute("keyword");
-        if (keyword != NULL && alt_host == keyword) {
+        if (keyword != nullptr && alt_host == keyword) {
           const char *alt_host_url = xalt_host->Attribute("url");
-          if (alt_host_url != NULL) {
+          if (alt_host_url != nullptr) {
             return alt_host_url;
           }
         }
@@ -2110,9 +2110,9 @@ get_host_info(P3DHost *host) {
   assert(!host->has_contents_file());
 
   TiXmlElement *xhost = _xpackage->FirstChildElement("host");
-  while (xhost != NULL) {
+  while (xhost != nullptr) {
     const char *url = xhost->Attribute("url");
-    if (url != NULL && host->get_host_url() == url) {
+    if (url != nullptr && host->get_host_url() == url) {
       // Found the entry for this particular host.
       host->read_xhost(xhost);
       return;
@@ -2168,7 +2168,7 @@ send_browser_script_object() {
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
   xcommand->SetAttribute("op", "set_browser_script_object");
-  if (_dom_object != NULL) {
+  if (_dom_object != nullptr) {
     xcommand->LinkEndChild(_session->p3dobj_to_xml(_dom_object));
   }
 
@@ -2184,16 +2184,16 @@ send_browser_script_object() {
 P3D_request *P3DInstance::
 make_p3d_request(TiXmlElement *xrequest) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  P3D_request *request = NULL;
+  P3D_request *request = nullptr;
 
   const char *rtype = xrequest->Attribute("rtype");
-  if (rtype != NULL) {
+  if (rtype != nullptr) {
     if (strcmp(rtype, "notify") == 0) {
       const char *message = xrequest->Attribute("message");
-      if (message != NULL) {
+      if (message != nullptr) {
         // A notify message from Python code.
         request = new P3D_request;
-        request->_instance = NULL;
+        request->_instance = nullptr;
         request->_request_type = P3D_RT_notify;
         request->_request._notify._message = strdup(message);
         handle_notify_request(message);
@@ -2210,19 +2210,19 @@ make_p3d_request(TiXmlElement *xrequest) {
       int unique_id = 0;
       xrequest->Attribute("unique_id", &unique_id);
 
-      P3D_object *value = NULL;
+      P3D_object *value = nullptr;
       TiXmlElement *xvalue = xrequest->FirstChildElement("value");
-      if (xvalue != NULL) {
+      if (xvalue != nullptr) {
         value = _session->xml_to_p3dobj(xvalue);
       }
-      if (value == NULL) {
+      if (value == nullptr) {
         value = inst_mgr->new_none_object();
       }
 
-      if (operation != NULL && xobject != NULL) {
+      if (operation != nullptr && xobject != nullptr) {
         P3D_object *object = _session->xml_to_p3dobj(xobject);
 
-        if (property_name == NULL) {
+        if (property_name == nullptr) {
           property_name = "";
         }
 
@@ -2242,25 +2242,25 @@ make_p3d_request(TiXmlElement *xrequest) {
     } else if (strcmp(rtype, "stop") == 0) {
       // A stop request from Python code.  This is kind of weird, but OK.
       request = new P3D_request;
-      request->_instance = NULL;
+      request->_instance = nullptr;
       request->_request_type = P3D_RT_stop;
 
     } else if (strcmp(rtype, "forget_package") == 0) {
       const char *host_url = xrequest->Attribute("host_url");
-      if (host_url != NULL) {
+      if (host_url != nullptr) {
         // A Python-level request to remove a package from the cache.
         request = new P3D_request;
-        request->_instance = NULL;
+        request->_instance = nullptr;
         request->_request_type = P3D_RT_forget_package;
         request->_request._forget_package._host_url = strdup(host_url);
-        request->_request._forget_package._package_name = NULL;
-        request->_request._forget_package._package_version = NULL;
+        request->_request._forget_package._package_name = nullptr;
+        request->_request._forget_package._package_version = nullptr;
 
         const char *package_name = xrequest->Attribute("package_name");
         const char *package_version = xrequest->Attribute("package_version");
-        if (package_name != NULL) {
+        if (package_name != nullptr) {
           request->_request._forget_package._package_name = strdup(package_name);
-          if (package_version != NULL) {
+          if (package_version != nullptr) {
             request->_request._forget_package._package_version = strdup(package_version);
           }
         }
@@ -2271,8 +2271,8 @@ make_p3d_request(TiXmlElement *xrequest) {
     }
   }
 
-  if (request != NULL) {
-    assert(request->_instance == NULL);
+  if (request != nullptr) {
+    assert(request->_instance == nullptr);
     request->_instance = this;
     ref();
   }
@@ -2298,19 +2298,19 @@ handle_notify_request(const string &message) {
     doc->LinkEndChild(xcommand);
     TiXmlDocument *response = _session->command_and_response(doc);
 
-    P3D_object *result = NULL;
-    if (response != NULL) {
+    P3D_object *result = nullptr;
+    if (response != nullptr) {
       TiXmlElement *xresponse = response->FirstChildElement("response");
-      if (xresponse != NULL) {
+      if (xresponse != nullptr) {
         TiXmlElement *xvalue = xresponse->FirstChildElement("value");
-        if (xvalue != NULL) {
+        if (xvalue != nullptr) {
           result = _session->xml_to_p3dobj(xvalue);
         }
       }
       delete response;
     }
 
-    if (result != NULL) {
+    if (result != nullptr) {
       if (_matches_script_origin) {
         // We only actually merge the objects if this web page is allowed to
         // call our scripting functions.
@@ -2329,7 +2329,7 @@ handle_notify_request(const string &message) {
     // The process told us that it just successfully opened its window, for
     // the first time.  Hide the splash window.
     _instance_window_opened = true;
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_visible(false);
     }
 
@@ -2352,7 +2352,7 @@ handle_notify_request(const string &message) {
     // window opening and the first frame being drawn.
     _instance_window_attached = true;
 #ifndef __APPLE__
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_visible(false);
     }
 #endif  // __APPLE__
@@ -2360,12 +2360,12 @@ handle_notify_request(const string &message) {
 #ifdef __APPLE__
     // Start a timer to update the frame repeatedly.  This seems to be
     // steadier than waiting for nullEvent.
-    if (_frame_timer == NULL) {
+    if (_frame_timer == nullptr) {
       CFRunLoopTimerContext timer_context;
       memset(&timer_context, 0, sizeof(timer_context));
       timer_context.info = this;
       _frame_timer = CFRunLoopTimerCreate
-        (NULL, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
+        (nullptr, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
       CFRunLoopRef run_loop = CFRunLoopGetCurrent();
       CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
     }
@@ -2377,16 +2377,16 @@ handle_notify_request(const string &message) {
     _instance_window_opened = true;
     _instance_window_attached = false;
     set_background_image(IT_active);
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_visible(true);
     }
 
 #ifdef __APPLE__
     // Stop the frame timer; we don't need it any more.
-    if (_frame_timer != NULL) {
+    if (_frame_timer != nullptr) {
       CFRunLoopTimerInvalidate(_frame_timer);
       CFRelease(_frame_timer);
-      _frame_timer = NULL;
+      _frame_timer = nullptr;
     }
 #endif  // __APPLE__
 
@@ -2403,7 +2403,7 @@ handle_notify_request(const string &message) {
     auth_finished_main_thread();
 
   } else if (message == "keyboardfocus") {
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->request_keyboard_focus();
     }
   }
@@ -2430,7 +2430,7 @@ handle_script_request(const string &operation, P3D_object *object,
 
     // We've got the property value; feed it back down to the subprocess.
 
-    if (result != NULL) {
+    if (result != nullptr) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
     }
@@ -2445,7 +2445,7 @@ handle_script_request(const string &operation, P3D_object *object,
     xcommand->LinkEndChild(xvalue);
 
   } else if (operation == "del_property") {
-    bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, NULL);
+    bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), true, nullptr);
 
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
@@ -2476,20 +2476,20 @@ handle_script_request(const string &operation, P3D_object *object,
       P3D_OBJECT_CALL(object, property_name.c_str(), needs_response,
                       values, num_values);
 
-    if (result != NULL) {
+    if (result != nullptr) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
     }
 
   } else if (operation == "eval") {
     P3D_object *result;
-    int size = P3D_OBJECT_GET_STRING(value, NULL, 0);
+    int size = P3D_OBJECT_GET_STRING(value, nullptr, 0);
     char *buffer = new char[size + 1];
     P3D_OBJECT_GET_STRING(value, buffer, size + 1);
     result = P3D_OBJECT_EVAL(object, buffer);
     delete[] buffer;
 
-    if (result != NULL) {
+    if (result != nullptr) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
       P3D_OBJECT_DECREF(result);
     }
@@ -2544,7 +2544,7 @@ make_splash_window() {
     make_visible = true;
   }
 
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     // Already got one.
     _splash_window->set_visible(make_visible);
     return;
@@ -2704,7 +2704,7 @@ make_splash_window() {
       _image_files[i]._filename.clear();
 
       // Make a temporary file to receive the splash image.
-      assert(_image_files[i]._temp_filename == NULL);
+      assert(_image_files[i]._temp_filename == nullptr);
       _image_files[i]._temp_filename = new P3DTemporaryFile(".jpg");
 
       // Start downloading the requested image.
@@ -2753,7 +2753,7 @@ set_background_image(ImageType image_type) {
     }
 
     // Update the splash window.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_image_filename(_image_files[_current_background_image]._filename, P3DSplashWindow::IP_background);
     }
   }
@@ -2790,7 +2790,7 @@ set_button_image(ImageType image_type) {
     }
 
     // Update the splash window.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       if (_current_button_image != IT_none) {
         _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
         _splash_window->set_image_filename(_image_files[_current_button_image + 1]._filename, P3DSplashWindow::IP_button_rollover);
@@ -2804,7 +2804,7 @@ set_button_image(ImageType image_type) {
   } else {
     // We're not changing the button graphic, but we might be re-activating
     // it.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       if (_current_button_image != IT_none) {
         _splash_window->set_button_active(true);
       } else {
@@ -2829,7 +2829,7 @@ report_package_info_ready(P3DPackage *package) {
       // If we're downloading one of the two cert packages, though, put up a
       // progress bar.
       make_splash_window();
-      if (_splash_window != NULL) {
+      if (_splash_window != nullptr) {
         _splash_window->set_install_progress(0.0, true, 0);
       }
       if (package == _certlist_package) {
@@ -2926,7 +2926,7 @@ ready_to_install() {
 #ifdef _WIN32
     _start_dl_tick = GetTickCount();
 #else
-    gettimeofday(&_start_dl_timeval, NULL);
+    gettimeofday(&_start_dl_timeval, nullptr);
 #endif
 
     nout << "Beginning install of " << _downloading_packages.size()
@@ -2956,7 +2956,7 @@ ready_to_install() {
 
       _main_object->set_float_property("downloadProgress", progress);
     }
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_install_progress(progress, true, 0);
     }
 
@@ -3030,7 +3030,7 @@ mark_download_complete() {
   }
 
   // Take down the download progress bar.
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     _splash_window->set_install_progress(0.0, true, 0);
   }
   set_install_label("");
@@ -3090,7 +3090,7 @@ report_instance_progress(double progress, bool is_progress_known,
     double elapsed = (double)(now - _start_dl_tick) * 0.001;
 #else
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     double elapsed = (double)(now.tv_sec - _start_dl_timeval.tv_sec) +
       (double)(now.tv_usec - _start_dl_timeval.tv_usec) / 1000000.0;
 #endif
@@ -3108,7 +3108,7 @@ report_instance_progress(double progress, bool is_progress_known,
     }
   }
 
-  if (_splash_window != NULL && _show_dl_instance_progress) {
+  if (_splash_window != nullptr && _show_dl_instance_progress) {
     _splash_window->set_install_progress(progress, is_progress_known, received_data);
   }
   _main_object->set_float_property("instanceDownloadProgress", progress);
@@ -3125,7 +3125,7 @@ report_package_progress(P3DPackage *package, double progress) {
   }
   if (package == _certlist_package || package == _p3dcert_package) {
     // This gets its own progress bar.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_install_progress(progress, true, 0);
     }
     return;
@@ -3141,7 +3141,7 @@ report_package_progress(P3DPackage *package, double progress) {
   progress = (progress * package->get_download_size() + _total_downloaded + _prev_downloaded) / (_total_download_size + _prev_downloaded);
   progress = min(progress, 1.0);
 
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     _splash_window->set_install_progress(progress, true, 0);
   }
   _main_object->set_float_property("downloadProgress", progress);
@@ -3155,7 +3155,7 @@ report_package_progress(P3DPackage *package, double progress) {
   double elapsed = (double)(now - _start_dl_tick) * 0.001;
 #else
   struct timeval now;
-  gettimeofday(&now, NULL);
+  gettimeofday(&now, nullptr);
   double elapsed = (double)(now.tv_sec - _start_dl_timeval.tv_sec) +
     (double)(now.tv_usec - _start_dl_timeval.tv_usec) / 1000000.0;
 #endif
@@ -3213,7 +3213,7 @@ report_package_done(P3DPackage *package, bool success) {
     // files out of it and point them to the splash window.
     string package_dir = package->get_package_dir();
     const TiXmlElement *xconfig = package->get_xconfig();
-    if (xconfig == NULL) {
+    if (xconfig == nullptr) {
       nout << "No <config> entry in image package\n";
       return;
     }
@@ -3225,7 +3225,7 @@ report_package_done(P3DPackage *package, bool success) {
         // filename.
         string token = string(_image_type_names[i]) + "_img";
         const string *basename = xconfig->Attribute(token);
-        if (basename == NULL) {
+        if (basename == nullptr) {
           nout << "No entry in image package for " << token << "\n";
         } else {
           string image_filename = package_dir + "/" + *basename;
@@ -3233,7 +3233,7 @@ report_package_done(P3DPackage *package, bool success) {
 
           // If the image should be on the window now, and the window still
           // exists, put it up.
-          if (_splash_window != NULL &&
+          if (_splash_window != nullptr &&
               _image_files[i]._image_placement != P3DSplashWindow::IP_none) {
             P3DSplashWindow::ImagePlacement image_placement = _image_files[i]._image_placement;
             _splash_window->set_image_filename(image_filename, image_placement);
@@ -3252,7 +3252,7 @@ report_package_done(P3DPackage *package, bool success) {
     package->mark_used();
 
     // Take down the download progress.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_install_progress(0.0, true, 0);
     }
     set_install_label("");
@@ -3270,7 +3270,7 @@ report_package_done(P3DPackage *package, bool success) {
     package->mark_used();
 
     // Take down the download progress.
-    if (_splash_window != NULL) {
+    if (_splash_window != nullptr) {
       _splash_window->set_install_progress(0.0, true, 0);
     }
     set_install_label("");
@@ -3294,7 +3294,7 @@ report_package_done(P3DPackage *package, bool success) {
 void P3DInstance::
 set_install_label(const string &install_label) {
   _install_label = install_label;
-  if (_splash_window != NULL) {
+  if (_splash_window != nullptr) {
     _splash_window->set_install_label(_install_label);
   }
 }
@@ -3330,7 +3330,7 @@ paint_window() {
  */
 bool P3DInstance::
 get_framebuffer_osx_port() {
-  if (_swbuffer == NULL || !_instance_window_attached) {
+  if (_swbuffer == nullptr || !_instance_window_attached) {
     // We don't have a Panda3D window yet.
     return false;
   }
@@ -3382,7 +3382,7 @@ get_framebuffer_osx_port() {
 
     _swbuffer->close_read_framebuffer();
 
-    if (_splash_window != NULL && _splash_window->get_visible()) {
+    if (_splash_window != nullptr && _splash_window->get_visible()) {
       // If the splash window is up, time to hide it.  We've just rendered a
       // real frame.
       _splash_window->set_visible(false);
@@ -3404,7 +3404,7 @@ get_framebuffer_osx_port() {
  */
 bool P3DInstance::
 get_framebuffer_osx_cgcontext() {
-  if (_swbuffer == NULL || !_instance_window_attached) {
+  if (_swbuffer == nullptr || !_instance_window_attached) {
     // We don't have a Panda3D window yet.
     return false;
   }
@@ -3420,7 +3420,7 @@ get_framebuffer_osx_cgcontext() {
     memcpy(_reversed_buffer, framebuffer, y_size * rowsize);
     _swbuffer->close_read_framebuffer();
 
-    if (_splash_window != NULL && _splash_window->get_visible()) {
+    if (_splash_window != nullptr && _splash_window->get_visible()) {
       // If the splash window is up, time to hide it.  We've just rendered a
       // real frame.
       _splash_window->set_visible(false);
@@ -3466,7 +3466,7 @@ paint_window_osx_port() {
   const P3D_window_handle &handle = _wparams.get_parent_window();
   assert(handle._window_handle_type == P3D_WHT_osx_port);
   GrafPtr out_port = handle._handle._osx_port._port;
-  GrafPtr port_save = NULL;
+  GrafPtr port_save = nullptr;
   Boolean port_changed = QDSwapPort(out_port, &port_save);
 
   // Make sure the clipping rectangle isn't in the way.  Is there a better way
@@ -3479,7 +3479,7 @@ paint_window_osx_port() {
            &src_rect, &ddrc_rect, srcCopy, 0);
 
   if (port_changed) {
-    QDSwapPort(port_save, NULL);
+    QDSwapPort(port_save, nullptr);
   }
 
   DisposeGWorld(pGWorld);
@@ -3501,7 +3501,7 @@ paint_window_osx_cgcontext(CGContextRef context) {
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
 
-  if (_buffer_image != NULL) {
+  if (_buffer_image != nullptr) {
     CGRect region = { { 0, 0 }, { (CGFloat)x_size, (CGFloat)y_size } };
     CGContextDrawImage(context, region, _buffer_image);
   }
@@ -3526,20 +3526,20 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   const P3D_window_handle &handle = _wparams.get_parent_window();
   if (handle._window_handle_type == P3D_WHT_osx_port) {
     GrafPtr out_port = handle._handle._osx_port._port;
-    GrafPtr port_save = NULL;
+    GrafPtr port_save = nullptr;
     Boolean port_changed = QDSwapPort(out_port, &port_save);
 
     GlobalToLocal(&pt);
 
     if (port_changed) {
-      QDSwapPort(port_save, NULL);
+      QDSwapPort(port_save, nullptr);
     }
   } else {
     // First, convert the coordinates from screen coordinates to browser
     // window coordinates.
     WindowRef window = handle._handle._osx_cgcontext._window;
     CGPoint cgpt = { (CGFloat)pt.h, (CGFloat)pt.v };
-    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
+    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, nullptr,
                    kHICoordSpaceWindow, window);
 
     // Then convert to plugin coordinates.
@@ -3572,7 +3572,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   case keyDown:
   case keyUp:
   case autoKey:
-    if (_swbuffer != NULL) {
+    if (_swbuffer != nullptr) {
       swb_event._source = SubprocessWindowBuffer::ES_keyboard;
       swb_event._code = er->message;
       if (er->what == keyUp) {
@@ -3614,7 +3614,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     }
   }
 
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     _swbuffer->add_event(swb_event);
   }
 #endif  // __APPLE__
@@ -3709,7 +3709,7 @@ handle_event_osx_cocoa(const P3D_event_data &event) {
     swb_event._flags |= SubprocessWindowBuffer::EF_has_mouse;
   }
 
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     _swbuffer->add_event(swb_event);
   }
 #endif  // __APPLE__
@@ -3773,7 +3773,7 @@ void P3DInstance::
 send_notify(const string &message) {
   nout << "send_notify(" << message << ")\n";
   P3D_request *request = new P3D_request;
-  request->_instance = NULL;
+  request->_instance = nullptr;
   request->_request_type = P3D_RT_notify;
   request->_request._notify._message = strdup(message.c_str());
   add_baked_request(request);
@@ -3793,12 +3793,12 @@ alloc_swbuffer() {
 
   _swbuffer = SubprocessWindowBuffer::new_buffer
     (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
     memset(_reversed_buffer, 0, _swbuffer->get_row_size());
     size_t rowsize = _swbuffer->get_row_size();
 
-    _buffer_data = CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer,
+    _buffer_data = CFDataCreateWithBytesNoCopy(nullptr, (const UInt8 *)_reversed_buffer,
                                                y_size * rowsize, kCFAllocatorNull);
 
     _data_provider = CGDataProviderCreateWithCFData(_buffer_data);
@@ -3806,7 +3806,7 @@ alloc_swbuffer() {
 
     _buffer_image = CGImageCreate(x_size, y_size, 8, 32, rowsize, _buffer_color_space,
                                   kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little,
-                                  _data_provider, NULL, false, kCGRenderingIntentDefault);
+                                  _data_provider, nullptr, false, kCGRenderingIntentDefault);
 
   }
 }
@@ -3819,26 +3819,26 @@ alloc_swbuffer() {
  */
 void P3DInstance::
 free_swbuffer() {
-  if (_swbuffer != NULL) {
+  if (_swbuffer != nullptr) {
     SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
                                            _shared_filename, _swbuffer);
-    _swbuffer = NULL;
+    _swbuffer = nullptr;
   }
-  if (_reversed_buffer != NULL) {
+  if (_reversed_buffer != nullptr) {
     delete[] _reversed_buffer;
-    _reversed_buffer = NULL;
+    _reversed_buffer = nullptr;
   }
 
-  if (_buffer_image != NULL) {
+  if (_buffer_image != nullptr) {
     CGImageRelease(_buffer_image);
     CGColorSpaceRelease(_buffer_color_space);
     CGDataProviderRelease(_data_provider);
     CFRelease(_buffer_data);
 
-    _buffer_data = NULL;
-    _data_provider = NULL;
-    _buffer_color_space = NULL;
-    _buffer_image = NULL;
+    _buffer_data = nullptr;
+    _data_provider = nullptr;
+    _buffer_color_space = nullptr;
+    _buffer_image = nullptr;
   }
 }
 #endif  // __APPLE__
@@ -3881,7 +3881,7 @@ download_finished(bool success) {
 
     // Put it onscreen if it's supposed to be onscreen now, and our splash
     // window still exists.
-    if (_inst->_splash_window != NULL &&
+    if (_inst->_splash_window != nullptr &&
         _inst->_image_files[_index]._image_placement != P3DSplashWindow::IP_none) {
       P3DSplashWindow::ImagePlacement image_placement = _inst->_image_files[_index]._image_placement;
       _inst->_splash_window->set_image_filename(get_filename(), image_placement);

@@ -46,7 +46,7 @@ get_random_seed() const {
  */
 INLINE bool RecorderController::
 is_recording() const {
-  return (_writer != (BamWriter *)NULL);
+  return (_writer != (BamWriter *)nullptr);
 }
 
 /**
@@ -54,7 +54,7 @@ is_recording() const {
  */
 INLINE bool RecorderController::
 is_playing() const {
-  return (_reader != (BamReader *)NULL);
+  return (_reader != (BamReader *)nullptr);
 }
 
 /**
@@ -138,7 +138,7 @@ add_recorder(const string &name, RecorderBase *recorder) {
  */
 INLINE bool RecorderController::
 has_recorder(const string &name) const {
-  return (_user_table->get_recorder(name) != (RecorderBase *)NULL);
+  return (_user_table->get_recorder(name) != (RecorderBase *)nullptr);
 }
 
 /**
@@ -153,7 +153,7 @@ has_recorder(const string &name) const {
 INLINE RecorderBase *RecorderController::
 get_recorder(const string &name) const {
   RecorderBase *recorder = _user_table->get_recorder(name);
-  if (is_playing() && recorder == (RecorderBase *)NULL) {
+  if (is_playing() && recorder == (RecorderBase *)nullptr) {
     recorder = _active_table->get_recorder(name);
   }
   return recorder;
@@ -178,7 +178,7 @@ remove_recorder(const string &name) {
   // it now.)
   if (is_recording() || is_playing()) {
     RecorderBase *recorder = _user_table->get_recorder(name);
-    if (recorder != (RecorderBase *)NULL) {
+    if (recorder != (RecorderBase *)nullptr) {
       recorder->_flags &= ~(RecorderBase::F_recording | RecorderBase::F_playing);
     }
   }
@@ -217,7 +217,7 @@ get_frame_tie() const {
  */
 INLINE RecorderController::RecorderFactory *RecorderController::
 get_factory() {
-  if (_factory == (RecorderFactory *)NULL) {
+  if (_factory == (RecorderFactory *)nullptr) {
     create_factory();
   }
   return _factory;

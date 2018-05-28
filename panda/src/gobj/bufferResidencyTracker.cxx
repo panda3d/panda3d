@@ -118,7 +118,7 @@ write(ostream &out, int indent_level) const {
 void BufferResidencyTracker::
 move_inactive(BufferContextChain &inactive, BufferContextChain &active) {
   BufferContext *node = active.get_first();
-  while (node != (BufferContext *)NULL) {
+  while (node != (BufferContext *)nullptr) {
     nassertv((node->_residency_state & S_active) != 0);
     node->_residency_state &= ~S_active;
     node = node->get_next();

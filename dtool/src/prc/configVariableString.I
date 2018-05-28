@@ -138,7 +138,7 @@ get_value() const {
 INLINE string ConfigVariableString::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != (ConfigDeclaration *)nullptr) {
     return decl->get_string_value();
   }
   return string();

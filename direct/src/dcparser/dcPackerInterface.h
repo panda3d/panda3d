@@ -82,7 +82,7 @@ PUBLISHED:
   virtual const DCClassParameter *as_class_parameter() const;
 
   INLINE bool check_match(const DCPackerInterface *other) const;
-  bool check_match(const string &description, DCFile *dcfile = NULL) const;
+  bool check_match(const string &description, DCFile *dcfile = nullptr) const;
 
 public:
   virtual void set_name(const string &name);

@@ -70,7 +70,7 @@ start(ThreadPriority priority, bool joinable) {
   // eventually decrement it when it terminates.
   _parent_obj->ref();
   _thread =
-    CreateThread(NULL, 0, &root_func, (void *)this, 0, &_thread_id);
+    CreateThread(nullptr, 0, &root_func, (void *)this, 0, &_thread_id);
 
   if (_thread_id == 0) {
     // Oops, we couldn't start the thread.  Be sure to decrement the reference

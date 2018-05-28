@@ -22,7 +22,7 @@ template class ParamValue<double>;
  */
 void EventParameter::
 output(ostream &out) const {
-  if (_ptr == (TypedWritableReferenceCount *)NULL) {
+  if (_ptr == (TypedWritableReferenceCount *)nullptr) {
     out << "(empty)";
 
   } else if (_ptr->is_of_type(ParamValueBase::get_class_type())) {

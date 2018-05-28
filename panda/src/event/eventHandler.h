@@ -52,7 +52,7 @@ PUBLISHED:
 
   void write(ostream &out) const;
 
-  INLINE static EventHandler *get_global_event_handler(EventQueue *queue = NULL);
+  INLINE static EventHandler *get_global_event_handler(EventQueue *queue = nullptr);
 
 public:
   bool add_hook(const string &event_name, EventFunction *function);

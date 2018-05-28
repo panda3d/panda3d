@@ -18,7 +18,7 @@
 template<class GetCategory>
 NotifyCategory *NotifyCategoryProxy<GetCategory>::
 init() {
-  if (_ptr == (NotifyCategory *)NULL) {
+  if (_ptr == (NotifyCategory *)nullptr) {
     _ptr = GetCategory::get_category();
   }
   return _ptr;
@@ -33,7 +33,7 @@ init() {
 template<class GetCategory>
 INLINE NotifyCategory *NotifyCategoryProxy<GetCategory>::
 get_unsafe_ptr() {
-  nassertd(_ptr != (NotifyCategory *)NULL) {
+  nassertd(_ptr != (NotifyCategory *)nullptr) {
     init();
     nout << "Uninitialized notify proxy: " << _ptr->get_fullname() << "\n";
   }

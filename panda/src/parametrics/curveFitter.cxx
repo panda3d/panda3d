@@ -152,7 +152,7 @@ remove_samples(int begin, int end) {
  */
 void CurveFitter::
 sample(ParametricCurveCollection *curves, int count) {
-  nassertv(curves != (ParametricCurveCollection *)NULL);
+  nassertv(curves != (ParametricCurveCollection *)nullptr);
   PN_stdfloat max_t = curves->get_max_t();
   PN_stdfloat t;
   DataPoint dp;
@@ -166,10 +166,10 @@ sample(ParametricCurveCollection *curves, int count) {
     }
   }
 
-  if (curves->get_xyz_curve() != (ParametricCurve *)NULL) {
+  if (curves->get_xyz_curve() != (ParametricCurve *)nullptr) {
     _got_xyz = true;
   }
-  if (curves->get_hpr_curve() != (ParametricCurve *)NULL) {
+  if (curves->get_hpr_curve() != (ParametricCurve *)nullptr) {
     _got_hpr = true;
   }
 }

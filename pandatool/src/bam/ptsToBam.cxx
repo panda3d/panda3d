@@ -49,7 +49,7 @@ PtsToBam() : WithOutputFile(true, false, true)
      "Decimates the point cloud by the indicated divisor.  The number of points\n"
      "added is 1/divisor; numbers larger than 1.0 mean correspondingly fewer\n"
      "points.",
-     &PtsToBam::dispatch_double, NULL, &_decimate_divisor);
+     &PtsToBam::dispatch_double, nullptr, &_decimate_divisor);
 
   _decimate_divisor = 1.0;
 }
@@ -172,7 +172,7 @@ process_line(const string &line) {
  */
 void PtsToBam::
 add_point(const vector_string &words) {
-  if (_data == NULL || _data->get_num_rows() >= egg_max_vertices) {
+  if (_data == nullptr || _data->get_num_rows() >= egg_max_vertices) {
     open_vertex_data();
   }
 
@@ -190,7 +190,7 @@ add_point(const vector_string &words) {
  */
 void PtsToBam::
 open_vertex_data() {
-  if (_data != (GeomVertexData *)NULL) {
+  if (_data != (GeomVertexData *)nullptr) {
     close_vertex_data();
   }
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3();
@@ -203,7 +203,7 @@ open_vertex_data() {
  */
 void PtsToBam::
 close_vertex_data() {
-  if (_data == NULL) {
+  if (_data == nullptr) {
     return;
   }
 
@@ -225,7 +225,7 @@ close_vertex_data() {
 
   _gnode->add_geom(geom);
 
-  _data = NULL;
+  _data = nullptr;
 }
 
 int main(int argc, char *argv[]) {

@@ -14,7 +14,7 @@
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
-OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = NULL;
+OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
 
 void OdeTriMeshData::
 link_data(dGeomID id, PT(OdeTriMeshData) data) {
@@ -29,13 +29,13 @@ get_data(dGeomID id) {
   if (iter != data_map.end()) {
     return iter->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void OdeTriMeshData::
 unlink_data(dGeomID id) {
   odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
-  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
+  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)nullptr);
   TriMeshDataMap::iterator iter = _tri_mesh_data_map->find(id);
   if (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
@@ -58,7 +58,7 @@ remove_data(OdeTriMeshData *data) {
     odetrimeshdata_cat.debug()
       << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   }
-  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+  if (_tri_mesh_data_map == (TriMeshDataMap *)nullptr) {
     return;
   }
 

@@ -400,7 +400,7 @@ interrogate_wrapper_parameter_is_this(FunctionWrapperIndex wrapper, int n) {
 bool
 interrogate_wrapper_has_pointer(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_has_pointer(" << wrapper << ")\n";
-  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != (void *)NULL);
+  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != (void *)nullptr);
 }
 
 void *

@@ -124,9 +124,9 @@ AndroidLogStream::
  */
 ostream &AndroidLogStream::
 out(NotifySeverity severity) {
-  static AndroidLogStream* streams[NS_fatal + 1] = {NULL};
+  static AndroidLogStream* streams[NS_fatal + 1] = {nullptr};
 
-  if (streams[severity] == NULL) {
+  if (streams[severity] == nullptr) {
     int priority = ANDROID_LOG_UNKNOWN;
     if (severity != NS_unspecified) {
       priority = ((int)severity) + 1;

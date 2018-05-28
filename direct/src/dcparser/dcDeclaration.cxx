@@ -26,7 +26,7 @@ DCDeclaration::
  */
 DCClass *DCDeclaration::
 as_class() {
-  return (DCClass *)NULL;
+  return (DCClass *)nullptr;
 }
 
 /**
@@ -34,7 +34,7 @@ as_class() {
  */
 const DCClass *DCDeclaration::
 as_class() const {
-  return (DCClass *)NULL;
+  return (DCClass *)nullptr;
 }
 
 /**
@@ -42,7 +42,7 @@ as_class() const {
  */
 DCSwitch *DCDeclaration::
 as_switch() {
-  return (DCSwitch *)NULL;
+  return (DCSwitch *)nullptr;
 }
 
 /**
@@ -50,7 +50,7 @@ as_switch() {
  */
 const DCSwitch *DCDeclaration::
 as_switch() const {
-  return (DCSwitch *)NULL;
+  return (DCSwitch *)nullptr;
 }
 
 /**

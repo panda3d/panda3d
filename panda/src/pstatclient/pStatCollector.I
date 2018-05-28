@@ -33,7 +33,7 @@ PStatCollector(PStatClient *client, int index) :
  */
 INLINE PStatCollector::
 PStatCollector() :
-  _client(NULL),
+  _client(nullptr),
   _index(0),
   _level(0.0f)
 {
@@ -57,7 +57,7 @@ INLINE PStatCollector::
 PStatCollector(const string &name, PStatClient *client) :
   _level(0.0f)
 {
-  if (client == (PStatClient *)NULL) {
+  if (client == (PStatClient *)nullptr) {
     client = PStatClient::get_global_pstats();
   }
   (*this) = client->make_collector_with_relname(0, name);
@@ -83,7 +83,7 @@ INLINE PStatCollector::
 PStatCollector(const PStatCollector &parent, const string &name) :
   _level(0.0f)
 {
-  nassertv(parent._client != (PStatClient *)NULL);
+  nassertv(parent._client != (PStatClient *)nullptr);
   (*this) =
     parent._client->make_collector_with_relname(parent._index, name);
 }
@@ -115,7 +115,7 @@ operator = (const PStatCollector &copy) {
  */
 INLINE bool PStatCollector::
 is_valid() const {
-  return (_client != (PStatClient *)NULL);
+  return (_client != (PStatClient *)nullptr);
 }
 
 /**
@@ -124,7 +124,7 @@ is_valid() const {
  */
 INLINE string PStatCollector::
 get_name() const {
-  if (_client != (PStatClient *)NULL) {
+  if (_client != (PStatClient *)nullptr) {
     return _client->get_collector_name(_index);
   }
   return string();
@@ -136,7 +136,7 @@ get_name() const {
  */
 INLINE string PStatCollector::
 get_fullname() const {
-  if (_client != (PStatClient *)NULL) {
+  if (_client != (PStatClient *)nullptr) {
     return _client->get_collector_fullname(_index);
   }
   return string();
@@ -384,7 +384,7 @@ is_started(const PStatThread &thread) {
  */
 INLINE void PStatCollector::
 start(const PStatThread &thread) {
-  nassertv(_client != NULL);
+  nassertv(_client != nullptr);
   _client->start(_index, thread._index);
 }
 
@@ -498,7 +498,7 @@ PStatCollector(const string &, PStatClient *client) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
-  if (client == (PStatClient *)NULL) {
+  if (client == (PStatClient *)nullptr) {
     return;
   }
 #endif
@@ -513,7 +513,7 @@ PStatCollector(const PStatCollector &parent, const string &) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
-  if (&parent == (const PStatCollector *)NULL) {
+  if (&parent == (const PStatCollector *)nullptr) {
     return;
   }
 #endif

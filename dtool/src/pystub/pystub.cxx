@@ -449,31 +449,31 @@ void PyEval_InitThreads() {
 }
 
 
-void *PyExc_AssertionError = (void *)NULL;
-void *PyExc_AttributeError = (void *)NULL;
-void *PyExc_BufferError = (void *)NULL;
-void *PyExc_ConnectionError = (void *)NULL;
-void *PyExc_Exception = (void *)NULL;
-void *PyExc_FutureWarning = (void *)NULL;
-void *PyExc_ImportError = (void *)NULL;
-void *PyExc_IndexError = (void *)NULL;
-void *PyExc_KeyError = (void *)NULL;
-void *PyExc_OSError = (void *)NULL;
-void *PyExc_OverflowError = (void *)NULL;
-void *PyExc_RuntimeError = (void *)NULL;
-void *PyExc_StandardError = (void *)NULL;
-void *PyExc_StopIteration = (void *)NULL;
-void *PyExc_SystemExit = (void *)NULL;
-void *PyExc_TypeError = (void *)NULL;
-void *PyExc_ValueError = (void *)NULL;
-void *PyTuple_Type = (void *)NULL;
-void *PyType_Type = (void *)NULL;
-void *_PyThreadState_Current = (void *)NULL;
-void *_Py_FalseStruct = (void *)NULL;
-void *_Py_NoneStruct = (void *)NULL;
-void *_Py_NotImplementedStruct = (void *)NULL;
-void *_Py_TrueStruct = (void *)NULL;
-void *_Py_ZeroStruct = (void *)NULL;
+void *PyExc_AssertionError = (void *)nullptr;
+void *PyExc_AttributeError = (void *)nullptr;
+void *PyExc_BufferError = (void *)nullptr;
+void *PyExc_ConnectionError = (void *)nullptr;
+void *PyExc_Exception = (void *)nullptr;
+void *PyExc_FutureWarning = (void *)nullptr;
+void *PyExc_ImportError = (void *)nullptr;
+void *PyExc_IndexError = (void *)nullptr;
+void *PyExc_KeyError = (void *)nullptr;
+void *PyExc_OSError = (void *)nullptr;
+void *PyExc_OverflowError = (void *)nullptr;
+void *PyExc_RuntimeError = (void *)nullptr;
+void *PyExc_StandardError = (void *)nullptr;
+void *PyExc_StopIteration = (void *)nullptr;
+void *PyExc_SystemExit = (void *)nullptr;
+void *PyExc_TypeError = (void *)nullptr;
+void *PyExc_ValueError = (void *)nullptr;
+void *PyTuple_Type = (void *)nullptr;
+void *PyType_Type = (void *)nullptr;
+void *_PyThreadState_Current = (void *)nullptr;
+void *_Py_FalseStruct = (void *)nullptr;
+void *_Py_NoneStruct = (void *)nullptr;
+void *_Py_NotImplementedStruct = (void *)nullptr;
+void *_Py_TrueStruct = (void *)nullptr;
+void *_Py_ZeroStruct = (void *)nullptr;
 
 
 void

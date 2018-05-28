@@ -29,8 +29,8 @@
 
 #include <iterator>
 
-LightReMutex *RenderEffects::_states_lock = NULL;
-RenderEffects::States *RenderEffects::_states = NULL;
+LightReMutex *RenderEffects::_states_lock = nullptr;
+RenderEffects::States *RenderEffects::_states = nullptr;
 CPT(RenderEffects) RenderEffects::_empty_state;
 TypeHandle RenderEffects::_type_handle;
 
@@ -41,7 +41,7 @@ TypeHandle RenderEffects::_type_handle;
  */
 RenderEffects::
 RenderEffects() : _lock("RenderEffects") {
-  if (_states == (States *)NULL) {
+  if (_states == (States *)nullptr) {
     init_states();
   }
   _saved_entry = _states->end();
@@ -176,7 +176,7 @@ CPT(RenderEffects) RenderEffects::
 make_empty() {
   // The empty state is asked for so often, we make it a special case and
   // store a pointer forever once we find it the first time.
-  if (_empty_state == (RenderEffects *)NULL) {
+  if (_empty_state == (RenderEffects *)nullptr) {
     RenderEffects *state = new RenderEffects;
     _empty_state = return_new(state);
   }
@@ -315,7 +315,7 @@ get_effect(TypeHandle type) const {
   if (ai != _effects.end()) {
     return (*ai)._effect;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -387,7 +387,7 @@ write(ostream &out, int indent_level) const {
  */
 int RenderEffects::
 get_num_states() {
-  if (_states == (States *)NULL) {
+  if (_states == (States *)nullptr) {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -514,7 +514,7 @@ init_states() {
  */
 CPT(RenderEffects) RenderEffects::
 return_new(RenderEffects *state) {
-  nassertr(state != (RenderEffects *)NULL, state);
+  nassertr(state != (RenderEffects *)nullptr, state);
 
 #ifndef NDEBUG
   if (!state_cache) {
@@ -580,7 +580,7 @@ determine_decal() {
   }
 
   const RenderEffect *effect = get_effect(DecalEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     _flags |= F_has_decal;
   }
   _flags |= F_checked_decal;
@@ -598,7 +598,7 @@ determine_show_bounds() {
   }
 
   const RenderEffect *effect = get_effect(ShowBoundsEffect::get_class_type());
-  if (effect != (const RenderEffect *)NULL) {
+  if (effect != (const RenderEffect *)nullptr) {
     _flags |= F_has_show_bounds;
     const ShowBoundsEffect *sba = DCAST(ShowBoundsEffect, effect);
     if (sba->get_tight()) {
@@ -694,7 +694,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     Effect &effect = _effects[i];
 
     effect._effect = DCAST(RenderEffect, p_list[pi++]);
-    if (effect._effect == (RenderEffect *)NULL) {
+    if (effect._effect == (RenderEffect *)nullptr) {
       // Remove this bogus RenderEffect pointer (it must have been from an
       // unwritable class).
       _effects.erase(_effects.begin() + i);

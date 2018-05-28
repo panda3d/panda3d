@@ -80,7 +80,7 @@ public:
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

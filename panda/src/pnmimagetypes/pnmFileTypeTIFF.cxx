@@ -338,7 +338,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
                          iostream_dont_close, istream_size,
                          iostream_map, iostream_unmap);
 
-    if ( tif == NULL ) {
+    if ( tif == nullptr ) {
       _is_valid = false;
     }
   }
@@ -374,7 +374,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   if (_is_valid) {
     unsigned short num_extra_samples;
-    unsigned short *extra_samples = NULL;
+    unsigned short *extra_samples = nullptr;
 
     if (!TIFFGetField(tif, TIFFTAG_EXTRASAMPLES, &num_extra_samples,
                       &extra_samples)) {
@@ -547,7 +547,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
  */
 PNMFileTypeTIFF::Reader::
 ~Reader() {
-  if (tif != (struct tiff *)NULL) {
+  if (tif != (struct tiff *)nullptr) {
     TIFFClose(tif);
   }
 }
@@ -898,7 +898,7 @@ write_pfm(const PfmFile &pfm) {
                        (TIFFSeekProc)ostream_seek,
                        iostream_dont_close, ostream_size,
                        iostream_map, iostream_unmap);
-  if (tif == NULL) {
+  if (tif == nullptr) {
     return false;
   }
 
@@ -1031,7 +1031,7 @@ write_data(xel *array, xelval *alpha) {
                        (TIFFSeekProc)ostream_seek,
                        iostream_dont_close, ostream_size,
                        iostream_map, iostream_unmap);
-  if ( tif == NULL ) {
+  if ( tif == nullptr ) {
     return 0;
   }
 

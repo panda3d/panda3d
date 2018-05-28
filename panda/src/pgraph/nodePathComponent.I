@@ -34,7 +34,7 @@ CData(const NodePathComponent::CData &copy) :
  */
 INLINE NodePathComponent::
 ~NodePathComponent() {
-  nassertv(_node != (PandaNode *)NULL);
+  nassertv(_node != (PandaNode *)nullptr);
   _node->delete_component(this);
 }
 
@@ -43,7 +43,7 @@ INLINE NodePathComponent::
  */
 INLINE PandaNode *NodePathComponent::
 get_node() const {
-  nassertr(_node != (PandaNode *)NULL, _node);
+  nassertr(_node != (PandaNode *)nullptr, _node);
   return _node;
 }
 

@@ -29,7 +29,7 @@
 #include <android/log.h>
 #endif
 
-Notify *Notify::_global_ptr = (Notify *)NULL;
+Notify *Notify::_global_ptr = (Notify *)nullptr;
 
 /**
  *
@@ -40,7 +40,7 @@ Notify() {
   _owns_ostream_ptr = false;
   _null_ostream_ptr = new fstream;
 
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = (AssertHandler *)nullptr;
   _assert_failed = false;
 }
 
@@ -67,7 +67,7 @@ set_ostream_ptr(ostream *ostream_ptr, bool delete_later) {
     delete _ostream_ptr;
   }
 
-  if (ostream_ptr == (ostream *)NULL) {
+  if (ostream_ptr == (ostream *)nullptr) {
     _ostream_ptr = &cerr;
     _owns_ostream_ptr = false;
   } else {
@@ -135,7 +135,7 @@ set_assert_handler(Notify::AssertHandler *assert_handler) {
  */
 void Notify::
 clear_assert_handler() {
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = (AssertHandler *)nullptr;
 }
 
 /**
@@ -143,7 +143,7 @@ clear_assert_handler() {
  */
 bool Notify::
 has_assert_handler() const {
-  return (_assert_handler != (AssertHandler *)NULL);
+  return (_assert_handler != (AssertHandler *)nullptr);
 }
 
 /**
@@ -172,10 +172,10 @@ get_top_category() {
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
   // The string should not contain colons.
-  nassertr(basename.find(':') == string::npos, (NotifyCategory *)NULL);
+  nassertr(basename.find(':') == string::npos, (NotifyCategory *)nullptr);
 
   string fullname;
-  if (parent_category != (NotifyCategory *)NULL) {
+  if (parent_category != (NotifyCategory *)nullptr) {
     fullname = parent_category->get_fullname() + ":" + basename;
   } else {
     // The parent_category is NULL.  If basename is empty, that means we refer
@@ -188,7 +188,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
   }
 
   pair<Categories::iterator, bool> result =
-    _categories.insert(Categories::value_type(fullname, (NotifyCategory *)NULL));
+    _categories.insert(Categories::value_type(fullname, (NotifyCategory *)nullptr));
 
   bool inserted = result.second;
   NotifyCategory *&category = (*result.first).second;
@@ -230,7 +230,7 @@ get_category(const string &fullname) {
 
   // No such Category; create one.  First identify the parent name, based on
   // the rightmost colon.
-  NotifyCategory *parent_category = (NotifyCategory *)NULL;
+  NotifyCategory *parent_category = (NotifyCategory *)nullptr;
   string basename = fullname;
 
   size_t colon = fullname.rfind(':');
@@ -281,7 +281,7 @@ write_string(const string &str) {
  */
 Notify *Notify::
 ptr() {
-  if (_global_ptr == (Notify *)NULL) {
+  if (_global_ptr == (Notify *)nullptr) {
     init_memory_hook();
     _global_ptr = new Notify;
   }
@@ -360,7 +360,7 @@ assert_failure(const char *expression, int line,
     // debugger otherwise.
 
     // So we'll force a segfault, which works every time.
-    int *ptr = (int *)NULL;
+    int *ptr = (int *)nullptr;
     *ptr = 1;
 
 #else  // WIN32

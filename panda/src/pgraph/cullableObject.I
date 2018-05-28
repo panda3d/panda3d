@@ -70,7 +70,7 @@ operator = (const CullableObject &copy) {
  */
 INLINE void CullableObject::
 draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
-  if (_draw_callback != (CallbackObject *)NULL) {
+  if (_draw_callback != (CallbackObject *)nullptr) {
     // It has a callback associated.
     gsg->clear_before_callback();
     gsg->set_state_and_transform(_state, _internal_transform);
@@ -82,7 +82,7 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     }
     // Now the callback has taken care of drawing.
   } else {
-    nassertv(_geom != (Geom *)NULL);
+    nassertv(_geom != (Geom *)nullptr);
     gsg->set_state_and_transform(_state, _internal_transform);
     draw_inline(gsg, force, current_thread);
   }

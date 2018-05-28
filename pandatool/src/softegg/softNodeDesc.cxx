@@ -29,38 +29,38 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   Namable(name),
   _parent(parent)
 {
-  _model = (SAA_Elem *)NULL;
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _model = (SAA_Elem *)nullptr;
+  _egg_group = (EggGroup *)nullptr;
+  _egg_table = (EggTable *)nullptr;
+  _anim = (EggXfmSAnim *)nullptr;
   _joint_type = JT_none;
 
   // Add ourselves to our parent.
-  if (_parent != (SoftNodeDesc *)NULL) {
+  if (_parent != (SoftNodeDesc *)nullptr) {
     softegg_cat.spam() << "parent name " << _parent->get_name();
     _parent->_children.push_back(this);
   }
 
   // set the _parentJoint to Null
-  _parentJoint = NULL;
+  _parentJoint = nullptr;
 
-  fullname = NULL;
+  fullname = nullptr;
 
   numTexLoc = 0;
   numTexGlb = 0;
 
-  uScale = NULL;
-  vScale = NULL;
-  uOffset = NULL;
-  vOffset = NULL;
+  uScale = nullptr;
+  vScale = nullptr;
+  uOffset = nullptr;
+  vOffset = nullptr;
 
   valid;
   uv_swap;
   // SAA_Boolean visible;
-  numTexTri = NULL;
-  textures = NULL;
-  materials = NULL;
-  triangles = NULL;
+  numTexTri = nullptr;
+  textures = nullptr;
+  materials = nullptr;
+  triangles = nullptr;
   gtype = SAA_GEOM_ORIGINAL;
 }
 
@@ -140,7 +140,7 @@ force_set_parent(SoftNodeDesc *parent) {
  */
 bool SoftNodeDesc::
 has_model() const {
-  return (_model != (SAA_Elem *)NULL);
+  return (_model != (SAA_Elem *)nullptr);
 }
 
 /**
@@ -149,7 +149,7 @@ has_model() const {
  */
 SAA_Elem *SoftNodeDesc::
 get_model() const {
-  nassertr(_model != (SAA_Elem *)NULL, _model);
+  nassertr(_model != (SAA_Elem *)nullptr, _model);
   return _model;
 }
 
@@ -190,9 +190,9 @@ is_joint_parent() const {
  */
 void SoftNodeDesc::
 clear_egg() {
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _egg_group = (EggGroup *)nullptr;
+  _egg_table = (EggTable *)nullptr;
+  _anim = (EggXfmSAnim *)nullptr;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -214,7 +214,7 @@ mark_joint_parent() {
   else
     softegg_cat.spam() << " ?parent " << get_name() << " joint type " << _joint_type;
 
-  if (_parent != (SoftNodeDesc *)NULL) {
+  if (_parent != (SoftNodeDesc *)nullptr) {
     _parent->mark_joint_parent();
   }
   softegg_cat.spam() << endl;
@@ -249,13 +249,13 @@ check_junk(bool parent_junk) {
     _joint_type = JT_junk;
     softegg_cat.spam() << "junk node " << get_name() << endl;
   }
-  if ( (strstr(name, "con-") != NULL) ||
-       (strstr(name, "con_") != NULL) ||
-       (strstr(name, "fly_") != NULL) ||
-       (strstr(name, "fly-") != NULL) ||
-       (strstr(name, "camRIG") != NULL) ||
-       (strstr(name, "cam_rig") != NULL) ||
-       (strstr(name, "bars") != NULL) )
+  if ( (strstr(name, "con-") != nullptr) ||
+       (strstr(name, "con_") != nullptr) ||
+       (strstr(name, "fly_") != nullptr) ||
+       (strstr(name, "fly-") != nullptr) ||
+       (strstr(name, "camRIG") != nullptr) ||
+       (strstr(name, "cam_rig") != nullptr) ||
+       (strstr(name, "bars") != nullptr) )
     {
       _joint_type = JT_junk;
       softegg_cat.spam() << "junk node " << get_name() << endl;
@@ -286,12 +286,12 @@ is_partial(char *search_prefix) {
   if (!search_prefix)
     return false;
   // if name is search_prefix, return false
-  if (strstr(name, search_prefix) != NULL) {
+  if (strstr(name, search_prefix) != nullptr) {
     softegg_cat.debug() << "matched " << name << " ";
     return false;
   }
   // if name is not search_prefix, look in its parent
-  if (strstr(name, search_prefix) == NULL) {
+  if (strstr(name, search_prefix) == nullptr) {
     softegg_cat.debug() << "node " << name << " ";
     if (_parent)
       return _parent->is_partial(search_prefix);
@@ -322,13 +322,13 @@ set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
 
   // if  already a joint or name has "joint" in it
   const char *name = get_name().c_str();
-  if (is_joint() || isSkeleton || strstr(name, "joint") != NULL) {
+  if (is_joint() || isSkeleton || strstr(name, "joint") != nullptr) {
     lastJoint = this;
   }
-  if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
+  if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != nullptr ) {
     // make sure _parentJoint didn't have the name "joint" in it
-    if (strstr(_parentJoint->get_name().c_str(), "joint") == NULL) {
-      _parentJoint = NULL;
+    if (strstr(_parentJoint->get_name().c_str(), "joint") == nullptr) {
+      _parentJoint = nullptr;
       // _parentJoint = lastJoint = NULL;
       softegg_cat.spam() << "scale joint flag set!\n";
     }
@@ -464,7 +464,7 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
   SAA_Elem *skeletonPart = _model;
   const char *name = get_name().c_str();
 
-  if ( skeletonPart != NULL ) {
+  if ( skeletonPart != nullptr ) {
     PN_stdfloat i,j,k;
     PN_stdfloat h,p,r;
     PN_stdfloat x,y,z;
@@ -636,7 +636,7 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
                                                TEX_PER_MAT , &textures[i] );
 
         // initialize the array value
-        texNameArray[i] = NULL;
+        texNameArray[i] = nullptr;
         // initialize the repeats
         uRepeat[i] = vRepeat[i] = 0;
 
@@ -895,12 +895,12 @@ make_vertex_offsets(int numShapes) {
   int offset;
   int numCV;
   char tableName[_MAX_PATH];
-  SAA_DVector *shapeVerts = NULL;
-  SAA_DVector *uniqueVerts = NULL;
+  SAA_DVector *shapeVerts = nullptr;
+  SAA_DVector *uniqueVerts = nullptr;
   SAA_Elem *model = get_model();
   SAA_Scene *scene = &stec.scene;
 
-  EggVertexPool *vpool = NULL;
+  EggVertexPool *vpool = nullptr;
   string vpool_name = get_name() + ".verts";
   EggNode *t = stec._tree.get_egg_root()->find_child(vpool_name);
   if (t)
@@ -988,7 +988,7 @@ make_vertex_offsets(int numShapes) {
       // if change isn't negligible, make a morph vertex entry
       double total = fabs(dx)+fabs(dy)+fabs(dz);
       if ( total > 0.00001 ) {
-        if ( vpool != NULL ) {
+        if ( vpool != nullptr ) {
           // create offset
           LVector3d p(dx, dy, dz);
           EggMorphVertex *dxyz = new EggMorphVertex(tableName, p);
@@ -1011,7 +1011,7 @@ make_vertex_offsets(int numShapes) {
 void SoftNodeDesc::
 make_morph_table(  PN_stdfloat time ) {
   int numShapes;
-  SAA_Elem *model = NULL;
+  SAA_Elem *model = nullptr;
   SAA_AnimInterpType type;
   SAA_Scene *scene = &stec.scene;
 
@@ -1080,7 +1080,7 @@ make_linear_morph_table(int numShapes, PN_stdfloat time) {
     // find the morph table associated with this key shape
     anim = stec.find_morph_table(tableName);
 
-    if ( anim != NULL ) {
+    if ( anim != nullptr ) {
       if ( i == (int)curveVal ) {
         if ( curveVal - i == 0 ) {
           anim->add_data(1.0f );
@@ -1151,7 +1151,7 @@ make_weighted_morph_table(int numShapes, PN_stdfloat time) {
       // find the morph table associated with this key shape
       anim = stec.find_morph_table(tableName);
 
-      if ( anim != NULL ) {
+      if ( anim != nullptr ) {
         anim->add_data(curveVal);
         softegg_cat.spam() << "adding element " << curveVal << endl;
       }
@@ -1183,7 +1183,7 @@ make_expression_morph_table(int numShapes, PN_stdfloat time)
   // populate morph table values for this frame
 
   // compose track name
-  track = NULL;
+  track = nullptr;
 
   // find how many expressions for this shape
   SAA_elementGetNbExpressions( scene, model, track, FALSE, &numExp );

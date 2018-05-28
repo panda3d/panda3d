@@ -45,7 +45,7 @@ operator = (const HTTPDate &copy) {
  */
 INLINE HTTPDate HTTPDate::
 now() {
-  return HTTPDate(time(NULL));
+  return HTTPDate(time(nullptr));
 }
 
 /**

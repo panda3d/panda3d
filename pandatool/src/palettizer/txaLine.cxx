@@ -45,8 +45,8 @@ TxaLine() {
   _margin = 0;
   _got_coverage_threshold = false;
   _coverage_threshold = 0.0;
-  _color_type = (PNMFileType *)NULL;
-  _alpha_type = (PNMFileType *)NULL;
+  _color_type = (PNMFileType *)nullptr;
+  _alpha_type = (PNMFileType *)nullptr;
 }
 
 /**
@@ -259,7 +259,7 @@ parse(const string &line) {
       } else {
         // Maybe it's a group name.
         PaletteGroup *group = pal->test_palette_group(word);
-        if (group != (PaletteGroup *)NULL) {
+        if (group != (PaletteGroup *)nullptr) {
           _palette_groups.insert(group);
 
         } else {
@@ -283,7 +283,7 @@ parse(const string &line) {
                 _quality_level = ql;
 
               } else if (word.length() > 2 && word[word.length() - 2] == '_' &&
-                         strchr("uv", word[word.length() - 1]) != NULL) {
+                         strchr("uv", word[word.length() - 1]) != nullptr) {
                 // It must be a wrap mode for u or v.
                 string prefix = word.substr(0, word.length() - 2);
                 EggTexture::WrapMode wm = EggTexture::string_wrap_mode(prefix);
@@ -408,7 +408,7 @@ match_texture(TextureImage *texture) const {
       break;
 
     case ST_scale:
-      if (source != (SourceTextureImage *)NULL && source->get_size()) {
+      if (source != (SourceTextureImage *)nullptr && source->get_size()) {
         request._got_size = true;
         request._x_size = max(1, (int)(source->get_x_size() * _scale / 100.0));
         request._y_size = max(1, (int)(source->get_y_size() * _scale / 100.0));
@@ -436,7 +436,7 @@ match_texture(TextureImage *texture) const {
     request._coverage_threshold = _coverage_threshold;
   }
 
-  if (_color_type != (PNMFileType *)NULL) {
+  if (_color_type != (PNMFileType *)nullptr) {
     request._properties._color_type = _color_type;
     request._properties._alpha_type = _alpha_type;
   }
@@ -599,9 +599,9 @@ output(ostream &out) const {
     }
   }
 
-  if (_color_type != (PNMFileType *)NULL) {
+  if (_color_type != (PNMFileType *)nullptr) {
     out << " " << _color_type->get_suggested_extension();
-    if (_alpha_type != (PNMFileType *)NULL) {
+    if (_alpha_type != (PNMFileType *)nullptr) {
       out << "," << _alpha_type->get_suggested_extension();
     }
   }

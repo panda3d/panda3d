@@ -81,7 +81,7 @@ public:
   virtual PN_stdfloat audio_3d_get_doppler_factor() const;
   virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
+  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=nullptr, LVecBase3 *speaker3=nullptr, LVecBase3 *speaker4=nullptr, LVecBase3 *speaker5=nullptr, LVecBase3 *speaker6=nullptr, LVecBase3 *speaker7=nullptr, LVecBase3 *speaker8=nullptr, LVecBase3 *speaker9=nullptr);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;

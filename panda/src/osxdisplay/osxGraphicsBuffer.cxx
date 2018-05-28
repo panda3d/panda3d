@@ -36,7 +36,7 @@ osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   osxGraphicsPipe *osx_pipe;
   DCAST_INTO_V(osx_pipe, _pipe);
 
-  _pbuffer = NULL;
+  _pbuffer = nullptr;
 
   // Since the pbuffer never gets flipped, we get screenshots from the same
   // buffer we draw into.
@@ -48,7 +48,7 @@ osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 osxGraphicsBuffer::
 ~osxGraphicsBuffer() {
-  nassertv(_pbuffer == NULL);
+  nassertv(_pbuffer == nullptr);
 }
 
 /**
@@ -62,10 +62,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == (GraphicsStateGuardian *)nullptr) {
     return false;
   }
-  nassertr(_pbuffer != NULL, false);
+  nassertr(_pbuffer != nullptr, false);
 
   osxGraphicsStateGuardian *osxgsg;
   DCAST_INTO_R(osxgsg, _gsg, false);
@@ -106,7 +106,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void osxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -125,13 +125,13 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void osxGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != (GraphicsStateGuardian *)nullptr) {
     // aglSetPBuffer(osxgsg->get_context(), _pbuffer, 0, 0, 0);
     _gsg.clear();
   }
-  if (_pbuffer != NULL) {
+  if (_pbuffer != nullptr) {
     aglDestroyPBuffer(_pbuffer);
-    _pbuffer = NULL;
+    _pbuffer = nullptr;
   }
   _is_valid = false;
 }
@@ -143,10 +143,10 @@ close_buffer() {
 bool osxGraphicsBuffer::
 open_buffer() {
   if (_gsg == 0) {
-    _gsg = new osxGraphicsStateGuardian(_engine, _pipe, NULL);
+    _gsg = new osxGraphicsStateGuardian(_engine, _pipe, nullptr);
   }
 
-  if (_pbuffer == NULL) {
+  if (_pbuffer == nullptr) {
     GLenum target = GL_TEXTURE_RECTANGLE_ARB;
     if (_size[0] == Texture::up_to_power_2(_size[0]) &&
         _size[1] == Texture::up_to_power_2(_size[1])) {

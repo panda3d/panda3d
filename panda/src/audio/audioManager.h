@@ -179,7 +179,7 @@ PUBLISHED:
   virtual void write(ostream &out) const;
 
   // set_speaker_configuration is a Miles only method.
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
+  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=nullptr, LVecBase3 *speaker3=nullptr, LVecBase3 *speaker4=nullptr, LVecBase3 *speaker5=nullptr, LVecBase3 *speaker6=nullptr, LVecBase3 *speaker7=nullptr, LVecBase3 *speaker8=nullptr, LVecBase3 *speaker9=nullptr);
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);

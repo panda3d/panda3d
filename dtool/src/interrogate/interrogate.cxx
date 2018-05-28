@@ -83,32 +83,32 @@ enum CommandOptions {
 };
 
 static struct option long_options[] = {
-  { "oc", required_argument, NULL, CO_oc },
-  { "od", required_argument, NULL, CO_od },
-  { "srcdir", required_argument, NULL, CO_srcdir },
-  { "module", required_argument, NULL, CO_module },
-  { "library", required_argument, NULL, CO_library },
-  { "do-module", no_argument, NULL, CO_do_module },
-  { "fptrs", no_argument, NULL, CO_fptrs },
-  { "fnames", no_argument, NULL, CO_fnames },
-  { "string", no_argument, NULL, CO_string },
-  { "refcount", no_argument, NULL, CO_refcount },
-  { "assert", no_argument, NULL, CO_assert },
-  { "true-names", no_argument, NULL, CO_true_names },
-  { "c", no_argument, NULL, CO_c },
-  { "python", no_argument, NULL, CO_python },
-  { "python-obj", no_argument, NULL, CO_python_obj },
-  { "python-native", no_argument, NULL, CO_python_native },
-  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
-  { "unique-names", no_argument, NULL, CO_unique_names },
-  { "nodb", no_argument, NULL, CO_nodb },
-  { "longlong", required_argument, NULL, CO_longlong },
-  { "promiscuous", no_argument, NULL, CO_promiscuous },
-  { "spam", no_argument, NULL, CO_spam },
-  { "noangles", no_argument, NULL, CO_noangles },
-  { "nomangle", no_argument, NULL, CO_nomangle },
-  { "help", no_argument, NULL, CO_help },
-  { NULL }
+  { "oc", required_argument, nullptr, CO_oc },
+  { "od", required_argument, nullptr, CO_od },
+  { "srcdir", required_argument, nullptr, CO_srcdir },
+  { "module", required_argument, nullptr, CO_module },
+  { "library", required_argument, nullptr, CO_library },
+  { "do-module", no_argument, nullptr, CO_do_module },
+  { "fptrs", no_argument, nullptr, CO_fptrs },
+  { "fnames", no_argument, nullptr, CO_fnames },
+  { "string", no_argument, nullptr, CO_string },
+  { "refcount", no_argument, nullptr, CO_refcount },
+  { "assert", no_argument, nullptr, CO_assert },
+  { "true-names", no_argument, nullptr, CO_true_names },
+  { "c", no_argument, nullptr, CO_c },
+  { "python", no_argument, nullptr, CO_python },
+  { "python-obj", no_argument, nullptr, CO_python_obj },
+  { "python-native", no_argument, nullptr, CO_python_native },
+  { "track-interpreter", no_argument, nullptr, CO_track_interpreter },
+  { "unique-names", no_argument, nullptr, CO_unique_names },
+  { "nodb", no_argument, nullptr, CO_nodb },
+  { "longlong", required_argument, nullptr, CO_longlong },
+  { "promiscuous", no_argument, nullptr, CO_promiscuous },
+  { "spam", no_argument, nullptr, CO_spam },
+  { "noangles", no_argument, nullptr, CO_noangles },
+  { "nomangle", no_argument, nullptr, CO_nomangle },
+  { "help", no_argument, nullptr, CO_help },
+  { nullptr }
 };
 
 void
@@ -320,7 +320,7 @@ main(int argc, char **argv) {
   extern int optind;
   int flag;
 
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+  flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
     switch (flag) {
     case 'I':
@@ -458,7 +458,7 @@ main(int argc, char **argv) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+    flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   }
 
   argc -= (optind-1);
@@ -541,10 +541,10 @@ main(int argc, char **argv) {
   // Make up a file identifier.  This is just some bogus number that should be
   // the same in both the compiled-in code and in the database, so we can
   // check synchronicity at load time.
-  int file_identifier = time((time_t *)NULL);
+  int file_identifier = time((time_t *)nullptr);
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
 
-  pofstream * the_output_include = NULL;
+  pofstream * the_output_include = nullptr;
   pofstream output_include;
 
 
@@ -584,7 +584,7 @@ main(int argc, char **argv) {
       << " *\n"
       << " */\n\n";
 
-    if(the_output_include != NULL)
+    if(the_output_include != nullptr)
     {
         output_code << "#include \""<<output_include_filename<<"\"\n";
         *the_output_include << "#include \"" << output_include_filename.get_fullpath_wo_extension() << "_pynative.h\"\n";
@@ -598,7 +598,7 @@ main(int argc, char **argv) {
   }
 
 
-  if(the_output_include != NULL)
+  if(the_output_include != nullptr)
       *the_output_include << "#endif  // #define   " << output_include_filename.get_basename_wo_extension() << "__HH__\n";
 
   // And now output the bulk of the database.

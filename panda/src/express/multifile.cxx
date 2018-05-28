@@ -102,8 +102,8 @@ Multifile() :
               "be loaded quickly, without paying the cost of an expensive hash on "
               "each subfile in order to decrypt it."));
 
-  _read = (IStreamWrapper *)NULL;
-  _write = (ostream *)NULL;
+  _read = (IStreamWrapper *)nullptr;
+  _write = (ostream *)nullptr;
   _offset = 0;
   _owns_stream = false;
   _next_index = 0;
@@ -152,11 +152,11 @@ open_read(const Filename &multifile_name, const streampos &offset) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vfile = vfs->get_file(fname);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     return false;
   }
   istream *multifile_stream = vfile->open_read_file(false);
-  if (multifile_stream == NULL) {
+  if (multifile_stream == nullptr) {
     return false;
   }
 
@@ -181,7 +181,7 @@ bool Multifile::
 open_read(IStreamWrapper *multifile_stream, bool owns_pointer,
           const streampos &offset) {
   close();
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
   _read = multifile_stream;
   _owns_stream = owns_pointer;
@@ -206,7 +206,7 @@ open_write(const Filename &multifile_name) {
   if (!fname.open_write(_write_file, true)) {
     return false;
   }
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
   _write = &_write_file;
   _multifile_name = multifile_name;
@@ -224,7 +224,7 @@ open_write(const Filename &multifile_name) {
 bool Multifile::
 open_write(ostream *multifile_stream, bool owns_pointer) {
   close();
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
   _write = multifile_stream;
   _owns_stream = owns_pointer;
@@ -253,7 +253,7 @@ open_read_write(const Filename &multifile_name) {
   if (exists) {
     _timestamp = fname.get_timestamp();
   } else {
-    _timestamp = time(NULL);
+    _timestamp = time(nullptr);
   }
   _timestamp_dirty = true;
   _read = &_read_write_filew;
@@ -279,7 +279,7 @@ open_read_write(const Filename &multifile_name) {
 bool Multifile::
 open_read_write(iostream *multifile_stream, bool owns_pointer) {
   close();
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
 
   // We don't support locking when opening a file in read-write mode, because
@@ -319,15 +319,15 @@ close() {
 
   if (_owns_stream) {
     // We prefer to delete the IStreamWrapper over the ostream, if possible.
-    if (_read != (IStreamWrapper *)NULL) {
+    if (_read != (IStreamWrapper *)nullptr) {
       delete _read;
-    } else if (_write != (ostream *)NULL) {
+    } else if (_write != (ostream *)nullptr) {
       delete _write;
     }
   }
 
-  _read = (IStreamWrapper *)NULL;
-  _write = (ostream *)NULL;
+  _read = (IStreamWrapper *)nullptr;
+  _write = (ostream *)nullptr;
   _offset = 0;
   _owns_stream = false;
   _next_index = 0;
@@ -424,7 +424,7 @@ add_subfile(const string &subfile_name, const Filename &filename,
     add_new_subfile(subfile, compression_level);
   }
 
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
 
   return name;
@@ -509,7 +509,7 @@ update_subfile(const string &subfile_name, const Filename &filename,
     add_new_subfile(subfile, compression_level);
   }
 
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
 
   return name;
@@ -603,9 +603,9 @@ add_signature(const Filename &certificate, const Filename &chain,
 
   // Create an in-memory BIO to read the "file" from the buffer.
   BIO *certificate_mbio = BIO_new_mem_buf((void *)certificate_data.data(), certificate_data.size());
-  X509 *x509 = PEM_read_bio_X509(certificate_mbio, NULL, NULL, (void *)"");
+  X509 *x509 = PEM_read_bio_X509(certificate_mbio, nullptr, nullptr, (void *)"");
   BIO_free(certificate_mbio);
-  if (x509 == NULL) {
+  if (x509 == nullptr) {
     express_cat.info()
       << "Could not read certificate in " << certificate << ".\n";
     return false;
@@ -625,10 +625,10 @@ add_signature(const Filename &certificate, const Filename &chain,
     }
 
     BIO *chain_mbio = BIO_new_mem_buf((void *)chain_data.data(), chain_data.size());
-    X509 *c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
-    while (c != NULL) {
+    X509 *c = PEM_read_bio_X509(chain_mbio, nullptr, nullptr, (void *)"");
+    while (c != nullptr) {
       cert_chain.push_back(c);
-      c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+      c = PEM_read_bio_X509(chain_mbio, nullptr, nullptr, (void *)"");
     }
     BIO_free(chain_mbio);
 
@@ -649,10 +649,10 @@ add_signature(const Filename &certificate, const Filename &chain,
   }
 
   BIO *pkey_mbio = BIO_new_mem_buf((void *)pkey_data.data(), pkey_data.size());
-  EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, NULL, NULL,
+  EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, nullptr, nullptr,
                                                (void *)password.c_str());
   BIO_free(pkey_mbio);
-  if (evp_pkey == NULL) {
+  if (evp_pkey == nullptr) {
     express_cat.info()
       << "Could not read private key in " << pkey << ".\n";
     return false;
@@ -694,10 +694,10 @@ add_signature(const Filename &composite, const string &password) {
 
   // Get the private key.
   BIO *pkey_mbio = BIO_new_mem_buf((void *)composite_data.data(), composite_data.size());
-  EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, NULL, NULL,
+  EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, nullptr, nullptr,
                                                (void *)password.c_str());
   BIO_free(pkey_mbio);
-  if (evp_pkey == NULL) {
+  if (evp_pkey == nullptr) {
     express_cat.info()
       << "Could not read private key in " << composite << ".\n";
     return false;
@@ -707,10 +707,10 @@ add_signature(const Filename &composite, const string &password) {
   CertChain cert_chain;
 
   BIO *chain_mbio = BIO_new_mem_buf((void *)composite_data.data(), composite_data.size());
-  X509 *c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
-  while (c != NULL) {
+  X509 *c = PEM_read_bio_X509(chain_mbio, nullptr, nullptr, (void *)"");
+  while (c != nullptr) {
     cert_chain.push_back(c);
-    c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+    c = PEM_read_bio_X509(chain_mbio, nullptr, nullptr, (void *)"");
   }
   BIO_free(chain_mbio);
 
@@ -791,7 +791,7 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
     return false;
   }
 
-  if (pkey == NULL) {
+  if (pkey == nullptr) {
     express_cat.info()
       << "No private key given.\n";
     return false;
@@ -812,7 +812,7 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
   for (ci = cert_chain.begin(); ci != cert_chain.end(); ++ci) {
     X509 *cert = (*ci)._cert;
 
-    int der_len = i2d_X509(cert, NULL);
+    int der_len = i2d_X509(cert, nullptr);
     unsigned char *der_buf = new unsigned char[der_len];
     unsigned char *p = der_buf;
     i2d_X509(cert, &p);
@@ -886,7 +886,7 @@ get_signature_subject_name(int n) const {
   nassertr(!cert_chain.empty(), string());
 
   X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
-  if (xname != NULL) {
+  if (xname != nullptr) {
     // We use "print" to dump the output to a memory BIO.  Is there an easier
     // way to extract the X509_NAME text?  Curse these incomplete docs.
     BIO *mbio = BIO_new(BIO_s_mem());
@@ -930,15 +930,15 @@ get_signature_friendly_name(int n) const {
 
     // A complex OpenSSL interface to extract out the name in utf-8.
     X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
-    if (xname != NULL) {
+    if (xname != nullptr) {
       int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
       if (pos != -1) {
         // We just get the first common name.  I guess it's possible to have
         // more than one; not sure what that means in this context.
         X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
-        if (xentry != NULL) {
+        if (xentry != nullptr) {
           ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
-          if (data != NULL) {
+          if (data != nullptr) {
             // We use "print" to dump the output to a memory BIO.  Is there an
             // easier way to decode the ASN1_STRING?  Curse these incomplete
             // docs.
@@ -976,8 +976,8 @@ get_signature_public_key(int n) const {
   nassertr(!cert_chain.empty(), string());
 
   EVP_PKEY *pkey = X509_get_pubkey(cert_chain[0]._cert);
-  if (pkey != NULL) {
-    int key_len = i2d_PublicKey(pkey, NULL);
+  if (pkey != nullptr) {
+    int key_len = i2d_PublicKey(pkey, nullptr);
     unsigned char *key_buf = new unsigned char[key_len];
     unsigned char *p = key_buf;
     i2d_PublicKey(pkey, &p);
@@ -1059,9 +1059,9 @@ validate_signature_certificate(int n) const {
   // Copy our CertChain structure into an X509 pointer and accompanying
   // STACK_OF(X509) pointer.
   X509 *x509 = chain[0]._cert;
-  STACK_OF(X509) *stack = NULL;
+  STACK_OF(X509) *stack = nullptr;
   if (chain.size() > 1) {
-    stack = sk_X509_new(NULL);
+    stack = sk_X509_new(nullptr);
     for (size_t n = 1; n < chain.size(); ++n) {
       sk_X509_push(stack, chain[n]._cert);
     }
@@ -1129,7 +1129,7 @@ flush() {
     }
   }
 
-  nassertr(_write != (ostream *)NULL, false);
+  nassertr(_write != (ostream *)nullptr, false);
 
   // First, mark out all of the removed subfiles.
   PendingSubfiles::iterator pi;
@@ -1188,14 +1188,14 @@ flush() {
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
 
-      if (_read != (IStreamWrapper *)NULL) {
+      if (_read != (IStreamWrapper *)nullptr) {
         _read->acquire();
         _next_index = subfile->write_data(*_write, _read->get_istream(),
                                           _next_index, this);
         _read->release();
 
       } else {
-        _next_index = subfile->write_data(*_write, NULL, _next_index, this);
+        _next_index = subfile->write_data(*_write, nullptr, _next_index, this);
       }
 
       nassertr(_next_index == _write->tellp(), false);
@@ -1448,7 +1448,7 @@ remove_subfile(int index) {
   _removed_subfiles.push_back(subfile);
   _subfiles.erase(_subfiles.begin() + index);
 
-  _timestamp = time(NULL);
+  _timestamp = time(nullptr);
   _timestamp_dirty = true;
 
   _needs_repack = true;
@@ -1585,18 +1585,18 @@ get_subfile_internal_length(int index) const {
  */
 istream *Multifile::
 open_read_subfile(int index) {
-  nassertr(is_read_valid(), NULL);
-  nassertr(index >= 0 && index < (int)_subfiles.size(), NULL);
+  nassertr(is_read_valid(), nullptr);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), nullptr);
   Subfile *subfile = _subfiles[index];
 
-  if (subfile->_source != (istream *)NULL ||
+  if (subfile->_source != (istream *)nullptr ||
       !subfile->_source_filename.empty()) {
     // The subfile has not yet been copied into the physical Multifile.  Force
     // a flush operation to incorporate it.
     flush();
 
     // That shouldn't change the subfile index or delete the subfile pointer.
-    nassertr(subfile == _subfiles[index], NULL);
+    nassertr(subfile == _subfiles[index], nullptr);
   }
 
   return open_read_subfile(subfile);
@@ -1610,7 +1610,7 @@ open_read_subfile(int index) {
  */
 void Multifile::
 close_read_subfile(istream *stream) {
-  if (stream != (istream *)NULL) {
+  if (stream != (istream *)nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -1666,7 +1666,7 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
 
   istream *in = open_read_subfile(index);
-  if (in == (istream *)NULL) {
+  if (in == (istream *)nullptr) {
     return false;
   }
 
@@ -1741,7 +1741,7 @@ compare_subfile(int index, const Filename &filename) {
   }
 
   istream *in1 = open_read_subfile(index);
-  if (in1 == (istream *)NULL) {
+  if (in1 == (istream *)nullptr) {
     return false;
   }
 
@@ -1889,7 +1889,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   Subfile *subfile = _subfiles[index];
 
-  if (subfile->_source != (istream *)NULL ||
+  if (subfile->_source != (istream *)nullptr ||
       !subfile->_source_filename.empty()) {
     // The subfile has not yet been copied into the physical Multifile.  Force
     // a flush operation to incorporate it.
@@ -1906,7 +1906,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
     // If the subfile is encrypted or compressed, we can't read it directly.
     // Fall back to the generic implementation.
     istream *in = open_read_subfile(index);
-    if (in == (istream *)NULL) {
+    if (in == (istream *)nullptr) {
       return false;
     }
 
@@ -1958,7 +1958,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
  */
 streampos Multifile::
 pad_to_streampos(streampos fpos) {
-  nassertr(_write != (ostream *)NULL, fpos);
+  nassertr(_write != (ostream *)nullptr, fpos);
   nassertr(_write->tellp() == fpos, fpos);
   streampos new_fpos = normalize_streampos(fpos);
   while (fpos < new_fpos) {
@@ -2029,12 +2029,12 @@ add_new_subfile(Subfile *subfile, int compression_level) {
  */
 istream *Multifile::
 open_read_subfile(Subfile *subfile) {
-  nassertr(subfile->_source == (istream *)NULL &&
-           subfile->_source_filename.empty(), NULL);
+  nassertr(subfile->_source == (istream *)nullptr &&
+           subfile->_source_filename.empty(), nullptr);
 
   // Return an ISubStream object that references into the open Multifile
   // istream.
-  nassertr(subfile->_data_start != (streampos)0, NULL);
+  nassertr(subfile->_data_start != (streampos)0, nullptr);
   istream *stream =
     new ISubStream(_read, _offset + subfile->_data_start,
                    _offset + subfile->_data_start + (streampos)subfile->_data_length);
@@ -2044,7 +2044,7 @@ open_read_subfile(Subfile *subfile) {
     express_cat.error()
       << "OpenSSL not compiled in; cannot read encrypted multifiles.\n";
     delete stream;
-    return NULL;
+    return nullptr;
 #else  // HAVE_OPENSSL
     // The subfile is encrypted.  So actually, return an IDecryptStream that
     // wraps around the ISubStream.
@@ -2060,7 +2060,7 @@ open_read_subfile(Subfile *subfile) {
       express_cat.error()
         << "Unable to decrypt subfile " << subfile->_name << ".\n";
       delete stream;
-      return NULL;
+      return nullptr;
     }
 #endif  // HAVE_OPENSSL
   }
@@ -2070,7 +2070,7 @@ open_read_subfile(Subfile *subfile) {
     express_cat.error()
       << "zlib not compiled in; cannot read compressed multifiles.\n";
     delete stream;
-    return NULL;
+    return nullptr;
 #else  // HAVE_ZLIB
     // Oops, the subfile is compressed.  So actually, return an
     // IDecompressStream that wraps around the ISubStream.
@@ -2082,7 +2082,7 @@ open_read_subfile(Subfile *subfile) {
   if (stream->fail()) {
     // Hmm, some inexplicable problem.
     delete stream;
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -2151,7 +2151,7 @@ clear_subfiles() {
  */
 bool Multifile::
 read_index() {
-  nassertr(_read != (IStreamWrapper *)NULL, false);
+  nassertr(_read != (IStreamWrapper *)nullptr, false);
 
   // We acquire the IStreamWrapper lock for the duration of this method.
   _read->acquire();
@@ -2331,7 +2331,7 @@ write_header() {
   _file_major_ver = _current_major_ver;
   _file_minor_ver = _current_minor_ver;
 
-  nassertr(_write != (ostream *)NULL, false);
+  nassertr(_write != (ostream *)nullptr, false);
   nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header_prefix.data(), _header_prefix.size());
   _write->write(_header, _header_size);
@@ -2380,7 +2380,7 @@ check_signatures() {
 
     // Extract the signature data and certificate separately.
     istream *stream = open_read_subfile(subfile);
-    nassertv(stream != NULL);
+    nassertv(stream != nullptr);
     StreamReader reader(*stream);
     size_t sig_size = reader.get_uint32();
     vector_uchar sig_data = reader.extract_bytes(sig_size);
@@ -2396,7 +2396,7 @@ check_signatures() {
     // Now convert each of the certificates to an X509 object, and store it in
     // our CertChain.
     CertChain chain;
-    EVP_PKEY *pkey = NULL;
+    EVP_PKEY *pkey = nullptr;
     if (!buffer.empty()) {
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
       // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
@@ -2407,13 +2407,13 @@ check_signatures() {
 #endif
       bp = (unsigned char *)&buffer[0];
       bp_end = bp + buffer.size();
-      X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-      while (num_certs > 0 && x509 != NULL) {
+      X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+      while (num_certs > 0 && x509 != nullptr) {
         chain.push_back(CertRecord(x509));
         --num_certs;
-        x509 = d2i_X509(NULL, &bp, bp_end - bp);
+        x509 = d2i_X509(nullptr, &bp, bp_end - bp);
       }
-      if (num_certs != 0 || x509 != NULL) {
+      if (num_certs != 0 || x509 != nullptr) {
         express_cat.warning()
           << "Extra data in signature record.\n";
       }
@@ -2423,11 +2423,11 @@ check_signatures() {
       pkey = X509_get_pubkey(chain[0]._cert);
     }
 
-    if (pkey != NULL) {
+    if (pkey != nullptr) {
       EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
       EVP_VerifyInit(md_ctx, EVP_sha1());
 
-      nassertv(_read != NULL);
+      nassertv(_read != nullptr);
       _read->acquire();
       istream *read = _read->get_istream();
 
@@ -2520,7 +2520,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
 
   // And finally, get the rest of the name.
   char *name_buffer = (char *)PANDA_MALLOC_ARRAY(name_length);
-  nassertr(name_buffer != (char *)NULL, next_index);
+  nassertr(name_buffer != (char *)nullptr, next_index);
   for (size_t ni = 0; ni < name_length; ni++) {
     name_buffer[ni] = read.get() ^ 0xff;
   }
@@ -2608,7 +2608,7 @@ write_data(ostream &write, istream *read, streampos fpos,
 
   istream *source = _source;
   pifstream source_file;
-  if (source == (istream *)NULL && !_source_filename.empty()) {
+  if (source == (istream *)nullptr && !_source_filename.empty()) {
     // If we have a filename, open it up and read that.
     if (!_source_filename.open_read(source_file)) {
       // Unable to open the source file.
@@ -2622,10 +2622,10 @@ write_data(ostream &write, istream *read, streampos fpos,
     }
   }
 
-  if (source == (istream *)NULL) {
+  if (source == (istream *)nullptr) {
     // We don't have any source data.  Perhaps we're reading from an already-
     // packed Subfile (e.g.  during repack()).
-    if (read == (istream *)NULL) {
+    if (read == (istream *)nullptr) {
       // No, we're just screwed.
       express_cat.info()
         << "No source for subfile " << _name << ".\n";
@@ -2698,10 +2698,10 @@ write_data(ostream &write, istream *read, streampos fpos,
 
       // In order to generate a signature, we need to have a valid read
       // pointer.
-      nassertr(read != NULL, fpos);
+      nassertr(read != nullptr, fpos);
 
       // And we also need to have a private key.
-      nassertr(_pkey != NULL, fpos);
+      nassertr(_pkey != nullptr, fpos);
 
       EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
       EVP_SignInit(md_ctx, EVP_sha1());
@@ -2776,10 +2776,10 @@ write_data(ostream &write, istream *read, streampos fpos,
     _timestamp = _source_filename.get_timestamp();
   }
   if (_timestamp == 0) {
-    _timestamp = time(NULL);
+    _timestamp = time(nullptr);
   }
 
-  _source = (istream *)NULL;
+  _source = (istream *)nullptr;
   _source_filename = Filename();
   source_file.close();
 

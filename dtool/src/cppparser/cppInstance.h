@@ -94,10 +94,10 @@ public:
 
   bool is_scoped() const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-                      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = nullptr) const;
 
   string get_simple_name() const;
-  string get_local_name(CPPScope *scope = NULL) const;
+  string get_local_name(CPPScope *scope = nullptr) const;
   string get_fully_scoped_name() const;
 
   void check_for_constructor(CPPScope *current_scope, CPPScope *global_scope);
@@ -105,7 +105,7 @@ public:
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
   virtual bool is_fully_specified() const;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,

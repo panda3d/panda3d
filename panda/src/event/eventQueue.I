@@ -17,7 +17,7 @@
  */
 INLINE EventQueue *EventQueue::
 get_global_event_queue() {
-  if (_global_event_queue == NULL) {
+  if (_global_event_queue == nullptr) {
     make_global_event_queue();
   }
   return _global_event_queue;

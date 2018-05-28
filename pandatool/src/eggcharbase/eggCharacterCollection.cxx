@@ -125,7 +125,7 @@ get_character_by_name(const string &character_name) const {
     }
   }
 
-  return (EggCharacterData *)NULL;
+  return (EggCharacterData *)nullptr;
 }
 
 
@@ -617,7 +617,7 @@ rename_char(int i, const string &name) {
 
   EggCharacterData *char_data = _characters[i];
   if (char_data->get_name() != name) {
-    nassertv(get_character_by_name(name) == (EggCharacterData *)NULL);
+    nassertv(get_character_by_name(name) == (EggCharacterData *)nullptr);
     char_data->rename_char(name);
   }
 }

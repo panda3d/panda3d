@@ -300,7 +300,7 @@ public:
   }
 
   void Free(void *block) {
-    if (block != NULL) {
+    if (block != nullptr) {
       PANDA_FREE_ARRAY(block);
     }
   }

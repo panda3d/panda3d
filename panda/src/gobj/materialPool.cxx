@@ -15,7 +15,7 @@
 #include "config_gobj.h"
 #include "lightMutexHolder.h"
 
-MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)NULL;
+MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)nullptr;
 
 
 /**
@@ -119,7 +119,7 @@ ns_list_contents(ostream &out) const {
  */
 MaterialPool *MaterialPool::
 get_global_ptr() {
-  if (_global_ptr == (MaterialPool *)NULL) {
+  if (_global_ptr == (MaterialPool *)nullptr) {
     _global_ptr = new MaterialPool;
   }
   return _global_ptr;

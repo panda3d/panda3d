@@ -61,9 +61,9 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
 
   _format_ctx = _ffvfile.get_format_context();
-  nassertv(_format_ctx != NULL);
+  nassertv(_format_ctx != nullptr);
 
-  if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(_format_ctx, nullptr) < 0) {
     cleanup();
     return;
   }
@@ -120,9 +120,9 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   avcodec_copy_context(_audio_ctx, codecpar);
 #endif
 
-  AVDictionary *opts = NULL;
+  AVDictionary *opts = nullptr;
   av_dict_set(&opts, "request_sample_fmt", "s16", 0);
-  if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
+  if (avcodec_open2(_audio_ctx, pAudioCodec, nullptr) < 0) {
     cleanup();
     return;
   }
@@ -148,7 +148,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     if (swr_init(_resample_ctx) != 0) {
       ffmpeg_cat.error()
         << "Failed to set up resample context.\n";
-      _resample_ctx = NULL;
+      _resample_ctx = nullptr;
     }
 #else
     ffmpeg_cat.error()
@@ -216,7 +216,7 @@ cleanup() {
 #else
     avcodec_free_frame(&_frame);
 #endif
-    _frame = NULL;
+    _frame = nullptr;
   }
 
   if (_packet) {
@@ -227,14 +227,14 @@ cleanup() {
       av_free_packet(_packet);
     }
     delete _packet;
-    _packet = NULL;
+    _packet = nullptr;
 #endif
   }
 
   if (_buffer_alloc) {
     delete[] _buffer_alloc;
     _buffer_alloc = 0;
-    _buffer = NULL;
+    _buffer = nullptr;
   }
 
   if ((_audio_ctx)&&(_audio_ctx->codec)) {
@@ -245,17 +245,17 @@ cleanup() {
     delete _audio_ctx;
 #endif
   }
-  _audio_ctx = NULL;
+  _audio_ctx = nullptr;
 
   if (_format_ctx) {
     _ffvfile.close();
-    _format_ctx = NULL;
+    _format_ctx = nullptr;
   }
 
 #ifdef HAVE_SWRESAMPLE
   if (_resample_ctx) {
     swr_free(&_resample_ctx);
-    _resample_ctx = NULL;
+    _resample_ctx = nullptr;
   }
 #endif
 
@@ -320,7 +320,7 @@ reload_buffer() {
     fetch_packet();
     if (_packet->data == nullptr) {
       // fetch_packet() says we're out of packets.  Let the codec know.
-      ret = avcodec_send_packet(_audio_ctx, NULL);
+      ret = avcodec_send_packet(_audio_ctx, nullptr);
     }
   }
 

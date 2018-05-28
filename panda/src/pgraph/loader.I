@@ -72,7 +72,7 @@ get_file(int n) const {
  */
 INLINE LoaderFileType *Loader::Results::
 get_file_type(int n) const {
-  nassertr(n >= 0 && n < (int)_files.size(), NULL);
+  nassertr(n >= 0 && n < (int)_files.size(), nullptr);
   return _files[n]._type;
 }
 
@@ -127,7 +127,7 @@ get_task_chain() const {
 INLINE void Loader::
 stop_threads() {
   PT(AsyncTaskChain) chain = _task_manager->find_task_chain(_task_chain);
-  if (chain != (AsyncTaskChain *)NULL) {
+  if (chain != (AsyncTaskChain *)nullptr) {
     chain->stop_threads();
   }
 }
@@ -210,7 +210,7 @@ save_async(AsyncTask *request) {
  */
 INLINE Loader *Loader::
 get_global_ptr() {
-  if (_global_ptr == (Loader *)NULL) {
+  if (_global_ptr == (Loader *)nullptr) {
     make_global_ptr();
   }
   return _global_ptr;

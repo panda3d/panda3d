@@ -42,11 +42,11 @@ get_region() const {
 INLINE void PGItem::
 set_notify(PGItemNotify *notify) {
   LightReMutexHolder holder(_lock);
-  if (_notify != (PGItemNotify *)NULL) {
+  if (_notify != (PGItemNotify *)nullptr) {
     _notify->remove_item(this);
   }
   _notify = notify;
-  if (_notify != (PGItemNotify *)NULL) {
+  if (_notify != (PGItemNotify *)nullptr) {
     _notify->add_item(this);
   }
 }
@@ -58,7 +58,7 @@ set_notify(PGItemNotify *notify) {
 INLINE bool PGItem::
 has_notify() const {
   LightReMutexHolder holder(_lock);
-  return (_notify != (PGItemNotify *)NULL);
+  return (_notify != (PGItemNotify *)nullptr);
 }
 
 /**

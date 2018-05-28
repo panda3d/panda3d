@@ -17,7 +17,7 @@
 #include "configPage.h"
 #include "config_prc.h"
 
-ConfigVariableManager *ConfigVariableManager::_global_ptr = NULL;
+ConfigVariableManager *ConfigVariableManager::_global_ptr = nullptr;
 
 /**
  * The constructor is private (actually, just protected, but only to avoid a
@@ -52,12 +52,12 @@ make_variable(const string &name) {
     return (*ni).second;
   }
 
-  ConfigVariableCore *variable = NULL;
+  ConfigVariableCore *variable = nullptr;
 
   // See if there's a template that matches this name.
   VariableTemplates::const_iterator ti;
   for (ti = _variable_templates.begin();
-       ti != _variable_templates.end() && variable == (ConfigVariableCore *)NULL;
+       ti != _variable_templates.end() && variable == (ConfigVariableCore *)nullptr;
        ++ti) {
     const GlobPattern &pattern = (*ti).first;
     ConfigVariableCore *templ = (*ti).second;
@@ -66,7 +66,7 @@ make_variable(const string &name) {
     }
   }
 
-  if (variable == (ConfigVariableCore *)NULL) {
+  if (variable == (ConfigVariableCore *)nullptr) {
     variable = new ConfigVariableCore(name);
   }
 
@@ -116,7 +116,7 @@ make_variable_template(const string &pattern,
     core->set_value_type(value_type);
   }
   if (!default_value.empty() ||
-      core->get_default_value() == (ConfigDeclaration *)NULL) {
+      core->get_default_value() == (ConfigDeclaration *)nullptr) {
     core->set_default_value(default_value);
   }
   if (!description.empty()) {
@@ -137,7 +137,7 @@ make_variable_template(const string &pattern,
         variable->set_value_type(value_type);
       }
       if (!default_value.empty() ||
-          variable->get_default_value() == (ConfigDeclaration *)NULL) {
+          variable->get_default_value() == (ConfigDeclaration *)nullptr) {
         variable->set_default_value(default_value);
       }
       if (!description.empty()) {
@@ -300,7 +300,7 @@ list_dynamic_variables() const {
  */
 ConfigVariableManager *ConfigVariableManager::
 get_global_ptr() {
-  if (_global_ptr == (ConfigVariableManager *)NULL) {
+  if (_global_ptr == (ConfigVariableManager *)nullptr) {
     _global_ptr = new ConfigVariableManager;
   }
   return _global_ptr;
@@ -357,7 +357,7 @@ list_variable(const ConfigVariableCore *variable,
       }
 
       decl = variable->get_default_value();
-      if (decl != (ConfigDeclaration *)NULL) {
+      if (decl != (ConfigDeclaration *)nullptr) {
         nout << "  default value = " << decl->get_string_value() << "\n";
       }
     }

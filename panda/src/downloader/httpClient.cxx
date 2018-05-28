@@ -216,7 +216,7 @@ HTTPClient() {
 
   _http_version = HTTPEnum::HV_11;
   _verify_ssl = verify_ssl ? VS_normal : VS_no_verify;
-  _ssl_ctx = (SSL_CTX *)NULL;
+  _ssl_ctx = (SSL_CTX *)nullptr;
 
   set_proxy_spec(http_proxy);
   set_direct_host_spec(http_direct_hosts);
@@ -241,8 +241,8 @@ HTTPClient() {
   _client_certificate_passphrase = http_client_certificate_passphrase;
 
   _client_certificate_loaded = false;
-  _client_certificate_pub = NULL;
-  _client_certificate_priv = NULL;
+  _client_certificate_pub = nullptr;
+  _client_certificate_priv = nullptr;
 
   int num_server_certs = http_preapproved_server_certificate_filename.get_num_unique_values();
   int si;
@@ -271,7 +271,7 @@ HTTPClient() {
  */
 HTTPClient::
 HTTPClient(const HTTPClient &copy) {
-  _ssl_ctx = (SSL_CTX *)NULL;
+  _ssl_ctx = (SSL_CTX *)nullptr;
 
   (*this) = copy;
 }
@@ -295,12 +295,12 @@ operator = (const HTTPClient &copy) {
  */
 HTTPClient::
 ~HTTPClient() {
-  if (_ssl_ctx != (SSL_CTX *)NULL) {
+  if (_ssl_ctx != (SSL_CTX *)nullptr) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000
     // Before we can free the context, we must remove the X509_STORE pointer
     // from it, so it won't be destroyed along with it (this object is shared
     // among all contexts).
-    _ssl_ctx->cert_store = NULL;
+    _ssl_ctx->cert_store = nullptr;
 #endif
     SSL_CTX_free(_ssl_ctx);
   }
@@ -866,7 +866,7 @@ load_client_certificate() {
 
       ERR_clear_error();
       _client_certificate_priv =
-        PEM_read_bio_PrivateKey(mbio, NULL, NULL,
+        PEM_read_bio_PrivateKey(mbio, nullptr, nullptr,
                                 (char *)_client_certificate_passphrase.c_str());
 
       // Rewind the "file" to the beginning in order to read the public key
@@ -875,7 +875,7 @@ load_client_certificate() {
 
       ERR_clear_error();
       _client_certificate_pub =
-        PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+        PEM_read_bio_X509(mbio, nullptr, nullptr, nullptr);
 
       BIO_free(mbio);
 
@@ -891,18 +891,18 @@ load_client_certificate() {
       }
 
       if (downloader_cat.is_on(sev)) {
-        if (_client_certificate_priv != (EVP_PKEY *)NULL &&
-            _client_certificate_pub != (X509 *)NULL) {
+        if (_client_certificate_priv != (EVP_PKEY *)nullptr &&
+            _client_certificate_pub != (X509 *)nullptr) {
           downloader_cat.out(sev)
             << "Read client certificate from " << source << "\n";
 
         } else {
-          if (_client_certificate_priv == (EVP_PKEY *)NULL) {
+          if (_client_certificate_priv == (EVP_PKEY *)nullptr) {
             downloader_cat.out(sev)
               << "Could not read private key from " << source << "\n";
           }
 
-          if (_client_certificate_pub == (X509 *)NULL) {
+          if (_client_certificate_pub == (X509 *)nullptr) {
             downloader_cat.out(sev)
               << "Could not read public key from " << source << "\n";
           }
@@ -911,8 +911,8 @@ load_client_certificate() {
     }
   }
 
-  return (_client_certificate_priv != (EVP_PKEY *)NULL &&
-          _client_certificate_pub != (X509 *)NULL);
+  return (_client_certificate_priv != (EVP_PKEY *)nullptr &&
+          _client_certificate_pub != (X509 *)nullptr);
 }
 
 /**
@@ -961,10 +961,10 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
   BIO *mbio = BIO_new_mem_buf((void *)pem.data(), pem.length());
 
   ERR_clear_error();
-  X509 *cert = PEM_read_bio_X509(mbio, NULL, NULL, NULL);
+  X509 *cert = PEM_read_bio_X509(mbio, nullptr, nullptr, nullptr);
   BIO_free(mbio);
 
-  if (cert == NULL) {
+  if (cert == nullptr) {
     downloader_cat.warning()
       << "Could not parse PEM data\n";
     return false;
@@ -1003,7 +1003,7 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
 bool HTTPClient::
 add_preapproved_server_certificate_name(const URLSpec &url, const string &name) {
   X509_NAME *cert_name = parse_x509_name(name);
-  if (cert_name == NULL) {
+  if (cert_name == nullptr) {
     downloader_cat.warning()
       << "Could not parse certificate name " << name << "\n";
     return false;
@@ -1156,7 +1156,7 @@ get_header(const URLSpec &url) {
  */
 HTTPClient *HTTPClient::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new HTTPClient;
   }
   return _global_ptr;
@@ -1168,7 +1168,7 @@ get_global_ptr() {
  */
 SSL_CTX *HTTPClient::
 get_ssl_ctx() {
-  if (_ssl_ctx != (SSL_CTX *)NULL) {
+  if (_ssl_ctx != (SSL_CTX *)nullptr) {
     return _ssl_ctx;
   }
 
@@ -1190,7 +1190,7 @@ get_ssl_ctx() {
 
   X509_STORE *store = sslw->get_x509_store();
 #if OPENSSL_VERSION_NUMBER >= 0x10100000
-  if (store != NULL) {
+  if (store != nullptr) {
     X509_STORE_up_ref(store);
   }
 #endif
@@ -1419,7 +1419,7 @@ select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
   }
 
   // No matching domains.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1441,14 +1441,14 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
     auth = new HTTPDigestAuthorization((*si).second, url, is_proxy);
   }
 
-  if (auth == (HTTPAuthorization *)NULL || !auth->is_valid()) {
+  if (auth == (HTTPAuthorization *)nullptr || !auth->is_valid()) {
     si = schemes.find("basic");
     if (si != schemes.end()) {
       auth = new HTTPBasicAuthorization((*si).second, url, is_proxy);
     }
   }
 
-  if (auth == (HTTPAuthorization *)NULL || !auth->is_valid()) {
+  if (auth == (HTTPAuthorization *)nullptr || !auth->is_valid()) {
     downloader_cat.warning()
       << "Don't know how to use any of the server's available authorization schemes:\n";
     for (si = schemes.begin(); si != schemes.end(); ++si) {
@@ -1475,14 +1475,14 @@ generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
  */
 void HTTPClient::
 unload_client_certificate() {
-  if (_client_certificate_priv != (EVP_PKEY *)NULL) {
+  if (_client_certificate_priv != (EVP_PKEY *)nullptr) {
     EVP_PKEY_free(_client_certificate_priv);
-    _client_certificate_priv = NULL;
+    _client_certificate_priv = nullptr;
   }
 
-  if (_client_certificate_pub != (X509 *)NULL) {
+  if (_client_certificate_pub != (X509 *)nullptr) {
     X509_free(_client_certificate_pub);
-    _client_certificate_pub = NULL;
+    _client_certificate_pub = nullptr;
   }
 
   _client_certificate_loaded = false;
@@ -1494,7 +1494,7 @@ unload_client_certificate() {
  */
 X509_NAME *HTTPClient::
 parse_x509_name(const string &source) {
-  X509_NAME *result = NULL;
+  X509_NAME *result = nullptr;
 
   result = X509_NAME_new();
   bool added_any = false;
@@ -1526,7 +1526,7 @@ parse_x509_name(const string &source) {
           << "Unknown type " << type << " in X509 name: " << source
           << "\n";
         X509_NAME_free(result);
-        return NULL;
+        return nullptr;
       }
 
       string value;
@@ -1556,7 +1556,7 @@ parse_x509_name(const string &source) {
             << "Unable to add " << type << "=" << value << " in X509 name: "
             << source << "\n";
           X509_NAME_free(result);
-          return NULL;
+          return nullptr;
         }
         added_any = true;
       }
@@ -1567,7 +1567,7 @@ parse_x509_name(const string &source) {
     downloader_cat.info()
       << "Invalid empty X509 name: " << source << "\n";
     X509_NAME_free(result);
-    return NULL;
+    return nullptr;
   }
 
   return result;

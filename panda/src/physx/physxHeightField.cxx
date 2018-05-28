@@ -46,7 +46,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseHeightField(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**

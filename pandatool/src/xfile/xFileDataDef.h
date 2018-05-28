@@ -46,7 +46,7 @@ public:
   };
 
   INLINE XFileDataDef(XFile *x_file, const string &name,
-                      Type type, XFileTemplate *xtemplate = NULL);
+                      Type type, XFileTemplate *xtemplate = nullptr);
   virtual ~XFileDataDef();
 
   virtual void clear();

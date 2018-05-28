@@ -279,7 +279,7 @@ set_bin_flash_color(int bin_index, const LColor &color) {
  */
 INLINE CullBinManager *CullBinManager::
 get_global_ptr() {
-  if (_global_ptr == (CullBinManager *)NULL) {
+  if (_global_ptr == (CullBinManager *)nullptr) {
     _global_ptr = new CullBinManager;
   }
   return _global_ptr;

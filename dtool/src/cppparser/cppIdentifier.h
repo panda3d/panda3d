@@ -48,7 +48,7 @@ public:
   bool is_scoped() const;
 
   string get_simple_name() const;
-  string get_local_name(CPPScope *scope = NULL) const;
+  string get_local_name(CPPScope *scope = nullptr) const;
   string get_fully_scoped_name() const;
 
   bool is_fully_specified() const;
@@ -56,30 +56,30 @@ public:
 
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-                      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = nullptr) const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
                       CPPDeclaration::SubstDecl &subst,
-                      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = nullptr) const;
 
   CPPType *find_type(CPPScope *current_scope, CPPScope *global_scope,
                      bool force_instantiate = false,
-                     CPPPreprocessor *error_sink = NULL) const;
+                     CPPPreprocessor *error_sink = nullptr) const;
   CPPType *find_type(CPPScope *current_scope, CPPScope *global_scope,
                      CPPDeclaration::SubstDecl &subst,
-                     CPPPreprocessor *error_sink = NULL) const;
+                     CPPPreprocessor *error_sink = nullptr) const;
   CPPDeclaration *find_symbol(CPPScope *current_scope,
                               CPPScope *global_scope,
-                              CPPPreprocessor *error_sink = NULL) const;
+                              CPPPreprocessor *error_sink = nullptr) const;
   CPPDeclaration *find_symbol(CPPScope *current_scope,
                               CPPScope *global_scope,
                               CPPDeclaration::SubstDecl &subst,
-                              CPPPreprocessor *error_sink = NULL) const;
+                              CPPPreprocessor *error_sink = nullptr) const;
   CPPDeclaration *find_template(CPPScope *current_scope,
                                 CPPScope *global_scope,
-                                CPPPreprocessor *error_sink = NULL) const;
+                                CPPPreprocessor *error_sink = nullptr) const;
   CPPScope *find_scope(CPPScope *current_scope,
                        CPPScope *global_scope,
-                       CPPPreprocessor *error_sink = NULL) const;
+                       CPPPreprocessor *error_sink = nullptr) const;
 
   CPPIdentifier *substitute_decl(CPPDeclaration::SubstDecl &subst,
                                  CPPScope *current_scope,
@@ -96,7 +96,7 @@ public:
 };
 
 inline ostream &operator << (ostream &out, const CPPIdentifier &identifier) {
-  identifier.output(out, (CPPScope *)NULL);
+  identifier.output(out, (CPPScope *)nullptr);
   return out;
 }
 

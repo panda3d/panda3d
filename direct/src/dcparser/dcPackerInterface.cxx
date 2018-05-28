@@ -32,7 +32,7 @@ DCPackerInterface(const string &name) :
   _has_nested_fields = false;
   _num_nested_fields = -1;
   _pack_type = PT_invalid;
-  _catalog = NULL;
+  _catalog = nullptr;
 }
 
 /**
@@ -50,7 +50,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
   _num_nested_fields(copy._num_nested_fields),
   _pack_type(copy._pack_type)
 {
-  _catalog = NULL;
+  _catalog = nullptr;
 }
 
 /**
@@ -58,7 +58,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
  */
 DCPackerInterface::
 ~DCPackerInterface() {
-  if (_catalog != (DCPackerCatalog *)NULL) {
+  if (_catalog != (DCPackerCatalog *)nullptr) {
     delete _catalog;
   }
 }
@@ -83,7 +83,7 @@ find_seek_index(const string &name) const {
  */
 DCField *DCPackerInterface::
 as_field() {
-  return (DCField *)NULL;
+  return (DCField *)nullptr;
 }
 
 /**
@@ -91,7 +91,7 @@ as_field() {
  */
 const DCField *DCPackerInterface::
 as_field() const {
-  return (DCField *)NULL;
+  return (DCField *)nullptr;
 }
 
 /**
@@ -99,7 +99,7 @@ as_field() const {
  */
 DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() {
-  return (DCSwitchParameter *)NULL;
+  return (DCSwitchParameter *)nullptr;
 }
 
 /**
@@ -107,7 +107,7 @@ as_switch_parameter() {
  */
 const DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() const {
-  return (DCSwitchParameter *)NULL;
+  return (DCSwitchParameter *)nullptr;
 }
 
 /**
@@ -115,7 +115,7 @@ as_switch_parameter() const {
  */
 DCClassParameter *DCPackerInterface::
 as_class_parameter() {
-  return (DCClassParameter *)NULL;
+  return (DCClassParameter *)nullptr;
 }
 
 /**
@@ -123,7 +123,7 @@ as_class_parameter() {
  */
 const DCClassParameter *DCPackerInterface::
 as_class_parameter() const {
-  return (DCClassParameter *)NULL;
+  return (DCClassParameter *)nullptr;
 }
 
 /**
@@ -145,7 +145,7 @@ check_match(const string &description, DCFile *dcfile) const {
   dc_cleanup_parser();
 
   DCField *field = dc_get_parameter_description();
-  if (field != NULL) {
+  if (field != nullptr) {
     match = check_match(field);
     delete field;
   }
@@ -184,7 +184,7 @@ calc_num_nested_fields(size_t) const {
  */
 DCPackerInterface *DCPackerInterface::
 get_nested_field(int) const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -367,7 +367,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
  */
 const DCPackerCatalog *DCPackerInterface::
 get_catalog() const {
-  if (_catalog == (DCPackerCatalog *)NULL) {
+  if (_catalog == (DCPackerCatalog *)nullptr) {
     ((DCPackerInterface *)this)->make_catalog();
   }
   return _catalog;
@@ -432,8 +432,8 @@ do_check_match_molecular_field(const DCMolecularField *) const {
  */
 void DCPackerInterface::
 make_catalog() {
-  nassertv(_catalog == (DCPackerCatalog *)NULL);
+  nassertv(_catalog == (DCPackerCatalog *)nullptr);
   _catalog = new DCPackerCatalog(this);
 
-  _catalog->r_fill_catalog("", this, NULL, 0);
+  _catalog->r_fill_catalog("", this, nullptr, 0);
 }

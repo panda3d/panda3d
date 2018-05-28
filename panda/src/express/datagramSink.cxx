@@ -56,7 +56,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
 const Filename &DatagramSink::
 get_filename() {
   const FileReference *file = get_file();
-  if (file != (FileReference *)NULL) {
+  if (file != (FileReference *)nullptr) {
     return file->get_filename();
   }
   static const Filename empty_filename;
@@ -69,7 +69,7 @@ get_filename() {
  */
 const FileReference *DatagramSink::
 get_file() {
-  return NULL;
+  return nullptr;
 }
 
 /**

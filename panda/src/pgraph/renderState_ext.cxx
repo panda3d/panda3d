@@ -37,7 +37,7 @@ get_composition_cache() const {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
     const RenderState *source = _this->_composition_cache.get_key(i);
-    if (source == (RenderState *)NULL) {
+    if (source == (RenderState *)nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -46,7 +46,7 @@ get_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const RenderState *result = _this->_composition_cache.get_data(i)._result;
-    if (result == (RenderState *)NULL) {
+    if (result == (RenderState *)nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -85,7 +85,7 @@ get_invert_composition_cache() const {
     PyObject *tuple = PyTuple_New(2);
     PyObject *a, *b;
     const RenderState *source = _this->_invert_composition_cache.get_key(i);
-    if (source == (RenderState *)NULL) {
+    if (source == (RenderState *)nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -94,7 +94,7 @@ get_invert_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const RenderState *result = _this->_invert_composition_cache.get_data(i)._result;
-    if (result == (RenderState *)NULL) {
+    if (result == (RenderState *)nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -118,7 +118,7 @@ get_invert_composition_cache() const {
 PyObject *Extension<RenderState>::
 get_states() {
   extern struct Dtool_PyTypedObject Dtool_RenderState;
-  if (RenderState::_states == (RenderState::States *)NULL) {
+  if (RenderState::_states == (RenderState::States *)nullptr) {
     return PyList_New(0);
   }
   LightReMutexHolder holder(*RenderState::_states_lock);

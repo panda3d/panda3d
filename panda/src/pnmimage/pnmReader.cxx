@@ -29,7 +29,7 @@ PNMReader::
     // vfs->close_read_file() just deletes the file pointer anyway.
     vfs->close_read_file(_file);
   }
-  _file = (istream *)NULL;
+  _file = (istream *)nullptr;
 }
 
 /**

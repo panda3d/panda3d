@@ -74,7 +74,7 @@ Panda3DBase(bool console_environment) {
 
   // Seed the lame random number generator in rand(); we use it to select a
   // mirror for downloading.
-  srand((unsigned int)time(NULL));
+  srand((unsigned int)time(nullptr));
 
   _prepend_filename_to_args = true;
 }
@@ -90,7 +90,7 @@ run_main_loop() {
     // Wait for new messages from Windows, and new requests from the plugin.
     MSG msg;
     int retval;
-    retval = GetMessage(&msg, NULL, 0, 0);
+    retval = GetMessage(&msg, nullptr, 0, 0);
     while (retval != 0 && !time_to_exit()) {
       if (retval == -1) {
         cerr << "Error processing message queue.\n";
@@ -101,20 +101,20 @@ run_main_loop() {
 
       // Check for new requests from the Panda3D plugin.
       P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-      while (inst != (P3D_instance *)NULL) {
+      while (inst != (P3D_instance *)nullptr) {
         P3D_request *request = P3D_instance_get_request_ptr(inst);
-        if (request != (P3D_request *)NULL) {
+        if (request != (P3D_request *)nullptr) {
           handle_request(request);
         }
         inst = P3D_check_request_ptr(wait_cycle);
       }
 
       while (!_url_getters.empty() &&
-             !PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+             !PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
         // If there are no Windows messages, check the download tasks.
         run_getters();
       }
-      retval = GetMessage(&msg, NULL, 0, 0);
+      retval = GetMessage(&msg, nullptr, 0, 0);
     }
 
     // WM_QUIT has been received.  Terminate all instances, and fall through.
@@ -128,9 +128,9 @@ run_main_loop() {
     // Windows events.  Instead, just wait for requests.
     while (!time_to_exit()) {
       P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-      if (inst != (P3D_instance *)NULL) {
+      if (inst != (P3D_instance *)nullptr) {
         P3D_request *request = P3D_instance_get_request_ptr(inst);
-        if (request != (P3D_request *)NULL) {
+        if (request != (P3D_request *)nullptr) {
           handle_request(request);
         }
       }
@@ -162,9 +162,9 @@ run_main_loop() {
   // Now wait while we process pending requests.
   while (!time_to_exit()) {
     P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-    if (inst != (P3D_instance *)NULL) {
+    if (inst != (P3D_instance *)nullptr) {
       P3D_request *request = P3D_instance_get_request_ptr(inst);
-      if (request != (P3D_request *)NULL) {
+      if (request != (P3D_request *)nullptr) {
         handle_request(request);
       }
     }
@@ -207,7 +207,7 @@ handle_request(P3D_request *request) {
     delete_instance(request->_instance);
 #ifdef _WIN32
     // Post a silly message to spin the event loop.
-    PostMessage(NULL, WM_USER, 0, 0);
+    PostMessage(nullptr, WM_USER, 0, 0);
 #endif
     handled = true;
     break;
@@ -267,7 +267,7 @@ void Panda3DBase::
 make_parent_window() {
   WNDCLASS wc;
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   ZeroMemory(&wc, sizeof(WNDCLASS));
   wc.lpfnWndProc = (WNDPROC)window_proc;
   wc.hInstance = application;
@@ -287,7 +287,7 @@ make_parent_window() {
   HWND toplevel_window =
     CreateWindow("panda3d", "Panda3D", window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, _win_width, _win_height,
-                 NULL, NULL, application, 0);
+                 nullptr, nullptr, application, 0);
   if (!toplevel_window) {
     cerr << "Could not create toplevel window!\n";
     exit(1);
@@ -364,7 +364,7 @@ create_instance(const string &p3d, bool start_instance,
   token._value = "1";
   tokens.push_back(token);
 
-  P3D_token *tokens_p = NULL;
+  P3D_token *tokens_p = nullptr;
   size_t num_tokens = tokens.size();
   if (!tokens.empty()) {
     tokens_p = &tokens[0];
@@ -379,10 +379,10 @@ create_instance(const string &p3d, bool start_instance,
     argv.push_back(args[i]);
   }
 
-  P3D_instance *inst = P3D_new_instance_ptr(NULL, tokens_p, num_tokens,
-                                            argv.size(), &argv[0], NULL);
+  P3D_instance *inst = P3D_new_instance_ptr(nullptr, tokens_p, num_tokens,
+                                            argv.size(), &argv[0], nullptr);
 
-  if (inst != NULL) {
+  if (inst != nullptr) {
     if (start_instance) {
       // We call start() first, to give the core API a chance to notice the
       // "hidden" attrib before we set the window parameters.
@@ -443,11 +443,11 @@ read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
     return false;
   }
   TiXmlElement *xpackage = doc.FirstChildElement("package");
-  if (xpackage == NULL) {
+  if (xpackage == nullptr) {
     return false;
   }
   TiXmlElement *xconfig = xpackage->FirstChildElement("config");
-  if (xconfig == NULL) {
+  if (xconfig == nullptr) {
     return false;
   }
 
@@ -473,7 +473,7 @@ read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
 bool Panda3DBase::
 parse_token(const char *arg) {
   const char *equals = strchr(arg, '=');
-  if (equals == NULL) {
+  if (equals == nullptr) {
     return false;
   }
 
@@ -624,12 +624,12 @@ report_downloading_package(P3D_instance *instance) {
   P3D_object *obj = P3D_instance_get_panda_script_object_ptr(instance);
 
   P3D_object *display_name = P3D_object_get_property_ptr(obj, "downloadPackageDisplayName");
-  if (display_name == NULL) {
+  if (display_name == nullptr) {
     cerr << "Installing package.\n";
     return;
   }
 
-  int name_length = P3D_object_get_string_ptr(display_name, NULL, 0);
+  int name_length = P3D_object_get_string_ptr(display_name, nullptr, 0);
   char *name = new char[name_length + 1];
   P3D_object_get_string_ptr(display_name, name, name_length + 1);
 
@@ -670,9 +670,9 @@ void Panda3DBase::
 timer_callback(EventLoopTimerRef timer) {
   // Check for new requests from the Panda3D plugin.
   P3D_instance *inst = P3D_check_request_ptr(0.0);
-  while (inst != (P3D_instance *)NULL) {
+  while (inst != (P3D_instance *)nullptr) {
     P3D_request *request = P3D_instance_get_request_ptr(inst);
-    if (request != (P3D_request *)NULL) {
+    if (request != (P3D_request *)nullptr) {
       handle_request(request);
     }
     inst = P3D_check_request_ptr(0.0);
@@ -758,6 +758,6 @@ run() {
   P3D_instance_feed_url_stream_ptr
     (_instance, _unique_id, status,
      _channel->get_status_code(),
-     _bytes_sent, NULL, 0);
+     _bytes_sent, nullptr, 0);
   return false;
 }

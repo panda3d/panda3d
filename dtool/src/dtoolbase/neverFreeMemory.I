@@ -59,7 +59,7 @@ get_total_unused() {
  */
 INLINE NeverFreeMemory *NeverFreeMemory::
 get_global_ptr() {
-  if (_global_ptr == (NeverFreeMemory *)NULL) {
+  if (_global_ptr == (NeverFreeMemory *)nullptr) {
     make_global_ptr();
   }
   return _global_ptr;

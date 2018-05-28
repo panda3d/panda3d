@@ -58,7 +58,7 @@ template <class T>
 INLINE T *PhysxObjectCollection<T>::
 get(unsigned int index) const {
 
-  nassertr(index < _objects.size(), NULL);
+  nassertr(index < _objects.size(), nullptr);
   return _objects[index];
 }
 
@@ -70,7 +70,7 @@ template <class T>
 INLINE T *PhysxObjectCollection<T>::
 operator [] (unsigned int index) const {
 
-  nassertr(index < _objects.size(), NULL);
+  nassertr(index < _objects.size(), nullptr);
   return _objects[index];
 }
 

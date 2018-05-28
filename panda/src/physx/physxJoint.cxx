@@ -80,7 +80,7 @@ factory(NxJointType shapeType) {
   }
 
   physx_cat.error() << "Unknown joint type.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -112,8 +112,8 @@ get_name() const {
 PhysxActor *PhysxJoint::
 get_actor(unsigned int idx) const {
 
-  nassertr_always(idx < 2, NULL);
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr_always(idx < 2, nullptr);
+  nassertr(_error_type == ET_ok, nullptr);
 
   NxActor *actorPtr[2];
   ptr()->getActors(&actorPtr[0], &actorPtr[1]);
@@ -126,7 +126,7 @@ get_actor(unsigned int idx) const {
 PhysxScene *PhysxJoint::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)(ptr()->getScene().userData);
 }
 

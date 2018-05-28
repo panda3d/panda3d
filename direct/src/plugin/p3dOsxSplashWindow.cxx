@@ -33,7 +33,7 @@ P3DOsxSplashWindow::
 P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
-  _font_attribs = NULL;
+  _font_attribs = nullptr;
   _install_progress = 0;
   _progress_known = true;
   _received_data = 0;
@@ -41,7 +41,7 @@ P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
   // We have to start with _mouse_active true; firefox doesn't send activate
   // events.
   _mouse_active = true;
-  _toplevel_window = NULL;
+  _toplevel_window = nullptr;
 }
 
 /**
@@ -49,13 +49,13 @@ P3DOsxSplashWindow(P3DInstance *inst, bool make_visible) :
  */
 P3DOsxSplashWindow::
 ~P3DOsxSplashWindow() {
-  if (_toplevel_window != NULL) {
+  if (_toplevel_window != nullptr) {
     SetWRefCon(_toplevel_window, 0);
     HideWindow(_toplevel_window);
     DisposeWindow(_toplevel_window);
-    _toplevel_window = NULL;
+    _toplevel_window = nullptr;
   }
-  if (_font_attribs != NULL) {
+  if (_font_attribs != nullptr) {
     CFRelease(_font_attribs);
   }
 }
@@ -72,7 +72,7 @@ set_wparams(const P3DWindowParams &wparams) {
   if (_wparams.get_window_type() == P3D_WT_toplevel ||
       _wparams.get_window_type() == P3D_WT_fullscreen) {
     // Creating a toplevel splash window.
-    if (_toplevel_window == NULL) {
+    if (_toplevel_window == nullptr) {
       Rect r;
       r.top = _wparams.get_win_y();
       r.left = _wparams.get_win_x();
@@ -134,7 +134,7 @@ set_wparams(const P3DWindowParams &wparams) {
   CFTypeRef traits_values[1] = { symbolic_ref };
   CFDictionaryRef traits = CFDictionaryCreate(kCFAllocatorDefault, (const void **)&traits_keys, (const void **)&traits_values, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
-  CFStringRef family = CFStringCreateWithCString(NULL, _font_family.c_str(), kCFStringEncodingUTF8);
+  CFStringRef family = CFStringCreateWithCString(nullptr, _font_family.c_str(), kCFStringEncodingUTF8);
 
   CFStringRef attribs_keys[2] = { kCTFontFamilyNameAttribute, kCTFontTraitsAttribute };
   CFTypeRef attribs_values[2] = { family, traits };
@@ -142,7 +142,7 @@ set_wparams(const P3DWindowParams &wparams) {
 
   // Create the font object.
   CTFontDescriptorRef font_desc = CTFontDescriptorCreateWithAttributes(attribs);
-  CTFontRef font = CTFontCreateWithFontDescriptor(font_desc, _font_size, NULL);
+  CTFontRef font = CTFontCreateWithFontDescriptor(font_desc, _font_size, nullptr);
 
   CFStringRef keys[1] = { kCTFontAttributeName };
   CFTypeRef values[1] = { font };
@@ -164,7 +164,7 @@ void P3DOsxSplashWindow::
 set_visible(bool visible) {
   P3DSplashWindow::set_visible(visible);
 
-  if (_toplevel_window != NULL) {
+  if (_toplevel_window != nullptr) {
     if (_visible) {
       ShowWindow(_toplevel_window);
     } else {
@@ -266,7 +266,7 @@ refresh() {
   if (!_visible) {
     return;
   }
-  if (_toplevel_window != NULL) {
+  if (_toplevel_window != nullptr) {
     Rect r = { 0, 0, (short)_win_height, (short)_win_width };
     InvalWindowRect(_toplevel_window, &r);
 
@@ -284,13 +284,13 @@ paint_window() {
     return;
   }
 
-  if (_toplevel_window != NULL ||
+  if (_toplevel_window != nullptr ||
       _wparams.get_parent_window()._window_handle_type == P3D_WHT_osx_port) {
 
     // The old QuickDraw-style window handle.  We use CreateCGContextForPort()
     // to map this to the new CoreGraphics-style.
-    GrafPtr out_port = NULL;
-    if (_toplevel_window != NULL) {
+    GrafPtr out_port = nullptr;
+    if (_toplevel_window != nullptr) {
       GetPort(&out_port);
 
     } else {
@@ -394,13 +394,13 @@ handle_event_osx_event_record(const P3D_event_data &event) {
   const P3D_window_handle &handle = _wparams.get_parent_window();
   if (handle._window_handle_type == P3D_WHT_osx_port) {
     GrafPtr out_port = handle._handle._osx_port._port;
-    GrafPtr port_save = NULL;
+    GrafPtr port_save = nullptr;
     Boolean port_changed = QDSwapPort(out_port, &port_save);
 
     GlobalToLocal(&pt);
 
     if (port_changed) {
-      QDSwapPort(port_save, NULL);
+      QDSwapPort(port_save, nullptr);
     }
 
   } else if (handle._window_handle_type == P3D_WHT_osx_cgcontext) {
@@ -408,7 +408,7 @@ handle_event_osx_event_record(const P3D_event_data &event) {
     // window coordinates.
     WindowRef window = handle._handle._osx_cgcontext._window;
     CGPoint cgpt = { (CGFloat)pt.h, (CGFloat)pt.v };
-    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, NULL,
+    HIPointConvert(&cgpt, kHICoordSpaceScreenPixel, nullptr,
                    kHICoordSpaceWindow, window);
 
     // Then convert to plugin coordinates.
@@ -536,7 +536,7 @@ load_image(OsxImageData &image, const string &image_filename) {
   }
 
   image._data =
-    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data,
+    CFDataCreateWithBytesNoCopy(nullptr, (const UInt8 *)image._raw_data,
                                 image._height * new_row_stride, kCFAllocatorNull);
   image._provider = CGDataProviderCreateWithCFData(image._data);
   image._color_space = CGColorSpaceCreateDeviceRGB();
@@ -545,7 +545,7 @@ load_image(OsxImageData &image, const string &image_filename) {
     CGImageCreate(image._width, image._height, 8, 32,
                   new_row_stride, image._color_space,
                   kCGImageAlphaFirst | kCGBitmapByteOrder32Little,
-                  image._provider, NULL, false, kCGRenderingIntentDefault);
+                  image._provider, nullptr, false, kCGRenderingIntentDefault);
 }
 
 /**
@@ -554,7 +554,7 @@ load_image(OsxImageData &image, const string &image_filename) {
  */
 bool P3DOsxSplashWindow::
 paint_image(CGContextRef context, const OsxImageData &image) {
-  if (image._image == NULL) {
+  if (image._image == nullptr) {
     return false;
   }
 
@@ -675,8 +675,8 @@ paint_progress_bar(CGContextRef context) {
     CGContextSetTextMatrix(context, text_xform);
 
     // Now draw the install_label right above it.
-    CFStringRef string = CFStringCreateWithCString(NULL, _install_label.c_str(), kCFStringEncodingUTF8);
-    CFAttributedStringRef attr_string = CFAttributedStringCreate(NULL, string, _font_attribs);
+    CFStringRef string = CFStringCreateWithCString(nullptr, _install_label.c_str(), kCFStringEncodingUTF8);
+    CFAttributedStringRef attr_string = CFAttributedStringCreate(nullptr, string, _font_attribs);
     CTLineRef line = CTLineCreateWithAttributedString(attr_string);
 
     // Determine the placement based on the size of the text.
@@ -716,11 +716,11 @@ OSStatus P3DOsxSplashWindow::
 event_callback(EventHandlerCallRef my_handler, EventRef event) {
   OSStatus result = eventNotHandledErr;
 
-  WindowRef window = NULL;
+  WindowRef window = nullptr;
   UInt32 the_class = GetEventClass(event);
   UInt32 kind = GetEventKind(event);
-  GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL,
-                    sizeof(WindowRef), NULL, (void*) &window);
+  GetEventParameter(event, kEventParamWindowRef, typeWindowRef, nullptr,
+                    sizeof(WindowRef), nullptr, (void*) &window);
   switch (the_class) {
   case kEventClassWindow:
     switch (kind) {
@@ -773,17 +773,17 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
     case kEventMouseDragged:
       {
         Point point;
-        GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL,
-                          sizeof(Point), NULL, (void *)&point);
+        GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, nullptr,
+                          sizeof(Point), nullptr, (void *)&point);
 
         GrafPtr port;
-        assert(_toplevel_window != NULL);
+        assert(_toplevel_window != nullptr);
         port = GetWindowPort(_toplevel_window);
-        GrafPtr port_save = NULL;
+        GrafPtr port_save = nullptr;
         Boolean port_changed = QDSwapPort(port, &port_save);
         GlobalToLocal(&point);
         if (port_changed) {
-          QDSwapPort(port_save, NULL);
+          QDSwapPort(port_save, nullptr);
         }
 
         set_mouse_data(point.h, point.v, _mouse_down);
@@ -800,25 +800,25 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
  */
 void P3DOsxSplashWindow::OsxImageData::
 dump_image() {
-  if (_image != NULL) {
+  if (_image != nullptr) {
     CGImageRelease(_image);
-    _image = NULL;
+    _image = nullptr;
   }
-  if (_color_space != NULL) {
+  if (_color_space != nullptr) {
     CGColorSpaceRelease(_color_space);
-    _color_space = NULL;
+    _color_space = nullptr;
   }
-  if (_provider != NULL) {
+  if (_provider != nullptr) {
     CGDataProviderRelease(_provider);
-    _provider = NULL;
+    _provider = nullptr;
   }
-  if (_data != NULL) {
+  if (_data != nullptr) {
     CFRelease(_data);
-    _data = NULL;
+    _data = nullptr;
   }
-  if (_raw_data != NULL) {
+  if (_raw_data != nullptr) {
     delete[] _raw_data;
-    _raw_data = NULL;
+    _raw_data = nullptr;
   }
 }
 

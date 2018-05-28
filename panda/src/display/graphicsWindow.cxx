@@ -294,7 +294,7 @@ has_keyboard(int device) const {
  */
 ButtonMap *GraphicsWindow::
 get_keyboard_map() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -432,8 +432,8 @@ get_pointer_events(int device) {
   PT(PointerEventList) result;
   {
     LightMutexHolder holder(_input_lock);
-    nassertr(device >= 0 && device < (int)_input_devices.size(), NULL);
-    nassertr(_input_devices[device].has_pointer_event(), NULL);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), nullptr);
+    nassertr(_input_devices[device].has_pointer_event(), nullptr);
     result = _input_devices[device].get_pointer_events();
   }
   return result;
@@ -648,13 +648,13 @@ close_window() {
     << "Closing " << get_type() << "\n";
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)NULL &&
-      _parent_window_handle != (WindowHandle *)NULL) {
+  if (_window_handle != (WindowHandle *)nullptr &&
+      _parent_window_handle != (WindowHandle *)nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 
-  _window_handle = NULL;
-  _parent_window_handle = NULL;
+  _window_handle = nullptr;
+  _parent_window_handle = nullptr;
   _is_valid = false;
 }
 

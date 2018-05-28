@@ -76,7 +76,7 @@ public:
   CPPExpression(const string &value);
   CPPExpression(long double value);
   CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
-                CPPScope *global_scope, CPPPreprocessor *error_sink = NULL);
+                CPPScope *global_scope, CPPPreprocessor *error_sink = nullptr);
   CPPExpression(int unary_operator, CPPExpression *op1);
   CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2);
   CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, CPPExpression *op3);
@@ -84,10 +84,10 @@ public:
   static CPPExpression typecast_op(CPPType *type, CPPExpression *op1, Type cast_type = T_typecast);
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
   static CPPExpression aggregate_init_op(CPPType *type, CPPExpression *op1);
-  static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
+  static CPPExpression new_op(CPPType *type, CPPExpression *op1 = nullptr);
   static CPPExpression typeid_op(CPPType *type, CPPType *std_type_info);
   static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);
-  static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = NULL);
+  static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = nullptr);
   static CPPExpression sizeof_func(CPPType *type);
   static CPPExpression sizeof_ellipsis_func(CPPIdentifier *ident);
   static CPPExpression alignof_func(CPPType *type);

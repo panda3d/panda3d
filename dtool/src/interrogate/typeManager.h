@@ -39,7 +39,7 @@ class CPPManifest;
 class TypeManager {
 public:
 
-  static CPPType *resolve_type(CPPType *type, CPPScope *scope = (CPPScope *)NULL);
+  static CPPType *resolve_type(CPPType *type, CPPScope *scope = (CPPScope *)nullptr);
 
   static bool is_assignable(CPPType *type);
 

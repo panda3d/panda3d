@@ -58,7 +58,7 @@ begin_group() {
  */
 void CollisionHandlerQueue::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != (CollisionEntry *)nullptr);
   _entries.push_back(entry);
 }
 
@@ -118,7 +118,7 @@ get_num_entries() const {
  */
 CollisionEntry *CollisionHandlerQueue::
 get_entry(int n) const {
-  nassertr(n >= 0 && n < (int)_entries.size(), NULL);
+  nassertr(n >= 0 && n < (int)_entries.size(), nullptr);
   return _entries[n];
 }
 

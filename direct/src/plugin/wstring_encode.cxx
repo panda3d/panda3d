@@ -30,11 +30,11 @@ bool
 wstring_to_string(string &result, const wstring &source) {
   bool success = false;
   int size = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.length(),
-                                 NULL, 0, NULL, NULL);
+                                 nullptr, 0, nullptr, nullptr);
   if (size > 0) {
     char *buffer = new char[size];
     int rc = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.length(),
-                                 buffer, size, NULL, NULL);
+                                 buffer, size, nullptr, nullptr);
     if (rc != 0) {
       result.assign(buffer, size);
       success = true;
@@ -54,7 +54,7 @@ bool
 string_to_wstring(wstring &result, const string &source) {
   bool success = false;
   int size = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.length(),
-                                 NULL, 0);
+                                 nullptr, 0);
   if (size > 0) {
     wchar_t *buffer = new wchar_t[size];
     int rc = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.length(),

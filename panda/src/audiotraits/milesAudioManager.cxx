@@ -147,7 +147,7 @@ get_sound(const string &file_name, bool, int) {
   } else {
     // ...the sound was not found in the cachepool.
     sd = load(path);
-    if (sd != (SoundData *)NULL) {
+    if (sd != (SoundData *)nullptr) {
       while (_sounds.size() >= (unsigned int)_cache_limit) {
         uncache_a_sound();
       }
@@ -158,7 +158,7 @@ get_sound(const string &file_name, bool, int) {
       if (!ib.second) {
         // The insert failed.
         audio_debug("  failed map insert of "<<path);
-        nassertr(do_is_valid(), NULL);
+        nassertr(do_is_valid(), nullptr);
         return get_null_sound();
       }
       // Set si, so that we can get a reference to the path for the
@@ -169,7 +169,7 @@ get_sound(const string &file_name, bool, int) {
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound;
 
-  if (sd != (SoundData *)NULL) {
+  if (sd != (SoundData *)nullptr) {
     most_recently_used((*si).first);
     if (sd->_file_type == AILFILETYPE_MIDI ||
         sd->_file_type == AILFILETYPE_XMIDI ||
@@ -199,7 +199,7 @@ get_sound(const string &file_name, bool, int) {
   }
 
   audio_debug("  returning 0x" << (void*)audioSound);
-  nassertr(do_is_valid(), NULL);
+  nassertr(do_is_valid(), nullptr);
   return audioSound;
 }
 
@@ -209,7 +209,7 @@ get_sound(const string &file_name, bool, int) {
 PT(AudioSound) MilesAudioManager::
 get_sound(MovieAudio *sound, bool, int) {
   nassert_raise("Miles audio manager does not support MovieAudio sources.");
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -505,69 +505,69 @@ set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *s
 
   MSSVECTOR3D speakers[9];
 
-  if(speaker1 != NULL) {
+  if(speaker1 != nullptr) {
     speakers[0].x = speaker1->get_x();
     speakers[0].y = speaker1->get_z();
     speakers[0].z = speaker1->get_y();
   }
-  if(speaker2 != NULL) {
+  if(speaker2 != nullptr) {
     speakers[1].x = speaker2->get_x();
     speakers[1].y = speaker2->get_z();
     speakers[1].z = speaker2->get_y();
   }
-  if(speaker3 != NULL) {
+  if(speaker3 != nullptr) {
     speakers[2].x = speaker3->get_x();
     speakers[2].y = speaker3->get_z();
     speakers[2].z = speaker3->get_y();
   }
-  if(speaker4 != NULL) {
+  if(speaker4 != nullptr) {
     speakers[3].x = speaker4->get_x();
     speakers[3].y = speaker4->get_z();
     speakers[3].z = speaker4->get_y();
   }
-  if(speaker5 != NULL) {
+  if(speaker5 != nullptr) {
     speakers[4].x = speaker5->get_x();
     speakers[4].y = speaker5->get_z();
     speakers[4].z = speaker5->get_y();
   }
-  if(speaker6 != NULL) {
+  if(speaker6 != nullptr) {
     speakers[5].x = speaker6->get_x();
     speakers[5].y = speaker6->get_z();
     speakers[5].z = speaker6->get_y();
   }
-  if(speaker7 != NULL) {
+  if(speaker7 != nullptr) {
     speakers[6].x = speaker7->get_x();
     speakers[6].y = speaker7->get_z();
     speakers[6].z = speaker7->get_y();
   }
-  if(speaker8 != NULL) {
+  if(speaker8 != nullptr) {
     speakers[7].x = speaker8->get_x();
     speakers[7].y = speaker8->get_z();
     speakers[7].z = speaker8->get_y();
   }
-  if(speaker9 != NULL) {
+  if(speaker9 != nullptr) {
     speakers[8].x = speaker9->get_x();
     speakers[8].y = speaker9->get_z();
     speakers[8].z = speaker9->get_y();
   }
 
-  if(speaker1 == NULL) {
+  if(speaker1 == nullptr) {
     audio_error("No valid speaker positions specified in MilesAudioManager::set_speaker_configuration().");
-  } else if(speaker2 == NULL) {
+  } else if(speaker2 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 1, 1.0);
-  } else if(speaker3 == NULL) {
+  } else if(speaker3 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 2, 1.0);
-  } else if(speaker4 == NULL) {
+  } else if(speaker4 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 3, 1.0);
-  } else if(speaker5 == NULL) {
+  } else if(speaker5 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 4, 1.0);
-  } else if(speaker6 == NULL) {
+  } else if(speaker6 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 5, 1.0);
-  } else if(speaker7 == NULL) {
+  } else if(speaker7 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 6, 1.0);
-  } else if(speaker8 == NULL) {
+  } else if(speaker8 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 7, 1.0);
-  } else if(speaker9 == NULL) {
+  } else if(speaker9 == nullptr) {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 8, 1.0);
   } else {
     AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 9, 1.0);
@@ -878,16 +878,16 @@ load(const Filename &file_name) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) file = vfs->get_file(file_name);
-  if (file == (VirtualFile *)NULL) {
+  if (file == (VirtualFile *)nullptr) {
     milesAudio_cat.warning()
       << "No such file: " << file_name << "\n";
-    return NULL;
+    return nullptr;
   }
 
   if (file->get_file_size() == 0) {
     milesAudio_cat.warning()
       << "File " << file_name << " is empty\n";
-    return NULL;
+    return nullptr;
   }
 
   sd->_basename = file_name.get_basename();
@@ -908,7 +908,7 @@ load(const Filename &file_name) {
     if (!file->read_file(sd->_raw_data, true)) {
       milesAudio_cat.warning()
         << "Unable to read " << file_name << "\n";
-      return NULL;
+      return nullptr;
     }
 
     sd->_file_type =
@@ -955,7 +955,7 @@ load(const Filename &file_name) {
       U32 wav_data_size;
       if (AIL_decompress_ASI(&sd->_raw_data[0], sd->_raw_data.size(),
                              sd->_basename.c_str(), &wav_data, &wav_data_size,
-                             NULL)) {
+                             nullptr)) {
         audio_debug("expanded " << sd->_basename << " from " << sd->_raw_data.size()
                     << " bytes to " << wav_data_size << " bytes.");
 

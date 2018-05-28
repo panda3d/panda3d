@@ -21,7 +21,7 @@
 // and we must use the arrow syntax to force initialization of the util_cat
 // category.
 
-ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
+ButtonRegistry *ButtonRegistry::_global_pointer = nullptr;
 
 
 /**
@@ -52,7 +52,7 @@ register_button(ButtonHandle &button_handle, const string &name,
 
     int index = -1;
     if (ascii_equivalent != '\0') {
-      if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
+      if (_handle_registry[ascii_equivalent] == (RegistryNode *)nullptr) {
         index = ascii_equivalent;
       } else {
         util_cat->error()
@@ -73,7 +73,7 @@ register_button(ButtonHandle &button_handle, const string &name,
     if (index == -1) {
       // It's not an ASCII equivalent; make up a new number.
       index = _handle_registry.size();
-      _handle_registry.push_back(NULL);
+      _handle_registry.push_back(nullptr);
     }
 
     ButtonHandle new_handle;
@@ -145,7 +145,7 @@ find_button(const string &name) {
  */
 ButtonHandle ButtonRegistry::
 find_ascii_button(char ascii_equivalent) const {
-  if (_handle_registry[ascii_equivalent] == (RegistryNode *)NULL) {
+  if (_handle_registry[ascii_equivalent] == (RegistryNode *)nullptr) {
     return ButtonHandle::none();
   }
   return _handle_registry[ascii_equivalent]->_handle;
@@ -158,7 +158,7 @@ void ButtonRegistry::
 write(ostream &out) const {
   out << "ASCII equivalents:\n";
   for (int i = 1; i < 128; i++) {
-    if (_handle_registry[i] != (RegistryNode *)NULL) {
+    if (_handle_registry[i] != (RegistryNode *)nullptr) {
       char hex[12];
       sprintf(hex, "%02x", (unsigned int)i);
       nassertv(strlen(hex) < 12);
@@ -192,7 +192,7 @@ ButtonRegistry() {
   _handle_registry.reserve(128);
   int i;
   for (i = 0; i < 128; i++) {
-    _handle_registry.push_back(NULL);
+    _handle_registry.push_back(nullptr);
   }
 }
 
@@ -210,14 +210,14 @@ init_global_pointer() {
  */
 ButtonRegistry::RegistryNode *ButtonRegistry::
 look_up(ButtonHandle handle) const {
-  nassertr(handle._index != 0, NULL);
+  nassertr(handle._index != 0, nullptr);
 
   if (handle._index < 0 ||
       handle._index >= (int)_handle_registry.size()) {
     util_cat->fatal()
       << "Invalid ButtonHandle index " << handle._index
       << "!  Is memory corrupt?\n";
-    return (RegistryNode *)NULL;
+    return (RegistryNode *)nullptr;
   }
 
   return _handle_registry[handle._index];

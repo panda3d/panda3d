@@ -90,7 +90,7 @@ safe_to_combine() const {
 bool CallbackNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CallbackObject *cbobj = get_cull_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != (CallbackObject *)nullptr) {
     NodeCullCallbackData cbdata(trav, data);
     cbobj->do_callback(&cbdata);
 
@@ -130,9 +130,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // CullableObject for the draw_callback, if any.  We don't need to pass any
   // Geoms, however.
   CallbackObject *cbobj = get_draw_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != (CallbackObject *)nullptr) {
     CullableObject *object =
-      new CullableObject(NULL, data._state,
+      new CullableObject(nullptr, data._state,
                          data.get_internal_transform(trav));
     object->set_draw_callback(cbobj);
     trav->get_cull_handler()->record_object(object, trav);

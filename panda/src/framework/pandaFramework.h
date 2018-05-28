@@ -61,10 +61,10 @@ public:
 
   WindowFramework *open_window();
   WindowFramework *open_window(GraphicsPipe *pipe,
-                               GraphicsStateGuardian *gsg = NULL);
+                               GraphicsStateGuardian *gsg = nullptr);
   WindowFramework *open_window(const WindowProperties &props, int flags,
-                               GraphicsPipe *pipe = NULL,
-                               GraphicsStateGuardian *gsg = NULL);
+                               GraphicsPipe *pipe = nullptr,
+                               GraphicsStateGuardian *gsg = nullptr);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;

@@ -17,8 +17,8 @@
 INLINE LinkedListNode::
 LinkedListNode() {
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 
@@ -38,7 +38,7 @@ LinkedListNode(bool) {
  */
 INLINE LinkedListNode::
 ~LinkedListNode() {
-  nassertv((_next == NULL && _prev == NULL) || (_next == this && _prev == this));
+  nassertv((_next == nullptr && _prev == nullptr) || (_next == this && _prev == this));
 }
 
 /**
@@ -48,7 +48,7 @@ INLINE LinkedListNode::
  */
 INLINE bool LinkedListNode::
 is_on_list() const {
-  return (_next != NULL);
+  return (_next != nullptr);
 }
 
 /**
@@ -56,13 +56,13 @@ is_on_list() const {
  */
 INLINE void LinkedListNode::
 remove_from_list() {
-  nassertv(_prev != NULL && _next != NULL);
+  nassertv(_prev != nullptr && _next != nullptr);
   nassertv(_prev->_next == this && _next->_prev == this);
   _prev->_next = _next;
   _next->_prev = _prev;
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 
@@ -72,9 +72,9 @@ remove_from_list() {
  */
 INLINE void LinkedListNode::
 insert_before(LinkedListNode *node) {
-  nassertv(node->_prev != NULL && node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (LinkedListNode *)NULL &&
-           _next == (LinkedListNode *)NULL);
+  nassertv(node->_prev != nullptr && node->_prev->_next == node && node->_next->_prev == node);
+  nassertv(_prev == (LinkedListNode *)nullptr &&
+           _next == (LinkedListNode *)nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;
@@ -87,9 +87,9 @@ insert_before(LinkedListNode *node) {
  */
 INLINE void LinkedListNode::
 insert_after(LinkedListNode *node) {
-  nassertv(node->_prev != NULL && node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (LinkedListNode *)NULL &&
-           _next == (LinkedListNode *)NULL);
+  nassertv(node->_prev != nullptr && node->_prev->_next == node && node->_next->_prev == node);
+  nassertv(_prev == (LinkedListNode *)nullptr &&
+           _next == (LinkedListNode *)nullptr);
   _next = node->_next;
   _prev = node;
   _next->_prev = this;

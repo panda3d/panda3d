@@ -127,7 +127,7 @@ NP_GetMIMEDescription(void) {
  */
 NPError
 NP_GetValue(void*, NPPVariable variable, void* value) {
-  if (value == NULL) {
+  if (value == nullptr) {
     return NPERR_INVALID_PARAM;
   }
 
@@ -175,7 +175,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   // On Unix, we have to use the pluginFuncs argument to pass our entry
   // points.
 #if !defined(_WIN32) && !defined(__APPLE__)
-  if (pluginFuncs != NULL) {
+  if (pluginFuncs != nullptr) {
     NP_GetEntryPoints(pluginFuncs);
   }
 #endif
@@ -194,7 +194,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
   // Check if the browser offers this very useful call.
   if (browser_major > 0 || browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
-    if ((void *)browser->pluginthreadasynccall == (void *)NULL) {
+    if ((void *)browser->pluginthreadasynccall == (void *)nullptr) {
       nout << "Browser should have PLUGIN_THREAD_ASYNC_CALL, but the pointer is NULL.\n";
       has_plugin_thread_async_call = false;
     } else {
@@ -205,7 +205,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   // Seed the lame random number generator in rand(); we use it to select a
   // mirror for downloading.
-  srand((unsigned int)time(NULL));
+  srand((unsigned int)time(nullptr));
 
   return NPERR_NO_ERROR;
 }
@@ -370,11 +370,11 @@ NPP_Destroy(NPP instance, NPSavedData **save) {
   nout << "save = " << (void *)save << "\n";
   // (*save) = NULL;
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
   inst->stop_outstanding_streams();
 
   delete inst;
-  instance->pdata = NULL;
+  instance->pdata = nullptr;
 
   return NPERR_NO_ERROR;
 }
@@ -392,7 +392,7 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
           << "\n";
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
   inst->set_window(window);
 
   return NPERR_NO_ERROR;
@@ -414,7 +414,7 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
        << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   return inst->new_stream(type, stream, seekable != 0, stype);
 }
@@ -432,7 +432,7 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   return inst->destroy_stream(stream, reason);
 }
@@ -446,7 +446,7 @@ NPP_WriteReady_x(NPP instance, NPStream *stream) {
   // (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   return inst->write_ready(stream);
 }
@@ -462,7 +462,7 @@ NPP_Write_x(NPP instance, NPStream *stream, int32_t offset,
   // " << instance << ", " << (PPInstance *)(instance->pdata) << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   return inst->write_stream(stream, offset, len, buffer);
 }
@@ -481,7 +481,7 @@ NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   inst->stream_as_file(stream, fname);
 }
@@ -504,7 +504,7 @@ NPP_HandleEvent(NPP instance, void *event) {
   PPInstance::generic_browser_call();
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   return inst->handle_event(event);
 }
@@ -522,7 +522,7 @@ NPP_URLNotify(NPP instance, const char *url,
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   inst->url_notify(url, reason, notifyData);
 }
@@ -535,11 +535,11 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   nout << "GetValue " << variable << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   if (variable == NPPVpluginScriptableNPObject) {
     NPObject *obj = inst->get_panda_script_object();
-    if (obj != NULL) {
+    if (obj != nullptr) {
       *(NPObject **)value = obj;
       return NPERR_NO_ERROR;
     }
@@ -571,7 +571,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
     return NPERR_NO_ERROR;
 
   } else {
-    return NP_GetValue(NULL, variable, value);
+    return NP_GetValue(nullptr, variable, value);
   }
 
   return NPERR_GENERIC_ERROR;

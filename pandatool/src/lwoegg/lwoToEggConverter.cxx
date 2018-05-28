@@ -37,7 +37,7 @@
  */
 LwoToEggConverter::
 LwoToEggConverter() {
-  _generic_layer = (CLwoLayer *)NULL;
+  _generic_layer = (CLwoLayer *)nullptr;
   _make_materials = true;
 }
 
@@ -110,7 +110,7 @@ convert_file(const Filename &filename) {
   }
 
   PT(IffChunk) chunk = in.get_chunk();
-  if (chunk == (IffChunk *)NULL) {
+  if (chunk == (IffChunk *)nullptr) {
     nout << "Unable to read " << filename << "\n";
     return false;
   }
@@ -162,7 +162,7 @@ get_layer(int number) const {
   if (number >= 0 && number < (int)_layers.size()) {
     return _layers[number];
   }
-  return (CLwoLayer *)NULL;
+  return (CLwoLayer *)nullptr;
 }
 
 /**
@@ -174,7 +174,7 @@ get_clip(int number) const {
   if (number >= 0 && number < (int)_clips.size()) {
     return _clips[number];
   }
-  return (CLwoClip *)NULL;
+  return (CLwoClip *)nullptr;
 }
 
 /**
@@ -188,7 +188,7 @@ get_surface(const string &name) const {
   if (si != _surfaces.end()) {
     return (*si).second;
   }
-  return (CLwoSurface *)NULL;
+  return (CLwoSurface *)nullptr;
 }
 
 /**
@@ -199,15 +199,15 @@ void LwoToEggConverter::
 cleanup() {
   _lwo_header.clear();
 
-  if (_generic_layer != (CLwoLayer *)NULL) {
+  if (_generic_layer != (CLwoLayer *)nullptr) {
     delete _generic_layer;
-    _generic_layer = (CLwoLayer *)NULL;
+    _generic_layer = (CLwoLayer *)nullptr;
   }
 
   Layers::iterator li;
   for (li = _layers.begin(); li != _layers.end(); ++li) {
     CLwoLayer *layer = (*li);
-    if (layer != (CLwoLayer *)NULL) {
+    if (layer != (CLwoLayer *)nullptr) {
       delete layer;
     }
   }
@@ -216,7 +216,7 @@ cleanup() {
   Clips::iterator ci;
   for (ci = _clips.begin(); ci != _clips.end(); ++ci) {
     CLwoClip *clip = (*ci);
-    if (clip != (CLwoClip *)NULL) {
+    if (clip != (CLwoClip *)nullptr) {
       delete clip;
     }
   }
@@ -250,11 +250,11 @@ cleanup() {
  */
 void LwoToEggConverter::
 collect_lwo() {
-  CLwoLayer *last_layer = (CLwoLayer *)NULL;
-  CLwoPoints *last_points = (CLwoPoints *)NULL;
-  CLwoPolygons *last_polygons = (CLwoPolygons *)NULL;
+  CLwoLayer *last_layer = (CLwoLayer *)nullptr;
+  CLwoPoints *last_points = (CLwoPoints *)nullptr;
+  CLwoPolygons *last_polygons = (CLwoPolygons *)nullptr;
 
-  const LwoTags *tags = (const LwoTags *)NULL;
+  const LwoTags *tags = (const LwoTags *)nullptr;
 
   int num_chunks = _lwo_header->get_num_chunks();
   for (int i = 0; i < num_chunks; i++) {
@@ -266,13 +266,13 @@ collect_lwo() {
       int number = layer->get_number();
       slot_layer(number);
 
-      if (_layers[number] != (CLwoLayer *)NULL) {
+      if (_layers[number] != (CLwoLayer *)nullptr) {
         nout << "Warning: multiple layers with number " << number << "\n";
       }
       _layers[number] = layer;
       last_layer = layer;
-      last_points = (CLwoPoints *)NULL;
-      last_polygons = (CLwoPolygons *)NULL;
+      last_points = (CLwoPoints *)nullptr;
+      last_polygons = (CLwoPolygons *)nullptr;
 
     } else if (chunk->is_of_type(LwoClip::get_class_type())) {
       const LwoClip *lwo_clip = DCAST(LwoClip, chunk);
@@ -281,13 +281,13 @@ collect_lwo() {
       int index = clip->get_index();
       slot_clip(index);
 
-      if (_clips[index] != (CLwoClip *)NULL) {
+      if (_clips[index] != (CLwoClip *)nullptr) {
         nout << "Warning: multiple clips with index " << index << "\n";
       }
       _clips[index] = clip;
 
     } else if (chunk->is_of_type(LwoPoints::get_class_type())) {
-      if (last_layer == (CLwoLayer *)NULL) {
+      if (last_layer == (CLwoLayer *)nullptr) {
         last_layer = make_generic_layer();
       }
 
@@ -297,7 +297,7 @@ collect_lwo() {
       last_points = points;
 
     } else if (chunk->is_of_type(LwoVertexMap::get_class_type())) {
-      if (last_points == (CLwoPoints *)NULL) {
+      if (last_points == (CLwoPoints *)nullptr) {
         nout << "Vertex map chunk encountered without a preceding points chunk.\n";
       } else {
         const LwoVertexMap *lwo_vmap = DCAST(LwoVertexMap, chunk);
@@ -305,7 +305,7 @@ collect_lwo() {
       }
 
     } else if (chunk->is_of_type(LwoDiscontinuousVertexMap::get_class_type())) {
-      if (last_polygons == (CLwoPolygons *)NULL) {
+      if (last_polygons == (CLwoPolygons *)nullptr) {
         nout << "Discontinous vertex map chunk encountered without a preceding polygons chunk.\n";
       } else {
         const LwoDiscontinuousVertexMap *lwo_vmad = DCAST(LwoDiscontinuousVertexMap, chunk);
@@ -316,7 +316,7 @@ collect_lwo() {
       tags = DCAST(LwoTags, chunk);
 
     } else if (chunk->is_of_type(LwoPolygons::get_class_type())) {
-      if (last_points == (CLwoPoints *)NULL) {
+      if (last_points == (CLwoPoints *)nullptr) {
         nout << "Polygon chunk encountered without a preceding points chunk.\n";
       } else {
         const LwoPolygons *lwo_polygons = DCAST(LwoPolygons, chunk);
@@ -327,9 +327,9 @@ collect_lwo() {
       }
 
     } else if (chunk->is_of_type(LwoPolygonTags::get_class_type())) {
-      if (last_polygons == (CLwoPolygons *)NULL) {
+      if (last_polygons == (CLwoPolygons *)nullptr) {
         nout << "Polygon tags chunk encountered without a preceding polygons chunk.\n";
-      } else if (tags == (LwoTags *)NULL) {
+      } else if (tags == (LwoTags *)nullptr) {
         nout << "Polygon tags chunk encountered without a preceding tags chunk.\n";
       } else {
         const LwoPolygonTags *lwo_ptags = DCAST(LwoPolygonTags, chunk);
@@ -337,7 +337,7 @@ collect_lwo() {
       }
 
     } else if (chunk->is_of_type(LwoSurface::get_class_type())) {
-      if (last_layer == (CLwoLayer *)NULL) {
+      if (last_layer == (CLwoLayer *)nullptr) {
         last_layer = make_generic_layer();
       }
 
@@ -358,14 +358,14 @@ collect_lwo() {
  */
 void LwoToEggConverter::
 make_egg() {
-  if (_generic_layer != (CLwoLayer *)NULL) {
+  if (_generic_layer != (CLwoLayer *)nullptr) {
     _generic_layer->make_egg();
   }
 
   Layers::iterator li;
   for (li = _layers.begin(); li != _layers.end(); ++li) {
     CLwoLayer *layer = (*li);
-    if (layer != (CLwoLayer *)NULL) {
+    if (layer != (CLwoLayer *)nullptr) {
       layer->make_egg();
     }
   }
@@ -388,14 +388,14 @@ make_egg() {
  */
 void LwoToEggConverter::
 connect_egg() {
-  if (_generic_layer != (CLwoLayer *)NULL) {
+  if (_generic_layer != (CLwoLayer *)nullptr) {
     _generic_layer->connect_egg();
   }
 
   Layers::iterator li;
   for (li = _layers.begin(); li != _layers.end(); ++li) {
     CLwoLayer *layer = (*li);
-    if (layer != (CLwoLayer *)NULL) {
+    if (layer != (CLwoLayer *)nullptr) {
       layer->connect_egg();
     }
   }
@@ -421,7 +421,7 @@ void LwoToEggConverter::
 slot_layer(int number) {
   nassertv(number - (int)_layers.size() < 1000);
   while (number >= (int)_layers.size()) {
-    _layers.push_back((CLwoLayer *)NULL);
+    _layers.push_back((CLwoLayer *)nullptr);
   }
   nassertv(number >= 0 && number < (int)_layers.size());
 }
@@ -434,7 +434,7 @@ void LwoToEggConverter::
 slot_clip(int number) {
   nassertv(number - (int)_clips.size() < 1000);
   while (number >= (int)_clips.size()) {
-    _clips.push_back((CLwoClip *)NULL);
+    _clips.push_back((CLwoClip *)nullptr);
   }
   nassertv(number >= 0 && number < (int)_clips.size());
 }
@@ -447,7 +447,7 @@ slot_clip(int number) {
  */
 CLwoLayer *LwoToEggConverter::
 make_generic_layer() {
-  nassertr(_generic_layer == (CLwoLayer *)NULL, _generic_layer);
+  nassertr(_generic_layer == (CLwoLayer *)nullptr, _generic_layer);
 
   PT(LwoLayer) layer = new LwoLayer;
   layer->make_generic();

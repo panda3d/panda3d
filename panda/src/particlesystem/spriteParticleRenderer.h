@@ -153,7 +153,7 @@ private:
  */
 class EXPCL_PANDAPHYSICS SpriteParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
-  explicit SpriteParticleRenderer(Texture *tex = (Texture *) NULL);
+  explicit SpriteParticleRenderer(Texture *tex = (Texture *) nullptr);
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);
   virtual ~SpriteParticleRenderer();
 

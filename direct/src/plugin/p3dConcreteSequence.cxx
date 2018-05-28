@@ -86,7 +86,7 @@ get_property(const string &property) {
   char *endptr;
   int index = strtoul(property.c_str(), &endptr, 10);
   if (*endptr != '\0') {
-    return NULL;
+    return nullptr;
   }
 
   return get_element(index);
@@ -133,7 +133,7 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
 P3D_object **P3DConcreteSequence::
 get_object_array() {
   if (_elements.empty()) {
-    return NULL;
+    return nullptr;
   }
   return &_elements[0];
 }
@@ -165,7 +165,7 @@ get_element(int n) const {
     return _elements[n];
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -174,7 +174,7 @@ get_element(int n) const {
  */
 bool P3DConcreteSequence::
 set_element(int n, P3D_object *value) {
-  if (value == NULL) {
+  if (value == nullptr) {
     // Delete an element.
     if (n < 0 || n >= (int)_elements.size()) {
       // Invalid index.

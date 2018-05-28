@@ -75,8 +75,8 @@ wait() {
       << *current_thread << " waiting on " << *this << "\n";
   }
 
-  nassertd(current_thread->_waiting_on_cvar == NULL &&
-           current_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == nullptr &&
+           current_thread->_waiting_on_cvar_full == nullptr) {
   }
   current_thread->_waiting_on_cvar = this;
 
@@ -86,7 +86,7 @@ wait() {
 
   nassertd(current_thread->_waiting_on_cvar == this) {
   }
-  current_thread->_waiting_on_cvar = NULL;
+  current_thread->_waiting_on_cvar = nullptr;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
@@ -125,8 +125,8 @@ wait(double timeout) {
       << ", with timeout " << timeout << "\n";
   }
 
-  nassertd(current_thread->_waiting_on_cvar == NULL &&
-           current_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == nullptr &&
+           current_thread->_waiting_on_cvar_full == nullptr) {
   }
   current_thread->_waiting_on_cvar = this;
 
@@ -136,7 +136,7 @@ wait(double timeout) {
 
   nassertd(current_thread->_waiting_on_cvar == this) {
   }
-  current_thread->_waiting_on_cvar = NULL;
+  current_thread->_waiting_on_cvar = nullptr;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()

@@ -20,13 +20,13 @@ INLINE MeshDrawer::
 MeshDrawer() {
   _root = NodePath("MeshDrawer");
   _at_start = 0;
-  _bv = NULL;
-  _vertex = NULL;
-  _normal = NULL;
-  _uv = NULL;
-  _color = NULL;
+  _bv = nullptr;
+  _vertex = nullptr;
+  _normal = nullptr;
+  _uv = nullptr;
+  _color = nullptr;
   _budget = 5000;
-  _vdata = NULL;
+  _vdata = nullptr;
 }
 
 /**
@@ -35,10 +35,10 @@ MeshDrawer() {
 INLINE MeshDrawer::
 ~MeshDrawer() {
   _root.remove_node();
-  if (_vertex != NULL) delete _vertex;
-  if (_normal != NULL) delete _normal;
-  if (_uv != NULL)     delete _uv;
-  if (_color != NULL)  delete _color;
+  if (_vertex != nullptr) delete _vertex;
+  if (_normal != nullptr) delete _normal;
+  if (_uv != nullptr)     delete _uv;
+  if (_color != nullptr)  delete _color;
 }
 
 /**

@@ -46,29 +46,29 @@ EXPCL_INTERROGATEDB void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *modu
     PyDict_SetItemString(Dtool_DTOOL_SUPER_BASE._PyType.tp_dict, "DtoolGetSuperBase", PyCFunction_New(&Dtool_Methods_DTOOL_SUPER_BASE[0], (PyObject *)&Dtool_DTOOL_SUPER_BASE));
   }
 
-  if (module != NULL) {
+  if (module != nullptr) {
     Py_INCREF((PyTypeObject *)&Dtool_DTOOL_SUPER_BASE);
     PyModule_AddObject(module, "DTOOL_SUPER_BASE", (PyObject *)&Dtool_DTOOL_SUPER_BASE);
   }
 }
 
 inline void *Dtool_DowncastInterface_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
-  return (void *) NULL;
+  return (void *) nullptr;
 }
 
 inline void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyTypedObject *requested_type) {
-  return NULL;
+  return nullptr;
 }
 
 int Dtool_Init_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) {
-  assert(self != NULL);
+  assert(self != nullptr);
   PyErr_Format(PyExc_TypeError, "cannot init constant class %s", Py_TYPE(self)->tp_name);
   return -1;
 }
 
 EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
   {
-    PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "dtoolconfig.DTOOL_SUPER_BASE",
     sizeof(Dtool_PyInstDef),
     0,
@@ -127,8 +127,8 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
   Dtool_PyModuleClassInit_DTOOL_SUPER_BASE,
   Dtool_UpcastInterface_DTOOL_SUPER_BASE,
   Dtool_DowncastInterface_DTOOL_SUPER_BASE,
-  NULL,
-  NULL,
+  nullptr,
+  nullptr,
 };
 
 #endif  // HAVE_PYTHON

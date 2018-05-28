@@ -151,20 +151,20 @@ cook_texcoords(const PhysxClothMeshDesc &meshDesc, const Filename &filename) {
 PhysxConvexMesh *PhysxKitchen::
 cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), NULL);
+  nassertr_always(meshDesc.is_valid(), nullptr);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookConvexMesh(meshDesc.get_desc(), buffer);
-  nassertr(status, NULL);
+  nassertr(status, nullptr);
 
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-  nassertr(sdk, NULL);
+  nassertr(sdk, nullptr);
 
   PhysxConvexMesh *mesh = new PhysxConvexMesh();
-  nassertr(mesh, NULL);
+  nassertr(mesh, nullptr);
 
   NxConvexMesh *meshPtr = sdk->createConvexMesh(PhysxMemoryReadBuffer(buffer.data));
-  nassertr(meshPtr, NULL);
+  nassertr(meshPtr, nullptr);
 
   mesh->link(meshPtr);
 
@@ -177,20 +177,20 @@ cook_convex_mesh(const PhysxConvexMeshDesc &meshDesc) {
 PhysxTriangleMesh *PhysxKitchen::
 cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), NULL);
+  nassertr_always(meshDesc.is_valid(), nullptr);
 
   PhysxMemoryWriteBuffer buffer;
   bool status = _cooking->NxCookTriangleMesh(meshDesc.get_desc(), buffer);
-  nassertr(status, NULL);
+  nassertr(status, nullptr);
 
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-  nassertr(sdk, NULL);
+  nassertr(sdk, nullptr);
 
   PhysxTriangleMesh *mesh = new PhysxTriangleMesh();
-  nassertr(mesh, NULL);
+  nassertr(mesh, nullptr);
 
   NxTriangleMesh *meshPtr = sdk->createTriangleMesh(PhysxMemoryReadBuffer(buffer.data));
-  nassertr(meshPtr, NULL);
+  nassertr(meshPtr, nullptr);
 
   mesh->link(meshPtr);
 
@@ -203,21 +203,21 @@ cook_triangle_mesh(const PhysxTriangleMeshDesc &meshDesc) {
 PhysxClothMesh *PhysxKitchen::
 cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), NULL);
+  nassertr_always(meshDesc.is_valid(), nullptr);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookClothMesh(meshDesc.get_desc(), wbuffer);
-  nassertr(status, NULL);
+  nassertr(status, nullptr);
 
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-  nassertr(sdk, NULL);
+  nassertr(sdk, nullptr);
 
   PhysxClothMesh *mesh = new PhysxClothMesh();
-  nassertr(mesh, NULL);
+  nassertr(mesh, nullptr);
 
   PhysxMemoryReadBuffer rbuffer(wbuffer.data);
   NxClothMesh *meshPtr = sdk->createClothMesh(rbuffer);
-  nassertr(meshPtr, NULL);
+  nassertr(meshPtr, nullptr);
 
   mesh->link(meshPtr);
 
@@ -230,21 +230,21 @@ cook_cloth_mesh(const PhysxClothMeshDesc &meshDesc) {
 PhysxSoftBodyMesh *PhysxKitchen::
 cook_soft_body_mesh(const PhysxSoftBodyMeshDesc &meshDesc) {
 
-  nassertr_always(meshDesc.is_valid(), NULL);
+  nassertr_always(meshDesc.is_valid(), nullptr);
 
   PhysxMemoryWriteBuffer wbuffer;
   bool status = _cooking->NxCookSoftBodyMesh(meshDesc.get_desc(), wbuffer);
-  nassertr(status, NULL);
+  nassertr(status, nullptr);
 
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-  nassertr(sdk, NULL);
+  nassertr(sdk, nullptr);
 
   PhysxSoftBodyMesh *mesh = new PhysxSoftBodyMesh();
-  nassertr(mesh, NULL);
+  nassertr(mesh, nullptr);
 
   PhysxMemoryReadBuffer rbuffer(wbuffer.data);
   NxSoftBodyMesh *meshPtr = sdk->createSoftBodyMesh(rbuffer);
-  nassertr(meshPtr, NULL);
+  nassertr(meshPtr, nullptr);
 
   mesh->link(meshPtr);
 

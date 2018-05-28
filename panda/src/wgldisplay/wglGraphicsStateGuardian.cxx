@@ -32,7 +32,7 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _share_with(share_with)
 {
   _made_context = false;
-  _context = (HGLRC)NULL;
+  _context = (HGLRC)nullptr;
 
   _twindow = (HWND)0;
   _twindow_dc = (HDC)0;
@@ -46,7 +46,7 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _supports_wgl_multisample = false;
   _supports_wgl_render_texture = false;
 
-  _wglCreateContextAttribsARB = NULL;
+  _wglCreateContextAttribsARB = nullptr;
 
   get_gamma_table();
   atexit(atexit_function);
@@ -58,9 +58,9 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 wglGraphicsStateGuardian::
 ~wglGraphicsStateGuardian() {
   release_twindow();
-  if (_context != (HGLRC)NULL) {
+  if (_context != (HGLRC)nullptr) {
     wglDeleteContext(_context);
-    _context = (HGLRC)NULL;
+    _context = (HGLRC)nullptr;
   }
 }
 
@@ -270,9 +270,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int  best_quality = 0;
   FrameBufferProperties best_prop;
 
-  HDC hdc = GetDC(NULL);
+  HDC hdc = GetDC(nullptr);
 
-  int max_pfnum = DescribePixelFormat(hdc, 1, 0, NULL);
+  int max_pfnum = DescribePixelFormat(hdc, 1, 0, nullptr);
 
   for (int pfnum = 0; pfnum<max_pfnum; ++pfnum) {
     FrameBufferProperties pfprop;
@@ -285,7 +285,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     }
   }
 
-  ReleaseDC(NULL, hdc);
+  ReleaseDC(nullptr, hdc);
 
   _pfnum = best_pfnum;
   _pfnum_supports_pbuffer = false;
@@ -321,7 +321,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     return;
   }
 
-  wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, NULL);
+  wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, nullptr);
 
   _extensions.clear();
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
@@ -333,7 +333,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _wglCreateContextAttribsARB =
       (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
   } else {
-    _wglCreateContextAttribsARB = NULL;
+    _wglCreateContextAttribsARB = nullptr;
   }
 
   _extensions.clear();
@@ -350,9 +350,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _wglChoosePixelFormatARB =
     (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
 
-  if (_wglGetPixelFormatAttribivARB == NULL ||
-      _wglGetPixelFormatAttribfvARB == NULL ||
-      _wglChoosePixelFormatARB == NULL) {
+  if (_wglGetPixelFormatAttribivARB == nullptr ||
+      _wglGetPixelFormatAttribfvARB == nullptr ||
+      _wglChoosePixelFormatARB == nullptr) {
     wgldisplay_cat.error()
       << "Driver claims to support WGL_ARB_pixel_format extension, but does not define all functions.\n";
     wglDeleteContext(twindow_ctx);
@@ -458,7 +458,7 @@ reset() {
   if (_supports_swap_control) {
     _wglSwapIntervalEXT =
       (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    if (_wglSwapIntervalEXT == NULL) {
+    if (_wglSwapIntervalEXT == nullptr) {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_EXT_swap_control extension, but does not define all functions.\n";
       _supports_swap_control = false;
@@ -485,11 +485,11 @@ reset() {
     _wglQueryPbufferARB =
       (PFNWGLQUERYPBUFFERARBPROC)wglGetProcAddress("wglQueryPbufferARB");
 
-    if (_wglCreatePbufferARB == NULL ||
-        _wglGetPbufferDCARB == NULL ||
-        _wglReleasePbufferDCARB == NULL ||
-        _wglDestroyPbufferARB == NULL ||
-        _wglQueryPbufferARB == NULL) {
+    if (_wglCreatePbufferARB == nullptr ||
+        _wglGetPbufferDCARB == nullptr ||
+        _wglReleasePbufferDCARB == nullptr ||
+        _wglDestroyPbufferARB == nullptr ||
+        _wglQueryPbufferARB == nullptr) {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_ARB_pbuffer extension, but does not define all functions.\n";
       _supports_pbuffer = false;
@@ -506,9 +506,9 @@ reset() {
     _wglChoosePixelFormatARB =
       (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
 
-    if (_wglGetPixelFormatAttribivARB == NULL ||
-        _wglGetPixelFormatAttribfvARB == NULL ||
-        _wglChoosePixelFormatARB == NULL) {
+    if (_wglGetPixelFormatAttribivARB == nullptr ||
+        _wglGetPixelFormatAttribfvARB == nullptr ||
+        _wglChoosePixelFormatARB == nullptr) {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_ARB_pixel_format extension, but does not define all functions.\n";
       _supports_pixel_format = false;
@@ -526,9 +526,9 @@ reset() {
       (PFNWGLRELEASETEXIMAGEARBPROC)wglGetProcAddress("wglReleaseTexImageARB");
     _wglSetPbufferAttribARB =
       (PFNWGLSETPBUFFERATTRIBARBPROC)wglGetProcAddress("wglSetPbufferAttribARB");
-    if (_wglBindTexImageARB == NULL ||
-        _wglReleaseTexImageARB == NULL ||
-        _wglSetPbufferAttribARB == NULL) {
+    if (_wglBindTexImageARB == nullptr ||
+        _wglReleaseTexImageARB == nullptr ||
+        _wglSetPbufferAttribARB == nullptr) {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_ARB_render_texture, but does not define all functions.\n";
       _supports_wgl_render_texture = false;
@@ -550,7 +550,7 @@ get_extra_extensions() {
   // drawing context.
   PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB =
     (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
-  if (wglGetExtensionsStringARB != NULL) {
+  if (wglGetExtensionsStringARB != nullptr) {
     HDC hdc = wglGetCurrentDC();
     if (hdc != 0) {
       save_extensions((const char *)wglGetExtensionsStringARB(hdc));
@@ -561,7 +561,7 @@ get_extra_extensions() {
   // If that failed, look for the EXT flavor, which wants no parameters.
   PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT =
     (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
-  if (wglGetExtensionsStringEXT != NULL) {
+  if (wglGetExtensionsStringEXT != nullptr) {
     save_extensions((const char *)wglGetExtensionsStringEXT());
   }
 }
@@ -591,12 +591,12 @@ make_context(HDC hdc) {
   // Attempt to create a context.
   wglGraphicsPipe::_current_valid = false;
 
-  if (_wglCreateContextAttribsARB != NULL) {
+  if (_wglCreateContextAttribsARB != nullptr) {
     // We have a fancier version of wglCreateContext that allows us to specify
     // what kind of OpenGL context we would like.
     int attrib_list[32];
     int n = 0;
-    attrib_list[0] = NULL;
+    attrib_list[0] = nullptr;
 
     if (gl_version.get_num_words() > 0) {
       attrib_list[n++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
@@ -614,14 +614,14 @@ make_context(HDC hdc) {
     attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
     attrib_list[n++] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 #endif
-    attrib_list[n] = NULL;
+    attrib_list[n] = nullptr;
 
     _context = _wglCreateContextAttribsARB(hdc, 0, attrib_list);
   } else {
     _context = wglCreateContext(hdc);
   }
 
-  if (_context == NULL) {
+  if (_context == nullptr) {
     wgldisplay_cat.error()
       << "Could not create GL context.\n";
     _is_valid = false;
@@ -629,9 +629,9 @@ make_context(HDC hdc) {
   }
 
   // Now share texture context with the indicated GSG.
-  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
     HGLRC share_context = _share_with->get_share_context();
-    if (share_context == NULL) {
+    if (share_context == nullptr) {
       // Whoops, the target context hasn't yet made its own context.  In that
       // case, it will share context with us.
       _share_with->redirect_share_pool(this);
@@ -649,7 +649,7 @@ make_context(HDC hdc) {
       }
     }
 
-    _share_with = (wglGraphicsStateGuardian *)NULL;
+    _share_with = (wglGraphicsStateGuardian *)nullptr;
   }
 }
 
@@ -665,10 +665,10 @@ get_share_context() const {
   if (_made_context) {
     return _context;
   }
-  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
     return _share_with->get_share_context();
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -682,7 +682,7 @@ get_share_context() const {
 void wglGraphicsStateGuardian::
 redirect_share_pool(wglGraphicsStateGuardian *share_with) {
   nassertv(!_made_context);
-  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
     _share_with->redirect_share_pool(share_with);
   } else {
     _share_with = share_with;
@@ -702,9 +702,9 @@ make_twindow() {
   DWORD window_style = 0;
 
   register_twindow_class();
-  HINSTANCE hinstance = GetModuleHandle(NULL);
+  HINSTANCE hinstance = GetModuleHandle(nullptr);
   _twindow = CreateWindow(_twindow_class_name, "twindow", window_style,
-                          0, 0, 1, 1, NULL, NULL, hinstance, 0);
+                          0, 0, 1, 1, nullptr, nullptr, hinstance, 0);
 
   if (!_twindow) {
     wgldisplay_cat.error()
@@ -755,7 +755,7 @@ register_twindow_class() {
 
   WNDCLASS wc;
 
-  HINSTANCE instance = GetModuleHandle(NULL);
+  HINSTANCE instance = GetModuleHandle(nullptr);
 
   // Clear before filling in window structure!
   ZeroMemory(&wc, sizeof(WNDCLASS));
@@ -836,7 +836,7 @@ get_gamma_table(void) {
 
   get = false;
   if (_gamma_table_initialized == false) {
-    HDC hdc = GetDC(NULL);
+    HDC hdc = GetDC(nullptr);
 
     if (hdc) {
       if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
@@ -844,7 +844,7 @@ get_gamma_table(void) {
         get = true;
       }
 
-      ReleaseDC (NULL, hdc);
+      ReleaseDC (nullptr, hdc);
     }
   }
 
@@ -857,7 +857,7 @@ get_gamma_table(void) {
 bool wglGraphicsStateGuardian::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
   bool set;
-  HDC hdc = GetDC(NULL);
+  HDC hdc = GetDC(nullptr);
 
   set = false;
   if (hdc) {
@@ -874,7 +874,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
       set = true;
     }
 
-    ReleaseDC (NULL, hdc);
+    ReleaseDC (nullptr, hdc);
   }
 
   return set;

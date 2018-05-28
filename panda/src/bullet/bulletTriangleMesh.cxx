@@ -423,7 +423,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // Add the vertices.
   const unsigned char *vptr = mesh.m_vertexBase;
-  nassertv(vptr != NULL || mesh.m_numVertices == 0);
+  nassertv(vptr != nullptr || mesh.m_numVertices == 0);
 
   for (int i = 0; i < mesh.m_numVertices; ++i) {
     const btVector3 &vertex = *((btVector3 *)vptr);
@@ -435,7 +435,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   // Now add the triangle indices.
   const unsigned char *iptr = mesh.m_triangleIndexBase;
-  nassertv(iptr != NULL || mesh.m_numTriangles == 0);
+  nassertv(iptr != nullptr || mesh.m_numTriangles == 0);
 
   for (int i = 0; i < mesh.m_numTriangles; ++i) {
     int *triangle = (int *)iptr;

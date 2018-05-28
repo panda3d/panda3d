@@ -100,12 +100,12 @@ RenameSet methodRenameDictionary[] = {
   { "__deepcopy__"  , "__deepcopy__",           0 },
   { "print"         , "Cprint",                 0 },
   { "CInterval.set_t", "_priv__cSetT",          0 },
-  { NULL, NULL, -1 }
+  { nullptr, nullptr, -1 }
 };
 
 RenameSet classRenameDictionary[] = {
   // No longer used, now empty.
-  { NULL, NULL, -1 }
+  { nullptr, nullptr, -1 }
 };
 
 const char *pythonKeywords[] = {
@@ -141,12 +141,12 @@ const char *pythonKeywords[] = {
   "while",
   "with",
   "yield",
-  NULL
+  nullptr
 };
 
 std::string
 checkKeyword(std::string &cppName) {
-  for (int x = 0; pythonKeywords[x] != NULL; x++) {
+  for (int x = 0; pythonKeywords[x] != nullptr; x++) {
     if (cppName == pythonKeywords[x]) {
       return std::string("_") + cppName;
     }
@@ -193,7 +193,7 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
     }
   }
 
-  for (int x = 0; classRenameDictionary[x]._from != NULL; x++) {
+  for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
     if (cppName == classRenameDictionary[x]._from) {
       className = classRenameDictionary[x]._to;
     }
@@ -247,7 +247,7 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
     }
   }
 
-  for (int x = 0; methodRenameDictionary[x]._from != NULL; x++) {
+  for (int x = 0; methodRenameDictionary[x]._from != nullptr; x++) {
     if (origName == methodRenameDictionary[x]._from) {
       methodName = methodRenameDictionary[x]._to;
     }
@@ -255,7 +255,7 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
 
   if (className.size() > 0) {
     string lookup_name = className + '.' + cppName;
-    for (int x = 0; classRenameDictionary[x]._from != NULL; x++) {
+    for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
       if (lookup_name == methodRenameDictionary[x]._from) {
         methodName = methodRenameDictionary[x]._to;
       }
@@ -296,7 +296,7 @@ std::string methodNameFromCppName(FunctionRemap *remap, const std::string &class
 bool InterfaceMakerPythonNative::
 get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
                          SlottedFunctionDef &def) {
-  if (obj == NULL) {
+  if (obj == nullptr) {
     // Only methods may be slotted.
     return false;
   }
@@ -679,7 +679,7 @@ write_function_slot(ostream &out, int indent_level, const SlottedFunctions &slot
 
 void InterfaceMakerPythonNative::
 get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructType *inclass, const std::string &upcast_seed, bool can_downcast) {
-  if (inclass == NULL) {
+  if (inclass == nullptr) {
     return;
   }
 
@@ -691,7 +691,7 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
     const CPPStructType::Base &base = (*bi);
 // if (base._vis <= V_public) can_downcast = false;
     CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
-    if (base_type != NULL) {
+    if (base_type != nullptr) {
       std::string scoped_name = base_type->get_local_name(&parser);
 
       if (answer.find(scoped_name) == answer.end()) {
@@ -806,7 +806,7 @@ void InterfaceMakerPythonNative::
 write_prototypes(ostream &out_code, ostream *out_h) {
   Functions::iterator fi;
 
-  if (out_h != NULL) {
+  if (out_h != nullptr) {
     *out_h << "#include \"py_panda.h\"\n\n";
   }
 
@@ -966,7 +966,7 @@ write_functions(ostream &out) {
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi).second;
     if (!func->_itype.is_global() && is_function_legal(func)) {
-      write_function_for_top(out, NULL, func);
+      write_function_for_top(out, nullptr, func);
     }
   }
 
@@ -1187,7 +1187,7 @@ write_class_declarations(ostream &out, ostream *out_h, Object *obj) {
 
   out << "\n";
 
-  if (out_h != NULL) {
+  if (out_h != nullptr) {
     *out_h << "extern \"C\" " << EXPORT_IMPORT_PREFIX << " struct Dtool_PyTypedObject Dtool_" << class_name << ";\n";
   }
 }
@@ -1465,7 +1465,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "  {NULL, NULL, 0, NULL}\n" << "};\n\n";
 
   out << "struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs};\n";
-  if (out_h != NULL) {
+  if (out_h != nullptr) {
     *out_h << "extern struct LibraryDef " << def->library_name << "_moddef;\n";
   }
 }
@@ -1546,7 +1546,7 @@ write_module_class(ostream &out, Object *obj) {
       }
 
       Object *nested_obj = _objects[nested_index];
-      assert(nested_obj != (Object *)NULL);
+      assert(nested_obj != (Object *)nullptr);
 
       if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
         write_module_class(out, nested_obj);
@@ -2190,8 +2190,8 @@ write_module_class(ostream &out, Object *obj) {
 
           vector_string params_const(1);
           vector_string params_nonconst(1);
-          FunctionRemap *remap_const = NULL;
-          FunctionRemap *remap_nonconst = NULL;
+          FunctionRemap *remap_const = nullptr;
+          FunctionRemap *remap_nonconst = nullptr;
 
           // Iterate through the remaps to find the one that matches our
           // parameters.
@@ -2219,20 +2219,20 @@ write_module_class(ostream &out, Object *obj) {
           // because the function may depend on it to decide whether to
           // provide a writable buffer or a readonly buffer.
           const string const_this = "(const " + cClassName + " *)local_this";
-          if (remap_const != NULL && remap_nonconst != NULL) {
+          if (remap_const != nullptr && remap_nonconst != nullptr) {
             out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             out << "    return " << remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst) << ";\n";
             out << "  } else {\n";
             out << "    return " << remap_const->call_function(out, 4, false, const_this, params_const) << ";\n";
             out << "  }\n";
-          } else if (remap_nonconst != NULL) {
+          } else if (remap_nonconst != nullptr) {
             out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             out << "    return " << remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst) << ";\n";
             out << "  } else {\n";
             out << "    Dtool_Raise_TypeError(\"Cannot call " << ClassName << ".__getbuffer__() on a const object.\");\n";
             out << "    return -1;\n";
             out << "  }\n";
-          } else if (remap_const != NULL) {
+          } else if (remap_const != nullptr) {
             out << "  return " << remap_const->call_function(out, 4, false, const_this, params_const) << ";\n";
           } else {
             nout << ClassName << "::__getbuffer__ does not match the required signature.\n";
@@ -2259,8 +2259,8 @@ write_module_class(ostream &out, Object *obj) {
 
           vector_string params_const(1);
           vector_string params_nonconst(1);
-          FunctionRemap *remap_const = NULL;
-          FunctionRemap *remap_nonconst = NULL;
+          FunctionRemap *remap_const = nullptr;
+          FunctionRemap *remap_nonconst = nullptr;
 
           // Iterate through the remaps to find the one that matches our
           // parameters.
@@ -2284,7 +2284,7 @@ write_module_class(ostream &out, Object *obj) {
 
           string return_expr;
           const string const_this = "(const " + cClassName + " *)local_this";
-          if (remap_const != NULL && remap_nonconst != NULL) {
+          if (remap_const != nullptr && remap_nonconst != nullptr) {
             out << "  if (!DtoolInstance_IS_CONST(self)) {\n";
             return_expr = remap_nonconst->call_function(out, 4, false, "local_this", params_nonconst);
             if (!return_expr.empty()) {
@@ -2298,7 +2298,7 @@ write_module_class(ostream &out, Object *obj) {
             }
             out << "  }\n";
 
-          } else if (remap_nonconst != NULL) {
+          } else if (remap_nonconst != nullptr) {
             // Doesn't matter if there's no const version.  We *have* to call
             // it or else we could leak memory.
             return_expr = remap_nonconst->call_function(out, 2, false, "local_this", params_nonconst);
@@ -2306,7 +2306,7 @@ write_module_class(ostream &out, Object *obj) {
               out << "  " << return_expr << ";\n";
             }
 
-          } else if (remap_const != NULL) {
+          } else if (remap_const != nullptr) {
             return_expr = remap_const->call_function(out, 2, false, const_this, params_const);
             if (!return_expr.empty()) {
               out << "  " << return_expr << ";\n";
@@ -3093,7 +3093,7 @@ write_module_class(ostream &out, Object *obj) {
       continue;
     }
     Object *nested_obj = _objects[nested_index];
-    assert(nested_obj != (Object *)NULL);
+    assert(nested_obj != (Object *)nullptr);
 
     if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
       num_dict_items += 2;
@@ -3125,7 +3125,7 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     Object *nested_obj = _objects[nested_index];
-    assert(nested_obj != (Object *)NULL);
+    assert(nested_obj != (Object *)nullptr);
 
     if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
       std::string ClassName1 = make_safe_name(nested_obj->_itype.get_scoped_name());
@@ -3462,7 +3462,7 @@ write_function_for_name(ostream &out, Object *obj,
 
   bool has_this = false;
   Function::Remaps::const_iterator ri;
-  FunctionRemap *remap = NULL;
+  FunctionRemap *remap = nullptr;
   int max_required_args = 0;
   bool all_nonconst = true;
   bool has_keywords = false;
@@ -4239,8 +4239,8 @@ int get_type_sort(CPPType *type) {
 
 // The Core sort function for remap calling orders..
 bool RemapCompareLess(FunctionRemap *in1, FunctionRemap *in2) {
-  assert(in1 != NULL);
-  assert(in2 != NULL);
+  assert(in1 != nullptr);
+  assert(in2 != nullptr);
 
   if (in1->_const_method != in2->_const_method) {
     // Non-const methods should come first.
@@ -4324,7 +4324,7 @@ write_function_forset(ostream &out,
     return;
   }
 
-  FunctionRemap *remap = NULL;
+  FunctionRemap *remap = nullptr;
   std::set<FunctionRemap *>::iterator sii;
 
   bool all_nonconst = false;
@@ -5287,23 +5287,23 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       // Unravel the type to determine its properties.
       int array_len = -1;
       bool is_const = true;
-      CPPSimpleType *simple = NULL;
+      CPPSimpleType *simple = nullptr;
       CPPType *unwrap = TypeManager::unwrap_const_reference(type);
-      if (unwrap != NULL) {
+      if (unwrap != nullptr) {
         CPPArrayType *array_type = unwrap->as_array_type();
         CPPPointerType *pointer_type = unwrap->as_pointer_type();
 
-        if (array_type != NULL) {
-          if (array_type->_bounds != NULL) {
+        if (array_type != nullptr) {
+          if (array_type->_bounds != nullptr) {
             array_len = array_type->_bounds->evaluate().as_integer();
           }
           unwrap = array_type->_element_type;
-        } else if (pointer_type != NULL) {
+        } else if (pointer_type != nullptr) {
           unwrap = pointer_type->_pointing_at;
         }
 
         CPPConstType *const_type = unwrap->as_const_type();
-        if (const_type != NULL) {
+        if (const_type != nullptr) {
           unwrap = const_type->_wrapped_around;
         } else {
           is_const = false;
@@ -6545,7 +6545,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  }\n";
 
       out << "  if (arg == (PyObject *)NULL) {\n";
-      if (property->_deleter != NULL) {
+      if (property->_deleter != nullptr) {
         if (property->_deleter->_has_this) {
           out << "    local_this->" << property->_deleter->_ifunc.get_name() << "(index);\n";
         } else {
@@ -6558,7 +6558,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       }
       out << "  }\n";
 
-      if (property->_clear_function != NULL) {
+      if (property->_clear_function != nullptr) {
         out << "  if (arg == Py_None) {\n";
         if (property->_clear_function->_has_this) {
           out << "    local_this->" << property->_clear_function->_ifunc.get_name() << "(index);\n";
@@ -6659,7 +6659,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
         "  }\n";
     }
 
-    if (property->_has_function != NULL) {
+    if (property->_has_function != nullptr) {
       std::set<FunctionRemap*> remaps;
       remaps.insert(property->_has_function->_remaps.begin(),
                     property->_has_function->_remaps.end());
@@ -6717,10 +6717,10 @@ write_getset(ostream &out, Object *obj, Property *property) {
       }
 
       out << "  if (value == (PyObject *)NULL) {\n";
-      if (property->_deleter != NULL) {
+      if (property->_deleter != nullptr) {
         out << "    PyObject *arg = key;\n";
 
-        if (property->_has_function != NULL) {
+        if (property->_has_function != nullptr) {
           std::set<FunctionRemap*> remaps;
           remaps.insert(property->_has_function->_remaps.begin(),
                         property->_has_function->_remaps.end());
@@ -6747,7 +6747,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       }
       out << "  }\n";
 
-      if (property->_clear_function != NULL) {
+      if (property->_clear_function != nullptr) {
         out << "  if (value == Py_None) {\n"
             << "    local_this->" << property->_clear_function->_ifunc.get_name() << "(key);\n"
             << "    return 0;\n"
@@ -6910,7 +6910,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       out << "  }\n\n";
     }
 
-    if (property->_has_function != NULL) {
+    if (property->_has_function != nullptr) {
       if (remap->_has_this) {
         out << "  if (!local_this->" << property->_has_function->_ifunc.get_name() << "()) {\n";
       } else {
@@ -6942,10 +6942,10 @@ write_getset(ostream &out, Object *obj, Property *property) {
       }
 
       out << "  if (arg == (PyObject *)NULL) {\n";
-      if (property->_deleter != NULL && remap->_has_this) {
+      if (property->_deleter != nullptr && remap->_has_this) {
         out << "    local_this->" << property->_deleter->_ifunc.get_name() << "();\n"
             << "    return 0;\n";
-      } else if (property->_deleter != NULL) {
+      } else if (property->_deleter != nullptr) {
         out << "    " << cClassName << "::" << property->_deleter->_ifunc.get_name() << "();\n"
             << "    return 0;\n";
       } else {
@@ -6954,7 +6954,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       }
       out << "  }\n";
 
-      if (property->_clear_function != NULL) {
+      if (property->_clear_function != nullptr) {
         out << "  if (arg == Py_None) {\n";
         if (remap->_has_this) {
           out << "    local_this->" << property->_clear_function->_ifunc.get_name() << "();\n";
@@ -7003,7 +7003,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
 InterfaceMaker::Object *InterfaceMakerPythonNative::
 record_object(TypeIndex type_index) {
   if (type_index == 0) {
-    return (Object *)NULL;
+    return (Object *)nullptr;
   }
 
   Objects::iterator oi = _objects.find(type_index);
@@ -7015,7 +7015,7 @@ record_object(TypeIndex type_index) {
   const InterrogateType &itype = idb->get_type(type_index);
 
   if (!is_cpp_type_legal(itype._cpptype)) {
-    return (Object *)NULL;
+    return (Object *)nullptr;
   }
 
   Object *object = new Object(itype);
@@ -7287,7 +7287,7 @@ generate_wrappers() {
  */
 bool InterfaceMakerPythonNative::
 is_cpp_type_legal(CPPType *in_ctype) {
-  if (in_ctype == NULL) {
+  if (in_ctype == nullptr) {
     return false;
   }
 
@@ -7357,7 +7357,7 @@ isExportThisRun(CPPType *ctype) {
  */
 bool InterfaceMakerPythonNative::
 isExportThisRun(Function *func) {
-  if (func == NULL || !is_function_legal(func)) {
+  if (func == nullptr || !is_function_legal(func)) {
     return false;
   }
 
@@ -7375,7 +7375,7 @@ isExportThisRun(Function *func) {
  */
 bool InterfaceMakerPythonNative::
 is_remap_legal(FunctionRemap *remap) {
-  if (remap == NULL) {
+  if (remap == nullptr) {
     return false;
   }
 
@@ -7402,7 +7402,7 @@ is_remap_legal(FunctionRemap *remap) {
   for (size_t pn = 0; pn < remap->_parameters.size(); pn++) {
     ParameterRemap *param = remap->_parameters[pn]._remap;
     CPPType *orig_type = param->get_orig_type();
-    if (param->get_default_value() == NULL && !is_cpp_type_legal(orig_type)) {
+    if (param->get_default_value() == nullptr && !is_cpp_type_legal(orig_type)) {
       return false;
     }
   }
@@ -7416,7 +7416,7 @@ is_remap_legal(FunctionRemap *remap) {
  */
 int InterfaceMakerPythonNative::
 has_coerce_constructor(CPPStructType *type) {
-  if (type == NULL) {
+  if (type == nullptr) {
     return 0;
   }
 
@@ -7429,7 +7429,7 @@ has_coerce_constructor(CPPStructType *type) {
   }
 
   CPPScope *scope = type->get_scope();
-  if (scope == NULL) {
+  if (scope == nullptr) {
     return 0;
   }
 
@@ -7443,7 +7443,7 @@ has_coerce_constructor(CPPStructType *type) {
     for (ii = fgroup->_instances.begin(); ii != fgroup->_instances.end(); ++ii) {
       CPPInstance *inst = (*ii);
       CPPFunctionType *ftype = inst->_type->as_function_type();
-      if (ftype == NULL) {
+      if (ftype == nullptr) {
         continue;
       }
       if (inst->_storage_class & CPPInstance::SC_explicit) {
@@ -7489,7 +7489,7 @@ has_coerce_constructor(CPPStructType *type) {
  */
 bool InterfaceMakerPythonNative::
 is_remap_coercion_possible(FunctionRemap *remap) {
-  if (remap == NULL) {
+  if (remap == nullptr) {
     return false;
   }
 
@@ -7565,7 +7565,7 @@ IsRunTimeTyped(const InterrogateType &itype) {
  */
 bool InterfaceMakerPythonNative::
 DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
-  if (inclass == NULL) {
+  if (inclass == nullptr) {
     return false;
   }
 
@@ -7582,7 +7582,7 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
     const CPPStructType::Base &base = (*bi);
 
     CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
-    if (base_type != NULL) {
+    if (base_type != nullptr) {
       if (DoesInheritFromIsClass(base_type, name)) {
         return true;
       }
@@ -7601,7 +7601,7 @@ has_get_class_type_function(CPPType *type) {
   }
 
   CPPStructType *struct_type = type->as_struct_type();
-  if (struct_type == NULL) {
+  if (struct_type == nullptr) {
     return false;
   }
 
@@ -7620,7 +7620,7 @@ has_init_type_function(CPPType *type) {
   }
 
   CPPStructType *struct_type = type->as_struct_type();
-  if (struct_type == NULL) {
+  if (struct_type == nullptr) {
     return false;
   }
 
@@ -7636,8 +7636,8 @@ has_init_type_function(CPPType *type) {
     const CPPInstance *cppinst = *ii;
     const CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-    if (cppfunc != NULL &&
-        cppfunc->_parameters != NULL &&
+    if (cppfunc != nullptr &&
+        cppfunc->_parameters != nullptr &&
         cppfunc->_parameters->_parameters.size() == 0 &&
         (cppinst->_storage_class & CPPInstance::SC_static) != 0) {
       return true;
@@ -7669,7 +7669,7 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "write") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();
@@ -7677,9 +7677,9 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
           CPPInstance *cppinst = (*ii).second;
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-          if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL &&
-                cppfunc->_return_type != NULL &&
+          if (cppfunc != nullptr) {
+            if (cppfunc->_parameters != nullptr &&
+                cppfunc->_return_type != nullptr &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 1) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -7693,7 +7693,7 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
                 if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
                   inst1 = cppfunc->_parameters->_parameters[1];
-                  if (inst1->_initializer != NULL) {
+                  if (inst1->_initializer != nullptr) {
                     // write(ostream, int = 0)
                     return 1;
                   }
@@ -7739,7 +7739,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "python_repr") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();
@@ -7747,9 +7747,9 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
           CPPInstance *cppinst = (*ii).second;
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-          if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL &&
-                cppfunc->_return_type != NULL &&
+          if (cppfunc != nullptr) {
+            if (cppfunc->_parameters != nullptr &&
+                cppfunc->_return_type != nullptr &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 2) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -7777,7 +7777,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "output") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();
@@ -7785,9 +7785,9 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
           CPPInstance *cppinst = (*ii).second;
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
-          if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL &&
-                cppfunc->_return_type != NULL &&
+          if (cppfunc != nullptr) {
+            if (cppfunc->_parameters != nullptr &&
+                cppfunc->_return_type != nullptr &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 1) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -7801,7 +7801,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
                 if (TypeManager::is_pointer_to_ostream(inst1->_type)) {
                   inst1 = cppfunc->_parameters->_parameters[1];
-                  if (inst1->_initializer != NULL) {
+                  if (inst1->_initializer != nullptr) {
                     // output(ostream, foo = bar, ...)
                     return 2;
                   }

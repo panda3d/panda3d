@@ -85,14 +85,14 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
     source_filename.set_binary();
   }
   istream *source_stream = vfs->open_read_file(source_filename, true);
-  if (source_stream == NULL) {
+  if (source_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
 
   Filename dest_filename = Filename::binary_filename(dest);
   ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
-  if (dest_stream == NULL) {
+  if (dest_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;
@@ -120,7 +120,7 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *source_stream = vfs->open_read_file(source_filename, false);
-  if (source_stream == NULL) {
+  if (source_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
   }
@@ -131,7 +131,7 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
     dest_filename.set_binary();
   }
   ostream *dest_stream = vfs->open_write_file(dest_filename, true, true);
-  if (dest_stream == NULL) {
+  if (dest_stream == nullptr) {
     express_cat.info() << "Couldn't open file " << dest_filename << "\n";
     vfs->close_read_file(source_stream);
     return false;

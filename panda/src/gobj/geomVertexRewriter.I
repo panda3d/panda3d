@@ -104,7 +104,7 @@ INLINE GeomVertexRewriter::
 INLINE GeomVertexData *GeomVertexRewriter::
 get_vertex_data() const {
   nassertr(GeomVertexWriter::get_vertex_data() ==
-           GeomVertexReader::get_vertex_data(), NULL);
+           GeomVertexReader::get_vertex_data(), nullptr);
   return GeomVertexWriter::get_vertex_data();
 }
 
@@ -115,7 +115,7 @@ get_vertex_data() const {
 INLINE GeomVertexArrayData *GeomVertexRewriter::
 get_array_data() const {
   nassertr(GeomVertexWriter::get_array_data() ==
-           GeomVertexReader::get_array_data(), NULL);
+           GeomVertexReader::get_array_data(), nullptr);
   return GeomVertexWriter::get_array_data();
 }
 
@@ -148,7 +148,7 @@ get_stride() const {
 INLINE Thread *GeomVertexRewriter::
 get_current_thread() const {
   nassertr(GeomVertexWriter::get_current_thread() ==
-           GeomVertexReader::get_current_thread(), NULL);
+           GeomVertexReader::get_current_thread(), nullptr);
   return GeomVertexWriter::get_current_thread();
 }
 
@@ -242,7 +242,7 @@ get_array() const {
 INLINE const GeomVertexColumn *GeomVertexRewriter::
 get_column() const {
   nassertr(GeomVertexWriter::get_column() ==
-           GeomVertexReader::get_column(), NULL);
+           GeomVertexReader::get_column(), nullptr);
   return GeomVertexWriter::get_column();
 }
 

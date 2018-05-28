@@ -60,7 +60,7 @@ Connection::
   net_cat.info()
     << "Deleting connection " << (void *)this << "\n";
 
-  if (_socket != (Socket_IP *)NULL) {
+  if (_socket != (Socket_IP *)nullptr) {
     flush();
 
     _socket->Close();
@@ -294,7 +294,7 @@ set_max_segment(int size) {
  */
 bool Connection::
 send_datagram(const NetDatagram &datagram, int tcp_header_size) {
-  nassertr(_socket != (Socket_IP *)NULL, false);
+  nassertr(_socket != (Socket_IP *)nullptr, false);
 
   if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
@@ -367,7 +367,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
  */
 bool Connection::
 send_raw_datagram(const NetDatagram &datagram) {
-  nassertr(_socket != (Socket_IP *)NULL, false);
+  nassertr(_socket != (Socket_IP *)nullptr, false);
 
   if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
@@ -483,7 +483,7 @@ check_send_error(bool okflag) {
 
     // Assume any error means the connection has been reset; tell our manager
     // about it and ignore it.
-    if (_manager != (ConnectionManager *)NULL) {
+    if (_manager != (ConnectionManager *)nullptr) {
       _manager->flush_read_connection(this);
       _manager->connection_reset(this, okflag);
     }

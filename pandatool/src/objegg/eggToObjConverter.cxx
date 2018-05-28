@@ -110,14 +110,14 @@ process(const Filename &filename) {
   Filename obj_filename = Filename::text_filename(filename);
   vfs->delete_file(obj_filename);
   ostream *file = vfs->open_write_file(obj_filename, true, true);
-  if (file == (ostream *)NULL) {
+  if (file == (ostream *)nullptr) {
     return false;
   }
   if (egg_precision != 0) {
     file->precision(egg_precision);
   }
 
-  _current_group = NULL;
+  _current_group = nullptr;
 
   /*
   (*file) << "\n#\n"
@@ -134,7 +134,7 @@ process(const Filename &filename) {
 
   write_faces(*file, _egg_data);
 
-  bool success = (file != (ostream *)NULL);
+  bool success = (file != (ostream *)nullptr);
   vfs->close_write_file(file);
 
   return success;
@@ -171,7 +171,7 @@ collect_vertices(EggNode *egg_node) {
 void EggToObjConverter::
 write_faces(ostream &out, EggNode *egg_node) {
   if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
-    const char *prim_type = NULL;
+    const char *prim_type = nullptr;
     if (egg_node->is_of_type(EggPolygon::get_class_type())) {
       prim_type = "f";
     } else if (egg_node->is_of_type(EggPoint::get_class_type())) {
@@ -180,7 +180,7 @@ write_faces(ostream &out, EggNode *egg_node) {
       prim_type = "l";
     }
 
-    if (prim_type != NULL) {
+    if (prim_type != nullptr) {
       write_group_reference(out, egg_node);
 
       EggPrimitive *egg_prim = DCAST(EggPrimitive, egg_node);
@@ -280,7 +280,7 @@ get_group_name(string &group_name, EggGroupNode *egg_group) {
 
   // Now recurse.
   EggGroupNode *egg_parent = egg_group->get_parent();
-  if (egg_parent != NULL) {
+  if (egg_parent != nullptr) {
     get_group_name(group_name, egg_parent);
   }
 }
@@ -379,7 +379,7 @@ write_vertices(ostream &out, const string &prefix, int num_components,
     int index = (*ui).second;
     const LVecBase4d &vec = (*ui).first;
     nassertv(index >= 0 && index < num_vertices);
-    nassertv(vertices[index] == NULL);
+    nassertv(vertices[index] == nullptr);
     vertices[index] = &vec;
   }
 

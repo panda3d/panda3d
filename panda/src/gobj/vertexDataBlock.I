@@ -38,10 +38,10 @@ get_page() const {
  */
 INLINE unsigned char *VertexDataBlock::
 get_pointer(bool force) const {
-  nassertr(get_page() != (VertexDataPage *)NULL, NULL);
+  nassertr(get_page() != (VertexDataPage *)nullptr, nullptr);
   unsigned char *page_data = get_page()->get_page_data(force);
-  if (page_data == (unsigned char *)NULL) {
-    return NULL;
+  if (page_data == (unsigned char *)nullptr) {
+    return nullptr;
   } else {
     return page_data + get_start();
   }

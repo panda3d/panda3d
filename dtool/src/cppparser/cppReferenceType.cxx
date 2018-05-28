@@ -114,7 +114,7 @@ is_constructible(const CPPType *given_type) const {
   const CPPType *b;
 
   CPPReferenceType *ref_type = ((CPPType *)given_type)->as_reference_type();
-  if (ref_type != NULL) {
+  if (ref_type != nullptr) {
     if (ref_type->_value_category == VC_rvalue) {
       return is_constructible(ref_type->_pointing_at);
     }
@@ -159,7 +159,7 @@ is_constructible(const CPPType *given_type) const {
   // Can initialize from derived class pointer.
   const CPPStructType *a_struct = a->as_struct_type();
   const CPPStructType *b_struct = b->as_struct_type();
-  if (a_struct != NULL && b_struct != NULL) {
+  if (a_struct != nullptr && b_struct != nullptr) {
     return a_struct->is_base_of(b_struct);
   }
 
@@ -199,7 +199,7 @@ is_destructible() const {
 bool CPPReferenceType::
 is_equivalent(const CPPType &other) const {
   const CPPReferenceType *ot = ((CPPType *)&other)->as_reference_type();
-  if (ot == (CPPReferenceType *)NULL) {
+  if (ot == (CPPReferenceType *)nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -261,7 +261,7 @@ as_reference_type() {
 bool CPPReferenceType::
 is_equal(const CPPDeclaration *other) const {
   const CPPReferenceType *ot = ((CPPDeclaration *)other)->as_reference_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (_pointing_at == ot->_pointing_at) &&
          (_value_category == ot->_value_category);
@@ -275,7 +275,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPReferenceType::
 is_less(const CPPDeclaration *other) const {
   const CPPReferenceType *ot = ((CPPDeclaration *)other)->as_reference_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_value_category != ot->_value_category) {
     return (_value_category < ot->_value_category);

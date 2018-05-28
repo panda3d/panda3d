@@ -100,7 +100,7 @@ get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
   for (size_t i = 0; i < _samples.size(); ++i) {
     SampleData &smp = _samples[i];
     if (AIL_sample_status(smp._sample) == SMP_DONE) {
-      if (smp._sound != NULL) {
+      if (smp._sound != nullptr) {
         // Tell the last sound that was using this sample that it's done now.
         smp._sound->internal_stop();
       }
@@ -137,7 +137,7 @@ release_sample(size_t index, MilesAudioSample *sound) {
 
   SampleData &smp = _samples[index];
   if (smp._sound == sound) {
-    smp._sound = NULL;
+    smp._sound = nullptr;
   }
 }
 
@@ -159,7 +159,7 @@ get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
   for (size_t i = 0; i < _sequences.size(); ++i) {
     SequenceData &seq = _sequences[i];
     if (AIL_sequence_status(seq._sequence) == SEQ_DONE) {
-      if (seq._sound != NULL) {
+      if (seq._sound != nullptr) {
         // Tell the last sound that was using this sequence that it's done
         // now.
         seq._sound->internal_stop();
@@ -196,7 +196,7 @@ release_sequence(size_t index, MilesAudioSequence *sound) {
 
   SequenceData &seq = _sequences[index];
   if (seq._sound == sound) {
-    seq._sound = NULL;
+    seq._sound = nullptr;
   }
 }
 
@@ -214,7 +214,7 @@ force_midi_reset() {
   audio_debug("MilesAudioManager::force_midi_reset");
 
 #ifdef WIN32
-  if ((_midi_driver!=NULL) && (_midi_driver->deviceid != MIDI_NULL_DRIVER) && (_midi_driver->hMidiOut != NULL)) {
+  if ((_midi_driver!=nullptr) && (_midi_driver->deviceid != MIDI_nullptr_DRIVER) && (_midi_driver->hMidiOut != nullptr)) {
     audio_debug("MilesAudioManager::calling midiOutReset");
     midiOutReset(_midi_driver->hMidiOut);
   }
@@ -226,7 +226,7 @@ force_midi_reset() {
  */
 GlobalMilesManager *GlobalMilesManager::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GlobalMilesManager;
   }
   return _global_ptr;
@@ -282,7 +282,7 @@ open_api() {
       _midi_driver = AIL_open_XMIDI_driver(AIL_OPEN_XMIDI_NULL_DRIVER);
 
       // Load the downloadable sounds file:
-      _dls_device = AIL_DLS_open(_midi_driver, _digital_driver, NULL, 0,
+      _dls_device = AIL_DLS_open(_midi_driver, _digital_driver, nullptr, 0,
                                  audio_output_rate, audio_output_bits,
                                  audio_output_channels);
 
@@ -293,7 +293,7 @@ open_api() {
 
       _dls_data.clear();
       PT(VirtualFile) file = vfs->get_file(dls_pathname);
-      if (file == (VirtualFile *)NULL) {
+      if (file == (VirtualFile *)nullptr) {
         milesAudio_cat.warning()
           << "DLS file does not exist: " << dls_pathname << "\n";
 
@@ -384,7 +384,7 @@ U32 AILCALLBACK GlobalMilesManager::
 open_callback(char const *filename, UINTa *file_handle) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *strm = vfs->open_read_file(Filename::binary_filename(string(filename)), true);
-  if (strm == NULL) {
+  if (strm == nullptr) {
     // Failure.
     return 0;
   }

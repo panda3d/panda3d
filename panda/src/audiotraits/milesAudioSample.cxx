@@ -38,7 +38,7 @@ MilesAudioSample(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
   MilesAudioSound(manager, file_name),
   _sd(sd)
 {
-  nassertv(sd != NULL);
+  nassertv(sd != nullptr);
   audio_debug("MilesAudioSample(manager=0x"<<(void*)&manager
               <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
 
@@ -112,7 +112,7 @@ play() {
  */
 void MilesAudioSample::
 stop() {
-  if (_manager == (MilesAudioManager *)NULL) {
+  if (_manager == (MilesAudioManager *)nullptr) {
     return;
   }
 
@@ -152,7 +152,7 @@ get_time() const {
   }
 
   S32 current_ms;
-  AIL_sample_ms_position(_sample, NULL, &current_ms);
+  AIL_sample_ms_position(_sample, nullptr, &current_ms);
   PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
@@ -259,9 +259,9 @@ cleanup() {
   set_active(false);
   nassertv(_sample == 0);
 
-  if (_manager != (MilesAudioManager *)NULL) {
+  if (_manager != (MilesAudioManager *)nullptr) {
     _manager->release_sound(this);
-    _manager = NULL;
+    _manager = nullptr;
   }
 }
 
@@ -325,7 +325,7 @@ void MilesAudioSample::set_3d_min_distance(PN_stdfloat dist) {
     // distances in a single operation.
     float max_dist;
     int auto_3D_wet_atten;
-    AIL_sample_3D_distances(_sample, &max_dist, NULL, &auto_3D_wet_atten);
+    AIL_sample_3D_distances(_sample, &max_dist, nullptr, &auto_3D_wet_atten);
 
     AIL_set_sample_3D_distances(_sample, max_dist, dist, auto_3D_wet_atten);
   } else {
@@ -341,7 +341,7 @@ PN_stdfloat MilesAudioSample::get_3d_min_distance() const {
 
   if(_sample != 0) {
     float min_dist;
-    AIL_sample_3D_distances(_sample, NULL, &min_dist, NULL);
+    AIL_sample_3D_distances(_sample, nullptr, &min_dist, nullptr);
     return (PN_stdfloat)min_dist;
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::get_3d_min_distance().");
@@ -362,7 +362,7 @@ void MilesAudioSample::set_3d_max_distance(PN_stdfloat dist) {
     // distances in a single operation.
     float min_dist;
     int auto_3D_wet_atten;
-    AIL_sample_3D_distances(_sample, NULL, &min_dist, &auto_3D_wet_atten);
+    AIL_sample_3D_distances(_sample, nullptr, &min_dist, &auto_3D_wet_atten);
 
     AIL_set_sample_3D_distances(_sample, dist, min_dist, auto_3D_wet_atten);
   } else {
@@ -378,7 +378,7 @@ PN_stdfloat MilesAudioSample::get_3d_max_distance() const {
 
   if(_sample != 0) {
     float max_dist;
-    AIL_sample_3D_distances(_sample, &max_dist, NULL, NULL);
+    AIL_sample_3D_distances(_sample, &max_dist, nullptr, nullptr);
     return (PN_stdfloat)max_dist;
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::get_3d_max_distance().");
@@ -500,7 +500,7 @@ finish_callback(HSAMPLE sample) {
     milesAudio_cat.debug()
       << "finished " << *self << "\n";
   }
-  if (self->_manager == (MilesAudioManager *)NULL) {
+  if (self->_manager == (MilesAudioManager *)nullptr) {
     return;
   }
   self->_manager->_sounds_finished = true;

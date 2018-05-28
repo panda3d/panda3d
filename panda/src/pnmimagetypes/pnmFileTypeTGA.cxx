@@ -176,8 +176,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   tga_head = new ImageHeader;
   RLE_count = 0;
   RLE_flag = 0;
-  ColorMap = NULL;
-  AlphaMap = NULL;
+  ColorMap = nullptr;
+  AlphaMap = nullptr;
 
   Red = 0;
   Grn = 0;
@@ -283,7 +283,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
         temp1 = tga_head->Index_lo + tga_head->Index_hi * 256;
         temp2 = tga_head->Length_lo + tga_head->Length_hi * 256;
         int num_colors = temp1 + temp2 + 1;
-        nassertv(ColorMap == NULL && AlphaMap == NULL);
+        nassertv(ColorMap == nullptr && AlphaMap == nullptr);
         ColorMap = (pixel *)PANDA_MALLOC_ARRAY(num_colors * sizeof(pixel));
         AlphaMap = (gray *)PANDA_MALLOC_ARRAY(num_colors * sizeof(gray));
         for ( unsigned int i = temp1; i < ( temp1 + temp2 ); ++i )
@@ -311,10 +311,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 PNMFileTypeTGA::Reader::
 ~Reader() {
   delete tga_head;
-  if (ColorMap != NULL) {
+  if (ColorMap != nullptr) {
     PANDA_FREE_ARRAY(ColorMap);
   }
-  if (AlphaMap != NULL) {
+  if (AlphaMap != nullptr) {
     PANDA_FREE_ARRAY(AlphaMap);
   }
 }

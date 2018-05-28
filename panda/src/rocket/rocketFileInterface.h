@@ -26,7 +26,7 @@ class VirtualFileSystem;
  */
 class RocketFileInterface : public Rocket::Core::FileInterface {
 public:
-  RocketFileInterface(VirtualFileSystem *vfs = NULL);
+  RocketFileInterface(VirtualFileSystem *vfs = nullptr);
   virtual ~RocketFileInterface() {};
 
   Rocket::Core::FileHandle Open(const Rocket::Core::String& path);

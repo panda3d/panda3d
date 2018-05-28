@@ -33,7 +33,7 @@ ImageTrans() : ImageFilter(true) {
      "l, la, rgb, or rgba, respectively, or any of the keywords r, g, b, or "
      "a to extract out just the indicated channel as a single grayscale "
      "image.",
-     &ImageTrans::dispatch_channels, NULL, &_channels);
+     &ImageTrans::dispatch_channels, nullptr, &_channels);
 
   add_option
     ("cscale", "r,g,b[,a]", 50,

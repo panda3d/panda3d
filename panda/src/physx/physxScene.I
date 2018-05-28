@@ -26,7 +26,7 @@ PhysxScene() : PhysxObject() {
 INLINE PhysxScene::
 ~PhysxScene() {
 
-  _debugNode = NULL;
+  _debugNode = nullptr;
 }
 
 /**

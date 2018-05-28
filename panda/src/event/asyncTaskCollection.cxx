@@ -46,7 +46,7 @@ add_task(AsyncTask *task) {
   // If the pointer to our internal array is shared by any other
   // AsyncTaskCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren AsyncTaskCollection objects.
-  nassertv(task != (AsyncTask *)NULL);
+  nassertv(task != (AsyncTask *)nullptr);
 
   if (_tasks.get_ref_count() > 1) {
     AsyncTasks old_tasks = _tasks;
@@ -182,7 +182,7 @@ find_task(const string &name) const {
       return task;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**

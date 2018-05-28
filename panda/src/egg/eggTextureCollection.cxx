@@ -99,7 +99,7 @@ get_num_textures() const {
  */
 EggTexture *EggTextureCollection::
 get_texture(int index) const {
-  nassertr(index >= 0 && index < (int)_ordered_textures.size(), NULL);
+  nassertr(index >= 0 && index < (int)_ordered_textures.size(), nullptr);
 
   return _ordered_textures[index];
 }
@@ -465,7 +465,7 @@ find_tref(const string &tref_name) const {
     }
   }
 
-  return (EggTexture *)NULL;
+  return (EggTexture *)nullptr;
 }
 
 /**
@@ -485,5 +485,5 @@ find_filename(const Filename &filename) const {
     }
   }
 
-  return (EggTexture *)NULL;
+  return (EggTexture *)nullptr;
 }

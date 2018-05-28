@@ -45,7 +45,7 @@ void *
 load_dso(const DSearchPath &path, const Filename &filename) {
   Filename abspath = resolve_dso(path, filename);
   if (!abspath.is_regular_file()) {
-    return NULL;
+    return nullptr;
   }
   wstring os_specific_w = abspath.to_os_specific_w();
 
@@ -56,7 +56,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
   if (hLib) {
     pLoadLibraryEx = (tLoadLibraryEx)GetProcAddress(hLib, "LoadLibraryExW");
     if (pLoadLibraryEx) {
-      return pLoadLibraryEx(os_specific_w.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+      return pLoadLibraryEx(os_specific_w.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
     }
   }
 
@@ -130,7 +130,7 @@ void *
 load_dso(const DSearchPath &path, const Filename &filename) {
   Filename abspath = resolve_dso(path, filename);
   if (!abspath.is_regular_file()) {
-    return NULL;
+    return nullptr;
   }
   string os_specific = abspath.to_os_specific();
   return dlopen(os_specific.c_str(), RTLD_NOW | RTLD_GLOBAL);
@@ -144,7 +144,7 @@ unload_dso(void *dso_handle) {
 string
 load_dso_error() {
    const char *message = dlerror();
-   if (message != (const char *)NULL) {
+   if (message != (const char *)nullptr) {
     return std::string(message);
   }
   return "No error.";

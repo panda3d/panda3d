@@ -332,7 +332,7 @@ BMPreadrow(
         pixval         *G,
         pixval         *B)
 {
-        BITSTREAM       b = NULL;
+        BITSTREAM       b = nullptr;
         unsigned        nbyte = 0;
         int             rc;
         unsigned        x;

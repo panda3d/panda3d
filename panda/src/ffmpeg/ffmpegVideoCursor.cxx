@@ -51,14 +51,14 @@ FfmpegVideoCursor() :
   _action_cvar(_lock),
   _thread_status(TS_stopped),
   _seek_frame(0),
-  _packet(NULL),
-  _format_ctx(NULL),
-  _video_ctx(NULL),
-  _convert_ctx(NULL),
+  _packet(nullptr),
+  _format_ctx(nullptr),
+  _video_ctx(nullptr),
+  _convert_ctx(nullptr),
   _pixel_format((int)AV_PIX_FMT_NONE),
   _video_index(-1),
-  _frame(NULL),
-  _frame_out(NULL),
+  _frame(nullptr),
+  _frame_out(nullptr),
   _eof_known(false)
 {
 }
@@ -69,8 +69,8 @@ FfmpegVideoCursor() :
  */
 void FfmpegVideoCursor::
 init_from(FfmpegVideo *source) {
-  nassertv(_thread == NULL && _thread_status == TS_stopped);
-  nassertv(source != NULL);
+  nassertv(_thread == nullptr && _thread_status == TS_stopped);
+  nassertv(source != nullptr);
   _source = source;
   _filename = _source->get_filename();
 
@@ -122,10 +122,10 @@ init_from(FfmpegVideo *source) {
   }
 
 #ifdef HAVE_SWSCALE
-  nassertv(_convert_ctx == NULL);
+  nassertv(_convert_ctx == nullptr);
   _convert_ctx = sws_getContext(_size_x, _size_y, _video_ctx->pix_fmt,
                                 _size_x, _size_y, (AVPixelFormat)_pixel_format,
-                                SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
+                                SWS_BILINEAR | SWS_PRINT_INFO, nullptr, nullptr, nullptr);
 #endif  // HAVE_SWSCALE
 
 #ifdef HAVE_THREADS
@@ -144,13 +144,13 @@ FfmpegVideoCursor(FfmpegVideo *src) :
   _action_cvar(_lock),
   _thread_status(TS_stopped),
   _seek_frame(0),
-  _packet(NULL),
-  _format_ctx(NULL),
-  _video_ctx(NULL),
-  _convert_ctx(NULL),
+  _packet(nullptr),
+  _format_ctx(nullptr),
+  _video_ctx(nullptr),
+  _convert_ctx(nullptr),
   _video_index(-1),
-  _frame(NULL),
-  _frame_out(NULL),
+  _frame(nullptr),
+  _frame_out(nullptr),
   _eof_known(false)
 {
   init_from(src);
@@ -256,7 +256,7 @@ start_thread() {
     _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
     if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
-      _thread = NULL;
+      _thread = nullptr;
       _thread_status = TS_stopped;
     }
   }
@@ -279,7 +279,7 @@ stop_thread() {
         _thread_status = TS_shutdown;
       }
       _action_cvar.notify();
-      _thread = NULL;
+      _thread = nullptr;
     }
 
     // Now that we've released the lock, we can join the thread.
@@ -334,7 +334,7 @@ set_time(double timestamp, int loop_count) {
   }
 
   _current_frame = frame;
-  if (_current_frame_buffer != NULL) {
+  if (_current_frame_buffer != nullptr) {
     // If we've previously returned a frame, don't bother asking for a next
     // one if that frame is still valid.
     return (_current_frame >= _current_frame_buffer->_end_frame ||
@@ -353,8 +353,8 @@ fetch_buffer() {
   MutexHolder holder(_lock);
 
   // If there was an error at any point, just return NULL.
-  if (_format_ctx == (AVFormatContext *)NULL) {
-    return NULL;
+  if (_format_ctx == (AVFormatContext *)nullptr) {
+    return nullptr;
   }
 
   PT(FfmpegBuffer) frame;
@@ -400,7 +400,7 @@ fetch_buffer() {
         }
       }
     }
-    if (frame == NULL || frame->_end_frame < _current_frame) {
+    if (frame == nullptr || frame->_end_frame < _current_frame) {
       // No frame available, or the frame is too old.  Seek.
       if (_thread_status == TS_wait || _thread_status == TS_seek || _thread_status == TS_readahead) {
         _thread_status = TS_seek;
@@ -410,16 +410,16 @@ fetch_buffer() {
     }
   }
 
-  if (frame != NULL) {
+  if (frame != nullptr) {
     bool too_old = (frame->_end_frame < _current_frame && !ffmpeg_show_seek_frames);
     bool too_new = frame->_begin_frame > _current_frame;
     if (too_old || too_new) {
       // The frame is too old or too new.  Just recycle it.
-      frame = NULL;
+      frame = nullptr;
     }
   }
 
-  if (frame != NULL) {
+  if (frame != nullptr) {
     _current_frame_buffer = frame;
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
@@ -475,18 +475,18 @@ open_stream() {
     }
   }
 
-  nassertr(_format_ctx == NULL, false);
+  nassertr(_format_ctx == nullptr, false);
   _format_ctx = _ffvfile.get_format_context();
-  nassertr(_format_ctx != NULL, false);
+  nassertr(_format_ctx != nullptr, false);
 
-  if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(_format_ctx, nullptr) < 0) {
     ffmpeg_cat.info()
       << "Couldn't find stream info\n";
     close_stream();
     return false;
   }
 
-  nassertr(_video_ctx == NULL, false);
+  nassertr(_video_ctx == nullptr, false);
 
   // As of libavformat version 57.41.100, AVStream.codec is deprecated in favor
   // of AVStream.codecpar.  Fortunately, the two structures have
@@ -522,7 +522,7 @@ open_stream() {
   _video_timebase = av_q2d(stream->time_base);
   _min_fseek = (int)(3.0 / _video_timebase);
 
-  AVCodec *pVideoCodec = NULL;
+  AVCodec *pVideoCodec = nullptr;
   if (ffmpeg_prefer_libvpx) {
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 0, 0)
     if (codecpar->codec_id == AV_CODEC_ID_VP9) {
@@ -533,10 +533,10 @@ open_stream() {
       pVideoCodec = avcodec_find_decoder_by_name("libvpx");
     }
   }
-  if (pVideoCodec == NULL) {
+  if (pVideoCodec == nullptr) {
     pVideoCodec = avcodec_find_decoder(codecpar->codec_id);
   }
-  if (pVideoCodec == NULL) {
+  if (pVideoCodec == nullptr) {
     ffmpeg_cat.info()
       << "Couldn't find codec\n";
     close_stream();
@@ -558,7 +558,7 @@ open_stream() {
   avcodec_copy_context(_video_ctx, codecpar);
 #endif
 
-  if (avcodec_open2(_video_ctx, pVideoCodec, NULL) < 0) {
+  if (avcodec_open2(_video_ctx, pVideoCodec, nullptr) < 0) {
     ffmpeg_cat.info()
       << "Couldn't open codec\n";
     close_stream();
@@ -591,10 +591,10 @@ close_stream() {
     delete _video_ctx;
 #endif
   }
-  _video_ctx = NULL;
+  _video_ctx = nullptr;
 
   _ffvfile.close();
-  _format_ctx = NULL;
+  _format_ctx = nullptr;
 
   _video_index = -1;
 }
@@ -610,21 +610,21 @@ cleanup() {
   ReMutexHolder av_holder(_av_lock);
 
 #ifdef HAVE_SWSCALE
-  if (_convert_ctx != NULL) {
+  if (_convert_ctx != nullptr) {
     sws_freeContext(_convert_ctx);
   }
-  _convert_ctx = NULL;
+  _convert_ctx = nullptr;
 #endif  // HAVE_SWSCALE
 
   if (_frame) {
     av_free(_frame);
-    _frame = NULL;
+    _frame = nullptr;
   }
 
   if (_frame_out) {
     _frame_out->data[0] = 0;
     av_free(_frame_out);
-    _frame_out = NULL;
+    _frame_out = nullptr;
   }
 
   if (_packet) {
@@ -635,7 +635,7 @@ cleanup() {
       av_free_packet(_packet);
     }
     delete _packet;
-    _packet = NULL;
+    _packet = nullptr;
 #endif
   }
 }
@@ -711,7 +711,7 @@ do_poll() {
     if ((int)_readahead_frames.size() < _max_readahead_frames) {
       // Time to read the next frame.
       PT(FfmpegBuffer) frame = do_alloc_frame();
-      nassertr(frame != NULL, false);
+      nassertr(frame != nullptr, false);
       _lock.release();
       fetch_frame(-1);
       if (_frame_ready) {
@@ -734,7 +734,7 @@ do_poll() {
       int seek_frame = _seek_frame;
       _thread_status = TS_seeking;
       PT(FfmpegBuffer) frame = do_alloc_frame();
-      nassertr(frame != NULL, false);
+      nassertr(frame != nullptr, false);
       _lock.release();
       advance_to_frame(seek_frame);
       if (_frame_ready) {
@@ -1146,7 +1146,7 @@ export_frame(FfmpegBuffer *buffer) {
   if (ffmpeg_global_lock) {
     ReMutexHolder av_holder(_av_lock);
 #ifdef HAVE_SWSCALE
-    nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
+    nassertv(_convert_ctx != nullptr && _frame != nullptr && _frame_out != nullptr);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
     img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
@@ -1154,7 +1154,7 @@ export_frame(FfmpegBuffer *buffer) {
 #endif
   } else {
 #ifdef HAVE_SWSCALE
-    nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
+    nassertv(_convert_ctx != nullptr && _frame != nullptr && _frame_out != nullptr);
     sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
     img_convert((AVPicture *)_frame_out, (AVPixelFormat)_pixel_format,
@@ -1190,7 +1190,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 void FfmpegVideoCursor::
 finalize(BamReader *) {
-  if (_source != (MovieVideo *)NULL) {
+  if (_source != (MovieVideo *)nullptr) {
     FfmpegVideo *video;
     DCAST_INTO_V(video, _source);
     init_from(video);
