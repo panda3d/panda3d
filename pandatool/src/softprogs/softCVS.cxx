@@ -57,7 +57,7 @@ SoftCVS() {
     ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
-     &SoftCVS::dispatch_string, NULL, &_cvs_binary);
+     &SoftCVS::dispatch_string, nullptr, &_cvs_binary);
 }
 
 

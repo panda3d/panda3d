@@ -27,7 +27,7 @@ has_font(const string &filename) {
  */
 INLINE bool FontPool::
 verify_font(const string &filename) {
-  return load_font(filename) != (TextFont *)NULL;
+  return load_font(filename) != nullptr;
 }
 
 /**

@@ -56,7 +56,7 @@ bool wglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -99,7 +99,7 @@ void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -164,7 +164,7 @@ ready_flip() {
  */
 void wglGraphicsWindow::
 end_flip() {
-  if (_hdc != NULL && _flip_ready) {
+  if (_hdc != nullptr && _flip_ready) {
     // The documentation on SwapBuffers() is not at all clear on whether the
     // GL context needs to be current before it can be called.  Empirically,
     // it appears that it is not necessary in many cases, but it definitely is
@@ -184,8 +184,8 @@ end_flip() {
  */
 void wglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglGraphicsPipe::wgl_make_current(_hdc, NULL, &_make_current_pcollector);
+  if (_gsg != nullptr) {
+    wglGraphicsPipe::wgl_make_current(_hdc, nullptr, &_make_current_pcollector);
     _gsg.clear();
   }
   ReleaseDC(_hWnd, _hdc);
@@ -208,7 +208,7 @@ open_window() {
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, NULL);
+    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, false);
     _gsg = wglgsg;
   } else {

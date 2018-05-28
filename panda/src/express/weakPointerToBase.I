@@ -509,7 +509,7 @@ output(ostream &out) const {
   out << _void_ptr;
   if (was_deleted()) {
     out << ":deleted";
-  } else if (_void_ptr != (void *)NULL) {
+  } else if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();
   }
 }

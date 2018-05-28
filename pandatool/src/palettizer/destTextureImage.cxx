@@ -98,7 +98,7 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
     // Also check the timestamps.
     SourceTextureImage *source = texture->get_preferred_source();
 
-    if (source != (SourceTextureImage *)NULL &&
+    if (source != nullptr &&
         source->get_filename().compare_timestamps(get_filename()) > 0) {
       copy(texture);
     }

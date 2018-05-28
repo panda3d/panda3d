@@ -378,7 +378,7 @@ get_array() const {
  */
 INLINE PTA_uchar Datagram::
 modify_array() {
-  if (_data == (uchar *)NULL) {
+  if (_data == nullptr) {
     // Create a new array.
     _data = PTA_uchar::empty_array(0);
 
@@ -420,7 +420,7 @@ operator == (const Datagram &other) const {
   if (_data == other._data) {
     return true;
   }
-  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+  if (_data != nullptr && other._data != nullptr) {
     return _data.v() == other._data.v();
   }
   return false;
@@ -444,7 +444,7 @@ operator < (const Datagram &other) const {
     return false;
   }
 
-  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+  if (_data != nullptr && other._data != nullptr) {
     // Different pointers, neither NULL.
     return _data.v() < other._data.v();
   }

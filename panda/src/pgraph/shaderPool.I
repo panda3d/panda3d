@@ -27,7 +27,7 @@ has_shader(const Filename &filename) {
  */
 INLINE bool ShaderPool::
 verify_shader(const Filename &filename) {
-  return load_shader(filename) != (Shader *)NULL;
+  return load_shader(filename) != nullptr;
 }
 
 /**

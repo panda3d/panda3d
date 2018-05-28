@@ -27,7 +27,7 @@ INLINE PhysxController *PhysxControllersHit::
 get_controller() const {
 
   NxController *controllerPtr = _hit.controller;
-  PhysxController *controller = controllerPtr ? (PhysxController *)controllerPtr : NULL;
+  PhysxController *controller = controllerPtr ? (PhysxController *)controllerPtr : nullptr;
 
   return controller;
 }
@@ -39,7 +39,7 @@ INLINE PhysxController *PhysxControllersHit::
 get_other() const {
 
   NxController *otherPtr = _hit.other;
-  PhysxController *other = otherPtr ? (PhysxController *)otherPtr : NULL;
+  PhysxController *other = otherPtr ? (PhysxController *)otherPtr : nullptr;
 
   return other;
 }

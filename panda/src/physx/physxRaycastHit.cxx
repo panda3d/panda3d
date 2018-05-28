@@ -21,7 +21,7 @@
 bool PhysxRaycastHit::
 is_empty() const {
 
-  return (_hit.shape == NULL);
+  return (_hit.shape == nullptr);
 }
 
 /**
@@ -30,7 +30,7 @@ is_empty() const {
 PhysxShape *PhysxRaycastHit::
 get_shape() const {
 
-  nassertr_always(_hit.shape, NULL);
+  nassertr_always(_hit.shape, nullptr);
   return (PhysxShape *)_hit.shape->userData;
 }
 

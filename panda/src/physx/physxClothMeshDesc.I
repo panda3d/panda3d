@@ -20,12 +20,12 @@ PhysxClothMeshDesc() {
   _desc.flags = 0;
   _desc.pointStrideBytes = sizeof(NxVec3);
   _desc.triangleStrideBytes = 3*sizeof(NxU32);
-  _desc.points = NULL;
-  _desc.triangles = NULL;
+  _desc.points = nullptr;
+  _desc.triangles = nullptr;
 
-  _points = NULL;
-  _triangles = NULL;
-  _texcoords = NULL;
+  _points = nullptr;
+  _triangles = nullptr;
+  _texcoords = nullptr;
 }
 
 /**

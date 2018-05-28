@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
                               PartGroup::HMF_ok_anim_extra;
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     NodePath loading_np;

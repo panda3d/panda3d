@@ -19,7 +19,7 @@
  */
 void ConfigVariableSearchPath::
 reload_search_path() {
-  nassertv(_core != (ConfigVariableCore *)NULL);
+  nassertv(_core != nullptr);
   mark_cache_valid(_local_modified);
   _cache.clear();
 

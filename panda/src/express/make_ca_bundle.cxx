@@ -21,7 +21,7 @@ static const char *target_filename = "ca_bundle_data_src.c";
 int
 main(int argc, char *argv[]) {
   FILE *fin = fopen(source_filename, "r");
-  if (fin == NULL) {
+  if (fin == nullptr) {
     cerr << "Couldn't open " << source_filename << " for reading.\n";
     return 1;
   }
@@ -33,7 +33,7 @@ main(int argc, char *argv[]) {
   // function, or it will get confused.
   ERR_clear_error();
   STACK_OF(X509_INFO) *inf;
-  inf = PEM_X509_INFO_read(fin, NULL, NULL, NULL);
+  inf = PEM_X509_INFO_read(fin, nullptr, nullptr, nullptr);
 
   if (!inf) {
     // Could not scan certificates.
@@ -55,7 +55,7 @@ main(int argc, char *argv[]) {
     if (itmp->x509) {
       X509 *cert = itmp->x509;
 
-      int der_len = i2d_X509(cert, NULL);
+      int der_len = i2d_X509(cert, nullptr);
       unsigned char *der_buf = new unsigned char[der_len];
       unsigned char *p = der_buf;
       i2d_X509(cert, &p);

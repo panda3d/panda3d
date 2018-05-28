@@ -110,7 +110,7 @@ get_texture() const {
     return DCAST(Texture, _value);
 
   default:
-    return NULL;
+    return nullptr;
   }
 }
 

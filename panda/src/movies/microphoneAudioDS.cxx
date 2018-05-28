@@ -146,7 +146,7 @@ find_all_microphones_ds() {
         format.nBlockAlign = 2 * chan;
         format.wBitsPerSample = 16;
         format.cbSize = 0;
-        stat = waveInOpen(NULL, i, &format, 0, 0, WAVE_FORMAT_QUERY);
+        stat = waveInOpen(nullptr, i, &format, 0, 0, WAVE_FORMAT_QUERY);
         if (stat == MMSYSERR_NOERROR) {
           PT(MicrophoneAudioDS) p = new MicrophoneAudioDS();
           ostringstream name;
@@ -235,7 +235,7 @@ open() {
   if (failed) {
     delete_buffers(buffers);
     nassert_raise("Could not allocate audio input buffers.");
-    return NULL;
+    return nullptr;
   }
 
   WAVEFORMATEX format;
@@ -253,7 +253,7 @@ open() {
   if (stat != MMSYSERR_NOERROR) {
     delete_buffers(buffers);
     nassert_raise("Could not open audio input device.");
-    return NULL;
+    return nullptr;
   }
 
   for (int i=0; i<(int)buffers.size(); i++) {
@@ -265,7 +265,7 @@ open() {
       waveInClose(hwav);
       delete_buffers(buffers);
       nassert_raise("Could not queue buffers for audio input device.");
-      return NULL;
+      return nullptr;
     }
   }
   stat = waveInStart(hwav);
@@ -273,7 +273,7 @@ open() {
     waveInClose(hwav);
     delete_buffers(buffers);
     nassert_raise("Could not start recording on input device.");
-    return NULL;
+    return nullptr;
   }
   return new MicrophoneAudioCursorDS(this, buffers, hwav);
 }

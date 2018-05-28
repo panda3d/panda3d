@@ -87,7 +87,7 @@ INLINE Texture *GraphicsOutput::
 get_texture(int i) const {
   CDReader cdata(_cycler);
   if ((i < 0) || (i >= ((int)cdata->_textures.size()))) {
-    return (Texture *)NULL;
+    return nullptr;
   }
   return cdata->_textures[i]._texture;
 }
@@ -734,7 +734,7 @@ end_frame_spam(FrameMode mode) {
 INLINE void GraphicsOutput::
 clear_cube_map_selection() {
   _target_tex_page = -1;
-  _prev_page_dr = NULL;
+  _prev_page_dr = nullptr;
 }
 
 /**

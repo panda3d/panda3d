@@ -157,32 +157,32 @@ PUBLISHED:
   bool raycast_any_shape(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL) const;
+    PhysxGroupsMask *groups=nullptr) const;
 
   PhysxRaycastHit raycast_closest_shape(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+    PhysxGroupsMask *groups=nullptr, bool smoothNormal=true) const;
 
   PhysxRaycastReport raycast_all_shapes(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+    PhysxGroupsMask *groups=nullptr, bool smoothNormal=true) const;
 
   bool raycast_any_bounds(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL) const;
+    PhysxGroupsMask *groups=nullptr) const;
 
   PhysxRaycastHit raycast_closest_bounds(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+    PhysxGroupsMask *groups=nullptr, bool smoothNormal=true) const;
 
   PhysxRaycastReport raycast_all_bounds(const PhysxRay &ray,
     PhysxShapesType shapesType=ST_all,
     PhysxMask mask=PhysxMask::all_on(),
-    PhysxGroupsMask *groups=NULL, bool smoothNormal=true) const;
+    PhysxGroupsMask *groups=nullptr, bool smoothNormal=true) const;
 
   // Overlap queries
   PhysxOverlapReport overlap_sphere_shapes(const LPoint3f &center, float radius,

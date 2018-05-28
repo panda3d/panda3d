@@ -36,7 +36,7 @@ void ReMutexDirect::
 do_lock(Thread *current_thread) {
   _lock_impl.lock();
 
-  if (_locking_thread == (Thread *)NULL) {
+  if (_locking_thread == nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -52,7 +52,7 @@ do_lock(Thread *current_thread) {
   } else {
     // The mutex is locked by some other thread.  Go to sleep on the condition
     // variable until it's unlocked.
-    while (_locking_thread != (Thread *)NULL) {
+    while (_locking_thread != nullptr) {
       _cvar_impl.wait();
     }
 
@@ -77,7 +77,7 @@ do_try_lock(Thread *current_thread) {
   bool acquired = true;
   _lock_impl.lock();
 
-  if (_locking_thread == (Thread *)NULL) {
+  if (_locking_thread == nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -117,7 +117,7 @@ do_elevate_lock() {
     return;
   }
 #elif !defined(NDEBUG)
-  nassertd(_locking_thread != (Thread *)NULL) {
+  nassertd(_locking_thread != nullptr) {
     _lock_impl.unlock();
     return;
   }
@@ -161,7 +161,7 @@ do_unlock() {
   --_lock_count;
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
-    _locking_thread = (Thread *)NULL;
+    _locking_thread = nullptr;
     _cvar_impl.notify();
   }
   _lock_impl.unlock();

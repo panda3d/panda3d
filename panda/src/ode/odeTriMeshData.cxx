@@ -14,7 +14,7 @@
 #include "odeTriMeshData.h"
 
 TypeHandle OdeTriMeshData::_type_handle;
-OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = NULL;
+OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
 
 void OdeTriMeshData::
 link_data(dGeomID id, PT(OdeTriMeshData) data) {
@@ -29,13 +29,13 @@ get_data(dGeomID id) {
   if (iter != data_map.end()) {
     return iter->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void OdeTriMeshData::
 unlink_data(dGeomID id) {
   odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
-  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
+  nassertv(_tri_mesh_data_map != nullptr);
   TriMeshDataMap::iterator iter = _tri_mesh_data_map->find(id);
   if (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
@@ -58,7 +58,7 @@ remove_data(OdeTriMeshData *data) {
     odetrimeshdata_cat.debug()
       << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   }
-  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+  if (_tri_mesh_data_map == nullptr) {
     return;
   }
 
@@ -88,9 +88,9 @@ remove_data(OdeTriMeshData *data) {
 OdeTriMeshData::
 OdeTriMeshData(const NodePath& model, bool use_normals) :
   _id(dGeomTriMeshDataCreate()),
-  _vertices(0),
-  _faces(0),
-  _normals(0),
+  _vertices(nullptr),
+  _faces(nullptr),
+  _normals(nullptr),
   _num_vertices(0),
   _num_faces(0) {
   odetrimeshdata_cat.debug() << get_type() << "(" << _id << ")" << "\n";
@@ -131,16 +131,16 @@ OdeTriMeshData::
 ~OdeTriMeshData() {
   odetrimeshdata_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
   destroy();
-  if (_vertices != 0) {
+  if (_vertices != nullptr) {
     PANDA_FREE_ARRAY(_vertices);
-    _vertices = 0;
+    _vertices = nullptr;
     _num_vertices = 0;
   }
-  if (_faces != 0) {
+  if (_faces != nullptr) {
     PANDA_FREE_ARRAY(_faces);
-    _faces = 0;
+    _faces = nullptr;
   }
-  if (_normals != 0) {
+  if (_normals != nullptr) {
     // This is never allocated?  Until we use _normals, assert that we don't
     // accidentally free it here through some mistake.
     nassertv(false);
@@ -151,10 +151,10 @@ OdeTriMeshData::
 void OdeTriMeshData::
 destroy() {
   odetrimeshdata_cat.debug() << get_type() << "::destroy(" << _id << ")" << "\n";
-  if (_id != 0) {
+  if (_id != nullptr) {
     dGeomTriMeshDataDestroy(_id);
     remove_data(this);
-    _id = 0;
+    _id = nullptr;
   }
 }
 

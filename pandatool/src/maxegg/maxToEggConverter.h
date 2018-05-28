@@ -81,7 +81,7 @@ class MaxToEggConverter {
     void make_polyset(INode *max_node,
                       Mesh *mesh,
                       EggGroup *egg_group,
-                      Shader *default_shader = NULL);
+                      Shader *default_shader = nullptr);
 
     Point3 get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo);
     VertColor get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo);

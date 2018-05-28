@@ -86,7 +86,7 @@ write(ostream &out, int indent_level) const {
  */
 TextGlyph *TextFont::
 get_invalid_glyph() {
-  if (_invalid_glyph == (TextGlyph *)NULL) {
+  if (_invalid_glyph == nullptr) {
     make_invalid_glyph();
   }
   return _invalid_glyph;

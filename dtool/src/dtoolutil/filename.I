@@ -192,7 +192,7 @@ operator = (const wstring &filename) {
  */
 INLINE Filename &Filename::
 operator = (const char *filename) {
-  assert(filename != NULL);
+  assert(filename != nullptr);
   return (*this) = string(filename);
 }
 

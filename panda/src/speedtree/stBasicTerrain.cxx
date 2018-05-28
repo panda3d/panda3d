@@ -113,7 +113,7 @@ setup_terrain(const Filename &terrain_filename) {
   }
 
   istream *in = vfs->open_read_file(fullpath, true);
-  if (in == NULL) {
+  if (in == nullptr) {
     speedtree_cat.warning()
       << "Couldn't open " << terrain_filename << "\n";
     return false;

@@ -44,7 +44,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *input_p = NULL;
+static istream *input_p = nullptr;
 
 // This is the name of the egg file we're parsing.  We keep it so we
 // can print it out for error messages.
@@ -162,7 +162,7 @@ eggyywarning(ostringstream &strm) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  nassertv(input_p != NULL);
+  nassertv(input_p != nullptr);
   if (*input_p) {
     input_p->read(buffer, max_size);
     result = input_p->gcount();
@@ -180,7 +180,7 @@ input_chars(char *buffer, int &result, int max_size) {
 
       // Truncate it at the newline.
       char *end = strchr(current_line, '\n');
-      if (end != NULL) {
+      if (end != nullptr) {
         *end = '\0';
       }
     }
@@ -700,7 +700,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 {HEX} {
   // A hexadecimal integer number.
   accept();
-  eggyylval._ulong = strtoul(yytext+2, NULL, 16);
+  eggyylval._ulong = strtoul(yytext+2, nullptr, 16);
   eggyylval._string = yytext;
   return EGG_ULONG;
 }
@@ -708,7 +708,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 {BINARY} {
   // A binary integer number.
   accept();
-  eggyylval._ulong = strtoul(yytext+2, NULL, 2);
+  eggyylval._ulong = strtoul(yytext+2, nullptr, 2);
   eggyylval._string = yytext;
   return EGG_ULONG;
 }
@@ -717,7 +717,7 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   // not-a-number.  These sometimes show up in egg files accidentally.
   accept();
   memset(&eggyylval._number, 0, sizeof(eggyylval._number));
-  *(unsigned long *)&eggyylval._number = strtoul(yytext+3, NULL, 0);
+  *(unsigned long *)&eggyylval._number = strtoul(yytext+3, nullptr, 0);
   eggyylval._string = yytext;
   return EGG_NUMBER;
 }

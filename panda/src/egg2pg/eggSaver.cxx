@@ -82,7 +82,7 @@ EggSaver::
 EggSaver(EggData *data) :
   _data(data)
 {
-  if (_data == NULL) {
+  if (_data == nullptr) {
     _data = new EggData;
   }
 }
@@ -97,13 +97,13 @@ add_node(PandaNode *node) {
   _data->add_child(_vpool);
 
   NodePath root(node);
-  convert_node(WorkingNodePath(root), _data, false, NULL);
+  convert_node(WorkingNodePath(root), _data, false, nullptr);
 
   // Remove the vertex pool if it has no vertices.
   if (_vpool->empty()) {
     _data->remove_child(_vpool);
   }
-  _vpool = NULL;
+  _vpool = nullptr;
 }
 
 /**
@@ -117,13 +117,13 @@ add_subgraph(PandaNode *root) {
   _data->add_child(_vpool);
 
   NodePath root_path(root);
-  recurse_nodes(root_path, _data, false, NULL);
+  recurse_nodes(root_path, _data, false, nullptr);
 
   // Remove the vertex pool if it has no vertices.
   if (_vpool->empty()) {
     _data->remove_child(_vpool);
   }
-  _vpool = NULL;
+  _vpool = nullptr;
 }
 
 /**
@@ -288,7 +288,7 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
 EggGroupNode * EggSaver::convert_animGroup_node(AnimGroup *animGroup, double fps ) {
   int num_children = animGroup->get_num_children();
 
-  EggGroupNode *eggNode = NULL;
+  EggGroupNode *eggNode = nullptr;
   if (animGroup->is_of_type(AnimBundle::get_class_type())) {
     EggTable *eggTable = new EggTable(animGroup->get_name());
     eggTable ->set_table_type(EggTable::TT_bundle);
@@ -319,8 +319,8 @@ EggGroupNode * EggSaver::convert_animGroup_node(AnimGroup *animGroup, double fps
   for (int i = 0; i < num_children; i++) {
     AnimGroup *animChild = animGroup->get_child(i);
     EggGroupNode *eggChildNode = convert_animGroup_node(animChild, fps);
-    if (eggChildNode!=NULL) {
-      nassertr(eggNode!=NULL, NULL);
+    if (eggChildNode!=nullptr) {
+      nassertr(eggNode!=nullptr, nullptr);
       eggNode->add_child(eggChildNode);
     }
   }
@@ -378,7 +378,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
 
     joint_group = joint;
     egg_parent->add_child(joint_group);
-    if (joint_map != NULL) {
+    if (joint_map != nullptr) {
       CharacterJointMap::iterator mi = joint_map->find(character_joint);
       if (mi != joint_map->end()) {
         pvector<pair<EggVertex*,PN_stdfloat> > &joint_vertices = (*mi).second;
@@ -789,11 +789,11 @@ convert_primitive(const GeomVertexData *vertex_data,
   }
 
   // Check for a material.
-  EggMaterial *egg_mat = (EggMaterial *)NULL;
+  EggMaterial *egg_mat = nullptr;
   const MaterialAttrib *ma;
   if (net_state->get_attrib(ma)) {
     egg_mat = get_egg_material(ma->get_material());
-    if (egg_mat != (EggMaterial *)NULL) {
+    if (egg_mat != nullptr) {
       egg_prim->set_material(egg_mat);
     }
   }
@@ -803,9 +803,9 @@ convert_primitive(const GeomVertexData *vertex_data,
   if (net_state->get_attrib(ta)) {
     EggTexture *egg_tex = get_egg_texture(ta->get_texture());
 
-    if (egg_tex != (EggTexture *)NULL) {
+    if (egg_tex != nullptr) {
       TextureStage *tex_stage = ta->get_on_stage(0);
-      if (tex_stage != (TextureStage *)NULL) {
+      if (tex_stage != nullptr) {
         switch (tex_stage->get_mode()) {
         case TextureStage::M_modulate:
           if (has_color_off == true) {
@@ -908,7 +908,7 @@ convert_primitive(const GeomVertexData *vertex_data,
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
 
       if (vertex_data->has_column(InternalName::get_transform_blend()) &&
-          joint_map != NULL && transformBlendTable != NULL) {
+          joint_map != nullptr && transformBlendTable != nullptr) {
         reader.set_column(InternalName::get_transform_blend());
         int idx = reader.get_data1i();
         const TransformBlend &blend = transformBlendTable->get_blend(idx);
@@ -1006,7 +1006,7 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
 
   const RenderEffects *effects = node->get_effects();
   const RenderEffect *effect = effects->get_effect(BillboardEffect::get_class_type());
-  if (effect != (RenderEffect *)NULL) {
+  if (effect != nullptr) {
     const BillboardEffect *bbe = DCAST(BillboardEffect, effect);
     if (bbe->get_axial_rotate()) {
       egg_group->set_billboard_type(EggGroup::BT_axis);
@@ -1198,7 +1198,7 @@ apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
  */
 EggMaterial *EggSaver::
 get_egg_material(Material *mat) {
-  if (mat != (Material *)NULL) {
+  if (mat != nullptr) {
     EggMaterial temp(mat->get_name());
     if (mat->has_base_color()) {
       temp.set_base(mat->get_base_color());
@@ -1239,7 +1239,7 @@ get_egg_material(Material *mat) {
     return _materials.create_unique_material(temp, ~EggMaterial::E_mref_name);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1247,7 +1247,7 @@ get_egg_material(Material *mat) {
  */
 EggTexture *EggSaver::
 get_egg_texture(Texture *tex) {
-  if (tex != (Texture *)NULL) {
+  if (tex != nullptr) {
     if (tex->has_filename()) {
       Filename filename = tex->get_filename();
       EggTexture temp(filename.get_basename_wo_extension(), filename);
@@ -1383,5 +1383,5 @@ get_egg_texture(Texture *tex) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }

@@ -56,7 +56,7 @@ public:
 
   TypeHandle find_registered_type(TypeHandle handle);
 
-  void register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data = NULL);
+  void register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data = nullptr);
 
   int get_num_types() const;
   TypeHandle get_type(int n) const;

@@ -16,8 +16,8 @@
  */
 INLINE PNMImage::
 PNMImage() {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   clear();
 }
@@ -28,8 +28,8 @@ PNMImage() {
 INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
          PNMFileType *type, ColorSpace color_space) {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   clear(x_size, y_size, num_channels, maxval, type, color_space);
 }
@@ -41,8 +41,8 @@ INLINE PNMImage::
 PNMImage(const PNMImage &copy) {
   // We don't need to invoke PNMImageHeader's copy constructor, because we'll
   // just call copy_from().
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   copy_from(copy);
 }
@@ -251,7 +251,7 @@ get_color_space() const {
  */
 INLINE bool PNMImage::
 is_valid() const {
-  return (_array != NULL);
+  return (_array != nullptr);
 }
 
 /**
@@ -403,7 +403,7 @@ get_gray_val(int x, int y) const {
  */
 INLINE xelval PNMImage::
 get_alpha_val(int x, int y) const {
-  nassertr(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size, 0);
+  nassertr(_alpha != nullptr && x >= 0 && x < _x_size && y >= 0 && y < _y_size, 0);
   return alpha_row(y)[x];
 }
 
@@ -468,7 +468,7 @@ set_gray_val(int x, int y, xelval gray) {
  */
 INLINE void PNMImage::
 set_alpha_val(int x, int y, xelval a) {
-  nassertv(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size);
+  nassertv(_alpha != nullptr && x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   alpha_row(y)[x] = a;
 }
 
@@ -1120,7 +1120,7 @@ get_alpha_array() const {
 INLINE xel *PNMImage::
 take_array() {
   xel *array = _array;
-  _array = NULL;
+  _array = nullptr;
   return array;
 }
 
@@ -1133,7 +1133,7 @@ take_array() {
 INLINE xelval *PNMImage::
 take_alpha_array() {
   xelval *alpha = _alpha;
-  _alpha = NULL;
+  _alpha = nullptr;
   return alpha;
 }
 
@@ -1159,7 +1159,7 @@ allocate_alpha() {
  */
 INLINE xel *PNMImage::
 row(int y) const {
-  nassertr(y >= 0 && y < _y_size, NULL);
+  nassertr(y >= 0 && y < _y_size, nullptr);
   return _array + y * _x_size;
 }
 
@@ -1169,7 +1169,7 @@ row(int y) const {
  */
 INLINE xelval *PNMImage::
 alpha_row(int y) const {
-  nassertr(_alpha != NULL && y >= 0 && y < _y_size, NULL);
+  nassertr(_alpha != nullptr && y >= 0 && y < _y_size, nullptr);
   return _alpha + y * _x_size;
 }
 

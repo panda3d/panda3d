@@ -95,13 +95,13 @@ BulletWorld() {
       break;
     default:
       bullet_cat.error() << "no proper filter algorithm!" << endl;
-      _filter_cb = NULL;
+      _filter_cb = nullptr;
   }
 
   _world->getPairCache()->setOverlapFilterCallback(_filter_cb);
 
   // Tick callback
-  _tick_callback_obj = NULL;
+  _tick_callback_obj = nullptr;
 
   // SoftBodyWorldInfo
   _info.m_dispatcher = _dispatcher;
@@ -786,7 +786,7 @@ BulletRigidBodyNode *BulletWorld::
 get_rigid_body(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_bodies.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_bodies.size(), nullptr);
   return _bodies[idx];
 }
 
@@ -807,7 +807,7 @@ BulletSoftBodyNode *BulletWorld::
 get_soft_body(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_softbodies.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_softbodies.size(), nullptr);
   return _softbodies[idx];
 }
 
@@ -828,7 +828,7 @@ BulletGhostNode *BulletWorld::
 get_ghost(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_ghosts.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_ghosts.size(), nullptr);
   return _ghosts[idx];
 }
 
@@ -849,7 +849,7 @@ BulletBaseCharacterControllerNode *BulletWorld::
 get_character(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_characters.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_characters.size(), nullptr);
   return _characters[idx];
 }
 
@@ -870,7 +870,7 @@ BulletVehicle *BulletWorld::
 get_vehicle(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_vehicles.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_vehicles.size(), nullptr);
   return _vehicles[idx];
 }
 
@@ -891,7 +891,7 @@ BulletConstraint *BulletWorld::
 get_constraint(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_constraints.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_constraints.size(), nullptr);
   return _constraints[idx];
 }
 
@@ -1052,10 +1052,10 @@ BulletPersistentManifold *BulletWorld::
 get_manifold(int idx) const {
   LightMutexHolder holder(get_global_lock());
 
-  nassertr(idx < _dispatcher->getNumManifolds(), NULL);
+  nassertr(idx < _dispatcher->getNumManifolds(), nullptr);
 
   btPersistentManifold *ptr = _dispatcher->getManifoldByIndexInternal(idx);
-  return (ptr) ? new BulletPersistentManifold(ptr) : NULL;
+  return (ptr) ? new BulletPersistentManifold(ptr) : nullptr;
 }
 
 /**
@@ -1077,7 +1077,7 @@ get_collision_object(PandaNode *node) {
     return ((BulletSoftBodyNode *)node)->get_object();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1148,7 +1148,7 @@ clear_contact_added_callback() {
   _world->getSolverInfo().m_solverMode &= ~SOLVER_USE_2_FRICTION_DIRECTIONS;
   _world->getSolverInfo().m_solverMode &= ~SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
 
-  bullet_contact_added_callback = NULL;
+  bullet_contact_added_callback = nullptr;
 }
 
 /**
@@ -1158,7 +1158,7 @@ void BulletWorld::
 set_tick_callback(CallbackObject *obj, bool is_pretick) {
   LightMutexHolder holder(get_global_lock());
 
-  nassertv(obj != NULL);
+  nassertv(obj != nullptr);
   _tick_callback_obj = obj;
   _world->setInternalTickCallback(&BulletWorld::tick_callback, this, is_pretick);
 }
@@ -1170,8 +1170,8 @@ void BulletWorld::
 clear_tick_callback() {
   LightMutexHolder holder(get_global_lock());
 
-  _tick_callback_obj = NULL;
-  _world->setInternalTickCallback(NULL);
+  _tick_callback_obj = nullptr;
+  _world->setInternalTickCallback(nullptr);
 }
 
 /**
@@ -1202,7 +1202,7 @@ void BulletWorld::
 set_filter_callback(CallbackObject *obj) {
   LightMutexHolder holder(get_global_lock());
 
-  nassertv(obj != NULL);
+  nassertv(obj != nullptr);
 
   if (_filter_algorithm != FA_callback) {
     bullet_cat.warning() << "filter algorithm is not 'callback'" << endl;
@@ -1218,7 +1218,7 @@ void BulletWorld::
 clear_filter_callback() {
   LightMutexHolder holder(get_global_lock());
 
-  _filter_cb3._filter_callback_obj = NULL;
+  _filter_cb3._filter_callback_obj = nullptr;
 }
 
 /**

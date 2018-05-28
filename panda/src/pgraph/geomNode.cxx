@@ -134,7 +134,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 
       if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
         CPT(RenderAttrib) ra = geom_attribs._color;
-        if (ra != (const RenderAttrib *)NULL) {
+        if (ra != nullptr) {
           int override = geom_attribs._color_override;
           entry->_state = entry->_state->add_attrib(ra, override);
         }
@@ -155,7 +155,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
       }
       if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-        if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
+        if (geom_attribs._color_scale != nullptr) {
           CPT(ColorScaleAttrib) csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
           if (csa->get_scale() != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
 
@@ -198,7 +198,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       }
 
       if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
-        if (geom_attribs._tex_matrix != (const RenderAttrib *)NULL) {
+        if (geom_attribs._tex_matrix != nullptr) {
           // Determine which texture coordinate names are used more than once.
           // This assumes we have discovered all of the textures that are in
           // effect on the GeomNode; this may not be true if there is a
@@ -206,7 +206,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           // started the flatten operation, but caveat programmer.
           NameCount name_count;
 
-          if (geom_attribs._texture != (RenderAttrib *)NULL) {
+          if (geom_attribs._texture != nullptr) {
             const TextureAttrib *ta = DCAST(TextureAttrib, geom_attribs._texture);
             int num_on_stages = ta->get_num_on_stages();
             for (int si = 0; si < num_on_stages; si++) {
@@ -254,7 +254,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       // applied in the above.
 
       if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
-        if (geom_attribs._cull_face != (const RenderAttrib *)NULL) {
+        if (geom_attribs._cull_face != nullptr) {
           const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, geom_attribs._cull_face);
           CullFaceAttrib::Mode mode = cfa->get_effective_mode();
           switch (mode) {
@@ -532,7 +532,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     // otherwise the bounding volume of the GeomNode is (probably) the same as
     // that of the one Geom, and we've already culled against that.
     if (num_geoms > 1) {
-      if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
+      if (data._view_frustum != nullptr) {
         // Cull the individual Geom against the view frustum.
         CPT(BoundingVolume) geom_volume = geom->get_bounds();
         const GeometricBoundingVolume *geom_gbv =
@@ -584,9 +584,9 @@ get_legal_collide_mask() const {
  */
 void GeomNode::
 add_geom(Geom *geom, const RenderState *state) {
-  nassertv(geom != (Geom *)NULL);
+  nassertv(geom != nullptr);
   nassertv(geom->check_valid());
-  nassertv(state != (RenderState *)NULL);
+  nassertv(state != nullptr);
 
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
@@ -635,7 +635,7 @@ add_geoms_from(const GeomNode *other) {
  */
 void GeomNode::
 set_geom(int n, Geom *geom) {
-  nassertv(geom != (Geom *)NULL);
+  nassertv(geom != nullptr);
   nassertv(geom->check_valid());
 
   CDWriter cdata(_cycler, true);
@@ -1144,7 +1144,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_geoms; i++) {
     manager->read_pointer(scan);
     manager->read_pointer(scan);
-    geoms->push_back(GeomEntry(NULL, NULL));
+    geoms->push_back(GeomEntry(nullptr, nullptr));
   }
   _geoms = geoms;
 }

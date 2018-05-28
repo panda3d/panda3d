@@ -86,7 +86,7 @@ create_cg_image(const PNMImage &pnm_image) {
   bool has_alpha;
   bool is_grayscale;
 
-  CFStringRef color_space_name = NULL;
+  CFStringRef color_space_name = nullptr;
   switch (pnm_image.get_color_type()) {
   case PNMImage::CT_grayscale:
     color_space_name = kCGColorSpaceGenericGray;
@@ -114,13 +114,13 @@ create_cg_image(const PNMImage &pnm_image) {
 
   case PNMImage::CT_invalid:
     // Shouldn't get here.
-    nassertr(false, NULL);
+    nassertr(false, nullptr);
     break;
   }
-  nassertr(color_space_name != NULL, NULL);
+  nassertr(color_space_name != nullptr, nullptr);
 
   CGColorSpaceRef color_space = CGColorSpaceCreateWithName(color_space_name);
-  nassertr(color_space != NULL, NULL);
+  nassertr(color_space != nullptr, nullptr);
 
   CGBitmapInfo bitmap_info = 0;
 #ifdef PGM_BIGGRAYS
@@ -148,17 +148,17 @@ create_cg_image(const PNMImage &pnm_image) {
       }
     }
   }
-  nassertr((void *)dp == (void *)(char_array + num_bytes), NULL);
+  nassertr((void *)dp == (void *)(char_array + num_bytes), nullptr);
 
   CGDataProviderRef provider =
-    CGDataProviderCreateWithData(NULL, char_array, num_bytes, release_data);
-  nassertr(provider != NULL, NULL);
+    CGDataProviderCreateWithData(nullptr, char_array, num_bytes, release_data);
+  nassertr(provider != nullptr, nullptr);
 
   CGImageRef image = CGImageCreate
     (width, height, bits_per_component, bits_per_pixel, bytes_per_row,
      color_space, bitmap_info, provider,
-     NULL, false, kCGRenderingIntentDefault);
-  nassertr(image != NULL, NULL);
+     nullptr, false, kCGRenderingIntentDefault);
+  nassertr(image != nullptr, nullptr);
 
   CGColorSpaceRelease(color_space);
   CGDataProviderRelease(provider);
@@ -192,12 +192,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(tinygsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
   // First thing to try: a TinyOsxGraphicsWindow
@@ -210,22 +210,22 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_hrgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     WindowHandle *window_handle = win_prop.get_parent_window();
-    if (window_handle != NULL) {
+    if (window_handle != nullptr) {
       tinydisplay_cat.info()
         << "Got parent_window " << *window_handle << "\n";
 #ifdef SUPPORT_SUBPROCESS_WINDOW
       WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-      if (os_handle != NULL &&
+      if (os_handle != nullptr &&
           os_handle->is_of_type(NativeWindowHandle::SubprocessHandle::get_class_type())) {
         return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
                                     flags, gsg, host);
@@ -240,13 +240,13 @@ make_output(const string &name,
   if (retry == 1) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 #endif  // IS_OSX

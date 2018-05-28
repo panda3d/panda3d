@@ -20,7 +20,7 @@
  */
 EggToSomethingConverter::
 EggToSomethingConverter() {
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -29,7 +29,7 @@ EggToSomethingConverter() {
  */
 EggToSomethingConverter::
 EggToSomethingConverter(const EggToSomethingConverter &copy) {
-  _egg_data = (EggData *)NULL;
+  _egg_data = nullptr;
   _error = false;
 }
 

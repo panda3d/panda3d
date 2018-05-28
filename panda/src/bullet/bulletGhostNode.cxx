@@ -133,10 +133,10 @@ PandaNode *BulletGhostNode::
 get_overlapping_node(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >=0 && idx < _ghost->getNumOverlappingObjects(), NULL);
+  nassertr(idx >=0 && idx < _ghost->getNumOverlappingObjects(), nullptr);
 
   btCollisionObject *object = _ghost->getOverlappingObject(idx);
-  return (object) ? (PandaNode *)object->getUserPointer() : NULL;
+  return (object) ? (PandaNode *)object->getUserPointer() : nullptr;
 }
 
 /**

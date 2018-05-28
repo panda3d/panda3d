@@ -16,7 +16,7 @@
  */
 INLINE Pipeline *Pipeline::
 get_render_pipeline() {
-  if (_render_pipeline == (Pipeline *)NULL) {
+  if (_render_pipeline == nullptr) {
     make_render_pipeline();
   }
   return _render_pipeline;

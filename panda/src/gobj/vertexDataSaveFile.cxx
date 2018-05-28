@@ -70,7 +70,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     flags |= FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
 #endif
     _handle = CreateFile(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
-                         0, NULL, CREATE_ALWAYS, flags, NULL);
+                         0, nullptr, CREATE_ALWAYS, flags, nullptr);
     if (_handle != INVALID_HANDLE_VALUE) {
       // The file was successfully opened and locked.
       break;
@@ -167,7 +167,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 VertexDataSaveFile::
 ~VertexDataSaveFile() {
 #ifdef _WIN32
-  if (_handle != NULL) {
+  if (_handle != nullptr) {
     CloseHandle(_handle);
   }
 #else
@@ -196,11 +196,11 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
   MutexHolder holder(_lock);
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::do_alloc(size);
-  if (block != (VertexDataSaveBlock *)NULL) {
+  if (block != nullptr) {
     _total_file_size = max(_total_file_size, block->get_start() + size);
     block->set_compressed(compressed);
 
@@ -224,11 +224,11 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
           << "Error writing " << size
           << " bytes to save file, windows error code 0x" << hex
           << error << dec << ".  Disk full?\n";
-        return NULL;
+        return nullptr;
       }
       success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
     }
-    nassertr(bytes_written == size, NULL);
+    nassertr(bytes_written == size, nullptr);
     double finish_time = ClockObject::get_global_clock()->get_real_time();
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -239,7 +239,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
       gobj_cat.error()
         << "Error seeking to position " << block->get_start() << " in save file.\n";
-      return NULL;
+      return nullptr;
     }
 
     while (size > 0) {
@@ -250,7 +250,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
         } else {
           gobj_cat.error()
             << "Error writing " << size << " bytes to save file.  Disk full?\n";
-          return NULL;
+          return nullptr;
         }
         continue;
       }
@@ -310,7 +310,7 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
     }
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
-  nassertr(bytes_read == size, NULL);
+  nassertr(bytes_read == size, nullptr);
   double finish_time = ClockObject::get_global_clock()->get_real_time();
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()

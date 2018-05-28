@@ -51,7 +51,7 @@ public:
 
 PUBLISHED:
   INLINE explicit PStatCollector(const string &name,
-                                 PStatClient *client = NULL);
+                                 PStatClient *client = nullptr);
   INLINE explicit PStatCollector(const PStatCollector &parent,
                                  const string &name);
 
@@ -111,7 +111,7 @@ public:
 
 PUBLISHED:
   INLINE PStatCollector(const string &name,
-                        PStatClient *client = NULL);
+                        PStatClient *client = nullptr);
   INLINE PStatCollector(const PStatCollector &parent,
                         const string &name);
 

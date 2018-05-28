@@ -29,7 +29,7 @@ class CPPInstance;
  */
 class EXPCL_INTERROGATEDB InterrogateFunction : public InterrogateComponent {
 public:
-  InterrogateFunction(InterrogateModuleDef *def = NULL);
+  InterrogateFunction(InterrogateModuleDef *def = nullptr);
   InterrogateFunction(const InterrogateFunction &copy);
   void operator = (const InterrogateFunction &copy);
 

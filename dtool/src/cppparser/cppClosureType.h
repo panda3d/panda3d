@@ -44,7 +44,7 @@ public:
 
   CaptureType _default_capture;
 
-  void add_capture(string name, CaptureType type, CPPExpression *initializer = NULL);
+  void add_capture(string name, CaptureType type, CPPExpression *initializer = nullptr);
 
   virtual bool is_fully_specified() const;
 

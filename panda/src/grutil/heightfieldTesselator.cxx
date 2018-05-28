@@ -175,9 +175,9 @@ generate() {
   delete[] _vertex_index;
   delete[] _dirty_vertices;
   delete[] _triangle_totals;
-  _vertex_index =0;
-  _dirty_vertices =0;
-  _triangle_totals =0;
+  _vertex_index =nullptr;
+  _dirty_vertices =nullptr;
+  _triangle_totals =nullptr;
 
   return root;
 }
@@ -257,7 +257,7 @@ generate_square(NodePath root, int scale, int x, int y, bool forceclose) {
 #define POINTH get_vertex(x+hsize,y+size)
 #define POINTI get_vertex(x+size ,y+size)
 
-  if (_triangles == 0) {
+  if (_triangles == nullptr) {
     open_geom();
   }
   if (subdivide(scale, x, y)) {
@@ -376,7 +376,7 @@ open_geom() {
  */
 void HeightfieldTesselator::
 close_geom(NodePath root) {
-  if (_triangles == 0) {
+  if (_triangles == nullptr) {
     return;
   }
   _triangles->close_primitive();
@@ -395,7 +395,7 @@ close_geom(NodePath root) {
   _next_index = 0;
   _last_vertex_a = -1;
   _last_vertex_b = -1;
-  _vertex_writer = 0;
-  _normal_writer = 0;
-  _triangles = 0;
+  _vertex_writer = nullptr;
+  _normal_writer = nullptr;
+  _triangles = nullptr;
 }

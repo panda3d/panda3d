@@ -35,17 +35,17 @@ public:
                                const cppyyltype &pos);
   virtual void add_enum_value(CPPInstance *inst);
   virtual void define_typedef_type(CPPTypedefType *type,
-                                   CPPPreprocessor *error_sink = NULL);
+                                   CPPPreprocessor *error_sink = nullptr);
   virtual void define_extension_type(CPPExtensionType *type,
-                                     CPPPreprocessor *error_sink = NULL);
+                                     CPPPreprocessor *error_sink = nullptr);
   virtual void define_namespace(CPPNamespace *scope);
   virtual void add_using(CPPUsing *using_decl, CPPScope *global_scope,
-                         CPPPreprocessor *error_sink = NULL);
+                         CPPPreprocessor *error_sink = nullptr);
 
   virtual bool is_fully_specified() const;
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
 
   virtual void output(ostream &out, CPPScope *scope) const;

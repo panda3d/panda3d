@@ -47,7 +47,7 @@ make_copy() {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -92,7 +92,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -108,7 +108,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat dist2 = dot(vec, vec);
   if (dist2 < (into_radius - from_radius) * (into_radius - from_radius)) {
     // No intersection--the sphere is within the hollow.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -144,7 +144,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), NULL);
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -185,7 +185,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -228,7 +228,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), NULL);
+  DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -264,7 +264,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     // Neither edge of the segment intersects the shell.  It follows that both
     // intersection points are within the hollow center of the sphere;
     // therefore, there is no intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {

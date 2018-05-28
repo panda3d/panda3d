@@ -16,7 +16,7 @@
  */
 INLINE MovieTypeRegistry *MovieTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new MovieTypeRegistry;
   }
 

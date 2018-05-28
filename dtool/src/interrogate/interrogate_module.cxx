@@ -52,15 +52,15 @@ enum CommandOptions {
 };
 
 static struct option long_options[] = {
-  { "oc", required_argument, NULL, CO_oc },
-  { "module", required_argument, NULL, CO_module },
-  { "library", required_argument, NULL, CO_library },
-  { "c", no_argument, NULL, CO_c },
-  { "python", no_argument, NULL, CO_python },
-  { "python-native", no_argument, NULL, CO_python_native },
-  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
-  { "import", required_argument, NULL, CO_import },
-  { NULL }
+  { "oc", required_argument, nullptr, CO_oc },
+  { "module", required_argument, nullptr, CO_module },
+  { "library", required_argument, nullptr, CO_library },
+  { "c", no_argument, nullptr, CO_c },
+  { "python", no_argument, nullptr, CO_python },
+  { "python-native", no_argument, nullptr, CO_python_native },
+  { "track-interpreter", no_argument, nullptr, CO_track_interpreter },
+  { "import", required_argument, nullptr, CO_import },
+  { nullptr }
 };
 
 /*
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
   pystub();
 
   preprocess_argv(argc, argv);
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+  flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
     switch (flag) {
     case CO_oc:
@@ -583,7 +583,7 @@ int main(int argc, char *argv[]) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+    flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   }
 
   argc -= (optind-1);
@@ -617,7 +617,7 @@ int main(int argc, char *argv[]) {
       pathname.set_type(Filename::T_dso);
       nout << "Loading " << pathname << "\n";
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         nout << "Unable to load: " << load_dso_error() << "\n";
         exit(1);
       }

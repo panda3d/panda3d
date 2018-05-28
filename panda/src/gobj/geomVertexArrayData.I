@@ -393,8 +393,8 @@ INLINE GeomVertexArrayDataHandle::
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -493,7 +493,7 @@ get_modified() const {
  */
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
-  return (get_read_pointer(false) != (const unsigned char *)NULL);
+  return (get_read_pointer(false) != nullptr);
 }
 
 /**

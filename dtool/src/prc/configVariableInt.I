@@ -116,7 +116,7 @@ get_value() const {
 INLINE int ConfigVariableInt::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_int_word(0);
   }
   return 0;

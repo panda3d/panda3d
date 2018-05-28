@@ -13,7 +13,7 @@
 
 INLINE OdeTriMeshData::TriMeshDataMap &OdeTriMeshData::
 get_tri_mesh_data_map() {
-  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+  if (_tri_mesh_data_map == nullptr) {
     _tri_mesh_data_map = new TriMeshDataMap;
   }
   return *_tri_mesh_data_map;

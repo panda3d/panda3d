@@ -72,7 +72,7 @@ private:
   void process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced = false);
   void process_instance(EggGroup *parent, const FCDEntityInstance* instance);
   void process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
-                    DaeMaterials *materials, DaeCharacter *character = NULL);
+                    DaeMaterials *materials, DaeCharacter *character = nullptr);
   void process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geometry_spline);
   void process_spline(EggGroup *parent, const FCDSpline* spline);
   void process_controller(EggGroup *parent, const FCDControllerInstance* instance);

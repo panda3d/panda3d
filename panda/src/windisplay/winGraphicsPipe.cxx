@@ -123,7 +123,7 @@ int update_cpu_frequency_function(int processor_number, DisplayInformation *disp
     }
 
     information_level = ProcessorInformation;
-    input_buffer = NULL;
+    input_buffer = nullptr;
     output_buffer = processor_power_information_array;
     input_buffer_size = 0;
     output_buffer_size = sizeof(PROCESSOR_POWER_INFORMATION) * MAXIMUM_PROCESSORS;
@@ -162,7 +162,7 @@ count_number_of_cpus(DisplayInformation *display_information) {
   LPFN_GLPI glpi;
   glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
                                     "GetLogicalProcessorInformation");
-  if (glpi == NULL) {
+  if (glpi == nullptr) {
     windisplay_cat.info()
       << "GetLogicalProcessorInformation is not supported.\n";
     return;
@@ -170,17 +170,17 @@ count_number_of_cpus(DisplayInformation *display_information) {
 
   // Allocate a buffer to hold the result of the
   // GetLogicalProcessorInformation call.
-  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = nullptr;
   DWORD buffer_length = 0;
   DWORD rc = glpi(buffer, &buffer_length);
   while (!rc) {
     if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-      if (buffer != NULL) {
+      if (buffer != nullptr) {
         PANDA_FREE_ARRAY(buffer);
       }
 
       buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)PANDA_MALLOC_ARRAY(buffer_length);
-      nassertv(buffer != NULL);
+      nassertv(buffer != nullptr);
     } else {
       windisplay_cat.info()
         << "GetLogicalProcessorInformation failed: " << GetLastError()
@@ -225,13 +225,13 @@ WinGraphicsPipe() {
   _supported_types = OT_window | OT_fullscreen_window;
 
   HMODULE user32 = GetModuleHandleA("user32.dll");
-  if (user32 != NULL) {
+  if (user32 != nullptr) {
     if (dpi_aware) {
       typedef HRESULT (WINAPI *PFN_SETPROCESSDPIAWARENESS)(Process_DPI_Awareness);
       PFN_SETPROCESSDPIAWARENESS pfnSetProcessDpiAwareness =
         (PFN_SETPROCESSDPIAWARENESS)GetProcAddress(user32, "SetProcessDpiAwarenessInternal");
 
-      if (pfnSetProcessDpiAwareness == NULL) {
+      if (pfnSetProcessDpiAwareness == nullptr) {
         if (windisplay_cat.is_debug()) {
           windisplay_cat.debug() << "Unable to find SetProcessDpiAwareness in user32.dll.\n";
         }
@@ -263,7 +263,7 @@ WinGraphicsPipe() {
     pvector<DisplayMode> display_modes;
     DEVMODE dm{};
     dm.dmSize = sizeof(dm);
-    for (int i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; ++i) {
+    for (int i = 0; EnumDisplaySettings(nullptr, i, &dm) != 0; ++i) {
       DisplayMode mode;
       mode.width = dm.dmPelsWidth;
       mode.height = dm.dmPelsHeight;

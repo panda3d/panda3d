@@ -103,7 +103,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
   _data_pos(0),
   _data_size(0)
 {
-  nassertv(stream != NULL);
+  nassertv(stream != nullptr);
 
   // Beginning of "RIFF" chunk.
   unsigned char magic[4];
@@ -279,7 +279,7 @@ WavAudioCursor(WavAudio *src, istream *stream) :
  */
 WavAudioCursor::
 ~WavAudioCursor() {
-  if (_stream != NULL) {
+  if (_stream != nullptr) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_stream);
   }

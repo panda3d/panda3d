@@ -37,7 +37,7 @@ PStatThread(PStatClient *client, int index) :
 INLINE PStatThread::
 PStatThread(Thread *thread, PStatClient *client) {
 #ifdef DO_PSTATS
-  if (client == (PStatClient *)NULL) {
+  if (client == nullptr) {
     client = PStatClient::get_global_pstats();
   }
 
@@ -51,7 +51,7 @@ PStatThread(Thread *thread, PStatClient *client) {
     (*this) = client->make_thread(thread);
   }
 #else
-  _client = (PStatClient *)NULL;
+  _client = nullptr;
   _index = 0;
 #endif
 }

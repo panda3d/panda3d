@@ -44,7 +44,7 @@ get_context() const {
     (void)e;
     // Return NULL, which will trigger the exception in Python
   }
-  return NULL;
+  return nullptr;
 }
 
 #endif

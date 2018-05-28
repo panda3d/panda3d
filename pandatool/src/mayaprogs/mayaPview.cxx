@@ -128,7 +128,7 @@ doIt(const MArgList &args) {
   string quoted = string("\"") + bam_filename.get_fullpath() + string("\"");
   nout << "pview " << pview_args << " " << quoted << "\n";
   int retval = _spawnlp(_P_DETACH, "pview",
-                        "pview", pview_args.c_str(), quoted.c_str(), NULL);
+                        "pview", pview_args.c_str(), quoted.c_str(), nullptr);
   if (retval == -1) {
     bam_filename.unlink();
     MProgressWindow::endProgress();
@@ -146,7 +146,7 @@ doIt(const MArgList &args) {
   // create a separate PandaFramework for each invocation, even though in
   // principle we could be sharing one framework for all of them.
   int argc = 0;
-  char **argv = NULL;
+  char **argv = nullptr;
   PandaFramework framework;
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
@@ -154,7 +154,7 @@ doIt(const MArgList &args) {
 
   PT(WindowFramework) window;
   window = framework.open_window();
-  if (window == (WindowFramework *)NULL) {
+  if (window == nullptr) {
     // Couldn't open a window.
     nout << "Couldn't open a window!\n";
     MProgressWindow::endProgress();
@@ -281,7 +281,7 @@ convert(const NodePath &parent, bool animate) {
   egg_data->set_coordinate_system(CS_default);
   PT(PandaNode) result = load_egg_data(egg_data);
 
-  if (result == (PandaNode *)NULL) {
+  if (result == nullptr) {
     nout << "Unable to load converted egg data.\n";
     return false;
   }

@@ -171,7 +171,7 @@ get_wrapper_prefix() {
 void InterfaceMakerPythonObj::
 write_class_wrapper(ostream &out, InterfaceMaker::Object *object) {
   CPPType *struct_type = object->_itype._cpptype;
-  if (struct_type == (CPPType *)NULL) {
+  if (struct_type == nullptr) {
     return;
   }
 

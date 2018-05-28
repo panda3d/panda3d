@@ -32,7 +32,7 @@ get_num_polygons() const {
  */
 LwoPolygons::Polygon *LwoPolygons::
 get_polygon(int n) const {
-  nassertr(n >= 0 && n < (int)_polygons.size(), (Polygon *)NULL);
+  nassertr(n >= 0 && n < (int)_polygons.size(), nullptr);
   return _polygons[n];
 }
 

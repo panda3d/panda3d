@@ -52,7 +52,7 @@ begin_group() {
  */
 void CollisionHandlerPhysical::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != nullptr);
   CollisionHandlerEvent::add_entry(entry);
 
   if (entry->get_from()->is_tangible() &&

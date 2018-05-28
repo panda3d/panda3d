@@ -283,7 +283,7 @@ rotate_impl() const {
       nassertr(false, vertices);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -315,10 +315,10 @@ rotate_impl() const {
 
     default:
       // This shouldn't get called with any other shade model.
-      nassertr(false, NULL);
+      nassertr(false, nullptr);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
 
   return new_vertices;

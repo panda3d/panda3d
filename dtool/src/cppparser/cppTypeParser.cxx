@@ -22,7 +22,7 @@ CPPTypeParser(CPPScope *current_scope, CPPScope *global_scope) :
   _current_scope(current_scope),
   _global_scope(global_scope)
 {
-  _type = NULL;
+  _type = nullptr;
 }
 
 /**
@@ -69,7 +69,7 @@ parse_type(const string &type, const CPPPreprocessor &filepos) {
  */
 void CPPTypeParser::
 output(ostream &out) const {
-  if (_type == NULL) {
+  if (_type == nullptr) {
     out << "(null type)";
   } else {
     out << *_type;

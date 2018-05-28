@@ -39,12 +39,12 @@ P3DX11SplashWindow(P3DInstance *inst, bool make_visible) :
   INIT_THREAD(_read_thread);
 
   // Init for subprocess
-  _composite_image = NULL;
+  _composite_image = nullptr;
   _needs_new_composite = false;
   _display = None;
   _window = None;
   _screen = 0;
-  _font = NULL;
+  _font = nullptr;
   _graphics_context = None;
   _bar_context = None;
   _bar_bg_context = None;
@@ -285,7 +285,7 @@ stop_subprocess() {
 
   // Wait for a certain amount of time for the process to stop by itself.
   struct timeval start;
-  gettimeofday(&start, NULL);
+  gettimeofday(&start, nullptr);
   int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
 
   int status;
@@ -297,7 +297,7 @@ stop_subprocess() {
     }
 
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
     int elapsed = now_ms - start_ms;
 
@@ -313,7 +313,7 @@ stop_subprocess() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 1;
-    select(0, NULL, NULL, NULL, &tv);
+    select(0, nullptr, nullptr, nullptr, &tv);
     result = waitpid(_subprocess_pid, &status, WNOHANG);
   }
 
@@ -406,7 +406,7 @@ void P3DX11SplashWindow::
 rt_thread_run() {
   while (true) {
     TiXmlDocument *doc = read_xml(_pipe_read, nout);
-    if (doc == NULL) {
+    if (doc == nullptr) {
       // Some error on reading.  The splash window must have gone away, e.g.
       // because the user explicitly closed it; tell the instance to exit.
       _inst->request_stop_sub_thread();
@@ -648,7 +648,7 @@ subprocess_run() {
       tv.tv_sec = 0;
       tv.tv_usec = 1000;   // 1 usec is not enough.
 
-      int result = select(read_fd + 1, &fds, NULL, NULL, &tv);
+      int result = select(read_fd + 1, &fds, nullptr, nullptr, &tv);
       if (result > 0) {
         // There is some noise on the pipe, so read it.
         input_ready = true;
@@ -668,7 +668,7 @@ subprocess_run() {
     struct timespec req;
     req.tv_sec = 0;
     req.tv_nsec = 50000000;  // 50 ms
-    nanosleep(&req, NULL);
+    nanosleep(&req, nullptr);
   }
 
   close_window();
@@ -680,22 +680,22 @@ subprocess_run() {
 void P3DX11SplashWindow::
 receive_command() {
   TiXmlDocument *doc = read_xml(_pipe_read, nout);
-  if (doc == NULL) {
+  if (doc == nullptr) {
     // Pipe closed or something.
     _subprocess_continue = false;
     return;
   }
 
   TiXmlElement *xcommand = doc->FirstChildElement("command");
-  if (xcommand != NULL) {
+  if (xcommand != nullptr) {
     const char *cmd = xcommand->Attribute("cmd");
-    if (cmd != NULL) {
+    if (cmd != nullptr) {
       if (strcmp(cmd, "exit") == 0) {
         _subprocess_continue = false;
 
       } else if (strcmp(cmd, "set_visible") == 0) {
         int visible = 0;
-        if (xcommand->Attribute("visible", &visible) != NULL) {
+        if (xcommand->Attribute("visible", &visible) != nullptr) {
           _visible = visible;
           if (_visible) {
             XMapWindow(_display, _window);
@@ -707,10 +707,10 @@ receive_command() {
       } else if (strcmp(cmd, "set_image_filename") == 0) {
         const string *image_filename = xcommand->Attribute(string("image_filename"));
         int image_placement;
-        if (image_filename != NULL &&
+        if (image_filename != nullptr &&
             xcommand->QueryIntAttribute("image_placement", &image_placement) == TIXML_SUCCESS) {
 
-          X11ImageData *image = NULL;
+          X11ImageData *image = nullptr;
           switch ((ImagePlacement)image_placement) {
           case IP_background:
             image = &_background_image;
@@ -732,7 +732,7 @@ receive_command() {
           case IP_none:
             break;
           }
-          if (image != NULL) {
+          if (image != nullptr) {
             if (image->_filename != *image_filename) {
               image->_filename = *image_filename;
               image->_filename_changed = true;
@@ -742,7 +742,7 @@ receive_command() {
 
       } else if (strcmp(cmd, "set_install_label") == 0) {
         const char *str = xcommand->Attribute("install_label");
-        if (str != NULL) {
+        if (str != nullptr) {
           if (_install_label != string(str)) {
             _install_label = str;
           }
@@ -775,7 +775,7 @@ receive_command() {
  */
 void P3DX11SplashWindow::
 redraw() {
-  if (_composite_image == NULL) {
+  if (_composite_image == nullptr) {
     // Clear the whole window, if there's no image.
     XClearWindow(_display, _window);
 
@@ -823,10 +823,10 @@ make_window() {
 
   // _display = (X11_Display*) _wparams.get_parent_window()._xdisplay;
   // _own_display = false; if (_display == 0) {
-    _display = XOpenDisplay(NULL);
+    _display = XOpenDisplay(nullptr);
     _own_display = true;
   // }
-  assert(_display != NULL);
+  assert(_display != nullptr);
   _screen = DefaultScreen(_display);
 
   int x = _wparams.get_win_x();
@@ -972,7 +972,7 @@ setup_gc() {
              _font_family.c_str(), weight_name, style, _font_size);
 
     _font = XLoadQueryFont(_display, font_name);
-    if (_font != NULL) {
+    if (_font != nullptr) {
       break;
     }
     nout << "Font " << font_name << " unavailable.\n";
@@ -984,14 +984,14 @@ setup_gc() {
                _font_family.c_str(), weight_name, style2, _font_size);
 
       _font = XLoadQueryFont(_display, font_name);
-      if (_font != NULL) {
+      if (_font != nullptr) {
         break;
       }
       nout << "Font " << font_name << " unavailable.\n";
     }
   }
 
-  if (_font != NULL) {
+  if (_font != nullptr) {
     nout << "Loaded font " << font_name << "\n";
   } else {
     nout << "Using fallback font 6x13.\n";
@@ -1054,9 +1054,9 @@ setup_gc() {
  */
 void P3DX11SplashWindow::
 close_window() {
-  if (_composite_image != NULL) {
+  if (_composite_image != nullptr) {
     XDestroyImage(_composite_image);
-    _composite_image = NULL;
+    _composite_image = nullptr;
   }
 
   if (_bar_context != None) {
@@ -1136,9 +1136,9 @@ update_image(X11ImageData &image) {
  */
 void P3DX11SplashWindow::
 compose_image() {
-  if (_composite_image != NULL) {
+  if (_composite_image != nullptr) {
     XDestroyImage(_composite_image);
-    _composite_image = NULL;
+    _composite_image = nullptr;
   }
   _needs_new_composite = false;
 

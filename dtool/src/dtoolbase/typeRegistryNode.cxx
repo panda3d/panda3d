@@ -45,7 +45,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   // additional work.  (See r_build_subtrees()).
 
   if (child->_inherit._top == base->_inherit._top) {
-    assert(child->_inherit._top != (TypeRegistryNode *)NULL);
+    assert(child->_inherit._top != nullptr);
 
     bool derives =
       Inherit::is_derived_from(child->_inherit, base->_inherit);
@@ -255,7 +255,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
     if (_visit_count == (int)_parent_classes.size()) {
       // This is the last time we'll visit this node, so continue the
       // recursion now.
-      assert(_inherit._top == (TypeRegistryNode *)NULL);
+      assert(_inherit._top == nullptr);
       sort(_top_inheritance.begin(), _top_inheritance.end());
       define_subtree();
     }
@@ -263,7 +263,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
   } else {
     // This class singly inherits, so this had better be the only time this
     // function is called on it since clear_subtree().
-    assert(_inherit._top == (TypeRegistryNode *)NULL);
+    assert(_inherit._top == nullptr);
 
     assert(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
 

@@ -377,7 +377,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
       PN_stdfloat r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3(h, p, r));
     }
-    const LVecBase3 *hprs_array = NULL;
+    const LVecBase3 *hprs_array = nullptr;
     if (hprs_length != 0) {
       hprs_array = &hprs[0];
     }

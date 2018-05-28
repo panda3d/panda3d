@@ -36,13 +36,13 @@ TypeHandle osxGraphicsStateGuardian::_type_handle;
 void *osxGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
   string fullname = "_" + string(name);
-  NSSymbol symbol = NULL;
+  NSSymbol symbol = nullptr;
 
   if (NSIsSymbolNameDefined(fullname.c_str())) {
     symbol = NSLookupAndBindSymbol(fullname.c_str());
   }
 
-  return symbol ? NSAddressOfSymbol(symbol) : NULL;
+  return symbol ? NSAddressOfSymbol(symbol) : nullptr;
 }
 
 /**
@@ -53,8 +53,8 @@ osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          osxGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(engine, pipe),
   _share_with(share_with),
-  _aglPixFmt(NULL),
-  _aglcontext(NULL)
+  _aglPixFmt(nullptr),
+  _aglcontext(nullptr)
 {
   _shared_buffer = 1011;
   get_gamma_table();
@@ -65,11 +65,11 @@ osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 osxGraphicsStateGuardian::
 ~osxGraphicsStateGuardian() {
-  if (_aglcontext != (AGLContext)NULL) {
-    aglSetCurrentContext(NULL);
+  if (_aglcontext != (AGLContext)nullptr) {
+    aglSetCurrentContext(nullptr);
     aglDestroyContext(_aglcontext);
     report_agl_error("aglDestroyContext");
-    _aglcontext = (AGLContext)NULL;
+    _aglcontext = (AGLContext)nullptr;
   }
 }
 
@@ -89,7 +89,7 @@ void osxGraphicsStateGuardian::reset()
 
   GLGraphicsStateGuardian::reset();
 
-  if (_aglcontext != (AGLContext)NULL) {
+  if (_aglcontext != (AGLContext)nullptr) {
     // Apply the video-sync setting.
     GLint value = sync_video ? 1 : 0;
     aglSetInteger(_aglcontext, AGL_SWAP_INTERVAL, &value);
@@ -106,7 +106,7 @@ void osxGraphicsStateGuardian::
 draw_resize_box() {
   // This state is created, once, and never freed.
   static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
+  if (state == nullptr) {
     state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               DepthWriteAttrib::make(DepthWriteAttrib::M_off),
                               DepthTestAttrib::make(DepthTestAttrib::M_none));
@@ -229,18 +229,18 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   attrib.push_back(AGL_NONE);
 
   // build context
-  _aglcontext = NULL;
+  _aglcontext = nullptr;
   _aglPixFmt = aglChoosePixelFormat(&display, 1, &attrib[0]);
   err = report_agl_error("aglChoosePixelFormat");
   if (_aglPixFmt) {
-    if(_share_with == NULL) {
-      _aglcontext = aglCreateContext(_aglPixFmt, NULL);
+    if(_share_with == nullptr) {
+      _aglcontext = aglCreateContext(_aglPixFmt, nullptr);
     } else {
       _aglcontext = aglCreateContext(_aglPixFmt, ((osxGraphicsStateGuardian *)_share_with)->_aglcontext);
     }
     err = report_agl_error("aglCreateContext");
 
-    if (_aglcontext == NULL) {
+    if (_aglcontext == nullptr) {
       osxdisplay_cat.error()
         << "osxGraphicsStateGuardian::build_gl Error Getting GL Context \n" ;
       if(err == noErr) {
@@ -348,9 +348,9 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
 
   GLint ndevs;
   AGLDevice *gdevs = aglDevicesOfPixelFormat(_aglPixFmt, &ndevs);
-  if (gdevs != (AGLDevice *)NULL) {
+  if (gdevs != nullptr) {
     AGLRendererInfo rinfo = aglQueryRendererInfo(gdevs, ndevs);
-    if (rinfo != NULL) {
+    if (rinfo != nullptr) {
       if (aglDescribeRenderer(rinfo, AGL_ACCELERATED, &value)) {
         // Now we know whether it's hardware or software.
         fb_props.set_force_hardware(value);

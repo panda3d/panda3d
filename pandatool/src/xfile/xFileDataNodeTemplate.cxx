@@ -205,7 +205,7 @@ get_num_elements() const {
  */
 XFileDataObject *XFileDataNodeTemplate::
 get_element(int n) {
-  nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_elements.size(), nullptr);
   return _nested_elements[n];
 }
 
@@ -222,5 +222,5 @@ get_element(const string &name) {
   xfile_cat.warning()
     << "\"" << name << "\" not a member of " << _template->get_name()
     << "\n";
-  return NULL;
+  return nullptr;
 }

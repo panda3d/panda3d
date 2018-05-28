@@ -160,7 +160,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (in_range) {
       // This switch level is in range.  Draw its children.
       PandaNode *child = get_child(index);
-      if (child != (PandaNode *)NULL) {
+      if (child != nullptr) {
         CullTraverserData next_data(data, child);
         trav->traverse(next_data);
       }
@@ -384,7 +384,7 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
         // wireframe mode.
         if (index < get_num_children()) {
           PandaNode *child = get_child(index);
-          if (child != (PandaNode *)NULL) {
+          if (child != nullptr) {
             CullTraverserData next_data3(data, child);
             next_data3._state = next_data3._state->compose(sw.get_viz_model_state());
             trav->traverse(next_data3);
@@ -524,7 +524,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
   if (index < get_num_children()) {
     const Switch &sw = cdata->_switch_vector[index];
     PandaNode *child = get_child(index);
-    if (child != (PandaNode *)NULL) {
+    if (child != nullptr) {
       UpdateSeq seq;
       CPT(BoundingVolume) bv = child->get_bounds(seq);
 

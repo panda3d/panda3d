@@ -87,8 +87,8 @@ trim_blanks(const string &str) {
  */
 CPPPreprocessor::InputFile::
 InputFile() {
-  _in = NULL;
-  _ignore_manifest = NULL;
+  _in = nullptr;
+  _ignore_manifest = nullptr;
   _line_number = 0;
   _col_number = 0;
   _next_line_number = 1;
@@ -101,7 +101,7 @@ InputFile() {
  */
 CPPPreprocessor::InputFile::
 ~InputFile() {
-  if (_in != NULL) {
+  if (_in != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -120,7 +120,7 @@ CPPPreprocessor::InputFile::
  */
 bool CPPPreprocessor::InputFile::
 open(const CPPFile &file) {
-  assert(_in == NULL);
+  assert(_in == nullptr);
 
   _file = file;
   pifstream *in = new pifstream;
@@ -134,7 +134,7 @@ open(const CPPFile &file) {
  */
 bool CPPPreprocessor::InputFile::
 connect_input(const string &input) {
-  assert(_in == NULL);
+  assert(_in == nullptr);
 
   _input = input;
   _in = new istringstream(_input);
@@ -146,7 +146,7 @@ connect_input(const string &input) {
  */
 int CPPPreprocessor::InputFile::
 get() {
-  assert(_in != NULL);
+  assert(_in != nullptr);
 
   if (!_lock_position) {
     _line_number = _next_line_number;
@@ -186,7 +186,7 @@ get() {
  */
 int CPPPreprocessor::InputFile::
 peek() {
-  assert(_in != NULL);
+  assert(_in != nullptr);
 
   int c = _in->peek();
 
@@ -344,7 +344,7 @@ get_next_token0() {
       // instantiation and call yacc recursively to parse the template
       // parameters.
       CPPDeclaration *decl = ident->find_template(current_scope, global_scope);
-      if (decl != NULL) {
+      if (decl != nullptr) {
         ident->_names.back().set_templ
           (nested_parse_template_instantiation(decl->get_template_scope()));
         token = internal_get_next_token();
@@ -402,7 +402,7 @@ get_next_token0() {
         // parameters.
         CPPDeclaration *decl =
           ident->find_template(current_scope, global_scope);
-        if (decl != NULL) {
+        if (decl != nullptr) {
           ident->_names.back().set_templ
             (nested_parse_template_instantiation(decl->get_template_scope()));
           token = internal_get_next_token();
@@ -417,7 +417,7 @@ get_next_token0() {
 
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
-    if (decl != NULL && decl->as_type() != NULL) {
+    if (decl != nullptr && decl->as_type() != nullptr) {
       // We need to see type pack template parameters as a different type of
       // identifier to resolve a parser ambiguity.
       CPPClassTemplateParameter *ctp = decl->as_class_template_parameter();
@@ -642,19 +642,19 @@ get_comment_before(int line, CPPFile file) {
       }
 
       if (comment->_last_line < line) {
-        return (CPPCommentBlock *)NULL;
+        return nullptr;
       }
     } else {
       wrong_file_count++;
       if (wrong_file_count > 10) {
-        return (CPPCommentBlock *)NULL;
+        return nullptr;
       }
     }
 
     ++ci;
   }
 
-  return (CPPCommentBlock *)NULL;
+  return nullptr;
 }
 
 /**
@@ -672,14 +672,14 @@ get_comment_on(int line, CPPFile file) {
       if (comment->_line_number == line) {
         return comment;
       } else if (comment->_line_number < line) {
-        return (CPPCommentBlock *)NULL;
+        return nullptr;
       }
     }
 
     ++ci;
   }
 
-  return (CPPCommentBlock *)NULL;
+  return nullptr;
 }
 
 /**
@@ -887,7 +887,7 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
   if (ep.parse_expr(expr, *this)) {
     return ep._expr;
   } else {
-    return (CPPExpression *)NULL;
+    return nullptr;
   }
 }
 
@@ -1674,7 +1674,7 @@ handle_pragma_directive(const string &args, const YYLTYPE &loc) {
     if (mi != _manifests.end()) {
       _manifest_stack[macro].push_back(mi->second);
     } else {
-      _manifest_stack[macro].push_back(NULL);
+      _manifest_stack[macro].push_back(nullptr);
     }
 
   } else if (sscanf(args.c_str(), "pop_macro ( \"%63[^\"]\" )", macro) == 1) {
@@ -1683,7 +1683,7 @@ handle_pragma_directive(const string &args, const YYLTYPE &loc) {
       CPPManifest *manifest = stack.back();
       stack.pop_back();
       Manifests::iterator mi = _manifests.find(macro);
-      if (manifest == NULL) {
+      if (manifest == nullptr) {
         // It was undefined when it was pushed, so make it undefined again.
         if (mi != _manifests.end()) {
           _manifests.erase(mi);
@@ -1966,7 +1966,7 @@ get_identifier(int c) {
 
   if (kw != 0) {
     YYSTYPE result;
-    result.u.identifier = (CPPIdentifier *)NULL;
+    result.u.identifier = nullptr;
     return CPPToken(kw, loc, name, result);
   }
 
@@ -2019,24 +2019,24 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   CPPIdentifier *ident = new CPPIdentifier("operator \"\" " + suffix);
   CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope, this);
 
-  if (decl == NULL || decl->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (decl == nullptr || decl->get_subtype() != CPPDeclaration::ST_function_group) {
     error("unknown literal suffix " + suffix, loc);
     return CPPToken(token, loc, str, value);
   }
 
   // Find the overload with the appropriate signature.
-  CPPExpression *expr = NULL;
-  CPPInstance *instance = NULL;
-  CPPInstance *raw_instance = NULL;
+  CPPExpression *expr = nullptr;
+  CPPInstance *instance = nullptr;
+  CPPInstance *raw_instance = nullptr;
   CPPFunctionGroup *fgroup = decl->as_function_group();
   CPPFunctionGroup::Instances::iterator it;
   for (it = fgroup->_instances.begin(); it != fgroup->_instances.end(); ++it) {
-    if ((*it)->_type == NULL) {
+    if ((*it)->_type == nullptr) {
       continue;
     }
 
     CPPFunctionType *ftype = (*it)->_type->as_function_type();
-    if (ftype == NULL || ftype->_parameters == NULL) {
+    if (ftype == nullptr || ftype->_parameters == nullptr) {
       continue;
     }
 
@@ -2049,7 +2049,7 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
     }
 
     CPPInstance *param = params[0];
-    if (param == NULL || param->_type == NULL) {
+    if (param == nullptr || param->_type == nullptr) {
       continue;
     }
 
@@ -2083,11 +2083,11 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
     } else if (type->get_subtype() == CPPDeclaration::ST_pointer) {
       // Must be a const pointer.  Unwrap it.
       type = type->as_pointer_type()->_pointing_at;
-      if (type == NULL || type->get_subtype() != CPPDeclaration::ST_const) {
+      if (type == nullptr || type->get_subtype() != CPPDeclaration::ST_const) {
         continue;
       }
       type = type->as_const_type()->_wrapped_around;
-      if (type == NULL || type->get_subtype() != CPPDeclaration::ST_simple) {
+      if (type == nullptr || type->get_subtype() != CPPDeclaration::ST_simple) {
         continue;
       }
 
@@ -2120,19 +2120,19 @@ get_literal(int token, YYLTYPE loc, const string &str, const YYSTYPE &value) {
   }
 
   YYSTYPE result;
-  if (instance != NULL) {
+  if (instance != nullptr) {
     result.u.expr = new CPPExpression(CPPExpression::literal(expr, instance));
     return CPPToken(CUSTOM_LITERAL, loc, str, result);
   }
 
-  if ((token == REAL || token == INTEGER) && raw_instance != NULL) {
+  if ((token == REAL || token == INTEGER) && raw_instance != nullptr) {
     // For numeric constants, we can fall back to a raw literal operator.
     result.u.expr = new CPPExpression(CPPExpression::raw_literal(str, instance));
     return CPPToken(CUSTOM_LITERAL, loc, str, result);
   }
 
   error(fgroup->_name + " has no suitable overload for literal of this type", loc);
-  result.u.expr = NULL;
+  result.u.expr = nullptr;
   return CPPToken(CUSTOM_LITERAL, loc, str, result);
 }
 
@@ -2489,7 +2489,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.integer = strtol(num.c_str(), (char **)NULL, 16);
+    result.u.integer = strtol(num.c_str(), nullptr, 16);
 
     return get_literal(INTEGER, loc, num, result);
 
@@ -2508,7 +2508,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.integer = strtol(bin.c_str(), (char **)NULL, 2);
+    result.u.integer = strtol(bin.c_str(), nullptr, 2);
 
     return get_literal(INTEGER, loc, bin, result);
   }
@@ -2549,7 +2549,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.real = (long double)pstrtod(num.c_str(), (char **)NULL);
+    result.u.real = (long double)pstrtod(num.c_str(), nullptr);
 
     return get_literal(REAL, loc, num, result);
   }
@@ -2565,11 +2565,11 @@ get_number(int c) {
     // A leading zero implies an octal number.  strtol() is supposed to be
     // able to make this distinction by itself, but we'll do it explicitly
     // just to be sure.
-    result.u.integer = strtol(num.c_str(), (char **)NULL, 8);
+    result.u.integer = strtol(num.c_str(), nullptr, 8);
 
   } else {
     // A decimal (base 10) integer.
-    result.u.integer = strtol(num.c_str(), (char **)NULL, 10);
+    result.u.integer = strtol(num.c_str(), nullptr, 10);
   }
 
   return get_literal(INTEGER, loc, num, result);
@@ -2859,7 +2859,7 @@ bool CPPPreprocessor::
 should_ignore_preprocessor() const {
   Files::const_iterator fi;
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
-    if ((*fi)._ignore_manifest != NULL) {
+    if ((*fi)._ignore_manifest != nullptr) {
       return true;
     }
   }
@@ -2957,7 +2957,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   indent(cerr, _files.size() * 2)
     << "Beginning nested parse\n";
 #endif
-  assert(scope != NULL);
+  assert(scope != nullptr);
 
   State old_state = _state;
   int old_nesting = _paren_nesting;
@@ -2991,7 +2991,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
       // Parse a typename template parameter.
       _saved_tokens.push_back(CPPToken(START_TYPE));
       CPPType *type = ::parse_type(this, current_scope, global_scope);
-      if (type == NULL) {
+      if (type == nullptr) {
         loc.last_line = get_line_number();
         loc.last_column = get_col_number() - 1;
         warning("invalid type", loc);
@@ -3008,7 +3008,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
       // Parse a constant expression template parameter.
       _saved_tokens.push_back(CPPToken(START_CONST_EXPR));
       CPPExpression *expr = parse_const_expr(this, current_scope, global_scope);
-      if (expr == NULL) {
+      if (expr == nullptr) {
         loc.last_line = get_line_number();
         loc.last_column = get_col_number() - 1;
         warning("invalid expression", loc);

@@ -21,7 +21,7 @@
 #include "loader.h"
 #include "lightMutexHolder.h"
 
-FontPool *FontPool::_global_ptr = (FontPool *)NULL;
+FontPool *FontPool::_global_ptr = nullptr;
 
 /**
  * Lists the contents of the font pool to the indicated output stream.
@@ -86,7 +86,7 @@ ns_load_font(const string &str) {
   if (extension.empty() || extension == "egg" || extension == "bam") {
     Loader *model_loader = Loader::get_global_ptr();
     PT(PandaNode) node = model_loader->load_sync(filename);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       // It is a model.  Elevate all the priorities by 1, and make a font out
       // of it.
 
@@ -104,16 +104,16 @@ ns_load_font(const string &str) {
   }
 
 #ifdef HAVE_FREETYPE
-  if (font == (TextFont *)NULL || !font->is_valid()) {
+  if (font == nullptr || !font->is_valid()) {
     // If we couldn't load the font as a model, try using FreeType to load it
     // as a font file.
     font = new DynamicTextFont(filename, face_index);
   }
 #endif
 
-  if (font == (TextFont *)NULL || !font->is_valid()) {
+  if (font == nullptr || !font->is_valid()) {
     // This font was not found or could not be read.
-    return NULL;
+    return nullptr;
   }
 
 
@@ -263,7 +263,7 @@ lookup_filename(const string &str, string &index_str,
  */
 FontPool *FontPool::
 get_ptr() {
-  if (_global_ptr == (FontPool *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new FontPool;
   }
   return _global_ptr;

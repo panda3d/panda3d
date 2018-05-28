@@ -40,10 +40,10 @@ DXTextureContext9(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
       << "Creating DX texture [" << tex->get_name() << "], minfilter(" << tex->get_minfilter() << "), magfilter(" << tex->get_magfilter() << "), anisodeg(" << tex->get_anisotropic_degree() << ")\n";
   }
 
-  _d3d_texture = NULL;
-  _d3d_2d_texture = NULL;
-  _d3d_volume_texture = NULL;
-  _d3d_cube_texture = NULL;
+  _d3d_texture = nullptr;
+  _d3d_2d_texture = nullptr;
+  _d3d_volume_texture = nullptr;
+  _d3d_cube_texture = nullptr;
   _has_mipmaps = false;
   _is_render_target = false;
   _managed = -1;
@@ -992,21 +992,21 @@ create_texture(DXScreenData &scrn) {
     case Texture::TT_2d_texture:
       hr = scrn._d3d_device->CreateTexture
         (target_width, target_height, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_2d_texture, NULL);
+         target_pixel_format, pool, &_d3d_2d_texture, nullptr);
       _d3d_texture = _d3d_2d_texture;
       break;
 
     case Texture::TT_3d_texture:
       hr = scrn._d3d_device->CreateVolumeTexture
         (target_width, target_height, target_depth, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_volume_texture, NULL);
+         target_pixel_format, pool, &_d3d_volume_texture, nullptr);
       _d3d_texture = _d3d_volume_texture;
       break;
 
     case Texture::TT_cube_map:
       hr = scrn._d3d_device->CreateCubeTexture
         (target_width, mip_level_count, usage,
-         target_pixel_format, pool, &_d3d_cube_texture, NULL);
+         target_pixel_format, pool, &_d3d_cube_texture, nullptr);
       _d3d_texture = _d3d_cube_texture;
 
       target_height = target_width;
@@ -1050,7 +1050,7 @@ create_texture(DXScreenData &scrn) {
       if (tex->has_ram_image()) {
         BamCache *cache = BamCache::get_global_ptr();
         PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-        if (record != (BamCacheRecord *)NULL) {
+        if (record != nullptr) {
           record->set_data(tex, tex);
           cache->store(record);
         }
@@ -1069,9 +1069,9 @@ create_texture(DXScreenData &scrn) {
  error_exit:
 
   RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = NULL;
-  _d3d_volume_texture = NULL;
-  _d3d_cube_texture = NULL;
+  _d3d_2d_texture = nullptr;
+  _d3d_volume_texture = nullptr;
+  _d3d_cube_texture = nullptr;
   return false;
 }
 
@@ -1101,7 +1101,7 @@ create_simple_texture(DXScreenData &scrn) {
 
   hr = scrn._d3d_device->CreateTexture
     (target_width, target_height, mip_level_count, usage,
-     target_pixel_format, pool, &_d3d_2d_texture, NULL);
+     target_pixel_format, pool, &_d3d_2d_texture, nullptr);
   _d3d_texture = _d3d_2d_texture;
   if (FAILED(hr)) {
     dxgsg9_cat.error()
@@ -1124,7 +1124,7 @@ create_simple_texture(DXScreenData &scrn) {
     hr = -1;
     // hr = fill_d3d_texture_pixels(scrn);
 
-    IDirect3DSurface9 *surface = NULL;
+    IDirect3DSurface9 *surface = nullptr;
     _d3d_2d_texture->GetSurfaceLevel(0, &surface);
 
     RECT source_size;
@@ -1135,8 +1135,8 @@ create_simple_texture(DXScreenData &scrn) {
     DWORD mip_filter = D3DX_FILTER_LINEAR;
 
     hr = D3DXLoadSurfaceFromMemory
-      (surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)image.p(),
-       target_pixel_format, target_width * 4, (PALETTEENTRY*)NULL,
+      (surface, nullptr, nullptr, (LPCVOID)image.p(),
+       target_pixel_format, target_width * 4, nullptr,
        &source_size, mip_filter, (D3DCOLOR)0x0);
 
     RELEASE(surface, dxgsg9, "create_simple_texture Surface", RELEASE_ONCE);
@@ -1156,9 +1156,9 @@ create_simple_texture(DXScreenData &scrn) {
 
  error_exit:
   RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = NULL;
-  _d3d_volume_texture = NULL;
-  _d3d_cube_texture = NULL;
+  _d3d_2d_texture = nullptr;
+  _d3d_volume_texture = nullptr;
+  _d3d_cube_texture = nullptr;
   return false;
 }
 
@@ -1168,15 +1168,15 @@ create_simple_texture(DXScreenData &scrn) {
 void DXTextureContext9::
 delete_texture() {
 
-  if (_d3d_texture == NULL) {
+  if (_d3d_texture == nullptr) {
     // don't bother printing the msg below, since we already released it.
     return;
   }
 
   RELEASE(_d3d_texture, dxgsg9, "texture", RELEASE_ONCE);
-  _d3d_2d_texture = NULL;
-  _d3d_volume_texture = NULL;
-  _d3d_cube_texture = NULL;
+  _d3d_2d_texture = nullptr;
+  _d3d_volume_texture = nullptr;
+  _d3d_cube_texture = nullptr;
 }
 
 /**
@@ -1308,7 +1308,7 @@ extract_texture_data(DXScreenData &screen) {
         surface_description.Format,
         pool,
         &destination_surface,
-        NULL);
+        nullptr);
       if (hr == D3D_OK) {
         if (source_surface && destination_surface) {
           hr = screen._d3d_device -> GetRenderTargetData (source_surface, destination_surface);
@@ -1316,7 +1316,7 @@ extract_texture_data(DXScreenData &screen) {
 
             D3DLOCKED_RECT rect;
 
-            hr = destination_surface -> LockRect (&rect, NULL, D3DLOCK_READONLY);
+            hr = destination_surface -> LockRect (&rect, nullptr, D3DLOCK_READONLY);
             if (hr == D3D_OK) {
 
               unsigned int y;
@@ -1367,7 +1367,7 @@ extract_texture_data(DXScreenData &screen) {
   else {
     for (int n = 0; n < num_levels; ++n) {
       D3DLOCKED_RECT rect;
-      hr = _d3d_2d_texture->LockRect(n, &rect, NULL, D3DLOCK_READONLY);
+      hr = _d3d_2d_texture->LockRect(n, &rect, nullptr, D3DLOCK_READONLY);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
           << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
@@ -1479,7 +1479,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
     return E_FAIL;
   }
 
-  hr = d3d_surface->LockRect(&locked_rect, (CONST RECT*)NULL, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE));
+  hr = d3d_surface->LockRect(&locked_rect, nullptr, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE));
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
@@ -1723,7 +1723,7 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
 {
   // This whole function was refactored out of fill_d3d_texture_pixels to make
   // the code more readable and to avoid code duplication.
-  IDirect3DSurface9 *mip_surface = NULL;
+  IDirect3DSurface9 *mip_surface = nullptr;
   bool using_temp_buffer = false;
   HRESULT hr = E_FAIL;
   CPTA_uchar image = get_texture()->get_ram_mipmap_image(mip_level);
@@ -1849,8 +1849,8 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
 
   } else {
     hr = D3DXLoadSurfaceFromMemory
-      (mip_surface, (PALETTEENTRY*)NULL, (RECT*)NULL, (LPCVOID)pixels,
-        source_format, source_row_byte_length, (PALETTEENTRY*)NULL,
+      (mip_surface, nullptr, nullptr, (LPCVOID)pixels,
+        source_format, source_row_byte_length, nullptr,
         &source_size, mip_filter, (D3DCOLOR)0x0);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
@@ -1922,7 +1922,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
               // turn off depth stencil when clearing texture if it exists
               depth_stencil_surface = 0;
               if (device -> GetDepthStencilSurface (&depth_stencil_surface) == D3D_OK) {
-                if (device -> SetDepthStencilSurface (NULL) == D3D_OK) {
+                if (device -> SetDepthStencilSurface (nullptr) == D3D_OK) {
 
                 }
               }
@@ -1935,7 +1935,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
                 scaled *= 255;
                 color = D3DCOLOR_RGBA((int)scaled[0], (int)scaled[1], (int)scaled[2], (int)scaled[3]);
                 flags = D3DCLEAR_TARGET;
-                if (device -> Clear (0, NULL, flags, color, 0.0f, 0) == D3D_OK) {
+                if (device -> Clear (0, nullptr, flags, color, 0.0f, 0) == D3D_OK) {
                 }
               }
 
@@ -2049,7 +2049,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
           }
 
           // mip_filter_flags |= D3DX_FILTER_DITHER;
-          hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
+          hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
                                 mip_filter_flags);
 
           if (FAILED(hr)) {
@@ -2118,7 +2118,7 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   size_t view_size = tex->get_ram_mipmap_view_size(0);
   image_pixels += view_size * get_view();
 
-  IDirect3DVolume9 *mip_level_0 = NULL;
+  IDirect3DVolume9 *mip_level_0 = nullptr;
   bool using_temp_buffer = false;
   BYTE *pixels = image_pixels;
 
@@ -2212,9 +2212,9 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_page_byte_length * orig_depth);
 #endif
   hr = D3DXLoadVolumeFromMemory
-    (mip_level_0, (PALETTEENTRY*)NULL, (D3DBOX*)NULL, (LPCVOID)pixels,
+    (mip_level_0, nullptr, nullptr, (LPCVOID)pixels,
      source_format, source_row_byte_length, source_page_byte_length,
-     (PALETTEENTRY*)NULL,
+     nullptr,
      &source_size, level_0_filter, (D3DCOLOR)0x0);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
@@ -2236,7 +2236,7 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
 
     // mip_filter_flags| = D3DX_FILTER_DITHER;
 
-    hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)NULL, 0,
+    hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
                            mip_filter_flags);
     if (FAILED(hr)) {
       dxgsg9_cat.error()

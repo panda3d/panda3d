@@ -55,7 +55,7 @@ public:
 
   void add_modifier(CPPInstanceIdentifierType type);
   void add_func_modifier(CPPParameterList *params, int flags,
-                         CPPType *trailing_return_type = NULL);
+                         CPPType *trailing_return_type = nullptr);
   void add_scoped_pointer_modifier(CPPIdentifier *scoping);
   void add_array_modifier(CPPExpression *expr);
   void add_initializer_modifier(CPPParameterList *params);
@@ -65,7 +65,7 @@ public:
   CPPParameterList *get_initializer() const;
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-                      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = nullptr) const;
 
   CPPIdentifier *_ident;
 

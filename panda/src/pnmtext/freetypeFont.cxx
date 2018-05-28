@@ -37,7 +37,7 @@ const PN_stdfloat FreetypeFont::_points_per_inch = 72.0f;
  */
 FreetypeFont::
 FreetypeFont() {
-  _face = NULL;
+  _face = nullptr;
 
   _point_size = text_point_size;
   _requested_pixels_per_unit = text_pixels_per_unit;
@@ -183,7 +183,7 @@ load_font(const char *font_data, int data_length, int face_index) {
  */
 void FreetypeFont::
 unload_font() {
-  _face = NULL;
+  _face = nullptr;
 }
 
 /**
@@ -297,7 +297,7 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
  */
 bool FreetypeFont::
 reset_scale() {
-  if (_face == NULL) {
+  if (_face == nullptr) {
     return false;
   }
 

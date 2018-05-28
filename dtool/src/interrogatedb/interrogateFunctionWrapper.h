@@ -27,7 +27,7 @@ class IndexRemapper;
  */
 class EXPCL_INTERROGATEDB InterrogateFunctionWrapper : public InterrogateComponent {
 public:
-  INLINE InterrogateFunctionWrapper(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateFunctionWrapper(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateFunctionWrapper(const InterrogateFunctionWrapper &copy);
   INLINE void operator = (const InterrogateFunctionWrapper &copy);
 

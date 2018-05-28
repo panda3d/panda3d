@@ -68,7 +68,7 @@ random_real_unit() {
 INLINE unsigned long Randomizer::
 get_next_seed() {
   if (!_got_first_seed) {
-    _next_seed = Mersenne((unsigned long)time(NULL));
+    _next_seed = Mersenne((unsigned long)time(nullptr));
     _got_first_seed = true;
   }
   return _next_seed.get_uint31();

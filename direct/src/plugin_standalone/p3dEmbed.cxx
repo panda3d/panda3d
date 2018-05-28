@@ -76,8 +76,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   string curstr;
   bool havenull = false;
   P3D_token token;
-  token._keyword = NULL;
-  token._value = NULL;
+  token._keyword = nullptr;
+  token._value = nullptr;
   string keyword;
   string value;
   string root_dir;

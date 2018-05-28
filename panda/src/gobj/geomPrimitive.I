@@ -450,7 +450,7 @@ GeomPrimitivePipelineReader(CPT(GeomPrimitive) object,
 #ifndef CPPPARSER
   _cdata(_object->_cycler.read_unlocked(current_thread)),
 #endif
-  _vertices_cdata(NULL)
+  _vertices_cdata(nullptr)
 {
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
@@ -494,8 +494,8 @@ INLINE GeomPrimitivePipelineReader::
   }
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -635,8 +635,8 @@ get_ends() const {
  */
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_mins() const {
-  nassertr(is_indexed(), NULL);
-  nassertr(_cdata->_got_minmax, NULL);
+  nassertr(is_indexed(), nullptr);
+  nassertr(_cdata->_got_minmax, nullptr);
   return _cdata->_mins.get_read_pointer();
 }
 
@@ -645,8 +645,8 @@ get_mins() const {
  */
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_maxs() const {
-  nassertr(is_indexed(), NULL);
-  nassertr(_cdata->_got_minmax, NULL);
+  nassertr(is_indexed(), nullptr);
+  nassertr(_cdata->_got_minmax, nullptr);
   return _cdata->_maxs.get_read_pointer();
 }
 

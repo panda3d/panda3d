@@ -149,7 +149,7 @@ bool WebBrowserTexture::get_flip_texture_active() const {
 bool WebBrowserTexture::cull_callback(CullTraverser *trav, const CullTraverserData &data) const{
     // see if we are in a state where udpates can happen.  else just return
     if( !_update_active ) return true;
-    if( _aw_web_view == NULL ) return true;
+    if( _aw_web_view == nullptr ) return true;
 
     // do we even need to update?
     if( !_aw_web_view->is_dirty() ) return true;

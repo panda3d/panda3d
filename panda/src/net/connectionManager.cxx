@@ -328,7 +328,7 @@ open_TCP_client_connection(const string &hostname, uint16_t port,
  */
 bool ConnectionManager::
 close_connection(const PT(Connection) &connection) {
-  if (connection != (Connection *)NULL) {
+  if (connection != nullptr) {
     connection->flush();
   }
 
@@ -479,13 +479,13 @@ scan_interfaces() {
   int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
   ULONG family = support_ipv6 ? AF_UNSPEC : AF_INET;
   ULONG buffer_size = 0;
-  ULONG result = GetAdaptersAddresses(family, flags, NULL, NULL, &buffer_size);
+  ULONG result = GetAdaptersAddresses(family, flags, nullptr, nullptr, &buffer_size);
   if (result == ERROR_BUFFER_OVERFLOW) {
     IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES *)PANDA_MALLOC_ARRAY(buffer_size);
-    result = GetAdaptersAddresses(family, flags, NULL, addresses, &buffer_size);
+    result = GetAdaptersAddresses(family, flags, nullptr, addresses, &buffer_size);
     if (result == ERROR_SUCCESS) {
       IP_ADAPTER_ADDRESSES *p = addresses;
-      while (p != NULL) {
+      while (p != nullptr) {
         // p->AdapterName appears to be a GUID.  Not sure if this is actually
         // useful to anyone; we'll store the "friendly name" instead.
         TextEncoder encoder;
@@ -505,7 +505,7 @@ scan_interfaces() {
           NetAddress addresses[3];
           IP_ADAPTER_PREFIX *m = p->FirstPrefix;
           int mc = 0;
-          while (m != NULL && mc < 3) {
+          while (m != nullptr && mc < 3) {
             addresses[mc] = NetAddress(Socket_Address(*m->Address.lpSockaddr));
             m = m->Next;
             ++mc;
@@ -551,20 +551,20 @@ scan_interfaces() {
   }
 
   struct ifaddrs *p = ifa;
-  while (p != NULL) {
+  while (p != nullptr) {
     if (p->ifa_addr->sa_family == AF_INET ||
         (support_ipv6 && p->ifa_addr->sa_family == AF_INET6)) {
       Interface iface;
       iface.set_name(p->ifa_name);
-      if (p->ifa_addr != NULL) {
+      if (p->ifa_addr != nullptr) {
         iface.set_ip(NetAddress(Socket_Address(*p->ifa_addr)));
       }
-      if (p->ifa_netmask != NULL) {
+      if (p->ifa_netmask != nullptr) {
         iface.set_netmask(NetAddress(Socket_Address(*p->ifa_netmask)));
       }
-      if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != NULL) {
+      if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != nullptr) {
         iface.set_broadcast(NetAddress(Socket_Address(*p->ifa_broadaddr)));
-      } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != NULL) {
+      } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != nullptr) {
         iface.set_p2p(NetAddress(Socket_Address(*p->ifa_dstaddr)));
       }
       _interfaces.push_back(iface);

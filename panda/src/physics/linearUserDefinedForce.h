@@ -21,7 +21,7 @@
  */
 class EXPCL_PANDAPHYSICS LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
-  explicit LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
+  explicit LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = nullptr,
                                   PN_stdfloat a = 1.0f, bool md = false);
   LinearUserDefinedForce(const LinearUserDefinedForce &copy);
   virtual ~LinearUserDefinedForce();

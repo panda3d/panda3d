@@ -67,7 +67,7 @@ remove_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(TypeHandle type) const {
-  return get_attrib(type) != (RenderAttrib *)NULL;
+  return get_attrib(type) != nullptr;
 }
 
 /**
@@ -76,7 +76,7 @@ has_attrib(TypeHandle type) const {
  */
 INLINE bool RenderState::
 has_attrib(int slot) const {
-  return get_attrib(slot) != (RenderAttrib *)NULL;
+  return get_attrib(slot) != nullptr;
 }
 
 /**
@@ -105,7 +105,7 @@ get_attrib(int slot) const {
  */
 INLINE const RenderAttrib *RenderState::
 get_attrib_def(int slot) const {
-  if (_attributes[slot]._attrib != (RenderAttrib *)NULL) {
+  if (_attributes[slot]._attrib != nullptr) {
     return _attributes[slot]._attrib;
   }
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
@@ -448,9 +448,9 @@ operator = (const Attribute &copy) {
 INLINE int RenderState::Attribute::
 compare_to(const Attribute &other) const {
   if (_attrib != other._attrib) {
-    if (_attrib == NULL) {
+    if (_attrib == nullptr) {
       return -1;
-    } else if (other._attrib == NULL) {
+    } else if (other._attrib == nullptr) {
       return 1;
     }
 
@@ -490,7 +490,7 @@ template<class AttribType>
 INLINE bool RenderState::
 get_attrib(const AttribType *&attrib) const {
   attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
-  return (attrib != (const AttribType *)NULL);
+  return (attrib != nullptr);
 }
 
 /**

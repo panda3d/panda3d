@@ -98,12 +98,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   wglGraphicsStateGuardian *wglgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(wglgsg, gsg, NULL);
+    DCAST_INTO_R(wglgsg, gsg, nullptr);
   }
 
   bool support_rtt;
@@ -125,13 +125,13 @@ make_output(const string &name,
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_hrgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     return new wglGraphicsWindow(engine, this, name, fb_prop, win_prop,
@@ -141,9 +141,9 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
-    if (!gl_support_fbo || host == NULL ||
+    if (!gl_support_fbo || host == nullptr ||
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -151,13 +151,13 @@ make_output(const string &name,
       if (fb_prop.get_indexed_color() ||
           fb_prop.get_back_buffers() > 0 ||
           fb_prop.get_accum_bits() > 0) {
-        return NULL;
+        return nullptr;
       }
     }
-    if (wglgsg != NULL && wglgsg->is_valid() && !wglgsg->needs_reset()) {
+    if (wglgsg != nullptr && wglgsg->is_valid() && !wglgsg->needs_reset()) {
       if (!wglgsg->_supports_framebuffer_object ||
-          wglgsg->_glDrawBuffers == NULL) {
-        return NULL;
+          wglgsg->_glDrawBuffers == nullptr) {
+        return nullptr;
       } else {
         // Early success - if we are sure that this buffer WILL meet specs, we
         // can precertify it.
@@ -174,13 +174,13 @@ make_output(const string &name,
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
     if ((wglgsg != 0) &&
         (wglgsg->is_valid()) &&
         (!wglgsg->needs_reset()) &&
   !wglgsg->_supports_pbuffer) {
-      return NULL;
+      return nullptr;
     }
 
     if (!support_rtt) {
@@ -188,7 +188,7 @@ make_output(const string &name,
           ((flags&BF_can_bind_every)!=0)) {
         // If we require Render-to-Texture, but can't be sure we support it,
         // bail.
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -198,7 +198,7 @@ make_output(const string &name,
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     // Early success - if we are sure that this buffer WILL meet specs, we can
@@ -216,7 +216,7 @@ make_output(const string &name,
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -227,7 +227,7 @@ make_output(const string &name,
  */
 PT(GraphicsStateGuardian) wglGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return new wglGraphicsStateGuardian(engine, this, NULL);
+  return new wglGraphicsStateGuardian(engine, this, nullptr);
 }
 
 

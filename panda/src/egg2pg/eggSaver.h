@@ -52,7 +52,7 @@ class EggVertex;
  */
 class EggSaver {
 PUBLISHED:
-  EggSaver(EggData *data = NULL);
+  EggSaver(EggData *data = nullptr);
 
   void add_node(PandaNode *node);
   void add_subgraph(PandaNode *root);
@@ -82,7 +82,7 @@ private:
                               EggGroupNode *egg_parent, bool has_decal,
                               CharacterJointMap *joint_map);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
-                         EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=NULL);
+                         EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=nullptr);
   void convert_primitive(const GeomVertexData *vertex_data,
                          const GeomPrimitive *primitive,
                          const RenderState *geom_state,

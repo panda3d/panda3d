@@ -99,7 +99,7 @@ Flock AIWorld::get_flock(unsigned int flock_id) {
       return *_flock_pool[i];
     }
   }
-  Flock *null_flock = NULL;
+  Flock *null_flock = nullptr;
   return *null_flock;
 }
 
@@ -112,7 +112,7 @@ void AIWorld::remove_flock(unsigned int flock_id) {
        for(unsigned int j = 0; j < _flock_pool[i]->_ai_char_list.size(); ++j) {
          _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->turn_off("flock_activate");
          _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->turn_off("flock");
-         _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->_flock_group = NULL;
+         _flock_pool[i]->_ai_char_list[j]->get_ai_behaviors()->_flock_group = nullptr;
        }
        _flock_pool.erase(_flock_pool.begin() + i);
        break;

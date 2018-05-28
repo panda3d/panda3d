@@ -37,7 +37,7 @@ TypeHandle FltHeader::_type_handle;
  */
 FltHeader::
 FltHeader(PathReplace *path_replace) : FltBeadID(this) {
-  if (path_replace == (PathReplace *)NULL) {
+  if (path_replace == nullptr) {
     _path_replace = new PathReplace;
     _path_replace->_path_store = PS_absolute;
   } else {
@@ -191,7 +191,7 @@ read_flt(Filename filename) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  if (in == nullptr) {
     assert(!flt_error_abort);
     return FE_could_not_open;
   }
@@ -425,7 +425,7 @@ get_instance(int instance_index) const {
   if (mi != _instances.end()) {
     return (*mi).second;
   }
-  return (FltInstanceDefinition *)NULL;
+  return nullptr;
 }
 
 /**
@@ -467,7 +467,7 @@ get_num_vertices() const {
  */
 FltVertex *FltHeader::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), 0);
+  nassertr(n >= 0 && n < (int)_vertices.size(), nullptr);
   return _vertices[n];
 }
 
@@ -512,7 +512,7 @@ get_vertex_by_offset(int offset) {
   vi = _vertices_by_offset.find(offset);
   if (vi == _vertices_by_offset.end()) {
     nout << "No vertex with offset " << offset << "\n";
-    return (FltVertex *)NULL;
+    return nullptr;
   }
   return (*vi).second;
 }
@@ -810,7 +810,7 @@ get_material(int material_index) const {
   if (mi != _materials.end()) {
     return (*mi).second;
   }
-  return (FltMaterial *)NULL;
+  return nullptr;
 }
 
 /**
@@ -869,7 +869,7 @@ get_texture(int texture_index) const {
   if (mi != _textures.end()) {
     return (*mi).second;
   }
-  return (FltTexture *)NULL;
+  return nullptr;
 }
 
 /**
@@ -928,7 +928,7 @@ get_light_source(int light_index) const {
   if (li != _light_sources.end()) {
     return (*li).second;
   }
-  return (FltLightSourceDefinition *)NULL;
+  return nullptr;
 }
 
 /**
@@ -993,7 +993,7 @@ get_num_eyepoints() const {
  */
 FltEyepoint *FltHeader::
 get_eyepoint(int n) {
-  nassertr(n >= 0 && n < get_num_eyepoints(), (FltEyepoint *)NULL);
+  nassertr(n >= 0 && n < get_num_eyepoints(), nullptr);
   return &_eyepoints[n];
 }
 
@@ -1011,7 +1011,7 @@ get_num_trackplanes() const {
  */
 FltTrackplane *FltHeader::
 get_trackplane(int n) {
-  nassertr(n >= 0 && n < get_num_trackplanes(), (FltTrackplane *)NULL);
+  nassertr(n >= 0 && n < get_num_trackplanes(), nullptr);
   return &_trackplanes[n];
 }
 

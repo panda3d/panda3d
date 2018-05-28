@@ -86,7 +86,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
 
   // Compute an arbitrary client nonce.
   ostringstream strm;
-  strm << time(NULL) << ":" << clock() << ":"
+  strm << time(nullptr) << ":" << clock() << ":"
        << url.get_url() << ":Panda";
 
   _cnonce = calc_md5(strm.str());

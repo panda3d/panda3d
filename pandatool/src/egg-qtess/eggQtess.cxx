@@ -37,14 +37,14 @@ EggQtess() {
     ("f", "filename", 0,
      "Read the indicated parameter file.  Type egg-qtess -H "
      "to print a description of the parameter file format.",
-     &EggQtess::dispatch_filename, NULL, &_qtess_filename);
+     &EggQtess::dispatch_filename, nullptr, &_qtess_filename);
 
   add_option
     ("up", "subdiv", 0,
      "Specify a uniform subdivision per patch (isoparam).  Each NURBS "
      "surface is made up of N x M patches, each of which is divided "
      "into subdiv x subdiv quads.  A fractional number is allowed.",
-     &EggQtess::dispatch_double, NULL, &_uniform_per_isoparam);
+     &EggQtess::dispatch_double, nullptr, &_uniform_per_isoparam);
 
   add_option
     ("us", "subdiv", 0,
@@ -52,7 +52,7 @@ EggQtess() {
      "surface is subdivided into subdiv x subdiv quads, regardless "
      "of the number of isoparams it has.  A fractional number is "
      "meaningless.",
-     &EggQtess::dispatch_int, NULL, &_uniform_per_surface);
+     &EggQtess::dispatch_int, nullptr, &_uniform_per_surface);
 
   add_option
     ("t", "tris", 0,
@@ -60,7 +60,7 @@ EggQtess() {
      "is the total number of triangles for the entire egg file, "
      "including those surfaces that have already been given an "
      "explicit tessellation by a parameter file.",
-     &EggQtess::dispatch_int, NULL, &_total_tris);
+     &EggQtess::dispatch_int, nullptr, &_total_tris);
 
   add_option
     ("ap", "", 0,
@@ -83,7 +83,7 @@ EggQtess() {
      "-ad.  A value of 0 forces placement by curvature only; a very "
      "large value (like 1000) forces placement by size only.  The "
      "default is 5.0.",
-     &EggQtess::dispatch_double, NULL, &QtessGlobals::_curvature_ratio);
+     &EggQtess::dispatch_double, nullptr, &QtessGlobals::_curvature_ratio);
 
   add_option
     ("e", "", 0,

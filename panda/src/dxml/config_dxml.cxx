@@ -59,7 +59,7 @@ read_xml_stream(istream &in) {
   in >> *doc;
   if (in.fail() && !in.eof()) {
     delete doc;
-    return NULL;
+    return nullptr;
   }
 
   return doc;
@@ -103,7 +103,7 @@ print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
   if (fopen_s(&file, os_name.c_str(), "w") != 0) {
 #else
   FILE *file = fopen(os_name.c_str(), "w");
-  if (file == NULL) {
+  if (file == nullptr) {
 #endif
     dxml_cat.error() << "Failed to open " << filename << " for writing\n";
   }

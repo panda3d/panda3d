@@ -661,23 +661,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // These variables will hold the results of register allocation.
 
-  const char *tangent_freg = 0;
-  const char *binormal_freg = 0;
+  const char *tangent_freg = nullptr;
+  const char *binormal_freg = nullptr;
   string tangent_input;
   string binormal_input;
   pmap<const InternalName *, const char *> texcoord_fregs;
   pvector<const char *> lightcoord_fregs;
-  const char *world_position_freg = 0;
-  const char *world_normal_freg = 0;
-  const char *eye_position_freg = 0;
-  const char *eye_normal_freg = 0;
-  const char *hpos_freg = 0;
+  const char *world_position_freg = nullptr;
+  const char *world_normal_freg = nullptr;
+  const char *eye_position_freg = nullptr;
+  const char *eye_normal_freg = nullptr;
+  const char *hpos_freg = nullptr;
 
   const char *position_vreg;
-  const char *transform_weight_vreg = 0;
+  const char *transform_weight_vreg = nullptr;
   const char *normal_vreg;
-  const char *color_vreg = 0;
-  const char *transform_index_vreg = 0;
+  const char *color_vreg = nullptr;
+  const char *transform_index_vreg = nullptr;
 
   if (_use_generic_attr) {
     position_vreg = "ATTR0";

@@ -46,7 +46,7 @@ static wstring
 get_csidl_dir_w(int csidl) {
   static const int buffer_size = MAX_PATH;
   wchar_t buffer[buffer_size];
-  if (SHGetSpecialFolderPathW(NULL, buffer, csidl, true)) {
+  if (SHGetSpecialFolderPathW(nullptr, buffer, csidl, true)) {
     wstring root = buffer;
     root += wstring(L"/Panda3D");
 
@@ -73,10 +73,10 @@ find_root_dir_default_w() {
   wstring root;
   bool is_protected = false;
   HMODULE ieframe = LoadLibrary("ieframe.dll");
-  if (ieframe != NULL) {
+  if (ieframe != nullptr) {
     typedef HRESULT STDAPICALLTYPE IEIsProtectedModeProcess(BOOL *pbResult);
     IEIsProtectedModeProcess *func = (IEIsProtectedModeProcess *)GetProcAddress(ieframe, "IEIsProtectedModeProcess");
-    if (func != NULL) {
+    if (func != nullptr) {
       BOOL result = false;
       HRESULT hr = (*func)(&result);
       if (hr == S_OK) {
@@ -101,12 +101,12 @@ find_root_dir_default_w() {
       // instead of hard-linking it.
 
       HMODULE shell32 = LoadLibrary("shell32.dll");
-      if (shell32 != NULL) {
+      if (shell32 != nullptr) {
         typedef HRESULT STDAPICALLTYPE SHGetKnownFolderPath(REFGUID rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
         SHGetKnownFolderPath *func = (SHGetKnownFolderPath *)GetProcAddress(shell32, "SHGetKnownFolderPath");
-        if (func != NULL) {
-          LPWSTR cache_path = NULL;
-          HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, 0, NULL, &cache_path);
+        if (func != nullptr) {
+          LPWSTR cache_path = nullptr;
+          HRESULT hr = (*func)(FOLDERID_LocalAppDataLow, 0, nullptr, &cache_path);
 
           if (SUCCEEDED(hr)) {
             root = cache_path;
@@ -128,8 +128,8 @@ find_root_dir_default_w() {
       // cache folder.
       typedef HRESULT STDAPICALLTYPE IEGetWriteableFolderPath(REFGUID clsidFolderID, LPWSTR* lppwstrPath);
       IEGetWriteableFolderPath *func = (IEGetWriteableFolderPath *)GetProcAddress(ieframe, "IEGetWriteableFolderPath");
-      if (func != NULL) {
-        LPWSTR cache_path = NULL;
+      if (func != nullptr) {
+        LPWSTR cache_path = nullptr;
 
         // Since we're here, we'll start by asking for LocalAppDataLow, even
         // though I know it doesn't work.
@@ -218,9 +218,9 @@ find_root_dir_default() {
 
   string root;
   const passwd *pwdata = getpwuid(getuid());
-  if (pwdata == NULL) {
+  if (pwdata == nullptr) {
     char *home = getenv("HOME");
-    if (home == NULL) {
+    if (home == nullptr) {
       // Beh.  Let's hope it never gets to this point.
       return ".";
     } else {
@@ -260,13 +260,13 @@ find_root_dir_actual() {
   }
 
   TiXmlElement *xconfig = doc.FirstChildElement("config");
-  if (xconfig == NULL) {
+  if (xconfig == nullptr) {
     // No <config> element within config.xml.
     return root;
   }
 
   const char *new_root = xconfig->Attribute("root_dir");
-  if (new_root == NULL || *new_root == '\0') {
+  if (new_root == nullptr || *new_root == '\0') {
     // No root_dir specified.
     return root;
   }
@@ -295,7 +295,7 @@ find_root_dir() {
   wstring root_w;
   string_to_wstring(root_w, root);
 
-  DWORD length = GetShortPathNameW(root_w.c_str(), NULL, 0);
+  DWORD length = GetShortPathNameW(root_w.c_str(), nullptr, 0);
   wchar_t *short_name = new wchar_t[length];
   GetShortPathNameW(root_w.c_str(), short_name, length);
 
