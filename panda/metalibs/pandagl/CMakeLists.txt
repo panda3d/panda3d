@@ -19,7 +19,6 @@ if(HAVE_GL)
   if(HAVE_COCOA)
     set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3cocoadisplay)
   endif()
-  
   if(HAVE_CARBON)
     set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3osxdisplay)
   endif()

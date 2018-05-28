@@ -26,3 +26,5 @@ find_library(COCOA_LIBRARY Cocoa)
 target_link_libraries(p3osxdisplay
   ${APPLICATIONSERVICES_LIBRARY} ${CARBON_LIBRARY} ${AGL_LIBRARY}
   ${CORESERVICES_LIBRARY} ${COCOA_LIBRARY})
+
+install(TARGETS p3osxdisplay DESTINATION lib)

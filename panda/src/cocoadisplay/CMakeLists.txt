@@ -33,3 +33,5 @@ find_library(APPKIT_LIBRARY AppKit)
 find_library(CARBON_LIBRARY Carbon)
 target_link_libraries(p3cocoadisplay
   ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY} ${CARBON_LIBRARY})
+
+install(TARGETS p3cocoadisplay DESTINATION lib)
