@@ -665,7 +665,6 @@ record_object(TypeIndex type_index) {
 
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   const InterrogateType &itype = idb->get_type(type_index);
-  assert(&itype != NULL);
 
   Object *object = new Object(itype);
   bool inserted = _objects.insert(Objects::value_type(type_index, object)).second;
