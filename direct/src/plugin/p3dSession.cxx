@@ -1335,7 +1335,7 @@ rt_thread_run() {
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
   TiXmlElement *xresponse = doc->FirstChildElement("response");
-  if (xresponse != (TiXmlElement *)nullptr) {
+  if (xresponse != nullptr) {
     int response_id;
     if (xresponse->QueryIntAttribute("response_id", &response_id) == TIXML_SUCCESS) {
       // This is a response to a previous command-and-response.  Send it to
@@ -1350,7 +1350,7 @@ rt_handle_request(TiXmlDocument *doc) {
   }
 
   TiXmlElement *xrequest = doc->FirstChildElement("request");
-  if (xrequest != (TiXmlElement *)nullptr) {
+  if (xrequest != nullptr) {
     int instance_id;
     if (xrequest->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
       // Look up the particular instance this is related to.
@@ -1577,7 +1577,7 @@ posix_create_process() {
       p = zero + 1;
       zero = _env.find('\0', p);
     }
-    ptrs.push_back((char *)nullptr);
+    ptrs.push_back(nullptr);
 
     stringstream input_handle_stream;
     input_handle_stream << _input_handle;

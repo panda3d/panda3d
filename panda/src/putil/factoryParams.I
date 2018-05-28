@@ -70,7 +70,7 @@ template<class ParamType>
 bool get_param_into(ParamType *&pointer, const FactoryParams &params) {
   FactoryParam *param =
     params.get_param_of_type(ParamType::get_class_type());
-  if (param == (FactoryParam *)nullptr) {
+  if (param == nullptr) {
     pointer = nullptr;
     return false;
   }

@@ -62,7 +62,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
   nassertr(_pbuffer != nullptr, false);
@@ -106,7 +106,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void osxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -125,7 +125,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void osxGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     // aglSetPBuffer(osxgsg->get_context(), _pbuffer, 0, 0, 0);
     _gsg.clear();
   }

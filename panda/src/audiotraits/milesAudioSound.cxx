@@ -130,7 +130,7 @@ set_time(PN_stdfloat time) {
  */
 void MilesAudioSound::
 set_active(bool active) {
-  if (_manager == (MilesAudioManager *)nullptr) {
+  if (_manager == nullptr) {
     return;
   }
 

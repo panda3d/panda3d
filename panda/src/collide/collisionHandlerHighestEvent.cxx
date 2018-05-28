@@ -55,7 +55,7 @@ begin_group() {
  */
 void CollisionHandlerHighestEvent::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)nullptr);
+  nassertv(entry != nullptr);
   LVector3 vec =
     entry->get_surface_point(entry->get_from_node_path()) -
     entry->get_from()->get_collision_origin();

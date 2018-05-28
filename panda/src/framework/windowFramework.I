@@ -25,7 +25,7 @@ get_panda_framework() const {
  */
 INLINE GraphicsWindow *WindowFramework::
 get_graphics_window() const {
-  if (_window != (GraphicsOutput *)nullptr &&
+  if (_window != nullptr &&
       _window->is_of_type(GraphicsWindow::get_class_type())) {
     return DCAST(GraphicsWindow, _window);
   }

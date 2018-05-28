@@ -17,7 +17,7 @@
  */
 INLINE bool DialNode::
 is_valid() const {
-  return (_dial != (ClientDialDevice *)nullptr) && _dial->is_connected();
+  return (_dial != nullptr) && _dial->is_connected();
 }
 
 /**

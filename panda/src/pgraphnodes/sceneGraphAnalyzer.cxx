@@ -284,7 +284,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
     _num_nodes_with_attribs++;
     const RenderAttrib *attrib =
       node->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (RenderAttrib *)nullptr) {
+    if (attrib != nullptr) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
@@ -336,7 +336,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(GeomNode *geom_node) {
-  nassertv(geom_node != (GeomNode *)nullptr);
+  nassertv(geom_node != nullptr);
 
   ++_num_geom_nodes;
 
@@ -351,7 +351,7 @@ collect_statistics(GeomNode *geom_node) {
 
     const RenderAttrib *attrib =
       geom_state->get_attrib(TextureAttrib::get_class_slot());
-    if (attrib != (RenderAttrib *)nullptr) {
+    if (attrib != nullptr) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
         collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
@@ -477,7 +477,7 @@ collect_statistics(const Geom *geom) {
  */
 void SceneGraphAnalyzer::
 collect_statistics(Texture *texture) {
-  nassertv(texture != (Texture *)nullptr);
+  nassertv(texture != nullptr);
 
   Textures::iterator ti = _textures.find(texture);
   if (ti == _textures.end()) {

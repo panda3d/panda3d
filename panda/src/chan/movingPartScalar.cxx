@@ -39,7 +39,7 @@ get_blend_value(const PartBundle *root) {
   // If a forced channel is set on this particular scalar, we always return
   // that value instead of performing the blend.  Furthermore, the frame
   // number is always 0 for the forced channel.
-  if (_forced_channel != (AnimChannelBase *)nullptr) {
+  if (_forced_channel != nullptr) {
     ChannelType *channel = DCAST(ChannelType, _forced_channel);
     channel->get_value(0, _value);
     return;
@@ -53,7 +53,7 @@ get_blend_value(const PartBundle *root) {
       _value = _default_value;
     }
 
-  } else if (_effective_control != (AnimControl *)nullptr &&
+  } else if (_effective_control != nullptr &&
              !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     ChannelType *channel = DCAST(ChannelType, _effective_channel);

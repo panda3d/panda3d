@@ -48,7 +48,7 @@ get_return_type() const {
     ++ii;
     while (ii != _instances.end()) {
       if ((*ii)->_type->as_function_type()->_return_type != return_type) {
-        return (CPPType *)nullptr;
+        return nullptr;
       }
       ++ii;
     }

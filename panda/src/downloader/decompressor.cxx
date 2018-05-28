@@ -137,7 +137,7 @@ initiate(const Filename &source_file, const Filename &dest_file) {
  */
 int Decompressor::
 run() {
-  if (_decompress == (istream *)nullptr) {
+  if (_decompress == nullptr) {
     // Hmm, we were already done.
     return EU_success;
   }
@@ -222,7 +222,7 @@ decompress(Ramfile &source_and_dest_file) {
  */
 PN_stdfloat Decompressor::
 get_progress() const {
-  if (_decompress == (istream *)nullptr) {
+  if (_decompress == nullptr) {
     // Hmm, we were already done.
     return 1.0f;
   }
@@ -240,15 +240,15 @@ get_progress() const {
  */
 void Decompressor::
 cleanup() {
-  if (_source != (istream *)nullptr) {
+  if (_source != nullptr) {
     delete _source;
     _source = nullptr;
   }
-  if (_dest != (ostream *)nullptr) {
+  if (_dest != nullptr) {
     delete _dest;
     _dest = nullptr;
   }
-  if (_decompress != (istream *)nullptr) {
+  if (_decompress != nullptr) {
     delete _decompress;
     _decompress = nullptr;
   }

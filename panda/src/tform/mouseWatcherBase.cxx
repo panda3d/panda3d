@@ -119,7 +119,7 @@ find_region(const string &name) const {
     }
   }
 
-  return (MouseWatcherRegion *)nullptr;
+  return nullptr;
 }
 
 /**

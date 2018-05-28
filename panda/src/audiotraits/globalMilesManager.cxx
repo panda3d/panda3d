@@ -293,7 +293,7 @@ open_api() {
 
       _dls_data.clear();
       PT(VirtualFile) file = vfs->get_file(dls_pathname);
-      if (file == (VirtualFile *)nullptr) {
+      if (file == nullptr) {
         milesAudio_cat.warning()
           << "DLS file does not exist: " << dls_pathname << "\n";
 

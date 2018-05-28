@@ -145,7 +145,7 @@ RenderGeometry(Rocket::Core::Vertex* vertices,
   Texture *texture = (Texture *)thandle;
 
   LVecBase2 tex_scale(1, 1);
-  if (texture != (Texture *)nullptr) {
+  if (texture != nullptr) {
     tex_scale = texture->get_tex_scale();
   }
 
@@ -153,7 +153,7 @@ RenderGeometry(Rocket::Core::Vertex* vertices,
                             GeomEnums::UH_stream, tex_scale);
 
   CPT(RenderState) state;
-  if (texture != (Texture *)nullptr) {
+  if (texture != nullptr) {
     state = RenderState::make(TextureAttrib::make(texture));
   } else {
     state = RenderState::make_empty();
@@ -176,7 +176,7 @@ CompileGeometry(Rocket::Core::Vertex* vertices,
   CompiledGeometry *c = new CompiledGeometry;
   LVecBase2 tex_scale(1, 1);
 
-  if (texture != (Texture *)nullptr) {
+  if (texture != nullptr) {
     rocket_cat.debug()
       << "Compiling geom " << c->_geom << " with texture '"
       << texture->get_name() << "'\n";
@@ -322,7 +322,7 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
 void RocketRenderInterface::
 ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
   Texture *tex = (Texture *)texture_handle;
-  if (tex != (Texture *)nullptr) {
+  if (tex != nullptr) {
     unref_delete(tex);
   }
 }

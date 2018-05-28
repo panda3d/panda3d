@@ -17,7 +17,7 @@
  */
 INLINE GraphicsEngine *PandaFramework::
 get_graphics_engine() {
-  if (_engine == (GraphicsEngine *)nullptr) {
+  if (_engine == nullptr) {
     _engine = GraphicsEngine::get_global_ptr();
     PT(GenericAsyncTask) task = new GenericAsyncTask("igloop", task_igloop, this);
     task->set_sort(50);

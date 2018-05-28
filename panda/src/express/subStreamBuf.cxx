@@ -22,8 +22,8 @@ static const size_t substream_buffer_size = 4096;
  */
 SubStreamBuf::
 SubStreamBuf() {
-  _source = (IStreamWrapper *)nullptr;
-  _dest = (OStreamWrapper *)nullptr;
+  _source = nullptr;
+  _dest = nullptr;
 
   // _start is the streampos of the first byte of the SubStream within its
   // parent stream.
@@ -93,8 +93,8 @@ close() {
   // Make sure the write buffer is flushed.
   sync();
 
-  _source = (IStreamWrapper *)nullptr;
-  _dest = (OStreamWrapper *)nullptr;
+  _source = nullptr;
+  _dest = nullptr;
   _start = 0;
   _end = 0;
 

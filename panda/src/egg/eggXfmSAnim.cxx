@@ -169,10 +169,10 @@ write(ostream &out, int indent_level) const {
       nassertv(sanim->get_name().length() == 1);
       char name = sanim->get_name()[0];
       char *p = (char *)strchr(matrix_component_letters, name);
-      nassertv(p != (char *)nullptr);
-      if (p != (char *)nullptr) {
+      nassertv(p != nullptr);
+      if (p != nullptr) {
         int index = p - matrix_component_letters;
-        nassertv(tables[index] == (EggSAnimData *)nullptr);
+        nassertv(tables[index] == nullptr);
         tables[index] = sanim;
       }
     } else {
@@ -183,7 +183,7 @@ write(ostream &out, int indent_level) const {
 
   // Now write out the table children in our normal order.
   for (int i = 0; i < num_matrix_components; i++) {
-    if (tables[i] != (EggSAnimData *)nullptr) {
+    if (tables[i] != nullptr) {
       tables[i]->write(out, indent_level + 2);
     }
   }
@@ -400,7 +400,7 @@ set_value(int row, const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)nullptr &&
+    nassertr(child != nullptr &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -495,7 +495,7 @@ add_data(const LMatrix4d &mat) {
   for (int i = 0; i < num_matrix_components; i++) {
     string name(1, matrix_component_letters[i]);
     EggNode *child = find_child(name);
-    nassertr(child != (EggNode *)nullptr &&
+    nassertr(child != nullptr &&
              child->is_of_type(EggSAnimData::get_class_type()), false);
     EggSAnimData *sanim = DCAST(EggSAnimData, child);
 
@@ -553,7 +553,7 @@ void EggXfmSAnim::
 add_component_data(const string &component_name, double value) {
   EggNode *child = find_child(component_name);
   EggSAnimData *sanim;
-  if (child == (EggNode *)nullptr) {
+  if (child == nullptr) {
     // We don't have this component yet; create it.
     sanim = new EggSAnimData(component_name);
     add_child(sanim);

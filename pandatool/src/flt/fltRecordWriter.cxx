@@ -142,7 +142,7 @@ write_instance_def(FltHeader *header, int instance_index) {
   }
 
   FltInstanceDefinition *instance = header->get_instance(instance_index);
-  if (instance == (FltInstanceDefinition *)nullptr) {
+  if (instance == nullptr) {
     assert(!flt_error_abort);
     return FE_undefined_instance;
   }

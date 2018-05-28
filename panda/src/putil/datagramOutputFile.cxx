@@ -32,12 +32,12 @@ open(const FileReference *file) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   _vfile = vfs->create_file(_filename);
-  if (_vfile == (VirtualFile *)nullptr) {
+  if (_vfile == nullptr) {
     // No such file.
     return false;
   }
   _out = _vfile->open_write_file(true, true);
-  _owns_out = (_out != (ostream *)nullptr);
+  _owns_out = (_out != nullptr);
   return _owns_out && !_out->fail();
 }
 
@@ -72,7 +72,7 @@ close() {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_write_file(_out);
   }
-  _out = (ostream *)nullptr;
+  _out = nullptr;
   _owns_out = false;
 
   _file.clear();
@@ -90,7 +90,7 @@ close() {
  */
 bool DatagramOutputFile::
 write_header(const string &header) {
-  nassertr(_out != (ostream *)nullptr, false);
+  nassertr(_out != nullptr, false);
   nassertr(!_wrote_first_datagram, false);
 
   _out->write(header.data(), header.size());
@@ -104,7 +104,7 @@ write_header(const string &header) {
  */
 bool DatagramOutputFile::
 put_datagram(const Datagram &data) {
-  nassertr(_out != (ostream *)nullptr, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   // First, write the size of the upcoming datagram.
@@ -137,7 +137,7 @@ put_datagram(const Datagram &data) {
  */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const Filename &filename) {
-  nassertr(_out != (ostream *)nullptr, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -206,7 +206,7 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
  */
 bool DatagramOutputFile::
 copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
-  nassertr(_out != (ostream *)nullptr, false);
+  nassertr(_out != nullptr, false);
   _wrote_first_datagram = true;
 
   pifstream in;
@@ -261,7 +261,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
  */
 bool DatagramOutputFile::
 is_error() {
-  if (_out == (ostream *)nullptr) {
+  if (_out == nullptr) {
     return true;
   }
 
@@ -277,7 +277,7 @@ is_error() {
  */
 void DatagramOutputFile::
 flush() {
-  if (_out != (ostream *)nullptr) {
+  if (_out != nullptr) {
     _out->flush();
   }
 }
@@ -311,7 +311,7 @@ get_file() {
  */
 streampos DatagramOutputFile::
 get_file_pos() {
-  if (_out == (ostream *)nullptr) {
+  if (_out == nullptr) {
     return 0;
   }
   return _out->tellp();

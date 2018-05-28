@@ -18,7 +18,7 @@
  */
 void FactoryParams::
 add_param(FactoryParam *param) {
-  nassertv(param != (FactoryParam *)nullptr);
+  nassertv(param != nullptr);
   _params.push_back(param);
 }
 
@@ -60,7 +60,7 @@ get_param_of_type(TypeHandle type) const {
   for (pi = _params.begin(); pi != _params.end(); ++pi) {
     FactoryParam *param;
     DCAST_INTO_R(param, *pi, nullptr);
-    nassertr(param != (FactoryParam *)nullptr, nullptr);
+    nassertr(param != nullptr, nullptr);
 
     if (param->is_exact_type(type)) {
       return param;
@@ -71,7 +71,7 @@ get_param_of_type(TypeHandle type) const {
   for (pi = _params.begin(); pi != _params.end(); ++pi) {
     FactoryParam *param;
     DCAST_INTO_R(param, *pi, nullptr);
-    nassertr(param != (FactoryParam *)nullptr, nullptr);
+    nassertr(param != nullptr, nullptr);
 
     if (param->is_of_type(type)) {
       return param;

@@ -61,7 +61,7 @@ ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
   _declarations_sorted(false),
   _value_queried(false)
 {
-  if (templ._default_value != (ConfigDeclaration *)nullptr) {
+  if (templ._default_value != nullptr) {
     set_default_value(templ._default_value->get_string_value());
   }
 }
@@ -187,7 +187,7 @@ set_description(const string &description) {
  */
 void ConfigVariableCore::
 set_default_value(const string &default_value) {
-  if (_default_value == (ConfigDeclaration *)nullptr) {
+  if (_default_value == nullptr) {
     // Defining the default value for the first time.
     ConfigPage *default_page = ConfigPage::get_default_page();
     _default_value = default_page->make_declaration(this, default_value);
@@ -228,7 +228,7 @@ set_default_value(const string &default_value) {
  */
 ConfigDeclaration *ConfigVariableCore::
 make_local_value() {
-  if (_local_value == (ConfigDeclaration *)nullptr) {
+  if (_local_value == nullptr) {
     ConfigPage *local_page = ConfigPage::get_local_page();
     string string_value = get_declaration(0)->get_string_value();
     _local_value = local_page->make_declaration(this, string_value);
@@ -253,9 +253,9 @@ make_local_value() {
  */
 bool ConfigVariableCore::
 clear_local_value() {
-  if (_local_value != (ConfigDeclaration *)nullptr) {
+  if (_local_value != nullptr) {
     ConfigPage::get_local_page()->delete_declaration(_local_value);
-    _local_value = (ConfigDeclaration *)nullptr;
+    _local_value = nullptr;
     invalidate_cache();
     return true;
   }
@@ -304,7 +304,7 @@ get_num_declarations() const {
 const ConfigDeclaration *ConfigVariableCore::
 get_declaration(size_t n) const {
   ((ConfigVariableCore *)this)->_value_queried = true;
-  if (_default_value == (ConfigDeclaration *)nullptr) {
+  if (_default_value == nullptr) {
     prc_cat->warning()
       << "value queried before default value set for "
       << get_name() << ".\n";
@@ -350,7 +350,7 @@ write(ostream &out) const {
         << "  (from " << (*di)->get_page()->get_name() << ")\n";
   }
 
-  if (_default_value != (ConfigDeclaration *)nullptr) {
+  if (_default_value != nullptr) {
     out << "  " << *_default_value << "  (default value)\n";
   }
 

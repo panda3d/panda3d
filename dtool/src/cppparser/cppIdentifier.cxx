@@ -26,7 +26,7 @@
 CPPIdentifier::
 CPPIdentifier(const string &name, const CPPFile &file) {
   _names.push_back(CPPNameComponent(name));
-  _native_scope = (CPPScope *)nullptr;
+  _native_scope = nullptr;
   _loc.first_line = 0;
   _loc.first_column = 0;
   _loc.last_line = 0;
@@ -40,7 +40,7 @@ CPPIdentifier(const string &name, const CPPFile &file) {
 CPPIdentifier::
 CPPIdentifier(const CPPNameComponent &name, const CPPFile &file) {
   _names.push_back(name);
-  _native_scope = (CPPScope *)nullptr;
+  _native_scope = nullptr;
   _loc.first_line = 0;
   _loc.first_column = 0;
   _loc.last_line = 0;
@@ -54,7 +54,7 @@ CPPIdentifier(const CPPNameComponent &name, const CPPFile &file) {
 CPPIdentifier::
 CPPIdentifier(const string &name, const cppyyltype &loc) : _loc(loc) {
   _names.push_back(CPPNameComponent(name));
-  _native_scope = (CPPScope *)nullptr;
+  _native_scope = nullptr;
 }
 
 /**
@@ -63,7 +63,7 @@ CPPIdentifier(const string &name, const cppyyltype &loc) : _loc(loc) {
 CPPIdentifier::
 CPPIdentifier(const CPPNameComponent &name, const cppyyltype &loc) : _loc(loc) {
   _names.push_back(name);
-  _native_scope = (CPPScope *)nullptr;
+  _native_scope = nullptr;
 }
 
 /**
@@ -240,7 +240,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   assert(!_names.empty());
 
   CPPScope *scope = _native_scope;
-  if (scope == (CPPScope *)nullptr) {
+  if (scope == nullptr) {
     scope = current_scope;
   }
   int i = 0;
@@ -253,14 +253,14 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 
   while (i + 1 < (int)_names.size() && scope != nullptr) {
     CPPScope *next_scope = scope->find_scope(_names[i].get_name());
-    if (next_scope == (CPPScope *)nullptr) {
+    if (next_scope == nullptr) {
       if (error_sink != nullptr) {
         error_sink->error("Symbol " + _names[i].get_name() +
                           " is not a known scope in " +
                           scope->get_fully_scoped_name(),
                           _loc);
       }
-      return (CPPScope *)nullptr;
+      return nullptr;
     }
     if (_names[i].has_templ()) {
       next_scope = next_scope->instantiate(_names[i].get_templ(),
@@ -283,7 +283,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   assert(!_names.empty());
 
   CPPScope *scope = _native_scope;
-  if (scope == (CPPScope *)nullptr) {
+  if (scope == nullptr) {
     scope = current_scope;
   }
   int i = 0;
@@ -297,14 +297,14 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   while (i + 1 < (int)_names.size() && scope != nullptr) {
     CPPScope *next_scope = scope->find_scope(_names[i].get_name(), subst,
                                              global_scope);
-    if (next_scope == (CPPScope *)nullptr) {
+    if (next_scope == nullptr) {
       if (error_sink != nullptr) {
         error_sink->error("Symbol " + _names[i].get_name() +
                           " is not a known scope in " +
                           scope->get_fully_scoped_name(),
                           _loc);
       }
-      return (CPPScope *)nullptr;
+      return nullptr;
     }
     if (_names[i].has_templ()) {
       next_scope = next_scope->instantiate(_names[i].get_templ(),
@@ -585,7 +585,7 @@ output_local_name(ostream &out, CPPScope *scope) const {
 void CPPIdentifier::
 output_fully_scoped_name(ostream &out) const {
   if (_native_scope != nullptr) {
-    _native_scope->output(out, (CPPScope *)nullptr);
+    _native_scope->output(out, nullptr);
     out << "::";
   }
   Names::const_iterator ni = _names.begin();

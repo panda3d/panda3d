@@ -310,7 +310,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     PN_stdfloat edge_dist = 0.0f;
 
     const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-    if (cpa != (ClipPlaneAttrib *)nullptr) {
+    if (cpa != nullptr) {
       // We have a clip plane; apply it.
       Points new_points;
       if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform(),ip)) {

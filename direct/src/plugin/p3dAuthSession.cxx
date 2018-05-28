@@ -440,7 +440,7 @@ posix_create_process() {
       p = zero + 1;
       zero = _env.find('\0', p);
     }
-    ptrs.push_back((char *)nullptr);
+    ptrs.push_back(nullptr);
 
     execle(_p3dcert_exe.c_str(), _p3dcert_exe.c_str(),
            _cert_filename->get_filename().c_str(), _cert_dir.c_str(),

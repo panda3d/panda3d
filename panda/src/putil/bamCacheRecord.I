@@ -95,7 +95,7 @@ get_dependent_pathname(int n) const {
  */
 INLINE bool BamCacheRecord::
 has_data() const {
-  return (_ptr != (TypedWritable *)nullptr);
+  return (_ptr != nullptr);
 }
 
 /**
@@ -135,7 +135,7 @@ extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   ptr = _ptr;
   ref_ptr = _ref_ptr;
   clear_data();
-  return (ptr != (TypedWritable *)nullptr);
+  return (ptr != nullptr);
 }
 
 /**
@@ -186,7 +186,7 @@ set_data(TypedWritableReferenceCount *ptr) {
 INLINE void BamCacheRecord::
 set_data(TypedWritable *ptr, int dummy) {
   nassertv(dummy == 0);
-  set_data(ptr, (ReferenceCount *)nullptr);
+  set_data(ptr, nullptr);
 }
 
 /**

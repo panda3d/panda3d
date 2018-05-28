@@ -501,7 +501,7 @@ get_long_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)nullptr);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -527,7 +527,7 @@ get_short_raw_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)nullptr);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -561,7 +561,7 @@ TrueClock() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)nullptr);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {

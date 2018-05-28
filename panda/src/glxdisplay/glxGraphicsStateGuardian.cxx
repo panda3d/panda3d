@@ -45,7 +45,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _supports_pbuffer = false;
   _uses_sgix_pbuffer = false;
 
-  if (share_with != (glxGraphicsStateGuardian *)nullptr) {
+  if (share_with != nullptr) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
@@ -63,7 +63,7 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
   destroy_temp_xwindow();
-  if (_visuals != (XVisualInfo *)nullptr) {
+  if (_visuals != nullptr) {
     XFree(_visuals);
   }
   if (_context != (GLXContext)nullptr) {
@@ -227,7 +227,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _context = 0;
   _fbconfig = 0;
   _visual = 0;
-  if (_visuals != (XVisualInfo *)nullptr) {
+  if (_visuals != nullptr) {
     XFree(_visuals);
     _visuals = nullptr;
   }
@@ -362,7 +362,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     if (_context) {
       mark_new();
 
-      if (_visuals != (XVisualInfo *)nullptr) {
+      if (_visuals != nullptr) {
         XFree(_visuals);
         _visuals = nullptr;
       }
@@ -697,7 +697,7 @@ void glxGraphicsStateGuardian::
 show_glx_client_string(const string &name, int id) {
   if (glgsg_cat.is_debug()) {
     const char *text = glXGetClientString(_display, id);
-    if (text == (const char *)nullptr) {
+    if (text == nullptr) {
       glgsg_cat.debug()
         << "Unable to query " << name << " (client)\n";
     } else {
@@ -714,7 +714,7 @@ void glxGraphicsStateGuardian::
 show_glx_server_string(const string &name, int id) {
   if (glgsg_cat.is_debug()) {
     const char *text = glXQueryServerString(_display, _screen, id);
-    if (text == (const char *)nullptr) {
+    if (text == nullptr) {
       glgsg_cat.debug()
         << "Unable to query " << name << " (server)\n";
     } else {
@@ -739,7 +739,7 @@ choose_temp_visual(const FrameBufferProperties &properties) {
   FrameBufferProperties best_props;
 
   // Scan available visuals.
-  if (_visuals != (XVisualInfo *)nullptr) {
+  if (_visuals != nullptr) {
     XFree(_visuals);
     _visuals = nullptr;
   }

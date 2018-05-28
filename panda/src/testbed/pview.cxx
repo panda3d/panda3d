@@ -58,8 +58,8 @@ event_W(const Event *, void *) {
   // shift-W: open a new window on the same scene.
 
   // If we already have a window, use the same GSG.
-  GraphicsPipe *pipe = (GraphicsPipe *)nullptr;
-  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)nullptr;
+  GraphicsPipe *pipe = nullptr;
+  GraphicsStateGuardian *gsg = nullptr;
 
   if (framework.get_num_windows() > 0) {
     WindowFramework *old_window = framework.get_window(0);
@@ -69,7 +69,7 @@ event_W(const Event *, void *) {
   }
 
   WindowFramework *window = framework.open_window(pipe, gsg);
-  if (window != (WindowFramework *)nullptr) {
+  if (window != nullptr) {
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
@@ -87,15 +87,15 @@ event_Enter(const Event *, void *) {
   // alt-enter: toggle between windowfullscreen in the same scene.
 
   // If we already have a window, use the same GSG.
-  GraphicsPipe *pipe = (GraphicsPipe *)nullptr;
-  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)nullptr;
+  GraphicsPipe *pipe = nullptr;
+  GraphicsStateGuardian *gsg = nullptr;
 
   WindowProperties props;
 
   for (int i = 0; i < framework.get_num_windows(); ++i) {
     WindowFramework *old_window = framework.get_window(i);
     GraphicsWindow *win = old_window->get_graphics_window();
-    if (win != (GraphicsWindow *)nullptr) {
+    if (win != nullptr) {
       pipe = win->get_pipe();
       gsg = win->get_gsg();
       props = win->get_properties();
@@ -109,7 +109,7 @@ event_Enter(const Event *, void *) {
   int flags = GraphicsPipe::BF_require_window;
 
   WindowFramework *window = framework.open_window(props, flags, pipe, gsg);
-  if (window != (WindowFramework *)nullptr) {
+  if (window != nullptr) {
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
@@ -125,7 +125,7 @@ event_2(const Event *event, void *) {
   DCAST_INTO_V(wf, param.get_ptr());
 
   WindowFramework *split = wf->split_window();
-  if (split != (WindowFramework *)nullptr) {
+  if (split != nullptr) {
     split->enable_keyboard();
     split->setup_trackball();
     framework.get_models().instance_to(split->get_render());
@@ -244,7 +244,7 @@ public:
     PT(BoundingVolume) volume = np.get_bounds();
 
     // We expect at least a geometric bounding volume around the world.
-    nassertv(volume != (BoundingVolume *)nullptr);
+    nassertv(volume != nullptr);
     nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
     CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
@@ -418,7 +418,7 @@ main(int argc, char **argv) {
   argv += (optind - 1);
 
   WindowFramework *window = framework.open_window(pipe, nullptr);
-  if (window != (WindowFramework *)nullptr) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     NodePath loading_np;
@@ -453,7 +453,7 @@ main(int argc, char **argv) {
 
       if (delete_models) {
         VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        for (int i = 1; i < argc && argv[i] != (char *)nullptr; i++) {
+        for (int i = 1; i < argc && argv[i] != nullptr; i++) {
           Filename model = Filename::from_os_specific(argv[i]);
           if (vfs->exists(model)) {
             nout << "Deleting " << model << "\n";

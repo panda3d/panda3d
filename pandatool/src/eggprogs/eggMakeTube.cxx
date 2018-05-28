@@ -244,7 +244,7 @@ calc_sphere2_vertex(int ri, int si) {
  */
 void EggMakeTube::
 add_polygon(EggVertex *a, EggVertex *b, EggVertex *c, EggVertex *d) {
-  if (a == (EggVertex *)nullptr) {
+  if (a == nullptr) {
     return;
   }
 

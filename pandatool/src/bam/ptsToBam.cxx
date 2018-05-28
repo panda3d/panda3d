@@ -190,7 +190,7 @@ add_point(const vector_string &words) {
  */
 void PtsToBam::
 open_vertex_data() {
-  if (_data != (GeomVertexData *)nullptr) {
+  if (_data != nullptr) {
     close_vertex_data();
   }
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3();

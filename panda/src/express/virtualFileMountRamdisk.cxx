@@ -210,7 +210,7 @@ open_read_file(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     return nullptr;
   }
 
@@ -228,7 +228,7 @@ open_write_file(const Filename &file, bool truncate) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)nullptr) {
+  if (f == nullptr) {
     return nullptr;
   }
 
@@ -257,7 +257,7 @@ open_append_file(const Filename &file) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)nullptr) {
+  if (f == nullptr) {
     return nullptr;
   }
 
@@ -274,7 +274,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   _lock.lock();
   PT(File) f = _root.do_create_file(file);
   _lock.unlock();
-  if (f == (File *)nullptr) {
+  if (f == nullptr) {
     return nullptr;
   }
 
@@ -299,7 +299,7 @@ open_read_append_file(const Filename &file) {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     return nullptr;
   }
 
@@ -317,7 +317,7 @@ get_file_size(const Filename &file, istream *stream) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     return 0;
   }
 
@@ -334,7 +334,7 @@ get_file_size(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   _lock.unlock();
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     return 0;
   }
 
@@ -374,7 +374,7 @@ bool VirtualFileMountRamdisk::
 scan_directory(vector_string &contents, const Filename &dir) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(dir);
-  if (f == (FileBase *)nullptr || !f->is_directory()) {
+  if (f == nullptr || !f->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -395,7 +395,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
                                      const string &new_contents) {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     _lock.unlock();
     return false;
   }
@@ -420,7 +420,7 @@ bool VirtualFileMountRamdisk::
 atomic_read_contents(const Filename &file, string &contents) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  if (f == (FileBase *)nullptr || f->is_directory()) {
+  if (f == nullptr || f->is_directory()) {
     _lock.unlock();
     return false;
   }

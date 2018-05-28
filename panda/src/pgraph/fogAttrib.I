@@ -24,7 +24,7 @@ FogAttrib() {
  */
 INLINE bool FogAttrib::
 is_off() const {
-  return _fog == (const Fog *)nullptr;
+  return _fog == nullptr;
 }
 
 /**

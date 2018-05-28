@@ -109,7 +109,7 @@ resume_after_pause() {
  */
 INLINE bool PStatClient::
 has_impl() const {
-  return (_impl != (PStatClientImpl *)nullptr);
+  return (_impl != nullptr);
 }
 
 /**
@@ -119,7 +119,7 @@ has_impl() const {
 INLINE PStatClientImpl *PStatClient::
 get_impl() {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)nullptr) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -132,7 +132,7 @@ get_impl() {
 INLINE const PStatClientImpl *PStatClient::
 get_impl() const {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)nullptr) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -191,7 +191,7 @@ get_name() const {
  */
 INLINE bool PStatClient::Collector::
 is_active() const {
-  return _def != (PStatCollectorDef *)nullptr && _def->_is_active;
+  return _def != nullptr && _def->_is_active;
 }
 
 /**
@@ -200,7 +200,7 @@ is_active() const {
  */
 INLINE PStatCollectorDef *PStatClient::Collector::
 get_def(const PStatClient *client, int this_index) const {
-  if (_def == (PStatCollectorDef *)nullptr) {
+  if (_def == nullptr) {
     ((Collector *)this)->make_def(client, this_index);
   }
 

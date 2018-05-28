@@ -58,7 +58,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
-    nassertr(entry != (CollisionEntry *)nullptr, 0.0f);
+    nassertr(entry != nullptr, 0.0f);
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {
@@ -117,7 +117,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
-    nassertr(entry != (CollisionEntry *)nullptr, 0.0f);
+    nassertr(entry != nullptr, 0.0f);
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {

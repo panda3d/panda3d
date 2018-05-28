@@ -104,7 +104,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -156,7 +156,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void eglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -180,7 +180,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void eglGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -199,7 +199,7 @@ end_flip() {
  */
 void eglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";

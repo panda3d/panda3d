@@ -789,7 +789,7 @@ rotate() const {
   PStatTimer timer(_rotate_pcollector);
   CPT(GeomVertexArrayData) rotated_vertices = rotate_impl();
 
-  if (rotated_vertices == (GeomVertexArrayData *)nullptr) {
+  if (rotated_vertices == nullptr) {
     // This primitive type can't be rotated.
     return this;
   }
@@ -1195,7 +1195,7 @@ void GeomPrimitive::
 set_nonindexed_vertices(int first_vertex, int num_vertices) {
   nassertv(num_vertices != -1);
   CDWriter cdata(_cycler, true);
-  cdata->_vertices = (GeomVertexArrayData *)nullptr;
+  cdata->_vertices = nullptr;
   cdata->_first_vertex = first_vertex;
   cdata->_num_vertices = num_vertices;
 
@@ -1400,7 +1400,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   IndexBufferContext *ibc = prepared_objects->prepare_index_buffer_now(this, gsg);
-  if (ibc != (IndexBufferContext *)nullptr) {
+  if (ibc != nullptr) {
     _contexts[prepared_objects] = ibc;
   }
   return ibc;
@@ -2074,7 +2074,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void GeomPrimitive::
 finalize(BamReader *manager) {
   const GeomVertexArrayData *vertices = get_vertices();
-  if (vertices != (GeomVertexArrayData *)nullptr) {
+  if (vertices != nullptr) {
     set_usage_hint(vertices->get_usage_hint());
   }
 }

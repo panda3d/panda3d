@@ -1111,7 +1111,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
-    if (tc == (TextureContext*)nullptr) {
+    if (tc == nullptr) {
       continue;
     }
 

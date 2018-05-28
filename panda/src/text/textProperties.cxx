@@ -259,7 +259,7 @@ write(ostream &out, int indent_level) const {
       << "default properties\n";
   }
   if (has_font()) {
-    if (get_font() != (TextFont *)nullptr) {
+    if (get_font() != nullptr) {
       indent(out, indent_level)
         << "with font " << _font->get_name() << "\n";
     } else {
@@ -450,7 +450,7 @@ load_default_font() {
   if (!text_default_font.empty()) {
     // First, attempt to load the user-specified filename.
     _default_font = FontPool::load_font(text_default_font.get_value());
-    if (_default_font != (TextFont *)nullptr && _default_font->is_valid()) {
+    if (_default_font != nullptr && _default_font->is_valid()) {
       return;
     }
   }
@@ -481,7 +481,7 @@ load_default_font() {
   BamFile bam_file;
   if (bam_file.open_read(in, "default font stream")) {
     PT(PandaNode) node = bam_file.read_node();
-    if (node != (PandaNode *)nullptr) {
+    if (node != nullptr) {
       _default_font = new StaticTextFont(node);
     }
   }

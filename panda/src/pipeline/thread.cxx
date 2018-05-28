@@ -141,11 +141,11 @@ output(ostream &out) const {
 void Thread::
 output_blocker(ostream &out) const {
 #ifdef DEBUG_THREADS
-  if (_blocked_on_mutex != (MutexDebug *)nullptr) {
+  if (_blocked_on_mutex != nullptr) {
     _blocked_on_mutex->output_with_holder(out);
-  } else if (_waiting_on_cvar != (ConditionVarDebug *)nullptr) {
+  } else if (_waiting_on_cvar != nullptr) {
     out << *_waiting_on_cvar;
-  } else if (_waiting_on_cvar_full != (ConditionVarFullDebug *)nullptr) {
+  } else if (_waiting_on_cvar_full != nullptr) {
     out << *_waiting_on_cvar_full;
   }
 #endif  // DEBUG_THREADS
@@ -210,7 +210,7 @@ init_main_thread() {
   // here attempts to protect against that.
   static int count = 0;
   ++count;
-  if (count == 1 && _main_thread == (Thread *)nullptr) {
+  if (count == 1 && _main_thread == nullptr) {
     _main_thread = new MainThread;
     _main_thread->ref();
   }
@@ -221,7 +221,7 @@ init_main_thread() {
  */
 void Thread::
 init_external_thread() {
-  if (_external_thread == (Thread *)nullptr) {
+  if (_external_thread == nullptr) {
     _external_thread = new ExternalThread;
     _external_thread->ref();
   }

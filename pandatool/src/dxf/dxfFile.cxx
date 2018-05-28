@@ -308,7 +308,7 @@ process(Filename filename) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)nullptr) {
+  if (in == nullptr) {
     return;
   }
   process(in, true);

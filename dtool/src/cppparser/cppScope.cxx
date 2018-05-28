@@ -111,7 +111,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
   // that appeared preceding this particular declaration; they might be
   // relevant to the declaration.
 
-  if (decl->_leading_comment == (CPPCommentBlock *)nullptr) {
+  if (decl->_leading_comment == nullptr) {
     decl->_leading_comment =
       preprocessor->get_comment_before(pos.first_line, pos.file);
   }
@@ -611,7 +611,7 @@ find_scope(const string &name, bool recurse) const {
     return (*ni).second->get_scope();
   }
 
-  CPPType *type = (CPPType *)nullptr;
+  CPPType *type = nullptr;
 
   Types::const_iterator ti;
   ti = _types.find(name);
@@ -620,7 +620,7 @@ find_scope(const string &name, bool recurse) const {
     // Resolve if this is a typedef or const.
     while (type->get_subtype() == CPPDeclaration::ST_const ||
            type->get_subtype() == CPPDeclaration::ST_typedef) {
-      if (type->as_typedef_type() != (CPPType *)nullptr) {
+      if (type->as_typedef_type() != nullptr) {
         type = type->as_typedef_type()->_type;
       } else {
         type = type->as_const_type()->_wrapped_around;
@@ -663,7 +663,7 @@ find_scope(const string &name, bool recurse) const {
     return _parent_scope->find_scope(name);
   }
 
-  return (CPPScope *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -680,7 +680,7 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
   // Resolve if this is a typedef or const.
   while (type->get_subtype() == CPPDeclaration::ST_const ||
          type->get_subtype() == CPPDeclaration::ST_typedef) {
-    if (type->as_typedef_type() != (CPPType *)nullptr) {
+    if (type->as_typedef_type() != nullptr) {
       type = type->as_typedef_type()->_type;
     } else {
       type = type->as_const_type()->_wrapped_around;
@@ -909,7 +909,7 @@ get_template_scope() {
   if (_parent_scope != nullptr) {
     return _parent_scope->get_template_scope();
   }
-  return (CPPTemplateScope *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -917,7 +917,7 @@ get_template_scope() {
  */
 CPPTemplateScope *CPPScope::
 as_template_scope() {
-  return (CPPTemplateScope *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -934,8 +934,8 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   bool anything_changed = false;
 
   if (_struct_type != nullptr) {
-    CPPScope *native_scope = (CPPScope *)nullptr;
-    if (_struct_type->_ident != (CPPIdentifier *)nullptr) {
+    CPPScope *native_scope = nullptr;
+    if (_struct_type->_ident != nullptr) {
       native_scope = _struct_type->_ident->_native_scope;
     }
     to_scope->_struct_type =
@@ -1028,7 +1028,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     string name = fgroup->_name;
 
     CPPFunctionGroup *&to_fgroup = to_scope->_functions[name];
-    if (to_fgroup == (CPPFunctionGroup *)nullptr) {
+    if (to_fgroup == nullptr) {
       to_fgroup = new CPPFunctionGroup(name);
     }
 
@@ -1106,7 +1106,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope,
   }
 
   CPPTypeDeclaration *typedecl = decl->as_type_declaration();
-  if (typedecl != (CPPTypeDeclaration *)nullptr) {
+  if (typedecl != nullptr) {
     CPPExtensionType *et = typedecl->_type->as_extension_type();
     if (et != nullptr) {
       define_extension_type(et, error_sink);

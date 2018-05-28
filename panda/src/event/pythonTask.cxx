@@ -844,7 +844,7 @@ void PythonTask::
 call_owner_method(const char *method_name) {
   if (_owner != Py_None) {
     PyObject *func = PyObject_GetAttrString(_owner, (char *)method_name);
-    if (func == (PyObject *)nullptr) {
+    if (func == nullptr) {
       task_cat.error()
         << "Owner object added to " << *this << " has no method "
         << method_name << "().\n";

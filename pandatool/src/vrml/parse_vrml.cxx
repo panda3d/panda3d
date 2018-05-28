@@ -83,7 +83,7 @@ parse_vrml(Filename filename) {
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)nullptr) {
+  if (in == nullptr) {
     nout << "Cannot open " << filename << " for reading.\n";
     return nullptr;
   }
@@ -126,7 +126,7 @@ main(int argc, char *argv[]) {
   }
 
   VrmlScene *scene = parse_vrml(argv[1]);
-  if (scene == (VrmlScene *)nullptr) {
+  if (scene == nullptr) {
     exit(1);
   }
 

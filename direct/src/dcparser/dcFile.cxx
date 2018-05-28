@@ -123,7 +123,7 @@ read(Filename filename) {
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)nullptr) {
+  if (in == nullptr) {
     cerr << "Cannot open " << filename << " for reading.\n";
     return false;
   }
@@ -263,7 +263,7 @@ get_class_by_name(const string &name) const {
     return (*ni).second->as_class();
   }
 
-  return (DCClass *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -278,7 +278,7 @@ get_switch_by_name(const string &name) const {
     return (*ni).second->as_switch();
   }
 
-  return (DCSwitch *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -394,9 +394,9 @@ get_keyword(int n) const {
 const DCKeyword *DCFile::
 get_keyword_by_name(const string &name) const {
   const DCKeyword *keyword = _keywords.get_keyword_by_name(name);
-  if (keyword == (const DCKeyword *)nullptr) {
+  if (keyword == nullptr) {
     keyword = _default_keywords.get_keyword_by_name(name);
-    if (keyword != (const DCKeyword *)nullptr) {
+    if (keyword != nullptr) {
       // One of the historical default keywords was used, but wasn't defined.
       // Define it implicitly right now.
       ((DCFile *)this)->_keywords.add_keyword(keyword);

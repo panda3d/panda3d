@@ -452,7 +452,7 @@ void MayaEggJoint::AssignNames(void)
 
 MayaEggJoint *MayaEggLoader::FindJoint(EggGroup *joint)
 {
-  if (joint==(EggGroup *)nullptr) {
+  if (joint==nullptr) {
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "joint:" << joint->get_name() << " is null: " << endl;
     }

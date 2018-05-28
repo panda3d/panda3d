@@ -191,7 +191,7 @@ underflow() {
 
           SSL *ssl = nullptr;
           BIO_get_ssl(*_source, &ssl);
-          if (ssl != (SSL *)nullptr) {
+          if (ssl != nullptr) {
             downloader_cat.warning()
               << "OpenSSL error code: " << SSL_get_error(ssl, read_count)
               << "\n";

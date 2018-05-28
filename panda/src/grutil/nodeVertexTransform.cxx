@@ -32,7 +32,7 @@ NodeVertexTransform(const PandaNode *node,
  */
 void NodeVertexTransform::
 get_matrix(LMatrix4 &matrix) const {
-  if (_prev != (const VertexTransform *)nullptr) {
+  if (_prev != nullptr) {
     LMatrix4 prev_matrix;
     _prev->get_matrix(prev_matrix);
     matrix.multiply(_node->get_transform()->get_mat(), prev_matrix);
@@ -47,7 +47,7 @@ get_matrix(LMatrix4 &matrix) const {
  */
 void NodeVertexTransform::
 output(ostream &out) const {
-  if (_prev != (const VertexTransform *)nullptr) {
+  if (_prev != nullptr) {
     _prev->output(out);
     out << " * ";
   }

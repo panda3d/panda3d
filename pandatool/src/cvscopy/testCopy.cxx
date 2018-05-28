@@ -39,7 +39,7 @@ run() {
   SourceFiles::iterator fi;
   for (fi = _source_files.begin(); fi != _source_files.end(); ++fi) {
     CVSSourceDirectory *dest = import(*fi, 0, _model_dir);
-    if (dest == (CVSSourceDirectory *)nullptr) {
+    if (dest == nullptr) {
       exit(1);
     }
   }

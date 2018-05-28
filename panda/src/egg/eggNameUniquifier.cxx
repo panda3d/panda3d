@@ -89,7 +89,7 @@ uniquify(EggNode *node) {
     EggGroupNode::iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
       EggNode *child = (*ci);
-      nassertv(child != (EggNode *)nullptr);
+      nassertv(child != nullptr);
       uniquify(child);
     }
   }
@@ -104,14 +104,14 @@ get_node(const string &category, const string &name) const {
   Categories::const_iterator ci;
   ci = _categories.find(category);
   if (ci == _categories.end()) {
-    return (EggNode *)nullptr;
+    return nullptr;
   }
 
   const UsedNames &names = (*ci).second;
   UsedNames::const_iterator ni;
   ni = names.find(name);
   if (ni == names.end()) {
-    return (EggNode *)nullptr;
+    return nullptr;
   }
 
   return (*ni).second;

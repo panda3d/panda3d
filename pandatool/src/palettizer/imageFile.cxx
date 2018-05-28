@@ -160,7 +160,7 @@ set_filename(PaletteGroup *group, const string &basename) {
         break;
 
       case 'g':
-        if (group != (PaletteGroup *)nullptr) {
+        if (group != nullptr) {
           dirname += group->get_dirname();
         }
         break;
@@ -199,12 +199,12 @@ set_filename(const string &dirname, const string &basename) {
   // be truncated at that dot.  It is therefore important that the supplied
   // basename always contains either an extension or a terminating dot.
 
-  if (_properties._color_type != (PNMFileType *)nullptr) {
+  if (_properties._color_type != nullptr) {
     _filename.set_extension
       (_properties._color_type->get_suggested_extension());
   }
 
-  if (_properties._alpha_type != (PNMFileType *)nullptr) {
+  if (_properties._alpha_type != nullptr) {
     _alpha_filename = _filename.get_fullpath_wo_extension() + "_a.";
     _alpha_filename.set_extension
       (_properties._alpha_type->get_suggested_extension());
@@ -255,7 +255,7 @@ exists() const {
   if (!_filename.exists()) {
     return false;
   }
-  if (_properties._alpha_type != (PNMFileType *)nullptr &&
+  if (_properties._alpha_type != nullptr &&
       _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     if (!_alpha_filename.exists()) {
@@ -338,7 +338,7 @@ write(const PNMImage &image) const {
   nassertr(!_filename.empty(), false);
 
   if (!image.has_alpha() ||
-      _properties._alpha_type == (PNMFileType *)nullptr) {
+      _properties._alpha_type == nullptr) {
     if (!_alpha_filename.empty() && _alpha_filename.exists()) {
       nout << "Deleting " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
       _alpha_filename.unlink();
@@ -399,7 +399,7 @@ unlink() {
  */
 void ImageFile::
 update_egg_tex(EggTexture *egg_tex) const {
-  nassertv(egg_tex != (EggTexture *)nullptr);
+  nassertv(egg_tex != nullptr);
 
   egg_tex->set_filename(FilenameUnifier::make_egg_filename(_filename));
 

@@ -216,7 +216,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     RecorderBase *recorder =
       RecorderController::get_factory()->make_instance_more_general(type, fparams);
-    if (recorder == (RecorderBase *)nullptr) {
+    if (recorder == nullptr) {
       recorder_cat.error()
         << "Unable to create Recorder of type " << type << "\n";
       _error = true;

@@ -1198,7 +1198,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
           EggVertex *vertex = (*vi);
           EggVertex *new_vertex = vertex_pool->find_matching_vertex(*vertex);
           new_vertices.push_back(new_vertex);
-          if (new_vertex == (EggVertex *)nullptr) {
+          if (new_vertex == nullptr) {
             ++num_new_vertices;
           }
         }
@@ -1212,7 +1212,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
           // We would have to add some vertices to this pool, so this vertex
           // pool qualifies only if the number of vertices we have to add
           // would still keep it within our limit.
-          if (best_pool == (EggVertexPool *)nullptr ||
+          if (best_pool == nullptr ||
               num_new_vertices < best_new_vertices) {
             // This is currently our most favorable vertex pool.
             best_pool = vertex_pool;
@@ -1222,7 +1222,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
       }
 
       if (!found_pool) {
-        if (best_pool == (EggVertexPool *)nullptr) {
+        if (best_pool == nullptr) {
           // There was no vertex pool that qualified.  We will have to create
           // a new vertex pool.
           best_pool = new EggVertexPool("");
@@ -1245,7 +1245,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
       nassertv(new_vertices.size() == vertices.size());
       for (vi = new_vertices.begin(); vi != new_vertices.end(); ++vi) {
         EggVertex *new_vertex = (*vi);
-        nassertv(new_vertex != (EggVertex *)nullptr);
+        nassertv(new_vertex != nullptr);
         prim->add_vertex(new_vertex);
       }
 
@@ -1545,7 +1545,7 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
         if (ext_data.read(filename)) {
           // The external file was read correctly.  Add its contents into the
           // tree at this point.
-          if (record != (BamCacheRecord *)nullptr) {
+          if (record != nullptr) {
             record->add_dependent_file(filename);
           }
 
@@ -1577,7 +1577,7 @@ r_load_externals(const DSearchPath &searchpath, CoordinateSystem coordsys,
  */
 void EggGroupNode::
 prepare_add_child(EggNode *node) {
-  nassertv(node != (EggNode *)nullptr);
+  nassertv(node != nullptr);
   test_ref_count_integrity();
   node->test_ref_count_integrity();
   // Make sure the node is not already a child of some other group.
@@ -1599,7 +1599,7 @@ prepare_add_child(EggNode *node) {
  */
 void EggGroupNode::
 prepare_remove_child(EggNode *node) {
-  nassertv(node != (EggNode *)nullptr);
+  nassertv(node != nullptr);
   // Make sure the node is in fact a child of this group.
   nassertv(node->get_parent() == this);
   nassertv(node->get_depth() == get_depth() + 1);
@@ -1867,7 +1867,7 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
 
     EggVertex new_vertex(*vertex);
     EggVertexUV *uv_obj = new_vertex.modify_uv_obj(value._uv_name);
-    nassertv(uv_obj != (EggVertexUV *)nullptr);
+    nassertv(uv_obj != nullptr);
     uv_obj->set_tangent(tangent);
     uv_obj->set_binormal(binormal);
 

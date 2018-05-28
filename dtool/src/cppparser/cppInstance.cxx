@@ -75,7 +75,7 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
   _bit_width = ii->_bit_width;
 
   CPPParameterList *params = ii->get_initializer();
-  if (params != (CPPParameterList *)nullptr) {
+  if (params != nullptr) {
     // In this case, the instance has a parameter-list initializer, e.g.: int
     // foo(0); We really should save this initializer in the instance object.
     // But we don't for now, since no one really cares about initializers
@@ -226,12 +226,12 @@ operator < (const CPPInstance &other) const {
  */
 void CPPInstance::
 set_initializer(CPPExpression *initializer) {
-  if (_type->as_function_type() != (CPPFunctionType *)nullptr) {
+  if (_type->as_function_type() != nullptr) {
     // This is a function declaration.
     _storage_class &= ~(SC_pure_virtual | SC_defaulted | SC_deleted);
-    _initializer = (CPPExpression *)nullptr;
+    _initializer = nullptr;
 
-    if (initializer != (CPPExpression *)nullptr) {
+    if (initializer != nullptr) {
       if (initializer->_type == CPPExpression::T_integer) { // = 0
         _storage_class |= SC_pure_virtual;
 

@@ -479,7 +479,7 @@ init_geoms() {
       _sprite_writer[i].push_back(SpriteWriter());
 
       state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
-      if (anim->get_frame(j) != (Texture *)nullptr) {
+      if (anim->get_frame(j) != nullptr) {
         state = state->add_attrib(TextureAttrib::make(anim->get_frame(j)));
         state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
 

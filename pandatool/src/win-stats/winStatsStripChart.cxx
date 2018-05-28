@@ -761,7 +761,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsStripChart::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsStripChart *self = (WinStatsStripChart *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsStripChart *)nullptr && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

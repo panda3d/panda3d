@@ -229,10 +229,10 @@ void AttribNodeRegistry::
 make_global_ptr() {
   AttribNodeRegistry *ptr = new AttribNodeRegistry;
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, (void *)nullptr, (void *)ptr);
+    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
   if (result != nullptr) {
     // Someone else got there first.
     delete ptr;
   }
-  assert(_global_ptr != (AttribNodeRegistry *)nullptr);
+  assert(_global_ptr != nullptr);
 }

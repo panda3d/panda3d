@@ -31,9 +31,9 @@ static const int iteration_count_factor = 1000;
  */
 EncryptStreamBuf::
 EncryptStreamBuf() {
-  _source = (istream *)nullptr;
+  _source = nullptr;
   _owns_source = false;
-  _dest = (ostream *)nullptr;
+  _dest = nullptr;
   _owns_dest = false;
 
   ConfigVariableString encryption_algorithm
@@ -190,17 +190,17 @@ close_read() {
     _read_ctx = nullptr;
   }
 
-  if (_read_overflow_buffer != (unsigned char *)nullptr) {
+  if (_read_overflow_buffer != nullptr) {
     delete[] _read_overflow_buffer;
     _read_overflow_buffer = nullptr;
   }
 
-  if (_source != (istream *)nullptr) {
+  if (_source != nullptr) {
     if (_owns_source) {
       delete _source;
       _owns_source = false;
     }
-    _source = (istream *)nullptr;
+    _source = nullptr;
   }
 }
 
@@ -297,7 +297,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
  */
 void EncryptStreamBuf::
 close_write() {
-  if (_dest != (ostream *)nullptr) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n);
     pbump(-(int)n);
@@ -318,7 +318,7 @@ close_write() {
       delete _dest;
       _owns_dest = false;
     }
-    _dest = (ostream *)nullptr;
+    _dest = nullptr;
   }
 }
 
@@ -349,12 +349,12 @@ overflow(int ch) {
  */
 int EncryptStreamBuf::
 sync() {
-  if (_source != (istream *)nullptr) {
+  if (_source != nullptr) {
     size_t n = egptr() - gptr();
     gbump((int)n);
   }
 
-  if (_dest != (ostream *)nullptr) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n);
     pbump(-(int)n);

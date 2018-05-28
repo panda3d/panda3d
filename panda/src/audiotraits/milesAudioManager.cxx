@@ -147,7 +147,7 @@ get_sound(const string &file_name, bool, int) {
   } else {
     // ...the sound was not found in the cachepool.
     sd = load(path);
-    if (sd != (SoundData *)nullptr) {
+    if (sd != nullptr) {
       while (_sounds.size() >= (unsigned int)_cache_limit) {
         uncache_a_sound();
       }
@@ -169,7 +169,7 @@ get_sound(const string &file_name, bool, int) {
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound;
 
-  if (sd != (SoundData *)nullptr) {
+  if (sd != nullptr) {
     most_recently_used((*si).first);
     if (sd->_file_type == AILFILETYPE_MIDI ||
         sd->_file_type == AILFILETYPE_XMIDI ||
@@ -878,7 +878,7 @@ load(const Filename &file_name) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) file = vfs->get_file(file_name);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     milesAudio_cat.warning()
       << "No such file: " << file_name << "\n";
     return nullptr;

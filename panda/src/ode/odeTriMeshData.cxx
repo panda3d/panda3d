@@ -35,7 +35,7 @@ get_data(dGeomID id) {
 void OdeTriMeshData::
 unlink_data(dGeomID id) {
   odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
-  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)nullptr);
+  nassertv(_tri_mesh_data_map != nullptr);
   TriMeshDataMap::iterator iter = _tri_mesh_data_map->find(id);
   if (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
@@ -58,7 +58,7 @@ remove_data(OdeTriMeshData *data) {
     odetrimeshdata_cat.debug()
       << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   }
-  if (_tri_mesh_data_map == (TriMeshDataMap *)nullptr) {
+  if (_tri_mesh_data_map == nullptr) {
     return;
   }
 

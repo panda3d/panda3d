@@ -213,7 +213,7 @@ output(ostream &out, CPPScope *scope, bool parameter_names,
       if (num_default_parameters >= 0 &&
           i < (int)_parameters.size() - num_default_parameters) {
         // Don't show the default value for this parameter.
-        _parameters[i]->_initializer = (CPPExpression *)nullptr;
+        _parameters[i]->_initializer = nullptr;
       }
 
       if (parameter_names) {

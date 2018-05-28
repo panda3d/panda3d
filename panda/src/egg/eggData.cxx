@@ -77,7 +77,7 @@ read(Filename filename, string display_name) {
   set_egg_timestamp(vfile->get_timestamp());
 
   istream *file = vfile->open_read_file(true);
-  if (file == (istream *)nullptr) {
+  if (file == nullptr) {
     egg_cat.error() << "Unable to open " << display_name << "\n";
     return false;
   }
@@ -211,7 +211,7 @@ write_egg(Filename filename) {
   filename.set_text();
   vfs->delete_file(filename);
   ostream *file = vfs->open_write_file(filename, true, true);
-  if (file == (ostream *)nullptr) {
+  if (file == nullptr) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;
   }

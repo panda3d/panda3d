@@ -188,7 +188,7 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
  */
 void CullableObject::
 output(ostream &out) const {
-  if (_geom != (Geom *)nullptr) {
+  if (_geom != nullptr) {
     out << *_geom;
   } else {
     out << "(null)";
@@ -243,7 +243,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   bool sprite_texcoord = false;
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
-  if (tex_gen != (TexGenAttrib *)nullptr) {
+  if (tex_gen != nullptr) {
     if (tex_gen->get_mode(TextureStage::get_default()) == TexGenAttrib::M_point_sprite) {
       sprite_texcoord = true;
 
@@ -255,7 +255,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   PN_stdfloat point_size = 1;
   bool perspective = false;
   const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
-  if (render_mode != (RenderModeAttrib *)nullptr) {
+  if (render_mode != nullptr) {
     point_size = render_mode->get_thickness();
     perspective = render_mode->get_perspective();
 
@@ -598,8 +598,8 @@ get_flash_cpu_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_cpu_state = (const RenderState *)nullptr;
-  if (flash_cpu_state == (const RenderState *)nullptr) {
+  static CPT(RenderState) flash_cpu_state = nullptr;
+  if (flash_cpu_state == nullptr) {
     flash_cpu_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),
@@ -619,8 +619,8 @@ get_flash_hardware_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_hardware_state = (const RenderState *)nullptr;
-  if (flash_hardware_state == (const RenderState *)nullptr) {
+  static CPT(RenderState) flash_hardware_state = nullptr;
+  if (flash_hardware_state == nullptr) {
     flash_hardware_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),

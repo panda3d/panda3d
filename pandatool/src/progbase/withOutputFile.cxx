@@ -27,7 +27,7 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
   _allow_stdout = allow_stdout;
   _binary_output = binary_output;
   _got_output_filename = false;
-  _output_ptr = (ostream *)nullptr;
+  _output_ptr = nullptr;
   _owns_output_ptr = false;
 }
 
@@ -48,7 +48,7 @@ WithOutputFile::
  */
 ostream &WithOutputFile::
 get_output() {
-  if (_output_ptr == (ostream *)nullptr) {
+  if (_output_ptr == nullptr) {
     if (!_got_output_filename) {
       // No filename given; use standard output.
       if (!_allow_stdout) {

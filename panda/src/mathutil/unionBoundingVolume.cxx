@@ -236,7 +236,7 @@ around_geometric(const BoundingVolume **first,
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
       const GeometricBoundingVolume *volume = (*p)->as_geometric_bounding_volume();
-      if (volume != (GeometricBoundingVolume *)nullptr) {
+      if (volume != nullptr) {
         add_component(volume);
       } else {
         set_infinite();

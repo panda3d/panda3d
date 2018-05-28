@@ -160,7 +160,7 @@ is_convertible_to(const CPPType *other) const {
 bool CPPConstType::
 is_equivalent(const CPPType &other) const {
   const CPPConstType *ot = ((CPPType *)&other)->as_const_type();
-  if (ot == (CPPConstType *)nullptr) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 

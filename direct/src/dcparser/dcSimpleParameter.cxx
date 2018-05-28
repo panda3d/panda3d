@@ -2173,7 +2173,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
 void DCSimpleParameter::
 output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)nullptr) {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {

@@ -211,7 +211,7 @@ do_read_one(Texture::CData *cdata_tex,
   }
   nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
 
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(fullpath);
   }
 

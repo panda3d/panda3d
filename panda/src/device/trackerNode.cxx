@@ -28,14 +28,14 @@ TrackerNode(ClientBase *client, const string &device_name) :
 
   _transform = TransformState::make_identity();
 
-  nassertv(client != (ClientBase *)nullptr);
+  nassertv(client != nullptr);
   set_tracker_coordinate_system(client->get_coordinate_system());
   set_graph_coordinate_system(CS_default);
 
   PT(ClientDevice) device =
     client->get_device(ClientTrackerDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)nullptr) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open tracker device " << device_name << "\n";
     return;
@@ -63,9 +63,9 @@ TrackerNode(ClientTrackerDevice *device) :
 
   _transform = TransformState::make_identity();
 
-  nassertv(device != (ClientTrackerDevice *)nullptr);
+  nassertv(device != nullptr);
   ClientBase *client = device->get_client();
-  nassertv(client != (ClientBase *)nullptr);
+  nassertv(client != nullptr);
   set_tracker_coordinate_system(client->get_coordinate_system());
   set_graph_coordinate_system(CS_default);
 }

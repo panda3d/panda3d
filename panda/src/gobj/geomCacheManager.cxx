@@ -62,7 +62,7 @@ flush() {
  */
 GeomCacheManager *GeomCacheManager::
 get_global_ptr() {
-  if (_global_ptr == (GeomCacheManager *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GeomCacheManager;
   }
   return _global_ptr;

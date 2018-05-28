@@ -95,7 +95,7 @@ set_tcp_header_size(int tcp_header_size) {
   _tcp_header_size = tcp_header_size;
 
 #ifdef HAVE_OPENSSL
-  if (_http_conn != (SocketStream *)nullptr) {
+  if (_http_conn != nullptr) {
     _http_conn->set_tcp_header_size(tcp_header_size);
   }
 #endif
@@ -157,7 +157,7 @@ try_connect_net(const URLSpec &url) {
     _qcm.open_TCP_client_connection(url.get_server(), url.get_port(),
                                     game_server_timeout_ms);
 
-  if (_net_conn != (Connection *)nullptr) {
+  if (_net_conn != nullptr) {
     _net_conn->set_no_delay(true);
     _qcr.add_connection(_net_conn);
     return true;
@@ -209,7 +209,7 @@ start_delay(double min_delay, double max_delay) {
     _qcr.start_delay(min_delay, max_delay);
 #endif  // HAVE_NET
 #ifdef HAVE_OPENSSL
-    if (_http_conn != (SocketStream *)nullptr) {
+    if (_http_conn != nullptr) {
       _http_conn->start_delay(min_delay, max_delay);
     }
 #endif  // HAVE_OPENSSL
@@ -233,7 +233,7 @@ stop_delay() {
   _qcr.stop_delay();
 #endif  // HAVE_NET
 #ifdef HAVE_OPENSSL
-  if (_http_conn != (SocketStream *)nullptr) {
+  if (_http_conn != nullptr) {
     _http_conn->stop_delay();
   }
 #endif  // HAVE_OPENSSL
@@ -278,7 +278,7 @@ check_datagram() {
 #ifdef HAVE_PYTHON
       // For now, we need to stuff this field onto the Python structure, to
       // support legacy code that expects to find it there.
-      if (_python_repository != (PyObject *)nullptr) {
+      if (_python_repository != nullptr) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
         PyGILState_STATE gstate;
         gstate = PyGILState_Ensure();
@@ -684,7 +684,7 @@ handle_update_field() {
 
   PStatTimer timer(_update_pcollector);
   unsigned int do_id = _di.get_uint32();
-  if (_python_repository != (PyObject *)nullptr)
+  if (_python_repository != nullptr)
   {
     PyObject *doId2do =
       PyObject_GetAttrString(_python_repository, "doId2do");
@@ -772,7 +772,7 @@ handle_update_field_owner() {
 
   PStatTimer timer(_update_pcollector);
   unsigned int do_id = _di.get_uint32();
-  if (_python_repository != (PyObject *)nullptr) {
+  if (_python_repository != nullptr) {
     PyObject *doId2do =
       PyObject_GetAttrString(_python_repository, "doId2do");
     nassertr(doId2do != nullptr, false);
@@ -915,7 +915,7 @@ describe_message(ostream &out, const string &prefix,
     string msgName;
 
     #ifdef HAVE_PYTHON
-    if (_python_repository != (PyObject *)nullptr) {
+    if (_python_repository != nullptr) {
       PyObject *msgId = PyLong_FromLong(msg_type);
       nassertv(msgId != nullptr);
 #if PY_MAJOR_VERSION >= 3
@@ -955,7 +955,7 @@ describe_message(ostream &out, const string &prefix,
     DCClass *dclass = nullptr;
 
     #ifdef HAVE_PYTHON
-    if (_python_repository != (PyObject *)nullptr) {
+    if (_python_repository != nullptr) {
       PyObject *doId2do =
         PyObject_GetAttrString(_python_repository, "doId2do");
       nassertv(doId2do != nullptr);
@@ -985,7 +985,7 @@ describe_message(ostream &out, const string &prefix,
 
     int field_id = packer.raw_unpack_uint16();
 
-    if (dclass == (DCClass *)nullptr) {
+    if (dclass == nullptr) {
       out << full_prefix << "update for unknown object " << do_id
           << ", field " << field_id << "\n";
 
@@ -993,7 +993,7 @@ describe_message(ostream &out, const string &prefix,
       out << full_prefix <<
         ":" << dclass->get_name() << "(" << do_id << ").";
       DCField *field = dclass->get_field_by_index(field_id);
-      if (field == (DCField *)nullptr) {
+      if (field == nullptr) {
         out << "unknown field " << field_id << "\n";
 
       } else {

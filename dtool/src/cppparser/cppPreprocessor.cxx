@@ -642,19 +642,19 @@ get_comment_before(int line, CPPFile file) {
       }
 
       if (comment->_last_line < line) {
-        return (CPPCommentBlock *)nullptr;
+        return nullptr;
       }
     } else {
       wrong_file_count++;
       if (wrong_file_count > 10) {
-        return (CPPCommentBlock *)nullptr;
+        return nullptr;
       }
     }
 
     ++ci;
   }
 
-  return (CPPCommentBlock *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -672,14 +672,14 @@ get_comment_on(int line, CPPFile file) {
       if (comment->_line_number == line) {
         return comment;
       } else if (comment->_line_number < line) {
-        return (CPPCommentBlock *)nullptr;
+        return nullptr;
       }
     }
 
     ++ci;
   }
 
-  return (CPPCommentBlock *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -887,7 +887,7 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
   if (ep.parse_expr(expr, *this)) {
     return ep._expr;
   } else {
-    return (CPPExpression *)nullptr;
+    return nullptr;
   }
 }
 
@@ -1966,7 +1966,7 @@ get_identifier(int c) {
 
   if (kw != 0) {
     YYSTYPE result;
-    result.u.identifier = (CPPIdentifier *)nullptr;
+    result.u.identifier = nullptr;
     return CPPToken(kw, loc, name, result);
   }
 
@@ -2489,7 +2489,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.integer = strtol(num.c_str(), (char **)nullptr, 16);
+    result.u.integer = strtol(num.c_str(), nullptr, 16);
 
     return get_literal(INTEGER, loc, num, result);
 
@@ -2508,7 +2508,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.integer = strtol(bin.c_str(), (char **)nullptr, 2);
+    result.u.integer = strtol(bin.c_str(), nullptr, 2);
 
     return get_literal(INTEGER, loc, bin, result);
   }
@@ -2549,7 +2549,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.real = (long double)pstrtod(num.c_str(), (char **)nullptr);
+    result.u.real = (long double)pstrtod(num.c_str(), nullptr);
 
     return get_literal(REAL, loc, num, result);
   }
@@ -2565,11 +2565,11 @@ get_number(int c) {
     // A leading zero implies an octal number.  strtol() is supposed to be
     // able to make this distinction by itself, but we'll do it explicitly
     // just to be sure.
-    result.u.integer = strtol(num.c_str(), (char **)nullptr, 8);
+    result.u.integer = strtol(num.c_str(), nullptr, 8);
 
   } else {
     // A decimal (base 10) integer.
-    result.u.integer = strtol(num.c_str(), (char **)nullptr, 10);
+    result.u.integer = strtol(num.c_str(), nullptr, 10);
   }
 
   return get_literal(INTEGER, loc, num, result);

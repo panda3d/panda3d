@@ -175,7 +175,7 @@ repack_data(XFileDataObject *object,
     break;
   }
 
-  if (data_value != (XFileDataObject *)nullptr) {
+  if (data_value != nullptr) {
     object->add_element(data_value);
     prev_data[this] = data_value;
   }
@@ -219,7 +219,7 @@ fill_zero_data(XFileDataObject *object) const {
     break;
   }
 
-  if (data_value != (XFileDataObject *)nullptr) {
+  if (data_value != nullptr) {
     object->add_element(data_value);
   }
 
@@ -414,7 +414,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,
                      unpack_method);
-      if (array_element == (XFileDataObject *)nullptr) {
+      if (array_element == nullptr) {
         return data_value;
       }
       data_value->add_element(array_element);
@@ -485,7 +485,7 @@ zero_fill_value(int array_index,
     for (int i = 0; i < array_size; i++) {
       PT(XFileDataObject) array_element =
         zero_fill_value(array_index + 1, zero_fill_method);
-      if (array_element == (XFileDataObject *)nullptr) {
+      if (array_element == nullptr) {
         return nullptr;
       }
       data_value->add_element(array_element);

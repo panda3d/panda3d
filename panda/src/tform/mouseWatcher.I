@@ -101,7 +101,7 @@ get_frame() const {
  */
 INLINE bool MouseWatcher::
 is_over_region() const {
-  return get_over_region() != (MouseWatcherRegion *)nullptr;
+  return get_over_region() != nullptr;
 }
 
 /**
@@ -109,7 +109,7 @@ is_over_region() const {
  */
 INLINE bool MouseWatcher::
 is_over_region(PN_stdfloat x, PN_stdfloat y) const {
-  return get_over_region(x, y) != (MouseWatcherRegion *)nullptr;
+  return get_over_region(x, y) != nullptr;
 }
 
 /**
@@ -117,7 +117,7 @@ is_over_region(PN_stdfloat x, PN_stdfloat y) const {
  */
 INLINE bool MouseWatcher::
 is_over_region(const LPoint2 &pos) const {
-  return get_over_region(pos) != (MouseWatcherRegion *)nullptr;
+  return get_over_region(pos) != nullptr;
 }
 
 /**
@@ -421,7 +421,7 @@ get_display_region() const {
  */
 INLINE bool MouseWatcher::
 has_display_region() const {
-  return (_display_region != (DisplayRegion *)nullptr);
+  return (_display_region != nullptr);
 }
 
 /**

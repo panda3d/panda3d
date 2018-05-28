@@ -36,7 +36,7 @@ DCSwitch(const string &name, DCField *key_parameter) :
  */
 DCSwitch::
 ~DCSwitch() {
-  nassertv(_key_parameter != (DCField *)nullptr);
+  nassertv(_key_parameter != nullptr);
   delete _key_parameter;
 
   Cases::iterator ci;
@@ -226,7 +226,7 @@ add_invalid_case() {
  */
 bool DCSwitch::
 add_default() {
-  if (_default_case != (SwitchFields *)nullptr) {
+  if (_default_case != nullptr) {
     add_invalid_case();
     return false;
   }
@@ -286,7 +286,7 @@ apply_switch(const char *value_data, size_t length) const {
   }
 
   // Unexpected value--use the default.
-  if (_default_case != (SwitchFields *)nullptr) {
+  if (_default_case != nullptr) {
     return _default_case;
   }
 
@@ -331,21 +331,21 @@ output_instance(ostream &out, bool brief, const string &prename,
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
-    if (dcase->_fields != last_fields && last_fields != (SwitchFields *)nullptr) {
+    if (dcase->_fields != last_fields && last_fields != nullptr) {
       last_fields->output(out, brief);
     }
     last_fields = dcase->_fields;
     out << "case " << _key_parameter->format_data(dcase->_value, false) << ": ";
   }
 
-  if (_default_case != (SwitchFields *)nullptr) {
-    if (_default_case != last_fields && last_fields != (SwitchFields *)nullptr) {
+  if (_default_case != nullptr) {
+    if (_default_case != last_fields && last_fields != nullptr) {
       last_fields->output(out, brief);
     }
     last_fields = _default_case;
     out << "default: ";
   }
-  if (last_fields != (SwitchFields *)nullptr) {
+  if (last_fields != nullptr) {
     last_fields->output(out, brief);
   }
 
@@ -377,7 +377,7 @@ write_instance(ostream &out, bool brief, int indent_level,
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
-    if (dcase->_fields != last_fields && last_fields != (SwitchFields *)nullptr) {
+    if (dcase->_fields != last_fields && last_fields != nullptr) {
       last_fields->write(out, brief, indent_level + 2);
     }
     last_fields = dcase->_fields;
@@ -385,15 +385,15 @@ write_instance(ostream &out, bool brief, int indent_level,
       << "case " << _key_parameter->format_data(dcase->_value, false) << ":\n";
   }
 
-  if (_default_case != (SwitchFields *)nullptr) {
-    if (_default_case != last_fields && last_fields != (SwitchFields *)nullptr) {
+  if (_default_case != nullptr) {
+    if (_default_case != last_fields && last_fields != nullptr) {
       last_fields->write(out, brief, indent_level + 2);
     }
     last_fields = _default_case;
     indent(out, indent_level)
       << "default:\n";
   }
-  if (last_fields != (SwitchFields *)nullptr) {
+  if (last_fields != nullptr) {
     last_fields->write(out, brief, indent_level + 2);
   }
 
@@ -428,7 +428,7 @@ generate_hash(HashGenerator &hashgen) const {
     }
   }
 
-  if (_default_case != (SwitchFields *)nullptr) {
+  if (_default_case != nullptr) {
     const SwitchFields *fields = _default_case;
     hashgen.add_int(fields->_fields.size());
     Fields::const_iterator fi;
@@ -466,7 +466,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
     pack_error = true;
   }
 
-  if (fields == (SwitchFields *)nullptr) {
+  if (fields == nullptr) {
     pack_error = true;
 
   } else {

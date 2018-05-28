@@ -118,7 +118,7 @@ play() {
  */
 void MilesAudioStream::
 stop() {
-  if (_manager == (MilesAudioManager *)nullptr) {
+  if (_manager == nullptr) {
     return;
   }
   miles_audio_debug("stop()");
@@ -266,7 +266,7 @@ cleanup() {
   set_active(false);
   nassertv(_stream == 0);
 
-  if (_manager != (MilesAudioManager *)nullptr) {
+  if (_manager != nullptr) {
     _manager->release_sound(this);
     _manager = nullptr;
   }
@@ -283,7 +283,7 @@ finish_callback(HSTREAM stream) {
     milesAudio_cat.debug()
       << "finished " << *self << "\n";
   }
-  if (self->_manager == (MilesAudioManager *)nullptr) {
+  if (self->_manager == nullptr) {
     return;
   }
   self->_manager->_sounds_finished = true;

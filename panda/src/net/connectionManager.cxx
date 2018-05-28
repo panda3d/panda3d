@@ -328,7 +328,7 @@ open_TCP_client_connection(const string &hostname, uint16_t port,
  */
 bool ConnectionManager::
 close_connection(const PT(Connection) &connection) {
-  if (connection != (Connection *)nullptr) {
+  if (connection != nullptr) {
     connection->flush();
   }
 

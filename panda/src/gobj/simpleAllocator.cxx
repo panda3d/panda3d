@@ -22,7 +22,7 @@ SimpleAllocator::
   if (_next != (LinkedListNode *)this) {
     MutexHolder holder(_lock);
     while (_next != (LinkedListNode *)this) {
-      nassertv(_next != (LinkedListNode *)nullptr);
+      nassertv(_next != nullptr);
       ((SimpleAllocatorBlock *)_next)->do_free();
     }
   }
@@ -169,7 +169,7 @@ changed_contiguous() {
  */
 void SimpleAllocatorBlock::
 output(ostream &out) const {
-  if (_allocator == (SimpleAllocator *)nullptr) {
+  if (_allocator == nullptr) {
     out << "free block\n";
   } else {
     MutexHolder holder(_allocator->_lock);

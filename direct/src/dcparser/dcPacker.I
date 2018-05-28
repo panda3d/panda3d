@@ -65,7 +65,7 @@ get_num_nested_fields() const {
  */
 INLINE bool DCPacker::
 more_nested_fields() const {
-  return (_current_field != (DCPackerInterface *)nullptr && !_pack_error);
+  return (_current_field != nullptr && !_pack_error);
 }
 
 /**
@@ -985,9 +985,9 @@ advance() {
 
     // But if the parent is a switch record, we make a special case so we can
     // get the alternate fields.
-    if (_current_parent != (DCPackerInterface *)nullptr) {
+    if (_current_parent != nullptr) {
       const DCSwitchParameter *switch_parameter = ((DCPackerInterface *)_current_parent)->as_switch_parameter();
-      if (switch_parameter != (DCSwitchParameter *)nullptr) {
+      if (switch_parameter != nullptr) {
         handle_switch(switch_parameter);
       }
     }
@@ -1009,7 +1009,7 @@ advance() {
  */
 INLINE void *DCPacker::StackElement::
 operator new(size_t size) {
-  if (_deleted_chain != (DCPacker::StackElement *)nullptr) {
+  if (_deleted_chain != nullptr) {
     StackElement *obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     return obj;

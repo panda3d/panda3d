@@ -68,10 +68,10 @@ get_read_pointer(bool force) const {
   LightMutexHolder holder(_lock);
 
   const unsigned char *ptr;
-  if (_resident_data != (unsigned char *)nullptr || _size == 0) {
+  if (_resident_data != nullptr || _size == 0) {
     ptr = _resident_data;
   } else {
-    nassertr(_block != (VertexDataBlock *)nullptr, nullptr);
+    nassertr(_block != nullptr, nullptr);
     nassertr(_reserved_size >= _size, nullptr);
 
     // We don't necessarily need to page the buffer all the way into independent
@@ -92,7 +92,7 @@ INLINE unsigned char *VertexDataBuffer::
 get_write_pointer() {
   LightMutexHolder holder(_lock);
 
-  if (_resident_data == (unsigned char *)nullptr && _reserved_size != 0) {
+  if (_resident_data == nullptr && _reserved_size != 0) {
     do_page_in();
   }
   nassertr(_reserved_size >= _size, nullptr);
@@ -133,7 +133,7 @@ set_size(size_t size) {
   nassertv(size <= _reserved_size);
 
   if (size != _size) {
-    if (_resident_data == (unsigned char *)nullptr && _reserved_size != 0) {
+    if (_resident_data == nullptr && _reserved_size != 0) {
       do_page_in();
     }
 

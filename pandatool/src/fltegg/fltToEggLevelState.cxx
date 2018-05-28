@@ -39,9 +39,9 @@ FltToEggLevelState::
  */
 FltToEggLevelState::ParentNodes::
 ParentNodes() {
-  _axial_billboard = (EggGroup *)nullptr;
-  _point_billboard = (EggGroup *)nullptr;
-  _plain = (EggGroup *)nullptr;
+  _axial_billboard = nullptr;
+  _point_billboard = nullptr;
+  _plain = nullptr;
 }
 
 /**
@@ -82,7 +82,7 @@ get_synthetic_group(const string &name,
 
   switch (type) {
   case FltGeometry::BT_axial:
-    if (nodes->_axial_billboard == (EggGroupNode *)nullptr) {
+    if (nodes->_axial_billboard == nullptr) {
       nodes->_axial_billboard = new EggGroup(name);
       _egg_parent->add_child(nodes->_axial_billboard);
       nodes->_axial_billboard->set_billboard_type(EggGroup::BT_axis);
@@ -94,7 +94,7 @@ get_synthetic_group(const string &name,
     return nodes->_axial_billboard;
 
   case FltGeometry::BT_point:
-    if (nodes->_point_billboard == (EggGroupNode *)nullptr) {
+    if (nodes->_point_billboard == nullptr) {
       nodes->_point_billboard = new EggGroup(name);
       _egg_parent->add_child(nodes->_point_billboard);
       nodes->_point_billboard->set_billboard_type(EggGroup::BT_point_world_relative);
@@ -107,7 +107,7 @@ get_synthetic_group(const string &name,
 
   default: // Normally, BT_none, although we've occasionally seen a
            // value of 3 come in here, whatever that's supposed to mean.
-    if (nodes->_plain == (EggGroupNode *)nullptr) {
+    if (nodes->_plain == nullptr) {
       nodes->_plain = new EggGroup(name);
       _egg_parent->add_child(nodes->_plain);
       if (!is_identity) {

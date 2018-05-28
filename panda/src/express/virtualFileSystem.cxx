@@ -432,7 +432,7 @@ chdir(const Filename &new_directory) {
   }
 
   PT(VirtualFile) file = do_get_file(new_directory, OF_status_only);
-  if (file != (VirtualFile *)nullptr && file->is_directory()) {
+  if (file != nullptr && file->is_directory()) {
     _cwd = file->get_filename();
     _lock.unlock();
     return true;
@@ -552,7 +552,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
       match = filename;
     }
     PT(VirtualFile) found_file = get_file(match, status_only);
-    if (found_file != (VirtualFile *)nullptr) {
+    if (found_file != nullptr) {
       return found_file;
     }
   }
@@ -568,7 +568,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
 bool VirtualFileSystem::
 delete_file(const Filename &filename) {
   PT(VirtualFile) file = get_file(filename, true);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return false;
   }
 
@@ -590,13 +590,13 @@ bool VirtualFileSystem::
 rename_file(const Filename &orig_filename, const Filename &new_filename) {
   _lock.lock();
   PT(VirtualFile) orig_file = do_get_file(orig_filename, OF_status_only);
-  if (orig_file == (VirtualFile *)nullptr) {
+  if (orig_file == nullptr) {
     _lock.unlock();
     return false;
   }
 
   PT(VirtualFile) new_file = do_get_file(new_filename, OF_status_only | OF_allow_nonexist);
-  if (new_file == (VirtualFile *)nullptr) {
+  if (new_file == nullptr) {
     _lock.unlock();
     return false;
   }
@@ -613,12 +613,12 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
 bool VirtualFileSystem::
 copy_file(const Filename &orig_filename, const Filename &new_filename) {
   PT(VirtualFile) orig_file = get_file(orig_filename, true);
-  if (orig_file == (VirtualFile *)nullptr) {
+  if (orig_file == nullptr) {
     return false;
   }
 
   PT(VirtualFile) new_file = create_file(new_filename);
-  if (new_file == (VirtualFile *)nullptr) {
+  if (new_file == nullptr) {
     return false;
   }
 
@@ -733,7 +733,7 @@ write(ostream &out) const {
  */
 VirtualFileSystem *VirtualFileSystem::
 get_global_ptr() {
-  if (_global_ptr == (VirtualFileSystem *)nullptr) {
+  if (_global_ptr == nullptr) {
     // Make sure this is initialized.
     init_libexpress();
 
@@ -839,13 +839,13 @@ get_global_ptr() {
 istream *VirtualFileSystem::
 open_read_file(const Filename &filename, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return nullptr;
   }
   istream *str = file->open_read_file(auto_unwrap);
-  if (str != (istream *)nullptr && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_file(str);
-    str = (istream *)nullptr;
+    str = nullptr;
   }
   return str;
 }
@@ -858,7 +858,7 @@ open_read_file(const Filename &filename, bool auto_unwrap) const {
  */
 void VirtualFileSystem::
 close_read_file(istream *stream) {
-  if (stream != (istream *)nullptr) {
+  if (stream != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -883,13 +883,13 @@ close_read_file(istream *stream) {
 ostream *VirtualFileSystem::
 open_write_file(const Filename &filename, bool auto_wrap, bool truncate) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return nullptr;
   }
   ostream *str = file->open_write_file(auto_wrap, truncate);
-  if (str != (ostream *)nullptr && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_write_file(str);
-    str = (ostream *)nullptr;
+    str = nullptr;
   }
   return str;
 }
@@ -902,13 +902,13 @@ open_write_file(const Filename &filename, bool auto_wrap, bool truncate) {
 ostream *VirtualFileSystem::
 open_append_file(const Filename &filename) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return nullptr;
   }
   ostream *str = file->open_append_file();
-  if (str != (ostream *)nullptr && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_write_file(str);
-    str = (ostream *)nullptr;
+    str = nullptr;
   }
   return str;
 }
@@ -921,7 +921,7 @@ open_append_file(const Filename &filename) {
  */
 void VirtualFileSystem::
 close_write_file(ostream *stream) {
-  if (stream != (ostream *)nullptr) {
+  if (stream != nullptr) {
 #if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
     (*global_operator_delete)(stream);
@@ -939,13 +939,13 @@ close_write_file(ostream *stream) {
 iostream *VirtualFileSystem::
 open_read_write_file(const Filename &filename, bool truncate) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return nullptr;
   }
   iostream *str = file->open_read_write_file(truncate);
-  if (str != (iostream *)nullptr && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_write_file(str);
-    str = (iostream *)nullptr;
+    str = nullptr;
   }
   return str;
 }
@@ -958,13 +958,13 @@ open_read_write_file(const Filename &filename, bool truncate) {
 iostream *VirtualFileSystem::
 open_read_append_file(const Filename &filename) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return nullptr;
   }
   iostream *str = file->open_read_append_file();
-  if (str != (iostream *)nullptr && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_write_file(str);
-    str = (iostream *)nullptr;
+    str = nullptr;
   }
   return str;
 }
@@ -977,7 +977,7 @@ open_read_append_file(const Filename &filename) {
  */
 void VirtualFileSystem::
 close_read_write_file(iostream *stream) {
-  if (stream != (iostream *)nullptr) {
+  if (stream != nullptr) {
 #if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~iostream();
     (*global_operator_delete)(stream);
@@ -1214,7 +1214,7 @@ do_get_file(const Filename &filename, int open_flags) const {
     }
   }
 
-  if (found_file == (VirtualFile *)nullptr && vfs_implicit_mf) {
+  if (found_file == nullptr && vfs_implicit_mf) {
     // The file wasn't found, as-is.  Does it appear to be an implicit .mf
     // file reference?
     ((VirtualFileSystem *)this)->consider_mount_mf(filename);
@@ -1268,7 +1268,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
     return false;
   }
 
-  if (found_file == (VirtualFile *)nullptr) {
+  if (found_file == nullptr) {
     // This was our first match.  Save it.
     found_file = vfile;
     if (!found_file->is_directory() || ((open_flags & OF_make_directory) != 0)) {
@@ -1293,7 +1293,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
     if (!implicit_pz_file) {
       // At least two directories matched to the same path.  We need a
       // composite directory.
-      if (composite_file == (VirtualFileComposite *)nullptr) {
+      if (composite_file == nullptr) {
         composite_file =
           new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_original_filename());
         composite_file->set_original_filename(original_filename);
@@ -1333,7 +1333,7 @@ consider_mount_mf(const Filename &filename) {
     // Hey, here's a multifile reference!
     dirname.set_binary();
     PT(VirtualFile) file = do_get_file(dirname, false);
-    if (file == (VirtualFile *)nullptr || !file->is_regular_file()) {
+    if (file == nullptr || !file->is_regular_file()) {
       // Oh, never mind.  Not a real file.
       return false;
     }
@@ -1341,7 +1341,7 @@ consider_mount_mf(const Filename &filename) {
     PT(Multifile) multifile = new Multifile;
 
     istream *stream = file->open_read_file(false);
-    if (stream == (istream *)nullptr) {
+    if (stream == nullptr) {
       // Couldn't read file.
       return false;
     }

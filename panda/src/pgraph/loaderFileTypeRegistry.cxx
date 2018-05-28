@@ -154,7 +154,7 @@ get_type_from_extension(const string &extension) {
       loader_cat->info()
         << "loading file type module: " << name << endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-      if (tmp == (void *)nullptr) {
+      if (tmp == nullptr) {
         loader_cat->warning()
           << "Unable to load " << dlname.to_os_specific() << ": "
           << load_dso_error() << endl;
@@ -231,7 +231,7 @@ write(ostream &out, int indent_level) const {
  */
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (LoaderFileTypeRegistry *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new LoaderFileTypeRegistry;
   }
   return _global_ptr;

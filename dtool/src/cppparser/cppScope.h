@@ -159,7 +159,7 @@ private:
 
 inline ostream &
 operator << (ostream &out, const CPPScope &scope) {
-  scope.output(out, (CPPScope *)nullptr);
+  scope.output(out, nullptr);
   return out;
 }
 

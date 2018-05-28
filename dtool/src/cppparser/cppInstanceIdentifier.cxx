@@ -291,7 +291,7 @@ r_unroll_type(CPPType *start_type,
   case IIT_func:
     {
       CPPType *return_type = r_unroll_type(start_type, mi);
-      if (mod._trailing_return_type != (CPPType *)nullptr) {
+      if (mod._trailing_return_type != nullptr) {
         CPPSimpleType *simple_type = return_type->as_simple_type();
         if (simple_type != nullptr && simple_type->_type == CPPSimpleType::T_auto) {
           return_type = mod._trailing_return_type;

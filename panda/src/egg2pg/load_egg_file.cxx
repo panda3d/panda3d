@@ -31,7 +31,7 @@ load_from_loader(EggLoader &loader) {
     return nullptr;
   }
 
-  if (loader._root != (PandaNode *)nullptr && egg_flatten) {
+  if (loader._root != nullptr && egg_flatten) {
     SceneGraphReducer gr;
 
     int combine_siblings_bits = 0;
@@ -76,7 +76,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   egg_filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(egg_filename);
   }
 
@@ -95,7 +95,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
 
   bool okflag;
   istream *istr = vfile->open_read_file(true);
-  if (istr == (istream *)nullptr) {
+  if (istr == nullptr) {
     egg2pg_cat.error()
       << "Couldn't read " << egg_filename << "\n";
     return nullptr;

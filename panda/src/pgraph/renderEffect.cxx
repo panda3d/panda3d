@@ -24,7 +24,7 @@ TypeHandle RenderEffect::_type_handle;
  */
 RenderEffect::
 RenderEffect() {
-  if (_effects == (Effects *)nullptr) {
+  if (_effects == nullptr) {
     // Make sure the global _effects map is allocated.  This only has to be
     // done once.  We could make this map static, but then we run into
     // problems if anyone creates a RenderState object at static init time; it
@@ -169,7 +169,7 @@ write(ostream &out, int indent_level) const {
  */
 int RenderEffect::
 get_num_effects() {
-  if (_effects == (Effects *)nullptr) {
+  if (_effects == nullptr) {
     return 0;
   }
   return _effects->size();
@@ -231,7 +231,7 @@ validate_effects() {
  */
 CPT(RenderEffect) RenderEffect::
 return_new(RenderEffect *effect) {
-  nassertr(effect != (RenderEffect *)nullptr, effect);
+  nassertr(effect != nullptr, effect);
 
   // This should be a newly allocated pointer, not one that was used for
   // anything else.

@@ -47,7 +47,7 @@ MutexHolder(const Mutex &mutex, Thread *current_thread) {
 INLINE MutexHolder::
 MutexHolder(Mutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (Mutex *)nullptr) {
+  if (mutex == nullptr) {
     mutex = new Mutex;
   }
   _mutex = mutex;

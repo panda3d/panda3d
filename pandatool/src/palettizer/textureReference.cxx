@@ -42,12 +42,12 @@ TypeHandle TextureReference::_type_handle;
  */
 TextureReference::
 TextureReference() {
-  _egg_file = (EggFile *)nullptr;
-  _egg_tex = (EggTexture *)nullptr;
+  _egg_file = nullptr;
+  _egg_tex = nullptr;
   _tex_mat = LMatrix3d::ident_mat();
   _inv_tex_mat = LMatrix3d::ident_mat();
-  _source_texture = (SourceTextureImage *)nullptr;
-  _placement = (TexturePlacement *)nullptr;
+  _source_texture = nullptr;
+  _placement = nullptr;
   _uses_alpha = false;
   _any_uvs = false;
   _min_uv.set(0.0, 0.0);
@@ -192,7 +192,7 @@ get_source() const {
  */
 TextureImage *TextureReference::
 get_texture() const {
-  nassertr(_source_texture != (SourceTextureImage *)nullptr, (TextureImage *)nullptr);
+  nassertr(_source_texture != nullptr, nullptr);
   return _source_texture->get_texture();
 }
 
@@ -303,12 +303,12 @@ is_equivalent(const TextureReference &other) const {
 void TextureReference::
 set_placement(TexturePlacement *placement) {
   if (_placement != placement) {
-    if (_placement != (TexturePlacement *)nullptr) {
+    if (_placement != nullptr) {
       // Remove our reference from the old placement object.
       _placement->remove_egg(this);
     }
     _placement = placement;
-    if (_placement != (TexturePlacement *)nullptr) {
+    if (_placement != nullptr) {
       // Add our reference to the new placement object.
       _placement->add_egg(this);
     }
@@ -320,7 +320,7 @@ set_placement(TexturePlacement *placement) {
  */
 void TextureReference::
 clear_placement() {
-  set_placement((TexturePlacement *)nullptr);
+  set_placement(nullptr);
 }
 
 /**
@@ -338,7 +338,7 @@ get_placement() const {
  */
 void TextureReference::
 mark_egg_stale() {
-  if (_egg_file != (EggFile *)nullptr) {
+  if (_egg_file != nullptr) {
     _egg_file->mark_stale();
   }
 }
@@ -349,12 +349,12 @@ mark_egg_stale() {
  */
 void TextureReference::
 update_egg() {
-  if (_egg_tex == (EggTexture *)nullptr) {
+  if (_egg_tex == nullptr) {
     // Not much we can do if we don't have an actual egg file to reference.
     return;
   }
 
-  if (_placement == (TexturePlacement *)nullptr) {
+  if (_placement == nullptr) {
     // Nor if we don't have an actual placement yet.  This is possible if the
     // egg was assigned to the "null" group, and the texture hasn't been re-
     // assigned yet.
@@ -362,7 +362,7 @@ update_egg() {
   }
 
   TextureImage *texture = get_texture();
-  if (texture != (TextureImage *)nullptr) {
+  if (texture != nullptr) {
     // Make sure the alpha mode is set according to what the texture image
     // wants.
     if (texture->has_num_channels() &&
@@ -406,7 +406,7 @@ update_egg() {
     // simply have to update the texture reference to the new texture
     // location.
     DestTextureImage *dest = _placement->get_dest();
-    nassertv(dest != (DestTextureImage *)nullptr);
+    nassertv(dest != nullptr);
     dest->update_egg_tex(_egg_tex);
     return;
   }
@@ -415,7 +415,7 @@ update_egg() {
   // update the texture reference, but also adjust the UV's.  In most cases,
   // we can do this by simply applying a texture matrix to the reference.
   PaletteImage *image = _placement->get_image();
-  nassertv(image != (PaletteImage *)nullptr);
+  nassertv(image != nullptr);
 
   image->update_egg_tex(_egg_tex);
 
@@ -447,7 +447,7 @@ update_egg() {
  */
 void TextureReference::
 apply_properties_to_source() {
-  nassertv(_source_texture != (SourceTextureImage *)nullptr);
+  nassertv(_source_texture != nullptr);
   _source_texture->update_properties(_properties);
 }
 
@@ -830,17 +830,17 @@ int TextureReference::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[pi] != (TypedWritable *)nullptr) {
+  if (p_list[pi] != nullptr) {
     DCAST_INTO_R(_egg_file, p_list[pi], pi);
   }
   pi++;
 
-  if (p_list[pi] != (TypedWritable *)nullptr) {
+  if (p_list[pi] != nullptr) {
     DCAST_INTO_R(_source_texture, p_list[pi], pi);
   }
   pi++;
 
-  if (p_list[pi] != (TypedWritable *)nullptr) {
+  if (p_list[pi] != nullptr) {
     DCAST_INTO_R(_placement, p_list[pi], pi);
   }
   pi++;

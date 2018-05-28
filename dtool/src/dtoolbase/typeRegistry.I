@@ -41,7 +41,7 @@ ptr() {
  */
 INLINE void TypeRegistry::
 init_lock() {
-  if (_lock == (MutexImpl *)nullptr) {
+  if (_lock == nullptr) {
     _lock = new MutexImpl;
   }
 }

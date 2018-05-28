@@ -43,13 +43,13 @@ PNMImage(const Filename &filename, PNMFileType *type) {
  */
 void PNMImage::
 clear() {
-  if (_array != (xel *)nullptr) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
-    _array = (xel *)nullptr;
+    _array = nullptr;
   }
-  if (_alpha != (xelval *)nullptr) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
-    _alpha = (xelval *)nullptr;
+    _alpha = nullptr;
   }
   _x_size = 0;
   _y_size = 0;
@@ -58,7 +58,7 @@ clear() {
   _inv_maxval = 1.0 / 255.0;
   _color_space = CS_linear;
   _comment.clear();
-  _type = (PNMFileType *)nullptr;
+  _type = nullptr;
   _has_read_size = false;
   _xel_encoding = XE_generic;
 }
@@ -274,7 +274,7 @@ alpha_fill_val(xelval alpha) {
 bool PNMImage::
 read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   PNMReader *reader = make_reader(filename, type, report_unknown_type);
-  if (reader == (PNMReader *)nullptr) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -299,7 +299,7 @@ read(istream &data, const string &filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, string(), type, report_unknown_type);
-  if (reader == (PNMReader *)nullptr) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -385,7 +385,7 @@ write(const Filename &filename, PNMFileType *type) const {
   }
 
   PNMWriter *writer = PNMImageHeader::make_writer(filename, type);
-  if (writer == (PNMWriter *)nullptr) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -409,7 +409,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
 
   PNMWriter *writer = PNMImageHeader::make_writer
     (&data, false, filename, type);
-  if (writer == (PNMWriter *)nullptr) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -1039,7 +1039,7 @@ blend(int x, int y, float r, float g, float b, float alpha) {
  */
 void PNMImage::
 set_array(xel *array) {
-  if (_array != (xel *)nullptr) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
   }
   _array = array;
@@ -1055,7 +1055,7 @@ set_array(xel *array) {
  */
 void PNMImage::
 set_alpha_array(xelval *alpha) {
-  if (_alpha != (xelval *)nullptr) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
   }
   _alpha = alpha;

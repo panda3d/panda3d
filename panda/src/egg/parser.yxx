@@ -1545,7 +1545,7 @@ group_body:
   EggGroup *group = DCAST(EggGroup, egg_stack.back());
   if (group->get_group_type() != EggGroup::GT_instance) {
     eggyyerror("<Ref> valid only within <Instance>");
-  } else if ($4 != (EggObject *)nullptr) {
+  } else if ($4 != nullptr) {
     group->add_group_ref(DCAST(EggGroup, $4));
   }
 }
@@ -1785,7 +1785,7 @@ matrix4_body:
 group_vertex_ref:
         VERTEXREF '{' integer_list group_vertex_membership REF '{' vertex_pool_name '}' '}'
 {
-  if ($7 != (EggVertexPool *)nullptr) {
+  if ($7 != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, $7);
     EggGroup *group = DCAST(EggGroup, egg_stack.back());
     PTA_double nums = $3;
@@ -2316,7 +2316,7 @@ nurbs_curve_body:
 primitive_tref_body:
         texture_name
 {
-  if ($1 != (EggTexture *)nullptr) {
+  if ($1 != nullptr) {
     EggTexture *texture = DCAST(EggTexture, $1);
     DCAST(EggPrimitive, egg_stack.back())->add_texture(texture);
   }
@@ -2373,7 +2373,7 @@ primitive_texture_body:
 primitive_material_body:
         material_name
 {
-  if ($1 != (EggMaterial *)nullptr) {
+  if ($1 != nullptr) {
     EggMaterial *material = DCAST(EggMaterial, $1);
     DCAST(EggPrimitive, egg_stack.back())->set_material(material);
   }
@@ -2466,7 +2466,7 @@ primitive_bface_body:
 primitive_vertex_ref:
         VERTEXREF '{' integer_list REF '{' vertex_pool_name '}' '}'
 {
-  if ($6 != (EggVertexPool *)nullptr) {
+  if ($6 != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, $6);
     EggPrimitive *prim = DCAST(EggPrimitive, egg_stack.back());
     PTA_double nums = $3;

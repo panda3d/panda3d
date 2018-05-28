@@ -21,7 +21,7 @@ CPPNameComponent::
 CPPNameComponent(const string &name) :
   _name(name)
 {
-  _templ = (CPPTemplateParameterList *)nullptr;
+  _templ = nullptr;
 }
 
 /**
@@ -114,7 +114,7 @@ empty() const {
  */
 bool CPPNameComponent::
 has_templ() const {
-  return _templ != (CPPTemplateParameterList *)nullptr;
+  return _templ != nullptr;
 }
 
 /**
@@ -123,7 +123,7 @@ has_templ() const {
  */
 bool CPPNameComponent::
 is_tbd() const {
-  if (_templ != (CPPTemplateParameterList *)nullptr) {
+  if (_templ != nullptr) {
     return _templ->is_tbd();
   }
   return false;

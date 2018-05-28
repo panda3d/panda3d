@@ -62,7 +62,7 @@ EggRetargetAnim() {
  */
 void EggRetargetAnim::
 run() {
-  nassertv(_collection != (EggCharacterCollection *)nullptr);
+  nassertv(_collection != nullptr);
   nassertv(_collection->get_num_eggs() > 0);
 
   if (_reference_filename.empty()) {
@@ -78,7 +78,7 @@ run() {
 
   // Read in the extra egg file that we use for extracting the references out.
   PT(EggData) reference_egg = read_egg(_reference_filename);
-  if (reference_egg == (EggData *)nullptr) {
+  if (reference_egg == nullptr) {
     nout << "Cannot read " << _reference_filename << "\n";
     exit(1);
   }
@@ -146,7 +146,7 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
         int num_frames = char_data->get_num_frames(i);
 
         EggBackPointer *back = joint_data->get_model(i);
-        nassertv(back != (EggBackPointer *)nullptr);
+        nassertv(back != nullptr);
         EggJointPointer *joint;
         DCAST_INTO_V(joint, back);
 

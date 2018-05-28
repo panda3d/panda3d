@@ -518,7 +518,7 @@ reset_level(PStatViewLevel *level) {
     int parent_index =
       _client_data->get_collector_def(level->_collector)._parent_index;
 
-    if (level->_parent == (PStatViewLevel *)nullptr) {
+    if (level->_parent == nullptr) {
       // This level didn't know its parent before, but now it does.
       PStatViewLevel *parent_level = get_level(parent_index);
       nassertr(parent_level != level, true);

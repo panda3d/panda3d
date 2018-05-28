@@ -64,7 +64,7 @@ process_events() {
  */
 void EventHandler::
 dispatch_event(const Event *event) {
-  nassertv(event != (Event *)nullptr);
+  nassertv(event != nullptr);
 
   // Is the event name defined in the hook table?  It will be if anyone has
   // ever assigned a hook to this particular event name.

@@ -168,7 +168,7 @@ GraphicsOutput::
   nassertv(!is_valid());
 
   // We shouldn't have a GraphicsPipe pointer anymore.
-  nassertv(_pipe == (GraphicsPipe *)nullptr);
+  nassertv(_pipe == nullptr);
 
   // We don't have to destruct our child display regions explicitly, since
   // they are all reference-counted and will go away when their pointers do.
@@ -240,7 +240,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   LightMutexHolder holder(_lock);
 
   // Create texture if necessary.
-  if (tex == (Texture *)nullptr) {
+  if (tex == nullptr) {
     tex = new Texture(get_name());
     tex->set_wrap_u(SamplerState::WM_clamp);
     tex->set_wrap_v(SamplerState::WM_clamp);
@@ -555,8 +555,8 @@ get_delete_flag() const {
 void GraphicsOutput::
 set_sort(int sort) {
   if (_sort != sort) {
-    if (_gsg != (GraphicsStateGuardian *)nullptr &&
-        _gsg->get_engine() != (GraphicsEngine *)nullptr) {
+    if (_gsg != nullptr &&
+        _gsg->get_engine() != nullptr) {
       _gsg->get_engine()->set_window_sort(this, sort);
     }
   }
@@ -838,7 +838,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   if (textures_power_2 != ATS_none) {
     flags |= GraphicsPipe::BF_size_power_2;
   }
-  if (tex != (Texture *)nullptr &&
+  if (tex != nullptr &&
       tex->get_texture_type() == Texture::TT_cube_map) {
     flags |= GraphicsPipe::BF_size_square;
   }
@@ -849,8 +849,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                 *fbp, WindowProperties::size(x_size, y_size),
                 flags, get_gsg(), get_host());
 
-  if (buffer != (GraphicsOutput *)nullptr) {
-    if (buffer->get_gsg() == (GraphicsStateGuardian *)nullptr ||
+  if (buffer != nullptr) {
+    if (buffer->get_gsg() == nullptr ||
         buffer->get_gsg()->get_prepared_objects() != get_gsg()->get_prepared_objects()) {
       // If the newly-created buffer doesn't share texture objects with the
       // current GSG, then we will have to force the texture copy to go
@@ -1072,7 +1072,7 @@ reset_window(bool swapchain) {
  */
 void GraphicsOutput::
 clear_pipe() {
-  _pipe = (GraphicsPipe *)nullptr;
+  _pipe = nullptr;
 }
 
 /**
@@ -1118,7 +1118,7 @@ clear(Thread *current_thread) {
         << get_name() << " " << (void *)this << "\n";
     }
 
-    nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+    nassertv(_gsg != nullptr);
 
     DisplayRegionPipelineReader dr_reader(_overlay_display_region, current_thread);
     _gsg->prepare_display_region(&dr_reader);
@@ -1182,7 +1182,7 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
           // In copy-to-texture mode, copy the just-rendered framebuffer to
           // the old texture page.
 
-          nassertv(old_page_dr != (DisplayRegion *)nullptr);
+          nassertv(old_page_dr != nullptr);
           if (display_cat.is_debug()) {
             display_cat.debug()
               << "Copying texture for " << get_name() << " at scene change.\n";
@@ -1390,7 +1390,7 @@ copy_to_textures() {
 
       bool copied = false;
       DisplayRegion *dr = _overlay_display_region;
-      if (_prev_page_dr != (DisplayRegion *)nullptr) {
+      if (_prev_page_dr != nullptr) {
         dr = _prev_page_dr;
       }
 

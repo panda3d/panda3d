@@ -63,33 +63,33 @@ fill_state(EggPrimitive *egg_prim) {
 
   EggRenderMode *render_mode;
   render_mode = egg_prim->determine_alpha_mode();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     am = render_mode->get_alpha_mode();
   }
   render_mode = egg_prim->determine_depth_write_mode();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     dwm = render_mode->get_depth_write_mode();
   }
   render_mode = egg_prim->determine_depth_test_mode();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     dtm = render_mode->get_depth_test_mode();
   }
   render_mode = egg_prim->determine_visibility_mode();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     vm = render_mode->get_visibility_mode();
   }
   render_mode = egg_prim->determine_draw_order();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     has_draw_order = true;
     draw_order = render_mode->get_draw_order();
   }
   render_mode = egg_prim->determine_depth_offset();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     has_depth_offset = true;
     depth_offset = render_mode->get_depth_offset();
   }
   render_mode = egg_prim->determine_bin();
-  if (render_mode != (EggRenderMode *)nullptr) {
+  if (render_mode != nullptr) {
     has_bin = true;
     bin = render_mode->get_bin();
   }
@@ -105,8 +105,8 @@ fill_state(EggPrimitive *egg_prim) {
     PT_EggTexture egg_tex = egg_prim->get_texture(i);
 
     const TextureDef &def = _loader._textures[egg_tex];
-    if (def._texture != (const RenderAttrib *)nullptr) {
-      if (texture_attrib == (RenderAttrib *)nullptr) {
+    if (def._texture != nullptr) {
+      if (texture_attrib == nullptr) {
         texture_attrib = def._texture;
       } else {
         texture_attrib = texture_attrib->compose(def._texture);
@@ -115,7 +115,7 @@ fill_state(EggPrimitive *egg_prim) {
       if (egg_tex->affects_polygon_alpha()) {
         const TextureAttrib *tex_attrib = DCAST(TextureAttrib, def._texture);
         Texture *tex = tex_attrib->get_texture();
-        nassertv(tex != (Texture *)nullptr);
+        nassertv(tex != nullptr);
 
         Texture::Format format = tex->get_format();
         if (Texture::has_alpha(format) && !Texture::has_binary_alpha(format)) {
@@ -139,7 +139,7 @@ fill_state(EggPrimitive *egg_prim) {
       bool has_tex_gen = false;
       if (egg_tex->get_tex_gen() != EggTexture::TG_unspecified) {
         has_tex_gen = true;
-        if (tex_gen_attrib == (const RenderAttrib *)nullptr) {
+        if (tex_gen_attrib == nullptr) {
           tex_gen_attrib = TexGenAttrib::make();
         }
         tex_gen_attrib = DCAST(TexGenAttrib, tex_gen_attrib)->
@@ -228,15 +228,15 @@ fill_state(EggPrimitive *egg_prim) {
     }
   }
 
-  if (texture_attrib != (RenderAttrib *)nullptr) {
+  if (texture_attrib != nullptr) {
     add_attrib(texture_attrib);
   }
 
-  if (tex_gen_attrib != (RenderAttrib *)nullptr) {
+  if (tex_gen_attrib != nullptr) {
     add_attrib(tex_gen_attrib);
   }
 
-  if (tex_mat_attrib != (RenderAttrib *)nullptr) {
+  if (tex_mat_attrib != nullptr) {
     add_attrib(tex_mat_attrib);
   }
 
@@ -580,7 +580,7 @@ apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib,
   if (egg_tex->has_transform()) {
     CPT(TransformState) transform = _loader.make_transform(egg_tex);
 
-    if (tex_mat_attrib == (const RenderAttrib *)nullptr) {
+    if (tex_mat_attrib == nullptr) {
       tex_mat_attrib = TexMatrixAttrib::make();
     }
     tex_mat_attrib = DCAST(TexMatrixAttrib, tex_mat_attrib)->

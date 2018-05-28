@@ -2014,7 +2014,7 @@ reparent_decals(EggGroupNode *egg_parent) {
 
   // First, walk through all children of this node, looking for the one decal
   // base, if any.
-  EggGroup *decal_base = (EggGroup *)nullptr;
+  EggGroup *decal_base = nullptr;
   pvector<EggGroup *> decal_children;
 
   EggGroupNode::iterator ci;
@@ -2023,7 +2023,7 @@ reparent_decals(EggGroupNode *egg_parent) {
     if (child->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, child);
       if (child_group->has_object_type("decalbase")) {
-        if (decal_base != (EggNode *)nullptr) {
+        if (decal_base != nullptr) {
           softegg_cat.error()
             << "Two children of " << egg_parent->get_name()
             << " both have decalbase set: " << decal_base->get_name()
@@ -2040,7 +2040,7 @@ reparent_decals(EggGroupNode *egg_parent) {
     }
   }
 
-  if (decal_base == (EggGroup *)nullptr) {
+  if (decal_base == nullptr) {
     if (!decal_children.empty()) {
       softegg_cat.warning()
         << decal_children.front()->get_name()

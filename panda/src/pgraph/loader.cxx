@@ -165,7 +165,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
-  if (requested_type == (LoaderFileType *)nullptr) {
+  if (requested_type == nullptr) {
     if (report_errors) {
       loader_cat.error()
         << "Extension of file " << this_filename
@@ -211,7 +211,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       Filename pathname(model_path.get_directory(i), this_filename);
       PT(PandaNode) result = try_load_file(pathname, this_options,
                                            requested_type);
-      if (result != (PandaNode *)nullptr) {
+      if (result != nullptr) {
         return result;
       }
     }
@@ -243,7 +243,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     // Look for the file only where it is.
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     PT(PandaNode) result = try_load_file(this_filename, this_options, requested_type);
-    if (result != (PandaNode *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
     if (report_errors) {
@@ -273,7 +273,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the file.
     PT(PandaNode) node = ModelPool::get_model(pathname, true);
-    if (node != (PandaNode *)nullptr) {
+    if (node != nullptr) {
       if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
         if (loader_cat.is_debug()) {
           loader_cat.debug()
@@ -292,7 +292,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       if (record->has_data()) {
         if (report_errors) {
           loader_cat.info()
@@ -334,8 +334,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (!cache_only) {
     // Load the model from disk.
     PT(PandaNode) result = requested_type->load_file(pathname, options, record);
-    if (result != (PandaNode *)nullptr) {
-      if (record != (BamCacheRecord *)nullptr) {
+    if (result != nullptr) {
+      if (record != nullptr) {
         // Store the loaded model in the model cache.
         record->set_data(result);
         cache->store(record);
@@ -403,7 +403,7 @@ save_file(const Filename &filename, const LoaderOptions &options,
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
 
-  if (requested_type == (LoaderFileType *)nullptr) {
+  if (requested_type == nullptr) {
     if (report_errors) {
       loader_cat.error()
         << "Extension of file " << this_filename
@@ -475,7 +475,7 @@ load_file_types() {
         loader_cat.info()
           << "loading file type module: " << name << endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-        if (tmp == (void *)nullptr) {
+        if (tmp == nullptr) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
             << ": " << load_dso_error() << endl;
@@ -512,7 +512,7 @@ load_file_types() {
  */
 void Loader::
 make_global_ptr() {
-  nassertv(_global_ptr == (Loader *)nullptr);
+  nassertv(_global_ptr == nullptr);
 
   _global_ptr = new Loader("loader");
 }

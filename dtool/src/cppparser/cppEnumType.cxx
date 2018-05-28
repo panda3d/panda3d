@@ -104,8 +104,8 @@ add_element(const string &name, CPPExpression *value, CPPPreprocessor *preproces
   inst->_storage_class |= CPPInstance::SC_constexpr;
   _elements.push_back(inst);
 
-  if (value == (CPPExpression *)nullptr) {
-    if (_last_value == (CPPExpression *)nullptr) {
+  if (value == nullptr) {
+    if (_last_value == nullptr) {
       // This is the first value, and should therefore be 0.
       static CPPExpression *const zero = new CPPExpression(0);
       value = zero;
@@ -123,12 +123,12 @@ add_element(const string &name, CPPExpression *value, CPPPreprocessor *preproces
   inst->_initializer = value;
   _last_value = value;
 
-  if (preprocessor != (CPPPreprocessor *)nullptr) {
+  if (preprocessor != nullptr) {
     // Same-line comment?
     CPPCommentBlock *comment =
       preprocessor->get_comment_on(pos.first_line, pos.file);
 
-    if (comment == (CPPCommentBlock *)nullptr) {
+    if (comment == nullptr) {
       // Nope.  Check for a comment before this line.
       comment =
         preprocessor->get_comment_before(pos.first_line, pos.file);

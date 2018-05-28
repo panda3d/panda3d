@@ -29,11 +29,11 @@ AnalogNode(ClientBase *client, const string &device_name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
 
-  nassertv(client != (ClientBase *)nullptr);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientAnalogDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)nullptr) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open analog device " << device_name << "\n";
     return;
@@ -66,7 +66,7 @@ void AnalogNode::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_analog != (ClientAnalogDevice *)nullptr) {
+  if (_analog != nullptr) {
     _analog->acquire();
     _analog->write_controls(out, indent_level + 2);
     _analog->unlock();

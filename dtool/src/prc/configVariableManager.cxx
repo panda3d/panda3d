@@ -57,7 +57,7 @@ make_variable(const string &name) {
   // See if there's a template that matches this name.
   VariableTemplates::const_iterator ti;
   for (ti = _variable_templates.begin();
-       ti != _variable_templates.end() && variable == (ConfigVariableCore *)nullptr;
+       ti != _variable_templates.end() && variable == nullptr;
        ++ti) {
     const GlobPattern &pattern = (*ti).first;
     ConfigVariableCore *templ = (*ti).second;
@@ -66,7 +66,7 @@ make_variable(const string &name) {
     }
   }
 
-  if (variable == (ConfigVariableCore *)nullptr) {
+  if (variable == nullptr) {
     variable = new ConfigVariableCore(name);
   }
 
@@ -116,7 +116,7 @@ make_variable_template(const string &pattern,
     core->set_value_type(value_type);
   }
   if (!default_value.empty() ||
-      core->get_default_value() == (ConfigDeclaration *)nullptr) {
+      core->get_default_value() == nullptr) {
     core->set_default_value(default_value);
   }
   if (!description.empty()) {
@@ -137,7 +137,7 @@ make_variable_template(const string &pattern,
         variable->set_value_type(value_type);
       }
       if (!default_value.empty() ||
-          variable->get_default_value() == (ConfigDeclaration *)nullptr) {
+          variable->get_default_value() == nullptr) {
         variable->set_default_value(default_value);
       }
       if (!description.empty()) {
@@ -300,7 +300,7 @@ list_dynamic_variables() const {
  */
 ConfigVariableManager *ConfigVariableManager::
 get_global_ptr() {
-  if (_global_ptr == (ConfigVariableManager *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ConfigVariableManager;
   }
   return _global_ptr;
@@ -357,7 +357,7 @@ list_variable(const ConfigVariableCore *variable,
       }
 
       decl = variable->get_default_value();
-      if (decl != (ConfigDeclaration *)nullptr) {
+      if (decl != nullptr) {
         nout << "  default value = " << decl->get_string_value() << "\n";
       }
     }

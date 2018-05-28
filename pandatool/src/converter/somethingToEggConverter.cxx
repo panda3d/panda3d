@@ -33,7 +33,7 @@ SomethingToEggConverter() {
   _output_frame_rate = 0.0;
   _control_flags = 0;
   _merge_externals = false;
-  _egg_data = (EggData *)nullptr;
+  _egg_data = nullptr;
   _error = false;
 }
 
@@ -46,7 +46,7 @@ SomethingToEggConverter(const SomethingToEggConverter &copy) :
   _path_replace(copy._path_replace),
   _merge_externals(copy._merge_externals)
 {
-  _egg_data = (EggData *)nullptr;
+  _egg_data = nullptr;
   _error = false;
 }
 

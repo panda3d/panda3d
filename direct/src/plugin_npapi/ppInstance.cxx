@@ -144,7 +144,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   // use this to measure elapsed time from the window parameters having been
   // received.
   struct timeval tv;
-  gettimeofday(&tv, (struct timezone *)nullptr);
+  gettimeofday(&tv, nullptr);
   _init_sec = tv.tv_sec;
   _init_usec = tv.tv_usec;
 #endif  // !_WIN32
@@ -1182,7 +1182,7 @@ request_ready(P3D_instance *instance) {
     // Since we are running at least Gecko 1.9, and we have this very useful
     // function, let's use it to ask the browser to call us back in the main
     // thread.
-    assert((void *)browser->pluginthreadasynccall != (void *)nullptr);
+    assert((void *)browser->pluginthreadasynccall != nullptr);
     browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, nullptr);
 #endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
 
@@ -2073,9 +2073,9 @@ handle_request_loop() {
   }
 
   P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
-  while (p3d_inst != (P3D_instance *)nullptr) {
+  while (p3d_inst != nullptr) {
     P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
-    if (request != (P3D_request *)nullptr) {
+    if (request != nullptr) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
       assert(inst != nullptr);
       if (!inst->handle_request(request)) {
@@ -2571,7 +2571,7 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
 
   } else {
     struct timeval tv;
-    gettimeofday(&tv, (struct timezone *)nullptr);
+    gettimeofday(&tv, nullptr);
     double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
 
     // Don't draw the twirling icon until at least half a second has passed,
@@ -2874,7 +2874,7 @@ x11_twirl_subprocess_run() {
 
     // What step are we on now?
     struct timeval tv;
-    gettimeofday(&tv, (struct timezone *)nullptr);
+    gettimeofday(&tv, nullptr);
     double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
     int step = ((int)(now * 10.0)) % twirl_num_steps;
     if (step != last_step) {

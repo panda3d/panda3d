@@ -96,7 +96,7 @@ public:
 };
 
 inline ostream &operator << (ostream &out, const CPPIdentifier &identifier) {
-  identifier.output(out, (CPPScope *)nullptr);
+  identifier.output(out, nullptr);
   return out;
 }
 

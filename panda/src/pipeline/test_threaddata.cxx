@@ -17,7 +17,7 @@
 #include "mutexHolder.h"
 #include "pointerTo.h"
 
-Mutex *cout_mutex = (Mutex *)nullptr;
+Mutex *cout_mutex = nullptr;
 
 // Test forking a thread with some private data.
 class ThreadWithData : public Thread {

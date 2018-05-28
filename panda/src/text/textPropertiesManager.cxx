@@ -14,7 +14,7 @@
 #include "textPropertiesManager.h"
 #include "indent.h"
 
-TextPropertiesManager *TextPropertiesManager::_global_ptr = (TextPropertiesManager *)nullptr;
+TextPropertiesManager *TextPropertiesManager::_global_ptr = nullptr;
 
 /**
  * The constructor is not intended to be called directly; there is only one
@@ -193,7 +193,7 @@ write(ostream &out, int indent_level) const {
  */
 TextPropertiesManager *TextPropertiesManager::
 get_global_ptr() {
-  if (_global_ptr == (TextPropertiesManager *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new TextPropertiesManager;
   }
   return _global_ptr;

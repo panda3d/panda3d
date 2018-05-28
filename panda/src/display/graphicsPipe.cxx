@@ -251,7 +251,7 @@ make_device(void *scrn) {
  */
 void GraphicsPipe::
 close_gsg(GraphicsStateGuardian *gsg) {
-  if (gsg != (GraphicsStateGuardian *)nullptr) {
+  if (gsg != nullptr) {
     gsg->close_gsg();
   }
 }

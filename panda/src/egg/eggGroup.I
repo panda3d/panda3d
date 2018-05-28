@@ -694,7 +694,7 @@ clear_lod() {
  */
 INLINE bool EggGroup::
 has_lod() const {
-  return (_lod != (EggSwitchCondition *)nullptr);
+  return (_lod != nullptr);
 }
 
 /**

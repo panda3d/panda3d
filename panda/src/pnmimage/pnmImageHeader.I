@@ -21,7 +21,7 @@ PNMImageHeader() {
   _num_channels = 0;
   _maxval = 255;
   _color_space = CS_unspecified;
-  _type = (PNMFileType *)nullptr;
+  _type = nullptr;
 }
 
 /**
@@ -184,7 +184,7 @@ set_comment(const string& comment) {
  */
 INLINE bool PNMImageHeader::
 has_type() const {
-  return _type != (PNMFileType *)nullptr;
+  return _type != nullptr;
 }
 
 /**

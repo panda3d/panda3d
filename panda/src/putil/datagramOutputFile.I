@@ -18,7 +18,7 @@ INLINE DatagramOutputFile::
 DatagramOutputFile() {
   _error = false;
   _wrote_first_datagram = false;
-  _out = (ostream *)nullptr;
+  _out = nullptr;
   _owns_out = false;
 }
 

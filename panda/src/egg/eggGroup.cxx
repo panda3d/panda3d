@@ -1069,7 +1069,7 @@ write_vertex_ref(ostream &out, int indent_level) const {
         indent(out, indent_level + 2)
           << "<Scalar> membership { " << membership << " }\n";
       }
-      if (pool == (EggVertexPool *)nullptr) {
+      if (pool == nullptr) {
         indent(out, indent_level + 2)
           << "// Invalid NULL vertex pool.\n";
       } else {

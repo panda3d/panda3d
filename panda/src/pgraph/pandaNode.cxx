@@ -333,7 +333,7 @@ combine_with(PandaNode *other) {
   }
 
   // We're something other than an ordinary PandaNode.  Don't combine.
-  return (PandaNode *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -523,7 +523,7 @@ count_num_descendants() const {
  */
 void PandaNode::
 add_child(PandaNode *child_node, int sort, Thread *current_thread) {
-  nassertv(child_node != (PandaNode *)nullptr);
+  nassertv(child_node != nullptr);
 
   if (!verify_child_no_cycles(child_node)) {
     // Whoops, adding this child node would introduce a cycle in the scene
@@ -596,7 +596,7 @@ remove_child(int child_index, Thread *current_thread) {
  */
 bool PandaNode::
 remove_child(PandaNode *child_node, Thread *current_thread) {
-  nassertr(child_node != (PandaNode *)nullptr, false);
+  nassertr(child_node != nullptr, false);
 
   // Make sure the child node is not destructed during the execution of this
   // method.
@@ -633,8 +633,8 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child,
               Thread *current_thread) {
-  nassertr(orig_child != (PandaNode *)nullptr, false);
-  nassertr(new_child != (PandaNode *)nullptr, false);
+  nassertr(orig_child != nullptr, false);
+  nassertr(new_child != nullptr, false);
 
   if (orig_child == new_child) {
     // Trivial no-op.
@@ -1768,7 +1768,7 @@ is_scene_root() const {
   // This function pointer has to be filled in when the global GraphicsEngine
   // is created, because we can't link with the GraphicsEngine functions
   // directly.
-  if (_scene_root_func != (SceneRootFunc *)nullptr) {
+  if (_scene_root_func != nullptr) {
     return (*_scene_root_func)(this);
   }
   return false;
@@ -2135,7 +2135,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     UpdateSeq mark;
     {
       CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-      if (cdata->_user_bounds != (BoundingVolume *)nullptr) {
+      if (cdata->_user_bounds != nullptr) {
         return cdata->_user_bounds;
       }
 
@@ -2373,7 +2373,7 @@ draw_mask_changed() {
 PT(PandaNode) PandaNode::
 r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const {
   PT(PandaNode) copy = make_copy();
-  nassertr(copy != (PandaNode *)nullptr, nullptr);
+  nassertr(copy != nullptr, nullptr);
   if (copy->get_type() != get_type()) {
     pgraph_cat.warning()
       << "Don't know how to copy nodes of type " << get_type() << "\n";
@@ -2666,11 +2666,11 @@ find_node_above(PandaNode *node) {
 PT(NodePathComponent) PandaNode::
 attach(NodePathComponent *parent, PandaNode *child_node, int sort,
        int pipeline_stage, Thread *current_thread) {
-  if (parent == (NodePathComponent *)nullptr) {
+  if (parent == nullptr) {
     // Attaching to NULL means to create a new "instance" with no attachments,
     // and no questions asked.
     PT(NodePathComponent) child =
-      new NodePathComponent(child_node, (NodePathComponent *)nullptr,
+      new NodePathComponent(child_node, nullptr,
                             pipeline_stage, current_thread);
     LightReMutexHolder holder(child_node->_paths_lock);
     child_node->_paths.insert(child);
@@ -2681,7 +2681,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
   // use that same NodePathComponent.
   PT(NodePathComponent) child = get_component(parent, child_node, pipeline_stage, current_thread);
 
-  if (child == (NodePathComponent *)nullptr) {
+  if (child == nullptr) {
     // The child was not already attached to the parent, so get a new
     // component.
     child = get_top_component(child_node, true, pipeline_stage, current_thread);
@@ -2700,7 +2700,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
  */
 void PandaNode::
 detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)nullptr);
+  nassertv(child != nullptr);
 
   for (int pipeline_stage_i = pipeline_stage;
        pipeline_stage_i >= 0;
@@ -2720,7 +2720,7 @@ detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
 void PandaNode::
 detach_one_stage(NodePathComponent *child, int pipeline_stage,
                  Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)nullptr);
+  nassertv(child != nullptr);
   if (child->is_top_node(pipeline_stage, current_thread)) {
     return;
   }
@@ -2786,7 +2786,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed, int pipeline_stage, Thread *current_thread) {
   bool any_ok = false;
 
-  if (new_parent != (NodePathComponent *)nullptr &&
+  if (new_parent != nullptr &&
       !new_parent->get_node()->verify_child_no_cycles(child->get_node())) {
     // Whoops, adding this child node would introduce a cycle in the scene
     // graph.
@@ -2802,7 +2802,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
     }
   }
 
-  if (new_parent != (NodePathComponent *)nullptr) {
+  if (new_parent != nullptr) {
     new_parent->get_node()->children_changed();
     new_parent->get_node()->mark_bam_modified();
   }
@@ -2825,7 +2825,7 @@ bool PandaNode::
 reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
                    int sort, bool as_stashed, int pipeline_stage,
                    Thread *current_thread) {
-  nassertr(child != (NodePathComponent *)nullptr, false);
+  nassertr(child != nullptr, false);
 
   // Keep a reference count to the new parent, since detaching the child might
   // lose the count.
@@ -2835,7 +2835,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
     detach(child, pipeline_stage, current_thread);
   }
 
-  if (new_parent != (NodePathComponent *)nullptr) {
+  if (new_parent != nullptr) {
     PandaNode *child_node = child->get_node();
     PandaNode *parent_node = new_parent->get_node();
 
@@ -2887,7 +2887,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 PT(NodePathComponent) PandaNode::
 get_component(NodePathComponent *parent, PandaNode *child_node,
               int pipeline_stage, Thread *current_thread) {
-  nassertr(parent != (NodePathComponent *)nullptr, (NodePathComponent *)nullptr);
+  nassertr(parent != nullptr, nullptr);
   PandaNode *parent_node = parent->get_node();
 
   LightReMutexHolder holder(child_node->_paths_lock);
@@ -2954,7 +2954,7 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   // We don't already have such a NodePathComponent; create and return a new
   // one.
   PT(NodePathComponent) child =
-    new NodePathComponent(child_node, (NodePathComponent *)nullptr,
+    new NodePathComponent(child_node, nullptr,
                           pipeline_stage, current_thread);
   child_node->_paths.insert(child);
 
@@ -3169,7 +3169,7 @@ r_list_descendants(ostream &out, int indent_level) const {
  */
 int PandaNode::
 do_find_child(PandaNode *node, const PandaNode::Down *down) const {
-  nassertr(node != (PandaNode *)nullptr, -1);
+  nassertr(node != nullptr, -1);
 
   // We have to search for the child by brute force, since we don't know what
   // sort index it was added as.
@@ -3232,7 +3232,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         << "\n";
     }
     CPT(RenderAttrib) off_clip_planes = cdata->_state->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (off_clip_planes == (RenderAttrib *)nullptr) {
+    if (off_clip_planes == nullptr) {
       off_clip_planes = ClipPlaneAttrib::make();
     }
 

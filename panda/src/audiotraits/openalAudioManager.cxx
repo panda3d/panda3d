@@ -79,7 +79,7 @@ AudioManager *Create_OpenALAudioManager() {
 OpenALAudioManager::
 OpenALAudioManager() {
   ReMutexHolder holder(_lock);
-  if (_managers == (Managers *)nullptr) {
+  if (_managers == nullptr) {
     _managers = new Managers;
     _al_sources = new SourceCache;
   }
@@ -197,7 +197,7 @@ OpenALAudioManager() {
 OpenALAudioManager::
 ~OpenALAudioManager() {
   ReMutexHolder holder(_lock);
-  nassertv(_managers != (Managers *)nullptr);
+  nassertv(_managers != nullptr);
   Managers::iterator mi = _managers->find(this);
   nassertv(mi != _managers->end());
   _managers->erase(mi);
@@ -213,7 +213,7 @@ OpenALAudioManager::
 void OpenALAudioManager::
 shutdown() {
   ReMutexHolder holder(_lock);
-  if (_managers != (Managers *)nullptr) {
+  if (_managers != nullptr) {
     Managers::iterator mi;
     for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
       (*mi)->cleanup();

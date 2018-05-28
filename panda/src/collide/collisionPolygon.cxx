@@ -235,7 +235,7 @@ PT(PandaNode) CollisionPolygon::
 get_viz(const CullTraverser *trav, const CullTraverserData &data,
         bool bounds_only) const {
   const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot()));
-  if (cpa == (const ClipPlaneAttrib *)nullptr) {
+  if (cpa == nullptr) {
     // Fortunately, the polygon is not clipped.  This is the normal, easy
     // case.
     return CollisionSolid::get_viz(trav, data, bounds_only);
@@ -463,7 +463,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat edge_dist = 0.0f;
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-  if (cpa != (ClipPlaneAttrib *)nullptr) {
+  if (cpa != nullptr) {
     // We have a clip plane; apply it.
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
@@ -562,7 +562,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   LPoint2 p = to_2d(plane_point);
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-  if (cpa != (ClipPlaneAttrib *)nullptr) {
+  if (cpa != nullptr) {
     // We have a clip plane; apply it.
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
@@ -635,7 +635,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LPoint2 p = to_2d(plane_point);
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-  if (cpa != (ClipPlaneAttrib *)nullptr) {
+  if (cpa != nullptr) {
     // We have a clip plane; apply it.
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
@@ -710,7 +710,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LPoint2 p = to_2d(plane_point);
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-  if (cpa != (ClipPlaneAttrib *)nullptr) {
+  if (cpa != nullptr) {
     // We have a clip plane; apply it.
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
@@ -799,7 +799,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   LPoint2 p = to_2d(plane_point);
 
   const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-  if (cpa != (ClipPlaneAttrib *)nullptr) {
+  if (cpa != nullptr) {
     // We have a clip plane; apply it.
     Points new_points;
     if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform())) {
@@ -958,7 +958,7 @@ fill_viz_geom() {
     collide_cat.debug()
       << "Recomputing viz for " << *this << "\n";
   }
-  nassertv(_viz_geom != (GeomNode *)nullptr && _bounds_viz_geom != (GeomNode *)nullptr);
+  nassertv(_viz_geom != nullptr && _bounds_viz_geom != nullptr);
   draw_polygon(_viz_geom, _bounds_viz_geom, _points);
 }
 

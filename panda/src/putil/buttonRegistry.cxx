@@ -52,7 +52,7 @@ register_button(ButtonHandle &button_handle, const string &name,
 
     int index = -1;
     if (ascii_equivalent != '\0') {
-      if (_handle_registry[ascii_equivalent] == (RegistryNode *)nullptr) {
+      if (_handle_registry[ascii_equivalent] == nullptr) {
         index = ascii_equivalent;
       } else {
         util_cat->error()
@@ -145,7 +145,7 @@ find_button(const string &name) {
  */
 ButtonHandle ButtonRegistry::
 find_ascii_button(char ascii_equivalent) const {
-  if (_handle_registry[ascii_equivalent] == (RegistryNode *)nullptr) {
+  if (_handle_registry[ascii_equivalent] == nullptr) {
     return ButtonHandle::none();
   }
   return _handle_registry[ascii_equivalent]->_handle;
@@ -158,7 +158,7 @@ void ButtonRegistry::
 write(ostream &out) const {
   out << "ASCII equivalents:\n";
   for (int i = 1; i < 128; i++) {
-    if (_handle_registry[i] != (RegistryNode *)nullptr) {
+    if (_handle_registry[i] != nullptr) {
       char hex[12];
       sprintf(hex, "%02x", (unsigned int)i);
       nassertv(strlen(hex) < 12);
@@ -217,7 +217,7 @@ look_up(ButtonHandle handle) const {
     util_cat->fatal()
       << "Invalid ButtonHandle index " << handle._index
       << "!  Is memory corrupt?\n";
-    return (RegistryNode *)nullptr;
+    return nullptr;
   }
 
   return _handle_registry[handle._index];

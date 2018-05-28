@@ -174,7 +174,7 @@ hash_file(const Filename &filename) {
   Filename bin_filename = Filename::binary_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(bin_filename, false);
-  if (istr == (istream *)nullptr) {
+  if (istr == nullptr) {
     (*this) = HashVal();
     return false;
   }

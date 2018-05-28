@@ -1050,7 +1050,7 @@ create_texture(DXScreenData &scrn) {
       if (tex->has_ram_image()) {
         BamCache *cache = BamCache::get_global_ptr();
         PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-        if (record != (BamCacheRecord *)nullptr) {
+        if (record != nullptr) {
           record->set_data(tex, tex);
           cache->store(record);
         }
@@ -1135,8 +1135,8 @@ create_simple_texture(DXScreenData &scrn) {
     DWORD mip_filter = D3DX_FILTER_LINEAR;
 
     hr = D3DXLoadSurfaceFromMemory
-      (surface, (PALETTEENTRY*)nullptr, (RECT*)nullptr, (LPCVOID)image.p(),
-       target_pixel_format, target_width * 4, (PALETTEENTRY*)nullptr,
+      (surface, nullptr, nullptr, (LPCVOID)image.p(),
+       target_pixel_format, target_width * 4, nullptr,
        &source_size, mip_filter, (D3DCOLOR)0x0);
 
     RELEASE(surface, dxgsg9, "create_simple_texture Surface", RELEASE_ONCE);
@@ -1479,7 +1479,7 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
     return E_FAIL;
   }
 
-  hr = d3d_surface->LockRect(&locked_rect, (CONST RECT*)nullptr, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE));
+  hr = d3d_surface->LockRect(&locked_rect, nullptr, (D3DLOCK_READONLY | D3DLOCK_NO_DIRTY_UPDATE));
   if (FAILED(hr)) {
     dxgsg9_cat.error()
       << "d3d_surface_to_texture LockRect() failed!" << D3DERRORSTRING(hr);
@@ -1849,8 +1849,8 @@ HRESULT DXTextureContext9::fill_d3d_texture_mipmap_pixels(int mip_level, int dep
 
   } else {
     hr = D3DXLoadSurfaceFromMemory
-      (mip_surface, (PALETTEENTRY*)nullptr, (RECT*)nullptr, (LPCVOID)pixels,
-        source_format, source_row_byte_length, (PALETTEENTRY*)nullptr,
+      (mip_surface, nullptr, nullptr, (LPCVOID)pixels,
+        source_format, source_row_byte_length, nullptr,
         &source_size, mip_filter, (D3DCOLOR)0x0);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
@@ -2049,7 +2049,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
           }
 
           // mip_filter_flags |= D3DX_FILTER_DITHER;
-          hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)nullptr, 0,
+          hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
                                 mip_filter_flags);
 
           if (FAILED(hr)) {
@@ -2212,9 +2212,9 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
   GraphicsStateGuardian::_data_transferred_pcollector.add_level(source_page_byte_length * orig_depth);
 #endif
   hr = D3DXLoadVolumeFromMemory
-    (mip_level_0, (PALETTEENTRY*)nullptr, (D3DBOX*)nullptr, (LPCVOID)pixels,
+    (mip_level_0, nullptr, nullptr, (LPCVOID)pixels,
      source_format, source_row_byte_length, source_page_byte_length,
-     (PALETTEENTRY*)nullptr,
+     nullptr,
      &source_size, level_0_filter, (D3DCOLOR)0x0);
   if (FAILED(hr)) {
     dxgsg9_cat.error()
@@ -2236,7 +2236,7 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
 
     // mip_filter_flags| = D3DX_FILTER_DITHER;
 
-    hr = D3DXFilterTexture(_d3d_texture, (PALETTEENTRY*)nullptr, 0,
+    hr = D3DXFilterTexture(_d3d_texture, nullptr, 0,
                            mip_filter_flags);
     if (FAILED(hr)) {
       dxgsg9_cat.error()

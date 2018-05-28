@@ -144,7 +144,7 @@ unload_dso(void *dso_handle) {
 string
 load_dso_error() {
    const char *message = dlerror();
-   if (message != (const char *)nullptr) {
+   if (message != nullptr) {
     return std::string(message);
   }
   return "No error.";

@@ -102,8 +102,8 @@ Multifile() :
               "be loaded quickly, without paying the cost of an expensive hash on "
               "each subfile in order to decrypt it."));
 
-  _read = (IStreamWrapper *)nullptr;
-  _write = (ostream *)nullptr;
+  _read = nullptr;
+  _write = nullptr;
   _offset = 0;
   _owns_stream = false;
   _next_index = 0;
@@ -319,15 +319,15 @@ close() {
 
   if (_owns_stream) {
     // We prefer to delete the IStreamWrapper over the ostream, if possible.
-    if (_read != (IStreamWrapper *)nullptr) {
+    if (_read != nullptr) {
       delete _read;
-    } else if (_write != (ostream *)nullptr) {
+    } else if (_write != nullptr) {
       delete _write;
     }
   }
 
-  _read = (IStreamWrapper *)nullptr;
-  _write = (ostream *)nullptr;
+  _read = nullptr;
+  _write = nullptr;
   _offset = 0;
   _owns_stream = false;
   _next_index = 0;
@@ -1129,7 +1129,7 @@ flush() {
     }
   }
 
-  nassertr(_write != (ostream *)nullptr, false);
+  nassertr(_write != nullptr, false);
 
   // First, mark out all of the removed subfiles.
   PendingSubfiles::iterator pi;
@@ -1188,7 +1188,7 @@ flush() {
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
 
-      if (_read != (IStreamWrapper *)nullptr) {
+      if (_read != nullptr) {
         _read->acquire();
         _next_index = subfile->write_data(*_write, _read->get_istream(),
                                           _next_index, this);
@@ -1589,7 +1589,7 @@ open_read_subfile(int index) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), nullptr);
   Subfile *subfile = _subfiles[index];
 
-  if (subfile->_source != (istream *)nullptr ||
+  if (subfile->_source != nullptr ||
       !subfile->_source_filename.empty()) {
     // The subfile has not yet been copied into the physical Multifile.  Force
     // a flush operation to incorporate it.
@@ -1610,7 +1610,7 @@ open_read_subfile(int index) {
  */
 void Multifile::
 close_read_subfile(istream *stream) {
-  if (stream != (istream *)nullptr) {
+  if (stream != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -1666,7 +1666,7 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
 
   istream *in = open_read_subfile(index);
-  if (in == (istream *)nullptr) {
+  if (in == nullptr) {
     return false;
   }
 
@@ -1741,7 +1741,7 @@ compare_subfile(int index, const Filename &filename) {
   }
 
   istream *in1 = open_read_subfile(index);
-  if (in1 == (istream *)nullptr) {
+  if (in1 == nullptr) {
     return false;
   }
 
@@ -1889,7 +1889,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   Subfile *subfile = _subfiles[index];
 
-  if (subfile->_source != (istream *)nullptr ||
+  if (subfile->_source != nullptr ||
       !subfile->_source_filename.empty()) {
     // The subfile has not yet been copied into the physical Multifile.  Force
     // a flush operation to incorporate it.
@@ -1906,7 +1906,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
     // If the subfile is encrypted or compressed, we can't read it directly.
     // Fall back to the generic implementation.
     istream *in = open_read_subfile(index);
-    if (in == (istream *)nullptr) {
+    if (in == nullptr) {
       return false;
     }
 
@@ -1958,7 +1958,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
  */
 streampos Multifile::
 pad_to_streampos(streampos fpos) {
-  nassertr(_write != (ostream *)nullptr, fpos);
+  nassertr(_write != nullptr, fpos);
   nassertr(_write->tellp() == fpos, fpos);
   streampos new_fpos = normalize_streampos(fpos);
   while (fpos < new_fpos) {
@@ -2029,7 +2029,7 @@ add_new_subfile(Subfile *subfile, int compression_level) {
  */
 istream *Multifile::
 open_read_subfile(Subfile *subfile) {
-  nassertr(subfile->_source == (istream *)nullptr &&
+  nassertr(subfile->_source == nullptr &&
            subfile->_source_filename.empty(), nullptr);
 
   // Return an ISubStream object that references into the open Multifile
@@ -2151,7 +2151,7 @@ clear_subfiles() {
  */
 bool Multifile::
 read_index() {
-  nassertr(_read != (IStreamWrapper *)nullptr, false);
+  nassertr(_read != nullptr, false);
 
   // We acquire the IStreamWrapper lock for the duration of this method.
   _read->acquire();
@@ -2331,7 +2331,7 @@ write_header() {
   _file_major_ver = _current_major_ver;
   _file_minor_ver = _current_minor_ver;
 
-  nassertr(_write != (ostream *)nullptr, false);
+  nassertr(_write != nullptr, false);
   nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header_prefix.data(), _header_prefix.size());
   _write->write(_header, _header_size);
@@ -2520,7 +2520,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
 
   // And finally, get the rest of the name.
   char *name_buffer = (char *)PANDA_MALLOC_ARRAY(name_length);
-  nassertr(name_buffer != (char *)nullptr, next_index);
+  nassertr(name_buffer != nullptr, next_index);
   for (size_t ni = 0; ni < name_length; ni++) {
     name_buffer[ni] = read.get() ^ 0xff;
   }
@@ -2608,7 +2608,7 @@ write_data(ostream &write, istream *read, streampos fpos,
 
   istream *source = _source;
   pifstream source_file;
-  if (source == (istream *)nullptr && !_source_filename.empty()) {
+  if (source == nullptr && !_source_filename.empty()) {
     // If we have a filename, open it up and read that.
     if (!_source_filename.open_read(source_file)) {
       // Unable to open the source file.
@@ -2622,10 +2622,10 @@ write_data(ostream &write, istream *read, streampos fpos,
     }
   }
 
-  if (source == (istream *)nullptr) {
+  if (source == nullptr) {
     // We don't have any source data.  Perhaps we're reading from an already-
     // packed Subfile (e.g.  during repack()).
-    if (read == (istream *)nullptr) {
+    if (read == nullptr) {
       // No, we're just screwed.
       express_cat.info()
         << "No source for subfile " << _name << ".\n";
@@ -2779,7 +2779,7 @@ write_data(ostream &write, istream *read, streampos fpos,
     _timestamp = time(nullptr);
   }
 
-  _source = (istream *)nullptr;
+  _source = nullptr;
   _source_filename = Filename();
   source_file.close();
 

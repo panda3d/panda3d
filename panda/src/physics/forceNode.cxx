@@ -114,7 +114,7 @@ remove_force(size_t index) {
 
   pvector< PT(BaseForce) >::iterator remove;
   remove = _forces.begin() + index;
-  (*remove)->_force_node = (ForceNode *) nullptr;
+  (*remove)->_force_node = nullptr;
   (*remove)->_force_node_path = NodePath();
 
   _forces.erase(remove);

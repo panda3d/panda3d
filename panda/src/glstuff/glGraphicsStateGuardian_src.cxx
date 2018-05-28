@@ -3015,12 +3015,12 @@ reset() {
   _dithering_enabled = false;
 
 #ifndef OPENGLES_1
-  _current_shader = (Shader *)nullptr;
-  _current_shader_context = (ShaderContext *)nullptr;
-  _vertex_array_shader = (Shader *)nullptr;
-  _vertex_array_shader_context = (ShaderContext *)nullptr;
-  _texture_binding_shader = (Shader *)nullptr;
-  _texture_binding_shader_context = (ShaderContext *)nullptr;
+  _current_shader = nullptr;
+  _current_shader_context = nullptr;
+  _vertex_array_shader = nullptr;
+  _vertex_array_shader_context = nullptr;
+  _texture_binding_shader = nullptr;
+  _texture_binding_shader_context = nullptr;
 #endif
 
   // Count the max number of lights
@@ -3457,7 +3457,7 @@ clear(DrawableRegion *clearable) {
  */
 void CLP(GraphicsStateGuardian)::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)nullptr);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, b, w, h;
@@ -3580,8 +3580,8 @@ clear_before_callback() {
 #ifndef OPENGLES_1
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)nullptr;
-    _vertex_array_shader_context = (ShaderContext *)nullptr;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
 #endif
   unbind_buffers();
@@ -3617,7 +3617,7 @@ clear_before_callback() {
  */
 CPT(TransformState) CLP(GraphicsStateGuardian)::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)nullptr) {
+  if (lens == nullptr) {
     return nullptr;
   }
 
@@ -3815,18 +3815,18 @@ end_frame(Thread *current_thread) {
   // This breaks shaders across multiple regions.
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)nullptr;
-    _vertex_array_shader_context = (ShaderContext *)nullptr;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
-    _texture_binding_shader = (Shader *)nullptr;
-    _texture_binding_shader_context = (ShaderContext *)nullptr;
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
   }
   if (_current_shader_context != 0) {
     _current_shader_context->unbind();
-    _current_shader = (Shader *)nullptr;
-    _current_shader_context = (ShaderContext *)nullptr;
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
 #endif
 
@@ -3973,7 +3973,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)nullptr, false);
+  nassertr(_data_reader != nullptr, false);
 
   _geom_display_list = 0;
 
@@ -4033,7 +4033,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     unbind_buffers();
 
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
-    nassertr(gc != (GeomContext *)nullptr, false);
+    nassertr(gc != nullptr, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
@@ -5693,7 +5693,7 @@ extract_texture_data(Texture *tex) {
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
     TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != (TextureContext *)nullptr, false);
+    nassertr(tc != nullptr, false);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
     if (!do_extract_texture_data(gtc)) {
@@ -6286,7 +6286,7 @@ setup_primitive(const unsigned char *&client_pointer,
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = reader->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)nullptr, false);
+  nassertr(ibc != nullptr, false);
   if (!apply_index_buffer(ibc, reader, force)) {
     return false;
   }
@@ -6427,7 +6427,7 @@ release_shader_buffer(BufferContext *bc) {
 void CLP(GraphicsStateGuardian)::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
-  nassertv(_current_occlusion_query == (OcclusionQueryContext *)nullptr);
+  nassertv(_current_occlusion_query == nullptr);
   PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
 
   _glGenQueries(1, &query->_index);
@@ -6453,7 +6453,7 @@ begin_occlusion_query() {
  */
 PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
-  nassertr(_current_occlusion_query != (OcclusionQueryContext *)nullptr, nullptr);
+  nassertr(_current_occlusion_query != nullptr, nullptr);
   PT(OcclusionQueryContext) result = _current_occlusion_query;
 
   GLuint index = DCAST(CLP(OcclusionQueryContext), result)->_index;
@@ -6659,7 +6659,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)nullptr, false);
+  nassertr(tc != nullptr, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   apply_texture(gtc);
@@ -7403,7 +7403,7 @@ do_issue_fog() {
   if (!target_fog->is_off()) {
     enable_fog(true);
     Fog *fog = target_fog->get_fog();
-    nassertv(fog != (Fog *)nullptr);
+    nassertv(fog != nullptr);
     apply_fog(fog);
   } else {
     enable_fog(false);
@@ -7461,7 +7461,7 @@ do_issue_material() {
   const MaterialAttrib *target_material;
   _target_rs->get_attrib_def(target_material);
 
-  if (target_material == (MaterialAttrib *)nullptr ||
+  if (target_material == nullptr ||
       target_material->is_off()) {
     material = &empty;
   } else {
@@ -7890,7 +7890,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   // _draw_set_state_light_bind_spotlight_pcollector);
 
   Lens *lens = light_obj->get_lens();
-  nassertv(lens != (Lens *)nullptr);
+  nassertv(lens != nullptr);
 
   GLenum id = get_light_id(light_id);
   static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
@@ -8116,7 +8116,7 @@ show_gl_string(const string &name, GLenum id) {
 
   const GLubyte *text = glGetString(id);
 
-  if (text == (const GLubyte *)nullptr) {
+  if (text == nullptr) {
     GLCAT.warning()
       << "Unable to query " << name << "\n";
 
@@ -8281,7 +8281,7 @@ query_glsl_version() {
  */
 void CLP(GraphicsStateGuardian)::
 save_extensions(const char *extensions) {
-  if (extensions != (const char *)nullptr) {
+  if (extensions != nullptr) {
     vector_string tokens;
     extract_words(extensions, tokens);
 
@@ -11088,7 +11088,7 @@ update_standard_texture_bindings() {
   // see if our flash_texture is in the texture stack here.  If so, then we
   // need to call the special show_texture method instead of the normal
   // texture stack.
-  if (_flash_texture != (Texture *)nullptr) {
+  if (_flash_texture != nullptr) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     int this_second = (int)floor(now);
     if (this_second & 1) {
@@ -11120,7 +11120,7 @@ update_standard_texture_bindings() {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)nullptr);
+    nassertv(texture != nullptr);
 
     // Issue the texture on stage i.
     set_active_texture_stage(i);
@@ -11140,7 +11140,7 @@ update_standard_texture_bindings() {
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)nullptr) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       continue;
     }
@@ -11375,11 +11375,11 @@ update_show_usage_texture_bindings(int show_stage_index) {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)nullptr);
+    nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)nullptr) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       break;
     }
@@ -11420,7 +11420,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)nullptr);
+    nassertv(texture != nullptr);
 
     // Choose the corresponding usage texture and apply it.
     set_active_texture_stage(i);
@@ -12040,7 +12040,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     // We support sampler objects.  Prepare the sampler object and bind it to
     // the indicated texture unit.
     SamplerContext *sc = sampler.prepare_now(get_prepared_objects(), this);
-    nassertr(sc != (SamplerContext *)nullptr, false);
+    nassertr(sc != nullptr, false);
     CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
 
     gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
@@ -12582,7 +12582,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (tex->has_ram_image()) {
           BamCache *cache = BamCache::get_global_ptr();
           PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-          if (record != (BamCacheRecord *)nullptr) {
+          if (record != nullptr) {
             record->set_data(tex, tex);
             cache->store(record);
           }
@@ -12591,7 +12591,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
     GraphicsEngine *engine = get_engine();
-    nassertr(engine != (GraphicsEngine *)nullptr, false);
+    nassertr(engine != nullptr, false);
     engine->texture_uploaded(tex);
     gtc->mark_loaded();
 
@@ -12634,7 +12634,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   }
 
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)nullptr, false);
+  nassertr(tex != nullptr, false);
 
   CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
   int width = tex->get_expected_mipmap_x_size(mipmap_bias);
@@ -12697,7 +12697,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       // mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)nullptr) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12750,7 +12750,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       PTA_uchar bgr_image;
       size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)nullptr) {
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
         if (one_page_only) {
@@ -12894,7 +12894,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     for (int n = mipmap_bias; n < num_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)nullptr) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12930,7 +12930,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       PTA_uchar bgr_image;
       size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)nullptr) {
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
         if (one_page_only) {
@@ -13082,13 +13082,13 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
   PStatGPUTimer timer(this, _load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)nullptr, false);
+  nassertr(tex != nullptr, false);
 
   GLenum internal_format = GL_RGBA;
   GLenum external_format = GL_BGRA;
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
-  if (image_ptr == (const unsigned char *)nullptr) {
+  if (image_ptr == nullptr) {
     return false;
   }
 
@@ -13248,7 +13248,7 @@ check_nonresident_texture(BufferContextChain &chain) {
   GLuint *texture_list = (GLuint *)alloca(num_textures * sizeof(GLuint));
   size_t ti = 0;
   BufferContext *node = chain.get_first();
-  while (node != (BufferContext *)nullptr) {
+  while (node != nullptr) {
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), node);
     gtc_list[ti] = gtc;
     texture_list[ti] = gtc->_index;

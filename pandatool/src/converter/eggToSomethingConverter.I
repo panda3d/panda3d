@@ -34,7 +34,7 @@ had_error() const {
  */
 INLINE void EggToSomethingConverter::
 clear_egg_data() {
-  set_egg_data((EggData *)nullptr);
+  set_egg_data(nullptr);
 }
 
 /**

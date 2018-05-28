@@ -42,7 +42,7 @@ DCPackerCatalog(const DCPackerCatalog &copy) :
  */
 DCPackerCatalog::
 ~DCPackerCatalog() {
-  if (_live_catalog != (LiveCatalog *)nullptr) {
+  if (_live_catalog != nullptr) {
     delete _live_catalog;
   }
 
@@ -92,7 +92,7 @@ find_entry_by_field(const DCPackerInterface *field) const {
  */
 const DCPackerCatalog::LiveCatalog *DCPackerCatalog::
 get_live_catalog(const char *data, size_t length) const {
-  if (_live_catalog != (LiveCatalog *)nullptr) {
+  if (_live_catalog != nullptr) {
     // Return the previously-allocated live catalog; it will be the same as
     // this one since it's based on a fixed-length field.
     return _live_catalog;
@@ -188,7 +188,7 @@ r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
                const DCPackerInterface *parent, int field_index) {
   string next_name_prefix = name_prefix;
 
-  if (parent != (const DCPackerInterface *)nullptr && !field->get_name().empty()) {
+  if (parent != nullptr && !field->get_name().empty()) {
     // Record this entry in the catalog.
     next_name_prefix += field->get_name();
     add_entry(next_name_prefix, field, parent, field_index);
@@ -197,7 +197,7 @@ r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
   }
 
   const DCSwitchParameter *switch_parameter = field->as_switch_parameter();
-  if (switch_parameter != (DCSwitchParameter *)nullptr) {
+  if (switch_parameter != nullptr) {
     // If we come upon a DCSwitch while building the catalog, save the
     // name_prefix at this point so we'll have it again when we later
     // encounter the switch while unpacking a live record (and so we can
@@ -211,7 +211,7 @@ r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
     // It's ok if num_nested is -1.
     for (int i = 0; i < num_nested; i++) {
       DCPackerInterface *nested = field->get_nested_field(i);
-      if (nested != (DCPackerInterface *)nullptr) {
+      if (nested != nullptr) {
         r_fill_catalog(next_name_prefix, nested, field, i);
       }
     }
@@ -255,10 +255,10 @@ r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
     last_switch = packer.get_last_switch();
 
     const DCPackerInterface *switch_case = packer.get_current_parent();
-    nassertv(switch_case != (DCPackerInterface *)nullptr);
+    nassertv(switch_case != nullptr);
     const DCPackerCatalog *switch_catalog =
       live_catalog->_catalog->update_switch_fields(last_switch, switch_case);
-    nassertv(switch_catalog != (DCPackerCatalog *)nullptr);
+    nassertv(switch_catalog != nullptr);
     live_catalog->_catalog = switch_catalog;
 
     // And we also have to expand the live catalog to hold the new entries.
@@ -317,7 +317,7 @@ update_switch_fields(const DCSwitchParameter *switch_parameter,
   int num_nested = switch_case->get_num_nested_fields();
   for (int i = 1; i < num_nested; i++) {
     DCPackerInterface *nested = switch_case->get_nested_field(i);
-    if (nested != (DCPackerInterface *)nullptr) {
+    if (nested != nullptr) {
       switch_catalog->r_fill_catalog(name_prefix, nested, switch_case, i);
     }
   }

@@ -235,7 +235,7 @@ get_type_by_handle(TypeHandle handle) const {
     return (*hi).second;
   }
 
-  return (PNMFileType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -273,7 +273,7 @@ write(ostream &out, int indent_level) const {
  */
 PNMFileTypeRegistry *PNMFileTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (PNMFileTypeRegistry *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PNMFileTypeRegistry;
   }
   return _global_ptr;

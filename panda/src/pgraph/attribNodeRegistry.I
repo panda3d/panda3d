@@ -16,7 +16,7 @@
  */
 INLINE AttribNodeRegistry *AttribNodeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (AttribNodeRegistry *)nullptr) {
+  if (_global_ptr == nullptr) {
     make_global_ptr();
   }
   return _global_ptr;

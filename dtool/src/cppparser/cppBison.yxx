@@ -118,7 +118,7 @@ parse_const_expr(CPPPreprocessor *pp, CPPScope *new_current_scope,
 
   current_scope = new_current_scope;
   global_scope = new_global_scope;
-  current_expr = (CPPExpression *)nullptr;
+  current_expr = nullptr;
   current_lexer = pp;
   yyparse();
 
@@ -142,7 +142,7 @@ parse_type(CPPPreprocessor *pp, CPPScope *new_current_scope,
 
   current_scope = new_current_scope;
   global_scope = new_global_scope;
-  current_type = (CPPType *)nullptr;
+  current_type = nullptr;
   current_lexer = pp;
   yyparse();
 
@@ -890,18 +890,18 @@ declaration:
         | KW_MAKE_SEQ '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (length_getter == (CPPDeclaration *)nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
     length_getter = nullptr;
   }
 
   CPPDeclaration *element_getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (element_getter == (CPPDeclaration *)nullptr || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (element_getter == nullptr || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid element method: " + $7->get_fully_scoped_name(), @5);
     element_getter = nullptr;
   }
 
-  if (length_getter != (CPPDeclaration *)nullptr && element_getter != (CPPDeclaration *)nullptr) {
+  if (length_getter != nullptr && element_getter != nullptr) {
     CPPMakeSeq *make_seq = new CPPMakeSeq($3,
                                           length_getter->as_function_group(),
                                           element_getter->as_function_group(),
@@ -1070,7 +1070,7 @@ type_like_declaration:
 }
         | storage_class constructor_prototype
 {
-  if ($2 != (CPPInstance *)nullptr) {
+  if ($2 != nullptr) {
     // Push the scope so that the initializers can make use of things defined
     // in the class body.
     push_scope($2->get_scope(current_scope, global_scope));
@@ -1079,7 +1079,7 @@ type_like_declaration:
 }
         maybe_initialize_or_constructor_body
 {
-  if ($2 != (CPPInstance *)nullptr) {
+  if ($2 != nullptr) {
     pop_scope();
     current_scope->add_declaration($2, global_scope, current_lexer, @2);
     $2->set_initializer($4);
@@ -1087,7 +1087,7 @@ type_like_declaration:
 }
         | storage_class function_prototype maybe_initialize_or_function_body
 {
-  if ($2 != (CPPInstance *)nullptr) {
+  if ($2 != nullptr) {
     $2->_storage_class |= (current_storage_class | $1);
     current_scope->add_declaration($2, global_scope, current_lexer, @2);
     $2->set_initializer($3);
@@ -1144,9 +1144,9 @@ typedef_declaration:
 }
         | storage_class function_prototype maybe_initialize_or_function_body
 {
-  if ($2 != (CPPDeclaration *)nullptr) {
+  if ($2 != nullptr) {
     CPPInstance *inst = $2->as_instance();
-    if (inst != (CPPInstance *)nullptr) {
+    if (inst != nullptr) {
       inst->_storage_class |= (current_storage_class | $1);
       current_scope->add_declaration(inst, global_scope, current_lexer, @2);
       CPPTypedefType *typedef_type = new CPPTypedefType(inst->_type, inst->_ident, current_scope);
@@ -1360,10 +1360,10 @@ function_prototype:
 {
   CPPDeclaration *decl =
     $1->find_symbol(current_scope, global_scope, current_lexer);
-  if (decl != (CPPDeclaration *)nullptr) {
+  if (decl != nullptr) {
     $$ = decl->as_instance();
   } else {
-    $$ = (CPPInstance *)nullptr;
+    $$ = nullptr;
   }
 }
         ;
@@ -1645,7 +1645,7 @@ typename_keyword:
 template_formal_parameter:
         typename_keyword
 {
-  $$ = CPPType::new_type(new CPPClassTemplateParameter((CPPIdentifier *)nullptr));
+  $$ = CPPType::new_type(new CPPClassTemplateParameter(nullptr));
 }
         | typename_keyword name
 {
@@ -1657,7 +1657,7 @@ template_formal_parameter:
 }
         | typename_keyword ELLIPSIS
 {
-  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter((CPPIdentifier *)nullptr);
+  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter(nullptr);
   ctp->_packed = true;
   $$ = CPPType::new_type(ctp);
 }
@@ -1956,7 +1956,7 @@ formal_parameters:
 template_parameter_maybe_initialize:
         empty
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '=' no_angle_bracket_const_expr
 {
@@ -1967,7 +1967,7 @@ template_parameter_maybe_initialize:
 maybe_initialize:
         empty
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '=' const_expr
 {
@@ -1978,15 +1978,15 @@ maybe_initialize:
 maybe_initialize_or_constructor_body:
         ';'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '{' code '}'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | ':' constructor_inits '{' code '}'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '=' KW_DEFAULT ';'
 {
@@ -2001,11 +2001,11 @@ maybe_initialize_or_constructor_body:
 maybe_initialize_or_function_body:
         ';'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '{' code '}'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | '=' const_expr ';'
 {
@@ -2021,7 +2021,7 @@ maybe_initialize_or_function_body:
 }
         | '=' '{' structure_init '}'
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         ;
 
@@ -2106,7 +2106,7 @@ formal_parameter:
 not_paren_formal_parameter_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | name_no_final
 {
@@ -2152,7 +2152,7 @@ not_paren_formal_parameter_identifier:
 formal_parameter_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | name_no_final
 {
@@ -2209,7 +2209,7 @@ formal_parameter_identifier:
 parameter_pack_identifier:
         ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2268,11 +2268,11 @@ parameter_pack_identifier:
 not_paren_empty_instance_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2320,11 +2320,11 @@ not_paren_empty_instance_identifier:
 empty_instance_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2369,7 +2369,7 @@ empty_instance_identifier:
 }
         | '(' function_parameter_list ')' function_post maybe_trailing_return_type
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)nullptr);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->add_modifier(IIT_paren);
   $$->add_func_modifier($2, $4, $5);
 }
@@ -2460,7 +2460,7 @@ type:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)nullptr) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -2579,7 +2579,7 @@ type_decl:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)nullptr) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -2657,7 +2657,7 @@ predefined_type:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)nullptr) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -3165,7 +3165,7 @@ element:
 optional_const_expr:
         empty
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | const_expr
 {
@@ -3176,7 +3176,7 @@ optional_const_expr:
 optional_const_expr_comma:
         empty
 {
-  $$ = (CPPExpression *)nullptr;
+  $$ = nullptr;
 }
         | const_expr_comma
 {
@@ -3227,7 +3227,7 @@ no_angle_bracket_const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)nullptr) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();
@@ -3491,7 +3491,7 @@ const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)nullptr) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();
@@ -3835,7 +3835,7 @@ formal_const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)nullptr) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();

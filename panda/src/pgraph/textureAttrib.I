@@ -80,7 +80,7 @@ get_num_on_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_on_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_render_stages.size(), (TextureStage *)nullptr);
+  nassertr(n >= 0 && n < (int)_render_stages.size(), nullptr);
   return _render_stages[n]->_stage;
 }
 
@@ -101,7 +101,7 @@ get_num_on_ff_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_on_ff_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_render_ff_stages.size(), (TextureStage *)nullptr);
+  nassertr(n >= 0 && n < (int)_render_ff_stages.size(), nullptr);
   return _render_ff_stages[n]->_stage;
 }
 
@@ -183,7 +183,7 @@ get_num_off_stages() const {
  */
 INLINE TextureStage *TextureAttrib::
 get_off_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_off_stages.size(), (TextureStage *)nullptr);
+  nassertr(n >= 0 && n < (int)_off_stages.size(), nullptr);
   return _off_stages[n]._stage;
 }
 

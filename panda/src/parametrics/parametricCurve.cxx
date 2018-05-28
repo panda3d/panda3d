@@ -418,7 +418,7 @@ get_bezier_seg(ParametricCurve::BezierSeg &) const {
  */
 NurbsCurveInterface *ParametricCurve::
 get_nurbs_interface() {
-  return (NurbsCurveInterface *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -497,7 +497,7 @@ convert_to_hermite(HermiteCurve *hc) const {
 bool ParametricCurve::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
-  nassertr(nurbs != (NurbsCurveInterface *)nullptr, false);
+  nassertr(nurbs != nullptr, false);
 
   BezierSegs bz_segs;
   if (!get_bezier_segs(bz_segs)) {

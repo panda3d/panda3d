@@ -496,7 +496,7 @@ get_into_collide_mask() const {
  */
 INLINE void PandaNode::
 clear_bounds() {
-  set_bounds((BoundingVolume *)nullptr);
+  set_bounds(nullptr);
 }
 
 /**
@@ -951,7 +951,7 @@ operator = (PandaNode::Children &&from) noexcept {
  */
 INLINE size_t PandaNode::Children::
 get_num_children() const {
-  nassertr(_down != (Down *)nullptr, 0);
+  nassertr(_down != nullptr, 0);
   return _down->size();
 }
 
@@ -960,7 +960,7 @@ get_num_children() const {
  */
 INLINE PandaNode *PandaNode::Children::
 get_child(size_t n) const {
-  nassertr(_down != (Down *)nullptr, nullptr);
+  nassertr(_down != nullptr, nullptr);
   nassertr(n < (size_t)_down->size(), nullptr);
   return (*_down)[n].get_child();
 }
@@ -971,7 +971,7 @@ get_child(size_t n) const {
  */
 INLINE int PandaNode::Children::
 get_child_sort(size_t n) const {
-  nassertr(_down != (Down *)nullptr, -1);
+  nassertr(_down != nullptr, -1);
   nassertr(n < _down->size(), -1);
   return (*_down)[n].get_sort();
 }
@@ -1031,7 +1031,7 @@ operator = (PandaNode::Stashed &&from) noexcept {
  */
 INLINE size_t PandaNode::Stashed::
 get_num_stashed() const {
-  nassertr(_stashed != (Down *)nullptr, 0);
+  nassertr(_stashed != nullptr, 0);
   return _stashed->size();
 }
 
@@ -1040,7 +1040,7 @@ get_num_stashed() const {
  */
 INLINE PandaNode *PandaNode::Stashed::
 get_stashed(size_t n) const {
-  nassertr(_stashed != (Down *)nullptr, nullptr);
+  nassertr(_stashed != nullptr, nullptr);
   nassertr(n < _stashed->size(), nullptr);
   return (*_stashed)[n].get_child();
 }
@@ -1051,7 +1051,7 @@ get_stashed(size_t n) const {
  */
 INLINE int PandaNode::Stashed::
 get_stashed_sort(size_t n) const {
-  nassertr(_stashed != (Down *)nullptr, -1);
+  nassertr(_stashed != nullptr, -1);
   nassertr(n < _stashed->size(), -1);
   return (*_stashed)[n].get_sort();
 }
@@ -1111,7 +1111,7 @@ operator = (PandaNode::Parents &&from) noexcept {
  */
 INLINE size_t PandaNode::Parents::
 get_num_parents() const {
-  nassertr(_up != (Up *)nullptr, 0);
+  nassertr(_up != nullptr, 0);
   return _up->size();
 }
 
@@ -1120,7 +1120,7 @@ get_num_parents() const {
  */
 INLINE PandaNode *PandaNode::Parents::
 get_parent(size_t n) const {
-  nassertr(_up != (Up *)nullptr, nullptr);
+  nassertr(_up != nullptr, nullptr);
   nassertr(n < _up->size(), nullptr);
   return (*_up)[n].get_parent();
 }
@@ -1254,7 +1254,7 @@ release() {
  */
 INLINE void PandaNodePipelineReader::
 compose_draw_mask(DrawMask &running_draw_mask) const {
-  nassertv(_cdata != (PandaNode::CData *)nullptr);
+  nassertv(_cdata != nullptr);
   running_draw_mask = (running_draw_mask & ~_cdata->_draw_control_mask) |
     (_cdata->_draw_show_mask & _cdata->_draw_control_mask);
 }
@@ -1267,7 +1267,7 @@ compose_draw_mask(DrawMask &running_draw_mask) const {
  */
 INLINE bool PandaNodePipelineReader::
 compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
-  nassertr(_cdata != (PandaNode::CData *)nullptr, false);
+  nassertr(_cdata != nullptr, false);
   nassertr(_cdata->_last_update == _cdata->_next_update, false);
 
   // As a special case, if net_draw_show_mask is all 0, it means either that

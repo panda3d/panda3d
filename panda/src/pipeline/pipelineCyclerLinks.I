@@ -85,8 +85,8 @@ remove_from_list() {
 INLINE void PipelineCyclerLinks::
 insert_before(PipelineCyclerLinks *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (PipelineCyclerLinks *)nullptr &&
-           _next == (PipelineCyclerLinks *)nullptr);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;

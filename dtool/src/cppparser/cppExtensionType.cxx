@@ -81,7 +81,7 @@ is_incomplete() const {
  */
 bool CPPExtensionType::
 is_tbd() const {
-  if (_ident != (CPPIdentifier *)nullptr) {
+  if (_ident != nullptr) {
     return _ident->is_tbd();
   }
   return false;
@@ -195,7 +195,7 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
 bool CPPExtensionType::
 is_equivalent(const CPPType &other) const {
   const CPPExtensionType *ot = ((CPPType *)&other)->as_extension_type();
-  if (ot == (CPPExtensionType *)nullptr) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 

@@ -29,8 +29,8 @@ RecorderController::
 RecorderController() {
   _clock_offset = 0.0;
   _frame_offset = 0;
-  _writer = (BamWriter *)nullptr;
-  _reader = (BamReader *)nullptr;
+  _writer = nullptr;
+  _reader = nullptr;
   _frame_tie = true;
   _user_table = new RecorderTable;
   _user_table_modified = false;
@@ -132,7 +132,7 @@ begin_playback(const Filename &filename) {
   // Start out by reading the RecorderHeader.
   TypedWritable *object = _reader->read_object();
 
-  if (object == (TypedWritable *)nullptr ||
+  if (object == nullptr ||
       !object->is_of_type(RecorderHeader::get_class_type())) {
     recorder_cat.error()
       << _filename << " does not contain a recorded session.\n";
@@ -151,7 +151,7 @@ begin_playback(const Filename &filename) {
 
   // Now read the first frame.
   _next_frame = read_frame();
-  if (_next_frame == (RecorderFrame *)nullptr) {
+  if (_next_frame == nullptr) {
     recorder_cat.error()
       << _filename << " does not contain any frames.\n";
     close();
@@ -169,14 +169,14 @@ begin_playback(const Filename &filename) {
  */
 void RecorderController::
 close() {
-  if (_writer != (BamWriter *)nullptr) {
+  if (_writer != nullptr) {
     delete _writer;
     _writer = nullptr;
 
     // Tell all of our recorders that they're no longer recording.
     _user_table->clear_flags(RecorderBase::F_recording);
   }
-  if (_reader != (BamReader *)nullptr) {
+  if (_reader != nullptr) {
     delete _reader;
     _reader = nullptr;
 
@@ -186,14 +186,14 @@ close() {
   _dout.close();
   _din.close();
 
-  if (_file_table != (RecorderTable *)nullptr) {
+  if (_file_table != nullptr) {
     delete _file_table;
-    _file_table = (RecorderTable *)nullptr;
+    _file_table = nullptr;
   }
 
-  if (_active_table != (RecorderTable *)nullptr) {
+  if (_active_table != nullptr) {
     delete _active_table;
-    _active_table = (RecorderTable *)nullptr;
+    _active_table = nullptr;
   }
 }
 
@@ -231,7 +231,7 @@ play_frame() {
     double now = global_clock->get_frame_time() - _clock_offset;
     int frame = global_clock->get_frame_count() - _frame_offset;
 
-    while (_next_frame != (RecorderFrame *)nullptr) {
+    while (_next_frame != nullptr) {
       if (_frame_tie) {
         if (frame < _next_frame->_frame) {
           // We haven't reached the next frame yet.
@@ -302,7 +302,7 @@ RecorderFrame *RecorderController::
 read_frame() {
   TypedWritable *object = _reader->read_object();
 
-  if (object == (TypedWritable *)nullptr ||
+  if (object == nullptr ||
       !object->is_of_type(RecorderFrame::get_class_type())) {
     return nullptr;
   }

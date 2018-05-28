@@ -885,7 +885,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                             MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                             if (joint_node_desc){
                                 EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                if (joint != (EggGroup *)nullptr)
+                                if (joint != nullptr)
                                     joint->ref_vertex(vert, 1.0f);
                             }
                         }
@@ -900,7 +900,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                                     MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                                     if (joint_node_desc){
                                         EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                        if (joint != (EggGroup *)nullptr)
+                                        if (joint != nullptr)
                                             joint->ref_vertex(vert, weight);
                                     }
                                 }
@@ -936,7 +936,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                                 MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
                                 if (joint_node_desc){
                                     EggGroup *joint = _tree.get_egg_group(joint_node_desc);
-                                    if (joint != (EggGroup *)nullptr) {
+                                    if (joint != nullptr) {
                                         joint->ref_vertex(vert, weight);
                                     }
                                 }
@@ -1322,7 +1322,7 @@ reparent_decals(EggGroupNode *egg_parent) {
 
     // First, walk through all children of this node, looking for the one
     // decal base, if any.
-    EggGroup *decal_base = (EggGroup *)nullptr;
+    EggGroup *decal_base = nullptr;
     pvector<EggGroup *> decal_children;
 
     EggGroupNode::iterator ci;
@@ -1331,7 +1331,7 @@ reparent_decals(EggGroupNode *egg_parent) {
         if (child->is_of_type(EggGroup::get_class_type())) {
             EggGroup *child_group = (EggGroup *) child;
             if (child_group->has_object_type("decalbase")) {
-                if (decal_base != (EggNode *)nullptr) {
+                if (decal_base != nullptr) {
                     // error
                     okflag = false;
                 }
@@ -1345,7 +1345,7 @@ reparent_decals(EggGroupNode *egg_parent) {
         }
     }
 
-    if (decal_base == (EggGroup *)nullptr) {
+    if (decal_base == nullptr) {
         if (!decal_children.empty()) {
             // warning
         }

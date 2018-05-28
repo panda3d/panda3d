@@ -35,9 +35,9 @@ do_zlib_free(voidpf opaque, voidpf address) {
  */
 ZStreamBuf::
 ZStreamBuf() {
-  _source = (istream *)nullptr;
+  _source = nullptr;
   _owns_source = false;
-  _dest = (ostream *)nullptr;
+  _dest = nullptr;
   _owns_dest = false;
 
 #ifdef PHAVE_IOSTREAM
@@ -100,7 +100,7 @@ open_read(istream *source, bool owns_source) {
  */
 void ZStreamBuf::
 close_read() {
-  if (_source != (istream *)nullptr) {
+  if (_source != nullptr) {
 
     int result = inflateEnd(&_z_source);
     if (result < 0) {
@@ -112,7 +112,7 @@ close_read() {
       delete _source;
       _owns_source = false;
     }
-    _source = (istream *)nullptr;
+    _source = nullptr;
   }
 }
 
@@ -151,7 +151,7 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
  */
 void ZStreamBuf::
 close_write() {
-  if (_dest != (ostream *)nullptr) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n, Z_FINISH);
     pbump(-(int)n);
@@ -166,7 +166,7 @@ close_write() {
       delete _dest;
       _owns_dest = false;
     }
-    _dest = (ostream *)nullptr;
+    _dest = nullptr;
   }
 }
 
@@ -250,12 +250,12 @@ overflow(int ch) {
  */
 int ZStreamBuf::
 sync() {
-  if (_source != (istream *)nullptr) {
+  if (_source != nullptr) {
     size_t n = egptr() - gptr();
     gbump(n);
   }
 
-  if (_dest != (ostream *)nullptr) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n, Z_SYNC_FLUSH);
     pbump(-(int)n);
@@ -427,7 +427,7 @@ show_zlib_error(const char *function, int error_code, z_stream &z) {
   default:
     error_line << error_code;
   }
-  if (z.msg != (char *)nullptr) {
+  if (z.msg != nullptr) {
     error_line
       << " = " << z.msg;
   }

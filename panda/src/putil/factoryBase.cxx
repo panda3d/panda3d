@@ -37,10 +37,10 @@ FactoryBase::
  */
 TypedObject *FactoryBase::
 make_instance(TypeHandle handle, const FactoryParams &params) {
-  TypedObject *instance = (TypedObject *)nullptr;
+  TypedObject *instance = nullptr;
 
   instance = make_instance_exact(handle, params);
-  if (instance == (TypedObject *)nullptr) {
+  if (instance == nullptr) {
     // Can't create an exact instance; try for a derived type.
     instance = make_instance_more_specific(handle, params);
   }
@@ -49,7 +49,7 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
       << (void *)instance;
-    if (instance != (TypedObject *)nullptr) {
+    if (instance != nullptr) {
       util_cat.debug(false)
         << ", of type " << instance->get_type();
     }
@@ -67,7 +67,7 @@ TypedObject *FactoryBase::
 make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
   TypedObject *object = make_instance_exact(handle, params);
 
-  if (object == (TypedObject *)nullptr) {
+  if (object == nullptr) {
     // Recursively search through the entire inheritance tree until we find
     // something we know about.
     if (handle.get_num_parent_classes() == 0) {
@@ -75,7 +75,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     }
 
     int num_parents = handle.get_num_parent_classes();
-    for (int i = 0; i < num_parents && object == (TypedObject *)nullptr; i++) {
+    for (int i = 0; i < num_parents && object == nullptr; i++) {
       object = make_instance_more_general(handle.get_parent_class(i), params);
     }
   }
@@ -84,7 +84,7 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     util_cat.debug()
       << "make_instance(" << handle << ", params) returns "
       << (void *)object;
-    if (object != (TypedObject *)nullptr) {
+    if (object != nullptr) {
       util_cat.debug(false)
         << ", of type " << object->get_type();
     }
@@ -134,7 +134,7 @@ find_registered_type(TypeHandle handle) {
 void FactoryBase::
 register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data) {
   nassertv(handle != TypeHandle::none());
-  nassertv(func != (BaseCreateFunc *)nullptr);
+  nassertv(func != nullptr);
 
   Creator creator;
   creator._func = func;
@@ -247,7 +247,7 @@ make_instance_exact(TypeHandle handle, FactoryParams params) {
   }
 
   Creator creator = (*ci).second;
-  nassertr(creator._func != (BaseCreateFunc *)nullptr, nullptr);
+  nassertr(creator._func != nullptr, nullptr);
   params._user_data = creator._user_data;
   return (*creator._func)(params);
 }
@@ -267,7 +267,7 @@ make_instance_more_specific(TypeHandle handle, FactoryParams params) {
     TypeHandle ptype = (*pi);
     if (ptype.is_derived_from(handle)) {
       TypedObject *object = make_instance_exact(ptype, params);
-      if (object != (TypedObject *)nullptr) {
+      if (object != nullptr) {
         return object;
       }
     }
@@ -280,10 +280,10 @@ make_instance_more_specific(TypeHandle handle, FactoryParams params) {
     TypeHandle ctype = (*ci).first;
     if (ctype.is_derived_from(handle)) {
       Creator creator = (*ci).second;
-      nassertr(creator._func != (BaseCreateFunc *)nullptr, nullptr);
+      nassertr(creator._func != nullptr, nullptr);
       params._user_data = creator._user_data;
       TypedObject *object = (*creator._func)(params);
-      if (object != (TypedObject *)nullptr) {
+      if (object != nullptr) {
         return object;
       }
     }

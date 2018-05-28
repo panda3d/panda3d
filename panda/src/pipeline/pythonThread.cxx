@@ -136,7 +136,7 @@ call_python_func(PyObject *function, PyObject *args) {
     // In the main thread, just call the function.
     result = PyObject_Call(function, args, nullptr);
 
-    if (result == (PyObject *)nullptr) {
+    if (result == nullptr) {
       if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
         // If we caught SystemExit, let it pass by without bothering to print
         // a callback.
@@ -194,7 +194,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
     // Call the user's function.
     result = PyObject_Call(function, args, nullptr);
-    if (result == (PyObject *)nullptr && PyErr_Occurred()) {
+    if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
       PyObject *exc, *val, *tb;
@@ -238,7 +238,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
     // Call the user's function.
     result = PyObject_Call(function, args, nullptr);
-    if (result == (PyObject *)nullptr && PyErr_Occurred()) {
+    if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
       PyObject *exc, *val, *tb;

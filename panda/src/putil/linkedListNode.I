@@ -73,8 +73,8 @@ remove_from_list() {
 INLINE void LinkedListNode::
 insert_before(LinkedListNode *node) {
   nassertv(node->_prev != nullptr && node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (LinkedListNode *)nullptr &&
-           _next == (LinkedListNode *)nullptr);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;
@@ -88,8 +88,8 @@ insert_before(LinkedListNode *node) {
 INLINE void LinkedListNode::
 insert_after(LinkedListNode *node) {
   nassertv(node->_prev != nullptr && node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (LinkedListNode *)nullptr &&
-           _next == (LinkedListNode *)nullptr);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _next = node->_next;
   _prev = node;
   _next->_prev = this;

@@ -45,7 +45,7 @@ LightReMutexHolder(const LightReMutex &mutex, Thread *current_thread) {
 INLINE LightReMutexHolder::
 LightReMutexHolder(LightReMutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (LightReMutex *)nullptr) {
+  if (mutex == nullptr) {
     mutex = new LightReMutex;
   }
   _mutex = mutex;

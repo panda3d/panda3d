@@ -18,7 +18,7 @@
 #include "virtualFileSystem.h"
 
 
-ModelPool *ModelPool::_global_ptr = (ModelPool *)nullptr;
+ModelPool *ModelPool::_global_ptr = nullptr;
 
 /**
  * Lists the contents of the model pool to the indicated output stream.  Helps
@@ -37,7 +37,7 @@ ns_has_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
-  if (ti != _models.end() && (*ti).second != (ModelRoot *)nullptr) {
+  if (ti != _models.end() && (*ti).second != nullptr) {
     // This model was previously loaded.
     return true;
   }
@@ -121,7 +121,7 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
 
   // First check if it has already been loaded and is still current.
   PT(ModelRoot) cached_model = ns_get_model(filename, true);
-  if (cached_model != (ModelRoot *)nullptr) {
+  if (cached_model != nullptr) {
     return cached_model;
   }
 
@@ -239,7 +239,7 @@ ns_garbage_collect() {
   Models::iterator ti;
   for (ti = _models.begin(); ti != _models.end(); ++ti) {
     ModelRoot *node = (*ti).second;
-    if (node == (ModelRoot *)nullptr ||
+    if (node == nullptr ||
         node->get_model_ref_count() == 1) {
       if (loader_cat.is_debug()) {
         loader_cat.debug()
@@ -285,7 +285,7 @@ ns_list_contents(ostream &out) const {
  */
 ModelPool *ModelPool::
 get_ptr() {
-  if (_global_ptr == (ModelPool *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ModelPool;
   }
   return _global_ptr;

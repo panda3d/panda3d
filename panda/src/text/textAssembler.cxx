@@ -234,7 +234,7 @@ get_plain_wtext() const {
   TextString::const_iterator si;
   for (si = _text_string.begin(); si != _text_string.end(); ++si) {
     const TextCharacter &tch = (*si);
-    if (tch._graphic == (TextGraphic *)nullptr) {
+    if (tch._graphic == nullptr) {
       wtext += tch._character;
     } else {
       wtext.push_back(0);
@@ -268,7 +268,7 @@ get_wordwrapped_plain_wtext() const {
     TextString::const_iterator si;
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
-      if (tch._graphic == (TextGraphic *)nullptr) {
+      if (tch._graphic == nullptr) {
         wtext += tch._character;
       } else {
         wtext.push_back(0);
@@ -295,7 +295,7 @@ get_wtext() const {
   for (si = _text_string.begin(); si != _text_string.end(); ++si) {
     const TextCharacter &tch = (*si);
     current_cprops->append_delta(wtext, tch._cprops);
-    if (tch._graphic == (TextGraphic *)nullptr) {
+    if (tch._graphic == nullptr) {
       wtext += tch._character;
     } else {
       wtext.push_back(text_embed_graphic_key);
@@ -341,7 +341,7 @@ get_wordwrapped_wtext() const {
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
       current_cprops->append_delta(wtext, tch._cprops);
-      if (tch._graphic == (TextGraphic *)nullptr) {
+      if (tch._graphic == nullptr) {
         wtext += tch._character;
       } else {
         wtext.push_back(text_embed_graphic_key);
@@ -622,7 +622,7 @@ calc_width(wchar_t character, const TextProperties &properties) {
   if (character == ' ') {
     // A space is a special case.
     TextFont *font = properties.get_font();
-    nassertr(font != (TextFont *)nullptr, 0.0f);
+    nassertr(font != nullptr, 0.0f);
     return font->get_space_advance() * properties.get_glyph_scale() * properties.get_text_scale();
   }
 
@@ -639,10 +639,10 @@ calc_width(wchar_t character, const TextProperties &properties) {
 
   PN_stdfloat advance = 0.0f;
 
-  if (first_glyph != (TextGlyph *)nullptr) {
+  if (first_glyph != nullptr) {
     advance = first_glyph->get_advance() * advance_scale;
   }
-  if (second_glyph != (TextGlyph *)nullptr) {
+  if (second_glyph != nullptr) {
     advance += second_glyph->get_advance();
   }
 
@@ -681,7 +681,7 @@ has_exact_character(wchar_t character, const TextProperties &properties) {
   }
 
   TextFont *font = properties.get_font();
-  nassertr(font != (TextFont *)nullptr, false);
+  nassertr(font != nullptr, false);
 
   CPT(TextGlyph) glyph;
   return font->get_glyph(character, glyph);
@@ -740,7 +740,7 @@ is_whitespace(wchar_t character, const TextProperties &properties) {
 
 
   TextFont *font = properties.get_font();
-  nassertr(font != (TextFont *)nullptr, false);
+  nassertr(font != nullptr, false);
 
   CPT(TextGlyph) glyph;
   if (!font->get_glyph(character, glyph)) {
@@ -834,7 +834,7 @@ scan_wtext(TextAssembler::TextString &output_string,
 
       // Get the graphic image.
       const TextGraphic *named_graphic = manager->get_graphic_ptr(graphic_name);
-      if (named_graphic != (TextGraphic *)nullptr) {
+      if (named_graphic != nullptr) {
         output_string.push_back(TextCharacter(named_graphic, graphic_wname, current_cprops));
 
       } else {
@@ -1107,7 +1107,7 @@ wordwrap_text() {
 PN_stdfloat TextAssembler::
 calc_hyphen_width(const TextCharacter &tch) {
   TextFont *font = tch._cprops->_properties.get_font();
-  nassertr(font != (TextFont *)nullptr, 0.0f);
+  nassertr(font != nullptr, 0.0f);
 
   PN_stdfloat hyphen_width = 0.0f;
   wstring text_soft_hyphen_output = get_text_soft_hyphen_output();
@@ -1439,7 +1439,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
 
     TextFont *font = properties->get_font();
-    nassertv(font != (TextFont *)nullptr);
+    nassertv(font != nullptr);
 
     // We get the row's alignment property from the first character of the row
     if ((align == TextProperties::A_left) &&
@@ -1454,7 +1454,7 @@ assemble_row(TextAssembler::TextRow &row,
 
     // And the height of the row is the maximum of all the fonts used within
     // the row.
-    if (graphic != (TextGraphic *)nullptr) {
+    if (graphic != nullptr) {
       LVecBase4 frame = graphic->get_frame();
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
@@ -1495,7 +1495,7 @@ assemble_row(TextAssembler::TextRow &row,
     } else if (character == text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
 
-    } else if (graphic != (TextGraphic *)nullptr) {
+    } else if (graphic != nullptr) {
       // A special embedded graphic.
       GlyphPlacement placement;
 
@@ -1625,7 +1625,7 @@ assemble_row(TextAssembler::TextRow &row,
         }
       }
 
-      if (first_glyph != (TextGlyph *)nullptr) {
+      if (first_glyph != nullptr) {
         advance = first_glyph->get_advance() * advance_scale;
         if (!first_glyph->is_whitespace()) {
           swap(placement._glyph, first_glyph);
@@ -1635,7 +1635,7 @@ assemble_row(TextAssembler::TextRow &row,
 
       // Check if there is a second glyph to create a hacky ligature or some
       // such nonsense.
-      if (second_glyph != (TextGlyph *)nullptr) {
+      if (second_glyph != nullptr) {
         placement._xpos += advance * glyph_scale;
         advance += second_glyph->get_advance();
         swap(placement._glyph, second_glyph);
@@ -1660,14 +1660,14 @@ assemble_row(TextAssembler::TextRow &row,
 
   row_width = xpos;
 
-  if (row._eol_cprops != (ComputedProperties *)nullptr) {
+  if (row._eol_cprops != nullptr) {
     // If there's an _eol_cprops, it represents the cprops of the newline
     // character that ended the line, which should also contribute towards the
     // line_height.
 
     const TextProperties *properties = &(row._eol_cprops->_properties);
     TextFont *font = properties->get_font();
-    nassertv(font != (TextFont *)nullptr);
+    nassertv(font != nullptr);
 
     if (line_height == 0.0f) {
       PN_stdfloat glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
@@ -1825,7 +1825,7 @@ get_character_glyphs(int character, const TextProperties *properties,
                      int &additional_flags,
                      PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale) {
   TextFont *font = properties->get_font();
-  nassertv_always(font != (TextFont *)nullptr);
+  nassertv_always(font != nullptr);
 
   got_glyph = false;
   glyph = nullptr;
@@ -2067,7 +2067,7 @@ tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
                const TextProperties *properties,
                TextAssembler::GlyphPlacement &placement) const {
   TextFont *font = properties->get_font();
-  nassertr(font != (TextFont *)nullptr, false);
+  nassertr(font != nullptr, false);
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -2463,7 +2463,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
  */
 void TextAssembler::GlyphPlacement::
 copy_graphic_to(PandaNode *node, const RenderState *state) const {
-  if (_graphic_model != (PandaNode *)nullptr) {
+  if (_graphic_model != nullptr) {
     // We need an intermediate node to hold the transform and state.
     PT(PandaNode) intermediate_node = new PandaNode("");
     node->add_child(intermediate_node);
@@ -2510,21 +2510,21 @@ GeomCollector(const TextAssembler::GeomCollector &copy) :
 GeomPrimitive *TextAssembler::GeomCollector::
 get_primitive(TypeHandle prim_type) {
   if (prim_type == GeomTriangles::get_class_type()) {
-    if (_triangles == (GeomPrimitive *)nullptr) {
+    if (_triangles == nullptr) {
       _triangles = new GeomTriangles(Geom::UH_static);
       _geom->add_primitive(_triangles);
     }
     return _triangles;
 
   } else if (prim_type == GeomLines::get_class_type()) {
-    if (_lines == (GeomPrimitive *)nullptr) {
+    if (_lines == nullptr) {
       _lines = new GeomLines(Geom::UH_static);
       _geom->add_primitive(_lines);
     }
     return _lines;
 
   } else if (prim_type == GeomPoints::get_class_type()) {
-    if (_points == (GeomPrimitive *)nullptr) {
+    if (_points == nullptr) {
       _points = new GeomPoints(Geom::UH_static);
       _geom->add_primitive(_points);
     }

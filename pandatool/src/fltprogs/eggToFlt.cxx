@@ -489,7 +489,7 @@ get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
     flt_vertex->_has_uv = true;
   }
 
-  if (frame != (const LMatrix4d *)nullptr) {
+  if (frame != nullptr) {
     flt_vertex->_pos = flt_vertex->_pos * (*frame);
     flt_vertex->_normal = flt_vertex->_normal * LCAST(PN_stdfloat, (*frame));
   }

@@ -98,7 +98,7 @@ FmodAudioManager() {
 
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
 
-  if (_system == (FMOD::System *)nullptr) {
+  if (_system == nullptr) {
     // Create the global FMOD System object.  This one object must be shared
     // by all FmodAudioManagers (this is particularly true on OSX, but the
     // FMOD documentation is unclear as to whether this is the intended design

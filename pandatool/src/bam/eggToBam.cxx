@@ -257,7 +257,7 @@ run() {
   }
 
   PT(PandaNode) root = load_egg_data(_data);
-  if (root == (PandaNode *)nullptr) {
+  if (root == nullptr) {
     nout << "Unable to build scene graph from egg file.\n";
     exit(1);
   }
@@ -385,7 +385,7 @@ collect_textures(PandaNode *node) {
 void EggToBam::
 collect_textures(const RenderState *state) {
   const TextureAttrib *tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_type()));
-  if (tex_attrib != (TextureAttrib *)nullptr) {
+  if (tex_attrib != nullptr) {
     int num_on_stages = tex_attrib->get_num_on_stages();
     for (int i = 0; i < num_on_stages; ++i) {
       _textures.insert(tex_attrib->get_on_texture(tex_attrib->get_on_stage(i)));
@@ -448,7 +448,7 @@ make_buffer() {
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   _pipe = selection->make_default_pipe();
-  if (_pipe == (GraphicsPipe *)nullptr) {
+  if (_pipe == nullptr) {
     nout << "Unable to create graphics pipe.\n";
     return false;
   }
@@ -473,7 +473,7 @@ make_buffer() {
                                  fbprops, winprops,
                                  GraphicsPipe::BF_fb_props_optional);
   _engine->open_windows();
-  if (_buffer == (GraphicsOutput *)nullptr || !_buffer->is_valid()) {
+  if (_buffer == nullptr || !_buffer->is_valid()) {
     nout << "Unable to create graphics window.\n";
     return false;
   }

@@ -68,7 +68,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void *handle = load_dso(get_plugin_path().get_value(), dl_name);
-      if (handle == (void *)nullptr) {
+      if (handle == nullptr) {
         audio_error("  load_dso(" << dl_name << ") failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
         nassertr(_create_AudioManager == nullptr, nullptr);
@@ -86,7 +86,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
             << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
         }
 
-        if (dso_symbol == (void *)nullptr) {
+        if (dso_symbol == nullptr) {
           // Couldn't find the module function.
           unload_dso(handle);
           handle = nullptr;
@@ -121,7 +121,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
  */
 AudioManager::
 ~AudioManager() {
-  if (_null_sound != (AudioSound *)nullptr) {
+  if (_null_sound != nullptr) {
     unref_delete((AudioSound *)_null_sound);
   }
 }
@@ -151,10 +151,10 @@ shutdown() {
  */
 PT(AudioSound) AudioManager::
 get_null_sound() {
-  if (_null_sound == (AudioSound *)nullptr) {
+  if (_null_sound == nullptr) {
     AudioSound *new_sound = new NullAudioSound;
     new_sound->ref();
-    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, (void *)nullptr, (void *)new_sound);
+    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, nullptr, (void *)new_sound);
     if (result != nullptr) {
       // Someone else must have assigned the AudioSound first.  OK.
       nassertr(_null_sound != new_sound, nullptr);

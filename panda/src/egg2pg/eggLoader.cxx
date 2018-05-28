@@ -224,7 +224,7 @@ reparent_decals() {
   ExtraNodes::const_iterator di;
   for (di = _decals.begin(); di != _decals.end(); ++di) {
     PandaNode *node = (*di);
-    nassertv(node != (PandaNode *)nullptr);
+    nassertv(node != nullptr);
 
     // The NodePath interface is best for this.
     NodePath parent(node);
@@ -307,7 +307,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
   EggGroupNode::const_iterator ci = egg_bin->begin();
   nassertv(ci != egg_bin->end());
   CPT(EggPrimitive) first_prim = DCAST(EggPrimitive, (*ci));
-  nassertv(first_prim != (EggPrimitive *)nullptr);
+  nassertv(first_prim != nullptr);
   const EggRenderState *render_state;
   DCAST_INTO_V(render_state, first_prim->get_user_data(EggRenderState::get_class_type()));
 
@@ -400,7 +400,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
       PT(GeomVertexData) vertex_data =
         make_vertex_data(render_state, vertex_pool, egg_bin, mat, blend_table,
                          is_dynamic, character_maker, has_overall_color);
-      nassertv(vertex_data != (GeomVertexData *)nullptr);
+      nassertv(vertex_data != nullptr);
 
       // And create a Geom to hold the primitives.
       PT(Geom) geom = new Geom(vertex_data);
@@ -423,7 +423,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
         // render_state->_state->write(cerr, 0);
 
       // Create a new GeomNode if we haven't already.
-      if (geom_node == (GeomNode *)nullptr) {
+      if (geom_node == nullptr) {
         // Now, is our parent node a GeomNode, or just an ordinary PandaNode?
         // If it's a GeomNode, we can add the new Geom directly to our parent;
         // otherwise, we need to create a new node.
@@ -453,7 +453,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     }
   }
 
-  if (geom_node != (GeomNode *)nullptr && egg_show_normals) {
+  if (geom_node != nullptr && egg_show_normals) {
     // Create some more geometry to visualize each normal.
     for (vpi = vertex_pools.begin(); vpi != vertex_pools.end(); ++vpi) {
       EggVertexPool *vertex_pool = (*vpi);
@@ -663,7 +663,7 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   assert(!parent->is_geom_node());
 
   PT(NurbsCurveEvaluator) nurbs = ::make_nurbs_curve(egg_curve, mat);
-  if (nurbs == (NurbsCurveEvaluator *)nullptr) {
+  if (nurbs == nullptr) {
     _error = true;
     return;
   }
@@ -733,7 +733,7 @@ make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
   curve = new NurbsCurve;
 
   NurbsCurveInterface *nurbs = curve->get_nurbs_interface();
-  nassertv(nurbs != (NurbsCurveInterface *)nullptr);
+  nassertv(nurbs != nullptr);
 
   if (egg_curve->get_order() < 1 || egg_curve->get_order() > 4) {
     egg2pg_cat.error()
@@ -802,7 +802,7 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, PandaNode *parent,
   assert(!parent->is_geom_node());
 
   PT(NurbsSurfaceEvaluator) nurbs = ::make_nurbs_surface(egg_surface, mat);
-  if (nurbs == (NurbsSurfaceEvaluator *)nullptr) {
+  if (nurbs == nullptr) {
     _error = true;
     return;
   }
@@ -915,7 +915,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   // Since some properties of the textures are inferred from the texture files
   // themselves (if the properties are not explicitly specified in the egg
   // file), then we add the textures as dependents for the egg file.
-  if (_record != (BamCacheRecord *)nullptr) {
+  if (_record != nullptr) {
     _record->add_dependent_file(egg_tex->get_fullpath());
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
       _record->add_dependent_file(egg_tex->get_alpha_fullpath());
@@ -987,7 +987,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     break;
   }
 
-  if (tex == (Texture *)nullptr) {
+  if (tex == nullptr) {
     return false;
   }
 
@@ -1002,7 +1002,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   // See if there is some egg data hanging on the texture.  In particular, the
   // TxaFileFilter might have left that here for us.
   TypedReferenceCount *aux = tex->get_aux_data("egg");
-  if (aux != (TypedReferenceCount *)nullptr &&
+  if (aux != nullptr &&
       aux->is_of_type(EggTexture::get_class_type())) {
     EggTexture *aux_egg_tex = DCAST(EggTexture, aux);
 
@@ -1686,7 +1686,7 @@ make_node(EggNode *egg_node, PandaNode *parent) {
     return make_node(DCAST(EggGroupNode, egg_node), parent);
   }
 
-  return (PandaNode *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -1733,7 +1733,7 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   }
 
   // Shouldn't get here.
-  return (PandaNode *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -1956,7 +1956,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     }
   }
 
-  if (node == (PandaNode *)nullptr) {
+  if (node == nullptr) {
     return nullptr;
   }
 
@@ -2319,7 +2319,7 @@ make_vertex_data(const EggRenderState *render_state,
   vertex_data->reserve_num_rows(vertex_pool->size());
 
   vertex_data->set_transform_blend_table(blend_table);
-  if (slider_table != (SliderTable *)nullptr) {
+  if (slider_table != nullptr) {
     vertex_data->set_slider_table(SliderTable::register_table(slider_table));
   }
 
@@ -2477,7 +2477,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
       // If the vertex has no explicit membership, it belongs right where it
       // is.
       PT(VertexTransform) vt = character_maker->egg_to_transform(primitive_home);
-      nassertr(vt != (VertexTransform *)nullptr, nullptr);
+      nassertr(vt != nullptr, nullptr);
       blend.add_transform(vt, 1.0f);
     } else {
       // If the vertex does have an explicit membership, ignore its parentage
@@ -2492,7 +2492,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
         }
 
         PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
-        nassertr(vt != (VertexTransform *)nullptr, nullptr);
+        nassertr(vt != nullptr, nullptr);
         blend.add_transform(vt, membership);
       }
     }
@@ -2564,7 +2564,7 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
     primitive = new GeomPatches(num_vertices, Geom::UH_static);
   }
 
-  if (primitive == (GeomPrimitive *)nullptr) {
+  if (primitive == nullptr) {
     // Don't know how to make this kind of primitive.
     egg2pg_cat.warning()
       << "Ignoring " << egg_prim->get_type() << "\n";
@@ -2633,7 +2633,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
   pnode->clear_vertices();
 
   PT(EggPolygon) poly = find_first_polygon(egg_group);
-  if (poly != (EggPolygon *)nullptr) {
+  if (poly != nullptr) {
     LMatrix4d mat = poly->get_vertex_to_node();
 
     EggPolygon::const_iterator vi;
@@ -2650,7 +2650,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
 void EggLoader::
 set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
   PT(EggPolygon) poly = find_first_polygon(egg_group);
-  if (poly != (EggPolygon *)nullptr) {
+  if (poly != nullptr) {
     if (poly->size() != 4) {
       egg2pg_cat.error()
         << "Invalid number of vertices for " << egg_group->get_name() << "\n";
@@ -2693,7 +2693,7 @@ find_first_polygon(EggGroup *egg_group) {
     if ((*ci)->is_of_type(EggGroup::get_class_type())) {
       EggGroup *child_group = DCAST(EggGroup, *ci);
       PT(EggPolygon) found = find_first_polygon(child_group);
-      if (found != (EggPolygon *)nullptr) {
+      if (found != nullptr) {
         return found;
       }
     }
@@ -2712,7 +2712,7 @@ bool EggLoader::
 make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
             LPoint3 &center, PN_stdfloat &radius, LColor &color) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 
@@ -2772,7 +2772,7 @@ bool EggLoader::
 make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
          LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 
@@ -2893,13 +2893,13 @@ void EggLoader::
 make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
                      EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
         CollisionPlane *csplane =
           create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
-        if (csplane != (CollisionPlane *)nullptr) {
+        if (csplane != nullptr) {
           apply_collision_flags(csplane, flags);
           cnode->add_solid(csplane);
           return;
@@ -2929,7 +2929,7 @@ make_collision_floor_mesh(EggGroup *egg_group, CollisionNode *cnode,
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
 
 
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     create_collision_floor_mesh(cnode, geom_group,flags);
   }
 }
@@ -2943,7 +2943,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
 
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
@@ -2970,7 +2970,7 @@ void EggLoader::
 make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
                        EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
@@ -3049,7 +3049,7 @@ void EggLoader::
 make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
                     EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
-  if (geom_group != (EggGroup *)nullptr) {
+  if (geom_group != nullptr) {
     // Collect all of the vertices.
     pset<EggVertex *> vertices;
 

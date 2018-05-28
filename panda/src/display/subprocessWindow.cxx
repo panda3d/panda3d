@@ -164,7 +164,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void SubprocessWindow::
 begin_flip() {
-  nassertv(_buffer != (GraphicsBuffer *)nullptr);
+  nassertv(_buffer != nullptr);
   if (_swbuffer == nullptr) {
     return;
   }
@@ -316,8 +316,8 @@ internal_close_window() {
   }
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)nullptr &&
-      _parent_window_handle != (WindowHandle *)nullptr) {
+  if (_window_handle != nullptr &&
+      _parent_window_handle != nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 
@@ -404,7 +404,7 @@ internal_open_window() {
   _window_handle = NativeWindowHandle::make_subprocess(_filename);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)nullptr) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 

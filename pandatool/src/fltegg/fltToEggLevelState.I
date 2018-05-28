@@ -18,8 +18,8 @@ INLINE FltToEggLevelState::
 FltToEggLevelState(FltToEggConverter *converter) :
   _converter(converter)
 {
-  _flt_object = (FltObject *)nullptr;
-  _egg_parent = (EggGroupNode *)nullptr;
+  _flt_object = nullptr;
+  _egg_parent = nullptr;
 }
 
 /**

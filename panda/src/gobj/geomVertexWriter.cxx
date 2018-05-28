@@ -32,12 +32,12 @@ unsigned char GeomVertexWriter::empty_buffer[100] = { 0 };
  */
 bool GeomVertexWriter::
 set_column(int array, const GeomVertexColumn *column) {
-  if (_vertex_data == (GeomVertexData *)nullptr &&
-      _array_data == (GeomVertexArrayData *)nullptr) {
+  if (_vertex_data == nullptr &&
+      _array_data == nullptr) {
     return false;
   }
 
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     // Clear the data type.
     _array = -1;
     _packer = nullptr;
@@ -48,12 +48,12 @@ set_column(int array, const GeomVertexColumn *column) {
     return false;
   }
 
-  if (_vertex_data != (GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
     return set_vertex_column(array, column, &writer);
   }
-  if (_array_data != (GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(column);
   }
 
@@ -71,7 +71,7 @@ bool GeomVertexWriter::
 reserve_num_rows(int num_rows) {
   bool result;
 
-  if (_vertex_data != (GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     // If we have a whole GeomVertexData, we must set the length of all its
     // arrays at once.
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
@@ -94,7 +94,7 @@ reserve_num_rows(int num_rows) {
 void GeomVertexWriter::
 output(ostream &out) const {
   const GeomVertexColumn *column = get_column();
-  if (column == (GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     out << "GeomVertexWriter()";
 
   } else {
@@ -125,11 +125,11 @@ initialize() {
 bool GeomVertexWriter::
 set_vertex_column(int array, const GeomVertexColumn *column,
                   GeomVertexDataPipelineWriter *data_writer) {
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     return set_column(0, nullptr);
   }
 
-  nassertr(_vertex_data != (GeomVertexData *)nullptr, false);
+  nassertr(_vertex_data != nullptr, false);
 
 #ifndef NDEBUG
   _array = -1;
@@ -153,11 +153,11 @@ set_vertex_column(int array, const GeomVertexColumn *column,
  */
 bool GeomVertexWriter::
 set_array_column(const GeomVertexColumn *column) {
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     return set_column(0, nullptr);
   }
 
-  nassertr(_array_data != (GeomVertexArrayData *)nullptr, false);
+  nassertr(_array_data != nullptr, false);
 
   _handle = _array_data->modify_handle();
   _stride = _handle->get_array_format()->get_stride();

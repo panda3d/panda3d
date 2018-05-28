@@ -64,7 +64,7 @@ TinySDLGraphicsWindow::
 bool TinySDLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -86,7 +86,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinySDLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();

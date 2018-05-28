@@ -154,5 +154,5 @@ pstrtod(const char *nptr, char **endptr) {
  */
 double
 patof(const char *str) {
-  return pstrtod(str, (char **)nullptr);
+  return pstrtod(str, nullptr);
 }

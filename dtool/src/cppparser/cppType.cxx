@@ -36,7 +36,7 @@ CPPType::
 CPPType(const CPPFile &file) :
   CPPDeclaration(file)
 {
-  _declaration = (CPPTypeDeclaration *)nullptr;
+  _declaration = nullptr;
 
   // This is set true by interrogate when the "forcetype" keyword is used.
   _forcetype = false;

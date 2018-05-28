@@ -18,7 +18,7 @@
 #include "string_utils.h"
 #include "configVariableColor.h"
 
-CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)nullptr;
+CullBinManager *CullBinManager::_global_ptr = nullptr;
 
 /**
  * The constructor is not intended to be called directly; there is only one

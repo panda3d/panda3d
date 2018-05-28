@@ -38,13 +38,13 @@ open(const FileReference *file) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   _vfile = vfs->get_file(_filename);
-  if (_vfile == (VirtualFile *)nullptr) {
+  if (_vfile == nullptr) {
     // No such file.
     return false;
   }
   _timestamp = _vfile->get_timestamp();
   _in = _vfile->open_read_file(true);
-  _owns_in = (_in != (istream *)nullptr);
+  _owns_in = (_in != nullptr);
   return _owns_in && !_in->fail();
 }
 
@@ -80,7 +80,7 @@ close() {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_in);
   }
-  _in = (istream *)nullptr;
+  _in = nullptr;
   _owns_in = false;
 
   _file.clear();
@@ -100,10 +100,10 @@ close() {
 bool DatagramInputFile::
 read_header(string &header, size_t num_bytes) {
   nassertr(!_read_first_datagram, false);
-  nassertr(_in != (istream *)nullptr, false);
+  nassertr(_in != nullptr, false);
 
   char *buffer = (char *)alloca(num_bytes);
-  nassertr(buffer != (char *)nullptr, false);
+  nassertr(buffer != nullptr, false);
 
   _in->read(buffer, num_bytes);
   if (_in->fail() || _in->eof()) {
@@ -121,7 +121,7 @@ read_header(string &header, size_t num_bytes) {
  */
 bool DatagramInputFile::
 get_datagram(Datagram &data) {
-  nassertr(_in != (istream *)nullptr, false);
+  nassertr(_in != nullptr, false);
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.
@@ -201,7 +201,7 @@ get_datagram(Datagram &data) {
  */
 bool DatagramInputFile::
 save_datagram(SubfileInfo &info) {
-  nassertr(_in != (istream *)nullptr, false);
+  nassertr(_in != nullptr, false);
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.
@@ -219,7 +219,7 @@ save_datagram(SubfileInfo &info) {
 
   // If this stream is file-based, we can just point the SubfileInfo directly
   // into this file.
-  if (_file != (FileReference *)nullptr) {
+  if (_file != nullptr) {
     info = SubfileInfo(_file, _in->tellg(), num_bytes);
     _in->seekg(num_bytes, ios::cur);
     return true;
@@ -279,7 +279,7 @@ save_datagram(SubfileInfo &info) {
  */
 bool DatagramInputFile::
 is_eof() {
-  return _in != (istream *)nullptr ? _in->eof() : true;
+  return _in != nullptr ? _in->eof() : true;
 }
 
 /**
@@ -287,7 +287,7 @@ is_eof() {
  */
 bool DatagramInputFile::
 is_error() {
-  if (_in == (istream *)nullptr) {
+  if (_in == nullptr) {
     return true;
   }
 
@@ -343,7 +343,7 @@ get_vfile() {
  */
 streampos DatagramInputFile::
 get_file_pos() {
-  if (_in == (istream *)nullptr) {
+  if (_in == nullptr) {
     return 0;
   }
   return _in->tellg();

@@ -227,7 +227,7 @@ get_force() const {
  */
 INLINE bool GeomVertexReader::
 set_column(int column) {
-  if (_vertex_data != (const GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     const GeomVertexFormat *format = reader.get_format();
@@ -235,7 +235,7 @@ set_column(int column) {
                              format->get_column(column),
                              &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
@@ -252,7 +252,7 @@ set_column(int column) {
  */
 INLINE bool GeomVertexReader::
 set_column(CPT_InternalName name) {
-  if (_vertex_data != (const GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     const GeomVertexFormat *format = reader.get_format();
@@ -260,7 +260,7 @@ set_column(CPT_InternalName name) {
                              format->get_column(name),
                              &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(name));
   }
 
@@ -282,7 +282,7 @@ clear() {
  */
 INLINE bool GeomVertexReader::
 has_column() const {
-  return (_packer != (GeomVertexColumn::Packer *)nullptr);
+  return (_packer != nullptr);
 }
 
 /**
@@ -299,7 +299,7 @@ get_array() const {
  */
 INLINE const GeomVertexColumn *GeomVertexReader::
 get_column() const {
-  if (_packer != (GeomVertexColumn::Packer *)nullptr) {
+  if (_packer != nullptr) {
     return _packer->_column;
   }
   return nullptr;

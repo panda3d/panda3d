@@ -125,7 +125,7 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
   // First, we set the property locally.
   if (value != nullptr) {
     Properties::iterator pi;
-    pi = _properties.insert(Properties::value_type(property, (P3D_object *)nullptr)).first;
+    pi = _properties.insert(Properties::value_type(property, nullptr)).first;
     assert(pi != _properties.end());
     P3D_object *orig_value = (*pi).second;
     if (orig_value != value) {

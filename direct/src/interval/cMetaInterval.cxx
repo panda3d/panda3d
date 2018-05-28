@@ -66,7 +66,7 @@ clear_intervals() {
   Defs::iterator di;
   for (di = _defs.begin(); di != _defs.end(); ++di) {
     IntervalDef &def = (*di);
-    if (def._c_interval != (CInterval *)nullptr) {
+    if (def._c_interval != nullptr) {
       CInterval::Parents::iterator pi =
         find(def._c_interval->_parents.begin(),
              def._c_interval->_parents.end(),
@@ -122,7 +122,7 @@ int CMetaInterval::
 add_c_interval(CInterval *c_interval,
                double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
-  nassertr(c_interval != (CInterval *)nullptr, -1);
+  nassertr(c_interval != nullptr, -1);
 
   c_interval->_parents.push_back(this);
   c_interval->_ival_pcollector = PStatCollector(_ival_pcollector, c_interval->_pname);

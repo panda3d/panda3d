@@ -76,14 +76,14 @@ apply_transform(const TransformState *node_transform) {
   if (!node_transform->is_identity()) {
     _net_transform = _net_transform->compose(node_transform);
 
-    if ((_view_frustum != (GeometricBoundingVolume *)nullptr) ||
+    if ((_view_frustum != nullptr) ||
         (!_cull_planes->is_empty())) {
       // We need to move the viewing frustums into the node's coordinate space
       // by applying the node's inverse transform.
       if (node_transform->is_singular()) {
         // But we can't invert a singular transform!  Instead of trying, we'll
         // just give up on frustum culling from this point down.
-        _view_frustum = (GeometricBoundingVolume *)nullptr;
+        _view_frustum = nullptr;
         _cull_planes = CullPlanes::make_empty();
 
       } else {
@@ -92,9 +92,9 @@ apply_transform(const TransformState *node_transform) {
 
         // Copy the bounding volumes for the frustums so we can transform
         // them.
-        if (_view_frustum != (GeometricBoundingVolume *)nullptr) {
+        if (_view_frustum != nullptr) {
           _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
-          nassertv(_view_frustum != (GeometricBoundingVolume *)nullptr);
+          nassertv(_view_frustum != nullptr);
 
           _view_frustum->xform(inv_transform->get_mat());
         }
@@ -146,9 +146,9 @@ bool CullTraverserData::
 is_in_view_impl() {
   const GeometricBoundingVolume *node_gbv = nullptr;
 
-  if (_view_frustum != (GeometricBoundingVolume *)nullptr) {
+  if (_view_frustum != nullptr) {
     node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
-    nassertr(node_gbv != (const GeometricBoundingVolume *)nullptr, false);
+    nassertr(node_gbv != nullptr, false);
 
     int result = _view_frustum->contains(node_gbv);
 
@@ -168,14 +168,14 @@ is_in_view_impl() {
 
       // If we have fake view-frustum culling enabled, instead of actually
       // culling an object we simply force it to be drawn in red wireframe.
-      _view_frustum = (GeometricBoundingVolume *)nullptr;
+      _view_frustum = nullptr;
       _state = _state->compose(get_fake_view_frustum_cull_state());
 #endif
 
     } else if ((result & BoundingVolume::IF_all) != 0) {
       // The node and its descendents are completely enclosed within the
       // frustum.  No need to cull further.
-      _view_frustum = (GeometricBoundingVolume *)nullptr;
+      _view_frustum = nullptr;
 
     } else {
       // The node is partially, but not completely, within the viewing
@@ -185,15 +185,15 @@ is_in_view_impl() {
         // down.  But this node has the "final" flag, so the user is claiming
         // that there is some important reason we should consider everything
         // visible at this point.  So be it.
-        _view_frustum = (GeometricBoundingVolume *)nullptr;
+        _view_frustum = nullptr;
       }
     }
   }
 
   if (!_cull_planes->is_empty()) {
-    if (node_gbv == (const GeometricBoundingVolume *)nullptr) {
+    if (node_gbv == nullptr) {
       node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
-      nassertr(node_gbv != (const GeometricBoundingVolume *)nullptr, false);
+      nassertr(node_gbv != nullptr, false);
     }
 
     // Also cull against the current clip planes.

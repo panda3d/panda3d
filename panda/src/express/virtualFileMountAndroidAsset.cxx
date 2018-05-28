@@ -107,7 +107,7 @@ read_file(const Filename &file, bool do_uncompress,
 
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_STREAMING);
-  if (asset == (AAsset *)nullptr) {
+  if (asset == nullptr) {
     express_cat.info()
       << "Unable to read " << file << "\n";
     return false;
@@ -144,7 +144,7 @@ istream *VirtualFileMountAndroidAsset::
 open_read_file(const Filename &file) const {
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
-  if (asset == (AAsset *)nullptr) {
+  if (asset == nullptr) {
     return nullptr;
   }
 

@@ -134,7 +134,7 @@ INLINE void SimpleLruPage::
 dequeue_lru() {
   LightMutexHolder holder(SimpleLru::_global_lock);
 
-  if (_lru != (SimpleLru *)nullptr) {
+  if (_lru != nullptr) {
     remove_from_list();
     _lru->_total_size -= _lru_size;
     _lru = nullptr;
@@ -150,7 +150,7 @@ dequeue_lru() {
  */
 INLINE void SimpleLruPage::
 mark_used_lru() const {
-  if (_lru != (SimpleLru *)nullptr) {
+  if (_lru != nullptr) {
     ((SimpleLruPage *)this)->mark_used_lru(_lru);
   }
 }
@@ -179,7 +179,7 @@ get_lru_size() const {
 INLINE void SimpleLruPage::
 set_lru_size(size_t lru_size) {
   LightMutexHolder holder(SimpleLru::_global_lock);
-  if (_lru != (SimpleLru *)nullptr) {
+  if (_lru != nullptr) {
     _lru->_total_size -= _lru_size;
     _lru->_total_size += lru_size;
     _lru_size = lru_size;

@@ -155,7 +155,7 @@ output(ostream &out) const {
 void VirtualFile::
 ls(ostream &out) const {
   CPT(VirtualFileList) contents = scan_directory();
-  if (contents == (VirtualFileList *)nullptr) {
+  if (contents == nullptr) {
     if (!is_directory()) {
       out << get_filename() << "\n";
     } else {
@@ -443,7 +443,7 @@ scan_local_directory(VirtualFileList *, const ov_set<string> &) const {
 void VirtualFile::
 r_ls_all(ostream &out, const Filename &root) const {
   CPT(VirtualFileList) contents = scan_directory();
-  if (contents == (VirtualFileList *)nullptr) {
+  if (contents == nullptr) {
     return;
   }
 

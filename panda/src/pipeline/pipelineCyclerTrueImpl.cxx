@@ -27,7 +27,7 @@ PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline) :
   _dirty(0),
   _lock(this)
 {
-  if (_pipeline == (Pipeline *)nullptr) {
+  if (_pipeline == nullptr) {
     _pipeline = Pipeline::get_render_pipeline();
   }
 

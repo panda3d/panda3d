@@ -132,7 +132,7 @@ get_info(const Filename &filename) {
   Objects objects;
   TypedWritable *object = bam_file.read_object();
 
-  if (object != (TypedWritable *)nullptr &&
+  if (object != nullptr &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's a cache data file; in this case, we output the
@@ -142,8 +142,8 @@ get_info(const Filename &filename) {
     object = bam_file.read_object();
   }
 
-  while (object != (TypedWritable *)nullptr || !bam_file.is_eof()) {
-    if (object != (TypedWritable *)nullptr) {
+  while (object != nullptr || !bam_file.is_eof()) {
+    if (object != nullptr) {
       objects.push_back(object);
     }
     object = bam_file.read_object();
@@ -271,7 +271,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
  */
 void BamInfo::
 describe_general_object(TypedWritable *object) {
-  nassertv(object != (TypedWritable *)nullptr);
+  nassertv(object != nullptr);
   nout << "  " << object->get_type() << "\n";
 }
 

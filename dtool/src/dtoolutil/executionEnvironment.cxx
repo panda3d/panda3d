@@ -164,11 +164,11 @@ get_cwd() {
   static size_t bufsize = 1024;
   static wchar_t *buffer = nullptr;
 
-  if (buffer == (wchar_t *)nullptr) {
+  if (buffer == nullptr) {
     buffer = new wchar_t[bufsize];
   }
 
-  while (_wgetcwd(buffer, bufsize) == (wchar_t *)nullptr) {
+  while (_wgetcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -176,7 +176,7 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new wchar_t[bufsize];
-    assert(buffer != (wchar_t *)nullptr);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific_w(buffer);
@@ -187,11 +187,11 @@ get_cwd() {
   static size_t bufsize = 1024;
   static char *buffer = nullptr;
 
-  if (buffer == (char *)nullptr) {
+  if (buffer == nullptr) {
     buffer = new char[bufsize];
   }
 
-  while (getcwd(buffer, bufsize) == (char *)nullptr) {
+  while (getcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -199,7 +199,7 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new char[bufsize];
-    assert(buffer != (char *)nullptr);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific(buffer);
@@ -217,7 +217,7 @@ ns_has_environment_variable(const string &var) const {
 #ifdef PREREAD_ENVIRONMENT
   return _variables.count(var) != 0;
 #else
-  return getenv(var.c_str()) != (char *)nullptr;
+  return getenv(var.c_str()) != nullptr;
 #endif
 }
 
@@ -257,7 +257,7 @@ ns_get_environment_variable(const string &var) const {
 
 #ifndef PREREAD_ENVIRONMENT
   const char *def = getenv(var.c_str());
-  if (def != (char *)nullptr) {
+  if (def != nullptr) {
     return def;
   }
 #endif
@@ -399,7 +399,7 @@ ns_clear_shadow(const string &var) {
 #ifdef PREREAD_ENVIRONMENT
   // Now we have to replace the value in the table.
   const char *def = getenv(var.c_str());
-  if (def != (char *)nullptr) {
+  if (def != nullptr) {
     (*vi).second = def;
   } else {
     _variables.erase(vi);
@@ -457,7 +457,7 @@ ns_get_dtool_name() const {
  */
 ExecutionEnvironment *ExecutionEnvironment::
 get_ptr() {
-  if (_global_ptr == (ExecutionEnvironment *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ExecutionEnvironment;
   }
   return _global_ptr;

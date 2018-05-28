@@ -150,7 +150,7 @@ get_panda_root() {
   if (panda_root == nullptr) {
     panda_root = new string;
     const char *envvar = getenv("PANDA_ROOT");
-    if (envvar != (const char *)nullptr) {
+    if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
 
@@ -472,7 +472,7 @@ get_home_directory() {
 
     // In all environments, check $HOME first.
     char *home = getenv("HOME");
-    if (home != (char *)nullptr) {
+    if (home != nullptr) {
       Filename dirname = from_os_specific(home);
       if (dirname.is_directory()) {
         if (dirname.make_canonical()) {
@@ -1764,7 +1764,7 @@ scan_directory(vector_string &contents) const {
     dirname = _filename;
   }
   DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)nullptr) {
+  if (root == nullptr) {
     if (errno != ENOTDIR) {
       perror(dirname.c_str());
     }
@@ -1773,7 +1773,7 @@ scan_directory(vector_string &contents) const {
 
   struct dirent *d;
   d = readdir(root);
-  while (d != (struct dirent *)nullptr) {
+  while (d != nullptr) {
     thread_consider_yield();
     if (d->d_name[0] != '.') {
       contents.push_back(d->d_name);

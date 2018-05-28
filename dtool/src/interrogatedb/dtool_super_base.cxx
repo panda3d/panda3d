@@ -53,7 +53,7 @@ EXPCL_INTERROGATEDB void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *modu
 }
 
 inline void *Dtool_DowncastInterface_DTOOL_SUPER_BASE(void *from_this, Dtool_PyTypedObject *from_type) {
-  return (void *) nullptr;
+  return nullptr;
 }
 
 inline void *Dtool_UpcastInterface_DTOOL_SUPER_BASE(PyObject *self, Dtool_PyTypedObject *requested_type) {

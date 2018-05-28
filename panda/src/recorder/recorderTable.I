@@ -46,7 +46,7 @@ operator = (const RecorderTable &copy) {
  */
 INLINE void RecorderTable::
 add_recorder(const string &name, RecorderBase *recorder) {
-  nassertv(recorder != (RecorderBase *)nullptr);
+  nassertv(recorder != nullptr);
   recorder->ref();
 
   std::pair<Recorders::iterator, bool> result =

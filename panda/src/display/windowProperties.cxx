@@ -197,7 +197,7 @@ clear() {
 void WindowProperties::
 set_parent_window(size_t parent) {
   if (parent == 0) {
-    set_parent_window((WindowHandle *)nullptr);
+    set_parent_window(nullptr);
   } else {
     PT(WindowHandle) handle = NativeWindowHandle::make_int(parent);
     set_parent_window(handle);

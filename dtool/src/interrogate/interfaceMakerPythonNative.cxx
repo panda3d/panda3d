@@ -1546,7 +1546,7 @@ write_module_class(ostream &out, Object *obj) {
       }
 
       Object *nested_obj = _objects[nested_index];
-      assert(nested_obj != (Object *)nullptr);
+      assert(nested_obj != nullptr);
 
       if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
         write_module_class(out, nested_obj);
@@ -3093,7 +3093,7 @@ write_module_class(ostream &out, Object *obj) {
       continue;
     }
     Object *nested_obj = _objects[nested_index];
-    assert(nested_obj != (Object *)nullptr);
+    assert(nested_obj != nullptr);
 
     if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
       num_dict_items += 2;
@@ -3125,7 +3125,7 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     Object *nested_obj = _objects[nested_index];
-    assert(nested_obj != (Object *)nullptr);
+    assert(nested_obj != nullptr);
 
     if (nested_obj->_itype.is_class() || nested_obj->_itype.is_struct()) {
       std::string ClassName1 = make_safe_name(nested_obj->_itype.get_scoped_name());
@@ -7003,7 +7003,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
 InterfaceMaker::Object *InterfaceMakerPythonNative::
 record_object(TypeIndex type_index) {
   if (type_index == 0) {
-    return (Object *)nullptr;
+    return nullptr;
   }
 
   Objects::iterator oi = _objects.find(type_index);
@@ -7015,7 +7015,7 @@ record_object(TypeIndex type_index) {
   const InterrogateType &itype = idb->get_type(type_index);
 
   if (!is_cpp_type_legal(itype._cpptype)) {
-    return (Object *)nullptr;
+    return nullptr;
   }
 
   Object *object = new Object(itype);
@@ -7669,7 +7669,7 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "write") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
+      if (ifunc._instances != nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();
@@ -7739,7 +7739,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "python_repr") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
+      if (ifunc._instances != nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();
@@ -7777,7 +7777,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
     if (ifunc.get_name() == "output") {
-      if (ifunc._instances != (InterrogateFunction::Instances *)nullptr) {
+      if (ifunc._instances != nullptr) {
         InterrogateFunction::Instances::const_iterator ii;
         for (ii = ifunc._instances->begin();
              ii != ifunc._instances->end();

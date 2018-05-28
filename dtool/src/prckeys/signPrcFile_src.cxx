@@ -327,7 +327,7 @@ main(int argc, char **argv) {
   EVP_PKEY *pkey = PEM_read_bio_PrivateKey(mbio, nullptr, nullptr, (void *)pp);
   BIO_free(mbio);
 
-  if (pkey == (EVP_PKEY *)nullptr) {
+  if (pkey == nullptr) {
     // Actually, we're not 100% sure this was the problem, but we can't really
     // tell why it failed, and we're 99% sure anyway.
     cerr << "Invalid pass phrase.\n";

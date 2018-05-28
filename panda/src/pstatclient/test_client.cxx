@@ -132,7 +132,7 @@ main(int argc, char *argv[]) {
 
   pvector<PStatCollector> _collectors;
   int i = 0;
-  while (ds[i].category != (const char *)nullptr) {
+  while (ds[i].category != nullptr) {
     _collectors.push_back(PStatCollector(ds[i].category));
     if (ds[i].is_level) {
       _collectors[i].set_level(ds[i].min_ms);

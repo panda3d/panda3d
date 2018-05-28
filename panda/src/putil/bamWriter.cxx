@@ -298,7 +298,7 @@ void BamWriter::
 write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an object ID
   // and leave it at that.
-  if (object == (const TypedWritable *)nullptr) {
+  if (object == nullptr) {
     write_object_id(packet, 0);
 
   } else {
@@ -436,7 +436,7 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
  */
 bool BamWriter::
 register_pta(Datagram &packet, const void *ptr) {
-  if (ptr == (const void *)nullptr) {
+  if (ptr == nullptr) {
     // A zero for the PTA ID indicates a NULL pointer.  This is a special
     // case.
     write_pta_id(packet, 0);

@@ -100,7 +100,7 @@ get_pending_lru() {
  */
 INLINE VertexDataSaveFile *VertexDataPage::
 get_save_file() {
-  if (_save_file == (VertexDataSaveFile *)nullptr) {
+  if (_save_file == nullptr) {
     make_save_file();
   }
   return _save_file;
@@ -126,7 +126,7 @@ save_to_disk() {
 INLINE int VertexDataPage::
 get_num_threads() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)nullptr) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_threads();
@@ -139,7 +139,7 @@ get_num_threads() {
 INLINE int VertexDataPage::
 get_num_pending_reads() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)nullptr) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_pending_reads();
@@ -152,7 +152,7 @@ get_num_pending_reads() {
 INLINE int VertexDataPage::
 get_num_pending_writes() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)nullptr) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_pending_writes();

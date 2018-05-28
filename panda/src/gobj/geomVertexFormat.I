@@ -97,7 +97,7 @@ get_array(size_t array) const {
  */
 INLINE bool GeomVertexFormat::
 has_column(const InternalName *name) const {
-  return (get_column(name) != (GeomVertexColumn *)nullptr);
+  return (get_column(name) != nullptr);
 }
 
 /**
@@ -430,7 +430,7 @@ get_color_column() const {
  */
 INLINE GeomVertexFormat::Registry *GeomVertexFormat::
 get_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     make_registry();
   }
   return _registry;

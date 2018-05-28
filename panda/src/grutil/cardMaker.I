@@ -134,5 +134,5 @@ set_source_geometry(PandaNode *node, const LVecBase4 &frame) {
  */
 INLINE void CardMaker::
 clear_source_geometry() {
-  _source_geometry = (PandaNode *)nullptr;
+  _source_geometry = nullptr;
 }

@@ -34,7 +34,7 @@ BaseForce(const BaseForce &copy) :
   TypedReferenceCount(copy)
 {
   _active = copy._active;
-  _force_node = (ForceNode *) nullptr;
+  _force_node = nullptr;
 }
 
 /**

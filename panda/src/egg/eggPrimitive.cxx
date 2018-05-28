@@ -37,9 +37,9 @@ determine_alpha_mode() {
   }
 
   EggRenderMode *result = EggNode::determine_alpha_mode();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       EggTexture *egg_tex = get_texture(i);
 
       // We only want to consider the alpha mode on those textures that can
@@ -70,9 +70,9 @@ determine_depth_write_mode() {
   }
 
   EggRenderMode *result = EggNode::determine_depth_write_mode();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->get_depth_write_mode() != DWM_unspecified) {
         result = get_texture(i);
       }
@@ -94,9 +94,9 @@ determine_depth_test_mode() {
   }
 
   EggRenderMode *result = EggNode::determine_depth_test_mode();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->get_depth_test_mode() != DTM_unspecified) {
         result = get_texture(i);
       }
@@ -118,9 +118,9 @@ determine_visibility_mode() {
   }
 
   EggRenderMode *result = EggNode::determine_visibility_mode();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->get_visibility_mode() != VM_unspecified) {
         result = get_texture(i);
       }
@@ -142,9 +142,9 @@ determine_depth_offset() {
   }
 
   EggRenderMode *result = EggNode::determine_depth_offset();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->has_depth_offset()) {
         result = get_texture(i);
       }
@@ -166,9 +166,9 @@ determine_draw_order() {
   }
 
   EggRenderMode *result = EggNode::determine_draw_order();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->has_draw_order()) {
         result = get_texture(i);
       }
@@ -190,9 +190,9 @@ determine_bin() {
   }
 
   EggRenderMode *result = EggNode::determine_bin();
-  if (result == (EggRenderMode *)nullptr) {
+  if (result == nullptr) {
     int num_textures = get_num_textures();
-    for (int i = 0; i < num_textures && result == (EggRenderMode *)nullptr; i++) {
+    for (int i = 0; i < num_textures && result == nullptr; i++) {
       if (get_texture(i)->has_bin()) {
         result = get_texture(i);
       }
@@ -374,7 +374,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)nullptr);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
@@ -406,7 +406,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)nullptr);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
@@ -988,7 +988,7 @@ r_apply_texmats(EggTextureCollection &textures) {
         EggVertex *vertex = get_vertex(i);
 
         const EggVertexUV *uv_obj = vertex->get_uv_obj(uv_name);
-        if (uv_obj != (EggVertexUV *)nullptr) {
+        if (uv_obj != nullptr) {
           EggVertex new_vertex(*vertex);
           PT(EggVertexUV) new_uv_obj = new EggVertexUV(*uv_obj);
           LTexCoord3d uvw = uv_obj->get_uvw() * mat;

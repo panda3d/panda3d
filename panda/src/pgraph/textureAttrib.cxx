@@ -52,7 +52,7 @@ CPT(RenderAttrib) TextureAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)nullptr) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new TextureAttrib);
   }
 
@@ -67,7 +67,7 @@ CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)nullptr) {
+  if (_all_off_attrib == nullptr) {
     TextureAttrib *attrib = new TextureAttrib;
     attrib->_off_all_stages = true;
     _all_off_attrib = return_new(attrib);
@@ -768,7 +768,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
     TextureStage *stage = (*si)._stage;
     Texture *tex = (*si)._texture;
-    nassertv(tex != (Texture *)nullptr);
+    nassertv(tex != nullptr);
 
     manager->write_pointer(dg, stage);
     manager->write_pointer(dg, tex);
@@ -811,7 +811,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // have to do anything special here.
     Texture *tex = DCAST(Texture, p_list[pi++]);
 
-    if (tex != (Texture *)nullptr) {
+    if (tex != nullptr) {
       StageNode &sn = _on_stages[sni];
       sn._stage = ts;
       sn._texture = tex;

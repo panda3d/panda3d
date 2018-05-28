@@ -23,7 +23,7 @@ CPPDeclaration(const CPPFile &file) :
 {
   _vis = V_unknown;
   _template_scope = nullptr;
-  _leading_comment = (CPPCommentBlock *)nullptr;
+  _leading_comment = nullptr;
 }
 
 /**
@@ -140,7 +140,7 @@ substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
  */
 CPPInstance *CPPDeclaration::
 as_instance() {
-  return (CPPInstance *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -148,7 +148,7 @@ as_instance() {
  */
 CPPClassTemplateParameter *CPPDeclaration::
 as_class_template_parameter() {
-  return (CPPClassTemplateParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -156,7 +156,7 @@ as_class_template_parameter() {
  */
 CPPTypedefType *CPPDeclaration::
 as_typedef_type() {
-  return (CPPTypedefType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -164,7 +164,7 @@ as_typedef_type() {
  */
 CPPTypeDeclaration *CPPDeclaration::
 as_type_declaration() {
-  return (CPPTypeDeclaration *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -172,7 +172,7 @@ as_type_declaration() {
  */
 CPPExpression *CPPDeclaration::
 as_expression() {
-  return (CPPExpression *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -180,7 +180,7 @@ as_expression() {
  */
 CPPType *CPPDeclaration::
 as_type() {
-  return (CPPType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -188,7 +188,7 @@ as_type() {
  */
 CPPNamespace *CPPDeclaration::
 as_namespace() {
-  return (CPPNamespace *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -196,7 +196,7 @@ as_namespace() {
  */
 CPPUsing *CPPDeclaration::
 as_using() {
-  return (CPPUsing *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -204,7 +204,7 @@ as_using() {
  */
 CPPSimpleType *CPPDeclaration::
 as_simple_type() {
-  return (CPPSimpleType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -212,7 +212,7 @@ as_simple_type() {
  */
 CPPPointerType *CPPDeclaration::
 as_pointer_type() {
-  return (CPPPointerType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -220,7 +220,7 @@ as_pointer_type() {
  */
 CPPReferenceType *CPPDeclaration::
 as_reference_type() {
-  return (CPPReferenceType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -228,7 +228,7 @@ as_reference_type() {
  */
 CPPArrayType *CPPDeclaration::
 as_array_type() {
-  return (CPPArrayType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -236,7 +236,7 @@ as_array_type() {
  */
 CPPConstType *CPPDeclaration::
 as_const_type() {
-  return (CPPConstType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -244,7 +244,7 @@ as_const_type() {
  */
 CPPFunctionType *CPPDeclaration::
 as_function_type() {
-  return (CPPFunctionType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -252,7 +252,7 @@ as_function_type() {
  */
 CPPFunctionGroup *CPPDeclaration::
 as_function_group() {
-  return (CPPFunctionGroup *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -260,7 +260,7 @@ as_function_group() {
  */
 CPPExtensionType *CPPDeclaration::
 as_extension_type() {
-  return (CPPExtensionType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -268,7 +268,7 @@ as_extension_type() {
  */
 CPPStructType *CPPDeclaration::
 as_struct_type() {
-  return (CPPStructType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -276,7 +276,7 @@ as_struct_type() {
  */
 CPPEnumType *CPPDeclaration::
 as_enum_type() {
-  return (CPPEnumType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -284,7 +284,7 @@ as_enum_type() {
  */
 CPPTBDType *CPPDeclaration::
 as_tbd_type() {
-  return (CPPTBDType *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -292,7 +292,7 @@ as_tbd_type() {
  */
 CPPTypeProxy *CPPDeclaration::
 as_type_proxy() {
-  return (CPPTypeProxy *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -300,7 +300,7 @@ as_type_proxy() {
  */
 CPPMakeProperty *CPPDeclaration::
 as_make_property() {
-  return (CPPMakeProperty *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -308,7 +308,7 @@ as_make_property() {
  */
 CPPMakeSeq *CPPDeclaration::
 as_make_seq() {
-  return (CPPMakeSeq *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -316,7 +316,7 @@ as_make_seq() {
  */
 CPPClosureType *CPPDeclaration::
 as_closure_type() {
-  return (CPPClosureType *)nullptr;
+  return nullptr;
 }
 
 /**

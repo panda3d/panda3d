@@ -27,7 +27,7 @@ CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
   _parent(parent),
   _dirname(dirname)
 {
-  if (_parent == (CVSSourceDirectory *)nullptr) {
+  if (_parent == nullptr) {
     _depth = 0;
   } else {
     _depth = _parent->_depth + 1;
@@ -58,7 +58,7 @@ get_dirname() const {
  */
 Filename CVSSourceDirectory::
 get_fullpath() const {
-  if (_parent == (CVSSourceDirectory *)nullptr) {
+  if (_parent == nullptr) {
     return _tree->get_root_fullpath();
   }
   return Filename(_parent->get_fullpath(), _dirname);
@@ -70,7 +70,7 @@ get_fullpath() const {
  */
 Filename CVSSourceDirectory::
 get_path() const {
-  if (_parent == (CVSSourceDirectory *)nullptr) {
+  if (_parent == nullptr) {
     return _dirname;
   }
   return Filename(_parent->get_path(), _dirname);
@@ -93,13 +93,13 @@ get_rel_to(const CVSSourceDirectory *other) const {
   while (a->_depth > b->_depth) {
     prefix += "../";
     a = a->_parent;
-    nassertr(a != (CVSSourceDirectory *)nullptr, string());
+    nassertr(a != nullptr, string());
   }
 
   while (b->_depth > a->_depth) {
     postfix = b->_dirname + "/" + postfix;
     b = b->_parent;
-    nassertr(b != (CVSSourceDirectory *)nullptr, string());
+    nassertr(b != nullptr, string());
   }
 
   while (a != b) {
@@ -107,8 +107,8 @@ get_rel_to(const CVSSourceDirectory *other) const {
     postfix = b->_dirname + "/" + postfix;
     a = a->_parent;
     b = b->_parent;
-    nassertr(a != (CVSSourceDirectory *)nullptr, string());
-    nassertr(b != (CVSSourceDirectory *)nullptr, string());
+    nassertr(a != nullptr, string());
+    nassertr(b != nullptr, string());
   }
 
   string result = prefix + postfix;
@@ -158,7 +158,7 @@ find_relpath(const string &relpath) {
       return _parent->find_relpath(rest);
     }
     // Tried to back out past the root directory.
-    return (CVSSourceDirectory *)nullptr;
+    return nullptr;
   }
 
   // Check for a child with the name indicated by first.
@@ -170,7 +170,7 @@ find_relpath(const string &relpath) {
   }
 
   // No match.
-  return (CVSSourceDirectory *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -186,12 +186,12 @@ find_dirname(const string &dirname) {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     CVSSourceDirectory *result = (*ci)->find_dirname(dirname);
-    if (result != (CVSSourceDirectory *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (CVSSourceDirectory *)nullptr;
+  return nullptr;
 }
 
 /**

@@ -86,7 +86,7 @@ bind_joints(JointMap &joint_map) {
     if (ji != joint_map.end()) {
       Joint &joint = ji->second;
 
-      if (joint._character != (DaeCharacter *)nullptr) {
+      if (joint._character != nullptr) {
         // In some cases, though, multiple controllers share the same joints.
         // We can't support this without duplicating the joint structure, so
         // we check if the bind poses are the same.
@@ -267,7 +267,7 @@ build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
   for (size_t t = 0; t < node->GetTransformCount(); ++t) {
     FCDTransform *transform = node->GetTransform(t);
     FCDAnimated *animated = transform->GetAnimated();
-    if (animated != (FCDAnimated *)nullptr) {
+    if (animated != nullptr) {
       if (animated->HasCurve()) {
         animateds.push_back(animated);
       }

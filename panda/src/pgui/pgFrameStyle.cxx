@@ -191,7 +191,7 @@ generate_into(const NodePath &parent, const LVecBase4 &frame,
     break;
   }
 
-  if (new_node != (PandaNode *)nullptr && _color[3] != 1.0f) {
+  if (new_node != nullptr && _color[3] != 1.0f) {
     // We've got some alpha on the color; we need transparency.
     new_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }

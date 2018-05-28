@@ -70,7 +70,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
       if (child->is_of_type(EggPolygon::get_class_type())) {
         EggPolygon *poly = DCAST(EggPolygon, child);
 
-        if (_vertex_pool == (EggVertexPool *)nullptr) {
+        if (_vertex_pool == nullptr) {
           _vertex_pool = poly->get_pool();
           add_polygon(poly, EggMesherStrip::MO_user);
 
@@ -93,7 +93,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
     Strips::iterator si;
     for (si = _done.begin(); si != _done.end(); ++si) {
       PT(EggPrimitive) egg_prim = get_prim(*si);
-      if (egg_prim != (EggPrimitive *)nullptr) {
+      if (egg_prim != nullptr) {
         output_children->add_child(egg_prim);
       }
     }

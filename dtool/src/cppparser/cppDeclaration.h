@@ -226,7 +226,7 @@ protected:
 
 inline ostream &
 operator << (ostream &out, const CPPDeclaration &decl) {
-  decl.output(out, 0, (CPPScope *)nullptr, false);
+  decl.output(out, 0, nullptr, false);
   return out;
 }
 

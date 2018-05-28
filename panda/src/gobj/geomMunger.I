@@ -177,7 +177,7 @@ unregister_myself() {
  */
 INLINE GeomMunger::Registry *GeomMunger::
 get_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     make_registry();
   }
   return _registry;

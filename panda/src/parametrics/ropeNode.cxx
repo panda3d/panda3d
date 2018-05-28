@@ -50,7 +50,7 @@ void RopeNode::CData::
 write_datagram(BamWriter *writer, Datagram &dg) const {
   // For now, we write a NULL pointer.  Eventually we will write out the
   // NurbsCurveEvaluator pointer.
-  writer->write_pointer(dg, (TypedWritable *)nullptr);
+  writer->write_pointer(dg, nullptr);
 }
 
 /**
@@ -129,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Create some geometry on-the-fly to render the rope.
   if (get_num_subdiv() > 0) {
     NurbsCurveEvaluator *curve = get_curve();
-    if (curve != (NurbsCurveEvaluator *)nullptr) {
+    if (curve != nullptr) {
       PT(NurbsCurveResult) result;
       if (has_matrix()) {
         result = curve->evaluate(data.get_node_path(), get_matrix());
@@ -180,7 +180,7 @@ void RopeNode::
 output(ostream &out) const {
   PandaNode::output(out);
   NurbsCurveEvaluator *curve = get_curve();
-  if (curve != (NurbsCurveEvaluator *)nullptr) {
+  if (curve != nullptr) {
     out << " " << *curve;
   } else {
     out << " (no curve)";
@@ -270,7 +270,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   PT(BoundingVolume) bound = new BoundingSphere;
 
   NurbsCurveEvaluator *curve = get_curve();
-  if (curve != (NurbsCurveEvaluator *)nullptr) {
+  if (curve != nullptr) {
     NurbsCurveEvaluator::Vert3Array verts;
     get_curve()->get_vertices(verts, rel_to);
 
@@ -526,7 +526,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
     LPoint3 point;
     result->eval_segment_point(segment, 0.0f, point);
 
-    if (curve_segment == (CurveSegment *)nullptr ||
+    if (curve_segment == nullptr ||
         !point.almost_equal(last_point)) {
       // If the first point of this segment is different from the last point
       // of the previous segment, end the previous segment and begin a new

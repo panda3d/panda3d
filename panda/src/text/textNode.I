@@ -19,7 +19,7 @@
 INLINE PN_stdfloat TextNode::
 get_line_height() const {
   TextFont *font = get_font();
-  if (font == (TextFont *)nullptr) {
+  if (font == nullptr) {
     return 0.0f;
   }
 
@@ -182,7 +182,7 @@ get_card_color() const {
  */
 INLINE void TextNode::
 set_card_texture(Texture *card_texture) {
-  if (card_texture == (Texture *)nullptr) {
+  if (card_texture == nullptr) {
     clear_card_texture();
   } else {
     if (!has_card_texture() || _card_texture != card_texture) {

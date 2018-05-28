@@ -16,7 +16,7 @@
  */
 INLINE void LinearControlForce::
 clear_physics_object() {
-  _physics_object = (const PhysicsObject*)nullptr;
+  _physics_object = nullptr;
 }
 
 /**

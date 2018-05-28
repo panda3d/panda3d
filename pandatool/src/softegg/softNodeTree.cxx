@@ -35,9 +35,9 @@ SoftNodeTree() {
   _fps = 0.0;
   _use_prefix = 0;
   _search_prefix = nullptr;
-  _egg_data = (EggData *)nullptr;
-  _egg_root = (EggGroupNode *)nullptr;
-  _skeleton_node = (EggGroupNode *)nullptr;
+  _egg_data = nullptr;
+  _egg_root = nullptr;
+  _skeleton_node = nullptr;
 }
 /**
  * Given an element, return a copy of the element's name WITHOUT prefix.
@@ -314,7 +314,7 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
  */
 EggGroup *SoftNodeTree::
 get_egg_group(SoftNodeDesc *node_desc) {
-  nassertr(_egg_root != (EggGroupNode *)nullptr, nullptr);
+  nassertr(_egg_root != nullptr, nullptr);
 
   // lets print some relationship
   softegg_cat.spam() << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
@@ -324,7 +324,7 @@ get_egg_group(SoftNodeDesc *node_desc) {
     softegg_cat.spam() << " parent " << node_desc->_parent;
   softegg_cat.spam() << endl;
 
-  if (node_desc->_egg_group == (EggGroup *)nullptr) {
+  if (node_desc->_egg_group == nullptr) {
     // We need to make a new group node.
     EggGroup *egg_group;
 
@@ -355,7 +355,7 @@ get_egg_group(SoftNodeDesc *node_desc) {
  */
 EggTable *SoftNodeTree::
 get_egg_table(SoftNodeDesc *node_desc) {
-  nassertr(_skeleton_node != (EggGroupNode *)nullptr, nullptr);
+  nassertr(_skeleton_node != nullptr, nullptr);
   nassertr(node_desc->is_joint(), nullptr);
 
   // lets print some relationship
@@ -366,7 +366,7 @@ get_egg_table(SoftNodeDesc *node_desc) {
     softegg_cat.spam() << " parent " << node_desc->_parent;
   softegg_cat.spam() << endl;
 
-  if (node_desc->_egg_table == (EggTable *)nullptr) {
+  if (node_desc->_egg_table == nullptr) {
     softegg_cat.spam() << "creating a new table\n";
     // We need to make a new table node.  nassertr(node_desc->_parent !=
     // (SoftNodeDesc *)NULL, NULL);

@@ -273,7 +273,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   // Set up the culling.  We do this by extruding the four corners of the
   // frame into the eight corners of the bounding frustum.
   PT(GeometricBoundingVolume) frustum = make_frustum(lens, frame);
-  if (frustum != (GeometricBoundingVolume *)nullptr) {
+  if (frustum != nullptr) {
     frustum->xform(modelview_transform->get_inverse()->get_mat());
     data._view_frustum = frustum;
   }
@@ -415,28 +415,28 @@ make_frustum(const Lens *lens, const LVecBase4 &frame) const{
 
   // Upper left.
   if (!lens->extrude(corner, nul, ful)) {
-    return (GeometricBoundingVolume *)nullptr;
+    return nullptr;
   }
 
   corner[0] = f2[1]; corner[1] = f2[3];
 
   // Upper right.
   if (!lens->extrude(corner, nur, fur)) {
-    return (GeometricBoundingVolume *)nullptr;
+    return nullptr;
   }
 
   corner[0] = f2[1]; corner[1] = f2[2];
 
   // Lower right.
   if (!lens->extrude(corner, nlr, flr)) {
-    return (GeometricBoundingVolume *)nullptr;
+    return nullptr;
   }
 
   corner[0] = f2[0]; corner[1] = f2[2];
 
   // Lower left.
   if (!lens->extrude(corner, nll, fll)) {
-    return (GeometricBoundingVolume *)nullptr;
+    return nullptr;
   }
 
   return new BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);

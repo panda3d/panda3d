@@ -66,7 +66,7 @@ show_type_or_expression(const string &str) {
            << "Subtype code is: " << (int)type->get_subtype() << "\n\n";
 
       CPPStructType *stype = type->as_struct_type();
-      if (stype != (CPPStructType *)nullptr) {
+      if (stype != nullptr) {
         stype->check_virtual();
       }
 
@@ -84,7 +84,7 @@ show_type_or_expression(const string &str) {
            << "get_preferred_name = " << type->get_preferred_name() << "\n"
            << "is_incomplete = " << type->is_incomplete() << "\n";
 
-      if (stype != (CPPStructType *)nullptr) {
+      if (stype != nullptr) {
         cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
         bool is_abstract = stype->is_abstract();
         cout << "is_abstract = " << is_abstract << "\n";
@@ -121,7 +121,7 @@ show_methods(const string &str) {
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)nullptr);
+  assert(scope != nullptr);
 
   cerr << "Methods in " << *stype << ":\n";
 
@@ -154,7 +154,7 @@ show_data_members(const string &str) {
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)nullptr);
+  assert(scope != nullptr);
 
   cerr << "Data members in " << *stype << ":\n";
 
@@ -180,7 +180,7 @@ show_nested_types(const string &str) {
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)nullptr);
+  assert(scope != nullptr);
 
   cerr << "Nested types in " << *stype << ":\n";
 

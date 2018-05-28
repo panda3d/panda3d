@@ -80,7 +80,7 @@ supports_save() const {
 PT(PandaNode) LoaderFileTypeBam::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(path);
   }
 
@@ -94,7 +94,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   time_t timestamp = bam_file.get_reader()->get_source()->get_timestamp();
 
   PT(PandaNode) node = bam_file.read_node(report_errors);
-  if (node != (PandaNode *)nullptr && node->is_of_type(ModelRoot::get_class_type())) {
+  if (node != nullptr && node->is_of_type(ModelRoot::get_class_type())) {
     ModelRoot *model_root = DCAST(ModelRoot, node.p());
     model_root->set_fullpath(path);
     model_root->set_timestamp(timestamp);

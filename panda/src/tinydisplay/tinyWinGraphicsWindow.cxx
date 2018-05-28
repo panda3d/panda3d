@@ -60,7 +60,7 @@ TinyWinGraphicsWindow::
 bool TinyWinGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -90,7 +90,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinyWinGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -166,7 +166,7 @@ supports_pixel_zoom() const {
  */
 void TinyWinGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     TinyGraphicsStateGuardian *tinygsg;
     DCAST_INTO_V(tinygsg, _gsg);
     tinygsg->_current_frame_buffer = nullptr;

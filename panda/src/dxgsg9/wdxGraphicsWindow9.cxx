@@ -83,7 +83,7 @@ make_current() {
 bool wdxGraphicsWindow9::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -126,7 +126,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void wdxGraphicsWindow9::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -149,7 +149,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void wdxGraphicsWindow9::
 end_flip() {
-  if (_dxgsg != (DXGraphicsStateGuardian9 *)nullptr && is_active()) {
+  if (_dxgsg != nullptr && is_active()) {
     _dxgsg->show_frame();
   }
   WinGraphicsWindow::end_flip();
@@ -234,7 +234,7 @@ close_window() {
       << "wdxGraphicsWindow9::close_window() " << this << "\n";
   }
 
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     _gsg.clear();
   }
 

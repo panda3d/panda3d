@@ -404,7 +404,7 @@ read_index() {
 
   while (true) {
     BamCacheIndex *new_index = do_read_index(_index_pathname);
-    if (new_index != (BamCacheIndex *)nullptr) {
+    if (new_index != nullptr) {
       merge_index(new_index);
       return;
     }
@@ -514,7 +514,7 @@ merge_index(BamCacheIndex *new_index) {
 
         if (cache_pathname.exists()) {
           PT(BamCacheRecord) record = do_read_record(cache_pathname, false);
-          if (record != (BamCacheRecord *)nullptr) {
+          if (record != nullptr) {
             _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
           }
         }
@@ -577,7 +577,7 @@ rebuild_index() {
       Filename pathname(_root, filename);
 
       PT(BamCacheRecord) record = do_read_record(pathname, false);
-      if (record == (BamCacheRecord *)nullptr) {
+      if (record == nullptr) {
         // Well, it was invalid, so blow it away.
         if (util_cat.is_debug()) {
           util_cat.debug()
@@ -696,7 +696,7 @@ do_read_index(const Filename &index_pathname) {
 
   TypedWritable *object = reader.read_object();
 
-  if (object == (TypedWritable *)nullptr) {
+  if (object == nullptr) {
     util_cat.error()
       << "Cache index " << index_pathname << " is empty.\n";
     return nullptr;
@@ -767,7 +767,7 @@ find_and_read_record(const Filename &source_pathname,
   while (true) {
     PT(BamCacheRecord) record =
       read_record(source_pathname, cache_filename, pass);
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       add_to_index(record);
       return record;
     }
@@ -809,7 +809,7 @@ read_record(const Filename &source_pathname,
   }
 
   PT(BamCacheRecord) record = do_read_record(cache_pathname, true);
-  if (record == (BamCacheRecord *)nullptr) {
+  if (record == nullptr) {
     // Well, it was invalid, so blow it away, and make a new one.
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -881,7 +881,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
   }
 
   TypedWritable *object = reader.read_object();
-  if (object == (TypedWritable *)nullptr) {
+  if (object == nullptr) {
     if (util_cat.is_debug()) {
       util_cat.debug()
         << cache_pathname << " is empty.\n";

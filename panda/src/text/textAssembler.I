@@ -296,7 +296,7 @@ get_ypos(int r, int) const {
  */
 INLINE PN_stdfloat TextAssembler::
 calc_width(const TextCharacter &tch) {
-  if (tch._graphic != (TextGraphic *)nullptr) {
+  if (tch._graphic != nullptr) {
     return calc_width(tch._graphic, tch._cprops->_properties);
   } else {
     return calc_width(tch._character, tch._cprops->_properties);
@@ -420,7 +420,7 @@ ComputedProperties(ComputedProperties *based_on, const wstring &wname,
   string name = encoder->encode_wtext(wname);
 
   const TextProperties *named_props = manager->get_properties_ptr(name);
-  if (named_props != (TextProperties *)nullptr) {
+  if (named_props != nullptr) {
     _properties.add_properties(*named_props);
   } else {
     text_cat.warning()

@@ -247,7 +247,7 @@ get_instance_list(const STTree *tree) const {
   Trees::const_iterator ti = _trees.find(&ilist);
   if (ti == _trees.end()) {
     // The tree was not already present.
-    static InstanceList empty_list((STTree *)nullptr);
+    static InstanceList empty_list(nullptr);
     return empty_list;
   }
 
@@ -408,7 +408,7 @@ add_from_stf(const Filename &stf_filename, const LoaderOptions &options) {
   }
 
   PT(VirtualFile) file = vfs->get_file(fullpath);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     speedtree_cat.error()
       << "Could not find " << stf_filename << "\n";
@@ -555,7 +555,7 @@ set_terrain(STTerrain *terrain) {
   _terrain = nullptr;
   _needs_repopulate = true;
 
-  if (terrain == (STTerrain *)nullptr) {
+  if (terrain == nullptr) {
     return;
   }
 
@@ -608,7 +608,7 @@ snap_to_terrain() {
     InstanceList *instance_list = (*ti);
 
     int num_instances = instance_list->get_num_instances();
-    if (_terrain != (STTerrain *)nullptr) {
+    if (_terrain != nullptr) {
       for (int i = 0; i < num_instances; ++i) {
         STTransform trans = instance_list->get_instance(i);
         LPoint3 pos = trans.get_pos();
@@ -884,7 +884,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   PStatTimer timer(_cull_speedtree_pcollector);
 
   GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, trav->get_gsg());
-  nassertr(gsg != (GraphicsStateGuardian *)nullptr, true);
+  nassertr(gsg != nullptr, true);
   if (!validate_api(gsg)) {
     return false;
   }
@@ -918,7 +918,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // to disable textures.
   bool show_textures = true;
   const TextureAttrib *ta = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
-  if (ta != (TextureAttrib *)nullptr) {
+  if (ta != nullptr) {
     show_textures = !ta->has_all_off();
   }
   _forest_render.EnableTexturing(show_textures);
@@ -935,7 +935,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   int diffuse_priority = 0;
   const LightAttrib *la = DCAST(LightAttrib, state->get_attrib(LightAttrib::get_class_slot()));
-  if (la != (LightAttrib *)nullptr) {
+  if (la != nullptr) {
     for (int i = 0; i < la->get_num_on_lights(); ++i) {
       NodePath light = la->get_on_light(i);
       if (!light.is_empty() && light.node()->is_of_type(DirectionalLight::get_class_type())) {
@@ -954,7 +954,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     }
   }
 
-  if (dlight != (DirectionalLight *)nullptr) {
+  if (dlight != nullptr) {
     CPT(TransformState) transform = dlight_np.get_transform(trav->get_scene()->get_scene_root().get_parent());
     LVector3 dir = dlight->get_direction() * transform->get_mat();
     dir.normalize();
@@ -1119,7 +1119,7 @@ write(ostream &out, int indent_level) const {
 void SpeedTreeNode::
 write_error(ostream &out) {
   const char *error = SpeedTree::CCore::GetError();
-  if (error != (const char *)nullptr) {
+  if (error != nullptr) {
     out << error;
   }
   out << "\n";
@@ -1308,7 +1308,7 @@ update_terrain_cells() {
 bool SpeedTreeNode::
 validate_api(GraphicsStateGuardian *gsg) {
   GraphicsPipe *pipe = gsg->get_pipe();
-  nassertr(pipe != (GraphicsPipe *)nullptr, true);
+  nassertr(pipe != nullptr, true);
 
 #if defined(SPEEDTREE_OPENGL)
   static const string compiled_api = "OpenGL";
@@ -1722,7 +1722,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_trees; i++) {
     InstanceList *instance_list = new InstanceList(nullptr);
     instance_list->fillin(scan, manager);
-    if (instance_list->get_tree() == (STTree *)nullptr) {
+    if (instance_list->get_tree() == nullptr) {
       // The tree wasn't successfully loaded.  Don't keep it.
       delete instance_list;
     } else {

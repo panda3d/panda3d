@@ -76,7 +76,7 @@ do_task() {
 
   AsyncTask *task = get_task(_task_index);
   set_current_task(task, true);
-  nassertr(_current_task != (AsyncTask *)nullptr, DS_exit);
+  nassertr(_current_task != nullptr, DS_exit);
 
   DoneStatus result = _current_task->do_task();
   switch (result) {
@@ -159,7 +159,7 @@ set_current_task(AsyncTask *task, bool clean_exit) {
     return;
   }
 
-  if (_current_task != (AsyncTask *)nullptr) {
+  if (_current_task != nullptr) {
     nassertv(_current_task->_state == S_active_nested);
     nassertv(_current_task->_manager == _manager || _manager == nullptr);
     _current_task->_state = S_inactive;
@@ -169,7 +169,7 @@ set_current_task(AsyncTask *task, bool clean_exit) {
 
   _current_task = task;
 
-  if (_current_task != (AsyncTask *)nullptr) {
+  if (_current_task != nullptr) {
     nassertv(_current_task->_state == S_inactive);
     nassertv(_current_task->_manager == nullptr);
     _current_task->upon_birth(_manager);

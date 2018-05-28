@@ -363,7 +363,7 @@ around_finite(const BoundingVolume **first,
   const BoundingVolume **p = first;
   nassertr(!(*p)->is_empty() && !(*p)->is_infinite(), false);
   const FiniteBoundingVolume *vol = (*p)->as_finite_bounding_volume();
-  nassertr(vol != (FiniteBoundingVolume *)nullptr, false);
+  nassertr(vol != nullptr, false);
   LPoint3 min_box = vol->get_min();
   LPoint3 max_box = vol->get_max();
 
@@ -373,7 +373,7 @@ around_finite(const BoundingVolume **first,
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
       vol = (*p)->as_finite_bounding_volume();
-      if (vol == (FiniteBoundingVolume *)nullptr) {
+      if (vol == nullptr) {
         set_infinite();
         return true;
       }
@@ -407,7 +407,7 @@ around_finite(const BoundingVolume **first,
     for (p = first; p != last; ++p) {
       if (!(*p)->is_empty()) {
         const BoundingSphere *sphere = (*p)->as_bounding_sphere();
-        if (sphere != (BoundingSphere *)nullptr) {
+        if (sphere != nullptr) {
           // This is a sphere; consider its corner.
           PN_stdfloat dist = length(sphere->_center - _center);
           _radius = max(_radius, dist + sphere->_radius);
@@ -415,7 +415,7 @@ around_finite(const BoundingVolume **first,
         } else {
           // This is a nonsphere.  We fit around it.
           const FiniteBoundingVolume *vol = (*p)->as_finite_bounding_volume();
-          nassertr(vol != (FiniteBoundingVolume *)nullptr, false);
+          nassertr(vol != nullptr, false);
 
           BoundingBox box(vol->get_min(), vol->get_max());
           box.local_object();

@@ -102,7 +102,7 @@ main(int argc, char *argv[]) {
   framework.set_window_title("Panda Viewer");
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)nullptr) {
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     window->enable_keyboard();

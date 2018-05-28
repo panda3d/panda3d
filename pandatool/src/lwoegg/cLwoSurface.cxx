@@ -40,7 +40,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _checked_material = false;
   _checked_texture = false;
   _map_uvs = nullptr;
-  _block = (CLwoSurfaceBlock *)nullptr;
+  _block = nullptr;
 
   // Walk through the chunk list, looking for some basic properties.
   int num_chunks = _surface->get_num_chunks();
@@ -107,7 +107,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
           block->_channel_id == IffId("COLR") &&
           block->_enabled) {
         // Now save the block with the lowest ordinal.
-        if (_block == (CLwoSurfaceBlock *)nullptr) {
+        if (_block == nullptr) {
           _block = block;
 
         } else if (block->_ordinal < _block->_ordinal) {
@@ -146,7 +146,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
  */
 CLwoSurface::
 ~CLwoSurface() {
-  if (_block != (CLwoSurfaceBlock *)nullptr) {
+  if (_block != nullptr) {
     delete _block;
   }
 }
@@ -164,7 +164,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   if (!_surface->_source.empty()) {
     // This surface is derived from another surface; apply that one first.
     CLwoSurface *parent = _converter->get_surface(_surface->_source);
-    if (parent != (CLwoSurface *)nullptr && parent != this) {
+    if (parent != nullptr && parent != this) {
       parent->apply_properties(egg_prim, egg_vertices, smooth_angle);
     }
   }
@@ -204,13 +204,13 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
 bool CLwoSurface::
 check_texture() {
   if (_checked_texture) {
-    return (_egg_texture != (EggTexture *)nullptr);
+    return (_egg_texture != nullptr);
   }
   _checked_texture = true;
-  _egg_texture = (EggTexture *)nullptr;
+  _egg_texture = nullptr;
   _map_uvs = nullptr;
 
-  if (_block == (CLwoSurfaceBlock *)nullptr) {
+  if (_block == nullptr) {
     // No texture.  Not even a shader block.
     return false;
   }
@@ -222,7 +222,7 @@ check_texture() {
   }
 
   CLwoClip *clip = _converter->get_clip(clip_index);
-  if (clip == (CLwoClip *)nullptr) {
+  if (clip == nullptr) {
     nout << "No clip image with index " << clip_index << "\n";
     return false;
   }
@@ -281,10 +281,10 @@ check_texture() {
 bool CLwoSurface::
 check_material() {
   if (_checked_material) {
-    return (_egg_material != (EggMaterial *)nullptr);
+    return (_egg_material != nullptr);
   }
   _checked_material = true;
-  _egg_material = (EggMaterial *)nullptr;
+  _egg_material = nullptr;
 
   if (!_converter->_make_materials) {
     // If we aren't making materials, then don't make a material.

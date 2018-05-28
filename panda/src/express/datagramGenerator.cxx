@@ -44,7 +44,7 @@ save_datagram(SubfileInfo &info) {
 const Filename &DatagramGenerator::
 get_filename() {
   const FileReference *file = get_file();
-  if (file != (FileReference *)nullptr) {
+  if (file != nullptr) {
     return file->get_filename();
   }
   static const Filename empty_filename;

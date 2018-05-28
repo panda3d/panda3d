@@ -270,7 +270,7 @@ broadcast_pos_hpr_xy() {
 void CDistributedSmoothNodeBase::
 begin_send_update(DCPacker &packer, const string &field_name) {
   DCField *field = _dclass->get_field_by_name(field_name);
-  nassertv(field != (DCField *)nullptr);
+  nassertv(field != nullptr);
 
   if (_is_ai) {
 

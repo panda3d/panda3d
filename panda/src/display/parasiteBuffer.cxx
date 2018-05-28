@@ -198,7 +198,7 @@ void ParasiteBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   _host->end_frame(FM_parasite, current_thread);
 

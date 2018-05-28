@@ -66,7 +66,7 @@ AnimChannelScalarDynamic(const string &name)
  */
 bool AnimChannelScalarDynamic::
 has_changed(int, double, int, double) {
-  if (_value_node != (PandaNode *)nullptr) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
     bool has_changed = (_value != _last_value);
     _last_value = _value;
@@ -84,7 +84,7 @@ has_changed(int, double, int, double) {
  */
 void AnimChannelScalarDynamic::
 get_value(int, PN_stdfloat &value) {
-  if (_value_node != (PandaNode *)nullptr) {
+  if (_value_node != nullptr) {
     value = _value->get_pos()[0];
 
   } else {
@@ -108,13 +108,13 @@ set_value(PN_stdfloat value) {
  */
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {
-  if (_value_node == (PandaNode *)nullptr) {
+  if (_value_node == nullptr) {
     _last_value = TransformState::make_pos(LVecBase3(_float_value, 0.0f, 0.0f));
   }
 
   _value_node = value_node;
 
-  if (_value_node != (PandaNode *)nullptr) {
+  if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
 }

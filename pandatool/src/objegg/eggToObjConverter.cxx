@@ -110,7 +110,7 @@ process(const Filename &filename) {
   Filename obj_filename = Filename::text_filename(filename);
   vfs->delete_file(obj_filename);
   ostream *file = vfs->open_write_file(obj_filename, true, true);
-  if (file == (ostream *)nullptr) {
+  if (file == nullptr) {
     return false;
   }
   if (egg_precision != 0) {
@@ -134,7 +134,7 @@ process(const Filename &filename) {
 
   write_faces(*file, _egg_data);
 
-  bool success = (file != (ostream *)nullptr);
+  bool success = (file != nullptr);
   vfs->close_write_file(file);
 
   return success;

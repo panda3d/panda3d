@@ -32,7 +32,7 @@ PosixGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe) :
  */
 PosixGraphicsStateGuardian::
 ~PosixGraphicsStateGuardian() {
-  if (_libgl_handle != (void *)nullptr) {
+  if (_libgl_handle != nullptr) {
     dlclose(_libgl_handle);
   }
 }
@@ -61,14 +61,14 @@ do_get_extension_func(const char *name) {
  */
 void *PosixGraphicsStateGuardian::
 get_system_func(const char *name) {
-  if (_libgl_handle == (void *)nullptr) {
+  if (_libgl_handle == nullptr) {
     // We open the current executable, rather than naming a particular
     // library.  Presumably libGL.so (or whatever the library should be
     // called) is already available in the current executable address space,
     // so this is more portable than insisting on a particular shared library
     // name.
     _libgl_handle = dlopen(nullptr, RTLD_LAZY);
-    nassertr(_libgl_handle != (void *)nullptr, nullptr);
+    nassertr(_libgl_handle != nullptr, nullptr);
 
     // If that doesn't locate the symbol we expected, then fall back to
     // loading the GL library by its usual name.
@@ -77,7 +77,7 @@ get_system_func(const char *name) {
       glxdisplay_cat.warning()
         << name << " not found in executable; looking in libGL.so instead.\n";
       _libgl_handle = dlopen("libGL.so", RTLD_LAZY);
-      nassertr(_libgl_handle != (void *)nullptr, nullptr);
+      nassertr(_libgl_handle != nullptr, nullptr);
     }
   }
 

@@ -2535,7 +2535,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         int view = _glgsg->get_current_tex_view_offset();
 
         gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
-        if (gtc != (TextureContext*)nullptr) {
+        if (gtc != nullptr) {
           input._gtc = gtc;
 
           _glgsg->update_texture(gtc, true);

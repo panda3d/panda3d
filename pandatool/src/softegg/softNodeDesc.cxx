@@ -29,14 +29,14 @@ SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
   Namable(name),
   _parent(parent)
 {
-  _model = (SAA_Elem *)nullptr;
-  _egg_group = (EggGroup *)nullptr;
-  _egg_table = (EggTable *)nullptr;
-  _anim = (EggXfmSAnim *)nullptr;
+  _model = nullptr;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
   _joint_type = JT_none;
 
   // Add ourselves to our parent.
-  if (_parent != (SoftNodeDesc *)nullptr) {
+  if (_parent != nullptr) {
     softegg_cat.spam() << "parent name " << _parent->get_name();
     _parent->_children.push_back(this);
   }
@@ -140,7 +140,7 @@ force_set_parent(SoftNodeDesc *parent) {
  */
 bool SoftNodeDesc::
 has_model() const {
-  return (_model != (SAA_Elem *)nullptr);
+  return (_model != nullptr);
 }
 
 /**
@@ -149,7 +149,7 @@ has_model() const {
  */
 SAA_Elem *SoftNodeDesc::
 get_model() const {
-  nassertr(_model != (SAA_Elem *)nullptr, _model);
+  nassertr(_model != nullptr, _model);
   return _model;
 }
 
@@ -190,9 +190,9 @@ is_joint_parent() const {
  */
 void SoftNodeDesc::
 clear_egg() {
-  _egg_group = (EggGroup *)nullptr;
-  _egg_table = (EggTable *)nullptr;
-  _anim = (EggXfmSAnim *)nullptr;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -214,7 +214,7 @@ mark_joint_parent() {
   else
     softegg_cat.spam() << " ?parent " << get_name() << " joint type " << _joint_type;
 
-  if (_parent != (SoftNodeDesc *)nullptr) {
+  if (_parent != nullptr) {
     _parent->mark_joint_parent();
   }
   softegg_cat.spam() << endl;

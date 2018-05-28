@@ -538,7 +538,7 @@ make_vertex(const LPoint2d &xy) {
 void EggMakeFont::
 add_character(int code) {
   PNMTextGlyph *glyph = _text_maker->get_glyph(code);
-  if (glyph == (PNMTextGlyph *)nullptr) {
+  if (glyph == nullptr) {
     nout << "No definition in font for character " << code << ".\n";
     return;
   }

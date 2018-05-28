@@ -789,11 +789,11 @@ convert_primitive(const GeomVertexData *vertex_data,
   }
 
   // Check for a material.
-  EggMaterial *egg_mat = (EggMaterial *)nullptr;
+  EggMaterial *egg_mat = nullptr;
   const MaterialAttrib *ma;
   if (net_state->get_attrib(ma)) {
     egg_mat = get_egg_material(ma->get_material());
-    if (egg_mat != (EggMaterial *)nullptr) {
+    if (egg_mat != nullptr) {
       egg_prim->set_material(egg_mat);
     }
   }
@@ -803,9 +803,9 @@ convert_primitive(const GeomVertexData *vertex_data,
   if (net_state->get_attrib(ta)) {
     EggTexture *egg_tex = get_egg_texture(ta->get_texture());
 
-    if (egg_tex != (EggTexture *)nullptr) {
+    if (egg_tex != nullptr) {
       TextureStage *tex_stage = ta->get_on_stage(0);
-      if (tex_stage != (TextureStage *)nullptr) {
+      if (tex_stage != nullptr) {
         switch (tex_stage->get_mode()) {
         case TextureStage::M_modulate:
           if (has_color_off == true) {
@@ -1006,7 +1006,7 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
 
   const RenderEffects *effects = node->get_effects();
   const RenderEffect *effect = effects->get_effect(BillboardEffect::get_class_type());
-  if (effect != (RenderEffect *)nullptr) {
+  if (effect != nullptr) {
     const BillboardEffect *bbe = DCAST(BillboardEffect, effect);
     if (bbe->get_axial_rotate()) {
       egg_group->set_billboard_type(EggGroup::BT_axis);
@@ -1198,7 +1198,7 @@ apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag) {
  */
 EggMaterial *EggSaver::
 get_egg_material(Material *mat) {
-  if (mat != (Material *)nullptr) {
+  if (mat != nullptr) {
     EggMaterial temp(mat->get_name());
     if (mat->has_base_color()) {
       temp.set_base(mat->get_base_color());
@@ -1247,7 +1247,7 @@ get_egg_material(Material *mat) {
  */
 EggTexture *EggSaver::
 get_egg_texture(Texture *tex) {
-  if (tex != (Texture *)nullptr) {
+  if (tex != nullptr) {
     if (tex->has_filename()) {
       Filename filename = tex->get_filename();
       EggTexture temp(filename.get_basename_wo_extension(), filename);

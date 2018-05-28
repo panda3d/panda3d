@@ -34,10 +34,10 @@ TypeHandle TexturePlacement::_type_handle;
  */
 TexturePlacement::
 TexturePlacement() {
-  _texture = (TextureImage *)nullptr;
-  _group = (PaletteGroup *)nullptr;
-  _image = (PaletteImage *)nullptr;
-  _dest = (DestTextureImage *)nullptr;
+  _texture = nullptr;
+  _group = nullptr;
+  _image = nullptr;
+  _dest = nullptr;
   _has_uvs = false;
   _size_known = false;
   _is_filled = true;
@@ -60,8 +60,8 @@ TexturePlacement(TextureImage *texture, PaletteGroup *group) :
     _omit_reason = OR_unknown;
   }
 
-  _image = (PaletteImage *)nullptr;
-  _dest = (DestTextureImage *)nullptr;
+  _image = nullptr;
+  _dest = nullptr;
   _has_uvs = false;
   _size_known = false;
   _is_filled = false;
@@ -443,7 +443,7 @@ get_uv_area() const {
  */
 bool TexturePlacement::
 is_placed() const {
-  return _image != (PaletteImage *)nullptr;
+  return _image != nullptr;
 }
 
 /**
@@ -451,7 +451,7 @@ is_placed() const {
  */
 PaletteImage *TexturePlacement::
 get_image() const {
-  nassertr(is_placed(), (PaletteImage *)nullptr);
+  nassertr(is_placed(), nullptr);
   return _image;
 }
 
@@ -460,7 +460,7 @@ get_image() const {
  */
 PalettePage *TexturePlacement::
 get_page() const {
-  nassertr(is_placed(), (PalettePage *)nullptr);
+  nassertr(is_placed(), nullptr);
   return _image->get_page();
 }
 
@@ -540,9 +540,9 @@ place_at(PaletteImage *image, int x, int y) {
  */
 void TexturePlacement::
 force_replace() {
-  if (_image != (PaletteImage *)nullptr) {
+  if (_image != nullptr) {
     _image->unplace(this);
-    _image = (PaletteImage *)nullptr;
+    _image = nullptr;
   }
   if (_omit_reason == OR_none) {
     mark_eggs_stale();
@@ -1031,22 +1031,22 @@ int TexturePlacement::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)nullptr) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_texture, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)nullptr) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_group, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)nullptr) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_image, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)nullptr) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_dest, p_list[index], index);
   }
   index++;

@@ -185,7 +185,7 @@ INLINE bool PGSliderBar::
 is_button_down() const {
   LightReMutexHolder holder(_lock);
   return _dragging || _mouse_button_page ||
-    (_scroll_button_held != (PGItem *)nullptr);
+    (_scroll_button_held != nullptr);
 }
 
 /**
@@ -243,11 +243,11 @@ get_manage_pieces() const {
 INLINE void PGSliderBar::
 set_thumb_button(PGButton *thumb_button) {
   LightReMutexHolder holder(_lock);
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     _thumb_button->set_notify(nullptr);
   }
   _thumb_button = thumb_button;
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     _thumb_button->set_notify(this);
   }
   _needs_remanage = true;
@@ -284,11 +284,11 @@ get_thumb_button() const {
 INLINE void PGSliderBar::
 set_left_button(PGButton *left_button) {
   LightReMutexHolder holder(_lock);
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     _left_button->set_notify(nullptr);
   }
   _left_button = left_button;
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     _left_button->set_notify(this);
   }
   _needs_remanage = true;
@@ -325,11 +325,11 @@ get_left_button() const {
 INLINE void PGSliderBar::
 set_right_button(PGButton *right_button) {
   LightReMutexHolder holder(_lock);
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     _right_button->set_notify(nullptr);
   }
   _right_button = right_button;
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     _right_button->set_notify(this);
   }
   _needs_remanage = true;

@@ -180,7 +180,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(double value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
-  if (value == (const char *)nullptr) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -193,7 +193,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const char *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const wchar_t *value) {
-  if (value == (const wchar_t *)nullptr) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -214,7 +214,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring &value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
-  if (value == (const std::string *)nullptr) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -227,7 +227,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value) {
 }
 
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value) {
-  if (value == (const std::wstring *)nullptr) {
+  if (value == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   } else {
@@ -266,7 +266,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value) {
 
 #if PY_MAJOR_VERSION >= 0x02060000
 ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value) {
-  if (value == (Py_buffer *)nullptr) {
+  if (value == nullptr) {
     return value;
   } else {
     return PyMemoryView_FromBuffer(value);

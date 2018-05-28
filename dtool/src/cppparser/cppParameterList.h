@@ -59,7 +59,7 @@ public:
 
 inline ostream &
 operator << (ostream &out, const CPPParameterList &plist) {
-  plist.output(out, (CPPScope *)nullptr, true);
+  plist.output(out, nullptr, true);
   return out;
 }
 

@@ -208,7 +208,7 @@ add(AsyncTask *task) {
     nassertv(!do_has_task(task));
 
     AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
-    if (chain == (AsyncTaskChain *)nullptr) {
+    if (chain == nullptr) {
       task_cat.warning()
         << "Creating implicit AsyncTaskChain " << task->_chain_name
         << " for " << get_type() << " " << get_name() << "\n";
@@ -639,7 +639,7 @@ do_output(ostream &out) const {
  */
 void AsyncTaskManager::
 make_global_ptr() {
-  nassertv(_global_ptr == (AsyncTaskManager *)nullptr);
+  nassertv(_global_ptr == nullptr);
 
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();

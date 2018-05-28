@@ -51,11 +51,11 @@ get_geom(Geom::UsageHint usage_hint) const {
     if (_has_quad) {
       ((TextGlyph *)this)->make_quad_geom();
       if (_geom.is_null()) {
-        return (Geom *)nullptr;
+        return nullptr;
       }
     } else {
       // Nope.
-      return (Geom *)nullptr;
+      return nullptr;
     }
   }
 

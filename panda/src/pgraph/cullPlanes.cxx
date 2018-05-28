@@ -81,7 +81,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
             const ClipPlaneAttrib *net_attrib,
             const ClipPlaneAttrib *off_attrib,
             const OccluderEffect *node_effect) const {
-  if (net_attrib == (ClipPlaneAttrib *)nullptr && node_effect == (OccluderEffect *)nullptr) {
+  if (net_attrib == nullptr && node_effect == nullptr) {
     return this;
   }
 
@@ -94,7 +94,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
   CPT(TransformState) net_transform = nullptr;
 
-  if (net_attrib != (ClipPlaneAttrib *)nullptr) {
+  if (net_attrib != nullptr) {
     int num_on_planes = net_attrib->get_num_on_planes();
     for (int i = 0; i < num_on_planes; ++i) {
       NodePath clip_plane = net_attrib->get_on_plane(i);
@@ -103,7 +103,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         if (!off_attrib->has_off_plane(clip_plane)) {
           // Here's a new clip plane; add it to the list.  For this we need
           // the net transform to this node.
-          if (net_transform == (TransformState *)nullptr) {
+          if (net_transform == nullptr) {
             net_transform = data->get_net_transform(trav);
           }
 
@@ -118,7 +118,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
     }
   }
 
-  if (node_effect != (OccluderEffect *)nullptr) {
+  if (node_effect != nullptr) {
     CPT(TransformState) center_transform = nullptr;
     // We'll need to know the occluder's frustum in cull-center space.
     SceneSetup *scene = trav->get_scene();
@@ -137,8 +137,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         // And the transform from cull-center space into the current node's
         // coordinate space.
-        if (center_transform == (TransformState *)nullptr) {
-          if (net_transform == (TransformState *)nullptr) {
+        if (center_transform == nullptr) {
+          if (net_transform == nullptr) {
             net_transform = data->get_net_transform(trav);
           }
 
@@ -177,7 +177,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         occluder_gbv = new BoundingBox(ccp_min, ccp_max);
 
-        if (data->_view_frustum != (GeometricBoundingVolume *)nullptr) {
+        if (data->_view_frustum != nullptr) {
           int occluder_result = data->_view_frustum->contains(occluder_gbv);
           if (occluder_result == BoundingVolume::IF_no_intersection) {
             // This occluder is outside the view frustum; ignore it.

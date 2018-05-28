@@ -55,7 +55,7 @@ AdaptiveLru::
   // to disk unnecessarily).
 
   while (_static_list._next != &_static_list) {
-    nassertv(_static_list._next != (LinkedListNode *)nullptr);
+    nassertv(_static_list._next != nullptr);
     AdaptiveLruPage *page = (AdaptiveLruPage *)(AdaptiveLruPageStaticList *)_static_list._next;
 
     page->_lru = nullptr;
@@ -170,19 +170,19 @@ update_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLruPage::
 enqueue_lru(AdaptiveLru *lru) {
-  if (lru != _lru && _lru != (AdaptiveLru *)nullptr) {
+  if (lru != _lru && _lru != nullptr) {
     // It was previously on a different LRU.  Remove it first.
     _lru->do_remove_page(this);
     _lru = nullptr;
   }
 
   if (lru == _lru) {
-    if (_lru != (AdaptiveLru *)nullptr) {
+    if (_lru != nullptr) {
       // It's already on this LRU.  Access it.
       _lru->do_access_page(this);
     }
   } else {
-    nassertv(lru != (AdaptiveLru *)nullptr);
+    nassertv(lru != nullptr);
     // Add it to a new LRU.
     _lru = lru;
 
@@ -281,7 +281,7 @@ write(ostream &out, int indent_level) const {
  */
 void AdaptiveLru::
 do_add_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)nullptr && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   _total_size += page->_lru_size;
@@ -294,7 +294,7 @@ do_add_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLru::
 do_remove_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)nullptr && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   _total_size -= page->_lru_size;
@@ -307,7 +307,7 @@ do_remove_page(AdaptiveLruPage *page) {
  */
 void AdaptiveLru::
 do_access_page(AdaptiveLruPage *page) {
-  nassertv(page != (AdaptiveLruPage *)nullptr && page->_lru == this);
+  nassertv(page != nullptr && page->_lru == this);
   LightMutexHolder holder(_lock);
 
   if (page->_current_frame_identifier == _current_frame_identifier) {
@@ -533,7 +533,7 @@ write(ostream &out, int indent_level) const {
  */
 unsigned int AdaptiveLruPage::
 get_num_frames() const {
-  if (_lru == (AdaptiveLru *)nullptr) {
+  if (_lru == nullptr) {
     return 0;
   }
   return _lru->_current_frame_identifier - _first_frame_identifier;
@@ -545,7 +545,7 @@ get_num_frames() const {
  */
 unsigned int AdaptiveLruPage::
 get_num_inactive_frames() const {
-  if (_lru == (AdaptiveLru *)nullptr) {
+  if (_lru == nullptr) {
     return 0;
   }
   return _lru->_current_frame_identifier - _current_frame_identifier;

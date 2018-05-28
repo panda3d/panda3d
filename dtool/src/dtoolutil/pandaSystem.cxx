@@ -432,7 +432,7 @@ write(ostream &out) const {
  */
 PandaSystem *PandaSystem::
 get_global_ptr() {
-  if (_global_ptr == (PandaSystem *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PandaSystem;
   }
 

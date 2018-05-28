@@ -79,7 +79,7 @@ clear_terrain() {
  */
 INLINE bool SpeedTreeNode::
 has_terrain() const {
-  return _terrain != (STTerrain *)nullptr;
+  return _terrain != nullptr;
 }
 
 /**

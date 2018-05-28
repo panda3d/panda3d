@@ -367,7 +367,7 @@ clear_rows() {
 void GeomVertexData::
 set_transform_table(const TransformTable *table) {
   Thread *current_thread = Thread::get_current_thread();
-  nassertv(table == (TransformTable *)nullptr || table->is_registered());
+  nassertv(table == nullptr || table->is_registered());
 
   CDWriter cdata(_cycler, true, current_thread);
   cdata->_transform_table = (TransformTable *)table;
@@ -425,7 +425,7 @@ set_transform_blend_table(const TransformBlendTable *table) {
  */
 void GeomVertexData::
 set_slider_table(const SliderTable *table) {
-  nassertv(table == (SliderTable *)nullptr || table->is_registered());
+  nassertv(table == nullptr || table->is_registered());
 
   CDWriter cdata(_cycler, true);
   cdata->_slider_table = (SliderTable *)table;
@@ -540,7 +540,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           dest_format->get_array(dest_i);
         const GeomVertexColumn *dest_column =
           dest_array_format->get_column(source_column->get_name());
-        nassertv(dest_column != (const GeomVertexColumn *)nullptr);
+        nassertv(dest_column != nullptr);
 
         if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
@@ -604,7 +604,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
       // Convert Panda-style animation tables to hardware-style animation
       // tables.
       CPT(TransformBlendTable) blend_table = source->get_transform_blend_table();
-      if (blend_table != (TransformBlendTable *)nullptr) {
+      if (blend_table != nullptr) {
         PT(TransformTable) transform_table = new TransformTable;
         TransformMap already_added;
 
@@ -732,7 +732,7 @@ convert_to(const GeomVertexFormat *new_format) const {
     entry->refresh(current_thread);
 
     CDCacheReader cdata(entry->_cycler);
-    if (cdata->_result != (GeomVertexData *)nullptr) {
+    if (cdata->_result != nullptr) {
       return cdata->_result;
     }
 
@@ -758,7 +758,7 @@ convert_to(const GeomVertexFormat *new_format) const {
   new_data->copy_from(this, false);
 
   // Record the new result in the cache.
-  if (entry == (CacheEntry *)nullptr) {
+  if (entry == nullptr) {
     // Create a new entry for the result.
     // We don't need the key anymore, move the pointers into the CacheEntry.
     entry = new CacheEntry((GeomVertexData *)this, move(key));
@@ -795,7 +795,7 @@ CPT(GeomVertexData) GeomVertexData::
 scale_color(const LVecBase4 &color_scale) const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
-  if (old_column == (GeomVertexColumn *)nullptr) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -866,7 +866,7 @@ CPT(GeomVertexData) GeomVertexData::
 set_color(const LColor &color) const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
-  if (old_column == (GeomVertexColumn *)nullptr) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -910,7 +910,7 @@ CPT(GeomVertexData) GeomVertexData::
 reverse_normals() const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_normal());
-  if (old_column == (GeomVertexColumn *)nullptr) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -967,7 +967,7 @@ animate_vertices(bool force, Thread *current_thread) const {
   {
     PStatTimer timer2(((GeomVertexData *)this)->_blends_pcollector, current_thread);
     if (!cdata->_transform_blend_table.is_null()) {
-      if (cdata->_slider_table != (SliderTable *)nullptr) {
+      if (cdata->_slider_table != nullptr) {
         modified =
           max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
               cdata->_slider_table->get_modified(current_thread));
@@ -975,7 +975,7 @@ animate_vertices(bool force, Thread *current_thread) const {
         modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
       }
 
-    } else if (cdata->_slider_table != (SliderTable *)nullptr) {
+    } else if (cdata->_slider_table != nullptr) {
       modified = cdata->_slider_table->get_modified(current_thread);
 
     } else {
@@ -985,14 +985,14 @@ animate_vertices(bool force, Thread *current_thread) const {
   }
 
   if (cdata->_animated_vertices_modified == modified &&
-      cdata->_animated_vertices != (GeomVertexData *)nullptr) {
+      cdata->_animated_vertices != nullptr) {
     // No changes.
     return cdata->_animated_vertices;
   }
 
   if (!force && !request_resident()) {
     // The vertex data isn't resident.  Return the best information we've got.
-    if (cdata->_animated_vertices != (GeomVertexData *)nullptr) {
+    if (cdata->_animated_vertices != nullptr) {
       return cdata->_animated_vertices;
     }
     return this;
@@ -1284,7 +1284,7 @@ write(ostream &out, int indent_level) const {
   }
   get_format()->write_with_data(out, indent_level + 2, this);
   CPT(TransformBlendTable) table = get_transform_blend_table();
-  if (table != (TransformBlendTable *)nullptr) {
+  if (table != nullptr) {
     indent(out, indent_level)
       << "Transform blend table:\n";
     table->write(out, indent_level + 2);
@@ -1347,7 +1347,7 @@ describe_vertex(ostream &out, int row) const {
     nassertv(array != nullptr && aformat != nullptr);
     out << "  " << *aformat << "\n";
     CPT(GeomVertexArrayDataHandle) handle = array->get_handle();
-    nassertv(handle != (const GeomVertexArrayDataHandle *)nullptr);
+    nassertv(handle != nullptr);
     const unsigned char *data = handle->get_read_pointer(true);
     nassertv(data != nullptr);
     int stride = aformat->get_stride();
@@ -1466,7 +1466,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   const GeomVertexFormat *orig_format = cdata->_format;
   CPT(GeomVertexFormat) new_format = orig_format;
 
-  if (cdata->_animated_vertices == (GeomVertexData *)nullptr) {
+  if (cdata->_animated_vertices == nullptr) {
     new_format = orig_format->get_post_animated_format();
     cdata->_animated_vertices =
       new GeomVertexData(get_name(), new_format,
@@ -1482,7 +1482,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
   // First, apply all of the morphs.
   CPT(SliderTable) slider_table = cdata->_slider_table;
-  if (slider_table != (SliderTable *)nullptr) {
+  if (slider_table != nullptr) {
     PStatTimer timer2(_morphs_pcollector);
     int num_morphs = orig_format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
@@ -1565,7 +1565,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
   // Then apply the transforms.
   CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer(current_thread);
-  if (tb_table != (TransformBlendTable *)nullptr) {
+  if (tb_table != nullptr) {
     // Recompute all the blends up front, so we don't have to test each one
     // for staleness at each vertex.
     {
@@ -2072,14 +2072,14 @@ finalize(BamReader *manager) {
     array_obj->_array_format = new_array_format;
   }
 
-  if (cdata->_transform_table != (TransformTable *)nullptr) {
+  if (cdata->_transform_table != nullptr) {
     CPT(TransformTable) new_transform_table =
       TransformTable::register_table(cdata->_transform_table);
     manager->change_pointer(cdata->_transform_table, new_transform_table);
     cdata->_transform_table = new_transform_table;
   }
 
-  if (cdata->_slider_table != (SliderTable *)nullptr) {
+  if (cdata->_slider_table != nullptr) {
     CPT(SliderTable) new_slider_table =
       SliderTable::register_table(cdata->_slider_table);
     manager->change_pointer(cdata->_slider_table, new_slider_table);
@@ -2186,7 +2186,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     CPT(GeomVertexArrayData) adata = _arrays[0].get_read_pointer();
     all_rows.set_range(0, adata->get_num_rows());
 
-    if (_slider_table != (SliderTable *)nullptr) {
+    if (_slider_table != nullptr) {
       int num_sliders = _slider_table->get_num_sliders();
       for (int i = 0; i < num_sliders; ++i) {
         ((SliderTable *)_slider_table.p())->set_slider_rows(i, all_rows);

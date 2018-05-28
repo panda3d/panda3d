@@ -72,7 +72,7 @@ load_collada_file(const Filename &filename, CoordinateSystem cs,
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(filename);
   }
 

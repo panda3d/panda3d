@@ -652,7 +652,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
     pop_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
     _active.pop_back();
 
-    if (thread != (AsyncTaskChain::AsyncTaskChainThread *)nullptr) {
+    if (thread != nullptr) {
       thread->_servicing = task;
     }
 
@@ -669,7 +669,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
     AsyncTask::DoneStatus ds = task->unlock_and_do_task();
 
-    if (thread != (AsyncTaskChain::AsyncTaskChainThread *)nullptr) {
+    if (thread != nullptr) {
       thread->_servicing = nullptr;
     }
     task->_servicing_thread = nullptr;
@@ -1099,7 +1099,7 @@ do_get_active_tasks() const {
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
-    if (task != (AsyncTask *)nullptr) {
+    if (task != nullptr) {
       result.add_task(task);
     }
   }
@@ -1228,7 +1228,7 @@ cleanup_pickup_mode() {
  */
 void AsyncTaskChain::
 do_output(ostream &out) const {
-  if (_manager != (AsyncTaskManager *)nullptr) {
+  if (_manager != nullptr) {
     out << _manager->get_type() << " " << _manager->get_name();
   } else {
     out << "(no manager)";
@@ -1288,7 +1288,7 @@ do_write(ostream &out, int indent_level) const {
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
-    if (task != (AsyncTask *)nullptr) {
+    if (task != nullptr) {
       tasks.push_back(task);
     }
   }

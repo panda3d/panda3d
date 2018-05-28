@@ -395,5 +395,5 @@ find_mref(const string &mref_name) const {
     }
   }
 
-  return (EggMaterial *)nullptr;
+  return nullptr;
 }

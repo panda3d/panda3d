@@ -42,7 +42,7 @@ __init__(PyObject *self, PyObject *sequence) {
 
     Texture *tex;
     DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
-    if (tex == (Texture *)nullptr) {
+    if (tex == nullptr) {
       // Unable to add item--probably it wasn't of the appropriate type.
       ostringstream stream;
       stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";

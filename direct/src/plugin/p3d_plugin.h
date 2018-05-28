@@ -633,7 +633,7 @@ struct _P3D_object {
 
 #define P3D_OBJECT_INCREF(object) (++(object)->_ref_count)
 #define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
-#define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)nullptr) { P3D_OBJECT_DECREF(object); } }
+#define P3D_OBJECT_XDECREF(object) { if ((object) != nullptr) { P3D_OBJECT_DECREF(object); } }
 
 /* End of method pointer definitions.  The following function types
    are once again meant to define actual function pointers to be found

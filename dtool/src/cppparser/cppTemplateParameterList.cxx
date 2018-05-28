@@ -116,7 +116,7 @@ bool CPPTemplateParameterList::
 is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
     CPPType *type = _parameters[i]->as_type();
-    if (type != (CPPType *)nullptr &&
+    if (type != nullptr &&
         (type->is_tbd() || type->as_class_template_parameter() != nullptr)) {
       return true;
     }

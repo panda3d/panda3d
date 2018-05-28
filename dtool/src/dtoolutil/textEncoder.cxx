@@ -345,7 +345,7 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
     encoding = TextEncoder::E_unicode;
   } else {
     ostream *notify_ptr = StringDecoder::get_notify_ptr();
-    if (notify_ptr != (ostream *)nullptr) {
+    if (notify_ptr != nullptr) {
       (*notify_ptr)
         << "Invalid TextEncoder::Encoding: " << word << "\n";
     }

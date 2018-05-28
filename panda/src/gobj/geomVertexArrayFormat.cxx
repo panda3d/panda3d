@@ -243,7 +243,7 @@ add_column(const GeomVertexColumn &column) {
 
   // Also make sure there aren't any columns that overlap with this one.
   const GeomVertexColumn *orig_column = get_column(column.get_start(), column.get_total_bytes());
-  while (orig_column != (const GeomVertexColumn *)nullptr) {
+  while (orig_column != nullptr) {
     remove_column(orig_column->get_name());
     orig_column = get_column(column.get_start(), column.get_total_bytes());
   }
@@ -667,7 +667,7 @@ sort_columns() {
  */
 void GeomVertexArrayFormat::
 make_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     _registry = new Registry;
   }
 }

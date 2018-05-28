@@ -58,7 +58,7 @@ ConfigPage::
  */
 ConfigPage *ConfigPage::
 get_default_page() {
-  if (_default_page == (ConfigPage *)nullptr) {
+  if (_default_page == nullptr) {
     _default_page = new ConfigPage("default", false, 0);
   }
   return _default_page;
@@ -71,7 +71,7 @@ get_default_page() {
  */
 ConfigPage *ConfigPage::
 get_local_page() {
-  if (_local_page == (ConfigPage *)nullptr) {
+  if (_local_page == nullptr) {
     _local_page = new ConfigPage("local", false, 0);
   }
   return _local_page;
@@ -142,7 +142,7 @@ read_prc(istream &in) {
 
     // Look for the first line in the buffer..
     char *newline = (char *)memchr((void *)buffer, '\n', count);
-    if (newline == (char *)nullptr) {
+    if (newline == nullptr) {
       // The buffer was one long line.  Huh.
       prev_line += string(buffer, count);
 
@@ -154,7 +154,7 @@ read_prc(istream &in) {
       // Now look for the next line, etc.
       char *start = newline + 1;
       newline = (char *)memchr((void *)start, '\n', buffer_end - start);
-      while (newline != (char *)nullptr) {
+      while (newline != nullptr) {
         length = newline - start;
         read_prc_line(string(start, length + 1));
         start = newline + 1;
@@ -189,7 +189,7 @@ read_prc(istream &in) {
     int num_keys = pkr->get_num_keys();
     for (int i = 1; i < num_keys && _trust_level == 0; i++) {
       EVP_PKEY *pkey = pkr->get_key(i);
-      if (pkey != (EVP_PKEY *)nullptr) {
+      if (pkey != nullptr) {
         int verify_result =
           EVP_VerifyFinal((EVP_MD_CTX *)_md_ctx,
                           (unsigned char *)_signature.data(),
@@ -283,7 +283,7 @@ get_num_declarations() const {
  */
 const ConfigDeclaration *ConfigPage::
 get_declaration(size_t n) const {
-  nassertr(n < _declarations.size(), (ConfigDeclaration *)nullptr);
+  nassertr(n < _declarations.size(), nullptr);
   return _declarations[n];
 }
 
@@ -294,7 +294,7 @@ get_declaration(size_t n) const {
  */
 ConfigDeclaration *ConfigPage::
 modify_declaration(size_t n) {
-  nassertr(n < _declarations.size(), (ConfigDeclaration *)nullptr);
+  nassertr(n < _declarations.size(), nullptr);
   return _declarations[n];
 }
 

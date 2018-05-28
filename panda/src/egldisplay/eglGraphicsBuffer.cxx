@@ -62,7 +62,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -105,7 +105,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void eglGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -124,7 +124,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void eglGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     eglGraphicsStateGuardian *eglgsg;
     DCAST_INTO_V(eglgsg, _gsg);
     if (!eglMakeCurrent(eglgsg->_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {

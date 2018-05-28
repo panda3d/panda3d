@@ -118,7 +118,7 @@ cull_callback(CullTraverser *, CullTraverserData &data) {
  */
 void ProjectionScreen::
 set_projector(const NodePath &projector) {
-  _projector_node = (LensNode *)nullptr;
+  _projector_node = nullptr;
   _projector = projector;
   if (!projector.is_empty()) {
     nassertv(projector.node()->is_of_type(LensNode::get_class_type()));
@@ -270,7 +270,7 @@ make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
            camera.node()->is_of_type(LensNode::get_class_type()),
            nullptr);
   LensNode *camera_node = DCAST(LensNode, camera.node());
-  nassertr(camera_node->get_lens() != (Lens *)nullptr, nullptr);
+  nassertr(camera_node->get_lens() != nullptr, nullptr);
 
   // First, ensure the UV's are up-to-date.
   recompute_if_stale(this_np);
@@ -318,8 +318,8 @@ bool ProjectionScreen::
 recompute_if_stale(const NodePath &this_np) {
   nassertr(!this_np.is_empty() && this_np.node() == this, false);
 
-  if (_projector_node != (LensNode *)nullptr &&
-      _projector_node->get_lens() != (Lens *)nullptr) {
+  if (_projector_node != nullptr &&
+      _projector_node->get_lens() != nullptr) {
     UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
     if (_stale || lens_change != _projector_lens_change) {
       recompute();
@@ -346,8 +346,8 @@ recompute_if_stale(const NodePath &this_np) {
  */
 void ProjectionScreen::
 do_recompute(const NodePath &this_np) {
-  if (_projector_node != (LensNode *)nullptr &&
-      _projector_node->get_lens() != (Lens *)nullptr) {
+  if (_projector_node != nullptr &&
+      _projector_node->get_lens() != nullptr) {
 
     recompute_node(this_np, _rel_top_mat, _computed_rel_top_mat);
     // Make sure this flag is set to false for next time.
@@ -479,7 +479,7 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   Thread *current_thread = Thread::get_current_thread();
 
   Lens *lens = _projector_node->get_lens();
-  nassertv(lens != (Lens *)nullptr);
+  nassertv(lens != nullptr);
 
   const LMatrix4 &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
@@ -650,7 +650,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
     const Geom *geom = node->get_geom(i);
     PT(Geom) new_geom =
       make_mesh_geom(geom, lens_node->get_lens(), rel_mat);
-    if (new_geom != (Geom *)nullptr) {
+    if (new_geom != nullptr) {
       new_node->add_geom(new_geom, node->get_geom_state(i));
     }
   }

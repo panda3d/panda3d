@@ -301,7 +301,7 @@ set_primitive(size_t i, const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)nullptr);
+  nassertv_always(compat != nullptr);
 
   cdata->_primitives[i] = (GeomPrimitive *)compat.p();
   PrimitiveType new_primitive_type = compat->get_primitive_type();
@@ -1030,7 +1030,7 @@ check_valid(const GeomVertexData *vertex_data) const {
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_user_bounds != (BoundingVolume *)nullptr) {
+  if (cdata->_user_bounds != nullptr) {
     return cdata->_user_bounds;
   }
 
@@ -1231,7 +1231,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
-  if (gc != (GeomContext *)nullptr) {
+  if (gc != nullptr) {
     _contexts[prepared_objects] = gc;
   }
   return gc;

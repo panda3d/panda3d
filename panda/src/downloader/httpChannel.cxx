@@ -588,7 +588,7 @@ open_read_body() {
  */
 void HTTPChannel::
 close_read_body(istream *stream) const {
-  if (stream != (istream *)nullptr) {
+  if (stream != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -677,7 +677,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
  */
 bool HTTPChannel::
 download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
-  nassertr(ramfile != (Ramfile *)nullptr, false);
+  nassertr(ramfile != nullptr, false);
   reset_download_to();
   ramfile->_pos = 0;
   _download_to_ramfile = ramfile;
@@ -887,7 +887,7 @@ reached_done_state() {
   } else {
     // Oops, we have to download the body now.
     open_read_body();
-    if (_body_stream == (ISocketStream *)nullptr) {
+    if (_body_stream == nullptr) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -924,7 +924,7 @@ run_try_next_proxy() {
 
     // Now try the next proxy in sequence.
     _proxy = _proxies[_proxy_next_index];
-    _proxy_auth = (HTTPAuthorization *)nullptr;
+    _proxy_auth = nullptr;
     _proxy_next_index++;
     close_connection();
     reconsider_proxy();
@@ -1138,7 +1138,7 @@ run_http_proxy_reading_header() {
     // 407: not authorized to proxy.  Try to get the authorization.
     string authenticate_request = get_header_value("Proxy-Authenticate");
     _proxy_auth = _client->generate_auth(_proxy, true, authenticate_request);
-    if (_proxy_auth != (HTTPAuthorization *)nullptr) {
+    if (_proxy_auth != nullptr) {
       _proxy_realm = _proxy_auth->get_realm();
       _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
@@ -1449,7 +1449,7 @@ run_setup_ssl() {
 
   SSL *ssl = nullptr;
   BIO_get_ssl(_sbio, &ssl);
-  nassertr(ssl != (SSL *)nullptr, false);
+  nassertr(ssl != nullptr, false);
 
   // We only take one word at a time from the _cipher_list.  If that
   // connection fails, then we take the next word.
@@ -1587,14 +1587,14 @@ run_ssl_handshake() {
 
   SSL *ssl = nullptr;
   BIO_get_ssl(_sbio, &ssl);
-  nassertr(ssl != (SSL *)nullptr, false);
+  nassertr(ssl != nullptr, false);
 
   if (!_nonblocking) {
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
   }
 
   const SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
-  if (cipher == (const SSL_CIPHER *)nullptr) {
+  if (cipher == nullptr) {
     downloader_cat.warning()
       << _NOTIFY_HTTP_CHANNEL_ID
       << "No current cipher on SSL connection.\n";
@@ -1612,7 +1612,7 @@ run_ssl_handshake() {
   _sbio = nullptr;
 
   X509 *cert = SSL_get_peer_certificate(ssl);
-  if (cert == (X509 *)nullptr) {
+  if (cert == nullptr) {
     downloader_cat.info()
       << _NOTIFY_HTTP_CHANNEL_ID
       << "No certificate was presented by server.\n";
@@ -1925,7 +1925,7 @@ run_reading_header() {
     string authenticate_request = get_header_value("Proxy-Authenticate");
     _proxy_auth =
       _client->generate_auth(_proxy, true, authenticate_request);
-    if (_proxy_auth != (HTTPAuthorization *)nullptr) {
+    if (_proxy_auth != nullptr) {
       _proxy_realm = _proxy_auth->get_realm();
       _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
       if (!_proxy_username.empty()) {
@@ -1942,7 +1942,7 @@ run_reading_header() {
     // 401: not authorized to remote server.  Try to get the authorization.
     string authenticate_request = get_header_value("WWW-Authenticate");
     _www_auth = _client->generate_auth(_request.get_url(), false, authenticate_request);
-    if (_www_auth != (HTTPAuthorization *)nullptr) {
+    if (_www_auth != nullptr) {
       _www_realm = _www_auth->get_realm();
       _www_username = _client->select_username(_request.get_url(), false, _www_realm);
       if (!_www_username.empty()) {
@@ -2090,7 +2090,7 @@ run_begin_body() {
 
   } else {
     open_read_body();
-    if (_body_stream == (ISocketStream *)nullptr) {
+    if (_body_stream == nullptr) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -2232,7 +2232,7 @@ run_read_trailer() {
  */
 bool HTTPChannel::
 run_download_to_file() {
-  nassertr(_body_stream != (ISocketStream *)nullptr && _owns_body_stream, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2293,8 +2293,8 @@ run_download_to_file() {
  */
 bool HTTPChannel::
 run_download_to_ram() {
-  nassertr(_body_stream != (ISocketStream *)nullptr && _owns_body_stream, false);
-  nassertr(_download_to_ramfile != (Ramfile *)nullptr, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
+  nassertr(_download_to_ramfile != nullptr, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2343,7 +2343,7 @@ run_download_to_ram() {
  */
 bool HTTPChannel::
 run_download_to_stream() {
-  nassertr(_body_stream != (ISocketStream *)nullptr && _owns_body_stream, false);
+  nassertr(_body_stream != nullptr && _owns_body_stream, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2448,7 +2448,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   // Changing the proxy is grounds for dropping the old connection, if any.
   if (_proxy != new_proxy) {
     _proxy = new_proxy;
-    _proxy_auth = (HTTPAuthorization *)nullptr;
+    _proxy_auth = nullptr;
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
         << _NOTIFY_HTTP_CHANNEL_ID
@@ -3467,7 +3467,7 @@ void HTTPChannel::
 make_header() {
   _proxy_auth = _client->select_auth(_proxy, true, _proxy_realm);
   _proxy_username = string();
-  if (_proxy_auth != (HTTPAuthorization *)nullptr) {
+  if (_proxy_auth != nullptr) {
     _proxy_realm = _proxy_auth->get_realm();
     _proxy_username = _client->select_username(_proxy, true, _proxy_realm);
   }
@@ -3482,7 +3482,7 @@ make_header() {
 
   _www_auth = _client->select_auth(_request.get_url(), false, _www_realm);
   _www_username = string();
-  if (_www_auth != (HTTPAuthorization *)nullptr) {
+  if (_www_auth != nullptr) {
     _www_realm = _www_auth->get_realm();
     _www_username = _client->select_username(_request.get_url(), false, _www_realm);
   }
@@ -3642,7 +3642,7 @@ void HTTPChannel::
 make_proxy_request_text() {
   _proxy_request_text = _proxy_header;
 
-  if (_proxy_auth != (HTTPAuthorization *)nullptr && !_proxy_username.empty()) {
+  if (_proxy_auth != nullptr && !_proxy_username.empty()) {
     _proxy_request_text += "Proxy-Authorization: ";
     _proxy_request_text +=
       _proxy_auth->generate(HTTPEnum::M_connect, _request.get_url().get_server_and_port(),
@@ -3662,14 +3662,14 @@ make_request_text() {
   _request_text = _header;
 
   if (_proxy_serves_document &&
-      _proxy_auth != (HTTPAuthorization *)nullptr && !_proxy_username.empty()) {
+      _proxy_auth != nullptr && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
     _request_text +=
       _proxy_auth->generate(_method, _request.get_url().get_url(), _proxy_username, _body);
     _request_text += "\r\n";
   }
 
-  if (_www_auth != (HTTPAuthorization *)nullptr && !_www_username.empty()) {
+  if (_www_auth != nullptr && !_www_username.empty()) {
     string authorization =
     _request_text += "Authorization: ";
     _request_text +=
@@ -3773,7 +3773,7 @@ close_download_stream() {
       VirtualFileSystem::close_write_file(_download_to_stream);
     }
   }
-  _download_to_ramfile = (Ramfile *)nullptr;
+  _download_to_ramfile = nullptr;
   _download_to_stream = nullptr;
 }
 
@@ -3799,9 +3799,9 @@ reset_to_new() {
 void HTTPChannel::
 reset_body_stream() {
   if (_owns_body_stream) {
-    if (_body_stream != (ISocketStream *)nullptr) {
+    if (_body_stream != nullptr) {
       close_read_body(_body_stream);
-      nassertv(_body_stream == (ISocketStream *)nullptr && !_owns_body_stream);
+      nassertv(_body_stream == nullptr && !_owns_body_stream);
     }
   } else {
     _body_stream = nullptr;

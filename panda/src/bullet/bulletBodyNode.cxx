@@ -927,7 +927,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   PT(BulletShape) shape = DCAST(BulletShape, p_list[pi++]);
 
-  while (shape != (BulletShape *)nullptr) {
+  while (shape != nullptr) {
     const TransformState *trans = DCAST(TransformState, p_list[pi++]);
     add_shape(shape, trans);
 

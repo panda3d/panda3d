@@ -31,7 +31,7 @@ PStatCollector RenderAttrib::_garbage_collect_pcollector("*:State Cache:Garbage 
  */
 RenderAttrib::
 RenderAttrib() {
-  if (_attribs == (Attribs *)nullptr) {
+  if (_attribs == nullptr) {
     init_attribs();
   }
   _saved_entry = -1;
@@ -155,7 +155,7 @@ int RenderAttrib::
 get_num_attribs() {
   LightReMutexHolder holder(*_attribs_lock);
 
-  if (_attribs == (Attribs *)nullptr) {
+  if (_attribs == nullptr) {
     return 0;
   }
   return _attribs->get_num_entries();
@@ -184,7 +184,7 @@ list_attribs(ostream &out) {
  */
 int RenderAttrib::
 garbage_collect() {
-  if (_attribs == (Attribs *)nullptr || !garbage_collect_states) {
+  if (_attribs == nullptr || !garbage_collect_states) {
     return 0;
   }
   LightReMutexHolder holder(*_attribs_lock);
@@ -313,7 +313,7 @@ validate_attribs() {
  */
 CPT(RenderAttrib) RenderAttrib::
 return_new(RenderAttrib *attrib) {
-  nassertr(attrib != (RenderAttrib *)nullptr, attrib);
+  nassertr(attrib != nullptr, attrib);
   if (!uniquify_attribs) {
     attrib->calc_hash();
     return attrib;
@@ -334,7 +334,7 @@ return_new(RenderAttrib *attrib) {
  */
 CPT(RenderAttrib) RenderAttrib::
 return_unique(RenderAttrib *attrib) {
-  nassertr(attrib != (RenderAttrib *)nullptr, attrib);
+  nassertr(attrib != nullptr, attrib);
 
   attrib->calc_hash();
 

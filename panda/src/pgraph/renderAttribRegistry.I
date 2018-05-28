@@ -86,7 +86,7 @@ get_sorted_slot(int n) const {
  */
 INLINE RenderAttribRegistry *RenderAttribRegistry::
 get_global_ptr() {
-  if (_global_ptr == (RenderAttribRegistry *)nullptr) {
+  if (_global_ptr == nullptr) {
     init_global_ptr();
   }
   return _global_ptr;

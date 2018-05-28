@@ -20,11 +20,11 @@
  */
 bool WorkingNodePath::
 is_valid() const {
-  if (_node == (PandaNode *)nullptr) {
+  if (_node == nullptr) {
     return false;
   }
-  if (_next == (WorkingNodePath *)nullptr) {
-    return (_start != (NodePathComponent *)nullptr);
+  if (_next == nullptr) {
+    return (_start != nullptr);
   }
 
   nassertr(_node != _next->_node, false);
@@ -39,7 +39,7 @@ is_valid() const {
  */
 int WorkingNodePath::
 get_num_nodes() const {
-  if (_next == (WorkingNodePath *)nullptr) {
+  if (_next == nullptr) {
     Thread *current_thread = Thread::get_current_thread();
     int pipeline_stage = current_thread->get_pipeline_stage();
     return _start->get_length(pipeline_stage, current_thread);
@@ -60,7 +60,7 @@ get_node(int index) const {
     return _node;
   }
 
-  if (_next == (WorkingNodePath *)nullptr) {
+  if (_next == nullptr) {
     return get_node_path().get_node(index - 1);
   }
 
@@ -83,22 +83,22 @@ output(ostream &out) const {
  */
 PT(NodePathComponent) WorkingNodePath::
 r_get_node_path() const {
-  if (_next == (WorkingNodePath *)nullptr) {
-    nassertr(_start != (NodePathComponent *)nullptr, nullptr);
+  if (_next == nullptr) {
+    nassertr(_start != nullptr, nullptr);
     return _start;
   }
 
-  nassertr(_start == (NodePathComponent *)nullptr, nullptr);
-  nassertr(_node != (PandaNode *)nullptr, nullptr);
+  nassertr(_start == nullptr, nullptr);
+  nassertr(_node != nullptr, nullptr);
 
   PT(NodePathComponent) comp = _next->r_get_node_path();
-  nassertr(comp != (NodePathComponent *)nullptr, nullptr);
+  nassertr(comp != nullptr, nullptr);
 
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
   PT(NodePathComponent) result =
     PandaNode::get_component(comp, _node, pipeline_stage, current_thread);
-  if (result == (NodePathComponent *)nullptr) {
+  if (result == nullptr) {
     // This means we found a disconnected chain in the WorkingNodePath's
     // ancestry: the node above this node isn't connected.  In this case,
     // don't attempt to go higher; just truncate the NodePath at the bottom of

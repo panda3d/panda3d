@@ -96,14 +96,14 @@ find_child_index(const XFileNode *child) const {
 XFileNode *XFileNode::
 find_descendent(const string &name) const {
   XFileNode *child = find_child(name);
-  if (child != (XFileNode *)nullptr) {
+  if (child != nullptr) {
     return child;
   }
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     XFileNode *child = (*ci)->find_descendent(name);
-    if (child != (XFileNode *)nullptr){
+    if (child != nullptr){
       return child;
     }
   }
@@ -297,7 +297,7 @@ matches(const XFileNode *other) const {
 XFileDataNode *XFileNode::
 add_Mesh(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Mesh");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -312,7 +312,7 @@ add_Mesh(const string &name) {
 XFileDataNode *XFileNode::
 add_MeshNormals(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshNormals");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -327,7 +327,7 @@ add_MeshNormals(const string &name) {
 XFileDataNode *XFileNode::
 add_MeshVertexColors(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshVertexColors");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -342,7 +342,7 @@ add_MeshVertexColors(const string &name) {
 XFileDataNode *XFileNode::
 add_MeshTextureCoords(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshTextureCoords");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -357,7 +357,7 @@ add_MeshTextureCoords(const string &name) {
 XFileDataNode *XFileNode::
 add_MeshMaterialList(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshMaterialList");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -374,7 +374,7 @@ add_Material(const string &name, const LColor &face_color,
              double power, const LRGBColor &specular_color,
              const LRGBColor &emissive_color) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Material");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -401,7 +401,7 @@ add_Material(const string &name, const LColor &face_color,
 XFileDataNode *XFileNode::
 add_TextureFilename(const string &name, const Filename &filename) {
   XFileTemplate *xtemplate = XFile::find_standard_template("TextureFilename");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -418,7 +418,7 @@ add_TextureFilename(const string &name, const Filename &filename) {
 XFileDataNode *XFileNode::
 add_Frame(const string &name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Frame");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), name, xtemplate);
   add_child(node);
@@ -434,7 +434,7 @@ XFileDataNode *XFileNode::
 add_FrameTransformMatrix(const LMatrix4d &mat) {
   XFileTemplate *xtemplate =
     XFile::find_standard_template("FrameTransformMatrix");
-  nassertr(xtemplate != (XFileTemplate *)nullptr, nullptr);
+  nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(get_x_file(), "", xtemplate);
   add_child(node);

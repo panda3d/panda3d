@@ -535,11 +535,11 @@ determine_removed_components() {
     nout << char_data->get_name() << " has " << num_components << " components.\n";
     for (int i = 0; i < num_components; i++) {
       EggComponentData *comp_data = char_data->get_component(i);
-      nassertv(comp_data != (EggComponentData *)nullptr);
+      nassertv(comp_data != nullptr);
 
       EggOptcharUserData *user_data =
         DCAST(EggOptcharUserData, comp_data->get_user_data());
-      nassertv(user_data != (EggOptcharUserData *)nullptr);
+      nassertv(user_data != nullptr);
 
       const string &name = comp_data->get_name();
       if (suppress_names.find(name) != suppress_names.end()) {
@@ -636,7 +636,7 @@ move_vertices() {
         joint_data->move_vertices_to(best_joint);
 
         // Now we can't remove the joint.
-        if (best_joint != (EggJointData *)nullptr) {
+        if (best_joint != nullptr) {
           EggOptcharUserData *best_user_data =
             DCAST(EggOptcharUserData, best_joint->get_user_data());
           best_user_data->_flags &= ~(EggOptcharUserData::F_empty | EggOptcharUserData::F_remove);
@@ -673,7 +673,7 @@ process_joints() {
 
       if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
         // This joint will be removed, so reparent it to nothing.
-        joint_data->reparent_to((EggJointData *)nullptr);
+        joint_data->reparent_to(nullptr);
 
         // Determine what kind of node it is we're removing, for the user's
         // information.
@@ -740,7 +740,7 @@ find_best_parent(EggJointData *joint_data) const {
 
   if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
     // Keep going.
-    if (joint_data->get_parent() != (EggJointData *)nullptr) {
+    if (joint_data->get_parent() != nullptr) {
       return find_best_parent(joint_data->get_parent());
     }
   }
@@ -755,7 +755,7 @@ find_best_parent(EggJointData *joint_data) const {
  */
 EggJointData *EggOptchar::
 find_best_vertex_joint(EggJointData *joint_data) const {
-  if (joint_data == (EggJointData *)nullptr) {
+  if (joint_data == nullptr) {
     return nullptr;
   }
 
@@ -794,11 +794,11 @@ apply_user_reparents() {
         node_b = char_data->find_joint(p._b);
       }
 
-      if (node_b == (EggJointData *)nullptr) {
+      if (node_b == nullptr) {
         nout << "No joint named " << p._b << " in " << char_data->get_name()
              << ".\n";
 
-      } else if (node_a != (EggJointData *)nullptr) {
+      } else if (node_a != nullptr) {
         nout << "Joint " << p._a << " already exists in "
              << char_data->get_name() << ".\n";
 
@@ -823,10 +823,10 @@ apply_user_reparents() {
         node_b = char_data->find_joint(p._b);
       }
 
-      if (node_b == (EggJointData *)nullptr) {
+      if (node_b == nullptr) {
         nout << "No joint named " << p._b << " in " << char_data->get_name()
              << ".\n";
-      } else if (node_a == (EggJointData *)nullptr) {
+      } else if (node_a == nullptr) {
         nout << "No joint named " << p._a << " in " << char_data->get_name()
              << ".\n";
       } else {
@@ -869,7 +869,7 @@ zero_channels() {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint_data = char_data->find_joint(p._a);
 
-      if (joint_data == (EggJointData *)nullptr) {
+      if (joint_data == nullptr) {
         nout << "No joint named " << p._a << " in " << char_data->get_name()
              << ".\n";
       } else {
@@ -900,7 +900,7 @@ quantize_channels() {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint_data = char_data->get_root_joint();
 
-      if (joint_data != (EggJointData *)nullptr) {
+      if (joint_data != nullptr) {
         joint_data->quantize_channels(p._b, p._a);
         did_anything = true;
       }
@@ -1314,7 +1314,7 @@ rename_joints() {
     for (ci = 0; ci < num_characters; ++ci) {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint = char_data->find_joint(sp._a);
-      if (joint != (EggJointData *)nullptr) {
+      if (joint != nullptr) {
         nout << "Renaming joint " << sp._a << " to " << sp._b << "\n";
         joint->set_name(sp._b);
 

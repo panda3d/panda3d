@@ -44,7 +44,7 @@ allocate(size_t size, TypeHandle type_handle) {
   ObjectNode *obj;
 
   _lock.lock();
-  if (_deleted_chain != (ObjectNode *)nullptr) {
+  if (_deleted_chain != nullptr) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     _lock.unlock();
@@ -103,7 +103,7 @@ deallocate(void *ptr, TypeHandle type_handle) {
 #ifdef USE_DELETED_CHAIN
   // TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", "
   // ", TAU_USER);
-  assert(ptr != (void *)nullptr);
+  assert(ptr != nullptr);
 
 #ifdef DO_MEMORY_USAGE
   const size_t alloc_size = _buffer_size + flag_reserved_bytes + MEMORY_HOOK_ALIGNMENT - 1;

@@ -207,7 +207,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
  */
 bool GeomVertexArrayData::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
-  if (_contexts == (Contexts *)nullptr) {
+  if (_contexts == nullptr) {
     return false;
   }
   Contexts::const_iterator ci;
@@ -232,7 +232,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 VertexBufferContext *GeomVertexArrayData::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
-  if (_contexts == (Contexts *)nullptr) {
+  if (_contexts == nullptr) {
     _contexts = new Contexts;
   }
   Contexts::const_iterator ci;
@@ -242,7 +242,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   VertexBufferContext *vbc = prepared_objects->prepare_vertex_buffer_now(this, gsg);
-  if (vbc != (VertexBufferContext *)nullptr) {
+  if (vbc != nullptr) {
     (*_contexts)[prepared_objects] = vbc;
   }
   return vbc;
@@ -254,7 +254,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  */
 bool GeomVertexArrayData::
 release(PreparedGraphicsObjects *prepared_objects) {
-  if (_contexts != (Contexts *)nullptr) {
+  if (_contexts != nullptr) {
     Contexts::iterator ci;
     ci = _contexts->find(prepared_objects);
     if (ci != _contexts->end()) {
@@ -276,7 +276,7 @@ int GeomVertexArrayData::
 release_all() {
   int num_freed = 0;
 
-  if (_contexts != (Contexts *)nullptr) {
+  if (_contexts != nullptr) {
     // We have to traverse a copy of the _contexts list, because the
     // PreparedGraphicsObjects object will call clear_prepared() in response
     // to each release_vertex_buffer(), and we don't want to be modifying the
@@ -335,7 +335,7 @@ evict_lru() {
  */
 void GeomVertexArrayData::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
-  nassertv(_contexts != (Contexts *)nullptr);
+  nassertv(_contexts != nullptr);
 
   Contexts::iterator ci;
   ci = _contexts->find(prepared_objects);
@@ -457,7 +457,7 @@ finalize(BamReader *manager) {
   _array_format = new_array_format;
 
   PT(BamAuxData) aux_data = (BamAuxData *)manager->get_aux_data(this, "");
-  if (aux_data != (BamAuxData *)nullptr) {
+  if (aux_data != nullptr) {
     if (aux_data->_endian_reversed) {
       // Now is the time to endian-reverse the data.
       VertexDataBuffer new_buffer(cdata->_buffer.get_size());
@@ -571,7 +571,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   if (manager->get_file_endian() != BamReader::BE_native) {
     // For non-native endian files, we have to convert the data.
 
-    if (array_data->_array_format == (GeomVertexArrayFormat *)nullptr) {
+    if (array_data->_array_format == nullptr) {
       // But we can't do that until we've completed the _array_format pointer,
       // which tells us how to convert it.
       endian_reversed = true;

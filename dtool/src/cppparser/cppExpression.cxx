@@ -131,7 +131,7 @@ as_pointer() const {
   default:
     cerr << "Invalid type\n";
     assert(false);
-    return (void *)nullptr;
+    return nullptr;
   }
 }
 
@@ -509,7 +509,7 @@ raw_literal(const string &raw, CPPInstance *lit_op) {
   CPPExpression expr(0);
   expr._type = T_raw_literal;
   expr._str = raw;
-  expr._u._literal._value = (CPPExpression *)nullptr;
+  expr._u._literal._value = nullptr;
   expr._u._literal._operator = lit_op;
   return expr;
 }
@@ -952,8 +952,8 @@ evaluate() const {
  */
 CPPType *CPPExpression::
 determine_type() const {
-  CPPType *t1 = (CPPType *)nullptr;
-  CPPType *t2 = (CPPType *)nullptr;
+  CPPType *t1 = nullptr;
+  CPPType *t2 = nullptr;
 
   static CPPType *nullptr_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_nullptr));
@@ -1028,16 +1028,16 @@ determine_type() const {
     return _u._variable->_type;
 
   case T_function:
-    if (_u._fgroup->get_return_type() == (CPPType *)nullptr) {
+    if (_u._fgroup->get_return_type() == nullptr) {
       // There are multiple functions by this name that have different return
       // types.  We could attempt to differentiate them based on the parameter
       // list, but that's a lot of work.  Let's just give up.
-      return (CPPType *)nullptr;
+      return nullptr;
     }
     return _u._fgroup->_instances.front()->_type;
 
   case T_unknown_ident:
-    return (CPPType *)nullptr;
+    return nullptr;
 
   case T_typecast:
   case T_static_cast:
@@ -1168,7 +1168,7 @@ determine_type() const {
       if (t1 != nullptr) {
         // Easy case, function with only a single overload.
         CPPFunctionType *ftype = t1->as_function_type();
-        if (ftype != (CPPFunctionType *)nullptr) {
+        if (ftype != nullptr) {
           return ftype->_return_type;
         }
       } else if (_u._op._op1->_type == T_function) {
@@ -1205,7 +1205,7 @@ determine_type() const {
       CPPType *type = _u._literal._operator->_type;
 
       CPPFunctionType *ftype = type->as_function_type();
-      if (ftype != (CPPFunctionType *)nullptr) {
+      if (ftype != nullptr) {
         return ftype->_return_type;
       }
     }

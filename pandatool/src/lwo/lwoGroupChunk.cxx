@@ -31,7 +31,7 @@ get_num_chunks() const {
  */
 IffChunk *LwoGroupChunk::
 get_chunk(int n) const {
-  nassertr(n >= 0 && n < (int)_chunks.size(), (IffChunk *)nullptr);
+  nassertr(n >= 0 && n < (int)_chunks.size(), nullptr);
   return _chunks[n];
 }
 
@@ -44,7 +44,7 @@ bool LwoGroupChunk::
 read_chunks_iff(IffInputFile *in, size_t stop_at) {
   while (in->get_bytes_read() < stop_at && !in->is_eof()) {
     PT(IffChunk) chunk = in->get_chunk();
-    if (chunk == (IffChunk *)nullptr) {
+    if (chunk == nullptr) {
       return false;
     }
     _chunks.push_back(chunk);
@@ -60,7 +60,7 @@ bool LwoGroupChunk::
 read_subchunks_iff(IffInputFile *in, size_t stop_at) {
   while (in->get_bytes_read() < stop_at && !in->is_eof()) {
     PT(IffChunk) chunk = in->get_subchunk(this);
-    if (chunk == (IffChunk *)nullptr) {
+    if (chunk == nullptr) {
       return false;
     }
     _chunks.push_back(chunk);

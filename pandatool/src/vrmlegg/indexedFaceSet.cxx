@@ -496,7 +496,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       poly->set_color(_appearance._color);
     }
 
-    if (_appearance._tex != (EggTexture *)nullptr) {
+    if (_appearance._tex != nullptr) {
       poly->set_texture(_appearance._tex);
     }
 

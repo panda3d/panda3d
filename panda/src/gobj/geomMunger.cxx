@@ -116,7 +116,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     // Now check that it's fresh.
     Geom::CDCacheReader cdata(entry->_cycler, current_thread);
     if (cdata->_source == geom &&
-        cdata->_geom_result != (Geom *)nullptr &&
+        cdata->_geom_result != nullptr &&
         geom->get_modified(current_thread) <= cdata->_geom_result->get_modified(current_thread) &&
         data->get_modified(current_thread) <= cdata->_data_result->get_modified(current_thread)) {
       // The cache entry is still good; use it.
@@ -145,7 +145,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   munge_geom_impl(geom, data, current_thread);
 
   // Record the new result in the cache.
-  if (entry == (Geom::CacheEntry *)nullptr) {
+  if (entry == nullptr) {
     // Create a new entry for the result.
     // We don't need the key anymore, move the pointers into the CacheEntry.
     entry = new Geom::CacheEntry(orig_geom, move(key));
@@ -332,7 +332,7 @@ geom_compare_to_impl(const GeomMunger *other) const {
  */
 void GeomMunger::
 make_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     _registry = new Registry;
   }
 }

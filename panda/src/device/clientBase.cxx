@@ -27,7 +27,7 @@ ClientBase() {
   _cs = CS_default;
 
 #ifdef OLD_HAVE_IPC
-  _client_thread = (thread *)nullptr;
+  _client_thread = nullptr;
   _shutdown = false;
 #endif
 }
@@ -126,7 +126,7 @@ get_device(TypeHandle device_type, const string &device_name) {
   // We need to create a new device for this name.
   PT(ClientDevice) device = make_device(device_type, device_name);
 
-  if (device != (ClientDevice *)nullptr) {
+  if (device != nullptr) {
     dbn.insert(DevicesByName::value_type(device_name, device));
     device->_is_connected = true;
   }

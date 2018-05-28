@@ -66,7 +66,7 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
   _read_state = ISocketStream::RS_reading;
   _doc = doc;
 
-  if (_doc != (HTTPChannel *)nullptr) {
+  if (_doc != nullptr) {
     _read_index = doc->_read_index;
     _doc->_transfer_file_size = 0;
     _doc->_got_transfer_file_size = true;
@@ -185,7 +185,7 @@ read_chars(char *start, size_t length) {
     if (chunk_size == 0) {
       // Last chunk; we're done.
       _done = true;
-      if (_doc != (HTTPChannel *)nullptr && _read_index == _doc->_read_index) {
+      if (_doc != nullptr && _read_index == _doc->_read_index) {
         _doc->_file_size = _doc->_transfer_file_size;
         _doc->_got_file_size = true;
       }
@@ -193,7 +193,7 @@ read_chars(char *start, size_t length) {
       return 0;
     }
 
-    if (_doc != (HTTPChannel *)nullptr && _read_index == _doc->_read_index) {
+    if (_doc != nullptr && _read_index == _doc->_read_index) {
       _doc->_transfer_file_size += chunk_size;
     }
 

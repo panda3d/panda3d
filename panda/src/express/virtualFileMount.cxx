@@ -128,7 +128,7 @@ read_file(const Filename &file, bool do_uncompress,
   result.clear();
 
   istream *in = open_read_file(file, do_uncompress);
-  if (in == (istream *)nullptr) {
+  if (in == nullptr) {
     express_cat.info()
       << "Unable to read " << file << "\n";
     return false;
@@ -158,7 +158,7 @@ bool VirtualFileMount::
 write_file(const Filename &file, bool do_compress,
            const unsigned char *data, size_t data_size) {
   ostream *out = open_write_file(file, do_compress, true);
-  if (out == (ostream *)nullptr) {
+  if (out == nullptr) {
     express_cat.info()
       << "Unable to write " << file << "\n";
     return false;
@@ -188,7 +188,7 @@ open_read_file(const Filename &file, bool do_uncompress) const {
   istream *result = open_read_file(file);
 
 #ifdef HAVE_ZLIB
-  if (result != (istream *)nullptr && do_uncompress) {
+  if (result != nullptr && do_uncompress) {
     // We have to slip in a layer to decompress the file on the fly.
     IDecompressStream *wrapper = new IDecompressStream(result, true);
     result = wrapper;
@@ -231,7 +231,7 @@ open_write_file(const Filename &file, bool do_compress, bool truncate) {
   ostream *result = open_write_file(file, truncate);
 
 #ifdef HAVE_ZLIB
-  if (result != (ostream *)nullptr && do_compress) {
+  if (result != nullptr && do_compress) {
     // We have to slip in a layer to compress the file on the fly.
     OCompressStream *wrapper = new OCompressStream(result, true);
     result = wrapper;

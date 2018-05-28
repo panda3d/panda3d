@@ -24,7 +24,7 @@ get_name() const {
  */
 INLINE bool QtessSurface::
 is_valid() const {
-  return (_nurbs != (NurbsSurfaceEvaluator *)nullptr);
+  return (_nurbs != nullptr);
 }
 
 /**

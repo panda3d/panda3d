@@ -40,7 +40,7 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _visuals=0;
   _fbconfig=0;
 
-  if (share_with != (eglGraphicsStateGuardian *)nullptr) {
+  if (share_with != nullptr) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
@@ -51,7 +51,7 @@ eglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 eglGraphicsStateGuardian::
 ~eglGraphicsStateGuardian() {
-  if (_visuals != (XVisualInfo *)nullptr) {
+  if (_visuals != nullptr) {
     XFree(_visuals);
   }
   if (_context != (EGLContext)nullptr) {

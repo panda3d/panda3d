@@ -574,7 +574,7 @@ void
 P3D_request_finish(P3D_request *request, bool handled) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  if (request != (P3D_request *)nullptr) {
+  if (request != nullptr) {
     P3DInstance::finish_request(request, handled);
   }
   RELEASE_LOCK(_api_lock);

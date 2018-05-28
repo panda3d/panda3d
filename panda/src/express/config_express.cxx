@@ -152,7 +152,7 @@ bool
 get_use_high_res_clock() {
   static ConfigVariableBool *use_high_res_clock = nullptr;
 
-  if (use_high_res_clock == (ConfigVariableBool *)nullptr) {
+  if (use_high_res_clock == nullptr) {
     use_high_res_clock = new ConfigVariableBool
       ("use-high-res-clock", true,
        PRC_DESC("Set this to false to avoid using the high-precision clock, even if "
@@ -166,7 +166,7 @@ bool
 get_paranoid_clock() {
   static ConfigVariableBool *paranoid_clock = nullptr;
 
-  if (paranoid_clock == (ConfigVariableBool *)nullptr) {
+  if (paranoid_clock == nullptr) {
     paranoid_clock = new ConfigVariableBool
       ("paranoid-clock", false,
        PRC_DESC("Set this to true to double-check the results of the high-resolution "
@@ -180,7 +180,7 @@ bool
 get_verify_dcast() {
   static ConfigVariableBool *verify_dcast = nullptr;
 
-  if (verify_dcast == (ConfigVariableBool *)nullptr) {
+  if (verify_dcast == nullptr) {
     verify_dcast = new ConfigVariableBool
       ("verify-dcast", true,
        PRC_DESC("Set this to true to verify that every attempted DCAST operation in "

@@ -199,7 +199,7 @@ is_destructible() const {
 bool CPPReferenceType::
 is_equivalent(const CPPType &other) const {
   const CPPReferenceType *ot = ((CPPType *)&other)->as_reference_type();
-  if (ot == (CPPReferenceType *)nullptr) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 

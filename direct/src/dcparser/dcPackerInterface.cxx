@@ -58,7 +58,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
  */
 DCPackerInterface::
 ~DCPackerInterface() {
-  if (_catalog != (DCPackerCatalog *)nullptr) {
+  if (_catalog != nullptr) {
     delete _catalog;
   }
 }
@@ -83,7 +83,7 @@ find_seek_index(const string &name) const {
  */
 DCField *DCPackerInterface::
 as_field() {
-  return (DCField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -91,7 +91,7 @@ as_field() {
  */
 const DCField *DCPackerInterface::
 as_field() const {
-  return (DCField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -99,7 +99,7 @@ as_field() const {
  */
 DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() {
-  return (DCSwitchParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -107,7 +107,7 @@ as_switch_parameter() {
  */
 const DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() const {
-  return (DCSwitchParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -115,7 +115,7 @@ as_switch_parameter() const {
  */
 DCClassParameter *DCPackerInterface::
 as_class_parameter() {
-  return (DCClassParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -123,7 +123,7 @@ as_class_parameter() {
  */
 const DCClassParameter *DCPackerInterface::
 as_class_parameter() const {
-  return (DCClassParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -367,7 +367,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
  */
 const DCPackerCatalog *DCPackerInterface::
 get_catalog() const {
-  if (_catalog == (DCPackerCatalog *)nullptr) {
+  if (_catalog == nullptr) {
     ((DCPackerInterface *)this)->make_catalog();
   }
   return _catalog;
@@ -432,7 +432,7 @@ do_check_match_molecular_field(const DCMolecularField *) const {
  */
 void DCPackerInterface::
 make_catalog() {
-  nassertv(_catalog == (DCPackerCatalog *)nullptr);
+  nassertv(_catalog == nullptr);
   _catalog = new DCPackerCatalog(this);
 
   _catalog->r_fill_catalog("", this, nullptr, 0);

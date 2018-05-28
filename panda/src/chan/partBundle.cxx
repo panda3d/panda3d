@@ -85,13 +85,13 @@ make_copy() const {
  */
 void PartBundle::
 merge_anim_preloads(const PartBundle *other) {
-  if (other->_anim_preload == (AnimPreloadTable *)nullptr ||
+  if (other->_anim_preload == nullptr ||
       _anim_preload == other->_anim_preload) {
     // No-op.
     return;
   }
 
-  if (_anim_preload == (AnimPreloadTable *)nullptr) {
+  if (_anim_preload == nullptr) {
     // Trivial case.
     _anim_preload = other->_anim_preload;
     return;
@@ -275,7 +275,7 @@ PT(AnimControl) PartBundle::
 load_bind_anim(Loader *loader, const Filename &filename,
                int hierarchy_match_flags, const PartSubset &subset,
                bool allow_async) {
-  nassertr(loader != (Loader *)nullptr, nullptr);
+  nassertr(loader != nullptr, nullptr);
 
   LoaderOptions anim_options(LoaderOptions::LF_search |
                              LoaderOptions::LF_report_errors |
@@ -284,7 +284,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
 
   int anim_index = -1;
   CPT(AnimPreloadTable) anim_preload = _anim_preload.get_read_pointer();
-  if (anim_preload != (AnimPreloadTable *)nullptr) {
+  if (anim_preload != nullptr) {
     anim_index = anim_preload->find_anim(basename);
   }
 
@@ -293,17 +293,17 @@ load_bind_anim(Loader *loader, const Filename &filename,
     // Therefore, perform an ordinary synchronous load-and-bind.
 
     PT(PandaNode) model = loader->load_sync(filename, anim_options);
-    if (model == (PandaNode *)nullptr) {
+    if (model == nullptr) {
       // Couldn't load the file.
       return nullptr;
     }
     AnimBundle *anim = AnimBundleNode::find_anim_bundle(model);
-    if (anim == (AnimBundle *)nullptr) {
+    if (anim == nullptr) {
       // No anim bundle.
       return nullptr;
     }
     PT(AnimControl) control = bind_anim(anim, hierarchy_match_flags, subset);
-    if (control == (AnimControl *)nullptr) {
+    if (control == nullptr) {
       // Couldn't bind.
       return nullptr;
     }
@@ -366,7 +366,7 @@ wait_pending() {
 bool PartBundle::
 freeze_joint(const string &joint_name, const TransformState *transform) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)nullptr) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -387,7 +387,7 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
 bool PartBundle::
 freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)nullptr) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -408,7 +408,7 @@ freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hp
 bool PartBundle::
 freeze_joint(const string &joint_name, PN_stdfloat value) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)nullptr) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -430,7 +430,7 @@ freeze_joint(const string &joint_name, PN_stdfloat value) {
 bool PartBundle::
 control_joint(const string &joint_name, PandaNode *node) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)nullptr) {
+  if (child == nullptr) {
     return false;
   }
 
@@ -451,7 +451,7 @@ control_joint(const string &joint_name, PandaNode *node) {
 bool PartBundle::
 release_joint(const string &joint_name) {
   PartGroup *child = find_child(joint_name);
-  if (child == (PartGroup *)nullptr) {
+  if (child == nullptr) {
     return false;
   }
 

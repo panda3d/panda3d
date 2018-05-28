@@ -26,8 +26,8 @@ CVSCopy() {
   _key_filename = "Sources.pp";
   _cvs_binary = "cvs";
   _user_aborted = false;
-  _model_dir = (CVSSourceDirectory *)nullptr;
-  _map_dir = (CVSSourceDirectory *)nullptr;
+  _model_dir = nullptr;
+  _map_dir = nullptr;
 
   clear_runlines();
   add_runline("[opts] file [file ... ]");
@@ -212,7 +212,7 @@ post_command_line() {
   }
 
   _model_dir = _tree.find_directory(_model_dirname);
-  if (_model_dir == (CVSSourceDirectory *)nullptr) {
+  if (_model_dir == nullptr) {
     if (_got_model_dirname) {
       nout << "Warning: model directory " << _model_dirname
            << " is not within the source hierarchy.\n";
@@ -222,7 +222,7 @@ post_command_line() {
   if (_got_map_dirname) {
     _map_dir = _tree.find_directory(_map_dirname);
 
-    if (_map_dir == (CVSSourceDirectory *)nullptr) {
+    if (_map_dir == nullptr) {
       nout << "Warning: map directory " << _map_dirname
            << " is not within the source hierarchy.\n";
     }
@@ -230,7 +230,7 @@ post_command_line() {
   } else {
     _map_dir = _tree.find_relpath("src/maps");
 
-    if (_map_dir == (CVSSourceDirectory *)nullptr) {
+    if (_map_dir == nullptr) {
       nout << "Warning: no directory " << _tree.get_root_dirname()
            << "/src/maps.\n";
       _map_dir = _model_dir;

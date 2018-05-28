@@ -202,7 +202,7 @@ prepare_texture(Texture *tex, int view) {
  */
 void DXGraphicsStateGuardian9::
 apply_texture(int i, TextureContext *tc, const SamplerState &sampler) {
-  if (tc == (TextureContext *)nullptr) {
+  if (tc == nullptr) {
     // The texture wasn't bound properly or something, so ensure texturing is
     // disabled and just return.
     set_texture_stage_state(i, D3DTSS_COLOROP, D3DTOP_DISABLE);
@@ -387,7 +387,7 @@ extract_texture_data(Texture *tex) {
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
     TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != (TextureContext *)nullptr, false);
+    nassertr(tc != nullptr, false);
     DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
 
     if (!dtc->extract_texture_data(*_screen)) {
@@ -607,7 +607,7 @@ setup_array_data(DXVertexBufferContext9*& dvbc,
 
   // Prepare the buffer object and bind it.
   VertexBufferContext* vbc = ((GeomVertexArrayData *)array_reader->get_object())->prepare_now(get_prepared_objects(), this);
-  nassertr(vbc != (VertexBufferContext *)nullptr, false);
+  nassertr(vbc != nullptr, false);
   if (!apply_vertex_buffer(vbc, array_reader, force)) {
     return false;
   }
@@ -710,7 +710,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 void DXGraphicsStateGuardian9::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
-  nassertv(_current_occlusion_query == (OcclusionQueryContext *)nullptr);
+  nassertv(_current_occlusion_query == nullptr);
 
   IDirect3DQuery9 *query;
   HRESULT hr = _d3d_device->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query);
@@ -739,7 +739,7 @@ begin_occlusion_query() {
  */
 PT(OcclusionQueryContext) DXGraphicsStateGuardian9::
 end_occlusion_query() {
-  if (_current_occlusion_query == (OcclusionQueryContext *)nullptr) {
+  if (_current_occlusion_query == nullptr) {
     return nullptr;
   }
 
@@ -856,7 +856,7 @@ clear(DrawableRegion *clearable) {
  */
 void DXGraphicsStateGuardian9::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)nullptr);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, u, w, h;
@@ -903,7 +903,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  */
 CPT(TransformState) DXGraphicsStateGuardian9::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)nullptr) {
+  if (lens == nullptr) {
     return nullptr;
   }
 
@@ -1052,18 +1052,18 @@ end_scene() {
 
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    _vertex_array_shader = (Shader *)nullptr;
-    _vertex_array_shader_context = (DXShaderContext9 *)nullptr;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings(this);
-    _texture_binding_shader = (Shader *)nullptr;
-    _texture_binding_shader_context = (DXShaderContext9 *)nullptr;
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
   }
   if (_current_shader_context != 0) {
     _current_shader_context->unbind(this);
-    _current_shader = (Shader *)nullptr;
-    _current_shader_context = (DXShaderContext9 *)nullptr;
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
 
   _dlights.clear();
@@ -1146,7 +1146,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)nullptr, false);
+  nassertr(_data_reader != nullptr, false);
 
   const GeomVertexFormat *format = _data_reader->get_format();
 
@@ -1182,7 +1182,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
 
     const TransformTable *table = data_reader->get_transform_table();
-    if (table != (TransformTable *)nullptr) {
+    if (table != nullptr) {
       for (size_t i = 0; i < table->get_num_transforms(); ++i) {
         LMatrix4 mat;
         table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
@@ -1338,7 +1338,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 
     // Indexed, vbuffers.
     IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-    nassertr(ibc != (IndexBufferContext *)nullptr, false);
+    nassertr(ibc != nullptr, false);
     if (!apply_index_buffer(ibc, reader, force)) {
       return false;
     }
@@ -1408,7 +1408,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 
       // Indexed, vbuffers, one long triangle strip.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertr(ibc != (IndexBufferContext *)nullptr, false);
+      nassertr(ibc != nullptr, false);
       if (!apply_index_buffer(ibc, reader, force)) {
         return false;
       }
@@ -1475,7 +1475,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 
       // Indexed, vbuffers, individual triangle strips.
       IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-      nassertr(ibc != (IndexBufferContext *)nullptr, false);
+      nassertr(ibc != nullptr, false);
       if (!apply_index_buffer(ibc, reader, force)) {
         return false;
       }
@@ -1582,7 +1582,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
 
     // Indexed, vbuffers.
     IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-    nassertr(ibc != (IndexBufferContext *)nullptr, false);
+    nassertr(ibc != nullptr, false);
     if (!apply_index_buffer(ibc, reader, force)) {
       return false;
     }
@@ -1679,7 +1679,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 
     // Indexed, vbuffers.
     IndexBufferContext *ibc = ((GeomPrimitive *)(reader->get_object()))->prepare_now(get_prepared_objects(), this);
-    nassertr(ibc != (IndexBufferContext *)nullptr, false);
+    nassertr(ibc != nullptr, false);
     if (!apply_index_buffer(ibc, reader, force)) {
       return false;
     }
@@ -1817,7 +1817,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   tex->set_render_to_texture(true);
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  if (tc == (TextureContext *)nullptr) {
+  if (tc == nullptr) {
     return false;
   }
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
@@ -2669,12 +2669,12 @@ reset() {
   // GF2Radeon8500, no on TNT)
   set_render_state(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-  _current_shader = (Shader *)nullptr;
-  _current_shader_context = (DXShaderContext9 *)nullptr;
-  _vertex_array_shader = (Shader *)nullptr;
-  _vertex_array_shader_context = (DXShaderContext9 *)nullptr;
-  _texture_binding_shader = (Shader *)nullptr;
-  _texture_binding_shader_context = (DXShaderContext9 *)nullptr;
+  _current_shader = nullptr;
+  _current_shader_context = nullptr;
+  _vertex_array_shader = nullptr;
+  _vertex_array_shader_context = nullptr;
+  _texture_binding_shader = nullptr;
+  _texture_binding_shader_context = nullptr;
 
   PRINT_REFCNT(dxgsg9, _d3d_device);
 
@@ -2991,7 +2991,7 @@ do_issue_fog() {
   if (!target_fog->is_off()) {
     set_render_state(D3DRS_FOGENABLE, TRUE);
     Fog *fog = target_fog->get_fog();
-    nassertv(fog != (Fog *)nullptr);
+    nassertv(fog != nullptr);
     apply_fog(fog);
   } else {
     set_render_state(D3DRS_FOGENABLE, FALSE);
@@ -3364,7 +3364,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 void DXGraphicsStateGuardian9::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   Lens *lens = light_obj->get_lens();
-  nassertv(lens != (Lens *)nullptr);
+  nassertv(lens != nullptr);
 
   // Get the light in "world coordinates" (actually, view coordinates).  This
   // means the light in the coordinate space of the camera, converted to DX's
@@ -3560,7 +3560,7 @@ update_standard_texture_bindings() {
 
   int num_stages = _target_texture->get_num_on_ff_stages();
   int num_old_stages = _max_texture_stages;
-  if (_state_texture != (TextureAttrib *)nullptr) {
+  if (_state_texture != nullptr) {
     num_old_stages = _state_texture->get_num_on_ff_stages();
   }
 
@@ -3579,7 +3579,7 @@ update_standard_texture_bindings() {
     int texcoord_index = _target_texture->get_ff_tc_index(si);
 
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)nullptr);
+    nassertv(texture != nullptr);
     const SamplerState &sampler = _target_texture->get_on_sampler(stage);
 
     // We always reissue every stage in DX, just in case the texcoord index or
@@ -4679,9 +4679,9 @@ show_frame() {
     DWORD flags;
     flags = 0;
 
-    hr = _swap_chain->Present((CONST RECT*)nullptr, (CONST RECT*)nullptr, (HWND)nullptr, nullptr, flags);
+    hr = _swap_chain->Present(nullptr, nullptr, (HWND)nullptr, nullptr, flags);
   } else {
-    hr = _d3d_device->Present((CONST RECT*)nullptr, (CONST RECT*)nullptr, (HWND)nullptr, nullptr);
+    hr = _d3d_device->Present(nullptr, nullptr, (HWND)nullptr, nullptr);
   }
 
   if (FAILED(hr)) {
@@ -5072,7 +5072,7 @@ do_issue_stencil() {
 
   const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib(StencilAttrib::get_class_slot()));
 
-  if (stencil != (const StencilAttrib *)nullptr) {
+  if (stencil != nullptr) {
     // DEBUG
     if (false) {
       dxgsg9_cat.debug() << "STENCIL STATE CHANGE\n";

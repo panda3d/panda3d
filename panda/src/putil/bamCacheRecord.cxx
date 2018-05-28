@@ -93,7 +93,7 @@ dependents_unchanged() const {
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
     PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-    if (file == (VirtualFile *)nullptr) {
+    if (file == nullptr) {
       // No such file.
       if (dfile._timestamp != 0) {
         if (util_cat.is_debug()) {
@@ -153,7 +153,7 @@ add_dependent_file(const Filename &pathname) {
   dfile._pathname.make_absolute();
 
   PT(VirtualFile) file = vfs->get_file(dfile._pathname);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     dfile._timestamp = 0;
     dfile._size = 0;

@@ -659,7 +659,7 @@ operator < (const TextureStage &other) const {
  */
 INLINE TextureStage *TextureStage::
 get_default() {
-  if (_default_stage == (TextureStage *)nullptr) {
+  if (_default_stage == nullptr) {
     _default_stage = new TextureStage("default");
   }
   return _default_stage;

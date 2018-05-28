@@ -46,7 +46,7 @@ INLINE NodePath::
 NodePath(PandaNode *node, Thread *current_thread) :
   _error_type(ET_ok)
 {
-  if (node != (PandaNode *)nullptr) {
+  if (node != nullptr) {
     int pipeline_stage = current_thread->get_pipeline_stage();
     _head = node->get_generic_component(false, pipeline_stage, current_thread);
   }
@@ -61,7 +61,7 @@ NodePath(PandaNode *node, Thread *current_thread) :
 INLINE NodePath NodePath::
 any_path(PandaNode *node, Thread *current_thread) {
   NodePath result;
-  if (node != (PandaNode *)nullptr) {
+  if (node != nullptr) {
     int pipeline_stage = current_thread->get_pipeline_stage();
     result._head = node->get_generic_component(true, pipeline_stage,
                                                current_thread);
@@ -186,7 +186,7 @@ get_max_search_depth() {
  */
 INLINE bool NodePath::
 is_empty() const {
-  return (_head == (NodePathComponent *)nullptr);
+  return (_head == nullptr);
 }
 
 /**
@@ -195,7 +195,7 @@ is_empty() const {
 INLINE bool NodePath::
 is_singleton(Thread *current_thread) const {
   int pipeline_stage = current_thread->get_pipeline_stage();
-  return (_head != (NodePathComponent *)nullptr && _head->is_top_node(pipeline_stage, current_thread));
+  return (_head != nullptr && _head->is_top_node(pipeline_stage, current_thread));
 }
 
 /**
@@ -214,7 +214,7 @@ get_error_type() const {
 INLINE PandaNode *NodePath::
 get_top_node(Thread *current_thread) const {
   if (is_empty()) {
-    return (PandaNode *)nullptr;
+    return nullptr;
   }
 
   return get_top(current_thread).node();
@@ -225,7 +225,7 @@ get_top_node(Thread *current_thread) const {
  */
 INLINE PandaNode *NodePath::
 node() const {
-  nassertr_always(!is_empty(), (PandaNode *)nullptr);
+  nassertr_always(!is_empty(), nullptr);
   return _head->get_node();
 }
 
@@ -283,7 +283,7 @@ is_same_graph(const NodePath &other, Thread *current_thread) const {
   // different instance of render that appears to have the same top node.  But
   // this is a very rare thing to do.
   int a_count, b_count;
-  return (find_common_ancestor(*this, other, a_count, b_count, current_thread) != (NodePathComponent *)nullptr);
+  return (find_common_ancestor(*this, other, a_count, b_count, current_thread) != nullptr);
 }
 
 /**
@@ -293,7 +293,7 @@ is_same_graph(const NodePath &other, Thread *current_thread) const {
 INLINE bool NodePath::
 is_ancestor_of(const NodePath &other, Thread *current_thread) const {
   int a_count, b_count;
-  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == (NodePathComponent *)nullptr) {
+  if (find_common_ancestor(*this, other, a_count, b_count, current_thread) == nullptr) {
     // Not related.
     return false;
   }
@@ -312,7 +312,7 @@ INLINE NodePath NodePath::
 get_common_ancestor(const NodePath &other, Thread *current_thread) const {
   int a_count, b_count;
   NodePathComponent *common = find_common_ancestor(*this, other, a_count, b_count, current_thread);
-  if (common == (NodePathComponent *)nullptr) {
+  if (common == nullptr) {
     return NodePath::not_found();
   }
 

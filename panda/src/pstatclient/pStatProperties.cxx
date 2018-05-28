@@ -231,7 +231,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   int i;
 
   for (i = 0;
-       time_properties[i].name != (const char *)nullptr;
+       time_properties[i].name != nullptr;
        i++) {
     const TimeCollectorProperties &tp = time_properties[i];
     if (fullname == tp.name) {
@@ -248,7 +248,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   }
 
   for (i = 0;
-       level_properties[i].name != (const char *)nullptr;
+       level_properties[i].name != nullptr;
        i++) {
     const LevelCollectorProperties &lp = level_properties[i];
     if (fullname == lp.name) {
@@ -260,7 +260,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
       if (lp.suggested_scale != 0.0) {
         def->_suggested_scale = lp.suggested_scale;
       }
-      if (lp.units != (const char *)nullptr) {
+      if (lp.units != nullptr) {
         def->_level_units = lp.units;
       }
       if (lp.inv_factor != 0.0) {

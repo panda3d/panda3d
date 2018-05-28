@@ -400,7 +400,7 @@ CDataCache(const Geom::CDataCache &copy) :
   _geom_result(copy._geom_result),
   _data_result(copy._data_result)
 {
-  if (_geom_result != _source && _geom_result != (Geom *)nullptr) {
+  if (_geom_result != _source && _geom_result != nullptr) {
     _geom_result->ref();
   }
 }
@@ -412,11 +412,11 @@ CDataCache(const Geom::CDataCache &copy) :
 INLINE void Geom::CDataCache::
 set_result(const Geom *geom_result, const GeomVertexData *data_result) {
   if (geom_result != _geom_result) {
-    if (_geom_result != _source && _geom_result != (Geom *)nullptr) {
+    if (_geom_result != _source && _geom_result != nullptr) {
       unref_delete(_geom_result);
     }
     _geom_result = geom_result;
-    if (_geom_result != _source && _geom_result != (Geom *)nullptr) {
+    if (_geom_result != _source && _geom_result != nullptr) {
       _geom_result->ref();
     }
   }

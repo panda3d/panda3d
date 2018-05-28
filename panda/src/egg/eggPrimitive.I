@@ -148,7 +148,7 @@ has_texture(EggTexture *texture) const {
  */
 INLINE EggTexture *EggPrimitive::
 get_texture() const {
-  return has_texture() ? get_texture(0) : (EggTexture *)nullptr;
+  return has_texture() ? get_texture(0) : nullptr;
 }
 
 /**
@@ -202,7 +202,7 @@ set_material(EggMaterial *material) {
  */
 INLINE void EggPrimitive::
 clear_material() {
-  _material = (EggMaterial *)nullptr;
+  _material = nullptr;
 }
 
 /**
@@ -221,7 +221,7 @@ get_material() const {
  */
 INLINE bool EggPrimitive::
 has_material() const {
-  return _material != (EggMaterial *)nullptr;
+  return _material != nullptr;
 }
 
 
@@ -398,5 +398,5 @@ get_vertex(size_t index) const {
  */
 INLINE EggVertexPool *EggPrimitive::
 get_pool() const {
-  return empty() ? (EggVertexPool *)nullptr : _vertices.front()->get_pool();
+  return empty() ? nullptr : _vertices.front()->get_pool();
 }

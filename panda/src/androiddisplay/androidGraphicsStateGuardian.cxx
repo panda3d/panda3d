@@ -37,7 +37,7 @@ AndroidGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _fbconfig = 0;
   _format = 0;
 
-  if (share_with != (AndroidGraphicsStateGuardian *)nullptr) {
+  if (share_with != nullptr) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }

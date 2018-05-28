@@ -86,7 +86,7 @@ void MutexDebug::
 output_with_holder(ostream &out) const {
   _global_lock->lock();
   output(out);
-  if (_locking_thread != (Thread *)nullptr) {
+  if (_locking_thread != nullptr) {
     out << " (held by " << *_locking_thread << ")\n";
   }
   _global_lock->unlock();
@@ -135,7 +135,7 @@ do_lock(Thread *current_thread) {
     return;
   }
 
-  if (_locking_thread == (Thread *)nullptr) {
+  if (_locking_thread == nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -209,7 +209,7 @@ do_lock(Thread *current_thread) {
           << *_locking_thread << ")\n";
       }
 
-      while (_locking_thread != (Thread *)nullptr) {
+      while (_locking_thread != nullptr) {
         thread_cat.debug()
           << *current_thread << " still blocking on " << *this << " (held by "
           << *_locking_thread << ")\n";
@@ -252,7 +252,7 @@ do_try_lock(Thread *current_thread) {
   }
 
   bool acquired = true;
-  if (_locking_thread == (Thread *)nullptr) {
+  if (_locking_thread == nullptr) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
@@ -350,7 +350,7 @@ do_unlock() {
   --_lock_count;
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
-    _locking_thread = (Thread *)nullptr;
+    _locking_thread = nullptr;
 
     if (_lightweight) {
       if (!_missed_threads.empty()) {

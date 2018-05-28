@@ -122,7 +122,7 @@ get_child_named(const string &name) const {
     }
   }
 
-  return (PartGroup *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -139,12 +139,12 @@ find_child(const string &name) const {
       return child;
     }
     PartGroup *result = child->find_child(name);
-    if (result != (PartGroup *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (PartGroup *)nullptr;
+  return nullptr;
 }
 
 // An STL object to sort a list of children into alphabetical order.

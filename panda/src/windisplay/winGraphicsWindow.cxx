@@ -112,7 +112,7 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 WinGraphicsWindow::
 ~WinGraphicsWindow() {
-  if (_window_handle != (WindowHandle *)nullptr) {
+  if (_window_handle != nullptr) {
     DCAST(WinWindowHandle, _window_handle)->clear_window();
   }
 }
@@ -461,7 +461,7 @@ open_window() {
   // it gives us a handle.  Warning: this is not thread safe!
   _creating_window = this;
   bool opened = open_graphic_window(is_fullscreen());
-  _creating_window = (WinGraphicsWindow *)nullptr;
+  _creating_window = nullptr;
 
   if (!opened) {
     return false;
@@ -530,7 +530,7 @@ open_window() {
   _window_handle = new WinWindowHandle(this, *_window_handle);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)nullptr) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -2106,7 +2106,7 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 
   // The window wasn't in the map; we must be creating it right now.
-  if (_creating_window != (WinGraphicsWindow *)nullptr) {
+  if (_creating_window != nullptr) {
     return _creating_window->window_proc(hwnd, msg, wparam, lparam);
   }
 
@@ -2156,7 +2156,7 @@ resend_lost_keypresses() {
 void WinGraphicsWindow::
 update_cursor_window(WinGraphicsWindow *to_window) {
   bool hide_cursor = false;
-  if (to_window == (WinGraphicsWindow *)nullptr) {
+  if (to_window == nullptr) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {

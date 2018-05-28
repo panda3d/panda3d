@@ -146,7 +146,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   trav->get_cull_handler()->record_object(occluder_viz, trav);
 
   // Also get the frame.
-  nassertr(_frame_viz != (Geom *)nullptr, false);
+  nassertr(_frame_viz != nullptr, false);
   CullableObject *frame_viz =
     new CullableObject(_frame_viz, get_frame_viz_state(trav, data),
                        data.get_internal_transform(trav));
@@ -210,7 +210,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
  */
 PT(Geom) OccluderNode::
 get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
-  if (_occluder_viz == (Geom *)nullptr) {
+  if (_occluder_viz == nullptr) {
     nassertr(_vertices.size() == 4, nullptr);
 
     if (pgraph_cat.is_debug()) {

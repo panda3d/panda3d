@@ -30,7 +30,7 @@ has_texture(const Filename &filename) {
  */
 INLINE bool TexturePool::
 verify_texture(const Filename &filename) {
-  return load_texture(filename) != (Texture *)nullptr;
+  return load_texture(filename) != nullptr;
 }
 
 /**

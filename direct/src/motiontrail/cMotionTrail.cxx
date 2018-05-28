@@ -298,7 +298,7 @@ add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVect
  */
 void CMotionTrail::end_geometry ( ) {
   static CPT(RenderState) state;
-  if (state == (RenderState *)nullptr) {
+  if (state == nullptr) {
     state = RenderState::make(ColorAttrib::make_vertex());
   }
 

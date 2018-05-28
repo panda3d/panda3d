@@ -63,7 +63,7 @@ create_hierarchy(XFileToEggConverter *converter) {
     const FrameData &table = (*ji).second;
 
     EggXfmSAnim *anim_table = get_table(joint_name);
-    if (anim_table == (EggXfmSAnim *)nullptr) {
+    if (anim_table == nullptr) {
       xfile_cat.warning()
         << "Frame " << joint_name << ", named by animation data, not defined.\n";
     } else {
@@ -81,7 +81,7 @@ create_hierarchy(XFileToEggConverter *converter) {
   for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
     EggXfmSAnim *anim_table = (*ti).second._table;
     EggGroup *joint = (*ti).second._joint;
-    if (anim_table->empty() && joint != (EggGroup *)nullptr) {
+    if (anim_table->empty() && joint != nullptr) {
       // If there's no animation data, assign the rest transform.
       anim_table->add_data(joint->get_transform3d());
     }

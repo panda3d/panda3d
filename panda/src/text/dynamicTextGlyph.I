@@ -32,7 +32,7 @@ DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
 INLINE DynamicTextGlyph::
 DynamicTextGlyph(int character, PN_stdfloat advance) :
   TextGlyph(character, advance),
-  _page((DynamicTextPage *)nullptr),
+  _page(nullptr),
   _x(0), _y(0),
   _x_size(0), _y_size(0),
   _margin(0)

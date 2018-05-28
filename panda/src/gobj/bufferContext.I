@@ -85,7 +85,7 @@ set_resident(bool flag) {
  */
 INLINE BufferContext *BufferContext::
 get_next() const {
-  nassertr(_owning_chain != (BufferContextChain *)nullptr, nullptr);
+  nassertr(_owning_chain != nullptr, nullptr);
   if ((BufferContextChain *)_next == _owning_chain) {
     return nullptr;
   }
@@ -98,7 +98,7 @@ get_next() const {
  */
 INLINE void BufferContext::
 update_data_size_bytes(size_t new_data_size_bytes) {
-  if (_owning_chain != (BufferContextChain *)nullptr) {
+  if (_owning_chain != nullptr) {
     _owning_chain->adjust_bytes((int)new_data_size_bytes - (int)_data_size_bytes);
   }
   _data_size_bytes = new_data_size_bytes;

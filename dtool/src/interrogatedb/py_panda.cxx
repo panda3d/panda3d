@@ -183,7 +183,7 @@ PyObject *Dtool_Raise_AssertionError() {
   PyObject *message = PyString_FromString(notify->get_assert_error_message().c_str());
 #endif
   Py_INCREF(PyExc_AssertionError);
-  PyErr_Restore(PyExc_AssertionError, message, (PyObject *)nullptr);
+  PyErr_Restore(PyExc_AssertionError, message, nullptr);
   notify->clear_assert_failed();
   return nullptr;
 }
@@ -196,9 +196,9 @@ PyObject *Dtool_Raise_TypeError(const char *message) {
   // eventually anyway, so we might as well just get to the point.
   Py_INCREF(PyExc_TypeError);
 #if PY_MAJOR_VERSION >= 3
-  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), (PyObject *)nullptr);
+  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), nullptr);
 #else
-  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), (PyObject *)nullptr);
+  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), nullptr);
 #endif
   return nullptr;
 }
@@ -221,7 +221,7 @@ PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *functio
     Py_TYPE(obj)->tp_name);
 
   Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, (PyObject *)nullptr);
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
   return nullptr;
 }
 
@@ -241,7 +241,7 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     Py_TYPE(obj)->tp_name, attribute);
 
   Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, (PyObject *)nullptr);
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
   return nullptr;
 }
 
@@ -544,7 +544,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
          << "incompatible with Python " << version.substr(0, 3);
     string error = errs.str();
     PyErr_SetString(PyExc_ImportError, error.c_str());
-    return (PyObject *)nullptr;
+    return nullptr;
   }
 
   // Initialize the types we define in py_panda.
@@ -710,7 +710,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
       return Dtool_Raise_TypeError("One of these does not appear to be DTOOL Instance ??");
     }
   }
-  return (PyObject *) nullptr;
+  return nullptr;
 }
 
 // We do expose a dictionay for dtool classes .. this should be removed at
@@ -728,7 +728,7 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
     }
   }
   if (PyErr_Occurred()) {
-    return (PyObject *)nullptr;
+    return nullptr;
   }
   Py_INCREF(Py_None);
   return Py_None;

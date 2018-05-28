@@ -523,7 +523,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (i = 0; i < num_segs; i++) {
     Curveseg seg;
     manager->read_pointer(scan);
-    seg._curve = (ParametricCurve *)nullptr;
+    seg._curve = nullptr;
     seg._tend = scan.get_float64();
     _segs.push_back(seg);
   }

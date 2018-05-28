@@ -108,7 +108,7 @@ as_field() const {
  */
 DCAtomicField *DCField::
 as_atomic_field() {
-  return (DCAtomicField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -117,7 +117,7 @@ as_atomic_field() {
  */
 const DCAtomicField *DCField::
 as_atomic_field() const {
-  return (DCAtomicField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -126,7 +126,7 @@ as_atomic_field() const {
  */
 DCMolecularField *DCField::
 as_molecular_field() {
-  return (DCMolecularField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -135,7 +135,7 @@ as_molecular_field() {
  */
 const DCMolecularField *DCField::
 as_molecular_field() const {
-  return (DCMolecularField *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -143,7 +143,7 @@ as_molecular_field() const {
  */
 DCParameter *DCField::
 as_parameter() {
-  return (DCParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -151,7 +151,7 @@ as_parameter() {
  */
 const DCParameter *DCField::
 as_parameter() const {
-  return (DCParameter *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -235,7 +235,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
     ostringstream strm;
     PyObject *exc_type = PyExc_Exception;
 
-    if (as_parameter() != (DCParameter *)nullptr) {
+    if (as_parameter() != nullptr) {
       // If it's a parameter-type field, the value may or may not be a
       // sequence.
       if (packer.had_pack_error()) {
@@ -251,7 +251,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
     } else {
       // If it's a molecular or atomic field, the value should be a sequence.
       PyObject *tuple = PySequence_Tuple(sequence);
-      if (tuple == (PyObject *)nullptr) {
+      if (tuple == nullptr) {
         strm << "Value for " << get_name() << " not a sequence: " \
              << get_pystr(sequence);
         exc_type = PyExc_TypeError;
@@ -340,10 +340,10 @@ unpack_args(DCPacker &packer) const {
  */
 void DCField::
 receive_update(DCPacker &packer, PyObject *distobj) const {
-  if (as_parameter() != (DCParameter *)nullptr) {
+  if (as_parameter() != nullptr) {
     // If it's a parameter-type field, just store a new value on the object.
     PyObject *value = unpack_args(packer);
-    if (value != (PyObject *)nullptr) {
+    if (value != nullptr) {
       PyObject_SetAttrString(distobj, (char *)_name.c_str(), value);
     }
     Py_DECREF(value);
@@ -362,9 +362,9 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
       // method.
       PyObject *args = unpack_args(packer);
 
-      if (args != (PyObject *)nullptr) {
+      if (args != nullptr) {
         PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
-        nassertv(func != (PyObject *)nullptr);
+        nassertv(func != nullptr);
 
         PyObject *result;
         {
@@ -499,7 +499,7 @@ pack_default_value(DCPackData &pack_data, bool &) const {
 void DCField::
 set_name(const string &name) {
   DCPackerInterface::set_name(name);
-  if (_dclass != (DCClass *)nullptr) {
+  if (_dclass != nullptr) {
     _dclass->_dc_file->mark_inherited_fields_stale();
   }
 }

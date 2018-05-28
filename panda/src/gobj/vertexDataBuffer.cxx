@@ -25,12 +25,12 @@ operator = (const VertexDataBuffer &copy) {
   LightMutexHolder holder(_lock);
   LightMutexHolder holder2(copy._lock);
 
-  if (_resident_data != (unsigned char *)nullptr) {
+  if (_resident_data != nullptr) {
     nassertv(_reserved_size != 0);
     get_class_type().deallocate_array(_resident_data);
     _resident_data = nullptr;
   }
-  if (copy._resident_data != (unsigned char *)nullptr && copy._size != 0) {
+  if (copy._resident_data != nullptr && copy._size != 0) {
     // We only allocate _size bytes, not the full _reserved_size allocated by
     // the original copy.
     _resident_data = (unsigned char *)get_class_type().allocate_array(copy._size);
@@ -87,18 +87,18 @@ do_clean_realloc(size_t reserved_size) {
     }
 
     // Page in if we're currently paged out.
-    if (_reserved_size != 0 && _resident_data == (unsigned char *)nullptr) {
+    if (_reserved_size != 0 && _resident_data == nullptr) {
       do_page_in();
     }
 
     if (_reserved_size == 0) {
-      nassertv(_resident_data == (unsigned char *)nullptr);
+      nassertv(_resident_data == nullptr);
       _resident_data = (unsigned char *)get_class_type().allocate_array(reserved_size);
     } else {
-      nassertv(_resident_data != (unsigned char *)nullptr);
+      nassertv(_resident_data != nullptr);
       _resident_data = (unsigned char *)get_class_type().reallocate_array(_resident_data, reserved_size);
     }
-    nassertv(_resident_data != (unsigned char *)nullptr);
+    nassertv(_resident_data != nullptr);
     _reserved_size = reserved_size;
   }
 
@@ -113,7 +113,7 @@ do_clean_realloc(size_t reserved_size) {
  */
 void VertexDataBuffer::
 do_unclean_realloc(size_t reserved_size) {
-  if (reserved_size != _reserved_size || _resident_data == (unsigned char *)nullptr) {
+  if (reserved_size != _reserved_size || _resident_data == nullptr) {
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << this << ".unclean_realloc(" << reserved_size << ")\n";
@@ -122,7 +122,7 @@ do_unclean_realloc(size_t reserved_size) {
     // If we're paged out, discard the page.
     _block = nullptr;
 
-    if (_resident_data != (unsigned char *)nullptr) {
+    if (_resident_data != nullptr) {
       nassertv(_reserved_size != 0);
 
       get_class_type().deallocate_array(_resident_data);
@@ -131,7 +131,7 @@ do_unclean_realloc(size_t reserved_size) {
     }
 
     if (reserved_size != 0) {
-      nassertv(_resident_data == (unsigned char *)nullptr);
+      nassertv(_resident_data == nullptr);
       _resident_data = (unsigned char *)get_class_type().allocate_array(reserved_size);
     }
 
@@ -151,11 +151,11 @@ do_unclean_realloc(size_t reserved_size) {
  */
 void VertexDataBuffer::
 do_page_out(VertexDataBook &book) {
-  if (_block != (VertexDataBlock *)nullptr || _reserved_size == 0) {
+  if (_block != nullptr || _reserved_size == 0) {
     // We're already paged out.
     return;
   }
-  nassertv(_resident_data != (unsigned char *)nullptr);
+  nassertv(_resident_data != nullptr);
 
   if (_size == 0) {
     // It's an empty buffer.  Just deallocate it; don't bother to create a
@@ -168,9 +168,9 @@ do_page_out(VertexDataBook &book) {
     // It's a nonempty buffer, so write _size bytes (but not the full
     // _reserved_size bytes) to a block.
     _block = book.alloc(_size);
-    nassertv(_block != (VertexDataBlock *)nullptr);
+    nassertv(_block != nullptr);
     unsigned char *pointer = _block->get_pointer(true);
-    nassertv(pointer != (unsigned char *)nullptr);
+    nassertv(pointer != nullptr);
     memcpy(pointer, _resident_data, _size);
 
     get_class_type().deallocate_array(_resident_data);
@@ -189,16 +189,16 @@ do_page_out(VertexDataBook &book) {
  */
 void VertexDataBuffer::
 do_page_in() {
-  if (_resident_data != (unsigned char *)nullptr || _reserved_size == 0) {
+  if (_resident_data != nullptr || _reserved_size == 0) {
     // We're already paged in.
     return;
   }
 
-  nassertv(_block != (VertexDataBlock *)nullptr);
+  nassertv(_block != nullptr);
   nassertv(_reserved_size == _size);
 
   _resident_data = (unsigned char *)get_class_type().allocate_array(_size);
-  nassertv(_resident_data != (unsigned char *)nullptr);
+  nassertv(_resident_data != nullptr);
 
   memcpy(_resident_data, _block->get_pointer(true), _size);
 }

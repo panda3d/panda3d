@@ -32,7 +32,7 @@ AnimBundle(AnimGroup *parent, const AnimBundle &copy) :
   _fps(copy._fps),
   _num_frames(copy._num_frames)
 {
-  nassertv(_root == (AnimBundle *)nullptr);
+  nassertv(_root == nullptr);
   _root = this;
 }
 
@@ -43,7 +43,7 @@ AnimBundle(AnimGroup *parent, const AnimBundle &copy) :
  */
 PT(AnimBundle) AnimBundle::
 copy_bundle() const {
-  PT(AnimGroup) group = copy_subtree((AnimGroup *)nullptr);
+  PT(AnimGroup) group = copy_subtree(nullptr);
   return DCAST(AnimBundle, group.p());
 }
 

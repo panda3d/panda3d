@@ -30,15 +30,15 @@ TypedWritable::
   BamWriterLink *link;
   do {
     link = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
-    if (link == (BamWriterLink *)nullptr) {
+    if (link == nullptr) {
       // List is unlocked and empty - no writers to remove.
       return;
     }
     link = (BamWriterLink *)(((uintptr_t)link) & ~(uintptr_t)0x1);
   } while (link != AtomicAdjust::
-    compare_and_exchange_ptr(_bam_writers, (void *)link, (void *)nullptr));
+    compare_and_exchange_ptr(_bam_writers, (void *)link, nullptr));
 
-  while (link != (BamWriterLink *)nullptr) {
+  while (link != nullptr) {
     BamWriterLink *next_link = link->_next;
     link->_writer->object_destructs(this);
     delete link;
@@ -265,7 +265,7 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
  */
 void TypedWritable::
 add_bam_writer(BamWriter *writer) {
-  nassertv(writer != (BamWriter *)nullptr);
+  nassertv(writer != nullptr);
 
   BamWriterLink *begin;
   BamWriterLink *new_link = new BamWriterLink;
@@ -289,7 +289,7 @@ add_bam_writer(BamWriter *writer) {
  */
 void TypedWritable::
 remove_bam_writer(BamWriter *writer) {
-  nassertv(writer != (BamWriter *)nullptr);
+  nassertv(writer != nullptr);
 
   BamWriterLink *begin;
 
@@ -307,7 +307,7 @@ remove_bam_writer(BamWriter *writer) {
                        (void *)((uintptr_t)begin | (uintptr_t)0x1)));
 
   // Find the writer in the list.
-  BamWriterLink *prev_link = (BamWriterLink *)nullptr;
+  BamWriterLink *prev_link = nullptr;
   BamWriterLink *link = begin;
 
   while (link != nullptr && link->_writer != writer) {
@@ -315,13 +315,13 @@ remove_bam_writer(BamWriter *writer) {
     link = link->_next;
   }
 
-  if (link == (BamWriterLink *)nullptr) {
+  if (link == nullptr) {
     // Not found.  Just unlock and leave.
     _bam_writers = (void *)begin;
     return;
   }
 
-  if (prev_link == (BamWriterLink *)nullptr) {
+  if (prev_link == nullptr) {
     // It's the first link.  Replace and unlock in one atomic op.
     _bam_writers = (void *)link->_next;
   } else {

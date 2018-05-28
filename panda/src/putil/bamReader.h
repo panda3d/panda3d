@@ -42,7 +42,7 @@
 #define READ_PTA(Manager, source, Read_func, array)   \
 {                                                     \
   void *t;                                            \
-  if ((t = Manager->get_pta(source)) == (void*)nullptr)  \
+  if ((t = Manager->get_pta(source)) == nullptr)  \
   {                                                   \
     array = Read_func(Manager, source);               \
     Manager->register_pta(array.get_void_ptr());      \

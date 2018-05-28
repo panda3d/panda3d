@@ -59,7 +59,7 @@ WinStatsGraph(WinStatsMonitor *monitor) :
  */
 WinStatsGraph::
 ~WinStatsGraph() {
-  _monitor = (WinStatsMonitor *)nullptr;
+  _monitor = nullptr;
   release_bitmap();
 
   DeleteObject(_dark_pen);
@@ -160,8 +160,8 @@ clicked_label(int collector_index) {
 void WinStatsGraph::
 close() {
   WinStatsMonitor *monitor = _monitor;
-  _monitor = (WinStatsMonitor *)nullptr;
-  if (monitor != (WinStatsMonitor *)nullptr) {
+  _monitor = nullptr;
+  if (monitor != nullptr) {
     monitor->remove_graph(this);
   }
 }
@@ -561,7 +561,7 @@ register_graph_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsGraph::
 static_graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsGraph *self = (WinStatsGraph *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsGraph *)nullptr && self->_graph_window == hwnd) {
+  if (self != nullptr && self->_graph_window == hwnd) {
     return self->graph_window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

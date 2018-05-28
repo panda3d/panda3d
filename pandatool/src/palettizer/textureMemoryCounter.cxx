@@ -53,11 +53,11 @@ reset() {
 void TextureMemoryCounter::
 add_placement(TexturePlacement *placement) {
   TextureImage *texture = placement->get_texture();
-  nassertv(texture != (TextureImage *)nullptr);
+  nassertv(texture != nullptr);
 
   if (placement->get_omit_reason() == OR_none) {
     PaletteImage *image = placement->get_image();
-    nassertv(image != (PaletteImage *)nullptr);
+    nassertv(image != nullptr);
     add_palette(image);
 
     int bytes = count_bytes(image, placement->get_placed_x_size(),
@@ -67,7 +67,7 @@ add_placement(TexturePlacement *placement) {
 
   } else {
     DestTextureImage *dest = placement->get_dest();
-    if (dest != (DestTextureImage *)nullptr) {
+    if (dest != nullptr) {
       int bytes = count_bytes(dest);
       add_texture(texture, bytes);
 

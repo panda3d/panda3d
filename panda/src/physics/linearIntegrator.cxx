@@ -53,7 +53,7 @@ integrate(Physical *physical, LinearForceVector &forces,
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be processed.
-    if (current_object == (PhysicsObject *) nullptr) {
+    if (current_object == nullptr) {
       continue;
     }
 

@@ -39,7 +39,7 @@ Physical(int total_objects, bool pre_alloc) :
     _phys_body = new PhysicsObject;
     add_physics_object(_phys_body);
   } else {
-    _phys_body = (PhysicsObject *) nullptr;
+    _phys_body = nullptr;
     // allocate each object.
     if (pre_alloc == true) {
       for (int i = 0; i < total_objects; ++i) {
@@ -87,7 +87,7 @@ Physical(const Physical& copy) :
   if (_physics_objects.size() == 1)
     _phys_body = _physics_objects[0];
   else
-    _phys_body = (PhysicsObject *) nullptr;
+    _phys_body = nullptr;
 }
 
 /**
@@ -99,7 +99,7 @@ Physical::
   // because the physics manager doesn't keep PT's to physicals, simply *'s,
   // and also means that we don't have to tell the physics manager ourselves
   // when one of our physicals is dead.
-  if (_physics_manager != (PhysicsManager *) nullptr) {
+  if (_physics_manager != nullptr) {
     _physics_manager->remove_physical(this);
   }
 }

@@ -21,9 +21,9 @@ MaxNodeTree() {
   _root = new MaxNodeDesc;
   _fps = 0.0;
   _export_mesh = false;
-  _egg_data = (EggData *)nullptr;
-  _egg_root = (EggGroupNode *)nullptr;
-  _skeleton_node = (EggGroupNode *)nullptr;
+  _egg_data = nullptr;
+  _egg_root = nullptr;
+  _skeleton_node = nullptr;
 }
 
 /**
@@ -140,13 +140,13 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
  */
 EggGroup *MaxNodeTree::
 get_egg_group(MaxNodeDesc *node_desc) {
-  nassertr(_egg_root != (EggGroupNode *)nullptr, nullptr);
+  nassertr(_egg_root != nullptr, nullptr);
 
-  if (node_desc->_egg_group == (EggGroup *)nullptr) {
+  if (node_desc->_egg_group == nullptr) {
     // We need to make a new group node.
     EggGroup *egg_group;
 
-    nassertr(node_desc->_parent != (MaxNodeDesc *)nullptr, nullptr);
+    nassertr(node_desc->_parent != nullptr, nullptr);
     egg_group = new EggGroup(node_desc->get_name());
     if (node_desc->is_joint()) {
       egg_group->set_group_type(EggGroup::GT_joint);
@@ -186,12 +186,12 @@ get_egg_group(MaxNodeDesc *node_desc) {
  */
 EggTable *MaxNodeTree::
 get_egg_table(MaxNodeDesc *node_desc) {
-  nassertr(_skeleton_node != (EggGroupNode *)nullptr, nullptr);
+  nassertr(_skeleton_node != nullptr, nullptr);
   nassertr(node_desc->is_joint(), nullptr);
 
-  if (node_desc->_egg_table == (EggTable *)nullptr) {
+  if (node_desc->_egg_table == nullptr) {
     // We need to make a new table node.
-    nassertr(node_desc->_parent != (MaxNodeDesc *)nullptr, nullptr);
+    nassertr(node_desc->_parent != nullptr, nullptr);
 
     EggTable *egg_table = new EggTable(node_desc->get_name());
     node_desc->_anim = new EggXfmSAnim("xform",

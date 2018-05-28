@@ -105,10 +105,10 @@ setup_window(GraphicsOutput *window) {
  */
 void SceneGraphAnalyzerMeter::
 clear_window() {
-  if (_window != (GraphicsOutput *)nullptr) {
+  if (_window != nullptr) {
     _window->remove_display_region(_display_region);
-    _window = (GraphicsOutput *)nullptr;
-    _display_region = (DisplayRegion *)nullptr;
+    _window = nullptr;
+    _display_region = nullptr;
   }
   _root = NodePath();
 }

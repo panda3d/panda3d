@@ -150,7 +150,7 @@ VertexDataPage::
   {
     MutexHolder holder2(_tlock);
     if (_pending_ram_class != _ram_class) {
-      nassertv(_thread_mgr != (PageThreadManager *)nullptr);
+      nassertv(_thread_mgr != nullptr);
       _thread_mgr->remove_page(this);
     }
   }
@@ -176,7 +176,7 @@ stop_threads() {
     _thread_mgr.clear();
   }
 
-  if (thread_mgr != (PageThreadManager *)nullptr) {
+  if (thread_mgr != nullptr) {
     gobj_cat.info()
       << "Stopping vertex paging threads.\n";
     thread_mgr->stop_threads();
@@ -200,7 +200,7 @@ flush_threads() {
     thread_mgr = _thread_mgr;
   }
 
-  if (thread_mgr != (PageThreadManager *)nullptr) {
+  if (thread_mgr != nullptr) {
     thread_mgr->stop_threads();
     MutexHolder holder(_tlock);
     thread_mgr->start_threads(num_threads);
@@ -301,7 +301,7 @@ VertexDataBlock *VertexDataPage::
 do_alloc(size_t size) {
   VertexDataBlock *block = (VertexDataBlock *)SimpleAllocator::do_alloc(size);
 
-  if (block != (VertexDataBlock *)nullptr && _ram_class != RC_disk) {
+  if (block != nullptr && _ram_class != RC_disk) {
     // When we allocate a new block within a resident page, we have to clear
     // the disk cache (since we have just invalidated it).
     _saved_block.clear();
@@ -321,7 +321,7 @@ void VertexDataPage::
 make_resident_now() {
   MutexHolder holder(_tlock);
   if (_pending_ram_class != _ram_class) {
-    nassertv(_thread_mgr != (PageThreadManager *)nullptr);
+    nassertv(_thread_mgr != nullptr);
     _thread_mgr->remove_page(this);
   }
 
@@ -593,7 +593,7 @@ do_save_to_disk() {
   if (_ram_class == RC_resident || _ram_class == RC_compressed) {
     PStatTimer timer(_vdata_save_pcollector);
 
-    if (_saved_block == (VertexDataSaveBlock *)nullptr) {
+    if (_saved_block == nullptr) {
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
           << "Storing page, " << _size << " bytes, to disk\n";
@@ -602,7 +602,7 @@ do_save_to_disk() {
       bool compressed = (_ram_class == RC_compressed);
 
       _saved_block = get_save_file()->write_data(_page_data, _allocated_size, compressed);
-      if (_saved_block == (VertexDataSaveBlock *)nullptr) {
+      if (_saved_block == nullptr) {
         // Can't write it to disk.  Too bad.
         return false;
       }
@@ -626,8 +626,8 @@ do_save_to_disk() {
 void VertexDataPage::
 do_restore_from_disk() {
   if (_ram_class == RC_disk) {
-    nassertv(_saved_block != (VertexDataSaveBlock *)nullptr);
-    nassertv(_page_data == (unsigned char *)nullptr && _size == 0);
+    nassertv(_saved_block != nullptr);
+    nassertv(_page_data == nullptr && _size == 0);
 
     PStatTimer timer(_vdata_restore_pcollector);
 
@@ -643,7 +643,7 @@ do_restore_from_disk() {
       nassert_raise("read error");
     }
 
-    nassertv(_page_data == (unsigned char *)nullptr);
+    nassertv(_page_data == nullptr);
     _page_data = new_data;
     _size = buffer_size;
     _allocated_size = new_allocated_size;
@@ -669,7 +669,7 @@ adjust_book_size() {
     new_size = 0;
   }
 
-  if (_book != (VertexDataBook *)nullptr && new_size != _book_size) {
+  if (_book != nullptr && new_size != _book_size) {
     VertexDataBook::Pages::iterator pi = _book->_pages.find(this);
     nassertv(pi != _book->_pages.end());
     _book->_pages.erase(pi);
@@ -713,7 +713,7 @@ request_ram_class(RamClass ram_class) {
   }
 
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)nullptr) {
+  if (_thread_mgr == nullptr) {
     // Create the thread manager.
     gobj_cat.info()
       << "Spawning " << num_threads << " vertex paging threads.\n";
@@ -812,7 +812,7 @@ add_page(VertexDataPage *page, RamClass ram_class) {
  */
 void VertexDataPage::PageThreadManager::
 remove_page(VertexDataPage *page) {
-  nassertv(page != (VertexDataPage *)nullptr);
+  nassertv(page != nullptr);
 
   PageThreads::iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {

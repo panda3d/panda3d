@@ -493,7 +493,7 @@ get_modified() const {
  */
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
-  return (get_read_pointer(false) != (const unsigned char *)nullptr);
+  return (get_read_pointer(false) != nullptr);
 }
 
 /**

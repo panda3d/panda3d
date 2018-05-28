@@ -873,7 +873,7 @@ make_from_txo(istream &in, const string &filename) {
 
   TypedWritable *object = reader.read_object();
 
-  if (object != (TypedWritable *)nullptr &&
+  if (object != nullptr &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's really a cache data file and not a true txo file;
@@ -882,7 +882,7 @@ make_from_txo(istream &in, const string &filename) {
     object = reader.read_object();
   }
 
-  if (object == (TypedWritable *)nullptr) {
+  if (object == nullptr) {
     gobj_cat.error()
       << "Texture object " << filename << " is empty.\n";
     return nullptr;
@@ -967,7 +967,7 @@ load_related(const InternalName *suffix) const {
     return (*ti).second;
   }
   if (cdata->_fullpath.empty()) {
-    return (Texture*)nullptr;
+    return nullptr;
   }
   Filename main = cdata->_fullpath;
   main.set_basename_wo_extension(main.get_basename_wo_extension() +
@@ -1567,7 +1567,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
     Contexts::iterator ci;
     for (ci = temp.begin(); ci != temp.end(); ++ci) {
       TextureContext *tc = (*ci).second;
-      if (tc != (TextureContext *)nullptr) {
+      if (tc != nullptr) {
         prepared_objects->release_texture(tc);
       }
     }
@@ -1602,7 +1602,7 @@ release_all() {
     Contexts::iterator ci;
     for (ci = temp.begin(); ci != temp.end(); ++ci) {
       TextureContext *tc = (*ci).second;
-      if (tc != (TextureContext *)nullptr) {
+      if (tc != nullptr) {
         prepared_objects->release_texture(tc);
       }
     }
@@ -2706,7 +2706,7 @@ adjust_size(int &x_size, int &y_size, const string &name,
 
     if (max_dimension < 0) {
       GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
-      if (gsg != (GraphicsStateGuardianBase *)nullptr) {
+      if (gsg != nullptr) {
         max_dimension = gsg->get_max_texture_dimension();
       }
     }
@@ -2778,7 +2778,7 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
   }
 
   bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     header_only = false;
   }
 
@@ -2789,21 +2789,21 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
   }
 
   if (is_txo_filename(fullpath)) {
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       record->add_dependent_file(fullpath);
     }
     return do_read_txo_file(cdata, fullpath);
   }
 
   if (is_dds_filename(fullpath)) {
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       record->add_dependent_file(fullpath);
     }
     return do_read_dds_file(cdata, fullpath, header_only);
   }
 
   if (is_ktx_filename(fullpath)) {
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       record->add_dependent_file(fullpath);
     }
     return do_read_ktx_file(cdata, fullpath, header_only);
@@ -3013,7 +3013,7 @@ bool Texture::
 do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options, bool header_only, BamCacheRecord *record) {
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     nassertr(!header_only, false);
     record->add_dependent_file(fullpath);
   }
@@ -3133,7 +3133,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
     }
     alpha_image.copy_header_from(*alpha_image_reader);
 
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       record->add_dependent_file(alpha_fullpath);
     }
 
@@ -3468,7 +3468,7 @@ do_read_txo_file(CData *cdata, const Filename &fullpath) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     gobj_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -3497,7 +3497,7 @@ do_read_txo_file(CData *cdata, const Filename &fullpath) {
 bool Texture::
 do_read_txo(CData *cdata, istream &in, const string &filename) {
   PT(Texture) other = make_from_txo(in, filename);
-  if (other == (Texture *)nullptr) {
+  if (other == nullptr) {
     return false;
   }
 
@@ -3523,7 +3523,7 @@ do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     gobj_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -4173,7 +4173,7 @@ do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     gobj_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -5322,7 +5322,7 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
     // See if the texture can be found in the on-disk cache, if it is active.
 
     record = cache->lookup(cdata->_fullpath, "txo");
-    if (record != (BamCacheRecord *)nullptr &&
+    if (record != nullptr &&
         record->has_data()) {
       PT(Texture) tex = DCAST(Texture, record->get_data());
 
@@ -5421,10 +5421,10 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
     cdata->_format = orig_format;
   }
 
-  if (do_has_ram_image(cdata) && record != (BamCacheRecord *)nullptr) {
+  if (do_has_ram_image(cdata) && record != nullptr) {
     if (cache->get_cache_textures() || (cdata->_ram_image_compression != CM_off && cache->get_cache_compressed_textures())) {
       // Update the cache.
-      if (record != (BamCacheRecord *)nullptr) {
+      if (record != nullptr) {
         record->add_dependent_file(cdata->_fullpath);
       }
       record->set_data(this, this);
@@ -10252,7 +10252,7 @@ make_this_from_bam(const FactoryParams &params) {
       }
     }
 
-    if (me != (Texture *)nullptr) {
+    if (me != nullptr) {
       me->set_name(name);
       CDWriter cdata_me(me->_cycler, true);
       me->do_fillin_from(cdata_me, dummy);

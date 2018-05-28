@@ -62,7 +62,7 @@ bool wglGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -117,7 +117,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void wglGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -171,7 +171,7 @@ bind_texture_to_pbuffer() {
       }
     }
     TextureContext *tc = tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg);
-    nassertv(tc != (TextureContext *)nullptr);
+    nassertv(tc != nullptr);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
     GLenum target = wglgsg->get_texture_target(tex->get_texture_type());
     if (target == GL_NONE) {
@@ -248,7 +248,7 @@ process_events() {
  */
 bool wglGraphicsBuffer::
 get_supports_render_texture() const {
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -262,7 +262,7 @@ get_supports_render_texture() const {
  */
 void wglGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
 

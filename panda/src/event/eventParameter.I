@@ -93,7 +93,7 @@ INLINE EventParameter::
  */
 INLINE bool EventParameter::
 is_empty() const {
-  return (_ptr == (TypedWritableReferenceCount *)nullptr);
+  return (_ptr == nullptr);
 }
 
 /**

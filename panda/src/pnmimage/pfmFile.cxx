@@ -118,7 +118,7 @@ read(const Filename &fullpath) {
 
   Filename filename = Filename::binary_filename(fullpath);
   PT(VirtualFile) file = vfs->get_file(filename);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // No such file.
     pnmimage_cat.error()
       << "Could not find " << fullpath << "\n";
@@ -147,7 +147,7 @@ read(const Filename &fullpath) {
 bool PfmFile::
 read(istream &in, const Filename &fullpath) {
   PNMReader *reader = make_reader(&in, false, fullpath);
-  if (reader == (PNMReader *)nullptr) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -230,7 +230,7 @@ write(ostream &out, const Filename &fullpath) {
   }
 
   PNMWriter *writer = make_writer(&out, false, fullpath);
-  if (writer == (PNMWriter *)nullptr) {
+  if (writer == nullptr) {
     return false;
   }
 

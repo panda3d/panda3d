@@ -155,9 +155,9 @@ record_derivation(TypeHandle child, TypeHandle parent) {
   _lock->lock();
 
   TypeRegistryNode *cnode = look_up(child, nullptr);
-  assert(cnode != (TypeRegistryNode *)nullptr);
+  assert(cnode != nullptr);
   TypeRegistryNode *pnode = look_up(parent, nullptr);
-  assert(pnode != (TypeRegistryNode *)nullptr);
+  assert(pnode != nullptr);
 
   // First, we'll just run through the list to make sure we hadn't already
   // made this connection.
@@ -184,8 +184,8 @@ void TypeRegistry::
 record_alternate_name(TypeHandle type, const string &name) {
   _lock->lock();
 
-  TypeRegistryNode *rnode = look_up(type, (TypedObject *)nullptr);
-  if (rnode != (TypeRegistryNode *)nullptr) {
+  TypeRegistryNode *rnode = look_up(type, nullptr);
+  if (rnode != nullptr) {
     NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
 
@@ -250,7 +250,7 @@ string TypeRegistry::
 get_name(TypeHandle type, TypedObject *object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(type, object);
-  assert(rnode != (TypeRegistryNode *)nullptr);
+  assert(rnode != nullptr);
   string name = rnode->_name;
   _lock->unlock();
 
@@ -276,10 +276,10 @@ is_derived_from(TypeHandle child, TypeHandle base,
   _lock->lock();
 
   const TypeRegistryNode *child_node = look_up(child, child_object);
-  const TypeRegistryNode *base_node = look_up(base, (TypedObject *)nullptr);
+  const TypeRegistryNode *base_node = look_up(base, nullptr);
 
-  assert(child_node != (TypeRegistryNode *)nullptr);
-  assert(base_node != (TypeRegistryNode *)nullptr);
+  assert(child_node != nullptr);
+  assert(base_node != nullptr);
 
   freshen_derivations();
 
@@ -311,7 +311,7 @@ get_typehandle(int n) {
   }
   _lock->unlock();
 
-  if (rnode != (TypeRegistryNode *)nullptr) {
+  if (rnode != nullptr) {
     return rnode->_handle;
   }
 
@@ -364,7 +364,7 @@ int TypeRegistry::
 get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  assert(rnode != (TypeRegistryNode *)nullptr);
+  assert(rnode != nullptr);
   int num_parents = (int)rnode->_parent_classes.size();
   _lock->unlock();
   return num_parents;
@@ -378,8 +378,8 @@ TypeHandle TypeRegistry::
 get_parent_class(TypeHandle child, int index) const {
   _lock->lock();
   TypeHandle handle;
-  TypeRegistryNode *rnode = look_up(child, (TypedObject *)nullptr);
-  assert(rnode != (TypeRegistryNode *)nullptr);
+  TypeRegistryNode *rnode = look_up(child, nullptr);
+  assert(rnode != nullptr);
   if (index >= 0 && index < (int)rnode->_parent_classes.size()) {
     handle = rnode->_parent_classes[index]->_handle;
   } else {
@@ -401,7 +401,7 @@ int TypeRegistry::
 get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
   _lock->lock();
   TypeRegistryNode *rnode = look_up(child, child_object);
-  assert(rnode != (TypeRegistryNode *)nullptr);
+  assert(rnode != nullptr);
   int num_children = (int)rnode->_child_classes.size();
   _lock->unlock();
   return num_children;
@@ -415,8 +415,8 @@ TypeHandle TypeRegistry::
 get_child_class(TypeHandle child, int index) const {
   _lock->lock();
   TypeHandle handle;
-  TypeRegistryNode *rnode = look_up(child, (TypedObject *)nullptr);
-  assert(rnode != (TypeRegistryNode *)nullptr);
+  TypeRegistryNode *rnode = look_up(child, nullptr);
+  assert(rnode != nullptr);
   if (index >= 0 && index < (int)rnode->_child_classes.size()) {
     handle = rnode->_child_classes[index]->_handle;
   } else {
@@ -443,8 +443,8 @@ get_parent_towards(TypeHandle child, TypeHandle base,
   TypeHandle handle;
   const TypeRegistryNode *child_node = look_up(child, child_object);
   const TypeRegistryNode *base_node = look_up(base, nullptr);
-  assert(child_node != (TypeRegistryNode *)nullptr &&
-         base_node != (TypeRegistryNode *)nullptr);
+  assert(child_node != nullptr &&
+         base_node != nullptr);
   freshen_derivations();
   handle = TypeRegistryNode::get_parent_towards(child_node, base_node);
   _lock->unlock();
@@ -537,7 +537,7 @@ rebuild_derivations() {
        hi != _handle_registry.end();
        ++hi) {
     TypeRegistryNode *node = *hi;
-    if (node != (TypeRegistryNode *)nullptr) {
+    if (node != nullptr) {
       node->clear_subtree();
     }
   }
@@ -629,7 +629,7 @@ look_up_invalid(TypeHandle handle, TypedObject *object) const {
       ostringstream name;
       if (handle._index > 0 && handle._index < (int)_handle_registry.size()) {
         TypeRegistryNode *rnode = _handle_registry[handle._index];
-        if (rnode != (TypeRegistryNode *)nullptr) {
+        if (rnode != nullptr) {
           name << rnode->_name;
           name << " (index " << handle._index << ")";
         } else {

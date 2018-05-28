@@ -17,7 +17,7 @@
  */
 INLINE bool ButtonNode::
 is_valid() const {
-  return (_button != (ClientButtonDevice *)nullptr) && _button->is_connected();
+  return (_button != nullptr) && _button->is_connected();
 }
 
 /**

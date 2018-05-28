@@ -353,7 +353,7 @@ fetch_buffer() {
   MutexHolder holder(_lock);
 
   // If there was an error at any point, just return NULL.
-  if (_format_ctx == (AVFormatContext *)nullptr) {
+  if (_format_ctx == nullptr) {
     return nullptr;
   }
 
@@ -1190,7 +1190,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 void FfmpegVideoCursor::
 finalize(BamReader *) {
-  if (_source != (MovieVideo *)nullptr) {
+  if (_source != nullptr) {
     FfmpegVideo *video;
     DCAST_INTO_V(video, _source);
     init_from(video);

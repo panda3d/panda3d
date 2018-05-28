@@ -46,12 +46,12 @@ safe_to_flatten() const {
  */
 AnimBundle *AnimBundleNode::
 find_anim_bundle(PandaNode *root) {
-  nassertr(root != (PandaNode *)nullptr, nullptr);
+  nassertr(root != nullptr, nullptr);
 
   if (root->is_of_type(AnimBundleNode::get_class_type())) {
     AnimBundleNode *anode = DCAST(AnimBundleNode, root);
     AnimBundle *anim = anode->get_bundle();
-    if (anim != (AnimBundle *)nullptr) {
+    if (anim != nullptr) {
       return anim;
     }
   }
@@ -60,7 +60,7 @@ find_anim_bundle(PandaNode *root) {
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     AnimBundle *anim = find_anim_bundle(cr.get_child(i));
-    if (anim != (AnimBundle *)nullptr) {
+    if (anim != nullptr) {
       return anim;
     }
   }

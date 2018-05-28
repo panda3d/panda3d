@@ -105,7 +105,7 @@ is_copy_constructible() const {
 bool CPPArrayType::
 is_equivalent(const CPPType &other) const {
   const CPPArrayType *ot = ((CPPType *)&other)->as_array_type();
-  if (ot == (CPPArrayType *)nullptr) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 

@@ -18,7 +18,7 @@ template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(To *ptr) {
   _void_ptr = (void *)ptr;
-  if (ptr != (To *)nullptr) {
+  if (ptr != nullptr) {
     ptr->ref();
 #ifdef DO_MEMORY_USAGE
     update_type(ptr);
@@ -58,7 +58,7 @@ template<class T>
 INLINE PointerToBase<T>::
 PointerToBase(PointerToBase<T> &&from) noexcept {
   _void_ptr = from._void_ptr;
-  from._void_ptr = (void *)nullptr;
+  from._void_ptr = nullptr;
 }
 
 /**
@@ -78,7 +78,7 @@ reassign(PointerToBase<T> &&from) noexcept {
     from._void_ptr = nullptr;
 
     // Now delete the old pointer.
-    if (old_ptr != (To *)nullptr) {
+    if (old_ptr != nullptr) {
       unref_delete(old_ptr);
     }
   }
@@ -167,7 +167,7 @@ update_type(To *ptr) {
 template<class T>
 ALWAYS_INLINE void PointerToBase<T>::
 clear() {
-  reassign((To *)nullptr);
+  reassign(nullptr);
 }
 
 /**
@@ -178,7 +178,7 @@ template<class T>
 INLINE void PointerToBase<T>::
 output(ostream &out) const {
   out << _void_ptr;
-  if (_void_ptr != (void *)nullptr) {
+  if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();
   }
 }

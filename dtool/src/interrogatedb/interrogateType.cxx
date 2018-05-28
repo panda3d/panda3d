@@ -32,8 +32,8 @@ InterrogateType(InterrogateModuleDef *def) :
   _array_size = 1;
   _destructor = 0;
 
-  _cpptype = (CPPType *)nullptr;
-  _cppscope = (CPPScope *)nullptr;
+  _cpptype = nullptr;
+  _cppscope = nullptr;
 }
 
 /**

@@ -82,7 +82,7 @@ void NeverFreeMemory::
 make_global_ptr() {
   NeverFreeMemory *ptr = new NeverFreeMemory;
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, (void *)nullptr, (void *)ptr);
+    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
   if (result != nullptr) {
     // Someone else got there first.
     delete ptr;

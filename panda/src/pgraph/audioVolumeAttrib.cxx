@@ -43,7 +43,7 @@ CPT(RenderAttrib) AudioVolumeAttrib::
 make_identity() {
   // We make identity a special case and store a pointer forever once we find
   // it the first time.
-  if (_identity_attrib == (AudioVolumeAttrib *)nullptr) {
+  if (_identity_attrib == nullptr) {
     AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, 1.0f);;
     _identity_attrib = return_new(attrib);
   }

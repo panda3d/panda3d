@@ -73,7 +73,7 @@ CollisionTraverser(const string &name) :
 {
   _respect_prev_transform = respect_prev_transform;
   #ifdef DO_COLLISION_RECORDING
-  _recorder = (CollisionRecorder *)nullptr;
+  _recorder = nullptr;
   #endif
 }
 
@@ -100,7 +100,7 @@ void CollisionTraverser::
 add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
   nassertv(!collider.is_empty() && collider.node()->is_collision_node());
-  nassertv(handler != (CollisionHandler *)nullptr);
+  nassertv(handler != nullptr);
 
   Colliders::iterator ci = _colliders.find(collider);
   if (ci != _colliders.end()) {
@@ -370,20 +370,20 @@ void CollisionTraverser::
 set_recorder(CollisionRecorder *recorder) {
   if (recorder != _recorder) {
     // Remove the old recorder, if any.
-    if (_recorder != (CollisionRecorder *)nullptr) {
+    if (_recorder != nullptr) {
       nassertv(_recorder->_trav == this);
-      _recorder->_trav = (CollisionTraverser *)nullptr;
+      _recorder->_trav = nullptr;
     }
 
     _recorder = recorder;
 
     // Tell the new recorder about his new owner.
-    if (_recorder != (CollisionRecorder *)nullptr) {
+    if (_recorder != nullptr) {
       nassertv(_recorder->_trav != this);
-      if (_recorder->_trav != (CollisionTraverser *)nullptr) {
+      if (_recorder->_trav != nullptr) {
         _recorder->_trav->clear_recorder();
       }
-      nassertv(_recorder->_trav == (CollisionTraverser *)nullptr);
+      nassertv(_recorder->_trav == nullptr);
       _recorder->_trav = this;
     }
   }
@@ -447,7 +447,7 @@ write(ostream &out, int indent_level) const {
     nassertv(ci != _colliders.end());
 
     CollisionHandler *handler = (*ci).second;
-    nassertv(handler != (CollisionHandler *)nullptr);
+    nassertv(handler != nullptr);
 
     indent(out, indent_level + 2)
       << cnode_path;
@@ -1110,8 +1110,8 @@ compare_collider_to_node(CollisionEntry &entry,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_parent_gbv != (GeometricBoundingVolume *)nullptr &&
-      into_node_gbv != (GeometricBoundingVolume *)nullptr) {
+  if (from_parent_gbv != nullptr &&
+      into_node_gbv != nullptr) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
     _cnode_volume_pcollector.add_level(1);
   }
@@ -1169,8 +1169,8 @@ compare_collider_to_geom_node(CollisionEntry &entry,
                               const GeometricBoundingVolume *from_node_gbv,
                               const GeometricBoundingVolume *into_node_gbv) {
   bool within_node_bounds = true;
-  if (from_parent_gbv != (GeometricBoundingVolume *)nullptr &&
-      into_node_gbv != (GeometricBoundingVolume *)nullptr) {
+  if (from_parent_gbv != nullptr &&
+      into_node_gbv != nullptr) {
     within_node_bounds = (into_node_gbv->contains(from_parent_gbv) != 0);
     _gnode_volume_pcollector.add_level(1);
   }
@@ -1180,9 +1180,9 @@ compare_collider_to_geom_node(CollisionEntry &entry,
     DCAST_INTO_V(gnode, entry._into_node);
     int num_geoms = gnode->get_num_geoms();
     for (int s = 0; s < num_geoms; ++s) {
-      entry._into = (CollisionSolid *)nullptr;
+      entry._into = nullptr;
       const Geom *geom = DCAST(Geom, gnode->get_geom(s));
-      if (geom != (Geom *)nullptr) {
+      if (geom != nullptr) {
         CPT(BoundingVolume) geom_bv = geom->get_bounds();
         const GeometricBoundingVolume *geom_gbv = nullptr;
         if (num_geoms > 1 &&
@@ -1209,8 +1209,8 @@ compare_collider_to_solid(CollisionEntry &entry,
                           const GeometricBoundingVolume *from_node_gbv,
                           const GeometricBoundingVolume *solid_gbv) {
   bool within_solid_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)nullptr &&
-      solid_gbv != (GeometricBoundingVolume *)nullptr) {
+  if (from_node_gbv != nullptr &&
+      solid_gbv != nullptr) {
     within_solid_bounds = (solid_gbv->contains(from_node_gbv) != 0);
     #ifdef DO_PSTATS
     ((CollisionSolid *)entry.get_into())->get_volume_pcollector().add_level(1);
@@ -1240,8 +1240,8 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *geom_gbv) {
   bool within_geom_bounds = true;
-  if (from_node_gbv != (GeometricBoundingVolume *)nullptr &&
-      geom_gbv != (GeometricBoundingVolume *)nullptr) {
+  if (from_node_gbv != nullptr &&
+      geom_gbv != nullptr) {
     within_geom_bounds = (geom_gbv->contains(from_node_gbv) != 0);
     _geom_volume_pcollector.add_level(1);
   }
@@ -1278,7 +1278,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             // in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
-              if (from_node_gbv != (GeometricBoundingVolume *)nullptr) {
+              if (from_node_gbv != nullptr) {
                 PT(BoundingSphere) sphere = new BoundingSphere;
                 sphere->around(v, v + 3);
                 within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
@@ -1308,7 +1308,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             // in the Geom.
             if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
               bool within_solid_bounds = true;
-              if (from_node_gbv != (GeometricBoundingVolume *)nullptr) {
+              if (from_node_gbv != nullptr) {
                 PT(BoundingSphere) sphere = new BoundingSphere;
                 sphere->around(v, v + 3);
                 within_solid_bounds = (sphere->contains(from_node_gbv) != 0);

@@ -22,13 +22,13 @@ ParameterRemapToString::
 ParameterRemapToString(CPPType *orig_type) :
   ParameterRemap(orig_type)
 {
-  static CPPType *char_star_type = (CPPType *)nullptr;
-  if (char_star_type == (CPPType *)nullptr) {
+  static CPPType *char_star_type = nullptr;
+  if (char_star_type == nullptr) {
     char_star_type = parser.parse_type("char *");
   }
 
-  static CPPType *const_char_star_type = (CPPType *)nullptr;
-  if (const_char_star_type == (CPPType *)nullptr) {
+  static CPPType *const_char_star_type = nullptr;
+  if (const_char_star_type == nullptr) {
     const_char_star_type = parser.parse_type("const char *");
   }
 
@@ -75,8 +75,8 @@ ParameterRemapToWString::
 ParameterRemapToWString(CPPType *orig_type) :
   ParameterRemap(orig_type)
 {
-  static CPPType *char_star_type = (CPPType *)nullptr;
-  if (char_star_type == (CPPType *)nullptr) {
+  static CPPType *char_star_type = nullptr;
+  if (char_star_type == nullptr) {
     char_star_type = parser.parse_type("const wchar_t *");
   }
 

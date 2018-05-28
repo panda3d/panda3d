@@ -181,7 +181,7 @@ end_unpack() {
     // which case the _catalog will be non-NULL).  On the other hand, if the
     // catalog is still NULL, then we have never called seek() and it is an
     // error not to unpack all values.
-    if (_catalog == (DCPackerCatalog *)nullptr) {
+    if (_catalog == nullptr) {
       _pack_error = true;
     }
   }
@@ -262,11 +262,11 @@ end_repack() {
  */
 bool DCPacker::
 seek(const string &field_name) {
-  if (_catalog == (DCPackerCatalog *)nullptr) {
+  if (_catalog == nullptr) {
     _catalog = _root->get_catalog();
     _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
   }
-  nassertr(_catalog != (DCPackerCatalog *)nullptr, false);
+  nassertr(_catalog != nullptr, false);
   if (_live_catalog == nullptr) {
     _pack_error = true;
     return false;
@@ -292,11 +292,11 @@ seek(const string &field_name) {
  */
 bool DCPacker::
 seek(int seek_index) {
-  if (_catalog == (DCPackerCatalog *)nullptr) {
+  if (_catalog == nullptr) {
     _catalog = _root->get_catalog();
     _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
   }
-  nassertr(_catalog != (DCPackerCatalog *)nullptr, false);
+  nassertr(_catalog != nullptr, false);
   if (_live_catalog == nullptr) {
     _pack_error = true;
     return false;
@@ -324,7 +324,7 @@ seek(int seek_index) {
     return true;
 
   } else if (_mode == M_repack) {
-    nassertr(_catalog != (DCPackerCatalog *)nullptr, false);
+    nassertr(_catalog != nullptr, false);
 
     if (_stack != nullptr || _current_field != nullptr) {
       // It is an error to reseek while the stack is nonempty--that means we
@@ -334,7 +334,7 @@ seek(int seek_index) {
     }
     const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(seek_index);
 
-    if (entry._parent->as_switch_parameter() != (DCSwitchParameter *)nullptr) {
+    if (entry._parent->as_switch_parameter() != nullptr) {
       // If the parent is a DCSwitch, that can only mean that the seeked field
       // is a switch parameter.  We can't support seeking to a switch
       // parameter and modifying it directly--what would happen to all of the
@@ -741,9 +741,9 @@ pack_object(PyObject *object) {
 
     const DCClass *dclass = nullptr;
     const DCPackerInterface *current_field = get_current_field();
-    if (current_field != (DCPackerInterface *)nullptr) {
+    if (current_field != nullptr) {
       const DCClassParameter *class_param = get_current_field()->as_class_parameter();
-      if (class_param != (DCClassParameter *)nullptr) {
+      if (class_param != nullptr) {
         dclass = class_param->get_class();
 
         if (dclass->has_class_def()) {
@@ -771,7 +771,7 @@ pack_object(PyObject *object) {
 
     // (3) Otherwise, it is considered to be a class object.
 
-    if (dclass != (DCClass *)nullptr && (is_instance || !is_sequence)) {
+    if (dclass != nullptr && (is_instance || !is_sequence)) {
       // The supplied object is either an instance of the expected class
       // object, or it is not a sequence--this is case (1) or (3).
       pack_class_object(dclass, object);
@@ -782,7 +782,7 @@ pack_object(PyObject *object) {
       int size = PySequence_Size(object);
       for (int i = 0; i < size; ++i) {
         PyObject *element = PySequence_GetItem(object, i);
-        if (element != (PyObject *)nullptr) {
+        if (element != nullptr) {
           pack_object(element);
           Py_DECREF(element);
         } else {
@@ -896,13 +896,13 @@ unpack_object() {
   case PT_class:
     {
       const DCClassParameter *class_param = get_current_field()->as_class_parameter();
-      if (class_param != (DCClassParameter *)nullptr) {
+      if (class_param != nullptr) {
         const DCClass *dclass = class_param->get_class();
         if (dclass->has_class_def()) {
           // If we know what kind of class object this is and it has a valid
           // constructor, create the class object instead of just a tuple.
           object = unpack_class_object(dclass);
-          if (object == (PyObject *)nullptr) {
+          if (object == nullptr) {
             cerr << "Unable to construct object of class "
                  << dclass->get_name() << "\n";
           } else {
@@ -939,7 +939,7 @@ unpack_object() {
     break;
   }
 
-  nassertr(object != (PyObject *)nullptr, nullptr);
+  nassertr(object != nullptr, nullptr);
   return object;
 }
 #endif  // HAVE_PYTHON
@@ -995,10 +995,10 @@ unpack_and_format(ostream &out, bool show_field_names) {
   DCPackType pack_type = get_pack_type();
 
   if (show_field_names && !get_current_field_name().empty()) {
-    nassertv(_current_field != (DCPackerInterface *)nullptr);
+    nassertv(_current_field != nullptr);
     const DCField *field = _current_field->as_field();
-    if (field != (DCField *)nullptr &&
-        field->as_parameter() != (DCParameter *)nullptr) {
+    if (field != nullptr &&
+        field->as_parameter() != nullptr) {
       out << field->get_name() << " = ";
     }
   }
@@ -1147,7 +1147,7 @@ handle_switch(const DCSwitchParameter *switch_parameter) {
       (_unpack_data + _push_marker, _unpack_p - _push_marker);
   }
 
-  if (new_parent == (DCPackerInterface *)nullptr) {
+  if (new_parent == nullptr) {
     // This means an invalid value was packed for the key.
     _range_error = true;
     return;
@@ -1181,7 +1181,7 @@ clear() {
   _pop_marker = 0;
   _last_switch = nullptr;
 
-  if (_live_catalog != (DCPackerCatalog::LiveCatalog *)nullptr) {
+  if (_live_catalog != nullptr) {
     _catalog->release_live_catalog(_live_catalog);
     _live_catalog = nullptr;
   }
@@ -1194,7 +1194,7 @@ clear() {
  */
 void DCPacker::
 clear_stack() {
-  while (_stack != (StackElement *)nullptr) {
+  while (_stack != nullptr) {
     StackElement *next = _stack->_next;
     delete _stack;
     _stack = next;
@@ -1212,7 +1212,7 @@ pack_class_object(const DCClass *dclass, PyObject *object) {
   push();
   while (more_nested_fields() && !_pack_error) {
     const DCField *field = get_current_field()->as_field();
-    nassertv(field != (DCField *)nullptr);
+    nassertv(field != nullptr);
     get_class_element(dclass, object, field);
   }
   pop();
@@ -1227,7 +1227,7 @@ pack_class_object(const DCClass *dclass, PyObject *object) {
 PyObject *DCPacker::
 unpack_class_object(const DCClass *dclass) {
   PyObject *class_def = dclass->get_class_def();
-  nassertr(class_def != (PyObject *)nullptr, nullptr);
+  nassertr(class_def != nullptr, nullptr);
 
   PyObject *object = nullptr;
 
@@ -1235,28 +1235,28 @@ unpack_class_object(const DCClass *dclass) {
     // If the class uses a default constructor, go ahead and create the Python
     // object for it now.
     object = PyObject_CallObject(class_def, nullptr);
-    if (object == (PyObject *)nullptr) {
+    if (object == nullptr) {
       return nullptr;
     }
   }
 
   push();
-  if (object == (PyObject *)nullptr && more_nested_fields()) {
+  if (object == nullptr && more_nested_fields()) {
     // The first nested field will be the constructor.
     const DCField *field = get_current_field()->as_field();
-    nassertr(field != (DCField *)nullptr, object);
+    nassertr(field != nullptr, object);
     nassertr(field == dclass->get_constructor(), object);
 
     set_class_element(class_def, object, field);
 
     // By now, the object should have been constructed.
-    if (object == (PyObject *)nullptr) {
+    if (object == nullptr) {
       return nullptr;
     }
   }
   while (more_nested_fields()) {
     const DCField *field = get_current_field()->as_field();
-    nassertr(field != (DCField *)nullptr, object);
+    nassertr(field != nullptr, object);
 
     set_class_element(class_def, object, field);
   }
@@ -1287,8 +1287,8 @@ set_class_element(PyObject *class_def, PyObject *&object,
       push();
       while (more_nested_fields()) {
         const DCField *field = get_current_field()->as_field();
-        nassertv(field != (DCField *)nullptr);
-        nassertv(object != (PyObject *)nullptr);
+        nassertv(field != nullptr);
+        nassertv(object != nullptr);
         set_class_element(class_def, object, field);
       }
       pop();
@@ -1307,7 +1307,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
     PyObject *element = unpack_object();
 
     if (pack_type == PT_field) {
-      if (object == (PyObject *)nullptr) {
+      if (object == nullptr) {
         // If the object hasn't been constructed yet, assume this is the
         // constructor.
         object = PyObject_CallObject(class_def, element);
@@ -1315,7 +1315,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
       } else {
         if (PyObject_HasAttrString(object, (char *)field_name.c_str())) {
           PyObject *func = PyObject_GetAttrString(object, (char *)field_name.c_str());
-          if (func != (PyObject *)nullptr) {
+          if (func != nullptr) {
             PyObject *result = PyObject_CallObject(func, element);
             Py_XDECREF(result);
             Py_DECREF(func);
@@ -1324,7 +1324,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
       }
 
     } else {
-      nassertv(object != (PyObject *)nullptr);
+      nassertv(object != nullptr);
       PyObject_SetAttrString(object, (char *)field_name.c_str(), element);
     }
 
@@ -1353,7 +1353,7 @@ get_class_element(const DCClass *dclass, PyObject *object,
       push();
       while (more_nested_fields() && !_pack_error) {
         const DCField *field = get_current_field()->as_field();
-        nassertv(field != (DCField *)nullptr);
+        nassertv(field != nullptr);
         get_class_element(dclass, object, field);
       }
       pop();

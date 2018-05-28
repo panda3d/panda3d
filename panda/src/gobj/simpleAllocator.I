@@ -95,7 +95,7 @@ get_contiguous() const {
 INLINE SimpleAllocatorBlock *SimpleAllocator::
 get_first_block() const {
   MutexHolder holder(_lock);
-  return (_next == this) ? (SimpleAllocatorBlock *)nullptr : (SimpleAllocatorBlock *)_next;
+  return (_next == this) ? nullptr : (SimpleAllocatorBlock *)_next;
 }
 
 /**
@@ -161,7 +161,7 @@ INLINE SimpleAllocatorBlock::
  */
 INLINE void SimpleAllocatorBlock::
 free() {
-  if (_allocator != (SimpleAllocator *)nullptr) {
+  if (_allocator != nullptr) {
     MutexHolder holder(_allocator->_lock);
     do_free();
   }
@@ -182,7 +182,7 @@ get_allocator() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_start() const {
-  nassertr(_allocator != (SimpleAllocator *)nullptr, 0);
+  nassertr(_allocator != nullptr, 0);
   return _start;
 }
 
@@ -192,7 +192,7 @@ get_start() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_size() const {
-  nassertr(_allocator != (SimpleAllocator *)nullptr, 0);
+  nassertr(_allocator != nullptr, 0);
   return _size;
 }
 
@@ -201,7 +201,7 @@ get_size() const {
  */
 INLINE bool SimpleAllocatorBlock::
 is_free() const {
-  return (_allocator != (SimpleAllocator *)nullptr);
+  return (_allocator != nullptr);
 }
 
 /**
@@ -210,7 +210,7 @@ is_free() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_max_size() const {
-  nassertr(_allocator != (SimpleAllocator *)nullptr, 0);
+  nassertr(_allocator != nullptr, 0);
   MutexHolder holder(_allocator->_lock);
   return do_get_max_size();
 }
@@ -221,7 +221,7 @@ get_max_size() const {
  */
 INLINE bool SimpleAllocatorBlock::
 realloc(size_t size) {
-  nassertr(_allocator != (SimpleAllocator *)nullptr, false);
+  nassertr(_allocator != nullptr, false);
   MutexHolder holder(_allocator->_lock);
   return do_realloc(size);
 }
@@ -232,9 +232,9 @@ realloc(size_t size) {
  */
 INLINE SimpleAllocatorBlock *SimpleAllocatorBlock::
 get_next_block() const {
-  nassertr(_allocator != (SimpleAllocator *)nullptr, nullptr);
+  nassertr(_allocator != nullptr, nullptr);
   MutexHolder holder(_allocator->_lock);
-  return (_next == _allocator) ? (SimpleAllocatorBlock *)nullptr : (SimpleAllocatorBlock *)_next;
+  return (_next == _allocator) ? nullptr : (SimpleAllocatorBlock *)_next;
 }
 
 /**
@@ -244,7 +244,7 @@ get_next_block() const {
  */
 INLINE void SimpleAllocatorBlock::
 do_free() {
-  nassertv(_allocator != (SimpleAllocator *)nullptr);
+  nassertv(_allocator != nullptr);
 
   _allocator->_total_size -= _size;
   LinkedListNode *prev = _prev;

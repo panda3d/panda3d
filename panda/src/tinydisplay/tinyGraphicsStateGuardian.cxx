@@ -99,7 +99,7 @@ reset() {
   _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
 
-  if (_c != (GLContext *)nullptr) {
+  if (_c != nullptr) {
     glClose(_c);
     _c = nullptr;
   }
@@ -142,12 +142,12 @@ reset() {
  */
 void TinyGraphicsStateGuardian::
 free_pointers() {
-  if (_aux_frame_buffer != (ZBuffer *)nullptr) {
+  if (_aux_frame_buffer != nullptr) {
     ZB_close(_aux_frame_buffer);
     _aux_frame_buffer = nullptr;
   }
 
-  if (_vertices != (GLVertex *)nullptr) {
+  if (_vertices != nullptr) {
     PANDA_FREE_ARRAY(_vertices);
     _vertices = nullptr;
   }
@@ -163,7 +163,7 @@ void TinyGraphicsStateGuardian::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
 
-  if (_c != (GLContext *)nullptr) {
+  if (_c != nullptr) {
     glClose(_c);
     _c = nullptr;
   }
@@ -245,7 +245,7 @@ clear(DrawableRegion *clearable) {
  */
 void TinyGraphicsStateGuardian::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)nullptr);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int xmin, ymin, xsize, ysize;
@@ -259,7 +259,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     ymin = 0;
     xsize = int(xsize * pixel_factor);
     ysize = int(ysize * pixel_factor);
-    if (_aux_frame_buffer == (ZBuffer *)nullptr) {
+    if (_aux_frame_buffer == nullptr) {
       _aux_frame_buffer = ZB_open(xsize, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
     } else if (_aux_frame_buffer->xsize < xsize || _aux_frame_buffer->ysize < ysize) {
       ZB_resize(_aux_frame_buffer, nullptr,
@@ -295,7 +295,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  */
 CPT(TransformState) TinyGraphicsStateGuardian::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)nullptr) {
+  if (lens == nullptr) {
     return nullptr;
   }
 
@@ -481,7 +481,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)nullptr, false);
+  nassertr(_data_reader != nullptr, false);
 
   PStatTimer timer(_draw_transform_pcollector);
 
@@ -557,7 +557,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     while (_vertices_size < num_used_vertices) {
       _vertices_size *= 2;
     }
-    if (_vertices != (GLVertex *)nullptr) {
+    if (_vertices != nullptr) {
       PANDA_FREE_ARRAY(_vertices);
     }
     _vertices = (GLVertex *)PANDA_MALLOC_ARRAY(_vertices_size * sizeof(GLVertex));
@@ -1354,7 +1354,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)nullptr, false);
+  nassertr(tc != nullptr, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   GLTexture *gltex = &gtc->_gltex;
@@ -1914,7 +1914,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
     gl_light->specular.v[3] = specular[3];
 
     Lens *lens = light_obj->get_lens();
-    nassertv(lens != (Lens *)nullptr);
+    nassertv(lens != nullptr);
 
     // Position needs to specify x, y, z, and w w == 1 implies non-infinite
     // position
@@ -2104,7 +2104,7 @@ do_issue_material() {
   const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
 
   const Material *material;
-  if (target_material == (MaterialAttrib *)nullptr ||
+  if (target_material == nullptr ||
       target_material->is_off()) {
     material = &empty;
   } else {
@@ -2148,11 +2148,11 @@ do_issue_texture() {
   for (int si = 0; si < num_stages; ++si) {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)nullptr);
+    nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)nullptr) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       return;
     }
@@ -2523,10 +2523,10 @@ bool TinyGraphicsStateGuardian::
 upload_simple_texture(TinyTextureContext *gtc) {
   PStatTimer timer(_load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)nullptr, false);
+  nassertr(tex != nullptr, false);
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
-  if (image_ptr == (const unsigned char *)nullptr) {
+  if (image_ptr == nullptr) {
     return false;
   }
 

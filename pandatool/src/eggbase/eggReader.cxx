@@ -50,7 +50,7 @@ EggReader() {
      "which should be self-contained and include only relative pathnames.",
      &EggReader::dispatch_none, &_noabs);
 
-  _tex_type = (PNMFileType *)nullptr;
+  _tex_type = nullptr;
   _delod = -1.0;
 
   _got_tex_dirname = false;

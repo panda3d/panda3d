@@ -18,10 +18,10 @@
  */
 CPPTypeDeclaration::
 CPPTypeDeclaration(CPPType *type) :
-  CPPInstance(type, (CPPIdentifier *)nullptr)
+  CPPInstance(type, nullptr)
 {
   assert(_type != nullptr);
-  if (_type->_declaration == (CPPTypeDeclaration *)nullptr) {
+  if (_type->_declaration == nullptr) {
     _type->_declaration = this;
   }
 }

@@ -163,7 +163,7 @@ write_public_keys(Filename outfile) {
   for (i = 0; i < num_keys; i++) {
     EVP_PKEY *pkey = pkr->get_key(i);
 
-    if (pkey != (EVP_PKEY *)nullptr) {
+    if (pkey != nullptr) {
       if (!PEM_write_bio_PUBKEY(mbio, pkey)) {
         output_ssl_errors();
         exit(1);
@@ -184,7 +184,7 @@ write_public_keys(Filename outfile) {
     EVP_PKEY *pkey = pkr->get_key(i);
     time_t generated_time = pkr->get_generated_time(i);
 
-    if (pkey != (EVP_PKEY *)nullptr) {
+    if (pkey != nullptr) {
       out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i
           << "_length, " << generated_time << " },\n";
     } else {

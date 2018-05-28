@@ -256,7 +256,7 @@ heap_alloc_single(size_t size) {
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)nullptr) {
+  while (alloc == nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.lock();
@@ -333,7 +333,7 @@ heap_alloc_array(size_t size) {
   void *alloc = call_malloc(inflated_size);
 #endif
 
-  while (alloc == (void *)nullptr) {
+  while (alloc == nullptr) {
     alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.lock();
@@ -387,7 +387,7 @@ heap_realloc_array(void *ptr, size_t size) {
   alloc1 = call_realloc(alloc1, inflated_size);
 #endif
 
-  while (alloc1 == (void *)nullptr) {
+  while (alloc1 == nullptr) {
     alloc_fail(inflated_size);
 
     // Recover the original pointer.
@@ -519,7 +519,7 @@ mmap_alloc(size_t size, bool allow_exec) {
   // Windows case.
   void *ptr = VirtualAlloc(nullptr, size, MEM_COMMIT | MEM_RESERVE,
                            allow_exec ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
-  if (ptr == (void *)nullptr) {
+  if (ptr == nullptr) {
     DWORD err = GetLastError();
     cerr << "Couldn't allocate memory page of size " << size << ": ";
 

@@ -17,7 +17,7 @@
 INLINE TextGlyph::
 TextGlyph(int character, PN_stdfloat advance) :
   _character(character),
-  _geom((Geom *)nullptr),
+  _geom(nullptr),
   _advance(advance),
   _has_quad(false)
 {
@@ -38,7 +38,7 @@ TextGlyph(int character, const Geom *geom,
   if (geom != nullptr) {
     check_quad_geom();
   }
-  if (_state == (RenderState *)nullptr) {
+  if (_state == nullptr) {
     _state = RenderState::make_empty();
   }
 }

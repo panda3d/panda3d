@@ -50,7 +50,7 @@ AnimGroup(AnimGroup *parent, const AnimGroup &copy) :
   Namable(copy),
   _children(get_class_type())
 {
-  if (parent != (AnimGroup *)nullptr) {
+  if (parent != nullptr) {
     parent->_children.push_back(this);
     _root = parent->_root;
   } else {
@@ -115,7 +115,7 @@ get_child_named(const string &name) const {
     }
   }
 
-  return (AnimGroup *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -132,12 +132,12 @@ find_child(const string &name) const {
       return child;
     }
     AnimGroup *result = child->find_child(name);
-    if (result != (AnimGroup *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (AnimGroup *)nullptr;
+  return nullptr;
 }
 
 // An STL object to sort a list of children into alphabetical order.

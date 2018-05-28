@@ -118,7 +118,7 @@ init(PT(Buffer) buffer) {
  */
 Patchfile::
 ~Patchfile() {
-  if (_hash_table != (uint32_t *)nullptr) {
+  if (_hash_table != nullptr) {
     PANDA_FREE_ARRAY(_hash_table);
   }
 
@@ -987,7 +987,7 @@ compute_file_patches(ostream &write_stream,
   stream_new.read(buffer_new, result_file_length);
 
   // allocate hashlink tables
-  if (_hash_table == (uint32_t *)nullptr) {
+  if (_hash_table == nullptr) {
     if (express_cat.is_debug()) {
       express_cat.debug()
         << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";

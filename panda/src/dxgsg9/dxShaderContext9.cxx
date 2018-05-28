@@ -671,7 +671,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
       }
 
       TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
-      if (tc == (TextureContext*)nullptr) {
+      if (tc == nullptr) {
         continue;
       }
 

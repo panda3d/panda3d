@@ -922,12 +922,12 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
     }
   }
 
-  if (_flat_texcoord_name != (InternalName *)nullptr) {
+  if (_flat_texcoord_name != nullptr) {
     // We need an additional texcoord column for the flat texcoords.
     add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, _flat_texcoord_name);
   }
 
-  if (_vis_blend != (PNMImage *)nullptr) {
+  if (_vis_blend != nullptr) {
     // The blend map, if specified, also gets applied to the vertices.
     add_vis_column(vis_columns, CT_blend1, CT_blend1, InternalName::get_color());
   }
@@ -1188,7 +1188,7 @@ transform_point(LPoint3f &point) const {
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat()).xform_point_in_place(point);
   }
-  if (_lens != (Lens *)nullptr) {
+  if (_lens != nullptr) {
     static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
                            0.0, 0.5, 0.0, 0.0,
                            0.0, 0.0, 1.0, 0.0,

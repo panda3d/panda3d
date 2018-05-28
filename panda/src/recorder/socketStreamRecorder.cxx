@@ -42,7 +42,7 @@ receive_datagram(Datagram &dg) {
   } else {
     // If we're not in playback mode, forward the request to the connection.
     bool got_data = false;
-    if (_stream != (SocketStream *)nullptr) {
+    if (_stream != nullptr) {
       got_data = _stream->receive_datagram(dg);
     }
 

@@ -51,7 +51,7 @@ do_task() {
   }
 
   PT(PandaNode) model = get_model();
-  if (model == (PandaNode *)nullptr) {
+  if (model == nullptr) {
     // Couldn't load the file.
     _control->fail_anim(part);
     return DS_done;
@@ -59,7 +59,7 @@ do_task() {
   _control->set_anim_model(model);
 
   AnimBundle *anim = AnimBundleNode::find_anim_bundle(model);
-  if (anim == (AnimBundle *)nullptr) {
+  if (anim == nullptr) {
     // No anim bundle.
     _control->fail_anim(part);
     return DS_done;

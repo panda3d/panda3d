@@ -70,7 +70,7 @@ ThreadSimpleImpl::
 
   free_thread_context(_context);
 
-  if (_stack != (void *)nullptr) {
+  if (_stack != nullptr) {
     memory_hook->mmap_free(_stack, _stack_size);
   }
   _manager->remove_thread(this);

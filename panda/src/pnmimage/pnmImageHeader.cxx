@@ -29,7 +29,7 @@ bool PNMImageHeader::
 read_header(const Filename &filename, PNMFileType *type,
             bool report_unknown_type) {
   PNMReader *reader = make_reader(filename, type, report_unknown_type);
-  if (reader != (PNMReader *)nullptr) {
+  if (reader != nullptr) {
     (*this) = (*reader);
     delete reader;
     return true;
@@ -55,7 +55,7 @@ read_header(istream &data, const string &filename, PNMFileType *type,
             bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, string(), type, report_unknown_type);
-  if (reader != (PNMReader *)nullptr) {
+  if (reader != nullptr) {
     (*this) = (*reader);
     delete reader;
     return true;
@@ -80,7 +80,7 @@ make_reader(const Filename &filename, PNMFileType *type,
       << "Reading image from " << filename << "\n";
   }
   bool owns_file = false;
-  istream *file = (istream *)nullptr;
+  istream *file = nullptr;
 
   if (filename == "-") {
     owns_file = false;
@@ -96,7 +96,7 @@ make_reader(const Filename &filename, PNMFileType *type,
     file = vfs->open_read_file(filename, true);
   }
 
-  if (file == (istream *)nullptr) {
+  if (file == nullptr) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
         << "Unable to open file.\n";
@@ -135,7 +135,7 @@ PNMReader *PNMImageHeader::
 make_reader(istream *file, bool owns_file, const Filename &filename,
             string magic_number, PNMFileType *type,
             bool report_unknown_type) const {
-  if (type == (PNMFileType *)nullptr) {
+  if (type == nullptr) {
     if (!read_magic_number(file, magic_number, 2)) {
       // No magic number.  No image.
       if (pnmimage_cat.is_debug()) {
@@ -158,7 +158,7 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
       get_type_from_magic_number(magic_number);
 
     if (pnmimage_cat.is_debug()) {
-      if (type != (PNMFileType *)nullptr) {
+      if (type != nullptr) {
         pnmimage_cat.debug()
           << "By magic number, image file appears to be type "
           << type->get_name() << ".\n";
@@ -169,13 +169,13 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
     }
   }
 
-  if (type == (PNMFileType *)nullptr && !filename.empty()) {
+  if (type == nullptr && !filename.empty()) {
     // We still don't know the type; attempt to guess it from the filename
     // extension.
     type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(filename);
 
     if (pnmimage_cat.is_debug()) {
-      if (type != (PNMFileType *)nullptr) {
+      if (type != nullptr) {
         pnmimage_cat.debug()
           << "From its extension, image file is probably type "
           << type->get_name() << ".\n";
@@ -187,17 +187,17 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
     }
   }
 
-  if (type == (PNMFileType *)nullptr) {
+  if (type == nullptr) {
     // No?  How about the default type associated with this image header.
     type = _type;
 
-    if (pnmimage_cat.is_debug() && type != (PNMFileType *)nullptr) {
+    if (pnmimage_cat.is_debug() && type != nullptr) {
       pnmimage_cat.debug()
         << "Assuming image file type is " << type->get_name() << ".\n";
     }
   }
 
-  if (type == (PNMFileType *)nullptr) {
+  if (type == nullptr) {
     // We can't figure out what type the file is; give up.
     if (report_unknown_type && pnmimage_cat.is_error()) {
       pnmimage_cat.error()
@@ -247,7 +247,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
       << "Writing image to " << filename << "\n";
   }
   bool owns_file = false;
-  ostream *file = (ostream *)nullptr;
+  ostream *file = nullptr;
 
   if (filename == "-") {
     owns_file = false;
@@ -267,7 +267,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
     }
   }
 
-  if (file == (ostream *)nullptr) {
+  if (file == nullptr) {
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
         << "Unable to write to file.\n";
@@ -299,13 +299,13 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 PNMWriter *PNMImageHeader::
 make_writer(ostream *file, bool owns_file, const Filename &filename,
             PNMFileType *type) const {
-  if (type == (PNMFileType *)nullptr && !filename.empty()) {
+  if (type == nullptr && !filename.empty()) {
     // We don't know the type; attempt to guess it from the filename
     // extension.
     type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(filename);
 
     if (pnmimage_cat.is_debug()) {
-      if (type != (PNMFileType *)nullptr) {
+      if (type != nullptr) {
         pnmimage_cat.debug()
           << "From its extension, image file is intended to be type "
           << type->get_name() << ".\n";
@@ -316,17 +316,17 @@ make_writer(ostream *file, bool owns_file, const Filename &filename,
     }
   }
 
-  if (type == (PNMFileType *)nullptr) {
+  if (type == nullptr) {
     // No?  How about the default type associated with this image header.
     type = _type;
 
-    if (pnmimage_cat.is_debug() && type != (PNMFileType *)nullptr) {
+    if (pnmimage_cat.is_debug() && type != nullptr) {
       pnmimage_cat.debug()
         << "Assuming image file type is " << type->get_name() << ".\n";
     }
   }
 
-  if (type == (PNMFileType *)nullptr) {
+  if (type == nullptr) {
     // We can't figure out what type the file is; give up.
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()

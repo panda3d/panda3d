@@ -56,7 +56,7 @@ void PrcKeyRegistry::
 record_keys(const KeyDef *key_def, size_t num_keys) {
   for (size_t i = 0; i < num_keys; i++) {
     const KeyDef *def = &key_def[i];
-    if (def->_data != (char *)nullptr) {
+    if (def->_data != nullptr) {
       // Clear the ith key.
       while (_keys.size() <= i) {
         Key key;
@@ -66,7 +66,7 @@ record_keys(const KeyDef *key_def, size_t num_keys) {
         _keys.push_back(key);
       }
       if (_keys[i]._def != def) {
-        if (_keys[i]._pkey != (EVP_PKEY *)nullptr) {
+        if (_keys[i]._pkey != nullptr) {
           EVP_PKEY_free(_keys[i]._pkey);
           _keys[i]._pkey = nullptr;
         }
@@ -94,7 +94,7 @@ set_key(size_t n, EVP_PKEY *pkey, time_t generated_time) {
     _keys.push_back(key);
   }
   _keys[n]._def = nullptr;
-  if (_keys[n]._pkey != (EVP_PKEY *)nullptr) {
+  if (_keys[n]._pkey != nullptr) {
     EVP_PKEY_free(_keys[n]._pkey);
     _keys[n]._pkey = nullptr;
   }
@@ -117,10 +117,10 @@ get_num_keys() const {
  */
 EVP_PKEY *PrcKeyRegistry::
 get_key(size_t n) const {
-  nassertr(n < _keys.size(), (EVP_PKEY *)nullptr);
+  nassertr(n < _keys.size(), nullptr);
 
-  if (_keys[n]._def != (KeyDef *)nullptr) {
-    if (_keys[n]._pkey == (EVP_PKEY *)nullptr) {
+  if (_keys[n]._def != nullptr) {
+    if (_keys[n]._pkey == nullptr) {
       // Convert the def to a EVP_PKEY structure.
       const KeyDef *def = _keys[n]._def;
       BIO *mbio = BIO_new_mem_buf((void *)def->_data, def->_length);
@@ -128,7 +128,7 @@ get_key(size_t n) const {
       ((PrcKeyRegistry *)this)->_keys[n]._pkey = pkey;
       BIO_free(mbio);
 
-      if (pkey == (EVP_PKEY *)nullptr) {
+      if (pkey == nullptr) {
         // Couldn't read the bio for some reason.
         ((PrcKeyRegistry *)this)->_keys[n]._def = nullptr;
       }
@@ -154,7 +154,7 @@ get_generated_time(size_t n) const {
  */
 PrcKeyRegistry *PrcKeyRegistry::
 get_global_ptr() {
-  if (_global_ptr == (PrcKeyRegistry *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PrcKeyRegistry;
   }
   return _global_ptr;

@@ -128,7 +128,7 @@ get_bin_name(int, const EggNode *) {
  */
 PT(EggBin) EggBinMaker::
 make_bin(int, const EggNode *, EggGroup *collapse_from) {
-  if (collapse_from == (EggGroup *)nullptr) {
+  if (collapse_from == nullptr) {
     return new EggBin;
   } else {
     return new EggBin(*collapse_from);

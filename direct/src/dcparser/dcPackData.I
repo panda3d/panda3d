@@ -26,7 +26,7 @@ DCPackData() {
  */
 INLINE DCPackData::
 ~DCPackData() {
-  if (_buffer != (const char *)nullptr) {
+  if (_buffer != nullptr) {
     delete[] _buffer;
   }
 }

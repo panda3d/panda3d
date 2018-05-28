@@ -78,31 +78,31 @@ add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *
     const GeomVertexColumn *column = reader->get_column();
     switch (column->get_num_components()) {
     case 1:
-      if (func1f != (Func1f *)nullptr) {
+      if (func1f != nullptr) {
         sender = new ComponentSender1f(reader, func1f);
       }
       break;
 
     case 2:
-      if (func2 != (Func2f *)nullptr) {
+      if (func2 != nullptr) {
         sender = new ComponentSender2f(reader, func2);
       }
       break;
 
     case 3:
-      if (func3 != (Func3f *)nullptr) {
+      if (func3 != nullptr) {
         sender = new ComponentSender3f(reader, func3);
       }
       break;
 
     case 4:
-      if (func4 != (Func4f *)nullptr) {
+      if (func4 != nullptr) {
         sender = new ComponentSender4f(reader, func4);
       }
       break;
     }
 
-    if (sender != (ComponentSender *)nullptr) {
+    if (sender != nullptr) {
       // Ok, we've got a valid sender; add it to the list.
       _senders.push_back(sender);
       return true;
@@ -155,7 +155,7 @@ add_texcoord_column(const GeomVertexDataPipelineReader *data_reader,
       break;
     }
 
-    if (sender != (ComponentSender *)nullptr) {
+    if (sender != nullptr) {
       // Ok, we've got a valid sender; add it to the list.
       _senders.push_back(sender);
       return true;
@@ -206,7 +206,7 @@ add_vector_column(const GeomVertexDataPipelineReader *data_reader, const Interna
       break;
     }
 
-    if (sender != (ComponentSender *)nullptr) {
+    if (sender != nullptr) {
       // Ok, we've got a valid sender; add it to the list.
       _senders.push_back(sender);
       return true;
@@ -256,7 +256,7 @@ add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader,
       break;
     }
 
-    if (sender != (ComponentSender *)nullptr) {
+    if (sender != nullptr) {
       // Ok, we've got a valid sender; add it to the list.
       _senders.push_back(sender);
       return true;

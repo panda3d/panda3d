@@ -1792,7 +1792,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   // The active profile failed, so recompile it with the ultimate profile.
   prog = cgCreateProgram(context, CG_SOURCE, text.c_str(),
-                         (CGprofile)ultimate, entry, (const char **)nullptr);
+                         (CGprofile)ultimate, entry, nullptr);
 
   // Extract the output listing.
   err = cgGetError();
@@ -1915,7 +1915,7 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
       CGprogram new_program;
       new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
                                     (CGprofile)_cg_fprofile, "fshader",
-                                    (const char**)nullptr);
+                                    nullptr);
       if (new_program) {
         cgDestroyProgram(_cg_fprogram);
         _cg_fprogram = new_program;
@@ -2479,7 +2479,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
       return false;
     }
 
-    if (record != (BamCacheRecord *)nullptr) {
+    if (record != nullptr) {
       record->add_dependent_file(vf);
     }
     _last_modified = max(_last_modified, vf->get_timestamp());
@@ -2540,7 +2540,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     return false;
   }
 
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(vf);
   }
   _last_modified = max(_last_modified, vf->get_timestamp());
@@ -2856,7 +2856,7 @@ check_modified() const {
     const Filename &fn = (*it);
 
     PT(VirtualFile) vfile = vfs->get_file(fn, true);
-    if (vfile == (VirtualFile *)nullptr || vfile->get_timestamp() > _last_modified) {
+    if (vfile == nullptr || vfile->get_timestamp() > _last_modified) {
       return true;
     }
   }
@@ -3142,7 +3142,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record = cache->lookup(fullpath, "sho");
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     if (record->has_data()) {
       shader_cat.info()
         << "Compute shader " << fn << " was found in disk cache.\n";
@@ -3436,7 +3436,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)nullptr) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     } else {
       _contexts.erase(ci);
@@ -3510,7 +3510,7 @@ release_all() {
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
     PreparedGraphicsObjects *prepared_objects = (*ci).first;
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)nullptr) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     }
   }

@@ -100,7 +100,7 @@ remove() {
  */
 double AsyncTask::
 get_wake_time() const {
-  if (_manager != (AsyncTaskManager *)nullptr) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (_state == S_sleeping) {
       return _wake_time;
@@ -122,7 +122,7 @@ get_wake_time() const {
  */
 void AsyncTask::
 recalc_wake_time() {
-  if (_manager != (AsyncTaskManager *)nullptr) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (_state == S_sleeping) {
       double now = _manager->_clock->get_frame_time();
@@ -144,7 +144,7 @@ recalc_wake_time() {
 double AsyncTask::
 get_elapsed_time() const {
   nassertr(_state != S_inactive, 0.0);
-  nassertr(_manager != (AsyncTaskManager *)nullptr, 0.0);
+  nassertr(_manager != nullptr, 0.0);
   return _manager->_clock->get_frame_time() - _start_time;
 }
 
@@ -157,7 +157,7 @@ get_elapsed_time() const {
 int AsyncTask::
 get_elapsed_frames() const {
   nassertr(_state != S_inactive, 0);
-  nassertr(_manager != (AsyncTaskManager *)nullptr, 0);
+  nassertr(_manager != nullptr, 0);
   return _manager->_clock->get_frame_count() - _start_frame;
 }
 
@@ -166,7 +166,7 @@ get_elapsed_frames() const {
  */
 void AsyncTask::
 set_name(const string &name) {
-  if (_manager != (AsyncTaskManager *)nullptr) {
+  if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (Namable::get_name() != name) {
       // Changing an active task's name requires moving it around on its name
@@ -247,7 +247,7 @@ get_name_prefix() const {
 void AsyncTask::
 set_task_chain(const string &chain_name) {
   if (chain_name != _chain_name) {
-    if (_manager != (AsyncTaskManager *)nullptr) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active) {
         // Changing chains on an "active" (i.e.  enqueued) task means removing
@@ -256,7 +256,7 @@ set_task_chain(const string &chain_name) {
         PT(AsyncTaskManager) manager = _manager;
 
         AsyncTaskChain *chain_a = manager->do_find_task_chain(_chain_name);
-        nassertv(chain_a != (AsyncTaskChain *)nullptr);
+        nassertv(chain_a != nullptr);
         chain_a->do_remove(this);
         _chain_name = chain_name;
 
@@ -290,14 +290,14 @@ set_task_chain(const string &chain_name) {
 void AsyncTask::
 set_sort(int sort) {
   if (sort != _sort) {
-    if (_manager != (AsyncTaskManager *)nullptr) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing sort on an "active" (i.e.  enqueued) task means removing
         // it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
         AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
-        nassertv(chain != (AsyncTaskChain *)nullptr);
+        nassertv(chain != nullptr);
         chain->do_remove(this);
         _sort = sort;
         chain->do_add(this);
@@ -335,14 +335,14 @@ set_sort(int sort) {
 void AsyncTask::
 set_priority(int priority) {
   if (priority != _priority) {
-    if (_manager != (AsyncTaskManager *)nullptr) {
+    if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
       if (_state == S_active && _sort >= _chain->_current_sort) {
         // Changing priority on an "active" (i.e.  enqueued) task means
         // removing it and re-inserting it into the queue.
         PT(AsyncTask) hold_task = this;
         AsyncTaskChain *chain = _manager->do_find_task_chain(_chain_name);
-        nassertv(chain != (AsyncTaskChain *)nullptr);
+        nassertv(chain != nullptr);
         chain->do_remove(this);
         _priority = priority;
         chain->do_add(this);
@@ -378,7 +378,7 @@ output(ostream &out) const {
 void AsyncTask::
 jump_to_task_chain(AsyncTaskManager *manager) {
   AsyncTaskChain *chain_b = manager->do_find_task_chain(_chain_name);
-  if (chain_b == (AsyncTaskChain *)nullptr) {
+  if (chain_b == nullptr) {
     task_cat.warning()
       << "Creating implicit AsyncTaskChain " << _chain_name
       << " for " << manager->get_type() << " "
@@ -540,7 +540,7 @@ upon_death(AsyncTaskManager *manager, bool clean_exit) {
   //NB. done_event is now being thrown in AsyncFuture::notify_done().
 
   // Throw a generic remove event for the manager.
-  if (manager != (AsyncTaskManager *)nullptr) {
+  if (manager != nullptr) {
     string remove_name = manager->get_name() + "-removeTask";
     PT_Event event = new Event(remove_name);
     event->add_parameter(EventParameter(this));

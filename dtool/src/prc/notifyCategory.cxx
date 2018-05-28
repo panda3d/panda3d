@@ -41,12 +41,12 @@ NotifyCategory(const string &fullname, const string &basename,
             ConfigVariable::F_dynamic),
   _local_modified(initial_invalid_cache())
 {
-  if (_parent != (NotifyCategory *)nullptr) {
+  if (_parent != nullptr) {
     _parent->_children.push_back(this);
   }
 
   // Only the unnamed top category is allowed not to have a parent.
-  nassertv(_parent != (NotifyCategory *)nullptr || _fullname.empty());
+  nassertv(_parent != nullptr || _fullname.empty());
 }
 
 /**
@@ -175,7 +175,7 @@ update_severity_cache() {
       nout << "Invalid severity name for " << _severity.get_name() << ": "
            << _severity.get_string_value() << "\n";
     }
-    if (_parent != (NotifyCategory *)nullptr) {
+    if (_parent != nullptr) {
       _severity_cache = _parent->get_severity();
 
     } else {
@@ -196,7 +196,7 @@ update_severity_cache() {
 bool NotifyCategory::
 get_notify_timestamp() {
   static ConfigVariableBool *notify_timestamp = nullptr;
-  if (notify_timestamp == (ConfigVariableBool *)nullptr) {
+  if (notify_timestamp == nullptr) {
     notify_timestamp = new ConfigVariableBool
       ("notify-timestamp", false,
        "Set true to output the date & time with each notify message.");
@@ -212,7 +212,7 @@ get_notify_timestamp() {
 bool NotifyCategory::
 get_check_debug_notify_protect() {
   static ConfigVariableBool *check_debug_notify_protect = nullptr;
-  if (check_debug_notify_protect == (ConfigVariableBool *)nullptr) {
+  if (check_debug_notify_protect == nullptr) {
     check_debug_notify_protect = new ConfigVariableBool
       ("check-debug-notify-protect", false,
        "Set true to issue a warning message if a debug or spam "

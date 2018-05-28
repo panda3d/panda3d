@@ -53,8 +53,8 @@ CullTraverser() :
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
-  _cull_handler = (CullHandler *)nullptr;
-  _portal_clipper = (PortalClipper *)nullptr;
+  _cull_handler = nullptr;
+  _portal_clipper = nullptr;
   _effective_incomplete_render = true;
 }
 
@@ -104,8 +104,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
  */
 void CullTraverser::
 traverse(const NodePath &root) {
-  nassertv(_cull_handler != (CullHandler *)nullptr);
-  nassertv(_scene_setup != (SceneSetup *)nullptr);
+  nassertv(_cull_handler != nullptr);
+  nassertv(_scene_setup != nullptr);
 
   if (allow_portal_cull) {
     // This _view_frustum is in cull_center space Erik: obsolete?
@@ -229,7 +229,7 @@ draw_bounding_volume(const BoundingVolume *vol,
                      const TransformState *internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
 
-  if (bounds_viz != (Geom *)nullptr) {
+  if (bounds_viz != nullptr) {
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz =
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
@@ -264,7 +264,7 @@ show_bounds(CullTraverserData &data, bool tight) {
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
 
-    if (bounds_viz != (Geom *)nullptr) {
+    if (bounds_viz != nullptr) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz =
         new CullableObject(move(bounds_viz), get_bounds_outer_viz_state(),
@@ -489,8 +489,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_outer_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)nullptr;
-  if (state == (const RenderState *)nullptr) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.3, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -507,8 +507,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_inner_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)nullptr;
-  if (state == (const RenderState *)nullptr) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -524,8 +524,8 @@ CPT(RenderState) CullTraverser::
 get_depth_offset_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)nullptr;
-  if (state == (const RenderState *)nullptr) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make(1));
   }

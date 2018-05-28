@@ -625,7 +625,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsMonitor::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsMonitor *self = (WinStatsMonitor *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsMonitor *)nullptr && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

@@ -336,7 +336,7 @@ get_num_default_parameters() const {
   CPPParameterList::Parameters::const_reverse_iterator pi;
   int count = 0;
   for (pi = params.rbegin();
-       pi != params.rend() && (*pi)->_initializer != (CPPExpression *)nullptr;
+       pi != params.rend() && (*pi)->_initializer != nullptr;
        ++pi) {
     count++;
   }

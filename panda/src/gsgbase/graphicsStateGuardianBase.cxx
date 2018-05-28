@@ -119,7 +119,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 
   gsg_list->_gsgs.push_back(gsg);
 
-  if (gsg_list->_default_gsg == (GraphicsStateGuardianBase *)nullptr) {
+  if (gsg_list->_default_gsg == nullptr) {
     gsg_list->_default_gsg = gsg;
   }
 }

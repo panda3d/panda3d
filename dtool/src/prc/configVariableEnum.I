@@ -126,7 +126,7 @@ INLINE EnumType ConfigVariableEnum<EnumType>::
 get_default_value() const {
   if (!_got_default_value) {
     const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-    if (decl != (ConfigDeclaration *)nullptr) {
+    if (decl != nullptr) {
       ((ConfigVariableEnum<EnumType> *)this)->_default_value = (EnumType)parse_string(decl->get_string_value());
       ((ConfigVariableEnum<EnumType> *)this)->_got_default_value = true;
     }

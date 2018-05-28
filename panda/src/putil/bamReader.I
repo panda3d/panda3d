@@ -34,7 +34,7 @@ get_source() {
  */
 INLINE const Filename &BamReader::
 get_filename() const {
-  if (_source != (DatagramGenerator *)nullptr) {
+  if (_source != nullptr) {
     return _source->get_filename();
   }
   static const Filename empty_filename;
@@ -175,7 +175,7 @@ register_factory(TypeHandle handle, WritableFactory::CreateFunc *func, void *use
  */
 INLINE WritableFactory *BamReader::
 get_factory() {
-  if (_factory == (WritableFactory *)nullptr) {
+  if (_factory == nullptr) {
     create_factory();
   }
   return _factory;

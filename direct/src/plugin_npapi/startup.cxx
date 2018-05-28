@@ -194,7 +194,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
   // Check if the browser offers this very useful call.
   if (browser_major > 0 || browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
-    if ((void *)browser->pluginthreadasynccall == (void *)nullptr) {
+    if ((void *)browser->pluginthreadasynccall == nullptr) {
       nout << "Browser should have PLUGIN_THREAD_ASYNC_CALL, but the pointer is NULL.\n";
       has_plugin_thread_async_call = false;
     } else {

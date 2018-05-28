@@ -32,7 +32,7 @@ TypeHandle PalettePage::_type_handle;
  */
 PalettePage::
 PalettePage() {
-  _group = (PaletteGroup *)nullptr;
+  _group = nullptr;
 }
 
 /**
@@ -248,7 +248,7 @@ int PalettePage::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[pi] != (TypedWritable *)nullptr) {
+  if (p_list[pi] != nullptr) {
     DCAST_INTO_R(_group, p_list[pi], pi);
   }
   pi++;

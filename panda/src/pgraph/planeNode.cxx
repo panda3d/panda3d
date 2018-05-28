@@ -186,7 +186,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
 
-  if (cdata->_front_viz != (Geom *)nullptr) {
+  if (cdata->_front_viz != nullptr) {
     return front ? cdata->_front_viz : cdata->_back_viz;
   }
 

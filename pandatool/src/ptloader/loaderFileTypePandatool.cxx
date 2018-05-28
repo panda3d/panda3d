@@ -32,7 +32,7 @@ LoaderFileTypePandatool(SomethingToEggConverter *loader,
                         EggToSomethingConverter *saver) :
   _loader(loader), _saver(saver)
 {
-  if (_loader != (SomethingToEggConverter *)nullptr) {
+  if (_loader != nullptr) {
     _loader->set_merge_externals(true);
   }
 }
@@ -49,7 +49,7 @@ LoaderFileTypePandatool::
  */
 string LoaderFileTypePandatool::
 get_name() const {
-  if (_loader != (SomethingToEggConverter *)nullptr) {
+  if (_loader != nullptr) {
     return _loader->get_name();
   }
   return _saver->get_name();
@@ -60,7 +60,7 @@ get_name() const {
  */
 string LoaderFileTypePandatool::
 get_extension() const {
-  if (_loader != (SomethingToEggConverter *)nullptr) {
+  if (_loader != nullptr) {
     return _loader->get_extension();
   }
   return _saver->get_extension();
@@ -72,7 +72,7 @@ get_extension() const {
  */
 string LoaderFileTypePandatool::
 get_additional_extensions() const {
-  if (_loader != (SomethingToEggConverter *)nullptr) {
+  if (_loader != nullptr) {
     return _loader->get_additional_extensions();
   }
   return _saver->get_additional_extensions();
@@ -84,7 +84,7 @@ get_additional_extensions() const {
  */
 bool LoaderFileTypePandatool::
 supports_compressed() const {
-  if (_loader != (SomethingToEggConverter *)nullptr) {
+  if (_loader != nullptr) {
     return _loader->supports_compressed();
   }
   return _saver->supports_compressed();
@@ -129,7 +129,7 @@ load_file(const Filename &path, const LoaderOptions &options,
     return nullptr;
   }
 
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(path);
   }
 

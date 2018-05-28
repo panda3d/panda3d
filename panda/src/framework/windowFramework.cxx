@@ -134,7 +134,7 @@ GraphicsOutput *WindowFramework::
 open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
             const FrameBufferProperties &fbprops) {
-  nassertr(_window == (GraphicsOutput *)nullptr, _window);
+  nassertr(_window == nullptr, _window);
 
   static int next_window_index = 1;
   ostringstream stream;
@@ -146,7 +146,7 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
   GraphicsOutput *winout =
     engine->make_output(pipe, name, 0, fbprops,
                         props, flags, gsg, nullptr);
-  if (winout != (GraphicsOutput *)nullptr) {
+  if (winout != nullptr) {
     _window = winout;
     // _window->request_properties(props);
 
@@ -203,13 +203,13 @@ close_window() {
   _lighting_enabled = false;
   _perpixel_enabled = false;
 
-  if (_frame_rate_meter != (FrameRateMeter *)nullptr) {
+  if (_frame_rate_meter != nullptr) {
     _frame_rate_meter->clear_window();
-    _frame_rate_meter = (FrameRateMeter *)nullptr;
+    _frame_rate_meter = nullptr;
   }
-  if (_scene_graph_analyzer_meter != (SceneGraphAnalyzerMeter *)nullptr) {
+  if (_scene_graph_analyzer_meter != nullptr) {
     _scene_graph_analyzer_meter->clear_window();
-    _scene_graph_analyzer_meter = (SceneGraphAnalyzerMeter *)nullptr;
+    _scene_graph_analyzer_meter = nullptr;
   }
 }
 
@@ -455,13 +455,13 @@ setup_trackball() {
  */
 void WindowFramework::
 center_trackball(const NodePath &object) {
-  if (_trackball == (Trackball *)nullptr) {
+  if (_trackball == nullptr) {
     return;
   }
 
   PT(BoundingVolume) volume = object.get_bounds();
   // We expect at least a geometric bounding volume around the world.
-  nassertv(volume != (BoundingVolume *)nullptr);
+  nassertv(volume != nullptr);
   nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
   CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
@@ -502,17 +502,17 @@ center_trackball(const NodePath &object) {
   // Choose a suitable distance to view the whole volume in our frame.  This
   // is based on the camera lens in use.  Determine the lens based on the
   // first camera; this will be the default camera.
-  Lens *lens = (Lens *)nullptr;
+  Lens *lens = nullptr;
   if (!_cameras.empty()) {
     Cameras::const_iterator ci;
     for (ci = _cameras.begin();
-         ci != _cameras.end() && lens == (Lens *)nullptr;
+         ci != _cameras.end() && lens == nullptr;
          ++ci) {
       lens = (*ci)->get_lens();
     }
   }
 
-  if (lens != (Lens *)nullptr) {
+  if (lens != nullptr) {
     LVecBase2 fov = lens->get_fov();
     distance = radius / ctan(deg_2_rad(min(fov[0], fov[1]) / 2.0f));
 
@@ -544,7 +544,7 @@ bool WindowFramework::
 load_models(const NodePath &parent, int argc, char *argv[], int first_arg) {
   pvector<Filename> files;
 
-  for (int i = first_arg; i < argc && argv[i] != (char *)nullptr; i++) {
+  for (int i = first_arg; i < argc && argv[i] != nullptr; i++) {
     files.push_back(Filename::from_os_specific(argv[i]));
   }
 
@@ -602,7 +602,7 @@ load_model(const NodePath &parent, Filename filename) {
     LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
     model_type = reg->get_type_from_extension(extension);
 
-    if (model_type == (LoaderFileType *)nullptr) {
+    if (model_type == nullptr) {
       // The extension isn't a known model file type; is it a known image file
       // extension?
       TexturePool *texture_pool = TexturePool::get_global_ptr();
@@ -630,12 +630,12 @@ load_model(const NodePath &parent, Filename filename) {
     // It failed to load.  Is it because the extension isn't recognised?  If
     // so, then we just got done printing out the known scene types, and we
     // should also print out the supported texture types.
-    if (node == (PandaNode *)nullptr && !is_image && model_type == nullptr) {
+    if (node == nullptr && !is_image && model_type == nullptr) {
       texture_pool->write_texture_types(nout, 2);
     }
   }
 
-  if (node == (PandaNode *)nullptr) {
+  if (node == nullptr) {
     nout << "Unable to load " << filename << "\n";
     return NodePath::not_found();
   }
@@ -822,7 +822,7 @@ adjust_dimensions() {
   Cameras::iterator ci;
   for (ci = _cameras.begin(); ci != _cameras.end(); ++ci) {
     Lens *lens = (*ci)->get_lens();
-    if (lens != (Lens *)nullptr) {
+    if (lens != nullptr) {
       if (y_size != 0) {
         lens->set_film_size(x_size, y_size);
       } else {
@@ -860,7 +860,7 @@ split_window(SplitType split_type) {
 
   if (split_type == ST_vertical) {
     _display_region_3d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);
-    if (_display_region_2d != (DisplayRegion *)nullptr) {
+    if (_display_region_2d != nullptr) {
       _display_region_2d->set_dimensions(left, right, bottom, (top + bottom) / 2.0f);
     }
 
@@ -868,7 +868,7 @@ split_window(SplitType split_type) {
 
   } else {
     _display_region_3d->set_dimensions(left, (left + right) / 2.0f, bottom, top);
-    if (_display_region_2d != (DisplayRegion *)nullptr) {
+    if (_display_region_2d != nullptr) {
       _display_region_2d->set_dimensions(left, (left + right) / 2.0f, bottom, top);
     }
 
@@ -1044,7 +1044,7 @@ void WindowFramework::
 set_background_type(WindowFramework::BackgroundType type) {
   _background_type = type;
 
-  if (_display_region_3d == (DisplayRegion *)nullptr) {
+  if (_display_region_3d == nullptr) {
     return;
   }
 
@@ -1101,7 +1101,7 @@ set_background_type(WindowFramework::BackgroundType type) {
  */
 TextFont *WindowFramework::
 get_shuttle_controls_font() {
-  if (_shuttle_controls_font == (TextFont *)nullptr) {
+  if (_shuttle_controls_font == nullptr) {
     PT(TextFont) font;
 
     string shuttle_controls_string((const char *)shuttle_controls, shuttle_controls_len);
@@ -1109,7 +1109,7 @@ get_shuttle_controls_font() {
     BamFile bam_file;
     if (bam_file.open_read(in, "shuttle_controls font stream")) {
       PT(PandaNode) node = bam_file.read_node();
-      if (node != (PandaNode *)nullptr) {
+      if (node != nullptr) {
         _shuttle_controls_font = new StaticTextFont(node);
       }
     }
@@ -1365,7 +1365,7 @@ create_anim_controls() {
   }
 
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
 
   if (control->get_num_frames() <= 1) {
     // Don't show the controls when the animation has only 0 or 1 frames.
@@ -1451,7 +1451,7 @@ destroy_anim_controls() {
 void WindowFramework::
 update_anim_controls() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
 
   if (_anim_slider != nullptr) {
     if (_anim_slider->is_button_down()) {
@@ -1494,7 +1494,7 @@ setup_shuttle_button(const string &label, int index,
   style.set_type(PGFrameStyle::T_bevel_out);
   button->set_frame_style(PGButton::S_rollover, style);
 
-  if (get_shuttle_controls_font() != (TextFont *)nullptr) {
+  if (get_shuttle_controls_font() != nullptr) {
     PT(TextNode) tn = new TextNode("label");
     tn->set_align(TextNode::A_center);
     tn->set_font(get_shuttle_controls_font());
@@ -1521,7 +1521,7 @@ setup_shuttle_button(const string &label, int index,
 void WindowFramework::
 back_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
   control->pose(control->get_frame() - 1);
 }
 
@@ -1531,7 +1531,7 @@ back_button() {
 void WindowFramework::
 pause_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
   control->stop();
 }
 
@@ -1541,7 +1541,7 @@ pause_button() {
 void WindowFramework::
 play_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
   control->loop(false);
 }
 
@@ -1551,7 +1551,7 @@ play_button() {
 void WindowFramework::
 forward_button() {
   AnimControl *control = _anim_controls.get_anim(_anim_index);
-  nassertv(control != (AnimControl *)nullptr);
+  nassertv(control != nullptr);
   control->pose(control->get_frame() + 1);
 }
 

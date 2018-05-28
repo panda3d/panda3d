@@ -178,7 +178,7 @@ return_file(istream *buffer_stream, bool auto_unwrap) const {
 
   istream *result = buffer_stream;
 #ifdef HAVE_ZLIB
-  if (result != (istream *)nullptr && do_unwrap) {
+  if (result != nullptr && do_unwrap) {
     // We have to slip in a layer to decompress the file on the fly.
     IDecompressStream *wrapper = new IDecompressStream(result, true);
     result = wrapper;

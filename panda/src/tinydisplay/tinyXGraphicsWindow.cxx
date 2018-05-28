@@ -83,7 +83,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -95,7 +95,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   TinyGraphicsStateGuardian *tinygsg;
   DCAST_INTO_R(tinygsg, _gsg, false);
 
-  if (_reduced_frame_buffer != (ZBuffer *)nullptr) {
+  if (_reduced_frame_buffer != nullptr) {
     tinygsg->_current_frame_buffer = _reduced_frame_buffer;
   } else {
     tinygsg->_current_frame_buffer = _full_frame_buffer;
@@ -114,7 +114,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinyXGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -143,7 +143,7 @@ end_flip() {
     return;
   }
 
-  if (_reduced_frame_buffer != (ZBuffer *)nullptr) {
+  if (_reduced_frame_buffer != nullptr) {
     // Zoom the reduced buffer onto the full buffer.
     ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0,
                        _full_frame_buffer->xsize, _full_frame_buffer->ysize,
@@ -377,7 +377,7 @@ process_events() {
  */
 void TinyXGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     TinyGraphicsStateGuardian *tinygsg;
     DCAST_INTO_V(tinygsg, _gsg);
     tinygsg->_current_frame_buffer = nullptr;
@@ -513,7 +513,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_x11(_xwindow);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)nullptr) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 

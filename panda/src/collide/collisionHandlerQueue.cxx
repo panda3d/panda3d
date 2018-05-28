@@ -58,7 +58,7 @@ begin_group() {
  */
 void CollisionHandlerQueue::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)nullptr);
+  nassertv(entry != nullptr);
   _entries.push_back(entry);
 }
 

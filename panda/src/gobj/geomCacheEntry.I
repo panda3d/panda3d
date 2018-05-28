@@ -43,8 +43,8 @@ remove_from_list() {
 INLINE void GeomCacheEntry::
 insert_before(GeomCacheEntry *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (GeomCacheEntry *)nullptr &&
-           _next == (GeomCacheEntry *)nullptr);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;

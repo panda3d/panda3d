@@ -577,7 +577,7 @@ make_geometry() {
   if (num_segments == 0) {
     // Can't do a frustum.
     cdata->_geom_data.clear();
-    return (Geom *)nullptr;
+    return nullptr;
   }
 
   // Now string together the line segments.
@@ -648,25 +648,25 @@ make_bounds() const {
   // Upper left.
   corner.set(-1.0f, 1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nul, ful)) {
-    return (BoundingVolume *)nullptr;
+    return nullptr;
   }
 
   // Upper right.
   corner.set(1.0f, 1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nur, fur)) {
-    return (BoundingVolume *)nullptr;
+    return nullptr;
   }
 
   // Lower right.
   corner.set(1.0f, -1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nlr, flr)) {
-    return (BoundingVolume *)nullptr;
+    return nullptr;
   }
 
   // Lower left.
   corner.set(-1.0f, -1.0f, 0.0f);
   if (!do_extrude(cdata, corner, nll, fll)) {
-    return (BoundingVolume *)nullptr;
+    return nullptr;
   }
 
   return new BoundingHexahedron(fll, flr, fur, ful, nll, nlr, nur, nul);
@@ -1613,7 +1613,7 @@ do_define_geom_data(CData *cdata) {
     num_segments = lens_geom_segments;
   }
 
-  if (cdata->_geom_data == (GeomVertexData *)nullptr) {
+  if (cdata->_geom_data == nullptr) {
     cdata->_geom_data = new GeomVertexData
       ("lens", GeomVertexFormat::get_v3(),
        Geom::UH_dynamic);

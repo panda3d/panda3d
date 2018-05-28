@@ -18,7 +18,7 @@ INLINE DatagramInputFile::
 DatagramInputFile() {
   _error = false;
   _read_first_datagram = false;
-  _in = (istream *)nullptr;
+  _in = nullptr;
   _owns_in = false;
   _timestamp = 0;
 }

@@ -16,7 +16,7 @@
 #include "configVariableInt.h"
 #include "config_pipeline.h"
 
-Pipeline *Pipeline::_render_pipeline = (Pipeline *)nullptr;
+Pipeline *Pipeline::_render_pipeline = nullptr;
 
 /**
  *
@@ -500,7 +500,7 @@ make_render_pipeline() {
               "pipeline stages than your application requires will incur "
               "additional runtime overhead."));
 
-  nassertv(_render_pipeline == (Pipeline *)nullptr);
+  nassertv(_render_pipeline == nullptr);
   _render_pipeline = new Pipeline("render", pipeline_stages);
 }
 

@@ -31,7 +31,7 @@ get_memory_usage(MemoryClass memory_class) const {
     return 0;
   } else {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     return (size_t)AtomicAdjust::get(rnode->_memory_usage[memory_class]);
   }
 #endif  // DO_MEMORY_USAGE
@@ -50,7 +50,7 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
 #endif
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[memory_class], (AtomicAdjust::Integer)size);
     // cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " <<
     // rnode->_memory_usage[memory_class] << "\n";
@@ -74,7 +74,7 @@ dec_memory_usage(MemoryClass memory_class, size_t size) {
 #endif
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[memory_class], -(AtomicAdjust::Integer)size);
     // cerr << *this << ".dec(" << memory_class << ", " << size << ") -> " <<
     // rnode->_memory_usage[memory_class] << "\n";
@@ -99,7 +99,7 @@ allocate_array(size_t size) {
     assert(size <= alloc_size);
 #endif
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)alloc_size);
     if (rnode->_memory_usage[MC_array] < 0) {
       cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
@@ -126,7 +126,7 @@ reallocate_array(void *old_ptr, size_t size) {
     size_t new_size = MemoryHook::get_ptr_size(new_ptr);
 
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)new_size - (AtomicAdjust::Integer)old_size);
     assert(rnode->_memory_usage[MC_array] >= 0);
   }
@@ -148,7 +148,7 @@ deallocate_array(void *ptr) {
   size_t alloc_size = MemoryHook::get_ptr_size(ptr);
   if ((*this) != TypeHandle::none()) {
     TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
-    assert(rnode != (TypeRegistryNode *)nullptr);
+    assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[MC_array], -(AtomicAdjust::Integer)alloc_size);
     assert(rnode->_memory_usage[MC_array] >= 0);
   }

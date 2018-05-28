@@ -95,7 +95,7 @@ PhysxManager::
 PhysxManager *PhysxManager::
 get_global_ptr() {
 
-  if (_global_ptr == (PhysxManager *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PhysxManager;
   }
 

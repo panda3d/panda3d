@@ -24,7 +24,7 @@
  */
 CPT(CopyOnWriteObject) CopyOnWritePointer::
 get_read_pointer(Thread *current_thread) const {
-  if (_cow_object == (CopyOnWriteObject *)nullptr) {
+  if (_cow_object == nullptr) {
     return nullptr;
   }
 
@@ -60,7 +60,7 @@ get_read_pointer(Thread *current_thread) const {
  */
 PT(CopyOnWriteObject) CopyOnWritePointer::
 get_write_pointer() {
-  if (_cow_object == (CopyOnWriteObject *)nullptr) {
+  if (_cow_object == nullptr) {
     return nullptr;
   }
 

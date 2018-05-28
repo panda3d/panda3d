@@ -28,7 +28,7 @@ TypeHandle SourceTextureImage::_type_handle;
  */
 SourceTextureImage::
 SourceTextureImage() {
-  _texture = (TextureImage *)nullptr;
+  _texture = nullptr;
 
   _egg_count = 0;
   _read_header = false;

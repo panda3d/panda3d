@@ -35,7 +35,7 @@ ThreadSafePointerToBase(const ThreadSafePointerToBase<T> &copy) {
 template<class T>
 INLINE ThreadSafePointerToBase<T>::
 ~ThreadSafePointerToBase() {
-  reassign((To *)nullptr);
+  reassign(nullptr);
 }
 
 /**
@@ -65,7 +65,7 @@ reassign(To *ptr) {
   _void_ptr = ptr;
 #endif  // HAVE_THREADS
 
-  if (ptr != (To *)nullptr) {
+  if (ptr != nullptr) {
     ptr->ref();
 #ifdef DO_MEMORY_USAGE
     if (MemoryUsage::get_track_memory_usage()) {
@@ -75,7 +75,7 @@ reassign(To *ptr) {
   }
 
   // Now delete the old pointer.
-  if (old_ptr != (To *)nullptr) {
+  if (old_ptr != nullptr) {
     unref_delete(old_ptr);
   }
 }
@@ -115,7 +115,7 @@ update_type(To *ptr) {
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 clear() {
-  reassign((To *)nullptr);
+  reassign(nullptr);
 }
 
 /**
@@ -126,7 +126,7 @@ template<class T>
 INLINE void ThreadSafePointerToBase<T>::
 output(ostream &out) const {
   out << _void_ptr;
-  if (_void_ptr != (void *)nullptr) {
+  if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();
   }
 }

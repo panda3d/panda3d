@@ -733,9 +733,9 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   dcyylval.str = dcyytext;
 
-  if (dc_file != (DCFile *)nullptr) {
+  if (dc_file != nullptr) {
     const DCKeyword *keyword = dc_file->get_keyword_by_name(dcyylval.str);
-    if (keyword != (DCKeyword *)nullptr) {
+    if (keyword != nullptr) {
       dcyylval.u.keyword = keyword;
       return KEYWORD;
     }

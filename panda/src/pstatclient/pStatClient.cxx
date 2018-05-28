@@ -508,7 +508,7 @@ client_resume_after_pause() {
  */
 PStatClient *PStatClient::
 get_global_pstats() {
-  if (_global_pstats == (PStatClient *)nullptr) {
+  if (_global_pstats == nullptr) {
     _global_pstats = new PStatClient;
 
     ClockObject::_start_clock_wait = start_clock_wait;
@@ -1173,7 +1173,7 @@ activate_hook(Thread *thread) {
 void PStatClient::Collector::
 make_def(const PStatClient *client, int this_index) {
   ReMutexHolder holder(client->_lock);
-  if (_def == (PStatCollectorDef *)nullptr) {
+  if (_def == nullptr) {
     _def = new PStatCollectorDef(this_index, _name);
     if (_parent_index != this_index) {
       const PStatCollectorDef *parent_def =

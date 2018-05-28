@@ -321,7 +321,7 @@ prepare_for_exit() {
  */
 void ThreadSimpleManager::
 set_current_thread(ThreadSimpleImpl *current_thread) {
-  nassertv(_current_thread == (ThreadSimpleImpl *)nullptr);
+  nassertv(_current_thread == nullptr);
   _current_thread = current_thread;
 }
 

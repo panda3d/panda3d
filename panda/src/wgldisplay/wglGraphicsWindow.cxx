@@ -56,7 +56,7 @@ bool wglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -99,7 +99,7 @@ void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -184,7 +184,7 @@ end_flip() {
  */
 void wglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     wglGraphicsPipe::wgl_make_current(_hdc, nullptr, &_make_current_pcollector);
     _gsg.clear();
   }

@@ -35,7 +35,7 @@ public:
     nassertr(!a.is_empty() && !b.is_empty(), a < b);
     PlaneNode *pa = DCAST(PlaneNode, a.node());
     PlaneNode *pb = DCAST(PlaneNode, b.node());
-    nassertr(pa != (PlaneNode *)nullptr && pb != (PlaneNode *)nullptr, a < b);
+    nassertr(pa != nullptr && pb != nullptr, a < b);
 
     return pa->get_priority() > pb->get_priority();
   }
@@ -340,7 +340,7 @@ CPT(RenderAttrib) ClipPlaneAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)nullptr) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new ClipPlaneAttrib);
   }
 
@@ -355,7 +355,7 @@ CPT(RenderAttrib) ClipPlaneAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)nullptr) {
+  if (_all_off_attrib == nullptr) {
     ClipPlaneAttrib *attrib = new ClipPlaneAttrib;
     attrib->_off_all_planes = true;
     _all_off_attrib = return_new(attrib);

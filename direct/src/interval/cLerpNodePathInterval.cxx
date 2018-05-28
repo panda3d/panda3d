@@ -404,7 +404,7 @@ priv_step(double t) {
         color.set(1.0f, 1.0f, 1.0f, 1.0f);
         const RenderAttrib *attrib =
           state->get_attrib(ColorAttrib::get_class_type());
-        if (attrib != (const RenderAttrib *)nullptr) {
+        if (attrib != nullptr) {
           const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
           if (ca->get_color_type() == ColorAttrib::T_flat) {
             color = ca->get_color();
@@ -428,7 +428,7 @@ priv_step(double t) {
         color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
         const RenderAttrib *attrib =
           state->get_attrib(ColorScaleAttrib::get_class_type());
-        if (attrib != (const RenderAttrib *)nullptr) {
+        if (attrib != nullptr) {
           const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
           color_scale = csa->get_scale();
         }
@@ -446,7 +446,7 @@ priv_step(double t) {
       const RenderAttrib *attrib =
         state->get_attrib(TexMatrixAttrib::get_class_type());
       CPT(TexMatrixAttrib) tma;
-      if (attrib != (const TexMatrixAttrib *)nullptr) {
+      if (attrib != nullptr) {
         tma = DCAST(TexMatrixAttrib, attrib);
         transform = tma->get_transform(_texture_stage);
       } else {

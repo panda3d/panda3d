@@ -136,7 +136,7 @@ get_column(int i) const {
  */
 INLINE bool GeomVertexArrayFormat::
 has_column(const InternalName *name) const {
-  return (get_column(name) != (GeomVertexColumn *)nullptr);
+  return (get_column(name) != nullptr);
 }
 
 /**
@@ -144,7 +144,7 @@ has_column(const InternalName *name) const {
  */
 INLINE GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::
 get_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     make_registry();
   }
   return _registry;

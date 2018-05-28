@@ -87,7 +87,7 @@ INLINE Texture *GraphicsOutput::
 get_texture(int i) const {
   CDReader cdata(_cycler);
   if ((i < 0) || (i >= ((int)cdata->_textures.size()))) {
-    return (Texture *)nullptr;
+    return nullptr;
   }
   return cdata->_textures[i]._texture;
 }

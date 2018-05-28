@@ -83,9 +83,9 @@ is_anim_matrix() const {
  */
 EggRenderMode *EggNode::
 determine_alpha_mode() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_alpha_mode();
 }
@@ -98,9 +98,9 @@ determine_alpha_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_write_mode() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_depth_write_mode();
 }
@@ -113,9 +113,9 @@ determine_depth_write_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_test_mode() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_depth_test_mode();
 }
@@ -128,9 +128,9 @@ determine_depth_test_mode() {
  */
 EggRenderMode *EggNode::
 determine_visibility_mode() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_visibility_mode();
 }
@@ -143,9 +143,9 @@ determine_visibility_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_offset() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_depth_offset();
 }
@@ -158,9 +158,9 @@ determine_depth_offset() {
  */
 EggRenderMode *EggNode::
 determine_draw_order() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_draw_order();
 }
@@ -172,9 +172,9 @@ determine_draw_order() {
  */
 EggRenderMode *EggNode::
 determine_bin() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)nullptr;
+    return nullptr;
   }
   return _parent->determine_bin();
 }
@@ -189,7 +189,7 @@ determine_bin() {
  */
 bool EggNode::
 determine_indexed() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
     return false;
   }
@@ -206,7 +206,7 @@ determine_indexed() {
  */
 bool EggNode::
 determine_decal() {
-  if (_parent == (EggGroupNode *)nullptr) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
     return false;
   }

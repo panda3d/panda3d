@@ -88,7 +88,7 @@ convert_file(const Filename &filename) {
   clear_error();
 
   VrmlScene *scene = parse_vrml(filename);
-  if (scene == (VrmlScene *)nullptr) {
+  if (scene == nullptr) {
     return false;
   }
 

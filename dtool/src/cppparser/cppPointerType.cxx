@@ -194,7 +194,7 @@ is_copy_assignable() const {
 bool CPPPointerType::
 is_equivalent(const CPPType &other) const {
   const CPPPointerType *ot = ((CPPType *)&other)->as_pointer_type();
-  if (ot == (CPPPointerType *)nullptr) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 

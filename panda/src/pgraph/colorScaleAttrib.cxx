@@ -45,7 +45,7 @@ CPT(RenderAttrib) ColorScaleAttrib::
 make_identity() {
   // We make identity a special case and store a pointer forever once we find
   // it the first time.
-  if (_identity_attrib == (ColorScaleAttrib *)nullptr) {
+  if (_identity_attrib == nullptr) {
     ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));;
     _identity_attrib = return_new(attrib);
   }

@@ -100,7 +100,7 @@ get_shading() const {
 PT(EggCompositePrimitive) EggCompositePrimitive::
 triangulate_in_place() {
   EggGroupNode *parent = get_parent();
-  nassertr(parent != (EggGroupNode *)nullptr, this);
+  nassertr(parent != nullptr, this);
 
   PT(EggCompositePrimitive) save_me = this;
   parent->remove_child(this);
@@ -171,7 +171,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)nullptr);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);
@@ -200,7 +200,7 @@ unify_attributes(EggPrimitive::Shading shading) {
           vertex->clear_color();
 
           EggVertexPool *vertex_pool = orig_vertex->get_pool();
-          nassertv(vertex_pool != (EggVertexPool *)nullptr);
+          nassertv(vertex_pool != nullptr);
           vertex = vertex_pool->create_unique_vertex(*vertex);
           vertex->copy_grefs_from(*orig_vertex);
           replace(pi, vertex);
@@ -248,7 +248,7 @@ unify_attributes(EggPrimitive::Shading shading) {
         }
 
         EggVertexPool *vertex_pool = orig_vertex->get_pool();
-        nassertv(vertex_pool != (EggVertexPool *)nullptr);
+        nassertv(vertex_pool != nullptr);
         vertex = vertex_pool->create_unique_vertex(*vertex);
         vertex->copy_grefs_from(*orig_vertex);
         replace(pi, vertex);

@@ -28,7 +28,7 @@ TypeHandle RefCountObj<Base>::_type_handle;
  */
 INLINE ReferenceCount::
 ReferenceCount() {
-  _weak_list = (WeakReferenceList *)nullptr;
+  _weak_list = nullptr;
   _ref_count = 0;
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
@@ -45,7 +45,7 @@ ReferenceCount() {
  */
 INLINE ReferenceCount::
 ReferenceCount(const ReferenceCount &) {
-  _weak_list = (WeakReferenceList *)nullptr;
+  _weak_list = nullptr;
   _ref_count = 0;
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this);
@@ -242,7 +242,7 @@ local_object() {
  */
 INLINE bool ReferenceCount::
 has_weak_list() const {
-  return _weak_list != (WeakReferenceList *)nullptr;
+  return _weak_list != nullptr;
 }
 
 /**
@@ -255,7 +255,7 @@ has_weak_list() const {
  */
 INLINE WeakReferenceList *ReferenceCount::
 get_weak_list() const {
-  if (AtomicAdjust::get_ptr(_weak_list) == (WeakReferenceList *)nullptr) {
+  if (AtomicAdjust::get_ptr(_weak_list) == nullptr) {
     ((ReferenceCount *)this)->create_weak_list();
   }
   return (WeakReferenceList *)AtomicAdjust::get_ptr(_weak_list);

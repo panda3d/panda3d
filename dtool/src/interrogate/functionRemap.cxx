@@ -39,7 +39,7 @@ FunctionRemap::
 FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
               CPPInstance *cppfunc, int num_default_parameters,
               InterfaceMaker *interface_maker) {
-  _return_type = (ParameterRemap *)nullptr;
+  _return_type = nullptr;
   _void_return = true;
   _ForcedVoidReturn = false;
   _has_this = false;
@@ -117,7 +117,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
   if (_type == T_destructor) {
     // A destructor wrapper is just a wrapper around the delete operator.
     assert(!container.empty());
-    assert(_cpptype != (CPPType *)nullptr);
+    assert(_cpptype != nullptr);
 
     if (TypeManager::is_reference_count(_cpptype)) {
       // Except for a reference-count type object, in which case the
@@ -299,7 +299,7 @@ make_wrapper_entry(FunctionIndex function_index) {
   iwrapper._name = _wrapper_name;
   iwrapper._unique_name = _unique_name;
 
-  if (_cppfunc->_leading_comment != (CPPCommentBlock *)nullptr) {
+  if (_cppfunc->_leading_comment != nullptr) {
     iwrapper._comment = InterrogateBuilder::trim_blanks(_cppfunc->_leading_comment->_comment);
   }
 
@@ -490,7 +490,7 @@ get_min_num_args() const {
   }
   for (; pi != _parameters.end(); ++pi) {
     ParameterRemap *param = (*pi)._remap;
-    if (param->get_default_value() != (CPPExpression *)nullptr) {
+    if (param->get_default_value() != nullptr) {
       // We've reached the first parameter that takes a default value.
       break;
     } else {
@@ -567,7 +567,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   string fname = _cppfunc->get_simple_name();
   CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _cppscope);
 
-  if (_cpptype != (CPPType *)nullptr &&
+  if (_cpptype != nullptr &&
       ((_cppfunc->_storage_class & CPPInstance::SC_static) == 0) &&
       _type != T_constructor) {
 
@@ -638,7 +638,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     }
 
     param._remap = interface_maker->remap_parameter(_cpptype, type);
-    if (param._remap == (ParameterRemap *)nullptr) {
+    if (param._remap == nullptr) {
       // If we can't handle one of the parameter types, we can't call the
       // function.
       if (fname == "__traverse__") {
@@ -666,13 +666,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // by the parser, but we know they actually return a new concrete
     // instance.
 
-    if (_cpptype == (CPPType *)nullptr) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     }
 
     _return_type = interface_maker->remap_parameter(_cpptype, _cpptype);
-    if (_return_type != (ParameterRemap *)nullptr) {
+    if (_return_type != nullptr) {
       _void_return = false;
     }
 
@@ -681,13 +681,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // return *this, which is a semi-standard C++ convention anyway.  We just
     // enforce it.
 
-    if (_cpptype == (CPPType *)nullptr) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     } else {
       CPPType *ref_type = CPPType::new_type(new CPPReferenceType(_cpptype));
       _return_type = interface_maker->remap_parameter(_cpptype, ref_type);
-      if (_return_type != (ParameterRemap *)nullptr) {
+      if (_return_type != nullptr) {
         _void_return = false;
       }
     }
@@ -697,7 +697,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // scripting languages, so we use this to denote item-access operators
     // that return a non-const reference.
 
-    if (_cpptype == (CPPType *)nullptr) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     } else {
@@ -726,12 +726,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   } else {
     // The normal case.
     _return_type = interface_maker->remap_parameter(_cpptype, rtype);
-    if (_return_type != (ParameterRemap *)nullptr) {
+    if (_return_type != nullptr) {
       _void_return = TypeManager::is_void(rtype);
     }
   }
 
-  if (_return_type == (ParameterRemap *)nullptr ||
+  if (_return_type == nullptr ||
       !_return_type->is_valid()) {
     // If our return type isn't something we can deal with, treat the function
     // as if it returns NULL.
@@ -739,7 +739,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _ForcedVoidReturn = true;
     CPPType *void_type = TypeManager::get_void_type();
     _return_type = interface_maker->remap_parameter(_cpptype, void_type);
-    assert(_return_type != (ParameterRemap *)nullptr);
+    assert(_return_type != nullptr);
   }
 
   // Do we need to manage the return value?

@@ -1154,7 +1154,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
 
   // Create the OpenGL texture object.
   TextureContext *tc = attach->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
-  nassertv(tc != (TextureContext *)nullptr);
+  nassertv(tc != nullptr);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   glgsg->update_texture(gtc, true);
@@ -1240,7 +1240,7 @@ generate_mipmaps() {
 void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
   if (_requested_multisamples && _fbo_multisample) {

@@ -33,8 +33,8 @@ EggJointData(EggCharacterCollection *collection,
              EggCharacterData *char_data) :
   EggComponentData(collection, char_data)
 {
-  _parent = (EggJointData *)nullptr;
-  _new_parent = (EggJointData *)nullptr;
+  _parent = nullptr;
+  _new_parent = nullptr;
   _has_rest_frame = false;
   _rest_frames_differ = false;
 }
@@ -46,7 +46,7 @@ EggJointData(EggCharacterCollection *collection,
 LMatrix4d EggJointData::
 get_frame(int model_index, int n) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)nullptr) {
+  if (back == nullptr) {
     return LMatrix4d::ident_mat();
   }
 
@@ -63,7 +63,7 @@ get_frame(int model_index, int n) const {
 LMatrix4d EggJointData::
 get_net_frame(int model_index, int n, EggCharacterDb &db) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)nullptr) {
+  if (back == nullptr) {
     return LMatrix4d::ident_mat();
   }
 
@@ -74,7 +74,7 @@ get_net_frame(int model_index, int n, EggCharacterDb &db) const {
   if (!db.get_matrix(joint, EggCharacterDb::TT_net_frame, n, mat)) {
     // Compute this frame's net, and stuff it in.
     mat = get_frame(model_index, n);
-    if (_parent != (EggJointData *)nullptr) {
+    if (_parent != nullptr) {
       mat = mat * _parent->get_net_frame(model_index, n, db);
     }
     db.set_matrix(joint, EggCharacterDb::TT_net_frame, n, mat);
@@ -89,7 +89,7 @@ get_net_frame(int model_index, int n, EggCharacterDb &db) const {
 LMatrix4d EggJointData::
 get_net_frame_inv(int model_index, int n, EggCharacterDb &db) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)nullptr) {
+  if (back == nullptr) {
     return LMatrix4d::ident_mat();
   }
 
@@ -139,12 +139,12 @@ void EggJointData::
 move_vertices_to(EggJointData *new_owner) {
   int num_models = get_num_models();
 
-  if (new_owner == (EggJointData *)nullptr) {
+  if (new_owner == nullptr) {
     for (int model_index = 0; model_index < num_models; model_index++) {
       if (has_model(model_index)) {
         EggJointPointer *joint;
         DCAST_INTO_V(joint, get_model(model_index));
-        joint->move_vertices_to((EggJointPointer *)nullptr);
+        joint->move_vertices_to(nullptr);
       }
     }
   } else {
@@ -184,7 +184,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   int num_models = get_num_models();
   for (int model_index = 0; model_index < num_models; model_index++) {
     EggBackPointer *back = get_model(model_index);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_R(joint, back, false);
 
@@ -195,11 +195,11 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
           // We already have this parent.
           transform = LMatrix4d::ident_mat();
 
-        } else if (_parent == (EggJointData *)nullptr) {
+        } else if (_parent == nullptr) {
           // We are moving from outside the joint hierarchy to within it.
           transform = new_parent->get_net_frame_inv(model_index, n, db);
 
-        } else if (new_parent == (EggJointData *)nullptr) {
+        } else if (new_parent == nullptr) {
           // We are moving from within the hierarchy to outside it.
           transform = _parent->get_net_frame(model_index, n, db);
 
@@ -278,7 +278,7 @@ do_rebuild_all(EggCharacterDb &db) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_R(joint, back, false);
       if (!joint->do_rebuild(db)) {
@@ -307,7 +307,7 @@ optimize() {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
       joint->optimize();
@@ -330,7 +330,7 @@ expose(EggGroup::DCSType dcs_type) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
       joint->expose(dcs_type);
@@ -347,7 +347,7 @@ zero_channels(const string &components) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
       joint->zero_channels(components);
@@ -364,7 +364,7 @@ quantize_channels(const string &components, double quantum) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)nullptr) {
+    if (back != nullptr) {
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
       joint->quantize_channels(components, quantum);
@@ -391,7 +391,7 @@ apply_default_pose(int source_model, int frame) {
     BackPointers::iterator bpi;
     for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
       EggBackPointer *back = (*bpi);
-      if (back != (EggBackPointer *)nullptr) {
+      if (back != nullptr) {
         EggJointPointer *joint;
         DCAST_INTO_V(joint, back);
         joint->apply_default_pose(source_joint, frame);
@@ -411,7 +411,7 @@ apply_default_pose(int source_model, int frame) {
  */
 void EggJointData::
 add_back_pointer(int model_index, EggObject *egg_object) {
-  nassertv(egg_object != (EggObject *)nullptr);
+  nassertv(egg_object != nullptr);
   if (egg_object->is_of_type(EggGroup::get_class_type())) {
     // It must be a <Joint>.
     EggJointNodePointer *joint = new EggJointNodePointer(egg_object);
@@ -488,7 +488,7 @@ calc_new_parent_depth(pset<EggJointData *> &chain) {
   if (_got_new_parent_depth) {
     return false;
   }
-  if (_new_parent == (EggJointData *)nullptr) {
+  if (_new_parent == nullptr) {
     // Here's the top of the new hierarchy.
     _got_new_parent_depth = true;
     _new_parent_depth = 0;
@@ -537,7 +537,7 @@ do_compute_reparent(int model_index, int n, EggCharacterDb &db) {
   }
 
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)nullptr) {
+  if (back == nullptr) {
     // This joint doesn't have any data to modify.
     _computed_ok = true;
     return true;
@@ -547,11 +547,11 @@ do_compute_reparent(int model_index, int n, EggCharacterDb &db) {
   DCAST_INTO_R(joint, back, false);
 
   LMatrix4d transform;
-  if (_parent == (EggJointData *)nullptr) {
+  if (_parent == nullptr) {
     // We are moving from outside the joint hierarchy to within it.
     transform = _new_parent->get_new_net_frame_inv(model_index, n, db);
 
-  } else if (_new_parent == (EggJointData *)nullptr) {
+  } else if (_new_parent == nullptr) {
     // We are moving from within the hierarchy to outside it.
     transform = _parent->get_net_frame(model_index, n, db);
 
@@ -614,7 +614,7 @@ do_finish_reparent() {
   }
 
   _parent = _new_parent;
-  if (_parent != (EggJointData *)nullptr) {
+  if (_parent != nullptr) {
     _parent->_children.push_back(this);
   }
 }
@@ -658,12 +658,12 @@ find_joint_exact(const string &name) {
       return child;
     }
     EggJointData *result = child->find_joint_exact(name);
-    if (result != (EggJointData *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (EggJointData *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -679,12 +679,12 @@ find_joint_matches(const string &name) {
       return child;
     }
     EggJointData *result = child->find_joint_matches(name);
-    if (result != (EggJointData *)nullptr) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (EggJointData *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -698,7 +698,7 @@ is_new_ancestor(EggJointData *child) const {
     return true;
   }
 
-  if (child->_new_parent == (EggJointData *)nullptr) {
+  if (child->_new_parent == nullptr) {
     return false;
   }
 
@@ -714,7 +714,7 @@ const LMatrix4d &EggJointData::
 get_new_net_frame(int model_index, int n, EggCharacterDb &db) {
   if (!_got_new_net_frame) {
     _new_net_frame = get_new_frame(model_index, n, db);
-    if (_new_parent != (EggJointData *)nullptr) {
+    if (_new_parent != nullptr) {
       _new_net_frame = _new_net_frame * _new_parent->get_new_net_frame(model_index, n, db);
     }
     _got_new_net_frame = true;
@@ -729,7 +729,7 @@ const LMatrix4d &EggJointData::
 get_new_net_frame_inv(int model_index, int n, EggCharacterDb &db) {
   if (!_got_new_net_frame_inv) {
     _new_net_frame_inv.invert_from(get_new_frame(model_index, n, db));
-    if (_new_parent != (EggJointData *)nullptr) {
+    if (_new_parent != nullptr) {
       _new_net_frame_inv = _new_parent->get_new_net_frame_inv(model_index, n, db) * _new_net_frame_inv;
     }
     _got_new_net_frame_inv = true;
@@ -747,7 +747,7 @@ get_new_frame(int model_index, int n, EggCharacterDb &db) {
   do_compute_reparent(model_index, n, db);
 
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)nullptr) {
+  if (back == nullptr) {
     return LMatrix4d::ident_mat();
   }
 

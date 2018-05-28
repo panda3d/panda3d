@@ -465,7 +465,7 @@ find_tref(const string &tref_name) const {
     }
   }
 
-  return (EggTexture *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -485,5 +485,5 @@ find_filename(const Filename &filename) const {
     }
   }
 
-  return (EggTexture *)nullptr;
+  return nullptr;
 }

@@ -99,7 +99,7 @@ void Datagram::
 pad_bytes(size_t size) {
   nassertv((int)size >= 0);
 
-  if (_data == (uchar *)nullptr) {
+  if (_data == nullptr) {
     // Create a new array.
     _data = PTA_uchar::empty_array(0);
 
@@ -129,7 +129,7 @@ void Datagram::
 append_data(const void *data, size_t size) {
   nassertv((int)size >= 0);
 
-  if (_data == (uchar *)nullptr) {
+  if (_data == nullptr) {
     // Create a new array.
     _data = PTA_uchar::empty_array(0);
 

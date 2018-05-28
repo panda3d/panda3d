@@ -456,7 +456,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Reader *self = (Reader *)png_get_io_ptr(png_ptr);
-  if (self == (Reader *)nullptr) {
+  if (self == nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()
@@ -918,7 +918,7 @@ png_error(png_structp png_ptr, png_const_charp error_msg) {
   // The PNG library insists we should not return, so instead of returning, we
   // will do a longjmp out of the png code.
   Writer *self = (Writer *)png_get_io_ptr(png_ptr);
-  if (self == (Writer *)nullptr) {
+  if (self == nullptr) {
     // Oops, we haven't got a self pointer yet.  Return anyway and hope we'll
     // be ok.
     pnmimage_png_cat.error()

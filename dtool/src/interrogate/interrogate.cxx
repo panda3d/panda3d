@@ -541,7 +541,7 @@ main(int argc, char **argv) {
   // Make up a file identifier.  This is just some bogus number that should be
   // the same in both the compiled-in code and in the database, so we can
   // check synchronicity at load time.
-  int file_identifier = time((time_t *)nullptr);
+  int file_identifier = time(nullptr);
   InterrogateModuleDef *def = builder.make_module_def(file_identifier);
 
   pofstream * the_output_include = nullptr;

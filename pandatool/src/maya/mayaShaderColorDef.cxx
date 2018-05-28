@@ -63,7 +63,7 @@ MayaShaderColorDef() {
 
   _opposite = 0;
 
-  _color_object = (MObject *)nullptr;
+  _color_object = nullptr;
 
   _has_texture = false;
   _has_flat_color = false;
@@ -128,7 +128,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
  */
 MayaShaderColorDef::
 ~MayaShaderColorDef() {
-  if (_color_object != (MObject *)nullptr) {
+  if (_color_object != nullptr) {
     delete _color_object;
   }
 }
@@ -205,7 +205,7 @@ write(ostream &out) const {
  */
 bool MayaShaderColorDef::
 reset_maya_texture(const Filename &texture) {
-  if (_color_object != (MObject *)nullptr) {
+  if (_color_object != nullptr) {
     _has_texture = set_string_attribute(*_color_object, "fileTextureName",
                                         texture.to_os_generic());
     _texture_filename = texture;

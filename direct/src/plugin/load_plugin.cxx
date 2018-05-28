@@ -189,7 +189,7 @@ load_plugin(const string &p3d_plugin_filename,
   if (module == nullptr) {
     // Couldn't load the .so.
     const char *message = dlerror();
-    if (message == (char *)nullptr) {
+    if (message == nullptr) {
       message = "No error";
     }
     logfile << "Couldn't load " << filename << ": " << message << "\n";

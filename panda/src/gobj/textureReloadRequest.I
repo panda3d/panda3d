@@ -24,8 +24,8 @@ TextureReloadRequest(const string &name,
   _texture(texture),
   _allow_compressed(allow_compressed)
 {
-  nassertv(_pgo != (PreparedGraphicsObjects *)nullptr);
-  nassertv(_texture != (Texture *)nullptr);
+  nassertv(_pgo != nullptr);
+  nassertv(_texture != nullptr);
 }
 
 /**

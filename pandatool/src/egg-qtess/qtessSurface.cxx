@@ -53,7 +53,7 @@ QtessSurface(EggNurbsSurface *egg_surface) :
     _min_v = 3;
   }
 
-  if (_nurbs == (NurbsSurfaceEvaluator *)nullptr) {
+  if (_nurbs == nullptr) {
     _num_u = _num_v = 0;
 
   } else {
@@ -86,7 +86,7 @@ QtessSurface(EggNurbsSurface *egg_surface) :
  */
 double QtessSurface::
 get_score(double ratio) {
-  if (_nurbs == (NurbsSurfaceEvaluator *)nullptr) {
+  if (_nurbs == nullptr) {
     return 0.0;
   }
 
@@ -115,13 +115,13 @@ tesselate() {
 
   PT(EggGroup) group = do_uniform_tesselate(tris);
   PT(EggNode) new_node = group.p();
-  if (new_node == (EggNode *)nullptr) {
+  if (new_node == nullptr) {
     new_node = new EggComment(_egg_surface->get_name(),
                               "Omitted NURBS surface.");
     tris = 0;
   }
   EggGroupNode *parent = _egg_surface->get_parent();
-  nassertr(parent != (EggGroupNode *)nullptr, 0);
+  nassertr(parent != nullptr, 0);
   parent->remove_child(_egg_surface);
   parent->add_child(new_node);
 

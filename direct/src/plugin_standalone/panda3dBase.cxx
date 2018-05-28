@@ -101,9 +101,9 @@ run_main_loop() {
 
       // Check for new requests from the Panda3D plugin.
       P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-      while (inst != (P3D_instance *)nullptr) {
+      while (inst != nullptr) {
         P3D_request *request = P3D_instance_get_request_ptr(inst);
-        if (request != (P3D_request *)nullptr) {
+        if (request != nullptr) {
           handle_request(request);
         }
         inst = P3D_check_request_ptr(wait_cycle);
@@ -128,9 +128,9 @@ run_main_loop() {
     // Windows events.  Instead, just wait for requests.
     while (!time_to_exit()) {
       P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-      if (inst != (P3D_instance *)nullptr) {
+      if (inst != nullptr) {
         P3D_request *request = P3D_instance_get_request_ptr(inst);
-        if (request != (P3D_request *)nullptr) {
+        if (request != nullptr) {
           handle_request(request);
         }
       }
@@ -162,9 +162,9 @@ run_main_loop() {
   // Now wait while we process pending requests.
   while (!time_to_exit()) {
     P3D_instance *inst = P3D_check_request_ptr(wait_cycle);
-    if (inst != (P3D_instance *)nullptr) {
+    if (inst != nullptr) {
       P3D_request *request = P3D_instance_get_request_ptr(inst);
-      if (request != (P3D_request *)nullptr) {
+      if (request != nullptr) {
         handle_request(request);
       }
     }
@@ -670,9 +670,9 @@ void Panda3DBase::
 timer_callback(EventLoopTimerRef timer) {
   // Check for new requests from the Panda3D plugin.
   P3D_instance *inst = P3D_check_request_ptr(0.0);
-  while (inst != (P3D_instance *)nullptr) {
+  while (inst != nullptr) {
     P3D_request *request = P3D_instance_get_request_ptr(inst);
-    if (request != (P3D_request *)nullptr) {
+    if (request != nullptr) {
       handle_request(request);
     }
     inst = P3D_check_request_ptr(0.0);

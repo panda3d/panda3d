@@ -22,7 +22,7 @@ PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline) :
   _write_count(0),
   _locked(false)
 {
-  if (_pipeline == (Pipeline *)nullptr) {
+  if (_pipeline == nullptr) {
     _pipeline = Pipeline::get_render_pipeline();
   }
 }
@@ -307,7 +307,7 @@ release_read_stage(int pipeline_stage, const CycleData *pointer) const {
 INLINE CycleData *PipelineCyclerDummyImpl::
 write_stage(int pipeline_stage, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage(int)", " ", TAU_USER);
-  nassertr(pipeline_stage == 0, (CycleData *)nullptr);
+  nassertr(pipeline_stage == 0, nullptr);
   _write_count++;
   return _data;
 }
@@ -321,7 +321,7 @@ write_stage(int pipeline_stage, Thread *) {
 INLINE CycleData *PipelineCyclerDummyImpl::
 write_stage_upstream(int pipeline_stage, bool, Thread *) {
   TAU_PROFILE("CycleData *PipelineCyclerDummyImpl::write_stage_upstream(int)", " ", TAU_USER);
-  nassertr(pipeline_stage == 0, (CycleData *)nullptr);
+  nassertr(pipeline_stage == 0, nullptr);
   _write_count++;
   return _data;
 }

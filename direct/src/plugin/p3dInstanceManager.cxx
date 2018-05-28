@@ -612,7 +612,7 @@ wait_request(double timeout) {
 #endif
 
   _request_ready.acquire();
-  if (check_request() != (P3DInstance *)nullptr) {
+  if (check_request() != nullptr) {
     _request_ready.release();
     return;
   }
@@ -649,7 +649,7 @@ wait_request(double timeout) {
     timeout = remaining.tv_sec + remaining.tv_usec * 0.001;
 #endif
 
-    if (check_request() != (P3DInstance *)nullptr) {
+    if (check_request() != nullptr) {
       _request_ready.release();
       return;
     }
@@ -1072,13 +1072,13 @@ scan_directory(const string &dirname, vector<string> &contents) {
   size_t orig_size = contents.size();
 
   DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)nullptr) {
+  if (root == nullptr) {
     return false;
   }
 
   struct dirent *d;
   d = readdir(root);
-  while (d != (struct dirent *)nullptr) {
+  while (d != nullptr) {
     if (d->d_name[0] != '.') {
       contents.push_back(d->d_name);
     }

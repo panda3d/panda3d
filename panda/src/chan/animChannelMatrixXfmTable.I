@@ -41,7 +41,7 @@ has_table(char table_id) const {
   if (table_index < 0) {
     return false;
   }
-  return !(_tables[table_index] == (const PN_stdfloat *)nullptr);
+  return !(_tables[table_index] == nullptr);
 }
 
 /**

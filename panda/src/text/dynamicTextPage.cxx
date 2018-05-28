@@ -72,7 +72,7 @@ slot_glyph(int character, int x_size, int y_size, int margin,
   int x, y;
   if (!find_hole(x, y, x_size, y_size)) {
     // No room for the glyph.
-    return (DynamicTextGlyph *)nullptr;
+    return nullptr;
   }
 
   // The glyph can be fit at (x, y).  Slot it.
@@ -209,7 +209,7 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       // Consider the spot at x, y.
       DynamicTextGlyph *overlap = find_overlap(x, y, x_size, y_size);
 
-      if (overlap == (DynamicTextGlyph *)nullptr) {
+      if (overlap == nullptr) {
         // Hooray!
         return true;
       }
@@ -245,7 +245,7 @@ find_overlap(int x, int y, int x_size, int y_size) const {
     }
   }
 
-  return (DynamicTextGlyph *)nullptr;
+  return nullptr;
 }
 
 

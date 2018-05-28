@@ -82,7 +82,7 @@ process_incoming_data(SocketInfo *sinfo) {
     << "\n";
 
   PT(Connection) new_connection = new Connection(_manager, session);
-  if (_manager != (ConnectionManager *)nullptr) {
+  if (_manager != nullptr) {
     _manager->new_connection(new_connection);
   }
   connection_opened(sinfo->_connection, net_addr, new_connection);

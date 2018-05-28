@@ -265,7 +265,7 @@ do_reparent() {
     EggJointData *joint_data = (*si);
     // Don't bother reporting joints that no longer have a parent, since we
     // don't care about joints that are now outside the hierarchy.
-    if (joint_data->get_parent() != (EggJointData *)nullptr) {
+    if (joint_data->get_parent() != nullptr) {
       nout << "Warning: reparenting " << joint_data->get_name()
            << " to ";
       if (joint_data->get_parent() == _root_joint) {
@@ -324,7 +324,7 @@ choose_optimal_hierarchy() {
       }
     }
 
-    if (best_parent != (EggJointData *)nullptr &&
+    if (best_parent != nullptr &&
         best_parent != joint_data->_parent) {
       nout << "best parent for " << joint_data->get_name() << " is "
            << best_parent->get_name() << "\n";

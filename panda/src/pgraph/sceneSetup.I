@@ -175,7 +175,7 @@ get_cull_center() const {
 INLINE PT(BoundingVolume) SceneSetup::
 get_cull_bounds() const {
   PT(BoundingVolume) bounds = _camera_node->get_cull_bounds();
-  if (bounds != (BoundingVolume *)nullptr) {
+  if (bounds != nullptr) {
     return bounds;
   }
 

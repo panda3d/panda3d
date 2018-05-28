@@ -31,7 +31,7 @@ CPT(RenderEffect) OccluderEffect::
 make() {
   // We make it a special case and store a pointer to the empty effect forever
   // once we find it the first time, as an optimization.
-  if (_empty_effect == (RenderEffect *)nullptr) {
+  if (_empty_effect == nullptr) {
     _empty_effect = return_new(new OccluderEffect);
   }
 

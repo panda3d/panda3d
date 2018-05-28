@@ -100,7 +100,7 @@ remove_physical(Physical *p) {
     return;
   }
   nassertv(p->_physics_manager == this);
-  p->_physics_manager = (PhysicsManager *) nullptr;
+  p->_physics_manager = nullptr;
   _physicals.erase(found);
 }
 

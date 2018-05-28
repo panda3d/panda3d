@@ -79,7 +79,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -129,7 +129,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void AndroidGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -153,7 +153,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void AndroidGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -207,7 +207,7 @@ process_events() {
  */
 void AndroidGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (_pipe == (GraphicsPipe *)nullptr) {
+  if (_pipe == nullptr) {
     // If the pipe is null, we're probably closing down.
     GraphicsWindow::set_properties_now(properties);
     return;
@@ -242,7 +242,7 @@ void AndroidGraphicsWindow::
 close_window() {
   destroy_surface();
 
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     _gsg.clear();
   }
 
@@ -326,7 +326,7 @@ destroy_surface() {
   }
 
   // Destroy the current context.
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     AndroidGraphicsStateGuardian *androidgsg;
     DCAST_INTO_V(androidgsg, _gsg);
     androidgsg->destroy_context();

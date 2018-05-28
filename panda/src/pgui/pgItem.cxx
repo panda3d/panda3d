@@ -37,7 +37,7 @@
 
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
-PGItem *PGItem::_focus_item = (PGItem *)nullptr;
+PGItem *PGItem::_focus_item = nullptr;
 PGItem::BackgroundFocus PGItem::_background_focus;
 
 
@@ -72,17 +72,17 @@ PGItem(const string &name) :
  */
 PGItem::
 ~PGItem() {
-  if (_notify != (PGItemNotify *)nullptr) {
+  if (_notify != nullptr) {
     _notify->remove_item(this);
     _notify = nullptr;
   }
 
   nassertv(_region->_item == this);
-  _region->_item = (PGItem *)nullptr;
+  _region->_item = nullptr;
 
   set_background_focus(false);
   if (_focus_item == this) {
-    _focus_item = (PGItem *)nullptr;
+    _focus_item = nullptr;
   }
 }
 
@@ -415,7 +415,7 @@ activate_region(const LMatrix4 &transform, int sort,
   }
 
   LVecBase4 frame;
-  if (cpa != (ClipPlaneAttrib *)nullptr && cpa->get_num_on_planes() != 0) {
+  if (cpa != nullptr && cpa->get_num_on_planes() != 0) {
     // Apply the clip plane(s) andor scissor region now that we are here in
     // world space.
 
@@ -462,7 +462,7 @@ activate_region(const LMatrix4 &transform, int sort,
               max(max(ll[up_axis], lr[up_axis]), max(ul[up_axis], ur[up_axis])));
   }
 
-  if (sa != (ScissorAttrib *)nullptr) {
+  if (sa != nullptr) {
     // Also restrict it to within the scissor region.
     const LVecBase4 &sf = sa->get_frame();
     // Expand sf from 0..1 to -1..1.
@@ -835,7 +835,7 @@ set_focus(bool focus) {
 
     // Set the keyboard focus to this item.
     if (_focus_item != this) {
-      if (_focus_item != (PGItem *)nullptr) {
+      if (_focus_item != nullptr) {
         // Clear the focus from whatever item currently has it.
         _focus_item->set_focus(false);
       }
@@ -849,7 +849,7 @@ set_focus(bool focus) {
   } else {
     if (_focus_item == this) {
       // Remove this item from the focus.
-      _focus_item = (PGItem *)nullptr;
+      _focus_item = nullptr;
     }
 
     if (get_focus()) {
@@ -1033,7 +1033,7 @@ get_sound(const string &event) const {
   if (si != _sounds.end()) {
     return (*si).second;
   }
-  return (AudioSound *)nullptr;
+  return nullptr;
 }
 
 /**
@@ -1054,7 +1054,7 @@ has_sound(const string &event) const {
  */
 TextNode *PGItem::
 get_text_node() {
-  if (_text_node == (TextNode *)nullptr) {
+  if (_text_node == nullptr) {
     _text_node = new TextNode("pguiText");
     _text_node->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -1093,7 +1093,7 @@ play_sound(const string &event) {
  */
 void PGItem::
 reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
-  if (obscurer != (PGItem *)nullptr && !obscurer->is_overall_hidden()) {
+  if (obscurer != nullptr && !obscurer->is_overall_hidden()) {
     LVecBase4 oframe = get_relative_frame(obscurer);
 
     // Determine the four rectangular regions on the four sides of the

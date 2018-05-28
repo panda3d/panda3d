@@ -1471,7 +1471,7 @@ download_finished(bool success) {
       nout << "expected: ";
       _file_spec.output_hash(nout);
       nout << "\n";
-      if (_file_spec.get_actual_file() != (FileSpec *)nullptr) {
+      if (_file_spec.get_actual_file() != nullptr) {
         nout << "     got: ";
         _file_spec.get_actual_file()->output_hash(nout);
         nout << "\n";

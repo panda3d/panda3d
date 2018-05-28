@@ -31,7 +31,7 @@ get_num_curves() const {
  */
 INLINE ParametricCurve *ParametricCurveCollection::
 get_curve(int index) const {
-  nassertr(index >= 0 && index < (int)_curves.size(), (ParametricCurve *)nullptr);
+  nassertr(index >= 0 && index < (int)_curves.size(), nullptr);
 
   return _curves[index];
 }

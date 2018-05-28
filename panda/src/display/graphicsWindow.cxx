@@ -648,8 +648,8 @@ close_window() {
     << "Closing " << get_type() << "\n";
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)nullptr &&
-      _parent_window_handle != (WindowHandle *)nullptr) {
+  if (_window_handle != nullptr &&
+      _parent_window_handle != nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 

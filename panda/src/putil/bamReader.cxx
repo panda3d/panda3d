@@ -43,7 +43,7 @@ BamReader(DatagramGenerator *source)
   _num_extra_objects = 0;
   _nesting_level = 0;
   _now_creating = _created_objs.end();
-  _reading_cycler = (PipelineCyclerBase *)nullptr;
+  _reading_cycler = nullptr;
   _pta_id = -1;
   _long_object_id = false;
   _long_pta_id = false;
@@ -163,7 +163,7 @@ init() {
  */
 void BamReader::
 set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
-  if (data == (void *)nullptr) {
+  if (data == nullptr) {
     AuxDataTable::iterator ti = _aux_data.find(obj);
     if (ti != _aux_data.end()) {
       AuxDataNames &names = (*ti).second;
@@ -290,7 +290,7 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
     ref_ptr = created_obj._ref_ptr;
 
     if (bam_cat.is_spam()) {
-      if (ptr != (TypedWritable *)nullptr) {
+      if (ptr != nullptr) {
         bam_cat.spam()
           << "Returning object of type " << ptr->get_type() << "\n";
       }
@@ -615,7 +615,7 @@ read_pointer(DatagramIterator &scan) {
   int object_id = read_object_id(scan);
 
   PointerReference &pref = _object_pointers[requestor_id];
-  if (_reading_cycler == (PipelineCyclerBase *)nullptr) {
+  if (_reading_cycler == nullptr) {
     // This is not being read within a read_cdata() call.
     pref._objects.push_back(object_id);
   } else {
@@ -804,7 +804,7 @@ get_aux_tag(const string &tag) const {
  */
 void BamReader::
 register_finalize(TypedWritable *whom) {
-  nassertv(whom != (TypedWritable *)nullptr);
+  nassertv(whom != nullptr);
 
   if (bam_cat.is_spam()) {
     bam_cat.spam()
@@ -837,7 +837,7 @@ register_change_this(ChangeThisFunc func, TypedWritable *object) {
 #ifndef NDEBUG
   // Sanity check the pointer--it should always be the same pointer after we
   // set it the first time.
-  if (created_obj._ptr == (TypedWritable *)nullptr) {
+  if (created_obj._ptr == nullptr) {
     created_obj.set_ptr(object, object->as_reference_count());
   } else {
     // We've previously assigned this pointer, and we should have assigned it
@@ -872,7 +872,7 @@ register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *object
 #ifndef NDEBUG
   // Sanity check the pointer--it should always be the same pointer after we
   // set it the first time.
-  if (created_obj._ptr == (TypedWritable *)nullptr) {
+  if (created_obj._ptr == nullptr) {
     created_obj.set_ptr(object, object);
   } else {
     // We've previously assigned this pointer, and we should have assigned it
@@ -893,7 +893,7 @@ register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *object
  */
 void BamReader::
 finalize_now(TypedWritable *whom) {
-  if (whom == (TypedWritable *)nullptr) {
+  if (whom == nullptr) {
     return;
   }
 
@@ -927,7 +927,7 @@ finalize_now(TypedWritable *whom) {
  */
 void *BamReader::
 get_pta(DatagramIterator &scan) {
-  nassertr(_pta_id == -1, (void *)nullptr);
+  nassertr(_pta_id == -1, nullptr);
   int id = read_pta_id(scan);
 
   if (id == 0) {
@@ -935,7 +935,7 @@ get_pta(DatagramIterator &scan) {
     // able to differentiate this case from that of a previously-read pointer,
     // but that's OK because the next data in the Bam file is the length of
     // the array, which will be zero--indicating an empty or NULL array.
-    return (void *)nullptr;
+    return nullptr;
   }
 
   PTAMap::iterator pi = _pta_map.find(id);
@@ -943,7 +943,7 @@ get_pta(DatagramIterator &scan) {
     // This is the first time we've encountered this particular ID, meaning we
     // need to read the data now and register it.
     _pta_id = id;
-    return (void *)nullptr;
+    return nullptr;
   }
 
   return (*pi).second;
@@ -1248,7 +1248,7 @@ p_read_object() {
       _created_objs_by_pointer[created_obj._ptr].push_back(object_id);
 
       // Just some sanity checks
-      if (object == (TypedWritable *)nullptr) {
+      if (object == nullptr) {
         if (bam_cat.is_debug()) {
           bam_cat.debug()
             << "Unable to create an object of type " << type << endl;
@@ -1355,7 +1355,7 @@ resolve_object_pointers(TypedWritable *object,
     int child_id = (*pi);
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
-      references.push_back((TypedWritable *)nullptr);
+      references.push_back(nullptr);
       continue;
     }
 
@@ -1447,7 +1447,7 @@ resolve_cycler_pointers(PipelineCyclerBase *cycler,
 
     if (child_id == 0) {
       // A NULL pointer is a NULL pointer.
-      references.push_back((TypedWritable *)nullptr);
+      references.push_back(nullptr);
       continue;
     }
 
@@ -1513,7 +1513,7 @@ finalize() {
   Finalize::iterator fi = _finalize_list.begin();
   while (fi != _finalize_list.end()) {
     TypedWritable *object = (*fi);
-    nassertv(object != (TypedWritable *)nullptr);
+    nassertv(object != nullptr);
     _finalize_list.erase(fi);
     if (bam_cat.is_spam()) {
       bam_cat.spam()
@@ -1527,14 +1527,14 @@ finalize() {
 
   // Now clear the aux data of all objects, except the NULL object.
   if (!_aux_data.empty()) {
-    AuxDataTable::iterator ti = _aux_data.find((TypedWritable *)nullptr);
+    AuxDataTable::iterator ti = _aux_data.find(nullptr);
 
     if (ti != _aux_data.end()) {
       if (_aux_data.size() > 1) {
         // Move the NULL data to the new table; remove the rest.
         AuxDataTable new_aux_data;
         AuxDataTable::iterator nti =
-          new_aux_data.insert(AuxDataTable::value_type((TypedWritable *)nullptr, AuxDataNames())).first;
+          new_aux_data.insert(AuxDataTable::value_type(nullptr, AuxDataNames())).first;
         (*nti).second.swap((*ti).second);
         _aux_data.swap(new_aux_data);
       }

@@ -124,7 +124,7 @@ do_python_callback(CallbackData *cbdata) {
   PyObject *result = PythonThread::call_python_func(_function, args);
   Py_DECREF(args);
 
-  if (result == (PyObject *)nullptr) {
+  if (result == nullptr) {
     if (PyErr_Occurred() != PyExc_SystemExit) {
       util_cat.error()
         << "Exception occurred in " << *this << "\n";

@@ -189,7 +189,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)nullptr) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -220,7 +220,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void x11GraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)nullptr);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -489,7 +489,7 @@ process_events() {
  */
 void x11GraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (_pipe == (GraphicsPipe *)nullptr) {
+  if (_pipe == nullptr) {
     // If the pipe is null, we're probably closing down.
     GraphicsWindow::set_properties_now(properties);
     return;
@@ -820,7 +820,7 @@ mouse_mode_relative() {
  */
 void x11GraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)nullptr) {
+  if (_gsg != nullptr) {
     _gsg.clear();
   }
 
@@ -978,7 +978,7 @@ open_window() {
     _ic = XCreateIC
       (im,
        XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       (void*)nullptr);
+       nullptr);
     if (_ic == (XIC)nullptr) {
       x11display_cat.warning()
         << "Couldn't create input context.\n";
@@ -1009,7 +1009,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_x11(_xwindow);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)nullptr) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -1033,7 +1033,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
   // Name the window if there is a name
   XTextProperty window_name;
-  XTextProperty *window_name_p = (XTextProperty *)nullptr;
+  XTextProperty *window_name_p = nullptr;
   if (properties.has_title()) {
     const char *name = properties.get_title().c_str();
     if (XStringListToTextProperty((char **)&name, 1, &window_name) != 0) {
@@ -1046,7 +1046,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XSizeHints *size_hints_p = nullptr;
   if (properties.has_origin() || properties.has_size()) {
     size_hints_p = XAllocSizeHints();
-    if (size_hints_p != (XSizeHints *)nullptr) {
+    if (size_hints_p != nullptr) {
       if (properties.has_origin()) {
         if (_properties.get_fullscreen()) {
           size_hints_p->x = 0;
@@ -1078,7 +1078,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // than those specific to window geometry.
   XWMHints *wm_hints_p = nullptr;
   wm_hints_p = XAllocWMHints();
-  if (wm_hints_p != (XWMHints *)nullptr) {
+  if (wm_hints_p != nullptr) {
     if (properties.has_minimized() && properties.get_minimized()) {
       wm_hints_p->initial_state = IconicState;
     } else {
@@ -1228,13 +1228,13 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
                    nullptr, 0, size_hints_p, wm_hints_p, class_hints_p);
 
-  if (size_hints_p != (XSizeHints *)nullptr) {
+  if (size_hints_p != nullptr) {
     XFree(size_hints_p);
   }
-  if (wm_hints_p != (XWMHints *)nullptr) {
+  if (wm_hints_p != nullptr) {
     XFree(wm_hints_p);
   }
-  if (class_hints_p != (XClassHint *)nullptr) {
+  if (class_hints_p != nullptr) {
     XFree(class_hints_p);
   }
 

@@ -353,7 +353,7 @@ parse_command_line(int argc, char **argv) {
     gopt.name = (char *)opt._option.c_str();
     gopt.has_arg = (opt._parm_name.empty()) ?
       no_argument : required_argument;
-    gopt.flag = (int *)nullptr;
+    gopt.flag = nullptr;
 
     // Return an index into the _options_by_index array, offset by 256 so we
     // don't confuse it with '?'.
@@ -416,7 +416,7 @@ parse_command_line(int argc, char **argv) {
         if (opt._option_method != (OptionDispatchMethod)nullptr) {
           okflag = (*opt._option_method)(this, opt._option, arg, opt._option_data);
         }
-        if (opt._bool_var != (bool *)nullptr) {
+        if (opt._bool_var != nullptr) {
           (*opt._bool_var) = true;
         }
 
@@ -616,7 +616,7 @@ add_option(const string &option, const string &parm_name,
   _options_by_name[option] = opt;
   _sorted_options = false;
 
-  if (bool_var != (bool *)nullptr) {
+  if (bool_var != nullptr) {
     (*bool_var) = false;
   }
 }
@@ -652,7 +652,7 @@ add_option(const string &option, const string &parm_name,
   _options_by_name[option] = opt;
   _sorted_options = false;
 
-  if (bool_var != (bool *)nullptr) {
+  if (bool_var != nullptr) {
     (*bool_var) = false;
   }
 }
@@ -1194,7 +1194,7 @@ dispatch_image_type(const string &opt, const string &arg, void *var) {
 
   (*ip) = reg->get_type_from_extension(arg);
 
-  if ((*ip) == (PNMFileType *)nullptr) {
+  if ((*ip) == nullptr) {
     nout << "Invalid image type for -" << opt << ": " << arg << "\n"
          << "The following image types are known:\n";
     reg->write(nout, 2);

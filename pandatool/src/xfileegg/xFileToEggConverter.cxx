@@ -226,7 +226,7 @@ find_joint(const string &joint_name) {
   ji = _joints.find(joint_name);
   if (ji != _joints.end()) {
     EggGroup *joint = (*ji).second;
-    if (joint == (EggGroup *)nullptr) {
+    if (joint == nullptr) {
       // An invalid joint detected earlier.
       return nullptr;
     }

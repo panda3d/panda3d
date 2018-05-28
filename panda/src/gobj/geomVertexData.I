@@ -797,7 +797,7 @@ get_array_reader(int i) const {
  */
 INLINE bool GeomVertexDataPipelineReader::
 has_vertex() const {
-  return (_cdata->_format->get_vertex_column() != (GeomVertexColumn *)nullptr);
+  return (_cdata->_format->get_vertex_column() != nullptr);
 }
 
 /**
@@ -806,7 +806,7 @@ has_vertex() const {
 INLINE bool GeomVertexDataPipelineReader::
 is_vertex_transformed() const {
   const GeomVertexColumn *column = _cdata->_format->get_vertex_column();
-  if (column != (GeomVertexColumn *)nullptr) {
+  if (column != nullptr) {
     return column->get_contents() == C_clip_point;
   }
 
@@ -818,7 +818,7 @@ is_vertex_transformed() const {
  */
 INLINE bool GeomVertexDataPipelineReader::
 has_normal() const {
-  return (_cdata->_format->get_normal_column() != (GeomVertexColumn *)nullptr);
+  return (_cdata->_format->get_normal_column() != nullptr);
 }
 
 /**
@@ -826,7 +826,7 @@ has_normal() const {
  */
 INLINE bool GeomVertexDataPipelineReader::
 has_color() const {
-  return (_cdata->_format->get_color_column() != (GeomVertexColumn *)nullptr);
+  return (_cdata->_format->get_color_column() != nullptr);
 }
 
 /**

@@ -253,7 +253,7 @@ read_db(Filename &file, bool want_server_info) {
   file.set_binary();
   istream *read_stream = vfs->open_read_file(file, true);
 
-  if (read_stream == (istream *)nullptr) {
+  if (read_stream == nullptr) {
     downloader_cat.error()
       << "failed to open input file: "
       << file << endl;

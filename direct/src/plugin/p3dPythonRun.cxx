@@ -565,7 +565,7 @@ handle_command(TiXmlDocument *doc) {
       } else if (strcmp(cmd, "start_instance") == 0) {
         assert(!needs_response);
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
-        if (xinstance != (TiXmlElement *)nullptr) {
+        if (xinstance != nullptr) {
           P3DCInstance *inst = new P3DCInstance(xinstance);
           start_instance(inst, xinstance);
         }
@@ -581,7 +581,7 @@ handle_command(TiXmlDocument *doc) {
         assert(!needs_response);
         int instance_id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
-        if (xwparams != (TiXmlElement *)nullptr &&
+        if (xwparams != nullptr &&
             xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
           setup_window(instance_id, xwparams);
         }
@@ -1185,18 +1185,18 @@ start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   set_instance_info(inst, xinstance);
 
   TiXmlElement *xpackage = xinstance->FirstChildElement("package");
-  while (xpackage != (TiXmlElement *)nullptr) {
+  while (xpackage != nullptr) {
     add_package_info(inst, xpackage);
     xpackage = xpackage->NextSiblingElement("package");
   }
 
   TiXmlElement *xfparams = xinstance->FirstChildElement("fparams");
-  if (xfparams != (TiXmlElement *)nullptr) {
+  if (xfparams != nullptr) {
     set_p3d_filename(inst, xfparams);
   }
 
   TiXmlElement *xwparams = xinstance->FirstChildElement("wparams");
-  if (xwparams != (TiXmlElement *)nullptr) {
+  if (xwparams != nullptr) {
     setup_window(inst, xwparams);
   }
 }
@@ -1489,7 +1489,7 @@ send_windows_message(int id, unsigned int msg, int wparam, int lparam) {
   }
 
   P3DCInstance *inst = (*ii).second;
-  if (inst->_parent_window_handle != (WindowHandle *)nullptr) {
+  if (inst->_parent_window_handle != nullptr) {
     inst->_parent_window_handle->send_windows_message(msg, wparam, lparam);
   }
 }

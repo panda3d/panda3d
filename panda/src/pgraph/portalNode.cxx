@@ -180,7 +180,7 @@ combine_with(PandaNode *other) {
     }
 
     // Two PortalNodes with different names can't combine.
-    return (PandaNode *)nullptr;
+    return nullptr;
   }
 
   return PandaNode::combine_with(other);
@@ -376,8 +376,8 @@ CPT(RenderState) PortalNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)nullptr;
-  if (state == (const RenderState *)nullptr) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));

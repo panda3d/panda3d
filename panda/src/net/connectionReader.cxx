@@ -132,7 +132,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads,
  */
 ConnectionReader::
 ~ConnectionReader() {
-  if (_manager != (ConnectionManager *)nullptr) {
+  if (_manager != nullptr) {
     _manager->remove_reader(this);
   }
 
@@ -172,7 +172,7 @@ ConnectionReader::
  */
 bool ConnectionReader::
 add_connection(Connection *connection) {
-  nassertr(connection != (Connection *)nullptr, false);
+  nassertr(connection != nullptr, false);
 
   LightMutexHolder holder(_sockets_mutex);
 
@@ -261,11 +261,11 @@ poll() {
   }
 
   SocketInfo *sinfo = get_next_available_socket(false, -2);
-  if (sinfo != (SocketInfo *)nullptr) {
+  if (sinfo != nullptr) {
     double max_poll_cycle = get_net_max_poll_cycle();
     if (max_poll_cycle < 0.0) {
       // Continue to read all data.
-      while (sinfo != (SocketInfo *)nullptr) {
+      while (sinfo != nullptr) {
         process_incoming_data(sinfo);
         sinfo = get_next_available_socket(false, -2);
       }
@@ -275,7 +275,7 @@ poll() {
       TrueClock *global_clock = TrueClock::get_global_ptr();
       double stop = global_clock->get_short_time() + max_poll_cycle;
 
-      while (sinfo != (SocketInfo *)nullptr) {
+      while (sinfo != nullptr) {
         process_incoming_data(sinfo);
         if (global_clock->get_short_time() >= stop) {
           return;
@@ -406,7 +406,7 @@ flush_read_connection(Connection *connection) {
  */
 void ConnectionReader::
 clear_manager() {
-  _manager = (ConnectionManager *)nullptr;
+  _manager = nullptr;
 }
 
 /**
@@ -465,7 +465,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
   } else if (bytes_read == 0) {
     // The socket was closed (!).  This shouldn't happen with a UDP
     // connection.  Oh well.  Report that and return.
-    if (_manager != (ConnectionManager *)nullptr) {
+    if (_manager != nullptr) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
@@ -547,7 +547,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 
     if (bytes_read <= 0) {
       // The socket was closed.  Report that and return.
-      if (_manager != (ConnectionManager *)nullptr) {
+      if (_manager != nullptr) {
         _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
@@ -601,7 +601,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 
     if (bytes_read <= 0) {
       // The socket was closed.  Report that and return.
-      if (_manager != (ConnectionManager *)nullptr) {
+      if (_manager != nullptr) {
         _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
@@ -674,7 +674,7 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
   } else if (bytes_read == 0) {
     // The socket was closed (!).  This shouldn't happen with a UDP
     // connection.  Oh well.  Report that and return.
-    if (_manager != (ConnectionManager *)nullptr) {
+    if (_manager != nullptr) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
@@ -728,7 +728,7 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
 
   if (bytes_read <= 0) {
     // The socket was closed.  Report that and return.
-    if (_manager != (ConnectionManager *)nullptr) {
+    if (_manager != nullptr) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
@@ -772,7 +772,7 @@ thread_run(int thread_index) {
   while (!_shutdown) {
     SocketInfo *sinfo =
       get_next_available_socket(true, thread_index);
-    if (sinfo != (SocketInfo *)nullptr) {
+    if (sinfo != nullptr) {
       process_incoming_data(sinfo);
       Thread::consider_yield();
     } else {
@@ -858,7 +858,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       } else if (_num_results < 0) {
         // If we had an error, just return.  But yield the timeslice first.
         Thread::force_yield();
-        return (SocketInfo *)nullptr;
+        return nullptr;
       }
     } while (!_shutdown && interrupted);
 
@@ -868,7 +868,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
     // (b) return from PR_Poll() with no sockets available.
   } while (!_shutdown && _num_results > 0);
 
-  return (SocketInfo *)nullptr;
+  return nullptr;
 }
 
 

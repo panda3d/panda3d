@@ -784,7 +784,7 @@ bake_requests() {
 
     // Now we've got a request in XML form; convert it to P3D_request form.
     TiXmlElement *xrequest = doc->FirstChildElement("request");
-    assert(xrequest != (TiXmlElement *)nullptr);
+    assert(xrequest != nullptr);
     P3D_request *request = make_p3d_request(xrequest);
     delete doc;
 

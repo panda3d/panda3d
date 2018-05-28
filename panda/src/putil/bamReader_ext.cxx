@@ -51,7 +51,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
   Py_DECREF(py_scan);
   Py_DECREF(py_manager);
 
-  if (result == (PyObject *)nullptr) {
+  if (result == nullptr) {
     util_cat.error()
       << "Exception occurred in Python factory function\n";
 
@@ -67,8 +67,8 @@ static TypedWritable *factory_callback(const FactoryParams &params){
 #endif
 
   // Unwrap the returned TypedWritable object.
-  if (result == (PyObject *)nullptr) {
-    return (TypedWritable *)nullptr;
+  if (result == nullptr) {
+    return nullptr;
   } else {
     void *object = nullptr;
     Dtool_Call_ExtractThisPointer(result, Dtool_TypedWritable, &object);

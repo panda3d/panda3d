@@ -107,7 +107,7 @@ CPT(GeomVertexFormat) GeomVertexFormat::
 get_post_animated_format() const {
   nassertr(is_registered(), nullptr);
 
-  if (_post_animated_format == (GeomVertexFormat *)nullptr) {
+  if (_post_animated_format == nullptr) {
     PT(GeomVertexFormat) new_format = new GeomVertexFormat(*this);
     new_format->remove_column(InternalName::get_transform_blend());
 
@@ -186,7 +186,7 @@ get_union_format(const GeomVertexFormat *other) const {
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
           const GeomVertexColumn *column_b = other->get_column(column_a->get_name());
-          if (column_b != (GeomVertexColumn *)nullptr &&
+          if (column_b != nullptr &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
             new_array->add_column(column_b->get_name(),
@@ -213,7 +213,7 @@ get_union_format(const GeomVertexFormat *other) const {
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
           const GeomVertexColumn *column_b = get_column(column_a->get_name());
-          if (column_b != (GeomVertexColumn *)nullptr &&
+          if (column_b != nullptr &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
             new_array->add_column(column_b->get_name(),
@@ -450,7 +450,7 @@ get_column(const InternalName *name) const {
     Arrays::const_iterator ai;
     for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
       const GeomVertexColumn *column = (*ai)->get_column(name);
-      if (column != (GeomVertexColumn *)nullptr) {
+      if (column != nullptr) {
         return column;
       }
     }
@@ -491,7 +491,7 @@ remove_column(const InternalName *name, bool keep_empty_array) {
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     GeomVertexArrayFormat *array_format = _arrays[array];
 
-    if (array_format->get_column(name) != (GeomVertexColumn *)nullptr) {
+    if (array_format->get_column(name) != nullptr) {
       // Here's the array with the named column!
       if (array_format->is_registered() ||
           array_format->get_ref_count() > 1) {
@@ -676,7 +676,7 @@ compare_to(const GeomVertexFormat &other) const {
  */
 void GeomVertexFormat::
 make_registry() {
-  if (_registry == (Registry *)nullptr) {
+  if (_registry == nullptr) {
     _registry = new Registry;
     _registry->make_standard_formats();
   }
@@ -813,7 +813,7 @@ do_unregister() {
   _texcoords.clear();
   _morphs.clear();
 
-  if (_post_animated_format != (GeomVertexFormat *)nullptr &&
+  if (_post_animated_format != nullptr &&
       _post_animated_format != this) {
     unref_delete(_post_animated_format);
   }

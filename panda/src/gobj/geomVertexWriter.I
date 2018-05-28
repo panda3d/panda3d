@@ -199,7 +199,7 @@ get_current_thread() const {
  */
 INLINE bool GeomVertexWriter::
 set_column(int column) {
-  if (_vertex_data != (GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
     const GeomVertexFormat *format = writer.get_format();
@@ -207,7 +207,7 @@ set_column(int column) {
                              format->get_column(column),
                              &writer);
   }
-  if (_array_data != (GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(column));
   }
   return false;
@@ -223,7 +223,7 @@ set_column(int column) {
  */
 INLINE bool GeomVertexWriter::
 set_column(CPT_InternalName name) {
-  if (_vertex_data != (GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineWriter writer(_vertex_data, true, _current_thread);
     writer.check_array_writers();
     const GeomVertexFormat *format = writer.get_format();
@@ -231,7 +231,7 @@ set_column(CPT_InternalName name) {
                              format->get_column(name),
                              &writer);
   }
-  if (_array_data != (GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(_array_data->get_array_format()->get_column(name));
   }
   return false;
@@ -251,7 +251,7 @@ clear() {
  */
 INLINE bool GeomVertexWriter::
 has_column() const {
-  return (_packer != (GeomVertexColumn::Packer *)nullptr);
+  return (_packer != nullptr);
 }
 
 /**
@@ -268,7 +268,7 @@ get_array() const {
  */
 INLINE const GeomVertexColumn *GeomVertexWriter::
 get_column() const {
-  if (_packer != (GeomVertexColumn::Packer *)nullptr) {
+  if (_packer != nullptr) {
     return _packer->_column;
   }
   return nullptr;
@@ -1376,7 +1376,7 @@ inc_add_pointer() {
     // Reset the data pointer.
     int write_row = get_write_row();
 
-    if (_vertex_data != (GeomVertexData *)nullptr) {
+    if (_vertex_data != nullptr) {
       // If we have a whole GeomVertexData, we must set the length of all its
       // arrays at once.
       _handle = nullptr;

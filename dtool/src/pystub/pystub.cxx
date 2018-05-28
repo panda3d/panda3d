@@ -449,31 +449,31 @@ void PyEval_InitThreads() {
 }
 
 
-void *PyExc_AssertionError = (void *)nullptr;
-void *PyExc_AttributeError = (void *)nullptr;
-void *PyExc_BufferError = (void *)nullptr;
-void *PyExc_ConnectionError = (void *)nullptr;
-void *PyExc_Exception = (void *)nullptr;
-void *PyExc_FutureWarning = (void *)nullptr;
-void *PyExc_ImportError = (void *)nullptr;
-void *PyExc_IndexError = (void *)nullptr;
-void *PyExc_KeyError = (void *)nullptr;
-void *PyExc_OSError = (void *)nullptr;
-void *PyExc_OverflowError = (void *)nullptr;
-void *PyExc_RuntimeError = (void *)nullptr;
-void *PyExc_StandardError = (void *)nullptr;
-void *PyExc_StopIteration = (void *)nullptr;
-void *PyExc_SystemExit = (void *)nullptr;
-void *PyExc_TypeError = (void *)nullptr;
-void *PyExc_ValueError = (void *)nullptr;
-void *PyTuple_Type = (void *)nullptr;
-void *PyType_Type = (void *)nullptr;
-void *_PyThreadState_Current = (void *)nullptr;
-void *_Py_FalseStruct = (void *)nullptr;
-void *_Py_NoneStruct = (void *)nullptr;
-void *_Py_NotImplementedStruct = (void *)nullptr;
-void *_Py_TrueStruct = (void *)nullptr;
-void *_Py_ZeroStruct = (void *)nullptr;
+void *PyExc_AssertionError = nullptr;
+void *PyExc_AttributeError = nullptr;
+void *PyExc_BufferError = nullptr;
+void *PyExc_ConnectionError = nullptr;
+void *PyExc_Exception = nullptr;
+void *PyExc_FutureWarning = nullptr;
+void *PyExc_ImportError = nullptr;
+void *PyExc_IndexError = nullptr;
+void *PyExc_KeyError = nullptr;
+void *PyExc_OSError = nullptr;
+void *PyExc_OverflowError = nullptr;
+void *PyExc_RuntimeError = nullptr;
+void *PyExc_StandardError = nullptr;
+void *PyExc_StopIteration = nullptr;
+void *PyExc_SystemExit = nullptr;
+void *PyExc_TypeError = nullptr;
+void *PyExc_ValueError = nullptr;
+void *PyTuple_Type = nullptr;
+void *PyType_Type = nullptr;
+void *_PyThreadState_Current = nullptr;
+void *_Py_FalseStruct = nullptr;
+void *_Py_NoneStruct = nullptr;
+void *_Py_NotImplementedStruct = nullptr;
+void *_Py_TrueStruct = nullptr;
+void *_Py_ZeroStruct = nullptr;
 
 
 void

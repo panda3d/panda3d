@@ -55,7 +55,7 @@ find_shader_for_node(MObject node, bool legacy_shader) {
     // The node is not renderable.  What are you thinking?
     maya_cat.error()
       << node_fn.name().asChar() << " : not a renderable object.\n";
-    return (MayaShader *)nullptr;
+    return nullptr;
   }
 
   // instObjGroups is a multi attribute, whatever that means.  For now, we'll
@@ -69,7 +69,7 @@ find_shader_for_node(MObject node, bool legacy_shader) {
     // No shading group defined for this object.
     maya_cat.error()
       << node_fn.name().asChar() << " : no shading group defined.\n";
-    return (MayaShader *)nullptr;
+    return nullptr;
   }
 
   // Now we have a number of ShadingEngines defined, one for each of these
@@ -87,7 +87,7 @@ find_shader_for_node(MObject node, bool legacy_shader) {
   // Well, we didn't find a ShadingEngine after all.  Huh.
   maya_cat.debug()
     << node_fn.name().asChar() << " : no shading engine found.\n";
-  return (MayaShader *)nullptr;
+  return nullptr;
 }
 
 /**

@@ -47,7 +47,7 @@ upcall() {
     // CullableObject for the draw_callback, if any.  We don't need to pass
     // any Geoms, however.
     CallbackObject *cbobj = cbnode->get_draw_callback();
-    if (cbobj != (CallbackObject *)nullptr) {
+    if (cbobj != nullptr) {
       CullableObject *object =
         new CullableObject(nullptr, _data._state,
                            _data.get_internal_transform(_trav));

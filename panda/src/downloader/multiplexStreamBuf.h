@@ -41,8 +41,8 @@ public:
   };
 
   void add_output(BufferType buffer_type, OutputType output_type,
-                  ostream *out = (ostream *)nullptr,
-                  FILE *fout = (FILE *)nullptr,
+                  ostream *out = nullptr,
+                  FILE *fout = nullptr,
                   bool owns_obj = false);
 
   void flush();

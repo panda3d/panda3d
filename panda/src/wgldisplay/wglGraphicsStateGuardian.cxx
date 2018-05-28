@@ -629,7 +629,7 @@ make_context(HDC hdc) {
   }
 
   // Now share texture context with the indicated GSG.
-  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
+  if (_share_with != nullptr) {
     HGLRC share_context = _share_with->get_share_context();
     if (share_context == nullptr) {
       // Whoops, the target context hasn't yet made its own context.  In that
@@ -649,7 +649,7 @@ make_context(HDC hdc) {
       }
     }
 
-    _share_with = (wglGraphicsStateGuardian *)nullptr;
+    _share_with = nullptr;
   }
 }
 
@@ -665,7 +665,7 @@ get_share_context() const {
   if (_made_context) {
     return _context;
   }
-  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
+  if (_share_with != nullptr) {
     return _share_with->get_share_context();
   }
   return nullptr;
@@ -682,7 +682,7 @@ get_share_context() const {
 void wglGraphicsStateGuardian::
 redirect_share_pool(wglGraphicsStateGuardian *share_with) {
   nassertv(!_made_context);
-  if (_share_with != (wglGraphicsStateGuardian *)nullptr) {
+  if (_share_with != nullptr) {
     _share_with->redirect_share_pool(share_with);
   } else {
     _share_with = share_with;

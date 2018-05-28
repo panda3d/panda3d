@@ -500,7 +500,7 @@ write(ostream &out) const {
  */
 ConfigPageManager *ConfigPageManager::
 get_global_ptr() {
-  if (_global_ptr == (ConfigPageManager *)nullptr) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ConfigPageManager;
   }
   return _global_ptr;

@@ -22,7 +22,7 @@
  */
 IIdentityStream::
 ~IIdentityStream() {
-  if (_channel != (HTTPChannel *)nullptr) {
+  if (_channel != nullptr) {
     _channel->body_stream_destructs(this);
     _channel = nullptr;
   }

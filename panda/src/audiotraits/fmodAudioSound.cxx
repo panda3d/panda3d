@@ -82,7 +82,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     // File not found.  We will display the appropriate error message below.
     result = FMOD_ERR_FILE_NOTFOUND;
 
@@ -897,7 +897,7 @@ open_callback(const char *name, int, unsigned int *file_size,
               void **handle, void **user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
-  if (file == (VirtualFile *)nullptr) {
+  if (file == nullptr) {
     return FMOD_ERR_FILE_NOTFOUND;
   }
   if (fmodAudio_cat.is_spam()) {

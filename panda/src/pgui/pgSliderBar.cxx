@@ -180,7 +180,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     recompute();
   }
 
-  if (_scroll_button_held != (PGItem *)nullptr &&
+  if (_scroll_button_held != nullptr &&
       _next_advance_time <= ClockObject::get_global_clock()->get_frame_time()) {
     advance_scroll();
   }
@@ -209,7 +209,7 @@ xform(const LMatrix4 &mat) {
 
   // Make sure we set the thumb to identity position first, so it won't be
   // accidentally flattened.
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     _thumb_button->clear_transform();
   }
 
@@ -267,15 +267,15 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
   style.set_width(bevel, bevel);
 
   // Remove the button nodes created by a previous call to setup(), if any.
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     remove_child(_thumb_button);
     set_thumb_button(nullptr);
   }
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     remove_child(_left_button);
     set_left_button(nullptr);
   }
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     remove_child(_right_button);
     set_right_button(nullptr);
   }
@@ -336,15 +336,15 @@ setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat b
   set_frame_style(0, style);
 
   // Remove the button nodes created by a previous call to setup(), if any.
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     remove_child(_thumb_button);
     set_thumb_button(nullptr);
   }
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     remove_child(_left_button);
     set_left_button(nullptr);
   }
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     remove_child(_right_button);
     set_right_button(nullptr);
   }
@@ -372,13 +372,13 @@ set_active(bool active) {
   PGItem::set_active(active);
 
   // This also implicitly sets the managed pieces.
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     _thumb_button->set_active(active);
   }
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     _left_button->set_active(active);
   }
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     _right_button->set_active(active);
   }
 }
@@ -410,19 +410,19 @@ remanage() {
                                     0.0f,
                                     (frame[2] + frame[3]) / 2.0f);
 
-  if (_left_button != (PGButton *)nullptr) {
+  if (_left_button != nullptr) {
     _left_button->set_frame(-width / 2.0f, width / 2.0f,
                             -width / 2.0f, width / 2.0f);
     _left_button->set_transform(TransformState::make_pos(center + ((width - length) / 2.0f) * _axis));
   }
 
-  if (_right_button != (PGButton *)nullptr) {
+  if (_right_button != nullptr) {
     _right_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
     _right_button->set_transform(TransformState::make_pos(center + ((length - width) / 2.0f) * _axis));
   }
 
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     _thumb_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
     _thumb_button->set_transform(TransformState::make_pos(center));
@@ -469,7 +469,7 @@ recompute() {
 
       PN_stdfloat trough_width = _max_x - _min_x;
 
-      if (_thumb_button == (PGButton *)nullptr) {
+      if (_thumb_button == nullptr) {
         _thumb_width = 0.0f;
         _range_x = 0.0f;
         _thumb_start.set(0.0f, 0.0f, 0.0f);
@@ -510,7 +510,7 @@ recompute() {
 
       PN_stdfloat trough_width = _max_x - _min_x;
 
-      if (_thumb_button == (PGButton *)nullptr) {
+      if (_thumb_button == nullptr) {
         _thumb_width = 0.0f;
         _range_x = 0.0f;
         _thumb_start.set(0.0f, 0.0f, 0.0f);
@@ -651,7 +651,7 @@ reposition() {
 
   PN_stdfloat t = get_ratio();
 
-  if (_thumb_button != (PGButton *)nullptr) {
+  if (_thumb_button != nullptr) {
     LPoint3 pos = (t * _range_x) * _axis + _thumb_start;
     CPT(TransformState) transform = TransformState::make_pos(pos);
     CPT(TransformState) orig_transform = _thumb_button->get_transform();

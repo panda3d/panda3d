@@ -32,7 +32,7 @@ const unsigned char GeomVertexReader::empty_buffer[100] = { 0 };
  */
 bool GeomVertexReader::
 set_column(int array, const GeomVertexColumn *column) {
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     // Clear the data type.
     _array = -1;
     _packer = nullptr;
@@ -43,12 +43,12 @@ set_column(int array, const GeomVertexColumn *column) {
     return false;
   }
 
-  if (_vertex_data != (const GeomVertexData *)nullptr) {
+  if (_vertex_data != nullptr) {
     GeomVertexDataPipelineReader reader(_vertex_data, _current_thread);
     reader.check_array_readers();
     return set_vertex_column(array, column, &reader);
   }
-  if (_array_data != (const GeomVertexArrayData *)nullptr) {
+  if (_array_data != nullptr) {
     return set_array_column(column);
   }
 
@@ -62,7 +62,7 @@ set_column(int array, const GeomVertexColumn *column) {
 void GeomVertexReader::
 output(ostream &out) const {
   const GeomVertexColumn *column = get_column();
-  if (column == (GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     out << "GeomVertexReader()";
 
   } else {
@@ -94,11 +94,11 @@ initialize() {
 bool GeomVertexReader::
 set_vertex_column(int array, const GeomVertexColumn *column,
                   const GeomVertexDataPipelineReader *data_reader) {
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     return set_column(0, nullptr);
   }
 
-  nassertr(_vertex_data != (const GeomVertexData *)nullptr, false);
+  nassertr(_vertex_data != nullptr, false);
 
 #ifndef NDEBUG
   _array = -1;
@@ -120,11 +120,11 @@ set_vertex_column(int array, const GeomVertexColumn *column,
  */
 bool GeomVertexReader::
 set_array_column(const GeomVertexColumn *column) {
-  if (column == (const GeomVertexColumn *)nullptr) {
+  if (column == nullptr) {
     return set_column(0, nullptr);
   }
 
-  nassertr(_array_data != (const GeomVertexArrayData *)nullptr, false);
+  nassertr(_array_data != nullptr, false);
 
   _handle = _array_data->get_handle();
   _stride = _handle->get_array_format()->get_stride();

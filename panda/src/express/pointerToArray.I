@@ -25,7 +25,7 @@ pvector<Element> ConstPointerToArray<Element>::_empty_array;
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(TypeHandle type_handle) :
-  PointerToArrayBase<Element>((ReferenceCountedVector<Element> *)nullptr),
+  PointerToArrayBase<Element>(nullptr),
   _type_handle(type_handle)
 {
 }
@@ -373,7 +373,7 @@ template<class Element>
 INLINE PointerToArray<Element>::
 operator Element *() const {
   To *vec = (To *)(this->_void_ptr);
-  return ((vec == nullptr)||(vec->empty())) ? (Element *)nullptr : &(vec->front());
+  return ((vec == nullptr)||(vec->empty())) ? nullptr : &(vec->front());
 }
 
 /**
@@ -384,7 +384,7 @@ template<class Element>
 INLINE Element *PointerToArray<Element>::
 p() const {
   To *vec = (To *)(this->_void_ptr);
-  return ((vec == nullptr)||(vec->empty())) ? (Element *)nullptr : &(vec->front());
+  return ((vec == nullptr)||(vec->empty())) ? nullptr : &(vec->front());
 }
 
 /**
@@ -642,7 +642,7 @@ operator = (PointerToArray<Element> &&from) noexcept {
 template<class Element>
 INLINE void PointerToArray<Element>::
 clear() {
-  ((PointerToArray<Element> *)this)->reassign((ReferenceCountedVector<Element> *)nullptr);
+  ((PointerToArray<Element> *)this)->reassign(nullptr);
 }
 
 
@@ -653,7 +653,7 @@ clear() {
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(TypeHandle type_handle) :
-  PointerToArrayBase<Element>((ReferenceCountedVector<Element> *)nullptr),
+  PointerToArrayBase<Element>(nullptr),
   _type_handle(type_handle)
 {
 }
@@ -881,7 +881,7 @@ template<class Element>
 INLINE ConstPointerToArray<Element>::
 operator const Element *() const {
   const To *vec = (const To *)(this->_void_ptr);
-  return ((vec == nullptr)||(vec->empty())) ? (const Element *)nullptr : &(vec->front());
+  return ((vec == nullptr)||(vec->empty())) ? nullptr : &(vec->front());
 }
 
 /**
@@ -892,7 +892,7 @@ template<class Element>
 INLINE const Element *ConstPointerToArray<Element>::
 p() const {
   const To *vec = (const To *)(this->_void_ptr);
-  return ((vec == nullptr)||(vec->empty())) ? (const Element *)nullptr : &(vec->front());
+  return ((vec == nullptr)||(vec->empty())) ? nullptr : &(vec->front());
 }
 
 /**
@@ -1107,7 +1107,7 @@ operator = (ConstPointerToArray<Element> &&from) noexcept {
 template<class Element>
 INLINE void ConstPointerToArray<Element>::
 clear() {
-  ((ConstPointerToArray<Element> *)this)->reassign((ReferenceCountedVector<Element> *)nullptr);
+  ((ConstPointerToArray<Element> *)this)->reassign(nullptr);
 }
 
 #endif  // CPPPARSER

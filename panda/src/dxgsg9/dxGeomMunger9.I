@@ -20,9 +20,9 @@ DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
   _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
 {
-  _filtered_texture = (TextureAttrib *)nullptr;
+  _filtered_texture = nullptr;
   _reffed_filtered_texture = false;
-  if (_texture != (TextureAttrib *)nullptr) {
+  if (_texture != nullptr) {
     _filtered_texture = _texture->filter_to_max(gsg->get_max_texture_stages());
     if (_filtered_texture != _texture) {
       _filtered_texture->ref();

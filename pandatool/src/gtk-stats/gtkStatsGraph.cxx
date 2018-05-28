@@ -127,7 +127,7 @@ GtkStatsGraph(GtkStatsMonitor *monitor) :
  */
 GtkStatsGraph::
 ~GtkStatsGraph() {
-  _monitor = (GtkStatsMonitor *)nullptr;
+  _monitor = nullptr;
   release_pixmap();
 
   Brushes::iterator bi;
@@ -138,7 +138,7 @@ GtkStatsGraph::
 
   _label_stack.clear_labels();
 
-  if (_window != (GtkWidget *)nullptr) {
+  if (_window != nullptr) {
     GtkWidget *window = _window;
     _window = nullptr;
     gtk_widget_destroy(window);
@@ -224,12 +224,12 @@ clicked_label(int collector_index) {
 void GtkStatsGraph::
 close() {
   _label_stack.clear_labels(false);
-  if (_window != (GtkWidget *)nullptr) {
+  if (_window != nullptr) {
     _window = nullptr;
 
     GtkStatsMonitor *monitor = _monitor;
-    _monitor = (GtkStatsMonitor *)nullptr;
-    if (monitor != (GtkStatsMonitor *)nullptr) {
+    _monitor = nullptr;
+    if (monitor != nullptr) {
       monitor->remove_graph(this);
     }
   }

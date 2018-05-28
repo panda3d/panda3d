@@ -48,7 +48,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader, bool structured)
   _character_node = new Character(_egg_root->get_name());
   _bundle = _character_node->get_bundle(0);
 
-  _morph_root = (PartGroup *)nullptr;
+  _morph_root = nullptr;
   _skeleton_root = new PartGroup(_bundle, "<skeleton>");
   _structured = structured;
 }
@@ -140,7 +140,7 @@ part_to_node(PartGroup *part, const string &name) const {
 
   if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
-    if (joint->_geom_node != (PandaNode *)nullptr) {
+    if (joint->_geom_node != nullptr) {
       node = joint->_geom_node;
     }
   }
@@ -169,7 +169,7 @@ part_to_node(PartGroup *part, const string &name) const {
  */
 int CharacterMaker::
 create_slider(const string &name) {
-  if (_morph_root == (PartGroup *)nullptr) {
+  if (_morph_root == nullptr) {
     _morph_root = new PartGroup(_bundle, "morph");
   }
   CharacterSlider *slider = new CharacterSlider(_morph_root, name);
@@ -238,7 +238,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
     }
 
     PT(AnimPreloadTable) anim_preload = _bundle->modify_anim_preload();
-    if (anim_preload == (AnimPreloadTable *)nullptr) {
+    if (anim_preload == nullptr) {
       anim_preload = new AnimPreloadTable;
       _bundle->set_anim_preload(anim_preload);
     }
@@ -341,7 +341,7 @@ make_geometry(EggNode *egg_node) {
       EggGroupNode *bin_home = determine_bin_home(egg_bin);
 
       bool is_dynamic;
-      if (bin_home == (EggGroupNode *)nullptr) {
+      if (bin_home == nullptr) {
         // This is a dynamic polyset that lives under the character's root
         // node.
         bin_home = _egg_root;
@@ -446,22 +446,22 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
 
   // If the group is not, in fact, a joint then we return the first joint
   // above the group.
-  EggGroup *egg_group = (EggGroup *)nullptr;
+  EggGroup *egg_group = nullptr;
   if (home->is_of_type(EggGroup::get_class_type())) {
     egg_group = DCAST(EggGroup, home);
   }
-  while (egg_group != (EggGroup *)nullptr &&
+  while (egg_group != nullptr &&
          egg_group->get_group_type() != EggGroup::GT_joint &&
          egg_group->get_dart_type() == EggGroup::DT_none) {
-    nassertr(egg_group->get_parent() != (EggGroupNode *)nullptr, nullptr);
+    nassertr(egg_group->get_parent() != nullptr, nullptr);
     home = egg_group->get_parent();
-    egg_group = (EggGroup *)nullptr;
+    egg_group = nullptr;
     if (home->is_of_type(EggGroup::get_class_type())) {
       egg_group = DCAST(EggGroup, home);
     }
   }
 
-  if (egg_group != (EggGroup *)nullptr &&
+  if (egg_group != nullptr &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
       !egg_group->has_dcs_type()) {
     // If the home is a joint without a <DCS> flag--this is the normal case--
@@ -564,22 +564,22 @@ determine_bin_home(EggBin *egg_bin) {
 
   // If the group is not, in fact, a joint then we return the first joint
   // above the group.
-  EggGroup *egg_group = (EggGroup *)nullptr;
+  EggGroup *egg_group = nullptr;
   if (home->is_of_type(EggGroup::get_class_type())) {
     egg_group = DCAST(EggGroup, home);
   }
-  while (egg_group != (EggGroup *)nullptr &&
+  while (egg_group != nullptr &&
          egg_group->get_group_type() != EggGroup::GT_joint &&
          egg_group->get_dart_type() == EggGroup::DT_none) {
-    nassertr(egg_group->get_parent() != (EggGroupNode *)nullptr, nullptr);
+    nassertr(egg_group->get_parent() != nullptr, nullptr);
     home = egg_group->get_parent();
-    egg_group = (EggGroup *)nullptr;
+    egg_group = nullptr;
     if (home->is_of_type(EggGroup::get_class_type())) {
       egg_group = DCAST(EggGroup, home);
     }
   }
 
-  if (egg_group != (EggGroup *)nullptr &&
+  if (egg_group != nullptr &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
       !egg_group->has_dcs_type()) {
     // If we have rigid geometry that is assigned to a joint without a <DCS>
@@ -618,7 +618,7 @@ determine_bin_home(EggBin *egg_bin) {
  */
 VertexTransform *CharacterMaker::
 get_identity_transform() {
-  if (_identity_transform == (VertexTransform *)nullptr) {
+  if (_identity_transform == nullptr) {
     _identity_transform = new UserVertexTransform("root");
   }
   return _identity_transform;

@@ -47,7 +47,7 @@ get_model_index(int n) const {
  */
 INLINE EggNode *EggCharacterData::
 get_model_root(int n) const {
-  nassertr(n >= 0 && n < (int)_models.size(), (EggNode *)nullptr);
+  nassertr(n >= 0 && n < (int)_models.size(), nullptr);
   return _models[n]._model_root;
 }
 
@@ -57,7 +57,7 @@ get_model_root(int n) const {
  */
 INLINE EggData *EggCharacterData::
 get_egg_data(int n) const {
-  nassertr(n >= 0 && n < (int)_models.size(), (EggData *)nullptr);
+  nassertr(n >= 0 && n < (int)_models.size(), nullptr);
   return _models[n]._egg_data;
 }
 

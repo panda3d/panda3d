@@ -144,7 +144,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       const SolidInfo &solid_info = (*si).second;
       bool was_detected = (solid_info._detected_count > 0);
       PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
-      if (node != (PandaNode *)nullptr) {
+      if (node != nullptr) {
         CullTraverserData next_data(xform_data, node);
 
         // We don't want to inherit the render state from above for these
@@ -321,8 +321,8 @@ CPT(RenderState) CollisionVisualizer::
 get_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)nullptr;
-  if (state == (const RenderState *)nullptr) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make());
   }

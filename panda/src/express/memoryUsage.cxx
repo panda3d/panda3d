@@ -387,7 +387,7 @@ mark_pointer(void *ptr, size_t size, ReferenceCount *ref_ptr) {
     // We're recording this pointer as now in use.
     ns_record_void_pointer(ptr, size);
 
-    if (ref_ptr != (ReferenceCount *)nullptr) {
+    if (ref_ptr != nullptr) {
       // Make the pointer typed.  This is particularly necessary in case the
       // ref_ptr is a different value than the base void pointer; this may be
       // our only opportunity to associate the two pointers.
@@ -777,8 +777,8 @@ ns_remove_pointer(ReferenceCount *ptr) {
         << "Removing ReferenceCount pointer " << (void *)ptr << "\n";
     }
 
-    info->_ref_ptr = (ReferenceCount *)nullptr;
-    info->_typed_ptr = (TypedObject *)nullptr;
+    info->_ref_ptr = nullptr;
+    info->_typed_ptr = nullptr;
 
     if (info->_freeze_index == _freeze_index) {
       double now = TrueClock::get_global_ptr()->get_long_time();
@@ -847,7 +847,7 @@ ns_record_void_pointer(void *ptr, size_t size) {
     MemoryInfo *info = (*insert_result.first).second;
 
     // We shouldn't already have a void pointer.
-    if (info->_void_ptr != (void *)nullptr) {
+    if (info->_void_ptr != nullptr) {
       express_cat.error()
         << "Void pointer " << (void *)ptr << " recorded twice!\n";
       nassertv(false);
@@ -900,14 +900,14 @@ ns_remove_void_pointer(void *ptr) {
 
     MemoryInfo *info = (*ti).second;
 
-    if (info->_void_ptr == (void *)nullptr) {
+    if (info->_void_ptr == nullptr) {
       express_cat.error()
         << "Pointer " << (void *)ptr << " deleted twice!\n";
       return;
     }
     nassertv(info->_void_ptr == ptr);
 
-    if (info->_ref_ptr != (ReferenceCount *)nullptr) {
+    if (info->_ref_ptr != nullptr) {
       express_cat.error()
         << "Pointer " << (void *)ptr
         << " did not destruct before being deleted!\n";
@@ -970,7 +970,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)nullptr) {
+        info->_ref_ptr != nullptr) {
       result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
                        now - info->_time);
     }
@@ -997,7 +997,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)nullptr) {
+        info->_ref_ptr != nullptr) {
       TypeHandle info_type = info->get_type();
       if (info_type != TypeHandle::none() &&
           info_type.is_derived_from(type)) {
@@ -1029,7 +1029,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)nullptr) {
+        info->_ref_ptr != nullptr) {
       double age = now - info->_time;
       if ((age >= from && age <= to) ||
           (age >= to && age <= from)) {
@@ -1071,7 +1071,7 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   for (si = _info_set.begin(); si != _info_set.end(); ++si) {
     MemoryInfo *info = (*si);
     if (info->_freeze_index == _freeze_index &&
-        info->_ref_ptr != (ReferenceCount *)nullptr) {
+        info->_ref_ptr != nullptr) {
       if (info->_ref_ptr->get_ref_count() == 0) {
         info->_ref_ptr->ref();
         result.add_entry(info->_ref_ptr, info->_typed_ptr, info->get_type(),
@@ -1185,7 +1185,7 @@ consolidate_void_ptr(MemoryInfo *info) {
     return;
   }
 
-  if (info->_typed_ptr == (TypedObject *)nullptr) {
+  if (info->_typed_ptr == nullptr) {
     // We don't have a typed pointer for this thing yet.
     return;
   }

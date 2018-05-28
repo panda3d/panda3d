@@ -154,7 +154,7 @@ doIt(const MArgList &args) {
 
   PT(WindowFramework) window;
   window = framework.open_window();
-  if (window == (WindowFramework *)nullptr) {
+  if (window == nullptr) {
     // Couldn't open a window.
     nout << "Couldn't open a window!\n";
     MProgressWindow::endProgress();
@@ -281,7 +281,7 @@ convert(const NodePath &parent, bool animate) {
   egg_data->set_coordinate_system(CS_default);
   PT(PandaNode) result = load_egg_data(egg_data);
 
-  if (result == (PandaNode *)nullptr) {
+  if (result == nullptr) {
     nout << "Unable to load converted egg data.\n";
     return false;
   }

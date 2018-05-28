@@ -371,7 +371,7 @@ do_read_one(Texture::CData *cdata,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
             const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
-  if (record != (BamCacheRecord *)nullptr) {
+  if (record != nullptr) {
     record->add_dependent_file(fullpath);
   }
 

@@ -57,7 +57,7 @@ INLINE ConfigVariable::
  */
 INLINE const ConfigDeclaration *ConfigVariable::
 get_default_value() const {
-  nassertr(is_constructed(), (ConfigDeclaration *)nullptr);
+  nassertr(is_constructed(), nullptr);
   return _core->get_default_value();
 }
 
@@ -273,7 +273,7 @@ set_double_word(size_t n, double value) {
 INLINE bool ConfigVariable::
 is_constructed() const {
 #ifndef NDEBUG
-  if (_core == (ConfigVariableCore *)nullptr) {
+  if (_core == nullptr) {
     report_unconstructed();
     return false;
   }

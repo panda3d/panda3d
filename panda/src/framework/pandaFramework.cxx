@@ -50,7 +50,7 @@ PandaFramework() :
   _is_open = false;
   _made_default_pipe = false;
   _window_title = string();
-  _engine = (GraphicsEngine *)nullptr;
+  _engine = nullptr;
   _start_time = 0.0;
   _frame_count = 0;
   _wireframe_enabled = false;
@@ -172,7 +172,7 @@ close_framework() {
 
   close_all_windows();
   // Also close down any other windows that might have been opened.
-  if (_engine != (GraphicsEngine *)nullptr) {
+  if (_engine != nullptr) {
     _engine->remove_all_windows();
     _engine = nullptr;
   }
@@ -240,7 +240,7 @@ get_mouse(GraphicsOutput *window) {
     mouse = data_root.attach_new_node(mouse_node);
 
     RecorderController *recorder = get_recorder();
-    if (recorder != (RecorderController *)nullptr) {
+    if (recorder != nullptr) {
       // If we're in recording or playback mode, associate a recorder.
       MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
       mouse = mouse.attach_new_node(mouse_recorder);
@@ -324,13 +324,13 @@ get_default_window_props(WindowProperties &props) {
 WindowFramework *PandaFramework::
 open_window() {
   GraphicsPipe *pipe = get_default_pipe();
-  if (pipe == (GraphicsPipe *)nullptr) {
+  if (pipe == nullptr) {
     // Can't get a pipe.
     return nullptr;
   }
 
   WindowFramework *wf = open_window(pipe, nullptr);
-  if (wf == (WindowFramework *)nullptr) {
+  if (wf == nullptr) {
     // Ok, the default graphics pipe failed; try a little harder.
     GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
     selection->load_aux_modules();
@@ -340,9 +340,9 @@ open_window() {
       TypeHandle pipe_type = selection->get_pipe_type(i);
       if (pipe_type != _default_pipe->get_type()) {
         PT(GraphicsPipe) new_pipe = selection->make_pipe(pipe_type);
-        if (new_pipe != (GraphicsPipe *)nullptr) {
+        if (new_pipe != nullptr) {
           wf = open_window(new_pipe, nullptr);
-          if (wf != (WindowFramework *)nullptr) {
+          if (wf != nullptr) {
             // Here's the winner!
             _default_pipe = new_pipe;
             return wf;
@@ -387,9 +387,9 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 WindowFramework *PandaFramework::
 open_window(const WindowProperties &props, int flags,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  if (pipe == (GraphicsPipe *)nullptr) {
+  if (pipe == nullptr) {
     pipe = get_default_pipe();
-    if (pipe == (GraphicsPipe *)nullptr) {
+    if (pipe == nullptr) {
       // Can't get a pipe.
       return nullptr;
     }
@@ -407,14 +407,14 @@ open_window(const WindowProperties &props, int flags,
   GraphicsOutput *win = wf->open_window(props, flags, get_graphics_engine(),
                                         pipe, gsg);
   _engine->open_windows();
-  if (win != (GraphicsOutput *)nullptr && !win->is_valid()) {
+  if (win != nullptr && !win->is_valid()) {
     // The window won't open.
     _engine->remove_window(win);
     wf->close_window();
     win = nullptr;
   }
 
-  if (win == (GraphicsOutput *)nullptr) {
+  if (win == nullptr) {
     // Oops, couldn't make a window or buffer.
     framework_cat.error()
       << "Unable to create window.\n";
@@ -467,7 +467,7 @@ close_window(int n) {
   WindowFramework *wf = _windows[n];
 
   GraphicsOutput *win = wf->get_graphics_output();
-  if (win != (GraphicsOutput *)nullptr) {
+  if (win != nullptr) {
     _engine->remove_window(win);
   }
 
@@ -485,7 +485,7 @@ close_all_windows() {
     WindowFramework *wf = (*wi);
 
     GraphicsOutput *win = wf->get_graphics_output();
-    if (win != (GraphicsOutput *)nullptr) {
+    if (win != nullptr) {
       _engine->remove_window(win);
     }
 
@@ -780,7 +780,7 @@ make_default_pipe() {
 
   _default_pipe = selection->make_default_pipe();
 
-  if (_default_pipe == (GraphicsPipe*)nullptr) {
+  if (_default_pipe == nullptr) {
     nout << "No graphics pipe is available!\n"
          << "Your Config.prc file must name at least one valid panda display\n"
          << "library via load-display or aux-display.\n";
@@ -1412,7 +1412,7 @@ AsyncTask::DoneStatus PandaFramework::
 task_record_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_recorder != (RecorderController *)nullptr) {
+  if (self->_recorder != nullptr) {
     self->_recorder->record_frame();
   }
 
@@ -1427,7 +1427,7 @@ AsyncTask::DoneStatus PandaFramework::
 task_play_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_recorder != (RecorderController *)nullptr) {
+  if (self->_recorder != nullptr) {
     self->_recorder->play_frame();
   }
 

@@ -106,7 +106,7 @@ void osxGraphicsStateGuardian::
 draw_resize_box() {
   // This state is created, once, and never freed.
   static CPT(RenderState) state;
-  if (state == (RenderState *)nullptr) {
+  if (state == nullptr) {
     state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               DepthWriteAttrib::make(DepthWriteAttrib::M_off),
                               DepthTestAttrib::make(DepthTestAttrib::M_none));
@@ -348,7 +348,7 @@ describe_pixel_format(FrameBufferProperties &fb_props) {
 
   GLint ndevs;
   AGLDevice *gdevs = aglDevicesOfPixelFormat(_aglPixFmt, &ndevs);
-  if (gdevs != (AGLDevice *)nullptr) {
+  if (gdevs != nullptr) {
     AGLRendererInfo rinfo = aglQueryRendererInfo(gdevs, ndevs);
     if (rinfo != nullptr) {
       if (aglDescribeRenderer(rinfo, AGL_ACCELERATED, &value)) {

@@ -234,14 +234,14 @@ should_retry() const {
  */
 BioPtr::
 ~BioPtr() {
-  if (_bio != (BIO *)nullptr) {
+  if (_bio != nullptr) {
     if (downloader_cat.is_debug() && !_server_name.empty()) {
       downloader_cat.debug()
         << "Dropping connection to " << _server_name << " port " << _port << "\n";
     }
 
     BIO_free_all(_bio);
-    _bio = (BIO *)nullptr;
+    _bio = nullptr;
   }
 }
 
