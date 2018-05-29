@@ -577,8 +577,8 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD) || (defined(IS_LINUX) && !defined(__ANDROID__))
-  // FreeBSD and Linux have a function to get the origin of a loaded library.
+#if defined(RTLD_DI_ORIGIN)
+  // When building with glibc/uClibc, we typically have access to RTLD_DI_ORIGIN in Unix-like operating systems.
 
   char origin[PATH_MAX + 1];
 
@@ -598,12 +598,16 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD)
-  // On FreeBSD, we can use dlinfo to get the linked libraries.
-
+#if !defined(RTLD_DI_ORIGIN) && defined(RTLD_DI_LINKMAP)
+  // On platforms without RTLD_DI_ORIGIN, we can use dlinfo with RTLD_DI_LINKMAP to get the origin of a loaded library.
   if (_dtool_name.empty()) {
-    Link_map *map;
-    dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+    struct link_map *map;
+    #ifdef RTLD_SELF
+        void* self = RTLD_SELF;
+    #else
+        void* self = dlopen(NULL, RTLD_NOW | RTLD_NOLOAD);
+    #endif
+    dlinfo(self, RTLD_DI_LINKMAP, &map);
 
     while (map != NULL) {
       const char *tail = strrchr(map->l_name, '/');
