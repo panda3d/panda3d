@@ -14,6 +14,6 @@ set(P3WINDISPLAY_SOURCES
     winDetectDx9.cxx)
 
 composite_sources(p3windisplay P3WINDISPLAY_SOURCES)
-add_library(p3windisplay ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})
-set_target_properties(p3windisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAWIN)
+add_component_library(p3windisplay SYMBOL BUILDING_PANDAWIN
+  ${P3WINDISPLAY_HEADERS} ${P3WINDISPLAY_SOURCES})
 target_link_libraries(p3windisplay p3display p3putil Imm32.lib)
