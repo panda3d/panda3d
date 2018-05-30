@@ -316,10 +316,10 @@ int write_python_table_native(ostream &out) {
       << "static struct PyModuleDef py_" << library_name << "_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
-      << "  NULL,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr,\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n"
       << "\n"
       << "PyObject *PyInit_" << library_name << "() {\n";
@@ -346,10 +346,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -393,10 +393,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -410,7 +410,7 @@ int write_python_table_native(ostream &out) {
       << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
       << "compiled for Python \" PY_VERSION \", which is incompatible "
       << "with Python 3\");\n"
-      << "  return (PyObject *)NULL;\n"
+      << "  return nullptr;\n"
       << "}\n"
       << "#endif\n"
       << "#endif\n"
@@ -497,17 +497,17 @@ int write_python_table(ostream &out) {
     library_name = module_name;
   }
 
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_methods,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"

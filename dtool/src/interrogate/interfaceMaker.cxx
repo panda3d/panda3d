@@ -755,8 +755,7 @@ manage_return_value(ostream &out, int indent_level,
       out << " = " << return_expr << ";\n";
 
       indent(out, indent_level)
-        << "if (" << return_expr << " != ("
-        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+        << "if (" << return_expr << " != nullptr) {\n";
       indent(out, indent_level + 2)
         << "(" << return_expr << ")->ref();\n";
       indent(out, indent_level)
@@ -813,8 +812,7 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
     // attempt to ref it.
 
     indent(out, indent_level)
-      << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+      << "if (" << varname << " != nullptr) {\n";
     indent(out, indent_level + 2)
       << varname << "->ref();\n";
     indent(out, indent_level)
@@ -847,8 +845,7 @@ output_unref(ostream &out, int indent_level, FunctionRemap *remap,
     // attempt to ref it.
 
     indent(out, indent_level)
-      << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+      << "if (" << varname << " != nullptr) {\n";
 
     if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
       // We're sure the reference count won't reach zero since we have it

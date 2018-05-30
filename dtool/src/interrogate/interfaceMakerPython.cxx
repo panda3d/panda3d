@@ -57,13 +57,13 @@ test_assert(ostream &out, int indent_level) const {
     indent(out, indent_level + 2)
       << "notify->clear_assert_failed();\n";
     indent(out, indent_level + 2)
-      << "return (PyObject *)NULL;\n";
+      << "return nullptr;\n";
     indent(out, indent_level)
       << "}\n";
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
     indent(out, indent_level + 2)
-      << "return (PyObject *)NULL;\n";
+      << "return nullptr;\n";
     indent(out, indent_level)
       << "}\n";
     out << "#endif\n";
