@@ -47,7 +47,6 @@ get_tree(int n) const {
  */
 INLINE const SpeedTreeNode::InstanceList &SpeedTreeNode::
 get_instance_list(int n) const {
-  nassertr(n >= 0 && n < (int)_trees.size(), *(InstanceList *)NULL);
   InstanceList *instance_list = _trees[n];
   return *instance_list;
 }

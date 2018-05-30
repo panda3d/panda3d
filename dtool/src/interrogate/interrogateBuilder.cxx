@@ -1696,8 +1696,6 @@ get_function(CPPInstance *function, string description,
     InterrogateFunction &ifunction =
       InterrogateDatabase::get_ptr()->update_function(index);
 
-    nassertr(&ifunction != NULL, 0);
-
     ifunction._flags |= flags;
 
     // Also, make sure this particular signature is defined.

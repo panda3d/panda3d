@@ -145,9 +145,6 @@ count_total_instances() const {
  */
 SpeedTreeNode::InstanceList &SpeedTreeNode::
 add_tree(const STTree *tree) {
-  nassertr(is_valid(), *(InstanceList *)NULL);
-  nassertr(tree->is_valid(), *(InstanceList *)NULL);
-
   InstanceList ilist(tree);
   Trees::iterator ti = _trees.find(&ilist);
   if (ti == _trees.end()) {

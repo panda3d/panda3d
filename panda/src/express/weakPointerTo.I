@@ -45,7 +45,6 @@ WeakPointerTo(const WeakPointerTo<T> &copy) :
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
-  nassertr(!this->was_deleted(), *((To *)NULL));
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
@@ -208,7 +207,6 @@ WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
-  nassertr(!this->was_deleted(), *((To *)NULL));
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
