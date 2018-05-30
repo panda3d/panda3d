@@ -63,8 +63,6 @@ ReferenceCount(const ReferenceCount &) {
  */
 INLINE void ReferenceCount::
 operator = (const ReferenceCount &) {
-  nassertv(this != NULL);
-
   // If this assertion fails, our own pointer was recently deleted.  Possibly
   // you used a real pointer instead of a PointerTo at some point, and the
   // object was deleted when the PointerTo went out of scope.  Maybe you tried
@@ -80,8 +78,6 @@ operator = (const ReferenceCount &) {
 ReferenceCount::
 ~ReferenceCount() {
   TAU_PROFILE("ReferenceCount::~ReferenceCount()", " ", TAU_USER);
-  nassertv(this != NULL);
-
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.

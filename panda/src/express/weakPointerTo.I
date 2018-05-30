@@ -45,7 +45,7 @@ WeakPointerTo(const WeakPointerTo<T> &copy) :
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
-  nassertr(!this->was_deleted(), *((To *)NULL));
+  assert(!this->was_deleted());
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
@@ -55,7 +55,7 @@ operator *() const {
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 operator -> () const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
@@ -68,7 +68,7 @@ operator -> () const {
 template<class T>
 INLINE WeakPointerTo<T>::
 operator T * () const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
@@ -108,7 +108,7 @@ lock() const {
 template<class T>
 INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
 p() const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
@@ -208,7 +208,7 @@ WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
-  nassertr(!this->was_deleted(), *((To *)NULL));
+  assert(!this->was_deleted());
   return *((To *)WeakPointerToBase<T>::_void_ptr);
 }
 
@@ -218,7 +218,7 @@ operator *() const {
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 operator -> () const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
@@ -232,7 +232,7 @@ operator -> () const {
 template<class T>
 INLINE WeakConstPointerTo<T>::
 operator const T * () const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
@@ -269,7 +269,7 @@ lock() const {
 template<class T>
 INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 p() const {
-  nassertr(!this->was_deleted(), (To *)NULL);
+  assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
 
