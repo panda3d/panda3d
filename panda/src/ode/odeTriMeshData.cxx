@@ -229,7 +229,7 @@ process_primitive(const GeomPrimitive *primitive,
                    CPT(GeomVertexData) vData) {
   GeomVertexReader vReader(vData, "vertex");
   GeomVertexReader nReader(vData, "normal");
-  LVecBase3f vertex, normal;
+  LVecBase3f vertex;
   // CPT(GeomPrimitive) dPrimitive = primitive->decompose();
   CPT(GeomPrimitive) dPrimitive = primitive;
   ostream &out = odetrimeshdata_cat.debug();

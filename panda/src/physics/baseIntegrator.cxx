@@ -40,16 +40,13 @@ precompute_linear_matrices(Physical *physical,
                            const LinearForceVector &forces) {
   nassertv(physical);
   // make sure the physical's in the scene graph, somewhere.
-  PhysicalNode *physical_node = physical->get_physical_node();
-  nassertv(physical_node);
+  nassertv(physical->get_physical_node() != nullptr);
 
   // by global forces, we mean forces not contained in the physical
-  int global_force_vec_size = forces.size();
+  size_t global_force_vec_size = forces.size();
 
   // by local forces, we mean members of the physical's force set.
-  int local_force_vec_size = physical->get_linear_forces().size();
-
-  ForceNode *force_node;
+  size_t local_force_vec_size = physical->get_linear_forces().size();
 
   // prepare the vector
   _precomputed_linear_matrices.clear();
@@ -63,8 +60,7 @@ precompute_linear_matrices(Physical *physical,
   LinearForceVector::const_iterator fi;
   for (fi = forces.begin(); fi != forces.end(); ++fi) {
     // LinearForce *cur_force = *fi;
-    force_node = (*fi)->get_force_node();
-    nassertv(force_node != (ForceNode *) NULL);
+    nassertv((*fi)->get_force_node() != nullptr);
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_linear_matrices.push_back(
@@ -74,8 +70,7 @@ precompute_linear_matrices(Physical *physical,
   // tally the local xforms
   const LinearForceVector &force_vector = physical->get_linear_forces();
   for (fi = force_vector.begin(); fi != force_vector.end(); ++fi) {
-    force_node = (*fi)->get_force_node();
-    nassertv(force_node != (ForceNode *) NULL);
+    nassertv((*fi)->get_force_node() != nullptr);
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_linear_matrices.push_back(
@@ -93,16 +88,13 @@ precompute_angular_matrices(Physical *physical,
                             const AngularForceVector &forces) {
   nassertv(physical);
   // make sure the physical's in the scene graph, somewhere.
-  PhysicalNode *physical_node = physical->get_physical_node();
-  nassertv(physical_node != NULL);
+  nassertv(physical->get_physical_node() != nullptr);
 
   // by global forces, we mean forces not contained in the physical
-  int global_force_vec_size = forces.size();
+  size_t global_force_vec_size = forces.size();
 
   // by local forces, we mean members of the physical's force set.
-  int local_force_vec_size = physical->get_angular_forces().size();
-
-  ForceNode *force_node;
+  size_t local_force_vec_size = physical->get_angular_forces().size();
 
   // prepare the vector
   _precomputed_angular_matrices.clear();
@@ -115,8 +107,7 @@ precompute_angular_matrices(Physical *physical,
   // tally the global xforms
   AngularForceVector::const_iterator fi;
   for (fi = forces.begin(); fi != forces.end(); ++fi) {
-    force_node = (*fi)->get_force_node();
-    nassertv(force_node != (ForceNode *) NULL);
+    nassertv((*fi)->get_force_node() != nullptr);
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_angular_matrices.push_back(
@@ -126,8 +117,7 @@ precompute_angular_matrices(Physical *physical,
   // tally the local xforms
   const AngularForceVector &force_vector = physical->get_angular_forces();
   for (fi = force_vector.begin(); fi != force_vector.end(); ++fi) {
-    force_node = (*fi)->get_force_node();
-    nassertv(force_node != (ForceNode *) NULL);
+    nassertv((*fi)->get_force_node() != nullptr);
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_angular_matrices.push_back(

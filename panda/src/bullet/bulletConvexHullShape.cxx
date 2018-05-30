@@ -130,13 +130,11 @@ add_geom(const Geom *geom, const TransformState *ts) {
 
 #if BT_BULLET_VERSION >= 282
   for (it = points.begin(); it != points.end(); ++it) {
-    LVecBase3 v = *it;
     _shape->addPoint(LVecBase3_to_btVector3(*it), false);
   }
   _shape->recalcLocalAabb();
 #else
   for (it = points.begin(); it != points.end(); ++it) {
-    LVecBase3 v = *it;
     _shape->addPoint(LVecBase3_to_btVector3(*it));
   }
 #endif

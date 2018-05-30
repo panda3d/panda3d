@@ -755,10 +755,10 @@ read_args() {
     if (_binary_name.empty()) {
       _binary_name = buffer;
     }
-    int idx = strlen(buffer) + 1;
+    size_t idx = strlen(buffer) + 1;
     while (idx < bufsize) {
       _args.push_back((char*)(buffer + idx));
-      int newidx = strlen(buffer + idx);
+      size_t newidx = strlen(buffer + idx);
       idx += newidx + 1;
     }
   }

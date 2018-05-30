@@ -36,6 +36,7 @@ public:
   int get_height() const;
 
   int get_collector_index() const;
+  int get_thread_index() const;
 
   void set_highlight(bool highlight);
   bool get_highlight() const;

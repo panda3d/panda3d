@@ -26,7 +26,7 @@ static PyObject *GetSuperBase(PyObject *self) {
 
 PyMethodDef Dtool_Methods_DTOOL_SUPER_BASE[] = {
   { "DtoolGetSuperBase", (PyCFunction) &GetSuperBase, METH_NOARGS, "Will Return SUPERbase Class"},
-  { NULL, NULL }
+  { nullptr, nullptr, 0, nullptr }
 };
 
 EXPCL_INTERROGATEDB void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module) {

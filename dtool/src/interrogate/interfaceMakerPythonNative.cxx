@@ -3610,8 +3610,8 @@ write_function_for_name(ostream &out, Object *obj,
         std::set<FunctionRemap *>::iterator sii;
         for (sii = mii->second.begin(); sii != mii->second.end(); ++sii) {
           remap = (*sii);
-          int first_param = remap->_has_this ? 1 : 0;
-          for (int i = first_param; i < remap->_parameters.size(); ++i) {
+          size_t first_param = remap->_has_this ? 1u : 0u;
+          for (size_t i = first_param; i < remap->_parameters.size(); ++i) {
             if (remap->_parameters[i]._has_name) {
               strip_keyword_args = false;
               break;

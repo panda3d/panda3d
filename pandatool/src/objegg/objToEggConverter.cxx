@@ -270,7 +270,6 @@ process_ref_plane_res(const string &line) {
   }
 
   bool okflag = true;
-  LPoint3d pos;
   okflag &= string_to_double(words[1], _ref_plane_res[0]);
   okflag &= string_to_double(words[2], _ref_plane_res[1]);
 

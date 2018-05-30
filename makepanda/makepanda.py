@@ -1357,6 +1357,13 @@ def CompileCxx(obj,src,opts):
         # Enable more warnings.
         cmd += " -Wall -Wno-reorder -Wno-unused-function"
 
+        if not src.endswith(".c"):
+            cmd += " -Wno-reorder"
+
+        # Ignore unused variables in NDEBUG builds, often used in asserts.
+        if optlevel == 4:
+            cmd += " -Wno-unused-variable"
+
         if src.endswith(".c"):
             cmd += ' ' + CFLAGS
         else:

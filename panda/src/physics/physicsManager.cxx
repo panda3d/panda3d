@@ -110,7 +110,7 @@ remove_physical(Physical *p) {
 void PhysicsManager::
 remove_physical_node(PhysicalNode *p) {
   nassertv(p);
-  for (int i = 0; i < p->get_num_physicals(); ++i) {
+  for (size_t i = 0; i < p->get_num_physicals(); ++i) {
     remove_physical(p->get_physical(i));
   }
 }

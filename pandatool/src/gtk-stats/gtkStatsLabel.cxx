@@ -118,6 +118,14 @@ get_collector_index() const {
 }
 
 /**
+ * Returns the thread index.
+ */
+int GtkStatsLabel::
+get_thread_index() const {
+  return _thread_index;
+}
+
+/**
  * Enables or disables the visual highlight for this label.
  */
 void GtkStatsLabel::

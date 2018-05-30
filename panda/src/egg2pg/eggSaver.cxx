@@ -860,8 +860,6 @@ convert_primitive(const GeomVertexData *vertex_data,
     }
   }
 
-  LNormal normal;
-  LColor color;
   CPT(TransformBlendTable) transformBlendTable = vertex_data->get_transform_blend_table();
 
   int num_primitives = primitive->get_num_primitives();

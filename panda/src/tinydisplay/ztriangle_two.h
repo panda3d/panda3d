@@ -31,7 +31,7 @@ static void
 FNAME(flat_untextured) (ZBuffer *zb,
                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  int color;
+  UNUSED int color;
   int or0, og0, ob0, oa0;
 
 #define INTERP_Z

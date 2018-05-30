@@ -248,7 +248,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
       const Geom *geom = geode->get_geom(i);
 
       bool found_points = false;
-      for (int j = 0; j < geom->get_num_primitives() && !found_points; j++) {
+      for (size_t j = 0; j < geom->get_num_primitives() && !found_points; ++j) {
         const GeomPrimitive *primitive = geom->get_primitive(j);
         if (primitive->is_of_type(GeomPoints::get_class_type())) {
           dot = geom;

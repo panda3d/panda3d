@@ -157,9 +157,9 @@ add_float64(PN_float64 value) {
 INLINE void Datagram::
 add_stdfloat(PN_stdfloat value) {
   if (_stdfloat_double) {
-    add_float64(value);
+    add_float64((double)value);
   } else {
-    add_float32(value);
+    add_float32((float)value);
   }
 }
 

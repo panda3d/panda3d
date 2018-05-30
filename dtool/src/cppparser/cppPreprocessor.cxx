@@ -1579,7 +1579,6 @@ handle_if_directive(const string &args, const YYLTYPE &loc) {
  */
 void CPPPreprocessor::
 handle_include_directive(const string &args, const YYLTYPE &loc) {
-  bool okflag = false;
   Filename filename;
   Filename filename_as_referenced;
   bool angle_quotes = false;
@@ -1599,7 +1598,6 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
   if (!expr.empty()) {
     if (expr[0] == '"' && expr[expr.size() - 1] == '"') {
       filename = expr.substr(1, expr.size() - 2);
-      okflag = true;
 
       if (_files.size() == 1) {
         // If we're currently processing a top-level file, record the include
@@ -1614,7 +1612,6 @@ handle_include_directive(const string &args, const YYLTYPE &loc) {
         // same, as if they used quote marks.
         angle_quotes = true;
       }
-      okflag = true;
 
       if (_files.size() == 1) {
         // If we're currently processing a top-level file, record the include
@@ -2552,7 +2549,7 @@ get_number(int c) {
     loc.last_column = get_col_number();
 
     YYSTYPE result;
-    result.u.real = pstrtod(num.c_str(), (char **)NULL);
+    result.u.real = (long double)pstrtod(num.c_str(), (char **)NULL);
 
     return get_literal(REAL, loc, num, result);
   }

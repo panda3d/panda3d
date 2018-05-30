@@ -323,8 +323,7 @@ generate_vis_points() const {
 NodePath PfmVizzer::
 generate_vis_mesh(MeshFace face) const {
   nassertr(_pfm.is_valid(), NodePath());
-  bool check_aux_pfm = uses_aux_pfm();
-  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
+  nassertr(!uses_aux_pfm() || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
   nassertr(face != 0, NodePath());
 
   if (_pfm.get_num_channels() == 1 && _vis_columns.empty()) {

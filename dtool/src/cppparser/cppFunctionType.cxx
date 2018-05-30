@@ -71,17 +71,19 @@ operator = (const CPPFunctionType &copy) {
  */
 bool CPPFunctionType::
 accepts_num_parameters(int num_parameters) {
+  assert(num_parameters >= 0);
   if (_parameters == NULL) {
     return (num_parameters == 0);
   }
+
   size_t actual_num_parameters = _parameters->_parameters.size();
   // If we passed too many parameters, it must have an ellipsis.
-  if (num_parameters > actual_num_parameters) {
+  if ((size_t)num_parameters > actual_num_parameters) {
     return _parameters->_includes_ellipsis;
   }
 
   // Make sure all superfluous parameters have a default value.
-  for (size_t i = num_parameters; i < actual_num_parameters; ++i) {
+  for (size_t i = (size_t)num_parameters; i < actual_num_parameters; ++i) {
     CPPInstance *param = _parameters->_parameters[i];
     if (param->_initializer == NULL) {
       return false;

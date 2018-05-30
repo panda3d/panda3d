@@ -697,7 +697,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // Texture coordinates.
     for (int si = 0; si < max_stage_index; ++si) {
-      LTexCoord d;
       (*texgen_func[si])(v->tex_coord[si], tcdata[si]);
     }
 
