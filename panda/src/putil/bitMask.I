@@ -18,17 +18,7 @@ TypeHandle BitMask<WType, nbits>::_type_handle;
  *
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-BitMask() :
-  _word(0)
-{
-}
-
-/**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits>::
 BitMask(WordType init_value) :
   _word(init_value)
 {
@@ -170,7 +160,7 @@ is_zero() const {
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 is_all_on() const {
-  return (~_word == 0);
+  return _word == (WordType)~0;
 }
 
 /**

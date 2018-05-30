@@ -37,17 +37,13 @@ PUBLISHED:
     num_bits = BMType::num_bits * 2,
   };
 
-  INLINE DoubleBitMask();
-  INLINE DoubleBitMask(const DoubleBitMask<BMType> &copy);
-  INLINE DoubleBitMask<BMType> &operator = (const DoubleBitMask<BMType> &copy);
+  constexpr DoubleBitMask() = default;
 
   INLINE static DoubleBitMask<BMType> all_on();
   INLINE static DoubleBitMask<BMType> all_off();
   INLINE static DoubleBitMask<BMType> lower_on(int on_bits);
   INLINE static DoubleBitMask<BMType> bit(int index);
   INLINE static DoubleBitMask<BMType> range(int low_bit, int size);
-
-  INLINE ~DoubleBitMask();
 
   constexpr static bool has_max_num_bits() {return true;}
   constexpr static int get_max_num_bits() {return num_bits;}

@@ -12,6 +12,12 @@
  */
 
 #include "doubleBitMask.h"
+#include <type_traits>
 
 template class DoubleBitMask<BitMaskNative>;
 template class DoubleBitMask<DoubleBitMaskNative>;
+
+#ifndef CPPPARSER
+static_assert(std::is_literal_type<DoubleBitMaskNative>::value, "DoubleBitMaskNative is not a literal type");
+static_assert(std::is_literal_type<QuadBitMaskNative>::value, "QuadBitMaskNative is not a literal type");
+#endif

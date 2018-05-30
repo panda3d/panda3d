@@ -15,36 +15,6 @@ template<class BMType>
 TypeHandle DoubleBitMask<BMType>::_type_handle;
 
 /**
- *
- */
-template<class BMType>
-INLINE DoubleBitMask<BMType>::
-DoubleBitMask() {
-}
-
-/**
- *
- */
-template<class BMType>
-INLINE DoubleBitMask<BMType>::
-DoubleBitMask(const DoubleBitMask<BMType> &copy) :
-  _lo(copy._lo),
-  _hi(copy._hi)
-{
-}
-
-/**
- *
- */
-template<class BMType>
-INLINE DoubleBitMask<BMType> &DoubleBitMask<BMType>::
-operator = (const DoubleBitMask<BMType> &copy) {
-  _lo = copy._lo;
-  _hi = copy._hi;
-  return *this;
-}
-
-/**
  * Returns a DoubleBitMask whose bits are all on.
  */
 template<class BMType>
@@ -109,14 +79,6 @@ range(int low_bit, int size) {
   DoubleBitMask<BMType> result;
   result.set_range(low_bit, size);
   return result;
-}
-
-/**
- *
- */
-template<class BMType>
-INLINE DoubleBitMask<BMType>::
-~DoubleBitMask() {
 }
 
 /**
