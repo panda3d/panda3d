@@ -20,7 +20,7 @@ pallocator_single(TypeHandle type_handle) noexcept :
 
 template<class Type>
 INLINE Type *pallocator_single<Type>::
-allocate(TYPENAME pallocator_single<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
+allocate(typename pallocator_single<Type>::size_type n, typename allocator<void>::const_pointer) {
   TAU_PROFILE("pallocator_single:allocate()", " ", TAU_USER);
   // This doesn't support allocating arrays.
   assert(n == 1);
@@ -30,7 +30,7 @@ allocate(TYPENAME pallocator_single<Type>::size_type n, TYPENAME allocator<void>
 
 template<class Type>
 INLINE void pallocator_single<Type>::
-deallocate(TYPENAME pallocator_single<Type>::pointer p, TYPENAME pallocator_single<Type>::size_type) {
+deallocate(typename pallocator_single<Type>::pointer p, typename pallocator_single<Type>::size_type) {
   TAU_PROFILE("pallocator_single:deallocate()", " ", TAU_USER);
   StaticDeletedChain<Type>::deallocate(p, _type_handle);
 }
@@ -44,13 +44,13 @@ pallocator_array(TypeHandle type_handle) noexcept :
 
 template<class Type>
 INLINE Type *pallocator_array<Type>::
-allocate(TYPENAME pallocator_array<Type>::size_type n, TYPENAME allocator<void>::const_pointer) {
-  return (TYPENAME pallocator_array<Type>::pointer)
+allocate(typename pallocator_array<Type>::size_type n, typename allocator<void>::const_pointer) {
+  return (typename pallocator_array<Type>::pointer)
     ASSUME_ALIGNED(_type_handle.allocate_array(n * sizeof(Type)), MEMORY_HOOK_ALIGNMENT);
 }
 
 template<class Type>
 INLINE void pallocator_array<Type>::
-deallocate(TYPENAME pallocator_array<Type>::pointer p, TYPENAME pallocator_array<Type>::size_type) {
+deallocate(typename pallocator_array<Type>::pointer p, typename pallocator_array<Type>::size_type) {
   _type_handle.deallocate_array((void *)p);
 }

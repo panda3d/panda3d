@@ -55,33 +55,33 @@ public:
   pmap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : base_class(comp, allocator(type_handle)) { }
 
 #ifdef USE_TAU
-  TYPENAME base_class::mapped_type &
-  operator [] (const TYPENAME base_class::key_type &k) {
+  typename base_class::mapped_type &
+  operator [] (const typename base_class::key_type &k) {
     TAU_PROFILE("pmap::operator [] (const key_type &)", " ", TAU_USER);
     return base_class::operator [] (k);
   }
 
-  std::pair<TYPENAME base_class::iterator, bool>
-  insert(const TYPENAME base_class::value_type &x) {
+  std::pair<typename base_class::iterator, bool>
+  insert(const typename base_class::value_type &x) {
     TAU_PROFILE("pmap::insert(const value_type &)", " ", TAU_USER);
     return base_class::insert(x);
   }
 
-  TYPENAME base_class::iterator
-  insert(TYPENAME base_class::iterator position,
-         const TYPENAME base_class::value_type &x) {
+  typename base_class::iterator
+  insert(typename base_class::iterator position,
+         const typename base_class::value_type &x) {
     TAU_PROFILE("pmap::insert(iterator, const value_type &)", " ", TAU_USER);
     return base_class::insert(position, x);
   }
 
   void
-  erase(TYPENAME base_class::iterator position) {
+  erase(typename base_class::iterator position) {
     TAU_PROFILE("pmap::erase(iterator)", " ", TAU_USER);
     base_class::erase(position);
   }
 
-  TYPENAME base_class::size_type
-  erase(const TYPENAME base_class::key_type &x) {
+  typename base_class::size_type
+  erase(const typename base_class::key_type &x) {
     TAU_PROFILE("pmap::erase(const key_type &)", " ", TAU_USER);
     return base_class::erase(x);
   }
@@ -92,14 +92,14 @@ public:
     base_class::clear();
   }
 
-  TYPENAME base_class::iterator
-  find(const TYPENAME base_class::key_type &x) {
+  typename base_class::iterator
+  find(const typename base_class::key_type &x) {
     TAU_PROFILE("pmap::find(const key_type &)", " ", TAU_USER);
     return base_class::find(x);
   }
 
-  TYPENAME base_class::const_iterator
-  find(const TYPENAME base_class::key_type &x) const {
+  typename base_class::const_iterator
+  find(const typename base_class::key_type &x) const {
     TAU_PROFILE("pmap::find(const key_type &)", " ", TAU_USER);
     return base_class::find(x);
   }

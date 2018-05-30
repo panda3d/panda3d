@@ -27,7 +27,7 @@
 template<class BMType>
 class DoubleBitMask {
 public:
-  typedef TYPENAME BMType::WordType WordType;
+  typedef typename BMType::WordType WordType;
 
 PUBLISHED:
   typedef BMType BitMaskType;

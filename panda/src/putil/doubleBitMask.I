@@ -167,7 +167,7 @@ is_all_on() const {
  * DoubleBitMask, shifted to the least-significant position.
  */
 template<class BMType>
-INLINE TYPENAME DoubleBitMask<BMType>::WordType DoubleBitMask<BMType>::
+INLINE typename DoubleBitMask<BMType>::WordType DoubleBitMask<BMType>::
 extract(int low_bit, int size) const {
   if (low_bit >= half_bits) {
     return _hi.extract(low_bit - half_bits, size);

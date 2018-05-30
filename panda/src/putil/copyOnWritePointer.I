@@ -357,11 +357,11 @@ operator = (PointerTo<T> &&from) noexcept {
  * See CopyOnWritePointer::get_read_pointer().
  */
 template<class T>
-INLINE CPT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
+INLINE CPT(typename CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_read_pointer(Thread *current_thread) const {
   // This is necessary because we don't currently have a way to cast between
   // two compatible PointerTo types without losing the reference count.
-  CPT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  CPT(typename CopyOnWritePointerTo<T>::To) to;
   CPT(CopyOnWriteObject) from = CopyOnWritePointer::get_read_pointer(current_thread);
   to.cheat() = (const To *)from.p();
   from.cheat() = nullptr;
@@ -372,7 +372,7 @@ get_read_pointer(Thread *current_thread) const {
  * See CopyOnWritePointer::get_read_pointer().
  */
 template<class T>
-INLINE const TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
+INLINE const typename CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
 get_read_pointer(Thread *current_thread) const {
   return (const To *)CopyOnWritePointer::get_read_pointer(current_thread);
 }
@@ -385,11 +385,11 @@ get_read_pointer(Thread *current_thread) const {
  * See CopyOnWritePointer::get_write_pointer().
  */
 template<class T>
-INLINE PT(TYPENAME CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
+INLINE PT(typename CopyOnWritePointerTo<T>::To) CopyOnWritePointerTo<T>::
 get_write_pointer() {
   // This is necessary because we don't currently have a way to cast between
   // two compatible PointerTo types without losing the reference count.
-  PT(TYPENAME CopyOnWritePointerTo<T>::To) to;
+  PT(typename CopyOnWritePointerTo<T>::To) to;
   PT(CopyOnWriteObject) from = CopyOnWritePointer::get_write_pointer();
   to.cheat() = (To *)from.p();
   from.cheat() = nullptr;
@@ -400,7 +400,7 @@ get_write_pointer() {
  * See CopyOnWritePointer::get_write_pointer().
  */
 template<class T>
-INLINE TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
+INLINE typename CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
 get_write_pointer() {
   return (To *)CopyOnWritePointer::get_write_pointer();
 }
@@ -412,7 +412,7 @@ get_write_pointer() {
  * See CopyOnWritePointer::get_unsafe_pointer().
  */
 template<class T>
-INLINE TYPENAME CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
+INLINE typename CopyOnWritePointerTo<T>::To *CopyOnWritePointerTo<T>::
 get_unsafe_pointer() {
   return (To *)(CopyOnWritePointer::get_unsafe_pointer());
 }

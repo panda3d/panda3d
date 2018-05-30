@@ -26,7 +26,7 @@
 template<class SwitchType>
 class MovingPart : public MovingPartBase {
 public:
-  typedef TYPENAME SwitchType::ValueType ValueType;
+  typedef typename SwitchType::ValueType ValueType;
   typedef AnimChannel<SwitchType> ChannelType;
 
 protected:
