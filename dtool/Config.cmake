@@ -572,7 +572,7 @@ endif()
 #package_option(XCURSOR
 #  "This enables custom cursor support in x11display.")
 
-if(HAVE_GL AND HAVE_X11)
+if(HAVE_GL AND HAVE_X11 AND NOT APPLE)
   option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." ON)
 else()
   option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." OFF)
