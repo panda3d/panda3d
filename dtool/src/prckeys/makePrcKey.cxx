@@ -188,7 +188,7 @@ write_public_keys(Filename outfile) {
       out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i
           << "_length, " << generated_time << " },\n";
     } else {
-      out << "  { NULL, 0, 0 },\n";
+      out << "  { nullptr, 0, 0 },\n";
     }
   };
 
