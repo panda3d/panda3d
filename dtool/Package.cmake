@@ -205,7 +205,9 @@ package_option(OPENAL
   LICENSE "LGPL")
 config_package(OPENAL "OpenAL sound library")
 
-
+if(OPENAL_FOUND AND APPLE)
+  set(HAVE_OPENAL_FRAMEWORK YES)
+endif()
 #
 # ------------ FreeType ------------
 #
