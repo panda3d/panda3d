@@ -23,7 +23,7 @@
  * You can use this when you want to create an AsyncTask without having to
  * subclass.
  */
-class EXPCL_PANDA_PIPELINE GenericAsyncTask : public AsyncTask {
+class EXPCL_PANDA_EVENT GenericAsyncTask : public AsyncTask {
 public:
   typedef DoneStatus TaskFunc(GenericAsyncTask *task, void *user_data);
   typedef void BirthFunc(GenericAsyncTask *task, void *user_data);

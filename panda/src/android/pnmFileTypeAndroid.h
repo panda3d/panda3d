@@ -28,7 +28,7 @@
  * Wrapper class around the Android Bitmap mechanism to allow loading images
  * on Android without needing libpng or libjpeg.
  */
-class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeAndroid : public PNMFileType {
+class PNMFileTypeAndroid : public PNMFileType {
 public:
   enum CompressFormat : jint {
     CF_jpeg = 0,

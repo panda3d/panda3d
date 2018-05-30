@@ -58,7 +58,7 @@
  * object's read pass.  To use this, subclass BamReaderAuxData and add
  * whatever additional data you require.
  */
-class EXPCL_PANDA_PGRAPH BamReaderAuxData : public TypedReferenceCount {
+class EXPCL_PANDA_PUTIL BamReaderAuxData : public TypedReferenceCount {
 public:
   INLINE BamReaderAuxData();
 

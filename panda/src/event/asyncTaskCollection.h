@@ -24,7 +24,7 @@
  *
  * TODO: None of this is thread-safe yet.
  */
-class EXPCL_PANDA_PGRAPH AsyncTaskCollection {
+class EXPCL_PANDA_EVENT AsyncTaskCollection {
 PUBLISHED:
   AsyncTaskCollection();
   AsyncTaskCollection(const AsyncTaskCollection &copy);
