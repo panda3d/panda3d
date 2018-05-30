@@ -1921,15 +1921,10 @@ open_write(ofstream &stream, bool truncate) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -1958,15 +1953,10 @@ open_append(ofstream &stream) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -2005,15 +1995,10 @@ open_read_write(fstream &stream, bool truncate) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -2042,15 +2027,10 @@ open_read_append(fstream &stream) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -2125,11 +2105,7 @@ open_write(pofstream &stream, bool truncate) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2159,11 +2135,7 @@ open_append(pofstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2203,11 +2175,7 @@ open_read_write(pfstream &stream, bool truncate) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2237,11 +2205,7 @@ open_read_append(pfstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }

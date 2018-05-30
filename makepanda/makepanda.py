@@ -2270,7 +2270,6 @@ DTOOL_CONFIG=[
     ("DO_PIPELINING",                  '1',                      '1'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
     ("WORDS_BIGENDIAN",                'UNDEF',                  'UNDEF'),
-    ("HAVE_OPEN_MASK",                 'UNDEF',                  'UNDEF'),
     ("PHAVE_LOCKF",                    '1',                      '1'),
     ("HAVE_WCHAR_T",                   '1',                      '1'),
     ("HAVE_WSTRING",                   '1',                      '1'),
