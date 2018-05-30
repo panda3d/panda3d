@@ -2722,7 +2722,7 @@ write_module_class(ostream &out, Object *obj) {
   write_function_slot(out, 2, slots, "nb_coerce");
   out << "#endif\n";
   write_function_slot(out, 2, slots, "nb_int");
-  out << "  0, // nb_long\n"; // removed in Python 3
+  out << "  nullptr, // nb_long\n"; // removed in Python 3
   write_function_slot(out, 2, slots, "nb_float");
   out << "#if PY_MAJOR_VERSION < 3\n";
   write_function_slot(out, 2, slots, "nb_oct");
@@ -2769,9 +2769,9 @@ write_module_class(ostream &out, Object *obj) {
     write_function_slot(out, 2, slots, "sq_concat");
     write_function_slot(out, 2, slots, "sq_repeat");
     write_function_slot(out, 2, slots, "sq_item");
-    out << "  0, // sq_slice\n"; // removed in Python 3
+    out << "  nullptr, // sq_slice\n"; // removed in Python 3
     write_function_slot(out, 2, slots, "sq_ass_item");
-    out << "  0, // sq_ass_slice\n"; // removed in Python 3
+    out << "  nullptr, // sq_ass_slice\n"; // removed in Python 3
     write_function_slot(out, 2, slots, "sq_contains");
 
     write_function_slot(out, 2, slots, "sq_inplace_concat");
@@ -2843,16 +2843,16 @@ write_module_class(ostream &out, Object *obj) {
   if (have_async) {
     out << "    &Dtool_AsyncMethods_" << ClassName << ",\n";
   } else {
-    out << "    0, // tp_as_async\n";
+    out << "    nullptr, // tp_as_async\n";
   }
   out << "#elif PY_MAJOR_VERSION >= 3\n";
-  out << "    0, // tp_reserved\n";
+  out << "    nullptr, // tp_reserved\n";
   out << "#else\n";
   if (has_hash_compare) {
     write_function_slot(out, 4, slots, "tp_compare",
                         "&DTOOL_PyObject_ComparePointers");
   } else {
-    out << "    0, // tp_compare\n";
+    out << "    nullptr, // tp_compare\n";
   }
   out << "#endif\n";
 
@@ -2869,20 +2869,20 @@ write_module_class(ostream &out, Object *obj) {
   if (has_parent_class || (obj->_protocol_types & Object::PT_sequence) != 0) {
     out << "    &Dtool_SequenceMethods_" << ClassName << ",\n";
   } else {
-    out << "    0, // tp_as_sequence\n";
+    out << "    nullptr, // tp_as_sequence\n";
   }
   // PyMappingMethods *tp_as_mapping;
   if (has_parent_class || (obj->_protocol_types & Object::PT_mapping) != 0) {
     out << "    &Dtool_MappingMethods_" << ClassName << ",\n";
   } else {
-    out << "    0, // tp_as_mapping\n";
+    out << "    nullptr, // tp_as_mapping\n";
   }
 
   // hashfunc tp_hash;
   if (has_hash_compare) {
     write_function_slot(out, 4, slots, "tp_hash", "&DTOOL_PyObject_HashPointer");
   } else {
-    out << "    0, // tp_hash\n";
+    out << "    nullptr, // tp_hash\n";
   }
 
   // ternaryfunc tp_call;
@@ -2906,7 +2906,7 @@ write_module_class(ostream &out, Object *obj) {
   if (has_parent_class || has_local_getbuffer) {
     out << "    &Dtool_BufferProcs_" << ClassName << ",\n";
   } else {
-    out << "    0, // tp_as_buffer\n";
+    out << "    nullptr, // tp_as_buffer\n";
   }
 
   string gcflag;
@@ -2934,15 +2934,15 @@ write_module_class(ostream &out, Object *obj) {
     out << ",\n";
     out << "#endif\n";
   } else {
-    out << "    0, // tp_doc\n";
+    out << "    nullptr, // tp_doc\n";
   }
 
   // traverseproc tp_traverse;
-  out << "    0, // tp_traverse\n";
+  out << "    nullptr, // tp_traverse\n";
   //write_function_slot(out, 4, slots, "tp_traverse");
 
   // inquiry tp_clear;
-  out << "    0, // tp_clear\n";
+  out << "    nullptr, // tp_clear\n";
   //write_function_slot(out, 4, slots, "tp_clear");
 
   // richcmpfunc tp_richcompare;
@@ -2953,10 +2953,10 @@ write_module_class(ostream &out, Object *obj) {
     out << "#if PY_MAJOR_VERSION >= 3\n";
     out << "    &DTOOL_PyObject_RichCompare,\n";
     out << "#else\n";
-    out << "    0, // tp_richcompare\n";
+    out << "    nullptr, // tp_richcompare\n";
     out << "#endif\n";
   } else {
-    out << "    0, // tp_richcompare\n";
+    out << "    nullptr, // tp_richcompare\n";
   }
 
   // Py_ssize_t tp_weaklistoffset;
@@ -2970,19 +2970,19 @@ write_module_class(ostream &out, Object *obj) {
   // struct PyMethodDef *tp_methods;
   out << "    Dtool_Methods_" << ClassName << ",\n";
   // struct PyMemberDef *tp_members;
-  out << "    0, // tp_members\n";
+  out << "    nullptr, // tp_members\n";
 
   // struct PyGetSetDef *tp_getset;
   if (num_getset > 0) {
     out << "    Dtool_Properties_" << ClassName << ",\n";
   } else {
-    out << "    0, // tp_getset\n";
+    out << "    nullptr, // tp_getset\n";
   }
 
   // struct _typeobject *tp_base;
-  out << "    0, // tp_base\n";
+  out << "    nullptr, // tp_base\n";
   // PyObject *tp_dict;
-  out << "    0, // tp_dict\n";
+  out << "    nullptr, // tp_dict\n";
   // descrgetfunc tp_descr_get;
   write_function_slot(out, 4, slots, "tp_descr_get");
   // descrsetfunc tp_descr_set;
@@ -3002,26 +3002,26 @@ write_module_class(ostream &out, Object *obj) {
     out << "    PyObject_Del,\n";
   }
   // inquiry tp_is_gc;
-  out << "    0, // tp_is_gc\n";
+  out << "    nullptr, // tp_is_gc\n";
   // PyObject *tp_bases;
-  out << "    0, // tp_bases\n";
+  out << "    nullptr, // tp_bases\n";
   // PyObject *tp_mro;
-  out << "    0, // tp_mro\n";
+  out << "    nullptr, // tp_mro\n";
   // PyObject *tp_cache;
-  out << "    0, // tp_cache\n";
+  out << "    nullptr, // tp_cache\n";
   // PyObject *tp_subclasses;
-  out << "    0, // tp_subclasses\n";
+  out << "    nullptr, // tp_subclasses\n";
   // PyObject *tp_weaklist;
-  out << "    0, // tp_weaklist\n";
+  out << "    nullptr, // tp_weaklist\n";
   // destructor tp_del;
-  out << "    0, // tp_del\n";
+  out << "    nullptr, // tp_del\n";
   // unsigned int tp_version_tag
   out << "#if PY_VERSION_HEX >= 0x02060000\n";
   out << "    0, // tp_version_tag\n";
   out << "#endif\n";
   // destructor tp_finalize
   out << "#if PY_VERSION_HEX >= 0x03040000\n";
-  out << "    0, // tp_finalize\n";
+  out << "    nullptr, // tp_finalize\n";
   out << "#endif\n";
   out << "  },\n";
 
@@ -3039,15 +3039,15 @@ write_module_class(ostream &out, Object *obj) {
       if (has_coerce > 1) {
         out << "  (CoerceFunction)Dtool_Coerce_" << ClassName << ",\n";
       } else {
-        out << "  (CoerceFunction)0,\n";
+        out << "  nullptr,\n";
       }
     } else {
-      out << "  (CoerceFunction)0,\n";
+      out << "  nullptr,\n";
       out << "  (CoerceFunction)Dtool_Coerce_" << ClassName << ",\n";
     }
   } else {
-    out << "  (CoerceFunction)0,\n";
-    out << "  (CoerceFunction)0,\n";
+    out << "  nullptr,\n";
+    out << "  nullptr,\n";
   }
 
   out << "};\n\n";
