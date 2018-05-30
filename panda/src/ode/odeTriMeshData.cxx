@@ -151,10 +151,10 @@ OdeTriMeshData::
 void OdeTriMeshData::
 destroy() {
   odetrimeshdata_cat.debug() << get_type() << "::destroy(" << _id << ")" << "\n";
-  if (_id != 0) {
+  if (_id != nullptr) {
     dGeomTriMeshDataDestroy(_id);
     remove_data(this);
-    _id = 0;
+    _id = nullptr;
   }
 }
 

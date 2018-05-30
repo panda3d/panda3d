@@ -23,7 +23,7 @@ OdeCylinderGeom(dGeomID id) :
 
 OdeCylinderGeom::
 OdeCylinderGeom(dReal radius, dReal length) :
-  OdeGeom(dCreateCylinder(0, radius, length)) {
+  OdeGeom(dCreateCylinder(nullptr, radius, length)) {
 }
 
 OdeCylinderGeom::
