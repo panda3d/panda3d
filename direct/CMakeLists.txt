@@ -16,8 +16,8 @@ add_subdirectory(src/showbase)
 
 # TODO: p3direct needs a source file!
 set(P3DIRECT_COMPONENTS
-  p3dcparser p3deadrec p3interval
-  p3motiontrail p3showbase)
+  p3dcparser p3deadrec p3directbase
+  p3interval p3motiontrail p3showbase)
 if(HAVE_PYTHON)
   list(APPEND P3DIRECT_COMPONENTS p3distributed)
 endif()
