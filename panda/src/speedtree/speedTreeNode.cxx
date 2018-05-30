@@ -145,8 +145,10 @@ count_total_instances() const {
  */
 SpeedTreeNode::InstanceList &SpeedTreeNode::
 add_tree(const STTree *tree) {
-  nassertr(is_valid(), *(InstanceList *)NULL);
-  nassertr(tree->is_valid(), *(InstanceList *)NULL);
+  // TODO: These should be nassertr instead of assert, but there's nothing we
+  // can really return when the assert fails.
+  assert(is_valid());
+  assert(tree->is_valid());
 
   InstanceList ilist(tree);
   Trees::iterator ti = _trees.find(&ilist);

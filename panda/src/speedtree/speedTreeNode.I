@@ -47,7 +47,9 @@ get_tree(int n) const {
  */
 INLINE const SpeedTreeNode::InstanceList &SpeedTreeNode::
 get_instance_list(int n) const {
-  nassertr(n >= 0 && n < (int)_trees.size(), *(InstanceList *)NULL);
+  // TODO: This should be nassertr instead of assert, but there's nothing we
+  // can really return when the assert fails.
+  assert(n >= 0 && n < (int)_trees.size());
   InstanceList *instance_list = _trees[n];
   return *instance_list;
 }
