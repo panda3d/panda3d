@@ -83,21 +83,6 @@ using namespace std;
 
 #define TYPENAME typename
 
-#ifndef HAVE_WCHAR_T
-// Some C++ libraries (os x 3.1) don't define this.
-typedef unsigned short wchar_t;
-#endif
-
-#ifndef HAVE_WSTRING
-// Some C++ libraries (gcc 2.95) don't define this.
-typedef basic_string<wchar_t> wstring;
-#endif
-
-#ifndef HAVE_STREAMSIZE
-// Some C++ libraries (Irix) don't define this.
-typedef long streamsize;
-#endif
-
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;
 typedef int ios_fmtflags;

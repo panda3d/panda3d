@@ -23,11 +23,6 @@
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 

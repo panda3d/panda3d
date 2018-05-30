@@ -24,11 +24,6 @@
 // recursion.
 #include <assert.h>
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers--notably SGI--don't define this for us.
-typedef int streamsize;
-#endif
-
 /**
  * Closes or deletes the relevant pointers, if _owns_obj is true.
  */

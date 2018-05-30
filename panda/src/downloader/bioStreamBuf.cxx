@@ -24,11 +24,6 @@
   #undef X509_NAME
 #endif  // WIN32_VC
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 /**
  *
  */
