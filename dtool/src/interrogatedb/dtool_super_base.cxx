@@ -71,57 +71,57 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     "dtoolconfig.DTOOL_SUPER_BASE",
     sizeof(Dtool_PyInstDef),
-    0,
+    0, // tp_itemsize
     &Dtool_FreeInstance_DTOOL_SUPER_BASE,
-    0,
-    0,
-    0,
+    nullptr, // tp_print
+    nullptr, // tp_getattr
+    nullptr, // tp_setattr
 #if PY_MAJOR_VERSION >= 3
-    0,
+    nullptr, // tp_compare
 #else
     &DTOOL_PyObject_ComparePointers,
 #endif
-    0,
-    0,
-    0,
-    0,
+    nullptr, // tp_repr
+    nullptr, // tp_as_number
+    nullptr, // tp_as_sequence
+    nullptr, // tp_as_mapping
     &DTOOL_PyObject_HashPointer,
-    0,
-    0,
+    nullptr, // tp_call
+    nullptr, // tp_str
     PyObject_GenericGetAttr,
     PyObject_GenericSetAttr,
-    0,
+    nullptr, // tp_as_buffer
     (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES),
-    0,
-    0,
-    0,
+    nullptr, // tp_doc
+    nullptr, // tp_traverse
+    nullptr, // tp_clear
 #if PY_MAJOR_VERSION >= 3
     &DTOOL_PyObject_RichCompare,
 #else
-    0,
+    nullptr, // tp_richcompare
 #endif
-    0,
-    0,
-    0,
+    0, // tp_weaklistoffset
+    nullptr, // tp_iter
+    nullptr, // tp_iternext
     Dtool_Methods_DTOOL_SUPER_BASE,
     standard_type_members,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    nullptr, // tp_getset
+    nullptr, // tp_base
+    nullptr, // tp_dict
+    nullptr, // tp_descr_get
+    nullptr, // tp_descr_set
+    0, // tp_dictoffset
     Dtool_Init_DTOOL_SUPER_BASE,
     PyType_GenericAlloc,
     Dtool_new_DTOOL_SUPER_BASE,
     PyObject_Del,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    nullptr, // tp_is_gc
+    nullptr, // tp_bases
+    nullptr, // tp_mro
+    nullptr, // tp_cache
+    nullptr, // tp_subclasses
+    nullptr, // tp_weaklist
+    nullptr, // tp_del
   },
   TypeHandle::none(),
   Dtool_PyModuleClassInit_DTOOL_SUPER_BASE,
