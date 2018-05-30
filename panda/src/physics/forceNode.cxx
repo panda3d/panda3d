@@ -133,7 +133,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void ForceNode::
-write_forces(ostream &out, unsigned int indent) const {
+write_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"_forces ("<<_forces.size()<<" forces)"<<"\n";
   for (ForceVector::const_iterator i=_forces.begin();
@@ -149,7 +149,7 @@ write_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void ForceNode::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ForceNode (id "<<this<<") ";
   // #*#PandaNode::output(out);

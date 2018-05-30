@@ -839,7 +839,6 @@ convert_primitive(const GeomVertexData *vertex_data,
   }
 
   // Check the backface flag.
-  bool bface = false;
   const CullFaceAttrib *cfa;
   if (net_state->get_attrib(cfa)) {
     if (cfa->get_effective_mode() == CullFaceAttrib::M_cull_none) {

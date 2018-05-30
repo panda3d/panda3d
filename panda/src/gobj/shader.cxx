@@ -2709,7 +2709,6 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // Check for an #endif after an include.  We have to restore the line
       // number in case the include happened under an #if block.
       out << line << "\n";
-      int nread = 0;
       if (had_include) {
         out << "#line " << (lineno + 1) << " " << fileno << "\n";
       }

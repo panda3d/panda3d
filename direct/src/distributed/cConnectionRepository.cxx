@@ -849,8 +849,9 @@ handle_update_field_owner() {
       vector_uchar data = _di.get_remaining_bytes();
       DCPacker packer;
       packer.set_unpack_data((const char *)data.data(), data.size(), false);
-      int field_id = packer.raw_unpack_uint16();
-      DCField *field = dclass->get_field_by_index(field_id);
+
+      //int field_id = packer.raw_unpack_uint16();
+      //DCField *field = dclass->get_field_by_index(field_id);
       if (true) {//field->is_broadcast()) {
         // It's a good idea to ensure the reference count to distobj is raised
         // while we call the update method--otherwise, the update method might

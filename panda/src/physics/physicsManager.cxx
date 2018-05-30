@@ -186,7 +186,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsManager::
-write_physicals(ostream &out, unsigned int indent) const {
+write_physicals(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   if (indent>10) {
     return;
@@ -206,7 +206,7 @@ write_physicals(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsManager::
-write_linear_forces(ostream &out, unsigned int indent) const {
+write_linear_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
@@ -222,7 +222,7 @@ write_linear_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsManager::
-write_angular_forces(ostream &out, unsigned int indent) const {
+write_angular_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
@@ -238,7 +238,7 @@ write_angular_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsManager::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"PhysicsManager:\n";
   if (indent>20) {
@@ -268,7 +268,7 @@ write(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsManager::
-debug_output(ostream &out, unsigned int indent) const {
+debug_output(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"PhysicsManager li"<<(_linear_integrator?1:0)<<" ai"<<(_angular_integrator?1:0)<<"\n";
   out<<"  _physicals "<<_physicals.size()<<"\n";

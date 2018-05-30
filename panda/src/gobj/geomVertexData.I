@@ -837,7 +837,6 @@ GeomVertexDataPipelineWriter(GeomVertexData *object, bool force_to_0,
                              Thread *current_thread) :
   GeomVertexDataPipelineBase(object, current_thread,
                              object->_cycler.write_upstream(force_to_0, current_thread)),
-  _force_to_0(force_to_0),
   _got_array_writers(false)
 {
 #ifdef _DEBUG

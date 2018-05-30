@@ -387,7 +387,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
  * independently of the original.
  */
 PT(Texture) MovieTexture::
-make_copy_impl() {
+make_copy_impl() const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   CDReader cdata(_cycler);
   PT(MovieTexture) copy = new MovieTexture(get_name());

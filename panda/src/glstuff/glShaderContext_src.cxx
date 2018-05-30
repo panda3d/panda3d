@@ -2660,9 +2660,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
+#ifndef OPENGLES
     GLint p = spec._id._seqno;
 
-#ifndef OPENGLES
     // If it was recently written to, we will have to issue a memory barrier
     // soon.
     if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {

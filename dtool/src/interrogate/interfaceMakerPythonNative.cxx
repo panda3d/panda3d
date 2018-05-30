@@ -2636,14 +2636,16 @@ write_module_class(ostream &out, Object *obj) {
   if (obj->_properties.size() > 0) {
     // Write out the array of properties, telling Python which getter and
     // setter to call when they are assigned or queried in Python code.
-    out << "static PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
-
     Properties::const_iterator pit;
     for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
       Property *property = (*pit);
       const InterrogateElement &ielem = property->_ielement;
       if (!property->_has_this || property->_getter_remaps.empty()) {
         continue;
+      }
+
+      if (num_getset == 0) {
+        out << "static PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
       }
 
       ++num_getset;
@@ -2679,8 +2681,10 @@ write_module_class(ostream &out, Object *obj) {
       }*/
     }
 
-    out << "  {NULL},\n";
-    out << "};\n\n";
+    if (num_getset != 0) {
+      out << "  {NULL},\n";
+      out << "};\n\n";
+    }
   }
 
   // These fields are inherited together.  We should either write all of them
@@ -7077,9 +7081,8 @@ record_object(TypeIndex type_index) {
   int num_elements = itype.number_of_elements();
   for (int ei = 0; ei < num_elements; ei++) {
     ElementIndex element_index = itype.get_element(ei);
-    const InterrogateElement &ielement = idb->get_element(element_index);
 
-    Property *property = record_property(itype, itype.get_element(ei));
+    Property *property = record_property(itype, element_index);
     if (property != nullptr) {
       object->_properties.push_back(property);
     } else {

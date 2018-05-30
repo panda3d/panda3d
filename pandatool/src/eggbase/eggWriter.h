@@ -40,7 +40,6 @@ protected:
 
 private:
   ofstream _output_stream;
-  ostream *_output_ptr;
 };
 
 #endif

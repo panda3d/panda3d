@@ -1580,7 +1580,6 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = qti->first;
-    TextureContext *first_tc = nullptr;
     for (int view = 0; view < tex->get_num_views(); ++view) {
       TextureContext *tc = tex->prepare_now(view, this, gsg);
       if (tc != nullptr) {

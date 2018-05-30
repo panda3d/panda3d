@@ -455,7 +455,6 @@ AdaptiveLruPage(size_t lru_size) :
   _update_frame_identifier(0),
   _current_frame_usage(0),
   _last_frame_usage(0),
-  _total_usage(0),
   _update_total_usage(0),
   _average_frame_utilization(1.0f)
 {
@@ -474,7 +473,6 @@ AdaptiveLruPage(const AdaptiveLruPage &copy) :
   _update_frame_identifier(0),
   _current_frame_usage(0),
   _last_frame_usage(0),
-  _total_usage(0),
   _update_total_usage(0),
   _average_frame_utilization(1.0f)
 {

@@ -90,7 +90,6 @@ private:
   typedef pvector<TextureReference *> Textures;
   Textures _textures;
 
-  bool _noabs;
   bool _first_txa_match;
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroup *_default_group;

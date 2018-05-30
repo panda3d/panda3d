@@ -149,7 +149,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseIntegrator::
-write_precomputed_linear_matrices(ostream &out, unsigned int indent) const {
+write_precomputed_linear_matrices(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_precomputed_linear_matrices\n";
@@ -165,7 +165,7 @@ write_precomputed_linear_matrices(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseIntegrator::
-write_precomputed_angular_matrices(ostream &out, unsigned int indent) const {
+write_precomputed_angular_matrices(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_precomputed_angular_matrices\n";
@@ -181,7 +181,7 @@ write_precomputed_angular_matrices(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseIntegrator::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseIntegrator:\n";
   write_precomputed_linear_matrices(out, indent+2);

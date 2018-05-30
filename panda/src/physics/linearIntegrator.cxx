@@ -78,7 +78,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearIntegrator::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearIntegrator:\n";
   out.width(indent+2); out<<""; out<<"_max_linear_dt "<<_max_linear_dt<<" (class static)\n";

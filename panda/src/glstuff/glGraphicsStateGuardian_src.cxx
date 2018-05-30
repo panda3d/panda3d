@@ -2643,7 +2643,6 @@ reset() {
   GLint max_3d_texture_size = 0;
   GLint max_2d_texture_array_layers = 0;
   GLint max_cube_map_size = 0;
-  GLint max_buffer_texture_size = 0;
 
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   _max_texture_dimension = max_texture_size;
@@ -2671,6 +2670,7 @@ reset() {
 
 #ifndef OPENGLES
   if (_supports_buffer_texture) {
+    GLint max_buffer_texture_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &max_buffer_texture_size);
     _max_buffer_texture_size = max_buffer_texture_size;
   } else {
@@ -2678,8 +2678,8 @@ reset() {
   }
 #endif  // !OPENGLES
 
-  GLint max_elements_vertices = 0, max_elements_indices = 0;
 #ifndef OPENGLES
+  GLint max_elements_vertices = 0, max_elements_indices = 0;
   if (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_draw_range_elements")) {
     glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
     glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
@@ -7604,7 +7604,6 @@ do_issue_blending() {
 #endif
 
   if (color_channels == ColorWriteAttrib::C_off) {
-    int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     if (gl_color_mask) {
@@ -8311,7 +8310,6 @@ report_extensions() const {
     ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
       size_t len = (*ei).size();
@@ -10915,7 +10913,6 @@ set_state_and_transform(const RenderState *target,
       !_state_mask.get_bit(texture_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
-    int prev_active = _num_active_texture_stages;
     do_issue_texture();
 
     // Since the TexGen and TexMatrix states depend partly on the particular
@@ -12264,10 +12261,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (image_compression != Texture::CM_off) {
-    Texture::QualityLevel quality_level = tex->get_effective_quality_level();
-
 #ifndef OPENGLES
-    switch (quality_level) {
+    switch (tex->get_effective_quality_level()) {
     case Texture::QL_fastest:
       glHint(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
       break;
@@ -13150,7 +13145,6 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
   int height = tex->get_y_size();
   int depth = 1;
   int scale = 1;
-  bool has_mipmaps = tex->uses_mipmaps();
 
   size_t num_bytes = 2;  // Temporary assumption?
 

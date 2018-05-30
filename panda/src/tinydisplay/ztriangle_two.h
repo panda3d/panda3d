@@ -187,7 +187,7 @@ FNAME(flat_textured) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT(or0, PIXEL_R(tmp)),     \
@@ -249,7 +249,7 @@ FNAME(smooth_textured) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT(or1, PIXEL_R(tmp)),     \
@@ -431,7 +431,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT(or0, PIXEL_R(tmp)),     \
@@ -567,7 +567,7 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT(or1, PIXEL_R(tmp)),     \
@@ -695,9 +695,9 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(&zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
-        int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
+        UNUSED int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)), \
                                 PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)), \
@@ -853,10 +853,10 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
       tmp = ZB_LOOKUP_TEXTURE(&zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
-      int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
+      UNUSED int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                    \
       if (ACMP(zb, a)) {                                                \
-        int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
-        int tmpb = ZB_LOOKUP_TEXTURE(&zb->current_textures[2], sb, tb, mipmap_levelb, mipmap_dxb); \
+        UNUSED int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
+        UNUSED int tmpb = ZB_LOOKUP_TEXTURE(&zb->current_textures[2], sb, tb, mipmap_levelb, mipmap_dxb); \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)), \
                                 PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)), \

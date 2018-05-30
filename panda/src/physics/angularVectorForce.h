@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE LRotation get_local_quat() const;
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   LRotation _fvec;

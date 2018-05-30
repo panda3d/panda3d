@@ -134,7 +134,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_physics_objects(ostream &out, unsigned int indent) const {
+write_physics_objects(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_physics_objects ("<<_physics_objects.size()<<" objects)\n";
@@ -150,7 +150,7 @@ write_physics_objects(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_linear_forces(ostream &out, unsigned int indent) const {
+write_linear_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
@@ -166,7 +166,7 @@ write_linear_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_angular_forces(ostream &out, unsigned int indent) const {
+write_angular_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
@@ -182,7 +182,7 @@ write_angular_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"Physical\n";
   write_physics_objects(out, indent+2);

@@ -1016,9 +1016,9 @@ blend(int x, int y, float r, float g, float b, float alpha) {
     } else {
       // Blend the color with the previous color.
       LRGBColorf prev_rgb = get_xel(x, y);
-      r = r + (1.0f - alpha) * (get_red(x, y) - r);
-      g = g + (1.0f - alpha) * (get_green(x, y) - g);
-      b = b + (1.0f - alpha) * (get_blue(x, y) - b);
+      r = r + (1.0f - alpha) * (prev_rgb[0] - r);
+      g = g + (1.0f - alpha) * (prev_rgb[1] - g);
+      b = b + (1.0f - alpha) * (prev_rgb[2] - b);
       alpha = prev_alpha + alpha * (1.0f - prev_alpha);
 
       if (has_alpha()) {

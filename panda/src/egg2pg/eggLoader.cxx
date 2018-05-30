@@ -3792,7 +3792,7 @@ TextureStage::CombineOperand EggLoader::
 get_combine_operand(const EggTexture *egg_tex,
                     EggTexture::CombineChannel channel, int n) {
   switch (egg_tex->get_combine_operand(channel, n)) {
-  case EggTexture::CS_unspecified:
+  case EggTexture::CO_unspecified:
     if (channel == EggTexture::CC_rgb) {
       // The default operand for RGB is src_color, except for the third
       // parameter, which defaults to src_alpha.

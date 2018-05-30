@@ -55,7 +55,6 @@ private:
 
   typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
-  PN_stdfloat _font_height;
   PT(PandaNode) _font;
   CoordinateSystem _cs;
 

@@ -17,8 +17,8 @@
 INLINE AsyncFuture::
 AsyncFuture() :
   _manager(nullptr),
-  _future_state(FS_pending),
-  _result(nullptr) {
+  _result(nullptr),
+  _future_state(FS_pending) {
 }
 
 /**

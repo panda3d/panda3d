@@ -154,7 +154,7 @@ handle_entries() {
 
       // unit vector pointing out to the right relative to the direction of
       // motion, looking into the direction of motion
-      const LVector3 right_unit(LVector3::up().cross(reverse_vec));
+      //const LVector3 right_unit(LVector3::up().cross(reverse_vec));
 
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
@@ -214,7 +214,7 @@ handle_entries() {
         from_node_path.set_prev_transform(wrt_node, prev_trans);
 
         {
-          const LPoint3 new_pos(from_node_path.get_pos(wrt_node));
+          //const LPoint3 new_pos(from_node_path.get_pos(wrt_node));
           CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
           const LPoint3 new_prev_pos(new_prev_trans->get_pos());
         }

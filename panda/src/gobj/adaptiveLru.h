@@ -172,7 +172,6 @@ private:
 
   int _current_frame_usage;
   int _last_frame_usage;
-  int _total_usage;
   int _update_total_usage;
 
   PN_stdfloat _average_frame_utilization;

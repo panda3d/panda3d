@@ -864,7 +864,7 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
 */
 
   btVector3 center;
-  btScalar radius;
+  btScalar radius = 0;
 
   if (_shape) {
     _shape->getBoundingSphere(center, radius);

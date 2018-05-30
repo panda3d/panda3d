@@ -216,12 +216,12 @@ MemoryHook() {
  */
 MemoryHook::
 MemoryHook(const MemoryHook &copy) :
-  _page_size(copy._page_size),
   _total_heap_single_size(copy._total_heap_single_size),
   _total_heap_array_size(copy._total_heap_array_size),
   _requested_heap_size(copy._requested_heap_size),
   _total_mmap_size(copy._total_mmap_size),
-  _max_heap_size(copy._max_heap_size) {
+  _max_heap_size(copy._max_heap_size),
+  _page_size(copy._page_size) {
 
   copy._lock.lock();
   _deleted_chains = copy._deleted_chains;

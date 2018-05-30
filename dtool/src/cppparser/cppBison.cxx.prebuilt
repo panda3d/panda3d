@@ -110,7 +110,6 @@ static CPPEnumType *current_enum = NULL;
 static int current_storage_class = 0;
 static CPPType *current_type = NULL;
 static CPPExpression *current_expr = NULL;
-static CPPClosureType *current_closure = NULL;
 static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
