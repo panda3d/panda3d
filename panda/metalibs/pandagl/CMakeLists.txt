@@ -10,21 +10,22 @@ if(HAVE_GL)
   set(PANDAGL_LINK_TARGETS p3glgsg)
 
   if(HAVE_GLX)
-    list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay)
+    list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay p3x11display)
   endif()
+
   if(HAVE_WGL)
-    list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay)
+    list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay p3windisplay)
   endif()
 
   if(HAVE_COCOA)
-    set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3cocoadisplay)
+    list(APPEND PANDAGL_LINK_TARGETS p3cocoadisplay)
   endif()
 
   if(HAVE_CARBON)
-    set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3osxdisplay)
+    list(APPEND PANDAGL_LINK_TARGETS p3osxdisplay)
   endif()
 
-  add_metalib(pandagl pandagl.cxx COMPONENTS ${PANDAGL_LINK_TARGETS})
+  add_metalib(pandagl ${MODULE_TYPE} pandagl.cxx COMPONENTS ${PANDAGL_LINK_TARGETS})
   set_target_properties(pandagl PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
 
   install(TARGETS pandagl DESTINATION lib)
