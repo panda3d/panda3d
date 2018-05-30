@@ -24,7 +24,7 @@
 template<class pair_iterator>
 class first_of_pair_iterator : public pair_iterator {
 public:
-  typedef TYPENAME pair_iterator::value_type::first_type value_type;
+  typedef typename pair_iterator::value_type::first_type value_type;
 
   first_of_pair_iterator() = default;
   first_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }
@@ -42,7 +42,7 @@ public:
 template<class pair_iterator>
 class second_of_pair_iterator : public pair_iterator {
 public:
-  typedef TYPENAME pair_iterator::value_type::second_type value_type;
+  typedef typename pair_iterator::value_type::second_type value_type;
 
   second_of_pair_iterator() = default;
   second_of_pair_iterator(const pair_iterator &init) : pair_iterator(init) { }

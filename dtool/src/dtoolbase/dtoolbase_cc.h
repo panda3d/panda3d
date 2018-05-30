@@ -37,7 +37,6 @@
 
 #define INLINE inline
 #define ALWAYS_INLINE inline
-#define TYPENAME typename
 #define MOVE(x) x
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
@@ -77,8 +76,6 @@ typedef int ios_seekdir;
 #include <string>
 #include <utility>
 #include <algorithm>
-
-#define TYPENAME typename
 
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;

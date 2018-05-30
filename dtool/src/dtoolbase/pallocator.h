@@ -48,11 +48,11 @@ class pallocator_single : public allocator<Type> {
 public:
   // Nowadays we cannot implicitly inherit typedefs from base classes in a
   // template class; we must explicitly copy them here.
-  typedef TYPENAME allocator<Type>::pointer pointer;
-  typedef TYPENAME allocator<Type>::reference reference;
-  typedef TYPENAME allocator<Type>::const_pointer const_pointer;
-  typedef TYPENAME allocator<Type>::const_reference const_reference;
-  typedef TYPENAME allocator<Type>::size_type size_type;
+  typedef typename allocator<Type>::pointer pointer;
+  typedef typename allocator<Type>::reference reference;
+  typedef typename allocator<Type>::const_pointer const_pointer;
+  typedef typename allocator<Type>::const_reference const_reference;
+  typedef typename allocator<Type>::size_type size_type;
 
   INLINE pallocator_single(TypeHandle type_handle) noexcept;
 
@@ -77,11 +77,11 @@ class pallocator_array : public allocator<Type> {
 public:
   // Nowadays we cannot implicitly inherit typedefs from base classes in a
   // template class; we must explicitly copy them here.
-  typedef TYPENAME allocator<Type>::pointer pointer;
-  typedef TYPENAME allocator<Type>::reference reference;
-  typedef TYPENAME allocator<Type>::const_pointer const_pointer;
-  typedef TYPENAME allocator<Type>::const_reference const_reference;
-  typedef TYPENAME allocator<Type>::size_type size_type;
+  typedef typename allocator<Type>::pointer pointer;
+  typedef typename allocator<Type>::reference reference;
+  typedef typename allocator<Type>::const_pointer const_pointer;
+  typedef typename allocator<Type>::const_reference const_reference;
+  typedef typename allocator<Type>::size_type size_type;
 
   INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) noexcept;
 

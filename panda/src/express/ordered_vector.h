@@ -105,13 +105,13 @@ public:
   // Be careful when using the non-const iterators that you do not disturb the
   // sorted order of the vector, or that if you do, you call sort() when you
   // are done.
-  typedef TYPENAME Vector::iterator ITERATOR;
-  typedef TYPENAME Vector::const_iterator CONST_ITERATOR;
-  typedef TYPENAME Vector::reverse_iterator REVERSE_ITERATOR;
-  typedef TYPENAME Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
+  typedef typename Vector::iterator ITERATOR;
+  typedef typename Vector::const_iterator CONST_ITERATOR;
+  typedef typename Vector::reverse_iterator REVERSE_ITERATOR;
+  typedef typename Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
 
-  typedef TYPENAME Vector::difference_type DIFFERENCE_TYPE;
-  typedef TYPENAME Vector::size_type SIZE_TYPE;
+  typedef typename Vector::difference_type DIFFERENCE_TYPE;
+  typedef typename Vector::size_type SIZE_TYPE;
 
   // Since the #define symbols do not actually expand to the correct names, we
   // have to re-typedef them so callers can reference them by their correct,
@@ -268,8 +268,8 @@ private:
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_set : public ordered_vector<Key, Compare, Vector> {
 public:
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
+  typedef typename ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
+  typedef typename ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_set(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_set(const Compare &compare,
@@ -289,8 +289,8 @@ public:
 template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
 class ov_multiset : public ordered_vector<Key, Compare, Vector> {
 public:
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
+  typedef typename ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
+  typedef typename ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_multiset(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_multiset(const Compare &compare,

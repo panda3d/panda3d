@@ -24,7 +24,7 @@ ReferenceCountedVector(TypeHandle type_handle) : pvector<Element>(type_handle) {
  */
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
-ReferenceCountedVector(TYPENAME ReferenceCountedVector<Element>::size_type initial_size, TypeHandle type_handle) :
+ReferenceCountedVector(typename ReferenceCountedVector<Element>::size_type initial_size, TypeHandle type_handle) :
   pvector<Element>(initial_size, type_handle)
 {
 }
@@ -53,7 +53,7 @@ ReferenceCountedVector(pvector<Element> &&from) :
  *
  */
 template<class Element>
-INLINE TYPENAME ReferenceCountedVector<Element>::size_type ReferenceCountedVector<Element>::
+INLINE typename ReferenceCountedVector<Element>::size_type ReferenceCountedVector<Element>::
 size() const {
   return pvector<Element>::size();
 }
@@ -62,7 +62,7 @@ size() const {
  *
  */
 template<class Element>
-INLINE TYPENAME ReferenceCountedVector<Element>::iterator ReferenceCountedVector<Element>::
+INLINE typename ReferenceCountedVector<Element>::iterator ReferenceCountedVector<Element>::
 insert(iterator position, const Element &x) {
   return pvector<Element>::insert(position, x);
 }

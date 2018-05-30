@@ -28,7 +28,7 @@
 template <class T>
 class WeakPointerTo : public WeakPointerToBase<T> {
 public:
-  typedef TYPENAME WeakPointerToBase<T>::To To;
+  typedef typename WeakPointerToBase<T>::To To;
 PUBLISHED:
   INLINE WeakPointerTo(To *ptr = nullptr);
   INLINE WeakPointerTo(const PointerTo<T> &copy);
@@ -64,7 +64,7 @@ PUBLISHED:
 template <class T>
 class WeakConstPointerTo : public WeakPointerToBase<T> {
 public:
-  typedef TYPENAME WeakPointerToBase<T>::To To;
+  typedef typename WeakPointerToBase<T>::To To;
 PUBLISHED:
   INLINE WeakConstPointerTo(const To *ptr = nullptr);
   INLINE WeakConstPointerTo(const PointerTo<T> &copy);

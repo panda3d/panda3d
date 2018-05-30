@@ -43,7 +43,7 @@ WeakPointerTo(const WeakPointerTo<T> &copy) :
  *
  */
 template<class T>
-INLINE TYPENAME WeakPointerTo<T>::To &WeakPointerTo<T>::
+INLINE typename WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
   assert(!this->was_deleted());
   return *((To *)WeakPointerToBase<T>::_void_ptr);
@@ -53,7 +53,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
+INLINE typename WeakPointerTo<T>::To *WeakPointerTo<T>::
 operator -> () const {
   assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
@@ -106,7 +106,7 @@ lock() const {
  * around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
+INLINE typename WeakPointerTo<T>::To *WeakPointerTo<T>::
 p() const {
   assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
@@ -117,7 +117,7 @@ p() const {
  * deleted.
  */
 template<class T>
-INLINE TYPENAME WeakPointerTo<T>::To *WeakPointerTo<T>::
+INLINE typename WeakPointerTo<T>::To *WeakPointerTo<T>::
 get_orig() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
@@ -158,7 +158,7 @@ operator = (const WeakPointerTo<T> &copy) {
 template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const To *ptr) :
-  WeakPointerToBase<T>((TYPENAME WeakConstPointerTo<T>::To *)ptr)
+  WeakPointerToBase<T>((typename WeakConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -206,7 +206,7 @@ WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
  *
  */
 template<class T>
-INLINE const TYPENAME WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
+INLINE const typename WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
   assert(!this->was_deleted());
   return *((To *)WeakPointerToBase<T>::_void_ptr);
@@ -216,7 +216,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
+INLINE const typename WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 operator -> () const {
   assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
@@ -267,7 +267,7 @@ lock() const {
  * work around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
+INLINE const typename WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 p() const {
   assert(!this->was_deleted());
   return (To *)WeakPointerToBase<T>::_void_ptr;
@@ -278,7 +278,7 @@ p() const {
  * deleted.
  */
 template<class T>
-INLINE const TYPENAME WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
+INLINE const typename WeakConstPointerTo<T>::To *WeakConstPointerTo<T>::
 get_orig() const {
   return (To *)WeakPointerToBase<T>::_void_ptr;
 }
