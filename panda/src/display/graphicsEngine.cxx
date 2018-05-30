@@ -1538,7 +1538,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
           }
 
           // Save the results for next frame.
-          dr->set_cull_result(MOVE(cull_result), MOVE(scene_setup), current_thread);
+          dr->set_cull_result(move(cull_result), MOVE(scene_setup), current_thread);
         }
       }
     }

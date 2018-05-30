@@ -45,10 +45,10 @@ public:
   INLINE explicit LightMutex(const char *name);
 PUBLISHED:
   INLINE explicit LightMutex(const string &name);
-  INLINE ~LightMutex();
-private:
-  INLINE LightMutex(const LightMutex &copy);
-  INLINE void operator = (const LightMutex &copy);
+  LightMutex(const LightMutex &copy) = delete;
+  ~LightMutex() = default;
+
+  LightMutex &operator = (const LightMutex &copy) = delete;
 };
 
 #include "lightMutex.I"

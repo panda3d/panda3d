@@ -32,9 +32,9 @@ VirtualFileMountRamdisk() : _root("") {
  */
 bool VirtualFileMountRamdisk::
 has_file(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL);
 }
 
@@ -45,9 +45,9 @@ has_file(const Filename &file) const {
  */
 bool VirtualFileMountRamdisk::
 create_file(const Filename &file) {
-  _lock.acquire();
+  _lock.lock();
   PT(File) f = _root.do_create_file(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL);
 }
 
@@ -58,9 +58,9 @@ create_file(const Filename &file) {
  */
 bool VirtualFileMountRamdisk::
 delete_file(const Filename &file) {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_delete_file(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL);
 }
 
@@ -72,10 +72,10 @@ delete_file(const Filename &file) {
  */
 bool VirtualFileMountRamdisk::
 rename_file(const Filename &orig_filename, const Filename &new_filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) orig_fb = _root.do_find_file(orig_filename);
   if (orig_fb == NULL) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
@@ -84,7 +84,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
     Directory *orig_d = DCAST(Directory, orig_fb);
     PT(Directory) new_d = _root.do_make_directory(new_filename);
     if (new_d == NULL || !new_d->_files.empty()) {
-      _lock.release();
+      _lock.unlock();
       return false;
     }
 
@@ -95,7 +95,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
 
     new_d->_files.swap(orig_d->_files);
     _root.do_delete_file(orig_filename);
-    _lock.release();
+    _lock.unlock();
     return true;
   }
 
@@ -103,7 +103,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
   File *orig_f = DCAST(File, orig_fb);
   PT(File) new_f = _root.do_create_file(new_filename);
   if (new_f == NULL) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
@@ -115,7 +115,7 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
   new_f->_data.str(orig_f->_data.str());
   _root.do_delete_file(orig_filename);
 
-  _lock.release();
+  _lock.unlock();
   return true;
 }
 
@@ -127,10 +127,10 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
  */
 bool VirtualFileMountRamdisk::
 copy_file(const Filename &orig_filename, const Filename &new_filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) orig_fb = _root.do_find_file(orig_filename);
   if (orig_fb == NULL || orig_fb->is_directory()) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
@@ -138,7 +138,7 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
   File *orig_f = DCAST(File, orig_fb);
   PT(File) new_f = _root.do_create_file(new_filename);
   if (new_f == NULL) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
@@ -149,7 +149,7 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
 
   new_f->_data.str(orig_f->_data.str());
 
-  _lock.release();
+  _lock.unlock();
   return true;
 }
 
@@ -161,9 +161,9 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
  */
 bool VirtualFileMountRamdisk::
 make_directory(const Filename &file) {
-  _lock.acquire();
+  _lock.lock();
   PT(Directory) f = _root.do_make_directory(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL);
 }
 
@@ -173,9 +173,9 @@ make_directory(const Filename &file) {
  */
 bool VirtualFileMountRamdisk::
 is_directory(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL && f->is_directory());
 }
 
@@ -185,9 +185,9 @@ is_directory(const Filename &file) const {
  */
 bool VirtualFileMountRamdisk::
 is_regular_file(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   return (f != NULL && !f->is_directory());
 }
 
@@ -207,9 +207,9 @@ is_writable(const Filename &file) const {
  */
 istream *VirtualFileMountRamdisk::
 open_read_file(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (FileBase *)NULL || f->is_directory()) {
     return NULL;
   }
@@ -225,9 +225,9 @@ open_read_file(const Filename &file) const {
  */
 ostream *VirtualFileMountRamdisk::
 open_write_file(const Filename &file, bool truncate) {
-  _lock.acquire();
+  _lock.lock();
   PT(File) f = _root.do_create_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (File *)NULL) {
     return NULL;
   }
@@ -254,9 +254,9 @@ open_write_file(const Filename &file, bool truncate) {
  */
 ostream *VirtualFileMountRamdisk::
 open_append_file(const Filename &file) {
-  _lock.acquire();
+  _lock.lock();
   PT(File) f = _root.do_create_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (File *)NULL) {
     return NULL;
   }
@@ -271,9 +271,9 @@ open_append_file(const Filename &file) {
  */
 iostream *VirtualFileMountRamdisk::
 open_read_write_file(const Filename &file, bool truncate) {
-  _lock.acquire();
+  _lock.lock();
   PT(File) f = _root.do_create_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (File *)NULL) {
     return NULL;
   }
@@ -296,9 +296,9 @@ open_read_write_file(const Filename &file, bool truncate) {
  */
 iostream *VirtualFileMountRamdisk::
 open_read_append_file(const Filename &file) {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (FileBase *)NULL || f->is_directory()) {
     return NULL;
   }
@@ -314,9 +314,9 @@ open_read_append_file(const Filename &file) {
  */
 streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file, istream *stream) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (FileBase *)NULL || f->is_directory()) {
     return 0;
   }
@@ -331,9 +331,9 @@ get_file_size(const Filename &file, istream *stream) const {
  */
 streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
-  _lock.release();
+  _lock.unlock();
   if (f == (FileBase *)NULL || f->is_directory()) {
     return 0;
   }
@@ -354,14 +354,14 @@ get_file_size(const Filename &file) const {
  */
 time_t VirtualFileMountRamdisk::
 get_timestamp(const Filename &file) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   if (f.is_null()) {
-    _lock.release();
+    _lock.unlock();
     return 0;
   }
   time_t timestamp = f->_timestamp;
-  _lock.release();
+  _lock.unlock();
   return timestamp;
 }
 
@@ -372,17 +372,17 @@ get_timestamp(const Filename &file) const {
  */
 bool VirtualFileMountRamdisk::
 scan_directory(vector_string &contents, const Filename &dir) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(dir);
   if (f == (FileBase *)NULL || !f->is_directory()) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
   Directory *f2 = DCAST(Directory, f);
   bool result = f2->do_scan_directory(contents);
 
-  _lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -393,10 +393,10 @@ bool VirtualFileMountRamdisk::
 atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents,
                                      const string &old_contents,
                                      const string &new_contents) {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   if (f == (FileBase *)NULL || f->is_directory()) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
@@ -409,7 +409,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
     retval = true;
   }
 
-  _lock.release();
+  _lock.unlock();
   return retval;
 }
 
@@ -418,17 +418,17 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
  */
 bool VirtualFileMountRamdisk::
 atomic_read_contents(const Filename &file, string &contents) const {
-  _lock.acquire();
+  _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
   if (f == (FileBase *)NULL || f->is_directory()) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
   File *f2 = DCAST(File, f);
   contents = f2->_data.str();
 
-  _lock.release();
+  _lock.unlock();
   return true;
 }
 

@@ -70,10 +70,8 @@ protected:
                  GraphicsStateGuardian *gsg,
                  GraphicsOutput *host,
                  bool default_stereo_flags);
-
-private:
-  GraphicsOutput(const GraphicsOutput &copy);
-  void operator = (const GraphicsOutput &copy);
+  GraphicsOutput(const GraphicsOutput &copy) = delete;
+  GraphicsOutput &operator = (const GraphicsOutput &copy) = delete;
 
 PUBLISHED:
   enum RenderTextureMode {

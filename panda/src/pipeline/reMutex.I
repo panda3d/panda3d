@@ -46,18 +46,3 @@ ReMutex(const string &)
 #endif  // DEBUG_THREADS
 {
 }
-
-/**
- *
- */
-INLINE ReMutex::
-~ReMutex() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void ReMutex::
-operator = (const ReMutex &copy) {
-  nassertv(false);
-}

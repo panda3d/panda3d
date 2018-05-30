@@ -583,12 +583,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   _geom = new_geom.p();
-
-#ifdef USE_MOVE_SEMANTICS
   _munged_data = move(new_data);
-#else
-  _munged_data = new_data;
-#endif
 
   return true;
 }

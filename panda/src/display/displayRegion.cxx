@@ -50,25 +50,6 @@ DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
  *
  */
 DisplayRegion::
-DisplayRegion(const DisplayRegion &copy) :
-  _window(NULL),
-  _cull_region_pcollector("Cull:Invalid"),
-  _draw_region_pcollector("Draw:Invalid")
-{
-}
-
-/**
- *
- */
-void DisplayRegion::
-operator = (const DisplayRegion&) {
-  nassertv(false);
-}
-
-/**
- *
- */
-DisplayRegion::
 ~DisplayRegion() {
   cleanup();
 

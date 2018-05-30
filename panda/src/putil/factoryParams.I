@@ -35,24 +35,22 @@ INLINE FactoryParams::
 ~FactoryParams() {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE FactoryParams::
-FactoryParams(FactoryParams &&from) NOEXCEPT :
-  _params(move(from._params)),
+FactoryParams(FactoryParams &&from) noexcept :
+  _params(std::move(from._params)),
   _user_data(from._user_data) {}
 
 /**
  *
  */
 INLINE void FactoryParams::
-operator = (FactoryParams &&from) NOEXCEPT {
-  _params = move(from._params);
+operator = (FactoryParams &&from) noexcept {
+  _params = std::move(from._params);
   _user_data = from._user_data;
 }
-#endif
 
 /**
  * Returns the custom pointer that was associated with the factory function.

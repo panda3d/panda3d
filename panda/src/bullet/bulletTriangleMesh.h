@@ -32,7 +32,7 @@
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
 PUBLISHED:
   BulletTriangleMesh();
-  ~BulletTriangleMesh() DEFAULT_DTOR;
+  ~BulletTriangleMesh() = default;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,

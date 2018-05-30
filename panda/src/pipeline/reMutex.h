@@ -38,10 +38,10 @@ public:
   INLINE explicit ReMutex(const char *name);
 PUBLISHED:
   INLINE explicit ReMutex(const string &name);
-  INLINE ~ReMutex();
-private:
-  INLINE ReMutex(const ReMutex &copy);
-  INLINE void operator = (const ReMutex &copy);
+  ReMutex(const ReMutex &copy) = delete;
+  ~ReMutex() = default;
+
+  void operator = (const ReMutex &copy) = delete;
 };
 
 #include "reMutex.I"

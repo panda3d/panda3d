@@ -31,18 +31,15 @@ public:
   typedef T To;
 
 protected:
-  ALWAYS_INLINE_CONSTEXPR PointerToBase() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE constexpr PointerToBase() noexcept = default;
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
+  INLINE PointerToBase(PointerToBase<T> &&from) noexcept;
   INLINE ~PointerToBase();
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToBase(PointerToBase<T> &&from) NOEXCEPT;
-  INLINE void reassign(PointerToBase<To> &&from) NOEXCEPT;
-#endif
 
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
+  INLINE void reassign(PointerToBase<To> &&from) noexcept;
 
   INLINE void update_type(To *ptr);
 

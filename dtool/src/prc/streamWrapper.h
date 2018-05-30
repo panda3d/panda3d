@@ -24,9 +24,7 @@
 class EXPCL_DTOOL_PRC StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
-
-private:
-  INLINE StreamWrapperBase(const StreamWrapperBase &copy) DELETED;
+  INLINE StreamWrapperBase(const StreamWrapperBase &copy) = delete;
 
 PUBLISHED:
   INLINE void acquire();

@@ -75,8 +75,8 @@ public:
   INLINE bool is_spam();
   INLINE bool is_debug();
 #else
-  CONSTEXPR static bool is_spam();
-  CONSTEXPR static bool is_debug();
+  constexpr static bool is_spam();
+  constexpr static bool is_debug();
 #endif
   INLINE bool is_info();
   INLINE bool is_warning();

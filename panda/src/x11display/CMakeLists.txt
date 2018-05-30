@@ -12,8 +12,8 @@ set(P3X11DISPLAY_SOURCES
 )
 
 composite_sources(p3x11display P3X11DISPLAY_SOURCES)
-add_library(p3x11display ${P3X11DISPLAY_HEADERS} ${P3X11DISPLAY_SOURCES})
-set_target_properties(p3x11display PROPERTIES DEFINE_SYMBOL BUILDING_PANDAX11)
+add_component_library(p3x11display SYMBOL BUILDING_PANDAX11
+  ${P3X11DISPLAY_HEADERS} ${P3X11DISPLAY_SOURCES})
 target_link_libraries(p3x11display panda ${X11_LIBRARIES})
 
 install(TARGETS p3x11display DESTINATION lib)

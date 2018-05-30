@@ -132,17 +132,15 @@ PointerToArrayBase(const PointerToArrayBase<Element> &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class Element>
 INLINE PointerToArrayBase<Element>::
-PointerToArrayBase(PointerToArrayBase<Element> &&from) NOEXCEPT :
+PointerToArrayBase(PointerToArrayBase<Element> &&from) noexcept :
   PointerToBase<ReferenceCountedVector<Element> >(move(from))
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

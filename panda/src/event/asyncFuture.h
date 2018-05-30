@@ -160,7 +160,7 @@ INLINE ostream &operator << (ostream &out, const AsyncFuture &fut) {
 /**
  * Specific future that collects the results of several futures.
  */
-class EXPCL_PANDA_EVENT AsyncGatheringFuture FINAL : public AsyncFuture {
+class EXPCL_PANDA_EVENT AsyncGatheringFuture final : public AsyncFuture {
 private:
   AsyncGatheringFuture(AsyncFuture::Futures futures);
 

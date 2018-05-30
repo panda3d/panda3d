@@ -28,8 +28,7 @@ class SpeedTreeNode;
 class EXPCL_PANDASPEEDTREE STTree : public TypedReferenceCount, public Namable {
 PUBLISHED:
   STTree(const Filename &fullpath);
-private:
-  STTree(const STTree &copy);
+  STTree(const STTree &copy) = delete;
 
 PUBLISHED:
   INLINE const Filename &get_fullpath() const;

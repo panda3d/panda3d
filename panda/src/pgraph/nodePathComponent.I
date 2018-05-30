@@ -30,23 +30,6 @@ CData(const NodePathComponent::CData &copy) :
 }
 
 /**
- * NodePathComponents should not be copied.
- */
-INLINE NodePathComponent::
-NodePathComponent(const NodePathComponent &copy) {
-  nassertv(false);
-}
-
-/**
- * NodePathComponents should not be copied.
- */
-INLINE void NodePathComponent::
-operator = (const NodePathComponent &copy) {
-  nassertv(false);
-}
-
-
-/**
  *
  */
 INLINE NodePathComponent::

@@ -61,15 +61,6 @@ STTree(const Filename &fullpath) :
   _is_valid = true;
 }
 
-
-/**
- * An STTree copy constructor is not supported.
- */
-STTree::
-STTree(const STTree &copy) {
-  nassertv(false);
-}
-
 /**
  *
  */

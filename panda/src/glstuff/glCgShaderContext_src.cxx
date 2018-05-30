@@ -436,42 +436,43 @@ set_state_and_transform(const RenderState *target_rs,
     altered |= Shader::SSD_projection;
   }
 
-  if (_state_rs.was_deleted() || _state_rs == (const RenderState *)NULL) {
+  CPT(RenderState) state_rs = _state_rs.lock();
+  if (state_rs == nullptr) {
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
 
-  } else if (_state_rs != target_rs) {
+  } else if (state_rs != target_rs) {
     // The state has changed since last time.
-    if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
     }
-    if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
       altered |= Shader::SSD_colorscale;
     }
-    if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
         target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
       altered |= Shader::SSD_material;
     }
-    if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
         target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
       altered |= Shader::SSD_shaderinputs;
     }
-    if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
         target_rs->get_attrib(FogAttrib::get_class_slot())) {
       altered |= Shader::SSD_fog;
     }
-    if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
         target_rs->get_attrib(LightAttrib::get_class_slot())) {
       altered |= Shader::SSD_light;
     }
-    if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
         target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
       altered |= Shader::SSD_clip_planes;
     }
-    if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
     }

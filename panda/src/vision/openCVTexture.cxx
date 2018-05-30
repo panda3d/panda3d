@@ -49,18 +49,6 @@ OpenCVTexture(const string &name) :
 }
 
 /**
- * Use OpenCVTexture::make_copy() to make a duplicate copy of an existing
- * OpenCVTexture.
- */
-OpenCVTexture::
-OpenCVTexture(const OpenCVTexture &copy) :
-  VideoTexture(copy),
-  _pages(copy._pages)
-{
-  nassertv(false);
-}
-
-/**
  *
  */
 OpenCVTexture::

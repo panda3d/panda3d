@@ -74,7 +74,7 @@ is_spam() {
 }
 #else
 template<class GetCategory>
-CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
+constexpr bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
   return false;
 }
@@ -92,7 +92,7 @@ is_debug() {
 }
 #else
 template<class GetCategory>
-CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
+constexpr bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
   return false;
 }

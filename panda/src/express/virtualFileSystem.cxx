@@ -190,9 +190,9 @@ mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
       << "mount " << *mount << " under " << mount_point << "\n";
   }
 
-  _lock.acquire();
+  _lock.lock();
   bool result = do_mount(mount, mount_point, flags);
-  _lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -202,7 +202,7 @@ mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
  */
 int VirtualFileSystem::
 unmount(Multifile *multifile) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -234,7 +234,7 @@ unmount(Multifile *multifile) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -244,7 +244,7 @@ unmount(Multifile *multifile) {
  */
 int VirtualFileSystem::
 unmount(const Filename &physical_filename) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -293,7 +293,7 @@ unmount(const Filename &physical_filename) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -303,7 +303,7 @@ unmount(const Filename &physical_filename) {
  */
 int VirtualFileSystem::
 unmount(VirtualFileMount *mount) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -326,7 +326,7 @@ unmount(VirtualFileMount *mount) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -336,7 +336,7 @@ unmount(VirtualFileMount *mount) {
  */
 int VirtualFileSystem::
 unmount_point(const Filename &mount_point) {
-  _lock.acquire();
+  _lock.lock();
   Filename nmp = normalize_mount_point(mount_point);
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
@@ -362,7 +362,7 @@ unmount_point(const Filename &mount_point) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -372,7 +372,7 @@ unmount_point(const Filename &mount_point) {
  */
 int VirtualFileSystem::
 unmount_all() {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri;
   for (ri = _mounts.begin(); ri != _mounts.end(); ++ri) {
     VirtualFileMount *mount = (*ri);
@@ -386,7 +386,7 @@ unmount_all() {
   int num_removed = _mounts.size();
   _mounts.clear();
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -395,9 +395,9 @@ unmount_all() {
  */
 int VirtualFileSystem::
 get_num_mounts() const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   int result = _mounts.size();
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -406,13 +406,13 @@ get_num_mounts() const {
  */
 PT(VirtualFileMount) VirtualFileSystem::
 get_mount(int n) const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   nassertd(n >= 0 && n < (int)_mounts.size()) {
-    ((VirtualFileSystem *)this)->_lock.release();
+    _lock.unlock();
     return NULL;
   }
   PT(VirtualFileMount) result = _mounts[n];
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -423,21 +423,21 @@ get_mount(int n) const {
  */
 bool VirtualFileSystem::
 chdir(const Filename &new_directory) {
-  _lock.acquire();
+  _lock.lock();
   if (new_directory == "/") {
     // We can always return to the root.
     _cwd = new_directory;
-    _lock.release();
+    _lock.unlock();
     return true;
   }
 
   PT(VirtualFile) file = do_get_file(new_directory, OF_status_only);
   if (file != (VirtualFile *)NULL && file->is_directory()) {
     _cwd = file->get_filename();
-    _lock.release();
+    _lock.unlock();
     return true;
   }
-  _lock.release();
+  _lock.unlock();
   return false;
 }
 
@@ -446,9 +446,9 @@ chdir(const Filename &new_directory) {
  */
 Filename VirtualFileSystem::
 get_cwd() const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   Filename result = _cwd;
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -460,9 +460,9 @@ get_cwd() const {
  */
 bool VirtualFileSystem::
 make_directory(const Filename &filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
-  _lock.release();
+  _lock.unlock();
   nassertr_always(result != NULL, false);
   return result->is_directory();
 }
@@ -474,7 +474,7 @@ make_directory(const Filename &filename) {
  */
 bool VirtualFileSystem::
 make_directory_full(const Filename &filename) {
-  _lock.acquire();
+  _lock.lock();
 
   // First, make sure everything up to the last path is known.  We don't care
   // too much if any of these fail; maybe they failed because the directory
@@ -489,7 +489,7 @@ make_directory_full(const Filename &filename) {
 
   // Now make the last one, and check the return value.
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
-  _lock.release();
+  _lock.unlock();
   nassertr_always(result != NULL, false);
   return result->is_directory();
 }
@@ -508,9 +508,9 @@ make_directory_full(const Filename &filename) {
 PT(VirtualFile) VirtualFileSystem::
 get_file(const Filename &filename, bool status_only) const {
   int open_flags = status_only ? OF_status_only : 0;
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, open_flags);
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -522,9 +522,9 @@ get_file(const Filename &filename, bool status_only) const {
  */
 PT(VirtualFile) VirtualFileSystem::
 create_file(const Filename &filename) {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, OF_create_file);
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -588,20 +588,20 @@ delete_file(const Filename &filename) {
  */
 bool VirtualFileSystem::
 rename_file(const Filename &orig_filename, const Filename &new_filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(VirtualFile) orig_file = do_get_file(orig_filename, OF_status_only);
   if (orig_file == (VirtualFile *)NULL) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
   PT(VirtualFile) new_file = do_get_file(new_filename, OF_status_only | OF_allow_nonexist);
   if (new_file == (VirtualFile *)NULL) {
-    _lock.release();
+    _lock.unlock();
     return false;
   }
 
-  _lock.release();
+  _lock.unlock();
 
   return orig_file->rename_file(new_file);
 }
@@ -712,13 +712,13 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
  */
 void VirtualFileSystem::
 write(ostream &out) const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
     mount->write(out);
   }
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
 }
 
 

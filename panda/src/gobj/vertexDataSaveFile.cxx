@@ -23,7 +23,7 @@
 #include <errno.h>
 #endif  // _WIN32
 
-#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
@@ -130,7 +130,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 
     // Now try to lock the file, so we can be sure that no other process is
     // simultaneously writing to the same save file.
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
     int result = lockf(_fd, F_TLOCK, 0);
 #else
     int result = flock(_fd, LOCK_EX | LOCK_NB);

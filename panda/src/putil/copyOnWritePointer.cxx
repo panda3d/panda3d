@@ -66,7 +66,7 @@ get_write_pointer() {
 
   Thread *current_thread = Thread::get_current_thread();
 
-  _cow_object->_lock_mutex.acquire();
+  _cow_object->_lock_mutex.lock();
   while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
          _cow_object->_locking_thread != current_thread) {
     if (util_cat.is_debug()) {
@@ -89,7 +89,7 @@ get_write_pointer() {
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
     _cow_object->CachedTypedWritableReferenceCount::cache_unref();
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
 
     MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
@@ -112,7 +112,7 @@ get_write_pointer() {
 
     PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
     _cow_object->CachedTypedWritableReferenceCount::cache_unref();
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
 
     MutexHolder holder(new_object->_lock_mutex);
     _cow_object = new_object;
@@ -132,7 +132,7 @@ get_write_pointer() {
     // reference.
     _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
     _cow_object->_locking_thread = current_thread;
-    _cow_object->_lock_mutex.release();
+    _cow_object->_lock_mutex.unlock();
   }
 
   return _cow_object;

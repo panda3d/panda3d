@@ -59,8 +59,8 @@ public:
 
   Key _key;
 
-  ALWAYS_INLINE_CONSTEXPR static nullptr_t get_data() { return nullptr; }
-  ALWAYS_INLINE_CONSTEXPR static nullptr_t modify_data() { return nullptr; }
+  ALWAYS_INLINE constexpr static nullptr_t get_data() { return nullptr; }
+  ALWAYS_INLINE constexpr static nullptr_t modify_data() { return nullptr; }
   ALWAYS_INLINE static void set_data(nullptr_t) {}
 };
 
@@ -85,13 +85,13 @@ class SimpleHashMap {
 
 public:
 #ifndef CPPPARSER
-  CONSTEXPR SimpleHashMap(const Compare &comp = Compare());
+  constexpr SimpleHashMap(const Compare &comp = Compare());
   INLINE SimpleHashMap(const SimpleHashMap &copy);
-  INLINE SimpleHashMap(SimpleHashMap &&from) NOEXCEPT;
+  INLINE SimpleHashMap(SimpleHashMap &&from) noexcept;
   INLINE ~SimpleHashMap();
 
   INLINE SimpleHashMap &operator = (const SimpleHashMap &copy);
-  INLINE SimpleHashMap &operator = (SimpleHashMap &&from) NOEXCEPT;
+  INLINE SimpleHashMap &operator = (SimpleHashMap &&from) noexcept;
 
   INLINE void swap(SimpleHashMap &other);
 
@@ -101,7 +101,7 @@ public:
   void clear();
 
   INLINE Value &operator [] (const Key &key);
-  CONSTEXPR size_t size() const;
+  constexpr size_t size() const;
 
   INLINE const Key &get_key(size_t n) const;
   INLINE const Value &get_data(size_t n) const;

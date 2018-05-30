@@ -596,11 +596,11 @@ do_cleanup() {
   nassertv(_num_tasks == 0 || _num_tasks == 1);
 
   // Now go back and call the upon_death functions.
-  _manager->_lock.release();
+  _manager->_lock.unlock();
   for (ti = dead.begin(); ti != dead.end(); ++ti) {
     (*ti)->upon_death(_manager, false);
   }
-  _manager->_lock.acquire();
+  _manager->_lock.lock();
 
   if (task_cat.is_spam()) {
     do_output(task_cat.spam());
@@ -791,9 +791,9 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   task->_manager = nullptr;
 
   if (upon_death) {
-    _manager->_lock.release();
+    _manager->_lock.unlock();
     task->upon_death(_manager, clean_exit);
-    _manager->_lock.acquire();
+    _manager->_lock.lock();
   }
 }
 
@@ -1031,7 +1031,7 @@ do_stop_threads() {
 
     // We have to release the lock while we join, so the threads can wake up
     // and see that we're shutting down.
-    _manager->_lock.release();
+    _manager->_lock.unlock();
     Threads::iterator ti;
     for (ti = wait_threads.begin(); ti != wait_threads.end(); ++ti) {
       if (task_cat.is_debug()) {
@@ -1046,7 +1046,7 @@ do_stop_threads() {
           << *Thread::get_current_thread() << "\n";
       }
     }
-    _manager->_lock.acquire();
+    _manager->_lock.lock();
 
     _state = S_initial;
 

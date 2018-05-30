@@ -214,7 +214,7 @@ bool CharacterJoint::
 remove_net_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
   if (effect != (RenderEffect *)NULL &&
-      DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+      DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
     node->clear_effect(CharacterJointEffect::get_class_type());
   }
 
@@ -244,7 +244,7 @@ clear_net_transforms() {
 
     CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
     if (effect != (RenderEffect *)NULL &&
-        DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+        DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
       node->clear_effect(CharacterJointEffect::get_class_type());
     }
   }
@@ -306,7 +306,7 @@ bool CharacterJoint::
 remove_local_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
   if (effect != (RenderEffect *)NULL &&
-      DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+      DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
     node->clear_effect(CharacterJointEffect::get_class_type());
   }
 
@@ -336,7 +336,7 @@ clear_local_transforms() {
 
     CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
     if (effect != (RenderEffect *)NULL &&
-        DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+        DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
       node->clear_effect(CharacterJointEffect::get_class_type());
     }
   }
@@ -427,7 +427,7 @@ set_character(Character *character) {
 
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
         if (effect != (RenderEffect *)NULL &&
-            DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+            DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
           node->clear_effect(CharacterJointEffect::get_class_type());
         }
       }
@@ -438,7 +438,7 @@ set_character(Character *character) {
 
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
         if (effect != (RenderEffect *)NULL &&
-            DCAST(CharacterJointEffect, effect)->get_character() == _character) {
+            DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
           node->clear_effect(CharacterJointEffect::get_class_type());
         }
       }

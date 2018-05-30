@@ -24,17 +24,17 @@
 // identifier, and then returning the value of that identifier, seems to lead
 // to compilation errors (at least in VC7) in which sometimes
 // IS_THRESHOLD_COMPEQ(a, a, get_nearly_zero_value(a)) != 0.
-CONSTEXPR double
+constexpr double
 get_nearly_zero_value(double) {
   return 1.0e-12;
 }
 
-CONSTEXPR float
+constexpr float
 get_nearly_zero_value(float) {
   return 1.0e-6f;
 }
 
-CONSTEXPR int
+constexpr int
 get_nearly_zero_value(int) {
   // This is a bit silly, but we should nevertheless define it in case it is
   // called for an integer type.

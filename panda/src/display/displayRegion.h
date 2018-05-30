@@ -57,10 +57,8 @@ class CullTraverser;
 class EXPCL_PANDA_DISPLAY DisplayRegion : public TypedReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
-
-private:
-  DisplayRegion(const DisplayRegion &copy);
-  void operator = (const DisplayRegion &copy);
+  DisplayRegion(const DisplayRegion &copy) = delete;
+  void operator = (const DisplayRegion &copy) = delete;
 
 public:
   virtual ~DisplayRegion();
@@ -310,9 +308,8 @@ private:
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);
-private:
-  INLINE DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy);
-  INLINE void operator = (const DisplayRegionPipelineReader &copy);
+  DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy) = delete;
+  void operator = (const DisplayRegionPipelineReader &copy) = delete;
 
 public:
   INLINE ~DisplayRegionPipelineReader();

@@ -44,10 +44,10 @@ public:
   INLINE Mutex(const char *name);
 PUBLISHED:
   INLINE explicit Mutex(const string &name);
-  INLINE ~Mutex();
-private:
-  INLINE Mutex(const Mutex &copy);
-  INLINE void operator = (const Mutex &copy);
+  Mutex(const Mutex &copy) = delete;
+  ~Mutex() = default;
+
+  void operator = (const Mutex &copy) = delete;
 
 public:
   // This is a global mutex set aside for the purpose of protecting Notify

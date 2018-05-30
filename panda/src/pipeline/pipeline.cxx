@@ -134,7 +134,7 @@ cycle() {
         while (link != &prev_dirty) {
           PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)link;
 
-          if (!cycler->_lock.try_acquire()) {
+          if (!cycler->_lock.try_lock()) {
             // No big deal, just move on to the next one for now, and we'll
             // come back around to it.  It's important not to block here in
             // order to prevent one cycler from deadlocking another.
@@ -144,7 +144,7 @@ cycle() {
             } else {
               // Well, we are the last cycler left, so we might as well wait.
               // This is necessary to trigger the deadlock detection code.
-              cycler->_lock.acquire();
+              cycler->_lock.lock();
             }
           }
 
@@ -162,7 +162,7 @@ cycle() {
 #ifdef DEBUG_THREADS
           inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
-          cycler->_lock.release();
+          cycler->_lock.unlock();
           break;
         }
       }
@@ -174,7 +174,7 @@ cycle() {
         while (link != &prev_dirty) {
           PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)link;
 
-          if (!cycler->_lock.try_acquire()) {
+          if (!cycler->_lock.try_lock()) {
             // No big deal, just move on to the next one for now, and we'll
             // come back around to it.  It's important not to block here in
             // order to prevent one cycler from deadlocking another.
@@ -184,7 +184,7 @@ cycle() {
             } else {
               // Well, we are the last cycler left, so we might as well wait.
               // This is necessary to trigger the deadlock detection code.
-              cycler->_lock.acquire();
+              cycler->_lock.lock();
             }
           }
 
@@ -206,7 +206,7 @@ cycle() {
             inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
           }
-          cycler->_lock.release();
+          cycler->_lock.unlock();
           break;
         }
       }
@@ -218,7 +218,7 @@ cycle() {
         while (link != &prev_dirty) {
           PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)link;
 
-          if (!cycler->_lock.try_acquire()) {
+          if (!cycler->_lock.try_lock()) {
             // No big deal, just move on to the next one for now, and we'll
             // come back around to it.  It's important not to block here in
             // order to prevent one cycler from deadlocking another.
@@ -228,7 +228,7 @@ cycle() {
             } else {
               // Well, we are the last cycler left, so we might as well wait.
               // This is necessary to trigger the deadlock detection code.
-              cycler->_lock.acquire();
+              cycler->_lock.lock();
             }
           }
 
@@ -250,7 +250,7 @@ cycle() {
             inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
 #endif
           }
-          cycler->_lock.release();
+          cycler->_lock.unlock();
           break;
         }
       }
@@ -293,11 +293,11 @@ set_num_stages(int num_stages) {
     PipelineCyclerLinks *links;
     for (links = _clean._next; links != &_clean; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
-      cycler->_lock.acquire();
+      cycler->_lock.lock();
     }
     for (links = _dirty._next; links != &_dirty; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
-      cycler->_lock.acquire();
+      cycler->_lock.lock();
     }
 
     _num_stages = num_stages;
@@ -315,12 +315,12 @@ set_num_stages(int num_stages) {
     int count = 0;
     for (links = _clean._next; links != &_clean; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
-      cycler->_lock.release();
+      cycler->_lock.unlock();
       ++count;
     }
     for (links = _dirty._next; links != &_dirty; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
-      cycler->_lock.release();
+      cycler->_lock.unlock();
       ++count;
     }
     nassertv(count == _num_cyclers);
@@ -402,7 +402,7 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
   // during cycle only if it's 0 (clean) or _next_cycle_seq (scheduled for the
   // next cycle, so not owned by the current one).
   while (cycler->_dirty != 0 && cycler->_dirty != _next_cycle_seq) {
-    if (_cycle_lock.try_acquire()) {
+    if (_cycle_lock.try_lock()) {
       // OK, great, we got the lock, so it finished cycling already.
       nassertv(!_cycling);
 
@@ -417,16 +417,16 @@ remove_cycler(PipelineCyclerTrueImpl *cycler) {
       inc_cycler_type(_dirty_cycler_types, cycler->get_parent_type(), -1);
   #endif
 
-      _cycle_lock.release();
+      _cycle_lock.unlock();
       return;
     } else {
       // It's possibly currently being cycled.  We will wait for the cycler
       // to be done with it, so that we can safely remove it.
-      _lock.release();
-      cycler->_lock.release();
+      _lock.unlock();
+      cycler->_lock.unlock();
       Thread::force_yield();
-      cycler->_lock.acquire();
-      _lock.acquire();
+      cycler->_lock.lock();
+      _lock.lock();
     }
   }
 

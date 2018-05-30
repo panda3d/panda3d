@@ -12,25 +12,6 @@
  */
 
 /**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVarFullDebug::
-ConditionVarFullDebug(const ConditionVarFullDebug &copy) :
-  _mutex(copy._mutex),
-  _impl(*_mutex._global_lock)
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVarFullDebug::
-operator = (const ConditionVarFullDebug &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE MutexDebug &ConditionVarFullDebug::

@@ -37,7 +37,7 @@ NeverFreeMemory() {
  */
 void *NeverFreeMemory::
 ns_alloc(size_t size) {
-  _lock.acquire();
+  _lock.lock();
 
   //NB: we no longer do alignment here.  The only class that uses this is
   // DeletedBufferChain, and we can do the alignment potentially more
@@ -55,7 +55,7 @@ ns_alloc(size_t size) {
     if (page._remaining >= min_page_remaining_size) {
       _pages.insert(page);
     }
-    _lock.release();
+    _lock.unlock();
     return result;
   }
 
@@ -71,7 +71,7 @@ ns_alloc(size_t size) {
   if (page._remaining >= min_page_remaining_size) {
     _pages.insert(page);
   }
-  _lock.release();
+  _lock.unlock();
   return result;
 }
 

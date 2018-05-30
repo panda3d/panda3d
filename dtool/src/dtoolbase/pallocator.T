@@ -13,7 +13,7 @@
 
 template<class Type>
 INLINE pallocator_single<Type>::
-pallocator_single(TypeHandle type_handle) NOEXCEPT :
+pallocator_single(TypeHandle type_handle) noexcept :
   _type_handle(type_handle)
 {
 }
@@ -37,7 +37,7 @@ deallocate(TYPENAME pallocator_single<Type>::pointer p, TYPENAME pallocator_sing
 
 template<class Type>
 INLINE pallocator_array<Type>::
-pallocator_array(TypeHandle type_handle) NOEXCEPT :
+pallocator_array(TypeHandle type_handle) noexcept :
   _type_handle(type_handle)
 {
 }

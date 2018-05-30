@@ -760,12 +760,9 @@ convert_to(const GeomVertexFormat *new_format) const {
   // Record the new result in the cache.
   if (entry == (CacheEntry *)NULL) {
     // Create a new entry for the result.
-#ifdef USE_MOVE_SEMANTICS
     // We don't need the key anymore, move the pointers into the CacheEntry.
     entry = new CacheEntry((GeomVertexData *)this, move(key));
-#else
-    entry = new CacheEntry((GeomVertexData *)this, key);
-#endif
+
     {
       LightMutexHolder holder(_cache_lock);
       bool inserted = ((GeomVertexData *)this)->_cache.insert(Cache::value_type(&entry->_key, entry)).second;

@@ -90,12 +90,11 @@ operator = (const NodePath &copy) {
   _error_type = copy._error_type;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE NodePath::
-NodePath(NodePath &&from) NOEXCEPT :
+NodePath(NodePath &&from) noexcept :
   _head(move(from._head)),
   _backup_key(from._backup_key),
   _error_type(from._error_type)
@@ -106,12 +105,11 @@ NodePath(NodePath &&from) NOEXCEPT :
  *
  */
 INLINE void NodePath::
-operator = (NodePath &&from) NOEXCEPT {
+operator = (NodePath &&from) noexcept {
   _head = move(from._head);
   _backup_key = from._backup_key;
   _error_type = from._error_type;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Sets this NodePath to the empty NodePath.  It will no longer point to any

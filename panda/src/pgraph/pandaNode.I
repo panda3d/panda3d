@@ -929,12 +929,11 @@ operator = (const PandaNode::Children &copy) {
   _down = copy._down;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Children::
-Children(PandaNode::Children &&from) NOEXCEPT :
+Children(PandaNode::Children &&from) noexcept :
   _down(move(from._down))
 {
 }
@@ -943,10 +942,9 @@ Children(PandaNode::Children &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Children::
-operator = (PandaNode::Children &&from) NOEXCEPT {
+operator = (PandaNode::Children &&from) noexcept {
   _down = move(from._down);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of children of the node.
@@ -1011,13 +1009,12 @@ operator = (const PandaNode::Stashed &copy) {
   _stashed = copy._stashed;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Stashed::
-Stashed(PandaNode::Stashed &&from) NOEXCEPT :
-  _stashed(move(from._stashed))
+Stashed(PandaNode::Stashed &&from) noexcept :
+  _stashed(std::move(from._stashed))
 {
 }
 
@@ -1025,10 +1022,9 @@ Stashed(PandaNode::Stashed &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Stashed::
-operator = (PandaNode::Stashed &&from) NOEXCEPT {
-  _stashed = move(from._stashed);
+operator = (PandaNode::Stashed &&from) noexcept {
+  _stashed = std::move(from._stashed);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of stashed children of the node.
@@ -1093,13 +1089,12 @@ operator = (const PandaNode::Parents &copy) {
   _up = copy._up;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Parents::
-Parents(PandaNode::Parents &&from) NOEXCEPT :
-  _up(move(from._up))
+Parents(PandaNode::Parents &&from) noexcept :
+  _up(std::move(from._up))
 {
 }
 
@@ -1107,10 +1102,9 @@ Parents(PandaNode::Parents &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Parents::
-operator = (PandaNode::Parents &&from) NOEXCEPT {
-  _up = move(from._up);
+operator = (PandaNode::Parents &&from) noexcept {
+  _up = std::move(from._up);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of parents of the node.

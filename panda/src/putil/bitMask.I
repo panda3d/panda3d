@@ -102,40 +102,11 @@ range(int low_bit, int size) {
 }
 
 /**
- * Returns true if there is a maximum number of bits that may be stored in
- * this structure, false otherwise.  If this returns true, the number may be
- * queried in get_max_num_bits().
- *
- * This method always returns true.  This method is defined so generic
- * programming algorithms can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR bool BitMask<WType, nbits>::
-has_max_num_bits() {
-  return true;
-}
-
-/**
- * If get_max_num_bits() returned true, this method may be called to return
- * the maximum number of bits that may be stored in this structure.  It is an
- * error to call this if get_max_num_bits() return false.
- *
- * It is never an error to call this method.  This returns the same thing as
- * get_num_bits().  This method is defined so generic programming algorithms
- * can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_max_num_bits() {
-  return num_bits;
-}
-
-/**
  * Returns the number of bits available to set in the bitmask.
  */
 template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_num_bits() {
+constexpr int BitMask<WType, nbits>::
+get_num_bits() const {
   return num_bits;
 }
 

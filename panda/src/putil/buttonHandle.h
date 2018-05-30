@@ -23,14 +23,14 @@
  * keyboard buttons and mouse buttons (but see KeyboardButton and
  * MouseButton).
  */
-class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
+class EXPCL_PANDA_PUTIL ButtonHandle final {
 PUBLISHED:
   // The default constructor must do nothing, because we can't guarantee
   // ordering of static initializers.  If the constructor tried to initialize
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
-  INLINE ButtonHandle() DEFAULT_CTOR;
-  CONSTEXPR ButtonHandle(int index);
+  INLINE ButtonHandle() = default;
+  constexpr ButtonHandle(int index);
   ButtonHandle(const string &name);
 
 PUBLISHED:
@@ -51,7 +51,7 @@ PUBLISHED:
 
   INLINE bool matches(const ButtonHandle &other) const;
 
-  CONSTEXPR int get_index() const;
+  constexpr int get_index() const;
   INLINE void output(ostream &out) const;
   INLINE static ButtonHandle none();
 

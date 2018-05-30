@@ -19,6 +19,6 @@ set(P3WGLDISPLAY_SOURCES
 
 
 composite_sources(p3wgldisplay P3WGLDISPLAY_SOURCES)
-add_library(p3wgldisplay ${P3WGLDISPLAY_HEADERS} ${P3WGLDISPLAY_SOURCES})
-set_target_properties(p3wgldisplay PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
+add_component_library(p3wgldisplay SYMBOL BUILDING_PANDAGL
+  ${P3WGLDISPLAY_HEADERS} ${P3WGLDISPLAY_SOURCES})
 target_link_libraries(p3wgldisplay p3display p3putil p3windisplay p3glgsg)

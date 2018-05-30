@@ -94,14 +94,9 @@ get_tag_keys() const {
  */
 PyObject *Extension<PandaNode>::
 get_python_tags() {
-  if (_this->_python_tag_data == NULL) {
-    _this->_python_tag_data = new PythonTagDataImpl;
-
-  } else if (_this->_python_tag_data->get_ref_count() > 1) {
-    // Copy-on-write.
-    _this->_python_tag_data = new PythonTagDataImpl(*(PythonTagDataImpl *)_this->_python_tag_data.p());
-  }
-  return ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
+  PyObject *dict = do_get_python_tags();
+  Py_INCREF(dict);
+  return dict;
 }
 
 /**
@@ -116,7 +111,7 @@ get_python_tags() {
  */
 int Extension<PandaNode>::
 set_python_tag(PyObject *key, PyObject *value) {
-  return PyDict_SetItem(get_python_tags(), key, value);
+  return PyDict_SetItem(do_get_python_tags(), key, value);
 }
 
 /**
@@ -166,7 +161,7 @@ clear_python_tag(PyObject *key) {
     return;
   }
 
-  PyObject *dict = get_python_tags();
+  PyObject *dict = do_get_python_tags();
   if (PyDict_GetItem(dict, key) != NULL) {
     PyDict_DelItem(dict, key);
   }
@@ -199,6 +194,21 @@ __traverse__(visitproc visit, void *arg) {
     Py_VISIT(((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict);
   }
   return 0;
+}
+
+/**
+ * Same as get_python_tags, without incrementing the reference count.
+ */
+PyObject *Extension<PandaNode>::
+do_get_python_tags() {
+  if (_this->_python_tag_data == NULL) {
+    _this->_python_tag_data = new PythonTagDataImpl;
+
+  } else if (_this->_python_tag_data->get_ref_count() > 1) {
+    // Copy-on-write.
+    _this->_python_tag_data = new PythonTagDataImpl(*(PythonTagDataImpl *)_this->_python_tag_data.p());
+  }
+  return ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
 }
 
 /**

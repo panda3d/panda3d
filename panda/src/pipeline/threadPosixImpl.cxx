@@ -41,14 +41,14 @@ ThreadPosixImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
-  _mutex.acquire();
+  _mutex.lock();
 
   if (!_detached) {
     pthread_detach(_thread);
     _detached = true;
   }
 
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -65,13 +65,13 @@ setup_main_thread() {
  */
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool joinable) {
-  _mutex.acquire();
+  _mutex.lock();
   if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new) {
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
@@ -148,12 +148,12 @@ start(ThreadPriority priority, bool joinable) {
     // Oops, we couldn't start the thread.  Be sure to decrement the reference
     // count we incremented above, and return false to indicate failure.
     unref_delete(_parent_obj);
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
   // Thread was successfully started.
-  _mutex.release();
+  _mutex.unlock();
   return true;
 }
 
@@ -163,15 +163,15 @@ start(ThreadPriority priority, bool joinable) {
  */
 void ThreadPosixImpl::
 join() {
-  _mutex.acquire();
+  _mutex.lock();
   if (!_detached) {
-    _mutex.release();
+    _mutex.unlock();
     void *return_val;
     pthread_join(_thread, &return_val);
     _detached = true;
     return;
   }
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -246,14 +246,14 @@ root_func(void *data) {
     nassertr(result == 0, NULL);
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_start_called) {
-        self->_mutex.release();
+        self->_mutex.unlock();
         return NULL;
       }
 
       self->_status = S_running;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID
@@ -270,13 +270,13 @@ root_func(void *data) {
     }
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_running) {
-        self->_mutex.release();
+        self->_mutex.unlock();
         return NULL;
       }
       self->_status = S_finished;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID

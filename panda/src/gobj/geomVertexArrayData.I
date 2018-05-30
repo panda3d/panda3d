@@ -239,7 +239,7 @@ CData(UsageHint usage_hint) :
  *
  */
 INLINE GeomVertexArrayData::CData::
-CData(GeomVertexArrayData::CData &&from) NOEXCEPT :
+CData(GeomVertexArrayData::CData &&from) noexcept :
   _usage_hint(move(from._usage_hint)),
   _buffer(move(from._buffer)),
   _modified(move(from._modified)),
@@ -369,23 +369,6 @@ GeomVertexArrayDataHandle(GeomVertexArrayData *object,
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy)
-  : _current_thread(copy._current_thread) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexArrayDataHandle::
-operator = (const GeomVertexArrayDataHandle &) {
-  nassertv(false);
 }
 
 /**

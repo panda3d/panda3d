@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPH NodePathCollection {
 PUBLISHED:
-  NodePathCollection() DEFAULT_CTOR;
+  NodePathCollection() = default;
 
 #ifdef HAVE_PYTHON
   EXTENSION(NodePathCollection(PyObject *self, PyObject *sequence));

@@ -26,10 +26,10 @@ class EXPCL_PANDA_PIPELINE LightMutexHolder {
 public:
   INLINE LightMutexHolder(const LightMutex &mutex);
   INLINE LightMutexHolder(LightMutex *&mutex);
+  LightMutexHolder(const LightMutexHolder &copy) = delete;
   INLINE ~LightMutexHolder();
-private:
-  INLINE LightMutexHolder(const LightMutexHolder &copy);
-  INLINE void operator = (const LightMutexHolder &copy);
+
+  LightMutexHolder &operator = (const LightMutexHolder &copy) = delete;
 
 private:
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)

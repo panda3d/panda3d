@@ -17,7 +17,13 @@
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(To *ptr) {
-  reassign(ptr);
+  _void_ptr = (To *)ptr;
+  if (ptr != nullptr) {
+    _weak_ref = ptr->weak_ref();
+#ifdef DO_MEMORY_USAGE
+    update_type(ptr);
+#endif
+  }
 }
 
 /**
@@ -26,7 +32,13 @@ WeakPointerToBase(To *ptr) {
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(const PointerToBase<T> &copy) {
-  reassign(copy);
+  // This double-casting is a bit of a cheat to get around the inheritance
+  // issue--it's difficult to declare a template class to be a friend.
+  To *ptr = (To *)((const WeakPointerToBase<To> *)&copy)->_void_ptr;
+  _void_ptr = ptr;
+  if (ptr != nullptr) {
+    _weak_ref = ptr->weak_ref();
+  }
 }
 
 /**
@@ -36,11 +48,35 @@ template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(const WeakPointerToBase<T> &copy) {
   _void_ptr = copy._void_ptr;
-  _ptr_was_deleted = copy._ptr_was_deleted;
 
-  if (is_valid_pointer()) {
-    To *ptr = (To *)_void_ptr;
-    ptr->weak_ref(this);
+  // Don't bother increasing the weak reference count if the object was
+  // already deleted.
+  WeakReferenceList *weak_ref = copy._weak_ref;
+  if (weak_ref != nullptr && !weak_ref->was_deleted()) {
+    _weak_ref = copy._weak_ref;
+    _weak_ref->ref();
+  }
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE WeakPointerToBase<T>::
+WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept {
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    WeakReferenceList *old_ref = (To *)this->_weak_ref;
+
+    this->_void_ptr = from._void_ptr;
+    this->_weak_ref = from._weak_ref;
+    from._void_ptr = nullptr;
+    from._weak_ref = nullptr;
+
+    // Now delete the old pointer.
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
+    }
   }
 }
 
@@ -50,7 +86,10 @@ WeakPointerToBase(const WeakPointerToBase<T> &copy) {
 template<class T>
 INLINE WeakPointerToBase<T>::
 ~WeakPointerToBase() {
-  reassign((To *)NULL);
+  WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
+  if (old_ref != nullptr && !old_ref->unref()) {
+    delete old_ref;
+  }
 }
 
 /**
@@ -60,34 +99,23 @@ INLINE WeakPointerToBase<T>::
 template<class T>
 void WeakPointerToBase<T>::
 reassign(To *ptr) {
-  if (ptr != (To *)_void_ptr || _ptr_was_deleted) {
-    To *old_ptr = (To *)_void_ptr;
+  if (ptr != (To *)_void_ptr) {
+    WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
 
     _void_ptr = (void *)ptr;
-    if (ptr != (To *)NULL) {
-      ptr->weak_ref(this);
+    if (ptr != nullptr) {
+      _weak_ref = ptr->weak_ref();
 #ifdef DO_MEMORY_USAGE
-      if (MemoryUsage::get_track_memory_usage()) {
-        // Make sure the MemoryUsage record knows what the TypeHandle is, if
-        // we know it ourselves.
-        TypeHandle type = get_type_handle(To);
-        if (type == TypeHandle::none()) {
-          do_init_type(To);
-          type = get_type_handle(To);
-        }
-        if (type != TypeHandle::none()) {
-          MemoryUsage::update_type(ptr, type);
-        }
-      }
+      update_type(ptr);
 #endif
+    } else {
+      _weak_ref = nullptr;
     }
 
     // Now remove the old reference.
-    if (old_ptr != (To *)NULL && !_ptr_was_deleted) {
-      old_ptr->weak_unref(this);
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
     }
-
-    _ptr_was_deleted = false;
   }
 }
 
@@ -108,8 +136,69 @@ reassign(const PointerToBase<To> &copy) {
 template<class T>
 INLINE void WeakPointerToBase<T>::
 reassign(const WeakPointerToBase<To> &copy) {
-  nassertv(!copy.was_deleted());
-  reassign((To *)copy._void_ptr);
+  void *new_ptr = copy._void_ptr;
+  if (new_ptr != _void_ptr) {
+    WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
+    _void_ptr = new_ptr;
+
+    // Don't bother increasing the weak reference count if the object was
+    // already deleted.
+    WeakReferenceList *weak_ref = copy._weak_ref;
+    if (weak_ref != nullptr && !weak_ref->was_deleted()) {
+      weak_ref->ref();
+      _weak_ref = weak_ref;
+    } else {
+      _weak_ref = nullptr;
+    }
+
+    // Now remove the old reference.
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
+    }
+  }
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE void WeakPointerToBase<T>::
+reassign(WeakPointerToBase<To> &&from) noexcept {
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    WeakReferenceList *old_ref = (WeakReferenceList *)this->_weak_ref;
+
+    this->_void_ptr = from._void_ptr;
+    this->_weak_ref = from._weak_ref;
+    from._void_ptr = nullptr;
+    from._weak_ref = nullptr;
+
+    // Now delete the old pointer.
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
+    }
+  }
+}
+
+/**
+ * Ensures that the MemoryUsage record for the pointer has the right type of
+ * object, if we know the type ourselves.
+ */
+template<class T>
+INLINE void WeakPointerToBase<T>::
+update_type(To *ptr) {
+#ifdef DO_MEMORY_USAGE
+  if (MemoryUsage::get_track_memory_usage()) {
+    TypeHandle type = get_type_handle(To);
+    if (type == TypeHandle::none()) {
+      do_init_type(To);
+      type = get_type_handle(To);
+    }
+    if (type != TypeHandle::none()) {
+      MemoryUsage::update_type(ptr, type);
+    }
+  }
+#endif  // DO_MEMORY_USAGE
 }
 
 #ifndef CPPPARSER
@@ -323,8 +412,6 @@ operator < (const PointerToBase<To> &other) const {
 
 #endif  // CPPPARSER
 
-
-
 /**
  * A convenient way to set the PointerTo object to NULL. (Assignment to a NULL
  * pointer also works, of course.)
@@ -332,7 +419,14 @@ operator < (const PointerToBase<To> &other) const {
 template<class T>
 INLINE void WeakPointerToBase<T>::
 clear() {
-  reassign((To *)NULL);
+  WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
+  _void_ptr = nullptr;
+  _weak_ref = nullptr;
+
+  // Now remove the old reference.
+  if (old_ref != nullptr && !old_ref->unref()) {
+    delete old_ref;
+  }
 }
 
 /**
@@ -346,7 +440,9 @@ clear() {
 template<class T>
 INLINE void WeakPointerToBase<T>::
 refresh() const {
-  ((WeakPointerToBase<T> *)this)->reassign((To *)_void_ptr);
+  if (_void_ptr != nullptr) {
+    ((WeakPointerToBase<T> *)this)->reassign((To *)_void_ptr);
+  }
 }
 
 /**

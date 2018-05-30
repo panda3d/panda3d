@@ -12,22 +12,6 @@
  */
 
 /**
- * Do not attempt to copy threads.
- */
-INLINE Thread::
-Thread(const Thread &copy) : _impl(this) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy threads.
- */
-INLINE void Thread::
-operator = (const Thread &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the sync name of the thread.  This name collects threads into "sync
  * groups", which are expected to run synchronously.  This is mainly used for
  * the benefit of PStats; threads with the same sync name can be ticked all at

@@ -93,7 +93,7 @@ function(composite_sources target sources_var)
     endif()
   endwhile()
 
-  #set_source_files_properties(${composite_files} PROPERTIES GENERATED YES)
+  set_source_files_properties(${composite_files} PROPERTIES GENERATED YES)
 
   # The new files are added to the existing files, which means the old files
   # are still there, but they won't be compiled due to the HEADER_FILE_ONLY setting.

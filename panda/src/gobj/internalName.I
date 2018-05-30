@@ -422,13 +422,12 @@ CPT_InternalName(const char (&literal)[N]) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE CPT_InternalName::
-CPT_InternalName(PointerTo<InternalName> &&from) NOEXCEPT :
-  ConstPointerTo<InternalName>(move(from))
+CPT_InternalName(PointerTo<InternalName> &&from) noexcept :
+  ConstPointerTo<InternalName>(std::move(from))
 {
 }
 
@@ -436,8 +435,8 @@ CPT_InternalName(PointerTo<InternalName> &&from) NOEXCEPT :
  *
  */
 INLINE CPT_InternalName::
-CPT_InternalName(ConstPointerTo<InternalName> &&from) NOEXCEPT :
-  ConstPointerTo<InternalName>(move(from))
+CPT_InternalName(ConstPointerTo<InternalName> &&from) noexcept :
+  ConstPointerTo<InternalName>(std::move(from))
 {
 }
 
@@ -445,8 +444,8 @@ CPT_InternalName(ConstPointerTo<InternalName> &&from) NOEXCEPT :
  *
  */
 INLINE CPT_InternalName &CPT_InternalName::
-operator = (PointerTo<InternalName> &&from) NOEXCEPT {
-  this->reassign(move(from));
+operator = (PointerTo<InternalName> &&from) noexcept {
+  this->reassign(std::move(from));
   return *this;
 }
 
@@ -454,11 +453,10 @@ operator = (PointerTo<InternalName> &&from) NOEXCEPT {
  *
  */
 INLINE CPT_InternalName &CPT_InternalName::
-operator = (ConstPointerTo<InternalName> &&from) NOEXCEPT {
-  this->reassign(move(from));
+operator = (ConstPointerTo<InternalName> &&from) noexcept {
+  this->reassign(std::move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

@@ -49,6 +49,10 @@
    out from CVS by the builder). */
 #define PANDA_VERSION_STR "@PANDA_VERSION_STR@"
 
+/* This is the Git commit we built Panda from, or an empty string if this isn't
+   known. */
+#define PANDA_GIT_COMMIT_STR "@PANDA_GIT_COMMIT_STR@"
+
 /* This is the version of the Panda3D ABI expressed as a string.
    This usually means the major and minor version. It should be the
    same for Panda3D versions that are supposed to be backward

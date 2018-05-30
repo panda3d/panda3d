@@ -45,7 +45,7 @@ GeomVertexRewriter(GeomVertexData *vertex_data, CPT_InternalName name,
   GeomVertexWriter(vertex_data, current_thread),
   GeomVertexReader(vertex_data, current_thread)
 {
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**
@@ -184,7 +184,7 @@ set_column(CPT_InternalName name) {
   // It's important to invoke the writer first, then the reader.  See
   // set_row().
   GeomVertexWriter::set_column(name);
-  return GeomVertexReader::set_column(MOVE(name));
+  return GeomVertexReader::set_column(std::move(name));
 }
 
 /**

@@ -48,22 +48,6 @@ FfmpegVirtualFile::
 }
 
 /**
- * These objects are not meant to be copied.
- */
-FfmpegVirtualFile::
-FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
- * These objects are not meant to be copied.
- */
-void FfmpegVirtualFile::
-operator = (const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
  * Opens the movie file via Panda's VFS.  Returns true on success, false on
  * failure.  If successful, use get_format_context() to get the open file
  * handle.
@@ -225,7 +209,7 @@ read_packet(void *opaque, uint8_t *buf, int size) {
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
   if (remaining < ssize) {
     if (remaining <= 0) {
-      return 0;
+      return AVERROR_EOF;
     }
 
     ssize = remaining;

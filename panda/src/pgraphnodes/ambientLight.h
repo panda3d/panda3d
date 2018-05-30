@@ -33,7 +33,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void write(ostream &out, int indent_level) const;
-  virtual bool is_ambient_light() const FINAL;
+  virtual bool is_ambient_light() const final;
 
 PUBLISHED:
   virtual int get_class_priority() const;

@@ -4,7 +4,6 @@ virtual file system. """
 
 import sys
 import os
-import re
 import fnmatch
 
 from direct.stdpy import file
@@ -76,7 +75,27 @@ def glob0(dirname, basename):
     return []
 
 
-magic_check = re.compile('[*?[]')
-
 def has_magic(s):
-    return magic_check.search(s) is not None
+    if isinstance(s, bytes):
+        return b'*' in s or b'?' in s or b'[' in s
+    else:
+        return '*' in s or '?' in s or '[' in s
+
+def escape(pathname):
+    drive, pathname = os.path.splitdrive(pathname)
+    if sys.version_info >= (3, 0) and isinstance(pathname, bytes):
+        newpath = bytearray(drive)
+        for c in pathname:
+            if c == 42 or c == 63 or c == 91:
+                newpath += bytes((91, c, 93))
+            else:
+                newpath.append(c)
+        return bytes(newpath)
+    else:
+        newpath = drive
+        for c in pathname:
+            if c == '*' or c == '?' or c == '[':
+                newpath += '[' + c + ']'
+            else:
+                newpath += c
+        return newpath

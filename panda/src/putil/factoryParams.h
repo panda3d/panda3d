@@ -37,12 +37,10 @@ class EXPCL_PANDA_PUTIL FactoryParams {
 public:
   INLINE FactoryParams();
   INLINE FactoryParams(const FactoryParams &copy);
+  INLINE FactoryParams(FactoryParams &&from) noexcept;
   INLINE ~FactoryParams();
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE FactoryParams(FactoryParams &&from) NOEXCEPT;
-  INLINE void operator = (FactoryParams &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (FactoryParams &&from) noexcept;
 
   void add_param(FactoryParam *param);
   void clear();

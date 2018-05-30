@@ -4895,14 +4895,14 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
           }
         }
 
-        do_set_ram_mipmap_image(cdata, (int)n, MOVE(image),
+        do_set_ram_mipmap_image(cdata, (int)n, move(image),
           row_size * do_get_expected_mipmap_y_size(cdata, (int)n));
 
       } else {
         // Compressed image.  We'll trust that the file has the right size.
         image = PTA_uchar::empty_array(image_size);
         ktx.extract_bytes(image.p(), image_size);
-        do_set_ram_mipmap_image(cdata, (int)n, MOVE(image), image_size / depth);
+        do_set_ram_mipmap_image(cdata, (int)n, move(image), image_size / depth);
       }
 
       ktx.skip_bytes(3 - ((image_size + 3) & 3));
@@ -5239,14 +5239,14 @@ unlocked_ensure_ram_image(bool allow_compression) {
 
   PT(Texture) tex = do_make_copy(cdata);
   _cycler.release_read(cdata);
-  _lock.release();
+  _lock.unlock();
 
   // Perform the actual reload in a copy of the texture, while our own mutex
   // is left unlocked.
   CDWriter cdata_tex(tex->_cycler, true);
   tex->do_reload_ram_image(cdata_tex, allow_compression);
 
-  _lock.acquire();
+  _lock.lock();
 
   CData *cdataw = _cycler.write_upstream(false, current_thread);
 

@@ -169,9 +169,9 @@ do_evict_to(size_t target_size, bool hard_evict) {
     SimpleLruPage *next = (SimpleLruPage *)node->_next;
 
     // We must release the lock while we call evict_lru().
-    _global_lock.release();
+    _global_lock.unlock();
     node->evict_lru();
-    _global_lock.acquire();
+    _global_lock.lock();
 
     if (node == end || node == _prev) {
       // If we reach the original tail of the list, stop.

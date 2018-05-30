@@ -273,9 +273,9 @@ wake_task(AsyncTask *task) {
     }
 
     {
-      manager->_lock.release();
+      manager->_lock.unlock();
       task->upon_birth(manager);
-      manager->_lock.acquire();
+      manager->_lock.lock();
       nassertv(task->_manager == nullptr &&
                task->_state == AsyncTask::S_inactive);
 
