@@ -338,7 +338,7 @@ BMPreadrow(
         unsigned        x;
 
         if (indexed) {
-          if ((b = pm_bitinit(fp, "r")) == (BITSTREAM) 0)
+          if ((b = pm_bitinit(fp, "r")) == nullptr)
             {
               return -1;
             }

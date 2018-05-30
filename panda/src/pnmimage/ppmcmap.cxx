@@ -31,8 +31,8 @@ ppm_computecolorhist(pixel** pixels,
     colorhist_vector chv;
 
     cht = ppm_computecolorhash( pixels, cols, rows, maxcolors, colorsP );
-    if ( cht == (colorhash_table) 0 )
-        return (colorhist_vector) 0;
+    if ( cht == nullptr )
+        return nullptr;
     chv = ppm_colorhashtocolorhist( cht, maxcolors );
     ppm_freecolorhash( cht );
     return chv;
@@ -95,20 +95,20 @@ ppm_computecolorhash(pixel** pixels,
         for ( col = 0, pP = pixels[row]; col < cols; ++col, ++pP )
             {
             hash = ppm_hashpixel( *pP );
-            for ( chl = cht[hash]; chl != (colorhist_list) 0; chl = chl->next )
+            for ( chl = cht[hash]; chl != nullptr; chl = chl->next )
                 if ( PPM_EQUAL( chl->ch.color, *pP ) )
                     break;
-            if ( chl != (colorhist_list) 0 )
+            if ( chl != nullptr )
                 ++(chl->ch.value);
             else
                 {
                 if ( ++(*colorsP) > maxcolors )
                     {
                     ppm_freecolorhash( cht );
-                    return (colorhash_table) 0;
+                    return nullptr;
                     }
                 chl = (colorhist_list) malloc( sizeof(struct colorhist_list_item) );
-                if ( chl == 0 )
+                if ( chl == nullptr )
                     pm_error( "out of memory computing hash table" );
                 chl->ch.color = *pP;
                 chl->ch.value = 1;
@@ -127,11 +127,11 @@ ppm_alloccolorhash( )
     int i;
 
     cht = (colorhash_table) malloc( HASH_SIZE * sizeof(colorhist_list) );
-    if ( cht == 0 )
+    if ( cht == nullptr )
         pm_error( "out of memory allocating hash table" );
 
     for ( i = 0; i < HASH_SIZE; ++i )
-        cht[i] = (colorhist_list) 0;
+        cht[i] = nullptr;
 
     return cht;
     }
@@ -145,7 +145,7 @@ ppm_addtocolorhash(colorhash_table cht,
     colorhist_list chl;
 
     chl = (colorhist_list) malloc( sizeof(struct colorhist_list_item) );
-    if ( chl == 0 )
+    if ( chl == nullptr )
         return -1;
     hash = ppm_hashpixel( *colorP );
     chl->ch.color = *colorP;
@@ -166,13 +166,13 @@ ppm_colorhashtocolorhist(colorhash_table cht,
     /* Now collate the hash table into a simple colorhist array. */
     chv = (colorhist_vector) malloc( maxcolors * sizeof(struct colorhist_item) );
     /* (Leave room for expansion by caller.) */
-    if ( chv == (colorhist_vector) 0 )
+    if ( chv == nullptr )
         pm_error( "out of memory generating histogram" );
 
     /* Loop through the hash table. */
     j = 0;
     for ( i = 0; i < HASH_SIZE; ++i )
-        for ( chl = cht[i]; chl != (colorhist_list) 0; chl = chl->next )
+        for ( chl = cht[i]; chl != nullptr; chl = chl->next )
             {
             /* Add the new entry. */
             chv[j] = chl->ch;
@@ -198,13 +198,13 @@ ppm_colorhisttocolorhash(colorhist_vector chv,
         {
         color = chv[i].color;
         hash = ppm_hashpixel( color );
-        for ( chl = cht[hash]; chl != (colorhist_list) 0; chl = chl->next )
+        for ( chl = cht[hash]; chl != nullptr; chl = chl->next )
             if ( PPM_EQUAL( chl->ch.color, color ) )
                 pm_error(
                     "same color found twice - %d %d %d", PPM_GETR(color),
                     PPM_GETG(color), PPM_GETB(color) );
         chl = (colorhist_list) malloc( sizeof(struct colorhist_list_item) );
-        if ( chl == (colorhist_list) 0 )
+        if ( chl == nullptr )
             pm_error( "out of memory" );
         chl->ch.color = color;
         chl->ch.value = i;
@@ -223,7 +223,7 @@ ppm_lookupcolor(colorhash_table cht,
     colorhist_list chl;
 
     hash = ppm_hashpixel( *colorP );
-    for ( chl = cht[hash]; chl != (colorhist_list) 0; chl = chl->next )
+    for ( chl = cht[hash]; chl != nullptr; chl = chl->next )
         if ( PPM_EQUAL( chl->ch.color, *colorP ) )
             return chl->ch.value;
 
@@ -243,7 +243,7 @@ ppm_freecolorhash(colorhash_table cht)
     colorhist_list chl, chlnext;
 
     for ( i = 0; i < HASH_SIZE; ++i )
-        for ( chl = cht[i]; chl != (colorhist_list) 0; chl = chlnext )
+        for ( chl = cht[i]; chl != nullptr; chl = chlnext )
             {
             chlnext = chl->next;
             free( (char*) chl );
