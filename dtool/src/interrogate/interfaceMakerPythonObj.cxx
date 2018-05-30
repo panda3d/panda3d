@@ -102,17 +102,17 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
           << ", METH_VARARGS },\n";
     }
   }
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_obj_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << def->library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_obj_funcs,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << def->library_name << "\n"
@@ -185,7 +185,7 @@ write_class_wrapper(ostream &out, InterfaceMaker::Object *object) {
       << " */\n"
       << "PyObject *\n"
       << name << "() {\n"
-      << "  static PyObject *wrapper = (PyObject *)NULL;\n"
+      << "  static PyObject *wrapper = nullptr;\n"
       << "  static PyMethodDef methods[] = {\n";
 
   int methods_size = 0;
@@ -216,7 +216,7 @@ write_class_wrapper(ostream &out, InterfaceMaker::Object *object) {
 
   out << "  };\n"
       << "  static const int class_methods_size = " << class_methods_size << ";\n\n"
-      << "  if (wrapper == (PyObject *)NULL) {\n"
+      << "  if (wrapper == nullptr) {\n"
       << "    int i;\n"
       << "    PyObject *bases = PyTuple_New(0);\n"
       << "    PyObject *dict = PyDict_New();\n"
@@ -228,13 +228,13 @@ write_class_wrapper(ostream &out, InterfaceMaker::Object *object) {
       << "    wrapper = PyClass_New(bases, dict, name);\n"
       << "    for (i = 0; i < methods_size; ++i) {\n"
       << "      PyObject *function, *method;\n"
-      << "      function = PyCFunction_New(&methods[i], (PyObject *)NULL);\n"
-      << "      method = PyMethod_New(function, (PyObject *)NULL, wrapper);\n"
+      << "      function = PyCFunction_New(&methods[i], nullptr);\n"
+      << "      method = PyMethod_New(function, nullptr, wrapper);\n"
       << "      PyDict_SetItemString(dict, methods[i].ml_name, method);\n"
       << "    }\n"
       << "    for (i = 0; i < class_methods_size; ++i) {\n"
       << "      PyObject *function;\n"
-      << "      function = PyCFunction_New(&class_methods[i], (PyObject *)NULL);\n"
+      << "      function = PyCFunction_New(&class_methods[i], nullptr);\n"
       << "      PyDict_SetItemString(dict, class_methods[i].ml_name, function);\n"
       << "    }\n"
       << "  }\n"
@@ -287,7 +287,7 @@ write_function_for(ostream &out, InterfaceMaker::Function *func) {
   // different overloaded C++ function signatures.
 
   out << "  PyErr_SetString(PyExc_TypeError, \"" << expected_params << "\");\n"
-      << "  return (PyObject *)NULL;\n";
+      << "  return nullptr;\n";
 
   out << "}\n\n";
 }
@@ -366,7 +366,7 @@ write_function_instance(ostream &out, int indent_level,
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      extra_param_check += "|| (" + param_name + "_long == nullptr)";
       pexpr_string = "PyLong_AsUnsignedLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
       expected_params += "long";
@@ -376,7 +376,7 @@ write_function_instance(ostream &out, int indent_level,
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      extra_param_check += "|| (" + param_name + "_long == nullptr)";
       pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
       expected_params += "long";
@@ -386,7 +386,7 @@ write_function_instance(ostream &out, int indent_level,
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_uint == NULL)";
+      extra_param_check += "|| (" + param_name + "_uint == nullptr)";
       pexpr_string = "(unsigned int)PyLong_AsUnsignedLong(" + param_name + "_uint)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_uint);";
       expected_params += "unsigned int";
@@ -452,7 +452,7 @@ write_function_instance(ostream &out, int indent_level,
     indent(out, indent_level + 6)
       << "PyErr_SetString(PyExc_TypeError, \"Invalid parameters.\");\n";
     indent(out, indent_level + 6)
-      << "return (PyObject *)NULL;\n";
+      << "return nullptr;\n";
     indent(out, indent_level + 4)
       << "}\n";
   }

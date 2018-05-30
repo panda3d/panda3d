@@ -522,7 +522,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
       out_code << "  _in_unique_names,\n"
           << "  " << num_wrappers << ",  /* num_unique_names */\n";
     } else {
-      out_code << "  (InterrogateUniqueNameDef *)0,  /* unique_names */\n"
+      out_code << "  nullptr,  /* unique_names */\n"
           << "  0,  /* num_unique_names */\n";
     }
 
@@ -530,7 +530,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
       out_code << "  _in_fptrs,\n"
           << "  " << num_wrappers << ",  /* num_fptrs */\n";
     } else {
-      out_code << "  (void **)0,  /* fptrs */\n"
+      out_code << "  nullptr,  /* fptrs */\n"
           << "  0,  /* num_fptrs */\n";
     }
 

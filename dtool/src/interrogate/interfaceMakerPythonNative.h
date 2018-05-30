@@ -132,7 +132,7 @@ private:
   static bool get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, SlottedFunctionDef &def);
   static void write_function_slot(ostream &out, int indent_level,
                                   const SlottedFunctions &slots,
-                                  const string &slot, const string &def = "0");
+                                  const string &slot, const string &def = "nullptr");
 
   void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
   void write_prototype_for(ostream &out, Function *func);
