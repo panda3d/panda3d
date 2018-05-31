@@ -1871,7 +1871,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             lptstr = (char *) GlobalLock(hglb);
             if (lptstr != nullptr)  {
               char *pChar;
-              for (pChar=lptstr; *pChar!=nullptr; pChar++) {
+              for (pChar=lptstr; *pChar; pChar++) {
                 _input_devices[0].keystroke((uchar)*pChar);
               }
               GlobalUnlock(hglb);
@@ -2160,12 +2160,12 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {
-      SystemParametersInfo(SPI_SETMOUSETRAILS, nullptr,
-                           (PVOID)_saved_mouse_trails, nullptr);
-      SystemParametersInfo(SPI_SETCURSORSHADOW, nullptr,
-                           (PVOID)_saved_cursor_shadow, nullptr);
-      SystemParametersInfo(SPI_SETMOUSEVANISH, nullptr,
-                           (PVOID)_saved_mouse_vanish, nullptr);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, 0,
+                           (PVOID)_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_SETCURSORSHADOW, 0,
+                           (PVOID)_saved_cursor_shadow, 0);
+      SystemParametersInfo(SPI_SETMOUSEVANISH, 0,
+                           (PVOID)_saved_mouse_vanish, 0);
       _got_saved_params = false;
     }
 
@@ -2179,17 +2179,17 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // These parameters are only defined for Win2000XP, but they should just
     // cause a silent error on earlier OS's, which is OK.
     if (!_got_saved_params) {
-      SystemParametersInfo(SPI_GETMOUSETRAILS, nullptr,
-                           &_saved_mouse_trails, nullptr);
-      SystemParametersInfo(SPI_GETCURSORSHADOW, nullptr,
-                           &_saved_cursor_shadow, nullptr);
-      SystemParametersInfo(SPI_GETMOUSEVANISH, nullptr,
-                           &_saved_mouse_vanish, nullptr);
+      SystemParametersInfo(SPI_GETMOUSETRAILS, 0,
+                           &_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_GETCURSORSHADOW, 0,
+                           &_saved_cursor_shadow, 0);
+      SystemParametersInfo(SPI_GETMOUSEVANISH, 0,
+                           &_saved_mouse_vanish, 0);
       _got_saved_params = true;
 
-      SystemParametersInfo(SPI_SETMOUSETRAILS, nullptr, (PVOID)0, nullptr);
-      SystemParametersInfo(SPI_SETCURSORSHADOW, nullptr, (PVOID)false, nullptr);
-      SystemParametersInfo(SPI_SETMOUSEVANISH, nullptr, (PVOID)false, nullptr);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, 0, (PVOID)0, 0);
+      SystemParametersInfo(SPI_SETCURSORSHADOW, 0, (PVOID)false, 0);
+      SystemParametersInfo(SPI_SETMOUSEVANISH, 0, (PVOID)false, 0);
     }
 
     SetCursor(to_window->_cursor);

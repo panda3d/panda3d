@@ -146,7 +146,7 @@ find_all_microphones_ds() {
         format.nBlockAlign = 2 * chan;
         format.wBitsPerSample = 16;
         format.cbSize = 0;
-        stat = waveInOpen(nullptr, i, &format, nullptr, nullptr, WAVE_FORMAT_QUERY);
+        stat = waveInOpen(nullptr, i, &format, 0, 0, WAVE_FORMAT_QUERY);
         if (stat == MMSYSERR_NOERROR) {
           PT(MicrophoneAudioDS) p = new MicrophoneAudioDS();
           ostringstream name;
@@ -248,7 +248,7 @@ open() {
   format.cbSize = 0;
 
   HWAVEIN hwav;
-  MMRESULT stat = waveInOpen(&hwav, _device_id, &format, nullptr, nullptr, CALLBACK_NULL);
+  MMRESULT stat = waveInOpen(&hwav, _device_id, &format, 0, 0, CALLBACK_NULL);
 
   if (stat != MMSYSERR_NOERROR) {
     delete_buffers(buffers);
