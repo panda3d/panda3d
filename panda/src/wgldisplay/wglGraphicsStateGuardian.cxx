@@ -596,7 +596,7 @@ make_context(HDC hdc) {
     // what kind of OpenGL context we would like.
     int attrib_list[32];
     int n = 0;
-    attrib_list[0] = nullptr;
+    attrib_list[0] = 0;
 
     if (gl_version.get_num_words() > 0) {
       attrib_list[n++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
@@ -614,7 +614,7 @@ make_context(HDC hdc) {
     attrib_list[n++] = WGL_CONTEXT_PROFILE_MASK_ARB;
     attrib_list[n++] = WGL_CONTEXT_CORE_PROFILE_BIT_ARB;
 #endif
-    attrib_list[n] = nullptr;
+    attrib_list[n] = 0;
 
     _context = _wglCreateContextAttribsARB(hdc, 0, attrib_list);
   } else {

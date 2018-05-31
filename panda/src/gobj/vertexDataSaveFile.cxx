@@ -306,7 +306,7 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
         << "Error reading " << size
         << " bytes from save file, windows error code 0x" << hex
         << error << dec << ".\n";
-      return nullptr;
+      return false;
     }
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
