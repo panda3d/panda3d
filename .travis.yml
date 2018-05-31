@@ -71,8 +71,7 @@ before_script:
 script:
 - >
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    cmake -DHAVE_CARBON=NO -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2o_1 \
-    -DBUILD_METALIBS=$BUILD_METALIBS -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT ..;
+    ../.travis/script_macos.sh;
   else
     cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS \
     -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT ..;
