@@ -1,32 +1,26 @@
-// Filename: ordered_vector.T
-// Created by:  drose (20Feb02)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file ordered_vector.T
+ * @author drose
+ * @date 2002-02-02
+ */
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::insert_unique
-//       Access: Public
-//  Description: Inserts the indicated key into the ordered vector.
-//               The iterator is a hint to the expected position; if
-//               this is correct, the insert operation is likely to be
-//               faster.  The return value is the iterator referencing
-//               the new element.
-//
-//               This flavor of insert does not allow multiple copies
-//               of the same key to be inserted.  If the key is
-//               already present, it is not inserted, and the iterator
-//               referencing the original value is returned.
-////////////////////////////////////////////////////////////////////
+/**
+ * Inserts the indicated key into the ordered vector.  The iterator is a hint
+ * to the expected position; if this is correct, the insert operation is
+ * likely to be faster.  The return value is the iterator referencing the new
+ * element.
+ *
+ * This flavor of insert does not allow multiple copies of the same key to be
+ * inserted.  If the key is already present, it is not inserted, and the
+ * iterator referencing the original value is returned.
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
 insert_unique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR position, 
@@ -62,18 +56,16 @@ insert_unique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR position,
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::insert_nonunique
-//       Access: Public
-//  Description: Inserts the indicated key into the ordered vector.
-//               The iterator is a hint to the expected position; if
-//               this is correct, the insert operation is likely to be
-//               faster.  The return value is the iterator referencing
-//               the new element.
-//
-//               This flavor of insert allows multiple copies of the
-//               same key to be inserted.
-////////////////////////////////////////////////////////////////////
+
+/**
+ * Inserts the indicated key into the ordered vector.  The iterator is a hint
+ * to the expected position; if this is correct, the insert operation is
+ * likely to be faster.  The return value is the iterator referencing the new
+ * element.
+ *
+ * This flavor of insert allows multiple copies of the
+ * same key to be inserted.
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
 insert_nonunique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR position, 
@@ -100,13 +92,10 @@ insert_nonunique(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR positio
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::verify_list_unique
-//       Access: Public
-//  Description: Ensures that the indicated range of elements is
-//               sorted correctly.  Returns true if this is the case;
-//               otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the indicated range of elements is sorted correctly.  Returns
+ * true if this is the case; otherwise, returns false.
+ */
 template<class Key, class Compare, class Vector>
 bool ordered_vector<Key, Compare, Vector>::
 verify_list_unique() const {
@@ -127,13 +116,10 @@ verify_list_unique() const {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::verify_list_nonunique
-//       Access: Public
-//  Description: Ensures that the indicated range of elements is
-//               sorted correctly.  Returns true if this is the case;
-//               otherwise, returns false.
-////////////////////////////////////////////////////////////////////
+/**
+ * Ensures that the indicated range of elements is sorted correctly.  Returns
+ * true if this is the case; otherwise, returns false.
+ */
 template<class Key, class Compare, class Vector>
 bool ordered_vector<Key, Compare, Vector>::
 verify_list_nonunique() const {
@@ -155,12 +141,9 @@ verify_list_nonunique() const {
 }
 
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_find_insert_position
-//       Access: Private
-//  Description: The recursive implementation of
-//               find_insert_position().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of find_insert_position().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ordered_vector<Key, Compare, Vector>::
 r_find_insert_position(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR first,
@@ -184,11 +167,9 @@ r_find_insert_position(TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR f
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_find
-//       Access: Private
-//  Description: The recursive implementation of find().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of find().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
 r_find(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
@@ -217,11 +198,9 @@ r_find(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_find_particular
-//       Access: Private
-//  Description: The recursive implementation of find_particular().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of find_particular().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
 r_find_particular(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
@@ -270,11 +249,9 @@ r_find_particular(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR 
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_count
-//       Access: Private
-//  Description: The recursive implementation of count().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of count().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::SIZE_TYPE ordered_vector<Key, Compare, Vector>::
 r_count(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
@@ -305,11 +282,9 @@ r_count(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_lower_bound
-//       Access: Private
-//  Description: The recursive implementation of lower_bound().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of lower_bound().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
 r_lower_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
@@ -338,11 +313,9 @@ r_lower_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR firs
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_upper_bound
-//       Access: Private
-//  Description: The recursive implementation of upper_bound().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of upper_bound().
+ */
 template<class Key, class Compare, class Vector>
 TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR ordered_vector<Key, Compare, Vector>::
 r_upper_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
@@ -371,11 +344,9 @@ r_upper_bound(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR firs
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: ordered_vector::r_equal_range
-//       Access: Private
-//  Description: The recursive implementation of equal_range().
-////////////////////////////////////////////////////////////////////
+/**
+ * The recursive implementation of equal_range().
+ */
 template<class Key, class Compare, class Vector>
 pair<TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
 r_equal_range(TYPENAME ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
