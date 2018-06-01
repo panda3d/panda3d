@@ -90,7 +90,7 @@ if(BUILD_MODELS)
     DESTINATION "${PROJECT_BINARY_DIR}/models/maps"
   )
   run_pzip(models
-    "${CMAKE_CURRENT_SOURCE_DIR}/models"
+    "${CMAKE_CURRENT_SOURCE_DIR}/models/"
     "${PROJECT_BINARY_DIR}/models"
     *.egg
   )
@@ -99,7 +99,7 @@ if(BUILD_MODELS)
     FILES_MATCHING PATTERN *.rgb PATTERN *.png PATTERN *.jpg PATTERN *.wav
   )
   run_pzip(dmodels
-    "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
     "${PROJECT_BINARY_DIR}/models"
     *.egg
   )
