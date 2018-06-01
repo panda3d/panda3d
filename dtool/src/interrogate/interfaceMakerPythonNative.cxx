@@ -5451,6 +5451,9 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         if (TypeManager::is_reference_count(obj_type)) {
           // We use a PointerTo to handle the management here.  It's cleaner
           // that way.
+          if (default_expr == " = 0" || default_expr == " = nullptr") {
+            default_expr.clear();
+          }
           if (TypeManager::is_const_pointer_to_anything(type)) {
             extra_convert
               << "CPT(" << class_name << ") " << param_name << "_this"

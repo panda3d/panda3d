@@ -71,6 +71,7 @@ public:
   typedef typename PointerToBase<T>::To To;
 PUBLISHED:
   ALWAYS_INLINE constexpr PointerTo() noexcept = default;
+  ALWAYS_INLINE explicit constexpr PointerTo(std::nullptr_t) noexcept {}
   ALWAYS_INLINE PointerTo(To *ptr) noexcept;
   INLINE PointerTo(const PointerTo<T> &copy);
 
@@ -132,6 +133,7 @@ public:
   typedef typename PointerToBase<T>::To To;
 PUBLISHED:
   ALWAYS_INLINE constexpr ConstPointerTo() noexcept = default;
+  ALWAYS_INLINE explicit constexpr ConstPointerTo(std::nullptr_t) noexcept {}
   ALWAYS_INLINE ConstPointerTo(const To *ptr) noexcept;
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
