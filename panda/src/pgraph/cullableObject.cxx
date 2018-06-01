@@ -188,7 +188,7 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
  */
 void CullableObject::
 output(ostream &out) const {
-  if (_geom != (Geom *)NULL) {
+  if (_geom != nullptr) {
     out << *_geom;
   } else {
     out << "(null)";
@@ -243,7 +243,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   bool sprite_texcoord = false;
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
-  if (tex_gen != (TexGenAttrib *)NULL) {
+  if (tex_gen != nullptr) {
     if (tex_gen->get_mode(TextureStage::get_default()) == TexGenAttrib::M_point_sprite) {
       sprite_texcoord = true;
 
@@ -255,7 +255,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   PN_stdfloat point_size = 1;
   bool perspective = false;
   const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
-  if (render_mode != (RenderModeAttrib *)NULL) {
+  if (render_mode != nullptr) {
     point_size = render_mode->get_thickness();
     perspective = render_mode->get_perspective();
 
@@ -491,7 +491,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   // Determine the format we should use to store the indices.  Don't choose
   // NT_uint8, as Direct3D 9 doesn't support it.
-  const GeomVertexArrayFormat *new_prim_format = NULL;
+  const GeomVertexArrayFormat *new_prim_format = nullptr;
   if (new_verts < 0xffff) {
     new_prim_format = GeomPrimitive::get_index_format(GeomEnums::NT_uint16);
 
@@ -575,7 +575,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
         int min_vi = primitive->get_min_vertex();
         int max_vi = primitive->get_max_vertex();
-        new_primitive->set_minmax(min_vi * 4, max_vi * 4 + 3, NULL, NULL);
+        new_primitive->set_minmax(min_vi * 4, max_vi * 4 + 3, nullptr, nullptr);
 
         new_geom->add_primitive(new_primitive);
       }
@@ -598,8 +598,8 @@ get_flash_cpu_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_cpu_state = (const RenderState *)NULL;
-  if (flash_cpu_state == (const RenderState *)NULL) {
+  static CPT(RenderState) flash_cpu_state = nullptr;
+  if (flash_cpu_state == nullptr) {
     flash_cpu_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),
@@ -619,8 +619,8 @@ get_flash_hardware_state() {
 
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) flash_hardware_state = (const RenderState *)NULL;
-  if (flash_hardware_state == (const RenderState *)NULL) {
+  static CPT(RenderState) flash_hardware_state = nullptr;
+  if (flash_hardware_state == nullptr) {
     flash_hardware_state = RenderState::make
       (LightAttrib::make_all_off(),
        TextureAttrib::make_off(),

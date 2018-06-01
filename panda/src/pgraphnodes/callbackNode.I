@@ -44,7 +44,7 @@ set_cull_callback(CallbackObject *object) {
  */
 INLINE void CallbackNode::
 clear_cull_callback() {
-  set_cull_callback(NULL);
+  set_cull_callback(nullptr);
 }
 
 /**
@@ -86,7 +86,7 @@ set_draw_callback(CallbackObject *object) {
  */
 INLINE void CallbackNode::
 clear_draw_callback() {
-  set_draw_callback(NULL);
+  set_draw_callback(nullptr);
 }
 
 /**

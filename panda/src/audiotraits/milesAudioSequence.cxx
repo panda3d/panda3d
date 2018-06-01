@@ -38,7 +38,7 @@ MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
   MilesAudioSound(manager, file_name),
   _sd(sd)
 {
-  nassertv(sd != NULL);
+  nassertv(sd != nullptr);
   audio_debug("MilesAudioSequence(manager=0x"<<(void*)&manager
               <<", sd=0x"<<(void*)sd<<", file_name="<<file_name<<")");
 
@@ -142,7 +142,7 @@ get_time() const {
   }
 
   S32 current_ms;
-  AIL_sequence_ms_position(_sequence, NULL, &current_ms);
+  AIL_sequence_ms_position(_sequence, nullptr, &current_ms);
   PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
@@ -221,7 +221,7 @@ length() const {
 
   // The MIDI file has already been started, so we can ask it directly.
   S32 length_ms;
-  AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+  AIL_sequence_ms_position(_sequence, &length_ms, nullptr);
   PN_stdfloat time = (PN_stdfloat)length_ms * 0.001f;
   return time;
 }
@@ -295,7 +295,7 @@ do_set_time(PN_stdfloat time) {
 
     // Ensure we don't inadvertently run off the end of the sound.
   S32 length_ms;
-  AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+  AIL_sequence_ms_position(_sequence, &length_ms, nullptr);
   time_ms = min(time_ms, length_ms);
 
   AIL_set_sequence_ms_position(_sequence, time_ms);
@@ -318,7 +318,7 @@ determine_length() {
   } else {
     AIL_init_sequence(_sequence, &_sd->_raw_data[0], 0);
     S32 length_ms;
-    AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+    AIL_sequence_ms_position(_sequence, &length_ms, nullptr);
     PN_stdfloat time = (PN_stdfloat)length_ms * 0.001f;
     mgr->release_sequence(_sequence_index, this);
     _sequence = 0;

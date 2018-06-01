@@ -98,7 +98,7 @@ FmodAudioManager() {
 
   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
 
-  if (_system == (FMOD::System *)NULL) {
+  if (_system == nullptr) {
     // Create the global FMOD System object.  This one object must be shared
     // by all FmodAudioManagers (this is particularly true on OSX, but the
     // FMOD documentation is unclear as to whether this is the intended design
@@ -196,7 +196,7 @@ FmodAudioManager::
   if (_all_managers.empty()) {
     result = _system->release();
     fmod_audio_errcheck("_system->release()", result);
-    _system = NULL;
+    _system = nullptr;
     _system_is_valid = false;
   }
 }
@@ -232,13 +232,13 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
   case FilterProperties::FT_compress:   dsptype = FMOD_DSP_TYPE_COMPRESSOR;  break;
   default:
     audio_error("Garbage in DSP configuration data");
-    return NULL;
+    return nullptr;
   }
 
   result = _system->createDSPByType( dsptype, &dsp);
   if (result != 0) {
     audio_error("Could not create DSP object");
-    return NULL;
+    return nullptr;
   }
 
   FMOD_RESULT res1 = FMOD_OK;
@@ -334,7 +334,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
       (res13!=FMOD_OK)||(res14!=FMOD_OK)) {
     audio_error("Could not configure DSP");
     dsp->release();
-    return NULL;
+    return nullptr;
   }
 
   dsp->setUserData(USER_DSP_MAGIC);
@@ -364,7 +364,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
       break;
     }
     FMOD::DSP *prev;
-    result = head->getInput(0, &prev, NULL);
+    result = head->getInput(0, &prev, nullptr);
     fmod_audio_errcheck("head->getInput()", result);
     void *userdata;
     result = prev->getUserData(&userdata);
@@ -380,7 +380,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
 
   for (int i=0; i<(int)(conf.size()); i++) {
     FMOD::DSP *dsp = make_dsp(conf[i]);
-    result = _channelgroup->addDSP(dsp, NULL);
+    result = _channelgroup->addDSP(dsp, nullptr);
     fmod_audio_errcheck("_channelgroup->addDSP()", result);
   }
 }
@@ -436,7 +436,7 @@ get_sound(const string &file_name, bool positional, int) {
 PT(AudioSound) FmodAudioManager::
 get_sound(MovieAudio *source, bool positional, int) {
   nassert_raise("FMOD audio manager does not support MovieAudio sources");
-  return NULL;
+  return nullptr;
 }
 
 /**

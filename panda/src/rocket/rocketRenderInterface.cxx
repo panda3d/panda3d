@@ -35,7 +35,7 @@
  */
 void RocketRenderInterface::
 render(Rocket::Core::Context* context, CullTraverser *trav) {
-  nassertv(context != NULL);
+  nassertv(context != nullptr);
   MutexHolder holder(_lock);
 
   _trav = trav;
@@ -54,9 +54,9 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
 
   context->Render();
 
-  _trav = NULL;
-  _net_transform = NULL;
-  _net_state = NULL;
+  _trav = nullptr;
+  _net_transform = nullptr;
+  _net_state = nullptr;
 }
 
 /**
@@ -145,7 +145,7 @@ RenderGeometry(Rocket::Core::Vertex* vertices,
   Texture *texture = (Texture *)thandle;
 
   LVecBase2 tex_scale(1, 1);
-  if (texture != (Texture *)NULL) {
+  if (texture != nullptr) {
     tex_scale = texture->get_tex_scale();
   }
 
@@ -153,7 +153,7 @@ RenderGeometry(Rocket::Core::Vertex* vertices,
                             GeomEnums::UH_stream, tex_scale);
 
   CPT(RenderState) state;
-  if (texture != (Texture *)NULL) {
+  if (texture != nullptr) {
     state = RenderState::make(TextureAttrib::make(texture));
   } else {
     state = RenderState::make_empty();
@@ -176,7 +176,7 @@ CompileGeometry(Rocket::Core::Vertex* vertices,
   CompiledGeometry *c = new CompiledGeometry;
   LVecBase2 tex_scale(1, 1);
 
-  if (texture != (Texture *)NULL) {
+  if (texture != nullptr) {
     rocket_cat.debug()
       << "Compiling geom " << c->_geom << " with texture '"
       << texture->get_name() << "'\n";
@@ -240,7 +240,7 @@ LoadTexture(Rocket::Core::TextureHandle& texture_handle,
 
   Filename fn = Filename::from_os_specific(source.CString());
   PT(Texture) tex = TexturePool::load_texture(fn, 0, false, options);
-  if (tex == NULL) {
+  if (tex == nullptr) {
     texture_handle = 0;
     texture_dimensions.x = 0;
     texture_dimensions.y = 0;
@@ -322,7 +322,7 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
 void RocketRenderInterface::
 ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
   Texture *tex = (Texture *)texture_handle;
-  if (tex != (Texture *)NULL) {
+  if (tex != nullptr) {
     unref_delete(tex);
   }
 }

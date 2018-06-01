@@ -103,8 +103,8 @@ write_complete_field_list(const DCFile &file) {
         cout << field->get_class()->get_name() << "::";
       }
       cout << field->get_name();
-      if (field->as_atomic_field() != (DCAtomicField *)NULL ||
-          field->as_molecular_field() != (DCMolecularField *)NULL) {
+      if (field->as_atomic_field() != nullptr ||
+          field->as_molecular_field() != nullptr) {
         // It's a "method".
         cout << "()";
       }

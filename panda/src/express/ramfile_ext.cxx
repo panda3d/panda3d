@@ -58,8 +58,8 @@ readline() {
 PyObject *Extension<Ramfile>::
 readlines() {
   PyObject *lst = PyList_New(0);
-  if (lst == NULL) {
-    return NULL;
+  if (lst == nullptr) {
+    return nullptr;
   }
 
   string line = _this->readline();

@@ -97,7 +97,7 @@ set_time(double timestamp, int loop_count) {
  */
 PT(MovieVideoCursor::Buffer) MovieVideoCursor::
 fetch_buffer() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -105,7 +105,7 @@ fetch_buffer() {
  */
 void MovieVideoCursor::
 apply_to_texture(const Buffer *buffer, Texture *t, int page) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
@@ -162,7 +162,7 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
  */
 void MovieVideoCursor::
 apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
@@ -216,7 +216,7 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
  */
 void MovieVideoCursor::
 apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
@@ -259,7 +259,7 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
  */
 MovieVideoCursor::Buffer *MovieVideoCursor::
 get_standard_buffer() {
-  if (_standard_buffer == NULL) {
+  if (_standard_buffer == nullptr) {
     _standard_buffer = make_new_buffer();
   }
   return _standard_buffer;

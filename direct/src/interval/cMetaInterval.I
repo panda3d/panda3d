@@ -58,8 +58,8 @@ get_def_type(int n) const {
  */
 INLINE CInterval *CMetaInterval::
 get_c_interval(int n) const {
-  nassertr(n >= 0 && n < (int)_defs.size(), NULL);
-  nassertr(_defs[n]._type == DT_c_interval, NULL);
+  nassertr(n >= 0 && n < (int)_defs.size(), nullptr);
+  nassertr(_defs[n]._type == DT_c_interval, nullptr);
   return _defs[n]._c_interval;
 }
 

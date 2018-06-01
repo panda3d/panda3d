@@ -52,7 +52,7 @@ MayaToEggServer() :
      "Specify the fit tolerance for Maya polygon tesselation.  The smaller "
      "the number, the more polygons will be generated.  The default is "
      "0.01.",
-     &MayaToEggServer::dispatch_double, NULL, &_polygon_tolerance);
+     &MayaToEggServer::dispatch_double, nullptr, &_polygon_tolerance);
 
   add_option
     ("bface", "", 0,
@@ -91,7 +91,7 @@ MayaToEggServer() :
      "transforms in the egg file.  The option may be one of all, model, "
      "dcs, or none.  The default is model, which means only transforms on "
      "nodes that have the model flag or the dcs flag are preserved.",
-     &MayaToEggServer::dispatch_transform_type, NULL, &_transform_type);
+     &MayaToEggServer::dispatch_transform_type, nullptr, &_transform_type);
 
   add_option
     ("subroot", "name", 0,
@@ -101,7 +101,7 @@ MayaToEggServer() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEggServer::dispatch_vector_string, NULL, &_subroots);
+     &MayaToEggServer::dispatch_vector_string, nullptr, &_subroots);
 
   add_option
     ("subset", "name", 0,
@@ -111,7 +111,7 @@ MayaToEggServer() :
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.  If it is omitted altogether, the entire file is "
      "converted.",
-     &MayaToEggServer::dispatch_vector_string, NULL, &_subsets);
+     &MayaToEggServer::dispatch_vector_string, nullptr, &_subsets);
 
   add_option
     ("exclude", "name", 0,
@@ -120,7 +120,7 @@ MayaToEggServer() :
      "name matches the parameter (which may include globbing characters "
      "like * or ?).  This parameter may be repeated multiple times to name "
      "multiple roots.",
-     &MayaToEggServer::dispatch_vector_string, NULL, &_excludes);
+     &MayaToEggServer::dispatch_vector_string, nullptr, &_excludes);
 
   add_option
     ("ignore-slider", "name", 0,
@@ -129,19 +129,19 @@ MayaToEggServer() :
      "and it will not become a part of the animation.  This "
      "parameter may including globbing characters, and it may be repeated "
      "as needed.",
-     &MayaToEggServer::dispatch_vector_string, NULL, &_ignore_sliders);
+     &MayaToEggServer::dispatch_vector_string, nullptr, &_ignore_sliders);
 
   add_option
     ("force-joint", "name", 0,
      "Specifies the name of a DAG node that maya2egg "
      "should treat as a joint, even if it does not appear to be a Maya joint "
      "and does not appear to be animated.",
-     &MayaToEggServer::dispatch_vector_string, NULL, &_force_joints);
+     &MayaToEggServer::dispatch_vector_string, nullptr, &_force_joints);
 
   add_option
     ("v", "", 0,
      "Increase verbosity.  More v's means more verbose.",
-     &MayaToEggServer::dispatch_count, NULL, &_verbose);
+     &MayaToEggServer::dispatch_count, nullptr, &_verbose);
 
   add_option
     ("legacy-shaders", "", 0,

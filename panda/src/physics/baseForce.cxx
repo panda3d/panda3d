@@ -21,7 +21,7 @@ TypeHandle BaseForce::_type_handle;
  */
 BaseForce::
 BaseForce(bool active) :
-  _force_node(NULL),
+  _force_node(nullptr),
   _active(active)
 {
 }
@@ -34,7 +34,7 @@ BaseForce(const BaseForce &copy) :
   TypedReferenceCount(copy)
 {
   _active = copy._active;
-  _force_node = (ForceNode *) NULL;
+  _force_node = nullptr;
 }
 
 /**

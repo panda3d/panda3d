@@ -89,7 +89,7 @@ istream *VirtualFileMountMultifile::
 open_read_file(const Filename &file) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {
-    return NULL;
+    return nullptr;
   }
 
   // The caller will eventually pass this pointer to

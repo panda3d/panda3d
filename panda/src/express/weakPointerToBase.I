@@ -297,6 +297,51 @@ operator >= (To *other) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
+operator == (nullptr_t) const {
+  return _void_ptr == nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator != (nullptr_t) const {
+  return _void_ptr != nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator > (nullptr_t) const {
+  return _void_ptr != nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator <= (nullptr_t) const {
+  return _void_ptr == nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
+operator >= (nullptr_t) const {
+  return true;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
 operator == (const WeakPointerToBase<To> &other) const {
   return (To *)_void_ptr == (To *)other._void_ptr;
 }
@@ -397,6 +442,15 @@ operator < (const To *other) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
+operator < (nullptr_t) const {
+  return false;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE bool WeakPointerToBase<T>::
 operator < (const WeakPointerToBase<To> &other) const {
   return (To *)_void_ptr < (To *)other._void_ptr;
 }
@@ -455,7 +509,7 @@ output(ostream &out) const {
   out << _void_ptr;
   if (was_deleted()) {
     out << ":deleted";
-  } else if (_void_ptr != (void *)NULL) {
+  } else if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();
   }
 }

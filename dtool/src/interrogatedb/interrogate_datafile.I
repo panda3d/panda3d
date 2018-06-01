@@ -19,7 +19,7 @@ template<class Element>
 void
 idf_output_vector(ostream &out, const vector<Element> &vec) {
   out << vec.size() << " ";
-  TYPENAME vector<Element>::const_iterator vi;
+  typename vector<Element>::const_iterator vi;
   for (vi = vec.begin(); vi != vec.end(); ++vi) {
     out << (*vi) << " ";
   }

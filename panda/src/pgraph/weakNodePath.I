@@ -79,7 +79,7 @@ operator bool () const {
  */
 INLINE bool WeakNodePath::
 is_empty() const {
-  return _head == (NodePathComponent *)NULL || _head.was_deleted();
+  return _head == nullptr || _head.was_deleted();
 }
 
 /**
@@ -88,7 +88,7 @@ is_empty() const {
  */
 INLINE bool WeakNodePath::
 was_deleted() const {
-  return _head != (NodePathComponent *)NULL && _head.was_deleted();
+  return _head != nullptr && _head.was_deleted();
 }
 
 /**

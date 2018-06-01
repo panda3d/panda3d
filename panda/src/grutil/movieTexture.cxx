@@ -48,7 +48,7 @@ MovieTexture(MovieVideo *video) :
   Texture(video->get_name())
 {
   Texture::CDWriter cdata_tex(Texture::_cycler, true);
-  do_load_one(cdata_tex, video->open(), NULL, 0, LoaderOptions());
+  do_load_one(cdata_tex, video->open(), nullptr, 0, LoaderOptions());
 }
 
 /**
@@ -211,7 +211,7 @@ do_read_one(Texture::CData *cdata_tex,
   }
   nassertr(z >= 0 && z < cdata_tex->_z_size * cdata_tex->_num_views, false);
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(fullpath);
   }
 
@@ -219,12 +219,12 @@ do_read_one(Texture::CData *cdata_tex,
   PT(MovieVideoCursor) alpha;
 
   color = MovieVideo::get(fullpath)->open();
-  if (color == 0) {
+  if (color == nullptr) {
     return false;
   }
   if (!alpha_fullpath.empty()) {
     alpha = MovieVideo::get(alpha_fullpath)->open();
-    if (alpha == 0) {
+    if (alpha == nullptr) {
       return false;
     }
   }
@@ -326,7 +326,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     // compute a new one.
     double offset;
     int true_loop_count = 1;
-    if (cdata->_synchronize != 0) {
+    if (cdata->_synchronize != nullptr) {
       offset = cdata->_synchronize->get_time();
     } else {
       // Calculate the cursor position modulo the length of the movie.
@@ -358,11 +358,11 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
       MovieVideoCursor *alpha = page._alpha;
       size_t i = pi - cdata->_pages.begin();
 
-      if (color != NULL && alpha != NULL) {
+      if (color != nullptr && alpha != nullptr) {
         color->apply_to_texture_rgb(page._cbuffer, (MovieTexture*)this, i);
         alpha->apply_to_texture_alpha(page._abuffer, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
 
-      } else if (color != NULL) {
+      } else if (color != nullptr) {
         color->apply_to_texture(page._cbuffer, (MovieTexture*)this, i);
       }
 
@@ -634,7 +634,7 @@ synchronize_to(AudioSound *s) {
 void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
-  cdata->_synchronize = 0;
+  cdata->_synchronize = nullptr;
 }
 
 
@@ -657,12 +657,12 @@ do_update_frames(const CData *cdata) const {
     MovieVideoCursor *color = page._color;
     MovieVideoCursor *alpha = page._alpha;
 
-    if (color != NULL && page._cbuffer == NULL) {
+    if (color != nullptr && page._cbuffer == nullptr) {
       if (color->set_time(cdata->_offset, cdata->_true_loop_count)) {
         ((VideoPage &)page)._cbuffer = color->fetch_buffer();
       }
     }
-    if (alpha != NULL && page._abuffer == NULL) {
+    if (alpha != nullptr && page._abuffer == nullptr) {
       if (alpha->set_time(cdata->_offset, cdata->_true_loop_count)) {
         ((VideoPage &)page)._abuffer = alpha->fetch_buffer();
       }
@@ -682,15 +682,15 @@ do_update_frames(const CData *cdata) const {
   PT(MovieVideoCursor::Buffer) newest;
   for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
     const VideoPage &page = (*pi);
-    if (page._cbuffer == NULL) {
-      if (page._color != NULL) {
+    if (page._cbuffer == nullptr) {
+      if (page._color != nullptr) {
         // This page isn't ready at all.
         in_sync = false;
       }
     } else {
-      nassertr(page._color != NULL, true);
+      nassertr(page._color != nullptr, true);
       any_frames = true;
-      if (newest == NULL) {
+      if (newest == nullptr) {
         newest = page._cbuffer;
       } else {
         int ref = newest->compare_timestamp(page._cbuffer);
@@ -704,14 +704,14 @@ do_update_frames(const CData *cdata) const {
         }
       }
     }
-    if (page._abuffer == NULL) {
-      if (page._alpha != NULL) {
+    if (page._abuffer == nullptr) {
+      if (page._alpha != nullptr) {
         in_sync = false;
       }
     } else {
-      nassertr(page._alpha != NULL, true);
+      nassertr(page._alpha != nullptr, true);
       any_frames = true;
-      if (newest == NULL) {
+      if (newest == nullptr) {
         newest = page._abuffer;
       } else {
         int ref = newest->compare_timestamp(page._abuffer);
@@ -734,15 +734,15 @@ do_update_frames(const CData *cdata) const {
   if (!in_sync) {
     // If we're not in sync, throw away pages that are older than the newest
     // available frame.
-    if (newest != NULL) {
+    if (newest != nullptr) {
       Pages::const_iterator pi;
       for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
         const VideoPage &page = (*pi);
-        if (page._cbuffer != NULL && newest->compare_timestamp(page._cbuffer) > 0) {
+        if (page._cbuffer != nullptr && newest->compare_timestamp(page._cbuffer) > 0) {
           ((VideoPage &)page)._cbuffer.clear();
           any_dropped = true;
         }
-        if (page._abuffer != NULL && newest->compare_timestamp(page._abuffer) > 0) {
+        if (page._abuffer != nullptr && newest->compare_timestamp(page._abuffer) > 0) {
           ((VideoPage &)page)._abuffer.clear();
           any_dropped = true;
         }

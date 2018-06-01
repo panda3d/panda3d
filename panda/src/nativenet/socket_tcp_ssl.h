@@ -30,10 +30,10 @@ struct SSlStartup {
 
   ~SSlStartup() {
     SSL_CTX_free (global_ssl_ctx);
-    global_ssl_ctx = NULL;
+    global_ssl_ctx = nullptr;
   }
 
-  bool isactive() { return global_ssl_ctx != NULL; };
+  bool isactive() { return global_ssl_ctx != nullptr; };
 };
 
 /**
@@ -42,7 +42,7 @@ struct SSlStartup {
 class EXPCL_PANDA_NATIVENET Socket_TCP_SSL : public Socket_IP {
 public:
   inline Socket_TCP_SSL(SOCKET);
-  inline Socket_TCP_SSL() : _ssl(NULL) {}
+  inline Socket_TCP_SSL() : _ssl(nullptr) {}
 
   virtual inline ~Socket_TCP_SSL()
   {
@@ -67,10 +67,10 @@ private:
   SSL *_ssl;
 
   void CleanSslUp() {
-    if (_ssl != NULL) {
+    if (_ssl != nullptr) {
       SSL_shutdown(_ssl);
       SSL_free(_ssl);
-      _ssl = NULL;
+      _ssl = nullptr;
     }
   }
 
@@ -101,7 +101,7 @@ Socket_TCP_SSL(SOCKET sck) : ::Socket_IP(sck) {
   SetNonBlocking(); // maybe should be blocking?
 
   _ssl = SSL_new(global_ssl_ctx);
-  if (_ssl == NULL) {
+  if (_ssl == nullptr) {
     return;
   }
 
@@ -188,7 +188,7 @@ ActiveOpen(const Socket_Address &theaddress) {
   }
 
   _ssl = SSL_new(global_ssl_ctx);
-  if (_ssl == NULL) {
+  if (_ssl == nullptr) {
     return false;
   }
   SSL_set_fd(_ssl, (int)GetSocket());
@@ -206,7 +206,7 @@ ActiveOpen(const Socket_Address &theaddress) {
  */
 inline int Socket_TCP_SSL::
 SendData(const char *data, int size) {
-  if (_ssl == NULL) {
+  if (_ssl == nullptr) {
     return -1;
   }
 
@@ -221,7 +221,7 @@ SendData(const char *data, int size) {
  */
 inline int Socket_TCP_SSL::
 RecvData(char *data, int len) {
-  if (_ssl == NULL) {
+  if (_ssl == nullptr) {
     return -1;
   }
 
@@ -235,7 +235,7 @@ RecvData(char *data, int len) {
  */
 inline bool Socket_TCP_SSL::
 ErrorIs_WouldBlocking(int err) {
-  if (_ssl == NULL || err >= 0) {
+  if (_ssl == nullptr || err >= 0) {
     nativenet_cat.warning()
       << "Socket_TCP_SSL::ErrorIs_WouldBlocking->Called With Error number "
       << err << " or _ssl is NULL\n";

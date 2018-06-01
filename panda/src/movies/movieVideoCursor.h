@@ -40,7 +40,7 @@ class BamReader;
  */
 class EXPCL_PANDA_MOVIES MovieVideoCursor : public TypedWritableReferenceCount {
 protected:
-  MovieVideoCursor(MovieVideo *src = NULL);
+  MovieVideoCursor(MovieVideo *src = nullptr);
 
 PUBLISHED:
   virtual ~MovieVideoCursor();

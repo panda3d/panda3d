@@ -72,13 +72,13 @@ _dcast_verify(TypeHandle want_handle, size_t want_size,
 #define DCAST_INTO_V(to_pointer, from_pointer) \
   { \
     (to_pointer) = _dcast_ref(to_pointer, from_pointer); \
-    nassertv((void *)(to_pointer) != (void *)NULL); \
+    nassertv((void *)(to_pointer) != nullptr); \
   }
 
 #define DCAST_INTO_R(to_pointer, from_pointer, return_value) \
   { \
     (to_pointer) = _dcast_ref(to_pointer, from_pointer); \
-    nassertr((void *)(to_pointer) != (void *)NULL, return_value); \
+    nassertr((void *)(to_pointer) != nullptr, return_value); \
   }
 
 #include "dcast.T"

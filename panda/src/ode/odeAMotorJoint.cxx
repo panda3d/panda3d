@@ -23,7 +23,7 @@ OdeAMotorJoint(dJointID id) :
 
 OdeAMotorJoint::
 OdeAMotorJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateAMotor(world.get_id(), 0)) {
+  OdeJoint(dJointCreateAMotor(world.get_id(), nullptr)) {
 }
 
 OdeAMotorJoint::

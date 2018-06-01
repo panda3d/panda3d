@@ -147,7 +147,7 @@ GraphicsEngine(Pipeline *pipeline) :
   _lock("GraphicsEngine::_lock"),
   _loaded_textures_lock("GraphicsEngine::_loaded_textures_lock")
 {
-  if (_pipeline == (Pipeline *)NULL) {
+  if (_pipeline == nullptr) {
     _pipeline = Pipeline::get_render_pipeline();
   }
 
@@ -288,7 +288,7 @@ make_output(GraphicsPipe *pipe,
   if ((x_size == 0)&&(y_size == 0)) {
     flags |= GraphicsPipe::BF_size_track_host;
   }
-  if (host != 0) {
+  if (host != nullptr) {
     host = host->get_host();
   }
 
@@ -296,28 +296,28 @@ make_output(GraphicsPipe *pipe,
   // call open_windows to get both ready.  If that fails, give up on using the
   // supplied gsg and host.
 
-  if (host == (GraphicsOutput *)NULL) {
-    if (gsg != (GraphicsStateGuardian*)NULL) {
+  if (host == nullptr) {
+    if (gsg != nullptr) {
       if ((!gsg->is_valid())||(gsg->needs_reset())) {
         open_windows();
       }
       if ((!gsg->is_valid())||(gsg->needs_reset())) {
-        gsg = NULL;
+        gsg = nullptr;
       }
     }
   } else {
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
       open_windows();
     }
-    if ((host->get_gsg()==0)||
+    if ((host->get_gsg()==nullptr)||
         (!host->is_valid())||
         (!host->get_gsg()->is_valid())||
         (host->get_gsg()->needs_reset())) {
-      host = NULL;
-      gsg = NULL;
+      host = nullptr;
+      gsg = nullptr;
     } else {
       gsg = host->get_gsg();
     }
@@ -325,21 +325,21 @@ make_output(GraphicsPipe *pipe,
 
   // Sanity check everything.
 
-  nassertr(pipe != (GraphicsPipe *)NULL, NULL);
-  if (gsg != (GraphicsStateGuardian *)NULL) {
-    nassertr(pipe == gsg->get_pipe(), NULL);
-    nassertr(this == gsg->get_engine(), NULL);
+  nassertr(pipe != nullptr, nullptr);
+  if (gsg != nullptr) {
+    nassertr(pipe == gsg->get_pipe(), nullptr);
+    nassertr(this == gsg->get_engine(), nullptr);
   }
 
   // Are we really asking for a callback window?
   if ((flags & GraphicsPipe::BF_require_callback_window)!=0) {
     PT(GraphicsStateGuardian) this_gsg = gsg;
-    if (this_gsg == (GraphicsStateGuardian *)NULL) {
+    if (this_gsg == nullptr) {
       // If we don't already have a GSG, we have to ask the pipe to make a new
       // one, unencumbered by window dressing.
       this_gsg = pipe->make_callback_gsg(this);
     }
-    if (this_gsg != (GraphicsStateGuardian *)NULL) {
+    if (this_gsg != nullptr) {
       CallbackGraphicsWindow *window = new CallbackGraphicsWindow(this, pipe, name, fb_prop, win_prop, flags, this_gsg);
       window->_sort = sort;
       do_add_window(window);
@@ -350,13 +350,13 @@ make_output(GraphicsPipe *pipe,
 
     // Couldn't make a callback window, because the pipe wouldn't make an
     // unencumbered GSG.
-    return NULL;
+    return nullptr;
   }
 
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
-  if ((host != 0)&&
+  if ((host != nullptr)&&
       ((flags&GraphicsPipe::BF_require_window)==0)&&
       ((flags&GraphicsPipe::BF_require_callback_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
@@ -406,7 +406,7 @@ make_output(GraphicsPipe *pipe,
     bool precertify = false;
     PT(GraphicsOutput) window =
       pipe->make_output(name, fb_prop, win_prop, flags, this, gsg, host, retry, precertify);
-    if (window != (GraphicsOutput *)NULL) {
+    if (window != nullptr) {
       window->_sort = sort;
       if (precertify && gsg != nullptr && window->get_gsg() == gsg) {
         do_add_window(window);
@@ -446,7 +446,7 @@ make_output(GraphicsPipe *pipe,
 
       // No good; delete the window and keep trying.
       bool removed = remove_window(window);
-      nassertr(removed, NULL);
+      nassertr(removed, nullptr);
     }
   }
 
@@ -464,7 +464,7 @@ make_output(GraphicsPipe *pipe,
 
   // Could not create a window to the user's specs.
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -512,7 +512,7 @@ add_window(GraphicsOutput *window, int sort) {
  */
 bool GraphicsEngine::
 remove_window(GraphicsOutput *window) {
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
   Thread *current_thread = Thread::get_current_thread();
 
   // First, make sure we know what this window is.
@@ -544,9 +544,9 @@ remove_window(GraphicsOutput *window) {
   do_remove_window(window, current_thread);
 
   GraphicsStateGuardian *gsg = window->get_gsg();
-  if (gsg != (GraphicsStateGuardian *)NULL) {
+  if (gsg != nullptr) {
     PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
-    if (pgo != (PreparedGraphicsObjects *)NULL) {
+    if (pgo != nullptr) {
       // Check to see if any other still-active windows share this context.
       bool any_common = false;
       {
@@ -554,7 +554,7 @@ remove_window(GraphicsOutput *window) {
         Windows::iterator wi;
         for (wi = _windows.begin(); wi != _windows.end() && !any_common; ++wi) {
           GraphicsStateGuardian *gsg2 = (*wi)->get_gsg();
-          if (gsg2 != (GraphicsStateGuardian *)NULL &&
+          if (gsg2 != nullptr &&
               gsg2->get_prepared_objects() == pgo) {
             any_common = true;
           }
@@ -594,10 +594,10 @@ remove_all_windows() {
   Windows::iterator wi;
   for (wi = old_windows.begin(); wi != old_windows.end(); ++wi) {
     GraphicsOutput *win = (*wi);
-    nassertv(win != NULL);
+    nassertv(win != nullptr);
     do_remove_window(win, current_thread);
     GraphicsStateGuardian *gsg = win->get_gsg();
-    if (gsg != (GraphicsStateGuardian *)NULL) {
+    if (gsg != nullptr) {
       gsg->release_all();
     }
   }
@@ -670,7 +670,7 @@ get_num_windows() const {
  */
 GraphicsOutput *GraphicsEngine::
 get_window(int n) const {
-  nassertr(n >= 0 && n < (int)_windows.size(), NULL);
+  nassertr(n >= 0 && n < (int)_windows.size(), nullptr);
 
   if (!_windows_sorted) {
     ((GraphicsEngine *)this)->do_resort_windows();
@@ -731,7 +731,7 @@ render_frame() {
     Windows::iterator wi;
     for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
       GraphicsOutput *win = (*wi);
-      nassertv(win != NULL);
+      nassertv(win != nullptr);
       if (win->get_delete_flag()) {
         do_remove_window(win, current_thread);
 
@@ -746,7 +746,7 @@ render_frame() {
         int num_drs = win->get_num_active_display_regions();
         for (int i = 0; i < num_drs; ++i) {
           DisplayRegion *dr = win->get_active_display_region(i);
-          if (dr != (DisplayRegion *)NULL) {
+          if (dr != nullptr) {
             NodePath camera_np = dr->get_camera(current_thread);
             if (!camera_np.is_empty()) {
               Camera *camera = DCAST(Camera, camera_np.node());
@@ -1166,7 +1166,7 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
  */
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
-  nassertv(sattr->get_shader() != (Shader *)NULL);
+  nassertv(sattr->get_shader() != nullptr);
   nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
@@ -1220,7 +1220,7 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
  */
 GraphicsEngine *GraphicsEngine::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new GraphicsEngine;
     PandaNode::set_scene_root_func(&scene_root_func);
   }
@@ -1261,7 +1261,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   trav->set_cull_handler(cull_handler);
   trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
 
-  trav->set_view_frustum(NULL);
+  trav->set_view_frustum(nullptr);
   if (view_frustum_cull) {
     // If we're to be performing view-frustum culling, determine the bounding
     // volume associated with the current viewing frustum.
@@ -1270,8 +1270,8 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     // lens.
     PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
-    if (bv != (BoundingVolume *)NULL && !bv->is_infinite() &&
-        bv->as_geometric_bounding_volume() != NULL) {
+    if (bv != nullptr && !bv->is_infinite() &&
+        bv->as_geometric_bounding_volume() != nullptr) {
       // Transform it into the appropriate coordinate space.
       PT(GeometricBoundingVolume) local_frustum;
       local_frustum = bv->make_copy()->as_geometric_bounding_volume();
@@ -1315,7 +1315,7 @@ is_scene_root(const PandaNode *node) {
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; i++) {
         DisplayRegion *dr = win->get_active_display_region(i);
-        if (dr != (DisplayRegion *)NULL) {
+        if (dr != nullptr) {
           NodePath camera = dr->get_camera();
           if (camera.is_empty()) {
             continue;
@@ -1391,7 +1391,7 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
           DisplayRegion *dr = win->get_active_display_region(i);
-          if (dr != (DisplayRegion *)NULL) {
+          if (dr != nullptr) {
             cull_and_draw_together(win, dr, current_thread);
           }
         }
@@ -1421,7 +1421,7 @@ void GraphicsEngine::
 cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
                        Thread *current_thread) {
   GraphicsStateGuardian *gsg = win->get_gsg();
-  nassertv(gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(gsg != nullptr);
 
   PT(SceneSetup) scene_setup;
 
@@ -1437,7 +1437,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     scene_setup = setup_scene(gsg, &dr_reader);
   }
 
-  if (scene_setup == (SceneSetup *)NULL) {
+  if (scene_setup == nullptr) {
     // Never mind.
 
   } else if (dr->is_stereo()) {
@@ -1452,7 +1452,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     DrawCullHandler cull_handler(gsg);
     if (gsg->begin_scene()) {
       CallbackObject *cbobj = dr->get_cull_callback();
-      if (cbobj != (CallbackObject *)NULL) {
+      if (cbobj != nullptr) {
         // Issue the cull callback on this DisplayRegion.
         DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
         cbobj->do_callback(&cbdata);
@@ -1555,7 +1555,7 @@ cull_to_bins(GraphicsOutput *win, GraphicsStateGuardian *gsg,
 
   BinCullHandler cull_handler(cull_result);
   CallbackObject *cbobj = dr->get_cull_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     // Issue the cull callback on this DisplayRegion.
     DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
     cbobj->do_callback(&cbdata);
@@ -1615,7 +1615,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           int num_display_regions = win->get_num_active_display_regions();
           for (int i = 0; i < num_display_regions; ++i) {
             DisplayRegion *dr = win->get_active_display_region(i);
-            if (dr != (DisplayRegion *)NULL) {
+            if (dr != nullptr) {
               do_draw(win, gsg, dr, current_thread);
             }
           }
@@ -1848,28 +1848,28 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   GraphicsOutput *window = dr->get_window();
   // The window pointer shouldn't be NULL, since we presumably got to this
   // particular DisplayRegion by walking through a list on a window.
-  nassertr(window != (GraphicsOutput *)NULL, NULL);
+  nassertr(window != nullptr, nullptr);
 
   NodePath camera = dr->get_camera();
   if (camera.is_empty()) {
     // No camera, no draw.
-    return NULL;
+    return nullptr;
   }
 
   Camera *camera_node;
-  DCAST_INTO_R(camera_node, camera.node(), NULL);
+  DCAST_INTO_R(camera_node, camera.node(), nullptr);
 
   if (!camera_node->is_active()) {
     // Camera inactive, no draw.
-    return NULL;
+    return nullptr;
   }
   camera_node->cleanup_aux_scene_data(current_thread);
 
   int lens_index = dr->get_lens_index();
   Lens *lens = camera_node->get_lens(lens_index);
-  if (lens == (Lens *)NULL || !camera_node->get_lens_active(lens_index)) {
+  if (lens == nullptr || !camera_node->get_lens_active(lens_index)) {
     // No lens, no draw.
-    return NULL;
+    return nullptr;
   }
 
   NodePath scene_root = camera_node->get_scene();
@@ -1901,7 +1901,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
         << scene_root.get_scale(NodePath()) << "); cannot render.\n";
       _singular_warning_this_frame = true;
     }
-    return NULL;
+    return nullptr;
   }
 
   if (world_transform->is_invalid()) {
@@ -1912,7 +1912,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
         << camera.get_scale(NodePath()) << "); cannot render.\n";
     }
     _singular_warning_this_frame = true;
-    return NULL;
+    return nullptr;
   }
 
   CPT(RenderState) initial_state = camera_node->get_initial_state();
@@ -1976,7 +1976,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     cbobj = dr_reader.get_draw_callback();
   }
 
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     // Issue the draw callback on this DisplayRegion.
 
     // Set the GSG to the initial state.
@@ -1993,7 +1993,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     return;
   }
 
-  if (cull_result == NULL || scene_setup == NULL) {
+  if (cull_result == nullptr || scene_setup == nullptr) {
     // Nothing to see here.
 
   } else if (dr->is_stereo()) {
@@ -2049,7 +2049,7 @@ do_add_window(GraphicsOutput *window) {
  */
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe) {
-  nassertv(gsg != NULL);
+  nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
@@ -2074,7 +2074,7 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe) {
  */
 void GraphicsEngine::
 do_remove_window(GraphicsOutput *window, Thread *current_thread) {
-  nassertv(window != NULL);
+  nassertv(window != nullptr);
   PT(GraphicsPipe) pipe = window->get_pipe();
   window->clear_pipe();
 
@@ -2285,8 +2285,8 @@ const RenderState *GraphicsEngine::
 get_invert_polygon_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make(CullFaceAttrib::make_reverse());
   }
 
@@ -2303,7 +2303,7 @@ get_invert_polygon_state() {
  */
 GraphicsEngine::WindowRenderer *GraphicsEngine::
 get_window_renderer(const string &name, int pipeline_stage) {
-  nassertr(_lock.debug_is_locked(), NULL);
+  nassertr(_lock.debug_is_locked(), nullptr);
 
   if (name.empty()) {
     return &_app;
@@ -2362,7 +2362,7 @@ add_window(Windows &wlist, GraphicsOutput *window) {
  */
 void GraphicsEngine::WindowRenderer::
 remove_window(GraphicsOutput *window) {
-  nassertv(window != NULL);
+  nassertv(window != nullptr);
   LightReMutexHolder holder(_wl_lock);
   PT(GraphicsOutput) ptwin = window;
 

@@ -21,7 +21,7 @@ LightReMutexDirect()
 #endif
 {
 #ifndef HAVE_REMUTEXIMPL
-  _locking_thread = NULL;
+  _locking_thread = nullptr;
   _lock_count = 0;
 #endif
 }

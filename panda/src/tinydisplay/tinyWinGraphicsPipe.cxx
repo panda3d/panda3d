@@ -73,12 +73,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(tinygsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
   // First thing to try: a TinyWinGraphicsWindow
@@ -91,13 +91,13 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_hrgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     return new TinyWinGraphicsWindow(engine, this, name, fb_prop, win_prop,
@@ -108,14 +108,14 @@ make_output(const string &name,
   if (retry == 1) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 #endif  // WIN32

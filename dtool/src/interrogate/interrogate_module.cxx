@@ -52,15 +52,15 @@ enum CommandOptions {
 };
 
 static struct option long_options[] = {
-  { "oc", required_argument, NULL, CO_oc },
-  { "module", required_argument, NULL, CO_module },
-  { "library", required_argument, NULL, CO_library },
-  { "c", no_argument, NULL, CO_c },
-  { "python", no_argument, NULL, CO_python },
-  { "python-native", no_argument, NULL, CO_python_native },
-  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
-  { "import", required_argument, NULL, CO_import },
-  { NULL }
+  { "oc", required_argument, nullptr, CO_oc },
+  { "module", required_argument, nullptr, CO_module },
+  { "library", required_argument, nullptr, CO_library },
+  { "c", no_argument, nullptr, CO_c },
+  { "python", no_argument, nullptr, CO_python },
+  { "python-native", no_argument, nullptr, CO_python_native },
+  { "track-interpreter", no_argument, nullptr, CO_track_interpreter },
+  { "import", required_argument, nullptr, CO_import },
+  { nullptr }
 };
 
 /*
@@ -316,10 +316,10 @@ int write_python_table_native(ostream &out) {
       << "static struct PyModuleDef py_" << library_name << "_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
-      << "  NULL,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr,\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n"
       << "\n"
       << "PyObject *PyInit_" << library_name << "() {\n";
@@ -346,10 +346,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -393,10 +393,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -410,7 +410,7 @@ int write_python_table_native(ostream &out) {
       << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
       << "compiled for Python \" PY_VERSION \", which is incompatible "
       << "with Python 3\");\n"
-      << "  return (PyObject *)NULL;\n"
+      << "  return nullptr;\n"
       << "}\n"
       << "#endif\n"
       << "#endif\n"
@@ -497,17 +497,17 @@ int write_python_table(ostream &out) {
     library_name = module_name;
   }
 
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_methods,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
   pystub();
 
   preprocess_argv(argc, argv);
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+  flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
     switch (flag) {
     case CO_oc:
@@ -583,7 +583,7 @@ int main(int argc, char *argv[]) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+    flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   }
 
   argc -= (optind-1);
@@ -617,7 +617,7 @@ int main(int argc, char *argv[]) {
       pathname.set_type(Filename::T_dso);
       nout << "Loading " << pathname << "\n";
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         nout << "Unable to load: " << load_dso_error() << "\n";
         exit(1);
       }

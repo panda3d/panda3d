@@ -135,7 +135,7 @@ convert_to_node(const LoaderOptions &options, const Filename &filename) {
   delete _current_vertex_data;
 
   if (had_error()) {
-    return NULL;
+    return nullptr;
   }
 
   return _root_node;
@@ -148,7 +148,7 @@ bool ObjToEggConverter::
 process(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *strm = vfs->open_read_file(filename, true);
-  if (strm == NULL) {
+  if (strm == nullptr) {
     objegg_cat.error()
       << "Couldn't read " << filename << "\n";
     return false;
@@ -448,7 +448,7 @@ process_f(vector_string &words) {
   PT(EggPolygon) poly = new EggPolygon;
   for (size_t i = 1; i < words.size(); ++i) {
     EggVertex *vertex = get_face_vertex(words[i]);
-    if (vertex == NULL) {
+    if (vertex == nullptr) {
       return false;
     }
     poly->add_vertex(vertex);
@@ -474,7 +474,7 @@ process_g(vector_string &words) {
   while (i > 1) {
     --i;
     EggNode *child = group->find_child(words[i]);
-    if (child == NULL || !child->is_of_type(EggGroup::get_class_type())) {
+    if (child == nullptr || !child->is_of_type(EggGroup::get_class_type())) {
       child = new EggGroup(words[i]);
       group->add_child(child);
     }
@@ -553,7 +553,7 @@ bool ObjToEggConverter::
 process_node(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *strm = vfs->open_read_file(filename, true);
-  if (strm == NULL) {
+  if (strm == nullptr) {
     objegg_cat.error()
       << "Couldn't read " << filename << "\n";
     return false;
@@ -734,7 +734,7 @@ bool ObjToEggConverter::
 process_g_node(vector_string &words) {
   _current_vertex_data->close_geom(this);
   delete _current_vertex_data;
-  _current_vertex_data = NULL;
+  _current_vertex_data = nullptr;
 
   NodePath np(_root_node);
 
@@ -878,7 +878,7 @@ ObjToEggConverter::VertexData::
 VertexData(PandaNode *parent, const string &name) :
   _parent(parent), _name(name)
 {
-  _geom_node = NULL;
+  _geom_node = nullptr;
 
   _v4_given = false;
   _vt3_given = false;
@@ -1090,7 +1090,7 @@ close_geom(const ObjToEggConverter *converter) {
     PT(Geom) geom = new Geom(vdata);
     geom->add_primitive(_prim);
 
-    if (_geom_node == NULL) {
+    if (_geom_node == nullptr) {
       _geom_node = new GeomNode(_name);
       _parent->add_child(_geom_node);
     }

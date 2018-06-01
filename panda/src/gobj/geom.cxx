@@ -301,7 +301,7 @@ set_primitive(size_t i, const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)NULL);
+  nassertv_always(compat != nullptr);
 
   cdata->_primitives[i] = (GeomPrimitive *)compat.p();
   PrimitiveType new_primitive_type = compat->get_primitive_type();
@@ -1030,7 +1030,7 @@ check_valid(const GeomVertexData *vertex_data) const {
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+  if (cdata->_user_bounds != nullptr) {
     return cdata->_user_bounds;
   }
 
@@ -1133,7 +1133,7 @@ clear_cache_stage(Thread *current_thread) {
        ++ci) {
     CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler, current_thread);
-    cdata->set_result(NULL, NULL);
+    cdata->set_result(nullptr, nullptr);
   }
 }
 
@@ -1231,7 +1231,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
-  if (gc != (GeomContext *)NULL) {
+  if (gc != nullptr) {
     _contexts[prepared_objects] = gc;
   }
   return gc;
@@ -1597,7 +1597,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *Geom::
 make_from_bam(const FactoryParams &params) {
-  Geom *object = new Geom(NULL);
+  Geom *object = new Geom(nullptr);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -1644,7 +1644,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 Geom::CDataCache::
 ~CDataCache() {
-  set_result(NULL, NULL);
+  set_result(nullptr, nullptr);
 }
 
 /**
@@ -1740,7 +1740,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _primitives.reserve(num_primitives);
   for (int i = 0; i < num_primitives; ++i) {
     manager->read_pointer(scan);
-    _primitives.push_back(NULL);
+    _primitives.push_back(nullptr);
   }
 
   _primitive_type = (PrimitiveType)scan.get_uint8();

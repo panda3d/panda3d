@@ -231,7 +231,7 @@ decompose_impl() const {
     }
     ++li;
   }
-  nassertr(vi == get_num_vertices(), NULL);
+  nassertr(vi == get_num_vertices(), nullptr);
 
   return lines.p();
 }
@@ -262,7 +262,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -279,7 +279,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
   return new_vertices;
 }

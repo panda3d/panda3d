@@ -586,7 +586,7 @@ main(int argc, char **argv) {
 #endif
 
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         cerr << "Unable to load: " << load_dso_error() << "\n";
         return_status++;
       }

@@ -614,7 +614,7 @@ private:
 
   Shader(ShaderLanguage lang);
 
-  bool read(const ShaderFile &sfile, BamCacheRecord *record = NULL);
+  bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
   bool do_read_source(string &into, const Filename &fn, BamCacheRecord *record);
   bool r_preprocess_source(ostream &out, const Filename &fn,
                            const Filename &source_dir,

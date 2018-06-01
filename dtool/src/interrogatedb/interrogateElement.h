@@ -27,7 +27,7 @@ class CPPMakeProperty;
  */
 class EXPCL_INTERROGATEDB InterrogateElement : public InterrogateComponent {
 public:
-  INLINE InterrogateElement(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateElement(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateElement(const InterrogateElement &copy);
   INLINE void operator = (const InterrogateElement &copy);
 

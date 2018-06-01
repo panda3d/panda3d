@@ -101,7 +101,7 @@ get_frame() const {
  */
 INLINE bool MouseWatcher::
 is_over_region() const {
-  return get_over_region() != (MouseWatcherRegion *)NULL;
+  return get_over_region() != nullptr;
 }
 
 /**
@@ -109,7 +109,7 @@ is_over_region() const {
  */
 INLINE bool MouseWatcher::
 is_over_region(PN_stdfloat x, PN_stdfloat y) const {
-  return get_over_region(x, y) != (MouseWatcherRegion *)NULL;
+  return get_over_region(x, y) != nullptr;
 }
 
 /**
@@ -117,7 +117,7 @@ is_over_region(PN_stdfloat x, PN_stdfloat y) const {
  */
 INLINE bool MouseWatcher::
 is_over_region(const LPoint2 &pos) const {
-  return get_over_region(pos) != (MouseWatcherRegion *)NULL;
+  return get_over_region(pos) != nullptr;
 }
 
 /**
@@ -391,7 +391,7 @@ get_modifier_buttons() const {
 INLINE void MouseWatcher::
 set_display_region(DisplayRegion *dr) {
   _display_region = dr;
-  _button_down_display_region = NULL;
+  _button_down_display_region = nullptr;
 }
 
 /**
@@ -400,8 +400,8 @@ set_display_region(DisplayRegion *dr) {
  */
 INLINE void MouseWatcher::
 clear_display_region() {
-  _display_region = NULL;
-  _button_down_display_region = NULL;
+  _display_region = nullptr;
+  _button_down_display_region = nullptr;
 }
 
 /**
@@ -421,7 +421,7 @@ get_display_region() const {
  */
 INLINE bool MouseWatcher::
 has_display_region() const {
-  return (_display_region != (DisplayRegion *)NULL);
+  return (_display_region != nullptr);
 }
 
 /**

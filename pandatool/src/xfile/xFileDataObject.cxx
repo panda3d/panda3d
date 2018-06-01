@@ -93,7 +93,7 @@ add_string(const string &string_value) {
 XFileDataObject &XFileDataObject::
 add_Vector(XFile *x_file, const LVecBase3d &vector) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Vector");
-  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  nassertr(xtemplate != nullptr, *this);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(x_file, "", xtemplate);
   add_element(node);
@@ -110,7 +110,7 @@ add_Vector(XFile *x_file, const LVecBase3d &vector) {
 XFileDataObject &XFileDataObject::
 add_MeshFace(XFile *x_file) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshFace");
-  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  nassertr(xtemplate != nullptr, *this);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(x_file, "", xtemplate);
   add_element(node);
@@ -125,7 +125,7 @@ add_MeshFace(XFile *x_file) {
 XFileDataObject &XFileDataObject::
 add_IndexedColor(XFile *x_file, int index, const LColor &color) {
   XFileTemplate *xtemplate = XFile::find_standard_template("IndexedColor");
-  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  nassertr(xtemplate != nullptr, *this);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(x_file, "", xtemplate);
   add_element(node);
@@ -143,7 +143,7 @@ add_IndexedColor(XFile *x_file, int index, const LColor &color) {
 XFileDataObject &XFileDataObject::
 add_Coords2d(XFile *x_file, const LVecBase2d &coords) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Coords2d");
-  nassertr(xtemplate != (XFileTemplate *)NULL, *this);
+  nassertr(xtemplate != nullptr, *this);
   XFileDataNodeTemplate *node =
     new XFileDataNodeTemplate(x_file, "", xtemplate);
   add_element(node);
@@ -288,7 +288,7 @@ get_element(int n) {
   xfile_cat.warning()
     << "Looking for [" << n << "] within data object of type "
     << get_type_name() << ", does not support nested objects.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -300,5 +300,5 @@ get_element(const string &name) {
   xfile_cat.warning()
     << "Looking for [\"" << name << "\"] within data object of type "
     << get_type_name() << ", does not support nested objects.\n";
-  return NULL;
+  return nullptr;
 }

@@ -72,7 +72,7 @@ make_output(const string &name,
             bool &precertify) {
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(tinygsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
   // First thing to try: a TinyXGraphicsWindow
@@ -88,7 +88,7 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinyXGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                    flags, gsg, host);
@@ -101,13 +101,13 @@ make_output(const string &name,
   if (retry == 1) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 #endif  // HAVE_X11

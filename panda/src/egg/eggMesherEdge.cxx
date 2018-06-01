@@ -61,7 +61,7 @@ output(ostream &out) const {
     out << " " << (*si)->_index;
   }
 
-  if (_opposite!=NULL) {
+  if (_opposite!=nullptr) {
     out << " opposite "
         << _opposite->_strips.size() << " strips:";
 

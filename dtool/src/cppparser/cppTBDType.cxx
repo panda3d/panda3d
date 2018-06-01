@@ -35,7 +35,7 @@ CPPTBDType(CPPIdentifier *ident) :
 CPPType *CPPTBDType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *type = _ident->find_type(current_scope, global_scope);
-  if (type != NULL) {
+  if (type != nullptr) {
     return type;
   }
   return this;
@@ -108,13 +108,13 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   rep = CPPType::new_type(rep)->as_tbd_type();
-  assert(rep != NULL);
+  assert(rep != nullptr);
 
   CPPType *result = rep;
 
   // Can we now define it as a real type?
   CPPType *type = rep->_ident->find_type(current_scope, global_scope, subst);
-  if (type != NULL) {
+  if (type != nullptr) {
     result = type;
   }
 
@@ -156,7 +156,7 @@ as_tbd_type() {
 bool CPPTBDType::
 is_equal(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (*_ident) == (*ot->_ident);
 }
@@ -169,7 +169,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPTBDType::
 is_less(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (*_ident) < (*ot->_ident);
 }

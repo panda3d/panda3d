@@ -39,11 +39,11 @@ PUBLISHED:
   INLINE ~GeoMipTerrain();
 
   INLINE PNMImage &heightfield();
-  bool set_heightfield(const Filename &filename, PNMFileType *type = NULL);
+  bool set_heightfield(const Filename &filename, PNMFileType *type = nullptr);
   INLINE bool set_heightfield(const PNMImage &image);
   INLINE PNMImage &color_map();
   INLINE bool set_color_map(const Filename &filename,
-                                  PNMFileType *type = NULL);
+                                  PNMFileType *type = nullptr);
   INLINE bool set_color_map(const PNMImage &image);
   INLINE bool set_color_map(const Texture *image);
   INLINE bool set_color_map(const string &path);

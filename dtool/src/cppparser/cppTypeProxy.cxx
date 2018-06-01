@@ -21,7 +21,7 @@ CPPTypeProxy::
 CPPTypeProxy() :
   CPPType(CPPFile())
 {
-  _actual_type = (CPPType *)NULL;
+  _actual_type = nullptr;
 }
 
 /**
@@ -31,7 +31,7 @@ CPPTypeProxy() :
  */
 CPPType *CPPTypeProxy::
 resolve_type(CPPScope *, CPPScope *) {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return this;
   }
   return _actual_type;
@@ -44,7 +44,7 @@ resolve_type(CPPScope *, CPPScope *) {
  */
 bool CPPTypeProxy::
 is_tbd() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return false;
   }
   return _actual_type->is_tbd();
@@ -57,7 +57,7 @@ is_tbd() const {
  */
 bool CPPTypeProxy::
 has_typedef_name() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return false;
   }
   return _actual_type->has_typedef_name();
@@ -69,7 +69,7 @@ has_typedef_name() const {
  */
 string CPPTypeProxy::
 get_typedef_name(CPPScope *) const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return string();
   }
   return _actual_type->get_typedef_name();
@@ -83,7 +83,7 @@ get_typedef_name(CPPScope *) const {
  */
 string CPPTypeProxy::
 get_simple_name() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return "unknown";
   }
   return _actual_type->get_simple_name();
@@ -95,7 +95,7 @@ get_simple_name() const {
  */
 string CPPTypeProxy::
 get_local_name(CPPScope *scope) const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return "unknown";
   }
   return _actual_type->get_local_name(scope);
@@ -107,7 +107,7 @@ get_local_name(CPPScope *scope) const {
  */
 string CPPTypeProxy::
 get_fully_scoped_name() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return "unknown";
   }
   return _actual_type->get_fully_scoped_name();
@@ -121,7 +121,7 @@ get_fully_scoped_name() const {
  */
 string CPPTypeProxy::
 get_preferred_name() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return "unknown";
   }
   return _actual_type->get_preferred_name();
@@ -132,7 +132,7 @@ get_preferred_name() const {
  */
 bool CPPTypeProxy::
 is_incomplete() const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return true;
   }
   return _actual_type->is_incomplete();
@@ -147,7 +147,7 @@ void CPPTypeProxy::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     out << "unknown " << prename << name;
     return;
   }
@@ -160,7 +160,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
  */
 void CPPTypeProxy::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     out << "unknown";
     return;
   }
@@ -181,7 +181,7 @@ get_subtype() const {
  */
 CPPType *CPPTypeProxy::
 as_type() {
-  if (_actual_type == (CPPType *)NULL) {
+  if (_actual_type == nullptr) {
     return this;
   }
   return _actual_type;
@@ -192,8 +192,8 @@ as_type() {
  */
 CPPSimpleType *CPPTypeProxy::
 as_simple_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPSimpleType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_simple_type();
 }
@@ -203,8 +203,8 @@ as_simple_type() {
  */
 CPPPointerType *CPPTypeProxy::
 as_pointer_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPPointerType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_pointer_type();
 }
@@ -214,8 +214,8 @@ as_pointer_type() {
  */
 CPPReferenceType *CPPTypeProxy::
 as_reference_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPReferenceType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_reference_type();
 }
@@ -225,8 +225,8 @@ as_reference_type() {
  */
 CPPArrayType *CPPTypeProxy::
 as_array_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPArrayType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_array_type();
 }
@@ -236,8 +236,8 @@ as_array_type() {
  */
 CPPConstType *CPPTypeProxy::
 as_const_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPConstType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_const_type();
 }
@@ -247,8 +247,8 @@ as_const_type() {
  */
 CPPFunctionType *CPPTypeProxy::
 as_function_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPFunctionType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_function_type();
 }
@@ -258,8 +258,8 @@ as_function_type() {
  */
 CPPExtensionType *CPPTypeProxy::
 as_extension_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPExtensionType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_extension_type();
 }
@@ -269,8 +269,8 @@ as_extension_type() {
  */
 CPPStructType *CPPTypeProxy::
 as_struct_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPStructType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_struct_type();
 }
@@ -280,8 +280,8 @@ as_struct_type() {
  */
 CPPEnumType *CPPTypeProxy::
 as_enum_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPEnumType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_enum_type();
 }
@@ -291,8 +291,8 @@ as_enum_type() {
  */
 CPPTBDType *CPPTypeProxy::
 as_tbd_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPTBDType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_tbd_type();
 }
@@ -302,8 +302,8 @@ as_tbd_type() {
  */
 CPPTypedefType *CPPTypeProxy::
 as_typedef_type() {
-  if (_actual_type == (CPPType *)NULL) {
-    return (CPPTypedefType *)NULL;
+  if (_actual_type == nullptr) {
+    return nullptr;
   }
   return _actual_type->as_typedef_type();
 }

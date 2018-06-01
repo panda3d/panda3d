@@ -48,13 +48,13 @@ EggRetargetAnim() {
     ("r", "file.egg", 0,
      "Read the reference model from the indicated egg file.  All of the "
      "animations will be retargeted to match the indicated file.",
-     &EggRetargetAnim::dispatch_filename, NULL, &_reference_filename);
+     &EggRetargetAnim::dispatch_filename, nullptr, &_reference_filename);
 
   add_option
     ("keep", "joint[,joint...]", 0,
      "Preserve the full animation on the named joint(s).  This is especially "
      "appropriate for the root joint.",
-     &EggRetargetAnim::dispatch_vector_string_comma, NULL, &_keep_joints);
+     &EggRetargetAnim::dispatch_vector_string_comma, nullptr, &_keep_joints);
 }
 
 /**
@@ -62,7 +62,7 @@ EggRetargetAnim() {
  */
 void EggRetargetAnim::
 run() {
-  nassertv(_collection != (EggCharacterCollection *)NULL);
+  nassertv(_collection != nullptr);
   nassertv(_collection->get_num_eggs() > 0);
 
   if (_reference_filename.empty()) {
@@ -78,7 +78,7 @@ run() {
 
   // Read in the extra egg file that we use for extracting the references out.
   PT(EggData) reference_egg = read_egg(_reference_filename);
-  if (reference_egg == (EggData *)NULL) {
+  if (reference_egg == nullptr) {
     nout << "Cannot read " << _reference_filename << "\n";
     exit(1);
   }
@@ -146,7 +146,7 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
         int num_frames = char_data->get_num_frames(i);
 
         EggBackPointer *back = joint_data->get_model(i);
-        nassertv(back != (EggBackPointer *)NULL);
+        nassertv(back != nullptr);
         EggJointPointer *joint;
         DCAST_INTO_V(joint, back);
 

@@ -30,7 +30,7 @@ INLINE TypeRegistry *TypeRegistry::
 ptr() {
   // It's OK that we don't acquire the lock, because we guarantee that this is
   // called at static init time.
-  if (_global_pointer == NULL) {
+  if (_global_pointer == nullptr) {
     init_global_pointer();
   }
   return _global_pointer;
@@ -41,7 +41,7 @@ ptr() {
  */
 INLINE void TypeRegistry::
 init_lock() {
-  if (_lock == (MutexImpl *)NULL) {
+  if (_lock == nullptr) {
     _lock = new MutexImpl;
   }
 }

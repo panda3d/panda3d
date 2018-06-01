@@ -35,7 +35,7 @@ public:
     nassertr(!a.is_empty() && !b.is_empty(), a < b);
     PlaneNode *pa = DCAST(PlaneNode, a.node());
     PlaneNode *pb = DCAST(PlaneNode, b.node());
-    nassertr(pa != (PlaneNode *)NULL && pb != (PlaneNode *)NULL, a < b);
+    nassertr(pa != nullptr && pb != nullptr, a < b);
 
     return pa->get_priority() > pb->get_priority();
   }
@@ -340,7 +340,7 @@ CPT(RenderAttrib) ClipPlaneAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new ClipPlaneAttrib);
   }
 
@@ -355,7 +355,7 @@ CPT(RenderAttrib) ClipPlaneAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     ClipPlaneAttrib *attrib = new ClipPlaneAttrib;
     attrib->_off_all_planes = true;
     _all_off_attrib = return_new(attrib);
@@ -487,7 +487,7 @@ filter_to_max(int max_clip_planes) const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_off(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, NULL);
+  DCAST_INTO_R(ta, other, nullptr);
 
   if (_off_all_planes || (!ta->_off_all_planes && ta->_off_planes.empty())) {
     // If we turn off all planes, or the other turns none off, the result is
@@ -701,7 +701,7 @@ get_hash_impl() const {
 CPT(RenderAttrib) ClipPlaneAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ClipPlaneAttrib *ta;
-  DCAST_INTO_R(ta, other, NULL);
+  DCAST_INTO_R(ta, other, nullptr);
 
   if (ta->_off_all_planes) {
     // If the other type turns off all planes, it doesn't matter what we are.
@@ -912,7 +912,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   } else {
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "planes");
-    nassertr(aux != NULL, pi);
+    nassertr(aux != nullptr, pi);
 
     int i;
     aux->_off_list.reserve(aux->_num_off_planes);
@@ -964,7 +964,7 @@ finalize(BamReader *manager) {
   } else {
     // Now it's safe to convert our saved PandaNodes into NodePaths.
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "planes");
-    nassertv(aux != NULL);
+    nassertv(aux != nullptr);
     nassertv(aux->_num_off_planes == (int)aux->_off_list.size());
     nassertv(aux->_num_on_planes == (int)aux->_on_list.size());
 

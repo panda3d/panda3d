@@ -65,7 +65,7 @@ get_node0() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody0();
 #endif
 
-  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): nullptr;
 }
 
 /**
@@ -81,7 +81,7 @@ get_node1() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody1();
 #endif
 
-  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): nullptr;
 }
 
 /**
@@ -101,7 +101,7 @@ BulletManifoldPoint *BulletPersistentManifold::
 get_manifold_point(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx < _manifold->getNumContacts(), NULL)
+  nassertr(idx < _manifold->getNumContacts(), nullptr)
 
   return new BulletManifoldPoint(_manifold->getContactPoint(idx));
 }

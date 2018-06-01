@@ -93,7 +93,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   int channels = _this->get_num_channels();
   int num_pixels = _this->get_x_size() * _this->get_y_size();
 
-  if (self != NULL) {
+  if (self != nullptr) {
     Py_INCREF(self);
   }
   view->obj = self;
@@ -101,20 +101,20 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->len = 4 * table.size();
   view->readonly = 1;
   view->itemsize = 4;
-  view->format = NULL;
+  view->format = nullptr;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     view->format = (char *) "f";
   }
   view->ndim = 2;
-  view->shape = NULL;
+  view->shape = nullptr;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     // If you're leaking and you know it, clap your hands!
     view->shape = new Py_ssize_t[2];
     view->shape[0] = num_pixels;
     view->shape[1] = channels;
   }
-  view->strides = NULL;
-  view->suboffsets = NULL;
+  view->strides = nullptr;
+  view->suboffsets = nullptr;
 
   return 0;
 #else

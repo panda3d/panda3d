@@ -176,7 +176,7 @@ private:
   public:
     DeflatePage() {
       _used_size = 0;
-      _next = NULL;
+      _next = nullptr;
     }
     ALLOC_DELETED_CHAIN(DeflatePage);
 

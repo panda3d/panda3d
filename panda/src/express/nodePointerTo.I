@@ -62,7 +62,7 @@ operator = (NodePointerTo<T> &&from) noexcept {
  *
  */
 template<class T>
-INLINE TYPENAME NodePointerTo<T>::To &NodePointerTo<T>::
+INLINE typename NodePointerTo<T>::To &NodePointerTo<T>::
 operator *() const {
   return *((To *)(this->_void_ptr));
 }
@@ -73,7 +73,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE TYPENAME NodePointerTo<T>::To *NodePointerTo<T>::
+INLINE typename NodePointerTo<T>::To *NodePointerTo<T>::
 operator -> () const {
   return (To *)(this->_void_ptr);
 }
@@ -99,7 +99,7 @@ operator T *() const {
  * around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE TYPENAME NodePointerTo<T>::To *NodePointerTo<T>::
+INLINE typename NodePointerTo<T>::To *NodePointerTo<T>::
 p() const {
   return (To *)(this->_void_ptr);
 }
@@ -135,8 +135,8 @@ operator = (const NodePointerTo<T> &copy) {
  */
 template<class T>
 INLINE NodeConstPointerTo<T>::
-NodeConstPointerTo(const TYPENAME NodeConstPointerTo<T>::To *ptr) :
-  NodePointerToBase<T>((TYPENAME NodeConstPointerTo<T>::To *)ptr)
+NodeConstPointerTo(const typename NodeConstPointerTo<T>::To *ptr) :
+  NodePointerToBase<T>((typename NodeConstPointerTo<T>::To *)ptr)
 {
 }
 #endif  // CPPPARSER
@@ -218,7 +218,7 @@ operator = (NodeConstPointerTo<T> &&from) noexcept {
  *
  */
 template<class T>
-INLINE const TYPENAME NodeConstPointerTo<T>::To &NodeConstPointerTo<T>::
+INLINE const typename NodeConstPointerTo<T>::To &NodeConstPointerTo<T>::
 operator *() const {
   return *((To *)(this->_void_ptr));
 }
@@ -229,7 +229,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE const TYPENAME NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
+INLINE const typename NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
 operator -> () const {
   return (To *)(this->_void_ptr);
 }
@@ -256,7 +256,7 @@ operator const T * () const {
  * work around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE const TYPENAME NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
+INLINE const typename NodeConstPointerTo<T>::To *NodeConstPointerTo<T>::
 p() const {
   return (To *)(this->_void_ptr);
 }

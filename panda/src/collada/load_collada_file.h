@@ -30,7 +30,7 @@ BEGIN_PUBLISH
  */
 EXPCL_COLLADA PT(PandaNode)
 load_collada_file(const Filename &filename, CoordinateSystem cs = CS_default,
-                  BamCacheRecord *record = NULL);
+                  BamCacheRecord *record = nullptr);
 END_PUBLISH
 
 #endif

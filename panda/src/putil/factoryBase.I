@@ -23,7 +23,7 @@
 INLINE TypedObject *FactoryBase::
 make_instance(const string &type_name, const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
-  nassertr(handle != TypeHandle::none(), NULL);
+  nassertr(handle != TypeHandle::none(), nullptr);
 
   return make_instance(handle, params);
 }
@@ -42,7 +42,7 @@ INLINE TypedObject *FactoryBase::
 make_instance_more_general(const string &type_name,
                            const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
-  nassertr(handle != TypeHandle::none(), NULL);
+  nassertr(handle != TypeHandle::none(), nullptr);
 
   return make_instance_more_general(handle, params);
 }

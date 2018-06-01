@@ -686,7 +686,7 @@ set_lod(const EggSwitchCondition &lod) {
  */
 INLINE void EggGroup::
 clear_lod() {
-  _lod = NULL;
+  _lod = nullptr;
 }
 
 /**
@@ -694,7 +694,7 @@ clear_lod() {
  */
 INLINE bool EggGroup::
 has_lod() const {
-  return (_lod != (EggSwitchCondition *)NULL);
+  return (_lod != nullptr);
 }
 
 /**

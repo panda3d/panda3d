@@ -46,7 +46,7 @@ ns_alloc(size_t size) {
 
   // Look for a page that has sufficient space remaining.
 
-  Pages::iterator pi = _pages.lower_bound(Page(NULL, size));
+  Pages::iterator pi = _pages.lower_bound(Page(nullptr, size));
   if (pi != _pages.end()) {
     // Here's a page with enough remaining space.
     Page page = (*pi);
@@ -82,8 +82,8 @@ void NeverFreeMemory::
 make_global_ptr() {
   NeverFreeMemory *ptr = new NeverFreeMemory;
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, (void *)NULL, (void *)ptr);
-  if (result != NULL) {
+    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
+  if (result != nullptr) {
     // Someone else got there first.
     delete ptr;
   }

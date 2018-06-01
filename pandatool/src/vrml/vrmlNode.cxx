@@ -39,7 +39,7 @@ get_value(const char *field_name) const {
 
   // That field was not defined.  Get the default value.
   const VrmlNodeType::NameTypeRec *field = _type->hasField(field_name);
-  if (field != NULL) {
+  if (field != nullptr) {
     return field->dflt;
   }
 

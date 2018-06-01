@@ -29,7 +29,7 @@ class XFileDataDef;
  */
 class XFileDataObject : virtual public ReferenceCount {
 public:
-  INLINE XFileDataObject(const XFileDataDef *data_def = NULL);
+  INLINE XFileDataObject(const XFileDataDef *data_def = nullptr);
   virtual ~XFileDataObject();
 
   INLINE const XFileDataDef *get_data_def() const;

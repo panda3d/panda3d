@@ -68,13 +68,13 @@ protected:
   void add_option(const string &option, const string &parm_name,
                   int index_group, const string &description,
                   OptionDispatchFunction option_function,
-                  bool *bool_var = (bool *)NULL,
-                  void *option_data = (void *)NULL);
+                  bool *bool_var = nullptr,
+                  void *option_data = nullptr);
   void add_option(const string &option, const string &parm_name,
                   int index_group, const string &description,
                   OptionDispatchMethod option_method,
-                  bool *bool_var = (bool *)NULL,
-                  void *option_data = (void *)NULL);
+                  bool *bool_var = nullptr,
+                  void *option_data = nullptr);
   bool redescribe_option(const string &option, const string &description);
   bool remove_option(const string &option);
 

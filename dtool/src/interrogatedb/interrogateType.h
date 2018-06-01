@@ -29,7 +29,7 @@ class CPPScope;
  */
 class EXPCL_INTERROGATEDB InterrogateType : public InterrogateComponent {
 public:
-  InterrogateType(InterrogateModuleDef *def = NULL);
+  InterrogateType(InterrogateModuleDef *def = nullptr);
   InterrogateType(const InterrogateType &copy);
   void operator = (const InterrogateType &copy);
 

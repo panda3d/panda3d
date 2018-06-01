@@ -29,7 +29,7 @@ void gl_shade_vertex(GLContext *c,GLVertex *v)
   B=m->emission.v[2]+m->ambient.v[2]*c->ambient_light_model.v[2];
   A=clampf(m->diffuse.v[3],0,1);
 
-  for(l=c->first_light;l!=NULL;l=l->next) {
+  for(l=c->first_light;l!=nullptr;l=l->next) {
     PN_stdfloat lR,lB,lG;
     
     /* ambient */

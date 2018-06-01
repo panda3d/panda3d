@@ -83,7 +83,7 @@ namespace {
     // If we can't open the process with PROCESS_TERMINATE rights, then we
     // give up immediately.
     hProc = OpenProcess(SYNCHRONIZE|PROCESS_TERMINATE, FALSE, dwPID);
-    if(hProc == NULL) {
+    if(hProc == nullptr) {
        return TA_FAILED;
     }
 
@@ -115,7 +115,7 @@ namespace {
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(),
+    if (CreateProcess(nullptr, (char*)cmd.c_str(),
         0, 0, 1, NORMAL_PRIORITY_CLASS,
         0, 0, &si, &pi)) {
       pid=pi.dwProcessId;
@@ -228,7 +228,7 @@ DirectD::start_app(const string& cmd) {
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
     ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
-    if (CreateProcess(NULL, (char*)cmd.c_str(),
+    if (CreateProcess(nullptr, (char*)cmd.c_str(),
         0, 0, 1, NORMAL_PRIORITY_CLASS | CREATE_SUSPENDED,
         0, 0, &si, &pi)) {
       // The process must be created with CREATE_SUSPENDED to give us a chance

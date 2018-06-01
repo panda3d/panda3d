@@ -33,7 +33,7 @@ ConfigVariableList(const string &name,
   // A list variable implicitly defines a default value of the empty string.
   // This is just to prevent the core variable from complaining should anyone
   // ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -44,7 +44,7 @@ ConfigVariableList(const string &name,
  */
 INLINE size_t ConfigVariableList::
 get_num_values() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, 0);
+  nassertr(_core != nullptr, 0);
   return _core->get_num_trusted_references();
 }
 
@@ -53,9 +53,9 @@ get_num_values() const {
  */
 INLINE string ConfigVariableList::
 get_string_value(size_t n) const {
-  nassertr(_core != (ConfigVariableCore *)NULL, string());
+  nassertr(_core != nullptr, string());
   const ConfigDeclaration *decl = _core->get_trusted_reference(n);
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_string_value();
   }
   return string();
@@ -66,7 +66,7 @@ get_string_value(size_t n) const {
  */
 INLINE size_t ConfigVariableList::
 get_num_unique_values() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, 0);
+  nassertr(_core != nullptr, 0);
   return _core->get_num_unique_references();
 }
 
@@ -75,9 +75,9 @@ get_num_unique_values() const {
  */
 INLINE string ConfigVariableList::
 get_unique_value(size_t n) const {
-  nassertr(_core != (ConfigVariableCore *)NULL, string());
+  nassertr(_core != nullptr, string());
   const ConfigDeclaration *decl = _core->get_unique_reference(n);
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_string_value();
   }
   return string();

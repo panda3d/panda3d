@@ -76,7 +76,7 @@ release_sound_data(bool force) {
  */
 INLINE bool OpenALAudioSound::
 is_valid() const {
-  return _manager != NULL;
+  return _manager != nullptr;
 }
 
 /**
@@ -98,5 +98,5 @@ is_playing() const {
  */
 INLINE bool OpenALAudioSound::
 has_sound_data() const {
-  return _sd != NULL;
+  return _sd != nullptr;
 }

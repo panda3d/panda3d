@@ -18,7 +18,7 @@
 #include "virtualFileSystem.h"
 #include "ca_bundle_data_src.c"
 
-OpenSSLWrapper *OpenSSLWrapper::_global_ptr = NULL;
+OpenSSLWrapper *OpenSSLWrapper::_global_ptr = nullptr;
 
 /**
  *
@@ -154,7 +154,7 @@ load_certificates_from_pem_ram(const char *data, size_t data_size) {
   // We have to be sure and clear the OpenSSL error state before we call this
   // function, or it will get confused.
   ERR_clear_error();
-  inf = PEM_X509_INFO_read_bio(mbio, NULL, NULL, NULL);
+  inf = PEM_X509_INFO_read_bio(mbio, nullptr, nullptr, nullptr);
   BIO_free(mbio);
 
   if (!inf) {
@@ -257,8 +257,8 @@ load_certificates_from_der_ram(const char *data, size_t data_size) {
   bp = (unsigned char *)data;
   bp_end = bp + data_size;
   while (bp < bp_end) {
-    X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-    if (x509 == NULL) {
+    X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+    if (x509 == nullptr) {
       notify_ssl_errors();
       break;
     }
@@ -350,7 +350,7 @@ notify_debug_ssl_errors() {
  */
 OpenSSLWrapper *OpenSSLWrapper::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new OpenSSLWrapper;
   }
   return _global_ptr;

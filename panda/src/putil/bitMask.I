@@ -168,7 +168,7 @@ is_all_on() const {
  * BitMask, shifted to the least-significant position.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 extract(int low_bit, int size) const {
   return (_word >> low_bit) &
     BitMask<WType, nbits>::lower_on(size)._word;
@@ -242,7 +242,7 @@ set_range_to(bool value, int low_bit, int size) {
  * Returns the entire BitMask as a single word.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 get_word() const {
   return _word;
 }

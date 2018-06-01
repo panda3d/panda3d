@@ -221,7 +221,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _transforms.reserve(num_transforms);
   for (size_t i = 0; i < num_transforms; ++i) {
     manager->read_pointer(scan);
-    _transforms.push_back(NULL);
+    _transforms.push_back(nullptr);
   }
 
   manager->read_cdata(scan, _cycler);

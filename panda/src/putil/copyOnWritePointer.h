@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PUTIL CopyOnWritePointer {
 public:
-  INLINE CopyOnWritePointer(CopyOnWriteObject *object = NULL);
+  INLINE CopyOnWritePointer(CopyOnWriteObject *object = nullptr);
   INLINE CopyOnWritePointer(const CopyOnWritePointer &copy);
   INLINE CopyOnWritePointer(CopyOnWritePointer &&from) noexcept;
   INLINE CopyOnWritePointer(PointerTo<CopyOnWriteObject> &&from) noexcept;
@@ -78,7 +78,7 @@ public:
 #ifndef CPPPARSER
   typedef T To;
 
-  INLINE CopyOnWritePointerTo(To *object = NULL);
+  INLINE CopyOnWritePointerTo(To *object = nullptr);
   INLINE CopyOnWritePointerTo(const CopyOnWritePointerTo<T> &copy);
   INLINE CopyOnWritePointerTo(CopyOnWritePointerTo &&from) noexcept;
   INLINE CopyOnWritePointerTo(PointerTo<T> &&from) noexcept;

@@ -243,13 +243,13 @@ root_func(void *data) {
 
     ThreadPosixImpl *self = (ThreadPosixImpl *)data;
     int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
-    nassertr(result == 0, NULL);
+    nassertr(result == 0, nullptr);
 
     {
       self->_mutex.lock();
       nassertd(self->_status == S_start_called) {
         self->_mutex.unlock();
-        return NULL;
+        return nullptr;
       }
 
       self->_status = S_running;
@@ -273,7 +273,7 @@ root_func(void *data) {
       self->_mutex.lock();
       nassertd(self->_status == S_running) {
         self->_mutex.unlock();
-        return NULL;
+        return nullptr;
       }
       self->_status = S_finished;
       self->_mutex.unlock();
@@ -293,7 +293,7 @@ root_func(void *data) {
     unref_delete(self->_parent_obj);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -304,7 +304,7 @@ void ThreadPosixImpl::
 init_pt_ptr_index() {
   nassertv(!_got_pt_ptr_index);
 
-  int result = pthread_key_create(&_pt_ptr_index, NULL);
+  int result = pthread_key_create(&_pt_ptr_index, nullptr);
   if (result != 0) {
     thread_cat->error()
       << "Unable to associate Thread pointers with threads.\n";

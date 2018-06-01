@@ -196,7 +196,7 @@ typedef ConstPointerTo<InternalName> CPT_InternalName;
 #else
 class CPT_InternalName : public ConstPointerTo<InternalName> {
 public:
-  INLINE CPT_InternalName(const To *ptr = (const To *)NULL);
+  INLINE CPT_InternalName(const To *ptr = nullptr);
   INLINE CPT_InternalName(const PointerTo<InternalName> &copy);
   INLINE CPT_InternalName(PointerTo<InternalName> &&from) noexcept;
   INLINE CPT_InternalName(const ConstPointerTo<InternalName> &copy);

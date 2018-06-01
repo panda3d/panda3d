@@ -66,7 +66,7 @@ get_error_count() const {
  */
 INLINE TrueClock *TrueClock::
 get_global_ptr() {
-  if (_global_ptr == (TrueClock *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new TrueClock;
   }
   return _global_ptr;

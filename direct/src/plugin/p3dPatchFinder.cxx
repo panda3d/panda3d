@@ -24,8 +24,8 @@ PackageVersion(const PackageVersionKey &key) :
   _host_url(key._host_url),
   _file(key._file)
 {
-  _package_current = NULL;
-  _package_base = NULL;
+  _package_current = nullptr;
+  _package_base = nullptr;
 }
 
 /**
@@ -58,7 +58,7 @@ get_patch_chain(Patchfiles &chain, PackageVersion *start_pv,
   for (pi = _from_patches.begin(); pi != _from_patches.end(); ++pi) {
     Patchfile *patchfile = (*pi);
     PackageVersion *from_pv = patchfile->_from_pv;
-    assert(from_pv != NULL);
+    assert(from_pv != nullptr);
     Patchfiles this_chain;
     if (from_pv->get_patch_chain(this_chain, start_pv, already_visited)) {
       // There's a path through this patchfile.
@@ -129,8 +129,8 @@ output(ostream &out) const {
 P3DPatchFinder::Patchfile::
 Patchfile(Package *package) :
   _package(package),
-  _from_pv(NULL),
-  _to_pv(NULL)
+  _from_pv(nullptr),
+  _to_pv(nullptr)
 {
   _package_name = package->_package_name;
   _platform = package->_platform;
@@ -161,30 +161,30 @@ get_target_key() const {
 void P3DPatchFinder::Patchfile::
 load_xml(TiXmlElement *xpatch) {
   const char *package_name_cstr = xpatch->Attribute("name");
-  if (package_name_cstr != NULL && *package_name_cstr) {
+  if (package_name_cstr != nullptr && *package_name_cstr) {
     _package_name = package_name_cstr;
   }
   const char *platform_cstr = xpatch->Attribute("platform");
-  if (platform_cstr != NULL && *platform_cstr) {
+  if (platform_cstr != nullptr && *platform_cstr) {
     _platform = platform_cstr;
   }
   const char *version_cstr = xpatch->Attribute("version");
-  if (version_cstr != NULL && *version_cstr) {
+  if (version_cstr != nullptr && *version_cstr) {
     _version = version_cstr;
   }
   const char *host_url_cstr = xpatch->Attribute("host");
-  if (host_url_cstr != NULL && *host_url_cstr) {
+  if (host_url_cstr != nullptr && *host_url_cstr) {
     _host_url = host_url_cstr;
   }
 
   _file.load_xml(xpatch);
 
   TiXmlElement *xsource = xpatch->FirstChildElement("source");
-  if (xsource != NULL) {
+  if (xsource != nullptr) {
     _source_file.load_xml(xsource);
   }
   TiXmlElement *xtarget = xpatch->FirstChildElement("target");
-  if (xtarget != NULL) {
+  if (xtarget != nullptr) {
     _target_file.load_xml(xtarget);
   }
 }
@@ -194,8 +194,8 @@ load_xml(TiXmlElement *xpatch) {
  */
 P3DPatchFinder::Package::
 Package() {
-  _current_pv = NULL;
-  _base_pv = NULL;
+  _current_pv = nullptr;
+  _base_pv = nullptr;
   _got_base_file = false;
 }
 
@@ -230,43 +230,43 @@ get_generic_key(const FileSpec &file) const {
 bool P3DPatchFinder::Package::
 read_desc_file(TiXmlDocument *doc) {
   TiXmlElement *xpackage = doc->FirstChildElement("package");
-  if (xpackage == NULL) {
+  if (xpackage == nullptr) {
     return false;
   }
 
   const char *package_name_cstr = xpackage->Attribute("name");
-  if (package_name_cstr != NULL && *package_name_cstr) {
+  if (package_name_cstr != nullptr && *package_name_cstr) {
     _package_name = package_name_cstr;
   }
   const char *platform_cstr = xpackage->Attribute("platform");
-  if (platform_cstr != NULL && *platform_cstr) {
+  if (platform_cstr != nullptr && *platform_cstr) {
     _platform = platform_cstr;
   }
   const char *version_cstr = xpackage->Attribute("version");
-  if (version_cstr != NULL && *version_cstr) {
+  if (version_cstr != nullptr && *version_cstr) {
     _version = version_cstr;
   }
   const char *host_url_cstr = xpackage->Attribute("host");
-  if (host_url_cstr != NULL && *host_url_cstr) {
+  if (host_url_cstr != nullptr && *host_url_cstr) {
     _host_url = host_url_cstr;
   }
 
   // Get the current version.
   TiXmlElement *xarchive = xpackage->FirstChildElement("uncompressed_archive");
-  if (xarchive != NULL) {
+  if (xarchive != nullptr) {
     _current_file.load_xml(xarchive);
   }
 
   // Get the base_version--the bottom (oldest) of the patch chain.
   xarchive = xpackage->FirstChildElement("base_version");
-  if (xarchive != NULL) {
+  if (xarchive != nullptr) {
     _base_file.load_xml(xarchive);
     _got_base_file = true;
   }
 
   _patches.clear();
   TiXmlElement *xpatch = xpackage->FirstChildElement("patch");
-  while (xpatch != NULL) {
+  while (xpatch != nullptr) {
     Patchfile *patchfile = new Patchfile(this);
     patchfile->load_xml(xpatch);
     _patches.push_back(patchfile);
@@ -301,7 +301,7 @@ get_patch_chain_to_current(Patchfiles &chain, TiXmlDocument *doc,
                            const FileSpec &file) {
   chain.clear();
   Package *package = read_package_desc_file(doc);
-  if (package == NULL) {
+  if (package == nullptr) {
     return false;
   }
 
@@ -309,7 +309,7 @@ get_patch_chain_to_current(Patchfiles &chain, TiXmlDocument *doc,
   PackageVersion *from_pv = get_package_version(package->get_generic_key(file));
   PackageVersion *to_pv = package->_current_pv;
 
-  if (to_pv != NULL && from_pv != NULL) {
+  if (to_pv != nullptr && from_pv != nullptr) {
     return to_pv->get_patch_chain(chain, from_pv, PackageVersionsList());
   }
 
@@ -326,7 +326,7 @@ read_package_desc_file(TiXmlDocument *doc) {
   Package *package = new Package;
   if (!package->read_desc_file(doc)) {
     delete package;
-    return NULL;
+    return nullptr;
   }
 
   _packages.push_back(package);

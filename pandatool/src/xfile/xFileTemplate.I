@@ -65,6 +65,6 @@ get_num_options() const {
  */
 INLINE XFileTemplate *XFileTemplate::
 get_option(int n) const {
-  nassertr(n >= 0 && n < (int)_options.size(), NULL);
+  nassertr(n >= 0 && n < (int)_options.size(), nullptr);
   return _options[n];
 }

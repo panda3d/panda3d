@@ -28,7 +28,7 @@
 template<class SwitchType>
 class AnimChannelFixed : public AnimChannel<SwitchType> {
 public:
-  typedef TYPENAME AnimChannel<SwitchType>::ValueType ValueType;
+  typedef typename AnimChannel<SwitchType>::ValueType ValueType;
 
 protected:
   INLINE AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy);

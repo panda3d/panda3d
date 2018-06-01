@@ -26,8 +26,8 @@
  */
 PNMImage::
 PNMImage(const Filename &filename, PNMFileType *type) {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
   _has_read_size = false;
 
   bool result = read(filename, type);
@@ -43,13 +43,13 @@ PNMImage(const Filename &filename, PNMFileType *type) {
  */
 void PNMImage::
 clear() {
-  if (_array != (xel *)NULL) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
-    _array = (xel *)NULL;
+    _array = nullptr;
   }
-  if (_alpha != (xelval *)NULL) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
-    _alpha = (xelval *)NULL;
+    _alpha = nullptr;
   }
   _x_size = 0;
   _y_size = 0;
@@ -58,7 +58,7 @@ clear() {
   _inv_maxval = 1.0 / 255.0;
   _color_space = CS_linear;
   _comment.clear();
-  _type = (PNMFileType *)NULL;
+  _type = nullptr;
   _has_read_size = false;
   _xel_encoding = XE_generic;
 }
@@ -226,10 +226,10 @@ take_from(PNMImage &orig) {
 
   if (has_alpha()) {
     _alpha = orig._alpha;
-    orig._alpha = NULL;
+    orig._alpha = nullptr;
   }
   _array = orig._array;
-  orig._array = NULL;
+  orig._array = nullptr;
 
   orig.clear();
 }
@@ -274,7 +274,7 @@ alpha_fill_val(xelval alpha) {
 bool PNMImage::
 read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
   PNMReader *reader = make_reader(filename, type, report_unknown_type);
-  if (reader == (PNMReader *)NULL) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -299,7 +299,7 @@ read(istream &data, const string &filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, string(), type, report_unknown_type);
-  if (reader == (PNMReader *)NULL) {
+  if (reader == nullptr) {
     clear();
     return false;
   }
@@ -322,7 +322,7 @@ read(PNMReader *reader) {
 
   clear();
 
-  if (reader == NULL) {
+  if (reader == nullptr) {
     return false;
   }
 
@@ -385,7 +385,7 @@ write(const Filename &filename, PNMFileType *type) const {
   }
 
   PNMWriter *writer = PNMImageHeader::make_writer(filename, type);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -409,7 +409,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
 
   PNMWriter *writer = PNMImageHeader::make_writer
     (&data, false, filename, type);
-  if (writer == (PNMWriter *)NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -425,7 +425,7 @@ write(ostream &data, const string &filename, PNMFileType *type) const {
  */
 bool PNMImage::
 write(PNMWriter *writer) const {
-  if (writer == NULL) {
+  if (writer == nullptr) {
     return false;
   }
 
@@ -497,9 +497,9 @@ set_color_type(PNMImage::ColorType color_type) {
 
   if (has_alpha() && !has_alpha(color_type)) {
     // Discard the alpha channel
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       PANDA_FREE_ARRAY(_alpha);
-      _alpha = NULL;
+      _alpha = nullptr;
     }
 
   } else if (!has_alpha() && has_alpha(color_type)) {
@@ -535,7 +535,7 @@ set_color_space(ColorSpace color_space) {
     return;
   }
 
-  if (_array != NULL) {
+  if (_array != nullptr) {
     size_t array_size = _x_size * _y_size;
 
     // Note: only convert RGB, since alpha channel is always linear.
@@ -680,7 +680,7 @@ unpremultiply_alpha() {
  */
 void PNMImage::
 reverse_rows() {
-  if (_array != NULL) {
+  if (_array != nullptr) {
     xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
     for (int y = 0; y < _y_size; y++) {
       int new_y = _y_size - 1 - y;
@@ -690,7 +690,7 @@ reverse_rows() {
     _array = new_array;
   }
 
-  if (_alpha != NULL) {
+  if (_alpha != nullptr) {
     xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
     for (int y = 0; y < _y_size; y++) {
       int new_y = _y_size - 1 - y;
@@ -712,7 +712,7 @@ void PNMImage::
 flip(bool flip_x, bool flip_y, bool transpose) {
   if (transpose) {
     // Transposed case.  X becomes Y, Y becomes X.
-    if (_array != NULL) {
+    if (_array != nullptr) {
       xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
       for (int xi = 0; xi < _x_size; ++xi) {
         xel *row = new_array + xi * _y_size;
@@ -727,7 +727,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       _array = new_array;
     }
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
       for (int xi = 0; xi < _x_size; ++xi) {
         xelval *row = new_alpha + xi * _y_size;
@@ -749,7 +749,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
 
   } else {
     // Non-transposed.  X is X, Y is Y.
-    if (_array != NULL) {
+    if (_array != nullptr) {
       xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
       for (int yi = 0; yi < _y_size; ++yi) {
         xel *row = new_array + yi * _x_size;
@@ -765,7 +765,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       _array = new_array;
     }
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
       for (int yi = 0; yi < _y_size; ++yi) {
         xelval *row = new_alpha + yi * _x_size;
@@ -984,7 +984,7 @@ set_pixel(int x, int y, const PixelSpec &pixel) {
   xel p;
   PPM_ASSIGN(p, pixel._red, pixel._green, pixel._blue);
   set_xel_val(x, y, p);
-  if (_alpha != NULL) {
+  if (_alpha != nullptr) {
     set_alpha_val(x, y, pixel._alpha);
   }
 }
@@ -1039,7 +1039,7 @@ blend(int x, int y, float r, float g, float b, float alpha) {
  */
 void PNMImage::
 set_array(xel *array) {
-  if (_array != (xel *)NULL) {
+  if (_array != nullptr) {
     PANDA_FREE_ARRAY(_array);
   }
   _array = array;
@@ -1055,7 +1055,7 @@ set_array(xel *array) {
  */
 void PNMImage::
 set_alpha_array(xelval *alpha) {
-  if (_alpha != (xelval *)NULL) {
+  if (_alpha != nullptr) {
     PANDA_FREE_ARRAY(_alpha);
   }
   _alpha = alpha;
@@ -1596,7 +1596,7 @@ threshold(const PNMImage &select_image, int channel, float threshold,
 void PNMImage::
 fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shrink_from_border) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, nullptr, CS_linear);
   dist.fill_val(radius);
 
   xelval threshold_val = mask.to_val(threshold);
@@ -1640,7 +1640,7 @@ fill_distance_inside(const PNMImage &mask, float threshold, int radius, bool shr
 void PNMImage::
 fill_distance_outside(const PNMImage &mask, float threshold, int radius) {
   nassertv(radius <= PNM_MAXMAXVAL);
-  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, NULL, CS_linear);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius, nullptr, CS_linear);
   dist.fill_val(radius);
 
   xelval threshold_val = mask.to_val(threshold);
@@ -2252,20 +2252,20 @@ operator ~ () const {
   PNMImage target (*this);
   size_t array_size = _x_size * _y_size;
 
-  if (_array != NULL && _alpha != NULL) {
+  if (_array != nullptr && _alpha != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._array[i].r = _maxval - _array[i].r;
       target._array[i].g = _maxval - _array[i].g;
       target._array[i].b = _maxval - _array[i].b;
       target._alpha[i] = _maxval - _alpha[i];
     }
-  } else if (_array != NULL) {
+  } else if (_array != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._array[i].r = _maxval - _array[i].r;
       target._array[i].g = _maxval - _array[i].g;
       target._array[i].b = _maxval - _array[i].b;
     }
-  } else if (_alpha != NULL) {
+  } else if (_alpha != nullptr) {
     for (size_t i = 0; i < array_size; ++i) {
       target._alpha[i] = _maxval - _alpha[i];
     }
@@ -2288,7 +2288,7 @@ operator += (const PNMImage &other) {
     size_t array_size = _x_size * _y_size;
 
     // Simple case: add vals directly.
-    if (_alpha != NULL && other._alpha != NULL) {
+    if (_alpha != nullptr && other._alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r + (int)other._array[i].r);
         _array[i].g = clamp_val((int)_array[i].g + (int)other._array[i].g);
@@ -2329,7 +2329,7 @@ operator += (const LColorf &other) {
     int add_b = (int)(other.get_z() * get_maxval() + 0.5);
     int add_a = (int)(other.get_w() * get_maxval() + 0.5);
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r + add_r);
         _array[i].g = clamp_val((int)_array[i].g + add_g);
@@ -2370,7 +2370,7 @@ operator -= (const PNMImage &other) {
     size_t array_size = _x_size * _y_size;
 
     // Simple case: subtract vals directly.
-    if (_alpha != NULL && other._alpha != NULL) {
+    if (_alpha != nullptr && other._alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)_array[i].r - (int)other._array[i].r);
         _array[i].g = clamp_val((int)_array[i].g - (int)other._array[i].g);
@@ -2433,7 +2433,7 @@ operator *= (float multiplier) {
   if (get_color_space() == CS_linear) {
     size_t array_size = _x_size * _y_size;
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)(_array[i].r * multiplier + 0.5f));
         _array[i].g = clamp_val((int)(_array[i].g * multiplier + 0.5f));
@@ -2470,7 +2470,7 @@ operator *= (const LColorf &other) {
   if (get_color_space() == CS_linear) {
     size_t array_size = _x_size * _y_size;
 
-    if (_alpha != NULL) {
+    if (_alpha != nullptr) {
       for (size_t i = 0; i < array_size; ++i) {
         _array[i].r = clamp_val((int)(_array[i].r * other[0] + 0.5f));
         _array[i].g = clamp_val((int)(_array[i].g * other[1] + 0.5f));

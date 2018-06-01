@@ -306,7 +306,7 @@ set_cull_callback(CallbackObject *object) {
  */
 INLINE void DisplayRegion::
 clear_cull_callback() {
-  set_cull_callback(NULL);
+  set_cull_callback(nullptr);
 }
 
 /**
@@ -354,7 +354,7 @@ set_draw_callback(CallbackObject *object) {
  */
 INLINE void DisplayRegion::
 clear_draw_callback() {
-  set_draw_callback(NULL);
+  set_draw_callback(nullptr);
 }
 
 /**
@@ -581,8 +581,8 @@ INLINE DisplayRegionPipelineReader::
   _object->_cycler.release_read(_cdata);
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 

@@ -71,7 +71,7 @@ INLINE AnimChannel<SwitchType>::
  */
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_value(int, TYPENAME AnimChannel<SwitchType>::ValueType &) {
+get_value(int, typename AnimChannel<SwitchType>::ValueType &) {
 }
 #endif
 

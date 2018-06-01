@@ -86,11 +86,11 @@ P3DInstanceManager() {
   _true_object = new P3DBoolObject(true);
   _false_object = new P3DBoolObject(false);
 
-  _auth_session = NULL;
+  _auth_session = nullptr;
 
   // Seed the lame random number generator in rand(); we use it to select a
   // mirror for downloading.
-  srand((unsigned int)time(NULL));
+  srand((unsigned int)time(nullptr));
 
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to this
@@ -127,7 +127,7 @@ P3DInstanceManager::
 
 #ifndef _WIN32
   // Restore the original SIGPIPE handler.
-  sigaction(SIGPIPE, &_old_sigpipe, NULL);
+  sigaction(SIGPIPE, &_old_sigpipe, nullptr);
 #endif  // _WIN32
 
   // force-finish any remaining instances.
@@ -139,9 +139,9 @@ P3DInstanceManager::
   assert(_sessions.empty());
   assert(_instances.empty());
 
-  if (_auth_session != NULL) {
+  if (_auth_session != nullptr) {
     p3d_unref_delete(_auth_session);
-    _auth_session = NULL;
+    _auth_session = nullptr;
   }
 
   Hosts::iterator hi;
@@ -239,7 +239,7 @@ initialize(int api_version, const string &contents_filename,
       int mib[2] = { CTL_HW, HW_MACHINE };
       char machine[512];
       size_t len = 511;
-      if (sysctl(mib, 2, (void *)machine, &len, NULL, 0) == 0) {
+      if (sysctl(mib, 2, (void *)machine, &len, nullptr, 0) == 0) {
         if (strcmp(machine, "x86_64") == 0) {
           _supported_platforms.push_back("osx_amd64");
         }
@@ -400,7 +400,7 @@ set_plugin_version(int major, int minor, int sequence,
   nout << "Core API version: " << _coreapi_set_ver << "\n";
 
   const char *timestamp_string = ctime(&_coreapi_timestamp);
-  if (timestamp_string == NULL) {
+  if (timestamp_string == nullptr) {
     timestamp_string = "";
   }
   nout << "Core API date: " << timestamp_string << "\n";
@@ -541,12 +541,12 @@ finish_instance(P3DInstance *inst) {
  */
 P3DAuthSession *P3DInstanceManager::
 authorize_instance(P3DInstance *inst) {
-  if (_auth_session != NULL) {
+  if (_auth_session != nullptr) {
     // We only want one auth_session window open at a time, to minimize user
     // confusion, so close any previous window.
     _auth_session->shutdown(true);
     p3d_unref_delete(_auth_session);
-    _auth_session = NULL;
+    _auth_session = nullptr;
   }
 
   _auth_session = new P3DAuthSession(inst);
@@ -566,7 +566,7 @@ validate_instance(P3D_instance *instance) {
     return (*ii);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -583,7 +583,7 @@ check_request() {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -600,7 +600,7 @@ wait_request(double timeout) {
   int stop_tick = int(GetTickCount() + timeout * 1000.0);
 #else
   struct timeval stop_time;
-  gettimeofday(&stop_time, NULL);
+  gettimeofday(&stop_time, nullptr);
 
   int seconds = (int)floor(timeout);
   stop_time.tv_sec += seconds;
@@ -612,7 +612,7 @@ wait_request(double timeout) {
 #endif
 
   _request_ready.acquire();
-  if (check_request() != (P3DInstance *)NULL) {
+  if (check_request() != nullptr) {
     _request_ready.release();
     return;
   }
@@ -633,7 +633,7 @@ wait_request(double timeout) {
     timeout = remaining_ticks * 0.001;
 #else
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
 
     struct timeval remaining;
     remaining.tv_sec = stop_time.tv_sec - now.tv_sec;
@@ -649,7 +649,7 @@ wait_request(double timeout) {
     timeout = remaining.tv_sec + remaining.tv_usec * 0.001;
 #endif
 
-    if (check_request() != (P3DInstance *)NULL) {
+    if (check_request() != nullptr) {
       _request_ready.release();
       return;
     }
@@ -713,7 +713,7 @@ get_unique_id() {
  */
 void P3DInstanceManager::
 signal_request_ready(P3DInstance *inst) {
-  if (inst->get_request_ready_func() != NULL) {
+  if (inst->get_request_ready_func() != nullptr) {
     // This instance requires asynchronous notifications of requests.  Thus,
     // we should tell the notify thread to wake up and make the callback.
     _notify_ready.acquire();
@@ -765,7 +765,7 @@ make_temp_filename(const string &extension) {
     if (tid == 0) {
       tid = 1;
     }
-    int hash = ((clock() + _next_temp_filename_counter) * ((time(NULL) * tid) >> 8)) & 0xffffff;
+    int hash = ((clock() + _next_temp_filename_counter) * ((time(nullptr) * tid) >> 8)) & 0xffffff;
     ++_next_temp_filename_counter;
     char hex_code[10];
     sprintf(hex_code, "%06x", hash);
@@ -847,8 +847,8 @@ find_cert(X509 *cert) {
   vector<string>::iterator si;
   for (si = contents.begin(); si != contents.end(); ++si) {
     string filename = this_cert_dir + "/" + (*si);
-    X509 *x509 = NULL;
-    FILE *fp = NULL;
+    X509 *x509 = nullptr;
+    FILE *fp = nullptr;
 #ifdef _WIN32
     wstring filename_w;
     if (string_to_wstring(filename_w, filename)) {
@@ -857,12 +857,12 @@ find_cert(X509 *cert) {
 #else // _WIN32
     fp = fopen(filename.c_str(), "r");
 #endif  // _WIN32
-    if (fp != NULL) {
-      x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
+    if (fp != nullptr) {
+      x509 = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
       fclose(fp);
     }
 
-    if (x509 != NULL) {
+    if (x509 != nullptr) {
       string der2 = cert_to_der(x509);
       // We might as well save this cert in the table for next time, even if
       // it's not the one we're looking for right now.
@@ -896,8 +896,8 @@ read_certlist(P3DPackage *package) {
       string suffix = basename.substr(basename.length() - 4);
       if (suffix == ".pem" || suffix == ".crt") {
         string filename = package->get_package_dir() + "/" + basename;
-        X509 *x509 = NULL;
-        FILE *fp = NULL;
+        X509 *x509 = nullptr;
+        FILE *fp = nullptr;
 #ifdef _WIN32
         wstring filename_w;
         if (string_to_wstring(filename_w, filename)) {
@@ -906,12 +906,12 @@ read_certlist(P3DPackage *package) {
 #else // _WIN32
         fp = fopen(filename.c_str(), "r");
 #endif  // _WIN32
-        if (fp != NULL) {
-          x509 = PEM_read_X509(fp, NULL, NULL, (void *)"");
+        if (fp != nullptr) {
+          x509 = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
           fclose(fp);
         }
 
-        if (x509 != NULL) {
+        if (x509 != nullptr) {
           string der2 = cert_to_der(x509);
           _approved_certs.insert(der2);
         }
@@ -952,7 +952,7 @@ get_cert_dir(X509 *cert) {
  */
 string P3DInstanceManager::
 cert_to_der(X509 *cert) {
-  int buffer_size = i2d_X509(cert, NULL);
+  int buffer_size = i2d_X509(cert, nullptr);
   unsigned char *buffer = new unsigned char[buffer_size];
   unsigned char *p = buffer;
   i2d_X509(cert, &p);
@@ -1001,7 +1001,7 @@ uninstall_all() {
  */
 P3DInstanceManager *P3DInstanceManager::
 get_global_ptr() {
-  if (_global_ptr == NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new P3DInstanceManager;
   }
   return _global_ptr;
@@ -1013,9 +1013,9 @@ get_global_ptr() {
  */
 void P3DInstanceManager::
 delete_global_ptr() {
-  if (_global_ptr != NULL) {
+  if (_global_ptr != nullptr) {
     delete _global_ptr;
-    _global_ptr = NULL;
+    _global_ptr = nullptr;
   }
 }
 
@@ -1072,13 +1072,13 @@ scan_directory(const string &dirname, vector<string> &contents) {
   size_t orig_size = contents.size();
 
   DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)NULL) {
+  if (root == nullptr) {
     return false;
   }
 
   struct dirent *d;
   d = readdir(root);
-  while (d != (struct dirent *)NULL) {
+  while (d != nullptr) {
     if (d->d_name[0] != '.') {
       contents.push_back(d->d_name);
     }
@@ -1347,13 +1347,13 @@ create_runtime_environment() {
   // $TEMP or $TMP being defined specifically, and if they are, we'll use
   // GetTempPath(); otherwise, we'll fall back to SHGetSpecialFolderPath().
 
-  if (getenv("TEMP") != NULL || getenv("TMP") != NULL) {
+  if (getenv("TEMP") != nullptr || getenv("TMP") != nullptr) {
     if (GetTempPathW(MAX_PATH, buffer_1) != 0) {
       temp_directory_w = buffer_1;
     }
   }
   if (temp_directory_w.empty()) {
-    if (SHGetSpecialFolderPathW(NULL, buffer_1, CSIDL_INTERNET_CACHE, true)) {
+    if (SHGetSpecialFolderPathW(nullptr, buffer_1, CSIDL_INTERNET_CACHE, true)) {
       temp_directory_w = buffer_1;
 
       // That just *might* return a non-writable folder, if we're in Protected
@@ -1379,9 +1379,9 @@ create_runtime_environment() {
   }
 
   // Also insist that the temp directory is fully specified.
-  size_t needs_size_2 = GetFullPathNameW(temp_directory_w.c_str(), 0, NULL, NULL);
+  size_t needs_size_2 = GetFullPathNameW(temp_directory_w.c_str(), 0, nullptr, nullptr);
   wchar_t *buffer_2 = new wchar_t[needs_size_2];
-  if (GetFullPathNameW(temp_directory_w.c_str(), needs_size_2, buffer_2, NULL) != 0) {
+  if (GetFullPathNameW(temp_directory_w.c_str(), needs_size_2, buffer_2, nullptr) != 0) {
     temp_directory_w = buffer_2;
   }
   delete[] buffer_2;
@@ -1428,7 +1428,7 @@ create_runtime_environment() {
     struct sigaction ignore;
     memset(&ignore, 0, sizeof(ignore));
     ignore.sa_handler = SIG_IGN;
-    sigaction(SIGINT, &ignore, NULL);
+    sigaction(SIGINT, &ignore, nullptr);
   }
 #endif
 
@@ -1482,9 +1482,9 @@ nt_thread_run() {
       for (ni = instances.begin(); ni != instances.end(); ++ni) {
         // TODO: a race condition here when instances are deleted.
         P3DInstance *inst = (*ni);
-        assert(inst != NULL);
+        assert(inst != nullptr);
         P3D_request_ready_func *func = inst->get_request_ready_func();
-        if (func != NULL) {
+        if (func != nullptr) {
           (*func)(inst);
         }
       }
@@ -1505,7 +1505,7 @@ supports_win64() {
   LPFN_ISWOW64PROCESS _IsWow64Process;
   _IsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle("kernel32"), "IsWow64Process");
 
-  if (_IsWow64Process != NULL) {
+  if (_IsWow64Process != nullptr) {
     if (!_IsWow64Process(GetCurrentProcess(), &is_win64)) {
       is_win64 = false;
     }

@@ -42,7 +42,7 @@ private:
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const Shader *shader = NULL, int priority = 0);
+  static CPT(RenderAttrib) make(const Shader *shader = nullptr, int priority = 0);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
 
@@ -115,7 +115,7 @@ PUBLISHED:
 
   const NodePath &get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;
-  Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=NULL) const;
+  Texture *get_shader_input_texture(const InternalName *id, SamplerState *sampler=nullptr) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
   const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
   ShaderBuffer *get_shader_input_buffer(const InternalName *id) const;

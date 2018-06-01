@@ -30,19 +30,19 @@ public:
     };
 
     PPDownloadRequest( PPInstance& instance, P3D_request* p3dRequest ) :
-        m_instance( instance ), m_p3dRequest( p3dRequest ), m_data( NULL ),
+        m_instance( instance ), m_p3dRequest( p3dRequest ), m_data( nullptr ),
         m_requestType( RequestType::P3DObject ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }
 
     PPDownloadRequest( PPInstance& instance, const std::string& fileName ) :
-        m_instance( instance ), m_p3dRequest( NULL ), m_fileName( fileName ),
-        m_data( NULL ), m_requestType( RequestType::File ), m_hFile( INVALID_HANDLE_VALUE )
+        m_instance( instance ), m_p3dRequest( nullptr ), m_fileName( fileName ),
+        m_data( nullptr ), m_requestType( RequestType::File ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }
 
     PPDownloadRequest( PPInstance& instance, std::strstream* data ) :
-        m_instance( instance ), m_p3dRequest ( NULL ), m_data( data ),
+        m_instance( instance ), m_p3dRequest ( nullptr ), m_data( data ),
         m_requestType( RequestType::Data ), m_hFile( INVALID_HANDLE_VALUE )
     {
     }

@@ -62,7 +62,7 @@ EggVertexAux::
  */
 PT(EggVertexAux) EggVertexAux::
 make_average(const EggVertexAux *first, const EggVertexAux *second) {
-  nassertr(first->get_name() == second->get_name(), NULL);
+  nassertr(first->get_name() == second->get_name(), nullptr);
 
   LVecBase4d aux = (first->_aux + second->_aux) / 2;
   return new EggVertexAux(first->get_name(), aux);

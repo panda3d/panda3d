@@ -15,7 +15,7 @@
  *
  */
 INLINE VirtualFileMountRamdisk::FileBase::
-FileBase(const string &basename) : _basename(basename), _timestamp(time(NULL)) {
+FileBase(const string &basename) : _basename(basename), _timestamp(time(nullptr)) {
 }
 
 /**

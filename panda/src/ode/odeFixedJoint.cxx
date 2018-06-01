@@ -23,7 +23,7 @@ OdeFixedJoint(dJointID id) :
 
 OdeFixedJoint::
 OdeFixedJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateFixed(world.get_id(), 0)) {
+  OdeJoint(dJointCreateFixed(world.get_id(), nullptr)) {
 }
 
 OdeFixedJoint::

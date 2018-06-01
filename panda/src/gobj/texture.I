@@ -2454,6 +2454,6 @@ inc_simple_image_modified() {
 INLINE Texture::RamImage::
 RamImage() :
   _page_size(0),
-  _pointer_image(NULL)
+  _pointer_image(nullptr)
 {
 }

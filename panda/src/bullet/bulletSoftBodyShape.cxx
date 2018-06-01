@@ -47,6 +47,6 @@ get_body() const {
   }
   else
   {
-    return NULL;
+    return nullptr;
   }
 }

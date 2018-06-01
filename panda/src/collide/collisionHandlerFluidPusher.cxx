@@ -35,7 +35,7 @@ CollisionHandlerFluidPusher() {
  */
 void CollisionHandlerFluidPusher::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != nullptr);
   // skip over CollisionHandlerPhysical::add_entry, since it filters out
   // collidees by orientation; our collider can change direction mid-frame, so
   // it may collide with something that would have been filtered out
@@ -158,20 +158,20 @@ handle_entries() {
 
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
-        const CollisionEntry *C = 0;
+        const CollisionEntry *C = nullptr;
         // find the first (earliest) collision
         Entries::const_iterator cei;
         for (cei = entries.begin(); cei != entries.end(); ++cei) {
           const CollisionEntry *entry = (*cei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
-          if (entry->collided() && ((C == 0) || (entry->get_t() < C->get_t()))) {
+          nassertr(entry != nullptr, false);
+          if (entry->collided() && ((C == nullptr) || (entry->get_t() < C->get_t()))) {
             nassertr(from_node_path == entry->get_from_node_path(), false);
             C = entry;
           }
         }
 
         // if no collisions, we're done
-        if (C == 0) {
+        if (C == nullptr) {
           break;
         }
 
@@ -227,13 +227,13 @@ handle_entries() {
         Entries new_entries;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
+          nassertr(entry != nullptr, false);
           // skip the one we just collided against
           if (entry != C) {
             entry->_from_node_path = from_node_path;
             entry->reset_collided();
             PT(CollisionEntry) result = entry->get_from()->test_intersection(**ei);
-            if (result != (CollisionEntry *)NULL && result != (CollisionEntry *)0) {
+            if (result != nullptr && result != nullptr) {
               new_entries.push_back(result);
             }
           }

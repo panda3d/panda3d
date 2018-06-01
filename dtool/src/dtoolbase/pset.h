@@ -54,27 +54,27 @@ public:
   pset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : base_class(comp, type_handle) { }
 
 #ifdef USE_TAU
-  std::pair<TYPENAME base_class::iterator, bool>
-  insert(const TYPENAME base_class::value_type &x) {
+  std::pair<typename base_class::iterator, bool>
+  insert(const typename base_class::value_type &x) {
     TAU_PROFILE("pset::insert(const value_type &)", " ", TAU_USER);
     return base_class::insert(x);
   }
 
-  TYPENAME base_class::iterator
-  insert(TYPENAME base_class::iterator position,
-         const TYPENAME base_class::value_type &x) {
+  typename base_class::iterator
+  insert(typename base_class::iterator position,
+         const typename base_class::value_type &x) {
     TAU_PROFILE("pset::insert(iterator, const value_type &)", " ", TAU_USER);
     return base_class::insert(position, x);
   }
 
   void
-  erase(TYPENAME base_class::iterator position) {
+  erase(typename base_class::iterator position) {
     TAU_PROFILE("pset::erase(iterator)", " ", TAU_USER);
     base_class::erase(position);
   }
 
-  TYPENAME base_class::size_type
-  erase(const TYPENAME base_class::key_type &x) {
+  typename base_class::size_type
+  erase(const typename base_class::key_type &x) {
     TAU_PROFILE("pset::erase(const key_type &)", " ", TAU_USER);
     return base_class::erase(x);
   }
@@ -85,14 +85,14 @@ public:
     base_class::clear();
   }
 
-  TYPENAME base_class::iterator
-  find(const TYPENAME base_class::key_type &x) {
+  typename base_class::iterator
+  find(const typename base_class::key_type &x) {
     TAU_PROFILE("pset::find(x)", " ", TAU_USER);
     return base_class::find(x);
   }
 
-  TYPENAME base_class::const_iterator
-  find(const TYPENAME base_class::key_type &x) const {
+  typename base_class::const_iterator
+  find(const typename base_class::key_type &x) const {
     TAU_PROFILE("pset::find(x)", " ", TAU_USER);
     return base_class::find(x);
   }

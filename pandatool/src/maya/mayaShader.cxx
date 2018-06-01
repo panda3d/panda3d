@@ -113,7 +113,7 @@ get_color_def(size_t idx) const {
   if (_color.size() > 0)
     return _color[idx];
   else
-    return (MayaShaderColorDef *)NULL;
+    return nullptr;
 }
 /**
  * Returns the overall color of the shader as a single-precision rgba value,

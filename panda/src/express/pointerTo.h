@@ -68,7 +68,7 @@
 template <class T>
 class PointerTo : public PointerToBase<T> {
 public:
-  typedef TYPENAME PointerToBase<T>::To To;
+  typedef typename PointerToBase<T>::To To;
 PUBLISHED:
   ALWAYS_INLINE constexpr PointerTo() noexcept = default;
   ALWAYS_INLINE PointerTo(To *ptr) noexcept;
@@ -129,7 +129,7 @@ PUBLISHED:
 template <class T>
 class ConstPointerTo : public PointerToBase<T> {
 public:
-  typedef TYPENAME PointerToBase<T>::To To;
+  typedef typename PointerToBase<T>::To To;
 PUBLISHED:
   ALWAYS_INLINE constexpr ConstPointerTo() noexcept = default;
   ALWAYS_INLINE ConstPointerTo(const To *ptr) noexcept;

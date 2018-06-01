@@ -55,7 +55,7 @@ ConfigVariableBase(const string &name,
 void ConfigVariableBase::
 record_unconstructed() const {
 #ifndef NDEBUG
-  if (_unconstructed == (Unconstructed *)NULL) {
+  if (_unconstructed == nullptr) {
     _unconstructed = new Unconstructed;
   }
   _unconstructed->insert(this);
@@ -69,7 +69,7 @@ record_unconstructed() const {
 bool ConfigVariableBase::
 was_unconstructed() const {
 #ifndef NDEBUG
-  if (_unconstructed != (Unconstructed *)NULL) {
+  if (_unconstructed != nullptr) {
     Unconstructed::const_iterator ui = _unconstructed->find(this);
     if (ui != _unconstructed->end()) {
       return true;

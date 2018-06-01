@@ -338,7 +338,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
                          iostream_dont_close, istream_size,
                          iostream_map, iostream_unmap);
 
-    if ( tif == NULL ) {
+    if ( tif == nullptr ) {
       _is_valid = false;
     }
   }
@@ -374,7 +374,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   if (_is_valid) {
     unsigned short num_extra_samples;
-    unsigned short *extra_samples = NULL;
+    unsigned short *extra_samples = nullptr;
 
     if (!TIFFGetField(tif, TIFFTAG_EXTRASAMPLES, &num_extra_samples,
                       &extra_samples)) {
@@ -547,7 +547,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
  */
 PNMFileTypeTIFF::Reader::
 ~Reader() {
-  if (tif != (struct tiff *)NULL) {
+  if (tif != nullptr) {
     TIFFClose(tif);
   }
 }
@@ -898,7 +898,7 @@ write_pfm(const PfmFile &pfm) {
                        (TIFFSeekProc)ostream_seek,
                        iostream_dont_close, ostream_size,
                        iostream_map, iostream_unmap);
-  if (tif == NULL) {
+  if (tif == nullptr) {
     return false;
   }
 
@@ -958,7 +958,7 @@ write_pfm(const PfmFile &pfm) {
  */
 int PNMFileTypeTIFF::Writer::
 write_data(xel *array, xelval *alpha) {
-  colorhist_vector chv = (colorhist_vector) 0;
+  colorhist_vector chv = nullptr;
   colorhash_table cht;
   unsigned short
     red[TIFF_COLORMAP_MAXCOLORS],
@@ -986,7 +986,7 @@ write_data(xel *array, xelval *alpha) {
     // the number of colors we can read.
     chv = ppm_computecolorhist( (pixel **)&array, _x_size * _y_size, 1,
                                 256, &colors );
-    if ( chv == (colorhist_vector) 0 ) {
+    if ( chv == nullptr ) {
       pnmimage_tiff_cat.debug()
         << colors << " colors found; too many for a palette.\n"
         << "Writing a 24-bit RGB file.\n";
@@ -1011,12 +1011,12 @@ write_data(xel *array, xelval *alpha) {
 
   case CT_two_channel:  // We don't yet support two-channel output for TIFF's.
   case CT_four_channel:
-    chv = (colorhist_vector) 0;
+    chv = nullptr;
     grayscale = false;
     break;
 
   case CT_grayscale:
-    chv = (colorhist_vector) 0;
+    chv = nullptr;
     grayscale = true;
     break;
 
@@ -1031,7 +1031,7 @@ write_data(xel *array, xelval *alpha) {
                        (TIFFSeekProc)ostream_seek,
                        iostream_dont_close, ostream_size,
                        iostream_map, iostream_unmap);
-  if ( tif == NULL ) {
+  if ( tif == nullptr ) {
     return 0;
   }
 
@@ -1039,7 +1039,7 @@ write_data(xel *array, xelval *alpha) {
   switch ( get_color_type() ) {
   case CT_color:
   case CT_four_channel:
-    if ( chv == (colorhist_vector) 0 ) {
+    if ( chv == nullptr ) {
       samplesperpixel = _num_channels;
       bitspersample = 8;
       photometric = PHOTOMETRIC_RGB;
@@ -1072,7 +1072,7 @@ write_data(xel *array, xelval *alpha) {
   }
 
   buf = (unsigned char*) malloc( bytesperrow );
-  if ( buf == (unsigned char*) 0 ) {
+  if ( buf == nullptr ) {
     pnmimage_tiff_cat.error()
       << "Can't allocate memory for row buffer\n";
     return 0;
@@ -1100,8 +1100,8 @@ write_data(xel *array, xelval *alpha) {
   }
   TIFFSetField( tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG );
 
-  if ( chv == (colorhist_vector) 0 ) {
-    cht = (colorhash_table) 0;
+  if ( chv == nullptr ) {
+    cht = nullptr;
   } else {
     /* Make TIFF colormap. */
     for ( i = 0; i < colors; ++i ) {
@@ -1122,7 +1122,7 @@ write_data(xel *array, xelval *alpha) {
     xelval *alpha_data = alpha + row*_x_size;
 
     if ( !is_grayscale() && ! grayscale ) {
-      if ( cht == (colorhash_table) 0 ) {
+      if ( cht == nullptr ) {
         tP = buf;
         for ( col = 0; col < _x_size; ++col ) {
           *tP++ = (unsigned char)(255 * PPM_GETR(row_data[col]) / _maxval);

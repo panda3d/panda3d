@@ -54,7 +54,7 @@ get_num_bundles() const {
  */
 INLINE PartBundle *PartBundleNode::
 get_bundle(int n) const {
-  nassertr(n >= 0 && n < (int)_bundles.size(), NULL);
+  nassertr(n >= 0 && n < (int)_bundles.size(), nullptr);
   return _bundles[n]->get_bundle();
 }
 
@@ -65,6 +65,6 @@ get_bundle(int n) const {
  */
 INLINE PartBundleHandle *PartBundleNode::
 get_bundle_handle(int n) const {
-  nassertr(n >= 0 && n < (int)_bundles.size(), NULL);
+  nassertr(n >= 0 && n < (int)_bundles.size(), nullptr);
   return _bundles[n];
 }

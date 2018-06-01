@@ -166,7 +166,7 @@ PandaNode(const PandaNode &copy) :
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
     cdata->_bounds_type = copy_cdata->_bounds_type;
     cdata->_user_bounds = copy_cdata->_user_bounds;
-    cdata->_internal_bounds = NULL;
+    cdata->_internal_bounds = nullptr;
     cdata->_internal_bounds_computed = UpdateSeq::initial();
     cdata->_internal_bounds_mark = UpdateSeq::initial();
     ++cdata->_internal_bounds_mark;
@@ -333,7 +333,7 @@ combine_with(PandaNode *other) {
   }
 
   // We're something other than an ordinary PandaNode.  Don't combine.
-  return (PandaNode *)NULL;
+  return nullptr;
 }
 
 /**
@@ -523,7 +523,7 @@ count_num_descendants() const {
  */
 void PandaNode::
 add_child(PandaNode *child_node, int sort, Thread *current_thread) {
-  nassertv(child_node != (PandaNode *)NULL);
+  nassertv(child_node != nullptr);
 
   if (!verify_child_no_cycles(child_node)) {
     // Whoops, adding this child node would introduce a cycle in the scene
@@ -596,7 +596,7 @@ remove_child(int child_index, Thread *current_thread) {
  */
 bool PandaNode::
 remove_child(PandaNode *child_node, Thread *current_thread) {
-  nassertr(child_node != (PandaNode *)NULL, false);
+  nassertr(child_node != nullptr, false);
 
   // Make sure the child node is not destructed during the execution of this
   // method.
@@ -633,8 +633,8 @@ remove_child(PandaNode *child_node, Thread *current_thread) {
 bool PandaNode::
 replace_child(PandaNode *orig_child, PandaNode *new_child,
               Thread *current_thread) {
-  nassertr(orig_child != (PandaNode *)NULL, false);
-  nassertr(new_child != (PandaNode *)NULL, false);
+  nassertr(orig_child != nullptr, false);
+  nassertr(new_child != nullptr, false);
 
   if (orig_child == new_child) {
     // Trivial no-op.
@@ -1182,8 +1182,8 @@ reset_all_prev_transform(Thread *current_thread) {
 
     list_node = panda_node->_next;
 #ifndef NDEBUG
-    panda_node->_prev = NULL;
-    panda_node->_next = NULL;
+    panda_node->_prev = nullptr;
+    panda_node->_next = nullptr;
 #endif  // NDEBUG
     panda_node->mark_bam_modified();
   }
@@ -1768,7 +1768,7 @@ is_scene_root() const {
   // This function pointer has to be filled in when the global GraphicsEngine
   // is created, because we can't link with the GraphicsEngine functions
   // directly.
-  if (_scene_root_func != (SceneRootFunc *)NULL) {
+  if (_scene_root_func != nullptr) {
     return (*_scene_root_func)(this);
   }
   return false;
@@ -1906,8 +1906,8 @@ set_bounds(const BoundingVolume *volume) {
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    if (volume == NULL) {
-      cdata->_user_bounds = NULL;
+    if (volume == nullptr) {
+      cdata->_user_bounds = nullptr;
     } else {
       cdata->_user_bounds = volume->make_copy();
     }
@@ -2091,7 +2091,7 @@ is_collision_node() const {
  */
 Light *PandaNode::
 as_light() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -2135,7 +2135,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     UpdateSeq mark;
     {
       CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-      if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+      if (cdata->_user_bounds != nullptr) {
         return cdata->_user_bounds;
       }
 
@@ -2152,7 +2152,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
     int internal_vertices;
     compute_internal_bounds(internal_bounds, internal_vertices,
                             pipeline_stage, current_thread);
-    nassertr(!internal_bounds.is_null(), NULL);
+    nassertr(!internal_bounds.is_null(), nullptr);
 
     // Now, acquire the lock, and apply the above-computed bounds.
     CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage);
@@ -2373,13 +2373,13 @@ draw_mask_changed() {
 PT(PandaNode) PandaNode::
 r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const {
   PT(PandaNode) copy = make_copy();
-  nassertr(copy != (PandaNode *)NULL, NULL);
+  nassertr(copy != nullptr, nullptr);
   if (copy->get_type() != get_type()) {
     pgraph_cat.warning()
       << "Don't know how to copy nodes of type " << get_type() << "\n";
 
     if (no_unsupported_copy) {
-      nassertr(false, NULL);
+      nassertr(false, nullptr);
     }
   }
 
@@ -2666,11 +2666,11 @@ find_node_above(PandaNode *node) {
 PT(NodePathComponent) PandaNode::
 attach(NodePathComponent *parent, PandaNode *child_node, int sort,
        int pipeline_stage, Thread *current_thread) {
-  if (parent == (NodePathComponent *)NULL) {
+  if (parent == nullptr) {
     // Attaching to NULL means to create a new "instance" with no attachments,
     // and no questions asked.
     PT(NodePathComponent) child =
-      new NodePathComponent(child_node, (NodePathComponent *)NULL,
+      new NodePathComponent(child_node, nullptr,
                             pipeline_stage, current_thread);
     LightReMutexHolder holder(child_node->_paths_lock);
     child_node->_paths.insert(child);
@@ -2681,7 +2681,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
   // use that same NodePathComponent.
   PT(NodePathComponent) child = get_component(parent, child_node, pipeline_stage, current_thread);
 
-  if (child == (NodePathComponent *)NULL) {
+  if (child == nullptr) {
     // The child was not already attached to the parent, so get a new
     // component.
     child = get_top_component(child_node, true, pipeline_stage, current_thread);
@@ -2700,7 +2700,7 @@ attach(NodePathComponent *parent, PandaNode *child_node, int sort,
  */
 void PandaNode::
 detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)NULL);
+  nassertv(child != nullptr);
 
   for (int pipeline_stage_i = pipeline_stage;
        pipeline_stage_i >= 0;
@@ -2720,7 +2720,7 @@ detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread) {
 void PandaNode::
 detach_one_stage(NodePathComponent *child, int pipeline_stage,
                  Thread *current_thread) {
-  nassertv(child != (NodePathComponent *)NULL);
+  nassertv(child != nullptr);
   if (child->is_top_node(pipeline_stage, current_thread)) {
     return;
   }
@@ -2786,7 +2786,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
          bool as_stashed, int pipeline_stage, Thread *current_thread) {
   bool any_ok = false;
 
-  if (new_parent != (NodePathComponent *)NULL &&
+  if (new_parent != nullptr &&
       !new_parent->get_node()->verify_child_no_cycles(child->get_node())) {
     // Whoops, adding this child node would introduce a cycle in the scene
     // graph.
@@ -2802,7 +2802,7 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
     }
   }
 
-  if (new_parent != (NodePathComponent *)NULL) {
+  if (new_parent != nullptr) {
     new_parent->get_node()->children_changed();
     new_parent->get_node()->mark_bam_modified();
   }
@@ -2825,7 +2825,7 @@ bool PandaNode::
 reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
                    int sort, bool as_stashed, int pipeline_stage,
                    Thread *current_thread) {
-  nassertr(child != (NodePathComponent *)NULL, false);
+  nassertr(child != nullptr, false);
 
   // Keep a reference count to the new parent, since detaching the child might
   // lose the count.
@@ -2835,7 +2835,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
     detach(child, pipeline_stage, current_thread);
   }
 
-  if (new_parent != (NodePathComponent *)NULL) {
+  if (new_parent != nullptr) {
     PandaNode *child_node = child->get_node();
     PandaNode *parent_node = new_parent->get_node();
 
@@ -2887,7 +2887,7 @@ reparent_one_stage(NodePathComponent *new_parent, NodePathComponent *child,
 PT(NodePathComponent) PandaNode::
 get_component(NodePathComponent *parent, PandaNode *child_node,
               int pipeline_stage, Thread *current_thread) {
-  nassertr(parent != (NodePathComponent *)NULL, (NodePathComponent *)NULL);
+  nassertr(parent != nullptr, nullptr);
   PandaNode *parent_node = parent->get_node();
 
   LightReMutexHolder holder(child_node->_paths_lock);
@@ -2916,7 +2916,7 @@ get_component(NodePathComponent *parent, PandaNode *child_node,
     return child;
   } else {
     // They aren't related.  Return NULL.
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -2948,13 +2948,13 @@ get_top_component(PandaNode *child_node, bool force, int pipeline_stage,
   if (!force) {
     // If we don't care to force the point, return NULL to indicate there's
     // not already a top component.
-    return NULL;
+    return nullptr;
   }
 
   // We don't already have such a NodePathComponent; create and return a new
   // one.
   PT(NodePathComponent) child =
-    new NodePathComponent(child_node, (NodePathComponent *)NULL,
+    new NodePathComponent(child_node, nullptr,
                           pipeline_stage, current_thread);
   child_node->_paths.insert(child);
 
@@ -3169,7 +3169,7 @@ r_list_descendants(ostream &out, int indent_level) const {
  */
 int PandaNode::
 do_find_child(PandaNode *node, const PandaNode::Down *down) const {
-  nassertr(node != (PandaNode *)NULL, -1);
+  nassertr(node != nullptr, -1);
 
   // We have to search for the child by brute force, since we don't know what
   // sort index it was added as.
@@ -3232,7 +3232,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         << "\n";
     }
     CPT(RenderAttrib) off_clip_planes = cdata->_state->get_attrib(ClipPlaneAttrib::get_class_slot());
-    if (off_clip_planes == (RenderAttrib *)NULL) {
+    if (off_clip_planes == nullptr) {
       off_clip_planes = ClipPlaneAttrib::make();
     }
 
@@ -3261,7 +3261,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     int child_volumes_i = 0;
 
     bool all_box = true;
-    CPT(BoundingVolume) internal_bounds = NULL;
+    CPT(BoundingVolume) internal_bounds = nullptr;
 
     if (update_bounds) {
       child_volumes = (const BoundingVolume **)alloca(sizeof(BoundingVolume *) * (num_children + 1));
@@ -3273,7 +3273,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
         nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
         child_volumes[child_volumes_i++] = internal_bounds;
-        if (internal_bounds->as_bounding_box() == NULL) {
+        if (internal_bounds->as_bounding_box() == nullptr) {
           all_box = false;
         }
       }
@@ -3371,7 +3371,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdataw->_external_bounds;
-            if (child_cdataw->_external_bounds->as_bounding_box() == NULL) {
+            if (child_cdataw->_external_bounds->as_bounding_box() == nullptr) {
               all_box = false;
             }
           }
@@ -3426,7 +3426,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 #endif
             nassertr(child_volumes_i < num_children + 1, CDStageWriter(_cycler, pipeline_stage, cdata));
             child_volumes[child_volumes_i++] = child_cdata->_external_bounds;
-            if (child_cdata->_external_bounds->as_bounding_box() == NULL) {
+            if (child_cdata->_external_bounds->as_bounding_box() == nullptr) {
               all_box = false;
             }
           }
@@ -3668,7 +3668,7 @@ CData() :
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
   _bounds_type(BoundingVolume::BT_default),
-  _user_bounds(NULL),
+  _user_bounds(nullptr),
   _final_bounds(false),
   _fancy_bits(0),
 
@@ -4075,7 +4075,7 @@ fillin_down_list(PandaNode::Down &down_list, const string &tag,
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
     int sort = scan.get_int32();
-    DownConnection connection(NULL, sort);
+    DownConnection connection(nullptr, sort);
     new_down_list.push_back(connection);
   }
 
@@ -4104,7 +4104,7 @@ check_cached(bool update_bounds) const {
 #ifdef DO_PIPELINING
     node_unref_delete((CycleData *)_cdata);
 #endif  // DO_PIPELINING
-    ((PandaNodePipelineReader *)this)->_cdata = NULL;
+    ((PandaNodePipelineReader *)this)->_cdata = nullptr;
     int pipeline_stage = _current_thread->get_pipeline_stage();
     PandaNode::CDLockedStageReader fresh_cdata(_node->_cycler, pipeline_stage, _current_thread);
     if (fresh_cdata->_last_update == fresh_cdata->_next_update &&

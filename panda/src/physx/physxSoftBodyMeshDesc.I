@@ -20,11 +20,11 @@ PhysxSoftBodyMeshDesc() {
   _desc.flags = 0;
   _desc.vertexStrideBytes = sizeof(NxVec3);
   _desc.tetrahedronStrideBytes = 4*sizeof(NxU32);
-  _desc.vertices = NULL;
-  _desc.tetrahedra = NULL;
+  _desc.vertices = nullptr;
+  _desc.tetrahedra = nullptr;
 
-  _vertices = NULL;
-  _tetrahedra = NULL;
+  _vertices = nullptr;
+  _tetrahedra = nullptr;
 }
 
 /**

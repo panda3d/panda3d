@@ -33,7 +33,7 @@ BEGIN_PUBLISH
  */
 EXPCL_PANDAEGG PT(PandaNode)
 load_egg_file(const Filename &filename, CoordinateSystem cs = CS_default,
-              BamCacheRecord *record = NULL);
+              BamCacheRecord *record = nullptr);
 
 /**
  * Another convenience function; works like load_egg_file() but starts from an
