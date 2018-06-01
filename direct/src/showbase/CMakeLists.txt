@@ -2,7 +2,7 @@ set(P3SHOWBASE_FILES
     showBase.cxx
     showBase.h)
 set(P3SHOWBASE_EXTRA_ARGS "")
-if(IS_OSX) 
+if(APPLE) 
   list(APPEND P3SHOWBASE_FILES showBase_assist.mm)
 endif()
 
