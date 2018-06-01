@@ -92,7 +92,7 @@ consider_update() {
  * independently of the original.
  */
 PT(Texture) OpenCVTexture::
-make_copy_impl() {
+make_copy_impl() const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   PT(OpenCVTexture) copy = new OpenCVTexture(get_name());
   Texture::CDWriter cdata_copy_tex(copy->Texture::_cycler, true);

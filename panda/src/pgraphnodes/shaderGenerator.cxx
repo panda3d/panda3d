@@ -288,8 +288,6 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
   }
 
-  bool normal_mapping = key._lighting && shader_attrib->auto_normal_on();
-
   // See if there is a normal map, height map, gloss map, or glow map.  Also
   // check if anything has TexGen.
 

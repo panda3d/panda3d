@@ -1355,7 +1355,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
 
         # Enable more warnings.
-        cmd += " -Wall -Wno-reorder -Wno-unused-function"
+        cmd += " -Wall -Wno-unused-function"
 
         if not src.endswith(".c"):
             cmd += " -Wno-reorder"

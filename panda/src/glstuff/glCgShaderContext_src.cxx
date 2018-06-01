@@ -1079,7 +1079,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
-    const InternalName *id = spec._name;
 
     CGparameter p = _cg_parameter_map[spec._id._seqno];
     if (p == 0) {

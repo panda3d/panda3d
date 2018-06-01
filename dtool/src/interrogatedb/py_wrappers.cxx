@@ -517,7 +517,7 @@ static PyObject *Dtool_MappingWrapper_keys(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Keys_Type, "MappingView");
   }
 
-  PyObject_INIT(keys, &Dtool_MappingWrapper_Keys_Type);
+  (void)PyObject_INIT(keys, &Dtool_MappingWrapper_Keys_Type);
   Py_XINCREF(wrap->_base._self);
   keys->_base._self = wrap->_base._self;
   keys->_base._name = wrap->_base._name;
@@ -552,7 +552,7 @@ static PyObject *Dtool_MappingWrapper_values(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Values_Type, "ValuesView");
   }
 
-  PyObject_INIT(values, &Dtool_MappingWrapper_Values_Type);
+  (void)PyObject_INIT(values, &Dtool_MappingWrapper_Values_Type);
   Py_XINCREF(wrap->_base._self);
   values->_base._self = wrap->_base._self;
   values->_base._name = wrap->_base._name;
@@ -588,7 +588,7 @@ static PyObject *Dtool_MappingWrapper_items(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Items_Type, "MappingView");
   }
 
-  PyObject_INIT(items, &Dtool_MappingWrapper_Items_Type);
+  (void)PyObject_INIT(items, &Dtool_MappingWrapper_Items_Type);
   Py_XINCREF(wrap->_base._self);
   items->_base._self = wrap->_base._self;
   items->_base._name = wrap->_base._name;
@@ -1557,7 +1557,7 @@ Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name
     _register_collection((PyTypeObject *)&Dtool_MutableSequenceWrapper_Type, "Sequence");
   }
 
-  PyObject_INIT(wrap, &Dtool_SequenceWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_SequenceWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1582,7 +1582,7 @@ Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, co
     _register_collection((PyTypeObject *)&Dtool_MutableSequenceWrapper_Type, "MutableSequence");
   }
 
-  PyObject_INIT(wrap, &Dtool_MutableSequenceWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MutableSequenceWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1609,7 +1609,7 @@ Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name) 
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Type, "Mapping");
   }
 
-  PyObject_INIT(wrap, &Dtool_MappingWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MappingWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1636,7 +1636,7 @@ Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char 
     _register_collection((PyTypeObject *)&Dtool_MutableMappingWrapper_Type, "MutableMapping");
   }
 
-  PyObject_INIT(wrap, &Dtool_MutableMappingWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MutableMappingWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;

@@ -41,7 +41,6 @@ protected:
   virtual bool open_buffer();
 
 private:
-  X11_Display *_display;
   EGLSurface _pbuffer;
   EGLDisplay _egl_display;
 
