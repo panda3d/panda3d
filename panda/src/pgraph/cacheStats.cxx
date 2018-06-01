@@ -22,10 +22,7 @@ void CacheStats::
 init() {
 #ifndef NDEBUG
   // Let's not use the clock at static init time.
-  reset(0.0);
-  // reset(ClockObject::get_global_clock()->get_real_time());
-  _total_cache_size = 0;
-  _num_states = 0;
+  //reset(ClockObject::get_global_clock()->get_real_time());
 
   _cache_report = ConfigVariableBool("cache-report", false);
   _cache_report_interval = ConfigVariableDouble("cache-report-interval", 5.0);

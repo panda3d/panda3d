@@ -18,28 +18,6 @@
 #include "texture.h"
 
 /**
- *
- */
-FrameBufferProperties::
-FrameBufferProperties() {
-  clear();
-}
-
-/**
- *
- */
-void FrameBufferProperties::
-operator = (const FrameBufferProperties &copy) {
-  _flags_specified = copy._flags_specified;
-  _flags = copy._flags;
-  _specified = copy._specified;
-
-  for (int i = 0; i < FBP_COUNT; ++i) {
-    _property[i]  = copy._property[i];
-  }
-}
-
-/**
  * Returns true if this set of properties makes strictly greater or equal
  * demands of the framebuffer than the other set of framebuffer properties.
  */
