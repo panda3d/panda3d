@@ -1412,9 +1412,9 @@ assemble_row(TextAssembler::TextRow &row,
   bool underscore = false;
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = nullptr;
-  const ComputedProperties *prev_cprops = nullptr;
 
 #ifdef HAVE_HARFBUZZ
+  const ComputedProperties *prev_cprops = nullptr;
   hb_buffer_t *harfbuff = nullptr;
 #endif
 

@@ -191,7 +191,7 @@ string handle_socket_error() {
   return string(strerror(errno));
 #else
   int err = WSAGetLastError();
-  char *errmsg;
+  const char *errmsg;
   switch (err) {
     case 10022:
       errmsg =  "An invalid argument was supplied";

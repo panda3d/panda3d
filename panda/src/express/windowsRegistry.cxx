@@ -34,8 +34,6 @@ set_string_value(const string &key, const string &name, const string &value,
   TextEncoder encoder;
   wstring wvalue = encoder.decode_text(value);
 
-  bool okflag = true;
-
   // Now convert the string to Windows' idea of the correct wide-char
   // encoding, so we can store it in the registry.  This might well be the
   // same string we just decoded from, but it might not.

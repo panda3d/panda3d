@@ -261,7 +261,7 @@ WinGraphicsPipe() {
       windisplay_cat.debug() << "Using EnumDisplaySettings to fetch display information.\n";
     }
     pvector<DisplayMode> display_modes;
-    DEVMODE dm = {0};
+    DEVMODE dm{};
     dm.dmSize = sizeof(dm);
     for (int i = 0; EnumDisplaySettings(NULL, i, &dm) != 0; ++i) {
       DisplayMode mode;
@@ -293,7 +293,7 @@ WinGraphicsPipe() {
   version_info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
   if (GetVersionEx(&version_info)) {
     if (windisplay_cat.is_info()) {
-      sprintf(string, "OS version: %d.%d.%d.%d\n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
+      sprintf(string, "OS version: %lu.%lu.%lu.%lu\n", version_info.dwMajorVersion, version_info.dwMinorVersion, version_info.dwPlatformId, version_info.dwBuildNumber);
       windisplay_cat.info() << string;
       windisplay_cat.info() << "  " << version_info.szCSDVersion << "\n";
     }

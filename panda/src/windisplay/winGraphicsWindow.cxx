@@ -69,9 +69,9 @@ static const char * const errorbox_title = "Panda3D Error";
 
 // These static variables contain pointers to the touch input functions, which
 // are dynamically extracted from USER32.DLL
-typedef WINUSERAPI BOOL (WINAPI *PFN_REGISTERTOUCHWINDOW)(IN HWND hWnd, IN ULONG ulFlags);
-typedef WINUSERAPI BOOL (WINAPI *PFN_GETTOUCHINPUTINFO)(IN HTOUCHINPUT hTouchInput, IN UINT cInputs, OUT PTOUCHINPUT pInputs, IN int cbSize);
-typedef WINUSERAPI BOOL (WINAPI *PFN_CLOSETOUCHINPUTHANDLE)(IN HTOUCHINPUT hTouchInput);
+typedef BOOL (WINAPI *PFN_REGISTERTOUCHWINDOW)(IN HWND hWnd, IN ULONG ulFlags);
+typedef BOOL (WINAPI *PFN_GETTOUCHINPUTINFO)(IN HTOUCHINPUT hTouchInput, IN UINT cInputs, OUT PTOUCHINPUT pInputs, IN int cbSize);
+typedef BOOL (WINAPI *PFN_CLOSETOUCHINPUTHANDLE)(IN HTOUCHINPUT hTouchInput);
 
 static PFN_REGISTERTOUCHWINDOW pRegisterTouchWindow = 0;
 static PFN_GETTOUCHINPUTINFO pGetTouchInputInfo = 0;
@@ -1292,7 +1292,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       << msg << ", " << wparam << ", " << lparam << ")\n";
   }
   WindowProperties properties;
-  int button = -1;
 
   switch (msg) {
   case WM_MOUSEMOVE:

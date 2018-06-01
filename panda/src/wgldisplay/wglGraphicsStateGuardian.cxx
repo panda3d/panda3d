@@ -123,7 +123,6 @@ get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum) {
                              pfd.cBlueBits, pfd.cAlphaBits);
   }
 
-  int mode = 0;
   if (pfd.dwFlags & PFD_DOUBLEBUFFER) {
     properties.set_back_buffers(1);
   }
@@ -193,7 +192,6 @@ get_properties_advanced(FrameBufferProperties &properties,
   properties.clear();
   properties.set_all_specified();
 
-  int frame_buffer_mode = 0;
   if (ivalue_list[acceleration_i] == WGL_NO_ACCELERATION_ARB) {
     properties.set_force_software(true);
   } else {

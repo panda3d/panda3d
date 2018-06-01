@@ -259,7 +259,7 @@ inline static void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, cha
   *len = 0;
 
   while (kappa > 0) {
-    uint32_t d;
+    uint32_t d = 0;
     switch (kappa) {
       case 10: d = p1 / 1000000000; p1 %= 1000000000; break;
       case  9: d = p1 /  100000000; p1 %=  100000000; break;
