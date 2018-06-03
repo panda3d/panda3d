@@ -114,9 +114,9 @@ static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
 
-static vector<CPPScope *> last_scopes;
-static vector<int> last_storage_classes;
-static vector<CPPStructType *> last_structs;
+static std::vector<CPPScope *> last_scopes;
+static std::vector<int> last_storage_classes;
+static std::vector<CPPStructType *> last_structs;
 
 int yyparse();
 

@@ -1637,7 +1637,7 @@ run_ssl_handshake() {
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << _NOTIFY_HTTP_CHANNEL_ID
-        << "Received certificate from server:\n" << flush;
+        << "Received certificate from server:\n" << std::flush;
       X509_print_fp(stderr, cert);
       fflush(stderr);
     }
@@ -2144,14 +2144,14 @@ run_reading_body() {
   }
 
   string line;
-  getline(*_body_stream, line);
+  std::getline(*_body_stream, line);
   while (!_body_stream->fail() && !_body_stream->eof()) {
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << _NOTIFY_HTTP_CHANNEL_ID
         << "skip: " << line << "\n";
     }
-    getline(*_body_stream, line);
+    std::getline(*_body_stream, line);
   }
 
   if (!_body_stream->is_closed()) {

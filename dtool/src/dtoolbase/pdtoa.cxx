@@ -397,7 +397,7 @@ void pdtoa(double value, char *buffer) {
 #ifdef _MSC_VER
   if (copysign(1.0, value) < 0) {
 #else
-  if (signbit(value)) {
+  if (std::signbit(value)) {
 #endif
     *buffer++ = '-';
     value = -value;

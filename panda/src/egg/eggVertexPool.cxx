@@ -675,7 +675,7 @@ transform(const LMatrix4d &mat) {
     typedef pvector<EggVertex *> Verts;
     Verts verts;
     verts.reserve(size());
-    copy(begin(), end(), back_inserter(verts));
+    std::copy(begin(), end(), std::back_inserter(verts));
 
     Verts::const_iterator vi;
     for (vi = verts.begin(); vi != verts.end(); ++vi) {
@@ -742,7 +742,7 @@ sort_by_external_index() {
     sorted_vertices.push_back(*i);
   }
 
-  ::sort(sorted_vertices.begin(), sorted_vertices.end(), SortByExternalIndex());
+  std::sort(sorted_vertices.begin(), sorted_vertices.end(), SortByExternalIndex());
 
   // Now reassign the indices, and copy them into a new index map.
   IndexVertices new_index_vertices;

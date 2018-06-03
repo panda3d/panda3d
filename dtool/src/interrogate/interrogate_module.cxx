@@ -80,10 +80,10 @@ upcase_string(const string &str) {
  * Finds a dependency cycle between the given dependency mapping, starting at
  * the node that is already placed in the given cycle vector.
  */
-static bool find_dependency_cycle(vector_string &cycle, map<string, set<string> > &dependencies) {
+static bool find_dependency_cycle(vector_string &cycle, std::map<string, std::set<string> > &dependencies) {
   assert(!cycle.empty());
 
-  const set<string> &deps = dependencies[cycle.back()];
+  const std::set<string> &deps = dependencies[cycle.back()];
   for (auto it = deps.begin(); it != deps.end(); ++it) {
     auto it2 = std::find(cycle.begin(), cycle.end(), *it);
     if (it2 != cycle.end()) {
@@ -156,7 +156,7 @@ int write_python_table_native(ostream &out) {
 
   int count = 0;
 
-  map<string, set<string> > dependencies;
+  std::map<string, std::set<string> > dependencies;
 
 // out << "extern \"C\" {\n";
 
@@ -182,7 +182,7 @@ int write_python_table_native(ostream &out) {
     if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
       if (interrogate_type_has_library_name(thetype)) {
         string library_name = interrogate_type_library_name(thetype);
-        set<string> &deps = dependencies[library_name];
+        std::set<string> &deps = dependencies[library_name];
 
         // Get the dependencies for this library.
         int num_derivations = interrogate_type_number_of_derivations(thetype);
@@ -219,7 +219,7 @@ int write_python_table_native(ostream &out) {
 
     for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
       const string &library_name = it->first;
-      set<string> &deps = dependencies[library_name];
+      std::set<string> &deps = dependencies[library_name];
 
       // Remove the dependencies that have already been added from the deps.
       if (!deps.empty()) {
@@ -243,7 +243,7 @@ int write_python_table_native(ostream &out) {
       cerr << "Circular dependency between libraries detected:\n";
       for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
         const string &library_name = it->first;
-        set<string> &deps = dependencies[library_name];
+        std::set<string> &deps = dependencies[library_name];
         if (deps.empty()) {
           continue;
         }

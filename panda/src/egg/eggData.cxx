@@ -276,7 +276,7 @@ write(ostream &out, int indent_level) const {
   PT(EggCoordinateSystem) ecs = new EggCoordinateSystem(_coordsys);
   ecs->write(out, indent_level);
   EggGroupNode::write(out, indent_level);
-  out << flush;
+  out << std::flush;
 }
 
 

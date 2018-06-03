@@ -644,7 +644,7 @@ erase(iterator first, iterator last) {
 EggPrimitive::iterator EggPrimitive::
 find(EggVertex *vertex) {
   PT_EggVertex vpt = vertex;
-  return ::find(begin(), end(), vpt);
+  return std::find(begin(), end(), vpt);
 }
 
 
@@ -670,7 +670,7 @@ add_vertex(EggVertex *vertex) {
 EggVertex *EggPrimitive::
 remove_vertex(EggVertex *vertex) {
   PT_EggVertex vpt = vertex;
-  iterator i = ::find(begin(), end(), vpt);
+  iterator i = std::find(begin(), end(), vpt);
   if (i == end()) {
     return PT_EggVertex();
   } else {

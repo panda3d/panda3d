@@ -73,7 +73,7 @@ make(PyStringObject *str) {
     Py_INCREF(str);
     iname->ref();
 
-    InternalName::_py_intern_table.insert(make_pair((PyObject *)str, iname.p()));
+    InternalName::_py_intern_table.insert(std::make_pair((PyObject *)str, iname.p()));
     return iname.p();
   }
 

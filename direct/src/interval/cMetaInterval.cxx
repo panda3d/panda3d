@@ -756,7 +756,7 @@ do_recompute() {
 
   // We do a stable_sort() to guarantee ordering of events that have the same
   // start time.  These must be invoked in the order in which they appear.
-  stable_sort(_events.begin(), _events.end(), IndirectLess<PlaybackEvent>());
+  std::stable_sort(_events.begin(), _events.end(), IndirectLess<PlaybackEvent>());
   _duration = int_to_double_time(_end_time);
 }
 

@@ -27,8 +27,8 @@
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define pmap map
-#define pmultimap multimap
+#define pmap std::map
+#define pmultimap std::multimap
 
 #ifdef HAVE_STL_HASH
 #define phash_map stdext::hash_map
@@ -39,6 +39,9 @@
 #endif  // HAVE_STL_HASH
 
 #else  // USE_STL_ALLOCATOR
+
+using std::map;
+using std::multimap;
 
 /**
  * This is our own Panda specialization on the default STL map.  Its main

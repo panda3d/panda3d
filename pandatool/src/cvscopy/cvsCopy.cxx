@@ -264,7 +264,7 @@ verify_binary_file(Filename source, Filename dest) {
   source.set_binary();
   dest.set_binary();
 
-  ifstream s, d;
+  std::ifstream s, d;
   if (!source.open_read(s)) {
     return false;
   }
@@ -313,8 +313,8 @@ copy_binary_file(Filename source, Filename dest) {
   source.set_binary();
   dest.set_binary();
 
-  ifstream in;
-  ofstream out;
+  std::ifstream in;
+  std::ofstream out;
   if (!source.open_read(in)) {
     nout << "Cannot read " << source << "\n";
     return false;
@@ -475,11 +475,11 @@ scan_for_root(const string &dirname) {
  */
 string CVSCopy::
 prompt(const string &message) {
-  nout << flush;
+  nout << std::flush;
   while (true) {
-    cerr << message << flush;
-    string response;
-    getline(cin, response);
+    std::cerr << message << std::flush;
+    std::string response;
+    std::getline(std::cin, response);
 
     // Remove leading and trailing whitespace.
     size_t p = 0;

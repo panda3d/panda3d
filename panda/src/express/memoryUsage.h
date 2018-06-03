@@ -156,12 +156,12 @@ private:
  * one pointer or the other.  We don't store an entry for an object's
  * TypedObject pointer.
  */
-  typedef map<void *, MemoryInfo *> Table;
+  typedef std::map<void *, MemoryInfo *> Table;
   Table _table;
 
   // This table indexes the individual MemoryInfo objects, for unique
   // iteration.
-  typedef set<MemoryInfo *> InfoSet;
+  typedef std::set<MemoryInfo *> InfoSet;
   InfoSet _info_set;
   bool _info_set_dirty;
 

@@ -39,7 +39,7 @@ public:
     CaptureType _type;
     CPPExpression *_initializer;
   };
-  typedef vector<Capture> Captures;
+  typedef std::vector<Capture> Captures;
   Captures _captures;
 
   CaptureType _default_capture;

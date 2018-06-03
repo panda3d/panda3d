@@ -203,11 +203,11 @@ PUBLISHED:
   EXTENSION(PyObject *scan_directory() const);
 #endif
 
-  bool open_read(ifstream &stream) const;
-  bool open_write(ofstream &stream, bool truncate = true) const;
-  bool open_append(ofstream &stream) const;
-  bool open_read_write(fstream &stream, bool truncate = false) const;
-  bool open_read_append(fstream &stream) const;
+  bool open_read(std::ifstream &stream) const;
+  bool open_write(std::ofstream &stream, bool truncate = true) const;
+  bool open_append(std::ofstream &stream) const;
+  bool open_read_write(std::fstream &stream, bool truncate = false) const;
+  bool open_read_append(std::fstream &stream) const;
 
 #ifdef USE_PANDAFILESTREAM
   bool open_read(pifstream &stream) const;

@@ -438,11 +438,11 @@ ask_any(const string &basename,
  */
 string CVSSourceTree::
 prompt(const string &message) {
-  nout << flush;
+  nout << std::flush;
   while (true) {
-    cerr << message << flush;
-    string response;
-    getline(cin, response);
+    cerr << message << std::flush;
+    std::string response;
+    std::getline(std::cin, response);
 
     // Remove leading and trailing whitespace.
     size_t p = 0;

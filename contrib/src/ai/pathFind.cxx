@@ -46,7 +46,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
   string fields[10];
 
   // Open data file for reading.
-  ifstream nav_mesh_file (navmesh_filename);
+  std::ifstream nav_mesh_file (navmesh_filename);
 
   if(nav_mesh_file.is_open()) {
     // Capture the grid size from the file.
@@ -56,7 +56,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
 
     // Initialize the stage mesh with NULL nodes.
     for(int r = 0; r < _grid_size; ++r) {
-      _nav_mesh.push_back(vector<Node*>());
+      _nav_mesh.push_back(std::vector<Node*>());
       for(int c = 0; c < _grid_size; ++c) {
         _nav_mesh[r].push_back(NULL);
       }
@@ -111,7 +111,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
  * _nav_mesh.
  */
 void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
-  ifstream nav_mesh_file (navmesh_filename);
+  std::ifstream nav_mesh_file (navmesh_filename);
 
   // Stage variables.
   int gd_x, gd_y, gd_xn, gd_yn;

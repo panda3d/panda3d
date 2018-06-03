@@ -48,7 +48,7 @@ thread_main() {
       MutexHolder holder(cout_mutex);
       cout << "Running thread " << get_name()
            << " with parameter " << _parameter
-           << ", i = " << i << "\n" << flush;
+           << ", i = " << i << "\n" << std::flush;
       Thread *thread = get_current_thread();
       nassertv(thread == this);
     }

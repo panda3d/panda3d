@@ -601,7 +601,7 @@ template<class Key, class Compare, class Vector>
 INLINE void ordered_vector<Key, Compare, Vector>::
 sort_nonunique() {
   TAU_PROFILE("ordered_vector::sort_nonunique()", " ", TAU_USER);
-  stable_sort(begin(), end(), _compare);
+  std::stable_sort(begin(), end(), _compare);
 }
 
 /**

@@ -237,7 +237,7 @@ FltError FltHeader::
 write_flt(Filename filename) {
   filename.set_binary();
 
-  ofstream out;
+  std::ofstream out;
   if (!filename.open_write(out)) {
     assert(!flt_error_abort);
     return FE_could_not_open;

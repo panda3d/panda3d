@@ -76,14 +76,14 @@ handle_args(ProgramBase::Args &args) {
     nout << "Populating args from input file: " << _input_filename << "\n";
     // Makes sure the file is set is_text
     _filename = Filename::text_filename(_input_filename);
-    ifstream input;
+    std::ifstream input;
     if (!_filename.open_read(input)) {
       nout << "Error opening file: " << _input_filename << "\n";
       return false;
     }
     string line;
     // File should be a space-delimited list of egg files
-    while (getline(input, line, ' ')) {
+    while (std::getline(input, line, ' ')) {
       args.push_back(line);
     }
   }

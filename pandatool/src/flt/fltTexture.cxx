@@ -136,7 +136,7 @@ FltError FltTexture::
 read_attr_data() {
   Filename attr_filename = get_attr_filename();
 
-  ifstream attr;
+  std::ifstream attr;
   if (!attr_filename.open_read(attr)) {
     return FE_could_not_open;
   }
@@ -184,7 +184,7 @@ write_attr_data(Filename attr_filename) const {
   }
 
   attr_filename.set_binary();
-  ofstream attr;
+  std::ofstream attr;
   if (!attr_filename.open_write(attr)) {
     return FE_could_not_open;
   }

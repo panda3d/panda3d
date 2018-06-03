@@ -90,7 +90,7 @@ public:
   };
 
 private:
-  typedef vector<Parameter> Parameters;
+  typedef std::vector<Parameter> Parameters;
   Parameters _parameters;
 
   friend class InterrogateBuilder;

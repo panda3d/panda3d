@@ -22,9 +22,11 @@
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define plist list
+#define plist std::list
 
 #else
+
+using std::list;
 
 /**
  * This is our own Panda specialization on the default STL list.  Its main

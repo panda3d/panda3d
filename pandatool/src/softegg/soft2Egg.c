@@ -192,10 +192,9 @@ class soft2egg : public EggBase
     bool                has_morph;
     bool                make_pose;
 
-    ofstream    eggFile;
-    ofstream    animFile;
-    ofstream    texFile;
-
+    std::ofstream eggFile;
+    std::ofstream animFile;
+    std::ofstream texFile;
 };
 
 

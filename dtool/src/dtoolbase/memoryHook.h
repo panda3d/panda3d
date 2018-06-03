@@ -84,7 +84,7 @@ protected:
 private:
   size_t _page_size;
 
-  typedef map<size_t, DeletedBufferChain *> DeletedChains;
+  typedef std::map<size_t, DeletedBufferChain *> DeletedChains;
   DeletedChains _deleted_chains;
 
   mutable MutexImpl _lock;

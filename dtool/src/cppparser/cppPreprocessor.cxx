@@ -567,12 +567,12 @@ show_line(const YYLTYPE &loc) {
   }
 
   // Seek to the offending line in the file.
-  ifstream stream;
+  std::ifstream stream;
   if (loc.file._filename.open_read(stream)) {
     int l = 0;
     string linestr;
     while (l < loc.first_line) {
-      getline(stream, linestr);
+      std::getline(stream, linestr);
       ++l;
     }
 

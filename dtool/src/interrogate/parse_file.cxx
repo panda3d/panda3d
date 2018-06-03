@@ -276,7 +276,7 @@ main(int argc, char **argv) {
     while (cin) {
       string str;
       cout << "Enter an expression or type name:\n";
-      getline(cin, str);
+      std::getline(std::cin, str);
       if (!str.empty()) {
 
         size_t space = str.find(' ');

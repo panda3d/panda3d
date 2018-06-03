@@ -734,8 +734,8 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new LightAttrib that will hold the result.
   LightAttrib *new_attrib = new LightAttrib;
-  back_insert_iterator<Lights> result =
-    back_inserter(new_attrib->_on_lights);
+  std::back_insert_iterator<Lights> result =
+    std::back_inserter(new_attrib->_on_lights);
 
   while (ai != _on_lights.end() &&
          bi != ta->_on_lights.end() &&

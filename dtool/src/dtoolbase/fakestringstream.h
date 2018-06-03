@@ -18,8 +18,6 @@
 #include <string.h>
 #include <string>
 
-using namespace std;
-
 class fake_istream_buffer {
 public:
   fake_istream_buffer() {

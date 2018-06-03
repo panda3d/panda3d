@@ -18,8 +18,8 @@
 #include "cmath.h"
 #include "lineSegs.h"
 
-typedef vector<Node *> NodeArray;
-typedef vector<NodeArray> NavMesh;
+typedef std::vector<Node *> NodeArray;
+typedef std::vector<NodeArray> NavMesh;
 
 Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size);
 
@@ -32,8 +32,8 @@ class EXPCL_PANDAAI PathFinder {
 public:
   Node *_src_node;
   Node *_dest_node;
-  vector<Node*> _open_list;
-  vector<Node*> _closed_list;
+  std::vector<Node*> _open_list;
+  std::vector<Node*> _closed_list;
 
   NavMesh _grid;
 

@@ -185,7 +185,7 @@ public:
 private:
   // This mutex protects _attribs.
   static LightReMutex *_attribs_lock;
-  typedef SimpleHashMap<const RenderAttrib *, nullptr_t, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
+  typedef SimpleHashMap<const RenderAttrib *, std::nullptr_t, indirect_compare_to_hash<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 
   int _saved_entry;

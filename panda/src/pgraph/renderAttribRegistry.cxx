@@ -105,7 +105,7 @@ register_slot(TypeHandle type_handle, int sort, RenderAttrib *default_attrib) {
   _registry.push_back(RegistryNode(type_handle, sort, default_attrib));
 
   _sorted_slots.push_back(slot);
-  ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
+  std::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
 
   return slot;
 }
@@ -123,7 +123,7 @@ set_slot_sort(int slot, int sort) {
   for (int i = 1; i < (int)_registry.size(); ++i) {
     _sorted_slots.push_back(i);
   }
-  ::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
+  std::sort(_sorted_slots.begin(), _sorted_slots.end(), SortSlots(this));
 }
 
 /**

@@ -117,11 +117,11 @@ eggyyerror(const string &msg) {
     }
     out
       << " at line " << line_number << ", column " << col_number << ":\n"
-      << setiosflags(Notify::get_literal_flag())
+      << std::setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
     indent(out, col_number-1)
       << "^\n" << msg << "\n\n"
-      << resetiosflags(Notify::get_literal_flag()) << flush;
+      << std::resetiosflags(Notify::get_literal_flag()) << std::flush;
   }
   error_count++;
 }
@@ -143,11 +143,11 @@ eggyywarning(const string &msg) {
     }
     out
       << " at line " << line_number << ", column " << col_number << ":\n"
-      << setiosflags(Notify::get_literal_flag())
+      << std::setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
     indent(out, col_number-1)
       << "^\n" << msg << "\n\n"
-      << resetiosflags(Notify::get_literal_flag()) << flush;
+      << std::resetiosflags(Notify::get_literal_flag()) << std::flush;
   }
   warning_count++;
 }
@@ -270,7 +270,7 @@ eat_c_comment() {
       ostringstream errmsg;
       errmsg << "This comment contains a nested /* symbol at line "
              << line << ", column " << col-1 << "--possibly unclosed?"
-             << ends;
+             << std::ends;
       eggyywarning(errmsg);
     }
     last_c = c;

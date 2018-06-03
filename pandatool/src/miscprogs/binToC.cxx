@@ -66,13 +66,13 @@ BinToC() :
  */
 void BinToC::
 run() {
-  ifstream in;
+  std::ifstream in;
   if (!_input_filename.open_read(in)) {
     nout << "Unable to read " << _input_filename << ".\n";
     exit(1);
   }
 
-  ostream &out = get_output();
+  std::ostream &out = get_output();
   string static_keyword;
   if (_static_table) {
     static_keyword = "static ";

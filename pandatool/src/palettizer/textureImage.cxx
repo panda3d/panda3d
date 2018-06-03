@@ -90,7 +90,7 @@ assign_groups() {
   if (_explicitly_assigned_groups.empty()) {
     // If we have no explicit group assignments, we must consider all the egg
     // files.
-    copy(_egg_files.begin(), _egg_files.end(), back_inserter(needed_eggs));
+    std::copy(_egg_files.begin(), _egg_files.end(), std::back_inserter(needed_eggs));
 
   } else {
     // Otherwise, we only need to consider the egg files that don't have any

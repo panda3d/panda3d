@@ -43,7 +43,7 @@ public:
   TypeHandle _handle;
   string _name;
   TypeHandle &_ref;
-  typedef vector<TypeRegistryNode *> Classes;
+  typedef std::vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;
   Classes _child_classes;
 
@@ -72,7 +72,7 @@ private:
     SubtreeMaskType _mask;
     SubtreeMaskType _bits;
   };
-  typedef vector<Inherit> TopInheritance;
+  typedef std::vector<Inherit> TopInheritance;
 
   void r_build_subtrees(TypeRegistryNode *top,
                         int bit_count, SubtreeMaskType bits);

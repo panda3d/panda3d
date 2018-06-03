@@ -971,14 +971,14 @@ vertex:
   if (vertex_index < 0) {
     ostringstream errmsg;
     errmsg << "Ignoring invalid vertex index " << vertex_index
-           << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << std::ends;
     eggyywarning(errmsg);
     vertex_index = -1;
 
   } else if (pool->has_vertex(vertex_index)) {
     ostringstream errmsg;
     errmsg << "Ignoring duplicate vertex index " << vertex_index
-           << " in vertex pool " << pool->get_name() << ends;
+           << " in vertex pool " << pool->get_name() << std::ends;
     eggyywarning(errmsg);
     vertex_index = -1;
   }
@@ -1797,7 +1797,7 @@ group_vertex_ref:
       if (vertex == NULL) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
-               << ends;
+               << std::ends;
         eggyyerror(errmsg);
       } else {
         group->ref_vertex(vertex, membership);
@@ -2477,7 +2477,7 @@ primitive_vertex_ref:
       if (vertex == NULL) {
         ostringstream errmsg;
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
-               << ends;
+               << std::ends;
         eggyyerror(errmsg);
       } else {
         prim->add_vertex(vertex);

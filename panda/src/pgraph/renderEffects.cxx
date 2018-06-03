@@ -123,8 +123,8 @@ xform(const LMatrix4 &mat) const {
   }
 
   RenderEffects *new_state = new RenderEffects;
-  back_insert_iterator<Effects> result =
-    back_inserter(new_state->_effects);
+  std::back_insert_iterator<Effects> result =
+    std::back_inserter(new_state->_effects);
 
   Effects::const_iterator ai;
   for (ai = _effects.begin(); ai != _effects.end(); ++ai) {
@@ -251,8 +251,8 @@ make(const RenderEffect *effect1,
 CPT(RenderEffects) RenderEffects::
 add_effect(const RenderEffect *effect) const {
   RenderEffects *new_state = new RenderEffects;
-  back_insert_iterator<Effects> result =
-    back_inserter(new_state->_effects);
+  std::back_insert_iterator<Effects> result =
+    std::back_inserter(new_state->_effects);
 
   Effect new_effect(effect);
   Effects::const_iterator ai = _effects.begin();
@@ -288,8 +288,8 @@ add_effect(const RenderEffect *effect) const {
 CPT(RenderEffects) RenderEffects::
 remove_effect(TypeHandle type) const {
   RenderEffects *new_state = new RenderEffects;
-  back_insert_iterator<Effects> result =
-    back_inserter(new_state->_effects);
+  std::back_insert_iterator<Effects> result =
+    std::back_inserter(new_state->_effects);
 
   Effects::const_iterator ai = _effects.begin();
 

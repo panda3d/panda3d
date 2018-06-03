@@ -55,7 +55,7 @@ private:
   InterrogateModuleDef *_def;
   string _name;
 
-  typedef vector<string> Strings;
+  typedef std::vector<string> Strings;
   Strings _alt_names;
 
   friend class InterrogateBuilder;

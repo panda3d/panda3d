@@ -77,7 +77,7 @@ run() {
   _decimated_point_number = 0.0;
   _num_vdatas = 0;
   string line;
-  while (getline(pts, line)) {
+  while (std::getline(pts, line)) {
     process_line(line);
   }
   close_vertex_data();
@@ -132,7 +132,7 @@ process_line(const string &line) {
   _line_number++;
 
   if (_line_number % 1000000 == 0) {
-    cerr << "." << flush;
+    std::cerr << "." << std::flush;
   }
 
   if (line.empty() || !isdigit(line[0])) {

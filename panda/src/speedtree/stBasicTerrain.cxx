@@ -191,7 +191,7 @@ setup_terrain(istream &in, const Filename &pathname) {
   }
 
   // Consume any whitespace at the end of the file.
-  in >> ws;
+  in >> std::ws;
 
   if (!in.eof()) {
     // If we didn't read all the way to end-of-file, there was an error.

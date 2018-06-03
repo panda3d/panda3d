@@ -1855,7 +1855,7 @@ scan_directory(vector_string &contents) const {
  * or set_binary().
  */
 bool Filename::
-open_read(ifstream &stream) const {
+open_read(std::ifstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1891,7 +1891,7 @@ open_read(ifstream &stream) const {
  * if it already exists.  Otherwise, the file is kept at its original length.
  */
 bool Filename::
-open_write(ofstream &stream, bool truncate) const {
+open_write(std::ofstream &stream, bool truncate) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1937,7 +1937,7 @@ open_write(ofstream &stream, bool truncate) const {
  * or set_binary().
  */
 bool Filename::
-open_append(ofstream &stream) const {
+open_append(std::ofstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1969,7 +1969,7 @@ open_append(ofstream &stream) const {
  * one of set_text() or set_binary().
  */
 bool Filename::
-open_read_write(fstream &stream, bool truncate) const {
+open_read_write(std::fstream &stream, bool truncate) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -2011,7 +2011,7 @@ open_read_write(fstream &stream, bool truncate) const {
  * open_read() without first calling one of set_text() or set_binary().
  */
 bool Filename::
-open_read_append(fstream &stream) const {
+open_read_append(std::fstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 

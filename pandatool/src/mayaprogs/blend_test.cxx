@@ -177,7 +177,7 @@ output_vertices(const char *filename, MFnMesh &mesh) {
     exit(1);
   }
 
-  ofstream file(filename, ios::out | ios::trunc);
+  std::ofstream file(filename, ios::out | ios::trunc);
   if (!file) {
     cerr << "Couldn't open " << filename << " for output.\n";
     exit(1);

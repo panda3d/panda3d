@@ -76,7 +76,7 @@ private:
 
   void config_initialized();
 
-  typedef vector<ConfigPage *> Pages;
+  typedef std::vector<ConfigPage *> Pages;
   Pages _implicit_pages;
   Pages _explicit_pages;
   bool _pages_sorted;
@@ -87,7 +87,7 @@ private:
 
   DSearchPath _search_path;
 
-  typedef vector<GlobPattern> Globs;
+  typedef std::vector<GlobPattern> Globs;
   Globs _prc_patterns;
   Globs _prc_encrypted_patterns;
   Globs _prc_executable_patterns;
@@ -105,7 +105,7 @@ private:
     int _file_flags;
     Filename _filename;
   };
-  typedef vector<ConfigFile> ConfigFiles;
+  typedef std::vector<ConfigFile> ConfigFiles;
 
   static ConfigPageManager *_global_ptr;
 };

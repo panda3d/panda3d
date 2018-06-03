@@ -2801,7 +2801,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
   // instead of source indices.
   istringstream log(info_log);
   string line;
-  while (getline(log, line)) {
+  while (std::getline(log, line)) {
     int fileno, lineno, colno;
     int prefixlen = 0;
 

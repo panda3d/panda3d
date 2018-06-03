@@ -552,7 +552,7 @@ get_group() {
       in.get();
     }
 
-    getline(in, _string);
+    std::getline(in, _string);
     _string = trim_right(_string);
 
     if (!in) {

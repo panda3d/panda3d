@@ -22,9 +22,11 @@
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define pdeque deque
+#define pdeque std::deque
 
 #else
+
+using std::deque;
 
 /**
  * This is our own Panda specialization on the default STL deque.  Its main

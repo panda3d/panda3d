@@ -64,7 +64,7 @@ public:
   virtual bool separate_overloading();
   virtual bool wrap_global_functions();
 
-  void get_function_remaps(vector<FunctionRemap *> &remaps);
+  void get_function_remaps(std::vector<FunctionRemap *> &remaps);
 
   static ostream &indent(ostream &out, int indent_level);
 
@@ -100,14 +100,14 @@ public:
     string _name;
     const InterrogateType &_itype;
     const InterrogateFunction &_ifunc;
-    typedef vector<FunctionRemap *> Remaps;
+    typedef std::vector<FunctionRemap *> Remaps;
     Remaps _remaps;
     bool _has_this;
     int _flags;
     ArgsType _args_type;
   };
-  typedef map<FunctionIndex, Function *> FunctionsByIndex;
-  typedef vector<Function *> Functions;
+  typedef std::map<FunctionIndex, Function *> FunctionsByIndex;
+  typedef std::vector<Function *> Functions;
   FunctionsByIndex _functions;
 
   class MakeSeq {
@@ -119,15 +119,15 @@ public:
     Function *_length_getter;
     Function *_element_getter;
   };
-  typedef vector<MakeSeq *> MakeSeqs;
+  typedef std::vector<MakeSeq *> MakeSeqs;
 
   class Property {
   public:
     Property(const InterrogateElement &ielement);
 
     const InterrogateElement &_ielement;
-    vector<FunctionRemap *> _getter_remaps;
-    vector<FunctionRemap *> _setter_remaps;
+    std::vector<FunctionRemap *> _getter_remaps;
+    std::vector<FunctionRemap *> _setter_remaps;
     Function *_length_function;
     Function *_has_function;
     Function *_clear_function;
@@ -136,7 +136,7 @@ public:
     Function *_getkey_function;
     bool _has_this;
   };
-  typedef vector<Property *> Properties;
+  typedef std::vector<Property *> Properties;
 
   class Object {
   public:
@@ -162,10 +162,10 @@ public:
     };
     int _protocol_types;
   };
-  typedef map<TypeIndex, Object *> Objects;
+  typedef std::map<TypeIndex, Object *> Objects;
   Objects _objects;
 
-  typedef map<string, FunctionRemap *> WrappersByHash;
+  typedef std::map<string, FunctionRemap *> WrappersByHash;
   WrappersByHash _wrappers_by_hash;
 
   virtual FunctionRemap *

@@ -1296,7 +1296,7 @@ repack() {
   }
   _removed_subfiles.clear();
   _new_subfiles.clear();
-  copy(_subfiles.begin(), _subfiles.end(), back_inserter(_new_subfiles));
+  std::copy(_subfiles.begin(), _subfiles.end(), std::back_inserter(_new_subfiles));
   _next_index = 0;
   _last_index = 0;
   _last_data_byte = 0;

@@ -2825,7 +2825,7 @@ static HCURSOR get_cursor(const Filename &filename);
 const WinGraphicsWindow::WindowClass &WinGraphicsWindow::
 register_window_class(const WindowProperties &props) {
   WindowClass wcreg(props);
-  wostringstream wclass_name;
+  std::wostringstream wclass_name;
   wclass_name << L"WinGraphicsWindow" << _window_class_index;
   wcreg._name = wclass_name.str();
 

@@ -20,6 +20,8 @@
 #include "deletedChain.h"
 #include "typeHandle.h"
 
+using std::allocator;
+
 /**
  * This is our own Panda specialization on the default STL allocator.  Its
  * main purpose is to call the hooks for MemoryUsage to properly track STL-
@@ -36,8 +38,8 @@
 // If we're not trying to make custom allocators (either we don't know what
 // kind of syntax this STL library wants, or we're compiling with OPTIMIZE 4),
 // then simply use the standard allocator.
-#define pallocator_single allocator
-#define pallocator_array allocator
+#define pallocator_single std::allocator
+#define pallocator_array std::allocator
 
 #else
 

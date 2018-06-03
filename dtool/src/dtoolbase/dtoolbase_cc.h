@@ -35,8 +35,6 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
 #define INLINE inline
 #define ALWAYS_INLINE inline
 #define TYPENAME typename
@@ -78,8 +76,7 @@ typedef int ios_seekdir;
 
 #include <string>
 #include <utility>
-
-using namespace std;
+#include <algorithm>
 
 #define TYPENAME typename
 
@@ -90,10 +87,10 @@ typedef int ios_iostate;
 // Old iostream libraries used ios::seek_dir instead of ios::seekdir.
 typedef ios::seek_dir ios_seekdir;
 #else
-typedef ios::openmode ios_openmode;
-typedef ios::fmtflags ios_fmtflags;
-typedef ios::iostate ios_iostate;
-typedef ios::seekdir ios_seekdir;
+typedef std::ios::openmode ios_openmode;
+typedef std::ios::fmtflags ios_fmtflags;
+typedef std::ios::iostate ios_iostate;
+typedef std::ios::seekdir ios_seekdir;
 #endif
 
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
@@ -160,6 +157,36 @@ namespace std {
 #define PUBLISHED public
 
 #endif  // CPPPARSER
+
+// This was previously `using namespace std`, but we don't want to pull in the
+// entire namespace, so we enumerate the things we are using without std::
+// prefix in the Panda headers.  It is intended that this list will shrink.
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::dec;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::istringstream;
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::setfill;
+using std::setw;
+using std::streambuf;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+using std::string;
+using std::stringstream;
+using std::swap;
+using std::wstring;
 
 // The ReferenceCount class is defined later, within Panda, but we need to
 // pass around forward references to it here at the very low level.

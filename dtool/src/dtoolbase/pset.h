@@ -27,18 +27,21 @@
 #if !defined(USE_STL_ALLOCATOR) || defined(CPPPARSER)
 // If we're not using custom allocators, just use the standard class
 // definition.
-#define pset set
-#define pmultiset multiset
+#define pset std::set
+#define pmultiset std::multiset
 
 #ifdef HAVE_STL_HASH
 #define phash_set stdext::hash_set
 #define phash_multiset stdext::hash_multiset
 #else  // HAVE_STL_HASH
-#define phash_set set
-#define phash_multiset multiset
+#define phash_set std::set
+#define phash_multiset std::multiset
 #endif  // HAVE_STL_HASH
 
 #else  // USE_STL_ALLOCATOR
+
+using std::set;
+using std::multiset;
 
 /**
  * This is our own Panda specialization on the default STL set.  Its main

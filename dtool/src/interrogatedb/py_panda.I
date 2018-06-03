@@ -247,7 +247,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value) {
   return PyUnicode_FromWideChar(&value, 1);
 }
 
-ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t) {
+ALWAYS_INLINE PyObject *Dtool_WrapValue(std::nullptr_t) {
   Py_INCREF(Py_None);
   return Py_None;
 }

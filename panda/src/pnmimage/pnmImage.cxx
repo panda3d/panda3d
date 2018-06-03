@@ -1918,7 +1918,7 @@ make_histogram(PNMImage::Histogram &histogram) {
       pixels.push_back(PixelSpecCount((*hi).first, (*hi).second));
     }
   }
-  ::sort(pixels.begin(), pixels.end());
+  std::sort(pixels.begin(), pixels.end());
 
   histogram.swap(pixels, hist_map);
 }

@@ -57,7 +57,7 @@ split_vertex(EggVertex *vert, const FunctionObject &sequence) {
   typedef pvector<EggPrimitive *> Prims;
   Prims prims;
   prims.reserve(vert->pref_size());
-  copy(vert->pref_begin(), vert->pref_end(), back_inserter(prims));
+  std::copy(vert->pref_begin(), vert->pref_end(), std::back_inserter(prims));
 
   // Now walk through the list of primitives that reference this vertex.
   Prims::const_iterator pri;

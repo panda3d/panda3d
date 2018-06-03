@@ -108,8 +108,8 @@ scan_directory() const {
   // Copy the set of nested mount points to a sorted list so we can search it
   // quickly.
   ov_set<string> mount_points;
-  copy(mount_points_flat.begin(), mount_points_flat.end(),
-       back_inserter(mount_points));
+  std::copy(mount_points_flat.begin(), mount_points_flat.end(),
+            std::back_inserter(mount_points));
   mount_points.sort();
 
 

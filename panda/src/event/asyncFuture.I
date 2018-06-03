@@ -89,7 +89,7 @@ get_result(TypedObject *&ptr, ReferenceCount *&ref_ptr) const {
  * Sets this future's result.  Can only be called if done() returns false.
  */
 INLINE void AsyncFuture::
-set_result(nullptr_t) {
+set_result(std::nullptr_t) {
   set_result(nullptr, nullptr);
 }
 

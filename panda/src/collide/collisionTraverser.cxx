@@ -495,7 +495,7 @@ prepare_colliders_single(CollisionTraverser::LevelStatesSingle &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {
@@ -706,7 +706,7 @@ prepare_colliders_double(CollisionTraverser::LevelStatesDouble &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {
@@ -917,7 +917,7 @@ prepare_colliders_quad(CollisionTraverser::LevelStatesQuad &level_states,
   for (i = 0; i < num_colliders; ++i) {
     indirect[i] = i;
   }
-  sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
+  std::sort(indirect, indirect + num_colliders, SortByColliderSort(*this));
 
   int num_remaining_colliders = num_colliders;
   for (i = 0; i < num_colliders; ++i) {

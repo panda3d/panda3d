@@ -163,7 +163,7 @@ public:
  */
 void PartGroup::
 sort_descendants() {
-  stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
+  std::stable_sort(_children.begin(), _children.end(), PartGroupAlphabeticalOrder());
 
   Children::iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {

@@ -231,8 +231,8 @@ size() const {
  */
 void TextureStageCollection::
 sort() {
-  ::sort(_texture_stages.begin(), _texture_stages.end(),
-         CompareTextureStageSort());
+  std::sort(_texture_stages.begin(), _texture_stages.end(),
+            CompareTextureStageSort());
 }
 
 /**

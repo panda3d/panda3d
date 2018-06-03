@@ -775,7 +775,7 @@ convert_char_chan() {
     // if (softegg_cat.is_debug()) { softegg_cat.debug(false)
     softegg_cat.info() << "frame " << time << "\n";
     // } else { We have to write to cerr instead of softegg_cat to allow
-    // flushing without writing a newline.  cerr << "." << flush; }
+    // flushing without writing a newline.  std::cerr << "." << std::flush; }
     // MGlobal::viewFrame(frame);
 
     for (i = 0; i < num_nodes; i++) {

@@ -245,7 +245,7 @@ const string &
 get_password() {
   if (!got_password) {
     cerr << "Enter password: ";
-    getline(cin, password);
+    std::getline(std::cin, password);
     got_password = true;
   }
 
@@ -650,7 +650,7 @@ list_files(const vector_string &params) {
 
   int i;
   if (verbose) {
-    cout << num_subfiles << " subfiles:\n" << flush;
+    cout << num_subfiles << " subfiles:\n" << std::flush;
     for (i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile->get_subfile_name(i);
       if (is_named(subfile_name, params)) {

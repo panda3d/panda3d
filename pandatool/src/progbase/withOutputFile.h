@@ -52,8 +52,8 @@ protected:
   Filename _output_filename;
 
 private:
-  ofstream _output_stream;
-  ostream *_output_ptr;
+  std::ofstream _output_stream;
+  std::ostream *_output_ptr;
   bool _owns_output_ptr;
 };
 

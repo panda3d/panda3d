@@ -36,9 +36,9 @@ Notify *Notify::_global_ptr = (Notify *)NULL;
  */
 Notify::
 Notify() {
-  _ostream_ptr = &cerr;
+  _ostream_ptr = &std::cerr;
   _owns_ostream_ptr = false;
-  _null_ostream_ptr = new fstream;
+  _null_ostream_ptr = new std::fstream;
 
   _assert_handler = (AssertHandler *)NULL;
   _assert_failed = false;

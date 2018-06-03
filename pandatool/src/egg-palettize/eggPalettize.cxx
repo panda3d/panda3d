@@ -701,7 +701,7 @@ run() {
 
   } else {
     _txa_filename.set_text();
-    ifstream txa_file;
+    std::ifstream txa_file;
     if (!_txa_filename.open_read(txa_file)) {
       nout << "Unable to open " << _txa_filename << "\n";
       exit(1);

@@ -136,7 +136,7 @@ has_texture() const {
 INLINE bool EggPrimitive::
 has_texture(EggTexture *texture) const {
   PT_EggTexture t = texture;
-  return (::find(_textures.begin(), _textures.end(), t) != _textures.end());
+  return (std::find(_textures.begin(), _textures.end(), t) != _textures.end());
 }
 
 /**

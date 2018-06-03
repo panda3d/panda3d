@@ -49,7 +49,7 @@ bool VirtualFileMountSystem::
 create_file(const Filename &file) {
   Filename pathname(_physical_filename, file);
   pathname.set_binary();
-  ofstream stream;
+  std::ofstream stream;
   return pathname.open_write(stream, false);
 }
 

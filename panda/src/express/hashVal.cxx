@@ -39,7 +39,7 @@ output_hex(ostream &out) const {
  */
 void HashVal::
 input_hex(istream &in) {
-  in >> ws;
+  in >> std::ws;
   char buffer[32];
   size_t i = 0;
   int ch = in.get();

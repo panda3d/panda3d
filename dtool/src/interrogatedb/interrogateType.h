@@ -154,16 +154,16 @@ public:
   TypeIndex _wrapped_type;
   int _array_size;
 
-  typedef vector<FunctionIndex> Functions;
+  typedef std::vector<FunctionIndex> Functions;
   Functions _constructors;
   FunctionIndex _destructor;
 
-  typedef vector<ElementIndex> Elements;
+  typedef std::vector<ElementIndex> Elements;
   Elements _elements;
   Functions _methods;
   Functions _casts;
 
-  typedef vector<MakeSeqIndex> MakeSeqs;
+  typedef std::vector<MakeSeqIndex> MakeSeqs;
   MakeSeqs _make_seqs;
 
   enum DerivationFlags {
@@ -188,7 +188,7 @@ public:
   };
 
 private:
-  typedef vector<Derivation> Derivations;
+  typedef std::vector<Derivation> Derivations;
   Derivations _derivations;
 
 public:
@@ -205,10 +205,10 @@ public:
   };
 
 private:
-  typedef vector<EnumValue> EnumValues;
+  typedef std::vector<EnumValue> EnumValues;
   EnumValues _enum_values;
 
-  typedef vector<TypeIndex> Types;
+  typedef std::vector<TypeIndex> Types;
   Types _nested_types;
 
 public:

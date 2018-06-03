@@ -74,7 +74,7 @@ add_source_file(const string &filename) {
 void InterrogateBuilder::
 read_command_file(istream &in) {
   string line;
-  getline(in, line);
+  std::getline(in, line);
   while (!in.fail() && !in.eof()) {
     // Strip out the comment.
     size_t hash = line.find('#');
@@ -110,7 +110,7 @@ read_command_file(istream &in) {
 
       do_command(command, params);
     }
-    getline(in, line);
+    std::getline(in, line);
   }
 }
 
@@ -323,7 +323,7 @@ build() {
  */
 void InterrogateBuilder::
 write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
-  typedef vector<InterfaceMaker *> InterfaceMakers;
+  typedef std::vector<InterfaceMaker *> InterfaceMakers;
   InterfaceMakers makers;
 
   if (build_c_wrappers) {
@@ -443,7 +443,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   }
 
   // Now collect all the function wrappers.
-  vector<FunctionRemap *> remaps;
+  std::vector<FunctionRemap *> remaps;
   for (mi = makers.begin(); mi != makers.end(); ++mi) {
     (*mi)->get_function_remaps(remaps);
   }
@@ -457,7 +457,7 @@ write_code(ostream &out_code,ostream * out_include, InterrogateModuleDef *def) {
   int num_wrappers = 0;
   map<int, FunctionRemap *> wrappers_by_index;
 
-  vector<FunctionRemap *>::iterator ri;
+  std::vector<FunctionRemap *>::iterator ri;
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
     wrappers_by_index[remap->_wrapper_index] = remap;
@@ -960,7 +960,7 @@ is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
  * purpose of this function.
  */
 void InterrogateBuilder::
-remap_indices(vector<FunctionRemap *> &remaps) {
+remap_indices(std::vector<FunctionRemap *> &remaps) {
   IndexRemapper index_remap;
   InterrogateDatabase::get_ptr()->remap_indices(1, index_remap);
 
@@ -976,7 +976,7 @@ remap_indices(vector<FunctionRemap *> &remaps) {
     (*fi).second = index_remap.map_from((*fi).second);
   }
 
-  vector<FunctionRemap *>::iterator ri;
+  std::vector<FunctionRemap *>::iterator ri;
   for (ri = remaps.begin(); ri != remaps.end(); ++ri) {
     FunctionRemap *remap = (*ri);
     remap->_wrapper_index = index_remap.map_from(remap->_wrapper_index);

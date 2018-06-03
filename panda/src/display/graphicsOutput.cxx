@@ -1540,7 +1540,9 @@ do_determine_display_regions(GraphicsOutput::CData *cdata) {
     }
   }
 
-  stable_sort(cdata->_active_display_regions.begin(), cdata->_active_display_regions.end(), IndirectLess<DisplayRegion>());
+  std::stable_sort(cdata->_active_display_regions.begin(),
+                   cdata->_active_display_regions.end(),
+                   IndirectLess<DisplayRegion>());
 }
 
 /**

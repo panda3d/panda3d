@@ -44,7 +44,7 @@ open(const Filename &filename) {
  */
 INLINE ostream &DatagramOutputFile::
 get_stream() {
-  static ofstream null_stream;
+  static std::ofstream null_stream;
   nassertr(_out != NULL, null_stream);
   return *_out;
 }

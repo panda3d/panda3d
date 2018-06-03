@@ -2575,7 +2575,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
   int ext_google_line = 0;
   bool had_include = false;
   int lineno = 0;
-  while (getline(*source, line)) {
+  while (std::getline(*source, line)) {
     ++lineno;
 
     if (line.empty()) {
@@ -2589,7 +2589,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       line.resize(line.size() - 1);
       string line2;
 
-      if (getline(*source, line2)) {
+      if (std::getline(*source, line2)) {
         line += line2;
         out.put('\n');
         ++lineno;
@@ -2618,7 +2618,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       size_t block_end = line2.find("*/");
       while (block_end == string::npos) {
         // Didn't find it - look in the next line.
-        if (getline(*source, line2)) {
+        if (std::getline(*source, line2)) {
           out.put('\n');
           ++lineno;
           block_end = line2.find("*/");

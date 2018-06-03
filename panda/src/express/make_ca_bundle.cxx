@@ -70,7 +70,7 @@ main(int argc, char *argv[]) {
 
   // Now write the data to the .c file, in a compilable form, similar to
   // bin2c.
-  ofstream out;
+  std::ofstream out;
   Filename target = Filename::text_filename(string(target_filename));
   if (!target.open_write(out)) {
     cerr << "Couldn't open " << target_filename << " for writing.\n";

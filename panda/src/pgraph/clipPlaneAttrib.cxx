@@ -505,8 +505,8 @@ compose_off(const RenderAttrib *other) const {
 
   // Create a new ClipPlaneAttrib that will hold the result.
   ClipPlaneAttrib *new_attrib = new ClipPlaneAttrib;
-  back_insert_iterator<Planes> result =
-    back_inserter(new_attrib->_on_planes);
+  std::back_insert_iterator<Planes> result =
+    std::back_inserter(new_attrib->_on_planes);
 
   while (ai != _off_planes.end() &&
          bi != ta->_off_planes.end()) {
@@ -717,8 +717,8 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new ClipPlaneAttrib that will hold the result.
   ClipPlaneAttrib *new_attrib = new ClipPlaneAttrib;
-  back_insert_iterator<Planes> result =
-    back_inserter(new_attrib->_on_planes);
+  std::back_insert_iterator<Planes> result =
+    std::back_inserter(new_attrib->_on_planes);
 
   while (ai != _on_planes.end() &&
          bi != ta->_on_planes.end() &&

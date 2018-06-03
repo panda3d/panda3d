@@ -24,7 +24,7 @@ DirectDClient::cli_command(const string& cmd) {
   cerr<<"command "<<cmd<<endl;
   if (cmd[0]==':') {
     // ...connect to host.
-    cerr<<"Local command "<<flush;
+    cerr<<"Local command "<<std::flush;
     string code;
     cin >> code;
     string host;
@@ -49,7 +49,7 @@ DirectDClient::run_client(const string& host, int port) {
   connect_to(host, port);
 
   while (!cin.fail() && _connections.size()!=0) {
-    cout << "directd send: " << flush;
+    cout << "directd send: " << std::flush;
     string d;
     cin >> d;
     cli_command(d);

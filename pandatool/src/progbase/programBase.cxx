@@ -57,7 +57,7 @@ operator () (const Option *a, const Option *b) const {
 // properly flushed before we exit, if someone calls exit().  It's probably
 // not necessary, but why not be phobic about it?
 static void flush_nout() {
-  nout << flush;
+  nout << std::flush;
 }
 
 static ConfigVariableInt default_terminal_width

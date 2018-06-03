@@ -545,7 +545,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
         // Now sort the points in order from back-to-front so they will render
         // properly with transparency, at least with each other.
-        sort(vertices, vertices_end, SortPoints(points));
+        std::sort(vertices, vertices_end, SortPoints(points));
 
         // Go through the points, now in sorted order, and generate a pair of
         // triangles for each one.  We generate indexed triangles instead of

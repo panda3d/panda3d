@@ -87,6 +87,8 @@ get_geom_rendering() const {
  */
 CPT(GeomPrimitive) GeomTristrips::
 make_adjacency() const {
+  using std::make_pair;
+
   Thread *current_thread = Thread::get_current_thread();
   PT(GeomTristripsAdjacency) adj = new GeomTristripsAdjacency(get_usage_hint());
   CPTA_int ends = get_ends();

@@ -73,6 +73,8 @@ get_primitive_type() const {
  */
 CPT(GeomPrimitive) GeomTriangles::
 make_adjacency() const {
+  using std::make_pair;
+
   Thread *current_thread = Thread::get_current_thread();
   PT(GeomTrianglesAdjacency) adj = new GeomTrianglesAdjacency(get_usage_hint());
 

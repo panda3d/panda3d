@@ -18,7 +18,6 @@
 #include <unistd.h>
 
 #include <iostream>
-using namespace std;
 
 const char SubprocessWindowBuffer::
 _magic_number[SubprocessWindowBuffer::magic_number_length] = "pNdaSWB";

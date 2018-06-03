@@ -123,7 +123,7 @@ read(istream &in, const string &filename) {
  */
 bool XFile::
 write(Filename filename) const {
-  ofstream out;
+  std::ofstream out;
 
   // We actually open the file to write in binary mode, to avoid the MS-DOS
   // newline characters (since Windows seems to do this too).

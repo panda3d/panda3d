@@ -87,7 +87,7 @@ run() {
   nout << "Listening for connections.\n";
 
   if (_got_outputFileName) {
-    _outFile = new ofstream(_outputFileName.c_str(), ios::out);
+    _outFile = new std::ofstream(_outputFileName.c_str(), std::ios::out);
   } else {
     _outFile = &(nout);
   }

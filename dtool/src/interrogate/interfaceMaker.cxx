@@ -460,7 +460,7 @@ wrap_global_functions() {
  * added to the end.
  */
 void InterfaceMaker::
-get_function_remaps(vector<FunctionRemap *> &remaps) {
+get_function_remaps(std::vector<FunctionRemap *> &remaps) {
   FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi).second;
