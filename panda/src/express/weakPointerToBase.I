@@ -297,7 +297,7 @@ operator >= (To *other) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator == (nullptr_t) const {
+operator == (std::nullptr_t) const {
   return _void_ptr == nullptr;
 }
 
@@ -306,7 +306,7 @@ operator == (nullptr_t) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator != (nullptr_t) const {
+operator != (std::nullptr_t) const {
   return _void_ptr != nullptr;
 }
 
@@ -315,7 +315,7 @@ operator != (nullptr_t) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator > (nullptr_t) const {
+operator > (std::nullptr_t) const {
   return _void_ptr != nullptr;
 }
 
@@ -324,7 +324,7 @@ operator > (nullptr_t) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator <= (nullptr_t) const {
+operator <= (std::nullptr_t) const {
   return _void_ptr == nullptr;
 }
 
@@ -333,7 +333,7 @@ operator <= (nullptr_t) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator >= (nullptr_t) const {
+operator >= (std::nullptr_t) const {
   return true;
 }
 
@@ -442,7 +442,7 @@ operator < (const To *other) const {
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
-operator < (nullptr_t) const {
+operator < (std::nullptr_t) const {
   return false;
 }
 
