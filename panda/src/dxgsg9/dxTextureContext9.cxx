@@ -1935,7 +1935,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
                 scaled *= 255;
                 color = D3DCOLOR_RGBA((int)scaled[0], (int)scaled[1], (int)scaled[2], (int)scaled[3]);
                 flags = D3DCLEAR_TARGET;
-                if (device -> Clear (NULL, NULL, flags, color, 0.0f, 0) == D3D_OK) {
+                if (device -> Clear (0, NULL, flags, color, 0.0f, 0) == D3D_OK) {
                 }
               }
 

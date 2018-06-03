@@ -385,7 +385,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return false;
     }
   }
 #endif  // WIN32
@@ -402,7 +402,7 @@ atomic_read_contents(const Filename &file, string &contents) const {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return false;
     }
   }
 #endif  // WIN32
