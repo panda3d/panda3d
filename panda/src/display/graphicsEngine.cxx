@@ -445,8 +445,7 @@ make_output(GraphicsPipe *pipe,
       }
 
       // No good; delete the window and keep trying.
-      bool removed = remove_window(window);
-      nassertr(removed, NULL);
+      remove_window(window);
     }
   }
 
