@@ -353,7 +353,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (parallax_mapping_samples == 0) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on() ||
-                 (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+                 (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         info._mode = TextureStage::M_height;
         info._flags = ShaderKey::TF_has_alpha;
       } else {
@@ -362,7 +362,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       break;
 
     case TextureStage::M_normal_gloss:
-      if (!shader_attrib->auto_gloss_on() || !key._lighting) {
+      if (!shader_attrib->auto_gloss_on() || key._lights.empty()) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on()) {
         info._mode = TextureStage::M_gloss;
@@ -411,7 +411,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
-          (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+          (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
@@ -425,7 +425,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       }
       break;
     case TextureStage::M_gloss:
-      if (key._lighting && shader_attrib->auto_gloss_on()) {
+      if (!key._lights.empty() && shader_attrib->auto_gloss_on()) {
         info._flags = ShaderKey::TF_map_gloss;
       } else {
         skip = true;
