@@ -362,6 +362,13 @@ open_window() {
     }
   }
 
+  if (cocoagsg->_context == nil) {
+    // Could not obtain a proper context.
+    _gsg.clear();
+    close_window();
+    return false;
+  }
+
   // Fill in the blanks.
   if (!_properties.has_origin()) {
     _properties.set_origin(-2, -2);
