@@ -33,7 +33,10 @@
 
 #ifdef CPPPARSER
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <utility>
+#include <algorithm>
 
 #define INLINE inline
 #define ALWAYS_INLINE inline

@@ -21,63 +21,13 @@
 #define IOSTREAM_H
 
 #include <stdtypedefs.h>
-
-#ifdef _WIN64
-typedef long long streamoff;
-typedef long long streamsize;
-#elif defined(_WIN32)
-typedef long streamoff;
-typedef int streamsize;
-#else
-typedef long long streamoff;
-typedef ptrdiff_t streamsize;
-#endif
+#include <ios>
+#include <streambuf>
+#include <ostream>
 
 // We don't care (much) about the actual definition of the various
 // iostream classes, but we do need to know the classnames that are
 // available.
-
-// We need to expose one method in each class to force it to publish.
-// But we'd like to expose some of these methods anyway, so no
-// problem.
-class ios_base {
-__published:
-  enum seekdir {
-    beg = 0,
-    cur = 1,
-    end = 2,
-  };
-  enum openmode {
-  };
-  // Don't define these lest interrogate get tempted to actually
-  // substitute in the values, which are implementation-defined.
-  static const openmode app;
-  static const openmode binary;
-  static const openmode in;
-  static const openmode out;
-  static const openmode trunc;
-protected:
-  // Force this to be a non-trivial type.
-  ios_base() {};
-private:
-  ios_base(const ios_base &);
-};
-class ios : public ios_base {
-__published:
-  typedef long fmtflags;
-
-  bool good() const;
-  bool eof() const;
-  bool fail() const;
-  bool bad() const;
-  void clear();
-
-protected:
-  ios();
-};
-
-// We actually want to wrap streampos as streamoff.
-#define streampos streamoff
 
 class ostream : virtual public ios {
 __published:
@@ -129,11 +79,6 @@ __published:
   fstream();
   void close();
 };
-
-class ostringstream : public ostream {};
-class istringstream : public istream {};
-class stringstream : public iostream {};
-class streambuf {};
 
 extern istream cin;
 extern ostream cout;

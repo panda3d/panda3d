@@ -1,0 +1,12 @@
+#pragma once
+
+namespace std {
+  template<class CharT, class Traits>
+  std::basic_ostream<CharT, Traits> &ends(std::basic_ostream<CharT, Traits> &os);
+
+  template<class CharT, class Traits>
+  std::basic_ostream<CharT, Traits> &flush(std::basic_ostream<CharT, Traits> &os);
+
+  template<class CharT, class Traits>
+  std::basic_ostream<CharT, Traits> &endl(std::basic_ostream<CharT, Traits> &os);
+}

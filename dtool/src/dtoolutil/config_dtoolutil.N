@@ -3,6 +3,7 @@ forcetype ifstream
 forcetype fstream
 
 forcetype ios_base
+forcetype basic_ios<char>
 forcetype ios
 forcetype istream
 forcetype ostream
