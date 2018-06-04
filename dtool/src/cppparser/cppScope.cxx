@@ -605,7 +605,7 @@ find_type(const string &name, CPPDeclaration::SubstDecl &subst,
  *
  */
 CPPScope *CPPScope::
-find_scope(const string &name, bool recurse) const {
+find_scope(const string &name, CPPScope *global_scope, bool recurse) const {
   Namespaces::const_iterator ni = _namespaces.find(name);
   if (ni != _namespaces.end()) {
     return (*ni).second->get_scope();
@@ -617,13 +617,21 @@ find_scope(const string &name, bool recurse) const {
   ti = _types.find(name);
   if (ti != _types.end()) {
     type = (*ti).second;
-    // Resolve if this is a typedef or const.
+    // Resolve if this is a typedef or const, or a TBD type.
     while (type->get_subtype() == CPPDeclaration::ST_const ||
-           type->get_subtype() == CPPDeclaration::ST_typedef) {
+           type->get_subtype() == CPPDeclaration::ST_typedef ||
+           type->get_subtype() == CPPDeclaration::ST_tbd) {
       if (type->as_typedef_type() != nullptr) {
         type = type->as_typedef_type()->_type;
-      } else {
+      } else if (type->as_const_type() != nullptr) {
         type = type->as_const_type()->_wrapped_around;
+      } else {
+        CPPType *new_type = type->resolve_type((CPPScope *)this, global_scope);
+        if (new_type != type) {
+          type = new_type;
+        } else {
+          break;
+        }
       }
     }
 
@@ -653,14 +661,14 @@ find_scope(const string &name, bool recurse) const {
 
   Using::const_iterator ui;
   for (ui = _using.begin(); ui != _using.end(); ++ui) {
-    CPPScope *scope = (*ui)->find_scope(name, false);
+    CPPScope *scope = (*ui)->find_scope(name, global_scope, false);
     if (scope != nullptr) {
       return scope;
     }
   }
 
   if (recurse && _parent_scope != nullptr) {
-    return _parent_scope->find_scope(name);
+    return _parent_scope->find_scope(name, global_scope);
   }
 
   return nullptr;

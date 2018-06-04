@@ -87,7 +87,8 @@ public:
                      CPPDeclaration::SubstDecl &subst,
                      CPPScope *global_scope,
                      bool recurse = true) const;
-  CPPScope *find_scope(const string &name, bool recurse = true) const;
+  CPPScope *find_scope(const string &name, CPPScope *global_scope,
+                       bool recurse = true) const;
   CPPScope *find_scope(const string &name,
                        CPPDeclaration::SubstDecl &subst,
                        CPPScope *global_scope,

@@ -252,7 +252,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
   }
 
   while (i + 1 < (int)_names.size() && scope != nullptr) {
-    CPPScope *next_scope = scope->find_scope(_names[i].get_name());
+    CPPScope *next_scope = scope->find_scope(_names[i].get_name(), global_scope);
     if (next_scope == nullptr) {
       if (error_sink != nullptr) {
         error_sink->error("Symbol " + _names[i].get_name() +
@@ -511,7 +511,7 @@ find_scope(CPPScope *current_scope, CPPScope *global_scope,
   if (scope == nullptr) {
     return nullptr;
   }
-  return scope->find_scope(get_simple_name());
+  return scope->find_scope(get_simple_name(), global_scope);
 }
 
 

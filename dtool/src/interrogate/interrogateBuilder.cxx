@@ -2267,6 +2267,10 @@ get_type(CPPType *type, bool global) {
     return 0;
   }
 
+  if (type->get_subtype() == CPPType::ST_tbd) {
+    type = type->resolve_type(&parser, &parser);
+  }
+
   TypeIndex index = 0;
 
   // First, check to see if it's already there.
