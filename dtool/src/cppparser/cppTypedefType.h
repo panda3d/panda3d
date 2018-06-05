@@ -34,10 +34,10 @@ public:
 
   bool is_scoped() const;
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
-                      CPPPreprocessor *error_sink = NULL) const;
+                      CPPPreprocessor *error_sink = nullptr) const;
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
 
   virtual bool is_incomplete() const;
@@ -56,7 +56,7 @@ public:
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,

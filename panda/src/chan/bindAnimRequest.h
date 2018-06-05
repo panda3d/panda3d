@@ -25,7 +25,7 @@ class AnimControl;
  * This class object manages an asynchronous load-and-bind animation request,
  * as issued through PartBundle::load_bind_anim().
  */
-class EXPCL_PANDA_PGRAPH BindAnimRequest : public ModelLoadRequest {
+class EXPCL_PANDA_CHAN BindAnimRequest : public ModelLoadRequest {
 public:
   ALLOC_DELETED_CHAIN(BindAnimRequest);
 

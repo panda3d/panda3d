@@ -29,7 +29,7 @@ class PreparedGraphicsObjects;
  */
 class EXPCL_PANDA_GOBJ ShaderBuffer : public TypedWritableReferenceCount, public Namable, public GeomEnums {
 private:
-  INLINE ShaderBuffer() DEFAULT_CTOR;
+  INLINE ShaderBuffer() = default;
 
 PUBLISHED:
   ~ShaderBuffer();

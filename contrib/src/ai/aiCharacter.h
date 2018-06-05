@@ -15,6 +15,7 @@
 #define _AICHARACTER_H
 
 #include "aiBehaviors.h"
+#include "referenceCount.h"
 
 /**
  * This class is used for creating the AI characters.  It assigns both physics
@@ -25,7 +26,7 @@
 class AIBehaviors;
 class AIWorld;
 
-class EXPCL_PANDAAI AICharacter {
+class EXPCL_PANDAAI AICharacter : public ReferenceCount {
  public:
   double _mass;
   double _max_force;

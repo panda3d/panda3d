@@ -58,7 +58,7 @@ traverse(PandaNode *node) {
     // We must start the traversal at the root of the graph.
     nassertv(data_node->get_num_parents(_current_thread) == 0);
 
-    r_transmit(data_node, (DataNodeTransmit *)NULL);
+    r_transmit(data_node, nullptr);
 
   } else {
     traverse_below(node, DataNodeTransmit());

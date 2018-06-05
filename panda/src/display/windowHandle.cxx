@@ -31,7 +31,7 @@ WindowHandle::
  */
 void WindowHandle::
 send_windows_message(unsigned int msg, int wparam, int lparam) {
-  if (_keyboard_window != NULL) {
+  if (_keyboard_window != nullptr) {
     _keyboard_window->receive_windows_message(msg, wparam, lparam);
   }
 }
@@ -42,7 +42,7 @@ send_windows_message(unsigned int msg, int wparam, int lparam) {
  */
 size_t WindowHandle::
 get_int_handle() const {
-  if (_os_handle != NULL) {
+  if (_os_handle != nullptr) {
     return _os_handle->get_int_handle();
   }
   return 0;
@@ -53,7 +53,7 @@ get_int_handle() const {
  */
 void WindowHandle::
 output(ostream &out) const {
-  if (_os_handle == NULL) {
+  if (_os_handle == nullptr) {
     out << "(null)";
   } else {
     out << *_os_handle;
@@ -75,7 +75,7 @@ attach_child(WindowHandle *child) {
 void WindowHandle::
 detach_child(WindowHandle *child) {
   if (_keyboard_window == child) {
-    _keyboard_window = NULL;
+    _keyboard_window = nullptr;
   }
 }
 

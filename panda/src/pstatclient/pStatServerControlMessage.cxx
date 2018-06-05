@@ -11,7 +11,7 @@
  * @date 2000-07-09
  */
 
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "pStatServerControlMessage.h"
 
 #include "datagram.h"

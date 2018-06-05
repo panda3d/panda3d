@@ -124,7 +124,7 @@ PUBLISHED:
   const SamplerState &get_sampler() const;
 
 public:
-  ShaderInput() DEFAULT_CTOR;
+  ShaderInput() = default;
 
   INLINE ParamValueBase *get_param() const;
   INLINE TypedWritableReferenceCount *get_value() const;

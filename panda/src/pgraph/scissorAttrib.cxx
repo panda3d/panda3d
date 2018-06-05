@@ -44,7 +44,7 @@ ScissorAttrib(const LVecBase4 &frame) :
  */
 CPT(RenderAttrib) ScissorAttrib::
 make_off() {
-  if (_off_attrib != NULL) {
+  if (_off_attrib != nullptr) {
     return _off_attrib;
   }
   ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));

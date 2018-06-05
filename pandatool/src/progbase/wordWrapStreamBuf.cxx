@@ -17,11 +17,6 @@
 
 #include "pnotify.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers--notably SGI--don't define this for us.
-typedef int streamsize;
-#endif
-
 /**
  *
  */

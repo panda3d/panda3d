@@ -279,7 +279,7 @@ PUBLISHED:
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
                      int primary_file_num_channels, int alpha_file_channel,
                      int z, int n, bool read_pages, bool read_mipmaps,
-                     BamCacheRecord *record = NULL,
+                     BamCacheRecord *record = nullptr,
                      const LoaderOptions &options = LoaderOptions());
 
   BLOCKING INLINE bool write(const Filename &fullpath);
@@ -466,7 +466,7 @@ PUBLISHED:
 
   BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
                                           QualityLevel quality_level = QL_default,
-                                          GraphicsStateGuardianBase *gsg = NULL);
+                                          GraphicsStateGuardianBase *gsg = nullptr);
   BLOCKING INLINE bool uncompress_ram_image();
 
   INLINE int get_num_ram_mipmap_images() const;

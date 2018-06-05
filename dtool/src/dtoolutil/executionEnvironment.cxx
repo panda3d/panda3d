@@ -86,7 +86,7 @@ extern int GLOBAL_ARGC;
 // safely access them at stat init time--at least, not in libc5. (It does seem
 // to work with glibc2, however.)
 
-ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
+ExecutionEnvironment *ExecutionEnvironment::_global_ptr = nullptr;
 
 /**
  * You shouldn't need to construct one of these; there's only one and it
@@ -162,13 +162,13 @@ get_cwd() {
 #ifdef WIN32_VC
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
-  static wchar_t *buffer = NULL;
+  static wchar_t *buffer = nullptr;
 
-  if (buffer == (wchar_t *)NULL) {
+  if (buffer == nullptr) {
     buffer = new wchar_t[bufsize];
   }
 
-  while (_wgetcwd(buffer, bufsize) == (wchar_t *)NULL) {
+  while (_wgetcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -176,7 +176,7 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new wchar_t[bufsize];
-    assert(buffer != (wchar_t *)NULL);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific_w(buffer);
@@ -185,13 +185,13 @@ get_cwd() {
 #else  // WIN32_VC
   // getcwd() requires us to allocate a dynamic buffer and grow it on demand.
   static size_t bufsize = 1024;
-  static char *buffer = NULL;
+  static char *buffer = nullptr;
 
-  if (buffer == (char *)NULL) {
+  if (buffer == nullptr) {
     buffer = new char[bufsize];
   }
 
-  while (getcwd(buffer, bufsize) == (char *)NULL) {
+  while (getcwd(buffer, bufsize) == nullptr) {
     if (errno != ERANGE) {
       perror("getcwd");
       return string();
@@ -199,7 +199,7 @@ get_cwd() {
     delete[] buffer;
     bufsize = bufsize * 2;
     buffer = new char[bufsize];
-    assert(buffer != (char *)NULL);
+    assert(buffer != nullptr);
   }
 
   Filename cwd = Filename::from_os_specific(buffer);
@@ -217,7 +217,7 @@ ns_has_environment_variable(const string &var) const {
 #ifdef PREREAD_ENVIRONMENT
   return _variables.count(var) != 0;
 #else
-  return getenv(var.c_str()) != (char *)NULL;
+  return getenv(var.c_str()) != nullptr;
 #endif
 }
 
@@ -257,7 +257,7 @@ ns_get_environment_variable(const string &var) const {
 
 #ifndef PREREAD_ENVIRONMENT
   const char *def = getenv(var.c_str());
-  if (def != (char *)NULL) {
+  if (def != nullptr) {
     return def;
   }
 #endif
@@ -327,13 +327,13 @@ ns_get_environment_variable(const string &var) const {
     { CSIDL_SYSTEMX86, "SYSTEMX86" },
     { CSIDL_TEMPLATES, "TEMPLATES" },
     { CSIDL_WINDOWS, "WINDOWS" },
-    { 0, NULL },
+    { 0, nullptr },
   };
 
-  for (int i = 0; csidl_table[i].name != NULL; ++i) {
+  for (int i = 0; csidl_table[i].name != nullptr; ++i) {
     if (strcmp(var.c_str(), csidl_table[i].name) == 0) {
       wchar_t buffer[MAX_PATH];
-      if (SHGetSpecialFolderPathW(NULL, buffer, csidl_table[i].id, true)) {
+      if (SHGetSpecialFolderPathW(nullptr, buffer, csidl_table[i].id, true)) {
         Filename pathname = Filename::from_os_specific_w(buffer);
         return pathname.to_os_specific();
       }
@@ -399,7 +399,7 @@ ns_clear_shadow(const string &var) {
 #ifdef PREREAD_ENVIRONMENT
   // Now we have to replace the value in the table.
   const char *def = getenv(var.c_str());
-  if (def != (char *)NULL) {
+  if (def != nullptr) {
     (*vi).second = def;
   } else {
     _variables.erase(vi);
@@ -457,7 +457,7 @@ ns_get_dtool_name() const {
  */
 ExecutionEnvironment *ExecutionEnvironment::
 get_ptr() {
-  if (_global_ptr == (ExecutionEnvironment *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ExecutionEnvironment;
   }
   return _global_ptr;
@@ -577,20 +577,20 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD) || (defined(IS_LINUX) && !defined(__ANDROID__))
-  // FreeBSD and Linux have a function to get the origin of a loaded library.
+#if defined(RTLD_DI_ORIGIN)
+  // When building with glibc/uClibc, we typically have access to RTLD_DI_ORIGIN in Unix-like operating systems.
 
   char origin[PATH_MAX + 1];
 
   if (_dtool_name.empty()) {
     void *dtool_handle = dlopen("libp3dtool.so." PANDA_ABI_VERSION_STR, RTLD_NOW | RTLD_NOLOAD);
-    if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
+    if (dtool_handle != nullptr && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
       _dtool_name = origin;
       _dtool_name += "/libp3dtool.so." PANDA_ABI_VERSION_STR;
     } else {
       // Try the version of libp3dtool.so without ABI suffix.
       dtool_handle = dlopen("libp3dtool.so", RTLD_NOW | RTLD_NOLOAD);
-      if (dtool_handle != NULL && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
+      if (dtool_handle != nullptr && dlinfo(dtool_handle, RTLD_DI_ORIGIN, origin) != -1) {
         _dtool_name = origin;
         _dtool_name += "/libp3dtool.so";
       }
@@ -598,14 +598,18 @@ read_args() {
   }
 #endif
 
-#if defined(IS_FREEBSD)
-  // On FreeBSD, we can use dlinfo to get the linked libraries.
-
+#if !defined(RTLD_DI_ORIGIN) && defined(RTLD_DI_LINKMAP)
+  // On platforms without RTLD_DI_ORIGIN, we can use dlinfo with RTLD_DI_LINKMAP to get the origin of a loaded library.
   if (_dtool_name.empty()) {
-    Link_map *map;
-    dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+    struct link_map *map;
+#ifdef RTLD_SELF
+    void *self = RTLD_SELF;
+#else
+    void *self = dlopen(NULL, RTLD_NOW | RTLD_NOLOAD);
+#endif
+    dlinfo(self, RTLD_DI_LINKMAP, &map);
 
-    while (map != NULL) {
+    while (map != nullptr) {
       const char *tail = strrchr(map->l_name, '/');
       const char *head = strchr(map->l_name, '/');
       if (tail && head && (strcmp(tail, "/libp3dtool.so." PANDA_ABI_VERSION_STR) == 0
@@ -648,7 +652,7 @@ read_args() {
   if (_binary_name.empty()) {
     static const DWORD buffer_size = 1024;
     wchar_t buffer[buffer_size];
-    DWORD size = GetModuleFileNameW(NULL, buffer, buffer_size);
+    DWORD size = GetModuleFileNameW(nullptr, buffer, buffer_size);
     if (size != 0) {
       Filename tmp = Filename::from_os_specific_w(wstring(buffer, size));
       tmp.make_true_case();
@@ -677,7 +681,7 @@ read_args() {
     char buffer[4096];
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
     mib[3] = getpid();
-    if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
+    if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
       perror("sysctl");
     } else {
       _binary_name = buffer;
@@ -715,7 +719,7 @@ read_args() {
   int argc = 0;
   LPWSTR *wargv = CommandLineToArgvW(cmdline, &argc);
 
-  if (wargv == NULL) {
+  if (wargv == nullptr) {
     cerr << "CommandLineToArgvW failed; command-line arguments unavailable to config.\n";
 
   } else {
@@ -745,16 +749,16 @@ read_args() {
   char buffer[4096];
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ARGS, 0};
   mib[3] = getpid();
-  if (sysctl(mib, 4, (void*) buffer, &bufsize, NULL, 0) == -1) {
+  if (sysctl(mib, 4, (void*) buffer, &bufsize, nullptr, 0) == -1) {
     perror("sysctl");
   } else {
     if (_binary_name.empty()) {
       _binary_name = buffer;
     }
-    int idx = strlen(buffer) + 1;
+    size_t idx = strlen(buffer) + 1;
     while (idx < bufsize) {
       _args.push_back((char*)(buffer + idx));
-      int newidx = strlen(buffer + idx);
+      size_t newidx = strlen(buffer + idx);
       idx += newidx + 1;
     }
   }
@@ -764,7 +768,7 @@ read_args() {
 
   // On Windows, __argv can be NULL when the main entry point is compiled in
   // Unicode mode (as is the case with Python 3)
-  if (GLOBAL_ARGV != NULL) {
+  if (GLOBAL_ARGV != nullptr) {
     if (_binary_name.empty() && argc > 0) {
       _binary_name = GLOBAL_ARGV[0];
       // This really needs to be resolved against PATH.
@@ -819,14 +823,14 @@ read_args() {
 
   if (!_binary_name.empty()) {
     char newpath [PATH_MAX + 1];
-    if (realpath(_binary_name.c_str(), newpath) != NULL) {
+    if (realpath(_binary_name.c_str(), newpath) != nullptr) {
       _binary_name = newpath;
     }
   }
 
   if (!_dtool_name.empty()) {
     char newpath [PATH_MAX + 1];
-    if (realpath(_dtool_name.c_str(), newpath) != NULL) {
+    if (realpath(_dtool_name.c_str(), newpath) != nullptr) {
       _dtool_name = newpath;
     }
   }

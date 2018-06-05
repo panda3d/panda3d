@@ -29,7 +29,7 @@ class FactoryParams;
 class EXPCL_PANDA_GRUTIL NodeVertexTransform : public VertexTransform {
 PUBLISHED:
   NodeVertexTransform(const PandaNode *node,
-                      const VertexTransform *prev = NULL);
+                      const VertexTransform *prev = nullptr);
 
   INLINE const PandaNode *get_node() const;
   INLINE const VertexTransform *get_prev() const;

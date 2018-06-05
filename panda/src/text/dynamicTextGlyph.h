@@ -34,9 +34,9 @@ public:
                           int x, int y, int x_size, int y_size,
                           int margin, PN_stdfloat advance);
   INLINE DynamicTextGlyph(int character, PN_stdfloat advance);
-private:
-  INLINE DynamicTextGlyph(const DynamicTextGlyph &copy);
-  INLINE void operator = (const DynamicTextGlyph &copy);
+  DynamicTextGlyph(const DynamicTextGlyph &copy) = delete;
+
+  DynamicTextGlyph &operator = (const DynamicTextGlyph &copy) = delete;
 
 PUBLISHED:
   virtual ~DynamicTextGlyph();

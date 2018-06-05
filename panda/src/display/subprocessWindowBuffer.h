@@ -17,7 +17,6 @@
 #include <stdio.h>  // perror
 #include <assert.h>
 #include <string>
-using namespace std;
 
 /**
  * This is a special class that is designed to faciliate SubprocessWindow.

@@ -36,6 +36,6 @@ public:
   string _comment;
 };
 
-typedef list<CPPCommentBlock *> CPPComments;
+typedef std::list<CPPCommentBlock *> CPPComments;
 
 #endif

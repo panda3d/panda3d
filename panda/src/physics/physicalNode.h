@@ -43,7 +43,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(physicals, get_num_physicals, get_physical, set_physical,
                     remove_physical, insert_physical);
 
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 public:
   virtual ~PhysicalNode();

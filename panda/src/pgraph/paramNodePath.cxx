@@ -45,7 +45,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
     // Before bam 6.40, we did not support writing NodePaths.  Instaed, we
     // write the PandaNode pointer and pray there is an unambiguous path.
     if (_node_path.is_empty()) {
-      manager->write_pointer(dg, NULL);
+      manager->write_pointer(dg, nullptr);
     } else {
       manager->write_pointer(dg, _node_path.node());
     }

@@ -45,6 +45,7 @@ class PointerSlotStorage {};
 using std::tr1::array;
 #else
 #include <array>
+using std::array;
 #endif
 
 /**

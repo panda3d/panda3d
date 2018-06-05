@@ -49,9 +49,7 @@ PUBLISHED:
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);
-  INLINE LoaderOptions(int flags, int texture_flags);
-  INLINE LoaderOptions(const LoaderOptions &copy);
-  INLINE void operator = (const LoaderOptions &copy);
+  constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;

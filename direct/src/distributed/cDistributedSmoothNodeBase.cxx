@@ -26,12 +26,12 @@ static const double network_time_precision = 100.0;  // Matches ClockDelta.py
  */
 CDistributedSmoothNodeBase::
 CDistributedSmoothNodeBase() {
-  _repository = NULL;
+  _repository = nullptr;
   _is_ai = false;
   _ai_id = 0;
 
 #ifdef HAVE_PYTHON
-  _clock_delta = NULL;
+  _clock_delta = nullptr;
 #endif
 
   _currL[0] = 0;
@@ -270,7 +270,7 @@ broadcast_pos_hpr_xy() {
 void CDistributedSmoothNodeBase::
 begin_send_update(DCPacker &packer, const string &field_name) {
   DCField *field = _dclass->get_field_by_name(field_name);
-  nassertv(field != (DCField *)NULL);
+  nassertv(field != nullptr);
 
   if (_is_ai) {
 
@@ -298,9 +298,9 @@ begin_send_update(DCPacker &packer, const string &field_name) {
 void CDistributedSmoothNodeBase::
 finish_send_update(DCPacker &packer) {
 #ifdef HAVE_PYTHON
-  nassertv(_clock_delta != NULL);
+  nassertv(_clock_delta != nullptr);
   PyObject *clock_delta = PyObject_GetAttrString(_clock_delta, "delta");
-  nassertv(clock_delta != NULL);
+  nassertv(clock_delta != nullptr);
   double delta = PyFloat_AsDouble(clock_delta);
   Py_DECREF(clock_delta);
 #else
@@ -319,7 +319,7 @@ finish_send_update(DCPacker &packer) {
   bool pack_ok = packer.end_pack();
   if (pack_ok) {
     Datagram dg(packer.get_data(), packer.get_length());
-    nassertv(_repository != NULL);
+    nassertv(_repository != nullptr);
     _repository->send_datagram(dg);
 
   } else {

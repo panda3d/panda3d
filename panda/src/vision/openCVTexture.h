@@ -29,9 +29,7 @@ struct CvCapture;
 class EXPCL_VISION OpenCVTexture : public VideoTexture {
 PUBLISHED:
   OpenCVTexture(const string &name = string());
-protected:
-  OpenCVTexture(const OpenCVTexture &copy);
-PUBLISHED:
+  OpenCVTexture(const OpenCVTexture &copy) = delete;
   virtual ~OpenCVTexture();
 
   bool from_camera(int camera_index = -1, int z = 0,
@@ -43,7 +41,7 @@ public:
 
 protected:
   virtual void consider_update();
-  virtual PT(Texture) make_copy_impl();
+  virtual PT(Texture) make_copy_impl() const;
   void do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy,
                  const Texture::CData *cdata_copy_tex);
 

@@ -25,7 +25,7 @@ class IndexRemapper;
  */
 class EXPCL_INTERROGATEDB InterrogateMakeSeq : public InterrogateComponent {
 public:
-  INLINE InterrogateMakeSeq(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateMakeSeq(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateMakeSeq(const InterrogateMakeSeq &copy);
   INLINE void operator = (const InterrogateMakeSeq &copy);
 

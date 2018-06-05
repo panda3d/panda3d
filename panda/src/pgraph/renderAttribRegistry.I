@@ -25,19 +25,6 @@ get_slot(TypeHandle type_handle) const {
 }
 
 /**
- * Returns the maximum number that any slot number is allowed to grow.
- * Actually, this number will be one higher than the highest possible slot
- * number.  This puts an upper bound on the number of RenderAttrib slots that
- * may be allocated, and allows other code to define an array of slots.
- *
- * This number will not change during the lifetime of the application.
- */
-CONSTEXPR int RenderAttribRegistry::
-get_max_slots() {
-  return _max_slots;
-}
-
-/**
  * Returns the number of RenderAttrib slots that have been allocated.  This is
  * one more than the highest slot number in use.
  */
@@ -99,7 +86,7 @@ get_sorted_slot(int n) const {
  */
 INLINE RenderAttribRegistry *RenderAttribRegistry::
 get_global_ptr() {
-  if (_global_ptr == (RenderAttribRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     init_global_ptr();
   }
   return _global_ptr;

@@ -58,7 +58,7 @@ is_in_range(Number num) const {
     return true;
   }
 
-  TYPENAME Ranges::const_iterator ri;
+  typename Ranges::const_iterator ri;
   for (ri = _ranges.begin(); ri != _ranges.end(); ++ri) {
     if (num >= (*ri)._min && num <= (*ri)._max) {
       return true;
@@ -96,7 +96,7 @@ has_one_value() const {
  * by the numeric range.
  */
 template <class NUM>
-INLINE TYPENAME DCNumericRange<NUM>::Number DCNumericRange<NUM>::
+INLINE typename DCNumericRange<NUM>::Number DCNumericRange<NUM>::
 get_one_value() const {
   nassertr(has_one_value(), 0);
   return _ranges[0]._min;
@@ -110,7 +110,7 @@ void DCNumericRange<NUM>::
 generate_hash(HashGenerator &hashgen) const {
   if (!_ranges.empty()) {
     hashgen.add_int(_ranges.size());
-    TYPENAME Ranges::const_iterator ri;
+    typename Ranges::const_iterator ri;
     for (ri = _ranges.begin(); ri != _ranges.end(); ++ri) {
       // We don't account for the fractional part of floating-point ranges
       // here.  Shouldn't be a real issue.
@@ -127,7 +127,7 @@ template <class NUM>
 void DCNumericRange<NUM>::
 output(ostream &out, Number divisor) const {
   if (!_ranges.empty()) {
-    TYPENAME Ranges::const_iterator ri;
+    typename Ranges::const_iterator ri;
     ri = _ranges.begin();
     output_minmax(out, divisor, *ri);
     ++ri;
@@ -151,7 +151,7 @@ output_char(ostream &out, Number divisor) const {
 
   } else {
     if (!_ranges.empty()) {
-      TYPENAME Ranges::const_iterator ri;
+      typename Ranges::const_iterator ri;
       ri = _ranges.begin();
       output_minmax_char(out, *ri);
       ++ri;
@@ -187,7 +187,7 @@ add_range(Number min, Number max) {
     return false;
   }
 
-  TYPENAME Ranges::const_iterator ri;
+  typename Ranges::const_iterator ri;
   for (ri = _ranges.begin(); ri != _ranges.end(); ++ri) {
     if ((min >= (*ri)._min && min <= (*ri)._max) ||
         (max >= (*ri)._min && max <= (*ri)._max) ||
@@ -227,7 +227,7 @@ get_num_ranges() const {
  * Returns the minimum value defined by the nth component.
  */
 template <class NUM>
-INLINE TYPENAME DCNumericRange<NUM>::Number DCNumericRange<NUM>::
+INLINE typename DCNumericRange<NUM>::Number DCNumericRange<NUM>::
 get_min(int n) const {
   nassertr(n >= 0 && n < (int)_ranges.size(), 0);
   return _ranges[n]._min;
@@ -237,7 +237,7 @@ get_min(int n) const {
  * Returns the maximum value defined by the nth component.
  */
 template <class NUM>
-INLINE TYPENAME DCNumericRange<NUM>::Number DCNumericRange<NUM>::
+INLINE typename DCNumericRange<NUM>::Number DCNumericRange<NUM>::
 get_max(int n) const {
   nassertr(n >= 0 && n < (int)_ranges.size(), 0);
   return _ranges[n]._max;

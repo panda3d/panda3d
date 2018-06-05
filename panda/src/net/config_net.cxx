@@ -40,9 +40,9 @@ ConfigureFn(config_net) {
 
 int
 get_net_max_write_queue() {
-  static ConfigVariableInt *net_max_write_queue = NULL;
+  static ConfigVariableInt *net_max_write_queue = nullptr;
 
-  if (net_max_write_queue == (ConfigVariableInt *)NULL) {
+  if (net_max_write_queue == nullptr) {
     net_max_write_queue = new ConfigVariableInt
       ("net-max-write-queue", 10000,
        PRC_DESC("This limits the number of datagrams in a ConnectionWriter's "
@@ -54,9 +54,9 @@ get_net_max_write_queue() {
 
 int
 get_net_max_response_queue() {
-  static ConfigVariableInt *net_max_response_queue = NULL;
+  static ConfigVariableInt *net_max_response_queue = nullptr;
 
-  if (net_max_response_queue == (ConfigVariableInt *)NULL) {
+  if (net_max_response_queue == nullptr) {
     net_max_response_queue = new ConfigVariableInt
       ("net-max-response-queue", 50000,
        PRC_DESC("This limits the number of datagrams, messages, what have you, "
@@ -69,9 +69,9 @@ get_net_max_response_queue() {
 
 bool
 get_net_error_abort() {
-  static ConfigVariableBool *net_error_abort = NULL;
+  static ConfigVariableBool *net_error_abort = nullptr;
 
-  if (net_error_abort == (ConfigVariableBool *)NULL) {
+  if (net_error_abort == nullptr) {
     net_error_abort = new ConfigVariableBool
       ("net-error-abort", false);
   }
@@ -81,9 +81,9 @@ get_net_error_abort() {
 
 double
 get_net_max_poll_cycle() {
-  static ConfigVariableDouble *net_max_poll_cycle = NULL;
+  static ConfigVariableDouble *net_max_poll_cycle = nullptr;
 
-  if (net_max_poll_cycle == (ConfigVariableDouble *)NULL) {
+  if (net_max_poll_cycle == nullptr) {
     net_max_poll_cycle = new ConfigVariableDouble
       ("net-max-poll-cycle", 0.2,
        PRC_DESC("Specifies the maximum amount of time, in seconds, to "
@@ -100,9 +100,9 @@ get_net_max_poll_cycle() {
 
 double
 get_net_max_block() {
-  static ConfigVariableDouble *net_max_block = NULL;
+  static ConfigVariableDouble *net_max_block = nullptr;
 
-  if (net_max_block == (ConfigVariableDouble *)NULL) {
+  if (net_max_block == nullptr) {
     net_max_block = new ConfigVariableDouble
       ("net-max-block", 0.01,
        PRC_DESC("Specifies the maximum amount of time, in seconds, to "

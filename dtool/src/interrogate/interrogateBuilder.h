@@ -68,8 +68,8 @@ public:
   TypeIndex get_type(CPPType *type, bool global);
 
 public:
-  typedef set<string> Commands;
-  typedef map<string, string> CommandParams;
+  typedef std::set<string> Commands;
+  typedef std::map<string, string> CommandParams;
   void insert_param_list(InterrogateBuilder::Commands &commands,
                          const string &params);
 
@@ -86,7 +86,7 @@ public:
 
   bool is_inherited_published(CPPInstance *function, CPPStructType *struct_type);
 
-  void remap_indices(vector<FunctionRemap *> &remaps);
+  void remap_indices(std::vector<FunctionRemap *> &remaps);
   void scan_function(CPPFunctionGroup *fgroup);
   void scan_function(CPPInstance *function);
   void scan_struct_type(CPPStructType *type);
@@ -135,17 +135,17 @@ public:
 
   static string trim_blanks(const string &str);
 
-  typedef map<string, TypeIndex> TypesByName;
-  typedef map<string, FunctionIndex> FunctionsByName;
-  typedef map<string, MakeSeqIndex> MakeSeqsByName;
-  typedef map<string, ElementIndex> PropertiesByName;
+  typedef std::map<string, TypeIndex> TypesByName;
+  typedef std::map<string, FunctionIndex> FunctionsByName;
+  typedef std::map<string, MakeSeqIndex> MakeSeqsByName;
+  typedef std::map<string, ElementIndex> PropertiesByName;
 
   TypesByName _types_by_name;
   FunctionsByName _functions_by_name;
   MakeSeqsByName _make_seqs_by_name;
   PropertiesByName _properties_by_name;
 
-  typedef map<string, char> IncludeFiles;
+  typedef std::map<string, char> IncludeFiles;
   IncludeFiles _include_files;
 
   Commands _forcetype;

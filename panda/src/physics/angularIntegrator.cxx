@@ -59,7 +59,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void AngularIntegrator::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularIntegrator:\n";
   out.width(indent+2); out<<""; out<<"_max_angular_dt "<<_max_angular_dt<<" (class const)\n";

@@ -44,7 +44,7 @@ MovieVideo::
  */
 PT(MovieVideoCursor) MovieVideo::
 open() {
-  return NULL;
+  return nullptr;
 }
 
 /**

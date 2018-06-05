@@ -163,7 +163,7 @@ write_public_keys(Filename outfile) {
   for (i = 0; i < num_keys; i++) {
     EVP_PKEY *pkey = pkr->get_key(i);
 
-    if (pkey != (EVP_PKEY *)NULL) {
+    if (pkey != nullptr) {
       if (!PEM_write_bio_PUBKEY(mbio, pkey)) {
         output_ssl_errors();
         exit(1);
@@ -184,11 +184,11 @@ write_public_keys(Filename outfile) {
     EVP_PKEY *pkey = pkr->get_key(i);
     time_t generated_time = pkr->get_generated_time(i);
 
-    if (pkey != (EVP_PKEY *)NULL) {
+    if (pkey != nullptr) {
       out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i
           << "_length, " << generated_time << " },\n";
     } else {
-      out << "  { NULL, 0, 0 },\n";
+      out << "  { nullptr, 0, 0 },\n";
     }
   };
 
@@ -220,17 +220,17 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
   BIO *mbio = BIO_new(BIO_s_mem());
 
   int write_result;
-  if (pp != NULL && *pp == '\0') {
+  if (pp != nullptr && *pp == '\0') {
     // The supplied password was the empty string.  This means not to encrypt
     // the private key.
     write_result =
-      PEM_write_bio_PKCS8PrivateKey(mbio, pkey, NULL, NULL, 0, NULL, NULL);
+      PEM_write_bio_PKCS8PrivateKey(mbio, pkey, nullptr, nullptr, 0, nullptr, nullptr);
 
   } else {
     // Otherwise, the default is to encrypt it.
     write_result =
       PEM_write_bio_PKCS8PrivateKey(mbio, pkey, EVP_des_ede3_cbc(),
-                                    NULL, 0, NULL, (void *)pp);
+                                    nullptr, 0, nullptr, (void *)pp);
   }
 
   if (!write_result) {
@@ -427,7 +427,7 @@ main(int argc, char **argv) {
   // Load the OpenSSL algorithms.
   OpenSSL_add_all_algorithms();
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
 
   string name = priv_outfile.get_fullpath_wo_extension();
   string prefix, suffix;
@@ -448,7 +448,7 @@ main(int argc, char **argv) {
   KeyNumbers::iterator ki;
   for (ki = key_numbers.begin(); ki != key_numbers.end(); ++ki) {
     int n = (*ki)._number;
-    const char *pp = NULL;
+    const char *pp = nullptr;
     if ((*ki)._got_pass_phrase) {
       pp = (*ki)._pass_phrase.c_str();
     }

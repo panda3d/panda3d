@@ -121,7 +121,7 @@ get_tex_mat_sym(int stage_index) {
  */
 INLINE unsigned char *DXGraphicsStateGuardian9::
 get_safe_buffer_start() {
-  if (_temp_buffer == NULL) {
+  if (_temp_buffer == nullptr) {
     // Guarantee we get a buffer of size 0x10000 bytes that begins on an even
     // multiple of 0x10000.  We do this by allocating double the required
     // buffer, and then pointing to the first multiple of 0x10000 within that

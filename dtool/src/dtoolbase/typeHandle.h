@@ -78,9 +78,9 @@ class TypedObject;
  * that ancestry of a particular type may be queried, and the type name may be
  * retrieved for run-time display.
  */
-class EXPCL_DTOOL_DTOOLBASE TypeHandle FINAL {
+class EXPCL_DTOOL_DTOOLBASE TypeHandle final {
 PUBLISHED:
-  TypeHandle() NOEXCEPT DEFAULT_CTOR;
+  TypeHandle() noexcept = default;
 
   enum MemoryClass {
     MC_singleton,
@@ -108,18 +108,18 @@ PUBLISHED:
   INLINE int compare_to(const TypeHandle &other) const;
   INLINE size_t get_hash() const;
 
-  INLINE string get_name(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE string get_name(TypedObject *object = nullptr) const;
   INLINE bool is_derived_from(TypeHandle parent,
-                              TypedObject *object = (TypedObject *)NULL) const;
+                              TypedObject *object = nullptr) const;
 
-  INLINE int get_num_parent_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_parent_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_parent_class(int index) const;
 
-  INLINE int get_num_child_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_child_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_child_class(int index) const;
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
-                                       TypedObject *object = (TypedObject *)NULL) const;
+                                       TypedObject *object = nullptr) const;
 
   int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
@@ -129,7 +129,7 @@ PUBLISHED:
 
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
-  CONSTEXPR static TypeHandle none();
+  constexpr static TypeHandle none() { return TypeHandle(0); }
   INLINE operator bool () const;
 
   MAKE_PROPERTY(index, get_index);
@@ -142,10 +142,10 @@ public:
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void deallocate_array(void *ptr);
 
-  CONSTEXPR static TypeHandle from_index(int index);
+  constexpr static TypeHandle from_index(int index) { return TypeHandle(index); }
 
 private:
-  CONSTEXPR TypeHandle(int index);
+  constexpr TypeHandle(int index);
 
   // Only kept temporarily for ABI compatibility.
   static TypeHandle _none;

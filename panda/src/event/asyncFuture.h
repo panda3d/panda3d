@@ -83,7 +83,7 @@ PUBLISHED:
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
-  INLINE void set_result(nullptr_t);
+  INLINE void set_result(std::nullptr_t);
   INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
   INLINE void set_result(TypedWritableReferenceCount *result);
@@ -160,7 +160,7 @@ INLINE ostream &operator << (ostream &out, const AsyncFuture &fut) {
 /**
  * Specific future that collects the results of several futures.
  */
-class EXPCL_PANDA_EVENT AsyncGatheringFuture FINAL : public AsyncFuture {
+class EXPCL_PANDA_EVENT AsyncGatheringFuture final : public AsyncFuture {
 private:
   AsyncGatheringFuture(AsyncFuture::Futures futures);
 

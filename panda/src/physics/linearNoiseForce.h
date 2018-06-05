@@ -28,7 +28,7 @@ PUBLISHED:
   virtual ~LinearNoiseForce();
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 public:
   static ConfigVariableInt _random_seed;

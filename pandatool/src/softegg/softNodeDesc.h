@@ -42,7 +42,7 @@ class EggXfmSAnim;
  */
 class SoftNodeDesc : public ReferenceCount, public Namable {
 public:
-  SoftNodeDesc(SoftNodeDesc *parent=NULL, const string &name = string());
+  SoftNodeDesc(SoftNodeDesc *parent=nullptr, const string &name = string());
   ~SoftNodeDesc();
 
   void set_parent(SoftNodeDesc *parent);

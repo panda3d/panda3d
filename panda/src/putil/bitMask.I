@@ -18,17 +18,7 @@ TypeHandle BitMask<WType, nbits>::_type_handle;
  *
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-BitMask() :
-  _word(0)
-{
-}
-
-/**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits>::
 BitMask(WordType init_value) :
   _word(init_value)
 {
@@ -102,40 +92,11 @@ range(int low_bit, int size) {
 }
 
 /**
- * Returns true if there is a maximum number of bits that may be stored in
- * this structure, false otherwise.  If this returns true, the number may be
- * queried in get_max_num_bits().
- *
- * This method always returns true.  This method is defined so generic
- * programming algorithms can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR bool BitMask<WType, nbits>::
-has_max_num_bits() {
-  return true;
-}
-
-/**
- * If get_max_num_bits() returned true, this method may be called to return
- * the maximum number of bits that may be stored in this structure.  It is an
- * error to call this if get_max_num_bits() return false.
- *
- * It is never an error to call this method.  This returns the same thing as
- * get_num_bits().  This method is defined so generic programming algorithms
- * can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_max_num_bits() {
-  return num_bits;
-}
-
-/**
  * Returns the number of bits available to set in the bitmask.
  */
 template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_num_bits() {
+constexpr int BitMask<WType, nbits>::
+get_num_bits() const {
   return num_bits;
 }
 
@@ -199,7 +160,7 @@ is_zero() const {
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 is_all_on() const {
-  return (~_word == 0);
+  return _word == (WordType)~0;
 }
 
 /**
@@ -207,7 +168,7 @@ is_all_on() const {
  * BitMask, shifted to the least-significant position.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 extract(int low_bit, int size) const {
   return (_word >> low_bit) &
     BitMask<WType, nbits>::lower_on(size)._word;
@@ -281,7 +242,7 @@ set_range_to(bool value, int low_bit, int size) {
  * Returns the entire BitMask as a single word.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 get_word() const {
   return _word;
 }

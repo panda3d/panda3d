@@ -195,7 +195,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       // used, but it instead uses specially named variables.  A bit of
       // guesswork is involved here; Cg seems to mostly use the semantics as
       // attribute names in GLSL, with a few exceptions.
-      const char *attribname = NULL;
+      const char *attribname = nullptr;
       switch (res) {
       case CG_POSITION0:
         attribname = "cg_Vertex";
@@ -436,42 +436,43 @@ set_state_and_transform(const RenderState *target_rs,
     altered |= Shader::SSD_projection;
   }
 
-  if (_state_rs.was_deleted() || _state_rs == (const RenderState *)NULL) {
+  CPT(RenderState) state_rs = _state_rs.lock();
+  if (state_rs == nullptr) {
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
 
-  } else if (_state_rs != target_rs) {
+  } else if (state_rs != target_rs) {
     // The state has changed since last time.
-    if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
     }
-    if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
       altered |= Shader::SSD_colorscale;
     }
-    if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
         target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
       altered |= Shader::SSD_material;
     }
-    if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
         target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
       altered |= Shader::SSD_shaderinputs;
     }
-    if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
         target_rs->get_attrib(FogAttrib::get_class_slot())) {
       altered |= Shader::SSD_fog;
     }
-    if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
         target_rs->get_attrib(LightAttrib::get_class_slot())) {
       altered |= Shader::SSD_light;
     }
-    if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
         target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
       altered |= Shader::SSD_clip_planes;
     }
-    if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
     }
@@ -518,7 +519,7 @@ issue_parameters(int altered) {
       Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
       const Shader::ShaderPtrData *ptr_data =_glgsg->fetch_ptr_parameter(spec);
-      if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
+      if (ptr_data == nullptr){ //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
@@ -735,7 +736,7 @@ update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
 
   int i = 0;
-  if (table != NULL) {
+  if (table != nullptr) {
     int num_transforms = min(_transform_table_size, (long)table->get_num_transforms());
     for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
@@ -763,7 +764,7 @@ update_slider_table(const SliderTable *table) {
   float *sliders = (float *)alloca(_slider_table_size * 4);
   memset(sliders, 0, _slider_table_size * 4);
 
-  if (table != NULL) {
+  if (table != nullptr) {
     int num_sliders = min(_slider_table_size, (long)table->get_num_sliders());
     for (int i = 0; i < num_sliders; ++i) {
       sliders[i] = table->get_slider(i)->get_slider();
@@ -1078,7 +1079,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
-    const InternalName *id = spec._name;
 
     CGparameter p = _cg_parameter_map[spec._id._seqno];
     if (p == 0) {
@@ -1110,7 +1110,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
-    if (tc == (TextureContext*)NULL) {
+    if (tc == nullptr) {
       continue;
     }
 

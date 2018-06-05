@@ -195,7 +195,7 @@ get_value() const {
 INLINE Filename ConfigVariableFilename::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return Filename::expand_from(decl->get_string_value());
   }
   return Filename();

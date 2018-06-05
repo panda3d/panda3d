@@ -28,7 +28,7 @@ PUBLISHED:
   virtual ~LinearSourceForce();
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   virtual LVector3 get_child_vector(const PhysicsObject *po);

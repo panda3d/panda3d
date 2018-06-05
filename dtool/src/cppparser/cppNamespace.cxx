@@ -33,7 +33,7 @@ CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
  */
 string CPPNamespace::
 get_simple_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_simple_name();
@@ -44,7 +44,7 @@ get_simple_name() const {
  */
 string CPPNamespace::
 get_local_name(CPPScope *scope) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_local_name(scope);
@@ -55,7 +55,7 @@ get_local_name(CPPScope *scope) const {
  */
 string CPPNamespace::
 get_fully_scoped_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_fully_scoped_name();
@@ -77,12 +77,12 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (_is_inline) {
     out << "inline ";
   }
-  if (!complete && _ident != NULL) {
+  if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     out << "namespace " << _ident->get_local_name(scope);
 
   } else {
-    if (_ident != NULL) {
+    if (_ident != nullptr) {
       out << "namespace " << _ident->get_local_name(scope) << " {\n";
     } else {
       out << "namespace {\n";

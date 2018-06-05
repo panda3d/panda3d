@@ -31,7 +31,7 @@
 #include "throw_event.h"
 #include "pnmImage.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "pset.h"
 #include "pmutex.h"
 

@@ -18,10 +18,6 @@
 #include <string.h>
 #include <string>
 
-#ifdef HAVE_NAMESPACE
-using namespace std;
-#endif
-
 class fake_istream_buffer {
 public:
   fake_istream_buffer() {

@@ -52,7 +52,7 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  explicit GraphicsEngine(Pipeline *pipeline = NULL);
+  explicit GraphicsEngine(Pipeline *pipeline = nullptr);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
@@ -78,8 +78,8 @@ PUBLISHED:
                               const string &name, int sort,
                               const FrameBufferProperties &fb_prop,
                               const WindowProperties &win_prop,
-                              int flags, GraphicsStateGuardian *gsg = NULL,
-                              GraphicsOutput *host = NULL);
+                              int flags, GraphicsStateGuardian *gsg = nullptr,
+                              GraphicsOutput *host = nullptr);
 
   // Syntactic shorthand versions of make_output
   INLINE GraphicsOutput *make_buffer(GraphicsOutput *host,

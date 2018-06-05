@@ -134,7 +134,7 @@ get_lru() const {
  */
 INLINE void AdaptiveLruPage::
 dequeue_lru() {
-  enqueue_lru(NULL);
+  enqueue_lru(nullptr);
 }
 
 /**
@@ -146,7 +146,7 @@ dequeue_lru() {
  */
 INLINE void AdaptiveLruPage::
 mark_used_lru() const {
-  if (_lru != (AdaptiveLru *)NULL) {
+  if (_lru != nullptr) {
     ((AdaptiveLruPage *)this)->mark_used_lru(_lru);
   }
 }
@@ -174,7 +174,7 @@ get_lru_size() const {
  */
 INLINE void AdaptiveLruPage::
 set_lru_size(size_t lru_size) {
-  if (_lru != (AdaptiveLru *)NULL) {
+  if (_lru != nullptr) {
     LightMutexHolder holder(_lru->_lock);
     _lru->_total_size -= _lru_size;
     _lru->_total_size += lru_size;

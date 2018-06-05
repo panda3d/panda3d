@@ -111,7 +111,6 @@ private:
 
 private:
   PT(CollisionHandler) _default_handler;
-  TypeHandle _graph_type;
 
   class OrderedColliderDef {
   public:

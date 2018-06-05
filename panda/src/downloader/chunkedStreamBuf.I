@@ -16,7 +16,7 @@
  */
 INLINE bool ChunkedStreamBuf::
 is_closed() const {
-  return (_source == (BioStreamPtr *)NULL || (*_source)->is_closed());
+  return (_source == nullptr || (*_source)->is_closed());
 }
 
 /**

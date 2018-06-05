@@ -28,9 +28,9 @@
 template <class T>
 class WeakPointerTo : public WeakPointerToBase<T> {
 public:
-  typedef TYPENAME WeakPointerToBase<T>::To To;
+  typedef typename WeakPointerToBase<T>::To To;
 PUBLISHED:
-  INLINE WeakPointerTo(To *ptr = (To *)NULL);
+  INLINE WeakPointerTo(To *ptr = nullptr);
   INLINE WeakPointerTo(const PointerTo<T> &copy);
   INLINE WeakPointerTo(const WeakPointerTo<T> &copy);
 
@@ -41,6 +41,7 @@ public:
   INLINE operator T *() const;
 
 PUBLISHED:
+  INLINE PointerTo<T> lock() const;
   INLINE To *p() const;
   INLINE To *get_orig() const;
 
@@ -63,9 +64,9 @@ PUBLISHED:
 template <class T>
 class WeakConstPointerTo : public WeakPointerToBase<T> {
 public:
-  typedef TYPENAME WeakPointerToBase<T>::To To;
+  typedef typename WeakPointerToBase<T>::To To;
 PUBLISHED:
-  INLINE WeakConstPointerTo(const To *ptr = (const To *)NULL);
+  INLINE WeakConstPointerTo(const To *ptr = nullptr);
   INLINE WeakConstPointerTo(const PointerTo<T> &copy);
   INLINE WeakConstPointerTo(const ConstPointerTo<T> &copy);
   INLINE WeakConstPointerTo(const WeakPointerTo<T> &copy);
@@ -77,6 +78,7 @@ public:
   INLINE operator const T *() const;
 
 PUBLISHED:
+  INLINE ConstPointerTo<T> lock() const;
   INLINE const To *p() const;
   INLINE const To *get_orig() const;
 

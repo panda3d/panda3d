@@ -32,10 +32,10 @@
 class EXPCL_PANDA_PIPELINE ConditionVarDirect {
 public:
   INLINE explicit ConditionVarDirect(MutexDirect &mutex);
-  INLINE ~ConditionVarDirect();
-private:
-  INLINE ConditionVarDirect(const ConditionVarDirect &copy);
-  INLINE void operator = (const ConditionVarDirect &copy);
+  ConditionVarDirect(const ConditionVarDirect &copy) = delete;
+  ~ConditionVarDirect() = default;
+
+  ConditionVarDirect &operator = (const ConditionVarDirect &copy) = delete;
 
 PUBLISHED:
   INLINE MutexDirect &get_mutex() const;

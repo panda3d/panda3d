@@ -239,7 +239,7 @@ CData(UsageHint usage_hint) :
  *
  */
 INLINE GeomVertexArrayData::CData::
-CData(GeomVertexArrayData::CData &&from) NOEXCEPT :
+CData(GeomVertexArrayData::CData &&from) noexcept :
   _usage_hint(move(from._usage_hint)),
   _buffer(move(from._buffer)),
   _modified(move(from._modified)),
@@ -372,23 +372,6 @@ GeomVertexArrayDataHandle(GeomVertexArrayData *object,
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy)
-  : _current_thread(copy._current_thread) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexArrayDataHandle::
-operator = (const GeomVertexArrayDataHandle &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomVertexArrayDataHandle::
@@ -410,8 +393,8 @@ INLINE GeomVertexArrayDataHandle::
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -510,7 +493,7 @@ get_modified() const {
  */
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
-  return (get_read_pointer(false) != (const unsigned char *)NULL);
+  return (get_read_pointer(false) != nullptr);
 }
 
 /**

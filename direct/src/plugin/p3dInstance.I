@@ -105,7 +105,7 @@ get_matches_script_origin() const {
  */
 inline bool P3DInstance::
 is_started() const {
-  return (_session != NULL);
+  return (_session != nullptr);
 }
 
 /**
@@ -123,7 +123,7 @@ is_failed() const {
 inline P3DInstance::ImageFile::
 ImageFile() {
   _use_standard_image = true;
-  _temp_filename = NULL;
+  _temp_filename = nullptr;
   _image_placement = P3DSplashWindow::IP_none;
 }
 
@@ -140,8 +140,8 @@ inline P3DInstance::ImageFile::
  */
 inline void P3DInstance::ImageFile::
 cleanup() {
-  if (_temp_filename != NULL) {
+  if (_temp_filename != nullptr) {
     delete _temp_filename;
-    _temp_filename = NULL;
+    _temp_filename = nullptr;
   }
 }

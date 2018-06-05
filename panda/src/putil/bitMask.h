@@ -36,8 +36,8 @@ public:
 PUBLISHED:
   enum { num_bits = nbits };
 
-  INLINE BitMask();
-  INLINE BitMask(WordType init_value);
+  constexpr BitMask() = default;
+  constexpr BitMask(WordType init_value);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();
@@ -45,10 +45,10 @@ PUBLISHED:
   INLINE static BitMask<WType, nbits> bit(int index);
   INLINE static BitMask<WType, nbits> range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits() { return true; }
+  constexpr static int get_max_num_bits() { return num_bits; }
 
-  CONSTEXPR static int get_num_bits();
+  constexpr int get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
@@ -131,7 +131,7 @@ public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
-  WordType _word;
+  WordType _word = 0u;
 
 public:
   static TypeHandle get_class_type() {

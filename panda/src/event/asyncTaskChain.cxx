@@ -51,7 +51,8 @@ AsyncTaskChain(AsyncTaskManager *manager, const string &name) :
   _needs_cleanup(false),
   _current_frame(0),
   _time_in_frame(0.0),
-  _block_till_next_frame(false)
+  _block_till_next_frame(false),
+  _next_implicit_sort(0)
 {
 }
 
@@ -403,8 +404,8 @@ write(ostream &out, int indent_level) const {
  */
 void AsyncTaskChain::
 do_add(AsyncTask *task) {
-  nassertv(task->_chain == NULL &&
-           task->_manager == NULL &&
+  nassertv(task->_chain == nullptr &&
+           task->_manager == nullptr &&
            task->_chain_name == get_name() &&
            task->_state == AsyncTask::S_inactive);
   nassertv(!do_has_task(task));
@@ -417,6 +418,9 @@ do_add(AsyncTask *task) {
   double now = _manager->_clock->get_frame_time();
   task->_start_time = now;
   task->_start_frame = _manager->_clock->get_frame_count();
+
+  // Remember the order in which tasks were added to the chain.
+  task->_implicit_sort = _next_implicit_sort++;
 
   _manager->add_task_by_name(task);
 
@@ -592,11 +596,11 @@ do_cleanup() {
   nassertv(_num_tasks == 0 || _num_tasks == 1);
 
   // Now go back and call the upon_death functions.
-  _manager->_lock.release();
+  _manager->_lock.unlock();
   for (ti = dead.begin(); ti != dead.end(); ++ti) {
     (*ti)->upon_death(_manager, false);
   }
-  _manager->_lock.acquire();
+  _manager->_lock.lock();
 
   if (task_cat.is_spam()) {
     do_output(task_cat.spam());
@@ -648,7 +652,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
     pop_heap(_active.begin(), _active.end(), AsyncTaskSortPriority());
     _active.pop_back();
 
-    if (thread != (AsyncTaskChain::AsyncTaskChainThread *)NULL) {
+    if (thread != nullptr) {
       thread->_servicing = task;
     }
 
@@ -665,10 +669,10 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
     AsyncTask::DoneStatus ds = task->unlock_and_do_task();
 
-    if (thread != (AsyncTaskChain::AsyncTaskChainThread *)NULL) {
-      thread->_servicing = NULL;
+    if (thread != nullptr) {
+      thread->_servicing = nullptr;
     }
-    task->_servicing_thread = NULL;
+    task->_servicing_thread = nullptr;
 
     if (task->_chain == this) {
       if (task->_state == AsyncTask::S_servicing_removed) {
@@ -787,9 +791,9 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   task->_manager = nullptr;
 
   if (upon_death) {
-    _manager->_lock.release();
+    _manager->_lock.unlock();
     task->upon_death(_manager, clean_exit);
-    _manager->_lock.acquire();
+    _manager->_lock.lock();
   }
 }
 
@@ -1027,7 +1031,7 @@ do_stop_threads() {
 
     // We have to release the lock while we join, so the threads can wake up
     // and see that we're shutting down.
-    _manager->_lock.release();
+    _manager->_lock.unlock();
     Threads::iterator ti;
     for (ti = wait_threads.begin(); ti != wait_threads.end(); ++ti) {
       if (task_cat.is_debug()) {
@@ -1042,7 +1046,7 @@ do_stop_threads() {
           << *Thread::get_current_thread() << "\n";
       }
     }
-    _manager->_lock.acquire();
+    _manager->_lock.lock();
 
     _state = S_initial;
 
@@ -1095,7 +1099,7 @@ do_get_active_tasks() const {
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
-    if (task != (AsyncTask *)NULL) {
+    if (task != nullptr) {
       result.add_task(task);
     }
   }
@@ -1184,7 +1188,7 @@ do_poll() {
       // in poll().  But it's possible, if someone calls set_num_threads()
       // while we're processing.
       _num_busy_threads++;
-      service_one_task(NULL);
+      service_one_task(nullptr);
       _num_busy_threads--;
       _cvar.notify_all();
 
@@ -1224,7 +1228,7 @@ cleanup_pickup_mode() {
  */
 void AsyncTaskChain::
 do_output(ostream &out) const {
-  if (_manager != (AsyncTaskManager *)NULL) {
+  if (_manager != nullptr) {
     out << _manager->get_type() << " " << _manager->get_name();
   } else {
     out << "(no manager)";
@@ -1284,7 +1288,7 @@ do_write(ostream &out, int indent_level) const {
   Threads::const_iterator thi;
   for (thi = _threads.begin(); thi != _threads.end(); ++thi) {
     AsyncTask *task = (*thi)->_servicing;
-    if (task != (AsyncTask *)NULL) {
+    if (task != nullptr) {
       tasks.push_back(task);
     }
   }
@@ -1375,7 +1379,7 @@ AsyncTaskChain::AsyncTaskChainThread::
 AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
   Thread(name, chain->get_name()),
   _chain(chain),
-  _servicing(NULL)
+  _servicing(nullptr)
 {
 }
 

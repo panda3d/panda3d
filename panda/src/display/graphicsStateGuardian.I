@@ -767,7 +767,7 @@ get_alpha_scale_via_texture() const {
 INLINE bool GraphicsStateGuardian::
 get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const {
   return _alpha_scale_via_texture &&
-    (tex_attrib == (const TextureAttrib *)NULL ||
+    (tex_attrib == nullptr ||
      tex_attrib->get_num_on_stages() < get_max_texture_stages());
 }
 
@@ -777,7 +777,7 @@ get_alpha_scale_via_texture(const TextureAttrib *tex_attrib) const {
  */
 INLINE TextureStage *GraphicsStateGuardian::
 get_alpha_scale_texture_stage() {
-  if (_alpha_scale_texture_stage == (TextureStage *)NULL) {
+  if (_alpha_scale_texture_stage == nullptr) {
     _alpha_scale_texture_stage = new TextureStage("alpha-scale");
     _alpha_scale_texture_stage->set_sort(1000000000);
   }

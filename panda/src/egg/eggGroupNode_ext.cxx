@@ -29,8 +29,8 @@ get_children() const {
   // Create the Python list object.
   EggGroupNode::size_type len = _this->size();
   PyObject *lst = PyList_New(len);
-  if (lst == NULL) {
-    return NULL;
+  if (lst == nullptr) {
+    return nullptr;
   }
 
   // Fill in the list.

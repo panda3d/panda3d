@@ -39,7 +39,7 @@ void CLwoLayer::
 connect_egg() {
   if (_layer->_parent != -1) {
     const CLwoLayer *parent = _converter->get_layer(_layer->_parent);
-    if (parent != (CLwoLayer *)NULL) {
+    if (parent != nullptr) {
       parent->_egg_group->add_child(_egg_group.p());
       return;
     }

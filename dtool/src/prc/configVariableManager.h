@@ -67,13 +67,13 @@ private:
 
   // We have to avoid pmap and pvector, due to the very low-level nature of
   // this stuff.
-  typedef vector<ConfigVariableCore *> Variables;
+  typedef std::vector<ConfigVariableCore *> Variables;
   Variables _variables;
 
-  typedef map<string, ConfigVariableCore *> VariablesByName;
+  typedef std::map<string, ConfigVariableCore *> VariablesByName;
   VariablesByName _variables_by_name;
 
-  typedef map<GlobPattern, ConfigVariableCore *> VariableTemplates;
+  typedef std::map<GlobPattern, ConfigVariableCore *> VariableTemplates;
   VariableTemplates _variable_templates;
 
   static ConfigVariableManager *_global_ptr;

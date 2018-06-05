@@ -90,13 +90,13 @@ inline int Socket_fdset::WaitForRead(bool zeroFds, uint32_t sleep_time)
 {
     int retVal = 0;
     if (sleep_time == 0xffffffff) {
-        retVal = DO_SELECT(_maxid + 1, &_the_set, NULL, NULL, NULL);
+        retVal = DO_SELECT(_maxid + 1, &_the_set, nullptr, nullptr, nullptr);
     } else {
         timeval timeoutValue;
         timeoutValue.tv_sec = sleep_time / 1000;
         timeoutValue.tv_usec = (sleep_time % 1000) * 1000;
 
-        retVal = DO_SELECT(_maxid + 1, &_the_set, NULL, NULL, &timeoutValue);
+        retVal = DO_SELECT(_maxid + 1, &_the_set, nullptr, nullptr, &timeoutValue);
     }
     if (zeroFds)
         clear();
@@ -111,7 +111,7 @@ inline int Socket_fdset::WaitForRead(bool zeroFds, const Time_Span & timeout)
 {
     timeval localtv = timeout.GetTval();
 
-    int retVal = DO_SELECT(_maxid + 1, &_the_set, NULL, NULL, &localtv);
+    int retVal = DO_SELECT(_maxid + 1, &_the_set, nullptr, nullptr, &localtv);
     if (zeroFds)
         clear();
 
@@ -144,7 +144,7 @@ inline int Socket_fdset::WaitForWrite(bool zeroFds, uint32_t sleep_time)
     int retVal = 0;
     if (sleep_time == 0xffffffff)
     {
-        retVal = DO_SELECT(_maxid + 1, NULL, &_the_set, NULL, NULL);
+        retVal = DO_SELECT(_maxid + 1, nullptr, &_the_set, nullptr, nullptr);
     }
     else
     {
@@ -152,7 +152,7 @@ inline int Socket_fdset::WaitForWrite(bool zeroFds, uint32_t sleep_time)
         timeoutValue.tv_sec = sleep_time / 1000;
         timeoutValue.tv_usec = (sleep_time % 1000) * 1000;
 
-        retVal = DO_SELECT(_maxid + 1, NULL, &_the_set, NULL, &timeoutValue);
+        retVal = DO_SELECT(_maxid + 1, nullptr, &_the_set, nullptr, &timeoutValue);
     }
     if (zeroFds)
         clear();
@@ -169,7 +169,7 @@ inline int Socket_fdset::WaitForError(bool zeroFds, uint32_t sleep_time)
     int retVal = 0;
     if (sleep_time == 0xffffffff)
     {
-        retVal = DO_SELECT(_maxid + 1, NULL, NULL, &_the_set, NULL);
+        retVal = DO_SELECT(_maxid + 1, nullptr, nullptr, &_the_set, nullptr);
     }
     else
     {
@@ -177,7 +177,7 @@ inline int Socket_fdset::WaitForError(bool zeroFds, uint32_t sleep_time)
         timeoutValue.tv_sec = sleep_time / 1000;
         timeoutValue.tv_usec = (sleep_time % 1000) * 1000;
 
-        retVal = DO_SELECT(_maxid + 1, NULL, NULL, &_the_set, &timeoutValue);
+        retVal = DO_SELECT(_maxid + 1, nullptr, nullptr, &_the_set, &timeoutValue);
     }
     if (zeroFds)
         clear();

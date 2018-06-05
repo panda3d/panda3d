@@ -332,13 +332,13 @@ BMPreadrow(
         pixval         *G,
         pixval         *B)
 {
-        BITSTREAM       b = NULL;
+        BITSTREAM       b = nullptr;
         unsigned        nbyte = 0;
         int             rc;
         unsigned        x;
 
         if (indexed) {
-          if ((b = pm_bitinit(fp, "r")) == (BITSTREAM) 0)
+          if ((b = pm_bitinit(fp, "r")) == nullptr)
             {
               return -1;
             }

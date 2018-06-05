@@ -46,31 +46,3 @@ Mutex(const string &)
 #endif  // DEBUG_THREADS
 {
 }
-
-/**
- *
- */
-INLINE Mutex::
-~Mutex() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE Mutex::
-#ifdef DEBUG_THREADS
-Mutex(const Mutex &copy) : MutexDebug(string(), false, false)
-#else
-  Mutex(const Mutex &copy)
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void Mutex::
-operator = (const Mutex &copy) {
-  nassertv(false);
-}

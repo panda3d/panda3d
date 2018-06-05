@@ -73,6 +73,8 @@ get_primitive_type() const {
  */
 CPT(GeomPrimitive) GeomTriangles::
 make_adjacency() const {
+  using std::make_pair;
+
   Thread *current_thread = Thread::get_current_thread();
   PT(GeomTrianglesAdjacency) adj = new GeomTrianglesAdjacency(get_usage_hint());
 
@@ -281,7 +283,7 @@ rotate_impl() const {
       nassertr(false, vertices);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -313,10 +315,10 @@ rotate_impl() const {
 
     default:
       // This shouldn't get called with any other shade model.
-      nassertr(false, NULL);
+      nassertr(false, nullptr);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
 
   return new_vertices;

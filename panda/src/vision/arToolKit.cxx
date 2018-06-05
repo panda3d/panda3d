@@ -280,7 +280,7 @@ analyze(Texture *tex, bool do_flip_texture) {
   CPTA_uchar ri = tex->get_ram_image();
   const unsigned char *ram = ri.p();
 
-  if (ram == NULL) {
+  if (ram == nullptr) {
     vision_cat.warning() << "No data in texture!\n";
     return;
   }

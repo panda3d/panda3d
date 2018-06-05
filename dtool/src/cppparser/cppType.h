@@ -68,10 +68,10 @@ public:
   CPPType *remove_pointer();
 
   bool has_typedef_name() const;
-  string get_typedef_name(CPPScope *scope = NULL) const;
+  string get_typedef_name(CPPScope *scope = nullptr) const;
 
   virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
+  virtual string get_local_name(CPPScope *scope = nullptr) const;
   virtual string get_fully_scoped_name() const;
   virtual string get_preferred_name() const;
   int get_num_alt_names() const;

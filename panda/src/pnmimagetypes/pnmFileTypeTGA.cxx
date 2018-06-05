@@ -176,8 +176,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   tga_head = new ImageHeader;
   RLE_count = 0;
   RLE_flag = 0;
-  ColorMap = NULL;
-  AlphaMap = NULL;
+  ColorMap = nullptr;
+  AlphaMap = nullptr;
 
   Red = 0;
   Grn = 0;
@@ -283,7 +283,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
         temp1 = tga_head->Index_lo + tga_head->Index_hi * 256;
         temp2 = tga_head->Length_lo + tga_head->Length_hi * 256;
         int num_colors = temp1 + temp2 + 1;
-        nassertv(ColorMap == NULL && AlphaMap == NULL);
+        nassertv(ColorMap == nullptr && AlphaMap == nullptr);
         ColorMap = (pixel *)PANDA_MALLOC_ARRAY(num_colors * sizeof(pixel));
         AlphaMap = (gray *)PANDA_MALLOC_ARRAY(num_colors * sizeof(gray));
         for ( unsigned int i = temp1; i < ( temp1 + temp2 ); ++i )
@@ -311,10 +311,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 PNMFileTypeTGA::Reader::
 ~Reader() {
   delete tga_head;
-  if (ColorMap != NULL) {
+  if (ColorMap != nullptr) {
     PANDA_FREE_ARRAY(ColorMap);
   }
-  if (AlphaMap != NULL) {
+  if (AlphaMap != nullptr) {
     PANDA_FREE_ARRAY(AlphaMap);
   }
 }
@@ -363,9 +363,9 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
   tgaHeader = new ImageHeader;
-  chv = (colorhist_vector)0;
-  cht = (colorhash_table)0;
-  runlength = (int*)0;
+  chv = nullptr;
+  cht = nullptr;
+  runlength = nullptr;
 }
 
 /**
@@ -375,13 +375,13 @@ PNMFileTypeTGA::Writer::
 ~Writer() {
   delete tgaHeader;
 
-  if (chv != (colorhist_vector)0) {
+  if (chv != nullptr) {
     ppm_freecolorhist(chv);
   }
-  if (cht != (colorhash_table)0) {
+  if (cht != nullptr) {
     ppm_freecolorhash(cht);
   }
-  if (runlength != (int *)0) {
+  if (runlength != nullptr) {
     pm_freerow((char *)runlength);
   }
 }
@@ -432,7 +432,7 @@ write_data(xel *array, xelval *) {
       pnmimage_tga_cat.info()
         << "computing colormap...\n";
       chv = ppm_computecolorhist(&array, cols * rows, 1, TGA_MAXCOLORS, &ncolors );
-      if ( chv == (colorhist_vector) 0 ) {
+      if ( chv == nullptr ) {
         pnmimage_tga_cat.info()
           << "too many colors, writing RGB.\n";
       } else {
@@ -498,7 +498,7 @@ write_data(xel *array, xelval *) {
   tgaHeader->OrgBit = 0;
 
     /* Write out the Targa header. */
-  writetga( tgaHeader, (char*) 0 );
+  writetga( tgaHeader, nullptr );
 
   if ( tgaHeader->ImgType == TGA_Map || tgaHeader->ImgType == TGA_RLEMap )
     {

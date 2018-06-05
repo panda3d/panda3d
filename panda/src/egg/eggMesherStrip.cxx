@@ -248,15 +248,15 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
           // the best.
 
           EggMesherEdge::Strips &strips = (*ei)->_strips;
-          EggMesherStrip *mate = NULL;
+          EggMesherStrip *mate = nullptr;
           for (si = strips.begin(); si != strips.end(); ++si) {
             if ((*si)->_row_id < first_row_id) {
-              if (mate == NULL || pick_sheet_mate(**si, *mate)) {
+              if (mate == nullptr || pick_sheet_mate(**si, *mate)) {
                 mate = *si;
               }
             }
           }
-          if (mate!=NULL) {
+          if (mate!=nullptr) {
             mate->measure_sheet(*ei, secondary, num_prims, num_rows,
                                 first_row_id, this_row_id,
                                 this_row_distance + secondary);
@@ -281,15 +281,15 @@ measure_sheet(const EggMesherEdge *edge, int new_row, int &num_prims,
         // Here's the edge.  Same drill as above.
 
         EggMesherEdge::Strips &strips = (*ei)->_strips;
-        EggMesherStrip *mate = NULL;
+        EggMesherStrip *mate = nullptr;
         for (si = strips.begin(); si != strips.end(); ++si) {
           if ((*si)->_row_id < first_row_id) {
-            if (mate == NULL || pick_sheet_mate(**si, *mate)) {
+            if (mate == nullptr || pick_sheet_mate(**si, *mate)) {
               mate = *si;
             }
           }
         }
-        if (mate != NULL) {
+        if (mate != nullptr) {
           mate->measure_sheet(*ei, false, num_prims, num_rows,
                               first_row_id, this_row_id, this_row_distance);
         }
@@ -428,15 +428,15 @@ find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
                 const EggVertexPool *vertex_pool) {
   Edges::iterator ei;
 
-  mate = NULL;
-  common_edge = NULL;
+  mate = nullptr;
+  common_edge = nullptr;
 
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     EggMesherEdge::Strips &strips = (*ei)->_strips;
     EggMesherEdge::Strips::iterator si;
     for (si = strips.begin(); si != strips.end(); ++si) {
       if (*si != this) {
-        if (mate==NULL || pick_mate(**si, *mate, **ei, *common_edge,
+        if (mate==nullptr || pick_mate(**si, *mate, **ei, *common_edge,
                                     vertex_pool)) {
           mate = *si;
           common_edge = *ei;
@@ -445,7 +445,7 @@ find_ideal_mate(EggMesherStrip *&mate, EggMesherEdge *&common_edge,
     }
   }
 
-  return (mate!=NULL);
+  return (mate!=nullptr);
 }
 
 
@@ -898,7 +898,7 @@ find_opposite_edge(int vi) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -918,7 +918,7 @@ find_opposite_edge(const EggMesherEdge *edge) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -938,7 +938,7 @@ find_adjacent_edge(const EggMesherEdge *edge) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**

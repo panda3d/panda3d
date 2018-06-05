@@ -19,7 +19,7 @@
 #include "shader.h"
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCache.h"
 #include "string_utils.h"
 
@@ -341,7 +341,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
   if (fromflag) {
     if (word2 == "") {
       bind._part[0] = from_single;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
     } else {
       if (from_double == SMO_INVALID) {
         cp_report_error(p, "Could not parse coordinate system name");
@@ -353,7 +353,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
   } else {
     if (word2 == "") {
       bind._part[1] = to_single;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else {
       if (to_double == SMO_INVALID) {
         cp_report_error(p, "Could not parse coordinate system name");
@@ -508,7 +508,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   if (spec._func == SMF_first) {
     spec._part[1] = SMO_INVALID;
-    spec._arg[1] = 0;
+    spec._arg[1] = nullptr;
   }
   if (spec._func == SMF_compose) {
     if (spec._part[1] == SMO_identity) {
@@ -753,7 +753,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_light_source_i_attrib;
     bind._arg[1] = InternalName::make("shadowViewMatrix");
     bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._index = atoi(pieces[2].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -866,7 +866,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_light_source_i_attrib;
     bind._arg[1] = InternalName::make("shadowViewMatrix");
     bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._index = atoi(pieces[2].c_str());
 
     int next = 1;
@@ -934,9 +934,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_transpose;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_material;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "color") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -945,9 +945,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_color;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "colorscale") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -956,9 +956,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_colorscale;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "fog") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -967,9 +967,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fog;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "fogcolor") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -978,9 +978,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fogcolor;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "ambient") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -989,9 +989,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_light_ambient;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1].compare(0, 5, "light") == 0) {
       if (!cp_errchk_parameter_float(p,16,16)) {
         return false;
@@ -1000,9 +1000,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_transpose;
       bind._func = SMF_first;
       bind._part[0] = SMO_light_source_i_packed;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
     } else if (pieces[1].compare(0, 5, "lspec") == 0) {
       if (!cp_errchk_parameter_float(p,3,4)) {
@@ -1014,7 +1014,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._part[0] = SMO_light_source_i_attrib;
       bind._arg[0] = InternalName::make("specular");
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
     } else {
       cp_report_error(p,"Unknown attr parameter.");
@@ -1057,7 +1057,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_alight_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1079,7 +1079,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_satten_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1141,9 +1141,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_whole;
     bind._func = SMF_first;
     bind._part[0] = SMO_texmat_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1164,9 +1164,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texscale_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1187,9 +1187,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texcolor_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1212,7 +1212,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_plane_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1234,7 +1234,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_clipplane_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1255,20 +1255,20 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     if (pieces[1] == "pixelsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._part[0] = SMO_pixel_size;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else if (pieces[1] == "windowsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._part[0] = SMO_window_size;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else if (pieces[1] == "time") {
       if (!cp_errchk_parameter_float(p, 1, 1)) {
@@ -1276,7 +1276,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       }
       bind._piece = SMP_row3x1;
       bind._part[0] = SMO_frame_time;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else {
       cp_report_error(p, "unknown system parameter");
@@ -1302,7 +1302,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     ShaderTexSpec bind;
     bind._id = p._id;
-    bind._name = 0;
+    bind._name = nullptr;
     bind._stage = atoi(pieces[1].c_str());
     bind._part = STO_stage_i;
     switch (p._type) {
@@ -1367,7 +1367,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_texpad_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     _mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1388,7 +1388,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_texpix_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     _mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1780,7 +1780,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
         << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
       if (err == CG_COMPILER_ERROR) {
         const char *listing = cgGetLastListing(context);
-        if (listing != NULL) {
+        if (listing != nullptr) {
           shader_cat.debug(false) << listing;
         }
       }
@@ -1795,13 +1795,13 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   // The active profile failed, so recompile it with the ultimate profile.
   prog = cgCreateProgram(context, CG_SOURCE, text.c_str(),
-                         (CGprofile)ultimate, entry, (const char **)NULL);
+                         (CGprofile)ultimate, entry, nullptr);
 
   // Extract the output listing.
   err = cgGetError();
   const char *listing = cgGetLastListing(context);
 
-  if (err == CG_NO_ERROR && listing != NULL && strlen(listing) > 1) {
+  if (err == CG_NO_ERROR && listing != nullptr && strlen(listing) > 1) {
     shader_cat.warning()
       << "Encountered warnings during compilation of " << get_filename(type)
       << ":\n" << listing;
@@ -1809,7 +1809,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
   } else if (err == CG_COMPILER_ERROR) {
     shader_cat.error()
       << "Failed to compile Cg shader " << get_filename(type);
-    if (listing != NULL) {
+    if (listing != nullptr) {
       shader_cat.error(false) << ":\n" << listing;
     } else {
       shader_cat.error(false) << "!\n";
@@ -1918,7 +1918,7 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
       CGprogram new_program;
       new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
                                     (CGprofile)_cg_fprofile, "fshader",
-                                    (const char**)NULL);
+                                    nullptr);
       if (new_program) {
         cgDestroyProgram(_cg_fprogram);
         _cg_fprogram = new_program;
@@ -2248,7 +2248,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(map[id._seqno]);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Uniform parameter " << id._name
                            << " is bound to resource " << resource << "\n";
       }
@@ -2261,7 +2261,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(p);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Texture parameter " << id._name
                           << " is bound to resource " << resource << "\n";
       }
@@ -2274,7 +2274,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     const char *resource = cgGetParameterResourceName(p);
-    if (shader_cat.is_debug() && resource != NULL) {
+    if (shader_cat.is_debug() && resource != nullptr) {
       if (cgGetParameterResource(p) == CG_GLSL_ATTRIB) {
         shader_cat.debug()
           << "Varying parameter " << id._name << " is bound to GLSL attribute "
@@ -2296,7 +2296,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(map[id._seqno]);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Uniform ptr parameter " << id._name
                            << " is bound to resource " << resource << "\n";
       }
@@ -2470,7 +2470,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
-    if (vf == NULL) {
+    if (vf == nullptr) {
       shader_cat.error()
         << "Could not find shader file: " << fn << "\n";
       return false;
@@ -2482,7 +2482,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
       return false;
     }
 
-    if (record != (BamCacheRecord *)NULL) {
+    if (record != nullptr) {
       record->add_dependent_file(vf);
     }
     _last_modified = max(_last_modified, vf->get_timestamp());
@@ -2528,7 +2528,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, path);
-  if (vf == NULL) {
+  if (vf == nullptr) {
     shader_cat.error()
       << "Could not find shader file: " << fn << "\n";
     return false;
@@ -2541,13 +2541,13 @@ r_preprocess_source(ostream &out, const Filename &fn,
   }
 
   istream *source = vf->open_read_file(true);
-  if (source == NULL) {
+  if (source == nullptr) {
     shader_cat.error()
       << "Could not open shader file: " << fn << "\n";
     return false;
   }
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(vf);
   }
   _last_modified = max(_last_modified, vf->get_timestamp());
@@ -2582,7 +2582,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
   int ext_google_line = 0;
   bool had_include = false;
   int lineno = 0;
-  while (getline(*source, line)) {
+  while (std::getline(*source, line)) {
     ++lineno;
 
     if (line.empty()) {
@@ -2596,7 +2596,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       line.resize(line.size() - 1);
       string line2;
 
-      if (getline(*source, line2)) {
+      if (std::getline(*source, line2)) {
         line += line2;
         out.put('\n');
         ++lineno;
@@ -2625,7 +2625,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       size_t block_end = line2.find("*/");
       while (block_end == string::npos) {
         // Didn't find it - look in the next line.
-        if (getline(*source, line2)) {
+        if (std::getline(*source, line2)) {
           out.put('\n');
           ++lineno;
           block_end = line2.find("*/");
@@ -2716,7 +2716,6 @@ r_preprocess_source(ostream &out, const Filename &fn,
       // Check for an #endif after an include.  We have to restore the line
       // number in case the include happened under an #if block.
       out << line << "\n";
-      int nread = 0;
       if (had_include) {
         out << "#line " << (lineno + 1) << " " << fileno << "\n";
       }
@@ -2864,7 +2863,7 @@ check_modified() const {
     const Filename &fn = (*it);
 
     PT(VirtualFile) vfile = vfs->get_file(fn, true);
-    if (vfile == (VirtualFile *)NULL || vfile->get_timestamp() > _last_modified) {
+    if (vfile == nullptr || vfile->get_timestamp() > _last_modified) {
       return true;
     }
   }
@@ -3293,7 +3292,7 @@ load(const Filename &file, ShaderLanguage lang) {
 
   PT(Shader) shader = new Shader(lang);
   if (!shader->read(sfile)) {
-    return NULL;
+    return nullptr;
   }
 
   _load_table[sfile] = shader;
@@ -3331,7 +3330,7 @@ load(ShaderLanguage lang, const Filename &vertex,
 
   PT(Shader) shader = new Shader(lang);
   if (!shader->read(sfile)) {
-    return NULL;
+    return nullptr;
   }
 
   _load_table[sfile] = shader;
@@ -3354,7 +3353,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
-    return NULL;
+    return nullptr;
   }
 
   Filename fullpath(fn);
@@ -3362,7 +3361,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (!vfs->resolve_filename(fullpath, get_model_path())) {
     shader_cat.error()
       << "Could not find compute shader file: " << fn << "\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sfile;
@@ -3384,7 +3383,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record = cache->lookup(fullpath, "sho");
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     if (record->has_data()) {
       shader_cat.info()
         << "Compute shader " << fn << " was found in disk cache.\n";
@@ -3396,7 +3395,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   PT(Shader) shader = new Shader(lang);
 
   if (!shader->read(sfile, record)) {
-    return NULL;
+    return nullptr;
   }
   _load_table[sfile] = shader;
 
@@ -3424,7 +3423,7 @@ make(string body, ShaderLanguage lang) {
   if (lang == SL_GLSL) {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
-    return NULL;
+    return nullptr;
 
   } else if (lang == SL_none) {
     shader_cat.warning()
@@ -3434,7 +3433,7 @@ make(string body, ShaderLanguage lang) {
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
     shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return NULL;
+    return nullptr;
   }
 #endif
 
@@ -3458,7 +3457,7 @@ make(string body, ShaderLanguage lang) {
     if (!shader->cg_analyze_shader(_default_caps)) {
       shader_cat.error()
         << "Shader encountered an error.\n";
-      return NULL;
+      return nullptr;
     }
   }
 #endif
@@ -3491,13 +3490,13 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
     shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return NULL;
+    return nullptr;
   }
 #endif
   if (lang == SL_none) {
     shader_cat.error()
       << "Shader::make() requires an explicit shader language.\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sbody(move(vertex), move(fragment), move(geometry),
@@ -3519,7 +3518,7 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
     if (!shader->cg_analyze_shader(_default_caps)) {
       shader_cat.error()
         << "Shader encountered an error.\n";
-      return NULL;
+      return nullptr;
     }
   }
 #endif
@@ -3539,7 +3538,7 @@ make_compute(ShaderLanguage lang, string body) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sbody;
@@ -3678,7 +3677,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)NULL) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     } else {
       _contexts.erase(ci);
@@ -3752,7 +3751,7 @@ release_all() {
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
     PreparedGraphicsObjects *prepared_objects = (*ci).first;
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)NULL) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     }
   }

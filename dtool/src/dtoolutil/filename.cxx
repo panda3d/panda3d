@@ -48,7 +48,7 @@
 #include <unistd.h>
 #endif
 
-#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
@@ -145,12 +145,12 @@ back_to_front_slash(const string &str) {
 
 static const string &
 get_panda_root() {
-  static string *panda_root = NULL;
+  static string *panda_root = nullptr;
 
-  if (panda_root == NULL) {
+  if (panda_root == nullptr) {
     panda_root = new string;
     const char *envvar = getenv("PANDA_ROOT");
-    if (envvar != (const char *)NULL) {
+    if (envvar != nullptr) {
       (*panda_root) = front_to_back_slash(envvar);
     }
 
@@ -430,7 +430,7 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
   if (fdirname.empty()) {
     // If we are not given a dirname, use the system tempnam() function to
     // create a system-defined temporary filename.
-    char *name = tempnam(NULL, prefix.c_str());
+    char *name = tempnam(nullptr, prefix.c_str());
     Filename result = Filename::from_os_specific(name);
     free(name);
     result.set_type(type);
@@ -446,7 +446,7 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
     // We take the time of day and multiply it by the process time.  This will
     // give us a very large number, of which we take the bottom 24 bits and
     // generate a 6-character hex code.
-    int hash = (clock() * time(NULL)) & 0xffffff;
+    int hash = (clock() * time(nullptr)) & 0xffffff;
     char hex_code[10];
 #ifdef _WIN32
     sprintf_s(hex_code, 10, "%06x", hash);
@@ -467,12 +467,12 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
  */
 const Filename &Filename::
 get_home_directory() {
-  if (AtomicAdjust::get_ptr(_home_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_home_directory) == nullptr) {
     Filename home_directory;
 
     // In all environments, check $HOME first.
     char *home = getenv("HOME");
-    if (home != (char *)NULL) {
+    if (home != nullptr) {
       Filename dirname = from_os_specific(home);
       if (dirname.is_directory()) {
         if (dirname.make_canonical()) {
@@ -486,7 +486,7 @@ get_home_directory() {
       wchar_t buffer[MAX_PATH];
 
       // On Windows, fall back to the "My Documents" folder.
-      if (SHGetSpecialFolderPathW(NULL, buffer, CSIDL_PERSONAL, true)) {
+      if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_PERSONAL, true)) {
         Filename dirname = from_os_specific_w(buffer);
         if (dirname.is_directory()) {
           if (dirname.make_canonical()) {
@@ -517,9 +517,9 @@ get_home_directory() {
     }
 
     Filename *newdir = new Filename(home_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_home_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_home_directory, nullptr, newdir) != nullptr) {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_home_directory != NULL);
+      assert(_home_directory != nullptr);
       delete newdir;
     }
   }
@@ -532,7 +532,7 @@ get_home_directory() {
  */
 const Filename &Filename::
 get_temp_directory() {
-  if (AtomicAdjust::get_ptr(_temp_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_temp_directory) == nullptr) {
     Filename temp_directory;
 
 #ifdef WIN32
@@ -565,9 +565,9 @@ get_temp_directory() {
     }
 
     Filename *newdir = new Filename(temp_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_temp_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_temp_directory, nullptr, newdir) != nullptr) {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_temp_directory != NULL);
+      assert(_temp_directory != nullptr);
       delete newdir;
     }
   }
@@ -582,13 +582,13 @@ get_temp_directory() {
  */
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_user_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_user_appdata_directory) == nullptr) {
     Filename user_appdata_directory;
 
 #ifdef WIN32
     wchar_t buffer[MAX_PATH];
 
-    if (SHGetSpecialFolderPathW(NULL, buffer, CSIDL_LOCAL_APPDATA, true)) {
+    if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_LOCAL_APPDATA, true)) {
       Filename dirname = from_os_specific_w(buffer);
       if (dirname.is_directory()) {
         if (dirname.make_canonical()) {
@@ -622,9 +622,9 @@ get_user_appdata_directory() {
     }
 
     Filename *newdir = new Filename(user_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_user_appdata_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_user_appdata_directory, nullptr, newdir) != nullptr) {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_user_appdata_directory != NULL);
+      assert(_user_appdata_directory != nullptr);
       delete newdir;
     }
   }
@@ -638,13 +638,13 @@ get_user_appdata_directory() {
  */
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (AtomicAdjust::get_ptr(_common_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_common_appdata_directory) == nullptr) {
     Filename common_appdata_directory;
 
 #ifdef WIN32
     wchar_t buffer[MAX_PATH];
 
-    if (SHGetSpecialFolderPathW(NULL, buffer, CSIDL_COMMON_APPDATA, true)) {
+    if (SHGetSpecialFolderPathW(nullptr, buffer, CSIDL_COMMON_APPDATA, true)) {
       Filename dirname = from_os_specific_w(buffer);
       if (dirname.is_directory()) {
         if (dirname.make_canonical()) {
@@ -672,9 +672,9 @@ get_common_appdata_directory() {
     }
 
     Filename *newdir = new Filename(common_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr(_common_appdata_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_common_appdata_directory, nullptr, newdir) != nullptr) {
       // Didn't store it.  Must have been stored by someone else.
-      assert(_common_appdata_directory != NULL);
+      assert(_common_appdata_directory != nullptr);
       delete newdir;
     }
   }
@@ -1017,7 +1017,7 @@ make_canonical() {
 #ifndef WIN32
   // Use realpath in order to resolve symlinks properly
   char newpath [PATH_MAX + 1];
-  if (realpath(c_str(), newpath) != NULL) {
+  if (realpath(c_str(), newpath) != nullptr) {
     Filename newpath_fn(newpath);
     newpath_fn._flags = _flags;
     (*this) = newpath_fn;
@@ -1764,7 +1764,7 @@ scan_directory(vector_string &contents) const {
     dirname = _filename;
   }
   DIR *root = opendir(dirname.c_str());
-  if (root == (DIR *)NULL) {
+  if (root == nullptr) {
     if (errno != ENOTDIR) {
       perror(dirname.c_str());
     }
@@ -1773,7 +1773,7 @@ scan_directory(vector_string &contents) const {
 
   struct dirent *d;
   d = readdir(root);
-  while (d != (struct dirent *)NULL) {
+  while (d != nullptr) {
     thread_consider_yield();
     if (d->d_name[0] != '.') {
       contents.push_back(d->d_name);
@@ -1814,7 +1814,7 @@ scan_directory(vector_string &contents) const {
 
   glob_t globbuf;
 
-  int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+  int r = glob(dirname.c_str(), GLOB_ERR, nullptr, &globbuf);
 
   if (r != 0) {
     // Some error processing the match string.  If our version of glob.h
@@ -1834,7 +1834,7 @@ scan_directory(vector_string &contents) const {
 
   size_t offset = dirname.size() - 1;
 
-  for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
+  for (int i = 0; globbuf.gl_pathv[i] != nullptr; i++) {
     contents.push_back(globbuf.gl_pathv[i] + offset);
   }
   globfree(&globbuf);
@@ -1855,7 +1855,7 @@ scan_directory(vector_string &contents) const {
  * or set_binary().
  */
 bool Filename::
-open_read(ifstream &stream) const {
+open_read(std::ifstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1891,7 +1891,7 @@ open_read(ifstream &stream) const {
  * if it already exists.  Otherwise, the file is kept at its original length.
  */
 bool Filename::
-open_write(ofstream &stream, bool truncate) const {
+open_write(std::ofstream &stream, bool truncate) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1921,15 +1921,10 @@ open_write(ofstream &stream, bool truncate) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -1942,7 +1937,7 @@ open_write(ofstream &stream, bool truncate) const {
  * or set_binary().
  */
 bool Filename::
-open_append(ofstream &stream) const {
+open_append(std::ofstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -1958,15 +1953,10 @@ open_append(ofstream &stream) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -1979,7 +1969,7 @@ open_append(ofstream &stream) const {
  * one of set_text() or set_binary().
  */
 bool Filename::
-open_read_write(fstream &stream, bool truncate) const {
+open_read_write(std::fstream &stream, bool truncate) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -2005,15 +1995,10 @@ open_read_write(fstream &stream, bool truncate) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -2026,7 +2011,7 @@ open_read_write(fstream &stream, bool truncate) const {
  * open_read() without first calling one of set_text() or set_binary().
  */
 bool Filename::
-open_read_append(fstream &stream) const {
+open_read_append(std::fstream &stream) const {
   assert(!get_pattern());
   assert(is_binary_or_text());
 
@@ -2042,15 +2027,10 @@ open_read_append(fstream &stream) const {
   stream.clear();
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
-  stream.open(os_specific.c_str(), open_mode);
 #else
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
-  stream.open(os_specific.c_str(), open_mode);
-#endif
 #endif  // WIN32_VC
+  stream.open(os_specific.c_str(), open_mode);
 
   return (!stream.fail());
 }
@@ -2125,11 +2105,7 @@ open_write(pofstream &stream, bool truncate) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2159,11 +2135,7 @@ open_append(pofstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2203,11 +2175,7 @@ open_read_write(pfstream &stream, bool truncate) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2237,11 +2205,7 @@ open_read_append(pfstream &stream) const {
 
   stream.clear();
   string os_specific = to_os_specific();
-#ifdef HAVE_OPEN_MASK
-  stream.open(os_specific.c_str(), open_mode, 0666);
-#else
   stream.open(os_specific.c_str(), open_mode);
-#endif
 
   return (!stream.fail());
 }
@@ -2262,7 +2226,7 @@ touch() const {
   wstring os_specific = to_os_specific_w();
   HANDLE fhandle;
   fhandle = CreateFileW(os_specific.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE,
-                        NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                        nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (fhandle == INVALID_HANDLE_VALUE) {
     return false;
   }
@@ -2276,7 +2240,7 @@ touch() const {
     return false;
   }
 
-  if (!SetFileTime(fhandle, NULL, NULL, &ftnow)) {
+  if (!SetFileTime(fhandle, nullptr, nullptr, &ftnow)) {
     CloseHandle(fhandle);
     return false;
   }
@@ -2300,7 +2264,7 @@ touch() const {
     os_specific = result;
   }
 #endif  // HAVE_CYGWIN
-  int result = utime(os_specific.c_str(), NULL);
+  int result = utime(os_specific.c_str(), nullptr);
   if (result < 0) {
     if (errno == ENOENT) {
       // So the file doesn't already exist; create it.
@@ -2676,16 +2640,16 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
-                             0, NULL, OPEN_ALWAYS,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
+                             0, nullptr, OPEN_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL, nullptr);
   while (hfile == INVALID_HANDLE_VALUE) {
     DWORD error = GetLastError();
     if (error == ERROR_SHARING_VIOLATION) {
       // If the file is locked by another process, yield and try again.
       Sleep(0);
       hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
-                          0, NULL, OPEN_ALWAYS,
-                          FILE_ATTRIBUTE_NORMAL, NULL);
+                          0, nullptr, OPEN_ALWAYS,
+                          FILE_ATTRIBUTE_NORMAL, nullptr);
     } else {
       cerr << "Couldn't open file: " << os_specific
            << ", error " << error << "\n";
@@ -2705,7 +2669,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   orig_contents = string();
 
   DWORD bytes_read;
-  if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+  if (!ReadFile(hfile, buf, buf_size, &bytes_read, nullptr)) {
     cerr << "Error reading file: " << os_specific
          << ", error " << GetLastError() << "\n";
     CloseHandle(hfile);
@@ -2714,7 +2678,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
   while (bytes_read > 0) {
     orig_contents += string(buf, bytes_read);
 
-    if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+    if (!ReadFile(hfile, buf, buf_size, &bytes_read, nullptr)) {
       cerr << "Error reading file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
@@ -2728,7 +2692,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
     SetFilePointer(hfile, 0, 0, FILE_BEGIN);
     DWORD bytes_written;
     if (!WriteFile(hfile, new_contents.data(), new_contents.size(),
-                   &bytes_written, NULL)) {
+                   &bytes_written, nullptr)) {
       cerr << "Error writing file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
@@ -2752,7 +2716,7 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   orig_contents = string();
 
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {
@@ -2812,16 +2776,16 @@ atomic_read_contents(string &contents) const {
 #ifdef WIN32_VC
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ,
-                             FILE_SHARE_READ, NULL, OPEN_ALWAYS,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
+                             FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
+                             FILE_ATTRIBUTE_NORMAL, nullptr);
   while (hfile == INVALID_HANDLE_VALUE) {
     DWORD error = GetLastError();
     if (error == ERROR_SHARING_VIOLATION) {
       // If the file is locked by another process, yield and try again.
       Sleep(0);
       hfile = CreateFileW(os_specific.c_str(), GENERIC_READ,
-                          FILE_SHARE_READ, NULL, OPEN_ALWAYS,
-                          FILE_ATTRIBUTE_NORMAL, NULL);
+                          FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
+                          FILE_ATTRIBUTE_NORMAL, nullptr);
     } else {
       cerr << "Couldn't open file: " << os_specific
            << ", error " << error << "\n";
@@ -2835,7 +2799,7 @@ atomic_read_contents(string &contents) const {
   contents = string();
 
   DWORD bytes_read;
-  if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+  if (!ReadFile(hfile, buf, buf_size, &bytes_read, nullptr)) {
     cerr << "Error reading file: " << os_specific
          << ", error " << GetLastError() << "\n";
     CloseHandle(hfile);
@@ -2844,7 +2808,7 @@ atomic_read_contents(string &contents) const {
   while (bytes_read > 0) {
     contents += string(buf, bytes_read);
 
-    if (!ReadFile(hfile, buf, buf_size, &bytes_read, NULL)) {
+    if (!ReadFile(hfile, buf, buf_size, &bytes_read, nullptr)) {
       cerr << "Error reading file: " << os_specific
            << ", error " << GetLastError() << "\n";
       CloseHandle(hfile);
@@ -2868,7 +2832,7 @@ atomic_read_contents(string &contents) const {
 
   contents = string();
 
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
 #else
   if (flock(fd, LOCK_EX) != 0) {

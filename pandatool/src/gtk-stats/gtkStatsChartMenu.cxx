@@ -185,7 +185,7 @@ handle_menu(gpointer data) {
   const GtkStatsMonitor::MenuDef *menu_def = (GtkStatsMonitor::MenuDef *)data;
   GtkStatsMonitor *monitor = menu_def->_monitor;
 
-  if (monitor == NULL) {
+  if (monitor == nullptr) {
     return;
   }
 

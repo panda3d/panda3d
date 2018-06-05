@@ -32,7 +32,7 @@ INLINE BulletTriangleMeshShape::
 INLINE bool BulletTriangleMeshShape::
 is_static() const {
 
-  return (_bvh_shape != NULL);
+  return (_bvh_shape != nullptr);
 }
 
 /**
@@ -41,5 +41,5 @@ is_static() const {
 INLINE bool BulletTriangleMeshShape::
 is_dynamic() const {
 
-  return (_gimpact_shape != NULL);
+  return (_gimpact_shape != nullptr);
 }

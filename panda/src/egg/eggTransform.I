@@ -19,10 +19,10 @@ Component(EggTransform::ComponentType type, double number) :
   _type(type),
   _number(number)
 {
-  _vec2 = (LVecBase2d *)NULL;
-  _vec3 = (LVecBase3d *)NULL;
-  _mat3 = (LMatrix3d *)NULL;
-  _mat4 = (LMatrix4d *)NULL;
+  _vec2 = nullptr;
+  _vec3 = nullptr;
+  _mat3 = nullptr;
+  _mat4 = nullptr;
 }
 
 /**
@@ -33,20 +33,20 @@ Component(const EggTransform::Component &copy) :
   _type(copy._type),
   _number(copy._number)
 {
-  _vec2 = (LVecBase2d *)NULL;
-  _vec3 = (LVecBase3d *)NULL;
-  _mat3 = (LMatrix3d *)NULL;
-  _mat4 = (LMatrix4d *)NULL;
-  if (copy._vec2 != (LVecBase2d *)NULL) {
+  _vec2 = nullptr;
+  _vec3 = nullptr;
+  _mat3 = nullptr;
+  _mat4 = nullptr;
+  if (copy._vec2 != nullptr) {
     _vec2 = new LVector2d(*copy._vec2);
   }
-  if (copy._vec3 != (LVecBase3d *)NULL) {
+  if (copy._vec3 != nullptr) {
     _vec3 = new LVector3d(*copy._vec3);
   }
-  if (copy._mat3 != (LMatrix3d *)NULL) {
+  if (copy._mat3 != nullptr) {
     _mat3 = new LMatrix3d(*copy._mat3);
   }
-  if (copy._mat4 != (LMatrix4d *)NULL) {
+  if (copy._mat4 != nullptr) {
     _mat4 = new LMatrix4d(*copy._mat4);
   }
 }
@@ -58,32 +58,32 @@ INLINE void EggTransform::Component::
 operator = (const EggTransform::Component &copy) {
   _type = copy._type;
   _number = copy._number;
-  if (_vec2 != (LVecBase2d *)NULL) {
+  if (_vec2 != nullptr) {
     delete _vec2;
-    _vec2 = (LVecBase2d *)NULL;
+    _vec2 = nullptr;
   }
-  if (_vec3 != (LVecBase3d *)NULL) {
+  if (_vec3 != nullptr) {
     delete _vec3;
-    _vec3 = (LVecBase3d *)NULL;
+    _vec3 = nullptr;
   }
-  if (_mat3 != (LMatrix3d *)NULL) {
+  if (_mat3 != nullptr) {
     delete _mat3;
-    _mat3 = (LMatrix3d *)NULL;
+    _mat3 = nullptr;
   }
-  if (_mat4 != (LMatrix4d *)NULL) {
+  if (_mat4 != nullptr) {
     delete _mat4;
-    _mat4 = (LMatrix4d *)NULL;
+    _mat4 = nullptr;
   }
-  if (copy._vec2 != (LVecBase2d *)NULL) {
+  if (copy._vec2 != nullptr) {
     _vec2 = new LVecBase2d(*copy._vec2);
   }
-  if (copy._vec3 != (LVecBase3d *)NULL) {
+  if (copy._vec3 != nullptr) {
     _vec3 = new LVecBase3d(*copy._vec3);
   }
-  if (copy._mat3 != (LMatrix3d *)NULL) {
+  if (copy._mat3 != nullptr) {
     _mat3 = new LMatrix3d(*copy._mat3);
   }
-  if (copy._mat4 != (LMatrix4d *)NULL) {
+  if (copy._mat4 != nullptr) {
     _mat4 = new LMatrix4d(*copy._mat4);
   }
 }
@@ -93,16 +93,16 @@ operator = (const EggTransform::Component &copy) {
  */
 INLINE EggTransform::Component::
 ~Component() {
-  if (_vec2 != (LVecBase2d *)NULL) {
+  if (_vec2 != nullptr) {
     delete _vec2;
   }
-  if (_vec3 != (LVecBase3d *)NULL) {
+  if (_vec3 != nullptr) {
     delete _vec3;
   }
-  if (_mat3 != (LMatrix3d *)NULL) {
+  if (_mat3 != nullptr) {
     delete _mat3;
   }
-  if (_mat4 != (LMatrix4d *)NULL) {
+  if (_mat4 != nullptr) {
     delete _mat4;
   }
 }
@@ -259,7 +259,7 @@ get_component_number(int n) const {
 INLINE const LVecBase2d &EggTransform::
 get_component_vec2(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), LVector2d::zero());
-  nassertr(_components[n]._vec2 != (LVecBase2d *)NULL, LVector2d::zero());
+  nassertr(_components[n]._vec2 != nullptr, LVector2d::zero());
   return *_components[n]._vec2;
 }
 
@@ -271,7 +271,7 @@ get_component_vec2(int n) const {
 INLINE const LVecBase3d &EggTransform::
 get_component_vec3(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), LVector3d::zero());
-  nassertr(_components[n]._vec3 != (LVecBase3d *)NULL, LVector3d::zero());
+  nassertr(_components[n]._vec3 != nullptr, LVector3d::zero());
   return *_components[n]._vec3;
 }
 
@@ -282,7 +282,7 @@ get_component_vec3(int n) const {
 INLINE const LMatrix3d &EggTransform::
 get_component_mat3(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), LMatrix3d::ident_mat());
-  nassertr(_components[n]._mat3 != (LMatrix3d *)NULL, LMatrix3d::ident_mat());
+  nassertr(_components[n]._mat3 != nullptr, LMatrix3d::ident_mat());
   return *_components[n]._mat3;
 }
 
@@ -293,7 +293,7 @@ get_component_mat3(int n) const {
 INLINE const LMatrix4d &EggTransform::
 get_component_mat4(int n) const {
   nassertr(n >= 0 && n < (int)_components.size(), LMatrix4d::ident_mat());
-  nassertr(_components[n]._mat4 != (LMatrix4d *)NULL, LMatrix4d::ident_mat());
+  nassertr(_components[n]._mat4 != nullptr, LMatrix4d::ident_mat());
   return *_components[n]._mat4;
 }
 

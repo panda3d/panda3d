@@ -637,7 +637,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   AnimateOff();
   _next_tex = 0;
 
-  TraverseEggNode(data, NULL);
+  TraverseEggNode(data, nullptr);
 
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MaxEggMesh *mesh = (*ci);

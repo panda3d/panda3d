@@ -12,14 +12,14 @@
  */
 
 #include "shaderPool.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "loader.h"
 #include "shader.h"
 #include "string_utils.h"
 
-ShaderPool *ShaderPool::_global_ptr = (ShaderPool *)NULL;
+ShaderPool *ShaderPool::_global_ptr = nullptr;
 
 /**
  * Lists the contents of the shader pool to the indicated output stream.
@@ -89,9 +89,9 @@ ns_load_shader(const Filename &orig_filename) {
   }
 
   PT(Shader) shader = Shader::load(filename, lang);
-  if (shader == (Shader *)NULL) {
+  if (shader == nullptr) {
     // This shader was not found or could not be read.
-    return NULL;
+    return nullptr;
   }
 
   {
@@ -211,7 +211,7 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename) {
  */
 ShaderPool *ShaderPool::
 get_ptr() {
-  if (_global_ptr == (ShaderPool *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ShaderPool;
   }
   return _global_ptr;

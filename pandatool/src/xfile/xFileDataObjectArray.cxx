@@ -98,6 +98,6 @@ get_num_elements() const {
  */
 XFileDataObject *XFileDataObjectArray::
 get_element(int n) {
-  nassertr(n >= 0 && n < (int)_nested_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nested_elements.size(), nullptr);
   return _nested_elements[n];
 }

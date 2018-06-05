@@ -43,7 +43,7 @@ ParamTypedRefCount(const TypedReferenceCount *value) :
  */
 INLINE TypeHandle ParamTypedRefCount::
 get_value_type() const {
-  if (_value == NULL) {
+  if (_value == nullptr) {
     return TypeHandle::none();
   } else {
     return _value->get_type();

@@ -73,10 +73,10 @@
 // 'assume at least one of the cases is always true')
 #ifdef _DEBUG
 #define NODEFAULT  default: assert(0); break;
-#elif defined(_MSC_VER)
-#define NODEFAULT  default: __assume(0);   // special VC keyword
 #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) || __has_builtin(__builtin_unreachable)
 #define NODEFAULT  default: __builtin_unreachable();
+#elif defined(_MSC_VER)
+#define NODEFAULT  default: __assume(0);   // special VC keyword
 #else
 #define NODEFAULT
 #endif
@@ -123,7 +123,7 @@
 
 // This is a workaround for a glibc bug that is triggered by clang when
 // compiling with -ffast-math.
-#ifdef __clang__
+#if defined(__clang__) && defined(__GLIBC__)
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
 #define __extern_always_inline extern __always_inline

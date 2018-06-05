@@ -24,6 +24,8 @@
 #ifdef HAVE_STL_HASH
 #include <hash_map>  // for hash_compare
 
+using std::less;
+
 template<class Key, class Compare = less<Key> >
 class stl_hash_compare : public stdext::hash_compare<Key, Compare> {
 public:
@@ -35,6 +37,8 @@ public:
 #else
 
 #include <map>  // for less
+
+using std::less;
 
 // This is declared for the cases in which we don't have STL_HASH available.
 template<class Key, class Compare = less<Key> >

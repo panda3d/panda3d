@@ -88,9 +88,9 @@ void MeshDrawer2D::generator(int budget) {
 void MeshDrawer2D::begin() {
 
   // recreate our rewriters
-  if (_vertex != NULL) delete _vertex;
-  if (_uv != NULL)     delete _uv;
-  if (_color != NULL)  delete _color;
+  if (_vertex != nullptr) delete _vertex;
+  if (_uv != nullptr)     delete _uv;
+  if (_color != nullptr)  delete _color;
 
   _vertex = new GeomVertexRewriter(_vdata, "vertex");
   _uv = new GeomVertexRewriter(_vdata, "texcoord");
@@ -120,9 +120,9 @@ void MeshDrawer2D::end() {
   _last_clear_index = _clear_index;
 
   // delete the re writers
-  delete _vertex; _vertex = NULL;
-  delete _uv;     _uv     = NULL;
-  delete _color;  _color  = NULL;
+  delete _vertex; _vertex = nullptr;
+  delete _uv;     _uv     = nullptr;
+  delete _color;  _color  = nullptr;
 
 }
 

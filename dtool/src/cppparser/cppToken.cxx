@@ -357,7 +357,7 @@ output(ostream &out) const {
     break;
 
   case KW_OPERATOR:
-    if (_lval.u.identifier != NULL) {
+    if (_lval.u.identifier != nullptr) {
       out << *_lval.u.identifier << "::";
     }
     out << "KW_OPERATOR";

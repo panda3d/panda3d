@@ -34,8 +34,8 @@
  */
 class EXPCL_PANDA_EVENT EventParameter {
 PUBLISHED:
-  INLINE EventParameter() DEFAULT_CTOR;
-  INLINE EventParameter(nullptr_t) {};
+  INLINE EventParameter() = default;
+  INLINE EventParameter(std::nullptr_t) {};
   INLINE EventParameter(const TypedWritableReferenceCount *ptr);
   INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);

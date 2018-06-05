@@ -51,7 +51,7 @@ contact_added_callback(btManifoldPoint &cp,
                        int id1,
                        int index1) {
 
-  if (cp.m_userPersistentData == NULL) {
+  if (cp.m_userPersistentData == nullptr) {
 
 #if BT_BULLET_VERSION >= 281
     PT(PandaNode) node0 = (PandaNode *)wrap0->getCollisionObject()->getUserPointer();

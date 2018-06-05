@@ -83,12 +83,12 @@ make_output(const string &name,
             int retry,
             bool &precertify) {
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(tinygsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
   // First thing to try: a TinySDLGraphicsWindow
@@ -101,14 +101,14 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinySDLGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 #endif  // HAVE_SDL

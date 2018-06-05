@@ -52,7 +52,7 @@ make_new(PPInstance *inst) {
  */
 void PPToplevelObject::
 set_main(P3D_object *p3d_object) {
-  if (p3d_object != NULL) {
+  if (p3d_object != nullptr) {
     P3D_OBJECT_INCREF(p3d_object);
   }
   P3D_OBJECT_XDECREF(_main);
@@ -67,7 +67,7 @@ set_main(P3D_object *p3d_object) {
 void PPToplevelObject::
 construct(PPInstance *inst) {
   _instance = inst;
-  _main = NULL;
+  _main = nullptr;
 
   // Get our one property name as an identifier, so we can look for it.
   _main_id = browser->getstringidentifier("main");
@@ -78,8 +78,8 @@ construct(PPInstance *inst) {
  */
 void PPToplevelObject::
 invalidate() {
-  _instance = NULL;
-  set_main(NULL);
+  _instance = nullptr;
+  set_main(nullptr);
 }
 
 /**
@@ -87,7 +87,7 @@ invalidate() {
  */
 bool PPToplevelObject::
 has_property(NPIdentifier name) {
-  if (_main == NULL) {
+  if (_main == nullptr) {
     // Not powered up yet.
     return false;
   }
@@ -105,7 +105,7 @@ has_property(NPIdentifier name) {
  */
 bool PPToplevelObject::
 get_property(NPIdentifier name, NPVariant *result) {
-  if (_main == NULL) {
+  if (_main == nullptr) {
     // Not powered up yet.
     return false;
   }

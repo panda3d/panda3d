@@ -26,7 +26,7 @@ PUBLISHED:
   virtual ~LinearEulerIntegrator();
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   virtual void child_integrate(Physical *physical,

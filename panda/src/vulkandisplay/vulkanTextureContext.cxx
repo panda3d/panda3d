@@ -78,7 +78,7 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
 
   VkImageMemoryBarrier barrier;
   barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-  barrier.pNext = NULL;
+  barrier.pNext = nullptr;
   barrier.srcAccessMask = _access_mask;
   barrier.dstAccessMask = dst_access_mask;
   barrier.oldLayout = _layout;
@@ -93,7 +93,7 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
   barrier.subresourceRange.layerCount = _array_layers;
 
   vkCmdPipelineBarrier(cmd, _stage_mask, dst_stage_mask, 0,
-                       0, NULL, 0, NULL, 1, &barrier);
+                       0, nullptr, 0, nullptr, 1, &barrier);
 
   _layout = layout;
   _access_mask = dst_access_mask;

@@ -144,7 +144,7 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
                                        WindowProperties::size(x_size, y_size),
                                        GraphicsPipe::BF_refuse_window |
                                        GraphicsPipe::BF_fb_props_optional,
-                                       gsg, NULL);
+                                       gsg, nullptr);
   return result;
 }
 

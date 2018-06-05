@@ -18,7 +18,7 @@
 #include "nullAudioManager.h"
 #include "windowsRegistry.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "load_dso.h"
 
 #ifdef WIN32
@@ -36,11 +36,11 @@ namespace {
   }
 }
 
-Create_AudioManager_proc *AudioManager::_create_AudioManager = NULL;
+Create_AudioManager_proc *AudioManager::_create_AudioManager = nullptr;
 
 void AudioManager::
 register_AudioManager_creator(Create_AudioManager_proc* proc) {
-  nassertv(_create_AudioManager == NULL || _create_AudioManager == proc);
+  nassertv(_create_AudioManager == nullptr || _create_AudioManager == proc);
   _create_AudioManager = proc;
 }
 
@@ -48,7 +48,7 @@ register_AudioManager_creator(Create_AudioManager_proc* proc) {
 PT(AudioManager) AudioManager::create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""<<audio_library_name<<"\"");
 
-  if (_create_AudioManager != NULL) {
+  if (_create_AudioManager != nullptr) {
     // Someone was already so good as to register an audio manager creation function,
     // perhaps by statically linking the requested library.  Let's use that, then.
     PT(AudioManager) am = (*_create_AudioManager)();
@@ -68,10 +68,10 @@ PT(AudioManager) AudioManager::create_AudioManager() {
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void *handle = load_dso(get_plugin_path().get_value(), dl_name);
-      if (handle == (void *)NULL) {
+      if (handle == nullptr) {
         audio_error("  load_dso(" << dl_name << ") failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
-        nassertr(_create_AudioManager == NULL, NULL);
+        nassertr(_create_AudioManager == nullptr, nullptr);
       } else {
         // Get the special function from the dso, which should return the
         // AudioManager factory function.
@@ -86,17 +86,17 @@ PT(AudioManager) AudioManager::create_AudioManager() {
             << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
         }
 
-        if (dso_symbol == (void *)NULL) {
+        if (dso_symbol == nullptr) {
           // Couldn't find the module function.
           unload_dso(handle);
-          handle = NULL;
+          handle = nullptr;
           audio_error("  Audio library did not provide get_audio_manager_func, will use NullAudioManager");
         } else {
           typedef Create_AudioManager_proc *FuncType();
           Create_AudioManager_proc *factory_func = (*(FuncType *)dso_symbol)();
 
           // Note that the audio manager module may register itself upon load.
-          if (_create_AudioManager == NULL) {
+          if (_create_AudioManager == nullptr) {
             AudioManager::register_AudioManager_creator(factory_func);
           }
         }
@@ -104,7 +104,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
     }
   }
 
-  if (_create_AudioManager == NULL) {
+  if (_create_AudioManager == nullptr) {
     _create_AudioManager = create_NullAudioManager;
   }
 
@@ -121,7 +121,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
  */
 AudioManager::
 ~AudioManager() {
-  if (_null_sound != (AudioSound *)NULL) {
+  if (_null_sound != nullptr) {
     unref_delete((AudioSound *)_null_sound);
   }
 }
@@ -131,7 +131,7 @@ AudioManager::
  */
 AudioManager::
 AudioManager() {
-  _null_sound = NULL;
+  _null_sound = nullptr;
 }
 
 /**
@@ -151,16 +151,16 @@ shutdown() {
  */
 PT(AudioSound) AudioManager::
 get_null_sound() {
-  if (_null_sound == (AudioSound *)NULL) {
+  if (_null_sound == nullptr) {
     AudioSound *new_sound = new NullAudioSound;
     new_sound->ref();
-    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, (void *)NULL, (void *)new_sound);
-    if (result != NULL) {
+    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, nullptr, (void *)new_sound);
+    if (result != nullptr) {
       // Someone else must have assigned the AudioSound first.  OK.
-      nassertr(_null_sound != new_sound, NULL);
+      nassertr(_null_sound != new_sound, nullptr);
       unref_delete(new_sound);
     }
-    nassertr(_null_sound != NULL, NULL);
+    nassertr(_null_sound != nullptr, nullptr);
   }
 
   return (AudioSound *)_null_sound;

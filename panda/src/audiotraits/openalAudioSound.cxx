@@ -38,7 +38,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
                  bool positional,
                  int mode) :
   _movie(movie),
-  _sd(NULL),
+  _sd(nullptr),
   _playing_loops(0),
   _playing_rate(0.0),
   _loops_completed(0),
@@ -109,7 +109,7 @@ cleanup() {
     release_sound_data(true);
   }
   _manager->release_sound(this);
-  _manager = 0;
+  _manager = nullptr;
 }
 
 /**

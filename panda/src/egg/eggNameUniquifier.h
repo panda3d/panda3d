@@ -68,7 +68,7 @@ PUBLISHED:
   EggNode *get_node(const string &category, const string &name) const;
   bool has_name(const string &category, const string &name) const;
   bool add_name(const string &category, const string &name,
-                EggNode *node = NULL);
+                EggNode *node = nullptr);
 
   virtual string get_category(EggNode *node)=0;
   virtual string filter_name(EggNode *node);

@@ -23,7 +23,7 @@ OdeConvexGeom(dGeomID id) :
 
 OdeConvexGeom::
 OdeConvexGeom(dReal radius, dReal length) :
-  OdeGeom(dCreateConvex(0, radius, length)) {
+  OdeGeom(dCreateConvex(nullptr, radius, length)) {
 }
 
 OdeConvexGeom::

@@ -21,16 +21,13 @@
 /**
  * A class object for storing a NodePath as a parameter.
  */
-class EXPCL_PANDA_GOBJ ParamNodePath : public ParamValueBase {
+class EXPCL_PANDA_PGRAPH ParamNodePath : public ParamValueBase {
 protected:
   INLINE ParamNodePath() {};
 
 PUBLISHED:
   INLINE ParamNodePath(const NodePath &node_path);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE ParamNodePath(NodePath &&node_path) NOEXCEPT;
-#endif
+  INLINE ParamNodePath(NodePath &&node_path) noexcept;
 
   INLINE virtual TypeHandle get_value_type() const;
   INLINE const NodePath &get_value() const;

@@ -84,7 +84,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearVectorForce::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearVectorForce:\n";
   out.width(indent+2); out<<""; out<<"_fvec "<<_fvec<<"\n";

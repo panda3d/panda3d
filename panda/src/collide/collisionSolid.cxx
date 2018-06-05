@@ -108,7 +108,7 @@ set_bounds(const BoundingVolume &bounding_volume) {
 PT(CollisionEntry) CollisionSolid::
 test_intersection(const CollisionEntry &) const {
   report_undefined_from_intersection(get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -134,7 +134,7 @@ PT(PandaNode) CollisionSolid::
 get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) const {
   LightMutexHolder holder(_lock);
   if ((_flags & F_viz_geom_stale) != 0) {
-    if (_viz_geom == (GeomNode *)NULL) {
+    if (_viz_geom == nullptr) {
       ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
       ((CollisionSolid *)this)->_bounds_viz_geom = new GeomNode("bounds_viz");
     } else {
@@ -202,7 +202,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_sphere(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -213,7 +213,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_line(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionLine::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -224,7 +224,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_ray(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionRay::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -235,7 +235,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_segment(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -246,7 +246,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_tube(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionTube::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -257,7 +257,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_parabola(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionParabola::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -268,7 +268,7 @@ PT(CollisionEntry) CollisionSolid::
 test_intersection_from_box(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionBox::get_class_type(),
                                      get_type());
-  return NULL;
+  return nullptr;
 }
 
 
@@ -389,8 +389,8 @@ CPT(RenderState) CollisionSolid::
 get_solid_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),
@@ -398,24 +398,24 @@ get_solid_viz_state() {
   }
 
   if (!do_is_tangible()) {
-    static CPT(RenderState) intangible_state = (const RenderState *)NULL;
-    if (intangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) intangible_state = nullptr;
+    if (intangible_state == nullptr) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(1.0f, 0.3, 0.5f, 0.5f)));
     }
     return intangible_state;
 
   } else if (do_has_effective_normal()) {
-    static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
-    if (fakenormal_state == (const RenderState *)NULL) {
+    static CPT(RenderState) fakenormal_state = nullptr;
+    if (fakenormal_state == nullptr) {
       fakenormal_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(0.5f, 0.5f, 1.0f, 0.5f)));
     }
     return fakenormal_state;
 
   } else {
-    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
-    if (tangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) tangible_state = nullptr;
+    if (tangible_state == nullptr) {
       tangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 0.5f)));
     }
@@ -435,8 +435,8 @@ CPT(RenderState) CollisionSolid::
 get_wireframe_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -444,24 +444,24 @@ get_wireframe_viz_state() {
   }
 
   if (!do_is_tangible()) {
-    static CPT(RenderState) intangible_state = (const RenderState *)NULL;
-    if (intangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) intangible_state = nullptr;
+    if (intangible_state == nullptr) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.0f, 1.0f)));
     }
     return intangible_state;
 
   } else if (do_has_effective_normal()) {
-    static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
-    if (fakenormal_state == (const RenderState *)NULL) {
+    static CPT(RenderState) fakenormal_state = nullptr;
+    if (fakenormal_state == nullptr) {
       fakenormal_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(0.0f, 0.0f, 1.0f, 1.0f)));
     }
     return fakenormal_state;
 
   } else {
-    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
-    if (tangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) tangible_state = nullptr;
+    if (tangible_state == nullptr) {
       tangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(0.0f, 0.0f, 1.0f, 1.0f)));
     }
@@ -480,8 +480,8 @@ CPT(RenderState) CollisionSolid::
 get_other_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),
@@ -504,8 +504,8 @@ CPT(RenderState) CollisionSolid::
 get_solid_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),
@@ -513,24 +513,24 @@ get_solid_bounds_viz_state() {
   }
 
   if (!do_is_tangible()) {
-    static CPT(RenderState) intangible_state = (const RenderState *)NULL;
-    if (intangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) intangible_state = nullptr;
+    if (intangible_state == nullptr) {
       intangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.5f, 0.3)));
     }
     return intangible_state;
 
   } else if (do_has_effective_normal()) {
-    static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
-    if (fakenormal_state == (const RenderState *)NULL) {
+    static CPT(RenderState) fakenormal_state = nullptr;
+    if (fakenormal_state == nullptr) {
       fakenormal_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(0.5f, 0.5f, 1.0f, 0.3)));
     }
     return fakenormal_state;
 
   } else {
-    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
-    if (tangible_state == (const RenderState *)NULL) {
+    static CPT(RenderState) tangible_state = nullptr;
+    if (tangible_state == nullptr) {
       tangible_state = base_state->add_attrib
         (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.5f, 0.3)));
     }
@@ -550,8 +550,8 @@ CPT(RenderState) CollisionSolid::
 get_wireframe_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -573,8 +573,8 @@ CPT(RenderState) CollisionSolid::
 get_other_bounds_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) base_state = (const RenderState *)NULL;
-  if (base_state == (const RenderState *)NULL) {
+  static CPT(RenderState) base_state = nullptr;
+  if (base_state == nullptr) {
     base_state = RenderState::make
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
        RenderModeAttrib::make(RenderModeAttrib::M_filled),

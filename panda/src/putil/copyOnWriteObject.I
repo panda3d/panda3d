@@ -32,7 +32,7 @@ CopyOnWriteObject()
 #endif
 #ifdef COW_THREADED
   _lock_status = LS_unlocked;
-  _locking_thread = NULL;
+  _locking_thread = nullptr;
 #endif  // COW_THREADED
 }
 
@@ -52,7 +52,7 @@ CopyOnWriteObject(const CopyOnWriteObject &copy) :
 #endif
 #ifdef COW_THREADED
   _lock_status = LS_unlocked;
-  _locking_thread = NULL;
+  _locking_thread = nullptr;
 #endif  // COW_THREADED
 }
 

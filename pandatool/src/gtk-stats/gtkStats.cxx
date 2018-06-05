@@ -14,10 +14,10 @@
 #include "pandatoolbase.h"
 #include "gtkStats.h"
 #include "gtkStatsServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 GtkWidget *main_window;
-static GtkStatsServer *server = NULL;
+static GtkStatsServer *server = nullptr;
 
 static gboolean
 delete_event(GtkWidget *widget,
@@ -61,10 +61,10 @@ main(int argc, char *argv[]) {
   // Connect the delete and destroy events, so the user can exit the
   // application by closing the main window.
   g_signal_connect(G_OBJECT(main_window), "delete_event",
-       G_CALLBACK(delete_event), NULL);
+       G_CALLBACK(delete_event), nullptr);
 
   g_signal_connect(G_OBJECT(main_window), "destroy",
-       G_CALLBACK(destroy), NULL);
+       G_CALLBACK(destroy), nullptr);
 
   ostringstream stream;
   stream << "Listening on port " << pstats_port;
@@ -97,7 +97,7 @@ main(int argc, char *argv[]) {
   gtk_widget_show(main_window);
 
   // Set up a timer to poll the pstats every so often.
-  g_timeout_add(200, timer, NULL);
+  g_timeout_add(200, timer, nullptr);
 
   // Now get lost in the message loop.
   gtk_main();

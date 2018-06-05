@@ -141,7 +141,7 @@ get_button_event() {
 bool GraphicsWindowInputDevice::
 has_pointer_event() const {
   LightMutexHolder holder(_lock);
-  return (_pointer_events != 0);
+  return (_pointer_events != nullptr);
 }
 
 /**
@@ -151,7 +151,7 @@ PT(PointerEventList) GraphicsWindowInputDevice::
 get_pointer_events() {
   LightMutexHolder holder(_lock);
   PT(PointerEventList) result = _pointer_events;
-  _pointer_events = 0;
+  _pointer_events = nullptr;
   return result;
 }
 
@@ -224,7 +224,7 @@ set_pointer(bool inwin, double x, double y, double time) {
 
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
-    if (_pointer_events == 0) {
+    if (_pointer_events == nullptr) {
       _pointer_events = new PointerEventList();
     }
     _pointer_events->add_event(_mouse_data._in_window,

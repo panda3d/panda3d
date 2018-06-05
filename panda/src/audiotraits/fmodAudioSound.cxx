@@ -82,7 +82,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     // File not found.  We will display the appropriate error message below.
     result = FMOD_ERR_FILE_NOTFOUND;
 
@@ -99,7 +99,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     if (ext == "mid") {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
-      if (sound_info.dlsname != NULL) {
+      if (sound_info.dlsname != nullptr) {
         audio_debug("Using DLS file " << sound_info.dlsname);
       }
     }
@@ -880,7 +880,7 @@ sound_end_callback(FMOD_CHANNEL *  channel,
   // have to worry about thread-related issues here.
   if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
-    void *userdata = NULL;
+    void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
     fmod_audio_errcheck("channel->getUserData()", result);
     FmodAudioSound *fsound = (FmodAudioSound*)userdata;
@@ -897,7 +897,7 @@ open_callback(const char *name, int, unsigned int *file_size,
               void **handle, void **user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     return FMOD_ERR_FILE_NOTFOUND;
   }
   if (fmodAudio_cat.is_spam()) {

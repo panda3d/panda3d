@@ -27,7 +27,7 @@
 template<class BMType>
 class DoubleBitMask {
 public:
-  typedef TYPENAME BMType::WordType WordType;
+  typedef typename BMType::WordType WordType;
 
 PUBLISHED:
   typedef BMType BitMaskType;
@@ -37,9 +37,7 @@ PUBLISHED:
     num_bits = BMType::num_bits * 2,
   };
 
-  INLINE DoubleBitMask();
-  INLINE DoubleBitMask(const DoubleBitMask<BMType> &copy);
-  INLINE DoubleBitMask<BMType> &operator = (const DoubleBitMask<BMType> &copy);
+  constexpr DoubleBitMask() = default;
 
   INLINE static DoubleBitMask<BMType> all_on();
   INLINE static DoubleBitMask<BMType> all_off();
@@ -47,12 +45,10 @@ PUBLISHED:
   INLINE static DoubleBitMask<BMType> bit(int index);
   INLINE static DoubleBitMask<BMType> range(int low_bit, int size);
 
-  INLINE ~DoubleBitMask();
+  constexpr static bool has_max_num_bits() {return true;}
+  constexpr static int get_max_num_bits() {return num_bits;}
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
-
-  CONSTEXPR static int get_num_bits();
+  constexpr int get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);

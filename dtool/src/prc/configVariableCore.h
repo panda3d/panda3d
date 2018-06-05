@@ -110,7 +110,7 @@ private:
   ConfigDeclaration *_default_value;
   ConfigDeclaration *_local_value;
 
-  typedef vector<const ConfigDeclaration *> Declarations;
+  typedef std::vector<const ConfigDeclaration *> Declarations;
   Declarations _declarations;
   Declarations _trusted_declarations;
   Declarations _untrusted_declarations;

@@ -73,8 +73,8 @@ VulkanGraphicsPipe() {
 
   VkApplicationInfo app_info;
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-  app_info.pNext = NULL;
-  app_info.pApplicationName = NULL;
+  app_info.pNext = nullptr;
+  app_info.pApplicationName = nullptr;
   app_info.applicationVersion = 0;
   app_info.pEngineName = "Panda3D";
   app_info.engineVersion = PANDA_NUMERIC_VERSION;
@@ -82,7 +82,7 @@ VulkanGraphicsPipe() {
 
   VkInstanceCreateInfo inst_info;
   inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-  inst_info.pNext = NULL;
+  inst_info.pNext = nullptr;
   inst_info.flags = 0;
   inst_info.pApplicationInfo = &app_info;
   inst_info.enabledLayerCount = 1;
@@ -90,7 +90,7 @@ VulkanGraphicsPipe() {
   inst_info.enabledExtensionCount = 3;
   inst_info.ppEnabledExtensionNames = extensions;
 
-  VkResult err = vkCreateInstance(&inst_info, NULL, &_instance);
+  VkResult err = vkCreateInstance(&inst_info, nullptr, &_instance);
   if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {
     vulkandisplay_cat.error()
       << "Cannot find a compatible Vulkan installable client driver (ICD).\n";
@@ -113,10 +113,10 @@ VulkanGraphicsPipe() {
   if (pvkCreateDebugReportCallback) {
     VkDebugReportCallbackCreateInfoEXT cb_info;
     cb_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-    cb_info.pNext = NULL;
+    cb_info.pNext = nullptr;
     cb_info.flags = 0;
     cb_info.pfnCallback = &debug_callback;
-    cb_info.pUserData = NULL;
+    cb_info.pUserData = nullptr;
 
     // Tell the extension which severities to report, based on the enabled
     // notify categories.
@@ -135,7 +135,7 @@ VulkanGraphicsPipe() {
     }
 
     VkDebugReportCallbackEXT callback;
-    err = pvkCreateDebugReportCallback(_instance, &cb_info, NULL, &callback);
+    err = pvkCreateDebugReportCallback(_instance, &cb_info, nullptr, &callback);
     if (err) {
       vulkan_error(err, "Failed to create debug report callback");
     }
@@ -147,7 +147,7 @@ VulkanGraphicsPipe() {
 
   // Enumerate the available GPUs.
   uint32_t gpu_count;
-  err = vkEnumeratePhysicalDevices(_instance, &gpu_count, NULL);
+  err = vkEnumeratePhysicalDevices(_instance, &gpu_count, nullptr);
   nassertv(!err && gpu_count > 0);
 
   VkPhysicalDevice *physical_devices =
@@ -204,7 +204,7 @@ VulkanGraphicsPipe() {
 
   // Query queue information, used by find_queue_family_for_surface.
   uint32_t num_families;
-  vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, NULL);
+  vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, nullptr);
   _queue_families.resize(num_families);
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, &_queue_families[0]);
 
@@ -249,7 +249,7 @@ VulkanGraphicsPipe() {
 
     // Display the vendor name, if the vendor ID is recognized.
     const char *vendor_name = get_vendor_name();
-    if (vendor_name != NULL) {
+    if (vendor_name != nullptr) {
       vulkandisplay_cat.debug() << "vendorID: 0x" << vendor_id
                                 << " (" << vendor_name << ")\n";
     } else {
@@ -265,20 +265,20 @@ VulkanGraphicsPipe() {
 
     // Enumerate supported extensions.
     uint32_t num_inst_extensions = 0, num_dev_extensions = 0;
-    vkEnumerateInstanceExtensionProperties(NULL, &num_inst_extensions, NULL);
-    vkEnumerateDeviceExtensionProperties(_gpu, NULL, &num_dev_extensions, NULL);
+    vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
+    vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, nullptr);
 
     VkExtensionProperties *extensions = (VkExtensionProperties *)
       alloca(sizeof(VkExtensionProperties) * max(num_inst_extensions, num_dev_extensions));
 
     vulkandisplay_cat.debug() << "Supported instance extensions:\n";
-    vkEnumerateInstanceExtensionProperties(NULL, &num_inst_extensions, extensions);
+    vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, extensions);
     for (uint32_t i = 0; i < num_inst_extensions; ++i) {
       vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
     }
 
     vulkandisplay_cat.debug() << "Supported device extensions:\n";
-    vkEnumerateDeviceExtensionProperties(_gpu, NULL, &num_dev_extensions, extensions);
+    vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, extensions);
     for (uint32_t i = 0; i < num_dev_extensions; ++i) {
       vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
     }
@@ -614,7 +614,7 @@ get_vendor_name() const {
   // Khronos vendor IDs for vendors without PCI.  See vk.xml.
   case 0x10001: return "Vivante Corporation";
   default:
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -654,12 +654,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   VulkanGraphicsStateGuardian *vkgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(vkgsg, gsg, NULL);
+    DCAST_INTO_R(vkgsg, gsg, nullptr);
   }
 
   // First thing to try: a VulkanGraphicsWindow
@@ -673,7 +673,7 @@ make_output(const string &name,
         (flags & BF_can_bind_color) != 0 ||
         (flags & BF_can_bind_every) != 0 ||
         (flags & BF_can_bind_layered) != 0) {
-      return NULL;
+      return nullptr;
     }
     return new VulkanGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                     flags, gsg, host);
@@ -681,7 +681,7 @@ make_output(const string &name,
 
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -700,7 +700,7 @@ make_callback_gsg(GraphicsEngine *engine) {
     }
   }
   if (i == _queue_families.size()) {
-    return NULL;
+    return nullptr;
   }
-  return new VulkanGraphicsStateGuardian(engine, this, NULL, i);
+  return new VulkanGraphicsStateGuardian(engine, this, nullptr, i);
 }

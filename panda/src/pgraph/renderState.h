@@ -50,11 +50,12 @@ protected:
 
 private:
   RenderState(const RenderState &copy);
-  void operator = (const RenderState &copy);
 
 public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
+
+  RenderState &operator = (const RenderState &copy) = delete;
 
   typedef RenderAttribRegistry::SlotMask SlotMask;
 
@@ -226,7 +227,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const RenderState *, nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
+  typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
   static const RenderState *_empty_state;
 

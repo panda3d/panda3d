@@ -48,7 +48,7 @@ get_num_tasks() const {
  */
 INLINE AsyncTaskManager *AsyncTaskManager::
 get_global_ptr() {
-  if (_global_ptr == (AsyncTaskManager *)NULL) {
+  if (_global_ptr == nullptr) {
     make_global_ptr();
   }
   return _global_ptr;

@@ -146,7 +146,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
@@ -173,13 +173,13 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
     // Both intersection points are before the start of the segment or after
     // the end of the segment.
-    return NULL;
+    return nullptr;
   }
 
   // doubles, not floats, to satisfy min and max templates.
@@ -224,7 +224,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), NULL);
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -234,7 +234,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -272,7 +272,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -282,12 +282,12 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0) {
     // Both intersection points are before the start of the ray.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -333,7 +333,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), NULL);
+  DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -344,13 +344,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
     // Both intersection points are before the start of the segment or after
     // the end of the segment.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -397,7 +397,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionTube::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), NULL);
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -410,7 +410,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
                            local_p.calc_point(parabola->get_t1()),
                            local_p.calc_point(parabola->get_t2()))) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {

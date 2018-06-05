@@ -89,18 +89,6 @@ public:
     };
     typedef struct my_error_mgr *_my_error_ptr;
     struct my_error_mgr _jerr;
-    unsigned long       pos;
-
-    unsigned long offBits;
-
-    unsigned short  cBitCount;
-    int             indexed;
-    int             classv;
-
-    pixval R[256];      /* reds */
-    pixval G[256];      /* greens */
-    pixval B[256];      /* blues */
-
     bool _is_valid;
   };
 

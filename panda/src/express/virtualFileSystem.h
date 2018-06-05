@@ -157,7 +157,7 @@ private:
                       int open_flags) const;
   bool consider_mount_mf(const Filename &filename);
 
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
   typedef pvector<PT(VirtualFileMount) > Mounts;
   Mounts _mounts;
   unsigned int _mount_seq;

@@ -162,7 +162,7 @@ flush() {
  */
 INLINE ISocketStream::
 ISocketStream(streambuf *buf) : istream(buf), SSReader(this) {
-  _channel = NULL;
+  _channel = nullptr;
 }
 
 /**

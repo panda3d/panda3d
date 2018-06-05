@@ -26,7 +26,7 @@ extern "C" {
  */
 static size_t cb_read_proc(void *user, void *buffer, size_t size) {
   istream *stream = (istream *)user;
-  nassertr(stream != NULL, false);
+  nassertr(stream != nullptr, false);
 
   stream->read((char *)buffer, size);
 
@@ -43,7 +43,7 @@ static size_t cb_read_proc(void *user, void *buffer, size_t size) {
  */
 static bool cb_seek_proc(void *user, int offset) {
   istream *stream = (istream *)user;
-  nassertr(stream != NULL, false);
+  nassertr(stream != nullptr, false);
 
   stream->seekg(offset, ios::cur);
   return !stream->fail();
@@ -59,14 +59,14 @@ FlacAudioCursor::
 FlacAudioCursor(FlacAudio *src, istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
-  _drflac(NULL)
+  _drflac(nullptr)
 {
-  nassertv(stream != NULL);
+  nassertv(stream != nullptr);
   nassertv(stream->good());
 
   _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream);
 
-  if (_drflac == NULL) {
+  if (_drflac == nullptr) {
     movies_cat.error()
       << "Failed to open FLAC file.\n";
     _is_valid = false;
@@ -88,7 +88,7 @@ FlacAudioCursor(FlacAudio *src, istream *stream) :
  */
 FlacAudioCursor::
 ~FlacAudioCursor() {
-  if (_drflac != NULL) {
+  if (_drflac != nullptr) {
     drflac_close(_drflac);
   }
 }

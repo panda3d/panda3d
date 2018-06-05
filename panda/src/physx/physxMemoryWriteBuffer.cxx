@@ -16,7 +16,7 @@
 /**
  *
  */
-PhysxMemoryWriteBuffer::PhysxMemoryWriteBuffer() : currentSize(0), maxSize(0), data(NULL)
+PhysxMemoryWriteBuffer::PhysxMemoryWriteBuffer() : currentSize(0), maxSize(0), data(nullptr)
 {
 
 }

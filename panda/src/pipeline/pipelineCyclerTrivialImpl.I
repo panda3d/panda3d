@@ -31,35 +31,6 @@ PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *) {
 }
 
 /**
- *
- */
-INLINE PipelineCyclerTrivialImpl::
-PipelineCyclerTrivialImpl(const PipelineCyclerTrivialImpl &) {
-  // The copy constructor for the PipelineCyclerTrivialImpl case doesn't work.
-  // Don't try to use it.  The PipelineCycler template class is ifdeffed
-  // appropriately to call the normal constructor instead.
-  nassertv(false);
-}
-
-/**
- *
- */
-INLINE void PipelineCyclerTrivialImpl::
-operator = (const PipelineCyclerTrivialImpl &) {
-  // The copy assignment operator for the PipelineCyclerTrivialImpl case
-  // doesn't work.  Don't try to use it.  The PipelineCycler template class is
-  // ifdeffed appropriately not to call this method.
-  nassertv(false);
-}
-
-/**
- *
- */
-INLINE PipelineCyclerTrivialImpl::
-~PipelineCyclerTrivialImpl() {
-}
-
-/**
  * Grabs an overall lock on the cycler.  Release it with a call to release().
  * This lock should be held while walking the list of stages.
  */

@@ -35,7 +35,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
                 CPPPreprocessor *preprocessor,
                 const cppyyltype &pos) {
   decl->_template_scope = this;
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->add_declaration(decl, global_scope, preprocessor, pos);
 }
 
@@ -45,7 +45,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 void CPPTemplateScope::
 add_enum_value(CPPInstance *inst) {
   inst->_template_scope = this;
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->add_enum_value(inst);
 }
 
@@ -55,7 +55,7 @@ add_enum_value(CPPInstance *inst) {
 void CPPTemplateScope::
 define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
   type->_template_scope = this;
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->define_typedef_type(type, error_sink);
 }
 
@@ -65,7 +65,7 @@ define_typedef_type(CPPTypedefType *type, CPPPreprocessor *error_sink) {
 void CPPTemplateScope::
 define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
   type->_template_scope = this;
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->define_extension_type(type, error_sink);
 }
 
@@ -74,7 +74,7 @@ define_extension_type(CPPExtensionType *type, CPPPreprocessor *error_sink) {
  */
 void CPPTemplateScope::
 define_namespace(CPPNamespace *scope) {
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->define_namespace(scope);
 }
 
@@ -84,7 +84,7 @@ define_namespace(CPPNamespace *scope) {
 void CPPTemplateScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
           CPPPreprocessor *error_sink) {
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   _parent_scope->add_using(using_decl, global_scope, error_sink);
 }
 
@@ -95,16 +95,16 @@ void CPPTemplateScope::
 add_template_parameter(CPPDeclaration *param) {
   _parameters._parameters.push_back(param);
   CPPClassTemplateParameter *cl = param->as_class_template_parameter();
-  if (cl != NULL) {
+  if (cl != nullptr) {
     // Create an implicit typedef for this class parameter.
-    if (cl->_ident != NULL) {
+    if (cl->_ident != nullptr) {
       string name = cl->_ident->get_local_name();
       _types[name] = cl;
     }
   }
 
   CPPInstance *inst = param->as_instance();
-  if (inst != NULL) {
+  if (inst != nullptr) {
     // Register the variable for this value parameter.
     string name = inst->get_local_name();
     if (!name.empty()) {
@@ -128,7 +128,7 @@ is_fully_specified() const {
  */
 string CPPTemplateScope::
 get_simple_name() const {
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   return _parent_scope->get_simple_name();
 }
 
@@ -137,7 +137,7 @@ get_simple_name() const {
  */
 string CPPTemplateScope::
 get_local_name(CPPScope *scope) const {
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   return _parent_scope->get_local_name(scope);
 }
 
@@ -146,7 +146,7 @@ get_local_name(CPPScope *scope) const {
  */
 string CPPTemplateScope::
 get_fully_scoped_name() const {
-  assert(_parent_scope != NULL);
+  assert(_parent_scope != nullptr);
   return _parent_scope->get_fully_scoped_name();
 }
 

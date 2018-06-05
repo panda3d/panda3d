@@ -17,7 +17,7 @@
 #include "pandatoolbase.h"
 
 #include "filename.h"
-#include "config_util.h"  // for get_model_path()
+#include "config_putil.h"  // for get_model_path()
 #include "animationConvert.h"
 #include "pathReplace.h"
 #include "pointerTo.h"

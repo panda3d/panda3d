@@ -51,17 +51,16 @@ class FactoryParams;
  * directly.  Instead, call one of the make() functions to create one for you.
  * And instead of modifying a TransformState object, create a new one.
  */
-class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
 protected:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;
@@ -253,7 +252,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, std::nullptr_t, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;

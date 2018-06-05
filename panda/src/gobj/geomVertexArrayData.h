@@ -151,7 +151,7 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData(UsageHint usage_hint = UH_unspecified);
-    INLINE CData(CData &&from) NOEXCEPT;
+    INLINE CData(CData &&from) noexcept;
     INLINE CData(const CData &copy);
     INLINE void operator = (const CData &copy);
 
@@ -257,14 +257,16 @@ private:
                                    Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(GeomVertexArrayData *object,
                                    Thread *current_thread);
-  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
-  INLINE void operator = (const GeomVertexArrayDataHandle &);
 
 PUBLISHED:
   INLINE ~GeomVertexArrayDataHandle();
 
 public:
+  GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &) = delete;
+
   ALLOC_DELETED_CHAIN_DECL(GeomVertexArrayDataHandle);
+
+  GeomVertexArrayDataHandle &operator = (const GeomVertexArrayDataHandle &) = delete;
 
   INLINE Thread *get_current_thread() const;
 

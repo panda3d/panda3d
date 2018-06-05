@@ -246,9 +246,7 @@ public:
   public:
     INLINE CacheKey(const GeomVertexFormat *modifier);
     INLINE CacheKey(const CacheKey &copy);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
-#endif
+    INLINE CacheKey(CacheKey &&from) noexcept;
 
     INLINE bool operator < (const CacheKey &other) const;
 
@@ -260,9 +258,8 @@ public:
     INLINE CacheEntry(GeomVertexData *source,
                       const GeomVertexFormat *modifier);
     INLINE CacheEntry(GeomVertexData *source, const CacheKey &key);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheEntry(GeomVertexData *source, CacheKey &&key) NOEXCEPT;
-#endif
+    INLINE CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept;
+
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
@@ -410,14 +407,12 @@ protected:
                                     Thread *current_thread,
                                     GeomVertexData::CData *cdata);
 
-private:
-  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) DELETED;
-  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) DELETED_ASSIGN;
-
 public:
+  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) = delete;
   INLINE ~GeomVertexDataPipelineBase();
 
-public:
+  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) = delete;
+
   INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexFormat *get_format() const;
@@ -535,7 +530,6 @@ private:
   void make_array_writers();
   void delete_array_writers();
 
-  bool _force_to_0;
   bool _got_array_writers;
   typedef pvector<PT(GeomVertexArrayDataHandle) > ArrayWriters;
   ArrayWriters _array_writers;

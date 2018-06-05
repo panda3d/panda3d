@@ -60,7 +60,7 @@ PandaNode *BulletClosestHitSweepResult::
 get_node() const {
 
   const btCollisionObject *objectPtr = m_hitCollisionObject;
-  return (objectPtr) ? (PandaNode *)objectPtr->getUserPointer() : NULL;
+  return (objectPtr) ? (PandaNode *)objectPtr->getUserPointer() : nullptr;
 }
 
 /**

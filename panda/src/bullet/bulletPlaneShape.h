@@ -29,7 +29,7 @@
 class EXPCL_PANDABULLET BulletPlaneShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletPlaneShape() : _shape(NULL) {};
+  INLINE BulletPlaneShape() : _shape(nullptr) {};
 
 PUBLISHED:
   explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);

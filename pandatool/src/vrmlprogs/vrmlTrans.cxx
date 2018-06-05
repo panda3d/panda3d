@@ -53,7 +53,7 @@ run() {
   nout << "Reading " << _input_filename << "\n";
 
   VrmlScene *scene = parse_vrml(_input_filename);
-  if (scene == (VrmlScene *)NULL) {
+  if (scene == nullptr) {
     nout << "Unable to read.\n";
     exit(1);
   }

@@ -189,7 +189,7 @@ find_texture(const string &name) const {
       return texture;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -205,7 +205,7 @@ get_num_textures() const {
  */
 Texture *TextureCollection::
 get_texture(int index) const {
-  nassertr(index >= 0 && index < (int)_textures.size(), NULL);
+  nassertr(index >= 0 && index < (int)_textures.size(), nullptr);
 
   return _textures[index];
 }
@@ -216,7 +216,7 @@ get_texture(int index) const {
  */
 Texture *TextureCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_textures.size(), NULL);
+  nassertr(index >= 0 && index < (int)_textures.size(), nullptr);
 
   return _textures[index];
 }

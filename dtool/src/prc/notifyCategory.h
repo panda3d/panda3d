@@ -55,8 +55,8 @@ PUBLISHED:
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
 #else
-  CONSTEXPR static bool is_spam();
-  CONSTEXPR static bool is_debug();
+  constexpr static bool is_spam();
+  constexpr static bool is_debug();
 #endif
   INLINE bool is_info() const;
   INLINE bool is_warning() const;
@@ -88,7 +88,7 @@ private:
   string _basename;
   NotifyCategory *_parent;
   ConfigVariableEnum<NotifySeverity> _severity;
-  typedef vector<NotifyCategory *> Children;
+  typedef std::vector<NotifyCategory *> Children;
   Children _children;
 
   static long _server_delta; // not a time_t because server delta may be signed.

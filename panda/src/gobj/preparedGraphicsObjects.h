@@ -164,7 +164,7 @@ public:
    * This is a handle to an enqueued object, from which the result can be
    * obtained upon completion.
    */
-  class EXPCL_PANDA_GOBJ EnqueuedObject FINAL : public AsyncFuture {
+  class EXPCL_PANDA_GOBJ EnqueuedObject final : public AsyncFuture {
   public:
     EnqueuedObject(PreparedGraphicsObjects *pgo, TypedWritableReferenceCount *object);
 
@@ -173,7 +173,7 @@ public:
     void set_result(SavedContext *result);
 
     void notify_removed();
-    virtual bool cancel() FINAL;
+    virtual bool cancel() final;
 
   PUBLISHED:
     MAKE_PROPERTY(object, get_object);

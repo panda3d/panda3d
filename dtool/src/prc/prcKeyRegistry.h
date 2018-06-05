@@ -63,7 +63,7 @@ private:
     time_t _generated_time;
   };
 
-  typedef vector<Key> Keys;
+  typedef std::vector<Key> Keys;
   Keys _keys;
 
   static PrcKeyRegistry *_global_ptr;

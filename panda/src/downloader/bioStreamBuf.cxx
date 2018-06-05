@@ -24,11 +24,6 @@
   #undef X509_NAME
 #endif  // WIN32_VC
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 /**
  *
  */
@@ -194,9 +189,9 @@ underflow() {
             << _source->get_port() << " (" << read_count << ").\n";
           OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
-          SSL *ssl = NULL;
+          SSL *ssl = nullptr;
           BIO_get_ssl(*_source, &ssl);
-          if (ssl != (SSL *)NULL) {
+          if (ssl != nullptr) {
             downloader_cat.warning()
               << "OpenSSL error code: " << SSL_get_error(ssl, read_count)
               << "\n";
@@ -276,7 +271,7 @@ write_chars(const char *start, size_t length) {
           fd_set wset;
           FD_ZERO(&wset);
           FD_SET(fd, &wset);
-          select(fd + 1, NULL, &wset, NULL, NULL);
+          select(fd + 1, nullptr, &wset, nullptr, nullptr);
 #endif  // SIMPLE_THREADS
         }
 

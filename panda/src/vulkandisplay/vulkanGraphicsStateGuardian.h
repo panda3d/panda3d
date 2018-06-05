@@ -25,7 +25,7 @@ class VulkanVertexBufferContext;
  * Manages a Vulkan device, and manages sending render commands to this
  * device.
  */
-class VulkanGraphicsStateGuardian FINAL : public GraphicsStateGuardian {
+class VulkanGraphicsStateGuardian final : public GraphicsStateGuardian {
 public:
   VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                               VulkanGraphicsStateGuardian *share_with,
@@ -122,7 +122,7 @@ private:
    * This allows us to map Panda states to Vulkan pipelines effectively.
    */
   struct PipelineKey {
-    INLINE PipelineKey() DEFAULT_CTOR;
+    INLINE PipelineKey() = default;
     INLINE PipelineKey(const PipelineKey &copy);
     INLINE void operator = (const PipelineKey &copy);
 
@@ -151,7 +151,7 @@ private:
    * descriptor set map.
    */
   struct DescriptorSetKey {
-    INLINE DescriptorSetKey() DEFAULT_CTOR;
+    INLINE DescriptorSetKey() = default;
     INLINE DescriptorSetKey(const DescriptorSetKey &copy);
     INLINE void operator = (const DescriptorSetKey &copy);
 

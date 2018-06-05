@@ -111,7 +111,7 @@ private:
     short _flags;
   };
 
-  typedef vector<Word> Words;
+  typedef std::vector<Word> Words;
   Words _words;
   bool _got_words;
 

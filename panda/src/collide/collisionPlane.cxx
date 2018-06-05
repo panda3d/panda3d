@@ -107,7 +107,7 @@ compute_internal_bounds() const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -119,7 +119,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat dist = dist_to_plane(from_center);
   if (dist > from_radius) {
     // No intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -146,7 +146,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
-  DCAST_INTO_R(line, entry.get_from(), NULL);
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -159,7 +159,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 
     if (_plane.dist_to_plane(from_origin) > 0.0f) {
       // The line is entirely in front of the plane.
-      return NULL;
+      return nullptr;
     }
 
     // The line is entirely behind the plane.
@@ -191,7 +191,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -208,13 +208,13 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   } else {
     if (!_plane.intersects_line(t, from_origin, from_direction)) {
       // No intersection.  The ray is parallel to the plane.
-      return NULL;
+      return nullptr;
     }
 
     if (t < 0.0f) {
       // The intersection point is before the start of the ray, and so the ray
       // is entirely in front of the plane.
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -243,7 +243,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
-  DCAST_INTO_R(segment, entry.get_from(), NULL);
+  DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -255,7 +255,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   if (dist_a >= 0.0f && dist_b >= 0.0f) {
     // Entirely in front of the plane means no intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -300,7 +300,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_tube(const CollisionEntry &entry) const {
   const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), NULL);
+  DCAST_INTO_R(tube, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -315,7 +315,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
 
   if (dist_a >= from_radius && dist_b >= from_radius) {
     // Entirely in front of the plane means no intersection.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -371,7 +371,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
-  DCAST_INTO_R(parabola, entry.get_from(), NULL);
+  DCAST_INTO_R(parabola, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -390,7 +390,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
     if (!get_plane().intersects_parabola(t1, t2, local_p)) {
       // No intersection.  The infinite parabola is entirely in front of the
       // plane.
-      return NULL;
+      return nullptr;
     }
 
     if (t1 >= parabola->get_t1() && t1 <= parabola->get_t2()) {
@@ -409,7 +409,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 
     } else {
       // Neither intersection point is within our segment.
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -437,7 +437,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionPlane::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), NULL);
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -459,7 +459,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   if (depth > 0) {
     // No collision.
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {

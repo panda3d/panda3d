@@ -18,7 +18,7 @@
 #include "string_utils.h"
 #include "configVariableColor.h"
 
-CullBinManager *CullBinManager::_global_ptr = (CullBinManager *)NULL;
+CullBinManager *CullBinManager::_global_ptr = nullptr;
 
 /**
  * The constructor is not intended to be called directly; there is only one
@@ -185,8 +185,8 @@ write(ostream &out) const {
 PT(CullBin) CullBinManager::
 make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
              const PStatCollector &draw_region_pcollector) {
-  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), NULL);
-  nassertr(_bin_definitions[bin_index]._in_use, NULL);
+  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), nullptr);
+  nassertr(_bin_definitions[bin_index]._in_use, nullptr);
   string name = get_bin_name(bin_index);
 
   BinType type = _bin_definitions[bin_index]._type;
@@ -197,8 +197,8 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
   }
 
   // Hmm, unknown (or unregistered) bin type.
-  nassertr(false, NULL);
-  return NULL;
+  nassertr(false, nullptr);
+  return nullptr;
 }
 
 /**

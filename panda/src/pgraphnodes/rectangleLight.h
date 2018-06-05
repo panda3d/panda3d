@@ -35,7 +35,7 @@ public:
   virtual void write(ostream &out, int indent_level) const;
 
 PUBLISHED:
-  INLINE const LColor &get_specular_color() const FINAL;
+  INLINE const LColor &get_specular_color() const final;
 
   INLINE PN_stdfloat get_max_distance() const;
   INLINE void set_max_distance(PN_stdfloat max_distance);

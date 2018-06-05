@@ -83,7 +83,7 @@ get_num_keywords() const {
  */
 const DCKeyword *DCKeywordList::
 get_keyword(int n) const {
-  nassertr(n >= 0 && n < (int)_keywords.size(), NULL);
+  nassertr(n >= 0 && n < (int)_keywords.size(), nullptr);
   return _keywords[n];
 }
 
@@ -99,7 +99,7 @@ get_keyword_by_name(const string &name) const {
     return (*ni).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**

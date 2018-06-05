@@ -269,6 +269,7 @@ init_libpnmimagetypes() {
 
   // And register with the PandaSystem.
   PandaSystem *ps = PandaSystem::get_global_ptr();
+  (void)ps; // Suppress unused variable warning
 
 #ifdef HAVE_JPEG
   ps->add_system("libjpeg");

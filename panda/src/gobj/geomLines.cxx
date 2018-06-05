@@ -182,7 +182,7 @@ rotate_impl() const {
       to.set_data1i(from.get_data1i());
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -194,7 +194,7 @@ rotate_impl() const {
       to.set_data1i(begin + first_vertex);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
 
   return new_vertices;

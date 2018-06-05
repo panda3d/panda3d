@@ -84,25 +84,25 @@ PUBLISHED:
   INLINE void set_type(PNMFileType *type);
   MAKE_PROPERTY2(type, has_type, get_type);
 
-  BLOCKING bool read_header(const Filename &filename, PNMFileType *type = NULL,
+  BLOCKING bool read_header(const Filename &filename, PNMFileType *type = nullptr,
                             bool report_unknown_type = true);
   BLOCKING bool read_header(istream &data, const string &filename = string(),
-                            PNMFileType *type = NULL, bool report_unknown_type = true);
+                            PNMFileType *type = nullptr, bool report_unknown_type = true);
 
   PNMReader *make_reader(const Filename &filename,
-                         PNMFileType *type = NULL,
+                         PNMFileType *type = nullptr,
                          bool report_unknown_type = true) const;
   PNMReader *make_reader(istream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          string magic_number = string(),
-                         PNMFileType *type = NULL,
+                         PNMFileType *type = nullptr,
                          bool report_unknown_type = true) const;
 
   PNMWriter *make_writer(const Filename &filename,
-                         PNMFileType *type = NULL) const;
+                         PNMFileType *type = nullptr) const;
   PNMWriter *make_writer(ostream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
-                         PNMFileType *type = NULL) const;
+                         PNMFileType *type = nullptr) const;
 
   static bool read_magic_number(istream *file, string &magic_number,
                                 int num_bytes);

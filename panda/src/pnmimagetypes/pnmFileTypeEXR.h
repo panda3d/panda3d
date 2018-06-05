@@ -69,7 +69,6 @@ public:
 
     typedef std::vector<std::string> ChannelNames;
     ChannelNames _channel_names;
-    IMF::PixelType _best_pixel_type;
   };
 
   class Writer : public PNMWriter {

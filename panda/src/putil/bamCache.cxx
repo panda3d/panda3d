@@ -18,7 +18,7 @@
 #include "hashVal.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "typeRegistry.h"
 #include "string_utils.h"
@@ -27,7 +27,7 @@
 #include "configVariableFilename.h"
 #include "virtualFileSystem.h"
 
-BamCache *BamCache::_global_ptr = NULL;
+BamCache *BamCache::_global_ptr = nullptr;
 
 /**
  *
@@ -101,7 +101,7 @@ BamCache::
 ~BamCache() {
   flush_index();
   delete _index;
-  _index = NULL;
+  _index = nullptr;
 }
 
 /**
@@ -165,7 +165,7 @@ lookup(const Filename &source_filename, const string &cache_extension) {
   if (rel_pathname.is_local()) {
     // If the source pathname is already within the cache directory, don't
     // cache it further.
-    return NULL;
+    return nullptr;
   }
 
   Filename cache_filename = hash_filename(source_pathname.get_fullpath());
@@ -199,7 +199,7 @@ store(BamCacheRecord *record) {
   nassertr(rel_pathname.is_local(), false);
 #endif  // NDEBUG
 
-  record->_recorded_time = time(NULL);
+  record->_recorded_time = time(nullptr);
 
   Filename cache_pathname = Filename::binary_filename(record->_cache_pathname);
 
@@ -311,7 +311,7 @@ emergency_read_only() {
 void BamCache::
 consider_flush_index() {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (!_lock.try_acquire()) {
+  if (!_lock.try_lock()) {
     // If we can't grab the lock, no big deal.  We don't want to hold up
     // the frame waiting for a cache operation.  We can try again later.
     return;
@@ -319,14 +319,14 @@ consider_flush_index() {
 #endif
 
   if (_index_stale_since != 0) {
-    int elapsed = (int)time(NULL) - (int)_index_stale_since;
+    int elapsed = (int)time(nullptr) - (int)_index_stale_since;
     if (elapsed > _flush_time) {
       flush_index();
     }
   }
 
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  _lock.release();
+  _lock.unlock();
 #endif
 }
 
@@ -404,7 +404,7 @@ read_index() {
 
   while (true) {
     BamCacheIndex *new_index = do_read_index(_index_pathname);
-    if (new_index != (BamCacheIndex *)NULL) {
+    if (new_index != nullptr) {
       merge_index(new_index);
       return;
     }
@@ -514,7 +514,7 @@ merge_index(BamCacheIndex *new_index) {
 
         if (cache_pathname.exists()) {
           PT(BamCacheRecord) record = do_read_record(cache_pathname, false);
-          if (record != (BamCacheRecord *)NULL) {
+          if (record != nullptr) {
             _index->_records.insert(_index->_records.end(), BamCacheIndex::Records::value_type(record->get_source_pathname(), record));
           }
         }
@@ -558,7 +558,7 @@ rebuild_index() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   PT(VirtualFileList) contents = vfs->scan_directory(_root);
-  if (contents == NULL) {
+  if (contents == nullptr) {
     util_cat.error()
       << "Unable to read directory " << _root << ", caching disabled.\n";
     set_active(false);
@@ -577,7 +577,7 @@ rebuild_index() {
       Filename pathname(_root, filename);
 
       PT(BamCacheRecord) record = do_read_record(pathname, false);
-      if (record == (BamCacheRecord *)NULL) {
+      if (record == nullptr) {
         // Well, it was invalid, so blow it away.
         if (util_cat.is_debug()) {
           util_cat.debug()
@@ -599,7 +599,7 @@ rebuild_index() {
   }
   _index->process_new_records();
 
-  _index_stale_since = time(NULL);
+  _index_stale_since = time(nullptr);
   check_cache_size();
   flush_index();
 }
@@ -642,7 +642,7 @@ check_cache_size() {
   if (_index->_cache_size / 1024 > _max_kbytes) {
     while (_index->_cache_size / 1024 > _max_kbytes) {
       PT(BamCacheRecord) record = _index->evict_old_file();
-      if (record == NULL) {
+      if (record == nullptr) {
         // Never mind; the cache is empty.
         break;
       }
@@ -666,53 +666,53 @@ check_cache_size() {
 BamCacheIndex *BamCache::
 do_read_index(const Filename &index_pathname) {
   if (index_pathname.empty()) {
-    return NULL;
+    return nullptr;
   }
 
   DatagramInputFile din;
   if (!din.open(index_pathname)) {
     util_cat.debug()
       << "Could not read index file: " << index_pathname << "\n";
-    return NULL;
+    return nullptr;
   }
 
   string head;
   if (!din.read_header(head, _bam_header.size())) {
     util_cat.debug()
       << index_pathname << " is not an index file.\n";
-    return NULL;
+    return nullptr;
   }
 
   if (head != _bam_header) {
     util_cat.debug()
       << index_pathname << " is not an index file.\n";
-    return NULL;
+    return nullptr;
   }
 
   BamReader reader(&din);
   if (!reader.init()) {
-    return NULL;
+    return nullptr;
   }
 
   TypedWritable *object = reader.read_object();
 
-  if (object == (TypedWritable *)NULL) {
+  if (object == nullptr) {
     util_cat.error()
       << "Cache index " << index_pathname << " is empty.\n";
-    return NULL;
+    return nullptr;
 
   } else if (!object->is_of_type(BamCacheIndex::get_class_type())) {
     util_cat.error()
       << "Cache index " << index_pathname << " contains a "
       << object->get_type() << ", not a BamCacheIndex.\n";
-    return NULL;
+    return nullptr;
   }
 
   BamCacheIndex *index = DCAST(BamCacheIndex, object);
   if (!reader.resolve()) {
     util_cat.error()
       << "Unable to fully resolve cache index file.\n";
-    return NULL;
+    return nullptr;
   }
 
   return index;
@@ -767,7 +767,7 @@ find_and_read_record(const Filename &source_pathname,
   while (true) {
     PT(BamCacheRecord) record =
       read_record(source_pathname, cache_filename, pass);
-    if (record != (BamCacheRecord *)NULL) {
+    if (record != nullptr) {
       add_to_index(record);
       return record;
     }
@@ -809,7 +809,7 @@ read_record(const Filename &source_pathname,
   }
 
   PT(BamCacheRecord) record = do_read_record(cache_pathname, true);
-  if (record == (BamCacheRecord *)NULL) {
+  if (record == nullptr) {
     // Well, it was invalid, so blow it away, and make a new one.
     if (util_cat.is_debug()) {
       util_cat.debug()
@@ -832,7 +832,7 @@ read_record(const Filename &source_pathname,
         << record->get_source_pathname() << ", not "
         << source_pathname << "\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   if (!record->has_data()) {
@@ -855,7 +855,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
       util_cat.debug()
         << "Could not read cache file: " << cache_pathname << "\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   string head;
@@ -864,7 +864,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
       util_cat.debug()
         << cache_pathname << " is not a cache file.\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   if (head != _bam_header) {
@@ -872,21 +872,21 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
       util_cat.debug()
         << cache_pathname << " is not a cache file.\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   BamReader reader(&din);
   if (!reader.init()) {
-    return NULL;
+    return nullptr;
   }
 
   TypedWritable *object = reader.read_object();
-  if (object == (TypedWritable *)NULL) {
+  if (object == nullptr) {
     if (util_cat.is_debug()) {
       util_cat.debug()
         << cache_pathname << " is empty.\n";
     }
-    return NULL;
+    return nullptr;
 
   } else if (!object->is_of_type(BamCacheRecord::get_class_type())) {
     if (util_cat.is_debug()) {
@@ -894,7 +894,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
         << "Cache file " << cache_pathname << " contains a "
         << object->get_type() << ", not a BamCacheRecord.\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   PT(BamCacheRecord) record = DCAST(BamCacheRecord, object);
@@ -903,7 +903,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
       util_cat.debug()
         << "Unable to fully resolve cache record in " << cache_pathname << "\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   // From this point below, we have validated that the selected filename is
@@ -937,7 +937,7 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
   record->_record_size = vfile->get_file_size(&in);
 
   // And the last access time is now, duh.
-  record->_record_access_time = time(NULL);
+  record->_record_access_time = time(nullptr);
 
   return record;
 }

@@ -88,7 +88,7 @@ is_debug() const {
  * "debug" severities, and these methods are redefined to be static to make it
  * more obvious to the compiler.
  */
-CONSTEXPR bool NotifyCategory::
+constexpr bool NotifyCategory::
 is_spam() {
   return false;
 }
@@ -98,7 +98,7 @@ is_spam() {
  * "debug" severities, and these methods are redefined to be static to make it
  * more obvious to the compiler.
  */
-CONSTEXPR bool NotifyCategory::
+constexpr bool NotifyCategory::
 is_debug() {
   return false;
 }

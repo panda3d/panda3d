@@ -32,6 +32,6 @@ get_num_components() const {
  */
 INLINE_MATHUTIL const GeometricBoundingVolume *IntersectionBoundingVolume::
 get_component(int n) const {
-  nassertr(n >= 0 && n < (int)_components.size(), NULL);
+  nassertr(n >= 0 && n < (int)_components.size(), nullptr);
   return _components[n];
 }

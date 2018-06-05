@@ -136,7 +136,6 @@ void Fog::
 adjust_to_camera(const TransformState *camera_transform) {
   LVector3 forward = LVector3::forward();
 
-  LPoint3 onset_point, opaque_point;
   if (get_num_parents() != 0) {
     // Linear fog is relative to the fog's net transform in the scene graph.
     NodePath this_np(this);

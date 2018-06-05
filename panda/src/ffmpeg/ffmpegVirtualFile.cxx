@@ -31,9 +31,9 @@ extern "C" {
  */
 FfmpegVirtualFile::
 FfmpegVirtualFile() :
-  _io_context(NULL),
-  _format_context(NULL),
-  _in(NULL),
+  _io_context(nullptr),
+  _format_context(nullptr),
+  _in(nullptr),
   _owns_in(false),
   _buffer_size(ffmpeg_read_buffer_size)
 {
@@ -45,22 +45,6 @@ FfmpegVirtualFile() :
 FfmpegVirtualFile::
 ~FfmpegVirtualFile() {
   close();
-}
-
-/**
- * These objects are not meant to be copied.
- */
-FfmpegVirtualFile::
-FfmpegVirtualFile(const FfmpegVirtualFile &copy) {
-  nassertv(false);
-}
-
-/**
- * These objects are not meant to be copied.
- */
-void FfmpegVirtualFile::
-operator = (const FfmpegVirtualFile &copy) {
-  nassertv(false);
 }
 
 /**
@@ -81,12 +65,12 @@ open_vfs(const Filename &filename) {
   Filename fname = filename;
   fname.set_binary();
   PT(VirtualFile) vfile = vfs->get_file(fname);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     return false;
   }
 
   _in = vfile->open_read_file(true);
-  if (_in == NULL) {
+  if (_in == nullptr) {
     return false;
   }
 
@@ -100,14 +84,14 @@ open_vfs(const Filename &filename) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;
 
   // Now we can open the stream.
   int result =
-    avformat_open_input(&_format_context, "", NULL, NULL);
+    avformat_open_input(&_format_context, "", nullptr, nullptr);
   if (result < 0) {
     close();
     return false;
@@ -148,14 +132,14 @@ open_subfile(const SubfileInfo &info) {
   // pointer.
   unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
   _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
-                                   &read_packet, 0, &seek);
+                                   &read_packet, nullptr, &seek);
 
   _format_context = avformat_alloc_context();
   _format_context->pb = _io_context;
 
   // Now we can open the stream.
   int result =
-    avformat_open_input(&_format_context, fname.c_str(), NULL, NULL);
+    avformat_open_input(&_format_context, fname.c_str(), nullptr, nullptr);
   if (result < 0) {
     close();
     return false;
@@ -170,24 +154,24 @@ open_subfile(const SubfileInfo &info) {
  */
 void FfmpegVirtualFile::
 close() {
-  if (_format_context != NULL) {
+  if (_format_context != nullptr) {
     avformat_close_input(&_format_context);
   }
 
-  if (_io_context != NULL) {
-    if (_io_context->buffer != NULL) {
+  if (_io_context != nullptr) {
+    if (_io_context->buffer != nullptr) {
       av_free(_io_context->buffer);
     }
     av_free(_io_context);
-    _io_context = NULL;
+    _io_context = nullptr;
   }
 
   if (_owns_in) {
-    nassertv(_in != NULL);
+    nassertv(_in != nullptr);
     VirtualFileSystem::close_read_file(_in);
     _owns_in = false;
   }
-  _in = NULL;
+  _in = nullptr;
 }
 
 /**
@@ -225,7 +209,7 @@ read_packet(void *opaque, uint8_t *buf, int size) {
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
   if (remaining < ssize) {
     if (remaining <= 0) {
-      return 0;
+      return AVERROR_EOF;
     }
 
     ssize = remaining;

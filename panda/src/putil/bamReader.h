@@ -42,7 +42,7 @@
 #define READ_PTA(Manager, source, Read_func, array)   \
 {                                                     \
   void *t;                                            \
-  if ((t = Manager->get_pta(source)) == (void*)NULL)  \
+  if ((t = Manager->get_pta(source)) == nullptr)  \
   {                                                   \
     array = Read_func(Manager, source);               \
     Manager->register_pta(array.get_void_ptr());      \
@@ -58,7 +58,7 @@
  * object's read pass.  To use this, subclass BamReaderAuxData and add
  * whatever additional data you require.
  */
-class EXPCL_PANDA_PGRAPH BamReaderAuxData : public TypedReferenceCount {
+class EXPCL_PANDA_PUTIL BamReaderAuxData : public TypedReferenceCount {
 public:
   INLINE BamReaderAuxData();
 
@@ -115,7 +115,7 @@ public:
 
 PUBLISHED:
   // The primary interface for a caller.
-  explicit BamReader(DatagramGenerator *source = NULL);
+  explicit BamReader(DatagramGenerator *source = nullptr);
   ~BamReader();
 
   void set_source(DatagramGenerator *source);
@@ -198,7 +198,7 @@ public:
 
 public:
   INLINE static void register_factory(TypeHandle type, WritableFactory::CreateFunc *func,
-                                      void *user_data = NULL);
+                                      void *user_data = nullptr);
   INLINE static WritableFactory *get_factory();
 
 PUBLISHED:

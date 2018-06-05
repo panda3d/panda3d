@@ -166,7 +166,7 @@ jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
    * manager serially with the same JPEG object, because their private object
    * sizes may be different.  Caveat programmer.
    */
-  if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
+  if (cinfo->dest == nullptr) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(my_destination_mgr));

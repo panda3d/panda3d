@@ -61,7 +61,7 @@ EggToFlt() :
      "if this is \"new\", these files will only be generated if they "
      "do not already exist (even if the properties have changed).  "
      "Specifying \"all\" causes these to be rewritten every time.",
-     &EggToFlt::dispatch_attr, NULL, &_auto_attr_update);
+     &EggToFlt::dispatch_attr, nullptr, &_auto_attr_update);
 
   // Flt files are always in the z-up coordinate system.  Don't confuse the
   // user with this meaningless option.
@@ -489,7 +489,7 @@ get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
     flt_vertex->_has_uv = true;
   }
 
-  if (frame != (const LMatrix4d *)NULL) {
+  if (frame != nullptr) {
     flt_vertex->_pos = flt_vertex->_pos * (*frame);
     flt_vertex->_normal = flt_vertex->_normal * LCAST(PN_stdfloat, (*frame));
   }

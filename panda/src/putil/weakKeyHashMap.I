@@ -17,8 +17,8 @@
 template<class Key, class Value>
 INLINE WeakKeyHashMap<Key, Value>::
 WeakKeyHashMap() :
-  _table(NULL),
-  _deleted_chain(NULL),
+  _table(nullptr),
+  _deleted_chain(nullptr),
   _table_size(0),
   _num_entries(0)
 {
@@ -196,8 +196,8 @@ clear() {
     }
 
     _deleted_chain->deallocate(_table, TypeHandle::none());
-    _table = NULL;
-    _deleted_chain = NULL;
+    _table = nullptr;
+    _deleted_chain = nullptr;
     _table_size = 0;
     _num_entries = 0;
   }
@@ -295,7 +295,6 @@ set_data(size_t n, const Value &data) {
   _table[n]._data = data;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  * Changes the data for the nth slot of the table.
  *
@@ -309,7 +308,6 @@ set_data(size_t n, Value &&data) {
   nassertv(has_element(n));
   _table[n]._data = move(data);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Removes the nth slot from the table.
@@ -337,7 +335,7 @@ remove_element(size_t n) {
       clear_element(i);
       --_num_entries;
     } else {
-      size_t wants_index = get_hash(_table[i]._key);
+      size_t wants_index = get_hash(_table[i]._key.get_orig());
       if (wants_index != i) {
         // This one was a hash conflict; try to put it where it belongs.  We
         // can't just put it in n, since maybe it belongs somewhere after n.
@@ -590,7 +588,7 @@ expand_table() {
   // Double the table size.
   size_t old_table_size = old_map._table_size;
   _table_size = (old_table_size << 1);
-  nassertv(_table == NULL);
+  nassertv(_table == nullptr);
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus
   // _table_size more bytes at the end (for the exists array).
@@ -611,13 +609,9 @@ expand_table() {
         new_index = (new_index + 1) & (_table_size - 1);
       }
 
-#ifdef USE_MOVE_SEMANTICS
       // Use C++11 rvalue references to invoke the move constructor, which may
       // be more efficient.
-      new(&_table[new_index]) TableEntry(move(old_map._table[i]));
-#else
-      new(&_table[new_index]) TableEntry(old_map._table[i]);
-#endif
+      new(&_table[new_index]) TableEntry(std::move(old_map._table[i]));
       exists_array[new_index] = true;
       ++_num_entries;
     }

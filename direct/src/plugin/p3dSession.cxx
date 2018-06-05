@@ -143,7 +143,7 @@ shutdown() {
 #else  // _WIN32
       // Wait for a certain amount of time for the process to stop by itself.
       struct timeval start;
-      gettimeofday(&start, NULL);
+      gettimeofday(&start, nullptr);
       int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
 
       int status;
@@ -155,7 +155,7 @@ shutdown() {
         }
 
         struct timeval now;
-        gettimeofday(&now, NULL);
+        gettimeofday(&now, nullptr);
         int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
         int elapsed = now_ms - start_ms;
 
@@ -171,7 +171,7 @@ shutdown() {
         struct timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
-        select(0, NULL, NULL, NULL, &tv);
+        select(0, nullptr, nullptr, nullptr, &tv);
         result = waitpid(_p3dpython_pid, &status, WNOHANG);
       }
       _p3dpython_pid = -1;
@@ -227,7 +227,7 @@ shutdown() {
  */
 void P3DSession::
 start_instance(P3DInstance *inst) {
-  assert(inst->_session == NULL);
+  assert(inst->_session == nullptr);
   assert(inst->get_session_key() == _session_key);
   if (_failed) {
     inst->set_failed();
@@ -279,7 +279,7 @@ terminate_instance(P3DInstance *inst) {
   if (inst->_session == this) {
     nout << "Assigning " << inst << "->log_pathname = " << _log_pathname << "\n";
     inst->_log_pathname = _log_pathname;
-    inst->_session = NULL;
+    inst->_session = nullptr;
     _instances.erase(inst->get_instance_id());
   }
   RELEASE_LOCK(_instances_lock);
@@ -319,7 +319,7 @@ send_command(TiXmlDocument *command) {
 TiXmlDocument *P3DSession::
 command_and_response(TiXmlDocument *command) {
   if (!_p3dpython_started) {
-    return NULL;
+    return nullptr;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -328,7 +328,7 @@ command_and_response(TiXmlDocument *command) {
   // Add the "want_response_id" attribute to the toplevel command, so the sub-
   // process knows we'll be waiting for its response.
   TiXmlElement *xcommand = command->FirstChildElement("command");
-  assert(xcommand != NULL);
+  assert(xcommand != nullptr);
   xcommand->SetAttribute("want_response_id", response_id);
 
   write_xml(_pipe_write, command, nout);
@@ -341,7 +341,7 @@ command_and_response(TiXmlDocument *command) {
     if (!_p3dpython_running) {
       // Hmm, looks like Python has gone away.
       _response_ready.release();
-      return NULL;
+      return nullptr;
     }
 
     // Make sure we bake requests while we are waiting, to process recursive
@@ -380,7 +380,7 @@ command_and_response(TiXmlDocument *command) {
     // coming and will block waiting for them.
 
     MSG msg;
-    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+    PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE | PM_NOYIELD);
 
     // We wait with a timeout, so we can go back and spin the event loop some
     // more.  On Windows, the timeout needs to be small, so we continue to
@@ -444,16 +444,16 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
     // Using the string form here instead of the char * form, so we don't get
     // tripped up on embedded null characters.
     const string *value = xvalue->Attribute(string("value"));
-    if (value != NULL) {
+    if (value != nullptr) {
       return new P3DStringObject(*value);
     }
 
   } else if (strcmp(type, "concrete_sequence") == 0) {
     P3DConcreteSequence *obj = new P3DConcreteSequence;
     const TiXmlElement *xitem = xvalue->FirstChildElement("value");
-    while (xitem != NULL) {
+    while (xitem != nullptr) {
       P3D_object *item = xml_to_p3dobj(xitem);
-      if (item != NULL) {
+      if (item != nullptr) {
         obj->append(item);
         P3D_OBJECT_DECREF(item);
       }
@@ -464,11 +464,11 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
   } else if (strcmp(type, "concrete_struct") == 0) {
     P3DConcreteStruct *obj = new P3DConcreteStruct;
     const TiXmlElement *xitem = xvalue->FirstChildElement("value");
-    while (xitem != NULL) {
+    while (xitem != nullptr) {
       const char *key = xitem->Attribute("key");
-      if (key != NULL) {
+      if (key != nullptr) {
         P3D_object *item = xml_to_p3dobj(xitem);
-        if (item != NULL) {
+        if (item != nullptr) {
           obj->set_property(key, item);
           P3D_OBJECT_DECREF(item);
         }
@@ -539,7 +539,7 @@ p3dobj_to_xml(P3D_object *obj) {
   case P3D_OT_string:
     {
       xvalue->SetAttribute("type", "string");
-      int size = P3D_OBJECT_GET_STRING(obj, NULL, 0);
+      int size = P3D_OBJECT_GET_STRING(obj, nullptr, 0);
       char *buffer = new char[size];
       P3D_OBJECT_GET_STRING(obj, buffer, size);
       xvalue->SetAttribute("value", string(buffer, size));
@@ -548,12 +548,12 @@ p3dobj_to_xml(P3D_object *obj) {
     break;
 
   case P3D_OT_object:
-    P3DObject *p3dobj = NULL;
+    P3DObject *p3dobj = nullptr;
     if (obj->_class == &P3DObject::_object_class) {
       p3dobj = (P3DObject *)obj;
     }
 
-    if (p3dobj != NULL && p3dobj->fill_xml(xvalue, this)) {
+    if (p3dobj != nullptr && p3dobj->fill_xml(xvalue, this)) {
       // This object has a specialized XML representation, valid for this
       // particular session.  It has already been filled into xvalue.
 
@@ -666,7 +666,7 @@ start_p3dpython(P3DInstance *inst) {
     return;
   }
 
-  if (inst->_panda3d_package == NULL) {
+  if (inst->_panda3d_package == nullptr) {
     nout << "Couldn't start Python: no panda3d dependency.\n";
     set_failed();
     return;
@@ -787,22 +787,22 @@ start_p3dpython(P3DInstance *inst) {
   string p3dpythonw_exe = _p3dpython_exe + "w";
   if (_p3dpython_exe.empty()) {
     // Allow package to override the name of the p3dpython executables.
-    const char *p3dpython_name_xconfig = NULL;
-    const char *p3dpythonw_name_xconfig = NULL;
+    const char *p3dpython_name_xconfig = nullptr;
+    const char *p3dpythonw_name_xconfig = nullptr;
     const TiXmlElement *panda3d_xconfig = inst->_panda3d_package->get_xconfig();
-    if (panda3d_xconfig != NULL) {
+    if (panda3d_xconfig != nullptr) {
       p3dpython_name_xconfig = panda3d_xconfig->Attribute("p3dpython_name");
       p3dpythonw_name_xconfig = panda3d_xconfig->Attribute("p3dpythonw_name");
     }
 
     string p3dpython_name = "p3dpython";
-    if (p3dpython_name_xconfig != NULL) {
+    if (p3dpython_name_xconfig != nullptr) {
       nout << "p3dpython_name from panda3d xconfig: " << p3dpython_name_xconfig << "\n";
       p3dpython_name = p3dpython_name_xconfig;
     }
 
     string p3dpythonw_name = p3dpython_name + "w";
-    if (p3dpythonw_name_xconfig != NULL) {
+    if (p3dpythonw_name_xconfig != nullptr) {
       nout << "p3dpythonw_name from panda3d xconfig: " << p3dpythonw_name_xconfig << "\n";
       p3dpythonw_name = p3dpythonw_name_xconfig;
     }
@@ -848,9 +848,9 @@ start_p3dpython(P3DInstance *inst) {
 #ifdef HAVE_X11
       "DISPLAY", "XAUTHORITY",
 #endif
-      NULL
+      nullptr
     };
-    for (int ki = 0; keep[ki] != NULL; ++ki) {
+    for (int ki = 0; keep[ki] != nullptr; ++ki) {
       string value;
       if (get_env(value, keep[ki])) {
         _env += keep[ki];
@@ -867,7 +867,7 @@ start_p3dpython(P3DInstance *inst) {
       "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
       "PYTHONPATH", "PYTHONHOME", "PRC_PATH", "PANDA_PRC_PATH",
       "TEMP", "CTPROJS",
-      NULL
+      nullptr
     };
 
 #ifdef _WIN32
@@ -886,14 +886,14 @@ start_p3dpython(P3DInstance *inst) {
 #endif  // _WIN32
 
     char **ep;
-    for (ep = global_environ; *ep != NULL; ++ep) {
+    for (ep = global_environ; *ep != nullptr; ++ep) {
       string env = *ep;
       size_t equals = env.find('=');
       if (equals != string::npos) {
         string var = env.substr(0, equals);
         const char *varc = var.c_str();
         bool found = false;
-        for (int i = 0; dont_keep[i] != NULL && !found; ++i) {
+        for (int i = 0; dont_keep[i] != nullptr && !found; ++i) {
 #ifdef _WIN32
           found = (_stricmp(dont_keep[i], varc) == 0);
 #else
@@ -1088,9 +1088,9 @@ start_p3dpython(P3DInstance *inst) {
 #else
     tzset();
 #endif
-    time_t log_time_seconds = time(NULL);
+    time_t log_time_seconds = time(nullptr);
     struct tm *log_time_local_p = localtime(&log_time_seconds);
-    if (log_time_local_p != NULL) {
+    if (log_time_local_p != nullptr) {
       struct tm log_time_local = *log_time_local_p;
       static const size_t buffer_size = 16;
       char buffer[buffer_size];
@@ -1121,7 +1121,7 @@ start_p3dpython(P3DInstance *inst) {
   HANDLE r_to, w_to, r_from, w_from;
 
   // Create the pipe to the process.
-  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
+  if (!CreatePipe(&r_to, &w_to, nullptr, 0)) {
     nout << "failed to create pipe\n";
     set_failed();
   } else {
@@ -1131,7 +1131,7 @@ start_p3dpython(P3DInstance *inst) {
   }
 
   // Create the pipe from the process.
-  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
+  if (!CreatePipe(&r_from, &w_from, nullptr, 0)) {
     nout << "failed to create pipe\n";
     set_failed();
   } else {
@@ -1311,7 +1311,7 @@ void P3DSession::
 rt_thread_run() {
   while (_read_thread_continue) {
     TiXmlDocument *doc = read_xml(_pipe_read, nout);
-    if (doc == NULL) {
+    if (doc == nullptr) {
       // Some error on reading.  Abort.
       rt_terminate();
       _p3dpython_running = false;
@@ -1335,7 +1335,7 @@ rt_thread_run() {
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
   TiXmlElement *xresponse = doc->FirstChildElement("response");
-  if (xresponse != (TiXmlElement *)NULL) {
+  if (xresponse != nullptr) {
     int response_id;
     if (xresponse->QueryIntAttribute("response_id", &response_id) == TIXML_SUCCESS) {
       // This is a response to a previous command-and-response.  Send it to
@@ -1350,7 +1350,7 @@ rt_handle_request(TiXmlDocument *doc) {
   }
 
   TiXmlElement *xrequest = doc->FirstChildElement("request");
-  if (xrequest != (TiXmlElement *)NULL) {
+  if (xrequest != nullptr) {
     int instance_id;
     if (xrequest->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
       // Look up the particular instance this is related to.
@@ -1360,13 +1360,13 @@ rt_handle_request(TiXmlDocument *doc) {
       if (ii != _instances.end()) {
         P3DInstance *inst = (*ii).second;
         inst->add_raw_request(doc);
-        doc = NULL;
+        doc = nullptr;
       }
       RELEASE_LOCK(_instances_lock);
     }
   }
 
-  if (doc != NULL) {
+  if (doc != nullptr) {
     delete doc;
   }
 }
@@ -1418,7 +1418,7 @@ win_create_process() {
     HANDLE handle = CreateFileW
       (log_pathname_w.c_str(), GENERIC_WRITE,
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-       NULL, CREATE_ALWAYS, 0, NULL);
+       nullptr, CREATE_ALWAYS, 0, nullptr);
     if (handle != INVALID_HANDLE_VALUE) {
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -1447,7 +1447,7 @@ win_create_process() {
   const wchar_t *start_dir_cstr;
   wstring start_dir_w;
   if (_keep_user_env) {
-    start_dir_cstr = NULL;
+    start_dir_cstr = nullptr;
     nout << "Not changing working directory.\n";
   } else {
     string_to_wstring(start_dir_w, _start_dir);
@@ -1479,7 +1479,7 @@ win_create_process() {
 
   PROCESS_INFORMATION process_info;
   BOOL result = CreateProcessW
-    (p3dpython_exe_w.c_str(), command_line, NULL, NULL, TRUE,
+    (p3dpython_exe_w.c_str(), command_line, nullptr, nullptr, TRUE,
      CREATE_UNICODE_ENVIRONMENT, (void *)env_w.c_str(),
      start_dir_cstr, &startup_info, &process_info);
   bool started_program = (result != 0);
@@ -1577,7 +1577,7 @@ posix_create_process() {
       p = zero + 1;
       zero = _env.find('\0', p);
     }
-    ptrs.push_back((char *)NULL);
+    ptrs.push_back(nullptr);
 
     stringstream input_handle_stream;
     input_handle_stream << _input_handle;
@@ -1605,7 +1605,7 @@ posix_create_process() {
   // program" message.  Maybe I'll put in the more reliable test later.
 
   struct timeval start;
-  gettimeofday(&start, NULL);
+  gettimeofday(&start, nullptr);
   int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
 
   int status;
@@ -1617,7 +1617,7 @@ posix_create_process() {
     }
 
     struct timeval now;
-    gettimeofday(&now, NULL);
+    gettimeofday(&now, nullptr);
     int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
     int elapsed = now_ms - start_ms;
     if (elapsed > 100) {
@@ -1631,7 +1631,7 @@ posix_create_process() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 1;
-    select(0, NULL, NULL, NULL, &tv);
+    select(0, nullptr, nullptr, nullptr, &tv);
     result = waitpid(child, &status, WNOHANG);
   }
 
@@ -1684,7 +1684,7 @@ p3dpython_thread_run() {
     _putenv(start);
 #else
     const char *equals = strchr(start, '=');
-    if (equals != NULL) {
+    if (equals != nullptr) {
       string variable(start, equals - start);
       setenv(variable.c_str(), equals + 1, true);
     }
@@ -1703,7 +1703,7 @@ p3dpython_thread_run() {
 #endif
   SetErrorMode(0);
   HMODULE module = LoadLibrary(libp3dpython.c_str());
-  if (module == NULL) {
+  if (module == nullptr) {
     // Couldn't load the DLL.
     nout << "Couldn't load " << libp3dpython << "\n";
     return;
@@ -1719,7 +1719,7 @@ p3dpython_thread_run() {
   libp3dpython += ".so";
   #endif
   void *module = dlopen(libp3dpython.c_str(), RTLD_LAZY | RTLD_LOCAL);
-  if (module == NULL) {
+  if (module == nullptr) {
     // Couldn't load the .so.
     nout << "Couldn't load " << libp3dpython << "\n";
     return;
@@ -1730,7 +1730,7 @@ p3dpython_thread_run() {
 #endif  // _WIN32
 
   run_p3dpython_func *run_p3dpython = (run_p3dpython_func *)get_func(module, "run_p3dpython");
-  if (run_p3dpython == NULL) {
+  if (run_p3dpython == nullptr) {
     nout << "Couldn't find run_p3dpython\n";
     return;
   }
@@ -1755,14 +1755,14 @@ get_env(string &value, const string &varname) {
   wstring varname_w;
   string_to_wstring(varname_w, varname);
   const wchar_t *vc = _wgetenv(varname_w.c_str());
-  if (vc == NULL) {
+  if (vc == nullptr) {
     return false;
   }
   wstring_to_string(value, vc);
   return true;
 #else  // _WIN32
   const char *vc = getenv(varname.c_str());
-  if (vc == NULL) {
+  if (vc == nullptr) {
     return false;
   }
   value = vc;

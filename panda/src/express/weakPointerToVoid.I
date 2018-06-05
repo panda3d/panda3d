@@ -15,46 +15,34 @@
  *
  */
 INLINE WeakPointerToVoid::
-WeakPointerToVoid() :
-  _ptr_was_deleted(false),
-  _callback(NULL) {
+WeakPointerToVoid() : _weak_ref(nullptr) {
 }
 
 /**
- * This is intended only to be called by the WeakPointerList destructor.  It
- * indicates that the object that we were pointing to has just been deleted.
- */
-INLINE void WeakPointerToVoid::
-mark_deleted() {
-  nassertv(!_ptr_was_deleted);
-  _ptr_was_deleted = true;
-  if (_callback != (WeakPointerCallback *)NULL) {
-    _callback->wp_callback(_void_ptr);
-  }
-}
-
-/**
- * Sets a callback that will be made when the pointer is deleted.  If a
- * previous callback has already been set, it will be replaced.
+ * Sets a callback that will be made when the pointer is deleted.  Does
+ * nothing if this is a null pointer.
  *
  * If the pointer has already been deleted, the callback will be made
  * immediately.
  */
 INLINE void WeakPointerToVoid::
-set_callback(WeakPointerCallback *callback) {
-  _callback = callback;
-  if (_ptr_was_deleted && _callback != (WeakPointerCallback *)NULL) {
-    _callback->wp_callback(_void_ptr);
+add_callback(WeakPointerCallback *callback) const {
+  if (_weak_ref != nullptr && !_weak_ref->was_deleted()) {
+    _weak_ref->add_callback(callback, _void_ptr);
+  } else if (_void_ptr != nullptr) {
+    callback->wp_callback(_void_ptr);
+    _weak_ref = nullptr;
   }
 }
 
 /**
- * Returns the callback that will be made when the pointer is deleted, or NULL
- * if no callback has been set.
+ * Removes a previously added callback.
  */
-INLINE WeakPointerCallback *WeakPointerToVoid::
-get_callback() const {
-  return _callback;
+INLINE void WeakPointerToVoid::
+remove_callback(WeakPointerCallback *callback) const {
+  if (_weak_ref != nullptr) {
+    _weak_ref->remove_callback(callback);
+  }
 }
 
 /**
@@ -63,7 +51,7 @@ get_callback() const {
  */
 INLINE bool WeakPointerToVoid::
 was_deleted() const {
-  return _ptr_was_deleted;
+  return _void_ptr != nullptr && (_weak_ref == nullptr || _weak_ref->was_deleted());
 }
 
 /**
@@ -72,5 +60,5 @@ was_deleted() const {
  */
 INLINE bool WeakPointerToVoid::
 is_valid_pointer() const {
-  return (_void_ptr != (void *)NULL) && !_ptr_was_deleted;
+  return _weak_ref != nullptr && !_weak_ref->was_deleted();
 }

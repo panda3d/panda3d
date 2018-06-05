@@ -46,18 +46,3 @@ LightReMutex(const string &)
 #endif  // DEBUG_THREADS
 {
 }
-
-/**
- *
- */
-INLINE LightReMutex::
-~LightReMutex() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void LightReMutex::
-operator = (const LightReMutex &copy) {
-  nassertv(false);
-}

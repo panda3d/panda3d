@@ -41,8 +41,8 @@ PyObject *Extension<GraphicsStateGuardian>::
 get_prepared_textures() const {
   PyObject *list = PyList_New(0);
 
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
 
   _this->traverse_prepared_textures(&traverse_callback, (void *)list);

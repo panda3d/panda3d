@@ -39,7 +39,7 @@ PUBLISHED:
   void update_transform();
 
   void set_transform_limit(PN_stdfloat limit) { _transform_limit = limit; };
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   PhysicsObject *_mass_center;

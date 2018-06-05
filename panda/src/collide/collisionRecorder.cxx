@@ -25,7 +25,7 @@ CollisionRecorder::
 CollisionRecorder() {
   _num_missed = 0;
   _num_detected = 0;
-  _trav = (CollisionTraverser *)NULL;
+  _trav = nullptr;
 }
 
 /**
@@ -33,7 +33,7 @@ CollisionRecorder() {
  */
 CollisionRecorder::
 ~CollisionRecorder() {
-  if (_trav != (CollisionTraverser *)NULL) {
+  if (_trav != nullptr) {
     _trav->clear_recorder();
   }
 }

@@ -41,14 +41,14 @@ ThreadPosixImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
-  _mutex.acquire();
+  _mutex.lock();
 
   if (!_detached) {
     pthread_detach(_thread);
     _detached = true;
   }
 
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -65,13 +65,13 @@ setup_main_thread() {
  */
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool joinable) {
-  _mutex.acquire();
+  _mutex.lock();
   if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new) {
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
@@ -148,12 +148,12 @@ start(ThreadPriority priority, bool joinable) {
     // Oops, we couldn't start the thread.  Be sure to decrement the reference
     // count we incremented above, and return false to indicate failure.
     unref_delete(_parent_obj);
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
   // Thread was successfully started.
-  _mutex.release();
+  _mutex.unlock();
   return true;
 }
 
@@ -163,15 +163,15 @@ start(ThreadPriority priority, bool joinable) {
  */
 void ThreadPosixImpl::
 join() {
-  _mutex.acquire();
+  _mutex.lock();
   if (!_detached) {
-    _mutex.release();
+    _mutex.unlock();
     void *return_val;
     pthread_join(_thread, &return_val);
     _detached = true;
     return;
   }
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -243,17 +243,17 @@ root_func(void *data) {
 
     ThreadPosixImpl *self = (ThreadPosixImpl *)data;
     int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
-    nassertr(result == 0, NULL);
+    nassertr(result == 0, nullptr);
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_start_called) {
-        self->_mutex.release();
-        return NULL;
+        self->_mutex.unlock();
+        return nullptr;
       }
 
       self->_status = S_running;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID
@@ -270,13 +270,13 @@ root_func(void *data) {
     }
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_running) {
-        self->_mutex.release();
-        return NULL;
+        self->_mutex.unlock();
+        return nullptr;
       }
       self->_status = S_finished;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID
@@ -293,7 +293,7 @@ root_func(void *data) {
     unref_delete(self->_parent_obj);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -304,7 +304,7 @@ void ThreadPosixImpl::
 init_pt_ptr_index() {
   nassertv(!_got_pt_ptr_index);
 
-  int result = pthread_key_create(&_pt_ptr_index, NULL);
+  int result = pthread_key_create(&_pt_ptr_index, nullptr);
   if (result != 0) {
     thread_cat->error()
       << "Unable to associate Thread pointers with threads.\n";

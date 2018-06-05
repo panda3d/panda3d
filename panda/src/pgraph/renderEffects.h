@@ -42,12 +42,11 @@ class EXPCL_PANDA_PGRAPH RenderEffects : public TypedWritableReferenceCount {
 protected:
   RenderEffects();
 
-private:
-  RenderEffects(const RenderEffects &copy);
-  void operator = (const RenderEffects &copy);
-
 public:
+  RenderEffects(const RenderEffects &copy) = delete;
   virtual ~RenderEffects();
+
+  RenderEffects &operator = (const RenderEffects &copy) = delete;
 
   bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;

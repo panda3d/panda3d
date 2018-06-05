@@ -106,7 +106,7 @@
 // Currently-being-define proto.  Prototypes may be nested, so a stack
 // is needed:
 
-stack< VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
+std::stack<VrmlNodeType*, plist<VrmlNodeType*> > currentProtoStack;
 
 // This is used to keep track of which field in which type of node is being
 // parsed.  Field are nested (nodes are contained inside MFNode/SFNode fields)
@@ -117,12 +117,12 @@ typedef struct {
     const VrmlNodeType::NameTypeRec *typeRec;
 } FieldRec;
 
-stack< FieldRec*, plist<FieldRec*> > currentField;
+std::stack<FieldRec*, plist<FieldRec*> > currentField;
 
 // Similarly for the node entries (which contain the actual values for
 // the fields as they are encountered):
 
-stack< VrmlNode*, plist<VrmlNode*> > currentNode;
+std::stack<VrmlNode*, plist<VrmlNode*> > currentNode;
 
 // This is used when the parser knows what kind of token it expects
 // to get next-- used when parsing field values (whose types are declared

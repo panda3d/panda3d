@@ -44,7 +44,7 @@ struct EXPCL_PANDA_PIPELINE PipelineCyclerTrueImpl : public PipelineCyclerLinks 
 private:
   PipelineCyclerTrueImpl();
 public:
-  PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
+  PipelineCyclerTrueImpl(CycleData *initial_data, Pipeline *pipeline = nullptr);
   PipelineCyclerTrueImpl(const PipelineCyclerTrueImpl &copy);
   void operator = (const PipelineCyclerTrueImpl &copy);
   ~PipelineCyclerTrueImpl();

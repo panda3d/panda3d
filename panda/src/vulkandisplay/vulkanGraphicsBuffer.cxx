@@ -60,7 +60,7 @@ clear(Thread *current_thread) {
 bool VulkanGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -115,7 +115,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   VkRenderPassBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  begin_info.pNext = NULL;
+  begin_info.pNext = nullptr;
   begin_info.renderPass = _render_pass;
   begin_info.framebuffer = _framebuffer;
   begin_info.renderArea.offset.x = 0;
@@ -131,7 +131,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   for (size_t i = 0; i < _attachments.size(); ++i) {
     const Attachment &attach = _attachments[i];
     barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[i].pNext = NULL;
+    barriers[i].pNext = nullptr;
     barriers[i].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
     barriers[i].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     barriers[i].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -197,7 +197,7 @@ close_buffer() {
     destroy_framebuffer();
 
     if (_render_pass != VK_NULL_HANDLE) {
-      vkDestroyRenderPass(vkgsg->_device, _render_pass, NULL);
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
       _render_pass = VK_NULL_HANDLE;
     }
 
@@ -378,28 +378,28 @@ setup_render_pass() {
   subpass.flags = 0;
   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpass.inputAttachmentCount = 0;
-  subpass.pInputAttachments = NULL;
+  subpass.pInputAttachments = nullptr;
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &color_reference;
-  subpass.pResolveAttachments = NULL;
-  subpass.pDepthStencilAttachment = _depth_stencil_format ? &depth_reference : NULL;
+  subpass.pResolveAttachments = nullptr;
+  subpass.pDepthStencilAttachment = _depth_stencil_format ? &depth_reference : nullptr;
   subpass.preserveAttachmentCount = 0;
-  subpass.pPreserveAttachments = NULL;
+  subpass.pPreserveAttachments = nullptr;
 
   VkRenderPassCreateInfo pass_info;
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  pass_info.pNext = NULL;
+  pass_info.pNext = nullptr;
   pass_info.flags = 0;
   pass_info.attachmentCount = _depth_stencil_format ? 2 : 1;
   pass_info.pAttachments = attachments;
   pass_info.subpassCount = 1;
   pass_info.pSubpasses = &subpass;
   pass_info.dependencyCount = 0;
-  pass_info.pDependencies = NULL;
+  pass_info.pDependencies = nullptr;
 
   VkRenderPass pass;
   VkResult
-  err = vkCreateRenderPass(vkgsg->_device, &pass_info, NULL, &pass);
+  err = vkCreateRenderPass(vkgsg->_device, &pass_info, nullptr, &pass);
   if (err) {
     vulkan_error(err, "Failed to create render pass");
     return false;
@@ -412,7 +412,7 @@ setup_render_pass() {
     // framebuffer and clearing all of the prepared states from the GSG.
     // Maybe we need to start reference counting render passes?
     vulkandisplay_cat.warning() << "Leaking VkRenderPass.\n";
-    //vkDestroyRenderPass(vkgsg->_device, _render_pass, NULL);
+    //vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
     //_render_pass = VK_NULL_HANDLE;
   }
 
@@ -446,13 +446,13 @@ destroy_framebuffer() {
   for (it = _attachments.begin(); it != _attachments.end(); ++it) {
     Attachment &attach = *it;
 
-    vkDestroyImageView(device, attach._image_view, NULL);
-    vkFreeMemory(device, attach._memory, NULL);
+    vkDestroyImageView(device, attach._image_view, nullptr);
+    vkFreeMemory(device, attach._memory, nullptr);
   }
   _attachments.clear();
 
   if (_framebuffer != VK_NULL_HANDLE) {
-    vkDestroyFramebuffer(device, _framebuffer, NULL);
+    vkDestroyFramebuffer(device, _framebuffer, nullptr);
     _framebuffer = VK_NULL_HANDLE;
   }
 }
@@ -483,7 +483,7 @@ create_framebuffer() {
 
   VkFramebufferCreateInfo fb_info;
   fb_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-  fb_info.pNext = NULL;
+  fb_info.pNext = nullptr;
   fb_info.flags = 0;
   fb_info.renderPass = _render_pass;
   fb_info.attachmentCount = num_attachments;
@@ -492,7 +492,7 @@ create_framebuffer() {
   fb_info.height = _size[1];
   fb_info.layers = 1;
 
-  err = vkCreateFramebuffer(device, &fb_info, NULL, &_framebuffer);
+  err = vkCreateFramebuffer(device, &fb_info, nullptr, &_framebuffer);
   if (err) {
     vulkan_error(err, "Failed to create framebuffer");
     return false;
@@ -522,7 +522,7 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
 
   VkImageCreateInfo img_info;
   img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  img_info.pNext = NULL;
+  img_info.pNext = nullptr;
   img_info.flags = 0;
   img_info.imageType = VK_IMAGE_TYPE_2D;
   img_info.format = format;
@@ -536,11 +536,11 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
   img_info.usage = usage;
   img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   img_info.queueFamilyIndexCount = 0;
-  img_info.pQueueFamilyIndices = NULL;
+  img_info.pQueueFamilyIndices = nullptr;
   img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   VkResult
-  err = vkCreateImage(device, &img_info, NULL, &attach._image);
+  err = vkCreateImage(device, &img_info, nullptr, &attach._image);
   if (err) {
     vulkan_error(err, "Failed to create image");
     return false;
@@ -552,7 +552,7 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
 
   VkMemoryAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
+  alloc_info.pNext = nullptr;
   alloc_info.allocationSize = mem_reqs.size;
 
   if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
@@ -561,7 +561,7 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
   }
 
   VkDeviceMemory memory;
-  err = vkAllocateMemory(device, &alloc_info, NULL, &memory);
+  err = vkAllocateMemory(device, &alloc_info, nullptr, &memory);
   if (err) {
     vulkan_error(err, "Failed to allocate memory for depth image");
     return false;
@@ -576,7 +576,7 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
 
   VkImageViewCreateInfo view_info;
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.pNext = NULL;
+  view_info.pNext = nullptr;
   view_info.flags = 0;
   view_info.image = attach._image;
   view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -591,7 +591,7 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = 1;
 
-  err = vkCreateImageView(device, &view_info, NULL, &attach._image_view);
+  err = vkCreateImageView(device, &view_info, nullptr, &attach._image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for attachment");
     return false;

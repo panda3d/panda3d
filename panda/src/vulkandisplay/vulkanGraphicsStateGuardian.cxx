@@ -48,7 +48,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _render_pass(VK_NULL_HANDLE),
   _pipeline_cache(VK_NULL_HANDLE),
   _pipeline_layout(VK_NULL_HANDLE),
-  _default_sc(NULL)
+  _default_sc(nullptr)
 {
   const char *const layers[] = {
     "VK_LAYER_LUNARG_standard_validation",
@@ -64,7 +64,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   const float queue_priorities[1] = {0.0f};
   VkDeviceQueueCreateInfo queue_info;
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  queue_info.pNext = NULL;
+  queue_info.pNext = nullptr;
   queue_info.flags = 0;
   queue_info.queueFamilyIndex = _graphics_queue_family_index;
   queue_info.queueCount = 2;
@@ -72,7 +72,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   VkDeviceCreateInfo device_info;
   device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  device_info.pNext = NULL;
+  device_info.pNext = nullptr;
   device_info.flags = 0;
   device_info.queueCreateInfoCount = 1;
   device_info.pQueueCreateInfos = &queue_info;
@@ -80,10 +80,10 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   device_info.ppEnabledLayerNames = layers;
   device_info.enabledExtensionCount = 1;
   device_info.ppEnabledExtensionNames = extensions;
-  device_info.pEnabledFeatures = NULL;
+  device_info.pEnabledFeatures = nullptr;
 
   VkResult
-  err = vkCreateDevice(pipe->_gpu, &device_info, NULL, &_device);
+  err = vkCreateDevice(pipe->_gpu, &device_info, nullptr, &_device);
   if (err) {
     vulkan_error(err, "Failed to create device");
     return;
@@ -95,9 +95,9 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a fence to signal when the command buffers have finished.
   VkFenceCreateInfo fence_info;
   fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fence_info.pNext = NULL;
+  fence_info.pNext = nullptr;
   fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-  err = vkCreateFence(_device, &fence_info, NULL, &_fence);
+  err = vkCreateFence(_device, &fence_info, nullptr, &_fence);
   if (err) {
     vulkan_error(err, "Failed to create fence");
     return;
@@ -106,12 +106,12 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a command pool to allocate command buffers from.
   VkCommandPoolCreateInfo cmd_pool_info;
   cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  cmd_pool_info.pNext = NULL;
+  cmd_pool_info.pNext = nullptr;
   cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT |
                         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
   cmd_pool_info.queueFamilyIndex = _graphics_queue_family_index;
 
-  err = vkCreateCommandPool(_device, &cmd_pool_info, NULL, &_cmd_pool);
+  err = vkCreateCommandPool(_device, &cmd_pool_info, nullptr, &_cmd_pool);
   if (err) {
     vulkan_error(err, "Failed to create command pool");
     return;
@@ -120,12 +120,12 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a pipeline cache, which may help with performance.
   VkPipelineCacheCreateInfo cache_info;
   cache_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-  cache_info.pNext = NULL;
+  cache_info.pNext = nullptr;
   cache_info.flags = 0;
   cache_info.initialDataSize = 0;
-  cache_info.pInitialData = NULL;
+  cache_info.pInitialData = nullptr;
 
-  err = vkCreatePipelineCache(_device, &cache_info, NULL, &_pipeline_cache);
+  err = vkCreatePipelineCache(_device, &cache_info, nullptr, &_pipeline_cache);
   if (err) {
     // This isn't a fatal error, since we don't strictly need the cache.
     vulkan_error(err, "Failed to create pipeline cache");
@@ -137,16 +137,16 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   layout_binding.descriptorCount = 1;
   layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  layout_binding.pImmutableSamplers = NULL;
+  layout_binding.pImmutableSamplers = nullptr;
 
   VkDescriptorSetLayoutCreateInfo set_info;
   set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-  set_info.pNext = NULL;
+  set_info.pNext = nullptr;
   set_info.flags = 0;
   set_info.bindingCount = 1;
   set_info.pBindings = &layout_binding;
 
-  err = vkCreateDescriptorSetLayout(_device, &set_info, NULL, &_descriptor_set_layout);
+  err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr, &_descriptor_set_layout);
   if (err) {
     vulkan_error(err, "Failed to create descriptor set layout");
   }
@@ -162,14 +162,14 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   VkPipelineLayoutCreateInfo layout_info;
   layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  layout_info.pNext = NULL;
+  layout_info.pNext = nullptr;
   layout_info.flags = 0;
   layout_info.setLayoutCount = 1;
   layout_info.pSetLayouts = &_descriptor_set_layout;
   layout_info.pushConstantRangeCount = 2;
   layout_info.pPushConstantRanges = ranges;
 
-  err = vkCreatePipelineLayout(_device, &layout_info, NULL, &_pipeline_layout);
+  err = vkCreatePipelineLayout(_device, &layout_info, nullptr, &_pipeline_layout);
   if (err) {
     vulkan_error(err, "Failed to create pipeline layout");
     return;
@@ -181,13 +181,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
   VkDescriptorPoolCreateInfo pool_info;
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  pool_info.pNext = NULL;
+  pool_info.pNext = nullptr;
   pool_info.flags = 0;
   pool_info.maxSets = 64;
   pool_info.poolSizeCount = 1;
   pool_info.pPoolSizes = &pool_size;
 
-  err = vkCreateDescriptorPool(_device, &pool_info, NULL, &_descriptor_pool);
+  err = vkCreateDescriptorPool(_device, &pool_info, nullptr, &_descriptor_pool);
   if (err) {
     vulkan_error(err, "Failed to create descriptor pool");
     return;
@@ -313,10 +313,10 @@ VulkanGraphicsStateGuardian::
 string VulkanGraphicsStateGuardian::
 get_driver_vendor() {
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
   const char *vendor = vkpipe->get_vendor_name();
-  if (vendor != NULL) {
+  if (vendor != nullptr) {
     return string(vendor);
   } else {
     char vendor[24];
@@ -331,7 +331,7 @@ get_driver_vendor() {
 string VulkanGraphicsStateGuardian::
 get_driver_renderer() {
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
   return string(vkpipe->_gpu_properties.deviceName);
 }
 
@@ -357,17 +357,17 @@ get_driver_version() {
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
-  nassertr(_transfer_cmd != VK_NULL_HANDLE, (TextureContext *)NULL);
+  nassertr(_transfer_cmd != VK_NULL_HANDLE, nullptr);
 
   PStatTimer timer(_prepare_texture_pcollector);
 
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
   VkResult err;
   VkImageCreateInfo image_info;
   image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-  image_info.pNext = NULL;
+  image_info.pNext = nullptr;
   image_info.flags = 0;
 
   int width = texture->get_x_size();
@@ -399,7 +399,7 @@ prepare_texture(Texture *texture, int view) {
 
   case Texture::TT_buffer_texture:
     // Not yet supported.
-    return (TextureContext *)NULL;
+    return nullptr;
   }
 
   image_info.format = get_image_format(texture);
@@ -413,7 +413,7 @@ prepare_texture(Texture *texture, int view) {
   image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
   image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   image_info.queueFamilyIndexCount = 0;
-  image_info.pQueueFamilyIndices = NULL;
+  image_info.pQueueFamilyIndices = nullptr;
   image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
   // Check if the format is actually supported.
@@ -437,7 +437,7 @@ prepare_texture(Texture *texture, int view) {
     default:
       vulkandisplay_cat.error()
         << "Texture format " << image_info.format << " not supported.\n";
-      return (TextureContext *)NULL;
+      return nullptr;
     }
 
     // Update the properties for the new format.
@@ -456,7 +456,7 @@ prepare_texture(Texture *texture, int view) {
     vulkandisplay_cat.error()
       << "Texture has too many layers, this format has a maximum of "
       << img_props.maxArrayLayers << "\n";
-    return (TextureContext *)NULL;
+    return nullptr;
   }
   while (image_info.extent.width > img_props.maxExtent.width ||
          image_info.extent.height > img_props.maxExtent.height ||
@@ -484,7 +484,7 @@ prepare_texture(Texture *texture, int view) {
   int mipmap_end = mipmap_begin + 1;
   if (texture->uses_mipmaps()) {
     mipmap_end = texture->get_expected_num_mipmap_levels();
-    nassertr(mipmap_end > mipmap_begin, (TextureContext *)NULL);
+    nassertr(mipmap_end > mipmap_begin, nullptr);
   }
 
   // Do we need to generate any mipmaps?
@@ -520,10 +520,10 @@ prepare_texture(Texture *texture, int view) {
   }
 
   VkImage image;
-  err = vkCreateImage(_device, &image_info, NULL, &image);
+  err = vkCreateImage(_device, &image_info, nullptr, &image);
   if (err) {
     vulkan_error(err, "Failed to create texture image");
-    return (TextureContext *)NULL;
+    return nullptr;
   }
 
   // Get the memory requirements, and find an appropriate heap to alloc in.
@@ -534,37 +534,37 @@ prepare_texture(Texture *texture, int view) {
 
   VkMemoryAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
+  alloc_info.pNext = nullptr;
   alloc_info.allocationSize = mem_reqs.size;
 
   if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
                                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkan_error(err, "Failed to find memory heap to allocate texture memory");
-    vkDestroyImage(_device, image, NULL);
-    return (TextureContext *)NULL;
+    vkDestroyImage(_device, image, nullptr);
+    return nullptr;
   }
 
   VkDeviceMemory device_mem;
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &device_mem);
+  err = vkAllocateMemory(_device, &alloc_info, nullptr, &device_mem);
   if (err) {
     vulkan_error(err, "Failed to allocate device memory for texture image");
-    vkDestroyImage(_device, image, NULL);
-    return (TextureContext *)NULL;
+    vkDestroyImage(_device, image, nullptr);
+    return nullptr;
   }
 
   // Bind memory to image.
   err = vkBindImageMemory(_device, image, device_mem, 0);
   if (err) {
     vulkan_error(err, "Failed to bind device memory to texture image");
-    vkDestroyImage(_device, image, NULL);
-    vkFreeMemory(_device, device_mem, NULL);
-    return (TextureContext *)NULL;
+    vkDestroyImage(_device, image, nullptr);
+    vkFreeMemory(_device, device_mem, nullptr);
+    return nullptr;
   }
 
   // Now we'll create an image view that describes how we interpret the image.
   VkImageViewCreateInfo view_info;
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.pNext = NULL;
+  view_info.pNext = nullptr;
   view_info.flags = 0;
   view_info.image = image;
 
@@ -662,12 +662,12 @@ prepare_texture(Texture *texture, int view) {
   view_info.subresourceRange.layerCount = num_layers;
 
   VkImageView image_view;
-  err = vkCreateImageView(_device, &view_info, NULL, &image_view);
+  err = vkCreateImageView(_device, &view_info, nullptr, &image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for texture");
-    vkDestroyImage(_device, image, NULL);
-    vkFreeMemory(_device, device_mem, NULL);
-    return (TextureContext *)NULL;
+    vkDestroyImage(_device, image, nullptr);
+    vkFreeMemory(_device, device_mem, nullptr);
+    return nullptr;
   }
 
   if (vulkandisplay_cat.is_debug()) {
@@ -766,7 +766,7 @@ upload_texture(VulkanTextureContext *tc) {
       }
     }
   }
-  nassertr(buffer_size > 0, (TextureContext *)NULL);
+  nassertr(buffer_size > 0, nullptr);
 
   VkBuffer buffer;
   VkDeviceMemory staging_mem;
@@ -808,7 +808,7 @@ upload_texture(VulkanTextureContext *tc) {
     const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer((int)n);
     size_t src_size;
     CPTA_uchar ptimage;
-    if (src == (const uint8_t *)NULL) {
+    if (src == nullptr) {
       ptimage = texture->get_ram_mipmap_image(n);
       src = (const uint8_t *)ptimage.p();
       src_size = ptimage.size();
@@ -817,7 +817,7 @@ upload_texture(VulkanTextureContext *tc) {
       src_size = texture->get_expected_ram_mipmap_image_size((int)n);
     }
 
-    if (src == (const uint8_t *)NULL) {
+    if (src == nullptr) {
       // There's no image for this level.  Are we supposed to generate it?
       if (n > 0 && tc->_generate_mipmaps) {
         blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
@@ -839,7 +839,7 @@ upload_texture(VulkanTextureContext *tc) {
     } else {
       // We do have an image.  This means we can write it to the appropriate
       // location in the staging buffer, and schedule a copy to the image.
-      nassertr(buffer != VK_NULL_HANDLE, (TextureContext *)NULL);
+      nassertr(buffer != VK_NULL_HANDLE, nullptr);
 
       // Pad for optimal alignment.
       VkDeviceSize remain = region.bufferOffset % optimal_align;
@@ -886,7 +886,7 @@ upload_texture(VulkanTextureContext *tc) {
   // Tell the GraphicsEngine that we uploaded the texture.  This may cause
   // it to unload the data from RAM at the end of this frame.
   GraphicsEngine *engine = get_engine();
-  if (engine != (GraphicsEngine *)NULL) {
+  if (engine != nullptr) {
     engine->texture_uploaded(texture);
   }
 
@@ -1015,7 +1015,7 @@ prepare_sampler(const SamplerState &sampler) {
   //TODO: support shadow filter and border color.
   VkSamplerCreateInfo sampler_info;
   sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-  sampler_info.pNext = NULL;
+  sampler_info.pNext = nullptr;
   sampler_info.flags = 0;
   sampler_info.magFilter = (VkFilter)(sampler.get_effective_magfilter() & 1);
   sampler_info.minFilter = (VkFilter)(sampler.get_effective_minfilter() & 1);
@@ -1037,9 +1037,9 @@ prepare_sampler(const SamplerState &sampler) {
 
   VkResult err;
   VkSampler vk_sampler;
-  err = vkCreateSampler(_device, &sampler_info, NULL, &vk_sampler);
+  err = vkCreateSampler(_device, &sampler_info, nullptr, &vk_sampler);
   if (err) {
-    return (SamplerContext *)NULL;
+    return nullptr;
   }
 
   return new VulkanSamplerContext(sampler, vk_sampler);
@@ -1061,7 +1061,7 @@ release_sampler(SamplerContext *) {
  */
 GeomContext *VulkanGraphicsStateGuardian::
 prepare_geom(Geom *) {
-  return (GeomContext *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1083,7 +1083,7 @@ prepare_shader(Shader *shader) {
   if (shader->get_language() != Shader::SL_SPIR_V) {
     vulkandisplay_cat.error()
       << "Vulkan can only consume SPIR-V shaders.\n";
-    return (ShaderContext *)NULL;
+    return nullptr;
   }
 
   PStatTimer timer(_prepare_shader_pcollector);
@@ -1097,16 +1097,16 @@ prepare_shader(Shader *shader) {
 
     VkShaderModuleCreateInfo module_info;
     module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    module_info.pNext = NULL;
+    module_info.pNext = nullptr;
     module_info.flags = 0;
     module_info.codeSize = code.size();
     module_info.pCode = (const uint32_t *)code.data();
 
-    err = vkCreateShaderModule(_device, &module_info, NULL, &sc->_modules[i]);
+    err = vkCreateShaderModule(_device, &module_info, nullptr, &sc->_modules[i]);
     if (err) {
       vulkan_error(err, "Failed to load shader module");
       delete sc;
-      return (ShaderContext *)NULL;
+      return nullptr;
     }
   }
 
@@ -1122,11 +1122,11 @@ release_shader(ShaderContext *context) {
   DCAST_INTO_V(sc, context);
 
   if (sc->_modules[0] != VK_NULL_HANDLE) {
-    vkDestroyShaderModule(_device, sc->_modules[0], NULL);
+    vkDestroyShaderModule(_device, sc->_modules[0], nullptr);
     sc->_modules[0] = VK_NULL_HANDLE;
   }
   if (sc->_modules[1] != VK_NULL_HANDLE) {
-    vkDestroyShaderModule(_device, sc->_modules[1], NULL);
+    vkDestroyShaderModule(_device, sc->_modules[1], nullptr);
     sc->_modules[1] = VK_NULL_HANDLE;
   }
   delete sc;
@@ -1140,7 +1140,7 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   PStatTimer timer(_prepare_vertex_buffer_pcollector);
 
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
   CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
@@ -1153,7 +1153,7 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create vertex buffer.\n";
-    return NULL;
+    return nullptr;
   }
 
   VulkanVertexBufferContext *vbc = new VulkanVertexBufferContext(_prepared_objects, array_data);
@@ -1179,7 +1179,7 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -1215,13 +1215,13 @@ release_vertex_buffer(VertexBufferContext *context) {
   DCAST_INTO_V(vbc, context);
 
   if (vbc->_buffer) {
-    vkDestroyBuffer(_device, vbc->_buffer, NULL);
-    vbc->_buffer = NULL;
+    vkDestroyBuffer(_device, vbc->_buffer, nullptr);
+    vbc->_buffer = nullptr;
   }
 
   if (vbc->_memory) {
-    vkFreeMemory(_device, vbc->_memory, NULL);
-    vbc->_memory = NULL;
+    vkFreeMemory(_device, vbc->_memory, nullptr);
+    vbc->_memory = nullptr;
   }
 
   delete vbc;
@@ -1235,7 +1235,7 @@ prepare_index_buffer(GeomPrimitive *primitive) {
   PStatTimer timer(_prepare_index_buffer_pcollector);
 
   VulkanGraphicsPipe *vkpipe;
-  DCAST_INTO_R(vkpipe, get_pipe(), NULL);
+  DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
   CPT(GeomVertexArrayDataHandle) handle = primitive->get_vertices()->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
@@ -1249,7 +1249,7 @@ prepare_index_buffer(GeomPrimitive *primitive) {
              index_type != GeomEnums::NT_uint32) {
     vulkandisplay_cat.error()
       << "Unsupported index type: " << index_type;
-    return NULL;
+    return nullptr;
   }
 
   //TODO: don't use host-visible memory, but copy from a staging buffer.
@@ -1260,7 +1260,7 @@ prepare_index_buffer(GeomPrimitive *primitive) {
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create index buffer.\n";
-    return NULL;
+    return nullptr;
   }
 
   VulkanIndexBufferContext *ibc = new VulkanIndexBufferContext(_prepared_objects, primitive);
@@ -1294,7 +1294,7 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -1350,13 +1350,13 @@ release_index_buffer(IndexBufferContext *context) {
   DCAST_INTO_V(ibc, context);
 
   if (ibc->_buffer) {
-    vkDestroyBuffer(_device, ibc->_buffer, NULL);
-    ibc->_buffer = NULL;
+    vkDestroyBuffer(_device, ibc->_buffer, nullptr);
+    ibc->_buffer = nullptr;
   }
 
   if (ibc->_memory) {
-    vkFreeMemory(_device, ibc->_memory, NULL);
-    ibc->_memory = NULL;
+    vkFreeMemory(_device, ibc->_memory, nullptr);
+    ibc->_memory = nullptr;
   }
 
   delete ibc;
@@ -1433,7 +1433,7 @@ set_state_and_transform(const RenderState *state,
 
   VkDescriptorSet ds = get_descriptor_set(state);
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          _pipeline_layout, 0, 1, &ds, 0, NULL);
+                          _pipeline_layout, 0, 1, &ds, 0, nullptr);
 }
 
 /**
@@ -1497,7 +1497,7 @@ clear(DrawableRegion *clearable) {
  */
 void VulkanGraphicsStateGuardian::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int count = dr->get_num_regions();
@@ -1583,7 +1583,7 @@ begin_frame(Thread *current_thread) {
     // Create a command buffer.
     VkCommandBufferAllocateInfo alloc_info;
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.pNext = NULL;
+    alloc_info.pNext = nullptr;
     alloc_info.commandPool = _cmd_pool;
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     alloc_info.commandBufferCount = 2;
@@ -1599,9 +1599,9 @@ begin_frame(Thread *current_thread) {
   // Begin the transfer command buffer, for preparing resources.
   VkCommandBufferBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = NULL;
+  begin_info.pNext = nullptr;
   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  begin_info.pInheritanceInfo = NULL;
+  begin_info.pInheritanceInfo = nullptr;
 
   err = vkBeginCommandBuffer(_transfer_cmd, &begin_info);
   if (err) {
@@ -1632,15 +1632,15 @@ begin_frame(Thread *current_thread) {
   //vkEndCommandBuffer(_transfer_cmd);
 
   /*VkSubmitInfo submit_info;
-  submit_info.pNext = NULL;
+  submit_info.pNext = nullptr;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.waitSemaphoreCount = 0;
-  submit_info.pWaitSemaphores = NULL;
-  submit_info.pWaitDstStageMask = NULL;
+  submit_info.pWaitSemaphores = nullptr;
+  submit_info.pWaitDstStageMask = nullptr;
   submit_info.commandBufferCount = 1;
   submit_info.pCommandBuffers = &_transfer_cmd;
   submit_info.signalSemaphoreCount = 0;
-  submit_info.pSignalSemaphores = NULL;
+  submit_info.pSignalSemaphores = nullptr;
   err = vkQueueSubmit(_queue, 1, &submit_info, VK_NULL_HANDLE);
   if (err) {
     vulkan_error(err, "Failed to submit preparation command buffer");
@@ -1704,7 +1704,7 @@ end_frame(Thread *current_thread) {
 
     for (size_t i = 0; i < num_downloads; ++i) {
       barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-      barriers[i].pNext = NULL;
+      barriers[i].pNext = nullptr;
       barriers[i].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
       barriers[i].dstAccessMask = VK_ACCESS_HOST_READ_BIT;
       barriers[i].srcQueueFamilyIndex = _graphics_queue_family_index;
@@ -1715,7 +1715,7 @@ end_frame(Thread *current_thread) {
     }
 
     vkCmdPipelineBarrier(_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0,
-                         0, NULL, (uint32_t)num_downloads, barriers, 0, NULL);
+                         0, nullptr, (uint32_t)num_downloads, barriers, 0, nullptr);
   }
 
   nassertv(_cmd != VK_NULL_HANDLE);
@@ -1725,15 +1725,15 @@ end_frame(Thread *current_thread) {
 
   // Submit the command buffers to the queue.
   VkSubmitInfo submit_info;
-  submit_info.pNext = NULL;
+  submit_info.pNext = nullptr;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.waitSemaphoreCount = 0;
-  submit_info.pWaitSemaphores = NULL;
-  submit_info.pWaitDstStageMask = NULL;
+  submit_info.pWaitSemaphores = nullptr;
+  submit_info.pWaitDstStageMask = nullptr;
   submit_info.commandBufferCount = 2;
   submit_info.pCommandBuffers = cmdbufs;
   submit_info.signalSemaphoreCount = 0;
-  submit_info.pSignalSemaphores = NULL;
+  submit_info.pSignalSemaphores = nullptr;
 
   VkResult err;
   err = vkQueueSubmit(_queue, 1, &submit_info, _fence);
@@ -1763,8 +1763,8 @@ end_frame(Thread *current_thread) {
       err = vkMapMemory(_device, down._memory, 0, view_size, 0, &data);
       if (err) {
         vulkan_error(err, "Failed to map memory for RAM transfer");
-        vkDestroyBuffer(_device, down._buffer, NULL);
-        vkFreeMemory(_device, down._memory, NULL);
+        vkDestroyBuffer(_device, down._buffer, nullptr);
+        vkFreeMemory(_device, down._memory, nullptr);
         continue;
       }
 
@@ -1772,8 +1772,8 @@ end_frame(Thread *current_thread) {
 
       // We won't need these any more.
       vkUnmapMemory(_device, down._memory);
-      vkDestroyBuffer(_device, down._buffer, NULL);
-      vkFreeMemory(_device, down._memory, NULL);
+      vkDestroyBuffer(_device, down._buffer, nullptr);
+      vkFreeMemory(_device, down._memory, nullptr);
     }
     _download_queue.clear();
   }
@@ -1911,7 +1911,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   // You're not allowed to call this while a render pass is active.
   nassertr(_render_pass == VK_NULL_HANDLE, false);
 
-  nassertr(_fb_color_tc != NULL, false);
+  nassertr(_fb_color_tc != nullptr, false);
   VulkanTextureContext *fbtc = _fb_color_tc;
 
   //TODO: proper format checking and size calculation.
@@ -1987,7 +1987,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   // You're not allowed to call this while a render pass is active.
   nassertr(_render_pass == VK_NULL_HANDLE, false);
 
-  nassertr(_fb_color_tc != NULL, false);
+  nassertr(_fb_color_tc != nullptr, false);
   VulkanTextureContext *fbtc = _fb_color_tc;
 
   //TODO: proper format checking and size calculation.
@@ -2094,16 +2094,16 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
 
   VkBufferCreateInfo buf_info;
   buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.pNext = NULL;
+  buf_info.pNext = nullptr;
   buf_info.flags = 0;
   buf_info.size = size;
   buf_info.usage = usage_flags;
   buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   buf_info.queueFamilyIndexCount = 0;
-  buf_info.pQueueFamilyIndices = NULL;
+  buf_info.pQueueFamilyIndices = nullptr;
 
   VkResult
-  err = vkCreateBuffer(_device, &buf_info, NULL, &buffer);
+  err = vkCreateBuffer(_device, &buf_info, nullptr, &buffer);
   if (err)  {
     vulkan_error(err, "Failed to create buffer");
     return false;
@@ -2114,29 +2114,29 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
 
   VkMemoryAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
+  alloc_info.pNext = nullptr;
   alloc_info.allocationSize = mem_reqs.size;
 
   // Find a host visible memory heap, since we're about to map it.
   if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
                                 flags)) {
     vulkan_error(err, "Failed to find memory heap to allocate buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
+    vkDestroyBuffer(_device, buffer, nullptr);
     return false;
   }
 
-  err = vkAllocateMemory(_device, &alloc_info, NULL, &memory);
+  err = vkAllocateMemory(_device, &alloc_info, nullptr, &memory);
   if (err) {
     vulkan_error(err, "Failed to allocate memory for buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
+    vkDestroyBuffer(_device, buffer, nullptr);
     return false;
   }
 
   err = vkBindBufferMemory(_device, buffer, memory, 0);
   if (err) {
     vulkan_error(err, "Failed to bind memory to buffer");
-    vkDestroyBuffer(_device, buffer, NULL);
-    vkFreeMemory(_device, memory, NULL);
+    vkDestroyBuffer(_device, buffer, nullptr);
+    vkFreeMemory(_device, memory, nullptr);
     return false;
   }
 
@@ -2189,20 +2189,20 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineShaderStageCreateInfo stages[2];
   stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  stages[0].pNext = NULL;
+  stages[0].pNext = nullptr;
   stages[0].flags = 0;
   stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
   stages[0].module = _default_sc->_modules[0];
   stages[0].pName = "main";
-  stages[0].pSpecializationInfo = NULL;
+  stages[0].pSpecializationInfo = nullptr;
 
   stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-  stages[1].pNext = NULL;
+  stages[1].pNext = nullptr;
   stages[1].flags = 0;
   stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
   stages[1].module = _default_sc->_modules[1];
   stages[1].pName = "main";
-  stages[1].pSpecializationInfo = NULL;
+  stages[1].pSpecializationInfo = nullptr;
 
   // Describe each vertex input binding (ie. GeomVertexArray).  Leave one
   // extra slot for the "dummy" binding, see below.
@@ -2359,7 +2359,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineVertexInputStateCreateInfo vertex_info;
   vertex_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertex_info.pNext = NULL;
+  vertex_info.pNext = nullptr;
   vertex_info.flags = 0;
   vertex_info.vertexBindingDescriptionCount = num_bindings;
   vertex_info.pVertexBindingDescriptions = binding_desc;
@@ -2368,7 +2368,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
   assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  assembly_info.pNext = NULL;
+  assembly_info.pNext = nullptr;
   assembly_info.flags = 0;
   assembly_info.topology = topology;
   assembly_info.primitiveRestartEnable = (
@@ -2380,12 +2380,12 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineViewportStateCreateInfo viewport_info;
   viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-  viewport_info.pNext = NULL;
+  viewport_info.pNext = nullptr;
   viewport_info.flags = 0;
   viewport_info.viewportCount = 1;
-  viewport_info.pViewports = NULL;
+  viewport_info.pViewports = nullptr;
   viewport_info.scissorCount = 1;
-  viewport_info.pScissors = NULL;
+  viewport_info.pScissors = nullptr;
 
   const RenderModeAttrib *render_mode;
   state->get_attrib_def(render_mode);
@@ -2394,7 +2394,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineRasterizationStateCreateInfo raster_info;
   raster_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-  raster_info.pNext = NULL;
+  raster_info.pNext = nullptr;
   raster_info.flags = 0;
   raster_info.depthClampEnable = VK_FALSE;
   raster_info.rasterizerDiscardEnable = VK_FALSE;
@@ -2427,12 +2427,12 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineMultisampleStateCreateInfo ms_info;
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  ms_info.pNext = NULL;
+  ms_info.pNext = nullptr;
   ms_info.flags = 0;
   ms_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
   ms_info.sampleShadingEnable = VK_FALSE;
   ms_info.minSampleShading = 0.0;
-  ms_info.pSampleMask = NULL;
+  ms_info.pSampleMask = nullptr;
   ms_info.alphaToCoverageEnable = VK_FALSE;
   ms_info.alphaToOneEnable = VK_FALSE;
 
@@ -2443,7 +2443,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineDepthStencilStateCreateInfo ds_info;
   ds_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  ds_info.pNext = NULL;
+  ds_info.pNext = nullptr;
   ds_info.flags = 0;
   ds_info.depthTestEnable = (depth_test->get_mode() != RenderAttrib::M_none);
   ds_info.depthWriteEnable = depth_write->get_mode();
@@ -2541,7 +2541,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineColorBlendStateCreateInfo blend_info;
   blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-  blend_info.pNext = NULL;
+  blend_info.pNext = nullptr;
   blend_info.flags = 0;
 
   if (logic_op->get_operation() != LogicOpAttrib::O_none) {
@@ -2566,20 +2566,20 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkPipelineDynamicStateCreateInfo dynamic_info;
   dynamic_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  dynamic_info.pNext = NULL;
+  dynamic_info.pNext = nullptr;
   dynamic_info.flags = 0;
   dynamic_info.dynamicStateCount = 2;
   dynamic_info.pDynamicStates = dynamic_states;
 
   VkGraphicsPipelineCreateInfo pipeline_info;
   pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipeline_info.pNext = NULL;
+  pipeline_info.pNext = nullptr;
   pipeline_info.flags = 0;
   pipeline_info.stageCount = 2;
   pipeline_info.pStages = stages;
   pipeline_info.pVertexInputState = &vertex_info;
   pipeline_info.pInputAssemblyState = &assembly_info;
-  pipeline_info.pTessellationState = NULL;
+  pipeline_info.pTessellationState = nullptr;
   pipeline_info.pViewportState = &viewport_info;
   pipeline_info.pRasterizationState = &raster_info;
   pipeline_info.pMultisampleState = &ms_info;
@@ -2594,7 +2594,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
 
   VkResult err;
   VkPipeline pipeline;
-  err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, NULL, &pipeline);
+  err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, nullptr, &pipeline);
   if (err) {
     vulkan_error(err, "Failed to create graphics pipeline");
     return VK_NULL_HANDLE;
@@ -2641,7 +2641,7 @@ make_descriptor_set(const RenderState *state) {
   //TODO: layout creation.
   VkDescriptorSetAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-  alloc_info.pNext = NULL;
+  alloc_info.pNext = nullptr;
   alloc_info.descriptorPool = _descriptor_pool;
   alloc_info.descriptorSetCount = 1;
   alloc_info.pSetLayouts = &_descriptor_set_layout;
@@ -2661,7 +2661,7 @@ make_descriptor_set(const RenderState *state) {
   if (tex_attrib->has_on_stage(TextureStage::get_default())) {
     texture = tex_attrib->get_on_texture(TextureStage::get_default());
     sampler = tex_attrib->get_on_sampler(TextureStage::get_default());
-    nassertr(texture != NULL, VK_NULL_HANDLE);
+    nassertr(texture != nullptr, VK_NULL_HANDLE);
   } else {
     // Just use a white texture.
     texture = _white_texture;
@@ -2680,17 +2680,17 @@ make_descriptor_set(const RenderState *state) {
 
   VkWriteDescriptorSet write;
   write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  write.pNext = NULL;
+  write.pNext = nullptr;
   write.dstSet = ds;
   write.dstBinding = 0;
   write.dstArrayElement = 0;
   write.descriptorCount = 1;
   write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   write.pImageInfo = &image_info;
-  write.pBufferInfo = NULL;
-  write.pTexelBufferView = NULL;
+  write.pBufferInfo = nullptr;
+  write.pTexelBufferView = nullptr;
 
-  vkUpdateDescriptorSets(_device, 1, &write, 0, NULL);
+  vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
 
   return ds;
 }

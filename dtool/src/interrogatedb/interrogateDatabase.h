@@ -124,41 +124,41 @@ private:
                                  const string &wrapper_hash_name);
 
   // This data is loaded from the various database files.
-  typedef map<TypeIndex, InterrogateType> TypeMap;
+  typedef std::map<TypeIndex, InterrogateType> TypeMap;
   TypeMap _type_map;
-  typedef map<FunctionIndex, InterrogateFunction *> FunctionMap;
+  typedef std::map<FunctionIndex, InterrogateFunction *> FunctionMap;
   FunctionMap _function_map;
-  typedef map<FunctionWrapperIndex, InterrogateFunctionWrapper> FunctionWrapperMap;
+  typedef std::map<FunctionWrapperIndex, InterrogateFunctionWrapper> FunctionWrapperMap;
   FunctionWrapperMap _wrapper_map;
 
-  typedef map<ManifestIndex, InterrogateManifest> ManifestMap;
+  typedef std::map<ManifestIndex, InterrogateManifest> ManifestMap;
   ManifestMap _manifest_map;
-  typedef map<ElementIndex, InterrogateElement> ElementMap;
+  typedef std::map<ElementIndex, InterrogateElement> ElementMap;
   ElementMap _element_map;
 
-  typedef map<MakeSeqIndex, InterrogateMakeSeq> MakeSeqMap;
+  typedef std::map<MakeSeqIndex, InterrogateMakeSeq> MakeSeqMap;
   MakeSeqMap _make_seq_map;
 
-  typedef vector<TypeIndex> GlobalTypes;
+  typedef std::vector<TypeIndex> GlobalTypes;
   GlobalTypes _global_types;
   GlobalTypes _all_types;
-  typedef vector<FunctionIndex> GlobalFunctions;
+  typedef std::vector<FunctionIndex> GlobalFunctions;
   GlobalFunctions _global_functions;
   GlobalFunctions _all_functions;
-  typedef vector<ManifestIndex> GlobalManifests;
+  typedef std::vector<ManifestIndex> GlobalManifests;
   GlobalManifests _global_manifests;
-  typedef vector<ElementIndex> GlobalElements;
+  typedef std::vector<ElementIndex> GlobalElements;
   GlobalElements _global_elements;
 
   // This data is compiled in directly to the shared libraries that we link
   // with.
-  typedef vector<InterrogateModuleDef *> Modules;
+  typedef std::vector<InterrogateModuleDef *> Modules;
   Modules _modules;
-  typedef map<string, InterrogateModuleDef *> ModulesByHash;
+  typedef std::map<string, InterrogateModuleDef *> ModulesByHash;
   ModulesByHash _modules_by_hash;
 
   // This records the set of database files that are still to be loaded.
-  typedef vector<InterrogateModuleDef *> Requests;
+  typedef std::vector<InterrogateModuleDef *> Requests;
   Requests _requests;
 
   bool _error_flag;
@@ -174,7 +174,7 @@ private:
   };
 
   int _lookups_fresh;
-  typedef map<string, int> Lookup;
+  typedef std::map<string, int> Lookup;
   Lookup _types_by_name;
   Lookup _types_by_scoped_name;
   Lookup _types_by_true_name;

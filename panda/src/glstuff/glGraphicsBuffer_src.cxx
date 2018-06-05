@@ -32,7 +32,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   _resolve_multisample_pcollector(_draw_window_pcollector, "Resolve multisamples"),
   _requested_multisamples(0),
   _requested_coverage_samples(0),
-  _rb_context(NULL)
+  _rb_context(nullptr)
 {
   // A FBO doesn't have a back buffer.
   _draw_buffer_type       = RenderBuffer::T_front;
@@ -97,7 +97,7 @@ clear(Thread *current_thread) {
 
   CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
-  if (glgsg->_glClearBufferfv == NULL) {
+  if (glgsg->_glClearBufferfv == nullptr) {
     // We can't efficiently clear the buffer.  Fall back to the inefficient
     // default implementation for now.
     GraphicsOutput::clear(current_thread);
@@ -267,7 +267,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
         CLP(TextureContext) *gtc = *it;
 
-        if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+        if (gtc != nullptr && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
           glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
           // If we've done it for one, we've done it for all.
           break;
@@ -492,7 +492,7 @@ rebuild_bitplanes() {
       // requested.
       _use_depth_stencil = true;
     }
-  } else if (attach[RTP_depth_stencil] != NULL && attach[RTP_depth] == NULL) {
+  } else if (attach[RTP_depth_stencil] != nullptr && attach[RTP_depth] == nullptr) {
     // The depth stencil slot was assigned a texture, but we don't support it.
     // Downgrade to a regular depth texture.
     swap(attach[RTP_depth], attach[RTP_depth_stencil]);
@@ -510,7 +510,7 @@ rebuild_bitplanes() {
   // depth_stencil implies depth, and we can't bind them both.  Detect that
   // case, normalize it, and complain.
   if (_use_depth_stencil && attach[RTP_depth] && attach[RTP_depth_stencil]) {
-    attach[RTP_depth] = NULL;
+    attach[RTP_depth] = nullptr;
     GLCAT.warning() << "Attempt to bind both RTP_depth and RTP_depth_stencil bitplanes.\n";
   }
 
@@ -562,7 +562,7 @@ rebuild_bitplanes() {
       if (_fb_properties.is_stereo()) {
         // The second tex view has already been initialized, so bind it
         // straight away.
-        if (attach[RTP_color] != NULL) {
+        if (attach[RTP_color] != nullptr) {
           attach_tex(layer, 1, attach[RTP_color], next++);
         } else {
           // XXX hack: I needed a slot to use, and we don't currently use
@@ -696,7 +696,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   if (tex && layer >= tex->get_z_size()) {
     // If the requested layer index exceeds the number of layers in the
     // texture, we will not bind this layer.
-    tex = NULL;
+    tex = nullptr;
   }
 
   if (!tex && _rb_size_z > 1) {
@@ -1154,7 +1154,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
 
   // Create the OpenGL texture object.
   TextureContext *tc = attach->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
-  nassertv(tc != (TextureContext *)NULL);
+  nassertv(tc != nullptr);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   glgsg->update_texture(gtc, true);
@@ -1175,7 +1175,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
 #ifndef OPENGLES
   if (_rb_size_z != 1) {
     // Bind all of the layers of the texture.
-    nassertv(glgsg->_glFramebufferTexture != NULL);
+    nassertv(glgsg->_glFramebufferTexture != nullptr);
     glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, attachpoint,
                                  gtc->_index, 0);
     return;
@@ -1240,7 +1240,7 @@ generate_mipmaps() {
 void CLP(GraphicsBuffer)::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   // Resolve Multisample rendering if using it.
   if (_requested_multisamples && _fbo_multisample) {
@@ -1347,7 +1347,7 @@ open_buffer() {
     return false;
   }
 
-  if (_rb_context == NULL) {
+  if (_rb_context == nullptr) {
     _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
   }
 
@@ -1534,10 +1534,10 @@ get_host() {
 void CLP(GraphicsBuffer)::
 close_buffer() {
   _rb_data_size_bytes = 0;
-  if (_rb_context != NULL) {
+  if (_rb_context != nullptr) {
     _rb_context->update_data_size_bytes(0);
     delete _rb_context;
-    _rb_context = NULL;
+    _rb_context = nullptr;
   }
 
   check_host_valid();
@@ -1718,12 +1718,12 @@ void CLP(GraphicsBuffer)::
 check_host_valid() {
   if (_host != nullptr && !_host->is_valid()) {
     _rb_data_size_bytes = 0;
-    if (_rb_context != NULL) {
+    if (_rb_context != nullptr) {
       // We must delete this object first, because when the GSG destructs, so
       // will the tracker that this context is attached to.
       _rb_context->update_data_size_bytes(0);
       delete _rb_context;
-      _rb_context = NULL;
+      _rb_context = nullptr;
     }
     _is_valid = false;
     _gsg.clear();
@@ -1751,7 +1751,7 @@ resolve_multisamples() {
     for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
       CLP(TextureContext) *gtc = *it;
 
-      if (gtc != NULL && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+      if (gtc != nullptr && gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
         glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
         // If we've done it for one, we've done it for all.
         break;
@@ -1773,7 +1773,7 @@ resolve_multisamples() {
   bool do_depth_blit = false;
   if (_rbm[RTP_depth_stencil] != 0 || _rbm[RTP_depth] != 0) {
     if (_shared_depth_buffer) {
-      CLP(GraphicsBuffer) *graphics_buffer = NULL;
+      CLP(GraphicsBuffer) *graphics_buffer = nullptr;
       //CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
       list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 

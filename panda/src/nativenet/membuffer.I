@@ -6,11 +6,11 @@
 inline void MemBuffer::
 ClearBuffer(void) {
   if (_BufferLocal == true) {
-    if (_Buffer != NULL) {
+    if (_Buffer != nullptr) {
       delete[] _Buffer;
     }
 
-    _Buffer = NULL;
+    _Buffer = nullptr;
   }
 }
 
@@ -29,7 +29,7 @@ AllocBuffer(size_t len) {
  */
 inline MemBuffer::
 MemBuffer(void) {
-  _Buffer = NULL;
+  _Buffer = nullptr;
   _BufferLocal = false;
   _BufferLen = 0;
 }
@@ -87,7 +87,7 @@ GrowBuffer(size_t new_len) {
 
     char *tmp = new char[len];
 
-    if (_Buffer != NULL) {
+    if (_Buffer != nullptr) {
       memcpy(tmp,_Buffer,_BufferLen);
     }
 

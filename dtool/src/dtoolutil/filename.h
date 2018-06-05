@@ -58,11 +58,8 @@ public:
   INLINE Filename(const string &filename);
   INLINE Filename(const wstring &filename);
   INLINE Filename(const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename(string &&filename) NOEXCEPT;
-  INLINE Filename(Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename(string &&filename) noexcept;
+  INLINE Filename(Filename &&from) noexcept;
 
 PUBLISHED:
   INLINE Filename();
@@ -106,11 +103,8 @@ PUBLISHED:
   INLINE Filename &operator = (const wstring &filename);
   INLINE Filename &operator = (const char *filename);
   INLINE Filename &operator = (const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename &operator = (string &&filename) NOEXCEPT;
-  INLINE Filename &operator = (Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename &operator = (string &&filename) noexcept;
+  INLINE Filename &operator = (Filename &&from) noexcept;
 
   // And retrieval is by any of the classic string operations.
   INLINE operator const string & () const;
@@ -209,11 +203,11 @@ PUBLISHED:
   EXTENSION(PyObject *scan_directory() const);
 #endif
 
-  bool open_read(ifstream &stream) const;
-  bool open_write(ofstream &stream, bool truncate = true) const;
-  bool open_append(ofstream &stream) const;
-  bool open_read_write(fstream &stream, bool truncate = false) const;
-  bool open_read_append(fstream &stream) const;
+  bool open_read(std::ifstream &stream) const;
+  bool open_write(std::ofstream &stream, bool truncate = true) const;
+  bool open_append(std::ofstream &stream) const;
+  bool open_read_write(std::fstream &stream, bool truncate = false) const;
+  bool open_read_append(std::fstream &stream) const;
 
 #ifdef USE_PANDAFILESTREAM
   bool open_read(pifstream &stream) const;

@@ -94,8 +94,6 @@ private:
   bool _needs_recompute_clip;
   bool _needs_recompute_canvas;
 
-  LVecBase4 _orig_clip_frame;
-
   bool _has_virtual_frame;
   LVecBase4 _virtual_frame;
 

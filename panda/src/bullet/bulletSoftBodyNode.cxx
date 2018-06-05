@@ -41,15 +41,15 @@ BulletSoftBodyNode(btSoftBody *body, const char *name) : BulletBodyNode(name) {
   // Shape
   btCollisionShape *shape_ptr = _soft->getCollisionShape();
 
-  nassertv(shape_ptr != NULL);
+  nassertv(shape_ptr != nullptr);
   nassertv(shape_ptr->getShapeType() == SOFTBODY_SHAPE_PROXYTYPE);
 
   _shapes.push_back(new BulletSoftBodyShape((btSoftBodyCollisionShape *)shape_ptr));
 
   // Rendering
-  _geom = NULL;
-  _curve = NULL;
-  _surface = NULL;
+  _geom = nullptr;
+  _curve = nullptr;
+  _surface = nullptr;
 }
 
 /**
@@ -134,7 +134,7 @@ BulletSoftBodyNodeElement BulletSoftBodyNode::
 get_node(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >=0 && idx < get_num_nodes(), BulletSoftBodyNodeElement::empty());
+  nassertr(idx >= 0 && idx < _soft->m_nodes.size(), BulletSoftBodyNodeElement::empty());
   return BulletSoftBodyNodeElement(_soft->m_nodes[idx]);
 }
 
@@ -385,7 +385,7 @@ void BulletSoftBodyNode::
 unlink_geom() {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _geom = NULL;
+  _geom = nullptr;
 }
 
 /**
@@ -407,7 +407,7 @@ void BulletSoftBodyNode::
 unlink_curve() {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _curve = NULL;
+  _curve = nullptr;
 }
 
 /**
@@ -429,7 +429,7 @@ void BulletSoftBodyNode::
 unlink_surface() {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _surface = NULL;
+  _surface = nullptr;
 }
 
 /**
@@ -851,7 +851,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indic
     num_triangles,
     randomizeConstraints);
 
-  nassertr(body, NULL);
+  nassertr(body, nullptr);
 
   delete[] vertices;
   delete[] triangles;
@@ -873,7 +873,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
-  nassertr(vdata->has_column(InternalName::get_vertex()), NULL);
+  nassertr(vdata->has_column(InternalName::get_vertex()), nullptr);
 
   GeomVertexReader vreader(vdata, InternalName::get_vertex());
 
@@ -953,7 +953,7 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indic
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
 make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, const char *node) {
 
-  nassertr(node && node[0], NULL);
+  nassertr(node && node[0], nullptr);
 
   // Nodes
   btAlignedObjectArray<btVector3> pos;

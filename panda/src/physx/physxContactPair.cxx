@@ -26,11 +26,11 @@ get_actor_a() const {
 
   if (_pair.isDeletedActor[0]) {
     physx_cat.warning() << "actor A has been deleted" << endl;
-    return NULL;
+    return nullptr;
   }
 
   NxActor *actorPtr = _pair.actors[0];
-  return (actorPtr == NULL) ? NULL : (PhysxActor *)actorPtr->userData;
+  return (actorPtr == nullptr) ? nullptr : (PhysxActor *)actorPtr->userData;
 }
 
 /**
@@ -41,11 +41,11 @@ get_actor_b() const {
 
   if (_pair.isDeletedActor[1]) {
     physx_cat.warning() << "actor B has been deleted" << endl;
-    return NULL;
+    return nullptr;
   }
 
   NxActor *actorPtr = _pair.actors[1];
-  return (actorPtr == NULL) ? NULL : (PhysxActor *)actorPtr->userData;
+  return (actorPtr == nullptr) ? nullptr : (PhysxActor *)actorPtr->userData;
 }
 
 /**

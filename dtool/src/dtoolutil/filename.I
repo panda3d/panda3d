@@ -54,24 +54,20 @@ Filename(const Filename &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename::
-Filename(string &&filename) NOEXCEPT {
-  _flags = 0;
-  (*this) = move(filename);
+Filename(string &&filename) noexcept : _flags(0) {
+  (*this) = std::move(filename);
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename::
-Filename(Filename &&from) NOEXCEPT :
-  _filename(move(from._filename)),
+Filename(Filename &&from) noexcept :
+  _filename(std::move(from._filename)),
   _dirname_end(from._dirname_end),
   _basename_start(from._basename_start),
   _basename_end(from._basename_end),
@@ -81,7 +77,6 @@ Filename(Filename &&from) NOEXCEPT :
   _flags(from._flags)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Creates an empty Filename.
@@ -197,7 +192,7 @@ operator = (const wstring &filename) {
  */
 INLINE Filename &Filename::
 operator = (const char *filename) {
-  assert(filename != NULL);
+  assert(filename != nullptr);
   return (*this) = string(filename);
 }
 
@@ -217,28 +212,25 @@ operator = (const Filename &copy) {
   return *this;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename &Filename::
-operator = (string &&filename) NOEXCEPT {
-  _filename = move(filename);
+operator = (string &&filename) noexcept {
+  _filename = std::move(filename);
 
   locate_basename();
   locate_extension();
   locate_hash();
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename &Filename::
-operator = (Filename &&from) NOEXCEPT {
-  _filename = move(from._filename);
+operator = (Filename &&from) noexcept {
+  _filename = std::move(from._filename);
   _dirname_end = from._dirname_end;
   _basename_start = from._basename_start;
   _basename_end = from._basename_end;
@@ -248,7 +240,6 @@ operator = (Filename &&from) NOEXCEPT {
   _flags = from._flags;
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *

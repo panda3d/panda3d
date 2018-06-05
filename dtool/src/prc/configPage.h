@@ -92,7 +92,7 @@ private:
   int _next_decl_seq;
   int _trust_level;
 
-  typedef vector<ConfigDeclaration *> Declarations;
+  typedef std::vector<ConfigDeclaration *> Declarations;
   Declarations _declarations;
 
   string _signature;

@@ -135,7 +135,7 @@ static const char *string_result(VkResult result) {
   default:
     break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -143,7 +143,7 @@ static const char *string_result(VkResult result) {
  */
 void vulkan_error(VkResult result, const char *message) {
   const char *const str = string_result(result);
-  if (str == NULL) {
+  if (str == nullptr) {
     // Unrecognized code.  Display error number.
     if (result < 0) {
       vulkandisplay_cat.error()

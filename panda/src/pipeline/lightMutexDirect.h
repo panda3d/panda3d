@@ -30,11 +30,16 @@ class Thread;
  */
 class EXPCL_PANDA_PIPELINE LightMutexDirect {
 protected:
-  INLINE LightMutexDirect();
-  INLINE ~LightMutexDirect();
-private:
-  INLINE LightMutexDirect(const LightMutexDirect &copy);
-  INLINE void operator = (const LightMutexDirect &copy);
+  LightMutexDirect() = default;
+  LightMutexDirect(const LightMutexDirect &copy) = delete;
+  ~LightMutexDirect() = default;
+
+  void operator = (const LightMutexDirect &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
@@ -54,9 +59,9 @@ private:
   // even in the SIMPLE_THREADS case.  We have to do this since any PStatTimer
   // call may trigger a context switch, and any low-level context switch
   // requires all containing mutexes to be true mutexes.
-  MutexTrueImpl _impl;
+  mutable MutexTrueImpl _impl;
 #else
-  MutexImpl _impl;
+  mutable MutexImpl _impl;
 #endif  // DO_PSTATS
 };
 

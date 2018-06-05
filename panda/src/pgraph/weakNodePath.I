@@ -57,11 +57,29 @@ operator = (const WeakNodePath &copy) {
 }
 
 /**
+ * Sets this NodePath to the empty NodePath.  It will no longer point to any
+ * node.
+ */
+INLINE void WeakNodePath::
+clear() {
+  _head.clear();
+  _backup_key = 0;
+}
+
+/**
+ * Returns true if this NodePath points to a valid, non-null node.
+ */
+INLINE WeakNodePath::
+operator bool () const {
+  return _head.is_valid_pointer();
+}
+
+/**
  * Returns true if the NodePath contains no nodes, or if it has been deleted.
  */
 INLINE bool WeakNodePath::
 is_empty() const {
-  return _head == (NodePathComponent *)NULL || _head.was_deleted();
+  return _head == nullptr || _head.was_deleted();
 }
 
 /**
@@ -70,27 +88,34 @@ is_empty() const {
  */
 INLINE bool WeakNodePath::
 was_deleted() const {
-  return _head != (NodePathComponent *)NULL && _head.was_deleted();
+  return _head != nullptr && _head.was_deleted();
 }
 
 /**
- * Returns the NodePath held within this object.
+ * Returns the NodePath held within this object, or an empty NodePath with the
+ * error flag set if the object was deleted.
  */
 INLINE NodePath WeakNodePath::
 get_node_path() const {
-  nassertr_always(!was_deleted(), NodePath::fail());
   NodePath result;
-  result._head = _head;
+  result._head = _head.lock();
+  if (!_head.is_null() && result._head == nullptr) {
+    result._error_type = NodePath::ET_fail;
+  }
   return result;
 }
 
 /**
- * Returns the PandaNode held within this object.
+ * Returns the PandaNode held within this object, or nullptr if the object was
+ * deleted.
  */
-INLINE PandaNode *WeakNodePath::
+INLINE PT(PandaNode) WeakNodePath::
 node() const {
-  nassertr_always(!is_empty(), (PandaNode *)NULL);
-  return _head->get_node();
+  if (auto head = _head.lock()) {
+    return head->get_node();
+  } else {
+    return nullptr;
+  }
 }
 
 /**
@@ -190,10 +215,9 @@ compare_to(const WeakNodePath &other) const {
  */
 INLINE int WeakNodePath::
 get_key() const {
-  if (is_empty() || was_deleted()) {
-    return _backup_key;
+  if (auto head = _head.lock()) {
+    _backup_key = head->get_key();
   }
-  ((WeakNodePath *)this)->_backup_key = _head->get_key();
   return _backup_key;
 }
 

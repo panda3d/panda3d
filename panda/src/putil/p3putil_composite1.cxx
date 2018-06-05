@@ -17,7 +17,7 @@
 #include "callbackObject.cxx"
 #include "clockObject.cxx"
 #include "colorSpace.cxx"
-#include "config_util.cxx"
+#include "config_putil.cxx"
 #include "configurable.cxx"
 #include "copyOnWriteObject.cxx"
 #include "copyOnWritePointer.cxx"

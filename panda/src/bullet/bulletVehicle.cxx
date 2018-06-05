@@ -76,7 +76,7 @@ BulletRigidBodyNode *BulletVehicle::
 do_get_chassis() {
 
   btRigidBody *bodyPtr = _vehicle->getRigidBody();
-  return (bodyPtr) ? (BulletRigidBodyNode *)bodyPtr->getUserPointer() : NULL;
+  return (bodyPtr) ? (BulletRigidBodyNode *)bodyPtr->getUserPointer() : nullptr;
 }
 
 /**
@@ -180,7 +180,7 @@ create_wheel() {
 
   btWheelInfo &info = _vehicle->addWheel(pos, direction, axle, suspension, radius, _tuning._, false);
 
-  info.m_clientInfo = NULL;
+  info.m_clientInfo = nullptr;
 
   return BulletWheel(info);
 }

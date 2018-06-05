@@ -103,7 +103,7 @@ public:
     F_explicit_args      = 0x8000,
   };
 
-  typedef vector<Parameter> Parameters;
+  typedef std::vector<Parameter> Parameters;
 
   Parameters _parameters;
   ParameterRemap *_return_type;

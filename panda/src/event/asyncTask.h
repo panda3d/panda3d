@@ -103,8 +103,8 @@ protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
 
-  virtual bool cancel() FINAL;
-  virtual bool is_task() const FINAL {return true;}
+  virtual bool cancel() final;
+  virtual bool is_task() const final {return true;}
 
   virtual bool is_runnable();
   virtual DoneStatus do_task();
@@ -119,6 +119,7 @@ protected:
   double _wake_time;
   int _sort;
   int _priority;
+  unsigned int _implicit_sort;
 
   State _state;
   Thread *_servicing_thread;

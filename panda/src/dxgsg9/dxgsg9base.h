@@ -82,14 +82,14 @@ typedef DWORD DXShaderHandle;
     var.dwSize = sizeof(type);
 
 #define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
-  if((HANDLE!=NULL)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL; }
+  if((HANDLE!=nullptr)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=nullptr; }
 
-#define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
-#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete [] (p);   (p)=NULL; } }
+#define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=nullptr; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete [] (p);   (p)=nullptr; } }
 
 // for stuff outside a panda class
-#define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=NULL; } }
-#define SAFE_FREELIB(hDLL)   { if(hDLL!=NULL) {  FreeLibrary(hDLL);hDLL = NULL; } }
+#define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=nullptr; } }
+#define SAFE_FREELIB(hDLL)   { if(hDLL!=nullptr) {  FreeLibrary(hDLL);hDLL = nullptr; } }
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
@@ -110,7 +110,7 @@ typedef DWORD DXShaderHandle;
                 refcnt = (OBJECT)->Release();     \
               } while(refcnt>0);                  \
         }                                         \
-        (OBJECT) = NULL;                          \
+        (OBJECT) = nullptr;                          \
       } else {                                    \
         MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
       }}
@@ -129,7 +129,7 @@ typedef DWORD DXShaderHandle;
                 refcnt = (OBJECT)->Release();     \
               } while(refcnt>0);                  \
         }                                         \
-        (OBJECT) = NULL;                          \
+        (OBJECT) = nullptr;                          \
    }}
 
 #define PRINT_REFCNT(MODULE,p)

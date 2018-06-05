@@ -83,9 +83,9 @@ is_anim_matrix() const {
  */
 EggRenderMode *EggNode::
 determine_alpha_mode() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_alpha_mode();
 }
@@ -98,9 +98,9 @@ determine_alpha_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_write_mode() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_depth_write_mode();
 }
@@ -113,9 +113,9 @@ determine_depth_write_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_test_mode() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_depth_test_mode();
 }
@@ -128,9 +128,9 @@ determine_depth_test_mode() {
  */
 EggRenderMode *EggNode::
 determine_visibility_mode() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_visibility_mode();
 }
@@ -143,9 +143,9 @@ determine_visibility_mode() {
  */
 EggRenderMode *EggNode::
 determine_depth_offset() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_depth_offset();
 }
@@ -158,9 +158,9 @@ determine_depth_offset() {
  */
 EggRenderMode *EggNode::
 determine_draw_order() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_draw_order();
 }
@@ -172,9 +172,9 @@ determine_draw_order() {
  */
 EggRenderMode *EggNode::
 determine_bin() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
-    return (EggRenderMode *)NULL;
+    return nullptr;
   }
   return _parent->determine_bin();
 }
@@ -189,7 +189,7 @@ determine_bin() {
  */
 bool EggNode::
 determine_indexed() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
     return false;
   }
@@ -206,7 +206,7 @@ determine_indexed() {
  */
 bool EggNode::
 determine_decal() {
-  if (_parent == (EggGroupNode *)NULL) {
+  if (_parent == nullptr) {
     // Too bad; we're done.
     return false;
   }
@@ -252,7 +252,7 @@ parse_egg(const string &egg_syntax) {
  */
 void EggNode::
 test_under_integrity() const {
-  if (_parent == NULL) {
+  if (_parent == nullptr) {
     // If we have no parent, everything should be zero.
     nassertv(_depth == 0);
     nassertv(_under_flags == 0);
@@ -303,15 +303,15 @@ egg_start_parse_body() {
 void EggNode::
 update_under(int depth_offset) {
   int depth;
-  if (_parent == NULL) {
+  if (_parent == nullptr) {
     depth = 0;
     _under_flags = 0;
-    _vertex_frame = NULL;
-    _node_frame = NULL;
-    _vertex_frame_inv = NULL;
-    _node_frame_inv = NULL;
-    _vertex_to_node = NULL;
-    _node_to_vertex = NULL;
+    _vertex_frame = nullptr;
+    _node_frame = nullptr;
+    _vertex_frame_inv = nullptr;
+    _node_frame_inv = nullptr;
+    _vertex_to_node = nullptr;
+    _node_to_vertex = nullptr;
   } else {
     _parent->test_ref_count_integrity();
     depth = _parent->_depth + 1;
