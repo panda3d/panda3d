@@ -33,6 +33,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 
+# Runtime code assumes that dynamic modules have a "lib" prefix; Windows
+# assumes that debug libraries have a _d suffix.
+set(CMAKE_SHARED_MODULE_PREFIX "lib")
+if(WIN32)
+  set(CMAKE_DEBUG_POSTFIX "_d")
+endif()
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option AND target_use_packages
 
@@ -83,7 +90,7 @@ if(BUILD_MODELS)
     DESTINATION "${PROJECT_BINARY_DIR}/models/maps"
   )
   run_pzip(models
-    "${CMAKE_CURRENT_SOURCE_DIR}/models"
+    "${CMAKE_CURRENT_SOURCE_DIR}/models/"
     "${PROJECT_BINARY_DIR}/models"
     *.egg
   )
@@ -92,7 +99,7 @@ if(BUILD_MODELS)
     FILES_MATCHING PATTERN *.rgb PATTERN *.png PATTERN *.jpg PATTERN *.wav
   )
   run_pzip(dmodels
-    "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
     "${PROJECT_BINARY_DIR}/models"
     *.egg
   )

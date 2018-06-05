@@ -1,4 +1,12 @@
 function(run_pzip target_name source destination glob)
+  if(NOT TARGET pzip)
+    # If pzip isn't built, we just copy instead.
+    file(COPY "${source}"
+      DESTINATION "${destination}"
+      FILES_MATCHING PATTERN "${glob}")
+    return()
+  endif()
+
   file(GLOB_RECURSE files RELATIVE "${source}" "${source}/${glob}")
 
   set(dstfiles "")
