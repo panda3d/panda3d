@@ -965,6 +965,7 @@ is_wstring(CPPType *type) {
 bool TypeManager::
 is_vector_unsigned_char(CPPType *type) {
   if (type->get_local_name(&parser) == "vector< unsigned char >" ||
+      type->get_local_name(&parser) == "std::vector< unsigned char >" ||
       type->get_local_name(&parser) == "pvector< unsigned char >") {
     return true;
   }
@@ -1804,7 +1805,9 @@ bool TypeManager::is_ostream(CPPType *type) {
     return is_ostream(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "ostream");
+    return (type->get_local_name(&parser) == "std::ostream" ||
+            type->get_local_name(&parser) == "ostream" ||
+            type->get_local_name(&parser) == "std::basic_ostream< char >");
 
   case CPPDeclaration::ST_typedef:
     return is_ostream(type->as_typedef_type()->_type);
