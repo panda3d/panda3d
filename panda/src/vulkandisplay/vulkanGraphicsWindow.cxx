@@ -677,13 +677,8 @@ setup_render_pass() {
 
   // Destroy the previous render pass object.
   if (_render_pass != VK_NULL_HANDLE) {
-    // Actually, we can't destroy it, since we may now have pipeline states
-    // that reference it.  Destroying it now would also require destroying the
-    // framebuffer and clearing all of the prepared states from the GSG.
-    // Maybe we need to start reference counting render passes?
-    vulkandisplay_cat.warning() << "Leaking VkRenderPass.\n";
-    //vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
-    //_render_pass = VK_NULL_HANDLE;
+    vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+    _render_pass = VK_NULL_HANDLE;
   }
 
   _render_pass = pass;
