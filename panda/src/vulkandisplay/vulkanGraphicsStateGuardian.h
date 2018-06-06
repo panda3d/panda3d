@@ -32,9 +32,9 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
-  virtual string get_driver_vendor();
-  virtual string get_driver_renderer();
-  virtual string get_driver_version();
+  virtual std::string get_driver_vendor();
+  virtual std::string get_driver_renderer();
+  virtual std::string get_driver_version();
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   bool upload_texture(VulkanTextureContext *vtc);
@@ -132,12 +132,10 @@ private:
   struct PipelineKey {
     INLINE PipelineKey() = default;
     INLINE PipelineKey(const PipelineKey &copy);
-    INLINE void operator = (const PipelineKey &copy);
+    INLINE PipelineKey(PipelineKey &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE PipelineKey(PipelineKey &&from) NOEXCEPT;
-    INLINE void operator = (PipelineKey &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const PipelineKey &copy);
+    INLINE void operator = (PipelineKey &&from) noexcept;
 
     INLINE bool operator ==(const PipelineKey &other) const;
     INLINE bool operator < (const PipelineKey &other) const;
@@ -161,12 +159,10 @@ private:
   struct DescriptorSetKey {
     INLINE DescriptorSetKey() = default;
     INLINE DescriptorSetKey(const DescriptorSetKey &copy);
-    INLINE void operator = (const DescriptorSetKey &copy);
+    INLINE DescriptorSetKey(DescriptorSetKey &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE DescriptorSetKey(DescriptorSetKey &&from) NOEXCEPT;
-    INLINE void operator = (DescriptorSetKey &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const DescriptorSetKey &copy);
+    INLINE void operator = (DescriptorSetKey &&from) noexcept;
 
     INLINE bool operator ==(const DescriptorSetKey &other) const;
     INLINE bool operator < (const DescriptorSetKey &other) const;

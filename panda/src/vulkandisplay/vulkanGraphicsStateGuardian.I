@@ -22,6 +22,17 @@ PipelineKey(const PipelineKey &copy) :
 }
 
 /**
+ * Move constructor for PipelineKey, defined for efficiency (so that we don't
+ * have to increase and decrease the reference count when moving this object).
+ */
+INLINE VulkanGraphicsStateGuardian::PipelineKey::
+PipelineKey(PipelineKey &&from) noexcept :
+  _state(std::move(from._state)),
+  _format(std::move(from._format)),
+  _topology(from._topology) {
+}
+
+/**
  * Copy assignment operator for PipelineKey.
  */
 INLINE void VulkanGraphicsStateGuardian::PipelineKey::
@@ -31,28 +42,15 @@ operator = (const PipelineKey &copy) {
   _topology = copy._topology;
 }
 
-#ifdef USE_MOVE_SEMANTICS
-/**
- * Move constructor for PipelineKey, defined for efficiency (so that we don't
- * have to increase and decrease the reference count when moving this object).
- */
-INLINE VulkanGraphicsStateGuardian::PipelineKey::
-PipelineKey(PipelineKey &&from) NOEXCEPT :
-  _state(move(from._state)),
-  _format(move(from._format)),
-  _topology(from._topology) {
-}
-
 /**
  * Move assignment operator for PipelineKey.
  */
 INLINE void VulkanGraphicsStateGuardian::PipelineKey::
-operator = (PipelineKey &&from) NOEXCEPT {
-  _state = move(from._state);
-  _format = move(from._format);
+operator = (PipelineKey &&from) noexcept {
+  _state = std::move(from._state);
+  _format = std::move(from._format);
   _topology = from._topology;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns true if these two PipelineKey objects are identical.
@@ -88,6 +86,17 @@ DescriptorSetKey(const DescriptorSetKey &copy) :
 }
 
 /**
+ * Move constructor for DescriptorSetKey, defined for efficiency (so that we
+ * don't have to increase and decrease the reference count when moving this
+ * object).
+ */
+INLINE VulkanGraphicsStateGuardian::DescriptorSetKey::
+DescriptorSetKey(DescriptorSetKey &&from) noexcept :
+  _tex_attrib(std::move(from._tex_attrib)),
+  _shader_attrib(std::move(from._shader_attrib)) {
+}
+
+/**
  * Copy assignment operator for DescriptorSetKey.
  */
 INLINE void VulkanGraphicsStateGuardian::DescriptorSetKey::
@@ -96,27 +105,14 @@ operator = (const DescriptorSetKey &copy) {
   _shader_attrib = copy._shader_attrib;
 }
 
-#ifdef USE_MOVE_SEMANTICS
-/**
- * Move constructor for DescriptorSetKey, defined for efficiency (so that we
- * don't have to increase and decrease the reference count when moving this
- * object).
- */
-INLINE VulkanGraphicsStateGuardian::DescriptorSetKey::
-DescriptorSetKey(DescriptorSetKey &&from) NOEXCEPT :
-  _tex_attrib(move(from._tex_attrib)),
-  _shader_attrib(move(from._shader_attrib)) {
-}
-
 /**
  * Move assignment operator for DescriptorSetKey.
  */
 INLINE void VulkanGraphicsStateGuardian::DescriptorSetKey::
-operator = (DescriptorSetKey &&from) NOEXCEPT {
-  _tex_attrib = move(from._tex_attrib);
-  _shader_attrib = move(from._shader_attrib);
+operator = (DescriptorSetKey &&from) noexcept {
+  _tex_attrib = std::move(from._tex_attrib);
+  _shader_attrib = std::move(from._shader_attrib);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns true if these two DescriptorSetKey objects are identical.

@@ -624,7 +624,7 @@ get_vendor_name() const {
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string VulkanGraphicsPipe::
+std::string VulkanGraphicsPipe::
 get_interface_name() const {
   return "Vulkan";
 }
@@ -643,7 +643,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) VulkanGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

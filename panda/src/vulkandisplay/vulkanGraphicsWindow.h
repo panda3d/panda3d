@@ -35,7 +35,7 @@ typedef GraphicsWindow BaseGraphicsWindow;
 class EXPCL_VULKANDISPLAY VulkanGraphicsWindow : public BaseGraphicsWindow {
 public:
   VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                       const string &name,
+                       const std::string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
                        int flags,

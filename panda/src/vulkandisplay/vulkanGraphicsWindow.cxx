@@ -21,12 +21,12 @@ TypeHandle VulkanGraphicsWindow::_type_handle;
  */
 VulkanGraphicsWindow::
 VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
-                  const FrameBufferProperties &fb_prop,
-                  const WindowProperties &win_prop,
-                  int flags,
-                  GraphicsStateGuardian *gsg,
-                  GraphicsOutput *host) :
+                     const std::string &name,
+                     const FrameBufferProperties &fb_prop,
+                     const WindowProperties &win_prop,
+                     int flags,
+                     GraphicsStateGuardian *gsg,
+                     GraphicsOutput *host) :
   BaseGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
   _surface(VK_NULL_HANDLE),
   _swapchain(VK_NULL_HANDLE),

@@ -310,29 +310,29 @@ VulkanGraphicsStateGuardian::
 /**
  * Returns the vendor of the video card driver
  */
-string VulkanGraphicsStateGuardian::
+std::string VulkanGraphicsStateGuardian::
 get_driver_vendor() {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
 
   const char *vendor = vkpipe->get_vendor_name();
   if (vendor != nullptr) {
-    return string(vendor);
+    return std::string(vendor);
   } else {
     char vendor[24];
     sprintf(vendor, "Unknown vendor 0x%04X", vkpipe->_gpu_properties.vendorID);
-    return string(vendor);
+    return std::string(vendor);
   }
 }
 
 /**
  * Returns GL_Renderer
  */
-string VulkanGraphicsStateGuardian::
+std::string VulkanGraphicsStateGuardian::
 get_driver_renderer() {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), nullptr);
-  return string(vkpipe->_gpu_properties.deviceName);
+  return std::string(vkpipe->_gpu_properties.deviceName);
 }
 
 /**
@@ -340,9 +340,9 @@ get_driver_renderer() {
  * be "" if the particular graphics implementation does not provide a way to
  * query this information.
  */
-string VulkanGraphicsStateGuardian::
+std::string VulkanGraphicsStateGuardian::
 get_driver_version() {
-  return string();
+  return std::string();
 }
 
 /**
@@ -1093,7 +1093,7 @@ prepare_shader(Shader *shader) {
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
 
   for (int i = 0; i < 2; ++i) {
-    string code = shader->get_text(shader_types[i]);
+    std::string code = shader->get_text(shader_types[i]);
 
     VkShaderModuleCreateInfo module_info;
     module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -2190,7 +2190,7 @@ get_pipeline(const RenderState *state, const GeomVertexFormat *format,
   it = _pipeline_map.find(key);
   if (it == _pipeline_map.end()) {
     VkPipeline pipeline = make_pipeline(state, format, topology);
-    _pipeline_map[MOVE(key)] = pipeline;
+    _pipeline_map[std::move(key)] = pipeline;
     return pipeline;
   } else {
     return it->second;
@@ -2650,7 +2650,7 @@ get_descriptor_set(const RenderState *state) {
   it = _descriptor_set_map.find(key);
   if (it == _descriptor_set_map.end()) {
     VkDescriptorSet ds = make_descriptor_set(state);
-    _descriptor_set_map[MOVE(key)] = ds;
+    _descriptor_set_map[std::move(key)] = ds;
     return ds;
   } else {
     return it->second;
