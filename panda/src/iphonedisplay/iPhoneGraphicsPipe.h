@@ -33,14 +33,14 @@ public:
   IPhoneGraphicsPipe();
   virtual ~IPhoneGraphicsPipe();
 
-  virtual string get_interface_name() const;
+  virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
   void rotate_windows();
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

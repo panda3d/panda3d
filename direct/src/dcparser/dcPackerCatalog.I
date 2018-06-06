@@ -52,7 +52,7 @@ get_entry(int n) const {
  * get_entry().
  */
 int DCPackerCatalog::LiveCatalog::
-find_entry_by_name(const string &name) const {
+find_entry_by_name(const std::string &name) const {
   return _catalog->find_entry_by_name(name);
 }
 

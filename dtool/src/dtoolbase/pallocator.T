@@ -20,7 +20,7 @@ pallocator_single(TypeHandle type_handle) noexcept :
 
 template<class Type>
 INLINE Type *pallocator_single<Type>::
-allocate(typename pallocator_single<Type>::size_type n, typename allocator<void>::const_pointer) {
+allocate(typename pallocator_single<Type>::size_type n, typename std::allocator<void>::const_pointer) {
   TAU_PROFILE("pallocator_single:allocate()", " ", TAU_USER);
   // This doesn't support allocating arrays.
   assert(n == 1);
@@ -44,7 +44,7 @@ pallocator_array(TypeHandle type_handle) noexcept :
 
 template<class Type>
 INLINE Type *pallocator_array<Type>::
-allocate(typename pallocator_array<Type>::size_type n, typename allocator<void>::const_pointer) {
+allocate(typename pallocator_array<Type>::size_type n, typename std::allocator<void>::const_pointer) {
   return (typename pallocator_array<Type>::pointer)
     ASSUME_ALIGNED(_type_handle.allocate_array(n * sizeof(Type)), MEMORY_HOOK_ALIGNMENT);
 }

@@ -37,12 +37,12 @@ PUBLISHED:
   INLINE void clear();
 
 public:
-  string read(size_t length);
-  string readline();
-  INLINE const string &get_data() const;
+  std::string read(size_t length);
+  std::string readline();
+  INLINE const std::string &get_data() const;
 
   size_t _pos;
-  string _data;
+  std::string _data;
 
   friend class Extension<Ramfile>;
 };

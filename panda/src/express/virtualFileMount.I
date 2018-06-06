@@ -49,8 +49,8 @@ get_mount_flags() const {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const VirtualFileMount &mount) {
+INLINE std::ostream &
+operator << (std::ostream &out, const VirtualFileMount &mount) {
   mount.output(out);
   return out;
 }

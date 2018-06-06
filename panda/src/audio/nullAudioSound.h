@@ -52,10 +52,10 @@ public:
   void set_active(bool);
   bool get_active() const;
 
-  void set_finished_event(const string& event);
-  const string& get_finished_event() const;
+  void set_finished_event(const std::string& event);
+  const std::string& get_finished_event() const;
 
-  const string& get_name() const;
+  const std::string& get_name() const;
 
   PN_stdfloat length() const;
 

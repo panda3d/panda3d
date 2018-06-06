@@ -28,7 +28,7 @@
  */
 class EXPCL_MILES_AUDIO MilesAudioStream : public MilesAudioSound {
 private:
-  MilesAudioStream(MilesAudioManager *manager, const string &file_name,
+  MilesAudioStream(MilesAudioManager *manager, const std::string &file_name,
                    const Filename &path);
 
 public:

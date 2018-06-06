@@ -34,7 +34,7 @@ public:
   INLINE void operator = (const FltToEggLevelState &copy);
   ~FltToEggLevelState();
 
-  EggGroupNode *get_synthetic_group(const string &name,
+  EggGroupNode *get_synthetic_group(const std::string &name,
                                     const FltBead *transform_bead,
                                     FltGeometry::BillboardType type = FltGeometry::BT_none);
 

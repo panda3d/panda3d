@@ -73,7 +73,7 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int _brush_origin;
-  string _net_value_text;
+  std::string _net_value_text;
 
   HWND _smooth_check_box;
   static size_t _check_box_height, _check_box_width;

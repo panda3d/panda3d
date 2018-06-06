@@ -44,11 +44,11 @@ public:
 
   virtual bool is_fully_specified() const;
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = nullptr) const;
-  virtual string get_fully_scoped_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
 
-  virtual void output(ostream &out, CPPScope *scope) const;
+  virtual void output(std::ostream &out, CPPScope *scope) const;
 
   virtual CPPTemplateScope *as_template_scope();
 

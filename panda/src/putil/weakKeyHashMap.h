@@ -56,8 +56,8 @@ public:
   INLINE size_t get_num_entries() const;
   INLINE bool is_empty() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
   bool validate() const;
 
 private:
@@ -96,7 +96,7 @@ private:
 };
 
 template<class Key, class Value>
-inline ostream &operator << (ostream &out, const WeakKeyHashMap<Key, Value> &shm) {
+inline std::ostream &operator << (std::ostream &out, const WeakKeyHashMap<Key, Value> &shm) {
   shm.output(out);
   return out;
 }

@@ -55,7 +55,7 @@ PUBLISHED:
   bool get_use_acceleration_spring() const;
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   static PhysxJoint *factory(NxJointType shapeType);
@@ -69,7 +69,7 @@ protected:
   INLINE PhysxJoint();
 
 private:
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

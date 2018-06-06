@@ -29,10 +29,10 @@ private:
   INLINE CullBinAttrib();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const string &bin_name, int draw_order);
+  static CPT(RenderAttrib) make(const std::string &bin_name, int draw_order);
   static CPT(RenderAttrib) make_default();
 
-  INLINE const string &get_bin_name() const;
+  INLINE const std::string &get_bin_name() const;
   INLINE int get_draw_order() const;
 
 PUBLISHED:
@@ -40,14 +40,14 @@ PUBLISHED:
   MAKE_PROPERTY(draw_order, get_draw_order);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual size_t get_hash_impl() const;
 
 private:
-  string _bin_name;
+  std::string _bin_name;
   int _draw_order;
 
 PUBLISHED:

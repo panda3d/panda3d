@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPoint::
-EggPoint(const string &name) :
+EggPoint(const std::string &name) :
   EggPrimitive(name),
   _flags(0),
   _thick(1.0)

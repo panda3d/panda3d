@@ -52,8 +52,8 @@ public:
   INLINE unsigned int get_offset() const;
 
 private:
-  ColladaInput(const string &semantic);
-  ColladaInput(const string &semantic, unsigned int set);
+  ColladaInput(const std::string &semantic);
+  ColladaInput(const std::string &semantic, unsigned int set);
   bool read_data(domSource &source);
   void write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride, unsigned int offset) const;
 
@@ -67,7 +67,7 @@ private:
 
   unsigned int _num_bound_params;
   unsigned int _offset;
-  string _semantic;
+  std::string _semantic;
   bool _have_set;
   unsigned int _set;
 };

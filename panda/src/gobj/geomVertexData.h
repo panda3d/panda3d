@@ -72,7 +72,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  explicit GeomVertexData(const string &name,
+  explicit GeomVertexData(const std::string &name,
                           const GeomVertexFormat *format,
                           UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
@@ -84,8 +84,8 @@ PUBLISHED:
 
   int compare_to(const GeomVertexData &other) const;
 
-  INLINE const string &get_name() const;
-  void set_name(const string &name);
+  INLINE const std::string &get_name() const;
+  void set_name(const std::string &name);
   MAKE_PROPERTY(name, get_name, set_name);
 
   INLINE UsageHint get_usage_hint() const;
@@ -164,9 +164,9 @@ PUBLISHED:
     replace_column(InternalName *name, int num_components,
                    NumericType numeric_type, Contents contents) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void describe_vertex(ostream &out, int row) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void describe_vertex(std::ostream &out, int row) const;
 
   void clear_cache();
   void clear_cache_stage();
@@ -206,7 +206,7 @@ private:
                 TransformMap &already_added);
 
 private:
-  string _name;
+  std::string _name;
 
   typedef pvector< COWPT(GeomVertexArrayData) > Arrays;
 
@@ -263,7 +263,7 @@ public:
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     GeomVertexData *_source;  // A back pointer to the containing data.
     CacheKey _key;
@@ -546,7 +546,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexData &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexData &obj);
 
 #include "geomVertexData.I"
 

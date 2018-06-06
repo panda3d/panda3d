@@ -34,7 +34,7 @@ public:
   void clear_vertices();
   void add_vertex(FltVertex *vertex);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

@@ -34,7 +34,7 @@ protected:
   virtual bool handle_args(Args &args);
 
   Filename _input_filename;
-  string _table_name;
+  std::string _table_name;
   bool _static_table;
   bool _for_string;
 };

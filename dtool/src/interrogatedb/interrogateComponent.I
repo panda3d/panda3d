@@ -98,7 +98,7 @@ has_name() const {
 /**
  *
  */
-INLINE const string &InterrogateComponent::
+INLINE const std::string &InterrogateComponent::
 get_name() const {
   return _name;
 }
@@ -114,7 +114,7 @@ get_num_alt_names() const {
 /**
  *
  */
-INLINE const string &InterrogateComponent::
+INLINE const std::string &InterrogateComponent::
 get_alt_name(int n) const {
   if (n >= 0 && n < (int)_alt_names.size()) {
     return _alt_names[n];

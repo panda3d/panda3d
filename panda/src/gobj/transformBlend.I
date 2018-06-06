@@ -376,8 +376,8 @@ CData(const TransformBlend::CData &copy) :
 {
 }
 
-INLINE ostream &
-operator << (ostream &out, const TransformBlend &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const TransformBlend &obj) {
   obj.output(out);
   return out;
 }

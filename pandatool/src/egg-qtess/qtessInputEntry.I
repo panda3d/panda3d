@@ -23,7 +23,7 @@ QtessInputEntry(const QtessInputEntry &copy) {
  *
  */
 INLINE void QtessInputEntry::
-add_node_name(const string &name) {
+add_node_name(const std::string &name) {
   _node_names.push_back(GlobPattern(name));
 }
 
@@ -150,7 +150,7 @@ get_num_surfaces() const {
 }
 
 
-INLINE ostream &operator << (ostream &out, const QtessInputEntry &entry) {
+INLINE std::ostream &operator << (std::ostream &out, const QtessInputEntry &entry) {
   entry.output(out);
   return out;
 }

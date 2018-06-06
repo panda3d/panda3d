@@ -42,7 +42,7 @@ open(const Filename &filename) {
 /**
  * Returns the ostream represented by the output file.
  */
-INLINE ostream &DatagramOutputFile::
+INLINE std::ostream &DatagramOutputFile::
 get_stream() {
   static std::ofstream null_stream;
   nassertr(_out != nullptr, null_stream);

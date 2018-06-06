@@ -47,7 +47,7 @@ class WorkingNodePath;
  */
 class EXPCL_PANDAFX ProjectionScreen : public PandaNode {
 PUBLISHED:
-  explicit ProjectionScreen(const string &name = "");
+  explicit ProjectionScreen(const std::string &name = "");
   virtual ~ProjectionScreen();
 
 protected:
@@ -67,16 +67,16 @@ PUBLISHED:
   INLINE const PfmFile &get_undist_lut() const;
 
   PT(GeomNode) generate_screen(const NodePath &projector,
-                               const string &screen_name,
+                               const std::string &screen_name,
                                int num_x_verts, int num_y_verts,
                                PN_stdfloat distance, PN_stdfloat fill_ratio);
-  void regenerate_screen(const NodePath &projector, const string &screen_name,
+  void regenerate_screen(const NodePath &projector, const std::string &screen_name,
                          int num_x_verts, int num_y_verts, PN_stdfloat distance,
                          PN_stdfloat fill_ratio);
   PT(PandaNode) make_flat_mesh(const NodePath &this_np, const NodePath &camera);
 
-  INLINE void set_texcoord_name(const string &texcoord_name);
-  INLINE string get_texcoord_name() const;
+  INLINE void set_texcoord_name(const std::string &texcoord_name);
+  INLINE std::string get_texcoord_name() const;
 
   INLINE void set_invert_uvs(bool invert_uvs);
   INLINE bool get_invert_uvs() const;

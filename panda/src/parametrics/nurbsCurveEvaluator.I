@@ -117,7 +117,7 @@ set_vertex_space(int i, const NodePath &space) {
  * node relative to the rel_to NodePath when the curve is evaluated.
  */
 INLINE void NurbsCurveEvaluator::
-set_vertex_space(int i, const string &space) {
+set_vertex_space(int i, const std::string &space) {
   nassertv(i >= 0 && i < (int)_vertices.size());
   _vertices[i].set_space(space);
 }
@@ -175,8 +175,8 @@ get_num_segments() const {
   return _basis.get_num_segments();
 }
 
-INLINE ostream &
-operator << (ostream &out, const NurbsCurveEvaluator &n) {
+INLINE std::ostream &
+operator << (std::ostream &out, const NurbsCurveEvaluator &n) {
   n.output(out);
   return out;
 }

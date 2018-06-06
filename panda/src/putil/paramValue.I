@@ -116,7 +116,7 @@ get_value() const {
  */
 template<class Type>
 INLINE void ParamValue<Type>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _value;
 }
 

@@ -300,8 +300,8 @@ operator < (const GeomVertexColumn &other) const {
   return 0;
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexColumn &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexColumn &obj) {
   obj.output(out);
   return out;
 }

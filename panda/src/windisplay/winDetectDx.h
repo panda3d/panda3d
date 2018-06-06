@@ -74,7 +74,7 @@ static DWORD _GetLastError (char *message_prefix) {
         FORMAT_MESSAGE_ALLOCATE_BUFFER |FORMAT_MESSAGE_FROM_SYSTEM,
         nullptr, error, MAKELANGID( LANG_ENGLISH, SUBLANG_ENGLISH_US ),
         (LPTSTR)&ptr,0, nullptr)) {
-    cout << "ERROR: "<< message_prefix << " result = " << (char*) ptr << "\n";
+    std::cout << "ERROR: "<< message_prefix << " result = " << (char*) ptr << "\n";
     LocalFree( ptr );
   }
 
@@ -100,7 +100,7 @@ static DWORD print_GetLastError (char *message_prefix)
                   (LPTSTR)&ptr,
                   0, nullptr))
   {
-    cout << "ERROR: "<< message_prefix << " result = " << (char*) ptr << "\n";
+    std::cout << "ERROR: "<< message_prefix << " result = " << (char*) ptr << "\n";
     LocalFree( ptr );
   }
 

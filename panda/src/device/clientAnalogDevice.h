@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_DEVICE ClientAnalogDevice : public ClientDevice {
 protected:
-  INLINE ClientAnalogDevice(ClientBase *client, const string &device_name);
+  INLINE ClientAnalogDevice(ClientBase *client, const std::string &device_name);
 
 public:
   INLINE int get_num_controls() const;
@@ -37,8 +37,8 @@ public:
   INLINE double get_control_state(int index) const;
   INLINE bool is_control_known(int index) const;
 
-  virtual void write(ostream &out, int indent_level = 0) const;
-  void write_controls(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
+  void write_controls(std::ostream &out, int indent_level) const;
 
 private:
   void ensure_control_index(int index);

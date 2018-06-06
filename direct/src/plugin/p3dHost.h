@@ -27,84 +27,84 @@ class P3DPackage;
  */
 class P3DHost {
 private:
-  P3DHost(const string &host_url, const string &host_dir = "");
+  P3DHost(const std::string &host_url, const std::string &host_dir = "");
   ~P3DHost();
 
 public:
   inline bool has_host_dir() const;
-  inline const string &get_host_dir() const;
-  inline const string &get_host_url() const;
-  inline const string &get_host_url_prefix() const;
-  inline const string &get_download_url_prefix() const;
-  inline const string &get_descriptive_name() const;
+  inline const std::string &get_host_dir() const;
+  inline const std::string &get_host_url() const;
+  inline const std::string &get_host_url_prefix() const;
+  inline const std::string &get_download_url_prefix() const;
+  inline const std::string &get_descriptive_name() const;
 
-  P3DHost *get_alt_host(const string &alt_host);
+  P3DHost *get_alt_host(const std::string &alt_host);
 
   inline bool has_contents_file() const;
   bool has_current_contents_file(P3DInstanceManager *inst_mgr) const;
   inline int get_contents_iseq() const;
-  inline bool check_contents_hash(const string &pathname) const;
+  inline bool check_contents_hash(const std::string &pathname) const;
 
   bool read_contents_file();
-  bool read_contents_file(const string &contents_filename, bool fresh_download);
+  bool read_contents_file(const std::string &contents_filename, bool fresh_download);
   void read_xhost(TiXmlElement *xhost);
 
-  P3DPackage *get_package(const string &package_name,
-                          const string &package_version,
-                          const string &package_platform,
-                          const string &package_seq,
-                          const string &alt_host = "");
-  bool choose_suitable_platform(string &selected_platform,
+  P3DPackage *get_package(const std::string &package_name,
+                          const std::string &package_version,
+                          const std::string &package_platform,
+                          const std::string &package_seq,
+                          const std::string &alt_host = "");
+  bool choose_suitable_platform(std::string &selected_platform,
                                 bool &per_platform,
-                                const string &package_name,
-                                const string &package_version,
-                                const string &package_platform);
+                                const std::string &package_name,
+                                const std::string &package_version,
+                                const std::string &package_platform);
   bool get_package_desc_file(FileSpec &desc_file,
-                             string &package_seq,
+                             std::string &package_seq,
                              bool &package_solo,
-                             const string &package_name,
-                             const string &package_version,
-                             const string &package_platform);
+                             const std::string &package_name,
+                             const std::string &package_version,
+                             const std::string &package_platform);
 
-  void forget_package(P3DPackage *package, const string &alt_host = "");
-  void migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_host);
+  void forget_package(P3DPackage *package, const std::string &alt_host = "");
+  void migrate_package_host(P3DPackage *package, const std::string &alt_host, P3DHost *new_host);
 
-  void choose_random_mirrors(vector<string> &result, int num_mirrors);
-  void add_mirror(string mirror_url);
+  void choose_random_mirrors(std::vector<std::string> &result, int num_mirrors);
+  void add_mirror(std::string mirror_url);
 
   void uninstall();
 
 private:
-  void determine_host_dir(const string &host_dir_basename);
+  void determine_host_dir(const std::string &host_dir_basename);
 
-  static string standardize_filename(const string &filename);
-  static bool copy_file(const string &from_filename, const string &to_filename);
-  static bool save_xml_file(TiXmlDocument *doc, const string &to_filename);
-  static int compare_seq(const string &seq_a, const string &seq_b);
+  static std::string standardize_filename(const std::string &filename);
+  static bool copy_file(const std::string &from_filename, const std::string &to_filename);
+  static bool save_xml_file(TiXmlDocument *doc, const std::string &to_filename);
+  static int compare_seq(const std::string &seq_a, const std::string &seq_b);
   static int compare_seq_int(const char *&num_a, const char *&num_b);
 
 private:
-  string _host_dir;
-  string _host_url;
-  string _host_url_prefix;
-  string _download_url_prefix;
-  string _descriptive_name;
+  std::string _host_dir;
+  std::string _host_url;
+  std::string _host_url_prefix;
+  std::string _download_url_prefix;
+  std::string _descriptive_name;
   TiXmlElement *_xcontents;
   time_t _contents_expiration;
   int _contents_iseq;
   FileSpec _contents_spec;
 
-  typedef vector<string> Mirrors;
+  typedef std::vector<std::string> Mirrors;
   Mirrors _mirrors;
 
-  typedef map<string, string> AltHosts;
+  typedef std::map<std::string, std::string> AltHosts;
   AltHosts _alt_hosts;
 
-  typedef vector<P3DPackage *> PlatformPackages;
-  typedef map<string, PlatformPackages> PackageMap;
-  typedef map<string, PackageMap> Packages;
+  typedef std::vector<P3DPackage *> PlatformPackages;
+  typedef std::map<std::string, PlatformPackages> PackageMap;
+  typedef std::map<std::string, PackageMap> Packages;
   Packages _packages;
-  typedef vector<P3DPackage *> FailedPackages;
+  typedef std::vector<P3DPackage *> FailedPackages;
   FailedPackages _failed_packages;
 
   friend class P3DInstanceManager;

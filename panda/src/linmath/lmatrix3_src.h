@@ -285,9 +285,9 @@ PUBLISHED:
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   void generate_hash(
@@ -327,7 +327,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);
   return out;
 }

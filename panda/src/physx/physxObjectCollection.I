@@ -46,7 +46,7 @@ remove(PT(T) object) {
   }
   else
   {
-    physx_cat.warning() << "object not found in collection" << endl;
+    physx_cat.warning() << "object not found in collection" << std::endl;
   }
 }
 
@@ -89,7 +89,7 @@ ls() const {
  */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
 
   for (unsigned int i=0; i < size(); i++) {
     get(i)->ls(out, indent_level + 2);

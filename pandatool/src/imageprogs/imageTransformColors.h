@@ -33,11 +33,11 @@ public:
   void run();
 
 protected:
-  static bool dispatch_mat4(const string &opt, const string &arg, void *var);
-  static bool dispatch_mat3(const string &opt, const string &arg, void *var);
-  static bool dispatch_range(const string &opt, const string &arg, void *var);
-  static bool dispatch_scale(const string &opt, const string &arg, void *var);
-  static bool dispatch_add(const string &opt, const string &arg, void *var);
+  static bool dispatch_mat4(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_mat3(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_range(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_scale(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_add(const std::string &opt, const std::string &arg, void *var);
 
   virtual bool handle_args(Args &args);
   Filename get_output_filename(const Filename &source_filename) const;

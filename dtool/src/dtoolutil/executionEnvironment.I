@@ -15,7 +15,7 @@
  * Returns true if the indicated environment variable is defined.
  */
 INLINE bool ExecutionEnvironment::
-has_environment_variable(const string &var) {
+has_environment_variable(const std::string &var) {
   return get_ptr()->ns_has_environment_variable(var);
 }
 
@@ -23,8 +23,8 @@ has_environment_variable(const string &var) {
  * Returns the definition of the indicated environment variable, or the empty
  * string if the variable is undefined.
  */
-INLINE string ExecutionEnvironment::
-get_environment_variable(const string &var) {
+INLINE std::string ExecutionEnvironment::
+get_environment_variable(const std::string &var) {
   return get_ptr()->ns_get_environment_variable(var);
 }
 
@@ -32,7 +32,7 @@ get_environment_variable(const string &var) {
  * Changes the definition of the indicated environment variable.
  */
 INLINE void ExecutionEnvironment::
-set_environment_variable(const string &var, const string &value) {
+set_environment_variable(const std::string &var, const std::string &value) {
   get_ptr()->ns_set_environment_variable(var, value);
 }
 
@@ -43,7 +43,7 @@ set_environment_variable(const string &var, const string &value) {
  * will return this new value.
  */
 INLINE void ExecutionEnvironment::
-shadow_environment_variable(const string &var, const string &value) {
+shadow_environment_variable(const std::string &var, const std::string &value) {
   get_ptr()->ns_shadow_environment_variable(var, value);
 }
 
@@ -52,7 +52,7 @@ shadow_environment_variable(const string &var, const string &value) {
  * and lets the actual value of the variable show again.
  */
 INLINE void ExecutionEnvironment::
-clear_shadow(const string &var) {
+clear_shadow(const std::string &var) {
   get_ptr()->ns_clear_shadow(var);
 }
 
@@ -70,7 +70,7 @@ get_num_args() {
  * .. get_num_args()).  The first parameter, n == 0, is the first actual
  * parameter, not the binary name.
  */
-INLINE string ExecutionEnvironment::
+INLINE std::string ExecutionEnvironment::
 get_arg(size_t n) {
   return get_ptr()->ns_get_arg(n);
 }
@@ -79,7 +79,7 @@ get_arg(size_t n) {
  * Returns the name of the binary executable that started this program, if it
  * can be determined.
  */
-INLINE string ExecutionEnvironment::
+INLINE std::string ExecutionEnvironment::
 get_binary_name() {
   return get_ptr()->ns_get_binary_name();
 }
@@ -88,7 +88,7 @@ get_binary_name() {
  * Returns the name of the libdtool DLL that is used in this program, if it
  * can be determined.
  */
-INLINE string ExecutionEnvironment::
+INLINE std::string ExecutionEnvironment::
 get_dtool_name() {
   return get_ptr()->ns_get_dtool_name();
 }
@@ -97,7 +97,7 @@ get_dtool_name() {
  * Do not use.
  */
 INLINE void ExecutionEnvironment::
-set_binary_name(const string &name) {
+set_binary_name(const std::string &name) {
   get_ptr()->_binary_name = name;
 }
 
@@ -105,6 +105,6 @@ set_binary_name(const string &name) {
  * Do not use.
  */
 INLINE void ExecutionEnvironment::
-set_dtool_name(const string &name) {
+set_dtool_name(const std::string &name) {
   get_ptr()->_dtool_name = name;
 }

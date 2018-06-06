@@ -62,7 +62,7 @@ public:
 
   bool fix_length(int pipeline_stage, Thread *current_thread);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   void set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread);
@@ -131,7 +131,7 @@ private:
 template<>
 INLINE void PointerToBase<NodePathComponent>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const NodePathComponent &comp);
+INLINE std::ostream &operator << (std::ostream &out, const NodePathComponent &comp);
 
 #include "nodePathComponent.I"
 

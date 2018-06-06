@@ -77,7 +77,7 @@ get_root_joint() const {
  * has that name.
  */
 INLINE EggJointData *EggCharacterData::
-find_joint(const string &name) const {
+find_joint(const std::string &name) const {
   return _root_joint->find_joint(name);
 }
 
@@ -87,7 +87,7 @@ find_joint(const string &name) const {
  * inherits the net transform of the indicated parent joint.
  */
 INLINE EggJointData *EggCharacterData::
-make_new_joint(const string &name, EggJointData *parent) {
+make_new_joint(const std::string &name, EggJointData *parent) {
   EggJointData *joint = parent->make_new_joint(name);
   _joints.push_back(joint);
   _components.push_back(joint);

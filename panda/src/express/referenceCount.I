@@ -411,9 +411,9 @@ void RefCountObj<Base>::
 init_type() {
 #if defined(HAVE_RTTI) && !defined(__EDG__)
   // If we have RTTI, we can determine the name of the base type.
-  string base_name = typeid(Base).name();
+  std::string base_name = typeid(Base).name();
 #else
-  string base_name = "unknown";
+  std::string base_name = "unknown";
 #endif
 
   TypeHandle base_type = register_dynamic_type(base_name);

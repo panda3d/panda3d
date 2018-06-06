@@ -47,30 +47,30 @@ protected:
   ~TextPropertiesManager();
 
 PUBLISHED:
-  void set_properties(const string &name, const TextProperties &properties);
-  TextProperties get_properties(const string &name);
-  bool has_properties(const string &name) const;
-  void clear_properties(const string &name);
+  void set_properties(const std::string &name, const TextProperties &properties);
+  TextProperties get_properties(const std::string &name);
+  bool has_properties(const std::string &name) const;
+  void clear_properties(const std::string &name);
 
-  void set_graphic(const string &name, const TextGraphic &graphic);
-  void set_graphic(const string &name, const NodePath &model);
-  TextGraphic get_graphic(const string &name);
-  bool has_graphic(const string &name) const;
-  void clear_graphic(const string &name);
+  void set_graphic(const std::string &name, const TextGraphic &graphic);
+  void set_graphic(const std::string &name, const NodePath &model);
+  TextGraphic get_graphic(const std::string &name);
+  bool has_graphic(const std::string &name) const;
+  void clear_graphic(const std::string &name);
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   static TextPropertiesManager *get_global_ptr();
 
 public:
-  const TextProperties *get_properties_ptr(const string &name);
-  const TextGraphic *get_graphic_ptr(const string &name);
+  const TextProperties *get_properties_ptr(const std::string &name);
+  const TextGraphic *get_graphic_ptr(const std::string &name);
 
 private:
-  typedef pmap<string, TextProperties> Properties;
+  typedef pmap<std::string, TextProperties> Properties;
   Properties _properties;
 
-  typedef pmap<string, TextGraphic> Graphics;
+  typedef pmap<std::string, TextGraphic> Graphics;
   Graphics _graphics;
 
   static TextPropertiesManager *_global_ptr;

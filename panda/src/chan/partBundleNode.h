@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_CHAN PartBundleNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit PartBundleNode(const string &name, PartBundle *bundle);
+  INLINE explicit PartBundleNode(const std::string &name, PartBundle *bundle);
 
 protected:
   INLINE PartBundleNode();

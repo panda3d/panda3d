@@ -29,7 +29,7 @@ public:
   DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE CullResult *get_cull_result() const;
   INLINE SceneSetup *get_scene_setup() const;

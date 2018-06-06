@@ -31,14 +31,14 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename);
 
 protected:
-  virtual DXFLayer *new_layer(const string &name);
+  virtual DXFLayer *new_layer(const std::string &name);
   virtual void done_entity();
   virtual void error();
 

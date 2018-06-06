@@ -37,7 +37,7 @@ public:
   LVecBase3 _size;
   LVecBase3 _rotation;
 
-  string _reference_object;
+  std::string _reference_object;
 
   LwoSurfaceBlockCoordSys::Type _csys;
 

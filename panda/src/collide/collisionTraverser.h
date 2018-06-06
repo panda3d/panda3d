@@ -44,7 +44,7 @@ class CollisionEntry;
  */
 class EXPCL_PANDA_COLLIDE CollisionTraverser : public Namable {
 PUBLISHED:
-  explicit CollisionTraverser(const string &name = "ctrav");
+  explicit CollisionTraverser(const std::string &name = "ctrav");
   ~CollisionTraverser();
 
   INLINE void set_respect_prev_transform(bool flag);
@@ -76,8 +76,8 @@ PUBLISHED:
   void hide_collisions();
 #endif  // DO_COLLISION_RECORDING
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
 private:
   typedef pvector<CollisionLevelStateSingle> LevelStatesSingle;
@@ -163,7 +163,7 @@ private:
   friend class SortByColliderSort;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionTraverser &trav) {
+INLINE std::ostream &operator << (std::ostream &out, const CollisionTraverser &trav) {
   trav.output(out);
   return out;
 }

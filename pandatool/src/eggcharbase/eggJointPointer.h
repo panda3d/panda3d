@@ -42,11 +42,11 @@ public:
 
   virtual void optimize();
   virtual void expose(EggGroup::DCSType dcs_type);
-  virtual void zero_channels(const string &components);
-  virtual void quantize_channels(const string &components, double quantum);
+  virtual void zero_channels(const std::string &components);
+  virtual void quantize_channels(const std::string &components, double quantum);
   virtual void apply_default_pose(EggJointPointer *source_joint, int frame);
 
-  virtual EggJointPointer *make_new_joint(const string &name)=0;
+  virtual EggJointPointer *make_new_joint(const std::string &name)=0;
 
 public:
   static TypeHandle get_class_type() {

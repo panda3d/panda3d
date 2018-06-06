@@ -360,7 +360,7 @@ get_right_button() const {
  * PGSliderBars.  The adjust event is the concatenation of this string
  * followed by get_id().
  */
-INLINE string PGSliderBar::
+INLINE std::string PGSliderBar::
 get_adjust_prefix() {
   return "adjust-";
 }
@@ -369,7 +369,7 @@ get_adjust_prefix() {
  * Returns the event name that will be thrown when the slider bar value is
  * adjusted by the user or programmatically.
  */
-INLINE string PGSliderBar::
+INLINE std::string PGSliderBar::
 get_adjust_event() const {
   LightReMutexHolder holder(_lock);
   return get_adjust_prefix() + get_id();
@@ -381,7 +381,7 @@ get_adjust_event() const {
  */
 INLINE void PGSliderBar::
 internal_set_ratio(PN_stdfloat ratio) {
-  _ratio = max(min(ratio, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  _ratio = std::max(std::min(ratio, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
   _needs_reposition = true;
   adjust();
 }

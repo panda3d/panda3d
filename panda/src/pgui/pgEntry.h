@@ -36,7 +36,7 @@
  */
 class EXPCL_PANDA_PGUI PGEntry : public PGItem {
 PUBLISHED:
-  explicit PGEntry(const string &name);
+  explicit PGEntry(const std::string &name);
   virtual ~PGEntry();
 
 protected:
@@ -68,9 +68,9 @@ PUBLISHED:
   void setup(PN_stdfloat width, int num_lines);
   void setup_minimal(PN_stdfloat width, int num_lines);
 
-  INLINE bool set_text(const string &text);
-  INLINE string get_plain_text() const;
-  INLINE string get_text() const;
+  INLINE bool set_text(const std::string &text);
+  INLINE std::string get_plain_text() const;
+  INLINE std::string get_text() const;
 
   INLINE int get_num_characters() const;
   INLINE wchar_t get_character(int n) const;
@@ -105,11 +105,11 @@ PUBLISHED:
   INLINE void set_overflow_mode(bool flag);
   INLINE bool get_overflow_mode() const;
 
-  INLINE void set_candidate_active(const string &candidate_active);
-  INLINE const string &get_candidate_active() const;
+  INLINE void set_candidate_active(const std::string &candidate_active);
+  INLINE const std::string &get_candidate_active() const;
 
-  INLINE void set_candidate_inactive(const string &candidate_inactive);
-  INLINE const string &get_candidate_inactive() const;
+  INLINE void set_candidate_inactive(const std::string &candidate_inactive);
+  INLINE const std::string &get_candidate_inactive() const;
 
   void set_text_def(int state, TextNode *node);
   TextNode *get_text_def(int state) const;
@@ -117,24 +117,24 @@ PUBLISHED:
   virtual void set_active(bool active);
   virtual void set_focus(bool focus);
 
-  INLINE static string get_accept_prefix();
-  INLINE static string get_accept_failed_prefix();
-  INLINE static string get_overflow_prefix();
-  INLINE static string get_type_prefix();
-  INLINE static string get_erase_prefix();
-  INLINE static string get_cursormove_prefix();
+  INLINE static std::string get_accept_prefix();
+  INLINE static std::string get_accept_failed_prefix();
+  INLINE static std::string get_overflow_prefix();
+  INLINE static std::string get_type_prefix();
+  INLINE static std::string get_erase_prefix();
+  INLINE static std::string get_cursormove_prefix();
 
-  INLINE string get_accept_event(const ButtonHandle &button) const;
-  INLINE string get_accept_failed_event(const ButtonHandle &button) const;
-  INLINE string get_overflow_event() const;
-  INLINE string get_type_event() const;
-  INLINE string get_erase_event() const;
-  INLINE string get_cursormove_event() const;
+  INLINE std::string get_accept_event(const ButtonHandle &button) const;
+  INLINE std::string get_accept_failed_event(const ButtonHandle &button) const;
+  INLINE std::string get_overflow_event() const;
+  INLINE std::string get_type_event() const;
+  INLINE std::string get_erase_event() const;
+  INLINE std::string get_cursormove_event() const;
 
 
-  INLINE bool set_wtext(const wstring &wtext);
-  INLINE wstring get_plain_wtext() const;
-  INLINE wstring get_wtext() const;
+  INLINE bool set_wtext(const std::wstring &wtext);
+  INLINE std::wstring get_plain_wtext() const;
+  INLINE std::wstring get_wtext() const;
   INLINE void set_accept_enabled(bool enabled);
   bool is_wtext() const;
 
@@ -152,7 +152,7 @@ private:
   bool _cursor_stale;
   bool _cursor_visible;
 
-  wstring _candidate_wtext;
+  std::wstring _candidate_wtext;
   size_t _candidate_highlight_start;
   size_t _candidate_highlight_end;
   size_t _candidate_cursor_pos;
@@ -163,8 +163,8 @@ private:
 
   bool _accept_enabled;
 
-  string _candidate_active;
-  string _candidate_inactive;
+  std::string _candidate_active;
+  std::string _candidate_inactive;
 
   typedef pvector< PT(TextNode) > TextDefs;
   TextDefs _text_defs;

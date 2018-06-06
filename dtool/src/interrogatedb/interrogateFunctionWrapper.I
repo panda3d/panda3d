@@ -128,9 +128,9 @@ parameter_has_name(int n) const {
 /**
  *
  */
-INLINE const string &InterrogateFunctionWrapper::
+INLINE const std::string &InterrogateFunctionWrapper::
 parameter_get_name(int n) const {
-  static string bogus_string;
+  static std::string bogus_string;
   if (n >= 0 && n < (int)_parameters.size()) {
     return _parameters[n]._name;
   }
@@ -151,7 +151,7 @@ parameter_is_this(int n) const {
 /**
  *
  */
-INLINE const string &InterrogateFunctionWrapper::
+INLINE const std::string &InterrogateFunctionWrapper::
 get_unique_name() const {
   return _unique_name;
 }
@@ -167,31 +167,31 @@ has_comment() const {
 /**
  *
  */
-INLINE const string &InterrogateFunctionWrapper::
+INLINE const std::string &InterrogateFunctionWrapper::
 get_comment() const {
   return _comment;
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateFunctionWrapper &wrapper) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateFunctionWrapper &wrapper) {
   wrapper.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateFunctionWrapper &wrapper) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateFunctionWrapper &wrapper) {
   wrapper.input(in);
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateFunctionWrapper::Parameter &p) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateFunctionWrapper::Parameter &p) {
   p.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateFunctionWrapper::Parameter &p) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateFunctionWrapper::Parameter &p) {
   p.input(in);
   return in;
 }

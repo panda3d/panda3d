@@ -38,7 +38,7 @@ PUBLISHED:
 
   virtual void get_matrix(LMatrix4 &matrix) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   CPT(PandaNode) _node;

@@ -16,7 +16,7 @@
  */
 template<class Parameter>
 INLINE EggMorph<Parameter>::
-EggMorph(const string &name, const Parameter &offset)
+EggMorph(const std::string &name, const Parameter &offset)
   : Namable(name), _offset(offset) {
 }
 
@@ -89,7 +89,7 @@ compare_to(const EggMorph<Parameter> &other, double threshold) const {
  */
 template<class Parameter>
 INLINE void EggMorph<Parameter>::
-output(ostream &out, const string &tag, int num_dimensions) const {
+output(std::ostream &out, const std::string &tag, int num_dimensions) const {
   out << tag << " " << get_name() << " {";
   for (int i = 0; i < num_dimensions; ++i) {
     out << " " << MAYBE_ZERO(_offset[i]);

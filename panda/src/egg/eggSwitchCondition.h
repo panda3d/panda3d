@@ -29,7 +29,7 @@
 class EXPCL_PANDAEGG EggSwitchCondition : public EggObject {
 PUBLISHED:
   virtual EggSwitchCondition *make_copy() const=0;
-  virtual void write(ostream &out, int indent_level) const=0;
+  virtual void write(std::ostream &out, int indent_level) const=0;
 
   virtual void transform(const LMatrix4d &mat)=0;
 
@@ -64,7 +64,7 @@ PUBLISHED:
                                       const LPoint3d &center, double fade = 0.0);
 
   virtual EggSwitchCondition *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   virtual void transform(const LMatrix4d &mat);
 

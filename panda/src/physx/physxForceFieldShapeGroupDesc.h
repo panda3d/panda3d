@@ -45,7 +45,7 @@ public:
   NxForceFieldShapeGroupDesc _desc;
 
 private:
-  string _name;
+  std::string _name;
 };
 
 #include "physxForceFieldShapeGroupDesc.I"

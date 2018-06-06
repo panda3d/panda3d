@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SwitchNode : public SelectiveChildNode {
 PUBLISHED:
-  INLINE explicit SwitchNode(const string &name);
+  INLINE explicit SwitchNode(const std::string &name);
 
 public:
   SwitchNode(const SwitchNode &copy);

@@ -140,8 +140,8 @@ PUBLISHED:
   INLINE void clear_bounds();
   MAKE_PROPERTY(bounds_type, get_bounds_type, set_bounds_type);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   void clear_cache();
   void clear_cache_stage(Thread *current_thread);
@@ -275,7 +275,7 @@ public:
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     Geom *_source;  // A back pointer to the containing Geom
     CacheKey _key;
@@ -450,7 +450,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Geom &obj);
+INLINE std::ostream &operator << (std::ostream &out, const Geom &obj);
 
 #include "geom.I"
 

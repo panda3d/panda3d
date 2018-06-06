@@ -29,7 +29,7 @@
  */
 class EXPCL_DTOOL_DTOOLBASE TypeRegistryNode {
 public:
-  TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref);
+  TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref);
 
   static bool is_derived_from(const TypeRegistryNode *child,
                               const TypeRegistryNode *base);
@@ -41,7 +41,7 @@ public:
   void define_subtree();
 
   TypeHandle _handle;
-  string _name;
+  std::string _name;
   TypeHandle &_ref;
   typedef std::vector<TypeRegistryNode *> Classes;
   Classes _parent_classes;

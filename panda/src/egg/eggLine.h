@@ -24,14 +24,14 @@
  */
 class EXPCL_PANDAEGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE explicit EggLine(const string &name = "");
+  INLINE explicit EggLine(const std::string &name = "");
   INLINE EggLine(const EggLine &copy);
   INLINE EggLine &operator = (const EggLine &copy);
   virtual ~EggLine();
 
   virtual EggLine *make_copy() const override;
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
   INLINE bool has_thick() const;
   INLINE double get_thick() const;

@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
-  explicit ButtonNode(ClientBase *client, const string &device_name);
+  explicit ButtonNode(ClientBase *client, const std::string &device_name);
   virtual ~ButtonNode();
 
   INLINE bool is_valid() const;
@@ -48,8 +48,8 @@ PUBLISHED:
   INLINE bool is_button_known(int index) const;
 
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   PT(ClientButtonDevice) _button;

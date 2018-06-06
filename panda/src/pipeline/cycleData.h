@@ -64,11 +64,11 @@ public:
                       void *extra_data);
 
   virtual TypeHandle get_parent_type() const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 };
 
-INLINE ostream &
-operator << (ostream &out, const CycleData &cd) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CycleData &cd) {
   cd.output(out);
   return out;
 }

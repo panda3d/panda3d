@@ -32,8 +32,8 @@ public:
   P3DDownload(const P3DDownload &copy);
   virtual ~P3DDownload();
 
-  void set_url(const string &url);
-  inline const string &get_url() const;
+  void set_url(const std::string &url);
+  inline const std::string &get_url() const;
 
   inline void set_instance(P3DInstance *instance);
   inline P3DInstance *get_instance() const;
@@ -78,7 +78,7 @@ protected:
 private:
   bool _canceled;
   int _download_id;
-  string _url;
+  std::string _url;
   P3DInstance *_instance;
 };
 

@@ -166,7 +166,7 @@ public:
   static void atexit_function(void);
 
   static void set_cg_device(LPDIRECT3DDEVICE9 cg_device);
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
 
 
 protected:
@@ -366,7 +366,7 @@ protected:
 
   bool _supports_stream_offset;
 
-  list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
+  std::list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
   int _supports_gamma_calibration;
 

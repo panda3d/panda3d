@@ -45,7 +45,7 @@ public:
   void place(TexturePlacement *placement);
   void unplace(TexturePlacement *placement);
 
-  void write_image_info(ostream &out, int indent_level = 0) const;
+  void write_image_info(std::ostream &out, int indent_level = 0) const;
   void optimal_resize();
   void reset_images();
   void setup_shadow_images();

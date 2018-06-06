@@ -34,7 +34,7 @@ class EggTextureCollection;
  */
 class EXPCL_PANDAEGG EggNode : public EggNamedObject {
 PUBLISHED:
-  INLINE explicit EggNode(const string &name = "");
+  INLINE explicit EggNode(const std::string &name = "");
   INLINE EggNode(const EggNode &copy);
   INLINE EggNode &operator = (const EggNode &copy);
 
@@ -78,8 +78,8 @@ PUBLISHED:
   virtual bool determine_indexed();
   virtual bool determine_decal();
 
-  virtual void write(ostream &out, int indent_level) const=0;
-  bool parse_egg(const string &egg_syntax);
+  virtual void write(std::ostream &out, int indent_level) const=0;
+  bool parse_egg(const std::string &egg_syntax);
 
 #ifdef _DEBUG
   void test_under_integrity() const;

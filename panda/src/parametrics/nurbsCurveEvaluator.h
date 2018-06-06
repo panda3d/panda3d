@@ -54,7 +54,7 @@ PUBLISHED:
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_vertex_space(int i, const NodePath &space);
-  INLINE void set_vertex_space(int i, const string &space);
+  INLINE void set_vertex_space(int i, const std::string &space);
   NodePath get_vertex_space(int i, const NodePath &rel_to) const;
 
   INLINE void set_extended_vertex(int i, int d, PN_stdfloat value);
@@ -74,7 +74,7 @@ PUBLISHED:
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to,
                                 const LMatrix4 &mat) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   typedef epvector<LVecBase4> Vert4Array;
@@ -99,7 +99,7 @@ private:
   NurbsBasisVector _basis;
 };
 
-INLINE ostream &operator << (ostream &out, const NurbsCurveEvaluator &n);
+INLINE std::ostream &operator << (std::ostream &out, const NurbsCurveEvaluator &n);
 
 #include "nurbsCurveEvaluator.I"
 

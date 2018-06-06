@@ -47,7 +47,7 @@ PUBLISHED:
   MAKE_SEQ(get_typed_pointers, get_num_pointers, get_typed_pointer);
 
   TypeHandle get_type(size_t n) const;
-  string get_type_name(size_t n) const;
+  std::string get_type_name(size_t n) const;
   double get_age(size_t n) const;
 
 #ifdef DO_MEMORY_USAGE
@@ -56,7 +56,7 @@ PUBLISHED:
 
   void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   void add_entry(ReferenceCount *ref_ptr, TypedObject *typed_ptr,
@@ -86,7 +86,7 @@ private:
   friend class MemoryUsage;
 };
 
-INLINE ostream &operator << (ostream &out, const MemoryUsagePointers &mup) {
+INLINE std::ostream &operator << (std::ostream &out, const MemoryUsagePointers &mup) {
   mup.output(out);
   return out;
 }

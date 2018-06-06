@@ -30,7 +30,7 @@ public:
   ALLOC_DELETED_CHAIN(BindAnimRequest);
 
 PUBLISHED:
-  explicit BindAnimRequest(const string &name,
+  explicit BindAnimRequest(const std::string &name,
                            const Filename &filename,
                            const LoaderOptions &options,
                            Loader *loader,

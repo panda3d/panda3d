@@ -43,7 +43,7 @@ PUBLISHED:
 public:
   INLINE Mutex(const char *name);
 PUBLISHED:
-  INLINE explicit Mutex(const string &name);
+  INLINE explicit Mutex(const std::string &name);
   Mutex(const Mutex &copy) = delete;
   ~Mutex() = default;
 

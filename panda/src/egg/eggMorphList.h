@@ -53,11 +53,11 @@ public:
   INLINE size_type size() const;
   INLINE bool empty() const;
 
-  pair<iterator, bool> insert(const MorphType &value);
+  std::pair<iterator, bool> insert(const MorphType &value);
   INLINE void clear();
 
-  void write(ostream &out, int indent_level,
-             const string &tag, int num_dimensions) const;
+  void write(std::ostream &out, int indent_level,
+             const std::string &tag, int num_dimensions) const;
 
 private:
   Morphs _morphs;

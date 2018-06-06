@@ -73,7 +73,7 @@ public:
   CPPExpression(bool value);
   CPPExpression(unsigned long long value);
   CPPExpression(int value);
-  CPPExpression(const string &value);
+  CPPExpression(const std::string &value);
   CPPExpression(long double value);
   CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
                 CPPScope *global_scope, CPPPreprocessor *error_sink = nullptr);
@@ -96,7 +96,7 @@ public:
   static CPPExpression literal(unsigned long long value, CPPInstance *lit_op);
   static CPPExpression literal(long double value, CPPInstance *lit_op);
   static CPPExpression literal(CPPExpression *value, CPPInstance *lit_op);
-  static CPPExpression raw_literal(const string &raw, CPPInstance *lit_op);
+  static CPPExpression raw_literal(const std::string &raw, CPPInstance *lit_op);
 
   static const CPPExpression &get_nullptr();
   static const CPPExpression &get_default();
@@ -120,7 +120,7 @@ public:
     double as_real() const;
     void *as_pointer() const;
     bool as_boolean() const;
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
     ResultType _type;
     union {
@@ -140,14 +140,14 @@ public:
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPExpression *as_expression();
 
   Type _type;
-  string _str;
+  std::string _str;
   union {
     bool _boolean;
     unsigned long long _integer;
@@ -191,8 +191,8 @@ protected:
   virtual bool is_less(const CPPDeclaration *other) const;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPExpression::Result &result) {
+inline std::ostream &
+operator << (std::ostream &out, const CPPExpression::Result &result) {
   result.output(out);
   return out;
 }

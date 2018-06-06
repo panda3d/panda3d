@@ -27,7 +27,7 @@ class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggPoolUniquifier();
 
-  virtual string get_category(EggNode *node);
+  virtual std::string get_category(EggNode *node);
 
 public:
   static TypeHandle get_class_type() {

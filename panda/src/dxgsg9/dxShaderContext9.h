@@ -79,7 +79,7 @@ public:
   int _num_bound_streams;
 
   // FOR DEBUGGING
-  string _name;
+  std::string _name;
 
 private:
 #ifdef HAVE_CG

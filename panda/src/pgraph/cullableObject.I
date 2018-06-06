@@ -28,9 +28,9 @@ CullableObject() {
 INLINE CullableObject::
 CullableObject(CPT(Geom) geom, CPT(RenderState) state,
                CPT(TransformState) internal_transform) :
-  _geom(move(geom)),
-  _state(move(state)),
-  _internal_transform(move(internal_transform))
+  _geom(std::move(geom)),
+  _state(std::move(state)),
+  _internal_transform(std::move(internal_transform))
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this, get_class_type());

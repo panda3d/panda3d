@@ -27,7 +27,7 @@ class DCParameter;
  */
 class DCMolecularField : public DCField {
 public:
-  DCMolecularField(const string &name, DCClass *dclass);
+  DCMolecularField(const std::string &name, DCClass *dclass);
 
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();
@@ -39,8 +39,8 @@ PUBLISHED:
 public:
   void add_atomic(DCAtomicField *atomic);
 
-  virtual void output(ostream &out, bool brief) const;
-  virtual void write(ostream &out, bool brief, int indent_level) const;
+  virtual void output(std::ostream &out, bool brief) const;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
   virtual DCPackerInterface *get_nested_field(int n) const;

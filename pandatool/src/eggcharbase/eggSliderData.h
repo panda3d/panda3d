@@ -33,7 +33,7 @@ public:
   double get_frame(int model_index, int n) const;
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 
 public:

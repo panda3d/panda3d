@@ -21,7 +21,7 @@
  * desired type.  It must be the name of some already-registered type.
  */
 INLINE TypedObject *FactoryBase::
-make_instance(const string &type_name, const FactoryParams &params) {
+make_instance(const std::string &type_name, const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
   nassertr(handle != TypeHandle::none(), nullptr);
 
@@ -39,7 +39,7 @@ make_instance(const string &type_name, const FactoryParams &params) {
  * type.
  */
 INLINE TypedObject *FactoryBase::
-make_instance_more_general(const string &type_name,
+make_instance_more_general(const std::string &type_name,
                            const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
   nassertr(handle != TypeHandle::none(), nullptr);

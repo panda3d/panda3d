@@ -80,7 +80,7 @@ has_scoped_name() const {
 /**
  *
  */
-INLINE const string &InterrogateElement::
+INLINE const std::string &InterrogateElement::
 get_scoped_name() const {
   return _scoped_name;
 }
@@ -96,7 +96,7 @@ has_comment() const {
 /**
  *
  */
-INLINE const string &InterrogateElement::
+INLINE const std::string &InterrogateElement::
 get_comment() const {
   return _comment;
 }
@@ -246,14 +246,14 @@ is_mapping() const {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateElement &element) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateElement &element) {
   element.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateElement &element) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateElement &element) {
   element.input(in);
   return in;
 }

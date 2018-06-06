@@ -41,7 +41,7 @@ PUBLISHED:
   virtual time_t get_timestamp() const;
   virtual const FileReference *get_file();
   virtual VirtualFile *get_vfile();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
 };
 
 #include "datagramGenerator.I"

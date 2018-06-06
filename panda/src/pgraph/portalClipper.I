@@ -161,7 +161,7 @@ is_whole_portal_in_view(const LMatrix4 &cmat) {
 
   int result = _reduced_frustum->contains(gbv);
 
-  portal_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << endl;
+  portal_cat.spam() << "1st level test if portal: " << *_reduced_frustum << " is in view " << result << std::endl;
   return (result != 0);
 }
 

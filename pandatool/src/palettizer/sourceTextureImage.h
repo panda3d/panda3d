@@ -76,8 +76,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &
-operator << (ostream &out, const SourceTextureImage &source) {
+INLINE std::ostream &
+operator << (std::ostream &out, const SourceTextureImage &source) {
   source.output_filename(out);
   return out;
 }

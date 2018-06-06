@@ -41,8 +41,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_inner_magnitude() const;
   INLINE bool get_cubic_lerping() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _radius;

@@ -45,13 +45,13 @@ private:
   void build_hierarchy(EggTable *egg_table, AnimGroup *parent);
 
   AnimChannelScalarTable *
-  create_s_channel(EggSAnimData *egg_anim, const string &name,
+  create_s_channel(EggSAnimData *egg_anim, const std::string &name,
                    AnimGroup *parent);
   AnimChannelMatrixXfmTable *
-  create_xfm_channel(EggNode *egg_node, const string &name,
+  create_xfm_channel(EggNode *egg_node, const std::string &name,
                      AnimGroup *parent);
   AnimChannelMatrixXfmTable *
-  create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
+  create_xfm_channel(EggXfmSAnim *egg_anim, const std::string &name,
                      AnimGroup *parent);
 
   PN_stdfloat _fps;

@@ -59,7 +59,7 @@ public:
   virtual NxShapeDesc *ptr() const = 0;
 
 private:
-  string _name;
+  std::string _name;
 
 protected:
   INLINE PhysxShapeDesc();

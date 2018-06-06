@@ -47,7 +47,7 @@ public:
   void report_pi() const;
   void report_statistics() const;
 
-  void read_txa_file(istream &txa_file, const string &txa_filename);
+  void read_txa_file(std::istream &txa_file, const std::string &txa_filename);
   void all_params_set();
   void process_command_line_eggs(bool force_texture_read, const Filename &state_filename);
   void process_all(bool force_texture_read, const Filename &state_filename);
@@ -57,15 +57,15 @@ public:
   bool read_stale_eggs(bool redo_all);
   bool write_eggs();
 
-  EggFile *get_egg_file(const string &name);
-  bool remove_egg_file(const string &name);
+  EggFile *get_egg_file(const std::string &name);
+  bool remove_egg_file(const std::string &name);
 
   void add_command_line_egg(EggFile *egg_file);
 
-  PaletteGroup *get_palette_group(const string &name);
-  PaletteGroup *test_palette_group(const string &name) const;
+  PaletteGroup *get_palette_group(const std::string &name);
+  PaletteGroup *test_palette_group(const std::string &name) const;
   PaletteGroup *get_default_group();
-  TextureImage *get_texture(const string &name);
+  TextureImage *get_texture(const std::string &name);
 
 private:
   static const char *yesno(bool flag);
@@ -82,22 +82,22 @@ public:
     RU_invalid
   };
 
-  static RemapUV string_remap(const string &str);
+  static RemapUV string_remap(const std::string &str);
 
   bool _is_valid;
 
   // These values are not stored in the textures.boo file, but are specific to
   // each session.
   TxaFile _txa_file;
-  string _default_groupname;
-  string _default_groupdir;
+  std::string _default_groupname;
+  std::string _default_groupdir;
   bool _noabs;
 
   // The following parameter values specifically relate to textures and
   // palettes.  These values are stored in the textures.boo file for future
   // reference.
-  string _generated_image_pattern;
-  string _map_dirname;
+  std::string _generated_image_pattern;
+  std::string _map_dirname;
   Filename _shadow_dirname;
   Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
@@ -121,10 +121,10 @@ public:
 
 private:
   typedef pvector<TexturePlacement *> Placements;
-  void compute_statistics(ostream &out, int indent_level,
+  void compute_statistics(std::ostream &out, int indent_level,
                           const Placements &placements) const;
 
-  typedef pmap<string, EggFile *> EggFiles;
+  typedef pmap<std::string, EggFile *> EggFiles;
   EggFiles _egg_files;
 
   typedef pvector<EggFile *> CommandLineEggs;
@@ -133,10 +133,10 @@ private:
   typedef pset<TextureImage *> CommandLineTextures;
   CommandLineTextures _command_line_textures;
 
-  typedef pmap<string, PaletteGroup *> Groups;
+  typedef pmap<std::string, PaletteGroup *> Groups;
   Groups _groups;
 
-  typedef pmap<string, TextureImage *> Textures;
+  typedef pmap<std::string, TextureImage *> Textures;
   Textures _textures;
   typedef pvector<TextureImage *> TextureConflicts;
   TextureConflicts _texture_conflicts;

@@ -34,7 +34,7 @@ public:
 
   int get_size(const XFileNode::PrevData &prev_data) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   bool matches(const XFileArrayDef &other, const XFileDataDef *parent,
                const XFileDataDef *other_parent) const;

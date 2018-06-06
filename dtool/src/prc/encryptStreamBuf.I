@@ -21,7 +21,7 @@
  * code, but open_write() will fail.
  */
 INLINE void EncryptStreamBuf::
-set_algorithm(const string &algorithm) {
+set_algorithm(const std::string &algorithm) {
   _algorithm = algorithm;
 }
 
@@ -29,7 +29,7 @@ set_algorithm(const string &algorithm) {
  * Returns the encryption algorithm that was specified by set_algorithm(), or
  * was read from the stream by the last successful open_read().
  */
-INLINE const string &EncryptStreamBuf::
+INLINE const std::string &EncryptStreamBuf::
 get_algorithm() const {
   return _algorithm;
 }

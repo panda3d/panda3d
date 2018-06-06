@@ -15,7 +15,7 @@
  *
  */
 INLINE StringStream::
-StringStream() : iostream(&_buf) {
+StringStream() : std::iostream(&_buf) {
 }
 
 /**
@@ -23,7 +23,7 @@ StringStream() : iostream(&_buf) {
  * data.
  */
 INLINE StringStream::
-StringStream(const string &source) : iostream(&_buf) {
+StringStream(const std::string &source) : std::iostream(&_buf) {
   set_data(source);
 }
 
@@ -47,21 +47,21 @@ get_data_size() {
 /**
  * Returns the contents of the data stream as a string.
  */
-INLINE string StringStream::
+INLINE std::string StringStream::
 get_data() {
   flush();
   const vector_uchar &data = _buf.get_data();
   if (!data.empty()) {
-    return string((char *)&data[0], data.size());
+    return std::string((char *)&data[0], data.size());
   }
-  return string();
+  return std::string();
 }
 
 /**
  * Replaces the contents of the data stream.  This implicitly reseeks to 0.
  */
 INLINE void StringStream::
-set_data(const string &data) {
+set_data(const std::string &data) {
   _buf.clear();
   if (!data.empty()) {
     set_data((const unsigned char *)data.data(), data.size());
