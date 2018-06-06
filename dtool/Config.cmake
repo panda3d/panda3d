@@ -610,11 +610,6 @@ endif()
 # Miscellaneous settings
 #
 
-option(HAVE_WIN_TOUCHINPUT
-"Define this if you are building on Windows 7 or better, and you
-want your Panda build to run only on Windows 7 or better, and you
-need to use the Windows touchinput interfaces." OFF)
-
 option(WANT_NATIVE_NET
   "Define this true to build the low-level native network
 implementation.  Normally this should be set true." ON)

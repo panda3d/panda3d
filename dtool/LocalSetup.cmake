@@ -14,41 +14,14 @@ include(CheckTypeSize)
 include(TestBigEndian)
 include(TestForSTDNamespace)
 
-# Define if we have libjpeg installed.
-check_include_file_cxx(jpegint.h PHAVE_JPEGINT_H)
-
 # Check if this is a big-endian system.
 test_big_endian(WORDS_BIGENDIAN)
-
-# Check if the compiler supports namespaces.
-set(HAVE_NAMESPACE ${CMAKE_STD_NAMESPACE})
-
-# Define if fstream::open() accepts a third parameter for umask.
-check_cxx_source_compiles("
-#include <fstream>
-std::fstream fs;
-int main(int argc, char *argv[]) { fs.open(\"file\", std::fstream::out, 0644); return 0; }
-" HAVE_OPEN_MASK)
 
 # Define if we have lockf().
 check_cxx_source_compiles("
 #include <unistd.h>
 int main(int argc, char *argv[]) { lockf(0, F_LOCK, 0); return 0; }
 " PHAVE_LOCKF)
-
-# Check if we have a wchar_t type.
-check_type_size(wchar_t HAVE_WCHAR_T)
-
-# Check if we have a wstring type.
-check_cxx_source_compiles("
-#include <string>
-std::wstring str;
-int main(int argc, char *argv[]) { return 0; }
-" HAVE_WSTRING)
-
-# Define if the C++ compiler supports the typename keyword.
-# Since we now require C++11, this is a given.
-set(HAVE_TYPENAME 1)
 
 # Define if we can trust the compiler not to insert extra bytes in
 # structs between base structs and derived structs.
@@ -92,13 +65,6 @@ check_include_file_cxx(getopt.h PHAVE_GETOPT_H)
 if(UNIX)
   set(IOCTL_TERMINAL_WIDTH 1)
 endif()
-
-# Do the system headers define a "streamsize" typedef?
-check_cxx_source_compiles("
-#include <ios>
-std::streamsize ss;
-int main(int argc, char *argv[]) { return 0; }
-" HAVE_STREAMSIZE)
 
 # Do the system headers define key ios typedefs like ios::openmode
 # and ios::fmtflags?
@@ -163,7 +129,6 @@ check_include_file_cxx(unistd.h PHAVE_UNISTD_H)
 check_include_file_cxx(utime.h PHAVE_UTIME_H)
 check_include_file_cxx(glob.h PHAVE_GLOB_H)
 check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
-check_include_file_cxx(sys/soundcard.h PHAVE_SYS_SOUNDCARD_H)
 check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H) #TODO doesn't work on OSX, use sys/ucontext.h
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
 check_include_file_cxx(stdint.h PHAVE_STDINT_H)
@@ -175,9 +140,6 @@ check_include_file_cxx(typeinfo HAVE_RTTI)
 # Do we have SSE2 support?
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-msse2 HAVE_SSE2)
-
-#/* Define if needed to have 64-bit file i/o */
-#$[cdefine __USE_LARGEFILE64]
 
 # Set LINK_ALL_STATIC if we're building everything as static libraries.
 # Also set the library type used for "modules" appropriately.

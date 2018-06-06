@@ -15,17 +15,8 @@
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 #cmakedefine HAVE_RAD_MSS
 
-/* Define if we have FMODex installed. */
-#cmakedefine HAVE_FMODEX
-
-/* Define if we have OpenAL installed. */
-#cmakedefine HAVE_OPENAL
-
 /* Define if we have Freetype 2.0 or better available. */
 #cmakedefine HAVE_FREETYPE
-
-/* Define if we are using SpeedTree. */
-#cmakedefine HAVE_SPEEDTREE
 
 /* Define if we want to compile in a default font. */
 #cmakedefine COMPILE_IN_DEFAULT_FONT
@@ -35,7 +26,6 @@
 
 /* Define if we have Maya available. */
 #cmakedefine HAVE_MAYA
-#cmakedefine MAYA_PRE_5_0
 
 /* Define if we have libRocket available and built with the Rocket Debugger. */
 #cmakedefine HAVE_ROCKET_DEBUGGER
@@ -61,7 +51,6 @@
 
 /* Define if we have libjpeg installed.  */
 #cmakedefine HAVE_JPEG
-#cmakedefine PHAVE_JPEGINT_H
 
 /* Define to build video-for-linux. */
 #cmakedefine HAVE_VIDEO4LINUX
@@ -95,12 +84,6 @@
 /* Define if we have CG installed.  */
 #cmakedefine HAVE_CG
 
-/* Define if we have CGGL installed.  */
-#cmakedefine HAVE_CGGL
-
-/* Define if we have CGDX9 installed.  */
-#cmakedefine HAVE_CGDX9
-
 /* Define for dxerr.h instead of dxerr9.h. */
 #cmakedefine USE_GENERIC_DXERR_LIBRARY
 
@@ -114,12 +97,6 @@
 #cmakedefine MIN_GL_VERSION_MINOR
 #endif
 
-/* Define if we have OpenGL ES installed and want to build for GLES. */
-#cmakedefine HAVE_GLES
-
-/* Define if we have OpenGL ES installed and want to build for GLES2. */
-#cmakedefine HAVE_GLES2
-
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 #cmakedefine HAVE_OPENCV
 #cmakedefine OPENCV_VER_23
@@ -129,17 +106,8 @@
 #cmakedefine HAVE_SWSCALE
 #cmakedefine HAVE_SWRESAMPLE
 
-/* Define if we have ODE installed and want to build for ODE.  */
-#cmakedefine HAVE_ODE
-
-/* Define if we have AWESOMIUM installed and want to build for AWESOMIUM.  */
-#cmakedefine HAVE_AWESOMIUM
-
 /* Define if we have GLX installed and want to build for GLX.  */
 #cmakedefine HAVE_GLX
-
-/* Define if we have EGL installed and want to build for EGL.  */
-#cmakedefine HAVE_EGL
 
 /* Define if we have Windows-GL installed and want to build for Wgl.  */
 #cmakedefine HAVE_WGL
@@ -159,15 +127,6 @@
 
 /* Define if we have X11. */
 #cmakedefine HAVE_X11
-
-/* Define if we have the XFree86-DGA extension. */
-#cmakedefine HAVE_XF86DGA
-
-/* Define if we have the XRandR extension. */
-#cmakedefine HAVE_XRANDR
-
-/* Define if we have the XCursor extension. */
-#cmakedefine HAVE_XCURSOR
 
 /* Define if we want to compile the threading code.  */
 #cmakedefine HAVE_THREADS
@@ -196,9 +155,6 @@
 
 /* Define if we want to compile the audio code.  */
 #cmakedefine HAVE_AUDIO
-
-/* Define if we have bison and flex available. */
-#cmakedefine HAVE_BISON
 
 /* Define if we want to use PStats.  */
 #cmakedefine DO_PSTATS
@@ -255,23 +211,8 @@
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
 #cmakedefine WORDS_BIGENDIAN
 
-/* Define if the C++ compiler uses namespaces.  */
-#cmakedefine HAVE_NAMESPACE
-
-/* Define if fstream::open() accepts a third parameter for umask. */
-#cmakedefine HAVE_OPEN_MASK
-
 /* Define if we have a lockf() function. */
 #cmakedefine PHAVE_LOCKF
-
-/* Define if some header file defines wchar_t. */
-#cmakedefine HAVE_WCHAR_T
-
-/* Define if the <string> header file defines wstring. */
-#cmakedefine HAVE_WSTRING
-
-/* Define if the C++ compiler supports the typename keyword.  */
-#cmakedefine HAVE_TYPENAME
 
 /* Define if we can trust the compiler not to insert extra bytes in
    structs between base structs and derived structs. */
@@ -297,9 +238,6 @@
 
 /* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
 #cmakedefine IOCTL_TERMINAL_WIDTH
-
-/* Do the system headers define a "streamsize" typedef? */
-#cmakedefine HAVE_STREAMSIZE
 
 /* Do the system headers define key ios typedefs like ios::openmode
    and ios::fmtflags? */
@@ -382,10 +320,6 @@
 /* Define if you have the <dirent.h> header file.  */
 #cmakedefine PHAVE_DIRENT_H
 
-/* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
-   interface)? */
-#cmakedefine PHAVE_SYS_SOUNDCARD_H
-
 /* Do we have <ucontext.h> (and therefore makecontext() /
    swapcontext())? */
 #cmakedefine PHAVE_UCONTEXT_H
@@ -405,14 +339,8 @@
 /* Is the code being compiled with the Tau profiler's instrumentor? */
 #cmakedefine USE_TAU
 
-/* Define if needed to have 64-bit file i/o */
-#cmakedefine __USE_LARGEFILE64
-
 // To activate the DELETED_CHAIN macros.
 #cmakedefine USE_DELETED_CHAIN
-
-// To build the Windows TOUCHINPUT interfaces (requires Windows 7).
-#cmakedefine HAVE_WIN_TOUCHINPUT
 
 // If we are to build the native net interfaces.
 #cmakedefine WANT_NATIVE_NET
