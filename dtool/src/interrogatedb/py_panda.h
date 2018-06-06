@@ -247,7 +247,7 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
  * Wrapper around Python 3.4's enum library, which does not have a C API.
  */
 EXPCL_INTERROGATEDB PyObject *Dtool_EnumType_Create(const char *name, PyObject *names,
-                                                    const char *module = NULL);
+                                                    const char *module = nullptr);
 
 /**
 
@@ -393,7 +393,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
-ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(std::nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value);
 

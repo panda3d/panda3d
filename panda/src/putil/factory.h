@@ -50,7 +50,7 @@ public:
                              const FactoryParams &params = FactoryParams());
 
   INLINE void register_factory(TypeHandle handle, CreateFunc *func,
-                               void *user_data = NULL);
+                               void *user_data = nullptr);
 };
 
 #include "factory.I"

@@ -80,7 +80,7 @@ public:
 protected:
   class CData;
 
-  virtual PT(Texture) make_copy_impl();
+  virtual PT(Texture) make_copy_impl() const;
   void do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
                  const CData *cdata_copy, const Texture::CData *cdata_copy_tex);
 

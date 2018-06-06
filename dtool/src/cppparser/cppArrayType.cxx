@@ -85,7 +85,7 @@ is_trivial() const {
  */
 bool CPPArrayType::
 is_default_constructible() const {
-  return _bounds != NULL && _element_type->is_default_constructible();
+  return _bounds != nullptr && _element_type->is_default_constructible();
 }
 
 /**
@@ -105,7 +105,7 @@ is_copy_constructible() const {
 bool CPPArrayType::
 is_equivalent(const CPPType &other) const {
   const CPPArrayType *ot = ((CPPType *)&other)->as_array_type();
-  if (ot == (CPPArrayType *)NULL) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -128,7 +128,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     _element_type->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
-  if (_bounds != NULL) {
+  if (_bounds != nullptr) {
     rep->_bounds =
       _bounds->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
@@ -171,7 +171,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
                 const string &name) const {
   ostringstream brackets;
   brackets << "[";
-  if (_bounds != NULL) {
+  if (_bounds != nullptr) {
     brackets << *_bounds;
   }
   brackets << "]";
@@ -204,13 +204,13 @@ as_array_type() {
 bool CPPArrayType::
 is_equal(const CPPDeclaration *other) const {
   const CPPArrayType *ot = ((CPPDeclaration *)other)->as_array_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
-  if (_bounds != NULL && ot->_bounds != NULL) {
+  if (_bounds != nullptr && ot->_bounds != nullptr) {
     if (*_bounds != *ot->_bounds) {
       return false;
     }
-  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
+  } else if ((_bounds == nullptr) != (ot->_bounds == nullptr)) {
     return false;
   }
 
@@ -225,13 +225,13 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPArrayType::
 is_less(const CPPDeclaration *other) const {
   const CPPArrayType *ot = ((CPPDeclaration *)other)->as_array_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
-  if (_bounds != NULL && ot->_bounds != NULL) {
+  if (_bounds != nullptr && ot->_bounds != nullptr) {
     if (*_bounds != *ot->_bounds) {
       return *_bounds < *ot->_bounds;
     }
-  } else if ((_bounds == NULL) != (ot->_bounds == NULL)) {
+  } else if ((_bounds == nullptr) != (ot->_bounds == nullptr)) {
     return _bounds < ot->_bounds;
   }
 

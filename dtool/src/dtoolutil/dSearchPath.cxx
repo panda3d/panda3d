@@ -220,8 +220,8 @@ append_path(const string &path, const string &separator) {
  */
 void DSearchPath::
 append_path(const DSearchPath &path) {
-  copy(path._directories.begin(), path._directories.end(),
-       back_inserter(_directories));
+  std::copy(path._directories.begin(), path._directories.end(),
+            std::back_inserter(_directories));
 }
 
 /**
@@ -232,8 +232,8 @@ void DSearchPath::
 prepend_path(const DSearchPath &path) {
   if (!path._directories.empty()) {
     Directories new_directories = path._directories;
-    copy(_directories.begin(), _directories.end(),
-         back_inserter(new_directories));
+    std::copy(_directories.begin(), _directories.end(),
+              std::back_inserter(new_directories));
     _directories.swap(new_directories);
   }
 }

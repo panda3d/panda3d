@@ -108,18 +108,18 @@ PUBLISHED:
   INLINE int compare_to(const TypeHandle &other) const;
   INLINE size_t get_hash() const;
 
-  INLINE string get_name(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE string get_name(TypedObject *object = nullptr) const;
   INLINE bool is_derived_from(TypeHandle parent,
-                              TypedObject *object = (TypedObject *)NULL) const;
+                              TypedObject *object = nullptr) const;
 
-  INLINE int get_num_parent_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_parent_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_parent_class(int index) const;
 
-  INLINE int get_num_child_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_child_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_child_class(int index) const;
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
-                                       TypedObject *object = (TypedObject *)NULL) const;
+                                       TypedObject *object = nullptr) const;
 
   int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 

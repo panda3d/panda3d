@@ -32,7 +32,7 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 void Extension<NodePathCollection>::
 __init__(PyObject *self, PyObject *sequence) {
   PyObject *fast = PySequence_Fast(sequence, "NodePathCollection constructor requires a sequence");
-  if (fast == NULL) {
+  if (fast == nullptr) {
     return;
   }
 
@@ -41,7 +41,7 @@ __init__(PyObject *self, PyObject *sequence) {
 
   for (int i = 0; i < size; ++i) {
     PyObject *item = PySequence_Fast_GET_ITEM(fast, i);
-    if (item == NULL) {
+    if (item == nullptr) {
       return;
     }
 
@@ -76,13 +76,13 @@ __reduce__(PyObject *self) const {
   // necessary to reconstruct this object.
 
   PyObject *this_class = (PyObject *)self->ob_type;
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *self_iter = PyObject_GetIter(self);
-  if (self_iter == NULL) {
-    return NULL;
+  if (self_iter == nullptr) {
+    return nullptr;
   }
 
   // Since a NodePathCollection is itself an iterator, we can simply pass it

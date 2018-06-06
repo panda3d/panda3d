@@ -37,7 +37,7 @@ TypeHandle StaticTextFont::_type_handle;
  */
 StaticTextFont::
 StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
-  nassertv(font_def != (PandaNode *)NULL);
+  nassertv(font_def != nullptr);
   _font = font_def;
   _cs = cs;
   _glyphs.clear();
@@ -248,7 +248,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
       const Geom *geom = geode->get_geom(i);
 
       bool found_points = false;
-      for (int j = 0; j < geom->get_num_primitives() && !found_points; j++) {
+      for (size_t j = 0; j < geom->get_num_primitives() && !found_points; ++j) {
         const GeomPrimitive *primitive = geom->get_primitive(j);
         if (primitive->is_of_type(GeomPoints::get_class_type())) {
           dot = geom;
@@ -295,10 +295,10 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     int character = atoi(name.c_str());
     CPT(Geom) ch;
     CPT(Geom) dot;
-    const RenderState *state = NULL;
+    const RenderState *state = nullptr;
     find_character_gsets(root, ch, dot, state, next_net_state);
     PN_stdfloat width = 0.0;
-    if (dot != (Geom *)NULL) {
+    if (dot != nullptr) {
       // Get the first vertex from the "dot" geoset.  This will be the origin
       // of the next character.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
@@ -313,9 +313,9 @@ find_characters(PandaNode *root, const RenderState *net_state) {
 
     CPT(Geom) ch;
     CPT(Geom) dot;
-    const RenderState *state = NULL;
+    const RenderState *state = nullptr;
     find_character_gsets(root, ch, dot, state, next_net_state);
-    if (dot != (Geom *)NULL) {
+    if (dot != nullptr) {
       // Get the first vertex from the "dot" geoset.  This will be the design
       // size indicator.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());

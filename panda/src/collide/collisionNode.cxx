@@ -142,7 +142,7 @@ combine_with(PandaNode *other) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -184,7 +184,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   for (si = _solids.begin(); si != _solids.end(); ++si) {
     CPT(CollisionSolid) solid = (*si).get_read_pointer();
     PT(PandaNode) node = solid->get_viz(trav, data, false);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       CullTraverserData next_data(data, node);
 
       // We don't want to inherit the render state from above for these guys.
@@ -206,7 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       for (si = _solids.begin(); si != _solids.end(); ++si) {
         CPT(CollisionSolid) solid = (*si).get_read_pointer();
         PT(PandaNode) node = solid->get_viz(trav, data, false);
-        if (node != (PandaNode *)NULL) {
+        if (node != nullptr) {
           CullTraverserData next_data(data, node);
 
           next_data._net_transform =
@@ -331,8 +331,8 @@ CPT(RenderState) CollisionNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
@@ -422,7 +422,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for(int i = 0; i < num_solids; i++) {
     manager->read_pointer(scan);
     // Push back a NULL for each solid, for now.  We'll fill them in later.
-    _solids.push_back((CollisionSolid *)NULL);
+    _solids.push_back(nullptr);
   }
 
   _from_collide_mask.set_word(scan.get_uint32());

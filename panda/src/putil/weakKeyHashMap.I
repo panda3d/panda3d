@@ -17,8 +17,8 @@
 template<class Key, class Value>
 INLINE WeakKeyHashMap<Key, Value>::
 WeakKeyHashMap() :
-  _table(NULL),
-  _deleted_chain(NULL),
+  _table(nullptr),
+  _deleted_chain(nullptr),
   _table_size(0),
   _num_entries(0)
 {
@@ -196,8 +196,8 @@ clear() {
     }
 
     _deleted_chain->deallocate(_table, TypeHandle::none());
-    _table = NULL;
-    _deleted_chain = NULL;
+    _table = nullptr;
+    _deleted_chain = nullptr;
     _table_size = 0;
     _num_entries = 0;
   }
@@ -588,7 +588,7 @@ expand_table() {
   // Double the table size.
   size_t old_table_size = old_map._table_size;
   _table_size = (old_table_size << 1);
-  nassertv(_table == NULL);
+  nassertv(_table == nullptr);
 
   // We allocate enough bytes for _table_size elements of TableEntry, plus
   // _table_size more bytes at the end (for the exists array).

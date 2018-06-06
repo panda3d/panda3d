@@ -30,7 +30,7 @@ public:
                const CPPFile &file);
 
   string get_simple_name() const;
-  string get_local_name(CPPScope *scope = NULL) const;
+  string get_local_name(CPPScope *scope = nullptr) const;
   string get_fully_scoped_name() const;
   CPPScope *get_scope() const;
 

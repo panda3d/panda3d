@@ -40,7 +40,7 @@ class EggXfmSAnim;
 class MayaNodeDesc : public ReferenceCount, public Namable {
 public:
   MayaNodeDesc(MayaNodeTree *tree,
-               MayaNodeDesc *parent = NULL, const string &name = string());
+               MayaNodeDesc *parent = nullptr, const string &name = string());
   ~MayaNodeDesc();
 
   void from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter);

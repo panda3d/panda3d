@@ -89,7 +89,7 @@ add_units_options() {
     ("ui", "units", 40,
      "Specify the units of the input " + _format_name +
      " file.  Normally, this can be inferred from the file itself.",
-     &SomethingToEgg::dispatch_units, NULL, &_input_units);
+     &SomethingToEgg::dispatch_units, nullptr, &_input_units);
 
   add_option
     ("uo", "units", 40,
@@ -97,7 +97,7 @@ add_units_options() {
      "specified, the vertices in the egg file will be scaled as "
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
-     &SomethingToEgg::dispatch_units, NULL, &_output_units);
+     &SomethingToEgg::dispatch_units, nullptr, &_output_units);
 }
 
 /**
@@ -111,14 +111,14 @@ add_animation_options() {
      "converted to egg, if at all.  At present, the following keywords "
      "are supported: none, pose, flip, strobe, model, chan, or both.  "
      "The default is none, which means not to convert animation.",
-     &SomethingToEgg::dispatch_animation_convert, NULL, &_animation_convert);
+     &SomethingToEgg::dispatch_animation_convert, nullptr, &_animation_convert);
 
   add_option
     ("cn", "name", 40,
      "Specifies the name of the animation character.  This should match "
      "between all of the model files and all of the channel files for a "
      "particular model and its associated channels.",
-     &SomethingToEgg::dispatch_string, NULL, &_character_name);
+     &SomethingToEgg::dispatch_string, nullptr, &_character_name);
 
   add_option
     ("sf", "start-frame", 40,

@@ -38,7 +38,7 @@ ISubStream(IStreamWrapper *source, streampos start, streampos end) : istream(&_b
 INLINE ISubStream &ISubStream::
 open(IStreamWrapper *source, streampos start, streampos end) {
   clear((ios_iostate)0);
-  _buf.open(source, NULL, start, end, false);
+  _buf.open(source, nullptr, start, end, false);
   return *this;
 }
 
@@ -79,7 +79,7 @@ OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append) : 
 INLINE OSubStream &OSubStream::
 open(OStreamWrapper *dest, streampos start, streampos end, bool append) {
   clear((ios_iostate)0);
-  _buf.open(NULL, dest, start, end, append);
+  _buf.open(nullptr, dest, start, end, append);
   return *this;
 }
 

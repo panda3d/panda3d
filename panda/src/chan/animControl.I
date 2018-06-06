@@ -28,7 +28,7 @@ is_pending() const {
  */
 INLINE bool AnimControl::
 has_anim() const {
-  return (_anim != (AnimBundle *)NULL);
+  return (_anim != nullptr);
 }
 
 /**

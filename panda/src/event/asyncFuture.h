@@ -83,7 +83,7 @@ PUBLISHED:
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
-  INLINE void set_result(nullptr_t);
+  INLINE void set_result(std::nullptr_t);
   INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
   INLINE void set_result(TypedWritableReferenceCount *result);

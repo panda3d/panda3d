@@ -47,7 +47,7 @@ add_callback(WeakPointerCallback *callback, void *data) {
   // have been deleted in the meantime.
   bool deleted = was_deleted();
   if (!deleted) {
-    _callbacks.insert(make_pair(callback, data));
+    _callbacks.insert(std::make_pair(callback, data));
   }
   _lock.unlock();
 

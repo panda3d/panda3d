@@ -42,7 +42,7 @@ FileSpec() {
   _timestamp = 0;
   memset(_hash, 0, hash_size);
   _got_hash = false;
-  _actual_file = NULL;
+  _actual_file = nullptr;
 }
 
 /**
@@ -56,7 +56,7 @@ FileSpec(const FileSpec &copy) :
   _got_hash(copy._got_hash)
 {
   memcpy(_hash, copy._hash, hash_size);
-  _actual_file = NULL;
+  _actual_file = nullptr;
 }
 
 /**
@@ -76,7 +76,7 @@ operator = (const FileSpec &copy) {
  */
 FileSpec::
 ~FileSpec() {
-  if (_actual_file != NULL) {
+  if (_actual_file != nullptr) {
     delete _actual_file;
   }
 }
@@ -87,25 +87,25 @@ FileSpec::
 void FileSpec::
 load_xml(TiXmlElement *xelement) {
   const char *filename = xelement->Attribute("filename");
-  if (filename != NULL) {
+  if (filename != nullptr) {
     _filename = filename;
   }
 
   const char *size = xelement->Attribute("size");
-  if (size != NULL) {
+  if (size != nullptr) {
     char *endptr;
     _size = strtoul(size, &endptr, 10);
   }
 
   const char *timestamp = xelement->Attribute("timestamp");
-  if (timestamp != NULL) {
+  if (timestamp != nullptr) {
     char *endptr;
     _timestamp = strtoul(timestamp, &endptr, 10);
   }
 
   _got_hash = false;
   const char *hash = xelement->Attribute("hash");
-  if (hash != NULL && strlen(hash) == (hash_size * 2)) {
+  if (hash != nullptr && strlen(hash) == (hash_size * 2)) {
     // Decode the hex hash string.
     _got_hash = decode_hex(_hash, hash, hash_size);
   }
@@ -151,9 +151,9 @@ quick_verify(const string &package_dir) {
  */
 bool FileSpec::
 quick_verify_pathname(const string &pathname) {
-  if (_actual_file != NULL) {
+  if (_actual_file != nullptr) {
     delete _actual_file;
-    _actual_file = NULL;
+    _actual_file = nullptr;
   }
 
   int result = 1;
@@ -221,9 +221,9 @@ quick_verify_pathname(const string &pathname) {
  */
 bool FileSpec::
 full_verify(const string &package_dir) {
-  if (_actual_file != NULL) {
+  if (_actual_file != nullptr) {
     delete _actual_file;
-    _actual_file = NULL;
+    _actual_file = nullptr;
   }
 
   string pathname = get_pathname(package_dir);
@@ -281,7 +281,7 @@ full_verify(const string &package_dir) {
  */
 const FileSpec *FileSpec::
 force_get_actual_file(const string &pathname) {
-  if (_actual_file == NULL) {
+  if (_actual_file == nullptr) {
 #ifdef _WIN32
     struct _stat st;
     wstring pathname_w;
@@ -418,7 +418,7 @@ output_hash(ostream &out) const {
 bool FileSpec::
 priv_check_hash(const string &pathname, void *stp) {
   const struct stat &st = *(const struct stat *)stp;
-  assert(_actual_file == NULL);
+  assert(_actual_file == nullptr);
   _actual_file = new FileSpec;
   _actual_file->_filename = pathname;
   _actual_file->_size = st.st_size;

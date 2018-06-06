@@ -36,7 +36,7 @@ Filename CVSSourceTree::_start_fullpath;
  */
 CVSSourceTree::
 CVSSourceTree() {
-  _root = (CVSSourceDirectory *)NULL;
+  _root = nullptr;
   _got_root_fullpath = false;
 }
 
@@ -45,7 +45,7 @@ CVSSourceTree() {
  */
 CVSSourceTree::
 ~CVSSourceTree() {
-  if (_root != (CVSSourceDirectory *)NULL) {
+  if (_root != nullptr) {
     delete _root;
   }
 }
@@ -67,9 +67,9 @@ set_root(const Filename &root_path) {
  */
 bool CVSSourceTree::
 scan(const Filename &key_filename) {
-  nassertr(_root == (CVSSourceDirectory *)NULL, false);
+  nassertr(_root == nullptr, false);
   Filename root_fullpath = get_root_fullpath();
-  _root = new CVSSourceDirectory(this, NULL, root_fullpath.get_basename());
+  _root = new CVSSourceDirectory(this, nullptr, root_fullpath.get_basename());
   return _root->scan(_path, key_filename);
 }
 
@@ -95,7 +95,7 @@ find_directory(const Filename &path) {
   if (root_fullpath.length() > fullpath.length() ||
       cmp_nocase(fullpath.substr(0, root_fullpath.length()), root_fullpath) != 0) {
     // Nope!
-    return (CVSSourceDirectory *)NULL;
+    return nullptr;
   }
 
   // The relative name is the part of fullpath not in root_fullpath.
@@ -112,7 +112,7 @@ find_directory(const Filename &path) {
 CVSSourceDirectory *CVSSourceTree::
 find_relpath(const string &relpath) {
   CVSSourceDirectory *result = _root->find_relpath(relpath);
-  if (result != (CVSSourceDirectory *)NULL) {
+  if (result != nullptr) {
     return result;
   }
 
@@ -129,7 +129,7 @@ find_relpath(const string &relpath) {
     return _root->find_relpath(rest);
   }
 
-  return (CVSSourceDirectory *)NULL;
+  return nullptr;
 }
 
 /**
@@ -185,7 +185,7 @@ get_root_fullpath() {
  */
 Filename CVSSourceTree::
 get_root_dirname() const {
-  nassertr(_root != (CVSSourceDirectory *)NULL, Filename());
+  nassertr(_root != nullptr, Filename());
   return _root->get_dirname();
 }
 
@@ -407,14 +407,14 @@ ask_any(const string &basename,
     // relative path from the root (with or without the root's dirname), or
     // the dirname of the particular directory.
     CVSSourceDirectory *dir = find_directory(result);
-    if (dir == (CVSSourceDirectory *)NULL) {
+    if (dir == nullptr) {
       dir = find_relpath(result);
     }
-    if (dir == (CVSSourceDirectory *)NULL) {
+    if (dir == nullptr) {
       dir = find_dirname(result);
     }
 
-    if (dir != (CVSSourceDirectory *)NULL) {
+    if (dir != nullptr) {
       // If the file is already in this directory, we must preserve its
       // existing case.
       FilePaths::const_iterator pi;
@@ -438,11 +438,11 @@ ask_any(const string &basename,
  */
 string CVSSourceTree::
 prompt(const string &message) {
-  nout << flush;
+  nout << std::flush;
   while (true) {
-    cerr << message << flush;
-    string response;
-    getline(cin, response);
+    cerr << message << std::flush;
+    std::string response;
+    std::getline(std::cin, response);
 
     // Remove leading and trailing whitespace.
     size_t p = 0;
@@ -491,7 +491,7 @@ get_start_fullpath() {
  */
 CVSSourceTree::FilePath::
 FilePath() :
-  _dir(NULL)
+  _dir(nullptr)
 {
 }
 
@@ -512,7 +512,7 @@ FilePath(CVSSourceDirectory *dir, const string &basename) :
  */
 bool CVSSourceTree::FilePath::
 is_valid() const {
-  return (_dir != (CVSSourceDirectory *)NULL);
+  return (_dir != nullptr);
 }
 
 /**
@@ -520,7 +520,7 @@ is_valid() const {
  */
 Filename CVSSourceTree::FilePath::
 get_path() const {
-  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  nassertr(_dir != nullptr, Filename());
   return Filename(_dir->get_path(), _basename);
 }
 
@@ -529,7 +529,7 @@ get_path() const {
  */
 Filename CVSSourceTree::FilePath::
 get_fullpath() const {
-  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  nassertr(_dir != nullptr, Filename());
   return Filename(_dir->get_fullpath(), _basename);
 }
 
@@ -539,6 +539,6 @@ get_fullpath() const {
  */
 Filename CVSSourceTree::FilePath::
 get_rel_from(const CVSSourceDirectory *other) const {
-  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  nassertr(_dir != nullptr, Filename());
   return Filename(other->get_rel_to(_dir), _basename);
 }

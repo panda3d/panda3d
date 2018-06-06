@@ -31,7 +31,7 @@ public:
 
 PUBLISHED:
   INLINE PStatThread(PStatClient *client, int index);
-  INLINE PStatThread(Thread *thread, PStatClient *client = NULL);
+  INLINE PStatThread(Thread *thread, PStatClient *client = nullptr);
 
   INLINE PStatThread(const PStatThread &copy);
   INLINE void operator = (const PStatThread &copy);

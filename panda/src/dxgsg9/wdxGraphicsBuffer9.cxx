@@ -37,10 +37,10 @@ wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   // initialize all class members
   _cube_map_index = -1;
-  _saved_color_buffer = NULL;
-  _saved_depth_buffer = NULL;
-  _color_backing_store = NULL;
-  _depth_backing_store = NULL;
+  _saved_color_buffer = nullptr;
+  _saved_depth_buffer = nullptr;
+  _color_backing_store = nullptr;
+  _depth_backing_store = nullptr;
 
   // is this correct ??? Since the pbuffer never gets flipped, we get
   // screenshots from the same buffer we draw into.
@@ -120,7 +120,7 @@ bool wdxGraphicsBuffer9::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_dxgsg -> _d3d_device == 0) {
@@ -151,7 +151,7 @@ void wdxGraphicsBuffer9::
 end_frame(FrameMode mode, Thread *current_thread) {
 
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -225,7 +225,7 @@ restore_bitplanes() {
 
   // clear all render targets, except for the main render target
   for (int i = 1; i<count_textures(); i++) {
-    hr = _dxgsg -> _d3d_device -> SetRenderTarget (i, NULL);
+    hr = _dxgsg -> _d3d_device -> SetRenderTarget (i, nullptr);
     if (!SUCCEEDED (hr)) {
       dxgsg9_cat.error ( ) << "SetRenderTarget " << i << " " << D3DERRORSTRING(hr) FL;
     }
@@ -235,8 +235,8 @@ restore_bitplanes() {
   if (_saved_depth_buffer) {
     _saved_depth_buffer->Release();
   }
-  _saved_color_buffer = NULL;
-  _saved_depth_buffer = NULL;
+  _saved_color_buffer = nullptr;
+  _saved_depth_buffer = nullptr;
 }
 
 
@@ -335,7 +335,7 @@ rebuild_bitplanes() {
     if ((_color_backing_store)&&
         ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
       _color_backing_store->Release();
-      _color_backing_store = NULL;
+      _color_backing_store = nullptr;
     }
     if (!_color_backing_store) {
       hr = _dxgsg->_d3d_device->CreateRenderTarget(bitplane_x, bitplane_y,
@@ -344,7 +344,7 @@ rebuild_bitplanes() {
                                                    _saved_color_desc.MultiSampleQuality,
                                                    FALSE,
                                                    &_color_backing_store,
-                                                   NULL);
+                                                   nullptr);
       if (!SUCCEEDED(hr)) {
         dxgsg9_cat.error ( ) << "CreateRenderTarget " << D3DERRORSTRING(hr) FL;
       }
@@ -354,7 +354,7 @@ rebuild_bitplanes() {
     // Maintain the color texture.
     if (_color_backing_store) {
       _color_backing_store->Release();
-      _color_backing_store = NULL;
+      _color_backing_store = nullptr;
     }
     color_tex = get_texture(color_tex_index);
     color_tex->set_size_padded(get_x_size(), get_y_size());
@@ -409,13 +409,13 @@ rebuild_bitplanes() {
       if ((_depth_backing_store)&&
           ((bitplane_x != _backing_sizex)||(bitplane_y != _backing_sizey))) {
         _depth_backing_store->Release();
-        _depth_backing_store = NULL;
+        _depth_backing_store = nullptr;
       }
       if (!_depth_backing_store) {
         hr = _dxgsg -> _d3d_device ->
           CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
                                      _saved_depth_desc.MultiSampleType, _saved_depth_desc.MultiSampleQuality,
-                                     false, &_depth_backing_store, NULL);
+                                     false, &_depth_backing_store, nullptr);
         if (!SUCCEEDED(hr)) {
           dxgsg9_cat.error ( ) << "CreateDepthStencilSurface " << D3DERRORSTRING(hr) FL;
         }
@@ -426,7 +426,7 @@ rebuild_bitplanes() {
     // Maintain the depth texture.
     if (_depth_backing_store) {
       _depth_backing_store->Release();
-      _depth_backing_store = NULL;
+      _depth_backing_store = nullptr;
     }
 
     if (_shared_depth_buffer) {
@@ -704,7 +704,7 @@ process_events() {
 
   // Handle all the messages on the queue in a row.  Some of these might be
   // for another window, but they will get dispatched appropriately.
-  while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
     process_1_event();
   }
 }
@@ -717,11 +717,11 @@ close_buffer() {
 
   if (_color_backing_store) {
     _color_backing_store->Release();
-    _color_backing_store = NULL;
+    _color_backing_store = nullptr;
   }
   if (_depth_backing_store) {
     _depth_backing_store->Release();
-    _depth_backing_store = NULL;
+    _depth_backing_store = nullptr;
   }
 
   _cube_map_index = -1;
@@ -784,7 +784,7 @@ void wdxGraphicsBuffer9::
 process_1_event() {
   MSG msg;
 
-  if (!GetMessage(&msg, NULL, 0, 0)) {
+  if (!GetMessage(&msg, nullptr, 0, 0)) {
     // WM_QUIT received.  We need a cleaner way to deal with this.
     // DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn

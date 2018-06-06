@@ -153,7 +153,7 @@ INLINE bool ShaderTerrainMesh::get_update_enabled() const {
 INLINE void ShaderTerrainMesh::Chunk::clear_children() {
   for (size_t i = 0; i < 4; ++i) {
     delete children[i];
-    children[i] = NULL;
+    children[i] = nullptr;
   }
 }
 
@@ -163,7 +163,7 @@ INLINE void ShaderTerrainMesh::Chunk::clear_children() {
  */
 INLINE ShaderTerrainMesh::Chunk::Chunk() {
   for (size_t i = 0; i < 4; ++i)
-    children[i] = NULL;
+    children[i] = nullptr;
 }
 
 /**

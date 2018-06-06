@@ -227,7 +227,7 @@ protected:
 
   void dx_cleanup();
   HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params,
-                           DXScreenData **screen = NULL);
+                           DXScreenData **screen = nullptr);
 
   bool check_cooperative_level();
 

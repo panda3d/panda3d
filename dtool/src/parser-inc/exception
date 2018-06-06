@@ -1,0 +1,10 @@
+#pragma once
+
+namespace std {
+  class exception;
+  class bad_exception;
+  class nested_exception;
+
+  typedef void (*unexpected_handler)();
+  typedef void (*terminate_handler)();
+}

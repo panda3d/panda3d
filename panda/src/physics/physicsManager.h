@@ -72,12 +72,12 @@ PUBLISHED:
   void init_random_seed();
 
   virtual void output(ostream &out) const;
-  virtual void write_physicals(ostream &out, unsigned int indent=0) const;
-  virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write_physicals(ostream &out, int indent=0) const;
+  virtual void write_linear_forces(ostream &out, int indent=0) const;
+  virtual void write_angular_forces(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
-  virtual void debug_output(ostream &out, unsigned int indent=0) const;
+  virtual void debug_output(ostream &out, int indent=0) const;
 
 public:
   friend class Physical;

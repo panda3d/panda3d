@@ -123,7 +123,7 @@ PUBLISHED:
                     const LoaderOptions &options = LoaderOptions());
   bool add_from_stf(istream &in, const Filename &pathname,
                     const LoaderOptions &options = LoaderOptions(),
-                    Loader *loader = NULL);
+                    Loader *loader = nullptr);
 
   bool setup_terrain(const Filename &terrain_file);
   void set_terrain(STTerrain *terrain);

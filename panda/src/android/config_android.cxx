@@ -19,7 +19,7 @@
 
 NotifyCategoryDef(android, "");
 
-struct android_app *panda_android_app = NULL;
+struct android_app *panda_android_app = nullptr;
 
 jclass    jni_PandaActivity;
 jmethodID jni_PandaActivity_readBitmapSize;

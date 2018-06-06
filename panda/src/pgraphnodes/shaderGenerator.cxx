@@ -288,8 +288,6 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
   }
 
-  bool normal_mapping = key._lighting && shader_attrib->auto_normal_on();
-
   // See if there is a normal map, height map, gloss map, or glow map.  Also
   // check if anything has TexGen.
 
@@ -355,7 +353,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (parallax_mapping_samples == 0) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on() ||
-                 (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+                 (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         info._mode = TextureStage::M_height;
         info._flags = ShaderKey::TF_has_alpha;
       } else {
@@ -364,7 +362,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       break;
 
     case TextureStage::M_normal_gloss:
-      if (!shader_attrib->auto_gloss_on() || !key._lighting) {
+      if (!shader_attrib->auto_gloss_on() || key._lights.empty()) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on()) {
         info._mode = TextureStage::M_gloss;
@@ -413,7 +411,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
-          (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+          (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
@@ -427,7 +425,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       }
       break;
     case TextureStage::M_gloss:
-      if (key._lighting && shader_attrib->auto_gloss_on()) {
+      if (!key._lights.empty() && shader_attrib->auto_gloss_on()) {
         info._flags = ShaderKey::TF_map_gloss;
       } else {
         skip = true;
@@ -663,23 +661,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // These variables will hold the results of register allocation.
 
-  const char *tangent_freg = 0;
-  const char *binormal_freg = 0;
+  const char *tangent_freg = nullptr;
+  const char *binormal_freg = nullptr;
   string tangent_input;
   string binormal_input;
   pmap<const InternalName *, const char *> texcoord_fregs;
   pvector<const char *> lightcoord_fregs;
-  const char *world_position_freg = 0;
-  const char *world_normal_freg = 0;
-  const char *eye_position_freg = 0;
-  const char *eye_normal_freg = 0;
-  const char *hpos_freg = 0;
+  const char *world_position_freg = nullptr;
+  const char *world_normal_freg = nullptr;
+  const char *eye_position_freg = nullptr;
+  const char *eye_normal_freg = nullptr;
+  const char *hpos_freg = nullptr;
 
   const char *position_vreg;
-  const char *transform_weight_vreg = 0;
+  const char *transform_weight_vreg = nullptr;
   const char *normal_vreg;
-  const char *color_vreg = 0;
-  const char *transform_index_vreg = 0;
+  const char *color_vreg = nullptr;
+  const char *transform_index_vreg = nullptr;
 
   if (_use_generic_attr) {
     position_vreg = "ATTR0";

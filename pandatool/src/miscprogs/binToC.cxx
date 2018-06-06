@@ -38,7 +38,7 @@ BinToC() :
   add_option
     ("n", "name", 0,
      "Specify the name of the table that is generated.",
-     &BinToC::dispatch_string, NULL, &_table_name);
+     &BinToC::dispatch_string, nullptr, &_table_name);
 
   add_option
     ("static", "", 0,
@@ -66,13 +66,13 @@ BinToC() :
  */
 void BinToC::
 run() {
-  ifstream in;
+  std::ifstream in;
   if (!_input_filename.open_read(in)) {
     nout << "Unable to read " << _input_filename << ".\n";
     exit(1);
   }
 
-  ostream &out = get_output();
+  std::ostream &out = get_output();
   string static_keyword;
   if (_static_table) {
     static_keyword = "static ";

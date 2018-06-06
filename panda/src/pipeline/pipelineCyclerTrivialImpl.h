@@ -40,13 +40,13 @@ class Pipeline;
  */
 struct EXPCL_PANDA_PIPELINE PipelineCyclerTrivialImpl {
 public:
-  INLINE PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
+  INLINE PipelineCyclerTrivialImpl(CycleData *initial_data, Pipeline *pipeline = nullptr);
   PipelineCyclerTrivialImpl(const PipelineCyclerTrivialImpl &copy) = delete;
   ~PipelineCyclerTrivialImpl() = default;
 
   PipelineCyclerTrivialImpl &operator = (const PipelineCyclerTrivialImpl &copy) = delete;
 
-  INLINE void acquire(Thread *current_thread = NULL);
+  INLINE void acquire(Thread *current_thread = nullptr);
   INLINE void release();
 
   INLINE const CycleData *read_unlocked(Thread *current_thread) const;

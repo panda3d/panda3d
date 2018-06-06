@@ -25,7 +25,7 @@ TypeHandle BulletConvexHullShape::_type_handle;
 BulletConvexHullShape::
 BulletConvexHullShape() {
 
-  _shape = new btConvexHullShape(NULL, 0);
+  _shape = new btConvexHullShape(nullptr, 0);
   _shape->setUserPointer(this);
 }
 
@@ -36,7 +36,7 @@ BulletConvexHullShape::
 BulletConvexHullShape(const BulletConvexHullShape &copy) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _shape = new btConvexHullShape(NULL, 0);
+  _shape = new btConvexHullShape(nullptr, 0);
   _shape->setUserPointer(this);
 
 #if BT_BULLET_VERSION >= 282
@@ -80,7 +80,7 @@ add_array(const PTA_LVecBase3 &points) {
   if (_shape)
       delete _shape;
 
-  _shape = new btConvexHullShape(NULL, 0);
+  _shape = new btConvexHullShape(nullptr, 0);
   _shape->setUserPointer(this);
 
   PTA_LVecBase3::const_iterator it;
@@ -123,20 +123,18 @@ add_geom(const Geom *geom, const TransformState *ts) {
       delete _shape;
 
   // Create shape
-  _shape = new btConvexHullShape(NULL, 0);
+  _shape = new btConvexHullShape(nullptr, 0);
   _shape->setUserPointer(this);
 
   pvector<LPoint3>::const_iterator it;
 
 #if BT_BULLET_VERSION >= 282
   for (it = points.begin(); it != points.end(); ++it) {
-    LVecBase3 v = *it;
     _shape->addPoint(LVecBase3_to_btVector3(*it), false);
   }
   _shape->recalcLocalAabb();
 #else
   for (it = points.begin(); it != points.end(); ++it) {
-    LVecBase3 v = *it;
     _shape->addPoint(LVecBase3_to_btVector3(*it));
   }
 #endif

@@ -37,7 +37,7 @@ AndroidGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _fbconfig = 0;
   _format = 0;
 
-  if (share_with != (AndroidGraphicsStateGuardian *)NULL) {
+  if (share_with != nullptr) {
     _prepared_objects = share_with->get_prepared_objects();
     _share_context = share_with->_context;
   }
@@ -48,12 +48,12 @@ AndroidGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 AndroidGraphicsStateGuardian::
 ~AndroidGraphicsStateGuardian() {
-  if (_context != (EGLContext)NULL) {
+  if (_context != (EGLContext)nullptr) {
     if (!eglDestroyContext(_egl_display, _context)) {
       androiddisplay_cat.error() << "Failed to destroy EGL context: "
         << get_egl_error_string(eglGetError()) << "\n";
     }
-    _context = (EGLContext)NULL;
+    _context = (EGLContext)nullptr;
   }
 }
 
@@ -145,7 +145,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // First get the number of matching configurations, so we know how much
   // memory to allocate.
   int num_configs = 0, returned_configs;
-  if (!eglChooseConfig(_egl_display, attrib_list, NULL, num_configs, &returned_configs) || returned_configs <= 0) {
+  if (!eglChooseConfig(_egl_display, attrib_list, nullptr, num_configs, &returned_configs) || returned_configs <= 0) {
     androiddisplay_cat.error() << "eglChooseConfig failed: "
       << get_egl_error_string(eglGetError()) << "\n";
     return;
@@ -228,7 +228,7 @@ create_context() {
   EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
   _context = eglCreateContext(_egl_display, _fbconfig, _share_context, context_attribs);
 #else
-  _context = eglCreateContext(_egl_display, _fbconfig, _share_context, NULL);
+  _context = eglCreateContext(_egl_display, _fbconfig, _share_context, nullptr);
 #endif
 
   int err = eglGetError();

@@ -14,21 +14,6 @@
 /**
  *
  */
-INLINE FrameBufferProperties::
-FrameBufferProperties(const FrameBufferProperties &copy) {
-  (*this) = copy;
-}
-
-/**
- *
- */
-INLINE FrameBufferProperties::
-~FrameBufferProperties() {
-}
-
-/**
- *
- */
 INLINE bool FrameBufferProperties::
 operator != (const FrameBufferProperties &other) const {
   return !operator == (other);

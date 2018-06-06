@@ -88,7 +88,7 @@ private:
   string _basename;
   NotifyCategory *_parent;
   ConfigVariableEnum<NotifySeverity> _severity;
-  typedef vector<NotifyCategory *> Children;
+  typedef std::vector<NotifyCategory *> Children;
   Children _children;
 
   static long _server_delta; // not a time_t because server delta may be signed.

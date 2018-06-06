@@ -85,7 +85,7 @@ private:
 
   // This shouldn't be a pmap, since it might be invoked before we initialize
   // the global malloc pointers.
-  typedef map<string, NotifyCategory *> Categories;
+  typedef std::map<string, NotifyCategory *> Categories;
   Categories _categories;
 
   static Notify *_global_ptr;

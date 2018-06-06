@@ -42,7 +42,7 @@ static double random_f(double max)
   return max * (double)i / (double)RAND_MAX;
 }
 
-#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << std::flush; }
 
 // n philosophers sharing n chopsticks.  Philosophers are poor folk and can't
 // afford luxuries like 2 chopsticks per person.

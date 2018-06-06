@@ -55,7 +55,7 @@ get_next_hit() {
 
   // No more items.  Return an empty hit.
   NxRaycastHit hit;
-  hit.shape = NULL;
+  hit.shape = nullptr;
   return PhysxRaycastHit(hit);
 }
 
@@ -69,7 +69,7 @@ get_hit(unsigned int idx) {
   {
     // Index out of bounds.  Return an empty hit.
     NxRaycastHit hit;
-    hit.shape = NULL;
+    hit.shape = nullptr;
     return PhysxRaycastHit(hit);
   }
 

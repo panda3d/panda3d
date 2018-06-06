@@ -42,7 +42,7 @@ protected:
     }
   };
 
-  typedef set<FunctionWriter *, IndirectCompareTo> Writers;
+  typedef std::set<FunctionWriter *, IndirectCompareTo> Writers;
   Writers _writers;
 };
 

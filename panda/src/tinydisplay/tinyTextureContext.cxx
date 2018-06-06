@@ -22,10 +22,10 @@ TypeHandle TinyTextureContext::_type_handle;
 TinyTextureContext::
 ~TinyTextureContext() {
   GLTexture *gltex = &_gltex;
-  if (gltex->allocated_buffer != NULL) {
+  if (gltex->allocated_buffer != nullptr) {
     nassertv(gltex->num_levels != 0);
     get_class_type().deallocate_array(gltex->allocated_buffer);
-    gltex->allocated_buffer = NULL;
+    gltex->allocated_buffer = nullptr;
     gltex->total_bytecount = 0;
     gltex->num_levels = 0;
   } else {
@@ -48,10 +48,10 @@ evict_lru() {
   dequeue_lru();
 
   GLTexture *gltex = &_gltex;
-  if (gltex->allocated_buffer != NULL) {
+  if (gltex->allocated_buffer != nullptr) {
     nassertv(gltex->num_levels != 0);
     get_class_type().deallocate_array(gltex->allocated_buffer);
-    gltex->allocated_buffer = NULL;
+    gltex->allocated_buffer = nullptr;
     gltex->total_bytecount = 0;
     gltex->num_levels = 0;
   } else {

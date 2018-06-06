@@ -18,7 +18,7 @@
  */
 void FactoryParams::
 add_param(FactoryParam *param) {
-  nassertv(param != (FactoryParam *)NULL);
+  nassertv(param != nullptr);
   _params.push_back(param);
 }
 
@@ -43,7 +43,7 @@ get_num_params() const {
  */
 FactoryParam *FactoryParams::
 get_param(int n) const {
-  nassertr(n >= 0 && n < (int)_params.size(), NULL);
+  nassertr(n >= 0 && n < (int)_params.size(), nullptr);
   return DCAST(FactoryParam, _params[n]);
 }
 
@@ -59,8 +59,8 @@ get_param_of_type(TypeHandle type) const {
   // First, search for the exact match.
   for (pi = _params.begin(); pi != _params.end(); ++pi) {
     FactoryParam *param;
-    DCAST_INTO_R(param, *pi, NULL);
-    nassertr(param != (FactoryParam *)NULL, NULL);
+    DCAST_INTO_R(param, *pi, nullptr);
+    nassertr(param != nullptr, nullptr);
 
     if (param->is_exact_type(type)) {
       return param;
@@ -70,13 +70,13 @@ get_param_of_type(TypeHandle type) const {
   // Now, search for a derived match.
   for (pi = _params.begin(); pi != _params.end(); ++pi) {
     FactoryParam *param;
-    DCAST_INTO_R(param, *pi, NULL);
-    nassertr(param != (FactoryParam *)NULL, NULL);
+    DCAST_INTO_R(param, *pi, nullptr);
+    nassertr(param != nullptr, nullptr);
 
     if (param->is_of_type(type)) {
       return param;
     }
   }
 
-  return NULL;
+  return nullptr;
 }

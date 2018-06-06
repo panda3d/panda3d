@@ -37,7 +37,7 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _is_valid = true;
 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  [[NSAutoreleasePool alloc] init];
 
   // Put Cocoa into thread-safe mode by spawning a thread which immediately
   // exits.

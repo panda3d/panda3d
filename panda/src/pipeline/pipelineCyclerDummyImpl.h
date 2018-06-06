@@ -38,12 +38,12 @@
  */
 struct EXPCL_PANDA_PIPELINE PipelineCyclerDummyImpl {
 public:
-  INLINE PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline = NULL);
+  INLINE PipelineCyclerDummyImpl(CycleData *initial_data, Pipeline *pipeline = nullptr);
   INLINE PipelineCyclerDummyImpl(const PipelineCyclerDummyImpl &copy);
   INLINE void operator = (const PipelineCyclerDummyImpl &copy);
   INLINE ~PipelineCyclerDummyImpl();
 
-  INLINE void acquire(Thread *current_thread = NULL);
+  INLINE void acquire(Thread *current_thread = nullptr);
   INLINE void release();
 
   INLINE const CycleData *read_unlocked(Thread *current_thread) const;

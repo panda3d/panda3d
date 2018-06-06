@@ -29,7 +29,7 @@ class CPPInstance;
  */
 class EXPCL_INTERROGATEDB InterrogateFunction : public InterrogateComponent {
 public:
-  InterrogateFunction(InterrogateModuleDef *def = NULL);
+  InterrogateFunction(InterrogateModuleDef *def = nullptr);
   InterrogateFunction(const InterrogateFunction &copy);
   void operator = (const InterrogateFunction &copy);
 
@@ -78,7 +78,7 @@ private:
   string _prototype;
   TypeIndex _class;
 
-  typedef vector<FunctionWrapperIndex> Wrappers;
+  typedef std::vector<FunctionWrapperIndex> Wrappers;
   Wrappers _c_wrappers;
   Wrappers _python_wrappers;
 
@@ -92,7 +92,7 @@ public:
   // This must be a pointer, rather than a concrete map, so we don't risk
   // trying to create a map in one DLL and access it in another.  Silly
   // Windows.
-  typedef map<string, CPPInstance *> Instances;
+  typedef std::map<string, CPPInstance *> Instances;
   Instances *_instances;
   string _expression;
 

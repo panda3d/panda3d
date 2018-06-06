@@ -52,16 +52,16 @@ private:
  * values.  This allows effectively using SimpleHashMap as a set.
  */
 template<class Key>
-class SimpleKeyValuePair<Key, nullptr_t> {
+class SimpleKeyValuePair<Key, std::nullptr_t> {
 public:
-  INLINE SimpleKeyValuePair(const Key &key, nullptr_t data) :
+  INLINE SimpleKeyValuePair(const Key &key, std::nullptr_t data) :
     _key(key) {}
 
   Key _key;
 
-  ALWAYS_INLINE constexpr static nullptr_t get_data() { return nullptr; }
-  ALWAYS_INLINE constexpr static nullptr_t modify_data() { return nullptr; }
-  ALWAYS_INLINE static void set_data(nullptr_t) {}
+  ALWAYS_INLINE constexpr static std::nullptr_t get_data() { return nullptr; }
+  ALWAYS_INLINE constexpr static std::nullptr_t modify_data() { return nullptr; }
+  ALWAYS_INLINE static void set_data(std::nullptr_t) {}
 };
 
 /**

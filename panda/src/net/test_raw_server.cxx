@@ -84,7 +84,7 @@ main(int argc, char *argv[]) {
       if (reader.get_data(datagram)) {
         string data = datagram.get_message();
         nout.write(data.data(), data.length());
-        nout << flush;
+        nout << std::flush;
 
         Clients::iterator ci;
         for (ci = clients.begin(); ci != clients.end(); ++ci) {

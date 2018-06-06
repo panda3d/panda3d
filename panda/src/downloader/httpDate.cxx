@@ -182,7 +182,7 @@ HTTPDate(const string &format) {
   if (t.tm_year < 100) {
     // Two-digit year.  Assume it's in the same century, unless that
     // assumption puts it more than 50 years in the future.
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *tp = gmtime(&now);
     t.tm_year += 100 * (tp->tm_year / 100);
     if (t.tm_year - tp->tm_year > 50) {
@@ -219,7 +219,7 @@ HTTPDate(const string &format) {
   if (_time != (time_t)-1) {
     // Unfortunately, mktime() assumes local time; convert this back to GMT.
 #if defined(IS_FREEBSD)
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *tp = localtime(&now);
     _time -= tp->tm_gmtoff;
 #elif defined(_WIN32)

@@ -310,7 +310,7 @@ BulletShape *BulletBodyNode::
 get_shape(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), nullptr);
   return _shapes[idx];
 }
 
@@ -334,7 +334,7 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   nassertv(ts);
 
   btCollisionShape *shape = bullet_shape->ptr();
-  nassertv(shape != NULL);
+  nassertv(shape != nullptr);
 
   nassertv(!(shape->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE &&
             ((btConvexHullShape *)shape)->getNumVertices() == 0));
@@ -782,7 +782,7 @@ void BulletBodyNode::
 add_shapes_from_collision_solids(CollisionNode *cnode) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  PT(BulletTriangleMesh) mesh = NULL;
+  PT(BulletTriangleMesh) mesh = nullptr;
 
   for (int j=0; j<cnode->get_num_solids(); j++) {
     CPT(CollisionSolid) solid = cnode->get_solid(j);
@@ -864,7 +864,7 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
 */
 
   btVector3 center;
-  btScalar radius;
+  btScalar radius = 0;
 
   if (_shape) {
     _shape->getBoundingSphere(center, radius);
@@ -914,7 +914,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 
   // Write NULL pointer to indicate the end of the list.
-  manager->write_pointer(dg, NULL);
+  manager->write_pointer(dg, nullptr);
 }
 
 /**
@@ -927,7 +927,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   PT(BulletShape) shape = DCAST(BulletShape, p_list[pi++]);
 
-  while (shape != (BulletShape *)NULL) {
+  while (shape != nullptr) {
     const TransformState *trans = DCAST(TransformState, p_list[pi++]);
     add_shape(shape, trans);
 

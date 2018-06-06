@@ -73,13 +73,13 @@ Open(const char *file, const char *mode) {
 
   if (mode[0] == 'r') {
     istream *stream = _vfs->open_read_file(file, true);
-    if (stream == NULL) {
-      return NULL;
+    if (stream == nullptr) {
+      return nullptr;
     }
     return new PandaIOStream(*stream);
 
   } else {
-    nassertr(false, NULL); // Not implemented on purpose.
-    return NULL;
+    nassertr(false, nullptr); // Not implemented on purpose.
+    return nullptr;
   }
 }

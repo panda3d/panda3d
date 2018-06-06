@@ -29,7 +29,7 @@
 #include <direct.h>  // for chdir()
 #endif
 
-MayaApi *MayaApi::_global_api = (MayaApi *)NULL;
+MayaApi *MayaApi::_global_api = nullptr;
 
 // We need this bogus object just to force the application to link with
 // OpenMayaAnim.lib; otherwise, Maya will complain (when compiled on Windows)
@@ -125,7 +125,7 @@ MayaApi::
     // Maya code.
     MLibrary::cleanup();
   }
-  _global_api = (MayaApi *)NULL;
+  _global_api = nullptr;
 }
 
 /**
@@ -141,7 +141,7 @@ MayaApi::
  */
 PT(MayaApi) MayaApi::
 open_api(string program_name, bool view_license, bool revertdir) {
-  if (_global_api == (MayaApi *)NULL) {
+  if (_global_api == nullptr) {
     // We need to create a new MayaApi object.
     if (program_name.empty()) {
       program_name = ExecutionEnvironment::get_binary_name();

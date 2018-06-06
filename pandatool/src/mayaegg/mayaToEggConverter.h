@@ -131,7 +131,7 @@ private:
                         EggGroup *group);
   void make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                     const MFnMesh &mesh, EggGroup *egg_group,
-                    MayaShader *default_shader = NULL);
+                    MayaShader *default_shader = nullptr);
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
   void make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,

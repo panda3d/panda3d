@@ -51,7 +51,7 @@ XFileToEgg() :
      "Specify the frame rate of the resulting animation.  If this is "
      "omitted or 0, the frame rate is inferred from the file itself; but "
      "note that the file must contain evenly-spaced keyframes.",
-     &XFileToEgg::dispatch_double, NULL, &_frame_rate);
+     &XFileToEgg::dispatch_double, nullptr, &_frame_rate);
 
   add_option
     ("anim", "", 0,

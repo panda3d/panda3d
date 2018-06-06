@@ -36,8 +36,8 @@ public:
 PUBLISHED:
   enum { num_bits = nbits };
 
-  INLINE BitMask();
-  INLINE BitMask(WordType init_value);
+  constexpr BitMask() = default;
+  constexpr BitMask(WordType init_value);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();
@@ -131,7 +131,7 @@ public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
-  WordType _word;
+  WordType _word = 0u;
 
 public:
   static TypeHandle get_class_type() {

@@ -23,8 +23,8 @@ enable() {
 
   _enabled = true;
 
-  _shape_hit_cbobj = NULL;
-  _controller_hit_cbobj = NULL;
+  _shape_hit_cbobj = nullptr;
+  _controller_hit_cbobj = nullptr;
 }
 
 /**

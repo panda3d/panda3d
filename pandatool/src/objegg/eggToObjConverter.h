@@ -67,8 +67,6 @@ private:
                       const UniqueVertices &unique);
 
 private:
-  bool _triangulate_polygons;
-
   UniqueVertices _unique_vert3, _unique_vert4, _unique_uv2, _unique_uv3, _unique_norm;
   VertexMap _vmap;
   EggGroupNode *_current_group;

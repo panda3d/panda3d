@@ -32,7 +32,7 @@ format_string(bool value) {
 INLINE string
 format_string(float value) {
   char buffer[32];
-  pdtoa(value, buffer);
+  pdtoa((double)value, buffer);
   return string(buffer);
 }
 

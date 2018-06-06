@@ -272,7 +272,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
   // Load the found textures into the renderer.
   if (extract_textures_from_node(node_path,np_col,tex_col)) {
     pvector< LTexCoord > ll,ur;
-    GeomNode *gnode = NULL;
+    GeomNode *gnode = nullptr;
     const Geom *geom;
     const GeomPrimitive *primitive;
 
@@ -479,7 +479,7 @@ init_geoms() {
       _sprite_writer[i].push_back(SpriteWriter());
 
       state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
-      if (anim->get_frame(j) != (Texture *)NULL) {
+      if (anim->get_frame(j) != nullptr) {
         state = state->add_attrib(TextureAttrib::make(anim->get_frame(j)));
         state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
 

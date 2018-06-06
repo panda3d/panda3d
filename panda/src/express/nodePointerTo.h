@@ -28,8 +28,8 @@ public:
   // By hiding this template from interrogate, we improve compile-time speed
   // and memory utilization.
 #ifndef CPPPARSER
-  typedef TYPENAME NodePointerToBase<T>::To To;
-  INLINE NodePointerTo(To *ptr = (To *)NULL);
+  typedef typename NodePointerToBase<T>::To To;
+  INLINE NodePointerTo(To *ptr = nullptr);
   INLINE NodePointerTo(const NodePointerTo<T> &copy);
   INLINE NodePointerTo(NodePointerTo<T> &&from) noexcept;
 
@@ -59,8 +59,8 @@ public:
   // By hiding this template from interrogate, we improve compile-time speed
   // and memory utilization.
 #ifndef CPPPARSER
-  typedef TYPENAME NodePointerToBase<T>::To To;
-  INLINE NodeConstPointerTo(const To *ptr = (const To *)NULL);
+  typedef typename NodePointerToBase<T>::To To;
+  INLINE NodeConstPointerTo(const To *ptr = nullptr);
   INLINE NodeConstPointerTo(const NodePointerTo<T> &copy);
   INLINE NodeConstPointerTo(const NodeConstPointerTo<T> &copy);
   INLINE NodeConstPointerTo(NodePointerTo<T> &&from) noexcept;

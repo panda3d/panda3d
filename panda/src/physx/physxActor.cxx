@@ -61,7 +61,7 @@ unlink() {
   }
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
@@ -78,7 +78,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseActor(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -358,7 +358,7 @@ get_node_path() const {
 PhysxScene *PhysxActor::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   NxScene *scenePtr = &(_ptr->getScene());
   PhysxScene *scene = (PhysxScene *)(scenePtr->userData);
@@ -387,14 +387,14 @@ get_num_shapes() const {
 PhysxShape *PhysxActor::
 create_shape(PhysxShapeDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(),nullptr);
 
   PhysxShape *shape = PhysxShape::factory(desc.ptr()->getType());
-  nassertr(shape, NULL);
+  nassertr(shape, nullptr);
 
   NxShape *shapePtr = _ptr->createShape(*desc.ptr());
-  nassertr(shapePtr, NULL);
+  nassertr(shapePtr, nullptr);
 
   shape->link(shapePtr);
 
@@ -408,8 +408,8 @@ create_shape(PhysxShapeDesc &desc) {
 PhysxShape *PhysxActor::
 get_shape(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbShapes(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbShapes(), nullptr);
 
   NxShape * const *shapes = _ptr->getShapes();
   NxShape *shapePtr = shapes[idx];
@@ -426,10 +426,10 @@ get_shape(unsigned int idx) const {
 PhysxShape *PhysxActor::
 get_shape_by_name(const char *name) const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   NxShape * const *shapes = _ptr->getShapes();
-  NxShape *shapePtr = NULL;
+  NxShape *shapePtr = nullptr;
   NxU32 nShapes = _ptr->getNbShapes();
 
   for (NxU32 i=0; i < nShapes; i++) {
@@ -440,7 +440,7 @@ get_shape_by_name(const char *name) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**

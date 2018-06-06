@@ -27,7 +27,7 @@ TypeHandle CharacterJoint::_type_handle;
  */
 CharacterJoint::
 CharacterJoint() :
-  _character(NULL)
+  _character(nullptr)
 {
 }
 
@@ -37,7 +37,7 @@ CharacterJoint() :
 CharacterJoint::
 CharacterJoint(const CharacterJoint &copy) :
   MovingPartMatrix(copy),
-  _character(NULL),
+  _character(nullptr),
   _net_transform(copy._net_transform),
   _initial_net_transform_inverse(copy._initial_net_transform_inverse),
   _skinning_matrix(copy._skinning_matrix)
@@ -75,7 +75,7 @@ CharacterJoint(Character *character,
 CharacterJoint::
 ~CharacterJoint() {
   nassertv(_vertex_transforms.empty());
-  nassertv(_character == (Character *)NULL);
+  nassertv(_character == nullptr);
 }
 
 /**
@@ -110,7 +110,7 @@ make_copy() const {
 bool CharacterJoint::
 update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
                  bool parent_changed, Thread *current_thread) {
-  nassertr(parent != (PartGroup *)NULL, false);
+  nassertr(parent != nullptr, false);
 
   bool net_changed = false;
   if (parent->is_character_joint()) {
@@ -194,7 +194,7 @@ do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
  */
 bool CharacterJoint::
 add_net_transform(PandaNode *node) {
-  if (_character != (Character *)NULL) {
+  if (_character != nullptr) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
   CPT(TransformState) t = TransformState::make_mat(_net_transform);
@@ -213,7 +213,7 @@ add_net_transform(PandaNode *node) {
 bool CharacterJoint::
 remove_net_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-  if (effect != (RenderEffect *)NULL &&
+  if (effect != nullptr &&
       DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
     node->clear_effect(CharacterJointEffect::get_class_type());
   }
@@ -243,7 +243,7 @@ clear_net_transforms() {
     PandaNode *node = *ai;
 
     CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-    if (effect != (RenderEffect *)NULL &&
+    if (effect != nullptr &&
         DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
       node->clear_effect(CharacterJointEffect::get_class_type());
     }
@@ -286,7 +286,7 @@ get_net_transforms() {
  */
 bool CharacterJoint::
 add_local_transform(PandaNode *node) {
-  if (_character != (Character *)NULL) {
+  if (_character != nullptr) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
   CPT(TransformState) t = TransformState::make_mat(_value);
@@ -305,7 +305,7 @@ add_local_transform(PandaNode *node) {
 bool CharacterJoint::
 remove_local_transform(PandaNode *node) {
   CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-  if (effect != (RenderEffect *)NULL &&
+  if (effect != nullptr &&
       DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
     node->clear_effect(CharacterJointEffect::get_class_type());
   }
@@ -335,7 +335,7 @@ clear_local_transforms() {
     PandaNode *node = *ai;
 
     CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-    if (effect != (RenderEffect *)NULL &&
+    if (effect != nullptr &&
         DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
       node->clear_effect(CharacterJointEffect::get_class_type());
     }
@@ -401,7 +401,7 @@ void CharacterJoint::
 set_character(Character *character) {
   if (character != _character) {
 
-    if (character != (Character *)NULL) {
+    if (character != nullptr) {
       // Change or set a _character pointer on each joint's exposed node.
       NodeList::iterator ai;
       for (ai = _net_transform_nodes.begin();
@@ -426,7 +426,7 @@ set_character(Character *character) {
         PandaNode *node = *ai;
 
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-        if (effect != (RenderEffect *)NULL &&
+        if (effect != nullptr &&
             DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
           node->clear_effect(CharacterJointEffect::get_class_type());
         }
@@ -437,7 +437,7 @@ set_character(Character *character) {
         PandaNode *node = *ai;
 
         CPT(RenderEffect) effect = node->get_effect(CharacterJointEffect::get_class_type());
-        if (effect != (RenderEffect *)NULL &&
+        if (effect != nullptr &&
             DCAST(CharacterJointEffect, effect)->matches_character(_character)) {
           node->clear_effect(CharacterJointEffect::get_class_type());
         }
@@ -514,7 +514,7 @@ complete_pointers(TypedWritable **p_list, BamReader* manager) {
   if (manager->get_file_minor_ver() >= 4) {
     _character = DCAST(Character, p_list[pi++]);
   } else {
-    _character = NULL;
+    _character = nullptr;
   }
 
   int i;

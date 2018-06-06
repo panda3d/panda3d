@@ -192,6 +192,6 @@ fillin(DatagramIterator &scan, BamReader* manager) {
   // Remaining bundles.  Push a new slot for each one.
   for (int i = 1; i < num_bundles; ++i) {
     manager->read_pointer(scan);
-    _bundles.push_back(NULL);
+    _bundles.push_back(nullptr);
   }
 }

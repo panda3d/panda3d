@@ -27,7 +27,7 @@ PUBLISHED:
   virtual ~LinearRandomForce();
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 protected:
   static PN_stdfloat bounded_rand();

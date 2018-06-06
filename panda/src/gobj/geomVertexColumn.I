@@ -16,7 +16,7 @@
  */
 INLINE GeomVertexColumn::
 GeomVertexColumn() :
-  _packer(NULL)
+  _packer(nullptr)
 {
 }
 
@@ -36,7 +36,7 @@ GeomVertexColumn(CPT_InternalName name, int num_components,
   _column_alignment(column_alignment),
   _num_elements(num_elements),
   _element_stride(element_stride),
-  _packer(NULL)
+  _packer(nullptr)
 {
   setup();
 }
@@ -54,7 +54,7 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   _column_alignment(copy._column_alignment),
   _num_elements(copy._num_elements),
   _element_stride(copy._element_stride),
-  _packer(NULL)
+  _packer(nullptr)
 {
   setup();
 }

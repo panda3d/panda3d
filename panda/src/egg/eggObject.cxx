@@ -96,7 +96,7 @@ get_user_data(TypeHandle type) const {
   if (ui != _user_data.end()) {
     return (*ui).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -149,5 +149,5 @@ clear_user_data(TypeHandle type) {
  */
 EggTransform *EggObject::
 as_transform() {
-  return NULL;
+  return nullptr;
 }

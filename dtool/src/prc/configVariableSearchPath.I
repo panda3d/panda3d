@@ -28,7 +28,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -52,7 +52,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -76,7 +76,7 @@ ConfigVariableSearchPath(const string &name,
   // A SearchPath variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from complaining
   // should anyone ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -123,7 +123,7 @@ get_default_value() const {
  */
 INLINE bool ConfigVariableSearchPath::
 clear_local_value() {
-  nassertr(_core != (ConfigVariableCore *)NULL, false);
+  nassertr(_core != nullptr, false);
 
   bool any_to_clear = !_prefix.is_empty() || _postfix.is_empty();
   _prefix.clear();

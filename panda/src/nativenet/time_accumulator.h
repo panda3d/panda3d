@@ -26,7 +26,7 @@ inline void Time_Accumulator::Set(const Time_Span & in)
     // this seems to make the most since .. if you are running the clock right
     // know... assume the timespane you are passing in is inclusive.. but keep
     // clock running.. May need to rethink this...
-    if(_accum_start != NULL)
+    if(_accum_start != nullptr)
     {
         Stop();
         Start();
@@ -35,7 +35,7 @@ inline void Time_Accumulator::Set(const Time_Span & in)
 /**
  *
  */
-inline Time_Accumulator::Time_Accumulator() : _total_time(0,0,0,0,0), _accum_start(NULL)
+inline Time_Accumulator::Time_Accumulator() : _total_time(0,0,0,0,0), _accum_start(nullptr)
 {
 }
 /**
@@ -43,7 +43,7 @@ inline Time_Accumulator::Time_Accumulator() : _total_time(0,0,0,0,0), _accum_sta
  */
 inline Time_Accumulator::~Time_Accumulator()
 {
-    if(_accum_start != NULL)
+    if(_accum_start != nullptr)
         delete _accum_start;
 }
 /**
@@ -51,7 +51,7 @@ inline Time_Accumulator::~Time_Accumulator()
  */
 inline     void Time_Accumulator::Start()
 {
-    if(_accum_start == NULL)
+    if(_accum_start == nullptr)
         _accum_start = new Time_Clock();
 }
 /**
@@ -59,12 +59,12 @@ inline     void Time_Accumulator::Start()
  */
 inline     void Time_Accumulator::Stop()
 {
-    if(_accum_start != NULL)
+    if(_accum_start != nullptr)
     {
          Time_Span   work1(Time_Clock::GetCurrentTime() - *_accum_start);
         _total_time += work1;
         delete _accum_start;
-        _accum_start = NULL;
+        _accum_start = nullptr;
     }
 }
 /**
@@ -72,10 +72,10 @@ inline     void Time_Accumulator::Stop()
  */
 void Time_Accumulator::Reset()
 {
-    if(_accum_start != NULL)
+    if(_accum_start != nullptr)
     {
         delete _accum_start;
-        _accum_start = NULL;
+        _accum_start = nullptr;
     }
     _total_time.Set(0,0,0,0,0);
 }
@@ -85,7 +85,7 @@ void Time_Accumulator::Reset()
 inline Time_Span  Time_Accumulator::Report()
 {
     Time_Span   answer(_total_time);
-    if(_accum_start != NULL)
+    if(_accum_start != nullptr)
     {
         Time_Span ww(Time_Clock::GetCurrentTime() - *_accum_start);
         answer += ww;

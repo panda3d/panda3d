@@ -53,7 +53,7 @@ operator = (PointerTo<T> &&from) noexcept {
  *
  */
 template<class T>
-constexpr TYPENAME PointerTo<T>::To &PointerTo<T>::
+constexpr typename PointerTo<T>::To &PointerTo<T>::
 operator *() const noexcept {
   return *((To *)(this->_void_ptr));
 }
@@ -62,7 +62,7 @@ operator *() const noexcept {
  *
  */
 template<class T>
-constexpr TYPENAME PointerTo<T>::To *PointerTo<T>::
+constexpr typename PointerTo<T>::To *PointerTo<T>::
 operator -> () const noexcept {
   return (To *)(this->_void_ptr);
 }
@@ -97,7 +97,7 @@ cheat() {
  * compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-constexpr TYPENAME PointerTo<T>::To *PointerTo<T>::
+constexpr typename PointerTo<T>::To *PointerTo<T>::
 p() const noexcept {
   return (To *)(this->_void_ptr);
 }
@@ -127,8 +127,8 @@ operator = (const PointerTo<T> &copy) {
  */
 template<class T>
 ALWAYS_INLINE ConstPointerTo<T>::
-ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) noexcept :
-  PointerToBase<T>((TYPENAME ConstPointerTo<T>::To *)ptr)
+ConstPointerTo(const typename ConstPointerTo<T>::To *ptr) noexcept :
+  PointerToBase<T>((typename ConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -196,7 +196,7 @@ operator = (ConstPointerTo<T> &&from) noexcept {
  *
  */
 template<class T>
-constexpr const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
+constexpr const typename ConstPointerTo<T>::To &ConstPointerTo<T>::
 operator *() const noexcept {
   return *((To *)(this->_void_ptr));
 }
@@ -205,7 +205,7 @@ operator *() const noexcept {
  *
  */
 template<class T>
-constexpr const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
+constexpr const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
 operator -> () const noexcept {
   return (To *)(this->_void_ptr);
 }
@@ -240,7 +240,7 @@ cheat() {
  * around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-constexpr const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
+constexpr const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
 p() const noexcept {
   return (To *)(this->_void_ptr);
 }

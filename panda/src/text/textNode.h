@@ -343,7 +343,6 @@ private:
   int _max_rows;
   GeomEnums::UsageHint _usage_hint;
   int _flatten_flags;
-  bool _dynamic_merge;
   PN_stdfloat _frame_width;
   PN_stdfloat _card_border_size;
   PN_stdfloat _card_border_uv_portion;

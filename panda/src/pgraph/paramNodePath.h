@@ -21,7 +21,7 @@
 /**
  * A class object for storing a NodePath as a parameter.
  */
-class EXPCL_PANDA_GOBJ ParamNodePath : public ParamValueBase {
+class EXPCL_PANDA_PGRAPH ParamNodePath : public ParamValueBase {
 protected:
   INLINE ParamNodePath() {};
 

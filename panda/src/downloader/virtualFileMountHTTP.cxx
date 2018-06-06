@@ -176,7 +176,7 @@ make_virtual_file(const Filename &local_filename,
  */
 istream *VirtualFileMountHTTP::
 open_read_file(const Filename &) const {
-  return NULL;
+  return nullptr;
 }
 
 /**

@@ -269,7 +269,7 @@ public:
   virtual int get_driver_shader_version_major();
   virtual int get_driver_shader_version_minor();
 
-  static void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
+  static void APIENTRY debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
 
   virtual void reset();
 

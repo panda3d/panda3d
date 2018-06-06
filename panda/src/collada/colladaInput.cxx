@@ -38,7 +38,7 @@
  */
 ColladaInput::
 ColladaInput(const string &semantic) :
-  _column_name (NULL),
+  _column_name (nullptr),
   _semantic (semantic),
   _offset (0),
   _have_set (false),
@@ -70,7 +70,7 @@ ColladaInput(const string &semantic) :
  */
 ColladaInput::
 ColladaInput(const string &semantic, unsigned int set) :
-  _column_name (NULL),
+  _column_name (nullptr),
   _semantic (semantic),
   _offset (0),
   _have_set (true),
@@ -107,7 +107,7 @@ ColladaInput(const string &semantic, unsigned int set) :
 ColladaInput *ColladaInput::
 from_dom(domInput_local_offset &input) {
   // If we already loaded it before, use that.
-  if (input.getUserData() != NULL) {
+  if (input.getUserData() != nullptr) {
     return (ColladaInput *) input.getUserData();
   }
 
@@ -117,7 +117,7 @@ from_dom(domInput_local_offset &input) {
   // If this has the VERTEX semantic, it points to a <vertices> element.
   if (new_input->is_vertex_source()) {
     domVertices *verts = daeSafeCast<domVertices> (input.getSource().getElement());
-    nassertr(verts != NULL, NULL);
+    nassertr(verts != nullptr, nullptr);
     daeTArray<domInput_localRef> &inputs = verts->getInput_array();
 
     // Iterate over the <input> elements in <vertices>.
@@ -127,7 +127,7 @@ from_dom(domInput_local_offset &input) {
     }
   } else {
     domSource *source = daeSafeCast<domSource> (input.getSource().getElement());
-    nassertr(source != NULL, NULL);
+    nassertr(source != nullptr, nullptr);
     new_input->read_data(*source);
   }
 
@@ -141,17 +141,17 @@ from_dom(domInput_local_offset &input) {
 ColladaInput *ColladaInput::
 from_dom(domInput_local &input) {
   // If we already loaded it before, use that.
-  if (input.getUserData() != NULL) {
+  if (input.getUserData() != nullptr) {
     return (ColladaInput *) input.getUserData();
   }
 
   ColladaInput *new_input = new ColladaInput(input.getSemantic());
   new_input->_offset = 0;
 
-  nassertr (!new_input->is_vertex_source(), NULL);
+  nassertr (!new_input->is_vertex_source(), nullptr);
 
   domSource *source = daeSafeCast<domSource> (input.getSource().getElement());
-  nassertr(source != NULL, NULL);
+  nassertr(source != nullptr, nullptr);
   new_input->read_data(*source);
 
   return new_input;
@@ -174,7 +174,7 @@ make_vertex_columns(GeomVertexArrayFormat *format) const {
     return counter;
   }
 
-  nassertr(_column_name != NULL, 0);
+  nassertr(_column_name != nullptr, 0);
 
   format->add_column(_column_name, _num_bound_params, GeomEnums::NT_stdfloat, _column_contents);
   return 1;
@@ -189,7 +189,7 @@ read_data(domSource &source) {
 
   // Get this, get that
   domFloat_array* float_array = source.getFloat_array();
-  if (float_array == NULL) {
+  if (float_array == nullptr) {
     return false;
   }
 
@@ -246,7 +246,7 @@ write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride) c
  */
 void ColladaInput::
 write_data(GeomVertexData *vdata, int start_row, domP &p, unsigned int stride, unsigned int offset) const {
-  nassertv(_column_name != NULL);
+  nassertv(_column_name != nullptr);
   GeomVertexWriter writer (vdata, _column_name);
   writer.set_row_unsafe(start_row);
 

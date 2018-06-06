@@ -21,7 +21,7 @@ ReMutexDirect()
 #endif
 {
 #ifndef HAVE_REMUTEXTRUEIMPL
-  _locking_thread = NULL;
+  _locking_thread = nullptr;
   _lock_count = 0;
 #endif
 }

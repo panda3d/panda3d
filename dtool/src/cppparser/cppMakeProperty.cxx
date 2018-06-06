@@ -64,41 +64,41 @@ get_fully_scoped_name() const {
  */
 void CPPMakeProperty::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (_length_function != NULL) {
+  if (_length_function != nullptr) {
     out << "__make_seq_property";
   } else {
     out << "__make_property";
   }
 
-  if (_has_function != NULL) {
+  if (_has_function != nullptr) {
     out.put('2');
   }
 
   out << "(" << _ident->get_local_name(scope);
 
-  if (_length_function != NULL) {
+  if (_length_function != nullptr) {
     out << ", " << _length_function->_name;
   }
 
-  if (_has_function != NULL) {
+  if (_has_function != nullptr) {
     out << ", " << _has_function->_name;
   }
 
   out << ", " << _get_function->_name;
 
-  if (_set_function != NULL) {
+  if (_set_function != nullptr) {
     out << ", " << _set_function->_name;
   }
 
-  if (_clear_function != NULL) {
+  if (_clear_function != nullptr) {
     out << ", " << _clear_function->_name;
   }
 
-  if (_del_function != NULL) {
+  if (_del_function != nullptr) {
     out << ", " << _del_function->_name;
   }
 
-  if (_insert_function != NULL) {
+  if (_insert_function != nullptr) {
     out << ", " << _insert_function->_name;
   }
 

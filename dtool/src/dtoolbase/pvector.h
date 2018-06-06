@@ -28,10 +28,12 @@
 #elif defined(CPPPARSER)
 // Simplified definition to speed up Interrogate parsing.
 template<class Type>
-class pvector : public vector<Type> {
+class pvector : public std::vector<Type> {
 };
 
 #else
+
+using std::vector;
 
 /**
  * This is our own Panda specialization on the default STL vector.  Its main

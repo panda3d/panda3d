@@ -53,7 +53,7 @@ open_p3d_file(FSRef *ref) {
   }
 
   // Create an instance.
-  create_instance((char *)filename, true, NULL, 0);
+  create_instance((char *)filename, true, nullptr, 0);
 }
 
 static pascal OSErr
@@ -74,7 +74,7 @@ open_documents_handler(const AppleEvent *theAppleEvent, AppleEvent *reply,
 
   for (index = 1; index <= count; index++) {
     err = AEGetNthPtr(&docList, index, typeFSRef,
-                      NULL, NULL, &theFSRef, sizeof(FSRef), NULL);// 5
+                      nullptr, nullptr, &theFSRef, sizeof(FSRef), nullptr);// 5
     require_noerr(err, CantGetDocDescPtr);
 
     // Here's the file, do something with it.

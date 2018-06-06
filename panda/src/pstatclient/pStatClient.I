@@ -25,7 +25,7 @@ get_num_collectors() const {
  */
 INLINE PStatCollectorDef *PStatClient::
 get_collector_def(int index) const {
-  nassertr(index >= 0 && index < _num_collectors, NULL);
+  nassertr(index >= 0 && index < _num_collectors, nullptr);
 
   return get_collector_ptr(index)->get_def(this, index);
 }
@@ -62,7 +62,7 @@ get_thread_sync_name(int index) const {
  */
 INLINE PT(Thread) PStatClient::
 get_thread_object(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), NULL);
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), nullptr);
   InternalThread *thread = get_thread_ptr(index);
   return thread->_thread.lock();
 }
@@ -109,7 +109,7 @@ resume_after_pause() {
  */
 INLINE bool PStatClient::
 has_impl() const {
-  return (_impl != (PStatClientImpl *)NULL);
+  return (_impl != nullptr);
 }
 
 /**
@@ -119,7 +119,7 @@ has_impl() const {
 INLINE PStatClientImpl *PStatClient::
 get_impl() {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)NULL) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -132,7 +132,7 @@ get_impl() {
 INLINE const PStatClientImpl *PStatClient::
 get_impl() const {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)NULL) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -162,7 +162,7 @@ get_thread_ptr(int thread_index) const {
  */
 INLINE PStatClient::Collector::
 Collector(int parent_index, const string &name) :
-  _def(NULL),
+  _def(nullptr),
   _parent_index(parent_index),
   _name(name)
 {
@@ -191,7 +191,7 @@ get_name() const {
  */
 INLINE bool PStatClient::Collector::
 is_active() const {
-  return _def != (PStatCollectorDef *)NULL && _def->_is_active;
+  return _def != nullptr && _def->_is_active;
 }
 
 /**
@@ -200,7 +200,7 @@ is_active() const {
  */
 INLINE PStatCollectorDef *PStatClient::Collector::
 get_def(const PStatClient *client, int this_index) const {
-  if (_def == (PStatCollectorDef *)NULL) {
+  if (_def == nullptr) {
     ((Collector *)this)->make_def(client, this_index);
   }
 

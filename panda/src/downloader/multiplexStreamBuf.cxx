@@ -24,11 +24,6 @@
 // recursion.
 #include <assert.h>
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers--notably SGI--don't define this for us.
-typedef int streamsize;
-#endif
-
 /**
  * Closes or deletes the relevant pointers, if _owns_obj is true.
  */
@@ -37,12 +32,12 @@ close() {
   if (_owns_obj) {
     switch (_output_type) {
     case OT_ostream:
-      assert(_out != (ostream *)NULL);
+      assert(_out != nullptr);
       delete _out;
       break;
 
     case OT_stdio:
-      assert(_fout != (FILE *)NULL);
+      assert(_fout != nullptr);
       fclose(_fout);
       break;
 
@@ -59,13 +54,13 @@ void MultiplexStreamBuf::Output::
 write_string(const string &str) {
   switch (_output_type) {
   case OT_ostream:
-    assert(_out != (ostream *)NULL);
+    assert(_out != nullptr);
     _out->write(str.data(), str.length());
     _out->flush();
     break;
 
   case OT_stdio:
-    assert(_fout != (FILE *)NULL);
+    assert(_fout != nullptr);
     fwrite(str.data(), str.length(), 1, _fout);
     fflush(_fout);
     break;

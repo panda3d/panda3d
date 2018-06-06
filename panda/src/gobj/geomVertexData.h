@@ -530,7 +530,6 @@ private:
   void make_array_writers();
   void delete_array_writers();
 
-  bool _force_to_0;
   bool _got_array_writers;
   typedef pvector<PT(GeomVertexArrayDataHandle) > ArrayWriters;
   ArrayWriters _array_writers;

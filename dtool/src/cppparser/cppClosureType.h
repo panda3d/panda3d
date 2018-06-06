@@ -39,12 +39,12 @@ public:
     CaptureType _type;
     CPPExpression *_initializer;
   };
-  typedef vector<Capture> Captures;
+  typedef std::vector<Capture> Captures;
   Captures _captures;
 
   CaptureType _default_capture;
 
-  void add_capture(string name, CaptureType type, CPPExpression *initializer = NULL);
+  void add_capture(string name, CaptureType type, CPPExpression *initializer = nullptr);
 
   virtual bool is_fully_specified() const;
 

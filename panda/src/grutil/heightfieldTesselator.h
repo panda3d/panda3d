@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE ~HeightfieldTesselator();
 
   INLINE PNMImage &heightfield();
-  INLINE bool set_heightfield(const Filename &filename, PNMFileType *type = NULL);
+  INLINE bool set_heightfield(const Filename &filename, PNMFileType *type = nullptr);
   INLINE void set_poly_count(int n);
   INLINE void set_visibility_radius(int r);
   INLINE void set_focal_point(int x, int y);

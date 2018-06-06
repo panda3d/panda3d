@@ -118,7 +118,7 @@ play() {
  */
 void MilesAudioStream::
 stop() {
-  if (_manager == (MilesAudioManager *)NULL) {
+  if (_manager == nullptr) {
     return;
   }
   miles_audio_debug("stop()");
@@ -152,7 +152,7 @@ get_time() const {
   }
 
   S32 current_ms;
-  AIL_stream_ms_position(_stream, NULL, &current_ms);
+  AIL_stream_ms_position(_stream, nullptr, &current_ms);
   PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
@@ -226,7 +226,7 @@ length() const {
     }
 
     S32 length_ms;
-    AIL_stream_ms_position(_stream, &length_ms, NULL);
+    AIL_stream_ms_position(_stream, &length_ms, nullptr);
     _length = (PN_stdfloat)length_ms * 0.001f;
     _got_length = true;
   }
@@ -266,9 +266,9 @@ cleanup() {
   set_active(false);
   nassertv(_stream == 0);
 
-  if (_manager != (MilesAudioManager *)NULL) {
+  if (_manager != nullptr) {
     _manager->release_sound(this);
-    _manager = NULL;
+    _manager = nullptr;
   }
 }
 
@@ -283,7 +283,7 @@ finish_callback(HSTREAM stream) {
     milesAudio_cat.debug()
       << "finished " << *self << "\n";
   }
-  if (self->_manager == (MilesAudioManager *)NULL) {
+  if (self->_manager == nullptr) {
     return;
   }
   self->_manager->_sounds_finished = true;
@@ -300,7 +300,7 @@ do_set_time(PN_stdfloat time) {
 
   // Ensure we don't inadvertently run off the end of the sound.
   S32 length_ms;
-  AIL_stream_ms_position(_stream, &length_ms, NULL);
+  AIL_stream_ms_position(_stream, &length_ms, nullptr);
   time_ms = min(time_ms, length_ms);
 
   AIL_set_stream_ms_position(_stream, time_ms);

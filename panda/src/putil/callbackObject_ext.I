@@ -20,7 +20,7 @@ INLINE PT(CallbackObject) Extension<CallbackObject>::
 make(PyObject *function) {
   if (function != Py_None && !PyCallable_Check(function)) {
     PyErr_SetString(PyExc_TypeError, "expected callable or None");
-    return NULL;
+    return nullptr;
   } else {
     return new PythonCallbackObject(function);
   }

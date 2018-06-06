@@ -110,7 +110,7 @@ public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
   INLINE GraphicsDevice *get_device() const;
-  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
+  virtual PT(GraphicsDevice) make_device(void *scrn = nullptr);
 
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 

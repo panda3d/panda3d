@@ -258,7 +258,7 @@ size() const {
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (int n) const {
   const XFileDataObject *element = ((XFileDataObject *)this)->get_element(n);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -270,7 +270,7 @@ operator [] (int n) const {
 INLINE const XFileDataObject &XFileDataObject::
 operator [] (const string &name) const {
   const XFileDataObject *element = ((XFileDataObject *)this)->get_element(name);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -281,7 +281,7 @@ operator [] (const string &name) const {
 INLINE XFileDataObject &XFileDataObject::
 operator [] (int n) {
   XFileDataObject *element = get_element(n);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 
@@ -293,7 +293,7 @@ operator [] (int n) {
 INLINE XFileDataObject &XFileDataObject::
 operator [] (const string &name) {
   XFileDataObject *element = get_element(name);
-  nassertr(element != (XFileDataObject *)NULL, *this);
+  nassertr(element != nullptr, *this);
   return *element;
 }
 

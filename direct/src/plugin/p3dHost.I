@@ -79,7 +79,7 @@ get_descriptive_name() const {
  */
 inline bool P3DHost::
 has_contents_file() const {
-  return (_xcontents != NULL);
+  return (_xcontents != nullptr);
 }
 
 /**

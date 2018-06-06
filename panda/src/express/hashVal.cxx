@@ -39,7 +39,7 @@ output_hex(ostream &out) const {
  */
 void HashVal::
 input_hex(istream &in) {
-  in >> ws;
+  in >> std::ws;
   char buffer[32];
   size_t i = 0;
   int ch = in.get();
@@ -174,7 +174,7 @@ hash_file(const Filename &filename) {
   Filename bin_filename = Filename::binary_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(bin_filename, false);
-  if (istr == (istream *)NULL) {
+  if (istr == nullptr) {
     (*this) = HashVal();
     return false;
   }

@@ -127,7 +127,6 @@ private:
   // This value is only filled in while reading from the bam file; don't use
   // it otherwise.
   int _num_references;
-  int _margin_override;
   int _num_textureSwaps;
 
 public:

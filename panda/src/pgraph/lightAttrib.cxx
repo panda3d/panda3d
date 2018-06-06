@@ -38,7 +38,7 @@ public:
     nassertr(!a.is_empty() && !b.is_empty(), a < b);
     Light *la = a.node()->as_light();
     Light *lb = b.node()->as_light();
-    nassertr(la != (Light *)NULL && lb != (Light *)NULL, a < b);
+    nassertr(la != nullptr && lb != nullptr, a < b);
 
     if (la->get_priority() != lb->get_priority()) {
       return la->get_priority() > lb->get_priority();
@@ -384,7 +384,7 @@ CPT(RenderAttrib) LightAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new LightAttrib);
   }
 
@@ -399,7 +399,7 @@ CPT(RenderAttrib) LightAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     LightAttrib *attrib = new LightAttrib;
     attrib->_off_all_lights = true;
     _all_off_attrib = return_new(attrib);
@@ -475,7 +475,7 @@ add_off_light(const NodePath &light) const {
  */
 CPT(RenderAttrib) LightAttrib::
 remove_off_light(const NodePath &light) const {
-  nassertr(!light.is_empty() && light.node()->as_light() != (Light *)NULL, this);
+  nassertr(!light.is_empty() && light.node()->as_light() != nullptr, this);
   LightAttrib *attrib = new LightAttrib(*this);
   attrib->_off_lights.erase(light);
   return return_new(attrib);
@@ -734,8 +734,8 @@ compose_impl(const RenderAttrib *other) const {
 
   // Create a new LightAttrib that will hold the result.
   LightAttrib *new_attrib = new LightAttrib;
-  back_insert_iterator<Lights> result =
-    back_inserter(new_attrib->_on_lights);
+  std::back_insert_iterator<Lights> result =
+    std::back_inserter(new_attrib->_on_lights);
 
   while (ai != _on_lights.end() &&
          bi != ta->_on_lights.end() &&
@@ -967,7 +967,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   } else {
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertr(aux != NULL, pi);
+    nassertr(aux != nullptr, pi);
 
     int i;
     aux->_off_list.reserve(aux->_num_off_lights);
@@ -1023,7 +1023,7 @@ finalize(BamReader *manager) {
   } else {
     // Now it's safe to convert our saved PandaNodes into NodePaths.
     BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
-    nassertv(aux != NULL);
+    nassertv(aux != nullptr);
     nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
     nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
 

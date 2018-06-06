@@ -131,7 +131,7 @@ as_pointer() const {
   default:
     cerr << "Invalid type\n";
     assert(false);
-    return (void *)NULL;
+    return nullptr;
   }
 }
 
@@ -148,7 +148,7 @@ as_boolean() const {
     return (_u._real != 0.0);
 
   case RT_pointer:
-    return (_u._pointer != NULL);
+    return (_u._pointer != nullptr);
 
   default:
     cerr << "Invalid type\n";
@@ -250,15 +250,15 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
   CPPDeclaration *decl =
     ident->find_symbol(current_scope, global_scope);
 
-  if (decl != NULL) {
+  if (decl != nullptr) {
     CPPInstance *inst = decl->as_instance();
-    if (inst != NULL) {
+    if (inst != nullptr) {
       _type = T_variable;
       _u._variable = inst;
       return;
     }
     CPPFunctionGroup *fgroup = decl->as_function_group();
-    if (fgroup != NULL) {
+    if (fgroup != nullptr) {
       _type = T_function;
       _u._fgroup = fgroup;
       return;
@@ -280,8 +280,8 @@ CPPExpression(int unary_operator, CPPExpression *op1) :
   _type = T_unary_operation;
   _u._op._operator = unary_operator;
   _u._op._op1 = op1;
-  _u._op._op2 = NULL;
-  _u._op._op3 = NULL;
+  _u._op._op2 = nullptr;
+  _u._op._op3 = nullptr;
 }
 
 /**
@@ -295,7 +295,7 @@ CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
   _u._op._operator = binary_operator;
   _u._op._op1 = op1;
   _u._op._op2 = op2;
-  _u._op._op3 = NULL;
+  _u._op._op3 = nullptr;
 }
 
 /**
@@ -332,11 +332,11 @@ typecast_op(CPPType *type, CPPExpression *op1, Type cast_type) {
 CPPExpression CPPExpression::
 construct_op(CPPType *type, CPPExpression *op1) {
   CPPExpression expr(0);
-  if (op1 == NULL) {
+  if (op1 == nullptr) {
     // A default constructor call--no parameters.
     expr._type = T_default_construct;
     expr._u._typecast._to = type;
-    expr._u._typecast._op1 = NULL;
+    expr._u._typecast._op1 = nullptr;
   } else {
     // A normal constructor call, with parameters.
     expr._type = T_construct;
@@ -352,7 +352,7 @@ construct_op(CPPType *type, CPPExpression *op1) {
 CPPExpression CPPExpression::
 aggregate_init_op(CPPType *type, CPPExpression *op1) {
   CPPExpression expr(0);
-  if (op1 == NULL) {
+  if (op1 == nullptr) {
     expr._type = T_empty_aggregate_init;
   } else {
     expr._type = T_aggregate_init;
@@ -368,11 +368,11 @@ aggregate_init_op(CPPType *type, CPPExpression *op1) {
 CPPExpression CPPExpression::
 new_op(CPPType *type, CPPExpression *op1) {
   CPPExpression expr(0);
-  if (op1 == NULL) {
+  if (op1 == nullptr) {
     // A default new operation--no parameters.
     expr._type = T_default_new;
     expr._u._typecast._to = type;
-    expr._u._typecast._op1 = NULL;
+    expr._u._typecast._op1 = nullptr;
   } else {
     // A normal new operation, with parameters.
     expr._type = T_new;
@@ -427,7 +427,7 @@ sizeof_func(CPPType *type) {
   CPPExpression expr(0);
   expr._type = T_sizeof;
   expr._u._typecast._to = type;
-  expr._u._typecast._op1 = NULL;
+  expr._u._typecast._op1 = nullptr;
   return expr;
 }
 
@@ -450,7 +450,7 @@ alignof_func(CPPType *type) {
   CPPExpression expr(0);
   expr._type = T_alignof;
   expr._u._typecast._to = type;
-  expr._u._typecast._op1 = NULL;
+  expr._u._typecast._op1 = nullptr;
   return expr;
 }
 
@@ -509,7 +509,7 @@ raw_literal(const string &raw, CPPInstance *lit_op) {
   CPPExpression expr(0);
   expr._type = T_raw_literal;
   expr._str = raw;
-  expr._u._literal._value = (CPPExpression *)NULL;
+  expr._u._literal._value = nullptr;
   expr._u._literal._operator = lit_op;
   return expr;
 }
@@ -553,7 +553,7 @@ evaluate() const {
 
   switch (_type) {
   case T_nullptr:
-    return Result((void *)0);
+    return Result(nullptr);
 
   case T_boolean:
     return Result((int)_u._boolean);
@@ -572,15 +572,15 @@ evaluate() const {
     return Result();
 
   case T_variable:
-    if (_u._variable->_type != NULL &&
-        _u._variable->_initializer != NULL) {
+    if (_u._variable->_type != nullptr &&
+        _u._variable->_initializer != nullptr) {
       // A constexpr variable, which is treated as const.
       if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
         return _u._variable->_initializer->evaluate();
       }
       // A const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
-      if (const_type != NULL) {
+      if (const_type != nullptr) {
         return _u._variable->_initializer->evaluate();
       }
     }
@@ -597,11 +597,11 @@ evaluate() const {
   case T_dynamic_cast:
   case T_const_cast:
   case T_reinterpret_cast:
-    assert(_u._typecast._op1 != NULL);
+    assert(_u._typecast._op1 != nullptr);
     r1 = _u._typecast._op1->evaluate();
     if (r1._type != RT_error) {
       CPPSimpleType *stype = _u._typecast._to->as_simple_type();
-      if (stype != NULL) {
+      if (stype != nullptr) {
         if (stype->_type == CPPSimpleType::T_bool) {
           return Result(r1.as_boolean());
 
@@ -630,18 +630,18 @@ evaluate() const {
     return Result();
 
   case T_alignof:
-    if (_u._typecast._to != NULL) {
+    if (_u._typecast._to != nullptr) {
       // Check if the type is defined with an alignas.  TODO: this should
       // probably be moved to a virtual getter on CPPType.
       CPPExtensionType *etype = _u._typecast._to->as_extension_type();
-      if (etype != NULL && etype->_alignment != NULL) {
+      if (etype != nullptr && etype->_alignment != nullptr) {
         return etype->_alignment->evaluate();
       }
     }
     return Result();
 
   case T_binary_operation:
-    assert(_u._op._op2 != NULL);
+    assert(_u._op._op2 != nullptr);
     r2 = _u._op._op2->evaluate();
 
     // The operators && and || are special cases: these are shirt-circuiting
@@ -666,7 +666,7 @@ evaluate() const {
     // Fall through
 
   case T_unary_operation:
-    assert(_u._op._op1 != NULL);
+    assert(_u._op._op1 != nullptr);
     r1 = _u._op._op1->evaluate();
     if (r1._type == RT_error) {
       // Here's one more special case: if the first operand is invalid, it
@@ -854,39 +854,39 @@ evaluate() const {
     case KW_HAS_VIRTUAL_DESTRUCTOR:
       {
         CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
-        return Result(struct_type != NULL && struct_type->has_virtual_destructor());
+        return Result(struct_type != nullptr && struct_type->has_virtual_destructor());
       }
 
     case KW_IS_ABSTRACT:
       {
         CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
-        return Result(struct_type != NULL && struct_type->is_abstract());
+        return Result(struct_type != nullptr && struct_type->is_abstract());
       }
 
     case KW_IS_BASE_OF:
       {
         CPPStructType *struct_type1 = _u._type_trait._type->as_struct_type();
         CPPStructType *struct_type2 = _u._type_trait._arg->as_struct_type();
-        return Result(struct_type1 != NULL && struct_type2 != NULL && struct_type1->is_base_of(struct_type2));
+        return Result(struct_type1 != nullptr && struct_type2 != nullptr && struct_type1->is_base_of(struct_type2));
       }
 
     case KW_IS_CLASS:
       {
         CPPExtensionType *ext_type = _u._type_trait._type->as_extension_type();
-        return Result(ext_type != NULL && (
+        return Result(ext_type != nullptr && (
           ext_type->_type == CPPExtensionType::T_class ||
           ext_type->_type == CPPExtensionType::T_struct));
       }
 
     case KW_IS_CONSTRUCTIBLE:
-      if (_u._type_trait._arg == NULL) {
+      if (_u._type_trait._arg == nullptr) {
         return Result(_u._type_trait._type->is_default_constructible());
       } else {
         return Result(_u._type_trait._type->is_constructible(_u._type_trait._arg));
       }
 
     case KW_IS_CONVERTIBLE_TO:
-      assert(_u._type_trait._arg != NULL);
+      assert(_u._type_trait._arg != nullptr);
       return Result(_u._type_trait._type->is_convertible_to(_u._type_trait._arg));
 
     case KW_IS_DESTRUCTIBLE:
@@ -895,7 +895,7 @@ evaluate() const {
     case KW_IS_EMPTY:
       {
         CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
-        return Result(struct_type != NULL && struct_type->is_empty());
+        return Result(struct_type != nullptr && struct_type->is_empty());
       }
 
     case KW_IS_ENUM:
@@ -904,7 +904,7 @@ evaluate() const {
     case KW_IS_FINAL:
       {
         CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
-        return Result(struct_type != NULL && struct_type->is_final());
+        return Result(struct_type != nullptr && struct_type->is_final());
       }
 
     case KW_IS_FUNDAMENTAL:
@@ -917,7 +917,7 @@ evaluate() const {
     case KW_IS_POLYMORPHIC:
       {
         CPPStructType *struct_type = _u._type_trait._type->as_struct_type();
-        return Result(struct_type != NULL && struct_type->is_polymorphic());
+        return Result(struct_type != nullptr && struct_type->is_polymorphic());
       }
 
     case KW_IS_STANDARD_LAYOUT:
@@ -929,7 +929,7 @@ evaluate() const {
     case KW_IS_UNION:
       {
         CPPExtensionType *ext_type = _u._type_trait._type->as_extension_type();
-        return Result(ext_type != NULL &&
+        return Result(ext_type != nullptr &&
           ext_type->_type == CPPExtensionType::T_union);
       }
 
@@ -952,8 +952,8 @@ evaluate() const {
  */
 CPPType *CPPExpression::
 determine_type() const {
-  CPPType *t1 = (CPPType *)NULL;
-  CPPType *t2 = (CPPType *)NULL;
+  CPPType *t1 = nullptr;
+  CPPType *t2 = nullptr;
 
   static CPPType *nullptr_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_nullptr));
@@ -1028,16 +1028,16 @@ determine_type() const {
     return _u._variable->_type;
 
   case T_function:
-    if (_u._fgroup->get_return_type() == (CPPType *)NULL) {
+    if (_u._fgroup->get_return_type() == nullptr) {
       // There are multiple functions by this name that have different return
       // types.  We could attempt to differentiate them based on the parameter
       // list, but that's a lot of work.  Let's just give up.
-      return (CPPType *)NULL;
+      return nullptr;
     }
     return _u._fgroup->_instances.front()->_type;
 
   case T_unknown_ident:
-    return (CPPType *)NULL;
+    return nullptr;
 
   case T_typecast:
   case T_static_cast:
@@ -1064,12 +1064,12 @@ determine_type() const {
 
   case T_binary_operation:
   case T_trinary_operation:
-    assert(_u._op._op2 != NULL);
+    assert(_u._op._op2 != nullptr);
     t2 = _u._op._op2->determine_type();
     // Fall through
 
   case T_unary_operation:
-    assert(_u._op._op1 != NULL);
+    assert(_u._op._op1 != nullptr);
     t1 = _u._op._op1->determine_type();
 
     switch (_u._op._operator) {
@@ -1081,7 +1081,7 @@ determine_type() const {
 
     case UNARY_MINUS:
     case UNARY_PLUS:
-      if (t1 != NULL) {
+      if (t1 != nullptr) {
         switch (t1->get_subtype()) {
         case CPPDeclaration::ST_array:
           // Decay into pointer.
@@ -1107,11 +1107,11 @@ determine_type() const {
           return t1;
         }
       }
-      return NULL;
+      return nullptr;
 
     case UNARY_STAR:
     case '[': // Array element reference
-      if (t1 != NULL) {
+      if (t1 != nullptr) {
         if (t1->as_pointer_type()) {
           return t1->as_pointer_type()->_pointing_at;
         }
@@ -1119,7 +1119,7 @@ determine_type() const {
           return t1->as_array_type()->_element_type;
         }
       }
-      return NULL;
+      return nullptr;
 
     case UNARY_REF:
       return t1;
@@ -1128,9 +1128,9 @@ determine_type() const {
     case '/':
     case '+':
     case '-':
-      if (t1 == NULL) {
+      if (t1 == nullptr) {
         return t2;
-      } else if (t2 == NULL) {
+      } else if (t2 == nullptr) {
         return t1;
       } else if (t1->as_pointer_type()) {
         if (t2->as_pointer_type()) {
@@ -1162,25 +1162,25 @@ determine_type() const {
 
     case '.':
     case POINTSAT:
-      return NULL;
+      return nullptr;
 
     case 'f': // Function evaluation
-      if (t1 != NULL) {
+      if (t1 != nullptr) {
         // Easy case, function with only a single overload.
         CPPFunctionType *ftype = t1->as_function_type();
-        if (ftype != (CPPFunctionType *)NULL) {
+        if (ftype != nullptr) {
           return ftype->_return_type;
         }
       } else if (_u._op._op1->_type == T_function) {
         CPPFunctionGroup *fgroup = _u._op._op1->_u._fgroup;
-        if (_u._op._op2 == NULL) {
+        if (_u._op._op2 == nullptr) {
           // If we are passing no args, look for an overload that has takes no
           // args.
           for (auto it = fgroup->_instances.begin(); it != fgroup->_instances.end(); ++it) {
             CPPInstance *inst = *it;
-            if (inst != NULL && inst->_type != NULL) {
+            if (inst != nullptr && inst->_type != nullptr) {
               CPPFunctionType *type = inst->_type->as_function_type();
-              if (type != NULL && type->accepts_num_parameters(0)) {
+              if (type != nullptr && type->accepts_num_parameters(0)) {
                 return type->_return_type;
               }
             }
@@ -1189,7 +1189,7 @@ determine_type() const {
           //TODO
         }
       }
-      return NULL;
+      return nullptr;
 
     case ',':
       return t2;
@@ -1201,15 +1201,15 @@ determine_type() const {
 
   case T_literal:
   case T_raw_literal:
-    if (_u._literal._operator != NULL) {
+    if (_u._literal._operator != nullptr) {
       CPPType *type = _u._literal._operator->_type;
 
       CPPFunctionType *ftype = type->as_function_type();
-      if (ftype != (CPPFunctionType *)NULL) {
+      if (ftype != nullptr) {
         return ftype->_return_type;
       }
     }
-    return NULL;
+    return nullptr;
 
   case T_typeid_type:
   case T_typeid_expr:
@@ -1226,7 +1226,7 @@ determine_type() const {
     abort();
   }
 
-  return NULL;  // Compiler kludge; can't get here.
+  return nullptr;  // Compiler kludge; can't get here.
 }
 
 /**
@@ -1361,9 +1361,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
     // See if we can define it now.
     decl = rep->_u._ident->find_symbol(current_scope, global_scope, subst);
-    if (decl != NULL) {
+    if (decl != nullptr) {
       CPPInstance *inst = decl->as_instance();
-      if (inst != NULL) {
+      if (inst != nullptr) {
         rep->_type = T_variable;
         rep->_u._variable = inst;
         any_changed = true;
@@ -1384,7 +1384,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
         break;
       }
       CPPFunctionGroup *fgroup = decl->as_function_group();
-      if (fgroup != NULL) {
+      if (fgroup != nullptr) {
         rep->_type = T_function;
         rep->_u._fgroup = fgroup;
         any_changed = true;
@@ -1481,13 +1481,13 @@ bool CPPExpression::
 is_tbd() const {
   switch (_type) {
   case T_variable:
-    if (_u._variable->_type != NULL &&
-        _u._variable->_initializer != NULL) {
+    if (_u._variable->_type != nullptr &&
+        _u._variable->_initializer != nullptr) {
       if (_u._variable->_storage_class & CPPInstance::SC_constexpr) {
         return false;
       }
       CPPConstType *const_type = _u._variable->_type->as_const_type();
-      if (const_type != NULL) {
+      if (const_type != nullptr) {
         return false;
       }
     }
@@ -1643,13 +1643,13 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     // We can just refer to the variable by name, except if it's a private
     // constant, in which case we have to compute the value, since we may have
     // to use it in generated code.
-    if (_u._variable->_type != NULL &&
-        _u._variable->_initializer != NULL &&
+    if (_u._variable->_type != nullptr &&
+        _u._variable->_initializer != nullptr &&
         _u._variable->_vis > V_public) {
       // A constexpr or const variable.  Fetch its assigned value.
       CPPConstType *const_type = _u._variable->_type->as_const_type();
       if ((_u._variable->_storage_class & CPPInstance::SC_constexpr) != 0 ||
-          const_type != NULL) {
+          const_type != nullptr) {
         _u._variable->_initializer->output(out, indent_level, scope, false);
         break;
       }
@@ -1659,7 +1659,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
   case T_function:
     // Pick any instance; they all have the same name anyway.
-    if (!_u._fgroup->_instances.empty() && _u._fgroup->_instances[0]->_ident != NULL) {
+    if (!_u._fgroup->_instances.empty() && _u._fgroup->_instances[0]->_ident != nullptr) {
       _u._fgroup->_instances[0]->_ident->output(out, scope);
     } else {
       out << _u._fgroup->_name;
@@ -1936,7 +1936,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
   case T_literal:
     _u._literal._value->output(out, indent_level, scope, false);
-    if (_u._literal._operator != NULL) {
+    if (_u._literal._operator != nullptr) {
       string name = _u._literal._operator->get_simple_name();
       assert(name.substr(0, 12) == "operator \"\" ");
       out << name.substr(12);
@@ -1945,7 +1945,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 
   case T_raw_literal:
     out << _str;
-    if (_u._literal._operator != NULL) {
+    if (_u._literal._operator != nullptr) {
       string name = _u._literal._operator->get_simple_name();
       assert(name.substr(0, 12) == "operator \"\" ");
       out << name.substr(12);
@@ -2064,9 +2064,9 @@ elevate_type(CPPType *t1, CPPType *t2) {
   CPPSimpleType *st1 = t1->as_simple_type();
   CPPSimpleType *st2 = t2->as_simple_type();
 
-  if (st1 == NULL || st2 == NULL) {
+  if (st1 == nullptr || st2 == nullptr) {
     // Nothing we can do about this.  Who knows?
-    return NULL;
+    return nullptr;
   }
 
   if (st1->_type == st2->_type) {
@@ -2113,7 +2113,7 @@ elevate_type(CPPType *t1, CPPType *t2) {
 bool CPPExpression::
 is_equal(const CPPDeclaration *other) const {
   const CPPExpression *ot = ((CPPDeclaration *)other)->as_expression();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_type != ot->_type) {
     return false;
@@ -2213,7 +2213,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPExpression::
 is_less(const CPPDeclaration *other) const {
   const CPPExpression *ot = ((CPPDeclaration *)other)->as_expression();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_type != ot->_type) {
     return (int)_type < (int)ot->_type;

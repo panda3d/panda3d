@@ -20,7 +20,7 @@
  */
 CPPClosureType::
 CPPClosureType(CaptureType default_capture) :
-  CPPFunctionType(NULL, NULL, 0),
+  CPPFunctionType(nullptr, nullptr, 0),
   _default_capture(default_capture) {
 }
 
@@ -134,7 +134,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     }
     out << capture._name;
 
-    if (capture._initializer != NULL) {
+    if (capture._initializer != nullptr) {
       out << " = " << *capture._initializer;
     }
 
@@ -142,7 +142,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   }
   out.put(']');
 
-  if (_parameters != NULL) {
+  if (_parameters != nullptr) {
     out.put('(');
     _parameters->output(out, scope, true, -1);
     out.put(')');
@@ -152,7 +152,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     out << " noexcept";
   }
 
-  if (_return_type != NULL) {
+  if (_return_type != nullptr) {
     out << " -> ";
     _return_type->output(out, indent_level, scope, false);
   }

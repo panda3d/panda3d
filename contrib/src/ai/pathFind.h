@@ -40,9 +40,9 @@ public:
   LVecBase3 _prev_position;
   PT(GeomNode) _parent;
   LineSegs *_pen;
-  vector<int> _previous_obstacles;
+  std::vector<int> _previous_obstacles;
   bool _dynamic_avoid;
-  vector<NodePath> _dynamic_obstacle;
+  std::vector<NodePath> _dynamic_obstacle;
 
   PathFind(AICharacter *ai_ch);
   ~PathFind();

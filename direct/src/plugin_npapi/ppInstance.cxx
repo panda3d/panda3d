@@ -54,13 +54,13 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
            int16_t argc, char *argn[], char *argv[], NPSavedData *saved,
            P3D_window_handle_type window_handle_type,
            P3D_event_type event_type) {
-  _p3d_inst = NULL;
+  _p3d_inst = nullptr;
 
   _npp_instance = instance;
   _npp_mode = mode;
   _window_handle_type = window_handle_type;
   _event_type = event_type;
-  _script_object = NULL;
+  _script_object = nullptr;
   _contents_expiration = 0;
   _failed = false;
   _started = false;
@@ -68,9 +68,9 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   // Copy the tokens and save them within this object.
   _tokens.reserve(argc);
   for (int i = 0; i < argc; ++i) {
-    if (argn[i] != NULL) {
+    if (argn[i] != nullptr) {
       const char *v = argv[i];
-      if (v == NULL) {
+      if (v == nullptr) {
         // Firefox might give us a NULL argv[i] in some cases.
         v = "";
       }
@@ -130,13 +130,13 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
 #ifdef HAVE_X11
   _twirl_subprocess_pid = -1;
 #ifdef HAVE_GTK
-  _plug = NULL;
+  _plug = nullptr;
 #endif  // HAVE_GTK
 #endif  // HAVE_X11
 
 #ifdef _WIN32
-  _hwnd = NULL;
-  _bg_brush = NULL;
+  _hwnd = nullptr;
+  _bg_brush = nullptr;
 #endif // _WIN32
 
 #ifndef _WIN32
@@ -144,7 +144,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   // use this to measure elapsed time from the window parameters having been
   // received.
   struct timeval tv;
-  gettimeofday(&tv, (struct timezone *)NULL);
+  gettimeofday(&tv, nullptr);
   _init_sec = tv.tv_sec;
   _init_usec = tv.tv_usec;
 #endif  // !_WIN32
@@ -155,16 +155,16 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16_t mode,
   // thread.)
   _run_loop_main = CFRunLoopGetCurrent();
   CFRetain(_run_loop_main);
-  _request_timer = NULL;
+  _request_timer = nullptr;
   INIT_LOCK(_timer_lock);
 
   // Also set up a timer to twirl the icon until the instance loads.
-  _twirl_timer = NULL;
+  _twirl_timer = nullptr;
   CFRunLoopTimerContext timer_context;
   memset(&timer_context, 0, sizeof(timer_context));
   timer_context.info = this;
   _twirl_timer = CFRunLoopTimerCreate
-    (NULL, 0, 0.1, 0, 0, st_twirl_timer_callback, &timer_context);
+    (nullptr, 0, 0.1, 0, 0, st_twirl_timer_callback, &timer_context);
   CFRunLoopAddTimer(_run_loop_main, _twirl_timer, kCFRunLoopCommonModes);
 #endif  // __APPLE__
 
@@ -181,15 +181,15 @@ PPInstance::
   cleanup_window();
 
 #ifdef __APPLE__
-  if (_twirl_timer != NULL) {
+  if (_twirl_timer != nullptr) {
     CFRunLoopTimerInvalidate(_twirl_timer);
     CFRelease(_twirl_timer);
-    _twirl_timer = NULL;
+    _twirl_timer = nullptr;
   }
-  if (_request_timer != NULL) {
+  if (_request_timer != nullptr) {
     CFRunLoopTimerInvalidate(_request_timer);
     CFRelease(_request_timer);
-    _request_timer = NULL;
+    _request_timer = nullptr;
   }
   _run_loop_main = CFRunLoopGetCurrent();
   CFRelease(_run_loop_main);
@@ -200,15 +200,15 @@ PPInstance::
   osx_release_twirl_images();
 #endif  // MACOSX_HAS_EVENT_MODELS
 
-  if (_p3d_inst != NULL) {
+  if (_p3d_inst != nullptr) {
     P3D_instance_finish_ptr(_p3d_inst);
-    _p3d_inst = NULL;
+    _p3d_inst = nullptr;
   }
 
   assert(_streams.empty());
   assert(_file_datas.empty());
 
-  if (_script_object != NULL) {
+  if (_script_object != nullptr) {
     browser->releaseobject(_script_object);
   }
 
@@ -259,7 +259,7 @@ begin() {
 
     string contents_filename = _root_dir + "/contents.xml";
     if (read_contents_file(contents_filename, false)) {
-      if (time(NULL) < _contents_expiration) {
+      if (time(nullptr) < _contents_expiration) {
         // Got the file, and it's good.
         get_core_api();
         success = true;
@@ -276,7 +276,7 @@ begin() {
       // Append a uniquifying query string to the URL to force the download to
       // go all the way through any caches.  We use the time in seconds;
       // that's unique enough.
-      strm << "?" << time(NULL);
+      strm << "?" << time(nullptr);
       url = strm.str();
 
       PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
@@ -308,7 +308,7 @@ set_window(NPWindow *window) {
 
   if (!_got_window) {
 #ifdef _WIN32
-    _orig_window_proc = NULL;
+    _orig_window_proc = nullptr;
     if (window->type == NPWindowTypeWindow) {
       // Save the window handle.
       _hwnd = (HWND)window->window;
@@ -330,7 +330,7 @@ set_window(NPWindow *window) {
       // twirling icon, and also to catch events in case something slips
       // through.
       _init_time = GetTickCount();
-      SetTimer(_hwnd, 1, 100, NULL);
+      SetTimer(_hwnd, 1, 100, nullptr);
     }
 #endif  // _WIN32
 #ifdef MACOSX_HAS_EVENT_MODELS
@@ -342,9 +342,9 @@ set_window(NPWindow *window) {
   if (_use_xembed) {
     if (!_got_window || _window.window != window->window) {
       // The window has changed.  Destroy the old GtkPlug.
-      if (_plug != NULL) {
+      if (_plug != nullptr) {
         gtk_widget_destroy(_plug);
-        _plug = NULL;
+        _plug = nullptr;
       }
 
       // Create a new GtkPlug to bind to the XEmbed socket.
@@ -367,7 +367,7 @@ set_window(NPWindow *window) {
 #endif  // HAVE_X11
 
   if (!_failed) {
-    if (_p3d_inst == NULL) {
+    if (_p3d_inst == nullptr) {
       create_instance();
     } else {
       send_window();
@@ -385,16 +385,16 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16_t *stype) {
     return NPERR_GENERIC_ERROR;
   }
 
-  if (stream->notifyData == NULL) {
+  if (stream->notifyData == nullptr) {
     // This is an unsolicited stream.  Assume the first unsolicited stream we
     // receive is the instance data; any other unsolicited stream is an error.
 
-    if (!_got_instance_url && stream->url != NULL) {
+    if (!_got_instance_url && stream->url != nullptr) {
       _got_instance_url = true;
       _instance_url = stream->url;
       stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
 
-      if (_p3d_inst != NULL) {
+      if (_p3d_inst != nullptr) {
         // If we already have an instance by the time we get this stream,
         // start sending the data to the instance (instead of having to mess
         // around with a temporary file).
@@ -488,7 +488,7 @@ write_ready(NPStream *stream) {
  */
 int PPInstance::
 write_stream(NPStream *stream, int offset, int len, void *buffer) {
-  if (stream->notifyData == NULL) {
+  if (stream->notifyData == nullptr) {
     nout << "Unexpected write_stream on " << stream->url << "\n";
     browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
     return 0;
@@ -523,7 +523,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
 
     // Nowadays we solve this problem by writing the data to a temporary file
     // until the instance is ready for it.
-    if (_p3d_inst == NULL) {
+    if (_p3d_inst == nullptr) {
       // The instance isn't ready, so stuff it in a temporary file.
       if (!_p3d_temp_file.feed(stream->end, buffer, len)) {
         set_failed();
@@ -575,7 +575,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
     _streams.erase(si);
   }
 
-  if (stream->notifyData == NULL) {
+  if (stream->notifyData == nullptr) {
     nout << "Unexpected destroy_stream on " << stream->url << "\n";
     return NPERR_NO_ERROR;
   }
@@ -595,14 +595,14 @@ destroy_stream(NPStream *stream, NPReason reason) {
   case PPDownloadRequest::RT_user:
     if (!req->_notified_done) {
       P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                       result_code, 0, stream->end, NULL, 0);
+                                       result_code, 0, stream->end, nullptr, 0);
       req->_notified_done = true;
     }
     break;
 
   case PPDownloadRequest::RT_instance_data:
     if (!req->_notified_done) {
-      if (_p3d_inst == NULL) {
+      if (_p3d_inst == nullptr) {
         // The instance still isn't ready; just mark the data done.  We'll
         // send the entire file to the instance when it is ready.
         _p3d_temp_file.finish();
@@ -614,7 +614,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
         // The instance has (only just) been created.  Tell it we've sent it
         // all the data it will get.
         P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
-                                         result_code, 0, stream->end, NULL, 0);
+                                         result_code, 0, stream->end, nullptr, 0);
       }
       req->_notified_done = true;
     }
@@ -655,7 +655,7 @@ destroy_stream(NPStream *stream, NPReason reason) {
  */
 void PPInstance::
 url_notify(const char *url, NPReason reason, void *notifyData) {
-  if (notifyData == NULL) {
+  if (notifyData == nullptr) {
     return;
   }
 
@@ -675,7 +675,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       assert(reason != NPRES_DONE);
 
       P3D_instance_feed_url_stream_ptr(_p3d_inst, req->_user_id,
-                                       P3D_RC_generic_error, 0, 0, NULL, 0);
+                                       P3D_RC_generic_error, 0, 0, nullptr, 0);
       req->_notified_done = true;
     }
     break;
@@ -739,7 +739,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
  */
 void PPInstance::
 stream_as_file(NPStream *stream, const char *fname) {
-  if (stream->notifyData == NULL) {
+  if (stream->notifyData == nullptr) {
     nout << "Unexpected stream_as_file on " << stream->url << "\n";
     return;
   }
@@ -772,7 +772,7 @@ stream_as_file(NPStream *stream, const char *fname) {
       // the file that Safari tells us about appears to be a temporary file
       // that Safari's about to delete.  In order to protect ourselves from
       // this, we need to temporarily copy the file somewhere else.
-      char *name = tempnam(NULL, "p3d_");
+      char *name = tempnam(nullptr, "p3d_");
 
       // We prefer just making a hard link; it's quick and easy.
       if (link(filename.c_str(), name) != 0) {
@@ -802,7 +802,7 @@ stream_as_file(NPStream *stream, const char *fname) {
  */
 bool PPInstance::
 handle_request(P3D_request *request) {
-  if (_p3d_inst == NULL || _failed) {
+  if (_p3d_inst == nullptr || _failed) {
     return false;
   }
   assert(request->_instance == _p3d_inst);
@@ -811,9 +811,9 @@ handle_request(P3D_request *request) {
 
   switch (request->_request_type) {
   case P3D_RT_stop:
-    if (_p3d_inst != NULL) {
+    if (_p3d_inst != nullptr) {
       P3D_instance_finish_ptr(_p3d_inst);
-      _p3d_inst = NULL;
+      _p3d_inst = nullptr;
     }
     cleanup_window();
     // Guess the browser doesn't really care.
@@ -911,7 +911,7 @@ handle_event(void *event) {
 #endif  // MACOSX_HAS_EVENT_MODELS
   }
 
-  if (_p3d_inst != NULL) {
+  if (_p3d_inst != nullptr) {
     if (P3D_instance_handle_event_ptr(_p3d_inst, &edata)) {
       retval = true;
     }
@@ -926,15 +926,15 @@ handle_event(void *event) {
  */
 NPObject *PPInstance::
 get_panda_script_object() {
-  if (_script_object != NULL) {
+  if (_script_object != nullptr) {
     // NPRuntime "steals" a reference to this object.
     browser->retainobject(_script_object);
     return _script_object;
   }
 
-  P3D_object *main = NULL;
+  P3D_object *main = nullptr;
 
-  if (_p3d_inst != NULL) {
+  if (_p3d_inst != nullptr) {
     main = P3D_instance_get_panda_script_object_ptr(_p3d_inst);
   }
   nout << "get_panda_script_object, main = " << main << "\n";
@@ -985,7 +985,7 @@ p3dobj_to_variant(NPVariant *result, P3D_object *object) {
 
   case P3D_OT_string:
     {
-      int size = P3D_OBJECT_GET_STRING(object, NULL, 0);
+      int size = P3D_OBJECT_GET_STRING(object, nullptr, 0);
       char *buffer = (char *)browser->memalloc(size);
       P3D_OBJECT_GET_STRING(object, buffer, size);
       STRINGN_TO_NPVARIANT(buffer, size, *result);
@@ -1071,9 +1071,9 @@ void PPInstance::
 find_host(TiXmlElement *xcontents) {
   string host_url = PANDA_PACKAGE_HOST_URL;
   TiXmlElement *xhost = xcontents->FirstChildElement("host");
-  if (xhost != NULL) {
+  if (xhost != nullptr) {
     const char *url = xhost->Attribute("url");
-    if (url != NULL && host_url == string(url)) {
+    if (url != nullptr && host_url == string(url)) {
       // We're the primary host.  This is the normal case.
       read_xhost(xhost);
       return;
@@ -1081,9 +1081,9 @@ find_host(TiXmlElement *xcontents) {
     } else {
       // We're not the primary host; perhaps we're an alternate host.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
-      while (xalthost != NULL) {
+      while (xalthost != nullptr) {
         const char *url = xalthost->Attribute("url");
-        if (url != NULL && host_url == string(url)) {
+        if (url != nullptr && host_url == string(url)) {
           // Yep, we're this alternate host.
           read_xhost(xhost);
           return;
@@ -1107,7 +1107,7 @@ read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we download
   // everything other than the contents.xml file.
   const char *download_url = xhost->Attribute("download_url");
-  if (download_url != NULL) {
+  if (download_url != nullptr) {
     _download_url_prefix = download_url;
   } else {
     _download_url_prefix = PANDA_PACKAGE_HOST_URL;
@@ -1119,9 +1119,9 @@ read_xhost(TiXmlElement *xhost) {
   }
 
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
-  while (xmirror != NULL) {
+  while (xmirror != nullptr) {
     const char *url = xmirror->Attribute("url");
-    if (url != NULL) {
+    if (url != nullptr) {
       add_mirror(url);
     }
     xmirror = xmirror->NextSiblingElement("mirror");
@@ -1175,15 +1175,15 @@ choose_random_mirrors(vector<string> &result, int num_mirrors) {
 void PPInstance::
 request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
-  assert(inst != NULL);
+  assert(inst != nullptr);
 
   if (has_plugin_thread_async_call) {
 #ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
     // Since we are running at least Gecko 1.9, and we have this very useful
     // function, let's use it to ask the browser to call us back in the main
     // thread.
-    assert((void *)browser->pluginthreadasynccall != (void *)NULL);
-    browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
+    assert((void *)browser->pluginthreadasynccall != nullptr);
+    browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, nullptr);
 #endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
 
   } else {
@@ -1195,7 +1195,7 @@ request_ready(P3D_instance *instance) {
 
     // Get the window handle for the window associated with this instance.
     const NPWindow *win = inst->get_window();
-    if (win != NULL && win->type == NPWindowTypeWindow) {
+    if (win != nullptr && win->type == NPWindowTypeWindow) {
       PostMessage((HWND)(win->window), WM_USER, 0, 0);
     }
 #endif  // _WIN32
@@ -1205,12 +1205,12 @@ request_ready(P3D_instance *instance) {
 
     // Only set a new timer if we don't have one already started.
     ACQUIRE_LOCK(inst->_timer_lock);
-    if (inst->_request_timer == NULL) {
+    if (inst->_request_timer == nullptr) {
       CFRunLoopTimerContext timer_context;
       memset(&timer_context, 0, sizeof(timer_context));
       timer_context.info = inst;
       inst->_request_timer = CFRunLoopTimerCreate
-        (NULL, 0, 0, 0, 0, timer_callback, &timer_context);
+        (nullptr, 0, 0, 0, 0, timer_callback, &timer_context);
       CFRunLoopAddTimer(inst->_run_loop_main, inst->_request_timer, kCFRunLoopCommonModes);
     }
     RELEASE_LOCK(inst->_timer_lock);
@@ -1232,7 +1232,7 @@ start_download(const string &url, PPDownloadRequest *req) {
     delete req;
   } else {
     // Otherwise, ask the browser to download it.
-    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+    browser->geturlnotify(_npp_instance, url.c_str(), nullptr, req);
   }
 }
 
@@ -1283,19 +1283,19 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
   bool found_core_package = false;
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
-  if (xcontents != NULL) {
+  if (xcontents != nullptr) {
     int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
     xcontents->Attribute("max_age", &max_age);
 
     // Get the latest possible expiration time, based on the max_age
     // indication.  Any expiration time later than this is in error.
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     _contents_expiration = now + (time_t)max_age;
 
     if (fresh_download) {
       // Update the XML with the new download information.
       TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-      while (xorig != NULL) {
+      while (xorig != nullptr) {
         xcontents->RemoveChild(xorig);
         xorig = xcontents->FirstChildElement("orig");
       }
@@ -1309,7 +1309,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
       // Read the expiration time from the XML.
       int expiration = 0;
       TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-      if (xorig != NULL) {
+      if (xorig != nullptr) {
         xorig->Attribute("expiration", &expiration);
       }
 
@@ -1327,14 +1327,14 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     // Now look for the core API package.
     _coreapi_set_ver = "";
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
-    while (xpackage != NULL) {
+    while (xpackage != nullptr) {
       const char *name = xpackage->Attribute("name");
-      if (name != NULL && strcmp(name, "coreapi") == 0) {
+      if (name != nullptr && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
-        if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
+        if (platform != nullptr && strcmp(platform, DTOOL_PLATFORM) == 0) {
           _coreapi_dll.load_xml(xpackage);
           const char *set_ver = xpackage->Attribute("set_ver");
-          if (set_ver != NULL) {
+          if (set_ver != nullptr) {
             _coreapi_set_ver = set_ver;
           }
           found_core_package = true;
@@ -1491,7 +1491,7 @@ send_p3d_temp_file_data() {
     // If we'd already finished the stream earlier, tell the plugin.
     P3D_instance_feed_url_stream_ptr(_p3d_inst, _p3d_instance_id,
                                      P3D_RC_done, 0, _p3d_temp_file._total_size,
-                                     NULL, 0);
+                                     nullptr, 0);
   }
   _p3d_temp_file.cleanup();
 }
@@ -1515,7 +1515,7 @@ get_core_api() {
     // uniquifier, to break through any caches.
     ostringstream strm;
     strm << _download_url_prefix << _coreapi_dll.get_filename()
-         << "?" << time(NULL);
+         << "?" << time(nullptr);
     url = strm.str();
     _core_urls.push_back(url);
 
@@ -1566,7 +1566,7 @@ downloaded_plugin(const string &filename) {
     nout << "Expected:\n";
     _coreapi_dll.write(nout);
     const FileSpec *actual = _coreapi_dll.force_get_actual_file(filename);
-    if (actual != NULL) {
+    if (actual != nullptr) {
       nout << "Found:\n";
       actual->write(nout);
     }
@@ -1671,10 +1671,10 @@ create_instance() {
 
 #ifdef __APPLE__
   // We no longer need to twirl the icon.  Stop the timer.
-  if (_twirl_timer != NULL) {
+  if (_twirl_timer != nullptr) {
     CFRunLoopTimerInvalidate(_twirl_timer);
     CFRelease(_twirl_timer);
-    _twirl_timer = NULL;
+    _twirl_timer = nullptr;
   }
 #endif  // __APPLE__
 
@@ -1685,21 +1685,21 @@ create_instance() {
   // In the Windows case, we let the timer keep running, because it also
   // checks for wayward messages.
 
-  P3D_token *tokens = NULL;
+  P3D_token *tokens = nullptr;
   if (!_tokens.empty()) {
     tokens = &_tokens[0];
   }
   _started = true;
   _p3d_inst = P3D_new_instance_ptr(request_ready, tokens, _tokens.size(),
-                               0, NULL, this);
-  if (_p3d_inst == NULL) {
+                               0, nullptr, this);
+  if (_p3d_inst == nullptr) {
     set_failed();
     return;
   }
 
   // Now get the browser's toplevel DOM object (called the "window" object in
   // JavaScript), to pass to the plugin.
-  NPObject *window_object = NULL;
+  NPObject *window_object = nullptr;
   if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                         &window_object) == NPERR_NO_ERROR) {
     PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
@@ -1709,7 +1709,7 @@ create_instance() {
     nout << "Couldn't get window_object\n";
   }
 
-  if (_script_object != NULL) {
+  if (_script_object != nullptr) {
     // Now that we have a true instance, initialize our script_object with the
     // proper P3D_object pointer.
     P3D_object *main = P3D_instance_get_panda_script_object_ptr(_p3d_inst);
@@ -1740,7 +1740,7 @@ create_instance() {
  */
 void PPInstance::
 send_window() {
-  assert(_p3d_inst != NULL);
+  assert(_p3d_inst != nullptr);
 
   int x = _window.x;
   int y = _window.y;
@@ -1770,7 +1770,7 @@ send_window() {
 #endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
-      if (context != NULL) {
+      if (context != nullptr) {
         parent_window._handle._osx_cgcontext._context = context->context;
         parent_window._handle._osx_cgcontext._window = (WindowRef)context->window;
       }
@@ -1784,7 +1784,7 @@ send_window() {
       // If we're using XEmbed, pass the X11 Window pointer of our plug down
       // to Panda.  (Hmm, it would be nice to pass the XID object and use this
       // system in general within Panda, but that's for the future, I think.)
-      assert(_plug != NULL);
+      assert(_plug != nullptr);
       parent_window._window_handle_type = P3D_WHT_x11_window;
       parent_window._handle._x11_window._xwindow = GDK_DRAWABLE_XID(_plug->window);
 #endif  // HAVE_GTK
@@ -1818,7 +1818,7 @@ send_window() {
 #endif
     } else if (_window_handle_type == P3D_WHT_osx_cgcontext) {
       NP_CGContext *context = (NP_CGContext *)_window.window;
-      if (context != NULL) {
+      if (context != nullptr) {
         parent_window._handle._osx_cgcontext._context = context->context;
         parent_window._handle._osx_cgcontext._window = (WindowRef)context->window;
       }
@@ -1845,7 +1845,7 @@ send_window() {
 #endif
 
   P3D_window_type window_type = P3D_WT_embedded;
-  if (_window.window == NULL && _event_type != P3D_ET_osx_cocoa) {
+  if (_window.window == nullptr && _event_type != P3D_ET_osx_cocoa) {
     // No parent window: it must be a hidden window.
     window_type = P3D_WT_hidden;
   } else if (_window.width == 0 || _window.height == 0) {
@@ -1870,16 +1870,16 @@ cleanup_window() {
     // Restore the parent window to its own window handler.
     HWND hwnd = (HWND)_window.window;
     SetWindowLongPtr(hwnd, GWLP_WNDPROC, _orig_window_proc);
-    InvalidateRect(hwnd, NULL, true);
+    InvalidateRect(hwnd, nullptr, true);
 
-    if (_bg_brush != NULL) {
+    if (_bg_brush != nullptr) {
       DeleteObject(_bg_brush);
-      _bg_brush = NULL;
+      _bg_brush = nullptr;
     }
     for (int step = 0; step < twirl_num_steps + 1; ++step) {
-      if (_twirl_bitmaps[step] != NULL) {
+      if (_twirl_bitmaps[step] != nullptr) {
         DeleteObject(_twirl_bitmaps[step]);
-        _twirl_bitmaps[step] = NULL;
+        _twirl_bitmaps[step] = nullptr;
       }
     }
 #endif  // _WIN32
@@ -1888,9 +1888,9 @@ cleanup_window() {
     x11_stop_twirl_subprocess();
 
 #ifdef HAVE_GTK
-    if (_plug != NULL) {
+    if (_plug != nullptr) {
       gtk_widget_destroy(_plug);
-      _plug = NULL;
+      _plug = nullptr;
     }
 #endif  // HAVE_GTK
 #endif  // HAVE_X11
@@ -2037,7 +2037,7 @@ set_failed() {
 
     if (!expression.empty()) {
       // Now attempt to evaluate the expression.
-      NPObject *window_object = NULL;
+      NPObject *window_object = nullptr;
       if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                             &window_object) == NPERR_NO_ERROR) {
         NPString npexpr = { expression.c_str(), (uint32_t)expression.length() };
@@ -2054,9 +2054,9 @@ set_failed() {
       }
     }
 
-    if (_p3d_inst != NULL) {
+    if (_p3d_inst != nullptr) {
       P3D_instance_finish_ptr(_p3d_inst);
-      _p3d_inst = NULL;
+      _p3d_inst = nullptr;
     }
     cleanup_window();
   }
@@ -2073,11 +2073,11 @@ handle_request_loop() {
   }
 
   P3D_instance *p3d_inst = P3D_check_request_ptr(0.0);
-  while (p3d_inst != (P3D_instance *)NULL) {
+  while (p3d_inst != nullptr) {
     P3D_request *request = P3D_instance_get_request_ptr(p3d_inst);
-    if (request != (P3D_request *)NULL) {
+    if (request != nullptr) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
-      assert(inst != NULL);
+      assert(inst != nullptr);
       if (!inst->handle_request(request)) {
         // If handling the request is meant to yield control temporarily to
         // JavaScript (e.g.  P3D_RT_callback), then do so now.
@@ -2130,7 +2130,7 @@ browser_sync_callback(void *) {
 LONG PPInstance::
 st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   LONG_PTR self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
-  if (self == NULL) {
+  if (self == nullptr) {
     // We haven't assigned the pointer yet (!?)
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
@@ -2174,7 +2174,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_TIMER:
     if (!_started) {
-      InvalidateRect(_hwnd, NULL, FALSE);
+      InvalidateRect(_hwnd, nullptr, FALSE);
     }
     break;
 
@@ -2286,7 +2286,7 @@ win_paint_twirl(HWND hwnd, HDC dc) {
       BitBlt(bdc, left, top, twirl_width, twirl_height,
              mem_dc, 0, 0, SRCCOPY);
 
-      SelectObject(mem_dc, NULL);
+      SelectObject(mem_dc, nullptr);
       DeleteDC(mem_dc);
     }
   }
@@ -2414,7 +2414,7 @@ const wchar_t *PPInstance::
 make_ansi_string(wstring &result, NPNSString *ns_string) {
   result.clear();
 
-  if (ns_string != NULL) {
+  if (ns_string != nullptr) {
     // An NPNSString is really just an NSString, which is itself just a
     // CFString.
     CFStringRef cfstr = (CFStringRef)ns_string;
@@ -2492,7 +2492,7 @@ osx_get_twirl_images() {
     image._raw_data = new_data;
 
     image._data =
-      CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data,
+      CFDataCreateWithBytesNoCopy(nullptr, (const UInt8 *)image._raw_data,
                                   twirl_size * 4, kCFAllocatorNull);
     image._provider = CGDataProviderCreateWithCFData(image._data);
     image._color_space = CGColorSpaceCreateDeviceRGB();
@@ -2501,7 +2501,7 @@ osx_get_twirl_images() {
       CGImageCreate(twirl_width, twirl_height, 8, 32,
                     twirl_width * 4, image._color_space,
                     kCGImageAlphaFirst | kCGBitmapByteOrder32Little,
-                    image._provider, NULL, false, kCGRenderingIntentDefault);
+                    image._provider, nullptr, false, kCGRenderingIntentDefault);
   }
 }
 #endif  // MACOSX_HAS_EVENT_MODELS
@@ -2520,25 +2520,25 @@ osx_release_twirl_images() {
   for (int step = 0; step < twirl_num_steps + 1; ++step) {
     OsxImageData &image = _twirl_images[step];
 
-    if (image._image != NULL) {
+    if (image._image != nullptr) {
       CGImageRelease(image._image);
-      image._image = NULL;
+      image._image = nullptr;
     }
-    if (image._color_space != NULL) {
+    if (image._color_space != nullptr) {
       CGColorSpaceRelease(image._color_space);
-      image._color_space = NULL;
+      image._color_space = nullptr;
     }
-    if (image._provider != NULL) {
+    if (image._provider != nullptr) {
       CGDataProviderRelease(image._provider);
-      image._provider = NULL;
+      image._provider = nullptr;
     }
-    if (image._data != NULL) {
+    if (image._data != nullptr) {
       CFRelease(image._data);
-      image._data = NULL;
+      image._data = nullptr;
     }
-    if (image._raw_data != NULL) {
+    if (image._raw_data != nullptr) {
       delete[] image._raw_data;
-      image._raw_data = NULL;
+      image._raw_data = nullptr;
     }
   }
 }
@@ -2571,7 +2571,7 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
 
   } else {
     struct timeval tv;
-    gettimeofday(&tv, (struct timezone *)NULL);
+    gettimeofday(&tv, nullptr);
     double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
 
     // Don't draw the twirling icon until at least half a second has passed,
@@ -2591,7 +2591,7 @@ paint_twirl_osx_cgcontext(CGContextRef context) {
  */
 bool PPInstance::
 osx_paint_image(CGContextRef context, const OsxImageData &image) {
-  if (image._image == NULL) {
+  if (image._image == nullptr) {
     return false;
   }
 
@@ -2627,10 +2627,10 @@ void PPInstance::
 timer_callback(CFRunLoopTimerRef timer, void *info) {
   PPInstance *self = (PPInstance *)info;
   ACQUIRE_LOCK(self->_timer_lock);
-  if (self->_request_timer != NULL) {
+  if (self->_request_timer != nullptr) {
     CFRunLoopTimerInvalidate(self->_request_timer);
     CFRelease(self->_request_timer);
-    self->_request_timer = NULL;
+    self->_request_timer = nullptr;
   }
   RELEASE_LOCK(self->_timer_lock);
 
@@ -2744,14 +2744,14 @@ x11_twirl_subprocess_run() {
   struct timespec req;
   req.tv_sec = 0;
   req.tv_nsec = 500000000;  // 500 ms
-  nanosleep(&req, NULL);
+  nanosleep(&req, nullptr);
 
   // We haven't been killed yet, so the plugin is still loading.  Start
   // twirling.
 
   // First, embed a window.
-  X11_Display *display = XOpenDisplay(NULL);
-  assert(display != NULL);
+  X11_Display *display = XOpenDisplay(nullptr);
+  assert(display != nullptr);
   int screen = DefaultScreen(display);
 
   int depth = DefaultDepth(display, screen);
@@ -2796,7 +2796,7 @@ x11_twirl_subprocess_run() {
   X11_Window parent = 0;
   if (_use_xembed) {
 #ifdef HAVE_GTK
-    assert(_plug != NULL);
+    assert(_plug != nullptr);
     parent = GDK_DRAWABLE_XID(_plug->window);
 #endif  // HAVE_GTK
   } else {
@@ -2874,7 +2874,7 @@ x11_twirl_subprocess_run() {
 
     // What step are we on now?
     struct timeval tv;
-    gettimeofday(&tv, (struct timezone *)NULL);
+    gettimeofday(&tv, nullptr);
     double now = (double)(tv.tv_sec - _init_sec) + (double)(tv.tv_usec - _init_usec) / 1000000.0;
     int step = ((int)(now * 10.0)) % twirl_num_steps;
     if (step != last_step) {
@@ -2896,7 +2896,7 @@ x11_twirl_subprocess_run() {
     struct timespec req;
     req.tv_sec = 0;
     req.tv_nsec = 100000000;  // 100 ms
-    nanosleep(&req, NULL);
+    nanosleep(&req, nullptr);
   }
 }
 #endif  // HAVE_X11
@@ -2990,7 +2990,7 @@ thread_run() {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 10000;
-    select(0, NULL, NULL, NULL, &tv);
+    select(0, nullptr, nullptr, nullptr, &tv);
 #endif
   }
 
@@ -3002,7 +3002,7 @@ thread_run() {
   }
 
   P3D_instance_feed_url_stream_ptr
-    (_p3d_inst, _user_id, result, 0, _total_count, NULL, 0);
+    (_p3d_inst, _user_id, result, 0, _total_count, nullptr, 0);
 
   // All done.
   _thread_done = true;
@@ -3041,7 +3041,7 @@ open() {
   _current_size = 0;
   _total_size = 0;
 
-  char *name = tempnam(NULL, "p3d_");
+  char *name = tempnam(nullptr, "p3d_");
   _filename = name;
   free(name);
 

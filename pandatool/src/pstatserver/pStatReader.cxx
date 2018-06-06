@@ -272,7 +272,7 @@ void PStatReader::
 dequeue_frame_data() {
   while (!_queued_frame_data.empty()) {
     const FrameData &data = _queued_frame_data.front();
-    nassertv(_client_data != (PStatClientData *)NULL);
+    nassertv(_client_data != nullptr);
 
     // Check to see if any new collectors have level data.
     int num_levels = data._frame_data->get_num_levels();

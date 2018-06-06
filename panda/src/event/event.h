@@ -32,7 +32,7 @@ class EventReceiver;
  */
 class EXPCL_PANDA_EVENT Event : public TypedReferenceCount {
 PUBLISHED:
-  Event(const string &event_name, EventReceiver *receiver = NULL);
+  Event(const string &event_name, EventReceiver *receiver = nullptr);
   Event(const Event &copy);
   void operator = (const Event &copy);
   ~Event();

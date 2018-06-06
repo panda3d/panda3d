@@ -33,7 +33,7 @@ protected:
   INLINE AnimChannel(const string &name = "");
   INLINE AnimChannel(AnimGroup *parent, const AnimChannel &copy);
 public:
-  typedef TYPENAME SwitchType::ValueType ValueType;
+  typedef typename SwitchType::ValueType ValueType;
 
   INLINE AnimChannel(AnimGroup *parent, const string &name);
   INLINE ~AnimChannel();

@@ -248,7 +248,7 @@ send_datagram(const Datagram &dg) {
 ISocketStream::
 ~ISocketStream() {
   // This should already have been cleared by the subclass destructor.
-  nassertv(_channel == NULL);
+  nassertv(_channel == nullptr);
 }
 
 #endif  // HAVE_OPENSSL

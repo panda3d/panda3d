@@ -16,7 +16,7 @@
  */
 INLINE VirtualFileMount::
 VirtualFileMount() :
-  _file_system(NULL),
+  _file_system(nullptr),
   _mount_flags(0)
 {
 }

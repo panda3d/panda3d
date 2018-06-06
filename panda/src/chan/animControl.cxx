@@ -40,7 +40,7 @@ AnimControl(const string &name, PartBundle *part,
 
   _pending = true;
   _part = part;
-  _anim = NULL;
+  _anim = nullptr;
   _channel_index = -1;
   set_frame_rate(frame_rate);
   set_num_frames(num_frames);
@@ -57,7 +57,7 @@ setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
            const BitArray &bound_joints) {
   MutexHolder holder(_pending_lock);
   nassertv(_pending && part == _part);
-  nassertv(_anim == (AnimBundle *)NULL);
+  nassertv(_anim == nullptr);
   _anim = anim;
   _channel_index = channel_index;
   _bound_joints = bound_joints;

@@ -259,20 +259,20 @@ typedef pthread_mutex_t mutex_t;
    pthread_mutex_t is at least one int wide.  */
 
 #define mutex_init(m)           \
-   (__pthread_mutex_init != NULL \
-    ? __pthread_mutex_init (m, NULL) : (*(int *)(m) = 0))
+   (__pthread_mutex_init != nullptr \
+    ? __pthread_mutex_init (m, nullptr) : (*(int *)(m) = 0))
 #define mutex_lock(m)           \
-   (__pthread_mutex_lock != NULL \
+   (__pthread_mutex_lock != nullptr \
     ? __pthread_mutex_lock (m) : ((*(int *)(m) = 1), 0))
 #define mutex_trylock(m)        \
-   (__pthread_mutex_trylock != NULL \
+   (__pthread_mutex_trylock != nullptr \
     ? __pthread_mutex_trylock (m) : (*(int *)(m) ? 1 : ((*(int *)(m) = 1), 0)))
 #define mutex_unlock(m)         \
-   (__pthread_mutex_unlock != NULL \
+   (__pthread_mutex_unlock != nullptr \
     ? __pthread_mutex_unlock (m) : (*(int*)(m) = 0))
 
 #define thread_atfork(prepare, parent, child) \
-   (__pthread_atfork != NULL ? __pthread_atfork(prepare, parent, child) : 0)
+   (__pthread_atfork != nullptr ? __pthread_atfork(prepare, parent, child) : 0)
 
 #elif defined(MUTEX_INITIALIZER)
 /* Assume hurd, with cthreads */
@@ -360,7 +360,7 @@ static inline int mutex_lock(mutex_t *m) {
     } else {
       tm.tv_sec = 0;
       tm.tv_nsec = 2000001;
-      nanosleep(&tm, NULL);
+      nanosleep(&tm, nullptr);
       cnt = 0;
     }
   }
@@ -392,7 +392,7 @@ static inline int mutex_unlock(mutex_t *m) {
 typedef pthread_mutex_t mutex_t;
 
 #define MUTEX_INITIALIZER          PTHREAD_MUTEX_INITIALIZER
-#define mutex_init(m)              pthread_mutex_init(m, NULL)
+#define mutex_init(m)              pthread_mutex_init(m, nullptr)
 #define mutex_lock(m)              pthread_mutex_lock(m)
 #define mutex_trylock(m)           pthread_mutex_trylock(m)
 #define mutex_unlock(m)            pthread_mutex_unlock(m)
@@ -438,7 +438,7 @@ typedef pthread_key_t tsd_key_t;
 typedef thread_t thread_id;
 
 #define MUTEX_INITIALIZER          { 0 }
-#define mutex_init(m)              mutex_init(m, USYNC_THREAD, NULL)
+#define mutex_init(m)              mutex_init(m, USYNC_THREAD, nullptr)
 
 /*
  * Hack for thread-specific data on Solaris.  We can't use thr_setspecific
@@ -2040,7 +2040,7 @@ extern __malloc_ptr_t _int_memalign __MALLOC_P ((mstate __m, size_t __alignment,
 #define BOUNDED_N(ptr, sz) (ptr)
 #endif
 #ifndef RETURN_ADDRESS
-#define RETURN_ADDRESS(X_) (NULL)
+#define RETURN_ADDRESS(X_) (nullptr)
 #endif
 
 /* On some platforms we can compile internal, not exported functions better.
@@ -3026,7 +3026,7 @@ int __malloc_initialized = -1;
    in the new arena. */
 
 #define arena_get(ptr, size) do { \
-  Void_t *vptr = NULL; \
+  Void_t *vptr = nullptr; \
   ptr = (mstate)tsd_getspecific(arena_key, vptr); \
   if(ptr && !mutex_trylock(&ptr->mutex)) { \
     THREAD_STAT(++(ptr->stat_lock_direct)); \
@@ -3088,7 +3088,7 @@ static Void_t*        save_arena;
 static Void_t*
 malloc_atfork(size_t sz, const Void_t *caller)
 {
-  Void_t *vptr = NULL;
+  Void_t *vptr = nullptr;
   Void_t *victim;
 
   tsd_getspecific(arena_key, vptr);
@@ -3115,7 +3115,7 @@ malloc_atfork(size_t sz, const Void_t *caller)
 static void
 free_atfork(Void_t* mem, const Void_t *caller)
 {
-  Void_t *vptr = NULL;
+  Void_t *vptr = nullptr;
   mstate ar_ptr;
   mchunkptr p;                          /* chunk corresponding to mem */
 
@@ -3232,9 +3232,9 @@ internal_function
 next_env_entry (char ***position)
 {
   char **current = *position;
-  char *result = NULL;
+  char *result = nullptr;
 
-  while (*current != NULL)
+  while (*current != nullptr)
     {
       if (__builtin_expect ((*current)[0] == 'M', 0)
           && (*current)[1] == 'A'
@@ -3288,7 +3288,7 @@ ptmalloc_init __MALLOC_P((void))
   __free_hook = free_starter;
 #ifdef _LIBC
   /* Initialize the pthreads interface. */
-  if (__pthread_initialize != NULL)
+  if (__pthread_initialize != nullptr)
     __pthread_initialize();
 #endif
 #endif /* !defined NO_THREADS */
@@ -3296,7 +3296,7 @@ ptmalloc_init __MALLOC_P((void))
   main_arena.next = &main_arena;
 
   mutex_init(&list_lock);
-  tsd_key_create(&arena_key, NULL);
+  tsd_key_create(&arena_key, nullptr);
   tsd_setspecific(arena_key, (Void_t *)&main_arena);
   thread_atfork(ptmalloc_lock_all, ptmalloc_unlock_all, ptmalloc_unlock_all2);
 #ifndef NO_THREADS
@@ -3305,12 +3305,12 @@ ptmalloc_init __MALLOC_P((void))
 #endif
 #ifdef _LIBC
   secure = __libc_enable_secure;
-  s = NULL;
+  s = nullptr;
   {
     char **runp = _environ;
     char *envline;
 
-    while (__builtin_expect ((envline = next_env_entry (&runp)) != NULL,
+    while (__builtin_expect ((envline = next_env_entry (&runp)) != nullptr,
                              0))
       {
         size_t len = strcspn (envline, "=");
@@ -3367,7 +3367,7 @@ ptmalloc_init __MALLOC_P((void))
     if(s[0]) mALLOPt(M_CHECK_ACTION, (int)(s[0] - '0'));
     __malloc_check_init();
   }
-  if(__malloc_initialize_hook != NULL)
+  if(__malloc_initialize_hook != nullptr)
     (*__malloc_initialize_hook)();
   __malloc_initialized = 1;
 }
@@ -4103,7 +4103,7 @@ malloc_hook_ini(sz, caller)
      size_t sz; const __malloc_ptr_t caller;
 #endif
 {
-  __malloc_hook = NULL;
+  __malloc_hook = nullptr;
   ptmalloc_init();
   return public_mALLOc(sz);
 }
@@ -4116,8 +4116,8 @@ realloc_hook_ini(ptr, sz, caller)
      Void_t* ptr; size_t sz; const __malloc_ptr_t caller;
 #endif
 {
-  __malloc_hook = NULL;
-  __realloc_hook = NULL;
+  __malloc_hook = nullptr;
+  __realloc_hook = nullptr;
   ptmalloc_init();
   return public_rEALLOc(ptr, sz);
 }
@@ -4130,14 +4130,14 @@ memalign_hook_ini(alignment, sz, caller)
      size_t alignment; size_t sz; const __malloc_ptr_t caller;
 #endif
 {
-  __memalign_hook = NULL;
+  __memalign_hook = nullptr;
   ptmalloc_init();
   return public_mEMALIGn(alignment, sz);
 }
 
-void weak_variable (*__malloc_initialize_hook) __MALLOC_P ((void)) = NULL;
+void weak_variable (*__malloc_initialize_hook) __MALLOC_P ((void)) = nullptr;
 void weak_variable (*__free_hook) __MALLOC_P ((__malloc_ptr_t __ptr,
-                                               const __malloc_ptr_t)) = NULL;
+                                               const __malloc_ptr_t)) = nullptr;
 __malloc_ptr_t weak_variable (*__malloc_hook)
  __MALLOC_P ((size_t __size, const __malloc_ptr_t)) = malloc_hook_ini;
 __malloc_ptr_t weak_variable (*__realloc_hook)
@@ -4146,7 +4146,7 @@ __malloc_ptr_t weak_variable (*__realloc_hook)
 __malloc_ptr_t weak_variable (*__memalign_hook)
  __MALLOC_P ((size_t __alignment, size_t __size, const __malloc_ptr_t))
      = memalign_hook_ini;
-void weak_variable (*__after_morecore_hook) __MALLOC_P ((void)) = NULL;
+void weak_variable (*__after_morecore_hook) __MALLOC_P ((void)) = nullptr;
 
 
 static int check_action = DEFAULT_CHECK_ACTION;
@@ -4240,7 +4240,7 @@ mem2chunk_check(mem) Void_t* mem;
   unsigned char magic;
 
   p = mem2chunk(mem);
-  if(!aligned_OK(p)) return NULL;
+  if(!aligned_OK(p)) return nullptr;
   if( (char*)p>=mp_.sbrk_base &&
       (char*)p<(mp_.sbrk_base+main_arena.system_mem) ) {
     /* Must be a chunk in conventional heap memory. */
@@ -4251,10 +4251,10 @@ mem2chunk_check(mem) Void_t* mem;
        ( !prev_inuse(p) && (p->prev_size&MALLOC_ALIGN_MASK ||
                             (long)prev_chunk(p)<(long)mp_.sbrk_base ||
                             next_chunk(prev_chunk(p))!=p) ))
-      return NULL;
+      return nullptr;
     magic = MAGICBYTE(p);
     for(sz += SIZE_SZ-1; (c = ((unsigned char*)p)[sz]) != magic; sz -= c) {
-      if(c<=0 || sz<(c+2*SIZE_SZ)) return NULL;
+      if(c<=0 || sz<(c+2*SIZE_SZ)) return nullptr;
     }
     ((unsigned char*)p)[sz] ^= 0xFF;
   } else {
@@ -4271,10 +4271,10 @@ mem2chunk_check(mem) Void_t* mem;
        !chunk_is_mmapped(p) || (p->size & PREV_INUSE) ||
        ( (((unsigned long)p - p->prev_size) & page_mask) != 0 ) ||
        ( (sz = chunksize(p)), ((p->prev_size + sz) & page_mask) != 0 ) )
-      return NULL;
+      return nullptr;
     magic = MAGICBYTE(p);
     for(sz -= 1; (c = ((unsigned char*)p)[sz]) != magic; sz -= c) {
-      if(c<=0 || sz<(c+2*SIZE_SZ)) return NULL;
+      if(c<=0 || sz<(c+2*SIZE_SZ)) return nullptr;
     }
     ((unsigned char*)p)[sz] ^= 0xFF;
   }
@@ -4336,7 +4336,7 @@ malloc_check(sz, caller) size_t sz; const Void_t *caller;
   Void_t *victim;
 
   (void)mutex_lock(&main_arena.mutex);
-  victim = (top_check() >= 0) ? _int_malloc(&main_arena, sz+1) : NULL;
+  victim = (top_check() >= 0) ? _int_malloc(&main_arena, sz+1) : nullptr;
   (void)mutex_unlock(&main_arena.mutex);
   return mem2mem_check(victim, sz);
 }
@@ -4387,7 +4387,7 @@ realloc_check(oldmem, bytes, caller)
   INTERNAL_SIZE_T nb, oldsize;
   Void_t* newmem = 0;
 
-  if (oldmem == 0) return malloc_check(bytes, NULL);
+  if (oldmem == 0) return malloc_check(bytes, nullptr);
   (void)mutex_lock(&main_arena.mutex);
   oldp = mem2chunk_check(oldmem);
   (void)mutex_unlock(&main_arena.mutex);
@@ -4396,7 +4396,7 @@ realloc_check(oldmem, bytes, caller)
       fprintf(stderr, "realloc(): invalid pointer %p!\n", oldmem);
     if(check_action & 2)
       abort();
-    return malloc_check(bytes, NULL);
+    return malloc_check(bytes, nullptr);
   }
   oldsize = chunksize(oldp);
 
@@ -4460,13 +4460,13 @@ memalign_check(alignment, bytes, caller)
   INTERNAL_SIZE_T nb;
   Void_t* mem;
 
-  if (alignment <= MALLOC_ALIGNMENT) return malloc_check(bytes, NULL);
+  if (alignment <= MALLOC_ALIGNMENT) return malloc_check(bytes, nullptr);
   if (alignment <  MINSIZE) alignment = MINSIZE;
 
   checked_request2size(bytes+1, nb);
   (void)mutex_lock(&main_arena.mutex);
   mem = (top_check() >= 0) ? _int_memalign(&main_arena, alignment, bytes+1) :
-    NULL;
+    nullptr;
   (void)mutex_unlock(&main_arena.mutex);
   return mem2mem_check(mem, bytes);
 }
@@ -5367,7 +5367,7 @@ public_mALLOc(size_t bytes)
 
   __malloc_ptr_t (*hook) __MALLOC_P ((size_t, __const __malloc_ptr_t)) =
     __malloc_hook;
-  if (hook != NULL)
+  if (hook != nullptr)
     return (*hook)(bytes, RETURN_ADDRESS (0));
 
   arena_get(ar_ptr, bytes);
@@ -5407,7 +5407,7 @@ public_fREe(Void_t* mem)
 
   void (*hook) __MALLOC_P ((__malloc_ptr_t, __const __malloc_ptr_t)) =
     __free_hook;
-  if (hook != NULL) {
+  if (hook != nullptr) {
     (*hook)(mem, RETURN_ADDRESS (0));
     return;
   }
@@ -5454,11 +5454,11 @@ public_rEALLOc(Void_t* oldmem, size_t bytes)
   __malloc_ptr_t (*hook) __MALLOC_P ((__malloc_ptr_t, size_t,
                                       __const __malloc_ptr_t)) =
     __realloc_hook;
-  if (hook != NULL)
+  if (hook != nullptr)
     return (*hook)(oldmem, bytes, RETURN_ADDRESS (0));
 
 #if REALLOC_ZERO_BYTES_FREES
-  if (bytes == 0 && oldmem != NULL) { public_fREe(oldmem); return 0; }
+  if (bytes == 0 && oldmem != nullptr) { public_fREe(oldmem); return 0; }
 #endif
 
   /* realloc of null is supposed to be same as malloc */
@@ -5523,7 +5523,7 @@ public_mEMALIGn(size_t alignment, size_t bytes)
   __malloc_ptr_t (*hook) __MALLOC_PMT ((size_t, size_t,
                                         __const __malloc_ptr_t)) =
     __memalign_hook;
-  if (hook != NULL)
+  if (hook != nullptr)
     return (*hook)(alignment, bytes, RETURN_ADDRESS (0));
 
   /* If need less alignment than we give anyway, just relay to malloc */
@@ -5602,7 +5602,7 @@ public_cALLOc(size_t n, size_t elem_size)
 
   __malloc_ptr_t (*hook) __MALLOC_PMT ((size_t, __const __malloc_ptr_t)) =
     __malloc_hook;
-  if (hook != NULL) {
+  if (hook != nullptr) {
     sz = n * elem_size;
     mem = (*hook)(sz, RETURN_ADDRESS (0));
     if(mem == 0)

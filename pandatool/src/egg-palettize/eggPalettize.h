@@ -62,7 +62,6 @@ private:
   bool _omitall;
   bool _redo_all;
   bool _redo_eggs;
-  bool _dont_lock_txa;
 
   bool _describe_input_file;
   bool _remove_eggs;

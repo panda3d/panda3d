@@ -26,8 +26,8 @@ CVSCopy() {
   _key_filename = "Sources.pp";
   _cvs_binary = "cvs";
   _user_aborted = false;
-  _model_dir = (CVSSourceDirectory *)NULL;
-  _map_dir = (CVSSourceDirectory *)NULL;
+  _model_dir = nullptr;
+  _map_dir = nullptr;
 
   clear_runlines();
   add_runline("[opts] file [file ... ]");
@@ -73,7 +73,7 @@ CVSCopy() {
      "is the ppremake convention, \"Sources.pp\".  Other likely candidates "
      "are \"CVS\" to search a CVS hierarchy, or \".\" to include "
      "all subdirectories indiscriminately.",
-     &CVSCopy::dispatch_filename, NULL, &_key_filename);
+     &CVSCopy::dispatch_filename, nullptr, &_key_filename);
 
   add_option
     ("nc", "", 80,
@@ -85,7 +85,7 @@ CVSCopy() {
     ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
-     &CVSCopy::dispatch_string, NULL, &_cvs_binary);
+     &CVSCopy::dispatch_string, nullptr, &_cvs_binary);
 }
 
 /**
@@ -212,7 +212,7 @@ post_command_line() {
   }
 
   _model_dir = _tree.find_directory(_model_dirname);
-  if (_model_dir == (CVSSourceDirectory *)NULL) {
+  if (_model_dir == nullptr) {
     if (_got_model_dirname) {
       nout << "Warning: model directory " << _model_dirname
            << " is not within the source hierarchy.\n";
@@ -222,7 +222,7 @@ post_command_line() {
   if (_got_map_dirname) {
     _map_dir = _tree.find_directory(_map_dirname);
 
-    if (_map_dir == (CVSSourceDirectory *)NULL) {
+    if (_map_dir == nullptr) {
       nout << "Warning: map directory " << _map_dirname
            << " is not within the source hierarchy.\n";
     }
@@ -230,7 +230,7 @@ post_command_line() {
   } else {
     _map_dir = _tree.find_relpath("src/maps");
 
-    if (_map_dir == (CVSSourceDirectory *)NULL) {
+    if (_map_dir == nullptr) {
       nout << "Warning: no directory " << _tree.get_root_dirname()
            << "/src/maps.\n";
       _map_dir = _model_dir;
@@ -264,7 +264,7 @@ verify_binary_file(Filename source, Filename dest) {
   source.set_binary();
   dest.set_binary();
 
-  ifstream s, d;
+  std::ifstream s, d;
   if (!source.open_read(s)) {
     return false;
   }
@@ -313,8 +313,8 @@ copy_binary_file(Filename source, Filename dest) {
   source.set_binary();
   dest.set_binary();
 
-  ifstream in;
-  ofstream out;
+  std::ifstream in;
+  std::ofstream out;
   if (!source.open_read(in)) {
     nout << "Cannot read " << source << "\n";
     return false;
@@ -475,11 +475,11 @@ scan_for_root(const string &dirname) {
  */
 string CVSCopy::
 prompt(const string &message) {
-  nout << flush;
+  nout << std::flush;
   while (true) {
-    cerr << message << flush;
-    string response;
-    getline(cin, response);
+    std::cerr << message << std::flush;
+    std::string response;
+    std::getline(std::cin, response);
 
     // Remove leading and trailing whitespace.
     size_t p = 0;

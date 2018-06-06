@@ -17,11 +17,6 @@
 #ifdef HAVE_OPENSSL
 #include "httpChannel.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 /**
  *
  */

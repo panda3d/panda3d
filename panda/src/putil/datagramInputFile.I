@@ -18,7 +18,7 @@ INLINE DatagramInputFile::
 DatagramInputFile() {
   _error = false;
   _read_first_datagram = false;
-  _in = (istream *)NULL;
+  _in = nullptr;
   _owns_in = false;
   _timestamp = 0;
 }
@@ -45,7 +45,7 @@ open(const Filename &filename) {
  */
 INLINE istream &DatagramInputFile::
 get_stream() {
-  static ifstream null_stream;
-  nassertr(_in != NULL, null_stream);
+  static std::ifstream null_stream;
+  nassertr(_in != nullptr, null_stream);
   return *_in;
 }

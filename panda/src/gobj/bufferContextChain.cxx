@@ -25,7 +25,7 @@ get_first() {
   // This method is declared non-inline so we can include bufferContext.h,
   // which is necessary for proper downcasting of the _next pointer.
   if (_next == this) {
-    return NULL;
+    return nullptr;
   }
   return (BufferContext *)_next;
 }

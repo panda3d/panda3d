@@ -88,7 +88,7 @@ extract_all(const string &to_dir, P3DPackage *package,
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
     FileSpec file;
-    if (package != NULL && !package->is_extractable(file, s._filename)) {
+    if (package != nullptr && !package->is_extractable(file, s._filename)) {
       continue;
     }
 
@@ -127,7 +127,7 @@ extract_all(const string &to_dir, P3DPackage *package,
     // or something.
     chmod(output_pathname.c_str(), 0555);
 
-    if (step != NULL && package != NULL) {
+    if (step != nullptr && package != nullptr) {
       step->thread_add_bytes_done(s._data_length);
     }
   }
@@ -409,7 +409,7 @@ check_signatures() {
     // Now convert each of the certificates to an X509 object, and store it in
     // our CertChain.
     CertChain chain;
-    EVP_PKEY *pkey = NULL;
+    EVP_PKEY *pkey = nullptr;
     if (buffer_size > 0) {
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
       // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
@@ -420,13 +420,13 @@ check_signatures() {
 #endif
       bp = (unsigned char *)&buffer[0];
       bp_end = bp + buffer_size;
-      X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-      while (num_certs > 0 && x509 != NULL) {
+      X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+      while (num_certs > 0 && x509 != nullptr) {
         chain.push_back(CertRecord(x509));
         --num_certs;
-        x509 = d2i_X509(NULL, &bp, bp_end - bp);
+        x509 = d2i_X509(nullptr, &bp, bp_end - bp);
       }
-      if (num_certs != 0 || x509 != NULL) {
+      if (num_certs != 0 || x509 != nullptr) {
         nout << "Extra data in signature record.\n";
       }
     }
@@ -437,7 +437,7 @@ check_signatures() {
       pkey = X509_get_pubkey(chain[0]._cert);
     }
 
-    if (pkey != NULL) {
+    if (pkey != nullptr) {
       EVP_MD_CTX *md_ctx;
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
       md_ctx = EVP_MD_CTX_create();

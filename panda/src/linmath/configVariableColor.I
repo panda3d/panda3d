@@ -141,7 +141,7 @@ get_value() const {
 INLINE LColor ConfigVariableColor::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     switch (decl->get_num_words()) {
     case 1:
       return LColor((PN_stdfloat)decl->get_double_word(0), (PN_stdfloat)decl->get_double_word(0),

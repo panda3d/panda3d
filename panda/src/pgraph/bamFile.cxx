@@ -29,8 +29,8 @@
  */
 BamFile::
 BamFile() {
-  _reader = NULL;
-  _writer = NULL;
+  _reader = nullptr;
+  _writer = nullptr;
 }
 
 /**
@@ -81,8 +81,8 @@ open_read(istream &in, const string &bam_filename, bool report_errors) {
  */
 TypedWritable *BamFile::
 read_object() {
-  if (_reader == (BamReader *)NULL) {
-    return NULL;
+  if (_reader == nullptr) {
+    return nullptr;
   }
 
   return _reader->read_object();
@@ -94,7 +94,7 @@ read_object() {
  */
 bool BamFile::
 is_eof() const {
-  return _reader != (BamReader *)NULL && _reader->is_eof();
+  return _reader != nullptr && _reader->is_eof();
 }
 
 /**
@@ -106,7 +106,7 @@ is_eof() const {
  */
 bool BamFile::
 resolve() {
-  if (_reader == (BamReader *)NULL) {
+  if (_reader == nullptr) {
     return false;
   }
 
@@ -134,7 +134,7 @@ read_node(bool report_errors) {
 
   TypedWritable *object = read_object();
 
-  if (object != (TypedWritable *)NULL &&
+  if (object != nullptr &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's really a cache data file and not a true bam file;
@@ -172,7 +172,7 @@ read_node(bool report_errors) {
       loader_cat.error()
         << "Unable to resolve Bam file.\n";
     }
-    result = (PandaNode *)NULL;
+    result = nullptr;
   }
 
   return result;
@@ -222,7 +222,7 @@ open_write(ostream &out, const string &bam_filename, bool report_errors) {
  */
 bool BamFile::
 write_object(const TypedWritable *object) {
-  if (_writer == (BamWriter *)NULL) {
+  if (_writer == nullptr) {
     return false;
   }
 
@@ -239,14 +239,14 @@ write_object(const TypedWritable *object) {
  */
 void BamFile::
 close() {
-  if (_reader != (BamReader *)NULL) {
+  if (_reader != nullptr) {
     // resolve();
     delete _reader;
-    _reader = NULL;
+    _reader = nullptr;
   }
-  if (_writer != (BamWriter *)NULL) {
+  if (_writer != nullptr) {
     delete _writer;
-    _writer = NULL;
+    _writer = nullptr;
   }
   _din.close();
   _dout.close();
@@ -260,7 +260,7 @@ close() {
  */
 int BamFile::
 get_file_major_ver() {
-  if (_reader == (BamReader *)NULL) {
+  if (_reader == nullptr) {
     return _bam_major_ver;
   }
   return _reader->get_file_major_ver();
@@ -273,7 +273,7 @@ get_file_major_ver() {
  */
 int BamFile::
 get_file_minor_ver() {
-  if (_reader == (BamReader *)NULL) {
+  if (_reader == nullptr) {
     return _bam_minor_ver;
   }
   return _reader->get_file_minor_ver();
@@ -285,10 +285,10 @@ get_file_minor_ver() {
  */
 BamFile::BamEndian BamFile::
 get_file_endian() const {
-  if (_writer != (BamWriter *)NULL) {
+  if (_writer != nullptr) {
     return _writer->get_file_endian();
   }
-  if (_reader != (BamReader *)NULL) {
+  if (_reader != nullptr) {
     return _reader->get_file_endian();
   }
 
@@ -301,10 +301,10 @@ get_file_endian() const {
  */
 bool BamFile::
 get_file_stdfloat_double() const {
-  if (_writer != (BamWriter *)NULL) {
+  if (_writer != nullptr) {
     return _writer->get_file_stdfloat_double();
   }
-  if (_reader != (BamReader *)NULL) {
+  if (_reader != nullptr) {
     return _reader->get_file_stdfloat_double();
   }
 

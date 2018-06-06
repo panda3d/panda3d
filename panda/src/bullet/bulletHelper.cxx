@@ -37,7 +37,7 @@ from_collision_solids(NodePath &np, bool clear) {
     NodePath cnp = npc.get_path(i);
     CollisionNode *cnode = DCAST(CollisionNode, cnp.node());
 
-    PT(PandaNode) bnode = NULL;
+    PT(PandaNode) bnode = nullptr;
 
     // Create a either a new rigid body or a new ghost for each CollisionNode,
     // and add one shape per CollisionSolid contained in the CollisionNode
@@ -179,8 +179,8 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
   CPT(GeomVertexFormat) fmt = (format) ? format : GeomVertexFormat::get_v3n3t2();
   fmt = BulletHelper::add_sb_flip_column(fmt);
 
-  nassertr(fmt->has_column(InternalName::get_vertex()), NULL);
-  nassertr(fmt->has_column(InternalName::get_normal()), NULL);
+  nassertr(fmt->has_column(InternalName::get_vertex()), nullptr);
+  nassertr(fmt->has_column(InternalName::get_normal()), nullptr);
 
   btSoftBody::tNodeArray &nodes(body->m_nodes);
 

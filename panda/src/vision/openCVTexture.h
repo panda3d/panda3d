@@ -41,7 +41,7 @@ public:
 
 protected:
   virtual void consider_update();
-  virtual PT(Texture) make_copy_impl();
+  virtual PT(Texture) make_copy_impl() const;
   void do_assign(Texture::CData *cdata_tex, const OpenCVTexture *copy,
                  const Texture::CData *cdata_copy_tex);
 

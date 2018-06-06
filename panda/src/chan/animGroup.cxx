@@ -36,7 +36,7 @@ AnimGroup::
 AnimGroup(const string &name) :
   Namable(name),
   _children(get_class_type()),
-  _root(NULL)
+  _root(nullptr)
 {
 }
 
@@ -50,11 +50,11 @@ AnimGroup(AnimGroup *parent, const AnimGroup &copy) :
   Namable(copy),
   _children(get_class_type())
 {
-  if (parent != (AnimGroup *)NULL) {
+  if (parent != nullptr) {
     parent->_children.push_back(this);
     _root = parent->_root;
   } else {
-    _root = NULL;
+    _root = nullptr;
   }
 }
 
@@ -67,7 +67,7 @@ AnimGroup(AnimGroup *parent, const string &name) :
   Namable(name),
   _children(get_class_type())
  {
-  nassertv(parent != NULL);
+  nassertv(parent != nullptr);
 
   parent->_children.push_back(this);
   _root = parent->_root;
@@ -95,7 +95,7 @@ get_num_children() const {
  */
 AnimGroup *AnimGroup::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -115,7 +115,7 @@ get_child_named(const string &name) const {
     }
   }
 
-  return (AnimGroup *)NULL;
+  return nullptr;
 }
 
 /**
@@ -132,12 +132,12 @@ find_child(const string &name) const {
       return child;
     }
     AnimGroup *result = child->find_child(name);
-    if (result != (AnimGroup *)NULL) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (AnimGroup *)NULL;
+  return nullptr;
 }
 
 // An STL object to sort a list of children into alphabetical order.

@@ -100,13 +100,13 @@ private:
 
   static INLINE void init_lock();
 
-  typedef vector<TypeRegistryNode *> HandleRegistry;
+  typedef std::vector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef map<string, TypeRegistryNode *> NameRegistry;
+  typedef std::map<string, TypeRegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
-  typedef vector<TypeRegistryNode *> RootClasses;
+  typedef std::vector<TypeRegistryNode *> RootClasses;
   RootClasses _root_classes;
 
   bool _derivations_fresh;

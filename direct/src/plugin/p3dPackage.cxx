@@ -59,16 +59,16 @@ P3DPackage(P3DHost *host, const string &package_name,
 
   _host_contents_iseq = 0;
 
-  _xconfig = NULL;
-  _temp_contents_file = NULL;
+  _xconfig = nullptr;
+  _temp_contents_file = nullptr;
 
   _computed_plan_size = false;
   _info_ready = false;
   _allow_data_download = false;
   _ready = false;
   _failed = false;
-  _active_download = NULL;
-  _saved_download = NULL;
+  _active_download = nullptr;
+  _saved_download = nullptr;
   _updated = false;
 }
 
@@ -89,24 +89,24 @@ P3DPackage::
   }
   _instances.clear();
 
-  if (_xconfig != NULL) {
+  if (_xconfig != nullptr) {
     delete _xconfig;
-    _xconfig = NULL;
+    _xconfig = nullptr;
   }
 
   // Cancel any pending download.
-  if (_active_download != NULL) {
+  if (_active_download != nullptr) {
     _active_download->cancel();
-    set_active_download(NULL);
+    set_active_download(nullptr);
   }
-  if (_saved_download != NULL) {
+  if (_saved_download != nullptr) {
     _saved_download->cancel();
-    set_saved_download(NULL);
+    set_saved_download(nullptr);
   }
 
-  if (_temp_contents_file != NULL) {
+  if (_temp_contents_file != nullptr) {
     delete _temp_contents_file;
-    _temp_contents_file = NULL;
+    _temp_contents_file = nullptr;
   }
 }
 
@@ -192,9 +192,9 @@ remove_instance(P3DInstance *inst) {
   if (inst == _instances[0]) {
     // This was the primary instance.  Cancel any pending download and move to
     // the next instance.
-    if (_active_download != NULL) {
+    if (_active_download != nullptr) {
       _active_download->cancel();
-      set_active_download(NULL);
+      set_active_download(nullptr);
     }
   }
 
@@ -226,12 +226,12 @@ mark_used() {
   }
 
   TiXmlElement *xusage = doc.FirstChildElement("usage");
-  if (xusage == NULL) {
+  if (xusage == nullptr) {
     xusage = new TiXmlElement("usage");
     doc.LinkEndChild(xusage);
   }
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   int count = 0;
   xusage->Attribute("count_runtime", &count);
   if (count == 0) {
@@ -292,7 +292,7 @@ uninstall() {
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
     P3DInstance *inst = (*ii);
     P3DSession *session = inst->get_session();
-    if (session != NULL) {
+    if (session != nullptr) {
       nout << "Stopping session " << session << "\n";
       session->shutdown();
     }
@@ -350,7 +350,7 @@ begin_info_download() {
     return;
   }
 
-  if (_active_download != NULL) {
+  if (_active_download != nullptr) {
     // In the middle of downloading.
     return;
   }
@@ -387,9 +387,9 @@ download_contents_file() {
 
   // Download contents.xml to a temporary filename first, in case multiple
   // packages are downloading it simultaneously.
-  if (_temp_contents_file != NULL) {
+  if (_temp_contents_file != nullptr) {
     delete _temp_contents_file;
-    _temp_contents_file = NULL;
+    _temp_contents_file = nullptr;
   }
   _temp_contents_file = new P3DTemporaryFile(".xml");
 
@@ -404,7 +404,7 @@ void P3DPackage::
 contents_file_download_finished(bool success) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (!_host->has_current_contents_file(inst_mgr)) {
-    if (!success || _temp_contents_file == NULL ||
+    if (!success || _temp_contents_file == nullptr ||
       !_host->read_contents_file(_temp_contents_file->get_filename(), true)) {
 
       if (_temp_contents_file) {
@@ -429,7 +429,7 @@ contents_file_download_finished(bool success) {
         report_done(false);
         if (_temp_contents_file) {
           delete _temp_contents_file;
-          _temp_contents_file = NULL;
+          _temp_contents_file = nullptr;
         }
         return;
       }
@@ -439,7 +439,7 @@ contents_file_download_finished(bool success) {
   // The file is correctly installed by now; we can remove the temporary file.
   if (_temp_contents_file) {
     delete _temp_contents_file;
-    _temp_contents_file = NULL;
+    _temp_contents_file = nullptr;
   }
 
   host_got_contents_file();
@@ -460,8 +460,8 @@ contents_file_download_finished(bool success) {
  */
 void P3DPackage::
 redownload_contents_file(P3DPackage::Download *download) {
-  assert(_active_download == NULL);
-  assert(_saved_download == NULL);
+  assert(_active_download == nullptr);
+  assert(_saved_download == nullptr);
 
   if (_host->get_contents_iseq() != _host_contents_iseq) {
     // If the contents_iseq number has changed, we don't even need to download
@@ -479,9 +479,9 @@ redownload_contents_file(P3DPackage::Download *download) {
   set_saved_download(download);
 
   // Download contents.xml to a temporary filename first.
-  if (_temp_contents_file != NULL) {
+  if (_temp_contents_file != nullptr) {
     delete _temp_contents_file;
-    _temp_contents_file = NULL;
+    _temp_contents_file = nullptr;
   }
   _temp_contents_file = new P3DTemporaryFile(".xml");
 
@@ -521,14 +521,14 @@ contents_file_redownload_finished(bool success) {
   // We no longer need the temporary file.
   if (_temp_contents_file) {
     delete _temp_contents_file;
-    _temp_contents_file = NULL;
+    _temp_contents_file = nullptr;
   }
 
   if (contents_changed) {
     // OK, the contents.xml has changed; this means we have to restart the
     // whole download process from the beginning.
     nout << "Redownloading contents.xml made a difference.\n";
-    set_saved_download(NULL);
+    set_saved_download(nullptr);
     host_got_contents_file();
 
   } else {
@@ -536,8 +536,8 @@ contents_file_redownload_finished(bool success) {
     // you to our regularly scheduled download.
     nout << "Redownloading contents.xml didn't help.\n";
     Download *download = _saved_download;
-    _saved_download = NULL;
-    if (download == NULL) {
+    _saved_download = nullptr;
+    if (download == nullptr) {
       // But, if _saved_download was NULL (meaning NULL was passed to
       // redownload_contents_file(), above), it means that we were called from
       // download_desc_file(), and there's nothing more to do.  We're just
@@ -639,7 +639,7 @@ download_desc_file() {
     nout << "Couldn't find package " << _package_fullname
          << ", platform \"" << _package_platform
          << "\" in contents file.\n";
-    redownload_contents_file(NULL);
+    redownload_contents_file(nullptr);
     return;
   }
 
@@ -730,7 +730,7 @@ desc_file_download_finished(bool success) {
 void P3DPackage::
 got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xpackage = doc->FirstChildElement("package");
-  if (xpackage == NULL) {
+  if (xpackage == nullptr) {
     nout << _package_name << " desc file contains no <package>\n";
     if (!freshly_downloaded) {
       download_desc_file();
@@ -752,9 +752,9 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   xpackage->Attribute("patch_version", &_patch_version);
 
   TiXmlElement *xconfig = xpackage->FirstChildElement("config");
-  if (xconfig != NULL) {
+  if (xconfig != nullptr) {
     const char *display_name_cstr = xconfig->Attribute("display_name");
-    if (display_name_cstr != NULL) {
+    if (display_name_cstr != nullptr) {
       _package_display_name = display_name_cstr;
     }
 
@@ -767,7 +767,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xcompressed_archive =
     xpackage->FirstChildElement("compressed_archive");
 
-  if (xuncompressed_archive == NULL || xcompressed_archive == NULL) {
+  if (xuncompressed_archive == nullptr || xcompressed_archive == nullptr) {
     // The desc file didn't include the archive file itself, weird.
     if (!freshly_downloaded) {
       download_desc_file();
@@ -784,7 +784,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   _unpack_size = 0;
   _extracts.clear();
   TiXmlElement *xextract = xpackage->FirstChildElement("extract");
-  while (xextract != NULL) {
+  while (xextract != nullptr) {
     FileSpec file;
     file.load_xml(xextract);
     _extracts.push_back(file);
@@ -797,16 +797,16 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   // Get the required packages.
   _requires.clear();
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
-  while (xrequires != NULL) {
+  while (xrequires != nullptr) {
     const char *package_name = xrequires->Attribute("name");
     const char *host_url = xrequires->Attribute("host");
-    if (package_name != NULL && host_url != NULL) {
+    if (package_name != nullptr && host_url != nullptr) {
       const char *version = xrequires->Attribute("version");
-      if (version == NULL) {
+      if (version == nullptr) {
         version = "";
       }
       const char *seq = xrequires->Attribute("seq");
-      if (seq == NULL) {
+      if (seq == nullptr) {
         seq = "";
       }
       P3DHost *host = inst_mgr->get_host(host_url);
@@ -969,14 +969,14 @@ build_install_plans(TiXmlDocument *doc) {
     // Maybe we've already read the md5 hash and we have it stored here.
     const FileSpec *on_disk_ptr = _uncompressed_archive.get_actual_file();
     FileSpec on_disk;
-    if (on_disk_ptr == NULL) {
+    if (on_disk_ptr == nullptr) {
       // If not, we have to go read it now.
       if (on_disk.read_hash(_uncompressed_archive.get_pathname(_package_dir))) {
         on_disk_ptr = &on_disk;
       }
     }
 
-    if (on_disk_ptr != NULL) {
+    if (on_disk_ptr != nullptr) {
       P3DPatchFinder patch_finder;
       P3DPatchFinder::Patchfiles chain;
       if (patch_finder.get_patch_chain_to_current(chain, doc, *on_disk_ptr)) {
@@ -1218,7 +1218,7 @@ P3DPackage::Download *P3DPackage::
 start_download(P3DPackage::DownloadType dtype, const string &urlbase,
                const string &pathname, const FileSpec &file_spec) {
   // Only one download should be active at a time
-  assert(_active_download == NULL);
+  assert(_active_download == nullptr);
   // This can't happen!  If verify_contents is set to P3D_VC_never, we're not
   // allowed to download anything, so we shouldn't get here
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -1249,7 +1249,7 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
   } else {
     strm << _host->get_download_url_prefix();
   }
-  strm << urlbase << "?" << time(NULL);
+  strm << urlbase << "?" << time(nullptr);
   string url = strm.str();
   download->_try_urls.push_back(url);
 
@@ -1315,11 +1315,11 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
 void P3DPackage::
 set_active_download(Download *download) {
   if (_active_download != download) {
-    if (_active_download != NULL) {
+    if (_active_download != nullptr) {
       p3d_unref_delete(_active_download);
     }
     _active_download = download;
-    if (_active_download != NULL) {
+    if (_active_download != nullptr) {
       _active_download->ref();
     }
   }
@@ -1332,11 +1332,11 @@ set_active_download(Download *download) {
 void P3DPackage::
 set_saved_download(Download *download) {
   if (_saved_download != download) {
-    if (_saved_download != NULL) {
+    if (_saved_download != nullptr) {
       p3d_unref_delete(_saved_download);
     }
     _saved_download = download;
-    if (_saved_download != NULL) {
+    if (_saved_download != nullptr) {
       _saved_download->ref();
     }
   }
@@ -1456,11 +1456,11 @@ download_finished(bool success) {
   if (get_ref_count() == 1) {
     // No one cares anymore.
     nout << "No one cares about " << get_url() << "\n";
-    _package->set_active_download(NULL);
+    _package->set_active_download(nullptr);
     return;
   }
 
-  _package->set_active_download(NULL);
+  _package->set_active_download(nullptr);
   assert(get_ref_count() > 0);
 
   if (success && !_file_spec.get_filename().empty()) {
@@ -1471,7 +1471,7 @@ download_finished(bool success) {
       nout << "expected: ";
       _file_spec.output_hash(nout);
       nout << "\n";
-      if (_file_spec.get_actual_file() != (FileSpec *)NULL) {
+      if (_file_spec.get_actual_file() != nullptr) {
         nout << "     got: ";
         _file_spec.get_actual_file()->output_hash(nout);
         nout << "\n";
@@ -1578,7 +1578,7 @@ InstallStepDownloadFile(P3DPackage *package, const FileSpec &file) :
 
   _pathname = _package->get_package_dir() + "/" + _file.get_filename();
 
-  _download = NULL;
+  _download = nullptr;
 }
 
 /**
@@ -1586,7 +1586,7 @@ InstallStepDownloadFile(P3DPackage *package, const FileSpec &file) :
  */
 P3DPackage::InstallStepDownloadFile::
 ~InstallStepDownloadFile() {
-  if (_download != NULL) {
+  if (_download != nullptr) {
     p3d_unref_delete(_download);
   }
 }
@@ -1596,13 +1596,13 @@ P3DPackage::InstallStepDownloadFile::
  */
 P3DPackage::InstallToken P3DPackage::InstallStepDownloadFile::
 do_step(bool download_finished) {
-  if (_download == NULL) {
+  if (_download == nullptr) {
     // First, we have to start the download going.
-    assert(_package->_active_download == NULL);
+    assert(_package->_active_download == nullptr);
 
     _download = _package->start_download(DT_install_step, _urlbase,
                                          _pathname, _file);
-    assert(_download != NULL);
+    assert(_download != nullptr);
     _download->ref();
   }
 
@@ -1632,7 +1632,7 @@ do_step(bool download_finished) {
     nout << "Restarting download of " << _urlbase << " on new instance\n";
 
     p3d_unref_delete(_download);
-    _download = NULL;
+    _download = nullptr;
     return IT_continue;
 
   } else {

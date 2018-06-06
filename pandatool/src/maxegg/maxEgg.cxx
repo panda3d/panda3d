@@ -297,7 +297,7 @@ ClassDesc* GetMaxEggPluginDesc() { return &MaxEggPluginDesc; }
 // Initialize class-static variables
 Mesh MaxEggPlugin::mesh;
 short MaxEggPlugin::meshBuilt=0;
-HWND MaxEggPlugin::hMaxEggParams = NULL;
+HWND MaxEggPlugin::hMaxEggParams = nullptr;
 IObjParam *MaxEggPlugin::iObjParams;
 
 /* MaxEggPluginOptionsDlgProc() - This is the callback function for the
@@ -454,9 +454,9 @@ void MaxEggPlugin::EndEditParams( IObjParam *ip, ULONG flags,Animatable *prev)
     if ( flags&END_EDIT_REMOVEUI ) {
         ip->UnRegisterDlgWnd(hMaxEggParams);
         ip->DeleteRollupPage(hMaxEggParams);
-        hMaxEggParams = NULL;
+        hMaxEggParams = nullptr;
     } else {
-        SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, NULL );
+        SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, 0L );
     }
 }
 
@@ -585,8 +585,8 @@ void MaxEggPlugin::DoExport() {
                     } else {
                         _stprintf(cmdLine, _T("pview \"%s\""), eggList[i]->_file_name);
                     }
-                    CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE,
-                                  NULL, NULL, &si, &pi);
+                    CreateProcess(nullptr, cmdLine, nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE,
+                                  nullptr, nullptr, &si, &pi);
                     pviewed += 1;
                 }
             }
@@ -634,10 +634,10 @@ int MaxEggPluginCreateMouseCallBack::proc(ViewExp *vpt,int msg, int point, int f
     if (msg==MOUSE_POINT||msg==MOUSE_MOVE) {
         switch(point) {
         case 0:
-            mat.SetTrans(vpt->SnapPoint(m,m,NULL,SNAP_IN_PLANE));
+            mat.SetTrans(vpt->SnapPoint(m,m,nullptr,SNAP_IN_PLANE));
             break;
         case 1:
-            mat.SetTrans(vpt->SnapPoint(m,m,NULL,SNAP_IN_PLANE));
+            mat.SetTrans(vpt->SnapPoint(m,m,nullptr,SNAP_IN_PLANE));
             if (msg==MOUSE_POINT) return CREATE_STOP;
             break;
         }
@@ -718,7 +718,7 @@ int MaxEggPlugin::Display(TimeValue t, INode* inode, ViewExp *vpt, int flags)
         gw->setColor( LINE_COLOR, GetSelColor());
     else if(!inode->IsFrozen())
         gw->setColor( LINE_COLOR, GetUIColor(COLOR_TAPE_OBJ));
-    mesh.render( gw, mtl, NULL, COMP_ALL);
+    mesh.render( gw, mtl, nullptr, COMP_ALL);
     return 0;
 }
 
@@ -838,7 +838,7 @@ __declspec( dllexport ) ClassDesc* LibClassDesc(int i)
 {
         switch(i) {
                 case 0: return GetMaxEggPluginDesc();
-                default: return NULL;
+                default: return nullptr;
         }
 }
 
@@ -855,6 +855,6 @@ TCHAR *GetString(int id)
         static TCHAR buf[256];
 
         if (hInstance)
-                return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : NULL;
-        return NULL;
+                return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : nullptr;
+        return nullptr;
 }

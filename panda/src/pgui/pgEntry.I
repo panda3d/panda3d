@@ -23,7 +23,7 @@ INLINE bool PGEntry::
 set_text(const string &text) {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
-  nassertr(text_node != (TextNode *)NULL, false);
+  nassertr(text_node != nullptr, false);
   return set_wtext(text_node->decode_text(text));
 }
 
@@ -38,7 +38,7 @@ INLINE string PGEntry::
 get_plain_text() const {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
-  nassertr(text_node != (TextNode *)NULL, string());
+  nassertr(text_node != nullptr, string());
   return text_node->encode_wtext(get_plain_wtext());
 }
 
@@ -51,7 +51,7 @@ INLINE string PGEntry::
 get_text() const {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
-  nassertr(text_node != (TextNode *)NULL, string());
+  nassertr(text_node != nullptr, string());
   return text_node->encode_wtext(get_wtext());
 }
 

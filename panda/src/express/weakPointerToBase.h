@@ -60,6 +60,12 @@ public:
   INLINE bool operator <= (To *other) const;
   INLINE bool operator >= (To *other) const;
 
+  INLINE bool operator == (std::nullptr_t) const;
+  INLINE bool operator != (std::nullptr_t) const;
+  INLINE bool operator > (std::nullptr_t) const;
+  INLINE bool operator <= (std::nullptr_t) const;
+  INLINE bool operator >= (std::nullptr_t) const;
+
   INLINE bool operator == (const WeakPointerToBase<To> &other) const;
   INLINE bool operator != (const WeakPointerToBase<To> &other) const;
   INLINE bool operator > (const WeakPointerToBase<To> &other) const;
@@ -73,6 +79,7 @@ public:
   INLINE bool operator >= (const PointerToBase<To> &other) const;
 #endif  // WIN32_VC
   INLINE bool operator < (const To *other) const;
+  INLINE bool operator < (std::nullptr_t) const;
   INLINE bool operator < (const WeakPointerToBase<To> &other) const;
   INLINE bool operator < (const PointerToBase<To> &other) const;
 #endif  // CPPPARSER

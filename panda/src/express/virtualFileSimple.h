@@ -74,7 +74,6 @@ private:
   VirtualFileMount *_mount;
   Filename _local_filename;
   bool _implicit_pz_file;
-  int _open_flags;
 
 public:
   virtual TypeHandle get_type() const {

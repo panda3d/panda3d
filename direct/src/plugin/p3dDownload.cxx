@@ -27,7 +27,7 @@ P3DDownload() {
 
   _canceled = false;
   _download_id = 0;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
@@ -46,7 +46,7 @@ P3DDownload(const P3DDownload &copy) :
 
   _canceled = false;
   _download_id = 0;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
@@ -162,7 +162,7 @@ receive_data(const unsigned char *this_data, size_t this_data_size) {
  */
 void P3DDownload::
 download_progress() {
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   if (now - _last_reported_time > 10) {
     _last_reported_time = now;
     nout << "Downloading " << get_url() << ": ";

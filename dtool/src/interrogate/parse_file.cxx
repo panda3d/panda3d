@@ -48,10 +48,10 @@ predefine_macro(CPPParser &parser, const string &option) {
 void
 show_type_or_expression(const string &str) {
   CPPExpression *expr = parser.parse_expr(str);
-  if (expr != NULL) {
+  if (expr != nullptr) {
     cout << "\nExpression: " << *expr << "\n";
     CPPType *type = expr->determine_type();
-    if (type == NULL) {
+    if (type == nullptr) {
       cout << "type is unknown\n";
     } else {
       cout << "type is " << *type << "\n";
@@ -60,13 +60,13 @@ show_type_or_expression(const string &str) {
 
   } else {
     CPPType *type = parser.parse_type(str);
-    if (type != NULL) {
+    if (type != nullptr) {
       cout << "\nType: " << *type << "\n"
            << "Defined in: " << type->_file << "\n"
            << "Subtype code is: " << (int)type->get_subtype() << "\n\n";
 
       CPPStructType *stype = type->as_struct_type();
-      if (stype != (CPPStructType *)NULL) {
+      if (stype != nullptr) {
         stype->check_virtual();
       }
 
@@ -84,7 +84,7 @@ show_type_or_expression(const string &str) {
            << "get_preferred_name = " << type->get_preferred_name() << "\n"
            << "is_incomplete = " << type->is_incomplete() << "\n";
 
-      if (stype != (CPPStructType *)NULL) {
+      if (stype != nullptr) {
         cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
         bool is_abstract = stype->is_abstract();
         cout << "is_abstract = " << is_abstract << "\n";
@@ -109,19 +109,19 @@ show_type_or_expression(const string &str) {
 void
 show_methods(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Methods in " << *stype << ":\n";
 
@@ -142,19 +142,19 @@ show_methods(const string &str) {
 void
 show_data_members(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Data members in " << *stype << ":\n";
 
@@ -168,19 +168,19 @@ show_data_members(const string &str) {
 void
 show_nested_types(const string &str) {
   CPPType *type = parser.parse_type(str);
-  if (type == NULL) {
+  if (type == nullptr) {
     cerr << "Invalid type: " << str << "\n";
     return;
   }
 
   CPPStructType *stype = type->as_struct_type();
-  if (stype == NULL) {
+  if (stype == nullptr) {
     cerr << "Type is not a structure or class.\n";
     return;
   }
 
   CPPScope *scope = stype->get_scope();
-  assert(scope != (CPPScope *)NULL);
+  assert(scope != nullptr);
 
   cerr << "Nested types in " << *stype << ":\n";
 
@@ -276,7 +276,7 @@ main(int argc, char **argv) {
     while (cin) {
       string str;
       cout << "Enter an expression or type name:\n";
-      getline(cin, str);
+      std::getline(std::cin, str);
       if (!str.empty()) {
 
         size_t space = str.find(' ');

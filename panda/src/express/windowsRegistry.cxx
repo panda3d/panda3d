@@ -34,8 +34,6 @@ set_string_value(const string &key, const string &name, const string &value,
   TextEncoder encoder;
   wstring wvalue = encoder.decode_text(value);
 
-  bool okflag = true;
-
   // Now convert the string to Windows' idea of the correct wide-char
   // encoding, so we can store it in the registry.  This might well be the
   // same string we just decoded from, but it might not.
@@ -46,8 +44,8 @@ set_string_value(const string &key, const string &name, const string &value,
   int mb_result_len =
     WideCharToMultiByte(CP_ACP, 0,
                         wvalue.data(), wvalue.length(),
-                        NULL, 0,
-                        NULL, NULL);
+                        nullptr, 0,
+                        nullptr, nullptr);
   if (mb_result_len == 0) {
     express_cat.error()
       << "Unable to convert '" << value
@@ -59,7 +57,7 @@ set_string_value(const string &key, const string &name, const string &value,
   WideCharToMultiByte(CP_ACP, 0,
                       wvalue.data(), wvalue.length(),
                       mb_result, mb_result_len,
-                      NULL, NULL);
+                      nullptr, nullptr);
 
   if (express_cat.is_debug()) {
     express_cat.debug()
@@ -141,7 +139,7 @@ get_string_value(const string &key, const string &name,
   int wide_result_len =
     MultiByteToWideChar(CP_ACP, 0,
                         data.data(), data.length(),
-                        NULL, 0);
+                        nullptr, 0);
   if (wide_result_len == 0) {
     express_cat.error()
       << "Unable to convert '" << data
@@ -347,7 +345,7 @@ format_message(int error_code) {
   PVOID buffer;
   DWORD length =
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL, error_code, 0, (LPTSTR)&buffer, 0, NULL);
+                  nullptr, error_code, 0, (LPTSTR)&buffer, 0, nullptr);
   if (length == 0) {
     return "Unknown error message";
   }

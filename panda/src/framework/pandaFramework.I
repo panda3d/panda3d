@@ -17,7 +17,7 @@
  */
 INLINE GraphicsEngine *PandaFramework::
 get_graphics_engine() {
-  if (_engine == (GraphicsEngine *)NULL) {
+  if (_engine == nullptr) {
     _engine = GraphicsEngine::get_global_ptr();
     PT(GenericAsyncTask) task = new GenericAsyncTask("igloop", task_igloop, this);
     task->set_sort(50);
@@ -74,7 +74,7 @@ get_num_windows() const {
  */
 INLINE WindowFramework *PandaFramework::
 get_window(int n) const {
-  nassertr(n >= 0 && n < (int)_windows.size(), NULL);
+  nassertr(n >= 0 && n < (int)_windows.size(), nullptr);
   return _windows[n];
 }
 
