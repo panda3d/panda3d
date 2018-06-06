@@ -2310,7 +2310,6 @@ DTOOL_CONFIG=[
     ("PHAVE_SYS_MALLOC_H",             'UNDEF',                  'UNDEF'),
     ("PHAVE_ALLOCA_H",                 'UNDEF',                  '1'),
     ("PHAVE_LOCALE_H",                 'UNDEF',                  '1'),
-    ("PHAVE_MINMAX_H",                 '1',                      'UNDEF'),
     ("PHAVE_SSTREAM",                  '1',                      '1'),
     ("PHAVE_NEW",                      '1',                      '1'),
     ("PHAVE_SYS_TYPES_H",              '1',                      '1'),
