@@ -22,6 +22,7 @@
 
 #include <stdtypedefs.h>
 #include <cwchar>
+#include <stdint.h>
 
 namespace std {
   template<class charT> struct char_traits;
