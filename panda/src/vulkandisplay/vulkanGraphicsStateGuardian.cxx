@@ -1830,11 +1830,27 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY);
+}
+
+/**
  * Draws a series of triangle strips.
  */
 bool VulkanGraphicsStateGuardian::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+}
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
 }
 
 /**
@@ -1863,11 +1879,27 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY);
+}
+
+/**
  * Draws a series of line strips.
  */
 bool VulkanGraphicsStateGuardian::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
   return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
+}
+
+/**
+ * Draws a series of line strips with adjacency information.
+ */
+bool VulkanGraphicsStateGuardian::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  return do_draw_primitive(reader, force, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY);
 }
 
 /**
