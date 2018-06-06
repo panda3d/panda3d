@@ -26,6 +26,10 @@ build dramatically but will be more memory intensive than a low value.")
 set(COMPOSITE_SOURCE_EXTENSIONS "cxx;c;mm" CACHE STRING
   "Only files of these extensions will be added to composite files.")
 
+set(COMPOSITE_SOURCE_EXCLUSIONS "" CACHE STRING
+  "A list of targets to skip when compositing sources. This is mainly
+desirable for CI builds.")
+
 set(COMPOSITE_GENERATOR "${CMAKE_SOURCE_DIR}/cmake/scripts/MakeComposite.cmake")
 
 
@@ -36,8 +40,12 @@ function(composite_sources target sources_var)
   set(sources ${orig_sources})
   list(LENGTH sources num_sources)
 
-  if(num_sources LESS 2 OR ${COMPOSITE_SOURCE_LIMIT} LESS 2)
-    # It's silly to do this for a single source.
+  # Don't composite if in the list of exclusions, and don't bother compositing
+  # with too few sources
+  list (FIND COMPOSITE_SOURCE_EXCLUSIONS ${target} _index)
+  if(num_sources LESS 2 
+    OR ${COMPOSITE_SOURCE_LIMIT} LESS 2
+    OR ${_index} GREATER -1)
     return()
   endif()
 
