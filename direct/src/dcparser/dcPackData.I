@@ -89,9 +89,9 @@ get_rewrite_pointer(size_t position, size_t size) {
 /**
  * Returns the data buffer as a string.  Also see get_data().
  */
-INLINE string DCPackData::
+INLINE std::string DCPackData::
 get_string() const {
-  return string(_buffer, _used_length);
+  return std::string(_buffer, _used_length);
 }
 
 /**

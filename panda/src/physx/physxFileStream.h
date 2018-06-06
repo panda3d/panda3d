@@ -51,7 +51,7 @@ private:
 
   // read
   PT(VirtualFile) _vf;
-  istream *_in;
+  std::istream *_in;
 };
 
 #endif // PHYSXFILESTREAM_H

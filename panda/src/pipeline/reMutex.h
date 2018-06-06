@@ -37,7 +37,7 @@ PUBLISHED:
 public:
   INLINE explicit ReMutex(const char *name);
 PUBLISHED:
-  INLINE explicit ReMutex(const string &name);
+  INLINE explicit ReMutex(const std::string &name);
   ReMutex(const ReMutex &copy) = delete;
   ~ReMutex() = default;
 

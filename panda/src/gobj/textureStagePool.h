@@ -46,8 +46,8 @@ PUBLISHED:
   MAKE_PROPERTY(mode, get_mode, set_mode);
 
   INLINE static int garbage_collect();
-  INLINE static void list_contents(ostream &out);
-  static void write(ostream &out);
+  INLINE static void list_contents(std::ostream &out);
+  static void write(std::ostream &out);
 
 private:
   TextureStagePool();
@@ -60,7 +60,7 @@ private:
   Mode ns_get_mode();
 
   int ns_garbage_collect();
-  void ns_list_contents(ostream &out) const;
+  void ns_list_contents(std::ostream &out) const;
 
   static TextureStagePool *get_global_ptr();
 
@@ -75,14 +75,14 @@ private:
   typedef pmap<CPT(TextureStage), PT(TextureStage), indirect_compare_to<const TextureStage *> > StagesByProperties;
   StagesByProperties _stages_by_properties;
 
-  typedef pmap<string, PT(TextureStage) > StagesByName;
+  typedef pmap<std::string, PT(TextureStage) > StagesByName;
   StagesByName _stages_by_name;
 
   Mode _mode;
 };
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStagePool::Mode mode);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, TextureStagePool::Mode &mode);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, TextureStagePool::Mode mode);
+EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, TextureStagePool::Mode &mode);
 
 #include "textureStagePool.I"
 

@@ -46,7 +46,7 @@ public:
   AssimpLoader();
   virtual ~AssimpLoader();
 
-  void get_extensions(string &ext) const;
+  void get_extensions(std::string &ext) const;
 
   bool read(const Filename &filename);
   void build_graph();

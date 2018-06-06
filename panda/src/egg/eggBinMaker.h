@@ -177,7 +177,7 @@ PUBLISHED:
   virtual bool
   collapse_group(const EggGroup *group, int bin_number);
 
-  virtual string
+  virtual std::string
   get_bin_name(int bin_number, const EggNode *child);
 
   virtual PT(EggBin)

@@ -33,7 +33,7 @@
  */
 class EXPCL_PANDA_DEVICE DialNode : public DataNode {
 PUBLISHED:
-  explicit DialNode(ClientBase *client, const string &device_name);
+  explicit DialNode(ClientBase *client, const std::string &device_name);
   virtual ~DialNode();
 
   INLINE bool is_valid() const;

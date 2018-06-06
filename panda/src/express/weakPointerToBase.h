@@ -88,11 +88,11 @@ PUBLISHED:
   INLINE void clear();
   INLINE void refresh() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const WeakPointerToBase<T> &pointer) {
+INLINE std::ostream &operator <<(std::ostream &out, const WeakPointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }

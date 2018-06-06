@@ -16,7 +16,7 @@
  * You should normally use the non-default constructor, below.
  */
 INLINE PartGroup::
-PartGroup(const string &name) :
+PartGroup(const std::string &name) :
   Namable(name),
   _children(get_class_type())
 {

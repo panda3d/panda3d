@@ -26,16 +26,16 @@
  */
 class P3DTemporaryFile {
 public:
-  P3DTemporaryFile(const string &extension);
+  P3DTemporaryFile(const std::string &extension);
   ~P3DTemporaryFile();
 
-  inline const string &get_filename() const;
+  inline const std::string &get_filename() const;
 
 private:
-  string _filename;
+  std::string _filename;
 };
 
-inline ostream &operator << (ostream &out, P3DTemporaryFile &tfile) {
+inline std::ostream &operator << (std::ostream &out, P3DTemporaryFile &tfile) {
   return out << tfile.get_filename();
 }
 

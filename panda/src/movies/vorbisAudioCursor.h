@@ -30,7 +30,7 @@ class VorbisAudio;
  */
 class EXPCL_PANDA_MOVIES VorbisAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  explicit VorbisAudioCursor(VorbisAudio *src, istream *stream);
+  explicit VorbisAudioCursor(VorbisAudio *src, std::istream *stream);
   virtual ~VorbisAudioCursor();
   virtual void seek(double offset);
 
@@ -57,8 +57,8 @@ protected:
   int _bytes_per_sample;
   bool _is_float;
 
-  streampos _data_start;
-  streampos _data_pos;
+  std::streampos _data_start;
+  std::streampos _data_pos;
   size_t _data_size;
 
 public:

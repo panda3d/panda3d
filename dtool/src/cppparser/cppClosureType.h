@@ -35,7 +35,7 @@ public:
   void operator = (const CPPClosureType &copy);
 
   struct Capture {
-    string _name;
+    std::string _name;
     CaptureType _type;
     CPPExpression *_initializer;
   };
@@ -44,7 +44,7 @@ public:
 
   CaptureType _default_capture;
 
-  void add_capture(string name, CaptureType type, CPPExpression *initializer = nullptr);
+  void add_capture(std::string name, CaptureType type, CPPExpression *initializer = nullptr);
 
   virtual bool is_fully_specified() const;
 
@@ -52,7 +52,7 @@ public:
   virtual bool is_copy_constructible() const;
   virtual bool is_destructible() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
   virtual CPPClosureType *as_closure_type();

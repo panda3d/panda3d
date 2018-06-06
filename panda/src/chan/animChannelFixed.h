@@ -34,13 +34,13 @@ protected:
   INLINE AnimChannelFixed(AnimGroup *parent, const AnimChannelFixed<SwitchType> &copy);
 
 public:
-  INLINE AnimChannelFixed(const string &name, const ValueType &value);
+  INLINE AnimChannelFixed(const std::string &name, const ValueType &value);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, ValueType &value);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   ValueType _value;
 

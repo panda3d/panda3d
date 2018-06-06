@@ -28,7 +28,7 @@ public:
 
   virtual bool add_element(XFileDataObject *element);
 
-  virtual void write_data(ostream &out, int indent_level,
+  virtual void write_data(std::ostream &out, int indent_level,
                           const char *separator) const;
 
 protected:

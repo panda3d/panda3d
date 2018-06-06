@@ -50,7 +50,7 @@ class EggSAnimData;
  */
 class SoftToEggConverter : public SomethingToEggConverter {
 public:
-  SoftToEggConverter(const string &program_name = "");
+  SoftToEggConverter(const std::string &program_name = "");
   SoftToEggConverter(const SoftToEggConverter &copy);
   virtual ~SoftToEggConverter();
 
@@ -61,12 +61,12 @@ public:
   bool HandleGetopts(int &idx, int argc, char **argv);
   bool DoGetopts(int &argc, char **&argv);
 
-  SoftNodeDesc *find_node(string name);
+  SoftNodeDesc *find_node(std::string name);
   int *FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert );
 
   virtual SomethingToEggConverter *make_copy();
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
 
   virtual bool convert_file(const Filename &filename);
   bool convert_soft(bool from_selection);
@@ -93,7 +93,7 @@ private:
 
   bool reparent_decals(EggGroupNode *egg_parent);
 
-  string _program_name;
+  std::string _program_name;
   bool _from_selection;
 
   SI_Error            result;
@@ -165,7 +165,7 @@ public:
   };
   TransformType _transform_type;
 
-  static TransformType string_transform_type(const string &arg);
+  static TransformType string_transform_type(const std::string &arg);
 
   typedef pvector<EggSAnimData *> MorphTable;
   MorphTable _morph_table;

@@ -38,19 +38,19 @@ class GraphicsWindow;
  */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice {
 private:
-  GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);
+  GraphicsWindowInputDevice(GraphicsWindow *host, const std::string &name, int flags);
 
 public:
-  static GraphicsWindowInputDevice pointer_only(GraphicsWindow *host, const string &name);
-  static GraphicsWindowInputDevice keyboard_only(GraphicsWindow *host, const string &name);
-  static GraphicsWindowInputDevice pointer_and_keyboard(GraphicsWindow *host, const string &name);
+  static GraphicsWindowInputDevice pointer_only(GraphicsWindow *host, const std::string &name);
+  static GraphicsWindowInputDevice keyboard_only(GraphicsWindow *host, const std::string &name);
+  static GraphicsWindowInputDevice pointer_and_keyboard(GraphicsWindow *host, const std::string &name);
 
   INLINE GraphicsWindowInputDevice();
   GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy);
   void operator = (const GraphicsWindowInputDevice &copy);
   ~GraphicsWindowInputDevice();
 
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
   INLINE bool has_pointer() const;
   INLINE bool has_keyboard() const;
 
@@ -87,7 +87,7 @@ PUBLISHED:
   void button_resume_down(ButtonHandle button, double time);
   void button_up(ButtonHandle button, double time);
   void keystroke(int keycode, double time);
-  void candidate(const wstring &candidate_string, size_t highlight_start,
+  void candidate(const std::wstring &candidate_string, size_t highlight_start,
                  size_t highlight_end, size_t cursor_pos);
   void focus_lost(double time);
   void raw_button_down(ButtonHandle button, double time);
@@ -115,7 +115,7 @@ private:
 
   GraphicsWindow *_host;
 
-  string _name;
+  std::string _name;
   int _flags;
   int _device_index;
   int _event_sequence;

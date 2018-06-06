@@ -36,7 +36,7 @@ protected:
 
 PUBLISHED:
   explicit CharacterJoint(Character *character, PartBundle *root,
-                          PartGroup *parent, const string &name,
+                          PartGroup *parent, const std::string &name,
                           const LMatrix4 &default_value);
   virtual ~CharacterJoint();
 

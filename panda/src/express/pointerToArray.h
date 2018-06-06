@@ -110,7 +110,7 @@ PUBLISHED:
   EXTENSION(PyObject *get_data() const);
   EXTENSION(void set_data(PyObject *data));
   EXTENSION(PyObject *get_subdata(size_type n, size_type count) const);
-  INLINE void set_subdata(size_type n, size_type count, const string &data);
+  INLINE void set_subdata(size_type n, size_type count, const std::string &data);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
 
@@ -196,10 +196,10 @@ public:
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
-  INLINE string get_data() const;
-  INLINE void set_data(const string &data);
-  INLINE string get_subdata(size_type n, size_type count) const;
-  INLINE void set_subdata(size_type n, size_type count, const string &data);
+  INLINE std::string get_data() const;
+  INLINE void set_data(const std::string &data);
+  INLINE std::string get_subdata(size_type n, size_type count) const;
+  INLINE void set_subdata(size_type n, size_type count, const std::string &data);
 
   // These functions are only to be used in Reading through BamReader.  They
   // are designed to work in pairs, so that you register what is returned by
@@ -336,8 +336,8 @@ PUBLISHED:
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
-  INLINE string get_data() const;
-  INLINE string get_subdata(size_type n, size_type count) const;
+  INLINE std::string get_data() const;
+  INLINE std::string get_subdata(size_type n, size_type count) const;
 
   INLINE int get_ref_count() const;
   INLINE void ref() const;

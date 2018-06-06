@@ -64,7 +64,7 @@ public:
   CPT(CullPlanes) remove_plane(const NodePath &clip_plane) const;
   CPT(CullPlanes) remove_occluder(const NodePath &occluder) const;
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   typedef pmap<NodePath, PT(BoundingPlane) > Planes;

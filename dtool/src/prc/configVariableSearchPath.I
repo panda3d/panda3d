@@ -15,12 +15,12 @@
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
-                         const string &description, int flags) :
+ConfigVariableSearchPath(const std::string &name,
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(Filename(".")),
   _local_modified(initial_invalid_cache())
@@ -38,13 +38,13 @@ ConfigVariableSearchPath(const string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
+ConfigVariableSearchPath(const std::string &name,
                          const DSearchPath &default_value,
-                         const string &description, int flags) :
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(default_value),
   _local_modified(initial_invalid_cache())
@@ -62,13 +62,13 @@ ConfigVariableSearchPath(const string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const string &name,
-                         const string &default_value,
-                         const string &description, int flags) :
+ConfigVariableSearchPath(const std::string &name,
+                         const std::string &default_value,
+                         const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string(), flags),
 #endif
   _default_value(Filename(default_value)),
   _local_modified(initial_invalid_cache())
@@ -169,7 +169,7 @@ prepend_directory(const Filename &directory) {
  * search list.
  */
 INLINE void ConfigVariableSearchPath::
-append_path(const string &path, const string &separator) {
+append_path(const std::string &path, const std::string &separator) {
   _postfix.append_path(path, separator);
   _local_modified = initial_invalid_cache();
 }
@@ -256,7 +256,7 @@ find_all_files(const Filename &filename) const {
  *
  */
 INLINE void ConfigVariableSearchPath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   get_value().output(out);
 }
 
@@ -264,12 +264,12 @@ output(ostream &out) const {
  *
  */
 INLINE void ConfigVariableSearchPath::
-write(ostream &out) const {
+write(std::ostream &out) const {
   get_value().write(out);
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableSearchPath &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableSearchPath &variable) {
   variable.output(out);
   return out;
 }

@@ -64,7 +64,7 @@ class GraphicsStateGuardianBase;
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
                                      public Namable, public LinkedListNode {
 PUBLISHED:
-  explicit PandaNode(const string &name);
+  explicit PandaNode(const std::string &name);
   virtual ~PandaNode();
   // published so that characters can be combined.
   virtual PandaNode *combine_with(PandaNode *other);
@@ -189,19 +189,19 @@ PUBLISHED:
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
   MAKE_PROPERTY(prev_transform, get_prev_transform);
 
-  void set_tag(const string &key, const string &value,
+  void set_tag(const std::string &key, const std::string &value,
                Thread *current_thread = Thread::get_current_thread());
-  INLINE string get_tag(const string &key,
+  INLINE std::string get_tag(const std::string &key,
                         Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE bool has_tag(const string &key,
+  INLINE bool has_tag(const std::string &key,
                       Thread *current_thread = Thread::get_current_thread()) const;
-  void clear_tag(const string &key,
+  void clear_tag(const std::string &key,
                  Thread *current_thread = Thread::get_current_thread());
 
 public:
   void get_tag_keys(vector_string &keys) const;
   INLINE size_t get_num_tags() const;
-  INLINE string get_tag_key(size_t i) const;
+  INLINE std::string get_tag_key(size_t i) const;
 
 PUBLISHED:
   MAKE_MAP_PROPERTY(tags, has_tag, get_tag, set_tag, clear_tag);
@@ -221,7 +221,7 @@ PUBLISHED:
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
-  void list_tags(ostream &out, const string &separator = "\n") const;
+  void list_tags(std::ostream &out, const std::string &separator = "\n") const;
 
   int compare_tags(const PandaNode *other) const;
 
@@ -272,10 +272,10 @@ PUBLISHED:
   bool is_scene_root() const;
   bool is_under_scene_root() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
-  INLINE void ls(ostream &out, int indent_level) const;
+  INLINE void ls(std::ostream &out, int indent_level) const;
 
   // A node has three bounding volumes: an "external" bounding volume that
   // represents the node and all of its children, an "internal" bounding
@@ -437,7 +437,7 @@ private:
   static void new_connection(PandaNode *parent_node, PandaNode *child_node,
                              int pipeline_stage, Thread *current_thread);
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
-  void r_list_descendants(ostream &out, int indent_level) const;
+  void r_list_descendants(std::ostream &out, int indent_level) const;
 
   INLINE void do_set_dirty_prev_transform();
   INLINE void do_clear_dirty_prev_transform();
@@ -520,7 +520,7 @@ private:
 
   // This is used to maintain a table of keyed data on each node, for the
   // user's purposes.
-  typedef SimpleHashMap<string, string, string_hash> TagData;
+  typedef SimpleHashMap<std::string, std::string, string_hash> TagData;
 
   // This is actually implemented in pandaNode_ext.h, but defined here so
   // that we can destruct it from the C++ side.  Note that it isn't cycled,
@@ -647,13 +647,13 @@ private:
                          BamWriter *manager, Datagram &dg) const;
     void update_up_list(const Up &up_list, BamWriter *manager) const;
     void update_down_list(const Down &down_list, BamWriter *manager) const;
-    int complete_up_list(Up &up_list, const string &tag,
+    int complete_up_list(Up &up_list, const std::string &tag,
                          TypedWritable **p_list, BamReader *manager);
-    int complete_down_list(Down &down_list, const string &tag,
+    int complete_down_list(Down &down_list, const std::string &tag,
                            TypedWritable **p_list, BamReader *manager);
-    void fillin_up_list(Up &up_list, const string &tag,
+    void fillin_up_list(Up &up_list, const std::string &tag,
                         DatagramIterator &scan, BamReader *manager);
-    void fillin_down_list(Down &down_list, const string &tag,
+    void fillin_down_list(Down &down_list, const std::string &tag,
                           DatagramIterator &scan, BamReader *manager);
 
     INLINE CPT(Down) get_down() const;
@@ -879,8 +879,8 @@ public:
   INLINE const TransformState *get_transform() const;
   INLINE const TransformState *get_prev_transform() const;
 
-  INLINE string get_tag(const string &key) const;
-  INLINE bool has_tag(const string &key) const;
+  INLINE std::string get_tag(const std::string &key) const;
+  INLINE bool has_tag(const std::string &key) const;
 
   INLINE CollideMask get_net_collide_mask() const;
   INLINE const RenderAttrib *get_off_clip_planes() const;
@@ -916,7 +916,7 @@ private:
 template<>
 INLINE void PointerToBase<PandaNode>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const PandaNode &node) {
+INLINE std::ostream &operator << (std::ostream &out, const PandaNode &node) {
   node.output(out);
   return out;
 }

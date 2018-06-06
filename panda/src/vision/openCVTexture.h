@@ -28,7 +28,7 @@ struct CvCapture;
  */
 class EXPCL_VISION OpenCVTexture : public VideoTexture {
 PUBLISHED:
-  OpenCVTexture(const string &name = string());
+  OpenCVTexture(const std::string &name = std::string());
   OpenCVTexture(const OpenCVTexture &copy) = delete;
   virtual ~OpenCVTexture();
 
@@ -54,7 +54,7 @@ protected:
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(Texture::CData *cdata,
-                           const PNMImage &pnmimage, const string &name,
+                           const PNMImage &pnmimage, const std::string &name,
                            int z, int n, const LoaderOptions &options);
 
 private:

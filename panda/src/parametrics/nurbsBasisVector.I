@@ -110,5 +110,5 @@ scale_t(int segment, PN_stdfloat t) const {
   PN_stdfloat from = _segments[segment]._from;
   PN_stdfloat to = _segments[segment]._to;
   t = (t - from) / (to - from);
-  return min(max(t, (PN_stdfloat)0.0), (PN_stdfloat)1.0);
+  return std::min(std::max(t, (PN_stdfloat)0.0), (PN_stdfloat)1.0);
 }

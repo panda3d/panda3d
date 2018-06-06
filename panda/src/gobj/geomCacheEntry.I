@@ -51,8 +51,8 @@ insert_before(GeomCacheEntry *node) {
   node->_prev = this;
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomCacheEntry &entry) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomCacheEntry &entry) {
   entry.output(out);
   return out;
 }

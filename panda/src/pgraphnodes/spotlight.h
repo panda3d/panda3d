@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
-  Spotlight(const string &name);
+  Spotlight(const std::string &name);
 
 protected:
   Spotlight(const Spotlight &copy);
@@ -39,7 +39,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   virtual bool get_vector_to_light(LVector3 &result,
                                    const LPoint3 &from_object_point,
@@ -127,7 +127,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Spotlight &light) {
+INLINE std::ostream &operator << (std::ostream &out, const Spotlight &light) {
   light.output(out);
   return out;
 }

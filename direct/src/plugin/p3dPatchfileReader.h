@@ -29,7 +29,7 @@
  */
 class P3DPatchfileReader {
 public:
-  P3DPatchfileReader(const string &package_dir,
+  P3DPatchfileReader(const std::string &package_dir,
                      const FileSpec &patchfile,
                      const FileSpec &source,
                      const FileSpec &target);
@@ -45,18 +45,18 @@ public:
   void close();
 
 private:
-  bool copy_bytes(istream &in, size_t copy_byte_count);
+  bool copy_bytes(std::istream &in, size_t copy_byte_count);
   inline unsigned int read_uint16();
   inline unsigned int read_uint32();
   inline int read_int32();
 
 private:
-  string _package_dir;
+  std::string _package_dir;
   FileSpec _patchfile;
   FileSpec _source;
   FileSpec _target;
 
-  string _output_pathname;
+  std::string _output_pathname;
   ifstream _patch_in;
   ifstream _source_in;
   ofstream _target_out;

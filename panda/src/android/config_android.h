@@ -39,6 +39,6 @@ extern jclass   jni_BitmapFactory_Options;
 extern jfieldID jni_BitmapFactory_Options_outWidth;
 extern jfieldID jni_BitmapFactory_Options_outHeight;
 
-EXPORT_CLASS void android_show_toast(ANativeActivity *activity, const string &message, int duration);
+EXPORT_CLASS void android_show_toast(ANativeActivity *activity, const std::string &message, int duration);
 
 #endif

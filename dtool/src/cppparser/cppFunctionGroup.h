@@ -28,20 +28,20 @@ class CPPInstance;
  */
 class CPPFunctionGroup : public CPPDeclaration {
 public:
-  CPPFunctionGroup(const string &name);
+  CPPFunctionGroup(const std::string &name);
   ~CPPFunctionGroup();
 
   CPPType *get_return_type() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPFunctionGroup *as_function_group();
 
-  typedef vector<CPPInstance *> Instances;
+  typedef std::vector<CPPInstance *> Instances;
   Instances _instances;
-  string _name;
+  std::string _name;
 };
 
 #endif

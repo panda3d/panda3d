@@ -32,14 +32,14 @@ class ClientBase;
 class EXPCL_PANDA_DEVICE ClientDevice : public TypedReferenceCount {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,
-               const string &device_name);
+               const std::string &device_name);
 
 public:
   virtual ~ClientDevice();
 
   INLINE ClientBase *get_client() const;
   INLINE TypeHandle get_device_type() const;
-  INLINE const string &get_device_name() const;
+  INLINE const std::string &get_device_name() const;
 
   INLINE bool is_connected() const;
   void disconnect();
@@ -48,13 +48,13 @@ public:
   INLINE void acquire();
   INLINE void unlock();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   ClientBase *_client;
   TypeHandle _device_type;
-  string _device_name;
+  std::string _device_name;
   bool _is_connected;
 
 #ifdef OLD_HAVE_IPC
@@ -81,7 +81,7 @@ private:
   friend class ClientBase;
 };
 
-INLINE ostream &operator <<(ostream &out, const ClientDevice &device) {
+INLINE std::ostream &operator <<(std::ostream &out, const ClientDevice &device) {
   device.output(out);
   return out;
 }

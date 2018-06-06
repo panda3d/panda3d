@@ -26,7 +26,7 @@ has_host_dir() const {
  * bootstrapped; if there is some danger of calling this early in the
  * initialization process, you should check has_host_dir() first.
  */
-inline const string &P3DHost::
+inline const std::string &P3DHost::
 get_host_dir() const {
   assert(has_host_dir());
   return _host_dir;
@@ -36,7 +36,7 @@ get_host_dir() const {
  * Returns the root URL of this particular host, as passed from the package
  * file.  This is a unique string that identifies each host.
  */
-inline const string &P3DHost::
+inline const std::string &P3DHost::
 get_host_url() const {
   return _host_url;
 }
@@ -48,7 +48,7 @@ get_host_url() const {
  *
  * Also see get_download_url_prefix().
  */
-inline const string &P3DHost::
+inline const std::string &P3DHost::
 get_host_url_prefix() const {
   return _host_url_prefix;
 }
@@ -58,7 +58,7 @@ get_host_url_prefix() const {
  * the contents.xml file.  This is often the same as get_host_url_prefix(),
  * but it may be different in the case of an https server for contents.xml.
  */
-inline const string &P3DHost::
+inline const std::string &P3DHost::
 get_download_url_prefix() const {
   return _download_url_prefix;
 }
@@ -68,7 +68,7 @@ get_download_url_prefix() const {
  * url if no descriptive name is provided.  This will be available after
  * read_contents_file() has been called.
  */
-inline const string &P3DHost::
+inline const std::string &P3DHost::
 get_descriptive_name() const {
   return _descriptive_name;
 }
@@ -101,6 +101,6 @@ get_contents_iseq() const {
  * contents.xml file (as provided by the server), false otherwise.
  */
 inline bool P3DHost::
-check_contents_hash(const string &pathname) const {
+check_contents_hash(const std::string &pathname) const {
   return _contents_spec.check_hash(pathname);
 }

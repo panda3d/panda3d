@@ -15,7 +15,7 @@
  *
  */
 INLINE EggXfmSAnim::
-EggXfmSAnim(const string &name, CoordinateSystem cs) : EggGroupNode(name) {
+EggXfmSAnim(const std::string &name, CoordinateSystem cs) : EggGroupNode(name) {
   _has_fps = false;
   _coordsys = cs;
 }
@@ -88,7 +88,7 @@ get_fps() const {
  *
  */
 INLINE void EggXfmSAnim::
-set_order(const string &order) {
+set_order(const std::string &order) {
   _order = order;
 }
 
@@ -111,7 +111,7 @@ has_order() const {
 /**
  *
  */
-INLINE const string &EggXfmSAnim::
+INLINE const std::string &EggXfmSAnim::
 get_order() const {
   if (has_order()) {
     return _order;
@@ -125,7 +125,7 @@ get_order() const {
  * the order string must be set to in order to use set_value() or add_data()
  * successfully.
  */
-INLINE const string &EggXfmSAnim::
+INLINE const std::string &EggXfmSAnim::
 get_standard_order() {
   return _standard_order;
 }

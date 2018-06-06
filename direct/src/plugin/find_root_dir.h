@@ -18,10 +18,10 @@
 #include <iostream>
 using namespace std;
 
-string find_root_dir();
+std::string find_root_dir();
 
 #ifdef __APPLE__
-string find_osx_root_dir();
+std::string find_osx_root_dir();
 #endif  // __APPLE__
 
 #endif

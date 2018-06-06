@@ -95,7 +95,7 @@ debug_is_locked() const {
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
 INLINE void MutexDirect::
-set_name(const string &) {
+set_name(const std::string &) {
 }
 
 /**
@@ -116,7 +116,7 @@ has_name() const {
 /**
  * The mutex name is only defined when compiling in DEBUG_THREADS mode.
  */
-INLINE string MutexDirect::
+INLINE std::string MutexDirect::
 get_name() const {
-  return string();
+  return std::string();
 }

@@ -32,24 +32,24 @@ PUBLISHED:
   INLINE size_t get_num_buttons() const;
   INLINE ButtonHandle get_raw_button(size_t i) const;
   INLINE ButtonHandle get_mapped_button(size_t i) const;
-  INLINE const string &get_mapped_button_label(size_t i) const;
+  INLINE const std::string &get_mapped_button_label(size_t i) const;
 
   INLINE ButtonHandle get_mapped_button(ButtonHandle raw) const;
-  INLINE ButtonHandle get_mapped_button(const string &raw_name) const;
-  INLINE const string &get_mapped_button_label(ButtonHandle raw) const;
-  INLINE const string &get_mapped_button_label(const string &raw_name) const;
+  INLINE ButtonHandle get_mapped_button(const std::string &raw_name) const;
+  INLINE const std::string &get_mapped_button_label(ButtonHandle raw) const;
+  INLINE const std::string &get_mapped_button_label(const std::string &raw_name) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 public:
-  void map_button(ButtonHandle raw_button, ButtonHandle button, const string &label = "");
+  void map_button(ButtonHandle raw_button, ButtonHandle button, const std::string &label = "");
 
 private:
   struct ButtonNode {
     ButtonHandle _raw;
     ButtonHandle _mapped;
-    string _label;
+    std::string _label;
   };
 
   pmap<int, ButtonNode> _button_map;

@@ -23,7 +23,7 @@
 #include <AGL/agl.h>
 
 #define HACK_SCREEN_HASH_CONTEXT true
-OSStatus report_agl_error(const string &comment);
+OSStatus report_agl_error(const std::string &comment);
 
 /**
  * An interface to the osx/ system for managing GL windows under X.
@@ -31,7 +31,7 @@ OSStatus report_agl_error(const string &comment);
 class osxGraphicsWindow : public GraphicsWindow {
 public:
   osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,

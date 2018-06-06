@@ -47,7 +47,7 @@ public:
   INLINE double compute_length(const EggVertexPool *vertex_pool) const;
   INLINE LVecBase3d compute_box(const EggVertexPool *vertex_pool) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   int _vi_a, _vi_b;
 
@@ -56,8 +56,8 @@ public:
   EggMesherEdge *_opposite;
 };
 
-INLINE ostream &
-operator << (ostream &out, const EggMesherEdge &edge) {
+INLINE std::ostream &
+operator << (std::ostream &out, const EggMesherEdge &edge) {
   edge.output(out);
   return out;
 }

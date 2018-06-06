@@ -34,8 +34,8 @@ get_event_queue() const {
   return _event_queue;
 }
 
-INLINE ostream &
-operator << (ostream &out, const CIntervalManager &ival_mgr) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CIntervalManager &ival_mgr) {
   ival_mgr.output(out);
   return out;
 }

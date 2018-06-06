@@ -29,7 +29,7 @@
 template<class Parameter>
 class EggMorph : public Namable {
 public:
-  INLINE EggMorph(const string &name, const Parameter &offset);
+  INLINE EggMorph(const std::string &name, const Parameter &offset);
   INLINE void set_offset(const Parameter &offset);
   INLINE const Parameter &get_offset() const;
 
@@ -39,7 +39,7 @@ public:
 
   INLINE int compare_to(const EggMorph<Parameter> &other, double threshold) const;
 
-  INLINE void output(ostream &out, const string &tag,
+  INLINE void output(std::ostream &out, const std::string &tag,
                      int num_dimensions) const;
 
 private:

@@ -60,9 +60,9 @@ get_num_prc_patterns() const {
  * Returns the nth filename pattern that will be considered a match as a valid
  * config file.  See get_num_prc_patterns().
  */
-INLINE string ConfigPageManager::
+INLINE std::string ConfigPageManager::
 get_prc_pattern(size_t n) const {
-  nassertr(n < _prc_patterns.size(), string());
+  nassertr(n < _prc_patterns.size(), std::string());
   return _prc_patterns[n].get_pattern();
 }
 
@@ -80,9 +80,9 @@ get_num_prc_encrypted_patterns() const {
  * Returns the nth filename pattern that will be considered a match as a valid
  * encrypted config file.  See get_num_prc_encrypted_patterns().
  */
-INLINE string ConfigPageManager::
+INLINE std::string ConfigPageManager::
 get_prc_encrypted_pattern(size_t n) const {
-  nassertr(n < _prc_patterns.size(), string());
+  nassertr(n < _prc_patterns.size(), std::string());
   return _prc_encrypted_patterns[n].get_pattern();
 }
 
@@ -100,9 +100,9 @@ get_num_prc_executable_patterns() const {
  * Returns the nth filename pattern that will be considered a match as a valid
  * executable-style config file.  See get_num_prc_executable_patterns().
  */
-INLINE string ConfigPageManager::
+INLINE std::string ConfigPageManager::
 get_prc_executable_pattern(size_t n) const {
-  nassertr(n < _prc_patterns.size(), string());
+  nassertr(n < _prc_patterns.size(), std::string());
   return _prc_executable_patterns[n].get_pattern();
 }
 
@@ -169,8 +169,8 @@ check_sort_pages() const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigPageManager &pageMgr) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigPageManager &pageMgr) {
   pageMgr.output(out);
   return out;
 }

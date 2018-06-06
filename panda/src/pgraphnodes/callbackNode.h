@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES CallbackNode : public PandaNode {
 PUBLISHED:
-  explicit CallbackNode(const string &name);
+  explicit CallbackNode(const std::string &name);
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
@@ -47,7 +47,7 @@ public:
   virtual bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {

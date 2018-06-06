@@ -122,7 +122,7 @@ protected:
   LightType _light_type;
   float _near_plane;
 
-  vector<ShadowSource*> _shadow_sources;
+  std::vector<ShadowSource*> _shadow_sources;
 };
 
 #include "rpLight.I"

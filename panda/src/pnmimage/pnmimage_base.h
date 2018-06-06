@@ -61,7 +61,7 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
   static int size() { return 3; }
-  void output(ostream &out) {
+  void output(std::ostream &out) {
     out << "pixel(r=" << r << ", g=" << g << ", b=" << b << ")";
   }
 #endif
@@ -105,14 +105,14 @@ EXPCL_PANDA_PNMIMAGE int pm_bitstomaxval(int bits);
 EXPCL_PANDA_PNMIMAGE char *pm_allocrow(int cols, int size);
 EXPCL_PANDA_PNMIMAGE void pm_freerow(char *itrow);
 
-EXPCL_PANDA_PNMIMAGE int pm_readbigshort(istream *in, short *sP);
-EXPCL_PANDA_PNMIMAGE int pm_writebigshort(ostream *out, short s);
-EXPCL_PANDA_PNMIMAGE int pm_readbiglong(istream *in, long *lP);
-EXPCL_PANDA_PNMIMAGE int pm_writebiglong(ostream *out, long l);
-EXPCL_PANDA_PNMIMAGE int pm_readlittleshort(istream *in, short *sP);
-EXPCL_PANDA_PNMIMAGE int pm_writelittleshort(ostream *out, short s);
-EXPCL_PANDA_PNMIMAGE int pm_readlittlelong(istream *in, long *lP);
-EXPCL_PANDA_PNMIMAGE int pm_writelittlelong(ostream *out, long l);
+EXPCL_PANDA_PNMIMAGE int pm_readbigshort(std::istream *in, short *sP);
+EXPCL_PANDA_PNMIMAGE int pm_writebigshort(std::ostream *out, short s);
+EXPCL_PANDA_PNMIMAGE int pm_readbiglong(std::istream *in, long *lP);
+EXPCL_PANDA_PNMIMAGE int pm_writebiglong(std::ostream *out, long l);
+EXPCL_PANDA_PNMIMAGE int pm_readlittleshort(std::istream *in, short *sP);
+EXPCL_PANDA_PNMIMAGE int pm_writelittleshort(std::ostream *out, short s);
+EXPCL_PANDA_PNMIMAGE int pm_readlittlelong(std::istream *in, long *lP);
+EXPCL_PANDA_PNMIMAGE int pm_writelittlelong(std::ostream *out, long l);
 
 
 // These ratios are used to compute the brightness of a colored pixel; they

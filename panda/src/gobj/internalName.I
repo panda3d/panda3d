@@ -22,7 +22,7 @@
  * handled transparently.
  */
 INLINE PT(InternalName) InternalName::
-make(const string &name) {
+make(const std::string &name) {
   return get_root()->append(name);
 }
 
@@ -63,7 +63,7 @@ get_parent() const {
  * Return the name represented by just this particular InternalName object,
  * ignoring its parents names.  This is everything after the rightmost dot.
  */
-INLINE const string &InternalName::
+INLINE const std::string &InternalName::
 get_basename() const {
   return _basename;
 }
@@ -136,7 +136,7 @@ get_tangent() {
  * coordinate set.
  */
 INLINE PT(InternalName) InternalName::
-get_tangent_name(const string &name) {
+get_tangent_name(const std::string &name) {
   return get_tangent()->append(name);
 }
 
@@ -161,7 +161,7 @@ get_binormal() {
  * named texture coordinate set.
  */
 INLINE PT(InternalName) InternalName::
-get_binormal_name(const string &name) {
+get_binormal_name(const std::string &name) {
   return get_binormal()->append(name);
 }
 
@@ -185,7 +185,7 @@ get_texcoord() {
  * set in a TextureStage.
  */
 INLINE PT(InternalName) InternalName::
-get_texcoord_name(const string &name) {
+get_texcoord_name(const std::string &name) {
   return get_texcoord()->append(name);
 }
 
@@ -298,7 +298,7 @@ get_transform_index() {
  * column it applies to.
  */
 INLINE PT(InternalName) InternalName::
-get_morph(InternalName *column, const string &slider) {
+get_morph(InternalName *column, const std::string &slider) {
   // This actually returns "column.morph.slider", although that's just an
   // implementation detail--as long as it returns a consistent, unique name
   // for each combination of column and slider, everything is good.
@@ -369,8 +369,8 @@ get_view() {
 /**
  *
  */
-INLINE ostream &
-operator << (ostream &out, const InternalName &tcn) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InternalName &tcn) {
   tcn.output(out);
   return out;
 }
@@ -407,7 +407,7 @@ CPT_InternalName(const ConstPointerTo<InternalName> &copy) :
  *
  */
 INLINE CPT_InternalName::
-CPT_InternalName(const string &name) :
+CPT_InternalName(const std::string &name) :
   ConstPointerTo<InternalName>(InternalName::make(name))
 {
 }

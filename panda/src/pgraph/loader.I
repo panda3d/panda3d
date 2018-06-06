@@ -109,14 +109,14 @@ get_task_manager() const {
  * is the initial name of the Loader object.
  */
 INLINE void Loader::
-set_task_chain(const string &task_chain) {
+set_task_chain(const std::string &task_chain) {
   _task_chain = task_chain;
 }
 
 /**
  * Returns the task chain that is used for asynchronous loads.
  */
-INLINE const string &Loader::
+INLINE const std::string &Loader::
 get_task_chain() const {
   return _task_chain;
 }

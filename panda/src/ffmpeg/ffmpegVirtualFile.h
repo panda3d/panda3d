@@ -58,9 +58,9 @@ private:
 private:
   AVIOContext *_io_context;
   AVFormatContext *_format_context;
-  streampos _start;
-  streamsize _size;
-  istream *_in;
+  std::streampos _start;
+  std::streamsize _size;
+  std::istream *_in;
   pifstream _file_in;
   bool _owns_in;
   int _buffer_size;

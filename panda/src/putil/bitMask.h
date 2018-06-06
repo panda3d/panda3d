@@ -78,10 +78,10 @@ PUBLISHED:
   INLINE bool has_bits_in_common(const BitMask<WType, nbits> &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
-  void output_binary(ostream &out, int spaces_every = 4) const;
-  void output_hex(ostream &out, int spaces_every = 4) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void output_binary(std::ostream &out, int spaces_every = 4) const;
+  void output_hex(std::ostream &out, int spaces_every = 4) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool operator == (const BitMask<WType, nbits> &other) const;
   INLINE bool operator != (const BitMask<WType, nbits> &other) const;
@@ -137,7 +137,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const string &name);
+  static void init_type(const std::string &name);
 
 private:
   static TypeHandle _type_handle;
@@ -146,7 +146,7 @@ private:
 #include "bitMask.I"
 
 template<class WType, int nbits>
-INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask) {
+INLINE std::ostream &operator << (std::ostream &out, const BitMask<WType, nbits> &bitmask) {
   bitmask.output(out);
   return out;
 }

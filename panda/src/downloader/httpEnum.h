@@ -47,7 +47,7 @@ PUBLISHED:
   };
 };
 
-ostream &operator << (ostream &out, HTTPEnum::Method method);
+std::ostream &operator << (std::ostream &out, HTTPEnum::Method method);
 
 #endif // HAVE_OPENSSL
 

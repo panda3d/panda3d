@@ -221,7 +221,7 @@ get_key() const {
   return _backup_key;
 }
 
-INLINE ostream &operator << (ostream &out, const WeakNodePath &node_path) {
+INLINE std::ostream &operator << (std::ostream &out, const WeakNodePath &node_path) {
   node_path.output(out);
   return out;
 }

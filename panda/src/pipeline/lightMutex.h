@@ -44,7 +44,7 @@ PUBLISHED:
 public:
   INLINE explicit LightMutex(const char *name);
 PUBLISHED:
-  INLINE explicit LightMutex(const string &name);
+  INLINE explicit LightMutex(const std::string &name);
   LightMutex(const LightMutex &copy) = delete;
   ~LightMutex() = default;
 

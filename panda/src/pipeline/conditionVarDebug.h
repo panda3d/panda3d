@@ -43,15 +43,15 @@ PUBLISHED:
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
   void notify();
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   MutexDebug &_mutex;
   ConditionVarImpl _impl;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ConditionVarDebug &cv) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConditionVarDebug &cv) {
   cv.output(out);
   return out;
 }

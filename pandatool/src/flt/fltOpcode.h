@@ -117,6 +117,6 @@ enum FltOpcode {
   FO_road_construction   = 127
 };
 
-ostream &operator << (ostream &out, FltOpcode opcode);
+std::ostream &operator << (std::ostream &out, FltOpcode opcode);
 
 #endif

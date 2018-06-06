@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPH ModelRoot : public ModelNode {
 PUBLISHED:
-  INLINE explicit ModelRoot(const string &name);
+  INLINE explicit ModelRoot(const std::string &name);
   INLINE explicit ModelRoot(const Filename &fullpath, time_t timestamp);
 
   INLINE int get_model_ref_count() const;

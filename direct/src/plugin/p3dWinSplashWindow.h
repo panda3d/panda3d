@@ -34,9 +34,9 @@ public:
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_visible(bool visible);
 
-  virtual void set_image_filename(const string &image_filename,
+  virtual void set_image_filename(const std::string &image_filename,
                                   ImagePlacement image_placement);
-  virtual void set_install_label(const string &install_label);
+  virtual void set_install_label(const std::string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
   virtual void request_keyboard_focus();
@@ -75,7 +75,7 @@ private:
     inline ~WinImageData();
     void dump_image();
 
-    string _filename;
+    std::string _filename;
     bool _filename_changed;
     HBITMAP _bitmap;
   };
@@ -86,14 +86,14 @@ private:
   WinImageData _button_click_image;
 
   bool _got_install;
-  string _install_label;
+  std::string _install_label;
   double _install_progress;
   bool _progress_known;
   size_t _received_data;
   LOCK _install_lock;
 
   ButtonState _drawn_bstate;
-  string _drawn_label;
+  std::string _drawn_label;
   double _drawn_progress;
   bool _drawn_progress_known;
   size_t _drawn_received_data;

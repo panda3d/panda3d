@@ -33,7 +33,7 @@ protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
 
 public:
-  MovingPartBase(PartGroup *parent, const string &name);
+  MovingPartBase(PartGroup *parent, const std::string &name);
 
 PUBLISHED:
   INLINE int get_max_bound() const;
@@ -47,9 +47,9 @@ PUBLISHED:
   virtual bool clear_forced_channel();
   virtual AnimChannelBase *get_forced_channel() const;
 
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void write_with_value(ostream &out, int indent_level) const;
-  virtual void output_value(ostream &out) const=0;
+  virtual void write(std::ostream &out, int indent_level) const;
+  virtual void write_with_value(std::ostream &out, int indent_level) const;
+  virtual void output_value(std::ostream &out) const=0;
 
 public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,

@@ -130,7 +130,7 @@ garbage_collect() {
  * Lists the contents of the model pool to the indicated output stream.
  */
 INLINE void ModelPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -139,7 +139,7 @@ list_contents(ostream &out) {
  */
 INLINE void ModelPool::
 list_contents() {
-  get_ptr()->ns_list_contents(cout);
+  get_ptr()->ns_list_contents(std::cout);
 }
 
 /**

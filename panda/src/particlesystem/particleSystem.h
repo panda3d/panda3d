@@ -104,10 +104,10 @@ PUBLISHED:
   INLINE void soft_start(PN_stdfloat br = 0.0);
   void update(PN_stdfloat dt);
 
-  virtual void output(ostream &out) const;
-  virtual void write_free_particle_fifo(ostream &out, int indent=0) const;
-  virtual void write_spawn_templates(ostream &out, int indent=0) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_free_particle_fifo(std::ostream &out, int indent=0) const;
+  virtual void write_spawn_templates(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   #ifdef PSSANITYCHECK

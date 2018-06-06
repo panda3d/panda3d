@@ -25,8 +25,8 @@ class EXPCL_PANDA_PGRAPH LoaderFileTypeBam : public LoaderFileType {
 public:
   LoaderFileTypeBam();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool supports_load() const;

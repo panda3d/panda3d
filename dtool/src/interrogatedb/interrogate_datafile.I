@@ -17,7 +17,7 @@
  */
 template<class Element>
 void
-idf_output_vector(ostream &out, const std::vector<Element> &vec) {
+idf_output_vector(std::ostream &out, const std::vector<Element> &vec) {
   out << vec.size() << " ";
   typename std::vector<Element>::const_iterator vi;
   for (vi = vec.begin(); vi != vec.end(); ++vi) {
@@ -33,7 +33,7 @@ idf_output_vector(ostream &out, const std::vector<Element> &vec) {
  */
 template<class Element>
 void
-idf_input_vector(istream &in, std::vector<Element> &vec) {
+idf_input_vector(std::istream &in, std::vector<Element> &vec) {
   int length;
   in >> length;
   if (in.fail()) {

@@ -28,8 +28,8 @@ PUBLISHED:
 
   INLINE void set_proc(LVector3 (*proc)(const PhysicsObject *));
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   LVector3 (*_proc)(const PhysicsObject *po);

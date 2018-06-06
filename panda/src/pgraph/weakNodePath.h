@@ -59,7 +59,7 @@ PUBLISHED:
 
   INLINE int get_key() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   WPT(NodePathComponent) _head;
@@ -68,7 +68,7 @@ private:
   friend class NodePath;
 };
 
-INLINE ostream &operator << (ostream &out, const WeakNodePath &node_path);
+INLINE std::ostream &operator << (std::ostream &out, const WeakNodePath &node_path);
 
 #include "weakNodePath.I"
 

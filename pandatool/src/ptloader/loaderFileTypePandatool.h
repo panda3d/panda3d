@@ -32,9 +32,9 @@ public:
                           EggToSomethingConverter *saver = nullptr);
   virtual ~LoaderFileTypePandatool();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
-  virtual string get_additional_extensions() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
+  virtual std::string get_additional_extensions() const;
   virtual bool supports_compressed() const;
 
   virtual bool supports_load() const;

@@ -137,8 +137,8 @@ PUBLISHED:
   INLINE void set_default_to_standing_still(bool flag);
   INLINE bool get_default_to_standing_still();
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   void set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,

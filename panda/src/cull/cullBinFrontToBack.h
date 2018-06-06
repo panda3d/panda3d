@@ -31,12 +31,12 @@
  */
 class EXPCL_PANDA_CULL CullBinFrontToBack : public CullBin {
 public:
-  INLINE CullBinFrontToBack(const string &name,
+  INLINE CullBinFrontToBack(const std::string &name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
   virtual ~CullBinFrontToBack();
 
-  static CullBin *make_bin(const string &name,
+  static CullBin *make_bin(const std::string &name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 

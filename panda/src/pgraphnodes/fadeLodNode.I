@@ -32,7 +32,7 @@ get_fade_time() const {
  * Returns the cull bin that is assigned to the fading part of the geometry
  * during a transition.
  */
-INLINE const string &FadeLODNode::
+INLINE const std::string &FadeLODNode::
 get_fade_bin_name() const {
   return _fade_bin_name;
 }

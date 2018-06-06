@@ -45,7 +45,7 @@ PUBLISHED:
   LPoint3f get_pos() const;
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   static PhysxForceFieldShape *factory(NxShapeType shapeType);
@@ -59,7 +59,7 @@ protected:
   INLINE PhysxForceFieldShape();
 
 private:
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

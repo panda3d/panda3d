@@ -138,7 +138,7 @@ is_fatal() {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 out(NotifySeverity severity, bool prefix) {
   return get_unsafe_ptr()->out(severity, prefix);
 }
@@ -147,7 +147,7 @@ out(NotifySeverity severity, bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 spam(bool prefix) {
   return get_unsafe_ptr()->spam(prefix);
 }
@@ -156,7 +156,7 @@ spam(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 debug(bool prefix) {
   return get_unsafe_ptr()->debug(prefix);
 }
@@ -165,7 +165,7 @@ debug(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 info(bool prefix) {
   return get_unsafe_ptr()->info(prefix);
 }
@@ -174,7 +174,7 @@ info(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 warning(bool prefix) {
   return get_unsafe_ptr()->warning(prefix);
 }
@@ -183,7 +183,7 @@ warning(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 error(bool prefix) {
   return get_unsafe_ptr()->error(prefix);
 }
@@ -192,7 +192,7 @@ error(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 fatal(bool prefix) {
   return get_unsafe_ptr()->fatal(prefix);
 }

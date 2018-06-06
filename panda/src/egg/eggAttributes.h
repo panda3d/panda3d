@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE bool matches_color(const EggAttributes &other) const;
   INLINE void copy_color(const EggAttributes &other);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
   INLINE bool sorts_less_than(const EggAttributes &other) const;
   int compare_to(const EggAttributes &other) const;
 

@@ -20,7 +20,7 @@
 // 64-bit integer, but don't recognize "long long int".  To parse (and
 // generate) code for these compilers, set this string to the 64-bit integer
 // typename keyword.
-extern string cpp_longlong_keyword;
+extern std::string cpp_longlong_keyword;
 
 
 #endif

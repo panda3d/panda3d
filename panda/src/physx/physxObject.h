@@ -29,16 +29,16 @@ class EXPCL_PANDAPHYSX PhysxObject : public TypedReferenceCount {
 
 #ifdef HAVE_PYTHON
 PUBLISHED:
-  INLINE void set_python_tag(const string &key, PyObject *value);
-  INLINE PyObject *get_python_tag(const string &key) const;
-  INLINE bool has_python_tag(const string &key) const;
-  INLINE void clear_python_tag(const string &key);
+  INLINE void set_python_tag(const std::string &key, PyObject *value);
+  INLINE PyObject *get_python_tag(const std::string &key) const;
+  INLINE bool has_python_tag(const std::string &key) const;
+  INLINE void clear_python_tag(const std::string &key);
   INLINE bool has_python_tags() const;
 #endif // HAVE_PYTHON
 
 PUBLISHED:
   virtual void ls() const = 0;
-  virtual void ls(ostream &out, int indent_level=0) const = 0;
+  virtual void ls(std::ostream &out, int indent_level=0) const = 0;
 
 protected:
   INLINE PhysxObject();
@@ -55,7 +55,7 @@ protected:
 
 #ifdef HAVE_PYTHON
 private:
-  typedef phash_map<string, PyObject *, string_hash> PythonTagData;
+  typedef phash_map<std::string, PyObject *, string_hash> PythonTagData;
   PythonTagData _python_tag_data;
 #endif // HAVE_PYTHON
 

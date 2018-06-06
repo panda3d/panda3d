@@ -17,7 +17,7 @@
  *
  */
 INLINE GeoMipTerrain::
-GeoMipTerrain(const string &name) {
+GeoMipTerrain(const std::string &name) {
   _root = NodePath(name);
   _root_flattened = false;
   _xsize = 0;
@@ -425,7 +425,7 @@ set_color_map(const Texture *tex) {
 }
 
 INLINE bool GeoMipTerrain::
-set_color_map(const string &path) {
+set_color_map(const std::string &path) {
   return set_color_map(Filename(path));
 }
 
@@ -479,8 +479,8 @@ get_border_stitching() {
  */
 INLINE double GeoMipTerrain::
 get_pixel_value(int x, int y) {
-  x = max(min(x,int(_xsize-1)),0);
-  y = max(min(y,int(_ysize-1)),0);
+  x = std::max(std::min(x,int(_xsize-1)),0);
+  y = std::max(std::min(y,int(_ysize-1)),0);
   if (_heightfield.is_grayscale()) {
     return double(_heightfield.get_bright(x, y));
   } else {

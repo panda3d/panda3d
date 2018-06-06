@@ -29,7 +29,7 @@ public:
   DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE CullHandler *get_cull_handler() const;
   INLINE SceneSetup *get_scene_setup() const;

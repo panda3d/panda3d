@@ -31,7 +31,7 @@ protected:
   CharacterSlider(const CharacterSlider &copy);
 
 PUBLISHED:
-  explicit CharacterSlider(PartGroup *parent, const string &name);
+  explicit CharacterSlider(PartGroup *parent, const std::string &name);
   virtual ~CharacterSlider();
 
   virtual PartGroup *make_copy() const;

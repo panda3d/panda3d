@@ -44,15 +44,15 @@ PUBLISHED:
   BLOCKING INLINE void wait(double timeout);
   INLINE void notify();
   INLINE void notify_all();
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   MutexDirect &_mutex;
   ConditionVarFullImpl _impl;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ConditionVarFullDirect &cv) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConditionVarFullDirect &cv) {
   cv.output(out);
   return out;
 }

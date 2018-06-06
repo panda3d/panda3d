@@ -29,7 +29,7 @@ class VrpnDial;
  */
 class VrpnDialDevice : public ClientDialDevice {
 public:
-  VrpnDialDevice(VrpnClient *client, const string &device_name,
+  VrpnDialDevice(VrpnClient *client, const std::string &device_name,
                    VrpnDial *vrpn_dial);
   virtual ~VrpnDialDevice();
 

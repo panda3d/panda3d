@@ -41,12 +41,12 @@ class EXPCL_PANDA_PGRAPH CullBin : public TypedReferenceCount, public CullBinEnu
 protected:
   INLINE CullBin(const CullBin &copy);
 public:
-  INLINE CullBin(const string &name, BinType bin_type,
+  INLINE CullBin(const std::string &name, BinType bin_type,
                  GraphicsStateGuardianBase *gsg,
                  const PStatCollector &draw_region_pcollector);
   virtual ~CullBin();
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   INLINE BinType get_bin_type() const;
 
   virtual PT(CullBin) make_next() const;
@@ -69,7 +69,7 @@ private:
   void check_flash_color();
 
 protected:
-  string _name;
+  std::string _name;
   BinType _bin_type;
   GraphicsStateGuardianBase *_gsg;
 

@@ -348,11 +348,11 @@ r_upper_bound(typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR firs
  * The recursive implementation of equal_range().
  */
 template<class Key, class Compare, class Vector>
-pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
+std::pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
 r_equal_range(typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR first,
               typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR last,
               const typename ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
-  typedef pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> pair_type;
+  typedef std::pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> pair_type;
 
   if (first == last) {
     // The list is empty; the key is not on the list.

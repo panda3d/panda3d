@@ -60,7 +60,7 @@ get_host() const {
 /**
  * Returns the directory into which this package is installed.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_package_dir() const {
   return _package_dir;
 }
@@ -71,7 +71,7 @@ get_package_dir() const {
  * will not contain spaces.  See also get_package_display_name() for a name
  * suitable for displaying to the user.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_package_name() const {
   return _package_name;
 }
@@ -79,7 +79,7 @@ get_package_name() const {
 /**
  * Returns the version string of this package.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_package_version() const {
   return _package_version;
 }
@@ -87,7 +87,7 @@ get_package_version() const {
 /**
  * Returns the platform string of this package.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_package_platform() const {
   return _package_platform;
 }
@@ -95,7 +95,7 @@ get_package_platform() const {
 /**
  * Returns the display_name name of this package, as set in the desc file.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_package_display_name() const {
   return _package_display_name;
 }
@@ -114,7 +114,7 @@ get_xconfig() const {
  * package, the desc file itself represents the entire contents of the
  * package.
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_desc_file_pathname() const {
   return _desc_file_pathname;
 }
@@ -123,7 +123,7 @@ get_desc_file_pathname() const {
  * Returns the relative path, on the host, of the directory that contains the
  * desc file (and to which all of the paths in the desc file are relative).
  */
-inline const string &P3DPackage::
+inline const std::string &P3DPackage::
 get_desc_file_dirname() const {
   return _desc_file_dirname;
 }
@@ -132,7 +132,7 @@ get_desc_file_dirname() const {
  * Returns the full path to the package's uncompressed archive file.  This is
  * only valid if get_ready() is true and the package is not a "solo" package.
  */
-inline string P3DPackage::
+inline std::string P3DPackage::
 get_archive_file_pathname() const {
   return _uncompressed_archive.get_pathname(_package_dir);
 }
@@ -154,7 +154,7 @@ get_progress() const {
   if (_bytes_needed == 0) {
     return 1.0;
   }
-  return min((double)_bytes_done / (double)_bytes_needed, 1.0);
+  return std::min((double)_bytes_done / (double)_bytes_needed, 1.0);
 }
 
 /**
@@ -169,8 +169,8 @@ report_step_progress() {
  *
  */
 inline P3DPackage::RequiredPackage::
-RequiredPackage(const string &package_name, const string &package_version,
-                const string &package_seq, P3DHost *host) :
+RequiredPackage(const std::string &package_name, const std::string &package_version,
+                const std::string &package_seq, P3DHost *host) :
   _package_name(package_name),
   _package_version(package_version),
   _package_seq(package_seq),

@@ -37,15 +37,15 @@
 using namespace std;
 
 // Appears in p3dInstanceManager.cxx.
-extern ostream *nout_stream;
+extern std::ostream *nout_stream;
 #define nout (*nout_stream)
 
 // Appears in p3d_plugin.cxx.
 extern LOCK _api_lock;
 
 // A convenience function for formatting a generic P3D_object to an ostream.
-inline ostream &
-operator << (ostream &out, P3D_object &value) {
+inline std::ostream &
+operator << (std::ostream &out, P3D_object &value) {
   int size = P3D_OBJECT_GET_REPR(&value, nullptr, 0);
   char *buffer = new char[size];
   P3D_OBJECT_GET_REPR(&value, buffer, size);

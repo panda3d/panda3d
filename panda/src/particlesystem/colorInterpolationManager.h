@@ -280,7 +280,7 @@ ColorInterpolationManager();
 
   INLINE void set_default_color(const LColor &c);
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);
-  INLINE string get_segment_id_list();
+  INLINE std::string get_segment_id_list();
   void clear_segment(const int seg_id);
   void clear_to_initial();
 

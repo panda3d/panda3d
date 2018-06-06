@@ -180,14 +180,14 @@ get_initial_state() const {
  * the value of the tag (as specified to set_tag_state()).
  */
 INLINE void Camera::
-set_tag_state_key(const string &tag_state_key) {
+set_tag_state_key(const std::string &tag_state_key) {
   _tag_state_key = tag_state_key;
 }
 
 /**
  * Returns the tag key as set by a previous call to set_tag_state_key().
  */
-INLINE const string &Camera::
+INLINE const std::string &Camera::
 get_tag_state_key() const {
   return _tag_state_key;
 }

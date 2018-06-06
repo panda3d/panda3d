@@ -32,7 +32,7 @@ public:
 
   INLINE void clear();
   void add_info(MemoryInfo *info);
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   INLINE bool is_size_unknown() const;
   INLINE size_t get_size() const;
@@ -41,7 +41,7 @@ public:
   INLINE bool operator < (const MemoryUsagePointerCounts &other) const;
 
 private:
-  static void output_bytes(ostream &out, size_t size);
+  static void output_bytes(std::ostream &out, size_t size);
 
 private:
   int _count;
@@ -49,7 +49,7 @@ private:
   size_t _size;
 };
 
-INLINE ostream &operator << (ostream &out, const MemoryUsagePointerCounts &c);
+INLINE std::ostream &operator << (std::ostream &out, const MemoryUsagePointerCounts &c);
 
 #include "memoryUsagePointerCounts.I"
 

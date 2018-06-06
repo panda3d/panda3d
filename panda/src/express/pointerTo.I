@@ -35,7 +35,7 @@ PointerTo(const PointerTo<T> &copy) :
 template<class T>
 INLINE PointerTo<T>::
 PointerTo(PointerTo<T> &&from) noexcept :
-  PointerToBase<T>(move(from))
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -45,7 +45,7 @@ PointerTo(PointerTo<T> &&from) noexcept :
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
 operator = (PointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 
@@ -158,7 +158,7 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
 template<class T>
 INLINE ConstPointerTo<T>::
 ConstPointerTo(PointerTo<T> &&from) noexcept :
-  PointerToBase<T>(move(from))
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -168,7 +168,7 @@ ConstPointerTo(PointerTo<T> &&from) noexcept :
 template<class T>
 INLINE ConstPointerTo<T>::
 ConstPointerTo(ConstPointerTo<T> &&from) noexcept :
-  PointerToBase<T>(move(from))
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -178,7 +178,7 @@ ConstPointerTo(ConstPointerTo<T> &&from) noexcept :
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
 operator = (PointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 
@@ -188,7 +188,7 @@ operator = (PointerTo<T> &&from) noexcept {
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
 operator = (ConstPointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 

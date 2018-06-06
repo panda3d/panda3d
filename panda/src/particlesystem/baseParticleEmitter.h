@@ -49,8 +49,8 @@ PUBLISHED:
   INLINE LVector3 get_explicit_launch_vector() const;
   INLINE LPoint3 get_radiate_origin() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   BaseParticleEmitter();
