@@ -376,6 +376,22 @@ class FSM(DirectObject):
                 # accept it.
                 return (request,) + args
 
+            elif '*' in self.defaultTransitions.get(self.state, []):
+                # Whenever we have a '*' as our to transition, we allow
+                # to transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get('*', []):
+                # If the requested state is in the default transitions
+                # from any state list, we also alow to transit to the
+                # new state
+                return (request,) + args
+
+            elif '*' in self.defaultTransitions.get('*', []):
+                # This is like we had set the defaultTransitions to None.
+                # Any state can transit to any other state
+                return (request,) + args
+
             # If self.defaultTransitions is not None, it is an error
             # to request a direct state transition (capital letter
             # request) not listed in defaultTransitions and not
