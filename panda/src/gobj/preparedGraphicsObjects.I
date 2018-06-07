@@ -49,6 +49,21 @@ release_all() {
 }
 
 /**
+ * Releases all prepared objects of all kinds at once, immediately.  This
+ * assumes that the GraphicsStateGuardian is currently active on this thread
+ * and in a state ready to accept releases.
+ *
+ * In most cases, you will simply want to call release_all() instead, which
+ * waits until the beginning of the next frame to process the releases.
+ */
+INLINE void PreparedGraphicsObjects::
+release_all_now(GraphicsStateGuardianBase *gsg) {
+  ReMutexHolder holder(_lock);
+  release_all();
+  do_release_now(gsg);
+}
+
+/**
  * Returns the number of objects of any kind that have been enqueued to be
  * prepared on this GSG.
  */

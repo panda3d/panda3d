@@ -69,6 +69,7 @@ PUBLISHED:
   void show_residency_trackers(ostream &out) const;
 
   INLINE void release_all();
+  INLINE void release_all_now(GraphicsStateGuardianBase *gsg);
   INLINE int get_num_queued() const;
   INLINE int get_num_prepared() const;
 
@@ -215,6 +216,8 @@ public:
   void end_frame(Thread *current_thread);
 
 private:
+  void do_release_now(GraphicsStateGuardianBase *gsg);
+
   static string init_name();
 
 private:

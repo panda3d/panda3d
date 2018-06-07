@@ -1504,69 +1504,7 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   ReMutexHolder holder(_lock, current_thread);
 
   // First, release all the textures, geoms, and buffers awaiting release.
-  if (!_released_textures.empty()) {
-    Textures::iterator tci;
-    for (tci = _released_textures.begin();
-         tci != _released_textures.end();
-         ++tci) {
-      TextureContext *tc = (*tci);
-      gsg->release_texture(tc);
-    }
-
-    _released_textures.clear();
-  }
-
-  if (!_released_samplers.empty()) {
-    ReleasedSamplers::iterator sci;
-    for (sci = _released_samplers.begin();
-         sci != _released_samplers.end();
-         ++sci) {
-      SamplerContext *sc = (*sci);
-      gsg->release_sampler(sc);
-    }
-
-    _released_samplers.clear();
-  }
-
-  Geoms::iterator gci;
-  for (gci = _released_geoms.begin();
-       gci != _released_geoms.end();
-       ++gci) {
-    GeomContext *gc = (*gci);
-    gsg->release_geom(gc);
-  }
-
-  _released_geoms.clear();
-
-  Shaders::iterator sci;
-  for (sci = _released_shaders.begin();
-       sci != _released_shaders.end();
-       ++sci) {
-    ShaderContext *sc = (*sci);
-    gsg->release_shader(sc);
-  }
-
-  _released_shaders.clear();
-
-  Buffers::iterator vbci;
-  for (vbci = _released_vertex_buffers.begin();
-       vbci != _released_vertex_buffers.end();
-       ++vbci) {
-    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
-    gsg->release_vertex_buffer(vbc);
-  }
-
-  _released_vertex_buffers.clear();
-
-  Buffers::iterator ibci;
-  for (ibci = _released_index_buffers.begin();
-       ibci != _released_index_buffers.end();
-       ++ibci) {
-    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
-    gsg->release_index_buffer(ibc);
-  }
-
-  _released_index_buffers.clear();
+  do_release_now(gsg);
 
   // Reset the residency trackers.
   _texture_residency.begin_frame(current_thread);
@@ -1663,6 +1601,77 @@ end_frame(Thread *current_thread) {
   _vbuffer_residency.end_frame(current_thread);
   _ibuffer_residency.end_frame(current_thread);
   _sbuffer_residency.end_frame(current_thread);
+}
+
+/**
+ * Asks the GraphicsStateGuardian to release all contexts that are pending
+ * release.  Assumes the lock is held.
+ */
+void PreparedGraphicsObjects::
+do_release_now(GraphicsStateGuardianBase *gsg) {
+  if (!_released_textures.empty()) {
+    Textures::iterator tci;
+    for (tci = _released_textures.begin();
+         tci != _released_textures.end();
+         ++tci) {
+      TextureContext *tc = (*tci);
+      gsg->release_texture(tc);
+    }
+
+    _released_textures.clear();
+  }
+
+  if (!_released_samplers.empty()) {
+    ReleasedSamplers::iterator sci;
+    for (sci = _released_samplers.begin();
+         sci != _released_samplers.end();
+         ++sci) {
+      SamplerContext *sc = (*sci);
+      gsg->release_sampler(sc);
+    }
+
+    _released_samplers.clear();
+  }
+
+  Geoms::iterator gci;
+  for (gci = _released_geoms.begin();
+       gci != _released_geoms.end();
+       ++gci) {
+    GeomContext *gc = (*gci);
+    gsg->release_geom(gc);
+  }
+
+  _released_geoms.clear();
+
+  Shaders::iterator sci;
+  for (sci = _released_shaders.begin();
+       sci != _released_shaders.end();
+       ++sci) {
+    ShaderContext *sc = (*sci);
+    gsg->release_shader(sc);
+  }
+
+  _released_shaders.clear();
+
+  Buffers::iterator vbci;
+  for (vbci = _released_vertex_buffers.begin();
+       vbci != _released_vertex_buffers.end();
+       ++vbci) {
+    VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
+    gsg->release_vertex_buffer(vbc);
+  }
+
+  _released_vertex_buffers.clear();
+
+  Buffers::iterator ibci;
+  for (ibci = _released_index_buffers.begin();
+       ibci != _released_index_buffers.end();
+       ++ibci) {
+    IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
+    gsg->release_index_buffer(ibc);
+  }
+
+  _released_index_buffers.clear();
 }
 
 /**
