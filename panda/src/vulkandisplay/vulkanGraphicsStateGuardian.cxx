@@ -305,6 +305,37 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
  */
 VulkanGraphicsStateGuardian::
 ~VulkanGraphicsStateGuardian() {
+  // Remove the things we created in the constructor, in reverse order.
+  vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
+  vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
+  vkDestroyPipelineLayout(_device, _pipeline_layout, nullptr);
+  vkDestroyDescriptorSetLayout(_device, _descriptor_set_layout, nullptr);
+  vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
+  vkDestroyCommandPool(_device, _cmd_pool, nullptr);
+  vkDestroyFence(_device, _fence, nullptr);
+  vkDestroyDevice(_device, nullptr);
+}
+
+/**
+ * This is called by the associated GraphicsWindow when close_window() is
+ * called.  It should null out the _win pointer and possibly free any open
+ * resources associated with the GSG.
+ */
+void VulkanGraphicsStateGuardian::
+close_gsg() {
+  // Make sure it's no longer doing anything before we destroy it.
+  vkDeviceWaitIdle(_device);
+
+  // We need to release all prepared resources, since the upcall to close_gsg
+  // will cause the PreparedGraphicsObjects to be cleared out.
+  {
+    PT(PreparedGraphicsObjects) pgo = std::move(_prepared_objects);
+    if (pgo != nullptr) {
+      pgo->release_all_now(this);
+    }
+  }
+
+  GraphicsStateGuardian::close_gsg();
 }
 
 /**
@@ -357,8 +388,6 @@ get_driver_version() {
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
-  nassertr(_transfer_cmd != VK_NULL_HANDLE, nullptr);
-
   PStatTimer timer(_prepare_texture_pcollector);
 
   VulkanGraphicsPipe *vkpipe;
@@ -954,7 +983,31 @@ update_texture(TextureContext *tc, bool force) {
  * including deleting the TextureContext itself, if it is non-NULL.
  */
 void VulkanGraphicsStateGuardian::
-release_texture(TextureContext *) {
+release_texture(TextureContext *tc) {
+  // This is called during begin_frame, after the fence has been waited upon,
+  // so we know that any command buffers using this have finished executing.
+  VulkanTextureContext *vtc;
+  DCAST_INTO_V(vtc, tc);
+
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Deleting image " << vtc->_image << " and view " << vtc->_image_view << "\n";
+  }
+
+  if (vtc->_image_view != VK_NULL_HANDLE) {
+    vkDestroyImageView(_device, vtc->_image_view, nullptr);
+    vtc->_image_view = VK_NULL_HANDLE;
+  }
+  if (vtc->_image != VK_NULL_HANDLE) {
+    vkDestroyImage(_device, vtc->_image, nullptr);
+    vtc->_image = VK_NULL_HANDLE;
+  }
+  if (vtc->_memory != VK_NULL_HANDLE) {
+    vkFreeMemory(_device, vtc->_memory, nullptr);
+    vtc->_memory = VK_NULL_HANDLE;
+  }
+
+  delete vtc;
 }
 
 /**
@@ -1050,7 +1103,18 @@ prepare_sampler(const SamplerState &sampler) {
  * including deleting the SamplerContext itself, if it is non-NULL.
  */
 void VulkanGraphicsStateGuardian::
-release_sampler(SamplerContext *) {
+release_sampler(SamplerContext *sc) {
+  // This is called during begin_frame, after the fence has been waited upon,
+  // so we know that any command buffers using this have finished executing.
+  VulkanSamplerContext *vsc;
+  DCAST_INTO_V(vsc, sc);
+
+  if (vsc->_sampler != VK_NULL_HANDLE) {
+    vkDestroySampler(_device, vsc->_sampler, nullptr);
+    vsc->_sampler = VK_NULL_HANDLE;
+  }
+
+  delete vsc;
 }
 
 /**
@@ -1121,6 +1185,8 @@ release_shader(ShaderContext *context) {
   VulkanShaderContext *sc;
   DCAST_INTO_V(sc, context);
 
+  // According to the Vulkan spec, it is safe to delete a shader module even
+  // if pipelines using it are still in use, so let's do it now.
   if (sc->_modules[0] != VK_NULL_HANDLE) {
     vkDestroyShaderModule(_device, sc->_modules[0], nullptr);
     sc->_modules[0] = VK_NULL_HANDLE;
@@ -1211,6 +1277,8 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
  */
 void VulkanGraphicsStateGuardian::
 release_vertex_buffer(VertexBufferContext *context) {
+  // This is called during begin_frame, after the fence has been waited upon,
+  // so we know that any command buffers using this have finished executing.
   VulkanVertexBufferContext *vbc;
   DCAST_INTO_V(vbc, context);
 
@@ -1346,6 +1414,8 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
  */
 void VulkanGraphicsStateGuardian::
 release_index_buffer(IndexBufferContext *context) {
+  // This is called during begin_frame, after the fence has been waited upon,
+  // so we know that any command buffers using this have finished executing.
   VulkanIndexBufferContext *ibc;
   DCAST_INTO_V(ibc, context);
 
@@ -1556,6 +1626,8 @@ prepare_lens() {
  */
 bool VulkanGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
+  nassertr_always(!_closing_gsg, false);
+
   VkResult err;
 
   {
@@ -1564,6 +1636,8 @@ begin_frame(Thread *current_thread) {
     // Make sure that the previous command buffer is done executing, so that
     // we don't update or delete resources while they're still being used.
     // We should probably come up with a better mechanism for this.
+    //NB: if we remove this, we also need to change the code in release_xxx in
+    // order not to delete resources that are still being used.
     err = vkWaitForFences(_device, 1, &_fence, VK_TRUE, 1000000000ULL);
     if (err == VK_TIMEOUT) {
       vulkandisplay_cat.error()
@@ -1942,6 +2016,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   // You're not allowed to call this while a render pass is active.
   nassertr(_render_pass == VK_NULL_HANDLE, false);
+  nassertr(!_closing_gsg, false);
 
   nassertr(_fb_color_tc != nullptr, false);
   VulkanTextureContext *fbtc = _fb_color_tc;
@@ -2018,6 +2093,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   // You're not allowed to call this while a render pass is active.
   nassertr(_render_pass == VK_NULL_HANDLE, false);
+  nassertr(!_closing_gsg, false);
 
   nassertr(_fb_color_tc != nullptr, false);
   VulkanTextureContext *fbtc = _fb_color_tc;

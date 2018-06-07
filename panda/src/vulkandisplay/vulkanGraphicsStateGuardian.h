@@ -32,6 +32,8 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
+  virtual void close_gsg();
+
   virtual std::string get_driver_vendor();
   virtual std::string get_driver_renderer();
   virtual std::string get_driver_version();
