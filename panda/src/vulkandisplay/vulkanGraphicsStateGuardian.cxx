@@ -46,6 +46,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _cmd(VK_NULL_HANDLE),
   _transfer_cmd(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
+  _wait_semaphore(VK_NULL_HANDLE),
+  _signal_semaphore(VK_NULL_HANDLE),
   _pipeline_cache(VK_NULL_HANDLE),
   _pipeline_layout(VK_NULL_HANDLE),
   _default_sc(nullptr)
@@ -1809,12 +1811,30 @@ end_frame(Thread *current_thread) {
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = nullptr;
 
+  if (_wait_semaphore != VK_NULL_HANDLE) {
+    // We may need to wait until the attachments are available for writing.
+    static const VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitSemaphores = &_wait_semaphore;
+    submit_info.pWaitDstStageMask = &flags;
+  }
+
+  if (_signal_semaphore != VK_NULL_HANDLE) {
+    // And we were asked to signal a semaphore when we are done rendering.
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &_signal_semaphore;
+  }
+
   VkResult err;
   err = vkQueueSubmit(_queue, 1, &submit_info, _fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
     return;
   }
+
+  // We're done with these for now.
+  _wait_semaphore = VK_NULL_HANDLE;
+  _signal_semaphore = VK_NULL_HANDLE;
 
   // If we queued up texture downloads, wait for the queue to finish (slow!)
   // and then copy the data from Vulkan host memory to Panda memory.

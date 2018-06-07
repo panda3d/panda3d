@@ -200,6 +200,8 @@ private:
   VkRenderPass _render_pass;
   VulkanTextureContext *_fb_color_tc;
   VulkanTextureContext *_fb_depth_tc;
+  VkSemaphore _wait_semaphore;
+  VkSemaphore _signal_semaphore;
 
   // Palette for flat colors.
   VkBuffer _color_vertex_buffer;

@@ -31,7 +31,8 @@ VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _surface(VK_NULL_HANDLE),
   _swapchain(VK_NULL_HANDLE),
   _render_pass(VK_NULL_HANDLE),
-  _present_complete(VK_NULL_HANDLE),
+  _image_available(VK_NULL_HANDLE),
+  _render_complete(VK_NULL_HANDLE),
   _current_clear_mask(-1),
   _depth_stencil_tc(nullptr),
   _image_index(0)
@@ -129,22 +130,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return true;
   }
 
-  VkSemaphoreCreateInfo semaphore_info;
-  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  semaphore_info.pNext = nullptr;
-  semaphore_info.flags = 0;
-
-  VkResult err;
-  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info,
-                          nullptr, &_present_complete);
-  nassertr(err == 0, false);
-
-  if (mode == FM_render) {
-    err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
-                                _present_complete, (VkFence)0, &_image_index);
-
-    nassertr(_image_index < _swap_buffers.size(), false);
-  }
+  nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
   /*if (mode == FM_render) {
@@ -227,6 +213,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   vkgsg->_render_pass = _render_pass;
   vkgsg->_fb_color_tc = buffer._tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
+  vkgsg->_wait_semaphore = _image_available;
+  vkgsg->_signal_semaphore = _render_complete;
 
   return true;
 }
@@ -243,34 +231,34 @@ end_frame(FrameMode mode, Thread *current_thread) {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
 
-  if (mode == FM_render) {
-    VkCommandBuffer cmd = vkgsg->_cmd;
-    nassertv(cmd != VK_NULL_HANDLE);
+  VkCommandBuffer cmd = vkgsg->_cmd;
+  nassertv(cmd != VK_NULL_HANDLE);
+  SwapBuffer &buffer = _swap_buffers[_image_index];
 
+  if (mode == FM_render) {
     vkCmdEndRenderPass(cmd);
     vkgsg->_render_pass = VK_NULL_HANDLE;
 
     // The driver implicitly transitioned this to the final layout.
-    SwapBuffer &buffer = _swap_buffers[_image_index];
     buffer._tc->_layout = _final_layout;
     buffer._tc->_access_mask = VK_ACCESS_MEMORY_READ_BIT;
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
-
-    // If we copied the textures, transition it back to the present state.
-    buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                           VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                           VK_ACCESS_MEMORY_READ_BIT);
   }
 
-  // Note: this will close the command buffer.
+  // If we copied the textures, transition it back to the present state.
+  buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
+                         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         VK_ACCESS_MEMORY_READ_BIT);
+
+  // Note: this will close the command buffer, and unsignal the previous
+  // frame's semaphore.
   vkgsg->end_frame(current_thread);
 
   if (mode == FM_render) {
-    nassertv(_present_complete != VK_NULL_HANDLE);
-    trigger_flip();
+    _flip_ready = true;
     clear_cube_map_selection();
   }
 }
@@ -288,6 +276,36 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void VulkanGraphicsWindow::
 begin_flip() {
+  VulkanGraphicsStateGuardian *vkgsg;
+  DCAST_INTO_V(vkgsg, _gsg);
+  VkDevice device = vkgsg->_device;
+  VkQueue queue = vkgsg->_queue;
+  VkResult err;
+
+  SwapBuffer &buffer = _swap_buffers[_image_index];
+
+  VkResult results[1];
+  VkPresentInfoKHR present;
+  present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  present.pNext = nullptr;
+  present.waitSemaphoreCount = 1;
+  present.pWaitSemaphores = &_render_complete;
+  present.swapchainCount = 1;
+  present.pSwapchains = &_swapchain;
+  present.pImageIndices = &_image_index;
+  present.pResults = results;
+
+  err = vkQueuePresentKHR(queue, &present);
+  if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+    cerr << "out of date.\n";
+
+  } else if (err == VK_SUBOPTIMAL_KHR) {
+    cerr << "suboptimal.\n";
+
+  } else if (err != VK_SUCCESS) {
+    vulkan_error(err, "Error presenting queue");
+    return;
+  }
 }
 
 /**
@@ -316,47 +334,21 @@ void VulkanGraphicsWindow::
 end_flip() {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
-  VkDevice device = vkgsg->_device;
-  VkQueue queue = vkgsg->_queue;
-  VkResult err;
 
-  SwapBuffer &buffer = _swap_buffers[_image_index];
+  // Get a new image for rendering into.  This may wait until a new image is
+  // available.
+  VkResult
+  err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
+                              _image_available, VK_NULL_HANDLE, &_image_index);
+  nassertv(err == VK_SUCCESS);
 
-  // Make sure it is in the state we expect it to be.
-  nassertv(buffer._tc->_layout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-  VkResult results[1];
-  VkPresentInfoKHR present;
-  present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-  present.pNext = nullptr;
-  present.waitSemaphoreCount = 0;
-  present.pWaitSemaphores = nullptr;
-  //present.waitSemaphoreCount = 1;
-  //present.pWaitSemaphores = &_present_complete;
-  present.swapchainCount = 1;
-  present.pSwapchains = &_swapchain;
-  present.pImageIndices = &_image_index;
-  present.pResults = results;
-
-  err = vkQueuePresentKHR(queue, &present);
-  if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-    cerr << "out of date.\n";
-
-  } else if (err == VK_SUBOPTIMAL_KHR) {
-    cerr << "suboptimal.\n";
-
-  } else if (err != VK_SUCCESS) {
-    vulkan_error(err, "Error presenting queue");
-    return;
+  if (vulkandisplay_cat.is_spam()) {
+    vulkandisplay_cat.spam()
+      << "Acquired image " << _image_index << " from swapchain\n";
   }
 
-  // Should we really wait for the present to be done?  Seems like a waste of
-  // precious frame time.
-  err = vkQueueWaitIdle(queue);
-  assert(err == VK_SUCCESS);
-
-  vkDestroySemaphore(vkgsg->_device, _present_complete, nullptr);
-  _present_complete = VK_NULL_HANDLE;
+  // Don't flip again until we've rendered another frame.
+  _flip_ready = false;
 }
 
 /**
@@ -998,6 +990,32 @@ create_swapchain() {
       vulkan_error(err, "Failed to create framebuffer");
       return false;
     }
+  }
+
+  // Create a semaphore for signalling the availability of an image.
+  // It will be signalled in end_flip() and waited upon before submitting the
+  // command buffers that use that image for rendering to.
+  VkSemaphoreCreateInfo semaphore_info = {};
+  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info,
+                          nullptr, &_image_available);
+  nassertr(err == VK_SUCCESS, false);
+
+  // Now create another one that is signalled when we are finished rendering,
+  // to indicate that it is safe to present the image.
+  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info,
+                          nullptr, &_render_complete);
+  nassertr(err == VK_SUCCESS, false);
+
+  // We need to acquire an image before we continue rendering.
+  _image_index = 0;
+  _flip_ready = false;
+  err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
+                              _image_available, VK_NULL_HANDLE, &_image_index);
+  if (err) {
+    vulkan_error(err, "Failed to acquire swapchain image");
+    return false;
   }
 
   return true;

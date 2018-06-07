@@ -64,8 +64,11 @@ private:
   VkSurfaceKHR _surface;
   VkSwapchainKHR _swapchain;
   VkRenderPass _render_pass;
-  VkSemaphore _present_complete;
   int _current_clear_mask;
+
+  // We'll need these to synchronize the rendering with the presentation.
+  VkSemaphore _render_complete;
+  VkSemaphore _image_available;
 
   LVecBase2i _swapchain_size;
   VkSurfaceFormatKHR _surface_format;
