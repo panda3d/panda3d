@@ -31,7 +31,7 @@
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS IDecompressStream : public std::istream {
+class EXPCL_PANDA_EXPRESS IDecompressStream : public std::istream {
 PUBLISHED:
   INLINE IDecompressStream();
   INLINE explicit IDecompressStream(std::istream *source, bool owns_source);
@@ -57,7 +57,7 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS OCompressStream : public std::ostream {
+class EXPCL_PANDA_EXPRESS OCompressStream : public std::ostream {
 PUBLISHED:
   INLINE OCompressStream();
   INLINE explicit OCompressStream(std::ostream *dest, bool owns_dest,

@@ -33,7 +33,7 @@ class URLSpec;
  * in the past, which can possibly be re-used for future requests to the same
  * server.
  */
-class EXPCL_PANDAEXPRESS HTTPAuthorization : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER HTTPAuthorization : public ReferenceCount {
 public:
   typedef pmap<std::string, std::string> Tokens;
   typedef pmap<std::string, Tokens> AuthenticationSchemes;

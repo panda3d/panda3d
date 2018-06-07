@@ -32,7 +32,7 @@
  * Multifile.  Call run() whenever you have spare cycles until run() returns
  * EU_success.
  */
-class EXPCL_PANDAEXPRESS Extractor {
+class EXPCL_PANDA_DOWNLOADER Extractor {
 PUBLISHED:
   Extractor();
   ~Extractor();

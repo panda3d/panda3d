@@ -20,7 +20,7 @@
 /**
  * The streambuf object that implements ISubStream.
  */
-class EXPCL_PANDAEXPRESS SubStreamBuf : public std::streambuf {
+class EXPCL_PANDA_EXPRESS SubStreamBuf : public std::streambuf {
 public:
   SubStreamBuf();
   virtual ~SubStreamBuf();

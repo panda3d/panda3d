@@ -28,7 +28,7 @@
 /**
  * Maps a web page (URL root) into the VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountHTTP : public VirtualFileMount {
+class EXPCL_PANDA_DOWNLOADER VirtualFileMountHTTP : public VirtualFileMount {
 PUBLISHED:
   explicit VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
   virtual ~VirtualFileMountHTTP();

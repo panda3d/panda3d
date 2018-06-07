@@ -26,7 +26,7 @@ class WeakPointerCallback;
  * object is created, and can outlive the object until all weak references
  * have disappeared.
  */
-class EXPCL_PANDAEXPRESS WeakReferenceList {
+class EXPCL_PANDA_EXPRESS WeakReferenceList {
 public:
   WeakReferenceList();
   ~WeakReferenceList();

@@ -17,7 +17,7 @@
 #include "pandabase.h"
 
 BEGIN_PUBLISH
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 copy_stream(std::istream &source, std::ostream &dest);
 END_PUBLISH
 

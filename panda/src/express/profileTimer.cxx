@@ -16,7 +16,7 @@
 // See ProfileTimer.h for documentation.
 
 
-EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
+EXPCL_PANDA_EXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
 
 ProfileTimer* ProfileTimer::_head;
 

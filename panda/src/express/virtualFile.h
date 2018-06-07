@@ -32,7 +32,7 @@ class VirtualFileSystem;
  * The abstract base class for a file or directory within the
  * VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFile : public TypedReferenceCount {
+class EXPCL_PANDA_EXPRESS VirtualFile : public TypedReferenceCount {
 public:
   INLINE VirtualFile();
 

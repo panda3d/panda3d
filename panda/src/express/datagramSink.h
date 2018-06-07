@@ -26,7 +26,7 @@ class Filename;
  * This class defines the abstract interface to sending datagrams to any
  * target, whether it be into a file or across the net
  */
-class EXPCL_PANDAEXPRESS DatagramSink {
+class EXPCL_PANDA_EXPRESS DatagramSink {
 PUBLISHED:
   INLINE DatagramSink();
   virtual ~DatagramSink();

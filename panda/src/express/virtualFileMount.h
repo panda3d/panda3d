@@ -28,7 +28,7 @@ class VirtualFileSystem;
  * VirtualFileSystem.  Normally users don't need to monkey with this class
  * directly.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedReferenceCount {
+class EXPCL_PANDA_EXPRESS VirtualFileMount : public TypedReferenceCount {
 PUBLISHED:
   INLINE VirtualFileMount();
   virtual ~VirtualFileMount();

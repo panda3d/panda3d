@@ -24,7 +24,7 @@
  * Datagram.  Elements may be retrieved one at a time; it is up to the caller
  * to know the correct type and order of each element.
  */
-class EXPCL_PANDAEXPRESS DatagramIterator {
+class EXPCL_PANDA_EXPRESS DatagramIterator {
 public:
   INLINE void assign(Datagram &datagram, size_t offset = 0);
 

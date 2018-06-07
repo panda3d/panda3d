@@ -34,7 +34,7 @@ typedef struct evp_pkey_st EVP_PKEY;
 /**
  * A file that contains a set of files.
  */
-class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();
   Multifile(const Multifile &copy) = delete;

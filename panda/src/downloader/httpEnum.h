@@ -26,7 +26,7 @@
  * This class is just used as a namespace wrapper for some of the enumerated
  * types used by various classes within the HTTPClient family.
  */
-class EXPCL_PANDAEXPRESS HTTPEnum {
+class EXPCL_PANDA_DOWNLOADER HTTPEnum {
 PUBLISHED:
   enum HTTPVersion {
     HV_09,  // HTTP 0.9 or older

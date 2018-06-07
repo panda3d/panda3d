@@ -23,7 +23,7 @@
  * exactly one file on one mount point.  Most directories, and all regular
  * files, are of this kind.
  */
-class EXPCL_PANDAEXPRESS VirtualFileSimple : public VirtualFile {
+class EXPCL_PANDA_EXPRESS VirtualFileSimple : public VirtualFile {
 public:
   INLINE VirtualFileSimple(VirtualFileMount *mount,
                            const Filename &local_filename,

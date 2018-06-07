@@ -27,7 +27,7 @@ class VirtualFile;
  * This class defines the abstract interace to any source of datagrams,
  * whether it be from a file or from the net.
  */
-class EXPCL_PANDAEXPRESS DatagramGenerator {
+class EXPCL_PANDA_EXPRESS DatagramGenerator {
 PUBLISHED:
   INLINE DatagramGenerator();
   virtual ~DatagramGenerator();

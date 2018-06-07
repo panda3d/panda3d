@@ -27,7 +27,7 @@
 /**
  * Maps a Multifile's contents into the VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
+class EXPCL_PANDA_EXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountAndroidAsset(AAssetManager *mgr, const std::string &apk_path);
   virtual ~VirtualFileMountAndroidAsset();

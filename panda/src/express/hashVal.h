@@ -27,7 +27,7 @@
  * Stores a 128-bit value that represents the hashed contents (typically MD5)
  * of a file or buffer.
  */
-class EXPCL_PANDAEXPRESS HashVal {
+class EXPCL_PANDA_EXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();
   INLINE HashVal(const HashVal &copy);

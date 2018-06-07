@@ -27,7 +27,7 @@
  * The DocumentSpec may also be used to request a newer document than a
  * particular one if available, for instance to refresh a cached document.
  */
-class EXPCL_PANDAEXPRESS DocumentSpec {
+class EXPCL_PANDA_DOWNLOADER DocumentSpec {
 PUBLISHED:
   INLINE DocumentSpec();
   INLINE DocumentSpec(const std::string &url);

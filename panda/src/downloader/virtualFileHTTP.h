@@ -29,7 +29,7 @@ class VirtualFileMountHTTP;
  * VirtualFileSystem, allowing models etc.  to be loaded directly from a web
  * page.
  */
-class EXPCL_PANDAEXPRESS VirtualFileHTTP : public VirtualFile {
+class EXPCL_PANDA_DOWNLOADER VirtualFileHTTP : public VirtualFile {
 public:
   VirtualFileHTTP(VirtualFileMountHTTP *mount,
                   const Filename &local_filename,

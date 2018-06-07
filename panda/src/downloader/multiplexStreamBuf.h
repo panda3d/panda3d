@@ -24,7 +24,7 @@
  * Used by MultiplexStream to implement an ostream that sends what is written
  * to it to any number of additional sources, like other ostreams.
  */
-class EXPCL_PANDAEXPRESS MultiplexStreamBuf : public std::streambuf {
+class EXPCL_PANDA_DOWNLOADER MultiplexStreamBuf : public std::streambuf {
 public:
   MultiplexStreamBuf();
   virtual ~MultiplexStreamBuf();

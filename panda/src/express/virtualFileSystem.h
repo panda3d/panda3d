@@ -37,7 +37,7 @@ class VirtualFileComposite;
  * For instance, a VirtualFileSystem can transparently mount one or more
  * Multifiles as their own subdirectory hierarchies.
  */
-class EXPCL_PANDAEXPRESS VirtualFileSystem {
+class EXPCL_PANDA_EXPRESS VirtualFileSystem {
 PUBLISHED:
   VirtualFileSystem();
   ~VirtualFileSystem();

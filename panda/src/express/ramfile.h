@@ -22,7 +22,7 @@
 /**
  * An in-memory buffer specifically designed for downloading files to memory.
  */
-class EXPCL_PANDAEXPRESS Ramfile {
+class EXPCL_PANDA_EXPRESS Ramfile {
 PUBLISHED:
   INLINE Ramfile();
 

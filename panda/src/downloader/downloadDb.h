@@ -59,7 +59,7 @@ MultifileRecord is a Vector<FileRecord>
  * the files on the client system, and another copy for the server,
  * representing the files the server has available.
  */
-class EXPCL_PANDAEXPRESS DownloadDb {
+class EXPCL_PANDA_DOWNLOADER DownloadDb {
 PUBLISHED:
   // Status of a multifile is stored in this enum Note these values are in
   // increasing order of "doneness" So if you are decompressed, you are
@@ -131,7 +131,7 @@ PUBLISHED:
 
 public:
 
-  class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
+  class EXPCL_PANDA_DOWNLOADER FileRecord : public ReferenceCount {
   public:
     FileRecord();
     FileRecord(std::string name);
@@ -141,7 +141,7 @@ public:
 
   typedef pvector< PT(FileRecord) > FileRecords;
 
-  class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
+  class EXPCL_PANDA_DOWNLOADER MultifileRecord : public ReferenceCount {
   public:
     MultifileRecord();
     MultifileRecord(std::string name, Phase phase, int size, int status);
@@ -162,7 +162,7 @@ public:
 
   typedef pvector< PT(MultifileRecord) > MultifileRecords;
 
-  class EXPCL_PANDAEXPRESS Db {
+  class EXPCL_PANDA_DOWNLOADER Db {
   public:
     Db();
     void write(std::ostream &out) const;

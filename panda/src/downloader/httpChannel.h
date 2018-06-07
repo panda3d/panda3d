@@ -51,7 +51,7 @@ class HTTPClient;
  * requested from the same HTTPChannel until the first document has been fully
  * retrieved.
  */
-class EXPCL_PANDAEXPRESS HTTPChannel : public TypedReferenceCount {
+class EXPCL_PANDA_DOWNLOADER HTTPChannel : public TypedReferenceCount {
 private:
   HTTPChannel(HTTPClient *client);
 

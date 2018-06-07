@@ -24,7 +24,7 @@
  * conversely, it can accept a time_t value and encode it for output as a
  * string.
  */
-class EXPCL_PANDAEXPRESS HTTPDate {
+class EXPCL_PANDA_DOWNLOADER HTTPDate {
 PUBLISHED:
   INLINE HTTPDate();
   INLINE HTTPDate(time_t time);

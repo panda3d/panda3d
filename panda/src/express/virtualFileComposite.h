@@ -23,7 +23,7 @@
  * one directory on different mount points.  The resulting directory appears
  * to be the union of all the individual simple directories.
  */
-class EXPCL_PANDAEXPRESS VirtualFileComposite : public VirtualFile {
+class EXPCL_PANDA_EXPRESS VirtualFileComposite : public VirtualFile {
 public:
   INLINE VirtualFileComposite(VirtualFileSystem *file_system,
                               const Filename &filename);
