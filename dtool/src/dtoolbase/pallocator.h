@@ -44,15 +44,15 @@ using std::allocator;
 #else
 
 template<class Type>
-class pallocator_single : public allocator<Type> {
+class pallocator_single : public std::allocator<Type> {
 public:
   // Nowadays we cannot implicitly inherit typedefs from base classes in a
   // template class; we must explicitly copy them here.
-  typedef typename allocator<Type>::pointer pointer;
-  typedef typename allocator<Type>::reference reference;
-  typedef typename allocator<Type>::const_pointer const_pointer;
-  typedef typename allocator<Type>::const_reference const_reference;
-  typedef typename allocator<Type>::size_type size_type;
+  typedef typename std::allocator<Type>::pointer pointer;
+  typedef typename std::allocator<Type>::reference reference;
+  typedef typename std::allocator<Type>::const_pointer const_pointer;
+  typedef typename std::allocator<Type>::const_reference const_reference;
+  typedef typename std::allocator<Type>::size_type size_type;
 
   INLINE pallocator_single(TypeHandle type_handle) noexcept;
 
@@ -61,7 +61,7 @@ public:
   INLINE pallocator_single(const pallocator_single<U> &copy) noexcept :
     _type_handle(copy._type_handle) { }
 
-  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+  INLINE Type *allocate(size_type n, std::allocator<void>::const_pointer hint = 0)
     RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 
@@ -73,15 +73,15 @@ public:
 };
 
 template<class Type>
-class pallocator_array : public allocator<Type> {
+class pallocator_array : public std::allocator<Type> {
 public:
   // Nowadays we cannot implicitly inherit typedefs from base classes in a
   // template class; we must explicitly copy them here.
-  typedef typename allocator<Type>::pointer pointer;
-  typedef typename allocator<Type>::reference reference;
-  typedef typename allocator<Type>::const_pointer const_pointer;
-  typedef typename allocator<Type>::const_reference const_reference;
-  typedef typename allocator<Type>::size_type size_type;
+  typedef typename std::allocator<Type>::pointer pointer;
+  typedef typename std::allocator<Type>::reference reference;
+  typedef typename std::allocator<Type>::const_pointer const_pointer;
+  typedef typename std::allocator<Type>::const_reference const_reference;
+  typedef typename std::allocator<Type>::size_type size_type;
 
   INLINE pallocator_array(TypeHandle type_handle = TypeHandle::none()) noexcept;
 
@@ -90,7 +90,7 @@ public:
   INLINE pallocator_array(const pallocator_array<U> &copy) noexcept :
     _type_handle(copy._type_handle) { }
 
-  INLINE Type *allocate(size_type n, allocator<void>::const_pointer hint = 0)
+  INLINE Type *allocate(size_type n, std::allocator<void>::const_pointer hint = 0)
     RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   INLINE void deallocate(pointer p, size_type n);
 

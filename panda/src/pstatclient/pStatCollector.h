@@ -50,18 +50,18 @@ public:
   INLINE PStatCollector();
 
 PUBLISHED:
-  INLINE explicit PStatCollector(const string &name,
+  INLINE explicit PStatCollector(const std::string &name,
                                  PStatClient *client = nullptr);
   INLINE explicit PStatCollector(const PStatCollector &parent,
-                                 const string &name);
+                                 const std::string &name);
 
   INLINE PStatCollector(const PStatCollector &copy);
   INLINE void operator = (const PStatCollector &copy);
 
   INLINE bool is_valid() const;
-  INLINE string get_name() const;
-  INLINE string get_fullname() const;
-  INLINE void output(ostream &out) const;
+  INLINE std::string get_name() const;
+  INLINE std::string get_fullname() const;
+  INLINE void output(std::ostream &out) const;
 
   INLINE bool is_active();
   INLINE bool is_started();
@@ -110,10 +110,10 @@ public:
   INLINE PStatCollector();
 
 PUBLISHED:
-  INLINE PStatCollector(const string &name,
+  INLINE PStatCollector(const std::string &name,
                         PStatClient *client = nullptr);
   INLINE PStatCollector(const PStatCollector &parent,
-                        const string &name);
+                        const std::string &name);
 
   INLINE bool is_active() { return false; }
   INLINE bool is_started() { return false; }
@@ -148,7 +148,7 @@ PUBLISHED:
 
 #include "pStatCollector.I"
 
-inline ostream &operator << (ostream &out, const PStatCollector &pcol) {
+inline std::ostream &operator << (std::ostream &out, const PStatCollector &pcol) {
 #ifdef DO_PSTATS
   pcol.output(out);
 #endif  // DO_PSTATS

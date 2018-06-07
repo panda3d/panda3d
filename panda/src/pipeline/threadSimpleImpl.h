@@ -54,7 +54,7 @@ public:
   void join();
   void preempt();
 
-  string get_unique_id() const;
+  std::string get_unique_id() const;
 
   static void prepare_for_exit();
 
@@ -75,7 +75,7 @@ public:
 
   INLINE double get_wake_time() const;
 
-  INLINE static void write_status(ostream &out);
+  INLINE static void write_status(std::ostream &out);
 
 private:
   static void st_begin_thread(void *data);

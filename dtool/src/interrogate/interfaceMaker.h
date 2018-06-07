@@ -51,12 +51,12 @@ public:
 
   virtual void generate_wrappers();
 
-  virtual void write_includes(ostream &out);
-  virtual void write_prototypes(ostream &out, ostream *out_h);
-  virtual void write_functions(ostream &out);
-  virtual void write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {};
+  virtual void write_includes(std::ostream &out);
+  virtual void write_prototypes(std::ostream &out, std::ostream *out_h);
+  virtual void write_functions(std::ostream &out);
+  virtual void write_module_support(std::ostream &out, std::ostream *out_h, InterrogateModuleDef *def) {};
 
-  virtual void write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def);
+  virtual void write_module(std::ostream &out, std::ostream *out_h, InterrogateModuleDef *def);
 
   virtual ParameterRemap *remap_parameter(CPPType *struct_type, CPPType *param_type);
 
@@ -66,7 +66,7 @@ public:
 
   void get_function_remaps(std::vector<FunctionRemap *> &remaps);
 
-  static ostream &indent(ostream &out, int indent_level);
+  static std::ostream &indent(std::ostream &out, int indent_level);
 
 public:
   // This contains information about the number of arguments that the wrapping
@@ -92,12 +92,12 @@ public:
 
   class Function {
   public:
-    Function(const string &name,
+    Function(const std::string &name,
              const InterrogateType &itype,
              const InterrogateFunction &ifunc);
     ~Function();
 
-    string _name;
+    std::string _name;
     const InterrogateType &_itype;
     const InterrogateFunction &_ifunc;
     typedef std::vector<FunctionRemap *> Remaps;
@@ -112,10 +112,10 @@ public:
 
   class MakeSeq {
   public:
-    MakeSeq(const string &name, const InterrogateMakeSeq &imake_seq);
+    MakeSeq(const std::string &name, const InterrogateMakeSeq &imake_seq);
 
     const InterrogateMakeSeq &_imake_seq;
-    string _name;
+    std::string _name;
     Function *_length_getter;
     Function *_element_getter;
   };
@@ -144,7 +144,7 @@ public:
     ~Object();
 
     void check_protocols();
-    bool is_static_method(const string &name);
+    bool is_static_method(const std::string &name);
 
     const InterrogateType &_itype;
     Functions _constructors;
@@ -165,7 +165,7 @@ public:
   typedef std::map<TypeIndex, Object *> Objects;
   Objects _objects;
 
-  typedef std::map<string, FunctionRemap *> WrappersByHash;
+  typedef std::map<std::string, FunctionRemap *> WrappersByHash;
   WrappersByHash _wrappers_by_hash;
 
   virtual FunctionRemap *
@@ -173,12 +173,12 @@ public:
                       const InterrogateFunction &ifunc,
                       CPPInstance *cppfunc, int num_default_parameters);
 
-  virtual string
+  virtual std::string
   get_wrapper_name(const InterrogateType &itype,
                    const InterrogateFunction &ifunc,
                    FunctionIndex func_index);
-  virtual string get_wrapper_prefix();
-  virtual string get_unique_prefix();
+  virtual std::string get_wrapper_prefix();
+  virtual std::string get_unique_prefix();
 
   Function *
   record_function(const InterrogateType &itype, FunctionIndex func_index);
@@ -192,19 +192,19 @@ public:
   void hash_function_signature(FunctionRemap *remap);
 
 
-  string
-  manage_return_value(ostream &out, int indent_level,
-                      FunctionRemap *remap, const string &return_expr) const;
+  std::string
+  manage_return_value(std::ostream &out, int indent_level,
+                      FunctionRemap *remap, const std::string &return_expr) const;
 
   void
-  delete_return_value(ostream &out, int indent_level,
-                      FunctionRemap *remap, const string &return_expr) const;
+  delete_return_value(std::ostream &out, int indent_level,
+                      FunctionRemap *remap, const std::string &return_expr) const;
 
-  void output_ref(ostream &out, int indent_level, FunctionRemap *remap,
-                  const string &varname) const;
-  void output_unref(ostream &out, int indent_level, FunctionRemap *remap,
-                    const string &varname) const;
-  void write_spam_message(ostream &out, FunctionRemap *remap) const;
+  void output_ref(std::ostream &out, int indent_level, FunctionRemap *remap,
+                  const std::string &varname) const;
+  void output_unref(std::ostream &out, int indent_level, FunctionRemap *remap,
+                    const std::string &varname) const;
+  void write_spam_message(std::ostream &out, FunctionRemap *remap) const;
 
 protected:
   InterrogateModuleDef *_def;

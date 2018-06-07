@@ -360,8 +360,8 @@ test_intersection(CollisionHandler *record,
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const CollisionEntry &entry) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CollisionEntry &entry) {
   entry.output(out);
   return out;
 }

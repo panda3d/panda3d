@@ -67,7 +67,7 @@ private:
   static TVOLATILE AtomicAdjust::Integer _global_modified;
 };
 
-ostream &operator << (ostream &out, ConfigFlags::ValueType type);
+std::ostream &operator << (std::ostream &out, ConfigFlags::ValueType type);
 
 #include "configFlags.I"
 

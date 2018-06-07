@@ -160,8 +160,8 @@ consider_sort_columns() const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexArrayFormat &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexArrayFormat &obj) {
   obj.output(out);
   return out;
 }

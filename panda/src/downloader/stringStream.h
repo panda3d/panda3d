@@ -24,9 +24,9 @@
  * buffer, which can be retrieved and/or set as a string in Python 2 or a
  * bytes object in Python 3.
  */
-class EXPCL_PANDAEXPRESS StringStream : public iostream {
+class EXPCL_PANDAEXPRESS StringStream : public std::iostream {
 public:
-  INLINE StringStream(const string &source);
+  INLINE StringStream(const std::string &source);
 
 PUBLISHED:
   EXTENSION(StringStream(PyObject *source));
@@ -46,8 +46,8 @@ PUBLISHED:
 
 public:
 #ifndef CPPPARSER
-  INLINE string get_data();
-  INLINE void set_data(const string &data);
+  INLINE std::string get_data();
+  INLINE void set_data(const std::string &data);
   void set_data(const unsigned char *data, size_t size);
 #endif
 

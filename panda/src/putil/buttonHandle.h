@@ -31,7 +31,7 @@ PUBLISHED:
   // previously by another static initializer!
   INLINE ButtonHandle() = default;
   constexpr ButtonHandle(int index);
-  ButtonHandle(const string &name);
+  ButtonHandle(const std::string &name);
 
 PUBLISHED:
   INLINE bool operator == (const ButtonHandle &other) const;
@@ -43,7 +43,7 @@ PUBLISHED:
   INLINE int compare_to(const ButtonHandle &other) const;
   INLINE size_t get_hash() const;
 
-  string get_name() const;
+  std::string get_name() const;
   INLINE bool has_ascii_equivalent() const;
   INLINE char get_ascii_equivalent() const;
 
@@ -52,7 +52,7 @@ PUBLISHED:
   INLINE bool matches(const ButtonHandle &other) const;
 
   constexpr int get_index() const;
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
   INLINE static ButtonHandle none();
 
   INLINE operator bool () const;
@@ -83,7 +83,7 @@ friend class ButtonRegistry;
 
 // It's handy to be able to output a ButtonHandle directly, and see the button
 // name.
-INLINE ostream &operator << (ostream &out, ButtonHandle button) {
+INLINE std::ostream &operator << (std::ostream &out, ButtonHandle button) {
   button.output(out);
   return out;
 }

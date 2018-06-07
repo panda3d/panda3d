@@ -40,12 +40,12 @@ public:
   virtual ~BaseIntegrator();
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write_precomputed_linear_matrices(ostream &out,
+  virtual void output(std::ostream &out) const;
+  virtual void write_precomputed_linear_matrices(std::ostream &out,
                                                  int indent=0) const;
-  virtual void write_precomputed_angular_matrices(ostream &out,
+  virtual void write_precomputed_angular_matrices(std::ostream &out,
                                                   int indent=0) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   BaseIntegrator();

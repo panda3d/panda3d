@@ -38,7 +38,7 @@ public:
   virtual ~DXFFile();
 
   void process(Filename filename);
-  void process(istream *in, bool owns_in);
+  void process(std::istream *in, bool owns_in);
 
   // These functions are called as the file is processed.  These are the main
   // hooks for redefining how the class should dispense its data.  As each
@@ -57,7 +57,7 @@ public:
   // definition, and must allocate a DXFLayer instance.  This function is
   // provided so that user code may force allocate of a specialized DXFLayer
   // instance instead.
-  virtual DXFLayer *new_layer(const string &name) {
+  virtual DXFLayer *new_layer(const std::string &name) {
     return new DXFLayer(name);
   }
 
@@ -140,18 +140,18 @@ protected:
   bool _vertices_follow;
   LMatrix4d _ocs2wcs;
 
-  istream *_in;
+  std::istream *_in;
   bool _owns_in;
 
   int _code;
-  string _string;
+  std::string _string;
 
   void compute_ocs();
 
   bool get_group();
   void change_state(State new_state);
   void change_section(Section new_section);
-  void change_layer(const string &layer_name);
+  void change_layer(const std::string &layer_name);
   void change_entity(Entity new_entity);
   void reset_entity();
 
@@ -161,8 +161,8 @@ protected:
   void state_verts();
 };
 
-ostream &operator << (ostream &out, const DXFFile::State &state);
-ostream &operator << (ostream &out, const DXFFile::Section &section);
-ostream &operator << (ostream &out, const DXFFile::Entity &entity);
+std::ostream &operator << (std::ostream &out, const DXFFile::State &state);
+std::ostream &operator << (std::ostream &out, const DXFFile::Section &section);
+std::ostream &operator << (std::ostream &out, const DXFFile::Entity &entity);
 
 #endif

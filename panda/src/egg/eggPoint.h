@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggPoint(const string &name = "");
+  INLINE explicit EggPoint(const std::string &name = "");
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 
@@ -42,7 +42,7 @@ PUBLISHED:
 
   virtual bool cleanup() override;
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
 private:
   enum Flags {

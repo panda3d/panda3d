@@ -68,7 +68,7 @@ PUBLISHED:
   INLINE AtomicAdjust::Integer get_seq() const;
   MAKE_PROPERTY(seq, get_seq);
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
 private:
   INLINE static bool priv_is_special(AtomicAdjust::Integer seq);
@@ -85,7 +85,7 @@ private:
   AtomicAdjust::Integer _seq;
 };
 
-INLINE ostream &operator << (ostream &out, const UpdateSeq &value);
+INLINE std::ostream &operator << (std::ostream &out, const UpdateSeq &value);
 
 #include "updateSeq.I"
 

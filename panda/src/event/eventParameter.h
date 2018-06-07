@@ -40,8 +40,8 @@ PUBLISHED:
   INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
-  INLINE EventParameter(const string &value);
-  INLINE EventParameter(const wstring &value);
+  INLINE EventParameter(const std::string &value);
+  INLINE EventParameter(const std::wstring &value);
 
   INLINE EventParameter(const EventParameter &copy);
   INLINE EventParameter &operator = (const EventParameter &copy);
@@ -57,22 +57,22 @@ PUBLISHED:
   INLINE bool is_double() const;
   INLINE double get_double_value() const;
   INLINE bool is_string() const;
-  INLINE string get_string_value() const;
+  INLINE std::string get_string_value() const;
   INLINE bool is_wstring() const;
-  INLINE wstring get_wstring_value() const;
+  INLINE std::wstring get_wstring_value() const;
 
   INLINE bool is_typed_ref_count() const;
   INLINE TypedReferenceCount *get_typed_ref_count_value() const;
 
   INLINE TypedWritableReferenceCount *get_ptr() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   PT(TypedWritableReferenceCount) _ptr;
 };
 
-INLINE ostream &operator << (ostream &out, const EventParameter &param);
+INLINE std::ostream &operator << (std::ostream &out, const EventParameter &param);
 
 typedef ParamTypedRefCount EventStoreTypedRefCount;
 

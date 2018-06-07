@@ -86,8 +86,8 @@ PUBLISHED:
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_PROPERTY(modified, get_modified);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
 private:
   class CData;
@@ -145,7 +145,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformBlend &obj);
+INLINE std::ostream &operator << (std::ostream &out, const TransformBlend &obj);
 
 #include "transformBlend.I"
 

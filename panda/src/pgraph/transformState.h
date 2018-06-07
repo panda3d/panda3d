@@ -194,16 +194,16 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
-  void write_composition_cache(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
+  void write_composition_cache(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
@@ -407,7 +407,7 @@ private:
 template<>
 INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const TransformState &state) {
+INLINE std::ostream &operator << (std::ostream &out, const TransformState &state) {
   state.output(out);
   return out;
 }

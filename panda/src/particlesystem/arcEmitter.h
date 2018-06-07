@@ -34,8 +34,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_start_angle();
   INLINE PN_stdfloat get_end_angle();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   // our emitter limits

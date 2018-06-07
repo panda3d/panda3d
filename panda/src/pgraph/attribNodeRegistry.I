@@ -37,7 +37,7 @@ Entry(const NodePath &node) :
  *
  */
 INLINE AttribNodeRegistry::Entry::
-Entry(TypeHandle type, const string &name) :
+Entry(TypeHandle type, const std::string &name) :
   _type(type),
   _name(name)
 {

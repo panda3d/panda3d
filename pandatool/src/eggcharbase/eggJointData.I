@@ -41,7 +41,7 @@ get_child(int n) const {
  * if no joint has that name.
  */
 INLINE EggJointData *EggJointData::
-find_joint(const string &name) {
+find_joint(const std::string &name) {
   EggJointData *joint = find_joint_exact(name);
   if (joint == nullptr) {
     joint = find_joint_matches(name);

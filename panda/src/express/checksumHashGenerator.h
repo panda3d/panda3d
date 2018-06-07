@@ -29,7 +29,7 @@ public:
   INLINE void add_fp(float num, float threshold);
   INLINE void add_fp(double num, double threshold);
   INLINE void add_pointer(void *ptr);
-  void add_string(const string &str);
+  void add_string(const std::string &str);
 };
 
 #include "checksumHashGenerator.I"

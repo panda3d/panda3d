@@ -28,8 +28,8 @@ get_variable(size_t n) const {
   return _variables[n];
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableManager &variableMgr) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableManager &variableMgr) {
   variableMgr.output(out);
   return out;
 }

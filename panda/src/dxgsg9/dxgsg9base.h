@@ -56,9 +56,9 @@
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << endl  // leave out descriptions to shrink release build
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << std::endl  // leave out descriptions to shrink release build
 #else
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << std::endl
 #endif
 #endif
 
@@ -103,7 +103,7 @@ typedef DWORD DXShaderHandle;
    ULONG refcnt;                                                \
    if(IS_VALID_PTR(OBJECT)) {                                   \
         refcnt = (OBJECT)->Release();                           \
-        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; \
+        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
         if((bDoDownToZero) && (refcnt>0)) {                     \
               MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
               do {                                \
@@ -112,11 +112,11 @@ typedef DWORD DXShaderHandle;
         }                                         \
         (OBJECT) = nullptr;                          \
       } else {                                    \
-        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
+        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << std::endl;  \
       }}
 
 #define PRINT_REFCNT(MODULE,p) { ULONG refcnt;  (p)->AddRef();  refcnt=(p)->Release(); \
-                                 MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; }
+                                 MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << std::endl; }
 
 #else
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)   { \

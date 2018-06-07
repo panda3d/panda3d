@@ -147,8 +147,8 @@ PUBLISHED:
 
   INLINE bool check_valid(const GeomVertexData *vertex_data) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
 /*
@@ -408,7 +408,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomPrimitive &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomPrimitive &obj);
 
 #include "geomPrimitive.I"
 

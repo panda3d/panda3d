@@ -38,9 +38,9 @@ __reduce__(PyObject *self) const {
 /**
  *
  */
-INLINE_LINMATH string Extension<FLOATNAME(LMatrix4)>::
+INLINE_LINMATH std::string Extension<FLOATNAME(LMatrix4)>::
 __repr__() const {
-  ostringstream out;
+  std::ostringstream out;
   out << "LMatrix4" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_m(0, 0)) << ", "
       << MAYBE_ZERO(_this->_m(0, 1)) << ", "

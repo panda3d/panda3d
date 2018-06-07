@@ -130,7 +130,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      cerr << "Detected leak for " << #CLASS_NAME \
+      std::cerr << "Detected leak for " << #CLASS_NAME \
            << " which interrogate cannot delete.\n"; \
     }\
   }\
@@ -180,10 +180,10 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
-EXPCL_INTERROGATEDB void RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype);
+EXPCL_INTERROGATEDB void RegisterNamedClass(const std::string &name, Dtool_PyTypedObject &otype);
 EXPCL_INTERROGATEDB void RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype);
 
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const string &name);
+EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const std::string &name);
 EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupRuntimeTypedClass(TypeHandle handle);
 
 EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
@@ -193,7 +193,7 @@ EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
  */
 EXPCL_INTERROGATEDB void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer);
 
-EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, bool report_errors);
+EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const std::string &function_name, bool const_ok, bool report_errors);
 
 EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThis(PyObject *self);
 

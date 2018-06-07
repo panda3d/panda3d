@@ -86,7 +86,7 @@ debug_is_locked() const {
  * The lightMutex name is only defined when compiling in DEBUG_THREADS mode.
  */
 INLINE void LightMutexDirect::
-set_name(const string &) {
+set_name(const std::string &) {
 }
 
 /**
@@ -107,7 +107,7 @@ has_name() const {
 /**
  * The lightMutex name is only defined when compiling in DEBUG_THREADS mode.
  */
-INLINE string LightMutexDirect::
+INLINE std::string LightMutexDirect::
 get_name() const {
-  return string();
+  return std::string();
 }

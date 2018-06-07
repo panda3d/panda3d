@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
-  MutexDebug(const string &name, bool allow_recursion, bool lightweight);
+  MutexDebug(const std::string &name, bool allow_recursion, bool lightweight);
   MutexDebug(const MutexDebug &copy) = delete;
   virtual ~MutexDebug();
 
@@ -47,8 +47,8 @@ PUBLISHED:
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 
-  virtual void output(ostream &out) const;
-  void output_with_holder(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  void output_with_holder(std::ostream &out) const;
 
   typedef void VoidFunc();
 
@@ -86,8 +86,8 @@ private:
   friend class ConditionVarFullDebug;
 };
 
-INLINE ostream &
-operator << (ostream &out, const MutexDebug &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MutexDebug &m) {
   m.output(out);
   return out;
 }

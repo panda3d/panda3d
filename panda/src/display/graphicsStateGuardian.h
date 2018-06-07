@@ -228,7 +228,7 @@ PUBLISHED:
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
   virtual int get_supported_geom_rendering() const;
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -267,11 +267,11 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
-  virtual bool has_extension(const string &extension) const;
+  virtual bool has_extension(const std::string &extension) const;
 
-  virtual string get_driver_vendor();
-  virtual string get_driver_renderer();
-  virtual string get_driver_version();
+  virtual std::string get_driver_vendor();
+  virtual std::string get_driver_renderer();
+  virtual std::string get_driver_version();
   virtual int get_driver_version_major();
   virtual int get_driver_version_minor();
   virtual int get_driver_shader_version_major();
@@ -760,7 +760,7 @@ private:
   friend class GraphicsEngine;
 };
 
-EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm);
+EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsStateGuardian::ShaderModel sm);
 
 #include "graphicsStateGuardian.I"
 

@@ -28,7 +28,7 @@ class OrthographicLens;
 class EXPCL_ROCKET RocketRegion : public DisplayRegion {
 protected:
   RocketRegion(GraphicsOutput *window, const LVecBase4 &dimensions,
-               const string &context_name);
+               const std::string &context_name);
 
   virtual void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                        GraphicsStateGuardian *gsg, Thread *current_thread);
@@ -36,9 +36,9 @@ protected:
 PUBLISHED:
   virtual ~RocketRegion();
 
-  INLINE static RocketRegion* make(const string &context_name,
+  INLINE static RocketRegion* make(const std::string &context_name,
                                    GraphicsOutput *window);
-  INLINE static RocketRegion* make(const string &context_name,
+  INLINE static RocketRegion* make(const std::string &context_name,
                                    GraphicsOutput *window,
                                    const LVecBase4 &dimensions);
 #ifndef CPPPARSER

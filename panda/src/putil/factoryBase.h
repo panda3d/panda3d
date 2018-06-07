@@ -45,13 +45,13 @@ public:
   TypedObject *make_instance(TypeHandle handle,
                              const FactoryParams &params);
 
-  INLINE TypedObject *make_instance(const string &type_name,
+  INLINE TypedObject *make_instance(const std::string &type_name,
                                     const FactoryParams &params);
 
   TypedObject *make_instance_more_general(TypeHandle handle,
                                           const FactoryParams &params);
 
-  INLINE TypedObject *make_instance_more_general(const string &type_name,
+  INLINE TypedObject *make_instance_more_general(const std::string &type_name,
                                                  const FactoryParams &params);
 
   TypeHandle find_registered_type(TypeHandle handle);
@@ -66,7 +66,7 @@ public:
   int get_num_preferred() const;
   TypeHandle get_preferred(int n) const;
 
-  void write_types(ostream &out, int indent_level = 0) const;
+  void write_types(std::ostream &out, int indent_level = 0) const;
 
 private:
   // These are private; we shouldn't be copy-constructing Factories.

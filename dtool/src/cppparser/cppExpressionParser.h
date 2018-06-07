@@ -29,18 +29,18 @@ public:
   CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope);
   ~CPPExpressionParser();
 
-  bool parse_expr(const string &expr);
-  bool parse_expr(const string &expr, const CPPPreprocessor &filepos);
+  bool parse_expr(const std::string &expr);
+  bool parse_expr(const std::string &expr, const CPPPreprocessor &filepos);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   CPPScope *_current_scope;
   CPPScope *_global_scope;
   CPPExpression *_expr;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPExpressionParser &ep) {
+inline std::ostream &
+operator << (std::ostream &out, const CPPExpressionParser &ep) {
   ep.output(out);
   return out;
 }

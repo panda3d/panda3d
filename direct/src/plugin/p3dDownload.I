@@ -14,7 +14,7 @@
 /**
  * Returns the URL that we are querying.
  */
-const string &P3DDownload::
+const std::string &P3DDownload::
 get_url() const {
   return _url;
 }

@@ -30,7 +30,7 @@ public:
   virtual bool get_bool();
   virtual int get_int();
   virtual double get_float();
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 
 private:
   double _value;

@@ -43,8 +43,8 @@ public:
   PStatMonitor(PStatServer *server);
   virtual ~PStatMonitor();
 
-  void hello_from(const string &hostname, const string &progname);
-  void bad_version(const string &hostname, const string &progname,
+  void hello_from(const std::string &hostname, const std::string &progname);
+  void bad_version(const std::string &hostname, const std::string &progname,
                    int client_major, int client_minor,
                    int server_major, int server_minor);
   void set_client_data(PStatClientData *client_data);
@@ -57,12 +57,12 @@ public:
 
   INLINE PStatServer *get_server();
   INLINE const PStatClientData *get_client_data() const;
-  INLINE string get_collector_name(int collector_index);
+  INLINE std::string get_collector_name(int collector_index);
   const LRGBColor &get_collector_color(int collector_index);
 
   INLINE bool is_client_known() const;
-  INLINE string get_client_hostname() const;
-  INLINE string get_client_progname() const;
+  INLINE std::string get_client_hostname() const;
+  INLINE std::string get_client_progname() const;
 
   PStatView &get_view(int thread_index);
   PStatView &get_level_view(int collector_index, int thread_index);
@@ -71,7 +71,7 @@ public:
   // The following virtual methods may be overridden by a derived monitor
   // class to customize behavior.
 
-  virtual string get_monitor_name()=0;
+  virtual std::string get_monitor_name()=0;
 
   virtual void initialized();
   virtual void got_hello();
@@ -96,8 +96,8 @@ private:
   PT(PStatClientData) _client_data;
 
   bool _client_known;
-  string _client_hostname;
-  string _client_progname;
+  std::string _client_hostname;
+  std::string _client_progname;
 
   typedef pmap<int, PStatView> Views;
   Views _views;

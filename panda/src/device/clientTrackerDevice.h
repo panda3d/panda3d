@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_DEVICE ClientTrackerDevice : public ClientDevice {
 protected:
-  INLINE ClientTrackerDevice(ClientBase *client, const string &device_name);
+  INLINE ClientTrackerDevice(ClientBase *client, const std::string &device_name);
 
 public:
   INLINE const TrackerData &get_data() const;

@@ -142,7 +142,7 @@ get_default_collide_mask() {
  */
 INLINE void GeomNode::
 count_name(GeomNode::NameCount &name_count, const InternalName *name) {
-  pair<NameCount::iterator, bool> result =
+  std::pair<NameCount::iterator, bool> result =
     name_count.insert(NameCount::value_type(name, 1));
   if (!result.second) {
     (*result.first).second++;

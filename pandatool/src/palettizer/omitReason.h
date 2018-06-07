@@ -52,6 +52,6 @@ enum OmitReason {
   // The texture is omitted because _omit_everything is set true.
 };
 
-ostream &operator << (ostream &out, OmitReason omit);
+std::ostream &operator << (std::ostream &out, OmitReason omit);
 
 #endif

@@ -74,11 +74,11 @@ PUBLISHED:
 
   virtual bool unref() const final;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   static int get_num_attribs();
-  static void list_attribs(ostream &out);
+  static void list_attribs(std::ostream &out);
   static int garbage_collect();
   static bool validate_attribs();
 
@@ -170,7 +170,7 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
+  void output_comparefunc(std::ostream &out, PandaCompareFunc fn) const;
 
 public:
   INLINE static int register_slot(TypeHandle type_handle, int sort,
@@ -226,7 +226,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const RenderAttrib &attrib) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderAttrib &attrib) {
   attrib.output(out);
   return out;
 }

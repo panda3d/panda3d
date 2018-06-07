@@ -49,7 +49,7 @@ has_tag_state_key() const {
  * Returns the tag state key that has been specified for the scene's camera,
  * if any.
  */
-INLINE const string &CullTraverser::
+INLINE const std::string &CullTraverser::
 get_tag_state_key() const {
   return _tag_state_key;
 }

@@ -30,12 +30,12 @@ protected:
   // The default constructor is protected: don't try to create an AnimChannel
   // without a parent.  To create an AnimChannel hierarchy, you must first
   // create an AnimBundle, and use that to create any subsequent children.
-  INLINE AnimChannel(const string &name = "");
+  INLINE AnimChannel(const std::string &name = "");
   INLINE AnimChannel(AnimGroup *parent, const AnimChannel &copy);
 public:
   typedef typename SwitchType::ValueType ValueType;
 
-  INLINE AnimChannel(AnimGroup *parent, const string &name);
+  INLINE AnimChannel(AnimGroup *parent, const std::string &name);
   INLINE ~AnimChannel();
 
 PUBLISHED:
@@ -81,7 +81,7 @@ public:
   static const char *get_channel_type_name() { return "AnimChannelMatrix"; }
   static const char *get_fixed_channel_type_name() { return "AnimChannelFixed<LMatrix4>"; }
   static const char *get_part_type_name() { return "MovingPart<LMatrix4>"; }
-  static void output_value(ostream &out, const ValueType &value);
+  static void output_value(std::ostream &out, const ValueType &value);
 
   static void write_datagram(Datagram &dest, ValueType& me)
   {
@@ -103,7 +103,7 @@ public:
   static const char *get_channel_type_name() { return "AnimChannelScalar"; }
   static const char *get_fixed_channel_type_name() { return "AnimChannelScalarFixed"; }
   static const char *get_part_type_name() { return "MovingPart<PN_stdfloat>"; }
-  static void output_value(ostream &out, ValueType value) {
+  static void output_value(std::ostream &out, ValueType value) {
     out << value;
   }
   static void write_datagram(Datagram &dest, ValueType& me)

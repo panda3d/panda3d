@@ -38,16 +38,16 @@ enum CoordinateSystem {
 };
 
 EXPCL_PANDA_LINMATH CoordinateSystem get_default_coordinate_system();
-EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const string &str);
-EXPCL_PANDA_LINMATH string format_coordinate_system(CoordinateSystem cs);
+EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const std::string &str);
+EXPCL_PANDA_LINMATH std::string format_coordinate_system(CoordinateSystem cs);
 EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 
 END_PUBLISH
 
 #define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
 
-EXPCL_PANDA_LINMATH ostream &operator << (ostream &out, CoordinateSystem cs);
-EXPCL_PANDA_LINMATH istream &operator >> (istream &in, CoordinateSystem &cs);
+EXPCL_PANDA_LINMATH std::ostream &operator << (std::ostream &out, CoordinateSystem cs);
+EXPCL_PANDA_LINMATH std::istream &operator >> (std::istream &in, CoordinateSystem &cs);
 
 
 #endif

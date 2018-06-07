@@ -56,7 +56,7 @@ class MaxToEggConverter {
     MaxEggOptions    *_options;
     int               _current_frame;
     PT(EggData)       _egg_data;
-    string            _program_name;
+    std::string            _program_name;
     MaxNodeTree       _tree;
     int               _cur_tref;
     EggTextureCollection _textures;

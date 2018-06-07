@@ -57,9 +57,9 @@ public:
   const Filename &get_flt_filename() const;
 
   FltError read_flt(Filename filename);
-  FltError read_flt(istream &in);
+  FltError read_flt(std::istream &in);
   FltError write_flt(Filename filename);
-  FltError write_flt(ostream &out);
+  FltError write_flt(std::ostream &out);
 
   enum AttrUpdate {
     AU_none,
@@ -113,7 +113,7 @@ public:
 
   int _format_revision_level;
   int _edit_revision_level;
-  string _last_revision;
+  std::string _last_revision;
   int _next_group_id;
   int _next_lod_id;
   int _next_object_id;
@@ -181,7 +181,7 @@ public:
   LColor get_color(int color_index) const;
   LRGBColor get_rgb(int color_index) const;
   bool has_color_name(int color_index) const;
-  string get_color_name(int color_index) const;
+  std::string get_color_name(int color_index) const;
 
   int get_closest_color(const LColor &color) const;
   int get_closest_rgb(const LRGBColor &color) const;
@@ -262,7 +262,7 @@ private:
   // Support for the color palette.
   bool _got_color_palette;
   typedef pvector<FltPackedColor> Colors;
-  typedef pmap<int, string> ColorNames;
+  typedef pmap<int, std::string> ColorNames;
   Colors _colors;
   ColorNames _color_names;
 

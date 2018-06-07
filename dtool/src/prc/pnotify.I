@@ -34,7 +34,7 @@ has_assert_failed() const {
  * Returns the error message that corresponds to the assertion that most
  * recently failed.
  */
-INLINE const string &Notify::
+INLINE const std::string &Notify::
 get_assert_error_message() const {
   return _assert_error_message;
 }

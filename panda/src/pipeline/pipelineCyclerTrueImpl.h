@@ -94,7 +94,7 @@ public:
     INLINE CyclerMutex(PipelineCyclerTrueImpl *cycler);
 
 #ifdef DEBUG_THREADS
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
     PipelineCyclerTrueImpl *_cycler;
 #endif  // DEBUG_THREADS
   };

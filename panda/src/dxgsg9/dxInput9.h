@@ -16,8 +16,8 @@
 
 #define DIRECTINPUT_VERSION 0x900
 #include <dinput.h>
-typedef vector<DIDEVICEINSTANCE> DI_DeviceInfos;
-typedef vector<DIDEVICEOBJECTINSTANCE> DI_DeviceObjInfos;
+typedef std::vector<DIDEVICEINSTANCE> DI_DeviceInfos;
+typedef std::vector<DIDEVICEOBJECTINSTANCE> DI_DeviceObjInfos;
 
 class DInput9Info {
 public:
@@ -33,8 +33,8 @@ public:
  DI_DeviceInfos _DevInfos;
  // arrays for all created devices.  Should probably put these together in a
  // struct, along with the data fmt info
- vector<LPDIRECTINPUTDEVICE8> _DeviceList;
- vector<DIDEVCAPS> _DevCaps;
+ std::vector<LPDIRECTINPUTDEVICE8> _DeviceList;
+ std::vector<DIDEVCAPS> _DevCaps;
 };
 
 #endif

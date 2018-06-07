@@ -43,21 +43,21 @@ public:
 
   INLINE int get_num_characters() const;
   INLINE EggCharacterData *get_character(int i) const;
-  EggCharacterData *get_character_by_name(const string &character_name) const;
+  EggCharacterData *get_character_by_name(const std::string &character_name) const;
 
   INLINE EggCharacterData *get_character_by_model_index(int model_index) const;
 
-  void rename_char(int i, const string &name);
+  void rename_char(int i, const std::string &name);
 
-  virtual void write(ostream &out, int indent_level = 0) const;
-  void check_errors(ostream &out, bool force_initial_rest_frame);
+  virtual void write(std::ostream &out, int indent_level = 0) const;
+  void check_errors(std::ostream &out, bool force_initial_rest_frame);
 
   virtual EggCharacterData *make_character_data();
   virtual EggJointData *make_joint_data(EggCharacterData *char_data);
   virtual EggSliderData *make_slider_data(EggCharacterData *char_data);
 
 public:
-  EggCharacterData *make_character(const string &character_name);
+  EggCharacterData *make_character(const std::string &character_name);
 
   class EggInfo {
   public:
@@ -77,9 +77,9 @@ public:
 private:
   bool scan_hierarchy(EggNode *egg_node);
   void scan_for_top_joints(EggNode *egg_node, EggNode *model_root,
-                           const string &character_name);
+                           const std::string &character_name);
   void scan_for_top_tables(EggTable *bundle, EggNode *model_root,
-                           const string &character_name);
+                           const std::string &character_name);
   void scan_for_morphs(EggNode *egg_node, int model_index,
                        EggCharacterData *char_data);
   void scan_for_sliders(EggNode *egg_node, int model_index,
@@ -101,7 +101,7 @@ private:
   };
 
   typedef pmap<EggNode *, ModelDescription> TopEggNodes;
-  typedef pmap<string, TopEggNodes> TopEggNodesByName;
+  typedef pmap<std::string, TopEggNodes> TopEggNodesByName;
   TopEggNodesByName _top_egg_nodes;
 
   int _next_model_index;

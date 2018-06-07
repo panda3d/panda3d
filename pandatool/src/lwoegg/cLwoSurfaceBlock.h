@@ -38,7 +38,7 @@ public:
 
   IffId _block_type;
   IffId _channel_id;
-  string _ordinal;
+  std::string _ordinal;
   bool _enabled;
 
   LwoSurfaceBlockOpacity::Type _opacity_type;
@@ -54,7 +54,7 @@ public:
   LwoSurfaceBlockWrap::Mode _h_wrap;
   PN_stdfloat _w_repeat;
   PN_stdfloat _h_repeat;
-  string _uv_name;
+  std::string _uv_name;
 
   LwoToEggConverter *_converter;
   CPT(LwoSurfaceBlock) _block;

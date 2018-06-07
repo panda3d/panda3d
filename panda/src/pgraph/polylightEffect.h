@@ -70,7 +70,7 @@ public:
   // CPT(RenderAttrib) do_poly_light(const NodePath &root, const
   // CullTraverserData *data, const TransformState *node_transform) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   ContribType _contribution_type;
@@ -101,6 +101,6 @@ private:
 
 #include "polylightEffect.I"
 
-ostream &operator << (ostream &out, PolylightEffect::ContribType ct);
+std::ostream &operator << (std::ostream &out, PolylightEffect::ContribType ct);
 
 #endif

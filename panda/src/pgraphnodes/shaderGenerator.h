@@ -168,9 +168,9 @@ protected:
 
   void analyze_renderstate(ShaderKey &key, const RenderState *rs);
 
-  static string combine_mode_as_string(const ShaderKey::TextureInfo &info,
+  static std::string combine_mode_as_string(const ShaderKey::TextureInfo &info,
                       TextureStage::CombineMode c_mode, bool alpha, short texindex);
-  static string combine_source_as_string(const ShaderKey::TextureInfo &info,
+  static std::string combine_source_as_string(const ShaderKey::TextureInfo &info,
                                          short num, bool alpha, short texindex);
   static const char *texture_type_as_string(Texture::TextureType ttype);
 

@@ -34,7 +34,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
-  explicit TextureStage(const string &name);
+  explicit TextureStage(const std::string &name);
   INLINE TextureStage(const TextureStage &copy);
   void operator = (const TextureStage &copy);
 
@@ -97,8 +97,8 @@ PUBLISHED:
     CO_one_minus_src_alpha,
   };
 
-  INLINE void set_name(const string &name);
-  INLINE const string &get_name() const;
+  INLINE void set_name(const std::string &name);
+  INLINE const std::string &get_name() const;
 
   INLINE void set_sort(int sort);
   INLINE int get_sort() const;
@@ -107,7 +107,7 @@ PUBLISHED:
   INLINE int get_priority() const;
 
   INLINE void set_texcoord_name(InternalName *name);
-  INLINE void set_texcoord_name(const string &texcoord_name);
+  INLINE void set_texcoord_name(const std::string &texcoord_name);
   INLINE InternalName *get_texcoord_name() const;
   INLINE InternalName *get_tangent_name() const;
   INLINE InternalName *get_binormal_name() const;
@@ -179,8 +179,8 @@ PUBLISHED:
 
   int compare_to(const TextureStage &other) const;
 
-  void write(ostream &out) const;
-  void output(ostream &out) const;
+  void write(std::ostream &out) const;
+  void output(std::ostream &out) const;
 
   INLINE static TextureStage *get_default();
 
@@ -216,7 +216,7 @@ private:
   static bool operand_valid_for_rgb(CombineOperand co);
   static bool operand_valid_for_alpha(CombineOperand co);
 
-  string _name;
+  std::string _name;
   int _sort;
   int _priority;
   PT(InternalName) _texcoord_name;
@@ -283,12 +283,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const TextureStage &ts);
+INLINE std::ostream &operator << (std::ostream &out, const TextureStage &ts);
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::Mode mode);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineMode cm);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineSource cs);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineOperand co);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, TextureStage::Mode mode);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, TextureStage::CombineMode cm);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, TextureStage::CombineSource cs);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, TextureStage::CombineOperand co);
 
 
 #include "textureStage.I"

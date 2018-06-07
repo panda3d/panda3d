@@ -44,8 +44,8 @@ PUBLISHED:
   INLINE UpdateSeq get_modified(Thread *current_thread = Thread::get_current_thread()) const;
   MAKE_PROPERTY(modified, get_modified);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   static UpdateSeq get_next_modified(Thread *current_thread);
   INLINE static UpdateSeq get_global_modified(Thread *current_thread);
@@ -107,7 +107,7 @@ private:
   friend class TransformTable;
 };
 
-INLINE ostream &operator << (ostream &out, const VertexTransform &obj);
+INLINE std::ostream &operator << (std::ostream &out, const VertexTransform &obj);
 
 #include "vertexTransform.I"
 

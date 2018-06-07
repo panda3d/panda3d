@@ -42,7 +42,7 @@ union VrmlFieldValue {
 typedef pvector<VrmlFieldValue> MFArray;
 
 
-ostream &output_value(ostream &out, const VrmlFieldValue &value, int type,
+std::ostream &output_value(std::ostream &out, const VrmlFieldValue &value, int type,
                       int indent = 0);
 
 

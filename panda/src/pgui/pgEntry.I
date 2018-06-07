@@ -20,7 +20,7 @@
  * truncated (see set_max_width(), etc.).
  */
 INLINE bool PGEntry::
-set_text(const string &text) {
+set_text(const std::string &text) {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
   nassertr(text_node != nullptr, false);
@@ -34,11 +34,11 @@ set_text(const string &text) {
  * This uses the Unicode encoding currently specified for the "focus"
  * TextNode; therefore, the TextNode must exist before calling get_text().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_plain_text() const {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
-  nassertr(text_node != nullptr, string());
+  nassertr(text_node != nullptr, std::string());
   return text_node->encode_wtext(get_plain_wtext());
 }
 
@@ -47,11 +47,11 @@ get_plain_text() const {
  * Unicode encoding currently specified for the "focus" TextNode; therefore,
  * the TextNode must exist before calling get_text().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_text() const {
   LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
-  nassertr(text_node != nullptr, string());
+  nassertr(text_node != nullptr, std::string());
   return text_node->encode_wtext(get_wtext());
 }
 
@@ -350,7 +350,7 @@ get_overflow_mode() const {
  * candidate string that the user can actively scroll through.
  */
 INLINE void PGEntry::
-set_candidate_active(const string &candidate_active) {
+set_candidate_active(const std::string &candidate_active) {
   LightReMutexHolder holder(_lock);
   _candidate_active = candidate_active;
 }
@@ -358,7 +358,7 @@ set_candidate_active(const string &candidate_active) {
 /**
  * See set_candidate_active().
  */
-INLINE const string &PGEntry::
+INLINE const std::string &PGEntry::
 get_candidate_active() const {
   LightReMutexHolder holder(_lock);
   return _candidate_active;
@@ -377,7 +377,7 @@ get_candidate_active() const {
  * candidate string that the user is not actively scrolling through.
  */
 INLINE void PGEntry::
-set_candidate_inactive(const string &candidate_inactive) {
+set_candidate_inactive(const std::string &candidate_inactive) {
   LightReMutexHolder holder(_lock);
   _candidate_inactive = candidate_inactive;
 }
@@ -385,7 +385,7 @@ set_candidate_inactive(const string &candidate_inactive) {
 /**
  * See set_candidate_inactive().
  */
-INLINE const string &PGEntry::
+INLINE const std::string &PGEntry::
 get_candidate_inactive() const {
   LightReMutexHolder holder(_lock);
   return _candidate_inactive;
@@ -396,7 +396,7 @@ get_candidate_inactive() const {
  * PGEntries.  The accept event is the concatenation of this string followed
  * by get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_accept_prefix() {
   return "accept-";
 }
@@ -406,7 +406,7 @@ get_accept_prefix() {
  * PGEntries.  This event is the concatenation of this string followed by
  * get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_accept_failed_prefix() {
   return "acceptfailed-";
 }
@@ -416,7 +416,7 @@ get_accept_failed_prefix() {
  * PGEntries.  The overflow event is the concatenation of this string followed
  * by get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_overflow_prefix() {
   return "overflow-";
 }
@@ -425,7 +425,7 @@ get_overflow_prefix() {
  * Returns the prefix that is used to define the type event for all PGEntries.
  * The type event is the concatenation of this string followed by get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_type_prefix() {
   return "type-";
 }
@@ -435,7 +435,7 @@ get_type_prefix() {
  * PGEntries.  The erase event is the concatenation of this string followed by
  * get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_erase_prefix() {
   return "erase-";
 }
@@ -445,7 +445,7 @@ get_erase_prefix() {
  * PGEntries.  The cursor event is the concatenation of this string followed
  * by get_id().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_cursormove_prefix() {
   return "cursormove-";
 }
@@ -454,7 +454,7 @@ get_cursormove_prefix() {
  * Returns the event name that will be thrown when the entry is accepted
  * normally.
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_accept_event(const ButtonHandle &button) const {
   return get_accept_prefix() + button.get_name() + "-" + get_id();
 }
@@ -463,7 +463,7 @@ get_accept_event(const ButtonHandle &button) const {
  * Returns the event name that will be thrown when the entry cannot accept an
  * input
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_accept_failed_event(const ButtonHandle &button) const {
   return get_accept_failed_prefix() + button.get_name() + "-" + get_id();
 }
@@ -473,7 +473,7 @@ get_accept_failed_event(const ButtonHandle &button) const {
  * to be entered into the PGEntry, exceeding either the limit set via
  * set_max_chars() or via set_max_width().
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_overflow_event() const {
   return get_overflow_prefix() + get_id();
 }
@@ -482,7 +482,7 @@ get_overflow_event() const {
  * Returns the event name that will be thrown whenever the user extends the
  * text by typing.
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_type_event() const {
   return get_type_prefix() + get_id();
 }
@@ -491,7 +491,7 @@ get_type_event() const {
  * Returns the event name that will be thrown whenever the user erases
  * characters in the text.
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_erase_event() const {
   return get_erase_prefix() + get_id();
 }
@@ -499,7 +499,7 @@ get_erase_event() const {
 /**
  * Returns the event name that will be thrown whenever the cursor moves
  */
-INLINE string PGEntry::
+INLINE std::string PGEntry::
 get_cursormove_event() const {
   return get_cursormove_prefix() + get_id();
 }
@@ -511,14 +511,14 @@ get_cursormove_event() const {
  * truncated (see set_max_width(), etc.).
  */
 INLINE bool PGEntry::
-set_wtext(const wstring &wtext) {
+set_wtext(const std::wstring &wtext) {
   LightReMutexHolder holder(_lock);
   bool ret = _text.set_wtext(wtext);
   if (_obscure_mode) {
-    ret = _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
+    ret = _obscure_text.set_wtext(std::wstring(_text.get_num_characters(), '*'));
   }
   _text_geom_stale = true;
-  set_cursor_position(min(_cursor_position, _text.get_num_characters()));
+  set_cursor_position(std::min(_cursor_position, _text.get_num_characters()));
   return ret;
 }
 
@@ -526,7 +526,7 @@ set_wtext(const wstring &wtext) {
  * Returns the text currently displayed within the entry, without any embedded
  * properties characters.
  */
-INLINE wstring PGEntry::
+INLINE std::wstring PGEntry::
 get_plain_wtext() const {
   LightReMutexHolder holder(_lock);
   return _text.get_plain_wtext();
@@ -535,7 +535,7 @@ get_plain_wtext() const {
 /**
  * Returns the text currently displayed within the entry.
  */
-INLINE wstring PGEntry::
+INLINE std::wstring PGEntry::
 get_wtext() const {
   LightReMutexHolder holder(_lock);
   return _text.get_wtext();

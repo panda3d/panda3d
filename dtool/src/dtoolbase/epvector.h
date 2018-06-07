@@ -35,10 +35,10 @@
  * kids.
  */
 template<class Type>
-class epvector : public vector<Type, Eigen::aligned_allocator<Type> > {
+class epvector : public std::vector<Type, Eigen::aligned_allocator<Type> > {
 public:
   typedef Eigen::aligned_allocator<Type> allocator;
-  typedef vector<Type, allocator> base_class;
+  typedef std::vector<Type, allocator> base_class;
   typedef typename base_class::size_type size_type;
 
   epvector(TypeHandle type_handle = pvector_type_handle) : base_class(allocator()) { }

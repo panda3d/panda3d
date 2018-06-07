@@ -39,8 +39,8 @@ public:
 
   void shutdown();
 
-  inline const string &get_session_key() const;
-  inline const string &get_log_pathname() const;
+  inline const std::string &get_session_key() const;
+  inline const std::string &get_log_pathname() const;
   inline bool get_matches_script_origin() const;
 
   void start_instance(P3DInstance *inst);
@@ -67,7 +67,7 @@ private:
   void spawn_read_thread();
   void join_read_thread();
 
-  static void replace_slashes(string &str);
+  static void replace_slashes(std::string &str);
 
 private:
   // These methods run only within the read thread.
@@ -87,42 +87,42 @@ private:
   THREAD_CALLBACK_DECLARATION(P3DSession, p3dpython_thread_run);
   void p3dpython_thread_run();
 
-  static bool get_env(string &value, const string &varname);
+  static bool get_env(std::string &value, const std::string &varname);
   void write_env() const;
 
 private:
   int _session_id;
-  string _session_key;
-  string _log_pathname;
-  string _python_root_dir;
-  string _start_dir;
+  std::string _session_key;
+  std::string _log_pathname;
+  std::string _python_root_dir;
+  std::string _start_dir;
   bool _matches_script_origin;
   bool _keep_user_env;
   bool _failed;
 
   // This information is passed to create_process(), or to
   // p3dpython_thread_run().
-  string _p3dpython_exe;
-  string _p3dpython_dll;
-  string _mf_filename;
-  string _env;
+  std::string _p3dpython_exe;
+  std::string _p3dpython_dll;
+  std::string _mf_filename;
+  std::string _env;
   FHandle _input_handle, _output_handle;
   bool _interactive_console;
 
-  typedef map<int, P3DInstance *> Instances;
+  typedef std::map<int, P3DInstance *> Instances;
   Instances _instances;
   LOCK _instances_lock;
 
   // Commands that are queued up to send down the pipe.  Normally these only
   // accumulate before the python process has been started; after that,
   // commands are written to the pipe directly.
-  typedef vector<TiXmlDocument *> Commands;
+  typedef std::vector<TiXmlDocument *> Commands;
   Commands _commands;
 
   // This map keeps track of the P3D_object pointers we have delivered to the
   // child process.  We have to keep each of these until the child process
   // tells us it's safe to delete them.
-  typedef map<int, P3D_object *> SentObjects;
+  typedef std::map<int, P3D_object *> SentObjects;
   SentObjects _sent_objects;
 
   P3DPackage *_panda3d;
@@ -146,7 +146,7 @@ private:
   bool _p3dpython_running;
 
   // The _response_ready mutex protects this structure.
-  typedef map<int, TiXmlDocument *> Responses;
+  typedef std::map<int, TiXmlDocument *> Responses;
   Responses _responses;
   P3DConditionVar _response_ready;
 

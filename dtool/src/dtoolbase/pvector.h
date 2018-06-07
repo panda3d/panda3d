@@ -41,15 +41,15 @@ using std::vector;
  * allocated memory.
  */
 template<class Type>
-class pvector : public vector<Type, pallocator_array<Type> > {
+class pvector : public std::vector<Type, pallocator_array<Type> > {
 public:
   typedef pallocator_array<Type> allocator;
-  typedef vector<Type, allocator> base_class;
+  typedef std::vector<Type, allocator> base_class;
   typedef typename base_class::size_type size_type;
 
   explicit pvector(TypeHandle type_handle = pvector_type_handle) : base_class(allocator(type_handle)) { }
   pvector(const pvector<Type> &copy) : base_class(copy) { }
-  pvector(pvector<Type> &&from) noexcept : base_class(move(from)) {};
+  pvector(pvector<Type> &&from) noexcept : base_class(std::move(from)) {};
   explicit pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   explicit pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
   pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator(type_handle)) { }
@@ -60,7 +60,7 @@ public:
   }
 
   pvector<Type> &operator =(pvector<Type> &&from) noexcept {
-    base_class::operator =(move(from));
+    base_class::operator =(std::move(from));
     return *this;
   }
 };

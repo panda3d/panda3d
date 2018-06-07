@@ -33,7 +33,7 @@ operator < (const ConfigPage &other) const {
  * Returns the name of the page.  If the page was loaded from a .prc file,
  * this is usually the filename.
  */
-INLINE const string &ConfigPage::
+INLINE const std::string &ConfigPage::
 get_name() const {
   return _name;
 }
@@ -109,7 +109,7 @@ set_trust_level(int trust_level) {
  * Returns the raw binary signature that was found in the prc file, if any.
  * This method is probably not terribly useful for most applications.
  */
-INLINE const string &ConfigPage::
+INLINE const std::string &ConfigPage::
 get_signature() const {
   return _signature;
 }
@@ -124,8 +124,8 @@ make_dirty() {
   _trust_level = 0;
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigPage &page) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigPage &page) {
   page.output(out);
   return out;
 }

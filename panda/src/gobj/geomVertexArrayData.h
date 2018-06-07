@@ -92,8 +92,8 @@ PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -316,10 +316,10 @@ PUBLISHED:
                                    PyObject *buffer,
                                    size_t from_start, size_t from_size));
 
-  INLINE string get_data() const;
-  void set_data(const string &data);
-  INLINE string get_subdata(size_t start, size_t size) const;
-  void set_subdata(size_t start, size_t size, const string &data);
+  INLINE std::string get_data() const;
+  void set_data(const std::string &data);
+  INLINE std::string get_subdata(size_t start, size_t size) const;
+  void set_subdata(size_t start, size_t size, const std::string &data);
 
   INLINE void mark_used() const;
 
@@ -350,7 +350,7 @@ private:
   friend class GeomVertexArrayData;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexArrayData &obj);
 
 #include "geomVertexArrayData.I"
 

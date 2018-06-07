@@ -52,7 +52,7 @@ PUBLISHED:
   INLINE LVecBase4 get_vertex(int ui, int vi, const NodePath &rel_to) const;
 
   INLINE void set_vertex_space(int ui, int vi, const NodePath &space);
-  INLINE void set_vertex_space(int ui, int vi, const string &space);
+  INLINE void set_vertex_space(int ui, int vi, const std::string &space);
   NodePath get_vertex_space(int ui, int vi, const NodePath &rel_to) const;
 
   INLINE void set_extended_vertex(int ui, int vi, int d, PN_stdfloat value);
@@ -77,7 +77,7 @@ PUBLISHED:
 
   PT(NurbsSurfaceResult) evaluate(const NodePath &rel_to = NodePath()) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   MAKE_PROPERTY(u_order, get_u_order, set_u_order);
   MAKE_PROPERTY(v_order, get_v_order, set_v_order);
@@ -119,7 +119,7 @@ private:
   NurbsBasisVector _v_basis;
 };
 
-INLINE ostream &operator << (ostream &out, const NurbsSurfaceEvaluator &n);
+INLINE std::ostream &operator << (std::ostream &out, const NurbsSurfaceEvaluator &n);
 
 #include "nurbsSurfaceEvaluator.I"
 

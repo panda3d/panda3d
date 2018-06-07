@@ -56,9 +56,9 @@ public:
   ~P3DInstance();
   void cleanup();
 
-  void set_p3d_url(const string &p3d_url);
-  void set_p3d_filename(const string &p3d_filename, const int &p3d_offset = 0);
-  int make_p3d_stream(const string &p3d_url);
+  void set_p3d_url(const std::string &p3d_url);
+  void set_p3d_filename(const std::string &p3d_filename, const int &p3d_offset = 0);
+  int make_p3d_stream(const std::string &p3d_url);
   inline const P3DFileParams &get_fparams() const;
 
   void set_wparams(const P3DWindowParams &wparams);
@@ -84,16 +84,16 @@ public:
   bool handle_event(const P3D_event_data &event);
 
   inline int get_instance_id() const;
-  inline const string &get_session_key() const;
-  const string &get_log_pathname() const;
-  inline const string &get_session_platform() const;
+  inline const std::string &get_session_key() const;
+  const std::string &get_log_pathname() const;
+  inline const std::string &get_session_platform() const;
 
   inline P3DSession *get_session() const;
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
-  void add_package(const string &name, const string &version,
-                   const string &seq, P3DHost *host);
+  void add_package(const std::string &name, const std::string &version,
+                   const std::string &seq, P3DHost *host);
   void add_package(P3DPackage *package);
   void remove_package(P3DPackage *package);
   bool get_packages_info_ready() const;
@@ -161,14 +161,14 @@ private:
     IT_num_image_types,     // Not a real value
   };
 
-  void priv_set_p3d_filename(const string &p3d_filename, const int &p3d_offset = -1);
-  void determine_p3d_basename(const string &p3d_url);
+  void priv_set_p3d_filename(const std::string &p3d_filename, const int &p3d_offset = -1);
+  void determine_p3d_basename(const std::string &p3d_url);
 
-  bool check_matches_origin(const string &origin_match);
-  bool check_matches_origin_one(const string &origin_match);
-  bool check_matches_hostname(const string &orig, const string &match);
-  void separate_components(vector<string> &components, const string &str);
-  bool check_matches_component(const string &orig, const string &match);
+  bool check_matches_origin(const std::string &origin_match);
+  bool check_matches_origin_one(const std::string &origin_match);
+  bool check_matches_hostname(const std::string &orig, const std::string &match);
+  void separate_components(std::vector<std::string> &components, const std::string &str);
+  bool check_matches_component(const std::string &orig, const std::string &match);
 
   void check_p3d_signature();
   void mark_p3d_untrusted();
@@ -176,15 +176,15 @@ private:
   void scan_app_desc_file(TiXmlDocument *doc);
   void add_panda3d_package();
   void add_packages();
-  string find_alt_host_url(const string &host_url, const string &alt_host);
+  std::string find_alt_host_url(const std::string &host_url, const std::string &alt_host);
   void get_host_info(P3DHost *host);
-  string get_start_dir_suffix() const;
+  std::string get_start_dir_suffix() const;
 
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
-  void handle_notify_request(const string &message);
-  void handle_script_request(const string &operation, P3D_object *object,
-                             const string &property_name, P3D_object *value,
+  void handle_notify_request(const std::string &message);
+  void handle_script_request(const std::string &operation, P3D_object *object,
+                             const std::string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
 
   void set_failed();
@@ -201,7 +201,7 @@ private:
                                 size_t received_data);
   void report_package_progress(P3DPackage *package, double progress);
   void report_package_done(P3DPackage *package, bool success);
-  void set_install_label(const string &install_label);
+  void set_install_label(const std::string &install_label);
 
   void paint_window();
 
@@ -217,7 +217,7 @@ private:
   void add_carbon_modifier_flags(unsigned int &swb_flags, int modifiers);
   void add_cocoa_modifier_flags(unsigned int &swb_flags, int modifiers);
 
-  void send_notify(const string &message);
+  void send_notify(const std::string &message);
 
 #ifdef __APPLE__
   void alloc_swbuffer();
@@ -228,10 +228,10 @@ private:
   P3D_request_ready_func *_func;
   P3D_object *_dom_object;
   P3DMainObject *_main_object;
-  string _p3d_basename;
-  string _origin_protocol;
-  string _origin_hostname;
-  string _origin_port;
+  std::string _p3d_basename;
+  std::string _origin_protocol;
+  std::string _origin_hostname;
+  std::string _origin_port;
 
   // We need a list of previous time reports so we can average the predicted
   // download time over the past few seconds.
@@ -240,7 +240,7 @@ private:
     double _total;
     double _report_time;
   };
-  typedef deque<TimeReport> TimeReports;
+  typedef std::deque<TimeReport> TimeReports;
   TimeReports _time_reports;
   double _total_time_reports;
 
@@ -258,7 +258,7 @@ private:
 
     bool _use_standard_image;
     P3DTemporaryFile *_temp_filename;
-    string _filename;
+    std::string _filename;
     P3DSplashWindow::ImagePlacement _image_placement;
   };
   ImageFile _image_files[IT_num_image_types];
@@ -283,11 +283,11 @@ private:
   P3DPackage *_p3dcert_package;
 
   int _instance_id;
-  string _session_key;
-  string _log_basename;
-  string _session_platform;
-  string _prc_name;
-  string _start_dir;
+  std::string _session_key;
+  std::string _log_basename;
+  std::string _session_platform;
+  std::string _prc_name;
+  std::string _start_dir;
   bool _hidden;
   bool _matches_run_origin;
   bool _matches_script_origin;
@@ -301,14 +301,14 @@ private:
 
   P3DSession *_session;
   P3DAuthSession *_auth_session;
-  string _log_pathname;
+  std::string _log_pathname;
 
 #ifdef __APPLE__
   // On OSX, we have to get a copy of the framebuffer data back from the child
   // process, and draw it to the window, here in the parent process.  Crazy!
   int _shared_fd;
   size_t _shared_mmap_size;
-  string _shared_filename;
+  std::string _shared_filename;
   SubprocessWindowBuffer *_swbuffer;
   char *_reversed_buffer;
   CFDataRef _buffer_data;
@@ -323,7 +323,7 @@ private:
 #endif  // __APPLE__
 
   P3DSplashWindow *_splash_window;
-  string _install_label;
+  std::string _install_label;
   bool _instance_window_opened;
   bool _instance_window_attached;
   bool _stuff_to_download;
@@ -341,7 +341,7 @@ private:
   // for more than a couple of seconds.
   bool _show_dl_instance_progress;
 
-  typedef vector<P3DPackage *> Packages;
+  typedef std::vector<P3DPackage *> Packages;
   Packages _packages;
   Packages _downloading_packages;
   int _download_package_index;
@@ -357,19 +357,19 @@ private:
   // it's in the above vector also.
   P3DPackage *_panda3d_package;
 
-  typedef map<int, P3DDownload *> Downloads;
+  typedef std::map<int, P3DDownload *> Downloads;
   Downloads _downloads;
 
   // The _raw_requests queue might be filled up by the read thread, so we
   // protect it in a lock.
   LOCK _request_lock;
-  typedef deque<TiXmlDocument *> RawRequests;
+  typedef std::deque<TiXmlDocument *> RawRequests;
   RawRequests _raw_requests;
   bool _requested_stop;
 
   // The _baked_requests queue is only touched in the main thread; no lock
   // needed.
-  typedef deque<P3D_request *> BakedRequests;
+  typedef std::deque<P3D_request *> BakedRequests;
   BakedRequests _baked_requests;
 
   friend class P3DSession;

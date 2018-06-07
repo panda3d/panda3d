@@ -376,7 +376,7 @@ get_quality_level() const {
  * Each different TextureStage in the world must be uniquely named.
  */
 INLINE void EggTexture::
-set_stage_name(const string &stage_name) {
+set_stage_name(const std::string &stage_name) {
   _stage_name = stage_name;
   _flags |= F_has_stage_name;
 }
@@ -386,7 +386,7 @@ set_stage_name(const string &stage_name) {
  */
 INLINE void EggTexture::
 clear_stage_name() {
-  _stage_name = string();
+  _stage_name = std::string();
   _flags &= ~F_has_stage_name;
 }
 
@@ -403,7 +403,7 @@ has_stage_name() const {
  * Returns the stage name that has been specified for this texture, or the
  * tref name if no texture stage has explicitly been specified.
  */
-INLINE const string &EggTexture::
+INLINE const std::string &EggTexture::
 get_stage_name() const {
   return has_stage_name() ? _stage_name : get_name();
 }
@@ -526,7 +526,7 @@ get_border_color() const {
  * texture coordinates will be used.
  */
 INLINE void EggTexture::
-set_uv_name(const string &uv_name) {
+set_uv_name(const std::string &uv_name) {
   if (uv_name == "default" || uv_name.empty()) {
     clear_uv_name();
   } else {
@@ -541,7 +541,7 @@ set_uv_name(const string &uv_name) {
  */
 INLINE void EggTexture::
 clear_uv_name() {
-  _uv_name = string();
+  _uv_name = std::string();
   _flags &= ~F_has_uv_name;
 }
 
@@ -558,7 +558,7 @@ has_uv_name() const {
  * Returns the texcoord name that has been specified for this texture, or the
  * empty string if no texcoord name has explicitly been specified.
  */
-INLINE const string &EggTexture::
+INLINE const std::string &EggTexture::
 get_uv_name() const {
   return _uv_name;
 }

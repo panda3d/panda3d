@@ -32,13 +32,13 @@ public:
   ~PPBrowserObject();
 
   int get_repr(char *buffer, int buffer_length) const;
-  P3D_object *get_property(const string &property) const;
-  bool set_property(const string &property, bool needs_response,
+  P3D_object *get_property(const std::string &property) const;
+  bool set_property(const std::string &property, bool needs_response,
                     P3D_object *value);
 
-  P3D_object *call(const string &method_name,
+  P3D_object *call(const std::string &method_name,
                    P3D_object *params[], int num_params) const;
-  P3D_object *eval(const string &expression) const;
+  P3D_object *eval(const std::string &expression) const;
 
   static void clear_class_definition();
 

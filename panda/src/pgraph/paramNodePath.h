@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE virtual TypeHandle get_value_type() const;
   INLINE const NodePath &get_value() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   NodePath _node_path;

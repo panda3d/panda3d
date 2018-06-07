@@ -87,8 +87,8 @@ extern EXPCL_GL void CLP(init_classes)();
 
 
 #if !defined(WIN32) && defined(GSG_VERBOSE)
-ostream &output_gl_enum(ostream &out, GLenum v);
-INLINE ostream &operator << (ostream &out, GLenum v) {
+std::ostream &output_gl_enum(std::ostream &out, GLenum v);
+INLINE std::ostream &operator << (std::ostream &out, GLenum v) {
   return output_gl_enum(out, v);
 }
 #endif

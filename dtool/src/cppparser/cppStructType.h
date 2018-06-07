@@ -86,7 +86,7 @@ public:
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
@@ -98,17 +98,17 @@ public:
 
   class Base {
   public:
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
     CPPType *_base;
     CPPVisibility _vis;
     bool _is_virtual;
   };
 
-  typedef vector<Base> Derivation;
+  typedef std::vector<Base> Derivation;
   Derivation _derivation;
 
-  typedef list<CPPInstance *> VFunctions;
+  typedef std::list<CPPInstance *> VFunctions;
   void get_virtual_funcs(VFunctions &funcs) const;
   void get_pure_virtual_funcs(VFunctions &funcs) const;
 
@@ -117,11 +117,11 @@ protected:
   virtual bool is_less(const CPPDeclaration *other) const;
 
   bool _subst_decl_recursive_protect;
-  typedef vector<CPPTypeProxy *> Proxies;
+  typedef std::vector<CPPTypeProxy *> Proxies;
   Proxies _proxies;
 };
 
-inline ostream &operator << (ostream &out, const CPPStructType::Base &base) {
+inline std::ostream &operator << (std::ostream &out, const CPPStructType::Base &base) {
   base.output(out);
   return out;
 }

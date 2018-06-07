@@ -46,12 +46,12 @@ PUBLISHED:
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   mutable MutexTrueImpl _impl;
@@ -60,8 +60,8 @@ private:
   friend class ConditionVarFullDirect;
 };
 
-INLINE ostream &
-operator << (ostream &out, const MutexDirect &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MutexDirect &m) {
   m.output(out);
   return out;
 }

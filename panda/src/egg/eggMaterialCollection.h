@@ -90,7 +90,7 @@ PUBLISHED:
   EggMaterial *create_unique_material(const EggMaterial &copy, int eq);
 
   // Find a material with a particular MRef name.
-  EggMaterial *find_mref(const string &mref_name) const;
+  EggMaterial *find_mref(const std::string &mref_name) const;
 
 private:
   Materials _materials;

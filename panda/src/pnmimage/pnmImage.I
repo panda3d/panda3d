@@ -68,7 +68,7 @@ INLINE PNMImage::
  */
 INLINE xelval PNMImage::
 clamp_val(int input_value) const {
-  return (xelval)min(max(0, input_value), (int)get_maxval());
+  return (xelval)std::min(std::max(0, input_value), (int)get_maxval());
 }
 
 /**
@@ -80,7 +80,7 @@ to_val(float input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return (int)(min(1.0f, max(0.0f, input_value)) * get_maxval() + 0.5f);
+    return (int)(std::min(1.0f, std::max(0.0f, input_value)) * get_maxval() + 0.5f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:
@@ -97,7 +97,7 @@ to_val(float input_value) const {
 
   case XE_scRGB:
   case XE_scRGB_alpha:
-    return min(max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
+    return std::min(std::max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
 
   default:
     return 0;
@@ -559,9 +559,9 @@ set_xel(int x, int y, const LRGBColorf &value) {
   case XE_scRGB_alpha:
     {
       LRGBColorf scaled = value * 8192.f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
     }
     break;
   }
@@ -721,19 +721,19 @@ set_xel_a(int x, int y, const LColorf &value) {
   case XE_scRGB:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
     }
     break;
 
   case XE_scRGB_alpha:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
-      alpha_row(y)[x] = min(max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
+      alpha_row(y)[x] = std::min(std::max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
     }
     break;
   }
@@ -1210,14 +1210,14 @@ setup_sub_image(const PNMImage &copy, int &xto, int &yto,
     yto = 0;
   }
 
-  x_size = min(x_size, copy.get_x_size() - xfrom);
-  y_size = min(y_size, copy.get_y_size() - yfrom);
+  x_size = std::min(x_size, copy.get_x_size() - xfrom);
+  y_size = std::min(y_size, copy.get_y_size() - yfrom);
 
   xmin = xto;
   ymin = yto;
 
-  xmax = min(xmin + x_size, get_x_size());
-  ymax = min(ymin + y_size, get_y_size());
+  xmax = std::min(xmin + x_size, get_x_size());
+  ymax = std::min(ymin + y_size, get_y_size());
 }
 
 /**

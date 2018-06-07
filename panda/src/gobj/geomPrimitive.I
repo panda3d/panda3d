@@ -445,7 +445,7 @@ CData(const GeomPrimitive::CData &copy) :
 INLINE GeomPrimitivePipelineReader::
 GeomPrimitivePipelineReader(CPT(GeomPrimitive) object,
                             Thread *current_thread) :
-  _object(move(object)),
+  _object(std::move(object)),
   _current_thread(current_thread),
 #ifndef CPPPARSER
   _cdata(_object->_cycler.read_unlocked(current_thread)),
@@ -667,8 +667,8 @@ draw(GraphicsStateGuardianBase *gsg, bool force) const {
   return _object->draw(gsg, this, force);
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomPrimitive &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomPrimitive &obj) {
   obj.output(out);
   return out;
 }

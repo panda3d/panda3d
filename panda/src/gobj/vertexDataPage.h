@@ -74,8 +74,8 @@ PUBLISHED:
   static void stop_threads();
   static void flush_threads();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   INLINE unsigned char *get_page_data(bool force);
@@ -114,7 +114,7 @@ private:
   class PageThreadManager;
   class EXPCL_PANDA_GOBJ PageThread : public Thread {
   public:
-    PageThread(PageThreadManager *manager, const string &name);
+    PageThread(PageThreadManager *manager, const std::string &name);
 
   protected:
     virtual void thread_main();
@@ -228,7 +228,7 @@ private:
   friend class VertexDataBook;
 };
 
-inline ostream &operator << (ostream &out, const VertexDataPage &page) {
+inline std::ostream &operator << (std::ostream &out, const VertexDataPage &page) {
   page.output(out);
   return out;
 }

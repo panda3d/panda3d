@@ -26,7 +26,7 @@ class PfmFile;
  */
 class EXPCL_PANDA_PNMIMAGE PNMWriter : public PNMImageHeader {
 protected:
-  INLINE PNMWriter(PNMFileType *type, ostream *file, bool owns_file);
+  INLINE PNMWriter(PNMFileType *type, std::ostream *file, bool owns_file);
 
 public:
 
@@ -62,7 +62,7 @@ public:
 protected:
   PNMFileType *_type;
   bool _owns_file;
-  ostream *_file;
+  std::ostream *_file;
   bool _is_valid;
 };
 

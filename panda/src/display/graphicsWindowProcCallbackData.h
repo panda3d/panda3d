@@ -39,7 +39,7 @@ public:
 #endif
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 #ifdef WIN32
   INLINE uintptr_t get_hwnd() const;

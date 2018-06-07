@@ -41,7 +41,7 @@ tell() const {
  * Returns the entire buffer contents as a string, regardless of the current
  * data pointer.
  */
-INLINE const string &Ramfile::
+INLINE const std::string &Ramfile::
 get_data() const {
   return _data;
 }

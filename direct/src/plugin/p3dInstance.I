@@ -42,7 +42,7 @@ get_instance_id() const {
  * is guaranteed to be unique for each unique session required for different
  * P3DInstances.
  */
-inline const string &P3DInstance::
+inline const std::string &P3DInstance::
 get_session_key() const {
   return _session_key;
 }
@@ -56,7 +56,7 @@ get_session_key() const {
  * Presumably all of the platform-specific packages that are downloaded
  * subsequently must be of the exact same platform.
  */
-inline const string &P3DInstance::
+inline const std::string &P3DInstance::
 get_session_platform() const {
   return _session_platform;
 }

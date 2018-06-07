@@ -42,18 +42,18 @@ get_num_threads() const {
 /**
  * Returns the name of the indicated thread.
  */
-INLINE string PStatClient::
+INLINE std::string PStatClient::
 get_thread_name(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), std::string());
   return get_thread_ptr(index)->_name;
 }
 
 /**
  * Returns the sync_name of the indicated thread.
  */
-INLINE string PStatClient::
+INLINE std::string PStatClient::
 get_thread_sync_name(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), std::string());
   return get_thread_ptr(index)->_sync_name;
 }
 
@@ -72,7 +72,7 @@ get_thread_object(int index) const {
  * true if successful, false on failure.
  */
 INLINE bool PStatClient::
-connect(const string &hostname, int port) {
+connect(const std::string &hostname, int port) {
   return get_global_pstats()->client_connect(hostname, port);
 }
 
@@ -161,7 +161,7 @@ get_thread_ptr(int thread_index) const {
  *
  */
 INLINE PStatClient::Collector::
-Collector(int parent_index, const string &name) :
+Collector(int parent_index, const std::string &name) :
   _def(nullptr),
   _parent_index(parent_index),
   _name(name)
@@ -179,7 +179,7 @@ get_parent_index() const {
 /**
  *
  */
-INLINE const string &PStatClient::Collector::
+INLINE const std::string &PStatClient::Collector::
 get_name() const {
   return _name;
 }

@@ -82,28 +82,28 @@ public:
                   CPPScope *current_scope,
                   CPPScope *global_scope) const;
 
-  CPPType *find_type(const string &name, bool recurse = true) const;
-  CPPType *find_type(const string &name,
+  CPPType *find_type(const std::string &name, bool recurse = true) const;
+  CPPType *find_type(const std::string &name,
                      CPPDeclaration::SubstDecl &subst,
                      CPPScope *global_scope,
                      bool recurse = true) const;
-  CPPScope *find_scope(const string &name, CPPScope *global_scope,
+  CPPScope *find_scope(const std::string &name, CPPScope *global_scope,
                        bool recurse = true) const;
-  CPPScope *find_scope(const string &name,
+  CPPScope *find_scope(const std::string &name,
                        CPPDeclaration::SubstDecl &subst,
                        CPPScope *global_scope,
                        bool recurse = true) const;
-  CPPDeclaration *find_symbol(const string &name,
+  CPPDeclaration *find_symbol(const std::string &name,
                               bool recurse = true) const;
-  CPPDeclaration *find_template(const string &name,
+  CPPDeclaration *find_template(const std::string &name,
                                 bool recurse = true) const;
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = nullptr) const;
-  virtual string get_fully_scoped_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
 
-  virtual void output(ostream &out, CPPScope *scope) const;
-  void write(ostream &out, int indent, CPPScope *scope) const;
+  virtual void output(std::ostream &out, CPPScope *scope) const;
+  void write(std::ostream &out, int indent, CPPScope *scope) const;
 
   CPPTemplateScope *get_template_scope();
   virtual CPPTemplateScope *as_template_scope();
@@ -117,30 +117,30 @@ private:
                           CPPPreprocessor *error_sink = nullptr);
 
 public:
-  typedef vector<CPPDeclaration *> Declarations;
+  typedef std::vector<CPPDeclaration *> Declarations;
   Declarations _declarations;
 
-  typedef map<string, CPPType *> ExtensionTypes;
+  typedef std::map<std::string, CPPType *> ExtensionTypes;
   ExtensionTypes _structs;
   ExtensionTypes _classes;
   ExtensionTypes _unions;
   ExtensionTypes _enums;
 
-  typedef map<string, CPPNamespace *> Namespaces;
+  typedef std::map<std::string, CPPNamespace *> Namespaces;
   Namespaces _namespaces;
 
-  typedef map<string, CPPType *> Types;
+  typedef std::map<std::string, CPPType *> Types;
   Types _types;
-  typedef map<string, CPPInstance *> Variables;
+  typedef std::map<std::string, CPPInstance *> Variables;
   Variables _variables;
   Variables _enum_values;
-  typedef map<string, CPPFunctionGroup *> Functions;
+  typedef std::map<std::string, CPPFunctionGroup *> Functions;
   Functions _functions;
-  typedef map<string, CPPDeclaration *> Templates;
+  typedef std::map<std::string, CPPDeclaration *> Templates;
   Templates _templates;
   CPPNameComponent _name;
 
-  typedef set<CPPScope *> Using;
+  typedef std::set<CPPScope *> Using;
   Using _using;
 
 protected:
@@ -149,7 +149,7 @@ protected:
   CPPVisibility _current_vis;
 
 private:
-  typedef map<const CPPTemplateParameterList *, CPPScope *, CPPTPLCompare> Instantiations;
+  typedef std::map<const CPPTemplateParameterList *, CPPScope *, CPPTPLCompare> Instantiations;
   Instantiations _instantiations;
 
   bool _is_fully_specified;
@@ -158,8 +158,8 @@ private:
   bool _subst_decl_recursive_protect;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPScope &scope) {
+inline std::ostream &
+operator << (std::ostream &out, const CPPScope &scope) {
   scope.output(out, nullptr);
   return out;
 }

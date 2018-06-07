@@ -54,7 +54,7 @@ PStatCollector() :
  * register the collector with; otherwise, the global client is used.
  */
 INLINE PStatCollector::
-PStatCollector(const string &name, PStatClient *client) :
+PStatCollector(const std::string &name, PStatClient *client) :
   _level(0.0f)
 {
   if (client == nullptr) {
@@ -80,7 +80,7 @@ PStatCollector(const string &name, PStatClient *client) :
  * collector on the same client as its parent.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &name) :
+PStatCollector(const PStatCollector &parent, const std::string &name) :
   _level(0.0f)
 {
   nassertv(parent._client != nullptr);
@@ -122,31 +122,31 @@ is_valid() const {
  * Returns the local name of this collector.  This is the rightmost part of
  * the fullname, after the rightmost colon.
  */
-INLINE string PStatCollector::
+INLINE std::string PStatCollector::
 get_name() const {
   if (_client != nullptr) {
     return _client->get_collector_name(_index);
   }
-  return string();
+  return std::string();
 }
 
 /**
  * Returns the full name of this collector.  This includes the names of all
  * the collector's parents, concatenated together with colons.
  */
-INLINE string PStatCollector::
+INLINE std::string PStatCollector::
 get_fullname() const {
   if (_client != nullptr) {
     return _client->get_collector_fullname(_index);
   }
-  return string();
+  return std::string();
 }
 
 /**
  *
  */
 INLINE void PStatCollector::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "PStatCollector(\"" << get_fullname() << "\")";
 }
 
@@ -494,7 +494,7 @@ PStatCollector()
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const string &, PStatClient *client) {
+PStatCollector(const std::string &, PStatClient *client) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
@@ -509,7 +509,7 @@ PStatCollector(const string &, PStatClient *client) {
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const string &) {
+PStatCollector(const PStatCollector &parent, const std::string &) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips

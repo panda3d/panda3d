@@ -36,10 +36,10 @@ class VrpnButtonDevice;
  */
 class VrpnButton {
 public:
-  VrpnButton(const string &button_name, vrpn_Connection *connection);
+  VrpnButton(const std::string &button_name, vrpn_Connection *connection);
   ~VrpnButton();
 
-  INLINE const string &get_button_name() const;
+  INLINE const std::string &get_button_name() const;
   INLINE bool is_empty() const;
 
   void mark(VrpnButtonDevice *device);
@@ -47,22 +47,22 @@ public:
 
   INLINE void poll();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   static void VRPN_CALLBACK
   vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info);
 
 private:
-  string _button_name;
+  std::string _button_name;
   vrpn_Button_Remote *_button;
 
   typedef pvector<VrpnButtonDevice *> Devices;
   Devices _devices;
 };
 
-INLINE ostream &operator << (ostream &out, const VrpnButton &button) {
+INLINE std::ostream &operator << (std::ostream &out, const VrpnButton &button) {
   button.output(out);
   return out;
 }

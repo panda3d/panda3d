@@ -39,7 +39,7 @@ get_fps() const {
 /**
  * Returns the camera's pixel format, as a FourCC code, if known.
  */
-INLINE const string &WebcamVideo::
+INLINE const std::string &WebcamVideo::
 get_pixel_format() const {
   return _pixel_format;
 }
@@ -49,7 +49,7 @@ get_pixel_format() const {
  * FPS to the output stream.
  */
 INLINE void WebcamVideo::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ": " << get_size_x() << "x" << get_size_y();
 
   if (!_pixel_format.empty()) {
@@ -59,7 +59,7 @@ output(ostream &out) const {
   out << " @ " << get_fps() << "Hz";
 }
 
-INLINE ostream &operator << (ostream &out, const WebcamVideo &n) {
+INLINE std::ostream &operator << (std::ostream &out, const WebcamVideo &n) {
   n.output(out);
   return out;
 }

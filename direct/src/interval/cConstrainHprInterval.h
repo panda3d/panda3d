@@ -26,7 +26,7 @@
  */
 class EXPCL_DIRECT_INTERVAL CConstrainHprInterval : public CConstraintInterval {
 PUBLISHED:
-  explicit CConstrainHprInterval(const string &name, double duration,
+  explicit CConstrainHprInterval(const std::string &name, double duration,
                                  const NodePath &node, const NodePath &target,
                                  bool wrt, const LVecBase3 hprOffset=LVector3::zero());
 
@@ -34,7 +34,7 @@ PUBLISHED:
   INLINE const NodePath &get_target() const;
 
   virtual void priv_step(double t);
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   NodePath _node;

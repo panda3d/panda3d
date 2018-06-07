@@ -38,7 +38,7 @@ public:
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list,
-                                    const ov_set<string> &mount_points) const;
+                                    const ov_set<std::string> &mount_points) const;
 
 private:
   VirtualFileSystem *_file_system;

@@ -179,7 +179,7 @@ private:
 
   private:
     // Cannot use a pmap, since that would be recursive!
-    typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
+    typedef std::map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;

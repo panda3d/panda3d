@@ -38,16 +38,16 @@ public:
   virtual bool read_file(const Filename &file, bool do_uncompress,
                          pvector<unsigned char> &result) const;
 
-  virtual istream *open_read_file(const Filename &file) const;
-  virtual streamsize get_file_size(const Filename &file, istream *stream) const;
-  virtual streamsize get_file_size(const Filename &file) const;
+  virtual std::istream *open_read_file(const Filename &file) const;
+  virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;
+  virtual std::streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   PT(Multifile) _multifile;

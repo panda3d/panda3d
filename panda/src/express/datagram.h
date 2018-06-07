@@ -48,7 +48,7 @@ PUBLISHED:
   Datagram &operator = (Datagram &&from) noexcept = default;
 
   virtual void clear();
-  void dump_hex(ostream &out, unsigned int indent=0) const;
+  void dump_hex(std::ostream &out, unsigned int indent=0) const;
 
   INLINE void add_bool(bool value);
   INLINE void add_int8(int8_t value);
@@ -75,11 +75,11 @@ PUBLISHED:
   INLINE void add_be_float32(PN_float32 value);
   INLINE void add_be_float64(PN_float64 value);
 
-  INLINE void add_string(const string &str);
-  INLINE void add_string32(const string &str);
-  INLINE void add_z_string(const string &str);
-  INLINE void add_fixed_string(const string &str, size_t size);
-  void add_wstring(const wstring &str);
+  INLINE void add_string(const std::string &str);
+  INLINE void add_string32(const std::string &str);
+  INLINE void add_z_string(const std::string &str);
+  INLINE void add_fixed_string(const std::string &str, size_t size);
+  void add_wstring(const std::wstring &str);
 
   void pad_bytes(size_t size);
   void append_data(const void *data, size_t size);
@@ -87,7 +87,7 @@ PUBLISHED:
 
   void assign(const void *data, size_t size);
 
-  INLINE string get_message() const;
+  INLINE std::string get_message() const;
   INLINE vector_uchar __bytes__() const;
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
@@ -104,8 +104,8 @@ PUBLISHED:
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, unsigned int indent=0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, unsigned int indent=0) const;
 
 private:
   PTA_uchar _data;
@@ -145,9 +145,9 @@ generic_write_datagram(Datagram &dest, float value);
 INLINE void
 generic_write_datagram(Datagram &dest, double value);
 INLINE void
-generic_write_datagram(Datagram &dest, const string &value);
+generic_write_datagram(Datagram &dest, const std::string &value);
 INLINE void
-generic_write_datagram(Datagram &dest, const wstring &value);
+generic_write_datagram(Datagram &dest, const std::wstring &value);
 
 
 #include "datagram.I"
