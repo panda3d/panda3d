@@ -17,29 +17,25 @@
 #include "displayInformation.h"
 
 /**
- * Callback called by the VK_EXT_debug_report extension whenever one of the
+ * Callback called by the VK_EXT_debug_utils extension whenever one of the
  * validation layers has something to report.
  */
-static VkBool32 debug_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT, uint64_t, size_t, int32_t, const char *prefix, const char *message, void *) {
+static VkBool32 debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT flags, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *data, void *) {
   // When updating this, be sure to also update the code in the GraphicsPipe
   // constructor that assigns the correct mask bits.
   NotifySeverity severity;
-  if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) {
+  if (flags & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
     severity = NS_error;
-  } else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) {
+  } else if (flags & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
     severity = NS_warning;
-  } else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) {
-    severity = NS_info;
-  //} else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) {
-  //  // I'd label this as 'info', but the output is just way too spammy.
-  //  severity = NS_spam;
-  //} else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) {
-  //  severity = NS_spam;
+  } else if (flags & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    // I'd label this as 'info', but the output is just way too spammy.
+    severity = NS_spam;
   } else {
     severity = NS_spam;
   }
 
-  vulkandisplay_cat.out(severity) << message << "\n";
+  vulkandisplay_cat.out(severity) << data->pMessage << "\n";
 
   // Return true here to fail validation, causing an error to be returned from
   // the validated function.
@@ -60,7 +56,7 @@ VulkanGraphicsPipe() {
   };
 
   const char *extensions[] = {
-    "VK_EXT_debug_report",
+    "VK_EXT_debug_utils",
     "VK_KHR_surface",
 #ifdef _WIN32
     "VK_KHR_win32_surface"
@@ -106,36 +102,36 @@ VulkanGraphicsPipe() {
     return;
   }
 
-  // Set a debug callback.
-  PFN_vkCreateDebugReportCallbackEXT pvkCreateDebugReportCallback =
-    (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugReportCallbackEXT");
+  // Set up the debugging extensions.
+  _vkSetDebugUtilsObjectName = (PFN_vkSetDebugUtilsObjectNameEXT)
+    vkGetInstanceProcAddr(_instance, "vkSetDebugUtilsObjectNameEXT");
 
-  if (pvkCreateDebugReportCallback) {
-    VkDebugReportCallbackCreateInfoEXT cb_info;
-    cb_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-    cb_info.pNext = nullptr;
-    cb_info.flags = 0;
-    cb_info.pfnCallback = &debug_callback;
-    cb_info.pUserData = nullptr;
+  PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessenger =
+    (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
+
+  if (pvkCreateDebugUtilsMessenger) {
+    VkDebugUtilsMessengerCreateInfoEXT info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                     | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                     | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    info.pfnUserCallback = &debug_callback;
 
     // Tell the extension which severities to report, based on the enabled
     // notify categories.
     if (vulkandisplay_cat.is_spam()) {
-      cb_info.flags |= VK_DEBUG_REPORT_DEBUG_BIT_EXT |
-                       VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
-    }
-    if (vulkandisplay_cat.is_info()) {
-      cb_info.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
     }
     if (vulkandisplay_cat.is_warning()) {
-      cb_info.flags |= VK_DEBUG_REPORT_WARNING_BIT_EXT;
+      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
     }
     if (vulkandisplay_cat.is_error()) {
-      cb_info.flags |= VK_DEBUG_REPORT_ERROR_BIT_EXT;
+      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
     }
 
-    VkDebugReportCallbackEXT callback;
-    err = pvkCreateDebugReportCallback(_instance, &cb_info, nullptr, &callback);
+    VkDebugUtilsMessengerEXT messenger;
+    err = pvkCreateDebugUtilsMessenger(_instance, &info, nullptr, &messenger);
     if (err) {
       vulkan_error(err, "Failed to create debug report callback");
     }
@@ -538,6 +534,21 @@ VulkanGraphicsPipe() {
  */
 VulkanGraphicsPipe::
 ~VulkanGraphicsPipe() {
+}
+
+/**
+ * Sets the name of a Vulkan object.  Useful for debugging.
+ */
+void VulkanGraphicsPipe::
+set_object_name(VkDevice device, VkObjectType type, void *object, const char *name) {
+  if (_vkSetDebugUtilsObjectName != nullptr) {
+    VkDebugUtilsObjectNameInfoEXT info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    info.objectType = type;
+    info.objectHandle = (uint64_t)object;
+    info.pObjectName = name;
+    _vkSetDebugUtilsObjectName(device, &info);
+  }
 }
 
 /**
