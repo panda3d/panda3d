@@ -17,8 +17,8 @@
 INLINE AsyncFuture::
 AsyncFuture() :
   _manager(nullptr),
-  _future_state(FS_pending),
-  _result(nullptr) {
+  _result(nullptr),
+  _future_state(FS_pending) {
 }
 
 /**
@@ -44,7 +44,7 @@ cancelled() const {
  * a coroutine task that exits with an exception.
  */
 INLINE void AsyncFuture::
-set_done_event(const string &done_event) {
+set_done_event(const std::string &done_event) {
   nassertv(!done());
   _done_event = done_event;
 }
@@ -53,7 +53,7 @@ set_done_event(const string &done_event) {
  * Returns the event name that will be triggered when the future finishes.
  * See set_done_event().
  */
-INLINE const string &AsyncFuture::
+INLINE const std::string &AsyncFuture::
 get_done_event() const {
   return _done_event;
 }
@@ -89,7 +89,7 @@ get_result(TypedObject *&ptr, ReferenceCount *&ref_ptr) const {
  * Sets this future's result.  Can only be called if done() returns false.
  */
 INLINE void AsyncFuture::
-set_result(nullptr_t) {
+set_result(std::nullptr_t) {
   set_result(nullptr, nullptr);
 }
 
@@ -129,7 +129,7 @@ gather(Futures futures) {
   } else if (futures.size() == 1) {
     return futures[0].p();
   } else {
-    return (AsyncFuture *)new AsyncGatheringFuture(move(futures));
+    return (AsyncFuture *)new AsyncGatheringFuture(std::move(futures));
   }
 }
 

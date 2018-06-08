@@ -50,7 +50,7 @@ unlink() {
   group->unlink();
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
@@ -67,7 +67,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseForceField(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -98,7 +98,7 @@ get_name() const {
 PhysxScene *PhysxForceField::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)(_ptr->getScene().userData);
 }
 
@@ -108,7 +108,7 @@ get_scene() const {
 PhysxForceFieldShapeGroup *PhysxForceField::
 get_include_shape_group() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxForceFieldShapeGroup *)(_ptr->getIncludeShapeGroup().userData);
 }
 
@@ -128,8 +128,8 @@ get_num_shape_groups() const {
 PhysxForceFieldShapeGroup *PhysxForceField::
 get_shape_group(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbShapeGroups(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbShapeGroups(), nullptr);
 
   NxForceFieldShapeGroup *groupPtr;
   NxU32 nGroups = _ptr->getNbShapeGroups();

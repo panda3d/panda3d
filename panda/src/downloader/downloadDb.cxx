@@ -253,7 +253,7 @@ read_db(Filename &file, bool want_server_info) {
   file.set_binary();
   istream *read_stream = vfs->open_read_file(file, true);
 
-  if (read_stream == (istream *)NULL) {
+  if (read_stream == nullptr) {
     downloader_cat.error()
       << "failed to open input file: "
       << file << endl;
@@ -583,9 +583,7 @@ add_multifile_record(PT(MultifileRecord) mfr) {
  * Verifies magic number, returns the number of multifiles or -1 if invalid
  */
 int DownloadDb::Db::
-parse_header(const string &data) {
-  Datagram dg(data);
-
+parse_header(Datagram dg) {
   // Make sure we have a good header
   DatagramIterator di(dg);
   uint32_t magic_number = di.get_uint32();
@@ -623,8 +621,7 @@ parse_header(const string &data) {
  * record
  */
 int DownloadDb::Db::
-parse_record_header(const string &data) {
-  Datagram dg(data);
+parse_record_header(Datagram dg) {
   DatagramIterator di(dg);
   int32_t record_length = di.get_int32();
   downloader_cat.spam()
@@ -639,14 +636,12 @@ parse_record_header(const string &data) {
  * Parses a multifile record (mfr) and returns one
  */
 PT(DownloadDb::MultifileRecord) DownloadDb::Db::
-parse_mfr(const string &data) {
+parse_mfr(Datagram dg) {
 
   PT(DownloadDb::MultifileRecord) mfr = new DownloadDb::MultifileRecord;
 
-  Datagram dg(data);
   DatagramIterator di(dg);
-  int32_t mfr_name_length = di.get_int32();
-  mfr->_name = di.extract_bytes(mfr_name_length);
+  mfr->_name = di.get_string32();
   mfr->_phase = di.get_float64();
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
@@ -676,14 +671,12 @@ parse_mfr(const string &data) {
  * Parses a file record (fr) and returns one
  */
 PT(DownloadDb::FileRecord) DownloadDb::Db::
-parse_fr(const string &data) {
+parse_fr(Datagram dg) {
 
   PT(DownloadDb::FileRecord) fr = new DownloadDb::FileRecord;
 
-  Datagram dg(data);
   DatagramIterator di(dg);
-  int32_t fr_name_length = di.get_int32();
-  fr->_name = di.extract_bytes(fr_name_length);
+  fr->_name = di.get_string32();
 
   // At one time, we stored files in the database with a backslash separator.
   // Nowadays we use a forward slash, but we should make sure we properly
@@ -706,15 +699,14 @@ parse_fr(const string &data) {
 bool DownloadDb::Db::
 read(StreamReader &sr, bool want_server_info) {
   // Read the header
-  string header;
-  header = sr.extract_bytes(_header_length);
+  vector_uchar header = sr.extract_bytes(_header_length);
   if (header.size() != (size_t)_header_length) {
     downloader_cat.error() << "truncated db file" << endl;
     return false;
   }
 
   // Parse the header
-  int num_multifiles = parse_header(header);
+  int num_multifiles = parse_header(Datagram(move(header)));
   if (num_multifiles < 0) {
     downloader_cat.error() << "invalid db header" << endl;
     return false;
@@ -727,26 +719,26 @@ read(StreamReader &sr, bool want_server_info) {
     // of the record
     int mfr_header_length = sizeof(int32_t);
 
-    string mfr_header = sr.extract_bytes(mfr_header_length);
+    vector_uchar mfr_header = sr.extract_bytes(mfr_header_length);
     if (mfr_header.size() != (size_t)mfr_header_length) {
       downloader_cat.error() << "invalid mfr header" << endl;
       return false;
     }
 
     // Parse the header
-    int mfr_length = parse_record_header(mfr_header);
+    int mfr_length = parse_record_header(Datagram(move(mfr_header)));
 
     // Ok, now that we know the size of the mfr, read it in Make a buffer to
     // read the multifile record into do not count the header length twice
     int read_length = (mfr_length - mfr_header_length);
-    string mfr_record = sr.extract_bytes(read_length);
+    vector_uchar mfr_record = sr.extract_bytes(read_length);
     if (mfr_record.size() != (size_t)read_length) {
       downloader_cat.error() << "invalid mfr record" << endl;
       return false;
     }
 
     // Parse the mfr
-    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(mfr_record);
+    PT(DownloadDb::MultifileRecord) mfr = parse_mfr(Datagram(move(mfr_record)));
 
     // Only read in the individual file info if you are the server
     if (want_server_info) {
@@ -758,27 +750,27 @@ read(StreamReader &sr, bool want_server_info) {
         int fr_header_length = sizeof(int32_t);
 
         // Read the header
-        string fr_header = sr.extract_bytes(fr_header_length);
+        vector_uchar fr_header = sr.extract_bytes(fr_header_length);
         if (fr_header.size() != (size_t)fr_header_length) {
           downloader_cat.error() << "invalid fr header" << endl;
           return false;
         }
 
         // Parse the header
-        int fr_length = parse_record_header(fr_header);
+        int fr_length = parse_record_header(Datagram(move(fr_header)));
 
         // Ok, now that we know the size of the mfr, read it in do not count
         // the header length twice
         int read_length = (fr_length - fr_header_length);
 
-        string fr_record = sr.extract_bytes(read_length);
+        vector_uchar fr_record = sr.extract_bytes(read_length);
         if (fr_record.size() != (size_t)read_length) {
           downloader_cat.error() << "invalid fr record" << endl;
           return false;
         }
 
         // Parse the file record
-        PT(DownloadDb::FileRecord) fr = parse_fr(fr_record);
+        PT(DownloadDb::FileRecord) fr = parse_fr(Datagram(move(fr_record)));
 
         // Add this file record to the current multifilerecord
         mfr->add_file_record(fr);
@@ -900,12 +892,10 @@ write_header(ostream &write_stream) {
   // Write the number of multifiles
   dg.add_int32(get_num_multifiles());
 
-  string msg = dg.get_message();
-
   // Seek back to the beginning of the write stream
   write_stream.seekp(0);
   // Overwrite the old bogus header with the real header
-  write_stream.write(msg.data(), msg.length());
+  write_stream.write((const char *)dg.get_data(), dg.get_length());
   return true;
 }
 
@@ -1100,17 +1090,8 @@ read_version_map(StreamReader &sr) {
 
   for (int i = 0; i < num_entries; i++) {
 
-    // Get the length of the file name
-    int name_length = sr.get_int32();
-    if (sr.get_istream()->fail()) {
-      return false;
-    }
-    downloader_cat.spam()
-      << "DownloadDb::read_version_map() - name length: " << name_length
-      << endl;
-
     // Get the file name
-    string name = sr.extract_bytes(name_length);
+    string name = sr.get_string32();
     downloader_cat.spam()
       << "DownloadDb::read_version_map() - name: " << name << endl;
 

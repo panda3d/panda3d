@@ -24,11 +24,6 @@
 // recursion.
 #include <assert.h>
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers--notably SGI--don't define this for us.
-typedef int streamsize;
-#endif
-
 /**
  * Closes or deletes the relevant pointers, if _owns_obj is true.
  */
@@ -37,12 +32,12 @@ close() {
   if (_owns_obj) {
     switch (_output_type) {
     case OT_ostream:
-      assert(_out != (ostream *)NULL);
+      assert(_out != nullptr);
       delete _out;
       break;
 
     case OT_stdio:
-      assert(_fout != (FILE *)NULL);
+      assert(_fout != nullptr);
       fclose(_fout);
       break;
 
@@ -59,13 +54,13 @@ void MultiplexStreamBuf::Output::
 write_string(const string &str) {
   switch (_output_type) {
   case OT_ostream:
-    assert(_out != (ostream *)NULL);
+    assert(_out != nullptr);
     _out->write(str.data(), str.length());
     _out->flush();
     break;
 
   case OT_stdio:
-    assert(_fout != (FILE *)NULL);
+    assert(_fout != nullptr);
     fwrite(str.data(), str.length(), 1, _fout);
     fflush(_fout);
     break;
@@ -122,9 +117,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
   o._owns_obj = owns_obj;
 
   // Ensure that we have the mutex while we fiddle with the list of outputs.
-  _lock.acquire();
+  _lock.lock();
   _outputs.push_back(o);
-  _lock.release();
+  _lock.unlock();
 }
 
 
@@ -133,9 +128,9 @@ add_output(MultiplexStreamBuf::BufferType buffer_type,
  */
 void MultiplexStreamBuf::
 flush() {
-  _lock.acquire();
+  _lock.lock();
   write_chars("", 0, true);
-  _lock.release();
+  _lock.unlock();
 }
 
 /**
@@ -144,7 +139,7 @@ flush() {
  */
 int MultiplexStreamBuf::
 overflow(int ch) {
-  _lock.acquire();
+  _lock.lock();
 
   streamsize n = pptr() - pbase();
 
@@ -159,7 +154,7 @@ overflow(int ch) {
     write_chars(&c, 1, false);
   }
 
-  _lock.release();
+  _lock.unlock();
   return 0;
 }
 
@@ -169,7 +164,7 @@ overflow(int ch) {
  */
 int MultiplexStreamBuf::
 sync() {
-  _lock.acquire();
+  _lock.lock();
 
   streamsize n = pptr() - pbase();
 
@@ -181,7 +176,7 @@ sync() {
   write_chars(pbase(), n, false);
   pbump(-n);
 
-  _lock.release();
+  _lock.unlock();
   return 0;  // Return 0 for success, EOF to indicate write full.
 }
 

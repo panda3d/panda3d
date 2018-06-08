@@ -160,7 +160,7 @@ is_convertible_to(const CPPType *other) const {
 bool CPPConstType::
 is_equivalent(const CPPType &other) const {
   const CPPConstType *ot = ((CPPType *)&other)->as_const_type();
-  if (ot == (CPPConstType *)NULL) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -213,7 +213,7 @@ as_const_type() {
 bool CPPConstType::
 is_equal(const CPPDeclaration *other) const {
   const CPPConstType *ot = ((CPPDeclaration *)other)->as_const_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return _wrapped_around == ot->_wrapped_around;
 }
@@ -226,7 +226,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPConstType::
 is_less(const CPPDeclaration *other) const {
   const CPPConstType *ot = ((CPPDeclaration *)other)->as_const_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return _wrapped_around < ot->_wrapped_around;
 }

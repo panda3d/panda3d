@@ -18,7 +18,7 @@
 
 BEGIN_PUBLISH
 EXPCL_PANDAEXPRESS bool
-copy_stream(istream &source, ostream &dest);
+copy_stream(std::istream &source, std::ostream &dest);
 END_PUBLISH
 
 #endif

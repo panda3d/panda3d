@@ -244,7 +244,6 @@ add_waiting_task(AsyncTask *task) {
  */
 void AsyncFuture::
 wake_task(AsyncTask *task) {
-  cerr << "waking task\n";
   AsyncTaskManager *manager = task->_manager;
   if (manager == nullptr) {
     // If it's an unscheduled task, schedule it on the same manager as the
@@ -274,9 +273,9 @@ wake_task(AsyncTask *task) {
     }
 
     {
-      manager->_lock.release();
+      manager->_lock.unlock();
       task->upon_birth(manager);
-      manager->_lock.acquire();
+      manager->_lock.lock();
       nassertv(task->_manager == nullptr &&
                task->_state == AsyncTask::S_inactive);
 

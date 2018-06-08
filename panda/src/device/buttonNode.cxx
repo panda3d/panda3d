@@ -28,11 +28,11 @@ ButtonNode(ClientBase *client, const string &device_name) :
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
-  nassertv(client != (ClientBase *)NULL);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientButtonDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)NULL) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open button device " << device_name << "\n";
     return;
@@ -77,7 +77,7 @@ void ButtonNode::
 output(ostream &out) const {
   DataNode::output(out);
 
-  if (_device != (InputDevice *)NULL) {
+  if (_device != nullptr) {
     out << " (";
     _device->output_buttons(out);
     out << ")";
@@ -91,7 +91,7 @@ void ButtonNode::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_device != (InputDevice *)NULL) {
+  if (_device != nullptr) {
     _device->write_buttons(out, indent_level + 2);
   }
 }

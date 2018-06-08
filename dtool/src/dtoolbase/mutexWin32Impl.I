@@ -23,7 +23,7 @@ INLINE MutexWin32Impl::
  *
  */
 INLINE void MutexWin32Impl::
-acquire() {
+lock() {
   EnterCriticalSection(&_lock);
 }
 
@@ -31,7 +31,7 @@ acquire() {
  *
  */
 INLINE bool MutexWin32Impl::
-try_acquire() {
+try_lock() {
   return (TryEnterCriticalSection(&_lock) != 0);
 }
 
@@ -39,6 +39,6 @@ try_acquire() {
  *
  */
 INLINE void MutexWin32Impl::
-release() {
+unlock() {
   LeaveCriticalSection(&_lock);
 }

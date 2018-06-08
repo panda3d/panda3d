@@ -144,7 +144,7 @@ XInputDevice::
  */
 bool XInputDevice::
 check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
-              const string &name, const string &manufacturer) {
+              const std::string &name, const std::string &manufacturer) {
   LightMutexHolder holder(_lock);
   if (_is_connected) {
     return false;
@@ -182,10 +182,10 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
     char buffer[4096];
     ULONG buflen = sizeof(buffer);
     if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_HARDWAREID, 0, buffer, &buflen, 0) == CR_SUCCESS) {
-      string ids(buffer, buflen);
+      std::string ids(buffer, buflen);
       char revstr[16];
       sprintf(revstr, "REV_%04x", caps.RevisionID);
-      if (ids.find(revstr) == string::npos) {
+      if (ids.find(revstr) == std::string::npos) {
         return false;
       }
     }

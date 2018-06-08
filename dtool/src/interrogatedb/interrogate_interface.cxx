@@ -400,7 +400,7 @@ interrogate_wrapper_parameter_is_this(FunctionWrapperIndex wrapper, int n) {
 bool
 interrogate_wrapper_has_pointer(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_has_pointer(" << wrapper << ")\n";
-  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != (void *)NULL);
+  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != nullptr);
 }
 
 void *
@@ -507,6 +507,12 @@ TypeIndex
 interrogate_get_type_by_true_name(const char *type_name) {
   // cerr << "interrogate_get_type_by_true_name(" << type_name << ")\n";
   return InterrogateDatabase::get_ptr()->lookup_type_by_true_name(type_name);
+}
+
+bool
+interrogate_type_is_global(TypeIndex type) {
+  // cerr << "interrogate_type_is_global(" << type << ")\n";
+  return InterrogateDatabase::get_ptr()->get_type(type).is_global();
 }
 
 const char *

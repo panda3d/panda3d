@@ -14,21 +14,6 @@
 /**
  *
  */
-INLINE FrameBufferProperties::
-FrameBufferProperties(const FrameBufferProperties &copy) {
-  (*this) = copy;
-}
-
-/**
- *
- */
-INLINE FrameBufferProperties::
-~FrameBufferProperties() {
-}
-
-/**
- *
- */
 INLINE bool FrameBufferProperties::
 operator != (const FrameBufferProperties &other) const {
   return !operator == (other);
@@ -53,8 +38,8 @@ is_stereo() const {
 /**
  *
  */
-INLINE ostream &
-operator << (ostream &out, const FrameBufferProperties &properties) {
+INLINE std::ostream &
+operator << (std::ostream &out, const FrameBufferProperties &properties) {
   properties.output(out);
   return out;
 }
@@ -72,7 +57,7 @@ get_depth_bits() const {
  */
 INLINE int FrameBufferProperties::
 get_color_bits() const {
-  return max(_property[FBP_color_bits],
+  return std::max(_property[FBP_color_bits],
              _property[FBP_red_bits] +
              _property[FBP_green_bits] +
              _property[FBP_blue_bits]);

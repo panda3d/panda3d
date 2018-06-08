@@ -63,6 +63,7 @@ ptr() const {
  */
 LVector3 BulletGenericConstraint::
 get_axis(int axis) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertr(axis >= 0, LVector3::zero());
   nassertr(axis <= 3, LVector3::zero());
@@ -76,6 +77,7 @@ get_axis(int axis) const {
  */
 PN_stdfloat BulletGenericConstraint::
 get_pivot(int axis) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertr(axis >= 0, 0.0f);
   nassertr(axis <= 3, 0.0f);
@@ -89,6 +91,7 @@ get_pivot(int axis) const {
  */
 PN_stdfloat BulletGenericConstraint::
 get_angle(int axis) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertr(axis >= 0, 0.0f);
   nassertr(axis <= 3, 0.0f);
@@ -102,6 +105,7 @@ get_angle(int axis) const {
  */
 void BulletGenericConstraint::
 set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(axis >= 0);
   nassertv(axis <= 3);
@@ -115,6 +119,7 @@ set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
  */
 void BulletGenericConstraint::
 set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(axis >= 0);
   nassertv(axis <= 3);
@@ -129,8 +134,29 @@ set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
 /**
  *
  */
+CPT(TransformState) BulletGenericConstraint::
+get_frame_a() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getFrameOffsetA());
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletGenericConstraint::
+get_frame_b() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getFrameOffsetB());
+}
+
+/**
+ *
+ */
 BulletRotationalLimitMotor BulletGenericConstraint::
 get_rotational_limit_motor(int axis) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return BulletRotationalLimitMotor(*_constraint->getRotationalLimitMotor(axis));
 }
@@ -140,6 +166,7 @@ get_rotational_limit_motor(int axis) {
  */
 BulletTranslationalLimitMotor BulletGenericConstraint::
 get_translational_limit_motor() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return BulletTranslationalLimitMotor(*_constraint->getTranslationalLimitMotor());
 }
@@ -149,6 +176,7 @@ get_translational_limit_motor() {
  */
 void BulletGenericConstraint::
 set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btTransform frame_a = TransformState_to_btTrans(ts_a);
   btTransform frame_b = TransformState_to_btTrans(ts_b);

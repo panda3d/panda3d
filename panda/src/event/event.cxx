@@ -86,7 +86,7 @@ get_parameter(int n) const {
  */
 bool Event::
 has_receiver() const {
-  return _receiver != (EventReceiver *)NULL;
+  return _receiver != nullptr;
 }
 
 /**
@@ -110,7 +110,7 @@ set_receiver(EventReceiver *receiver) {
  */
 void Event::
 clear_receiver() {
-  _receiver = (EventReceiver *)NULL;
+  _receiver = nullptr;
 }
 
 /**

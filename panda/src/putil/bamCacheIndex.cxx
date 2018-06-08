@@ -14,7 +14,7 @@
 #include "bamCacheIndex.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "config_util.h" // util_cat
+#include "config_putil.h" // util_cat
 #include "indent.h"
 #include <algorithm>
 
@@ -94,8 +94,8 @@ release_records() {
   Records::const_iterator ri;
   for (ri = _records.begin(); ri != _records.end(); ++ri) {
     BamCacheRecord *record = (*ri).second;
-    record->_next = NULL;
-    record->_prev = NULL;
+    record->_next = nullptr;
+    record->_prev = nullptr;
   }
   _next = this;
   _prev = this;
@@ -110,13 +110,13 @@ PT(BamCacheRecord) BamCacheIndex::
 evict_old_file() {
   if (_next == this) {
     // Nothing in the cache.
-    return NULL;
+    return nullptr;
   }
 
   // The first record in the linked list is the least-recently-used one.
   PT(BamCacheRecord) record = (BamCacheRecord *)_next;
   bool removed = remove_record(record->get_source_pathname());
-  nassertr(removed, NULL);
+  nassertr(removed, nullptr);
 
   return record;
 }
@@ -249,7 +249,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_records = scan.get_uint32();
   _record_vector.reserve(num_records);
   for (int i = 0; i < num_records; ++i) {
-    _record_vector.push_back(NULL);
+    _record_vector.push_back(nullptr);
     manager->read_pointer(scan);
   }
 }

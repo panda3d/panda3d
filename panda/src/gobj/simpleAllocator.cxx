@@ -22,7 +22,7 @@ SimpleAllocator::
   if (_next != (LinkedListNode *)this) {
     MutexHolder holder(_lock);
     while (_next != (LinkedListNode *)this) {
-      nassertv(_next != (LinkedListNode *)NULL);
+      nassertv(_next != nullptr);
       ((SimpleAllocatorBlock *)_next)->do_free();
     }
   }
@@ -69,13 +69,13 @@ SimpleAllocatorBlock *SimpleAllocator::
 do_alloc(size_t size) {
   if (size > _contiguous) {
     // Don't even bother.
-    return NULL;
+    return nullptr;
   }
 
   // First fit algorithm: walk through all the empty blocks until we find one
   // that has enough room.
 
-  SimpleAllocatorBlock *block = NULL;
+  SimpleAllocatorBlock *block = nullptr;
   size_t end = 0;
   size_t best = 0;
   if (_next != this) {
@@ -89,7 +89,7 @@ do_alloc(size_t size) {
       size_t free_size = next->_start - end;
       if (size <= free_size) {
         SimpleAllocatorBlock *new_block = make_block(end, size);
-        nassertr(new_block->get_allocator() == this, NULL);
+        nassertr(new_block->get_allocator() == this, nullptr);
 
         new_block->insert_before(next);
         _total_size += size;
@@ -116,7 +116,7 @@ do_alloc(size_t size) {
   size_t free_size = _max_size - end;
   if (size <= free_size) {
     SimpleAllocatorBlock *new_block = make_block(end, size);
-    nassertr(new_block->get_allocator() == this, NULL);
+    nassertr(new_block->get_allocator() == this, nullptr);
 
     new_block->insert_before(this);
     _total_size += size;
@@ -143,7 +143,7 @@ do_alloc(size_t size) {
   }
 
   // No room for this block.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -169,7 +169,7 @@ changed_contiguous() {
  */
 void SimpleAllocatorBlock::
 output(ostream &out) const {
-  if (_allocator == (SimpleAllocator *)NULL) {
+  if (_allocator == nullptr) {
     out << "free block\n";
   } else {
     MutexHolder holder(_allocator->_lock);

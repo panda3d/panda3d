@@ -30,10 +30,44 @@ BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant) {
 /**
  *
  */
+BulletPlaneShape::
+BulletPlaneShape(const BulletPlaneShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  btVector3 btNormal = copy._shape->getPlaneNormal();
+  PN_stdfloat constant = (PN_stdfloat)_shape->getPlaneConstant();
+
+  _shape = new btStaticPlaneShape(btNormal, constant);
+  _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
 btCollisionShape *BulletPlaneShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletPlaneShape::
+get_plane_constant() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_shape->getPlaneConstant();
+}
+
+/**
+ *
+ */
+LVector3 BulletPlaneShape::
+get_plane_normal() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_shape->getPlaneNormal());
 }
 
 /**

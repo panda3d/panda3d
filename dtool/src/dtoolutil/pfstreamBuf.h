@@ -41,7 +41,7 @@
 
 #endif // WIN_PIPE_CALLS
 
-class EXPCL_DTOOL PipeStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PipeStreamBuf : public std::streambuf {
 public:
   enum Direction { Input, Output };
 
@@ -49,7 +49,7 @@ public:
   virtual ~PipeStreamBuf(void);
 
   void flush();
-  void command(const string);
+  void command(const std::string);
 
 protected:
   virtual int overflow(int c);
@@ -59,13 +59,13 @@ private:
   void init_pipe();
   bool is_open() const;
   bool eof_pipe() const;
-  bool open_pipe(const string &cmd);
+  bool open_pipe(const std::string &cmd);
   void close_pipe();
   size_t write_pipe(const char *data, size_t len);
   size_t read_pipe(char *data, size_t len);
 
   Direction _dir;
-  string _line_buffer;
+  std::string _line_buffer;
 
 #ifndef WIN_PIPE_CALLS
   FILE *_pipe;

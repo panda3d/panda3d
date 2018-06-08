@@ -41,7 +41,7 @@ ButtonEvent(ButtonHandle button, ButtonEvent::Type type, double time) :
  *
  */
 INLINE ButtonEvent::
-ButtonEvent(short keycode, double time) :
+ButtonEvent(int keycode, double time) :
   _button(ButtonHandle::none()),
   _keycode(keycode),
   _highlight_start(0),
@@ -55,7 +55,7 @@ ButtonEvent(short keycode, double time) :
  *
  */
 INLINE ButtonEvent::
-ButtonEvent(const wstring &candidate_string, size_t highlight_start,
+ButtonEvent(const std::wstring &candidate_string, size_t highlight_start,
             size_t highlight_end, size_t cursor_pos) :
   _button(ButtonHandle::none()),
   _keycode(0),

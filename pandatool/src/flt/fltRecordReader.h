@@ -29,7 +29,7 @@
  */
 class FltRecordReader {
 public:
-  FltRecordReader(istream &in);
+  FltRecordReader(std::istream &in);
   ~FltRecordReader();
 
   FltOpcode get_opcode() const;
@@ -45,7 +45,7 @@ public:
 private:
   void read_next_header();
 
-  istream &_in;
+  std::istream &_in;
   Datagram _datagram;
   FltOpcode _opcode;
   int _record_length;

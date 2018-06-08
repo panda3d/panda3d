@@ -50,8 +50,8 @@ generate_block(unsigned short mx,
                unsigned short my,
                unsigned short level) {
 
-  nassertr(mx < (_xsize - 1) / _block_size, NULL);
-  nassertr(my < (_ysize - 1) / _block_size, NULL);
+  nassertr(mx < (_xsize - 1) / _block_size, nullptr);
+  nassertr(my < (_ysize - 1) / _block_size, nullptr);
 
   unsigned short center = _block_size / 2;
   unsigned int vcounter = 0;

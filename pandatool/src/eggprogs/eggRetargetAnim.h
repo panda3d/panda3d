@@ -37,7 +37,7 @@ public:
   void run();
 
   void retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-                     int reference_model, const pset<string> &keep_names,
+                     int reference_model, const pset<std::string> &keep_names,
                      EggCharacterDb &db);
 
   Filename _reference_filename;

@@ -16,7 +16,7 @@
 #include "configVariableManager.h"
 #include "virtualFileSystem.h"
 #include "config_express.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "hashVal.h"
 
 /**
@@ -44,10 +44,10 @@ load_prc_file(const Filename &filename) {
     vfs->resolve_filename(path, get_model_path());
 
   istream *file = vfs->open_read_file(path, true);
-  if (file == (istream *)NULL) {
+  if (file == nullptr) {
     util_cat.error()
       << "Unable to open " << path << "\n";
-    return NULL;
+    return nullptr;
   }
 
   util_cat.info()
@@ -64,7 +64,7 @@ load_prc_file(const Filename &filename) {
     util_cat.info()
       << "Unable to read " << path << "\n";
     cp_mgr->delete_explicit_page(page);
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -94,7 +94,7 @@ load_prc_file_data(const string &name, const string &data) {
     util_cat.info()
       << "Unable to read explicit prc data " << name << "\n";
     cp_mgr->delete_explicit_page(page);
-    return NULL;
+    return nullptr;
   }
 }
 

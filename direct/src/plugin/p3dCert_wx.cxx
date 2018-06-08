@@ -136,14 +136,14 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
   // I hate stay-on-top dialogs, but if we don't set this flag, it doesn't
   // come to the foreground on OSX, and might be lost behind the browser
   // window.
-  wxDialog(NULL, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition,
+  wxDialog(nullptr, wxID_ANY, _T("New Panda3D Application"), wxDefaultPosition,
            wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP),
   _cert_dir(cert_dir)
 {
-  _view_cert_dialog = NULL;
+  _view_cert_dialog = nullptr;
 
-  _cert = NULL;
-  _stack = NULL;
+  _cert = nullptr;
+  _stack = nullptr;
   _verify_result = -1;
 
   read_cert_file(cert_filename);
@@ -157,17 +157,17 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
  */
 AuthDialog::
 ~AuthDialog() {
-  if (_view_cert_dialog != NULL) {
+  if (_view_cert_dialog != nullptr) {
     _view_cert_dialog->Destroy();
   }
 
-  if (_cert != NULL) {
+  if (_cert != nullptr) {
     X509_free(_cert);
-    _cert = NULL;
+    _cert = nullptr;
   }
-  if (_stack != NULL) {
+  if (_stack != nullptr) {
     sk_X509_free(_stack);
-    _stack = NULL;
+    _stack = nullptr;
   }
 }
 
@@ -184,7 +184,7 @@ run_clicked(wxCommandEvent &event) {
  */
 void AuthDialog::
 view_cert_clicked(wxCommandEvent &event) {
-  if (_view_cert_dialog != NULL) {
+  if (_view_cert_dialog != nullptr) {
     _view_cert_dialog->Destroy();
   }
   Hide();
@@ -206,7 +206,7 @@ cancel_clicked(wxCommandEvent &event) {
  */
 void AuthDialog::
 approve_cert() {
-  assert(_cert != NULL);
+  assert(_cert != nullptr);
 
   // Make sure the directory exists.
   mkdir_complete(_cert_dir, cerr);
@@ -243,13 +243,13 @@ approve_cert() {
 
   // Sure, there's a slight race condition right now: another process might
   // attempt to create the same filename.  So what.
-  FILE *fp = NULL;
+  FILE *fp = nullptr;
 #ifdef _WIN32
   fp = _wfopen(buf_w.c_str(), L"w");
 #else // _WIN32
   fp = fopen(buf, "w");
 #endif  // _WIN32
-  if (fp != NULL) {
+  if (fp != nullptr) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
   }
@@ -263,7 +263,7 @@ approve_cert() {
  */
 void AuthDialog::
 read_cert_file(const string &cert_filename) {
-  FILE *fp = NULL;
+  FILE *fp = nullptr;
 #ifdef _WIN32
   wstring cert_filename_w;
   if (string_to_wstring(cert_filename_w, cert_filename)) {
@@ -273,23 +273,23 @@ read_cert_file(const string &cert_filename) {
   fp = fopen(cert_filename.c_str(), "r");
 #endif  // _WIN32
 
-  if (fp == NULL) {
+  if (fp == nullptr) {
     cerr << "Couldn't read " << cert_filename << "\n";
     return;
   }
-  _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
-  if (_cert == NULL) {
+  _cert = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
+  if (_cert == nullptr) {
     cerr << "Could not read certificate in " << cert_filename << ".\n";
     fclose(fp);
     return;
   }
 
   // Build up a STACK of the remaining certificates in the file.
-  _stack = sk_X509_new(NULL);
-  X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
-  while (c != NULL) {
+  _stack = sk_X509_new(nullptr);
+  X509 *c = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
+  while (c != nullptr) {
     sk_X509_push(_stack, c);
-    c = PEM_read_X509(fp, NULL, NULL, (void *)"");
+    c = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
   }
 
   fclose(fp);
@@ -301,7 +301,7 @@ read_cert_file(const string &cert_filename) {
  */
 void AuthDialog::
 get_friendly_name() {
-  if (_cert == NULL) {
+  if (_cert == nullptr) {
     _friendly_name.clear();
     return;
   }
@@ -319,15 +319,15 @@ get_friendly_name() {
 
     // A complex OpenSSL interface to extract out the name in utf-8.
     X509_NAME *xname = X509_get_subject_name(_cert);
-    if (xname != NULL) {
+    if (xname != nullptr) {
       int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
       if (pos != -1) {
         // We just get the first common name.  I guess it's possible to have
         // more than one; not sure what that means in this context.
         X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
-        if (xentry != NULL) {
+        if (xentry != nullptr) {
           ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
-          if (data != NULL) {
+          if (data != nullptr) {
             // We use "print" to dump the output to a memory BIO.  Is there an
             // easier way to decode the ASN1_STRING?  Curse these incomplete
             // docs.
@@ -352,7 +352,7 @@ get_friendly_name() {
  */
 void AuthDialog::
 verify_cert() {
-  if (_cert == NULL) {
+  if (_cert == nullptr) {
     _verify_result = -1;
     return;
   }
@@ -407,11 +407,11 @@ load_certificates_from_der_ram(X509_STORE *store,
 
   bp = (unsigned char *)data;
   bp_end = bp + data_size;
-  X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-  while (x509 != NULL) {
+  X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+  while (x509 != nullptr) {
     X509_STORE_add_cert(store, x509);
     ++count;
-    x509 = d2i_X509(NULL, &bp, bp_end - bp);
+    x509 = d2i_X509(nullptr, &bp, bp_end - bp);
   }
 
   return count;
@@ -449,12 +449,12 @@ layout() {
   // Create the run  cancel buttons.
   wxBoxSizer *bsizer = new wxBoxSizer(wxHORIZONTAL);
 
-  if (_verify_result == 0 && _cert != NULL) {
+  if (_verify_result == 0 && _cert != nullptr) {
     wxButton *run_button = new wxButton(panel, wxID_OK, _T("Run"));
     bsizer->Add(run_button, 0, wxALIGN_CENTER | wxALL, 5);
   }
 
-  if (_cert != NULL) {
+  if (_cert != nullptr) {
     wxButton *view_button = new wxButton(panel, VIEW_CERT_BUTTON, _T("View Certificate"));
     bsizer->Add(view_button, 0, wxALIGN_CENTER | wxALL, 5);
   }
@@ -522,7 +522,7 @@ END_EVENT_TABLE()
  */
 ViewCertDialog::
 ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
-wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition,
+wxDialog(nullptr, wxID_ANY, _T("View Certificate"), wxDefaultPosition,
          wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
   _auth_dialog(auth_dialog),
   _cert(cert)
@@ -535,8 +535,8 @@ wxDialog(NULL, wxID_ANY, _T("View Certificate"), wxDefaultPosition,
  */
 ViewCertDialog::
 ~ViewCertDialog() {
-  if (_auth_dialog != NULL) {
-    _auth_dialog->_view_cert_dialog = NULL;
+  if (_auth_dialog != nullptr) {
+    _auth_dialog->_view_cert_dialog = nullptr;
   }
 }
 
@@ -545,7 +545,7 @@ ViewCertDialog::
  */
 void ViewCertDialog::
 run_clicked(wxCommandEvent &event) {
-  if (_auth_dialog != NULL){
+  if (_auth_dialog != nullptr){
     _auth_dialog->approve_cert();
   }
   Destroy();
@@ -556,7 +556,7 @@ run_clicked(wxCommandEvent &event) {
  */
 void ViewCertDialog::
 cancel_clicked(wxCommandEvent &event) {
-  if (_auth_dialog != NULL){
+  if (_auth_dialog != nullptr){
     _auth_dialog->Destroy();
   }
   Destroy();
@@ -568,7 +568,7 @@ cancel_clicked(wxCommandEvent &event) {
 void ViewCertDialog::
 layout() {
   // Format the certificate text for display in the dialog.
-  assert(_cert != NULL);
+  assert(_cert != nullptr);
 
   BIO *mbio = BIO_new(BIO_s_mem());
   X509_print(mbio, _cert);

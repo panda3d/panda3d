@@ -24,7 +24,7 @@ PyMemberDef standard_type_members[] = {
 // {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
 // READONLY, (char *)"A type check signature"},
   {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
-  {NULL}  /* Sentinel */
+  {nullptr}  /* Sentinel */
 };
 
 static RuntimeTypeMap runtime_type_map;
@@ -183,9 +183,9 @@ PyObject *Dtool_Raise_AssertionError() {
   PyObject *message = PyString_FromString(notify->get_assert_error_message().c_str());
 #endif
   Py_INCREF(PyExc_AssertionError);
-  PyErr_Restore(PyExc_AssertionError, message, (PyObject *)NULL);
+  PyErr_Restore(PyExc_AssertionError, message, nullptr);
   notify->clear_assert_failed();
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -196,11 +196,11 @@ PyObject *Dtool_Raise_TypeError(const char *message) {
   // eventually anyway, so we might as well just get to the point.
   Py_INCREF(PyExc_TypeError);
 #if PY_MAJOR_VERSION >= 3
-  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), (PyObject *)NULL);
+  PyErr_Restore(PyExc_TypeError, PyUnicode_FromString(message), nullptr);
 #else
-  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), (PyObject *)NULL);
+  PyErr_Restore(PyExc_TypeError, PyString_FromString(message), nullptr);
 #endif
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -221,8 +221,8 @@ PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *functio
     Py_TYPE(obj)->tp_name);
 
   Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, (PyObject *)NULL);
-  return NULL;
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  return nullptr;
 }
 
 /**
@@ -241,8 +241,8 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     Py_TYPE(obj)->tp_name, attribute);
 
   Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, (PyObject *)NULL);
-  return NULL;
+  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  return nullptr;
 }
 
 /**
@@ -265,7 +265,7 @@ PyObject *_Dtool_Raise_BadArgumentsError() {
  */
 PyObject *_Dtool_Return_None() {
   if (UNLIKELY(_PyErr_OCCURRED())) {
-    return NULL;
+    return nullptr;
   }
 #ifndef NDEBUG
   if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
@@ -282,7 +282,7 @@ PyObject *_Dtool_Return_None() {
  */
 PyObject *Dtool_Return_Bool(bool value) {
   if (UNLIKELY(_PyErr_OCCURRED())) {
-    return NULL;
+    return nullptr;
   }
 #ifndef NDEBUG
   if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
@@ -301,7 +301,7 @@ PyObject *Dtool_Return_Bool(bool value) {
  */
 PyObject *_Dtool_Return(PyObject *value) {
   if (UNLIKELY(_PyErr_OCCURRED())) {
-    return NULL;
+    return nullptr;
   }
 #ifndef NDEBUG
   if (UNLIKELY(Notify::ptr()->has_assert_failed())) {
@@ -315,22 +315,22 @@ PyObject *_Dtool_Return(PyObject *value) {
  * Creates a Python 3.4-style enum type.  Steals reference to 'names'.
  */
 PyObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
-  static PyObject *enum_class = NULL;
-  static PyObject *enum_meta = NULL;
-  static PyObject *enum_create = NULL;
-  if (enum_meta == NULL) {
+  static PyObject *enum_class = nullptr;
+  static PyObject *enum_meta = nullptr;
+  static PyObject *enum_create = nullptr;
+  if (enum_meta == nullptr) {
     PyObject *enum_module = PyImport_ImportModule("enum");
-    nassertr_always(enum_module != NULL, NULL);
+    nassertr_always(enum_module != nullptr, nullptr);
 
     enum_class = PyObject_GetAttrString(enum_module, "Enum");
     enum_meta = PyObject_GetAttrString(enum_module, "EnumMeta");
     enum_create = PyObject_GetAttrString(enum_meta, "_create_");
-    nassertr(enum_meta != NULL, NULL);
+    nassertr(enum_meta != nullptr, nullptr);
   }
 
   PyObject *result = PyObject_CallFunction(enum_create, (char *)"OsN", enum_class, name, names);
-  nassertr(result != NULL, NULL);
-  if (module != NULL) {
+  nassertr(result != nullptr, nullptr);
+  if (module != nullptr) {
     PyObject *modstr = PyUnicode_FromString(module);
     PyObject_SetAttrString(result, "__module__", modstr);
     Py_DECREF(modstr);
@@ -346,19 +346,19 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // caller will have to get the type index to pass to this function to begin
   // with.  That code probably would have crashed by now if it was really NULL
   // for whatever reason.
-  nassertr(local_this_in != NULL, NULL);
+  nassertr(local_this_in != nullptr, nullptr);
 
   // IF the class is possibly a run time typed object
   if (type_index > 0) {
     // get best fit class...
     Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(type_index);
-    if (target_class != NULL) {
+    if (target_class != nullptr) {
       // cast to the type...
       void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
-      if (new_local_this != NULL) {
+      if (new_local_this != nullptr) {
         // ask class to allocate an instance..
-        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, NULL, NULL);
-        if (self != NULL) {
+        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->_PyType.tp_new(&target_class->_PyType, nullptr, nullptr);
+        if (self != nullptr) {
           self->_ptr_to_object = new_local_this;
           self->_memory_rules = memory_rules;
           self->_is_const = is_const;
@@ -372,8 +372,8 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
 
   // if we get this far .. just wrap the thing in the known type ?? better
   // than aborting...I guess....
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, NULL, NULL);
-  if (self != NULL) {
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type._PyType.tp_new(&known_class_type._PyType, nullptr, nullptr);
+  if (self != nullptr) {
     self->_ptr_to_object = local_this_in;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
@@ -386,7 +386,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a
 // general dtool py instance..
 PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
-  if (local_this == NULL) {
+  if (local_this == nullptr) {
     // This is actually a very common case, so let's allow this, but return
     // Py_None consistently.  This eliminates code in the wrappers.
     Py_INCREF(Py_None);
@@ -394,8 +394,8 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   }
 
   Dtool_PyTypedObject *classdef = &in_classdef;
-  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->_PyType.tp_new(&classdef->_PyType, NULL, NULL);
-  if (self != NULL) {
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->_PyType.tp_new(&classdef->_PyType, nullptr, nullptr);
+  if (self != nullptr) {
     self->_ptr_to_object = local_this;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
@@ -420,7 +420,7 @@ int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject 
 // done at code generation time because of multiple generation passes in
 // interrogate..
 void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
-  for (; in->ml_name != NULL; in++) {
+  for (; in->ml_name != nullptr; in++) {
     if (themap.find(in->ml_name) == themap.end()) {
       themap[in->ml_name] = in;
     }
@@ -492,7 +492,7 @@ LookupNamedClass(const string &name) {
 
     interrogatedb_cat.error()
       << "Attempt to use type " << name << " which has not yet been defined!\n";
-    return NULL;
+    return nullptr;
   } else {
     return it->second;
   }
@@ -506,7 +506,7 @@ LookupRuntimeTypedClass(TypeHandle handle) {
   if (it == runtime_type_map.end()) {
     interrogatedb_cat.error()
       << "Attempt to use type " << handle << " which has not yet been defined!\n";
-    return NULL;
+    return nullptr;
   } else {
     return it->second;
   }
@@ -523,7 +523,7 @@ Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
       return di->second;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -544,7 +544,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
          << "incompatible with Python " << version.substr(0, 3);
     string error = errs.str();
     PyErr_SetString(PyExc_ImportError, error.c_str());
-    return (PyObject *)NULL;
+    return nullptr;
   }
 
   // Initialize the types we define in py_panda.
@@ -593,12 +593,12 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #endif
 
     // Initialize the base class of everything.
-    Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(NULL);
+    Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(nullptr);
   }
 
   // the module level function inits....
   MethodDefmap functions;
-  for (int xx = 0; defs[xx] != NULL; xx++) {
+  for (int xx = 0; defs[xx] != nullptr; xx++) {
     Dtool_Accum_MethDefs(defs[xx]->_methods, functions);
   }
 
@@ -608,9 +608,9 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   for (mi = functions.begin(); mi != functions.end(); mi++, offset++) {
     newdef[offset] = *mi->second;
   }
-  newdef[offset].ml_doc = NULL;
-  newdef[offset].ml_name = NULL;
-  newdef[offset].ml_meth = NULL;
+  newdef[offset].ml_doc = nullptr;
+  newdef[offset].ml_name = nullptr;
+  newdef[offset].ml_meth = nullptr;
   newdef[offset].ml_flags = 0;
 
 #if PY_MAJOR_VERSION >= 3
@@ -620,7 +620,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   PyObject *module = Py_InitModule((char *)modulename, newdef);
 #endif
 
-  if (module == NULL) {
+  if (module == nullptr) {
 #if PY_MAJOR_VERSION >= 3
     return Dtool_Raise_TypeError("PyModule_Create returned NULL");
 #else
@@ -640,21 +640,21 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 
     // Grab the __main__ module.
     PyObject *main_module = PyImport_ImportModule("__main__");
-    if (main_module == NULL) {
+    if (main_module == nullptr) {
       interrogatedb_cat.warning() << "Unable to import __main__\n";
     }
 
     // Extract the __file__ attribute, if present.
     Filename main_dir;
     PyObject *file_attr = PyObject_GetAttrString(main_module, "__file__");
-    if (file_attr == NULL) {
+    if (file_attr == nullptr) {
       // Must be running in the interactive interpreter.  Use the CWD.
       main_dir = ExecutionEnvironment::get_cwd();
     } else {
 #if PY_MAJOR_VERSION >= 3
       Py_ssize_t length;
       wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
-      if (buffer != NULL) {
+      if (buffer != nullptr) {
         main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
         main_dir.make_absolute();
         main_dir = main_dir.get_dirname();
@@ -686,8 +686,8 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 // grab the "THIS" pointer from an object and use it Required to support
 // historical inheritance in the form of "is this instance of"..
 PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
-  PyObject *from_in = NULL;
-  PyObject *to_in = NULL;
+  PyObject *from_in = nullptr;
+  PyObject *to_in = nullptr;
   if (PyArg_UnpackTuple(args, "Dtool_BorrowThisReference", 2, 2, &to_in, &from_in)) {
 
     if (DtoolInstance_Check(from_in) && DtoolInstance_Check(to_in)) {
@@ -710,7 +710,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
       return Dtool_Raise_TypeError("One of these does not appear to be DTOOL Instance ??");
     }
   }
-  return (PyObject *) NULL;
+  return nullptr;
 }
 
 // We do expose a dictionay for dtool classes .. this should be removed at
@@ -721,14 +721,14 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *key;
   if (PyArg_ParseTuple(args, "OSO", &self, &key, &subject)) {
     PyObject *dict = ((PyTypeObject *)self)->tp_dict;
-    if (dict == NULL || !PyDict_Check(dict)) {
+    if (dict == nullptr || !PyDict_Check(dict)) {
       return Dtool_Raise_TypeError("No dictionary On Object");
     } else {
       PyDict_SetItem(dict, key, subject);
     }
   }
   if (PyErr_Occurred()) {
-    return (PyObject *)NULL;
+    return nullptr;
   }
   Py_INCREF(Py_None);
   return Py_None;
@@ -736,7 +736,7 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
 
 Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
   if (self != nullptr && DtoolInstance_Check(self)) {
-    return (Py_hash_t)DtoolInstance_VOID_PTR(self);
+    return (Py_hash_t)(intptr_t)DtoolInstance_VOID_PTR(self);
   }
   return -1;
 }
@@ -753,7 +753,7 @@ int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2) {
   // try this compare
   void *v1_this = DTOOL_Call_GetPointerThis(v1);
   void *v2_this = DTOOL_Call_GetPointerThis(v2);
-  if (v1_this != NULL && v2_this != NULL) { // both are our types...
+  if (v1_this != nullptr && v2_this != nullptr) { // both are our types...
     if (v1_this < v2_this) {
       return -1;
     }
@@ -776,23 +776,23 @@ int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2) {
 int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
   // First try compareTo function..
   PyObject * func = PyObject_GetAttrString(v1, "compare_to");
-  if (func == NULL) {
+  if (func == nullptr) {
     PyErr_Clear();
   } else {
 #if PY_VERSION_HEX >= 0x03060000
     PyObject *res = _PyObject_FastCall(func, &v2, 1);
 #else
-    PyObject *res = NULL;
+    PyObject *res = nullptr;
     PyObject *args = PyTuple_Pack(1, v2);
-    if (args != NULL) {
-      res = PyObject_Call(func, args, NULL);
+    if (args != nullptr) {
+      res = PyObject_Call(func, args, nullptr);
       Py_DECREF(args);
     }
 #endif
     Py_DECREF(func);
     PyErr_Clear(); // just in case the function threw an error
     // only use if the function returns an INT... hmm
-    if (res != NULL) {
+    if (res != nullptr) {
       if (PyLong_Check(res)) {
         long answer = PyLong_AsLong(res);
         Py_DECREF(res);
@@ -861,8 +861,8 @@ PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
  */
 PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
   PyObject *callable = PyObject_GetAttrString(self, "make_copy");
-  if (callable == NULL) {
-    return NULL;
+  if (callable == nullptr) {
+    return nullptr;
   }
   PyObject *result = _PyObject_CallNoArg(callable);
   Py_DECREF(callable);
@@ -880,7 +880,7 @@ PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *result = _PyObject_FastCall(callable, &self, 1);
 #else
   PyObject *args = PyTuple_Pack(1, self);
-  PyObject *result = PyObject_Call(callable, args, NULL);
+  PyObject *result = PyObject_Call(callable, args, nullptr);
   Py_DECREF(args);
 #endif
   return result;
@@ -893,8 +893,8 @@ PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
  */
 PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
   PyObject *callable = PyObject_GetAttrString(self, "__copy__");
-  if (callable == NULL) {
-    return NULL;
+  if (callable == nullptr) {
+    return nullptr;
   }
   PyObject *result = _PyObject_CallNoArg(callable);
   Py_DECREF(callable);

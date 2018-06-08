@@ -181,7 +181,7 @@ get_num_names() const {
  */
 const InternalName *InternalNameCollection::
 get_name(int index) const {
-  nassertr(index >= 0 && index < (int)_names.size(), NULL);
+  nassertr(index >= 0 && index < (int)_names.size(), nullptr);
 
   return _names[index];
 }
@@ -192,7 +192,7 @@ get_name(int index) const {
  */
 const InternalName *InternalNameCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_names.size(), NULL);
+  nassertr(index >= 0 && index < (int)_names.size(), nullptr);
 
   return _names[index];
 }

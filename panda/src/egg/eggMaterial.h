@@ -25,10 +25,10 @@
  */
 class EXPCL_PANDAEGG EggMaterial : public EggNode {
 PUBLISHED:
-  explicit EggMaterial(const string &mref_name);
+  explicit EggMaterial(const std::string &mref_name);
   EggMaterial(const EggMaterial &copy);
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   enum Equivalence {
     E_attributes           = 0x001,

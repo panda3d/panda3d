@@ -29,12 +29,12 @@
  */
 class EXPCL_PANDAEGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
-  explicit EggVertexAux(const string &name, const LVecBase4d &aux);
+  explicit EggVertexAux(const std::string &name, const LVecBase4d &aux);
   EggVertexAux(const EggVertexAux &copy);
   EggVertexAux &operator = (const EggVertexAux &copy);
   virtual ~EggVertexAux();
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
 
   INLINE const LVecBase4d &get_aux() const;
   INLINE void set_aux(const LVecBase4d &aux);
@@ -42,7 +42,7 @@ PUBLISHED:
   static PT(EggVertexAux) make_average(const EggVertexAux *first,
                                        const EggVertexAux *second);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
   int compare_to(const EggVertexAux &other) const;
 
 private:

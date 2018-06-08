@@ -307,7 +307,7 @@ open_device() {
   sprintf(path, "/sys/class/input/js%d/device/device/../product", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       if (buffer[0] != 0) {
         _name.assign(buffer);
@@ -318,7 +318,7 @@ open_device() {
   sprintf(path, "/sys/class/input/js%d/device/device/../manufacturer", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _manufacturer.assign(buffer);
     }
@@ -327,7 +327,7 @@ open_device() {
   sprintf(path, "/sys/class/input/js%d/device/device/../serial", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _serial_number.assign(buffer);
     }

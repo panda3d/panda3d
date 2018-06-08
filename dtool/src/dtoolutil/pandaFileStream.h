@@ -26,19 +26,19 @@
  * simple-threading implementation (using this interface will block only the
  * current thread, rather than the entire process, on I/O waits).
  */
-class EXPCL_DTOOL IFileStream : public istream {
+class EXPCL_DTOOL_DTOOLUTIL IFileStream : public std::istream {
 PUBLISHED:
   INLINE IFileStream();
-  INLINE explicit IFileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit IFileStream(const char *filename, std::ios::openmode mode = std::ios::in);
   INLINE ~IFileStream();
 
-  INLINE void open(const char *filename, ios::openmode mode = ios::in);
+  INLINE void open(const char *filename, std::ios::openmode mode = std::ios::in);
 
 public:
 #ifdef _WIN32
-  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode = ios::in);
+  INLINE void attach(const char *filename, HANDLE handle, std::ios::openmode mode = std::ios::in);
 #else
-  INLINE void attach(const char *filename, int fd, ios::openmode mode = ios::in);
+  INLINE void attach(const char *filename, int fd, std::ios::openmode mode = std::ios::in);
 #endif
 
 PUBLISHED:
@@ -54,19 +54,19 @@ private:
  * simple-threading implementation (using this interface will block only the
  * current thread, rather than the entire process, on I/O waits).
  */
-class EXPCL_DTOOL OFileStream : public ostream {
+class EXPCL_DTOOL_DTOOLUTIL OFileStream : public std::ostream {
 PUBLISHED:
   INLINE OFileStream();
-  INLINE explicit OFileStream(const char *filename, ios::openmode mode = ios::out);
+  INLINE explicit OFileStream(const char *filename, std::ios::openmode mode = std::ios::out);
   INLINE ~OFileStream();
 
-  INLINE void open(const char *filename, ios::openmode mode = ios::out);
+  INLINE void open(const char *filename, std::ios::openmode mode = std::ios::out);
 
 public:
 #ifdef _WIN32
-  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode = ios::out);
+  INLINE void attach(const char *filename, HANDLE handle, std::ios::openmode mode = std::ios::out);
 #else
-  INLINE void attach(const char *filename, int fd, ios::openmode mode = ios::out);
+  INLINE void attach(const char *filename, int fd, std::ios::openmode mode = std::ios::out);
 #endif
 
 PUBLISHED:
@@ -83,19 +83,19 @@ private:
  * will block only the current thread, rather than the entire process, on I/O
  * waits).
  */
-class EXPCL_DTOOL FileStream : public iostream {
+class EXPCL_DTOOL_DTOOLUTIL FileStream : public std::iostream {
 PUBLISHED:
   INLINE FileStream();
-  INLINE explicit FileStream(const char *filename, ios::openmode mode = ios::in);
+  INLINE explicit FileStream(const char *filename, std::ios::openmode mode = std::ios::in);
   INLINE ~FileStream();
 
-  INLINE void open(const char *filename, ios::openmode mode = ios::in);
+  INLINE void open(const char *filename, std::ios::openmode mode = std::ios::in);
 
 public:
 #ifdef _WIN32
-  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode);
+  INLINE void attach(const char *filename, HANDLE handle, std::ios::openmode mode);
 #else
-  INLINE void attach(const char *filename, int fd, ios::openmode mode);
+  INLINE void attach(const char *filename, int fd, std::ios::openmode mode);
 #endif
 
 PUBLISHED:

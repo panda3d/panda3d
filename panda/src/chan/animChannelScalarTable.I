@@ -25,7 +25,7 @@ get_table() const {
  */
 INLINE bool AnimChannelScalarTable::
 has_table() const {
-  return _table != (const PN_stdfloat *)NULL;
+  return _table != nullptr;
 }
 
 
@@ -34,5 +34,5 @@ has_table() const {
  */
 INLINE void AnimChannelScalarTable::
 clear_table() {
-  _table = NULL;
+  _table = nullptr;
 }

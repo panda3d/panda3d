@@ -119,7 +119,7 @@ find_region(const string &name) const {
     }
   }
 
-  return (MouseWatcherRegion *)NULL;
+  return nullptr;
 }
 
 /**
@@ -180,7 +180,7 @@ get_region(int n) const {
   if (n >= 0 && n < (int)_regions.size()) {
     return _regions[n];
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -366,7 +366,7 @@ do_update_regions() {
  */
 PandaNode *MouseWatcherBase::
 make_viz_region(MouseWatcherRegion *region) {
-  nassertr(_lock.debug_is_locked(), NULL);
+  nassertr(_lock.debug_is_locked(), nullptr);
 
   LineSegs ls("show_regions");
   ls.set_color(_color);

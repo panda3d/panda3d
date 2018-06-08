@@ -18,6 +18,7 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
+#include "geomLinesAdjacency.h"
 
 TypeHandle GeomLines::_type_handle;
 
@@ -65,6 +66,67 @@ make_copy() const {
 GeomPrimitive::PrimitiveType GeomLines::
 get_primitive_type() const {
   return PT_lines;
+}
+
+/**
+ * Adds adjacency information to this primitive.  May return null if this type
+ * of geometry does not support adjacency information.
+ */
+CPT(GeomPrimitive) GeomLines::
+make_adjacency() const {
+ Thread *current_thread = Thread::get_current_thread();
+  PT(GeomLinesAdjacency) adj = new GeomLinesAdjacency(get_usage_hint());
+
+  GeomPrimitivePipelineReader from(this, current_thread);
+  int num_vertices = from.get_num_vertices();
+
+  PT(GeomVertexArrayData) new_vertices = adj->make_index_data();
+  new_vertices->set_num_rows(num_vertices * 2);
+
+  // First, build a map of each vertex to its next vertex, and another map
+  // doing the exact reverse.  Note that this only considers lines that are
+  // ordered the same way as being connected; we may need to change this.
+  map<int, int> forward_map, reverse_map;
+  for (int i = 0; i < num_vertices; i += 2) {
+    int v0 = from.get_vertex(i);
+    int v1 = from.get_vertex(i + 1);
+    forward_map[v0] = v1;
+    reverse_map[v1] = v0;
+  }
+
+  // Now build up the new vertex data.  For each line, we insert the
+  // appropriate connecting vertex.
+  {
+    GeomVertexWriter to(new_vertices, 0);
+    for (int i = 0; i < num_vertices; i += 2) {
+      int v0 = from.get_vertex(i);
+      int v1 = from.get_vertex(i + 1);
+
+      auto it = reverse_map.find(v0);
+      if (it != reverse_map.end()) {
+        to.set_data1i(it->second);
+      } else {
+        // Um, no adjoining line segment?  Just repeat the vertex, I guess.
+        to.set_data1i(v0);
+      }
+
+      to.set_data1i(v0);
+      to.set_data1i(v1);
+
+      // Do the same for the second vertex in the line.
+      it = forward_map.find(v1);
+      if (it != forward_map.end()) {
+        to.set_data1i(it->second);
+      } else {
+        to.set_data1i(v1);
+      }
+    }
+
+    nassertr(to.is_at_end(), nullptr);
+  }
+
+  adj->set_vertices(move(new_vertices));
+  return adj.p();
 }
 
 /**
@@ -120,7 +182,7 @@ rotate_impl() const {
       to.set_data1i(from.get_data1i());
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -132,7 +194,7 @@ rotate_impl() const {
       to.set_data1i(begin + first_vertex);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
 
   return new_vertices;

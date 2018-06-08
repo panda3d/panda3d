@@ -19,7 +19,7 @@
 TypeHandle InputDeviceNode::_type_handle;
 
 InputDeviceNode::
-InputDeviceNode(InputDevice *device, const string &name) :
+InputDeviceNode(InputDevice *device, const std::string &name) :
   DataNode(name),
   _device(device)
 {

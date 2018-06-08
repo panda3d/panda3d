@@ -23,16 +23,16 @@
  * Panda.  Application developers can use this class to query the runtime
  * version or capabilities of the current Panda environment.
  */
-class EXPCL_DTOOL PandaSystem {
+class EXPCL_DTOOL_DTOOLUTIL PandaSystem {
 protected:
   PandaSystem();
   ~PandaSystem();
 
 PUBLISHED:
-  static string get_version_string();
-  static string get_package_version_string();
-  static string get_package_host_url();
-  static string get_p3d_coreapi_version_string();
+  static std::string get_version_string();
+  static std::string get_package_version_string();
+  static std::string get_package_host_url();
+  static std::string get_p3d_coreapi_version_string();
 
   static int get_major_version();
   static int get_minor_version();
@@ -41,12 +41,12 @@ PUBLISHED:
 
   static int get_memory_alignment();
 
-  static string get_distributor();
-  static string get_compiler();
-  static string get_build_date();
-  static string get_git_commit();
+  static std::string get_distributor();
+  static std::string get_compiler();
+  static std::string get_build_date();
+  static std::string get_git_commit();
 
-  static string get_platform();
+  static std::string get_platform();
 
   MAKE_PROPERTY(version_string, get_version_string);
   MAKE_PROPERTY(major_version, get_major_version);
@@ -63,41 +63,41 @@ PUBLISHED:
 
   MAKE_PROPERTY(platform, get_platform);
 
-  bool has_system(const string &system) const;
+  bool has_system(const std::string &system) const;
   size_t get_num_systems() const;
-  string get_system(size_t n) const;
+  std::string get_system(size_t n) const;
   MAKE_SEQ(get_systems, get_num_systems, get_system);
   MAKE_SEQ_PROPERTY(systems, get_num_systems, get_system);
 
-  string get_system_tag(const string &system, const string &tag) const;
+  std::string get_system_tag(const std::string &system, const std::string &tag) const;
 
-  void add_system(const string &system);
-  void set_system_tag(const string &system, const string &tag,
-                      const string &value);
+  void add_system(const std::string &system);
+  void set_system_tag(const std::string &system, const std::string &tag,
+                      const std::string &value);
 
   bool heap_trim(size_t pad);
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
   static PandaSystem *get_global_ptr();
 
 private:
   void reset_system_names();
 
-  void set_package_version_string(const string &package_version_string);
-  void set_package_host_url(const string &package_host_url);
+  void set_package_version_string(const std::string &package_version_string);
+  void set_package_host_url(const std::string &package_host_url);
 
-  typedef pmap<string, string> SystemTags;
-  typedef pmap<string, SystemTags> Systems;
-  typedef pvector<string> SystemNames;
+  typedef pmap<std::string, std::string> SystemTags;
+  typedef pmap<std::string, SystemTags> Systems;
+  typedef pvector<std::string> SystemNames;
 
   Systems _systems;
   SystemNames _system_names;
   bool _system_names_dirty;
 
-  string _package_version_string;
-  string _package_host_url;
+  std::string _package_version_string;
+  std::string _package_host_url;
 
   static PandaSystem *_global_ptr;
 
@@ -115,7 +115,7 @@ private:
   friend class ConfigPageManager;
 };
 
-inline ostream &operator << (ostream &out, const PandaSystem &ps) {
+inline std::ostream &operator << (std::ostream &out, const PandaSystem &ps) {
   ps.output(out);
   return out;
 }

@@ -25,8 +25,8 @@
  */
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
-  INLINE explicit UvScrollNode(const string &name);
+  INLINE explicit UvScrollNode(const std::string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
+  INLINE explicit UvScrollNode(const std::string &name);
 
 protected:
   INLINE UvScrollNode(const UvScrollNode &copy);

@@ -55,7 +55,7 @@ protected:
   PartBundle(const PartBundle &copy);
 
 PUBLISHED:
-  explicit PartBundle(const string &name = "");
+  explicit PartBundle(const std::string &name = "");
   virtual PartGroup *make_copy() const;
 
   INLINE CPT(AnimPreloadTable) get_anim_preload() const;
@@ -123,8 +123,8 @@ PUBLISHED:
   INLINE void set_control_effect(AnimControl *control, PN_stdfloat effect);
   INLINE PN_stdfloat get_control_effect(AnimControl *control) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
                             int hierarchy_match_flags = 0,
@@ -136,11 +136,11 @@ PUBLISHED:
                                  bool allow_async);
   void wait_pending();
 
-  bool freeze_joint(const string &joint_name, const TransformState *transform);
-  bool freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
-  bool freeze_joint(const string &joint_name, PN_stdfloat value);
-  bool control_joint(const string &joint_name, PandaNode *node);
-  bool release_joint(const string &joint_name);
+  bool freeze_joint(const std::string &joint_name, const TransformState *transform);
+  bool freeze_joint(const std::string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  bool freeze_joint(const std::string &joint_name, PN_stdfloat value);
+  bool control_joint(const std::string &joint_name, PandaNode *node);
+  bool release_joint(const std::string &joint_name);
 
   bool update();
   bool force_update();
@@ -149,6 +149,7 @@ public:
   // The following functions aren't really part of the public interface;
   // they're just public so we don't have to declare a bunch of friends.
   virtual void control_activated(AnimControl *control);
+  void control_removed(AnimControl *control);
   INLINE void set_update_delay(double delay);
 
   bool do_bind_anim(AnimControl *control, AnimBundle *anim,
@@ -204,6 +205,7 @@ private:
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 public:
   static void register_with_read_factory();
@@ -241,13 +243,13 @@ private:
   friend class MovingPartScalar;
 };
 
-inline ostream &operator <<(ostream &out, const PartBundle &bundle) {
+inline std::ostream &operator <<(std::ostream &out, const PartBundle &bundle) {
   bundle.output(out);
   return out;
 }
 
-ostream &operator <<(ostream &out, PartBundle::BlendType blend_type);
-istream &operator >>(istream &in, PartBundle::BlendType &blend_type);
+std::ostream &operator <<(std::ostream &out, PartBundle::BlendType blend_type);
+std::istream &operator >>(std::istream &in, PartBundle::BlendType &blend_type);
 
 #include "partBundle.I"
 

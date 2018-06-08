@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_DEVICE InputDeviceNode : public DataNode {
 PUBLISHED:
-  InputDeviceNode(InputDevice *device, const string &name);
+  InputDeviceNode(InputDevice *device, const std::string &name);
   void set_device(InputDevice *device);
   PT(InputDevice) get_device() const;
 

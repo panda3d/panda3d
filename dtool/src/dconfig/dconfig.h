@@ -30,13 +30,13 @@
  * used primarily by Python code.  For modern code, use the new
  * ConfigVariable* interface instead of this deprecated interface.
  */
-class EXPCL_DTOOLCONFIG DConfig {
+class EXPCL_DTOOL_DCONFIG DConfig {
 PUBLISHED:
-  static INLINE bool GetBool(const string &sym, bool def = false);
-  static INLINE int GetInt(const string &sym, int def = 0);
-  static INLINE float GetFloat(const string &sym, float def = 0.);
-  static INLINE double GetDouble(const string &sym, double def = 0.);
-  static INLINE string GetString(const string &sym, const string &def = "");
+  static INLINE bool GetBool(const std::string &sym, bool def = false);
+  static INLINE int GetInt(const std::string &sym, int def = 0);
+  static INLINE float GetFloat(const std::string &sym, float def = 0.);
+  static INLINE double GetDouble(const std::string &sym, double def = 0.);
+  static INLINE std::string GetString(const std::string &sym, const std::string &def = "");
 };
 
 #include "dconfig.I"

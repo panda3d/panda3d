@@ -28,20 +28,3 @@ INLINE BulletBoxShape::
 
   delete _shape;
 }
-
-/**
- *
- */
-INLINE BulletBoxShape::
-BulletBoxShape(const BulletBoxShape &copy) :
-  _shape(copy._shape), _half_extents(copy._half_extents) {
-}
-
-/**
- *
- */
-INLINE void BulletBoxShape::
-operator = (const BulletBoxShape &copy) {
-  _shape = copy._shape;
-  _half_extents = copy._half_extents;
-}

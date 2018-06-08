@@ -30,8 +30,7 @@ private:
 
 PUBLISHED:
   explicit BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
-  INLINE BulletConeShape(const BulletConeShape &copy);
-  INLINE void operator = (const BulletConeShape &copy);
+  BulletConeShape(const BulletConeShape &copy);
   INLINE ~BulletConeShape();
 
   INLINE PN_stdfloat get_radius() const;
@@ -47,6 +46,7 @@ private:
   btConeShape *_shape;
   PN_stdfloat _radius;
   PN_stdfloat _height;
+  BulletUpAxis _up;
 
 public:
   static void register_with_read_factory();

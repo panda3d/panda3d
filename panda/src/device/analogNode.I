@@ -26,7 +26,7 @@ OutputData() {
  */
 INLINE bool AnalogNode::
 is_valid() const {
-  return (_analog != (ClientAnalogDevice *)NULL) && _analog->is_connected();
+  return (_analog != nullptr) && _analog->is_connected();
 }
 
 /**

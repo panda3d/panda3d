@@ -237,7 +237,7 @@ WinRawInputDevice::
  * if the device was connected successfully.
  */
 bool WinRawInputDevice::
-on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, string name) {
+on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   LightMutexHolder holder(_lock);
 
   _name = move(name);

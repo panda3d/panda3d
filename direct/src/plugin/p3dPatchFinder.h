@@ -34,26 +34,26 @@ public:
   class Patchfile;
   class PackageVersion;
 
-  typedef vector<Patchfile *> Patchfiles;
-  typedef vector<PackageVersion *> PackageVersionsList;
+  typedef std::vector<Patchfile *> Patchfiles;
+  typedef std::vector<PackageVersion *> PackageVersionsList;
 
   // This class is used to index into a map to locate PackageVersion objects,
   // below.
   class PackageVersionKey {
   public:
-    PackageVersionKey(const string &package_name,
-                      const string &platform,
-                      const string &version,
-                      const string &host_url,
+    PackageVersionKey(const std::string &package_name,
+                      const std::string &platform,
+                      const std::string &version,
+                      const std::string &host_url,
                       const FileSpec &file);
     bool operator < (const PackageVersionKey &other) const;
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
   public:
-    string _package_name;
-    string _platform;
-    string _version;
-    string _host_url;
+    std::string _package_name;
+    std::string _platform;
+    std::string _version;
+    std::string _host_url;
     FileSpec _file;
   };
 
@@ -68,12 +68,12 @@ public:
                          const PackageVersionsList &already_visited_in);
 
   public:
-    string _package_name;
-    string _platform;
-    string _version;
-    string _host_url;
+    std::string _package_name;
+    std::string _platform;
+    std::string _version;
+    std::string _host_url;
     FileSpec _file;
-    string _print_name;
+    std::string _print_name;
 
     // The Package object that produces this version if this is the current
     // form or the base form, respectively.
@@ -98,10 +98,10 @@ public:
 
   public:
     Package *_package;
-    string _package_name;
-    string _platform;
-    string _version;
-    string _host_url;
+    std::string _package_name;
+    std::string _platform;
+    std::string _version;
+    std::string _host_url;
 
     // The patchfile itself
     FileSpec _file;
@@ -132,10 +132,10 @@ public:
     bool read_desc_file(TiXmlDocument *doc);
 
   public:
-    string _package_name;
-    string _platform;
-    string _version;
-    string _host_url;
+    std::string _package_name;
+    std::string _platform;
+    std::string _version;
+    std::string _host_url;
 
     PackageVersion *_current_pv;
     PackageVersion *_base_pv;
@@ -162,16 +162,16 @@ private:
   void record_patchfile(Patchfile *patchfile);
 
 private:
-  typedef map<PackageVersionKey, PackageVersion *> PackageVersions;
+  typedef std::map<PackageVersionKey, PackageVersion *> PackageVersions;
   PackageVersions _package_versions;
 
-  typedef vector<Package *> Packages;
+  typedef std::vector<Package *> Packages;
   Packages _packages;
 };
 
 #include "p3dPatchFinder.I"
 
-inline ostream &operator << (ostream &out, const P3DPatchFinder::PackageVersionKey &key) {
+inline std::ostream &operator << (std::ostream &out, const P3DPatchFinder::PackageVersionKey &key) {
   key.output(out);
   return out;
 }

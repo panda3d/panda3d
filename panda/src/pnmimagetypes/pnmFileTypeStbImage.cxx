@@ -62,7 +62,7 @@
 
 static const char *const stb_extensions[] = {
   // Expose the extensions that we don't already expose through other loaders.
-#ifndef HAVE_JPEG
+#if !defined(HAVE_JPEG) && !defined(ANDROID)
   "jpg", "jpeg",
 #endif
 #ifndef HAVE_PNG
@@ -91,7 +91,7 @@ static const int num_stb_extensions = sizeof(stb_extensions) / sizeof(const char
 // Callbacks to allow stb_image to read from VFS.
 static int cb_read(void *user, char *data, int size) {
   istream *in = (istream *)user;
-  nassertr(in != NULL, 0);
+  nassertr(in != nullptr, 0);
 
   in->read(data, size);
 
@@ -105,7 +105,7 @@ static int cb_read(void *user, char *data, int size) {
 
 static void cb_skip(void *user, int n) {
   istream *in = (istream *)user;
-  nassertv(in != NULL);
+  nassertv(in != nullptr);
 
   in->seekg(n, ios::cur);
 
@@ -118,7 +118,7 @@ static void cb_skip(void *user, int n) {
 
 static int cb_eof(void *user) {
   istream *in = (istream *)user;
-  nassertr(in != NULL, 1);
+  nassertr(in != nullptr, 1);
 
   return in->eof();
 }
@@ -358,7 +358,7 @@ read_pfm(PfmFile &pfm) {
     return false;
   }
   token += 3;
-  width = (int) strtol(token, NULL, 10);
+  width = (int) strtol(token, nullptr, 10);
 
   // Read data
   pfm.clear(width, height, 3);
@@ -380,7 +380,7 @@ main_decode_loop:
     }
   } else {
     // Read RLE-encoded data
-    scanline = NULL;
+    scanline = nullptr;
 
     for (j = 0; j < height; ++j) {
       c1 = stbi__get8(&_context);

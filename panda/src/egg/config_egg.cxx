@@ -58,6 +58,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDAEGG)
+  #error Buildsystem error: BUILDING_PANDAEGG not defined
+#endif
+
 Configure(config_egg);
 NotifyCategoryDef(egg, "");
 

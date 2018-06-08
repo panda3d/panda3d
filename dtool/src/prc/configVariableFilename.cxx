@@ -23,12 +23,12 @@ reload_cache() {
   // thread-safe manner.  But chances are that the first time this is called
   // is at static init time, when there is no risk of data races.
   static MutexImpl lock;
-  lock.acquire();
+  lock.lock();
 
   // We check again for cache validity since another thread may have beaten
   // us to the punch while we were waiting for the lock.
   if (!is_cache_valid(_local_modified)) {
-    nassertv(_core != (ConfigVariableCore *)NULL);
+    nassertv(_core != nullptr);
 
     const ConfigDeclaration *decl = _core->get_declaration(0);
     const ConfigPage *page = decl->get_page();
@@ -42,5 +42,5 @@ reload_cache() {
 
     mark_cache_valid(_local_modified);
   }
-  lock.release();
+  lock.unlock();
 }

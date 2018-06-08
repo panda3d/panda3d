@@ -12,7 +12,7 @@
  */
 
 #include "pathReplace.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_pandatoolbase.h"
 #include "indent.h"
 #include "virtualFileSystem.h"

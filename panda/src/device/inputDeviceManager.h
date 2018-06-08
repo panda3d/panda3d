@@ -28,7 +28,7 @@ class WinRawInputDevice;
  * This class keeps track of all the devices on a system, and sends out events
  * when a device has been hot-plugged.
  */
-class EXPCL_PANDA_DEVICE InputDeviceManager {
+class EXPCL_PANDA_DEVICE InputDeviceManager final {
 protected:
   InputDeviceManager();
 

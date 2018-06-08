@@ -32,8 +32,8 @@ PUBLISHED:
   INLINE LOrientation get_initial_orientation() const;
   INLINE LOrientation get_final_orientation() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   virtual void populate_child_particle(BaseParticle *bp) const;

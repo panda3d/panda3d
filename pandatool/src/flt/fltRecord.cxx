@@ -69,7 +69,7 @@ get_num_children() const {
  */
 FltRecord *FltRecord::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -104,7 +104,7 @@ get_num_subfaces() const {
  */
 FltRecord *FltRecord::
 get_subface(int n) const {
-  nassertr(n >= 0 && n < (int)_subfaces.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_subfaces.size(), nullptr);
   return _subfaces[n];
 }
 
@@ -139,7 +139,7 @@ get_num_extensions() const {
  */
 FltRecord *FltRecord::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < (int)_extensions.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_extensions.size(), nullptr);
   return _extensions[n];
 }
 
@@ -178,7 +178,7 @@ get_num_ancillary() const {
  */
 FltRecord *FltRecord::
 get_ancillary(int n) const {
-  nassertr(n >= 0 && n < (int)_ancillary.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_ancillary.size(), nullptr);
   return _ancillary[n];
 }
 
@@ -621,7 +621,8 @@ extract_record(FltRecordReader &) {
 bool FltRecord::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_comment) {
-    _comment = reader.get_iterator().get_remaining_bytes();
+    DatagramIterator &di = reader.get_iterator();
+    _comment = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 
@@ -735,7 +736,7 @@ build_record(FltRecordWriter &) const {
 FltError FltRecord::
 write_ancillary(FltRecordWriter &writer) const {
   if (!_comment.empty()) {
-    Datagram dc(_comment);
+    Datagram dc(_comment.data(), _comment.size());
     FltError result = writer.write_record(FO_comment, dc);
     if (result != FE_ok) {
       return result;

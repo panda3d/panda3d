@@ -41,15 +41,15 @@ BulletSoftBodyNode(btSoftBody *body, const char *name) : BulletBodyNode(name) {
   // Shape
   btCollisionShape *shape_ptr = _soft->getCollisionShape();
 
-  nassertv(shape_ptr != NULL);
+  nassertv(shape_ptr != nullptr);
   nassertv(shape_ptr->getShapeType() == SOFTBODY_SHAPE_PROXYTYPE);
 
   _shapes.push_back(new BulletSoftBodyShape((btSoftBodyCollisionShape *)shape_ptr));
 
   // Rendering
-  _geom = NULL;
-  _curve = NULL;
-  _surface = NULL;
+  _geom = nullptr;
+  _curve = nullptr;
+  _surface = nullptr;
 }
 
 /**
@@ -66,6 +66,7 @@ get_object() const {
  */
 BulletSoftBodyConfig BulletSoftBodyNode::
 get_cfg() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return BulletSoftBodyConfig(_soft->m_cfg);
 }
@@ -75,6 +76,7 @@ get_cfg() {
  */
 BulletSoftBodyWorldInfo BulletSoftBodyNode::
 get_world_info() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return BulletSoftBodyWorldInfo(*(_soft->m_worldInfo));
 }
@@ -84,6 +86,7 @@ get_world_info() {
  */
 int BulletSoftBodyNode::
 get_num_materials() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->m_materials.size();
 }
@@ -93,8 +96,9 @@ get_num_materials() const {
  */
 BulletSoftBodyMaterial BulletSoftBodyNode::
 get_material(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >= 0 && idx < get_num_materials(), BulletSoftBodyMaterial::empty());
+  nassertr(idx >= 0 && idx < _soft->m_materials.size(), BulletSoftBodyMaterial::empty());
 
   btSoftBody::Material *material = _soft->m_materials[idx];
   return BulletSoftBodyMaterial(*material);
@@ -105,6 +109,7 @@ get_material(int idx) const {
  */
 BulletSoftBodyMaterial BulletSoftBodyNode::
 append_material() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btSoftBody::Material *material = _soft->appendMaterial();
   nassertr(material, BulletSoftBodyMaterial::empty());
@@ -117,6 +122,7 @@ append_material() {
  */
 int BulletSoftBodyNode::
 get_num_nodes() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->m_nodes.size();
 }
@@ -126,8 +132,9 @@ get_num_nodes() const {
  */
 BulletSoftBodyNodeElement BulletSoftBodyNode::
 get_node(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >=0 && idx < get_num_nodes(), BulletSoftBodyNodeElement::empty());
+  nassertr(idx >= 0 && idx < _soft->m_nodes.size(), BulletSoftBodyNodeElement::empty());
   return BulletSoftBodyNodeElement(_soft->m_nodes[idx]);
 }
 
@@ -136,6 +143,7 @@ get_node(int idx) const {
  */
 void BulletSoftBodyNode::
 generate_bending_constraints(int distance, BulletSoftBodyMaterial *material) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   if (material) {
     _soft->generateBendingConstraints(distance, &(material->get_material()));
@@ -150,6 +158,7 @@ generate_bending_constraints(int distance, BulletSoftBodyMaterial *material) {
  */
 void BulletSoftBodyNode::
 randomize_constraints() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->randomizeConstraints();
 }
@@ -159,8 +168,9 @@ randomize_constraints() {
  */
 void BulletSoftBodyNode::
 transform_changed() {
-
   if (_sync_disable) return;
+
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
@@ -174,7 +184,7 @@ transform_changed() {
     btTransform trans = TransformState_to_btTrans(ts);
 
     // Offset between current approx center and current initial transform
-    btVector3 pos = LVecBase3_to_btVector3(this->get_aabb().get_approx_center());
+    btVector3 pos = LVecBase3_to_btVector3(this->do_get_aabb().get_approx_center());
     btVector3 origin = _soft->m_initialWorldTransform.getOrigin();
     btVector3 offset = pos - origin;
 
@@ -205,16 +215,16 @@ transform_changed() {
  *
  */
 void BulletSoftBodyNode::
-sync_p2b() {
+do_sync_p2b() {
 
   // transform_changed(); Disabled for now...
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletSoftBodyNode::
-sync_b2p() {
+do_sync_b2p() {
 
   // Render softbody
   if (_geom) {
@@ -266,7 +276,7 @@ sync_b2p() {
 
   // Update the synchronized transform with the current approximate center of
   // the soft body
-  LVecBase3 pos = this->get_aabb().get_approx_center();
+  LVecBase3 pos = this->do_get_aabb().get_approx_center();
   CPT(TransformState) ts = TransformState::make_pos(pos);
 
   NodePath np = NodePath::any_path((PandaNode *)this);
@@ -291,6 +301,19 @@ sync_b2p() {
  */
 int BulletSoftBodyNode::
 get_closest_node_index(LVecBase3 point, bool local) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_closest_node_index(point, local);
+}
+
+/**
+ * Returns the index of the node which is closest to the given point.  The
+ * distance between each node and the given point is computed in world space
+ * if local=false, and in local space if local=true.
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+int BulletSoftBodyNode::
+do_get_closest_node_index(LVecBase3 point, bool local) {
 
   btScalar max_dist_sqr = 1e30;
   btVector3 point_x = LVecBase3_to_btVector3(point);
@@ -322,11 +345,12 @@ get_closest_node_index(LVecBase3 point, bool local) {
  */
 void BulletSoftBodyNode::
 link_geom(Geom *geom) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(geom->get_vertex_data()->has_column(InternalName::get_vertex()));
   nassertv(geom->get_vertex_data()->has_column(InternalName::get_normal()));
 
-  sync_p2b();
+  do_sync_p2b();
 
   _geom = geom;
 
@@ -349,7 +373,7 @@ link_geom(Geom *geom) {
 
   while (!vertices.is_at_end()) {
     LVecBase3 point = vertices.get_data3();
-    int node_idx = get_closest_node_index(point, true);
+    int node_idx = do_get_closest_node_index(point, true);
     indices.set_data1i(node_idx);
   }
 }
@@ -359,8 +383,9 @@ link_geom(Geom *geom) {
  */
 void BulletSoftBodyNode::
 unlink_geom() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _geom = NULL;
+  _geom = nullptr;
 }
 
 /**
@@ -368,6 +393,7 @@ unlink_geom() {
  */
 void BulletSoftBodyNode::
 link_curve(NurbsCurveEvaluator *curve) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(curve->get_num_vertices() == _soft->m_nodes.size());
 
@@ -379,8 +405,9 @@ link_curve(NurbsCurveEvaluator *curve) {
  */
 void BulletSoftBodyNode::
 unlink_curve() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _curve = NULL;
+  _curve = nullptr;
 }
 
 /**
@@ -388,6 +415,7 @@ unlink_curve() {
  */
 void BulletSoftBodyNode::
 link_surface(NurbsSurfaceEvaluator *surface) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(surface->get_num_u_vertices() * surface->get_num_v_vertices() == _soft->m_nodes.size());
 
@@ -399,8 +427,9 @@ link_surface(NurbsSurfaceEvaluator *surface) {
  */
 void BulletSoftBodyNode::
 unlink_surface() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  _surface = NULL;
+  _surface = nullptr;
 }
 
 /**
@@ -408,6 +437,16 @@ unlink_surface() {
  */
 BoundingBox BulletSoftBodyNode::
 get_aabb() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_aabb();
+}
+
+/**
+ *
+ */
+BoundingBox BulletSoftBodyNode::
+do_get_aabb() const {
 
   btVector3 pMin;
   btVector3 pMax;
@@ -425,6 +464,7 @@ get_aabb() const {
  */
 void BulletSoftBodyNode::
 set_volume_mass(PN_stdfloat mass) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setVolumeMass(mass);
 }
@@ -434,6 +474,7 @@ set_volume_mass(PN_stdfloat mass) {
  */
 void BulletSoftBodyNode::
 set_total_mass(PN_stdfloat mass, bool fromfaces) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setTotalMass(mass, fromfaces);
 }
@@ -443,6 +484,7 @@ set_total_mass(PN_stdfloat mass, bool fromfaces) {
  */
 void BulletSoftBodyNode::
 set_volume_density(PN_stdfloat density) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setVolumeDensity(density);
 }
@@ -452,6 +494,7 @@ set_volume_density(PN_stdfloat density) {
  */
 void BulletSoftBodyNode::
 set_total_density(PN_stdfloat density) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setTotalDensity(density);
 }
@@ -461,6 +504,7 @@ set_total_density(PN_stdfloat density) {
  */
 void BulletSoftBodyNode::
 set_mass(int node, PN_stdfloat mass) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setMass(node, mass);
 }
@@ -470,6 +514,7 @@ set_mass(int node, PN_stdfloat mass) {
  */
 PN_stdfloat BulletSoftBodyNode::
 get_mass(int node) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->getMass(node);
 }
@@ -479,6 +524,7 @@ get_mass(int node) const {
  */
 PN_stdfloat BulletSoftBodyNode::
 get_total_mass() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->getTotalMass();
 }
@@ -488,6 +534,7 @@ get_total_mass() const {
  */
 PN_stdfloat BulletSoftBodyNode::
 get_volume() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->getVolume();
 }
@@ -497,6 +544,7 @@ get_volume() const {
  */
 void BulletSoftBodyNode::
 add_force(const LVector3 &force) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!force.is_nan());
   _soft->addForce(LVecBase3_to_btVector3(force));
@@ -507,6 +555,7 @@ add_force(const LVector3 &force) {
  */
 void BulletSoftBodyNode::
 add_force(const LVector3 &force, int node) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!force.is_nan());
   _soft->addForce(LVecBase3_to_btVector3(force), node);
@@ -517,6 +566,7 @@ add_force(const LVector3 &force, int node) {
  */
 void BulletSoftBodyNode::
 set_velocity(const LVector3 &velocity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!velocity.is_nan());
   _soft->setVelocity(LVecBase3_to_btVector3(velocity));
@@ -527,6 +577,7 @@ set_velocity(const LVector3 &velocity) {
  */
 void BulletSoftBodyNode::
 add_velocity(const LVector3 &velocity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!velocity.is_nan());
   _soft->addVelocity(LVecBase3_to_btVector3(velocity));
@@ -537,6 +588,7 @@ add_velocity(const LVector3 &velocity) {
  */
 void BulletSoftBodyNode::
 add_velocity(const LVector3 &velocity, int node) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!velocity.is_nan());
   _soft->addVelocity(LVecBase3_to_btVector3(velocity), node);
@@ -547,6 +599,7 @@ add_velocity(const LVector3 &velocity, int node) {
  */
 void BulletSoftBodyNode::
 generate_clusters(int k, int maxiterations) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->generateClusters(k, maxiterations);
 }
@@ -556,6 +609,7 @@ generate_clusters(int k, int maxiterations) {
  */
 void BulletSoftBodyNode::
 release_clusters() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->releaseClusters();
 }
@@ -565,6 +619,7 @@ release_clusters() {
  */
 void BulletSoftBodyNode::
 release_cluster(int index) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->releaseCluster(index);
 }
@@ -574,6 +629,7 @@ release_cluster(int index) {
  */
 int BulletSoftBodyNode::
 get_num_clusters() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _soft->clusterCount();
 }
@@ -583,6 +639,7 @@ get_num_clusters() const {
  */
 LVecBase3 BulletSoftBodyNode::
 cluster_com(int cluster) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVecBase3(_soft->clusterCom(cluster));
 }
@@ -592,6 +649,7 @@ cluster_com(int cluster) const {
  */
 void BulletSoftBodyNode::
 set_pose(bool bvolume, bool bframe) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _soft->setPose(bvolume, bframe);
 }
@@ -601,11 +659,12 @@ set_pose(bool bvolume, bool bframe) {
  */
 void BulletSoftBodyNode::
 append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(node < _soft->m_nodes.size())
   nassertv(body);
 
-  body->sync_p2b();
+  body->do_sync_p2b();
 
   btRigidBody *ptr = (btRigidBody *)body->get_object();
   _soft->appendAnchor(node, ptr, disable);
@@ -616,12 +675,13 @@ append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
  */
 void BulletSoftBodyNode::
 append_anchor(int node, BulletRigidBodyNode *body, const LVector3 &pivot, bool disable) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(node < _soft->m_nodes.size())
   nassertv(body);
   nassertv(!pivot.is_nan());
 
-  body->sync_p2b();
+  body->do_sync_p2b();
 
   btRigidBody *ptr = (btRigidBody *)body->get_object();
   _soft->appendAnchor(node, ptr, LVecBase3_to_btVector3(pivot), disable);
@@ -642,6 +702,7 @@ BulletSoftBodyNodeElement(btSoftBody::Node &node) : _node(node) {
  */
 int BulletSoftBodyNode::
 get_point_index(LVecBase3 p, PTA_LVecBase3 points) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   PN_stdfloat eps = 1.0e-6f; // TODO make this a config option
 
@@ -790,7 +851,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indic
     num_triangles,
     randomizeConstraints);
 
-  nassertr(body, NULL);
+  nassertr(body, nullptr);
 
   delete[] vertices;
   delete[] triangles;
@@ -812,7 +873,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
 
-  nassertr(vdata->has_column(InternalName::get_vertex()), NULL);
+  nassertr(vdata->has_column(InternalName::get_vertex()), nullptr);
 
   GeomVertexReader vreader(vdata, InternalName::get_vertex());
 
@@ -892,7 +953,7 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indic
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
 make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, const char *node) {
 
-  nassertr(node && node[0], NULL);
+  nassertr(node && node[0], nullptr);
 
   // Nodes
   btAlignedObjectArray<btVector3> pos;
@@ -979,6 +1040,7 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, 
  */
 void BulletSoftBodyNode::
 append_linear_joint(BulletBodyNode *body, int cluster, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(body);
 
@@ -998,6 +1060,7 @@ append_linear_joint(BulletBodyNode *body, int cluster, PN_stdfloat erp, PN_stdfl
  */
 void BulletSoftBodyNode::
 append_linear_joint(BulletBodyNode *body, const LPoint3 &pos, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(body);
 
@@ -1017,6 +1080,7 @@ append_linear_joint(BulletBodyNode *body, const LPoint3 &pos, PN_stdfloat erp, P
  */
 void BulletSoftBodyNode::
 append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split, BulletSoftBodyControl *control) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(body);
 
@@ -1037,6 +1101,7 @@ append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp
  */
 void BulletSoftBodyNode::
 set_wind_velocity(const LVector3 &velocity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!velocity.is_nan());
   _soft->setWindVelocity(LVecBase3_to_btVector3(velocity));
@@ -1047,6 +1112,67 @@ set_wind_velocity(const LVector3 &velocity) {
  */
 LVector3 BulletSoftBodyNode::
 get_wind_velocity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_soft->getWindVelocity());
+}
+
+/**
+ *
+ */
+LPoint3 BulletSoftBodyNodeElement::
+get_pos() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LPoint3(_node.m_x);
+}
+
+/**
+ *
+ */
+LVector3 BulletSoftBodyNodeElement::
+get_normal() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_node.m_n);
+}
+
+/**
+ *
+ */
+LVector3 BulletSoftBodyNodeElement::
+get_velocity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btVector3_to_LVector3(_node.m_v);
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletSoftBodyNodeElement::
+get_inv_mass() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_node.m_im;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletSoftBodyNodeElement::
+get_area() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_node.m_area;
+}
+
+/**
+ *
+ */
+int BulletSoftBodyNodeElement::
+is_attached() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_node.m_battach;
 }

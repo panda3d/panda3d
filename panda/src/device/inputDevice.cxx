@@ -23,7 +23,7 @@ TypeHandle InputDevice::_type_handle;
  * Defines a new InputDevice.
  */
 InputDevice::
-InputDevice(const string &name, DeviceClass dev_class, int flags) :
+InputDevice(const std::string &name, DeviceClass dev_class, int flags) :
   _name(name),
   _flags(flags),
   _device_class(dev_class),
@@ -342,7 +342,7 @@ set_tracker(const LPoint3 &pos, const LOrientation &orient, double time) {
  * Writes a one-line string describing the device.
  */
 void InputDevice::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << _name << " (";
@@ -404,7 +404,7 @@ output(ostream &out) const {
  * Writes a one-line string of all of the current button states.
  */
 void InputDevice::
-output_buttons(ostream &out) const {
+output_buttons(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   bool any_buttons = false;
@@ -434,7 +434,7 @@ output_buttons(ostream &out) const {
  * Writes a multi-line description of the current button states.
  */
 void InputDevice::
-write_buttons(ostream &out, int indent_level) const {
+write_buttons(std::ostream &out, int indent_level) const {
   bool any_buttons = false;
   Buttons::const_iterator bi;
   for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
@@ -468,7 +468,7 @@ write_buttons(ostream &out, int indent_level) const {
  * Writes a multi-line description of the current analog control states.
  */
 void InputDevice::
-write_controls(ostream &out, int indent_level) const {
+write_controls(std::ostream &out, int indent_level) const {
   LightMutexHolder holder(_lock);
 
   bool any_controls = false;
@@ -510,7 +510,7 @@ do_poll() {
 /**
  * Returns a string describing the given device class enumerant.
  */
-string InputDevice::
+std::string InputDevice::
 format_device_class(DeviceClass dc) {
   switch (dc) {
   case InputDevice::DC_unknown:
@@ -555,7 +555,7 @@ format_device_class(DeviceClass dc) {
 /**
  * Returns a string describing the given axis enumerant.
  */
-string InputDevice::
+std::string InputDevice::
 format_axis(ControlAxis axis) {
   switch (axis) {
   case InputDevice::C_none:
@@ -618,14 +618,14 @@ format_axis(ControlAxis axis) {
   return "**invalid**";
 }
 
-ostream &
-operator << (ostream &out, InputDevice::DeviceClass dc) {
+std::ostream &
+operator << (std::ostream &out, InputDevice::DeviceClass dc) {
   out << InputDevice::format_device_class(dc);
   return out;
 }
 
-ostream &
-operator << (ostream &out, InputDevice::ControlAxis axis) {
+std::ostream &
+operator << (std::ostream &out, InputDevice::ControlAxis axis) {
   out << InputDevice::format_axis(axis);
   return out;
 }

@@ -48,12 +48,12 @@ class PandaNode;
 class EXPCL_PANDA_PGRAPH RenderEffect : public TypedWritableReferenceCount {
 protected:
   RenderEffect();
-private:
-  RenderEffect(const RenderEffect &copy);
-  void operator = (const RenderEffect &copy);
 
 public:
+  RenderEffect(const RenderEffect &copy) = delete;
   virtual ~RenderEffect();
+
+  RenderEffect &operator = (const RenderEffect &copy) = delete;
 
   virtual bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
@@ -73,11 +73,11 @@ public:
 PUBLISHED:
   INLINE int compare_to(const RenderEffect &other) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   static int get_num_effects();
-  static void list_effects(ostream &out);
+  static void list_effects(std::ostream &out);
   static bool validate_effects();
 
 protected:
@@ -118,7 +118,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const RenderEffect &effect) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderEffect &effect) {
   effect.output(out);
   return out;
 }

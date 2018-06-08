@@ -42,7 +42,7 @@ get_instance_id() const {
  * is guaranteed to be unique for each unique session required for different
  * P3DInstances.
  */
-inline const string &P3DInstance::
+inline const std::string &P3DInstance::
 get_session_key() const {
   return _session_key;
 }
@@ -56,7 +56,7 @@ get_session_key() const {
  * Presumably all of the platform-specific packages that are downloaded
  * subsequently must be of the exact same platform.
  */
-inline const string &P3DInstance::
+inline const std::string &P3DInstance::
 get_session_platform() const {
   return _session_platform;
 }
@@ -105,7 +105,7 @@ get_matches_script_origin() const {
  */
 inline bool P3DInstance::
 is_started() const {
-  return (_session != NULL);
+  return (_session != nullptr);
 }
 
 /**
@@ -123,7 +123,7 @@ is_failed() const {
 inline P3DInstance::ImageFile::
 ImageFile() {
   _use_standard_image = true;
-  _temp_filename = NULL;
+  _temp_filename = nullptr;
   _image_placement = P3DSplashWindow::IP_none;
 }
 
@@ -140,8 +140,8 @@ inline P3DInstance::ImageFile::
  */
 inline void P3DInstance::ImageFile::
 cleanup() {
-  if (_temp_filename != NULL) {
+  if (_temp_filename != nullptr) {
     delete _temp_filename;
-    _temp_filename = NULL;
+    _temp_filename = nullptr;
   }
 }

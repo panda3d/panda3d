@@ -21,7 +21,7 @@
 #include "indirectLess.h"
 #include "lightMutexHolder.h"
 
-GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = NULL;
+GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = nullptr;
 TypeHandle GeomVertexArrayFormat::_type_handle;
 
 /**
@@ -52,7 +52,7 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
+  add_column(move(name0), num_components0, numeric_type0, contents0);
 }
 
 /**
@@ -72,8 +72,8 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
-  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
+  add_column(move(name0), num_components0, numeric_type0, contents0);
+  add_column(move(name1), num_components1, numeric_type1, contents1);
 }
 
 /**
@@ -96,9 +96,9 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
-  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
-  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
+  add_column(move(name0), num_components0, numeric_type0, contents0);
+  add_column(move(name1), num_components1, numeric_type1, contents1);
+  add_column(move(name2), num_components2, numeric_type2, contents2);
 }
 
 /**
@@ -124,10 +124,10 @@ GeomVertexArrayFormat(CPT_InternalName name0, int num_components0,
   _divisor(0),
   _columns_unsorted(false)
 {
-  add_column(MOVE(name0), num_components0, numeric_type0, contents0);
-  add_column(MOVE(name1), num_components1, numeric_type1, contents1);
-  add_column(MOVE(name2), num_components2, numeric_type2, contents2);
-  add_column(MOVE(name3), num_components3, numeric_type3, contents3);
+  add_column(move(name0), num_components0, numeric_type0, contents0);
+  add_column(move(name1), num_components1, numeric_type1, contents1);
+  add_column(move(name2), num_components2, numeric_type2, contents2);
+  add_column(move(name3), num_components3, numeric_type3, contents3);
 }
 
 /**
@@ -219,7 +219,7 @@ add_column(CPT_InternalName name, int num_components,
     start = _total_bytes;
   }
 
-  return add_column(GeomVertexColumn(MOVE(name), num_components, numeric_type, contents,
+  return add_column(GeomVertexColumn(move(name), num_components, numeric_type, contents,
                                      start, column_alignment));
 }
 
@@ -243,7 +243,7 @@ add_column(const GeomVertexColumn &column) {
 
   // Also make sure there aren't any columns that overlap with this one.
   const GeomVertexColumn *orig_column = get_column(column.get_start(), column.get_total_bytes());
-  while (orig_column != (const GeomVertexColumn *)NULL) {
+  while (orig_column != nullptr) {
     remove_column(orig_column->get_name());
     orig_column = get_column(column.get_start(), column.get_total_bytes());
   }
@@ -381,7 +381,7 @@ get_column(const InternalName *name) const {
   if (ni != _columns_by_name.end()) {
     return (*ni).second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -399,7 +399,7 @@ get_column(int start_byte, int num_bytes) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -603,7 +603,7 @@ get_format_string(bool pad) const {
     default:
       gobj_cat.error()
         << "Unknown numeric type " << column->get_numeric_type() << "!\n";
-      return NULL;
+      return nullptr;
     }
     memset((void*) (fmt + fi), fmt_code, column->get_num_components());
     offset += column->get_total_bytes();
@@ -667,7 +667,7 @@ sort_columns() {
  */
 void GeomVertexArrayFormat::
 make_registry() {
-  if (_registry == (Registry *)NULL) {
+  if (_registry == nullptr) {
     _registry = new Registry;
   }
 }

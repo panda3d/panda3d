@@ -31,7 +31,7 @@ class OpusAudio;
  */
 class EXPCL_PANDA_MOVIES OpusAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  explicit OpusAudioCursor(OpusAudio *src, istream *stream);
+  explicit OpusAudioCursor(OpusAudio *src, std::istream *stream);
   virtual ~OpusAudioCursor();
   virtual void seek(double offset);
 
@@ -49,8 +49,8 @@ protected:
   int _bytes_per_sample;
   bool _is_float;
 
-  streampos _data_start;
-  streampos _data_pos;
+  std::streampos _data_start;
+  std::streampos _data_pos;
   size_t _data_size;
 
 public:

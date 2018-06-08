@@ -22,7 +22,7 @@
 #include "vector_int.h"
 
 #else
-typedef vector<int> vector_int;
+typedef std::vector<int> vector_int;
 #endif
 
 /**

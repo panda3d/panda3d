@@ -105,17 +105,17 @@ public:
   virtual CPPDeclaration *
   instantiate(const CPPTemplateParameterList *actual_params,
               CPPScope *current_scope, CPPScope *global_scope,
-              CPPPreprocessor *error_sink = NULL) const;
+              CPPPreprocessor *error_sink = nullptr) const;
 
-  typedef map<CPPDeclaration *, CPPDeclaration *> SubstDecl;
+  typedef std::map<CPPDeclaration *, CPPDeclaration *> SubstDecl;
   virtual CPPDeclaration *substitute_decl(SubstDecl &subst,
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  typedef set<CPPDeclaration *> Instantiations;
+  typedef std::set<CPPDeclaration *> Instantiations;
   Instantiations _instantiations;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const=0;
 
   virtual SubType get_subtype() const=0;
@@ -224,13 +224,13 @@ protected:
   virtual bool is_less(const CPPDeclaration *other) const;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPDeclaration &decl) {
-  decl.output(out, 0, (CPPScope *)NULL, false);
+inline std::ostream &
+operator << (std::ostream &out, const CPPDeclaration &decl) {
+  decl.output(out, 0, nullptr, false);
   return out;
 }
 
-ostream &
-operator << (ostream &out, const CPPDeclaration::SubstDecl &decl);
+std::ostream &
+operator << (std::ostream &out, const CPPDeclaration::SubstDecl &decl);
 
 #endif

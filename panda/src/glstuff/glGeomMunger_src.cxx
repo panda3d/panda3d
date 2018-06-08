@@ -39,8 +39,8 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
     // TexGen object gets deleted.
     _texture = (const TextureAttrib *)state->get_attrib(TextureAttrib::get_class_slot());
     _tex_gen = (const TexGenAttrib *)state->get_attrib(TexGenAttrib::get_class_slot());
-    _texture.set_callback(this);
-    _tex_gen.set_callback(this);
+    _texture.add_callback(this);
+    _tex_gen.add_callback(this);
   }
 }
 
@@ -56,6 +56,11 @@ CLP(GeomMunger)::
     (*gci)->remove_munger(this);
   }
   _geom_contexts.clear();
+
+  if ((_flags & F_parallel_arrays) == 0) {
+    _texture.remove_callback(this);
+    _tex_gen.remove_callback(this);
+  }
 }
 
 /**
@@ -79,13 +84,13 @@ munge_format_impl(const GeomVertexFormat *orig,
   new_format->set_animation(animation);
 
   CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, get_gsg(), NULL);
+  DCAST_INTO_R(glgsg, get_gsg(), nullptr);
 
 #ifndef OPENGLES
   // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices and
   // texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
-  if (vertex_type != (GeomVertexColumn *)NULL &&
+  if (vertex_type != nullptr &&
       (vertex_type->get_numeric_type() == NT_int8 ||
        vertex_type->get_numeric_type() == NT_uint8)) {
     int vertex_array = orig->get_array_with(InternalName::get_vertex());
@@ -122,7 +127,7 @@ munge_format_impl(const GeomVertexFormat *orig,
 #endif  // !OPENGLES
 
   const GeomVertexColumn *color_type = orig->get_color_column();
-  if (color_type != (GeomVertexColumn *)NULL &&
+  if (color_type != nullptr &&
       color_type->get_numeric_type() == NT_packed_dabc &&
       !glgsg->_supports_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the byte
@@ -193,7 +198,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
 
     const GeomVertexColumn *column = format->get_vertex_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -202,7 +207,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     }
 
     column = format->get_normal_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -211,7 +216,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     }
 
     column = format->get_color_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -220,21 +225,21 @@ munge_format_impl(const GeomVertexFormat *orig,
     }
 
     // Put only the used texture coordinates into the interleaved array.
-    if (_texture != (TextureAttrib *)NULL) {
+    if (auto texture = _texture.lock()) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
 
-      int num_stages = _texture->get_num_on_stages();
+      int num_stages = texture->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
-        TextureStage *stage = _texture->get_on_stage(i);
-        if (_tex_gen == (TexGenAttrib *)NULL ||
-            !_tex_gen->has_stage(stage)) {
+        TextureStage *stage = texture->get_on_stage(i);
+        CPT(TexGenAttrib) tex_gen = _tex_gen.lock();
+        if (tex_gen == nullptr || !tex_gen->has_stage(stage)) {
           InternalName *name = stage->get_texcoord_name();
           if (used_stages.insert(name).second) {
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
 
-            if (texcoord_type != (const GeomVertexColumn *)NULL) {
+            if (texcoord_type != nullptr) {
               new_array_format->add_column
                 (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
                  -1, texcoord_type->get_column_alignment());
@@ -265,13 +270,13 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
 
   CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_R(glgsg, get_gsg(), NULL);
+  DCAST_INTO_R(glgsg, get_gsg(), nullptr);
 
 #ifndef OPENGLES
   // OpenGL ES 1 does, but regular OpenGL doesn't support GL_BYTE vertices and
   // texture coordinates.
   const GeomVertexColumn *vertex_type = orig->get_vertex_column();
-  if (vertex_type != (GeomVertexColumn *)NULL &&
+  if (vertex_type != nullptr &&
       (vertex_type->get_numeric_type() == NT_int8 ||
        vertex_type->get_numeric_type() == NT_uint8)) {
     int vertex_array = orig->get_array_with(InternalName::get_vertex());
@@ -332,7 +337,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
 
     const GeomVertexColumn *column = format->get_vertex_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -341,7 +346,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     }
 
     column = format->get_normal_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -350,7 +355,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     }
 
     column = format->get_color_column();
-    if (column != (const GeomVertexColumn *)NULL) {
+    if (column != nullptr) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
@@ -360,21 +365,21 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
     // Put only the used texture coordinates into the interleaved array.  The
     // others will be kept around, but in a parallel array.
-    if (_texture != (TextureAttrib *)NULL) {
+    if (auto texture = _texture.lock()) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
 
-      int num_stages = _texture->get_num_on_stages();
+      int num_stages = texture->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
-        TextureStage *stage = _texture->get_on_stage(i);
-        if (_tex_gen == (TexGenAttrib *)NULL ||
-            !_tex_gen->has_stage(stage)) {
+        TextureStage *stage = texture->get_on_stage(i);
+        CPT(TexGenAttrib) tex_gen = _tex_gen.lock();
+        if (tex_gen == nullptr || !tex_gen->has_stage(stage)) {
           InternalName *name = stage->get_texcoord_name();
           if (used_stages.insert(name).second) {
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
 
-            if (texcoord_type != (const GeomVertexColumn *)NULL) {
+            if (texcoord_type != nullptr) {
               new_array_format->add_column
                 (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
                  -1, texcoord_type->get_column_alignment());

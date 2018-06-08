@@ -19,6 +19,13 @@
 
 #ifdef __cplusplus
 
+// By including checkPandaVersion.h, we guarantee that runtime attempts to
+// load any DLL will fail if they inadvertently link with the wrong version of
+// dtool, which, transitively, means all DLLs must be from the same
+// (ABI-compatible) version of Panda.
+
+#include "checkPandaVersion.h"
+
 #ifdef USE_TAU
 // Tau provides this destructive version of stdbool.h that we must mask.
 #define __PDT_STDBOOL_H_
@@ -26,23 +33,14 @@
 
 #ifdef CPPPARSER
 #include <iostream>
+#include <iomanip>
 #include <string>
-
-using namespace std;
+#include <utility>
+#include <algorithm>
 
 #define INLINE inline
 #define ALWAYS_INLINE inline
-#define TYPENAME typename
-#define CONSTEXPR constexpr
-#define ALWAYS_INLINE_CONSTEXPR constexpr
-#define NOEXCEPT noexcept
-#define FINAL final
 #define MOVE(x) x
-#define DEFAULT_CTOR = default
-#define DEFAULT_DTOR = default
-#define DEFAULT_ASSIGN = default
-#define DELETED = delete
-#define DELETED_ASSIGN = delete
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -80,31 +78,7 @@ typedef int ios_seekdir;
 
 #include <string>
 #include <utility>
-
-#ifdef HAVE_NAMESPACE
-using namespace std;
-#endif
-
-#ifdef HAVE_TYPENAME
-#define TYPENAME typename
-#else
-#define TYPENAME
-#endif
-
-#ifndef HAVE_WCHAR_T
-// Some C++ libraries (os x 3.1) don't define this.
-typedef unsigned short wchar_t;
-#endif
-
-#ifndef HAVE_WSTRING
-// Some C++ libraries (gcc 2.95) don't define this.
-typedef basic_string<wchar_t> wstring;
-#endif
-
-#ifndef HAVE_STREAMSIZE
-// Some C++ libraries (Irix) don't define this.
-typedef long streamsize;
-#endif
+#include <algorithm>
 
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;
@@ -113,24 +87,31 @@ typedef int ios_iostate;
 // Old iostream libraries used ios::seek_dir instead of ios::seekdir.
 typedef ios::seek_dir ios_seekdir;
 #else
-typedef ios::openmode ios_openmode;
-typedef ios::fmtflags ios_fmtflags;
-typedef ios::iostate ios_iostate;
-typedef ios::seekdir ios_seekdir;
+typedef std::ios::openmode ios_openmode;
+typedef std::ios::fmtflags ios_fmtflags;
+typedef std::ios::iostate ios_iostate;
+typedef std::ios::seekdir ios_seekdir;
 #endif
 
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
-typedef decltype(nullptr) nullptr_t;
+#include <tr1/tuple>
 
-template<class T> struct remove_reference      {typedef T type;};
-template<class T> struct remove_reference<T&>  {typedef T type;};
-template<class T> struct remove_reference<T&& >{typedef T type;};
+namespace std {
+  using std::tr1::tuple;
+  using std::tr1::tie;
 
-template<class T> typename remove_reference<T>::type &&move(T &&t) {
-  return static_cast<typename remove_reference<T>::type&&>(t);
-}
+  typedef decltype(nullptr) nullptr_t;
+
+  template<class T> struct remove_reference      {typedef T type;};
+  template<class T> struct remove_reference<T&>  {typedef T type;};
+  template<class T> struct remove_reference<T&& >{typedef T type;};
+
+  template<class T> typename remove_reference<T>::type &&move(T &&t) {
+    return static_cast<typename remove_reference<T>::type&&>(t);
+  }
+};
 #endif
 
 #ifdef _MSC_VER
@@ -151,113 +132,15 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 #endif
 
 // Determine the availability of C++11 features.
-#if defined(__has_extension) // Clang magic.
-#  if __has_extension(cxx_constexpr)
-#    if !defined(__apple_build_version__) || __apple_build_version__ >= 5000000
-#      define CONSTEXPR constexpr
-#    endif
-#  endif
-#  if __has_extension(cxx_noexcept)
-#    define NOEXCEPT noexcept
-#  endif
-#  if __has_extension(cxx_rvalue_references) && (__cplusplus >= 201103L)
-#    define USE_MOVE_SEMANTICS
-#    define MOVE(x) move(x)
-#  endif
-#  if __has_extension(cxx_override_control) && (__cplusplus >= 201103L)
-#    define FINAL final
-#  endif
-#  if __has_extension(cxx_defaulted_functions)
-#     define DEFAULT_CTOR = default
-#     define DEFAULT_DTOR = default
-#     define DEFAULT_ASSIGN = default
-#  endif
-#  if __has_extension(cxx_deleted_functions)
-#     define DELETED = delete
-#  endif
-#elif defined(__GNUC__) // GCC
-
-// Starting at GCC 4.4
-#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-#  define DEFAULT_CTOR = default
-#  define DEFAULT_DTOR = default
-#  define DEFAULT_ASSIGN = default
-#  define DELETED = delete
-#  endif
-
-// Starting at GCC 4.6
-#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
-#    define CONSTEXPR constexpr
-#    define NOEXCEPT noexcept
-#    define USE_MOVE_SEMANTICS
-#    define MOVE(x) move(x)
-#  endif
-
-// Starting at GCC 4.7
-#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-#    define FINAL final
-#  endif
-
-// GCC defines several macros which we can query.  List of all supported
-// builtin macros: https://gcc.gnu.org/projects/cxx-status.html
-#  if !defined(CONSTEXPR) && __cpp_constexpr >= 200704
-#    define CONSTEXPR constexpr
-#  endif
-
-#elif defined(_MSC_VER) && _MSC_VER >= 1900 // Visual Studio 2015
-#  define CONSTEXPR constexpr
-#  define NOEXCEPT noexcept
-#  define USE_MOVE_SEMANTICS
-#  define FINAL final
-#  define MOVE(x) move(x)
-#elif defined(_MSC_VER) && _MSC_VER >= 1600 // Visual Studio 2010
-#  define NOEXCEPT throw()
-#  define USE_MOVE_SEMANTICS
-#  define FINAL sealed
-#  define MOVE(x) move(x)
+#if defined(_MSC_VER) && _MSC_VER < 1900 // Visual Studio 2015
+#error Microsoft Visual C++ 2015 or later is required to compile Panda3D.
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER >= 1800 // Visual Studio 2013
-#  define DEFAULT_CTOR = default
-#  define DEFAULT_DTOR = default
-#  define DEFAULT_ASSIGN = default
-#  define DELETED = delete
-#endif
-
-// Fallbacks if features are not supported
-#ifndef CONSTEXPR
-#  define CONSTEXPR INLINE
-#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE
-#else
-#  define ALWAYS_INLINE_CONSTEXPR ALWAYS_INLINE CONSTEXPR
-#endif
-#ifndef NOEXCEPT
-#  define NOEXCEPT
-#endif
-#ifndef MOVE
-#  define MOVE(x) x
-#endif
-#ifndef FINAL
-#  define FINAL
-#endif
-#ifndef DEFAULT_CTOR
-#  define DEFAULT_CTOR {}
-#endif
-#ifndef DEFAULT_DTOR
-#  define DEFAULT_DTOR {}
-#endif
-#ifndef DEFAULT_ASSIGN
-#  define DEFAULT_ASSIGN {return *this;}
-#endif
-#ifndef DELETED
-#  define DELETED {assert(false);}
-#  define DELETED_ASSIGN {assert(false);return *this;}
-#else
-#  define DELETED_ASSIGN DELETED
-#endif
+// This is just to support code generated with older versions of interrogate.
+#define MOVE(x) (std::move(x))
 
 
-#if !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)
+#ifndef LINK_ALL_STATIC
 // This macro must be used to export an instantiated template class from a
 // DLL.  If the template class name itself contains commas, it may be
 // necessary to first define a macro for the class name, to allow proper macro
@@ -275,6 +158,36 @@ template<class T> typename remove_reference<T>::type &&move(T &&t) {
 
 #endif  // CPPPARSER
 
+// This was previously `using namespace std`, but we don't want to pull in the
+// entire namespace, so we enumerate the things we are using without std::
+// prefix in the Panda headers.  It is intended that this list will shrink.
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::dec;
+using std::endl;
+using std::hex;
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::istringstream;
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::setfill;
+using std::setw;
+using std::streambuf;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+using std::string;
+using std::stringstream;
+using std::swap;
+using std::wstring;
+
 // The ReferenceCount class is defined later, within Panda, but we need to
 // pass around forward references to it here at the very low level.
 class ReferenceCount;
@@ -282,8 +195,8 @@ class ReferenceCount;
 // We need a pointer to a global MemoryHook object, to manage all malloc and
 // free requests from Panda.  See the comments in MemoryHook itself.
 class MemoryHook;
-EXPCL_DTOOL extern MemoryHook *memory_hook;
-EXPCL_DTOOL void init_memory_hook();
+EXPCL_DTOOL_DTOOLBASE extern MemoryHook *memory_hook;
+EXPCL_DTOOL_DTOOLBASE void init_memory_hook();
 
 // Now redefine some handy macros to hook into the above MemoryHook object.
 #ifndef USE_MEMORY_NOWRAPPERS
@@ -303,8 +216,8 @@ EXPCL_DTOOL void init_memory_hook();
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
 // We need another forward-reference function to allow low-level code to
 // cooperatively yield the timeslice, in SIMPLE_THREADS mode.
-extern EXPCL_DTOOL void (*global_thread_yield)();
-extern EXPCL_DTOOL void (*global_thread_consider_yield)();
+extern EXPCL_DTOOL_DTOOLBASE void (*global_thread_yield)();
+extern EXPCL_DTOOL_DTOOLBASE void (*global_thread_consider_yield)();
 
 INLINE void thread_yield() {
   (*global_thread_yield)();
@@ -324,8 +237,8 @@ INLINE void thread_consider_yield() {
 
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
-extern EXPCL_DTOOL bool __tau_shutdown;
-class EXPCL_DTOOL TauProfile {
+extern EXPCL_DTOOL_DTOOLBASE bool __tau_shutdown;
+class EXPCL_DTOOL_DTOOLBASE TauProfile {
 public:
   TauProfile(void *&tautimer, char *name, char *type, int group, char *group_name) {
     Tau_profile_c_timer(&tautimer, name, type, group, group_name);

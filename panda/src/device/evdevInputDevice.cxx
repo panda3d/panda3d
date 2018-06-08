@@ -233,6 +233,8 @@ do_poll() {
  */
 bool EvdevInputDevice::
 init_device() {
+  using std::string;
+
   nassertr(_fd >= 0, false);
 
   LightMutexHolder holder(_lock);
@@ -600,7 +602,7 @@ init_device() {
     f = fopen(path, "r");
   }
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       if (buffer[0] != 0) {
         _name.assign(buffer);
@@ -611,7 +613,7 @@ init_device() {
   sprintf(path, "/sys/class/input/event%d/device/device/%s../manufacturer", _index, parent);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _manufacturer.assign(buffer);
     }
@@ -620,7 +622,7 @@ init_device() {
   sprintf(path, "/sys/class/input/event%d/device/device/%s../serial", _index, parent);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _serial_number.assign(buffer);
     }

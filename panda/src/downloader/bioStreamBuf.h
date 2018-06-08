@@ -25,7 +25,7 @@
 /**
  * The streambuf object that implements IBioStream.
  */
-class EXPCL_PANDAEXPRESS BioStreamBuf : public streambuf {
+class EXPCL_PANDAEXPRESS BioStreamBuf : public std::streambuf {
 public:
   BioStreamBuf();
   virtual ~BioStreamBuf();

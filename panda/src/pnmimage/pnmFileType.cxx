@@ -92,7 +92,7 @@ matches_magic_number(const string &) const {
  */
 PNMReader *PNMFileType::
 make_reader(istream *, bool, const string &) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -102,7 +102,7 @@ make_reader(istream *, bool, const string &) {
  */
 PNMWriter *PNMFileType::
 make_writer(ostream *, bool) {
-  return NULL;
+  return nullptr;
 }
 
 /**

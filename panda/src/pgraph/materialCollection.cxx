@@ -181,7 +181,7 @@ find_material(const string &name) const {
       return material;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -197,7 +197,7 @@ get_num_materials() const {
  */
 Material *MaterialCollection::
 get_material(int index) const {
-  nassertr(index >= 0 && index < (int)_materials.size(), NULL);
+  nassertr(index >= 0 && index < (int)_materials.size(), nullptr);
 
   return _materials[index];
 }
@@ -208,7 +208,7 @@ get_material(int index) const {
  */
 Material *MaterialCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_materials.size(), NULL);
+  nassertr(index >= 0 && index < (int)_materials.size(), nullptr);
 
   return _materials[index];
 }

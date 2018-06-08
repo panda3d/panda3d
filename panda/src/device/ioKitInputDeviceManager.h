@@ -22,7 +22,7 @@
 /**
  * The macOS implementation of InputDeviceManager.
  */
-class EXPCL_PANDA_DEVICE IOKitInputDeviceManager FINAL : public InputDeviceManager {
+class EXPCL_PANDA_DEVICE IOKitInputDeviceManager final : public InputDeviceManager {
 protected:
   IOKitInputDeviceManager();
   ~IOKitInputDeviceManager();

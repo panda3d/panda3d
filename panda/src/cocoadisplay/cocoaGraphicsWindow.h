@@ -30,7 +30,7 @@
 class CocoaGraphicsWindow : public GraphicsWindow {
 public:
   CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -87,6 +87,7 @@ private:
   NSWindow *_window;
   NSView *_view;
   NSUInteger _modifier_keys;
+  UInt32 _dead_key_state;
   CGDirectDisplayID _display;
   PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;

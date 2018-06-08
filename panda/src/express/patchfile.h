@@ -88,49 +88,49 @@ private:
   uint32_t calc_match_length(const char* buf1, const char* buf2, uint32_t max_length,
     uint32_t min_length);
 
-  void emit_ADD(ostream &write_stream, uint32_t length, const char* buffer);
-  void emit_COPY(ostream &write_stream, uint32_t length, uint32_t COPY_pos);
-  void emit_add_and_copy(ostream &write_stream,
+  void emit_ADD(std::ostream &write_stream, uint32_t length, const char* buffer);
+  void emit_COPY(std::ostream &write_stream, uint32_t length, uint32_t COPY_pos);
+  void emit_add_and_copy(std::ostream &write_stream,
                          uint32_t add_length, const char *add_buffer,
                          uint32_t copy_length, uint32_t copy_pos);
-  void cache_add_and_copy(ostream &write_stream,
+  void cache_add_and_copy(std::ostream &write_stream,
                           uint32_t add_length, const char *add_buffer,
                           uint32_t copy_length, uint32_t copy_pos);
-  void cache_flush(ostream &write_stream);
+  void cache_flush(std::ostream &write_stream);
 
-  void write_header(ostream &write_stream,
-                    istream &stream_orig, istream &stream_new);
-  void write_terminator(ostream &write_stream);
+  void write_header(std::ostream &write_stream,
+                    std::istream &stream_orig, std::istream &stream_new);
+  void write_terminator(std::ostream &write_stream);
 
-  bool compute_file_patches(ostream &write_stream,
+  bool compute_file_patches(std::ostream &write_stream,
                             uint32_t offset_orig, uint32_t offset_new,
-                             istream &stream_orig, istream &stream_new);
-  bool compute_mf_patches(ostream &write_stream,
+                             std::istream &stream_orig, std::istream &stream_new);
+  bool compute_mf_patches(std::ostream &write_stream,
                           uint32_t offset_orig, uint32_t offset_new,
-                          istream &stream_orig, istream &stream_new);
+                          std::istream &stream_orig, std::istream &stream_new);
 #ifdef HAVE_TAR
   class TarSubfile {
   public:
     inline bool operator < (const TarSubfile &other) const {
       return _name < other._name;
     }
-    string _name;
-    streampos _header_start;
-    streampos _data_start;
-    streampos _data_end;
-    streampos _end;
+    std::string _name;
+    std::streampos _header_start;
+    std::streampos _data_start;
+    std::streampos _data_end;
+    std::streampos _end;
   };
   typedef ov_set<TarSubfile> TarDef;
 
-  bool read_tar(TarDef &tar, istream &stream);
-  bool compute_tar_patches(ostream &write_stream,
+  bool read_tar(TarDef &tar, std::istream &stream);
+  bool compute_tar_patches(std::ostream &write_stream,
                            uint32_t offset_orig, uint32_t offset_new,
-                           istream &stream_orig, istream &stream_new,
+                           std::istream &stream_orig, std::istream &stream_new,
                            TarDef &tar_orig, TarDef &tar_new);
 
   // Because this is static, we can only call read_tar() one at a time--no
   // threads, please.
-  static istream *_tar_istream;
+  static std::istream *_tar_istream;
 
   static int tar_openfunc(const char *filename, int oflags, ...);
   static int tar_closefunc(int fd);
@@ -139,15 +139,15 @@ private:
 #endif  // HAVE_TAR
 
   bool do_compute_patches(const Filename &file_orig, const Filename &file_new,
-                          ostream &write_stream,
+                          std::ostream &write_stream,
                           uint32_t offset_orig, uint32_t offset_new,
-                          istream &stream_orig, istream &stream_new);
+                          std::istream &stream_orig, std::istream &stream_new);
 
-  bool patch_subfile(ostream &write_stream,
+  bool patch_subfile(std::ostream &write_stream,
                      uint32_t offset_orig, uint32_t offset_new,
                      const Filename &filename,
-                     IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
-                     IStreamWrapper &stream_new, streampos new_start, streampos new_end);
+                     IStreamWrapper &stream_orig, std::streampos orig_start, std::streampos orig_end,
+                     IStreamWrapper &stream_new, std::streampos new_start, std::streampos new_end);
 
   static const uint32_t _HASH_BITS;
   static const uint32_t _HASHTABLESIZE;
@@ -164,7 +164,7 @@ private:
   uint32_t _add_pos;
   uint32_t _last_copy_pos;
 
-  string _cache_add_data;
+  std::string _cache_add_data;
   uint32_t _cache_copy_start;
   uint32_t _cache_copy_length;
 
@@ -183,9 +183,9 @@ private:
   uint32_t _total_bytes_to_process;
   uint32_t _total_bytes_processed;
 
-  istream *_patch_stream;
+  std::istream *_patch_stream;
   pofstream _write_stream;
-  istream *_origfile_stream;
+  std::istream *_origfile_stream;
 
   Filename _patch_file;
   Filename _orig_file;

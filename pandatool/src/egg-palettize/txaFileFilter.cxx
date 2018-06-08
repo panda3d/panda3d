@@ -20,7 +20,7 @@
 #include "dconfig.h"
 #include "configVariableFilename.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 NotifyCategoryDeclNoExport(txafile);
 NotifyCategoryDef(txafile, "");
@@ -111,7 +111,7 @@ read_txa_file() {
 
   // We need to create a global Palettizer object to hold some of the global
   // properties that may be specified in a txa file.
-  if (pal == (Palettizer *)NULL) {
+  if (pal == nullptr) {
     pal = new Palettizer;
   }
 
@@ -132,7 +132,7 @@ read_txa_file() {
   } else {
     filename.set_text();
     istream *ifile = vfs->open_read_file(filename, true);
-    if (ifile == (istream *)NULL) {
+    if (ifile == nullptr) {
       txafile_cat.warning()
         << "Filename " << filename << " cannot be read.\n";
     } else {

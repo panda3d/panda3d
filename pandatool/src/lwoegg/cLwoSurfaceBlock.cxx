@@ -45,7 +45,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
   _h_wrap = LwoSurfaceBlockWrap::M_repeat;
   _w_repeat = 1.0;
   _h_repeat = 1.0;
-  _tmap = (CLwoSurfaceBlockTMap *)NULL;
+  _tmap = nullptr;
 
   // Scan the chunks in the header.
   int num_hchunks = _block->_header->get_num_chunks();
@@ -71,7 +71,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
 
     if (chunk->is_of_type(LwoSurfaceBlockTMap::get_class_type())) {
       const LwoSurfaceBlockTMap *lwo_tmap = DCAST(LwoSurfaceBlockTMap, chunk);
-      if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+      if (_tmap != nullptr) {
         nout << "Two TMAP chunks encountered within surface block.\n";
         delete _tmap;
       }
@@ -113,7 +113,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
     }
   }
 
-  if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+  if (_tmap != nullptr) {
     _tmap->get_transform(_transform);
   }
 
@@ -144,7 +144,7 @@ CLwoSurfaceBlock(LwoToEggConverter *converter, const LwoSurfaceBlock *block) :
  */
 CLwoSurfaceBlock::
 ~CLwoSurfaceBlock() {
-  if (_tmap != (CLwoSurfaceBlockTMap *)NULL) {
+  if (_tmap != nullptr) {
     delete _tmap;
   }
 }

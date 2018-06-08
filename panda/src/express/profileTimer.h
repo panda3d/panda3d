@@ -54,10 +54,10 @@ PUBLISHED:
   // Don't call any of the following during timing: (Because they are slow,
   // not because anything will break).
   double getTotalTime() const;
-  static void consolidateAllTo(ostream &out=cout);
-  void consolidateTo(ostream &out=cout) const;
-  static void printAllTo(ostream &out=cout);
-  void printTo(ostream &out=cout) const;
+  static void consolidateAllTo(std::ostream &out=std::cout);
+  void consolidateTo(std::ostream &out=std::cout) const;
+  static void printAllTo(std::ostream &out=std::cout);
+  void printTo(std::ostream &out=std::cout) const;
 
 public:
   /*

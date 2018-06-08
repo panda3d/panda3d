@@ -73,7 +73,7 @@ get_api_version() const {
  * PANDA_PACKAGE_HOST_URL, but it might be set to something different by the
  * -u parameter on the panda3d executable.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_host_url() const {
   return _host_url;
 }
@@ -83,7 +83,7 @@ get_host_url() const {
  * downloaded and installed.  This must be a writable directory or nothing
  * will work.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_root_dir() const {
   return _root_dir;
 }
@@ -92,7 +92,7 @@ get_root_dir() const {
  * Returns the directory that the .p3d file should be mounted to and run from.
  * This is usually the "start" subdirectory of the root_dir.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_start_dir() const {
   return _start_dir;
 }
@@ -102,7 +102,7 @@ get_start_dir() const {
  * running.  This string will be used to determine the appropriate packages to
  * download.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_platform() const {
   return _platform;
 }
@@ -112,7 +112,7 @@ get_platform() const {
  * written.  This filename will end with a slash, so that full pathnames may
  * be made by concatenting directly with this string.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_temp_directory() const {
   return _temp_directory;
 }
@@ -122,7 +122,7 @@ get_temp_directory() const {
  * written.  This filename will end with a slash, so that full pathnames may
  * be made by concatenting directly with this string.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_log_directory() const {
   return _log_directory;
 }
@@ -133,7 +133,7 @@ get_log_directory() const {
  * different from the session log file(s), which represent the output from a
  * particular Python session.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_log_pathname() const {
   return _log_pathname;
 }
@@ -187,7 +187,7 @@ get_num_supported_platforms() const {
  * environment will support, in order of preference--preferred platforms
  * appear first in the list.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_supported_platform(int n) const {
   return _supported_platforms.at(n);
 }
@@ -230,7 +230,7 @@ get_plugin_official_version() const {
  * Returns the "distributor" reported by the plugin.  This should represent
  * the entity that built and hosted the plugin.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_plugin_distributor() const {
   return _plugin_distributor;
 }
@@ -240,7 +240,7 @@ get_plugin_distributor() const {
  * the plugin).  This is for reporting purposes only; see get_host_url() for
  * the URL to contact to actually download content.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_coreapi_host_url() const {
   return _coreapi_host_url;
 }
@@ -261,7 +261,7 @@ get_coreapi_timestamp() const {
  * not provide a number here.  If provided, this will be a string of dot-
  * separated integers.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_coreapi_set_ver() const {
   return _coreapi_set_ver;
 }
@@ -269,7 +269,7 @@ get_coreapi_set_ver() const {
 /**
  * Returns the "super mirror" URL.  See p3d_plugin.h.
  */
-inline const string &P3DInstanceManager::
+inline const std::string &P3DInstanceManager::
 get_super_mirror() const {
   return _super_mirror_url;
 }

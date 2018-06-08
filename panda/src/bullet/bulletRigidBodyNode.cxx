@@ -48,9 +48,11 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
  */
 BulletRigidBodyNode::
 BulletRigidBodyNode(const BulletRigidBodyNode &copy) :
-  BulletBodyNode(copy),
-  _motion(copy._motion)
+  BulletBodyNode(copy)
 {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _motion = copy._motion;
   _rigid = new btRigidBody(*copy._rigid);
   _rigid->setUserPointer(this);
   _rigid->setCollisionShape(_shape);
@@ -64,6 +66,7 @@ BulletRigidBodyNode(const BulletRigidBodyNode &copy) :
  */
 PandaNode *BulletRigidBodyNode::
 make_copy() const {
+
   return new BulletRigidBodyNode(*this);
 }
 
@@ -72,10 +75,11 @@ make_copy() const {
  */
 void BulletRigidBodyNode::
 output(ostream &out) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  BulletBodyNode::output(out);
+  BulletBodyNode::do_output(out);
 
-  out << " mass=" << get_mass();
+  out << " mass=" << do_get_mass();
 }
 
 /**
@@ -93,10 +97,10 @@ get_object() const {
  * The default implementation does nothing.
  */
 void BulletRigidBodyNode::
-shape_changed() {
+do_shape_changed() {
 
-  set_mass(get_mass());
-  transform_changed();
+  do_set_mass(do_get_mass());
+  do_transform_changed();
 }
 
 /**
@@ -104,9 +108,10 @@ shape_changed() {
  * automatically computed from the shape of the body.  Setting a value of zero
  * for mass will make the body static.  A value of zero can be considered an
  * infinite mass.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletRigidBodyNode::
-set_mass(PN_stdfloat mass) {
+do_set_mass(PN_stdfloat mass) {
 
   btScalar bt_mass = mass;
   btVector3 bt_inertia(0.0, 0.0, 0.0);
@@ -120,11 +125,25 @@ set_mass(PN_stdfloat mass) {
 }
 
 /**
+ * Sets the mass of a rigid body.  This also modifies the inertia, which is
+ * automatically computed from the shape of the body.  Setting a value of zero
+ * for mass will make the body static.  A value of zero can be considered an
+ * infinite mass.
+ */
+void BulletRigidBodyNode::
+set_mass(PN_stdfloat mass) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_set_mass(mass);
+}
+
+/**
  * Returns the total mass of a rigid body.  A value of zero means that the
  * body is staic, i.e.  has an infinite mass.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 PN_stdfloat BulletRigidBodyNode::
-get_mass() const {
+do_get_mass() const {
 
   btScalar inv_mass = _rigid->getInvMass();
   btScalar mass = (inv_mass == btScalar(0.0)) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
@@ -133,10 +152,23 @@ get_mass() const {
 }
 
 /**
+ * Returns the total mass of a rigid body.  A value of zero means that the
+ * body is staic, i.e.  has an infinite mass.
+ */
+PN_stdfloat BulletRigidBodyNode::
+get_mass() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return do_get_mass();
+}
+
+
+/**
  * Returns the inverse mass of a rigid body.
  */
 PN_stdfloat BulletRigidBodyNode::
 get_inv_mass() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_rigid->getInvMass();
 }
@@ -153,6 +185,7 @@ get_inv_mass() const {
  */
 void BulletRigidBodyNode::
 set_inertia(const LVecBase3 &inertia) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btVector3 inv_inertia(
     inertia.get_x() == 0.0 ? btScalar(0.0) : btScalar(1.0 / inertia.get_x()),
@@ -171,6 +204,7 @@ set_inertia(const LVecBase3 &inertia) {
  */
 LVector3 BulletRigidBodyNode::
 get_inertia() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btVector3 inv_inertia = _rigid->getInvInertiaDiagLocal();
   LVector3 inertia(
@@ -187,6 +221,7 @@ get_inertia() const {
  */
 LVector3 BulletRigidBodyNode::
 get_inv_inertia_diag_local() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getInvInertiaDiagLocal());
 }
@@ -196,6 +231,7 @@ get_inv_inertia_diag_local() const {
  */
 LMatrix3 BulletRigidBodyNode::
 get_inv_inertia_tensor_world() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btMatrix3x3_to_LMatrix3(_rigid->getInvInertiaTensorWorld());
 }
@@ -205,6 +241,7 @@ get_inv_inertia_tensor_world() const {
  */
 void BulletRigidBodyNode::
 apply_force(const LVector3 &force, const LPoint3 &pos) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!force.is_nan());
   nassertv_always(!pos.is_nan());
@@ -218,6 +255,7 @@ apply_force(const LVector3 &force, const LPoint3 &pos) {
  */
 void BulletRigidBodyNode::
 apply_central_force(const LVector3 &force) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!force.is_nan());
 
@@ -229,6 +267,7 @@ apply_central_force(const LVector3 &force) {
  */
 void BulletRigidBodyNode::
 apply_torque(const LVector3 &torque) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!torque.is_nan());
 
@@ -240,6 +279,7 @@ apply_torque(const LVector3 &torque) {
  */
 void BulletRigidBodyNode::
 apply_torque_impulse(const LVector3 &torque) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!torque.is_nan());
 
@@ -251,6 +291,7 @@ apply_torque_impulse(const LVector3 &torque) {
  */
 void BulletRigidBodyNode::
 apply_impulse(const LVector3 &impulse, const LPoint3 &pos) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!impulse.is_nan());
   nassertv_always(!pos.is_nan());
@@ -264,6 +305,7 @@ apply_impulse(const LVector3 &impulse, const LPoint3 &pos) {
  */
 void BulletRigidBodyNode::
 apply_central_impulse(const LVector3 &impulse) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!impulse.is_nan());
 
@@ -271,10 +313,10 @@ apply_central_impulse(const LVector3 &impulse) {
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletRigidBodyNode::
-transform_changed() {
+do_transform_changed() {
 
   if (_motion.sync_disabled()) return;
 
@@ -289,7 +331,7 @@ transform_changed() {
   _motion.set_net_transform(ts);
 
   // For dynamic or static bodies we directly apply the new transform.
-  if (!is_kinematic()) {
+  if (!(get_object()->isKinematicObject())) {
     btTransform trans = TransformState_to_btTrans(ts);
     _rigid->setCenterOfMassTransform(trans);
   }
@@ -317,18 +359,31 @@ transform_changed() {
  *
  */
 void BulletRigidBodyNode::
-sync_p2b() {
+transform_changed() {
 
-  if (is_kinematic()) {
-    transform_changed();
+  if (_motion.sync_disabled()) return;
+
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  do_transform_changed();
+}
+
+/**
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+void BulletRigidBodyNode::
+do_sync_p2b() {
+
+  if (get_object()->isKinematicObject()) {
+    do_transform_changed();
   }
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletRigidBodyNode::
-sync_b2p() {
+do_sync_b2p() {
 
   _motion.sync_b2p((PandaNode *)this);
 }
@@ -338,6 +393,7 @@ sync_b2p() {
  */
 LVector3 BulletRigidBodyNode::
 get_linear_velocity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getLinearVelocity());
 }
@@ -347,6 +403,7 @@ get_linear_velocity() const {
  */
 LVector3 BulletRigidBodyNode::
 get_angular_velocity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getAngularVelocity());
 }
@@ -356,6 +413,7 @@ get_angular_velocity() const {
  */
 void BulletRigidBodyNode::
 set_linear_velocity(const LVector3 &velocity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!velocity.is_nan());
 
@@ -367,6 +425,7 @@ set_linear_velocity(const LVector3 &velocity) {
  */
 void BulletRigidBodyNode::
 set_angular_velocity(const LVector3 &velocity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!velocity.is_nan());
 
@@ -377,7 +436,48 @@ set_angular_velocity(const LVector3 &velocity) {
  *
  */
 void BulletRigidBodyNode::
+set_linear_damping(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _rigid->setDamping(value, _rigid->getAngularDamping());
+}
+
+/**
+ *
+ */
+void BulletRigidBodyNode::
+set_angular_damping(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _rigid->setDamping(_rigid->getLinearDamping(), value);
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletRigidBodyNode::
+get_linear_damping() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_rigid->getLinearDamping();
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletRigidBodyNode::
+get_angular_damping() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_rigid->getAngularDamping();
+}
+
+/**
+ *
+ */
+void BulletRigidBodyNode::
 clear_forces() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _rigid->clearForces();
 }
@@ -387,6 +487,7 @@ clear_forces() {
  */
 PN_stdfloat BulletRigidBodyNode::
 get_linear_sleep_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _rigid->getLinearSleepingThreshold();
 }
@@ -396,6 +497,7 @@ get_linear_sleep_threshold() const {
  */
 PN_stdfloat BulletRigidBodyNode::
 get_angular_sleep_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _rigid->getAngularSleepingThreshold();
 }
@@ -405,6 +507,7 @@ get_angular_sleep_threshold() const {
  */
 void BulletRigidBodyNode::
 set_linear_sleep_threshold(PN_stdfloat threshold) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _rigid->setSleepingThresholds(threshold, _rigid->getAngularSleepingThreshold());
 }
@@ -414,6 +517,7 @@ set_linear_sleep_threshold(PN_stdfloat threshold) {
  */
 void BulletRigidBodyNode::
 set_angular_sleep_threshold(PN_stdfloat threshold) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _rigid->setSleepingThresholds(_rigid->getLinearSleepingThreshold(), threshold);
 }
@@ -423,6 +527,7 @@ set_angular_sleep_threshold(PN_stdfloat threshold) {
  */
 void BulletRigidBodyNode::
 set_gravity(const LVector3 &gravity) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv_always(!gravity.is_nan());
 
@@ -434,6 +539,7 @@ set_gravity(const LVector3 &gravity) {
  */
 LVector3 BulletRigidBodyNode::
 get_gravity() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getGravity());
 }
@@ -443,6 +549,7 @@ get_gravity() const {
  */
 LVector3 BulletRigidBodyNode::
 get_linear_factor() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getLinearFactor());
 }
@@ -452,6 +559,7 @@ get_linear_factor() const {
  */
 LVector3 BulletRigidBodyNode::
 get_angular_factor() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getAngularFactor());
 }
@@ -461,6 +569,7 @@ get_angular_factor() const {
  */
 void BulletRigidBodyNode::
 set_linear_factor(const LVector3 &factor) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _rigid->setLinearFactor(LVecBase3_to_btVector3(factor));
 }
@@ -470,6 +579,7 @@ set_linear_factor(const LVector3 &factor) {
  */
 void BulletRigidBodyNode::
 set_angular_factor(const LVector3 &factor) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _rigid->setAngularFactor(LVecBase3_to_btVector3(factor));
 }
@@ -479,6 +589,7 @@ set_angular_factor(const LVector3 &factor) {
  */
 LVector3 BulletRigidBodyNode::
 get_total_force() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getTotalForce());
 }
@@ -488,6 +599,7 @@ get_total_force() const {
  */
 LVector3 BulletRigidBodyNode::
 get_total_torque() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_rigid->getTotalTorque());
 }

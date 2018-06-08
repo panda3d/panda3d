@@ -38,7 +38,7 @@ QtessSurface(EggNurbsSurface *egg_surface) :
 
   _importance = 1.0;
   _importance2 = 1.0;
-  _match_u = _match_v = NULL;
+  _match_u = _match_v = nullptr;
   _tess_u = _tess_v = 0;
   _got_scores = false;
 
@@ -53,7 +53,7 @@ QtessSurface(EggNurbsSurface *egg_surface) :
     _min_v = 3;
   }
 
-  if (_nurbs == (NurbsSurfaceEvaluator *)NULL) {
+  if (_nurbs == nullptr) {
     _num_u = _num_v = 0;
 
   } else {
@@ -86,7 +86,7 @@ QtessSurface(EggNurbsSurface *egg_surface) :
  */
 double QtessSurface::
 get_score(double ratio) {
-  if (_nurbs == (NurbsSurfaceEvaluator *)NULL) {
+  if (_nurbs == nullptr) {
     return 0.0;
   }
 
@@ -115,13 +115,13 @@ tesselate() {
 
   PT(EggGroup) group = do_uniform_tesselate(tris);
   PT(EggNode) new_node = group.p();
-  if (new_node == (EggNode *)NULL) {
+  if (new_node == nullptr) {
     new_node = new EggComment(_egg_surface->get_name(),
                               "Omitted NURBS surface.");
     tris = 0;
   }
   EggGroupNode *parent = _egg_surface->get_parent();
-  nassertr(parent != (EggGroupNode *)NULL, 0);
+  nassertr(parent != nullptr, 0);
   parent->remove_child(_egg_surface);
   parent->add_child(new_node);
 
@@ -301,9 +301,9 @@ record_vertex_extras() {
  */
 void QtessSurface::
 apply_match() {
-  if (_match_u != NULL) {
+  if (_match_u != nullptr) {
     QtessSurface *m = *_match_u;
-    if (m == NULL) {
+    if (m == nullptr) {
       qtess_cat.warning()
         << "No surface to match " << get_name() << " to in U.\n";
     } else {
@@ -322,9 +322,9 @@ apply_match() {
     }
   }
 
-  if (_match_v != NULL) {
+  if (_match_v != nullptr) {
     QtessSurface *m = *_match_v;
-    if (m == NULL) {
+    if (m == nullptr) {
       qtess_cat.warning()
         << "No surface to match " << get_name() << " in V.\n";
     } else {
@@ -358,7 +358,7 @@ do_uniform_tesselate(int &tris) const {
       qtess_cat.debug()
         << get_name() << " : omit\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   PT(EggGroup) group = new EggGroup(_egg_surface->get_name());
@@ -416,7 +416,7 @@ do_uniform_tesselate(int &tris) const {
       n_collection[egg_vertex->get_pos3()].insert(egg_vertex);
     }
   }
-  nassertr((int)new_verts.size() == num_verts, NULL);
+  nassertr((int)new_verts.size() == num_verts, nullptr);
 
   // Now create a bunch of quads.
   for (vi = 1; vi < num_v; vi++) {
@@ -460,7 +460,7 @@ do_uniform_tesselate(int &tris) const {
            pri != egg_vertex->pref_end();
            ++pri) {
         EggPrimitive *egg_primitive = (*pri);
-        nassertr(egg_primitive->has_normal(), NULL);
+        nassertr(egg_primitive->has_normal(), nullptr);
         normal += egg_primitive->get_normal();
         num_polys++;
       }

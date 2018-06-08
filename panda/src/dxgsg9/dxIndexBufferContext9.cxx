@@ -27,7 +27,7 @@ TypeHandle DXIndexBufferContext9::_type_handle;
 DXIndexBufferContext9::
 DXIndexBufferContext9(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
   IndexBufferContext(pgo, data),
-  _ibuffer(NULL),
+  _ibuffer(nullptr),
   _managed(-1) {
 }
 
@@ -62,7 +62,7 @@ evict_lru() {
  */
 void DXIndexBufferContext9::
 free_ibuffer(void) {
-  if (_ibuffer != NULL) {
+  if (_ibuffer != nullptr) {
     if (DEBUG_INDEX_BUFFER && dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
         << "deleting index buffer " << _ibuffer << "\n";
@@ -74,7 +74,7 @@ free_ibuffer(void) {
       _ibuffer->Release();
     }
 
-    _ibuffer = NULL;
+    _ibuffer = nullptr;
   }
 }
 
@@ -118,7 +118,7 @@ allocate_ibuffer(DXScreenData &scrn,
   do
   {
      hr = scrn._d3d_device->CreateIndexBuffer
-      (data_size, usage, index_type, pool, &_ibuffer, NULL);
+      (data_size, usage, index_type, pool, &_ibuffer, nullptr);
      attempts++;
   }
   while (scrn._dxgsg9 -> check_dx_allocation (hr, data_size, attempts));
@@ -126,7 +126,7 @@ allocate_ibuffer(DXScreenData &scrn,
   if (FAILED(hr)) {
     dxgsg9_cat.warning()
       << "CreateIndexBuffer failed" << D3DERRORSTRING(hr);
-    _ibuffer = NULL;
+    _ibuffer = nullptr;
   } else {
     if (DEBUG_INDEX_BUFFER && dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug()
@@ -162,10 +162,10 @@ upload_data(const GeomPrimitivePipelineReader *reader, bool force) {
   nassertr(reader->get_object() == get_data(), false);
   Thread *current_thread = reader->get_current_thread();
 
-  nassertr(_ibuffer != NULL, false);
+  nassertr(_ibuffer != nullptr, false);
 
   const unsigned char *data_pointer = reader->get_read_pointer(force);
-  if (data_pointer == NULL) {
+  if (data_pointer == nullptr) {
     return false;
   }
   size_t data_size = (size_t)reader->get_data_size_bytes();

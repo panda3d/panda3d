@@ -28,6 +28,20 @@ BulletSphereShape(PN_stdfloat radius) : _radius(radius) {
 /**
  *
  */
+BulletSphereShape::
+BulletSphereShape(const BulletSphereShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _radius = copy._radius;
+
+  _shape = new btSphereShape(_radius);
+  _shape->setUserPointer(this);
+}
+
+
+/**
+ *
+ */
 btCollisionShape *BulletSphereShape::
 ptr() const {
 

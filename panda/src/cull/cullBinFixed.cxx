@@ -61,7 +61,7 @@ add_object(CullableObject *object, Thread *current_thread) {
 void CullBinFixed::
 finish_cull(SceneSetup *, Thread *current_thread) {
   PStatTimer timer(_cull_this_pcollector, current_thread);
-  stable_sort(_objects.begin(), _objects.end());
+  std::stable_sort(_objects.begin(), _objects.end());
 }
 
 /**

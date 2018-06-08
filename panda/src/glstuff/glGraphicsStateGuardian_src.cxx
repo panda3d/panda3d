@@ -14,7 +14,7 @@
  *   get_supports_cg_profile)
  */
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "displayRegion.h"
 #include "renderBuffer.h"
 #include "geom.h"
@@ -86,7 +86,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO")
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 
 #ifndef OPENGLES_1
-PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
+PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = nullptr;
 #endif
 
 // The following noop functions are assigned to the corresponding glext
@@ -528,7 +528,7 @@ reset() {
     PFNGLGETSTRINGIPROC _glGetStringi =
       (PFNGLGETSTRINGIPROC)get_extension_func("glGetStringi");
 
-    if (_glGetStringi != NULL) {
+    if (_glGetStringi != nullptr) {
       GLint n = 0;
       glGetIntegerv(GL_NUM_EXTENSIONS, &n);
       for (GLint i = 0; i < n; ++i) {
@@ -611,13 +611,13 @@ reset() {
     if (_supports_debug) {
       // Set the categories we want to listen to.
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH,
-                             0, NULL, GLCAT.is_error());
+                             0, nullptr, GLCAT.is_error());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
-                             0, NULL, GLCAT.is_warning());
+                             0, nullptr, GLCAT.is_warning());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW,
-                             0, NULL, GLCAT.is_info());
+                             0, nullptr, GLCAT.is_info());
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION,
-                             0, NULL, GLCAT.is_debug());
+                             0, nullptr, GLCAT.is_debug());
 
       // Enable the callback.
       _glDebugMessageCallback((GLDEBUGPROC_P) &debug_callback, (void*)this);
@@ -653,6 +653,12 @@ reset() {
     Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
 
+#ifndef OPENGLES
+  if (_supports_geometry_shaders) {
+    _supported_geom_rendering |= Geom::GR_adjacency;
+  }
+#endif
+
   _supports_point_parameters = false;
 
 #ifdef OPENGLES_1
@@ -671,7 +677,7 @@ reset() {
       get_extension_func("glPointParameterfvARB");
   }
   if (_supports_point_parameters) {
-    if (_glPointParameterfv == NULL) {
+    if (_glPointParameterfv == nullptr) {
       GLCAT.warning()
         << "glPointParameterfv advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_point_parameters = false;
@@ -712,7 +718,7 @@ reset() {
 
 #else
   _explicit_primitive_restart = false;
-  _glPrimitiveRestartIndex = NULL;
+  _glPrimitiveRestartIndex = nullptr;
 
   if (gl_support_primitive_restart_index) {
     if ((is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) &&
@@ -766,7 +772,7 @@ reset() {
       get_extension_func("glDrawRangeElementsEXT");
   }
 #endif
-  if (_glDrawRangeElements == NULL) {
+  if (_glDrawRangeElements == nullptr) {
     GLCAT.warning()
       << "glDrawRangeElements advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     _glDrawRangeElements = null_glDrawRangeElements;
@@ -795,7 +801,7 @@ reset() {
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func("glTexSubImage3DEXT");
 
-    _glCopyTexSubImage3D = NULL;
+    _glCopyTexSubImage3D = nullptr;
     if (has_extension("GL_EXT_copy_texture")) {
       _glCopyTexSubImage3D = (PFNGLCOPYTEXSUBIMAGE3DPROC)
         get_extension_func("glCopyTexSubImage3DEXT");
@@ -816,7 +822,7 @@ reset() {
   }
 
   if (_supports_3d_texture) {
-    if (_glTexImage3D == NULL || _glTexSubImage3D == NULL) {
+    if (_glTexImage3D == nullptr || _glTexSubImage3D == nullptr) {
       GLCAT.warning()
         << "3-D textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_3d_texture = false;
@@ -854,7 +860,7 @@ reset() {
 #endif
 
   if (_supports_tex_storage) {
-    if (_glTexStorage1D == NULL || _glTexStorage2D == NULL || _glTexStorage3D == NULL) {
+    if (_glTexStorage1D == nullptr || _glTexStorage2D == nullptr || _glTexStorage3D == nullptr) {
       GLCAT.warning()
         << "Immutable texture storage advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_tex_storage = false;
@@ -867,7 +873,7 @@ reset() {
     _glClearTexImage = (PFNGLCLEARTEXIMAGEPROC)
       get_extension_func("glClearTexImage");
 
-    if (_glClearTexImage == NULL) {
+    if (_glClearTexImage == nullptr) {
       GLCAT.warning()
         << "GL_ARB_clear_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -882,7 +888,7 @@ reset() {
     _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
       get_extension_func("glClearBufferData");
 
-    if (_glClearBufferData == NULL) {
+    if (_glClearBufferData == nullptr) {
       GLCAT.warning()
         << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -908,7 +914,7 @@ reset() {
 #endif
   }
 
-  if (_supports_2d_texture_array && _glFramebufferTextureLayer == NULL) {
+  if (_supports_2d_texture_array && _glFramebufferTextureLayer == nullptr) {
     GLCAT.warning()
       << "Texture arrays advertised as supported by OpenGL runtime, but could not get pointer to glFramebufferTextureLayer function.\n";
   }
@@ -959,14 +965,14 @@ reset() {
   _supports_compressed_texture = true;
 
   // Supported in the core.  1D textures are not supported by OpenGL ES.
-  _glCompressedTexImage1D = NULL;
+  _glCompressedTexImage1D = nullptr;
   _glCompressedTexImage2D = glCompressedTexImage2D;
-  _glCompressedTexSubImage1D = NULL;
+  _glCompressedTexSubImage1D = nullptr;
   _glCompressedTexSubImage2D = glCompressedTexSubImage2D;
-  _glGetCompressedTexImage = NULL;
+  _glGetCompressedTexImage = nullptr;
 
-  _glCompressedTexImage3D = NULL;
-  _glCompressedTexSubImage3D = NULL;
+  _glCompressedTexImage3D = nullptr;
+  _glCompressedTexSubImage3D = nullptr;
 #ifdef OPENGLES_2
   if (_supports_3d_texture) {
     _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
@@ -1018,13 +1024,13 @@ reset() {
   }
 
   if (_supports_compressed_texture) {
-    if (_glCompressedTexImage1D == NULL ||
-        _glCompressedTexImage2D == NULL ||
-        _glCompressedTexImage3D == NULL ||
-        _glCompressedTexSubImage1D == NULL ||
-        _glCompressedTexSubImage2D == NULL ||
-        _glCompressedTexSubImage3D == NULL ||
-        _glGetCompressedTexImage == NULL) {
+    if (_glCompressedTexImage1D == nullptr ||
+        _glCompressedTexImage2D == nullptr ||
+        _glCompressedTexImage3D == nullptr ||
+        _glCompressedTexSubImage1D == nullptr ||
+        _glCompressedTexSubImage2D == nullptr ||
+        _glCompressedTexSubImage3D == nullptr ||
+        _glGetCompressedTexImage == nullptr) {
       GLCAT.warning()
         << "Compressed textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_compressed_texture = false;
@@ -1239,13 +1245,13 @@ reset() {
   }
 
   if (supports_multitexture) {
-    if (_glActiveTexture == NULL
+    if (_glActiveTexture == nullptr
 #ifdef SUPPORT_FIXED_FUNCTION
-        || (has_fixed_function_pipeline() && _glClientActiveTexture == NULL)
+        || (has_fixed_function_pipeline() && _glClientActiveTexture == nullptr)
 #endif
 #ifdef SUPPORT_IMMEDIATE_MODE
-        || GLf(_glMultiTexCoord1) == NULL || GLf(_glMultiTexCoord2) == NULL
-        || GLf(_glMultiTexCoord3) == NULL || GLf(_glMultiTexCoord4) == NULL
+        || GLf(_glMultiTexCoord1) == nullptr || GLf(_glMultiTexCoord2) == nullptr
+        || GLf(_glMultiTexCoord3) == nullptr || GLf(_glMultiTexCoord4) == nullptr
 #endif
         ) {
       GLCAT.warning()
@@ -1408,9 +1414,9 @@ reset() {
 #endif  // OPENGLES_1
 
   if (_supports_buffers) {
-    if (_glGenBuffers == NULL || _glBindBuffer == NULL ||
-        _glBufferData == NULL || _glBufferSubData == NULL ||
-        _glDeleteBuffers == NULL) {
+    if (_glGenBuffers == nullptr || _glBindBuffer == nullptr ||
+        _glBufferData == nullptr || _glBufferSubData == nullptr ||
+        _glDeleteBuffers == nullptr) {
       GLCAT.warning()
         << "Buffers advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_buffers = false;
@@ -1428,7 +1434,7 @@ reset() {
       get_extension_func("glMapBufferRangeEXT");
 
   } else {
-    _glMapBufferRange = NULL;
+    _glMapBufferRange = nullptr;
   }
 #else
   // Check for various advanced buffer management features.
@@ -1436,14 +1442,14 @@ reset() {
     _glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC)
       get_extension_func("glMapBufferRange");
   } else {
-    _glMapBufferRange = NULL;
+    _glMapBufferRange = nullptr;
   }
 
   if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_buffer_storage")) {
     _glBufferStorage = (PFNGLBUFFERSTORAGEPROC)
       get_extension_func("glBufferStorage");
 
-    if (_glBufferStorage != NULL) {
+    if (_glBufferStorage != nullptr) {
       _supports_buffer_storage = true;
     } else {
       GLCAT.warning()
@@ -1485,8 +1491,8 @@ reset() {
   }
 
   if (_supports_vao) {
-    if (_glBindVertexArray == NULL || _glDeleteVertexArrays == NULL ||
-        _glGenVertexArrays == NULL) {
+    if (_glBindVertexArray == nullptr || _glDeleteVertexArrays == nullptr ||
+        _glGenVertexArrays == nullptr) {
       GLCAT.warning()
         << "Vertex array objects advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vao = false;
@@ -1520,13 +1526,13 @@ reset() {
 
   } else if (has_extension("GL_EXT_geometry_shader4")) {
     _supports_geometry_shaders = true;
-    _glFramebufferTexture = NULL;
+    _glFramebufferTexture = nullptr;
     _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
       get_extension_func("glProgramParameteriEXT");
 
   } else {
     _supports_geometry_shaders = false;
-    _glFramebufferTexture = NULL;
+    _glFramebufferTexture = nullptr;
   }
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
@@ -1614,7 +1620,7 @@ reset() {
     _glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC)
       get_extension_func("glDispatchCompute");
 
-    if (_glDispatchCompute != NULL) {
+    if (_glDispatchCompute != nullptr) {
       _supports_compute_shaders = true;
     }
   }
@@ -1701,14 +1707,14 @@ reset() {
       _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
          get_extension_func("glVertexAttribIPointer");
     } else {
-      _glVertexAttribIPointer = NULL;
+      _glVertexAttribIPointer = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
         has_extension("GL_ARB_vertex_attrib_64bit")) {
       _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
          get_extension_func("glVertexAttribLPointer");
     } else {
-      _glVertexAttribLPointer = NULL;
+      _glVertexAttribLPointer = nullptr;
     }
 
     if (_supports_tessellation_shaders) {
@@ -1729,8 +1735,8 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointerARB");
 
-    _glVertexAttribIPointer = NULL;
-    _glVertexAttribLPointer = NULL;
+    _glVertexAttribIPointer = nullptr;
+    _glVertexAttribLPointer = nullptr;
   }
 #endif
 
@@ -1768,13 +1774,13 @@ reset() {
   _glVertexAttrib4fv = glVertexAttrib4fv;
   _glVertexAttrib4dv = null_glVertexAttrib4dv;
   _glVertexAttribPointer = glVertexAttribPointer;
-  _glVertexAttribLPointer = NULL;
+  _glVertexAttribLPointer = nullptr;
 
   if (is_at_least_gles_version(3, 0)) {
     _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
       get_extension_func("glVertexAttribIPointer");
   } else {
-    _glVertexAttribIPointer = NULL;
+    _glVertexAttribIPointer = nullptr;
   }
 #endif
 
@@ -1811,7 +1817,7 @@ reset() {
   // to have a shader applied, or if it failed to compile.  This default
   // shader just outputs a red color, indicating that something went wrong.
 #ifndef OPENGLES_1
-  if (_default_shader == NULL && !has_fixed_function_pipeline()) {
+  if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
     _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
   }
 #endif
@@ -1979,7 +1985,7 @@ reset() {
 
 #ifndef OPENGLES_1
   if (_supports_geometry_instancing) {
-    if (_glDrawArraysInstanced == NULL || _glDrawElementsInstanced == NULL) {
+    if (_glDrawArraysInstanced == nullptr || _glDrawElementsInstanced == nullptr) {
       GLCAT.warning()
         << "Geometry instancing advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_geometry_instancing = false;
@@ -1987,7 +1993,7 @@ reset() {
   }
 
   if (_supports_vertex_attrib_divisor) {
-    if (_glVertexAttribDivisor == NULL) {
+    if (_glVertexAttribDivisor == nullptr) {
       GLCAT.warning()
         << "Instanced vertex arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vertex_attrib_divisor = false;
@@ -2008,7 +2014,7 @@ reset() {
     _glDrawElementsIndirect = (PFNGLDRAWELEMENTSINDIRECTPROC)
       get_extension_func("glDrawElementsIndirect");
 
-    if (_glDrawArraysIndirect == NULL || _glDrawElementsIndirect == NULL) {
+    if (_glDrawArraysIndirect == nullptr || _glDrawElementsIndirect == nullptr) {
       GLCAT.warning()
         << "Indirect draw advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
@@ -2045,7 +2051,7 @@ reset() {
       get_extension_func("glGenFramebuffersOES");
     _glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSOESPROC)
       get_extension_func("glCheckFramebufferStatusOES");
-    _glFramebufferTexture1D = NULL;
+    _glFramebufferTexture1D = nullptr;
     _glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DOESPROC)
       get_extension_func("glFramebufferTexture2DOES");
     _glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFEROESPROC)
@@ -2056,7 +2062,7 @@ reset() {
       get_extension_func("glGenerateMipmapOES");
   } else {
     _supports_framebuffer_object = false;
-    _glGenerateMipmap = NULL;
+    _glGenerateMipmap = nullptr;
   }
 #elif defined(OPENGLES)
   // In OpenGL ES 2.x, FBO's are supported in the core.
@@ -2072,7 +2078,7 @@ reset() {
   _glDeleteFramebuffers = glDeleteFramebuffers;
   _glGenFramebuffers = glGenFramebuffers;
   _glCheckFramebufferStatus = glCheckFramebufferStatus;
-  _glFramebufferTexture1D = NULL;
+  _glFramebufferTexture1D = nullptr;
   _glFramebufferTexture2D = glFramebufferTexture2D;
   _glFramebufferRenderbuffer = glFramebufferRenderbuffer;
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
@@ -2203,7 +2209,7 @@ reset() {
     _supports_framebuffer_object = false;
     _supports_framebuffer_multisample = false;
     _supports_framebuffer_blit = false;
-    _glGenerateMipmap = NULL;
+    _glGenerateMipmap = nullptr;
   }
 #endif
 
@@ -2212,7 +2218,7 @@ reset() {
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
   } else {
-    _glGenerateTextureMipmap = NULL;
+    _glGenerateTextureMipmap = nullptr;
   }
 #endif
 
@@ -2242,7 +2248,7 @@ reset() {
 #endif
 
 #if defined(OPENGLES_1)
-  _glDrawBuffers = NULL;
+  _glDrawBuffers = nullptr;
   _max_color_targets = 1;
 
 #elif defined(OPENGLES_2)
@@ -2259,7 +2265,7 @@ reset() {
       get_extension_func("glDrawBuffersNV");
 
   } else {
-    _glDrawBuffers = NULL;
+    _glDrawBuffers = nullptr;
   }
 
 #else
@@ -2272,13 +2278,13 @@ reset() {
       get_extension_func("glDrawBuffersARB");
 
   } else {
-    _glDrawBuffers = NULL;
+    _glDrawBuffers = nullptr;
   }
 #endif
 
 #ifndef OPENGLES_1
   _max_color_targets = 1;
-  if (_glDrawBuffers != NULL) {
+  if (_glDrawBuffers != nullptr) {
     GLint max_draw_buffers = 0;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_color_targets = max_draw_buffers;
@@ -2295,9 +2301,9 @@ reset() {
       get_extension_func("glClearBufferfi");
 
   } else {
-    _glClearBufferfv = NULL;
-    _glClearBufferiv = NULL;
-    _glClearBufferfi = NULL;
+    _glClearBufferfv = nullptr;
+    _glClearBufferiv = nullptr;
+    _glClearBufferfi = nullptr;
   }
 #endif  // !OPENGLES
 
@@ -2312,7 +2318,7 @@ reset() {
     _glDepthRangeArrayv = (PFNGLDEPTHRANGEARRAYVPROC)
       get_extension_func("glDepthRangeArrayv");
 
-    if (_glViewportArrayv == NULL || _glScissorArrayv == NULL || _glDepthRangeArrayv == NULL) {
+    if (_glViewportArrayv == nullptr || _glScissorArrayv == nullptr || _glDepthRangeArrayv == nullptr) {
       GLCAT.warning()
           << "Viewport arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
@@ -2365,9 +2371,9 @@ reset() {
   }
 
   if (_supports_occlusion_query) {
-    if (_glGenQueries == NULL || _glBeginQuery == NULL ||
-        _glEndQuery == NULL || _glDeleteQueries == NULL ||
-        _glGetQueryiv == NULL || _glGetQueryObjectuiv == NULL) {
+    if (_glGenQueries == nullptr || _glBeginQuery == nullptr ||
+        _glEndQuery == nullptr || _glDeleteQueries == nullptr ||
+        _glGetQueryiv == nullptr || _glGetQueryObjectuiv == nullptr) {
       GLCAT.warning()
         << "Occlusion queries advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_occlusion_query = false;
@@ -2408,7 +2414,7 @@ reset() {
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func("glBlendEquationOES");
 
-    if (_glBlendEquation == NULL) {
+    if (_glBlendEquation == nullptr) {
       _glBlendEquation = null_glBlendEquation;
       GLCAT.warning()
         << "BlendEquationOES advertised as supported by OpenGL ES runtime, but "
@@ -2422,7 +2428,7 @@ reset() {
     _glBlendEquationSeparate = (PFNGLBLENDEQUATIONSEPARATEOESPROC)
       get_extension_func("glBlendEquationSeparateOES");
 
-    if (_glBlendEquation == NULL) {
+    if (_glBlendEquation == nullptr) {
       _supports_blend_equation_separate = false;
       GLCAT.warning()
         << "BlendEquationSeparateOES advertised as supported by OpenGL ES "
@@ -2432,14 +2438,14 @@ reset() {
     }
   } else {
     _supports_blend_equation_separate = false;
-    _glBlendEquationSeparate = NULL;
+    _glBlendEquationSeparate = nullptr;
   }
 
   if (has_extension("GL_OES_blend_func_separate")) {
     _glBlendFuncSeparate = (PFNGLBLENDFUNCSEPARATEOESPROC)
       get_extension_func("glBlendFuncSeparateOES");
 
-    if (_glBlendFuncSeparate == NULL) {
+    if (_glBlendFuncSeparate == nullptr) {
       _glBlendFuncSeparate = null_glBlendFuncSeparate;
       GLCAT.warning()
         << "BlendFuncSeparateOES advertised as supported by OpenGL ES runtime, but "
@@ -2466,7 +2472,7 @@ reset() {
     _glBlendEquation = null_glBlendEquation;
   }
 
-  if (_glBlendEquation == NULL) {
+  if (_glBlendEquation == nullptr) {
     _glBlendEquation = null_glBlendEquation;
     GLCAT.warning()
       << "BlendEquation advertised as supported by OpenGL runtime, but could "
@@ -2485,10 +2491,10 @@ reset() {
 
   } else {
     _supports_blend_equation_separate = false;
-    _glBlendEquationSeparate = NULL;
+    _glBlendEquationSeparate = nullptr;
   }
 
-  if (_supports_blend_equation_separate && _glBlendEquationSeparate == NULL) {
+  if (_supports_blend_equation_separate && _glBlendEquationSeparate == nullptr) {
     _supports_blend_equation_separate = false;
     GLCAT.warning()
       << "BlendEquationSeparate advertised as supported by OpenGL runtime, "
@@ -2507,7 +2513,7 @@ reset() {
     _glBlendFuncSeparate = null_glBlendFuncSeparate;
   }
 
-  if (_glBlendFuncSeparate == NULL) {
+  if (_glBlendFuncSeparate == nullptr) {
     _glBlendFuncSeparate = null_glBlendFuncSeparate;
     GLCAT.warning()
       << "BlendFuncSeparate advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
@@ -2516,7 +2522,7 @@ reset() {
 
   // In OpenGL ES 2.x, this is supported in the core.  In 1.x, not at all.
 #ifndef OPENGLES
-  _glBlendColor = NULL;
+  _glBlendColor = nullptr;
   bool supports_blend_color = false;
   if (is_at_least_gl_version(1, 2)) {
     supports_blend_color = true;
@@ -2527,11 +2533,11 @@ reset() {
     _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func("glBlendColorEXT");
   }
-  if (supports_blend_color && _glBlendColor == NULL) {
+  if (supports_blend_color && _glBlendColor == nullptr) {
     GLCAT.warning()
       << "BlendColor advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
   }
-  if (_glBlendColor == NULL) {
+  if (_glBlendColor == nullptr) {
     _glBlendColor = null_glBlendColor;
   }
 #endif
@@ -2637,7 +2643,6 @@ reset() {
   GLint max_3d_texture_size = 0;
   GLint max_2d_texture_array_layers = 0;
   GLint max_cube_map_size = 0;
-  GLint max_buffer_texture_size = 0;
 
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   _max_texture_dimension = max_texture_size;
@@ -2665,6 +2670,7 @@ reset() {
 
 #ifndef OPENGLES
   if (_supports_buffer_texture) {
+    GLint max_buffer_texture_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &max_buffer_texture_size);
     _max_buffer_texture_size = max_buffer_texture_size;
   } else {
@@ -2672,8 +2678,8 @@ reset() {
   }
 #endif  // !OPENGLES
 
-  GLint max_elements_vertices = 0, max_elements_indices = 0;
 #ifndef OPENGLES
+  GLint max_elements_vertices = 0, max_elements_indices = 0;
   if (is_at_least_gl_version(1, 2) || has_extension("GL_EXT_draw_range_elements")) {
     glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
     glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
@@ -2736,7 +2742,7 @@ reset() {
         glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
           const char *format_str = get_compressed_format_string(formats[i]);
-          if (format_str != NULL) {
+          if (format_str != nullptr) {
             GLCAT.debug(false) << "  " << format_str << '\n';
           } else {
             GLCAT.debug(false)
@@ -2788,8 +2794,8 @@ reset() {
 #endif
 
   } else {
-    _glBindImageTexture = NULL;
-    _glMemoryBarrier = NULL;
+    _glBindImageTexture = nullptr;
+    _glMemoryBarrier = nullptr;
   }
 #endif  // !OPENGLES_1
 
@@ -2810,10 +2816,10 @@ reset() {
     _glSamplerParameterf = (PFNGLSAMPLERPARAMETERFPROC) get_extension_func("glSamplerParameterf");
     _glSamplerParameterfv = (PFNGLSAMPLERPARAMETERFVPROC) get_extension_func("glSamplerParameterfv");
 
-    if (_glGenSamplers == NULL || _glDeleteSamplers == NULL ||
-        _glBindSampler == NULL || _glSamplerParameteri == NULL ||
-        _glSamplerParameteriv == NULL || _glSamplerParameterf == NULL ||
-        _glSamplerParameterfv == NULL) {
+    if (_glGenSamplers == nullptr || _glDeleteSamplers == nullptr ||
+        _glBindSampler == nullptr || _glSamplerParameteri == nullptr ||
+        _glSamplerParameteriv == nullptr || _glSamplerParameterf == nullptr ||
+        _glSamplerParameterfv == nullptr) {
       GLCAT.warning()
         << "GL_ARB_sampler_objects advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -2841,7 +2847,7 @@ reset() {
         get_extension_func("glBindVertexBuffers");
     }
 
-    if (_glBindTextures != NULL && _glBindImageTextures != NULL) {
+    if (_glBindTextures != nullptr && _glBindImageTextures != nullptr) {
       _supports_multi_bind = true;
     } else {
       GLCAT.warning()
@@ -2859,7 +2865,7 @@ reset() {
     _glGetInternalformativ = (PFNGLGETINTERNALFORMATIVPROC)
       get_extension_func("glGetInternalformativ");
 
-    if (_glGetInternalformativ == NULL) {
+    if (_glGetInternalformativ == nullptr) {
       GLCAT.warning()
         << "ARB_internalformat_query2 advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
@@ -2878,8 +2884,8 @@ reset() {
     _glUniformHandleui64 = (PFNGLUNIFORMHANDLEUI64PROC)
       get_extension_func("glUniformHandleui64ARB");
 
-    if (_glGetTextureHandle == NULL || _glMakeTextureHandleResident == NULL ||
-       _glUniformHandleui64 == NULL) {
+    if (_glGetTextureHandle == nullptr || _glMakeTextureHandleResident == nullptr ||
+       _glUniformHandleui64 == nullptr) {
       GLCAT.warning()
         << "GL_ARB_bindless_texture advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     } else {
@@ -2905,9 +2911,9 @@ reset() {
       get_extension_func("glProgramParameteri");
 
     GLint num_binary_formats = 0;
-    if (_glGetProgramBinary != NULL &&
-        _glProgramBinary != NULL &&
-        _glProgramParameteri != NULL) {
+    if (_glGetProgramBinary != nullptr &&
+        _glProgramBinary != nullptr &&
+        _glProgramParameteri != nullptr) {
       glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &num_binary_formats);
     }
 
@@ -3009,12 +3015,12 @@ reset() {
   _dithering_enabled = false;
 
 #ifndef OPENGLES_1
-  _current_shader = (Shader *)NULL;
-  _current_shader_context = (ShaderContext *)NULL;
-  _vertex_array_shader = (Shader *)NULL;
-  _vertex_array_shader_context = (ShaderContext *)NULL;
-  _texture_binding_shader = (Shader *)NULL;
-  _texture_binding_shader_context = (ShaderContext *)NULL;
+  _current_shader = nullptr;
+  _current_shader_context = nullptr;
+  _vertex_array_shader = nullptr;
+  _vertex_array_shader_context = nullptr;
+  _texture_binding_shader = nullptr;
+  _texture_binding_shader_context = nullptr;
 #endif
 
   // Count the max number of lights
@@ -3296,7 +3302,7 @@ clear(DrawableRegion *clearable) {
   int mask = 0;
 
 #ifndef OPENGLES_1
-  if (_current_fbo != 0 && _glClearBufferfv != NULL) {
+  if (_current_fbo != 0 && _glClearBufferfv != nullptr) {
     // We can use glClearBuffer to clear all the color attachments, which
     // protects us from the overhead of having to call set_draw_buffer for
     // every single attachment.
@@ -3451,7 +3457,7 @@ clear(DrawableRegion *clearable) {
  */
 void CLP(GraphicsStateGuardian)::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int l, b, w, h;
@@ -3574,8 +3580,8 @@ clear_before_callback() {
 #ifndef OPENGLES_1
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (ShaderContext *)NULL;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
 #endif
   unbind_buffers();
@@ -3611,12 +3617,12 @@ clear_before_callback() {
  */
 CPT(TransformState) CLP(GraphicsStateGuardian)::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)NULL) {
-    return NULL;
+  if (lens == nullptr) {
+    return nullptr;
   }
 
   if (!lens->is_linear()) {
-    return NULL;
+    return nullptr;
   }
 
   // The projection matrix must always be right-handed Y-up, even if our
@@ -3809,18 +3815,18 @@ end_frame(Thread *current_thread) {
   // This breaks shaders across multiple regions.
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
-    _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (ShaderContext *)NULL;
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
   }
   if (_texture_binding_shader_context != 0) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
-    _texture_binding_shader = (Shader *)NULL;
-    _texture_binding_shader_context = (ShaderContext *)NULL;
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
   }
   if (_current_shader_context != 0) {
     _current_shader_context->unbind();
-    _current_shader = (Shader *)NULL;
-    _current_shader_context = (ShaderContext *)NULL;
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
 #endif
 
@@ -3958,7 +3964,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!has_fixed_function_pipeline()) {
     // We can't draw without a shader bound in OpenGL ES 2.  This shouldn't
     // happen anyway unless the default shader failed to compile somehow.
-    if (_current_shader_context == NULL) {
+    if (_current_shader_context == nullptr) {
       return false;
     }
   }
@@ -3967,7 +3973,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
+  nassertr(_data_reader != nullptr, false);
 
   _geom_display_list = 0;
 
@@ -4027,7 +4033,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     unbind_buffers();
 
     GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
-    nassertr(gc != (GeomContext *)NULL, false);
+    nassertr(gc != nullptr, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     //const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
 
@@ -4170,7 +4176,7 @@ update_standard_vertex_arrays(bool force) {
     _sender.clear();
 
     _sender.add_column(_data_reader, InternalName::get_normal(),
-                       NULL, NULL, GLPf(Normal3), NULL);
+                       nullptr, nullptr, GLPf(Normal3), nullptr);
 #ifndef NDEBUG
     if (_show_texture_usage) {
       // In show_texture_usage mode, all colors are white, so as not to
@@ -4179,7 +4185,7 @@ update_standard_vertex_arrays(bool force) {
     } else
 #endif // NDEBUG
       if (!_sender.add_column(_data_reader, InternalName::get_color(),
-                              NULL, NULL, GLPf(Color3), GLPf(Color4))) {
+                              nullptr, nullptr, GLPf(Color3), GLPf(Color4))) {
         // If we didn't have a color column, the item color is white.
         GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
       }
@@ -4223,7 +4229,7 @@ update_standard_vertex_arrays(bool force) {
     // We must add vertex last, because glVertex3f() is the key function call
     // that actually issues the vertex.
     _sender.add_column(_data_reader, InternalName::get_vertex(),
-                       NULL, GLPf(Vertex2), GLPf(Vertex3), GLPf(Vertex4));
+                       nullptr, GLPf(Vertex2), GLPf(Vertex3), GLPf(Vertex4));
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
@@ -4359,7 +4365,7 @@ unbind_buffers() {
 
 #ifndef OPENGLES
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
-    _glBindVertexBuffers(0, _current_vertex_buffers.size(), NULL, NULL, NULL);
+    _glBindVertexBuffers(0, _current_vertex_buffers.size(), nullptr, nullptr, nullptr);
   } else {
     for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
       if (_current_vertex_buffers[i] != 0) {
@@ -4437,7 +4443,7 @@ update_shader_vertex_format(const GeomVertexFormat *format) {
       continue;
     }
 
-    if (_vertex_attrib_columns[loc] != NULL &&
+    if (_vertex_attrib_columns[loc] != nullptr &&
         _vertex_attrib_columns[loc]->compare_to(*column) == 0) {
       continue;
     }
@@ -4542,6 +4548,68 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of disconnected triangles with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_triangles_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_TRIANGLES_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_tri_pcollector.add_level(num_vertices);
+    _primitive_batches_tri_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_TRIANGLES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_TRIANGLES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_TRIANGLES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_TRIANGLES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of triangle strips.
@@ -4668,6 +4736,128 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
   report_my_gl_errors();
   return true;
 }
+
+/**
+ * Draws a series of triangle strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_tristrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_tristrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_TRIANGLE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+      int num_vertices = reader->get_num_vertices();
+      _vertices_tristrip_pcollector.add_level(num_vertices);
+      _primitive_batches_tristrip_pcollector.add_level(1);
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, num_vertices,
+                                   get_numeric_type(reader->get_index_type()),
+                                   client_pointer, _instance_count);
+        } else {
+          _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                               reader->get_min_vertex(),
+                               reader->get_max_vertex(),
+                               num_vertices,
+                               get_numeric_type(reader->get_index_type()),
+                               client_pointer);
+        }
+      } else {
+        if (_supports_geometry_instancing && _instance_count > 0) {
+          _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 reader->get_first_vertex(),
+                                 num_vertices, _instance_count);
+        } else {
+          glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY,
+                          reader->get_first_vertex(),
+                          num_vertices);
+        }
+      }
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual triangle strips, stepping over the degenerate
+      // vertices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_tristrip_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_TRIANGLE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_TRIANGLE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_tristrip_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_TRIANGLE_STRIP_ADJACENCY, first_vertex + start,
+                         ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
 
 /**
  * Draws a series of triangle fans.
@@ -4889,6 +5079,66 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of disconnected line segments with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_lines_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_lines_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_LINES_ADJACENCY);
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_other_pcollector.add_level(num_vertices);
+    _primitive_batches_other_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINES_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINES_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_LINES_ADJACENCY,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else {
+        glDrawArrays(GL_LINES_ADJACENCY,
+                     reader->get_first_vertex(),
+                     num_vertices);
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
+
+/**
  * Draws a series of line strips.
  */
 bool CLP(GraphicsStateGuardian)::
@@ -5011,6 +5261,117 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Draws a series of line strips with adjacency information.
+ */
+#ifndef OPENGLES
+bool CLP(GraphicsStateGuardian)::
+draw_linestrips_adj(const GeomPrimitivePipelineReader *reader, bool force) {
+  // PStatGPUTimer timer(this, _draw_primitive_pcollector,
+  // reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_linestrips_adj: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_LINE_STRIP_ADJACENCY);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long line strip, connected by strip cut indices.
+      if (_explicit_primitive_restart) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+
+      int num_vertices = reader->get_num_vertices();
+      _vertices_other_pcollector.add_level(num_vertices);
+      _primitive_batches_other_pcollector.add_level(1);
+
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else {
+        _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+
+      if (_explicit_primitive_restart) {
+        glDisable(GL_PRIMITIVE_RESTART);
+      }
+    } else {
+      // Send the individual line strips, stepping over the strip-cut indices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_other_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_LINE_STRIP_ADJACENCY, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else {
+            _glDrawRangeElements(GL_LINE_STRIP_ADJACENCY,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_LINE_STRIP_ADJACENCY, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else {
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, first_vertex + start, ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+#endif  // OPENGLES
+
+/**
  * Draws a series of disconnected points.
  */
 bool CLP(GraphicsStateGuardian)::
@@ -5119,7 +5480,7 @@ end_draw_primitives() {
  */
 void CLP(GraphicsStateGuardian)::
 issue_memory_barrier(GLbitfield barriers) {
-  if (!gl_enable_memory_barriers || _glMemoryBarrier == NULL) {
+  if (!gl_enable_memory_barriers || _glMemoryBarrier == nullptr) {
     return;
   }
 
@@ -5181,7 +5542,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_3d_texture) {
       GLCAT.warning()
         << "3-D textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5189,7 +5550,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_2d_texture_array) {
       GLCAT.warning()
         << "2-D texture arrays are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5197,7 +5558,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_cube_map) {
       GLCAT.warning()
         << "Cube map textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5205,7 +5566,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_buffer_texture) {
       GLCAT.warning()
         << "Buffer textures are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5213,7 +5574,7 @@ prepare_texture(Texture *tex, int view) {
     if (!_supports_cube_map_array) {
       GLCAT.warning()
         << "Cube map arrays are not supported by this OpenGL driver.\n";
-      return NULL;
+      return nullptr;
     }
     break;
 
@@ -5332,7 +5693,7 @@ extract_texture_data(Texture *tex) {
   int num_views = tex->get_num_views();
   for (int view = 0; view < num_views; ++view) {
     TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-    nassertr(tc != (TextureContext *)NULL, false);
+    nassertr(tc != nullptr, false);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
     if (!do_extract_texture_data(gtc)) {
@@ -5356,7 +5717,7 @@ extract_texture_data(Texture *tex) {
  */
 SamplerContext *CLP(GraphicsStateGuardian)::
 prepare_sampler(const SamplerState &sampler) {
-  nassertr(_supports_sampler_objects, NULL);
+  nassertr(_supports_sampler_objects, nullptr);
   PStatGPUTimer timer(this, _prepare_sampler_pcollector);
 
   CLP(SamplerContext) *gsc = new CLP(SamplerContext)(this, sampler);
@@ -5491,7 +5852,7 @@ prepare_shader(Shader *se) {
   PStatGPUTimer timer(this, _prepare_shader_pcollector);
 
 #ifndef OPENGLES_1
-  ShaderContext *result = NULL;
+  ShaderContext *result = nullptr;
 
   switch (se->get_language()) {
   case Shader::SL_GLSL:
@@ -5501,7 +5862,7 @@ prepare_shader(Shader *se) {
     } else {
       GLCAT.error()
         << "Tried to load GLSL shader, but GLSL shaders not supported.\n";
-      return NULL;
+      return nullptr;
     }
 
   case Shader::SL_Cg:
@@ -5512,22 +5873,22 @@ prepare_shader(Shader *se) {
     } else {
       GLCAT.error()
         << "Tried to load Cg shader, but basic shaders not supported.\n";
-      return NULL;
+      return nullptr;
     }
 #elif defined(OPENGLES)
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support is not available for OpenGL ES.\n";
-    return NULL;
+    return nullptr;
 #else
     GLCAT.error()
       << "Tried to load Cg shader, but Cg support not compiled in.\n";
-    return NULL;
+    return nullptr;
 #endif
 
   default:
     GLCAT.error()
       << "Tried to load shader with unsupported shader language!\n";
-    return NULL;
+    return nullptr;
   }
 
   if (result->valid()) {
@@ -5537,7 +5898,7 @@ prepare_shader(Shader *se) {
   delete result;
 #endif  // OPENGLES_1
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5600,7 +5961,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     return gvbc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5627,7 +5988,7 @@ update_vertex_buffer(CLP(VertexBufferContext) *gvbc,
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -5716,7 +6077,7 @@ setup_array_data(const unsigned char *&client_pointer,
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     client_pointer = array_reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       array_reader->get_usage_hint() < gl_min_buffer_usage_hint) {
@@ -5731,14 +6092,14 @@ setup_array_data(const unsigned char *&client_pointer,
       _current_vbuffer_index = 0;
     }
     client_pointer = array_reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
 
   // Prepare the buffer object and bind it.
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext),
     array_reader->prepare_now(get_prepared_objects(), this));
 
-  nassertr(gvbc != (CLP(VertexBufferContext) *)NULL, false);
+  nassertr(gvbc != (CLP(VertexBufferContext) *)nullptr, false);
   if (!update_vertex_buffer(gvbc, array_reader, force)) {
     return false;
   }
@@ -5753,7 +6114,7 @@ setup_array_data(const unsigned char *&client_pointer,
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  client_pointer = NULL;
+  client_pointer = nullptr;
   return true;
 }
 
@@ -5788,7 +6149,7 @@ prepare_index_buffer(GeomPrimitive *data) {
     return gibc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5825,7 +6186,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
-      if (client_pointer == NULL) {
+      if (client_pointer == nullptr) {
         return false;
       }
 
@@ -5905,7 +6266,7 @@ setup_primitive(const unsigned char *&client_pointer,
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
     client_pointer = reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
       reader->get_usage_hint() == Geom::UH_client) {
@@ -5920,18 +6281,18 @@ setup_primitive(const unsigned char *&client_pointer,
       _current_ibuffer_index = 0;
     }
     client_pointer = reader->get_read_pointer(force);
-    return (client_pointer != NULL);
+    return (client_pointer != nullptr);
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = reader->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, false);
+  nassertr(ibc != nullptr, false);
   if (!apply_index_buffer(ibc, reader, force)) {
     return false;
   }
 
   // NULL is the OpenGL convention for the first byte of the buffer object.
-  client_pointer = NULL;
+  client_pointer = nullptr;
   return true;
 }
 
@@ -5978,7 +6339,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
     return gbc;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -5987,9 +6348,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
 void CLP(GraphicsStateGuardian)::
 apply_shader_buffer(GLuint base, ShaderBuffer *buffer) {
   GLuint index = 0;
-  if (buffer != NULL) {
+  if (buffer != nullptr) {
     BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
-    if (bc != NULL) {
+    if (bc != nullptr) {
       CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
       index = gbc->_index;
       gbc->set_active(true);
@@ -6066,7 +6427,7 @@ release_shader_buffer(BufferContext *bc) {
 void CLP(GraphicsStateGuardian)::
 begin_occlusion_query() {
   nassertv(_supports_occlusion_query);
-  nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
+  nassertv(_current_occlusion_query == nullptr);
   PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
 
   _glGenQueries(1, &query->_index);
@@ -6092,7 +6453,7 @@ begin_occlusion_query() {
  */
 PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
-  nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
+  nassertr(_current_occlusion_query != nullptr, nullptr);
   PT(OcclusionQueryContext) result = _current_occlusion_query;
 
   GLuint index = DCAST(CLP(OcclusionQueryContext), result)->_index;
@@ -6102,7 +6463,7 @@ end_occlusion_query() {
       << "ending occlusion query index " << (int)index << "\n";
   }
 
-  _current_occlusion_query = NULL;
+  _current_occlusion_query = nullptr;
   _glEndQuery(GL_SAMPLES_PASSED);
 
   // Temporary hack to try working around an apparent driver bug on iMacs.
@@ -6132,7 +6493,7 @@ end_occlusion_query() {
 PT(TimerQueryContext) CLP(GraphicsStateGuardian)::
 issue_timer_query(int pstats_index) {
 #if defined(DO_PSTATS) && !defined(OPENGLES)
-  nassertr(_supports_timer_query, NULL);
+  nassertr(_supports_timer_query, nullptr);
 
   PT(CLP(TimerQueryContext)) query;
 
@@ -6170,7 +6531,7 @@ issue_timer_query(int pstats_index) {
   return (TimerQueryContext *)query;
 
 #else
-  return NULL;
+  return nullptr;
 #endif
 }
 
@@ -6185,7 +6546,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 
   PStatGPUTimer timer(this, _compute_dispatch_pcollector);
   nassertv(_supports_compute_shaders);
-  nassertv(_current_shader_context != NULL);
+  nassertv(_current_shader_context != nullptr);
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
   maybe_gl_finish();
@@ -6211,7 +6572,7 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
   set_read_buffer(rb._buffer_type);
   clear_color_write_mask();
 
@@ -6298,7 +6659,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
+  nassertr(tc != nullptr, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   apply_texture(gtc);
@@ -6314,7 +6675,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   if (uses_mipmaps) {
     if (_supports_generate_mipmap) {
 #ifndef OPENGLES_2
-      if (_glGenerateMipmap == NULL) {
+      if (_glGenerateMipmap == nullptr) {
         glTexParameteri(target, GL_GENERATE_MIPMAP, true);
       }
 #endif
@@ -6374,7 +6735,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
       // to specify them.  Might as well use the actual values.
       GLint external_format = get_external_image_format(tex);
       GLint component_type = get_component_type(tex->get_component_type());
-      _glTexImage3D(target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
+      _glTexImage3D(target, 0, internal_format, width, height, depth, 0, external_format, component_type, nullptr);
     }
 
     _glCopyTexSubImage3D(target, 0, 0, 0, z, xo, yo, w, h);
@@ -6391,7 +6752,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     }
   }
 
-  if (uses_mipmaps && _glGenerateMipmap != NULL) {
+  if (uses_mipmaps && _glGenerateMipmap != nullptr) {
     glEnable(target);
     _glGenerateMipmap(target);
     glDisable(target);
@@ -6426,7 +6787,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 bool CLP(GraphicsStateGuardian)::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr, const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   clear_color_write_mask();
@@ -6698,7 +7059,7 @@ do_issue_shader() {
   // If we don't have a shader, apply the default shader.
   if (!has_fixed_function_pipeline() && !shader) {
     shader = _default_shader;
-    nassertv(shader != NULL);
+    nassertv(shader != nullptr);
   }
 
   if (shader) {
@@ -6713,7 +7074,7 @@ do_issue_shader() {
   if (_default_shader != nullptr && shader != _default_shader &&
       (context == 0 || !context->valid())) {
     shader = _default_shader;
-    nassertv(shader != NULL);
+    nassertv(shader != nullptr);
     if (_current_shader != shader) {
       context = shader->prepare_now(get_prepared_objects(), this);
     } else {
@@ -6731,7 +7092,7 @@ do_issue_shader() {
     if (context != _current_shader_context) {
       // Use a completely different shader than before.  Unbind old shader,
       // bind the new one.
-      if (_current_shader_context != NULL &&
+      if (_current_shader_context != nullptr &&
           _current_shader->get_language() != shader->get_language()) {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
@@ -7042,7 +7403,7 @@ do_issue_fog() {
   if (!target_fog->is_off()) {
     enable_fog(true);
     Fog *fog = target_fog->get_fog();
-    nassertv(fog != (Fog *)NULL);
+    nassertv(fog != nullptr);
     apply_fog(fog);
   } else {
     enable_fog(false);
@@ -7100,7 +7461,7 @@ do_issue_material() {
   const MaterialAttrib *target_material;
   _target_rs->get_attrib_def(target_material);
 
-  if (target_material == (MaterialAttrib *)NULL ||
+  if (target_material == nullptr ||
       target_material->is_off()) {
     material = &empty;
   } else {
@@ -7243,7 +7604,6 @@ do_issue_blending() {
 #endif
 
   if (color_channels == ColorWriteAttrib::C_off) {
-    int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
     if (gl_color_mask) {
@@ -7530,7 +7890,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   // _draw_set_state_light_bind_spotlight_pcollector);
 
   Lens *lens = light_obj->get_lens();
-  nassertv(lens != (Lens *)NULL);
+  nassertv(lens != nullptr);
 
   GLenum id = get_light_id(light_id);
   static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
@@ -7756,7 +8116,7 @@ show_gl_string(const string &name, GLenum id) {
 
   const GLubyte *text = glGetString(id);
 
-  if (text == (const GLubyte *)NULL) {
+  if (text == nullptr) {
     GLCAT.warning()
       << "Unable to query " << name << "\n";
 
@@ -7921,7 +8281,7 @@ query_glsl_version() {
  */
 void CLP(GraphicsStateGuardian)::
 save_extensions(const char *extensions) {
-  if (extensions != (const char *)NULL) {
+  if (extensions != nullptr) {
     vector_string tokens;
     extract_words(extensions, tokens);
 
@@ -7950,7 +8310,6 @@ report_extensions() const {
     ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    size_t maxlen = 0;
     pset<string>::const_iterator ei;
     for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
       size_t len = (*ei).size();
@@ -8038,11 +8397,11 @@ get_extension_func(const char *name) {
     { "glDeleteBuffers", (void *)&glDeleteBuffers },
     { "glGenBuffers", (void *)&glGenBuffers },
 #endif
-    { NULL, NULL }
+    { nullptr, nullptr }
   };
 
   int i = 0;
-  while (compiled_function_table[i].name != NULL) {
+  while (compiled_function_table[i].name != nullptr) {
     if (strcmp(compiled_function_table[i].name, name) == 0) {
       return compiled_function_table[i].fptr;
     }
@@ -8062,7 +8421,7 @@ get_extension_func(const char *name) {
  */
 void *CLP(GraphicsStateGuardian)::
 do_get_extension_func(const char *) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -10087,7 +10446,7 @@ get_compressed_format_string(GLenum format) {
   case 0x93F0: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV2_IMG";
   case 0x93F1: return "GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV2_IMG";
   default:
-    return NULL;
+    return nullptr;
   }
 }
 #endif
@@ -10401,13 +10760,13 @@ set_state_and_transform(const RenderState *target,
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
-  else if (!has_fixed_function_pipeline() && _current_shader == NULL) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+  else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
     do_issue_shader();
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 
   // Update all of the state that is bound to the shader program.
-  if (_current_shader_context != NULL) {
+  if (_current_shader_context != nullptr) {
     _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
@@ -10554,7 +10913,6 @@ set_state_and_transform(const RenderState *target,
       !_state_mask.get_bit(texture_slot)) {
     // PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
-    int prev_active = _num_active_texture_stages;
     do_issue_texture();
 
     // Since the TexGen and TexMatrix states depend partly on the particular
@@ -10697,7 +11055,7 @@ do_issue_texture() {
         disable_standard_texture_bindings();
       }
 #endif
-      _current_shader_context->update_shader_texture_bindings(NULL);
+      _current_shader_context->update_shader_texture_bindings(nullptr);
     } else {
       _current_shader_context->
         update_shader_texture_bindings(_texture_binding_shader_context);
@@ -10730,7 +11088,7 @@ update_standard_texture_bindings() {
   // see if our flash_texture is in the texture stack here.  If so, then we
   // need to call the special show_texture method instead of the normal
   // texture stack.
-  if (_flash_texture != (Texture *)NULL) {
+  if (_flash_texture != nullptr) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     int this_second = (int)floor(now);
     if (this_second & 1) {
@@ -10762,7 +11120,7 @@ update_standard_texture_bindings() {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     // Issue the texture on stage i.
     set_active_texture_stage(i);
@@ -10782,7 +11140,7 @@ update_standard_texture_bindings() {
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)NULL) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       continue;
     }
@@ -11017,11 +11375,11 @@ update_show_usage_texture_bindings(int show_stage_index) {
   for (i = 0; i < num_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)NULL) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       break;
     }
@@ -11062,7 +11420,7 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     // Choose the corresponding usage texture and apply it.
     set_active_texture_stage(i);
@@ -11682,7 +12040,7 @@ apply_sampler(GLuint unit, const SamplerState &sampler, CLP(TextureContext) *gtc
     // We support sampler objects.  Prepare the sampler object and bind it to
     // the indicated texture unit.
     SamplerContext *sc = sampler.prepare_now(get_prepared_objects(), this);
-    nassertr(sc != (SamplerContext *)NULL, false);
+    nassertr(sc != nullptr, false);
     CLP(SamplerContext) *gsc = DCAST(CLP(SamplerContext), sc);
 
     gsc->enqueue_lru(&_prepared_objects->_sampler_object_lru);
@@ -11903,10 +12261,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
   }
 
   if (image_compression != Texture::CM_off) {
-    Texture::QualityLevel quality_level = tex->get_effective_quality_level();
-
 #ifndef OPENGLES
-    switch (quality_level) {
+    switch (tex->get_effective_quality_level()) {
     case Texture::QL_fastest:
       glHint(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
       break;
@@ -12041,7 +12397,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
 #ifndef OPENGLES_2
-    if (gtc->_generate_mipmaps && _glGenerateMipmap == NULL) {
+    if (gtc->_generate_mipmaps && _glGenerateMipmap == nullptr) {
       // The old, deprecated way to generate mipmaps.
       glTexParameteri(target, GL_GENERATE_MIPMAP, GL_TRUE);
     }
@@ -12191,7 +12547,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
        component_type, false, 0, image_compression);
   }
 
-  if (gtc->_generate_mipmaps && _glGenerateMipmap != NULL &&
+  if (gtc->_generate_mipmaps && _glGenerateMipmap != nullptr &&
       !image.is_null()) {
     // We uploaded an image; we may need to generate mipmaps.
     if (GLCAT.is_debug()) {
@@ -12226,7 +12582,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
         if (tex->has_ram_image()) {
           BamCache *cache = BamCache::get_global_ptr();
           PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
-          if (record != (BamCacheRecord *)NULL) {
+          if (record != nullptr) {
             record->set_data(tex, tex);
             cache->store(record);
           }
@@ -12235,7 +12591,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
     }
 
     GraphicsEngine *engine = get_engine();
-    nassertr(engine != (GraphicsEngine *)NULL, false);
+    nassertr(engine != nullptr, false);
     engine->texture_uploaded(tex);
     gtc->mark_loaded();
 
@@ -12278,7 +12634,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   }
 
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != nullptr, false);
 
   CPTA_uchar image = tex->get_ram_mipmap_image(mipmap_bias);
   int width = tex->get_expected_mipmap_x_size(mipmap_bias);
@@ -12286,7 +12642,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
   int depth = tex->get_expected_mipmap_z_size(mipmap_bias);
 
   // Determine the number of images to upload.
-  int num_levels = 1;
+  int num_levels = mipmap_bias + 1;
   if (uses_mipmaps) {
     num_levels = tex->get_expected_num_mipmap_levels();
   }
@@ -12341,7 +12697,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       // mipmap image pointer which is a PTA_uchar
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)NULL) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12394,7 +12750,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       PTA_uchar bgr_image;
       size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)NULL) {
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
         if (one_page_only) {
@@ -12538,7 +12894,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
     for (int n = mipmap_bias; n < num_levels; ++n) {
       const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       CPTA_uchar ptimage;
-      if (image_ptr == (const unsigned char *)NULL) {
+      if (image_ptr == nullptr) {
         ptimage = tex->get_ram_mipmap_image(n);
         if (ptimage.is_null()) {
           if (n < num_ram_mipmap_levels) {
@@ -12574,7 +12930,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       PTA_uchar bgr_image;
       size_t view_size = tex->get_ram_mipmap_view_size(n);
-      if (image_ptr != (const unsigned char *)NULL) {
+      if (image_ptr != nullptr) {
         const unsigned char *orig_image_ptr = image_ptr;
         image_ptr += view_size * gtc->get_view();
         if (one_page_only) {
@@ -12698,14 +13054,14 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
-  if (_glGenerateTextureMipmap != NULL) {
+  if (_glGenerateTextureMipmap != nullptr) {
     // OpenGL 4.5 offers an easy way to do this without binding.
     _glGenerateTextureMipmap(gtc->_index);
     return;
   }
 #endif
 
-  if (_glGenerateMipmap != NULL) {
+  if (_glGenerateMipmap != nullptr) {
     _state_texture = 0;
     update_texture(gtc, true);
     apply_texture(gtc);
@@ -12726,13 +13082,13 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
   PStatGPUTimer timer(this, _load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != nullptr, false);
 
   GLenum internal_format = GL_RGBA;
   GLenum external_format = GL_BGRA;
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
-  if (image_ptr == (const unsigned char *)NULL) {
+  if (image_ptr == nullptr) {
     return false;
   }
 
@@ -12789,7 +13145,6 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
   int height = tex->get_y_size();
   int depth = 1;
   int scale = 1;
-  bool has_mipmaps = tex->uses_mipmaps();
 
   size_t num_bytes = 2;  // Temporary assumption?
 
@@ -12893,7 +13248,7 @@ check_nonresident_texture(BufferContextChain &chain) {
   GLuint *texture_list = (GLuint *)alloca(num_textures * sizeof(GLuint));
   size_t ti = 0;
   BufferContext *node = chain.get_first();
-  while (node != (BufferContext *)NULL) {
+  while (node != nullptr) {
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), node);
     gtc_list[ti] = gtc;
     texture_list[ti] = gtc->_index;

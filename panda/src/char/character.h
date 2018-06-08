@@ -30,7 +30,6 @@
 #include "sliderTable.h"
 
 class CharacterJointBundle;
-class ComputedVertices;
 
 /**
  * An animated character, with skeleton-morph animation and either soft-
@@ -41,7 +40,7 @@ protected:
   Character(const Character &copy, bool copy_bundles);
 
 PUBLISHED:
-  explicit Character(const string &name);
+  explicit Character(const std::string &name);
   virtual ~Character();
 
 public:
@@ -69,11 +68,11 @@ PUBLISHED:
                          PN_stdfloat delay_factor);
   void clear_lod_animation();
 
-  CharacterJoint *find_joint(const string &name) const;
-  CharacterSlider *find_slider(const string &name) const;
+  CharacterJoint *find_joint(const std::string &name) const;
+  CharacterSlider *find_slider(const std::string &name) const;
 
-  void write_parts(ostream &out) const;
-  void write_part_values(ostream &out) const;
+  void write_parts(std::ostream &out) const;
+  void write_part_values(std::ostream &out) const;
 
   void update_to_now();
   void update();

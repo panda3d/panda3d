@@ -20,11 +20,11 @@ PhysxCcdSkeletonDesc() {
   _desc.flags = 0;
   _desc.pointStrideBytes = sizeof(NxVec3);
   _desc.triangleStrideBytes = 3*sizeof(NxU32);
-  _desc.points = NULL;
-  _desc.triangles = NULL;
+  _desc.points = nullptr;
+  _desc.triangles = nullptr;
 
-  _vertices = NULL;
-  _triangles = NULL;
+  _vertices = nullptr;
+  _triangles = nullptr;
 }
 
 /**

@@ -38,7 +38,7 @@ link(NxShape *shapePtr) {
 void PhysxConvexShape::
 unlink() {
 
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxActor *actor = (PhysxActor *)_ptr->getActor().userData;

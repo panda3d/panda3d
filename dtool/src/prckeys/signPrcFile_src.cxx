@@ -92,7 +92,7 @@ read_file(istream &in, string &data) {
 
     // Look for the first line in the buffer..
     char *newline = (char *)memchr((void *)buffer, '\n', count);
-    if (newline == NULL) {
+    if (newline == nullptr) {
       // The buffer was one long line.  Huh.
       prev_line += string(buffer, count);
 
@@ -104,7 +104,7 @@ read_file(istream &in, string &data) {
       // Now look for the next line, etc.
       char *start = newline + 1;
       newline = (char *)memchr((void *)start, '\n', buffer_end - start);
-      while (newline != NULL) {
+      while (newline != nullptr) {
         length = newline - start;
         read_prc_line(string(start, length + 1), data);
         start = newline + 1;
@@ -158,7 +158,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   ostringstream strm;
   strm << "##!\n";
   if (!no_comments) {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *t = localtime(&now);
     char formatted[128];
     strftime(formatted, 128, "%I:%M %p %B %d, %Y", t);
@@ -265,7 +265,7 @@ usage() {
 int
 main(int argc, char **argv) {
   preprocess_argv(argc, argv);
-  if (argv[0] != NULL && *argv[0]) {
+  if (argv[0] != nullptr && *argv[0]) {
     // Get the program name from the command-line arguments, if the OS
     // provides it.
     Filename progfile = Filename::from_os_specific(argv[0]);
@@ -318,16 +318,16 @@ main(int argc, char **argv) {
   OpenSSL_add_all_algorithms();
 
   // Convert the compiled-in data to an EVP_PKEY.
-  const char *pp = NULL;
+  const char *pp = nullptr;
   if (got_pass_phrase) {
     pp = pass_phrase.c_str();
   }
 
   BIO *mbio = BIO_new_mem_buf((void *)KEY_DATA, KEY_LENGTH);
-  EVP_PKEY *pkey = PEM_read_bio_PrivateKey(mbio, NULL, NULL, (void *)pp);
+  EVP_PKEY *pkey = PEM_read_bio_PrivateKey(mbio, nullptr, nullptr, (void *)pp);
   BIO_free(mbio);
 
-  if (pkey == (EVP_PKEY *)NULL) {
+  if (pkey == nullptr) {
     // Actually, we're not 100% sure this was the problem, but we can't really
     // tell why it failed, and we're 99% sure anyway.
     cerr << "Invalid pass phrase.\n";

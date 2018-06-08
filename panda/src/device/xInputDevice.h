@@ -32,13 +32,13 @@ typedef struct tagRID_DEVICE_INFO RID_DEVICE_INFO;
  * This implementation of InputDevice uses Microsoft's XInput library to
  * interface with an Xbox 360 game controller.
  */
-class EXPCL_PANDA_DEVICE XInputDevice FINAL : public InputDevice {
+class EXPCL_PANDA_DEVICE XInputDevice final : public InputDevice {
 public:
   XInputDevice(DWORD user_index);
   ~XInputDevice();
 
   bool check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
-                     const string &name, const string &manufacturer);
+                     const std::string &name, const std::string &manufacturer);
   void detect(InputDeviceManager *mgr);
   static bool init_xinput();
 

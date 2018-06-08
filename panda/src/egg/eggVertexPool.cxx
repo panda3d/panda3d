@@ -63,7 +63,7 @@ EggVertexPool::
     nassertv(vertex->_pool == this);
     nassertv(vertex->get_index() == index);
 
-    vertex->_pool = NULL;
+    vertex->_pool = nullptr;
     vertex->_index = -1;
   }
 
@@ -114,11 +114,11 @@ get_vertex(int index) const {
   IndexVertices::const_iterator ivi = _index_vertices.find(index);
 
   if (ivi == _index_vertices.end()) {
-    return NULL;
+    return nullptr;
   } else {
     EggVertex *vertex = (*ivi).second;
     if (vertex->is_forward_reference()) {
-      return NULL;
+      return nullptr;
     }
     return vertex;
   }
@@ -133,7 +133,7 @@ get_vertex(int index) const {
  */
 EggVertex *EggVertexPool::
 get_forward_vertex(int index) {
-  nassertr(index >= 0, NULL);
+  nassertr(index >= 0, nullptr);
 
   IndexVertices::const_iterator ivi = _index_vertices.find(index);
 
@@ -421,13 +421,13 @@ add_vertex(EggVertex *vertex, int index) {
   PT(EggVertex) vertex_keep = vertex;
 
   // Don't try to add a vertex while it still belongs to another pool.
-  nassertr(vertex->_pool == NULL, NULL);
+  nassertr(vertex->_pool == nullptr, nullptr);
 
   if (index == -1) {
     index = get_highest_index() + 1;
   }
   // Always supply an index number >= 0.
-  nassertr(index >= 0, NULL);
+  nassertr(index >= 0, nullptr);
 
   // Check for a forward reference.
   IndexVertices::const_iterator ivi = _index_vertices.find(index);
@@ -443,7 +443,7 @@ add_vertex(EggVertex *vertex, int index) {
     }
 
     // Oops, you duplicated a vertex index.
-    nassertr(false, NULL);
+    nassertr(false, nullptr);
   }
 
   _unique_vertices.insert(vertex);
@@ -495,7 +495,7 @@ find_matching_vertex(const EggVertex &copy) {
   }
 
   // No matching vertex.
-  return NULL;
+  return nullptr;
 }
 
 
@@ -550,7 +550,7 @@ remove_vertex(EggVertex *vertex) {
 
   _unique_vertices.erase(uvi);
 
-  vertex->_pool = NULL;
+  vertex->_pool = nullptr;
 }
 
 /**
@@ -572,7 +572,7 @@ remove_unused_vertices() {
     if (vertex->pref_size() == 0) {
       // This vertex is not used.  Don't add it to the new lists.
       vertex->clear_grefs();
-      vertex->_pool = NULL;
+      vertex->_pool = nullptr;
       num_removed++;
 
     } else {
@@ -598,7 +598,7 @@ remove_unused_vertices() {
         orig_vertex->test_pref_integrity();
         nassertr(vertex->pref_size() == 0, 0);
         vertex->clear_grefs();
-        vertex->_pool = NULL;
+        vertex->_pool = nullptr;
         num_removed++;
 
       } else {
@@ -675,7 +675,7 @@ transform(const LMatrix4d &mat) {
     typedef pvector<EggVertex *> Verts;
     Verts verts;
     verts.reserve(size());
-    copy(begin(), end(), back_inserter(verts));
+    std::copy(begin(), end(), std::back_inserter(verts));
 
     Verts::const_iterator vi;
     for (vi = verts.begin(); vi != verts.end(); ++vi) {
@@ -742,7 +742,7 @@ sort_by_external_index() {
     sorted_vertices.push_back(*i);
   }
 
-  ::sort(sorted_vertices.begin(), sorted_vertices.end(), SortByExternalIndex());
+  std::sort(sorted_vertices.begin(), sorted_vertices.end(), SortByExternalIndex());
 
   // Now reassign the indices, and copy them into a new index map.
   IndexVertices new_index_vertices;

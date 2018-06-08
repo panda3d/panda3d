@@ -85,7 +85,7 @@ set_filename(ShaderType type, const Filename &filename) {
 /**
  * Return the Shader's text for the given shader type.
  */
-INLINE const string &Shader::
+INLINE const std::string &Shader::
 get_text(ShaderType type) const {
   if (_text._separate) {
     nassertr(type != ST_none || !_text._shared.empty(), _text._shared);
@@ -205,7 +205,7 @@ operator == (const ShaderCaps &other) const {
  */
 INLINE Shader::ShaderPtrData::
 ShaderPtrData() :
-  _ptr(NULL),
+  _ptr(nullptr),
   _type(SPT_unknown),
   _updated(true),
   _size(0)
@@ -694,9 +694,9 @@ read_datagram(DatagramIterator &scan) {
  *
  */
 INLINE Shader::ShaderFile::
-ShaderFile(string shared) :
+ShaderFile(std::string shared) :
   _separate(false),
-  _shared(move(shared))
+  _shared(std::move(shared))
 {
 }
 
@@ -704,14 +704,14 @@ ShaderFile(string shared) :
  *
  */
 INLINE Shader::ShaderFile::
-ShaderFile(string vertex, string fragment, string geometry,
-           string tess_control, string tess_evaluation) :
+ShaderFile(std::string vertex, std::string fragment, std::string geometry,
+           std::string tess_control, std::string tess_evaluation) :
   _separate(true),
-  _vertex(move(vertex)),
-  _fragment(move(fragment)),
-  _geometry(move(geometry)),
-  _tess_control(move(tess_control)),
-  _tess_evaluation(move(tess_evaluation))
+  _vertex(std::move(vertex)),
+  _fragment(std::move(fragment)),
+  _geometry(std::move(geometry)),
+  _tess_control(std::move(tess_control)),
+  _tess_evaluation(std::move(tess_evaluation))
 {
 }
 

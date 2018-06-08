@@ -16,7 +16,7 @@
  */
 INLINE LightReMutex::
 #ifdef DEBUG_THREADS
-LightReMutex() : MutexDebug(string(), true, true)
+LightReMutex() : MutexDebug(std::string(), true, true)
 #else
 LightReMutex()
 #endif  // DEBUG_THREADS
@@ -28,7 +28,7 @@ LightReMutex()
  */
 INLINE LightReMutex::
 #ifdef DEBUG_THREADS
-LightReMutex(const char *name) : MutexDebug(string(name), true, true)
+LightReMutex(const char *name) : MutexDebug(std::string(name), true, true)
 #else
 LightReMutex(const char *)
 #endif  // DEBUG_THREADS
@@ -40,24 +40,9 @@ LightReMutex(const char *)
  */
 INLINE LightReMutex::
 #ifdef DEBUG_THREADS
-LightReMutex(const string &name) : MutexDebug(name, true, true)
+LightReMutex(const std::string &name) : MutexDebug(name, true, true)
 #else
-LightReMutex(const string &)
+LightReMutex(const std::string &)
 #endif  // DEBUG_THREADS
 {
-}
-
-/**
- *
- */
-INLINE LightReMutex::
-~LightReMutex() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void LightReMutex::
-operator = (const LightReMutex &copy) {
-  nassertv(false);
 }

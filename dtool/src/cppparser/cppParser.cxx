@@ -25,7 +25,7 @@ bool cppparser_output_class_keyword = false;
  *
  */
 CPPParser::
-CPPParser() : CPPScope((CPPScope *)NULL, CPPNameComponent(""), V_public) {
+CPPParser() : CPPScope(nullptr, CPPNameComponent(""), V_public) {
 }
 
 /**
@@ -88,6 +88,6 @@ parse_type(const string &type) {
   if (ep.parse_type(type, *this)) {
     return ep._type;
   } else {
-    return (CPPType *)NULL;
+    return nullptr;
   }
 }

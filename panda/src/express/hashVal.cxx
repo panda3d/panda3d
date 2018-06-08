@@ -39,7 +39,7 @@ output_hex(ostream &out) const {
  */
 void HashVal::
 input_hex(istream &in) {
-  in >> ws;
+  in >> std::ws;
   char buffer[32];
   size_t i = 0;
   int ch = in.get();
@@ -143,11 +143,11 @@ set_from_hex(const string &text) {
 /**
  * Returns the HashVal as a 16-byte binary string.
  */
-string HashVal::
+vector_uchar HashVal::
 as_bin() const {
   Datagram dg;
   write_datagram(dg);
-  return dg.get_message();
+  return vector_uchar((unsigned char *)dg.get_data(), (unsigned char *)dg.get_data() + dg.get_length());
 }
 
 /**
@@ -155,7 +155,7 @@ as_bin() const {
  * false otherwise.
  */
 bool HashVal::
-set_from_bin(const string &text) {
+set_from_bin(const vector_uchar &text) {
   nassertr(text.size() == 16, false);
   Datagram dg(text);
   DatagramIterator dgi(dg);
@@ -174,7 +174,7 @@ hash_file(const Filename &filename) {
   Filename bin_filename = Filename::binary_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(bin_filename, false);
-  if (istr == (istream *)NULL) {
+  if (istr == nullptr) {
     (*this) = HashVal();
     return false;
   }

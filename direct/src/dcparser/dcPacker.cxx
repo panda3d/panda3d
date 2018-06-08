@@ -23,7 +23,7 @@
 #include "py_panda.h"
 #endif
 
-DCPacker::StackElement *DCPacker::StackElement::_deleted_chain = NULL;
+DCPacker::StackElement *DCPacker::StackElement::_deleted_chain = nullptr;
 int DCPacker::StackElement::_num_ever_allocated = 0;
 
 /**
@@ -32,15 +32,15 @@ int DCPacker::StackElement::_num_ever_allocated = 0;
 DCPacker::
 DCPacker() {
   _mode = M_idle;
-  _unpack_data = NULL;
+  _unpack_data = nullptr;
   _unpack_length = 0;
   _owns_unpack_data = false;
   _unpack_p = 0;
-  _live_catalog = NULL;
+  _live_catalog = nullptr;
   _parse_error = false;
   _pack_error = false;
   _range_error = false;
-  _stack = NULL;
+  _stack = nullptr;
 
   clear();
 }
@@ -73,11 +73,11 @@ begin_pack(const DCPackerInterface *root) {
   _range_error = false;
 
   _root = root;
-  _catalog = NULL;
-  _live_catalog = NULL;
+  _catalog = nullptr;
+  _live_catalog = nullptr;
 
   _current_field = root;
-  _current_parent = NULL;
+  _current_parent = nullptr;
   _current_field_index = 0;
   _num_nested_fields = 0;
 }
@@ -94,7 +94,7 @@ end_pack() {
 
   _mode = M_idle;
 
-  if (_stack != NULL || _current_field != NULL || _current_parent != NULL) {
+  if (_stack != nullptr || _current_field != nullptr || _current_parent != nullptr) {
     _pack_error = true;
   }
 
@@ -146,7 +146,7 @@ set_unpack_data(const char *unpack_data, size_t unpack_length,
 void DCPacker::
 begin_unpack(const DCPackerInterface *root) {
   nassertv(_mode == M_idle);
-  nassertv(_unpack_data != NULL);
+  nassertv(_unpack_data != nullptr);
 
   _mode = M_unpack;
   _parse_error = false;
@@ -154,11 +154,11 @@ begin_unpack(const DCPackerInterface *root) {
   _range_error = false;
 
   _root = root;
-  _catalog = NULL;
-  _live_catalog = NULL;
+  _catalog = nullptr;
+  _live_catalog = nullptr;
 
   _current_field = root;
-  _current_parent = NULL;
+  _current_parent = nullptr;
   _current_field_index = 0;
   _num_nested_fields = 0;
 }
@@ -175,13 +175,13 @@ end_unpack() {
 
   _mode = M_idle;
 
-  if (_stack != NULL || _current_field != NULL || _current_parent != NULL) {
+  if (_stack != nullptr || _current_field != nullptr || _current_parent != nullptr) {
     // This happens if we have not unpacked all of the fields.  However, this
     // is not an error if we have called seek() during the unpack session (in
     // which case the _catalog will be non-NULL).  On the other hand, if the
     // catalog is still NULL, then we have never called seek() and it is an
     // error not to unpack all values.
-    if (_catalog == (DCPackerCatalog *)NULL) {
+    if (_catalog == nullptr) {
       _pack_error = true;
     }
   }
@@ -206,7 +206,7 @@ end_unpack() {
 void DCPacker::
 begin_repack(const DCPackerInterface *root) {
   nassertv(_mode == M_idle);
-  nassertv(_unpack_data != NULL);
+  nassertv(_unpack_data != nullptr);
   nassertv(_unpack_p == 0);
 
   _mode = M_repack;
@@ -220,14 +220,14 @@ begin_repack(const DCPackerInterface *root) {
   _root = root;
   _catalog = _root->get_catalog();
   _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
-  if (_live_catalog == NULL) {
+  if (_live_catalog == nullptr) {
     _pack_error = true;
   }
 
   // We don't begin at the first field in repack mode.  Instead, you must
   // explicitly call seek().
-  _current_field = NULL;
-  _current_parent = NULL;
+  _current_field = nullptr;
+  _current_parent = nullptr;
   _current_field_index = 0;
   _num_nested_fields = 0;
 }
@@ -262,12 +262,12 @@ end_repack() {
  */
 bool DCPacker::
 seek(const string &field_name) {
-  if (_catalog == (DCPackerCatalog *)NULL) {
+  if (_catalog == nullptr) {
     _catalog = _root->get_catalog();
     _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
   }
-  nassertr(_catalog != (DCPackerCatalog *)NULL, false);
-  if (_live_catalog == NULL) {
+  nassertr(_catalog != nullptr, false);
+  if (_live_catalog == nullptr) {
     _pack_error = true;
     return false;
   }
@@ -292,12 +292,12 @@ seek(const string &field_name) {
  */
 bool DCPacker::
 seek(int seek_index) {
-  if (_catalog == (DCPackerCatalog *)NULL) {
+  if (_catalog == nullptr) {
     _catalog = _root->get_catalog();
     _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
   }
-  nassertr(_catalog != (DCPackerCatalog *)NULL, false);
-  if (_live_catalog == NULL) {
+  nassertr(_catalog != nullptr, false);
+  if (_live_catalog == nullptr) {
     _pack_error = true;
     return false;
   }
@@ -324,9 +324,9 @@ seek(int seek_index) {
     return true;
 
   } else if (_mode == M_repack) {
-    nassertr(_catalog != (DCPackerCatalog *)NULL, false);
+    nassertr(_catalog != nullptr, false);
 
-    if (_stack != NULL || _current_field != NULL) {
+    if (_stack != nullptr || _current_field != nullptr) {
       // It is an error to reseek while the stack is nonempty--that means we
       // haven't finished packing the current field.
       _pack_error = true;
@@ -334,7 +334,7 @@ seek(int seek_index) {
     }
     const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(seek_index);
 
-    if (entry._parent->as_switch_parameter() != (DCSwitchParameter *)NULL) {
+    if (entry._parent->as_switch_parameter() != nullptr) {
       // If the parent is a DCSwitch, that can only mean that the seeked field
       // is a switch parameter.  We can't support seeking to a switch
       // parameter and modifying it directly--what would happen to all of the
@@ -357,7 +357,7 @@ seek(int seek_index) {
       _catalog->release_live_catalog(_live_catalog);
       _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
 
-      if (_live_catalog == NULL) {
+      if (_live_catalog == nullptr) {
         _pack_error = true;
         return false;
       }
@@ -470,7 +470,7 @@ push() {
 
     if (_num_nested_fields >= 0 &&
         _current_field_index >= _num_nested_fields) {
-      _current_field = NULL;
+      _current_field = nullptr;
 
     } else {
       _current_field = _current_parent->get_nested_field(_current_field_index);
@@ -487,7 +487,7 @@ push() {
  */
 void DCPacker::
 pop() {
-  if (_current_field != NULL && _num_nested_fields >= 0) {
+  if (_current_field != nullptr && _num_nested_fields >= 0) {
     // Oops, didn't pack or unpack enough values.
     _pack_error = true;
 
@@ -497,7 +497,7 @@ pop() {
     _pack_error = true;
   }
 
-  if (_stack == NULL) {
+  if (_stack == nullptr) {
     // Unbalanced pop().
     _pack_error = true;
 
@@ -528,7 +528,7 @@ pop() {
     _current_field_index = _stack->_current_field_index;
     _push_marker = _stack->_push_marker;
     _pop_marker = _stack->_pop_marker;
-    _num_nested_fields = (_current_parent == NULL) ? 0 : _current_parent->get_num_nested_fields();
+    _num_nested_fields = (_current_parent == nullptr) ? 0 : _current_parent->get_num_nested_fields();
 
     StackElement *next = _stack->_next;
     delete _stack;
@@ -545,7 +545,7 @@ pop() {
 void DCPacker::
 pack_default_value() {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     if (_current_field->pack_default_value(_pack_data, _pack_error)) {
@@ -571,7 +571,7 @@ pack_default_value() {
 void DCPacker::
 unpack_validate() {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -597,7 +597,7 @@ unpack_validate() {
 void DCPacker::
 unpack_skip() {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -739,11 +739,11 @@ pack_object(PyObject *object) {
       (PyObject_HasAttrString(object, "__len__") != 0);
     bool is_instance = false;
 
-    const DCClass *dclass = NULL;
+    const DCClass *dclass = nullptr;
     const DCPackerInterface *current_field = get_current_field();
-    if (current_field != (DCPackerInterface *)NULL) {
+    if (current_field != nullptr) {
       const DCClassParameter *class_param = get_current_field()->as_class_parameter();
-      if (class_param != (DCClassParameter *)NULL) {
+      if (class_param != nullptr) {
         dclass = class_param->get_class();
 
         if (dclass->has_class_def()) {
@@ -771,7 +771,7 @@ pack_object(PyObject *object) {
 
     // (3) Otherwise, it is considered to be a class object.
 
-    if (dclass != (DCClass *)NULL && (is_instance || !is_sequence)) {
+    if (dclass != nullptr && (is_instance || !is_sequence)) {
       // The supplied object is either an instance of the expected class
       // object, or it is not a sequence--this is case (1) or (3).
       pack_class_object(dclass, object);
@@ -782,7 +782,7 @@ pack_object(PyObject *object) {
       int size = PySequence_Size(object);
       for (int i = 0; i < size; ++i) {
         PyObject *element = PySequence_GetItem(object, i);
-        if (element != (PyObject *)NULL) {
+        if (element != nullptr) {
           pack_object(element);
           Py_DECREF(element);
         } else {
@@ -812,7 +812,7 @@ pack_object(PyObject *object) {
  */
 PyObject *DCPacker::
 unpack_object() {
-  PyObject *object = NULL;
+  PyObject *object = nullptr;
 
   DCPackType pack_type = get_pack_type();
 
@@ -896,13 +896,13 @@ unpack_object() {
   case PT_class:
     {
       const DCClassParameter *class_param = get_current_field()->as_class_parameter();
-      if (class_param != (DCClassParameter *)NULL) {
+      if (class_param != nullptr) {
         const DCClass *dclass = class_param->get_class();
         if (dclass->has_class_def()) {
           // If we know what kind of class object this is and it has a valid
           // constructor, create the class object instead of just a tuple.
           object = unpack_class_object(dclass);
-          if (object == (PyObject *)NULL) {
+          if (object == nullptr) {
             cerr << "Unable to construct object of class "
                  << dclass->get_name() << "\n";
           } else {
@@ -939,7 +939,7 @@ unpack_object() {
     break;
   }
 
-  nassertr(object != (PyObject *)NULL, NULL);
+  nassertr(object != nullptr, nullptr);
   return object;
 }
 #endif  // HAVE_PYTHON
@@ -995,10 +995,10 @@ unpack_and_format(ostream &out, bool show_field_names) {
   DCPackType pack_type = get_pack_type();
 
   if (show_field_names && !get_current_field_name().empty()) {
-    nassertv(_current_field != (DCPackerInterface *)NULL);
+    nassertv(_current_field != nullptr);
     const DCField *field = _current_field->as_field();
-    if (field != (DCField *)NULL &&
-        field->as_parameter() != (DCParameter *)NULL) {
+    if (field != nullptr &&
+        field->as_parameter() != nullptr) {
       out << field->get_name() << " = ";
     }
   }
@@ -1135,7 +1135,7 @@ void DCPacker::
 handle_switch(const DCSwitchParameter *switch_parameter) {
   // First, get the value from the key.  This is either found in the unpack or
   // the pack data, depending on what mode we're in.
-  const DCPackerInterface *new_parent = NULL;
+  const DCPackerInterface *new_parent = nullptr;
 
   if (_mode == M_pack || _mode == M_repack) {
     const char *data = _pack_data.get_data();
@@ -1147,7 +1147,7 @@ handle_switch(const DCSwitchParameter *switch_parameter) {
       (_unpack_data + _push_marker, _unpack_p - _push_marker);
   }
 
-  if (new_parent == (DCPackerInterface *)NULL) {
+  if (new_parent == nullptr) {
     // This means an invalid value was packed for the key.
     _range_error = true;
     return;
@@ -1173,20 +1173,20 @@ handle_switch(const DCSwitchParameter *switch_parameter) {
 void DCPacker::
 clear() {
   clear_stack();
-  _current_field = NULL;
-  _current_parent = NULL;
+  _current_field = nullptr;
+  _current_parent = nullptr;
   _current_field_index = 0;
   _num_nested_fields = 0;
   _push_marker = 0;
   _pop_marker = 0;
-  _last_switch = NULL;
+  _last_switch = nullptr;
 
-  if (_live_catalog != (DCPackerCatalog::LiveCatalog *)NULL) {
+  if (_live_catalog != nullptr) {
     _catalog->release_live_catalog(_live_catalog);
-    _live_catalog = NULL;
+    _live_catalog = nullptr;
   }
-  _catalog = NULL;
-  _root = NULL;
+  _catalog = nullptr;
+  _root = nullptr;
 }
 
 /**
@@ -1194,7 +1194,7 @@ clear() {
  */
 void DCPacker::
 clear_stack() {
-  while (_stack != (StackElement *)NULL) {
+  while (_stack != nullptr) {
     StackElement *next = _stack->_next;
     delete _stack;
     _stack = next;
@@ -1212,7 +1212,7 @@ pack_class_object(const DCClass *dclass, PyObject *object) {
   push();
   while (more_nested_fields() && !_pack_error) {
     const DCField *field = get_current_field()->as_field();
-    nassertv(field != (DCField *)NULL);
+    nassertv(field != nullptr);
     get_class_element(dclass, object, field);
   }
   pop();
@@ -1227,36 +1227,36 @@ pack_class_object(const DCClass *dclass, PyObject *object) {
 PyObject *DCPacker::
 unpack_class_object(const DCClass *dclass) {
   PyObject *class_def = dclass->get_class_def();
-  nassertr(class_def != (PyObject *)NULL, NULL);
+  nassertr(class_def != nullptr, nullptr);
 
-  PyObject *object = NULL;
+  PyObject *object = nullptr;
 
   if (!dclass->has_constructor()) {
     // If the class uses a default constructor, go ahead and create the Python
     // object for it now.
-    object = PyObject_CallObject(class_def, NULL);
-    if (object == (PyObject *)NULL) {
-      return NULL;
+    object = PyObject_CallObject(class_def, nullptr);
+    if (object == nullptr) {
+      return nullptr;
     }
   }
 
   push();
-  if (object == (PyObject *)NULL && more_nested_fields()) {
+  if (object == nullptr && more_nested_fields()) {
     // The first nested field will be the constructor.
     const DCField *field = get_current_field()->as_field();
-    nassertr(field != (DCField *)NULL, object);
+    nassertr(field != nullptr, object);
     nassertr(field == dclass->get_constructor(), object);
 
     set_class_element(class_def, object, field);
 
     // By now, the object should have been constructed.
-    if (object == (PyObject *)NULL) {
-      return NULL;
+    if (object == nullptr) {
+      return nullptr;
     }
   }
   while (more_nested_fields()) {
     const DCField *field = get_current_field()->as_field();
-    nassertr(field != (DCField *)NULL, object);
+    nassertr(field != nullptr, object);
 
     set_class_element(class_def, object, field);
   }
@@ -1287,8 +1287,8 @@ set_class_element(PyObject *class_def, PyObject *&object,
       push();
       while (more_nested_fields()) {
         const DCField *field = get_current_field()->as_field();
-        nassertv(field != (DCField *)NULL);
-        nassertv(object != (PyObject *)NULL);
+        nassertv(field != nullptr);
+        nassertv(object != nullptr);
         set_class_element(class_def, object, field);
       }
       pop();
@@ -1307,7 +1307,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
     PyObject *element = unpack_object();
 
     if (pack_type == PT_field) {
-      if (object == (PyObject *)NULL) {
+      if (object == nullptr) {
         // If the object hasn't been constructed yet, assume this is the
         // constructor.
         object = PyObject_CallObject(class_def, element);
@@ -1315,7 +1315,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
       } else {
         if (PyObject_HasAttrString(object, (char *)field_name.c_str())) {
           PyObject *func = PyObject_GetAttrString(object, (char *)field_name.c_str());
-          if (func != (PyObject *)NULL) {
+          if (func != nullptr) {
             PyObject *result = PyObject_CallObject(func, element);
             Py_XDECREF(result);
             Py_DECREF(func);
@@ -1324,7 +1324,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
       }
 
     } else {
-      nassertv(object != (PyObject *)NULL);
+      nassertv(object != nullptr);
       PyObject_SetAttrString(object, (char *)field_name.c_str(), element);
     }
 
@@ -1353,7 +1353,7 @@ get_class_element(const DCClass *dclass, PyObject *object,
       push();
       while (more_nested_fields() && !_pack_error) {
         const DCField *field = get_current_field()->as_field();
-        nassertv(field != (DCField *)NULL);
+        nassertv(field != nullptr);
         get_class_element(dclass, object, field);
       }
       pop();

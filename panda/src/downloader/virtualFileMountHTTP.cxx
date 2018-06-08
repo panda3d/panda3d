@@ -176,7 +176,7 @@ make_virtual_file(const Filename &local_filename,
  */
 istream *VirtualFileMountHTTP::
 open_read_file(const Filename &) const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -238,7 +238,7 @@ output(ostream &out) const {
 PT(HTTPChannel) VirtualFileMountHTTP::
 get_channel() {
   PT(HTTPChannel) channel;
-  _channels_lock.acquire();
+  _channels_lock.lock();
 
   if (!_channels.empty()) {
     // If we have some channels sitting around, grab one.  Grab the one on the
@@ -251,7 +251,7 @@ get_channel() {
     channel = _http->make_channel(true);
   }
 
-  _channels_lock.release();
+  _channels_lock.unlock();
   return channel;
 }
 
@@ -262,9 +262,9 @@ get_channel() {
  */
 void VirtualFileMountHTTP::
 recycle_channel(HTTPChannel *channel) {
-  _channels_lock.acquire();
+  _channels_lock.lock();
   _channels.push_back(channel);
-  _channels_lock.release();
+  _channels_lock.unlock();
 }
 
 #endif  // HAVE_OPENSSL

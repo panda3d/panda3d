@@ -122,7 +122,7 @@ got_bad_version(int client_major, int client_minor,
   }
 
   string message = str.str();
-  MessageBox(NULL, message.c_str(), "Bad version",
+  MessageBox(nullptr, message.c_str(), "Bad version",
              MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }
 
@@ -438,7 +438,7 @@ create_window() {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
   _menu_bar = CreateMenu();
@@ -459,7 +459,7 @@ create_window() {
   _window =
     CreateWindow(_window_class_name, _window_title.c_str(), window_style,
                  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-                 NULL, _menu_bar, application, 0);
+                 nullptr, _menu_bar, application, 0);
   if (!_window) {
     nout << "Could not create monitor window!\n";
     exit(1);
@@ -497,8 +497,8 @@ setup_options_menu() {
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
   mii.fType = MFT_STRING | MFT_RADIOCHECK;
-  mii.hbmpChecked = NULL;
-  mii.hbmpUnchecked = NULL;
+  mii.hbmpChecked = nullptr;
+  mii.hbmpUnchecked = nullptr;
   mii.fState = MFS_UNCHECKED;
   mii.wID = MI_time_ms;
   mii.dwTypeData = "ms";
@@ -531,8 +531,8 @@ setup_speed_menu() {
 
   mii.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_CHECKMARKS | MIIM_STATE;
   mii.fType = MFT_STRING | MFT_RADIOCHECK;
-  mii.hbmpChecked = NULL;
-  mii.hbmpUnchecked = NULL;
+  mii.hbmpChecked = nullptr;
+  mii.hbmpUnchecked = nullptr;
   mii.fState = MFS_UNCHECKED;
   mii.wID = MI_speed_1;
   mii.dwTypeData = "1";
@@ -603,9 +603,9 @@ register_window_class(HINSTANCE application) {
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-  wc.lpszMenuName = NULL;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -625,7 +625,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsMonitor::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsMonitor *self = (WinStatsMonitor *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsMonitor *)NULL && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

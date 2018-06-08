@@ -29,14 +29,14 @@ class Filename;
  */
 class MayaApi : public ReferenceCount {
 protected:
-  MayaApi(const string &program_name, bool view_license = false, bool revertdir = true);
+  MayaApi(const std::string &program_name, bool view_license = false, bool revertdir = true);
   MayaApi(const MayaApi &copy);
   void operator = (const MayaApi &copy);
 
 public:
   ~MayaApi();
 
-  static PT(MayaApi) open_api(string program_name = "", bool view_license = false, bool revertdir = true);
+  static PT(MayaApi) open_api(std::string program_name = "", bool view_license = false, bool revertdir = true);
   bool is_valid() const;
 
   bool read(const Filename &filename);

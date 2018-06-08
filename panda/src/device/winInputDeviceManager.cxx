@@ -192,7 +192,7 @@ on_input_device_arrival(HANDLE handle) {
   // Then we walk the device tree upward to get the USB node, which which will
   // be something like a "USB\VID..." node, from which we can fetch the real
   // USB device information (such as the product name).
-  string name, manufacturer;
+  std::string name, manufacturer;
   DEVINST inst;
   CONFIGRET ret = CM_Locate_DevNodeA(&inst, (DEVINSTID_A)path, CM_LOCATE_DEVNODE_PHANTOM);
   if (ret == CR_SUCCESS) {
@@ -215,7 +215,7 @@ on_input_device_arrival(HANDLE handle) {
     DEVINST parent;
     while (CM_Get_Parent(&parent, cur, 0) == CR_SUCCESS) {
       buflen = 4096;
-      string dev_class;
+      std::string dev_class;
       if (CM_Get_DevNode_Registry_Property(parent, CM_DRP_CLASS, 0, buffer, &buflen, 0) == CR_SUCCESS) {
         if (strcmp(buffer, "USB") == 0) {
           // This is some generic USB device, like a hub.  We've gone too far.
@@ -253,7 +253,7 @@ on_input_device_arrival(HANDLE handle) {
           wbuffer[--wlen] = 0;
         }
         TextEncoder encoder;
-        name.assign(encoder.encode_wtext(wstring(wbuffer, wlen)));
+        name.assign(encoder.encode_wtext(std::wstring(wbuffer, wlen)));
         break;
       } else {
         buflen = 4096;

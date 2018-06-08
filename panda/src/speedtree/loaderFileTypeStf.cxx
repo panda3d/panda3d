@@ -56,7 +56,7 @@ load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   if (!path.is_regular_file()) {
     // Quietly fail if the file doesn't exist.  The Loader expects this.
-    return NULL;
+    return nullptr;
   }
 
   PT(SpeedTreeNode) st = new SpeedTreeNode(path.get_basename());

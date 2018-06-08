@@ -22,11 +22,11 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS string
-compress_string(const string &source, int compression_level);
+EXPCL_PANDAEXPRESS std::string
+compress_string(const std::string &source, int compression_level);
 
-EXPCL_PANDAEXPRESS string
-decompress_string(const string &source);
+EXPCL_PANDAEXPRESS std::string
+decompress_string(const std::string &source);
 
 EXPCL_PANDAEXPRESS bool
 compress_file(const Filename &source, const Filename &dest, int compression_level);
@@ -34,9 +34,9 @@ EXPCL_PANDAEXPRESS bool
 decompress_file(const Filename &source, const Filename &dest);
 
 EXPCL_PANDAEXPRESS bool
-compress_stream(istream &source, ostream &dest, int compression_level);
+compress_stream(std::istream &source, std::ostream &dest, int compression_level);
 EXPCL_PANDAEXPRESS bool
-decompress_stream(istream &source, ostream &dest);
+decompress_stream(std::istream &source, std::ostream &dest);
 
 END_PUBLISH
 

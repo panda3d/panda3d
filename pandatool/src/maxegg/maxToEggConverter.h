@@ -56,7 +56,7 @@ class MaxToEggConverter {
     MaxEggOptions    *_options;
     int               _current_frame;
     PT(EggData)       _egg_data;
-    string            _program_name;
+    std::string            _program_name;
     MaxNodeTree       _tree;
     int               _cur_tref;
     EggTextureCollection _textures;
@@ -81,7 +81,7 @@ class MaxToEggConverter {
     void make_polyset(INode *max_node,
                       Mesh *mesh,
                       EggGroup *egg_group,
-                      Shader *default_shader = NULL);
+                      Shader *default_shader = nullptr);
 
     Point3 get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo);
     VertColor get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo);

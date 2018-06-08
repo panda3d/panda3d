@@ -60,7 +60,7 @@ unlink() {
   }
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
@@ -77,7 +77,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseForceFieldShapeGroup(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -86,7 +86,7 @@ release() {
 PhysxScene *PhysxForceFieldShapeGroup::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)(_ptr->getScene().userData);
 }
 
@@ -97,10 +97,10 @@ get_scene() const {
 PhysxForceField *PhysxForceFieldShapeGroup::
 get_force_field() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
-  if (_ptr->getForceField() == NULL) {
-    return NULL;
+  if (_ptr->getForceField() == nullptr) {
+    return nullptr;
   }
   else {
     return (PhysxForceField *)(_ptr->getForceField()->userData);
@@ -157,14 +157,14 @@ get_num_shapes() const {
 PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 create_shape(PhysxForceFieldShapeDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(),NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(),nullptr);
 
   PhysxForceFieldShape *shape = PhysxForceFieldShape::factory(desc.ptr()->getType());
-  nassertr(shape, NULL);
+  nassertr(shape, nullptr);
 
   NxForceFieldShape *shapePtr = _ptr->createShape(*desc.ptr());
-  nassertr(shapePtr, NULL);
+  nassertr(shapePtr, nullptr);
 
   shape->link(shapePtr);
 
@@ -177,8 +177,8 @@ create_shape(PhysxForceFieldShapeDesc &desc) {
 PhysxForceFieldShape *PhysxForceFieldShapeGroup::
 get_shape(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbShapes(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbShapes(), nullptr);
 
   NxForceFieldShape *shapePtr;
   NxU32 nShapes = _ptr->getNbShapes();

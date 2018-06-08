@@ -21,7 +21,7 @@
 #include <math.h>
 
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
-DCClassParameter *DCSimpleParameter::_uint32uint8_type = NULL;
+DCClassParameter *DCSimpleParameter::_uint32uint8_type = nullptr;
 
 /**
  *
@@ -186,7 +186,7 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
     _nested_field = create_uint32uint8_type();
 
   } else {
-    _nested_field = NULL;
+    _nested_field = nullptr;
   }
 }
 
@@ -2173,7 +2173,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
 void DCSimpleParameter::
 output_instance(ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
@@ -2238,6 +2238,8 @@ output_instance(ostream &out, bool brief, const string &prename,
       }
       break;
 
+    case ST_blob:
+    case ST_blob32:
     case ST_string:
       if (!_uint_range.is_empty()) {
         out << "(";
@@ -2340,7 +2342,7 @@ do_check_match_array_parameter(const DCArrayParameter *other) const {
     // We cannot match a fixed-size array.
     return false;
   }
-  if (_nested_field == NULL) {
+  if (_nested_field == nullptr) {
     // Only an array-style simple parameter can match a DCArrayParameter.
     return false;
   }
@@ -2372,8 +2374,8 @@ create_nested_field(DCSubatomicType type, unsigned int divisor) {
  */
 DCPackerInterface *DCSimpleParameter::
 create_uint32uint8_type() {
-  if (_uint32uint8_type == NULL) {
-    DCClass *dclass = new DCClass(NULL, "", true, false);
+  if (_uint32uint8_type == nullptr) {
+    DCClass *dclass = new DCClass(nullptr, "", true, false);
     dclass->add_field(new DCSimpleParameter(ST_uint32));
     dclass->add_field(new DCSimpleParameter(ST_uint8));
     _uint32uint8_type = new DCClassParameter(dclass);

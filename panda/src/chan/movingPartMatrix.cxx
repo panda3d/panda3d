@@ -21,11 +21,6 @@
 #include "bamWriter.h"
 #include "config_chan.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class MovingPart<ACMatrixSwitchType>;
 
 TypeHandle MovingPartMatrix::_type_handle;
@@ -58,7 +53,7 @@ get_blend_value(const PartBundle *root) {
   // If a forced channel is set on this particular joint, we always return
   // that value instead of performing the blend.  Furthermore, the frame
   // number is always 0 for the forced channel.
-  if (_forced_channel != (AnimChannelBase *)NULL) {
+  if (_forced_channel != nullptr) {
     ChannelType *channel = DCAST(ChannelType, _forced_channel);
     channel->get_value(0, _value);
     return;
@@ -72,7 +67,7 @@ get_blend_value(const PartBundle *root) {
       _value = _default_value;
     }
 
-  } else if (_effective_control != (AnimControl *)NULL &&
+  } else if (_effective_control != nullptr &&
              !cdata->_frame_blend_flag) {
     // A single value, the normal case.
     ChannelType *channel = DCAST(ChannelType, _effective_channel);
@@ -98,7 +93,7 @@ get_blend_value(const PartBundle *root) {
           int channel_index = control->get_channel_index();
           nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
           ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
-          if (channel != (ChannelType *)NULL) {
+          if (channel != nullptr) {
             ValueType v;
             channel->get_value(control->get_frame(), v);
 
@@ -145,12 +140,12 @@ get_blend_value(const PartBundle *root) {
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
 
-          ChannelType *channel = NULL;
+          ChannelType *channel = nullptr;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
             channel = DCAST(ChannelType, _channels[channel_index]);
           }
-          if (channel != (ChannelType *)NULL) {
+          if (channel != nullptr) {
             int frame = control->get_frame();
             ValueType v;
             LVecBase3 iscale, ishear;
@@ -218,12 +213,12 @@ get_blend_value(const PartBundle *root) {
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
 
-          ChannelType *channel = NULL;
+          ChannelType *channel = nullptr;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
             channel = DCAST(ChannelType, _channels[channel_index]);
           }
-          if (channel != (ChannelType *)NULL) {
+          if (channel != nullptr) {
             int frame = control->get_frame();
             LVecBase3 iscale, ihpr, ipos, ishear;
             channel->get_scale(frame, iscale);
@@ -294,12 +289,12 @@ get_blend_value(const PartBundle *root) {
           PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
 
-          ChannelType *channel = NULL;
+          ChannelType *channel = nullptr;
           int channel_index = control->get_channel_index();
           if (channel_index >= 0 && channel_index < (int)_channels.size()) {
             channel = DCAST(ChannelType, _channels[channel_index]);
           }
-          if (channel != (ChannelType *)NULL) {
+          if (channel != nullptr) {
             int frame = control->get_frame();
             LVecBase3 iscale, ipos, ishear;
             LQuaternion iquat;

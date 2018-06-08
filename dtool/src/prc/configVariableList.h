@@ -28,27 +28,27 @@
  *
  * A ConfigVariableList cannot be modified locally.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableList : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariableList : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableList(const string &name,
-                            const string &description = string(),
+  INLINE ConfigVariableList(const std::string &name,
+                            const std::string &description = std::string(),
                             int flags = 0);
   INLINE ~ConfigVariableList();
 
   INLINE size_t get_num_values() const;
-  INLINE string get_string_value(size_t n) const;
+  INLINE std::string get_string_value(size_t n) const;
 
   INLINE size_t get_num_unique_values() const;
-  INLINE string get_unique_value(size_t n) const;
+  INLINE std::string get_unique_value(size_t n) const;
 
   INLINE size_t size() const;
-  INLINE string operator [] (size_t n) const;
+  INLINE std::string operator [] (size_t n) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigVariableList &variable);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigVariableList &variable);
 
 #include "configVariableList.I"
 

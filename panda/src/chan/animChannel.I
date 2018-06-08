@@ -26,7 +26,7 @@ TypeHandle AnimChannel<SwitchType>::_type_handle;
  */
 template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
-AnimChannel(const string &name)
+AnimChannel(const std::string &name)
   : AnimChannelBase(name) {
 }
 
@@ -48,7 +48,7 @@ AnimChannel(AnimGroup *parent, const AnimChannel &copy) :
  */
 template<class SwitchType>
 INLINE AnimChannel<SwitchType>::
-AnimChannel(AnimGroup *parent, const string &name)
+AnimChannel(AnimGroup *parent, const std::string &name)
   : AnimChannelBase(parent, name) {
 }
 
@@ -71,7 +71,7 @@ INLINE AnimChannel<SwitchType>::
  */
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_value(int, TYPENAME AnimChannel<SwitchType>::ValueType &) {
+get_value(int, typename AnimChannel<SwitchType>::ValueType &) {
 }
 #endif
 

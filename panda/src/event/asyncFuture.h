@@ -70,20 +70,20 @@ PUBLISHED:
 
   virtual bool cancel();
 
-  INLINE void set_done_event(const string &done_event);
-  INLINE const string &get_done_event() const;
+  INLINE void set_done_event(const std::string &done_event);
+  INLINE const std::string &get_done_event() const;
   MAKE_PROPERTY(done_event, get_done_event, set_done_event);
 
   EXTENSION(PyObject *add_done_callback(PyObject *self, PyObject *fn));
 
   EXTENSION(static PyObject *gather(PyObject *args));
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   BLOCKING void wait();
   BLOCKING void wait(double timeout);
 
-  INLINE void set_result(nullptr_t);
+  INLINE void set_result(std::nullptr_t);
   INLINE void set_result(TypedObject *result);
   INLINE void set_result(TypedReferenceCount *result);
   INLINE void set_result(TypedWritableReferenceCount *result);
@@ -125,7 +125,7 @@ protected:
   PT(ReferenceCount) _result_ref;
   AtomicAdjust::Integer _future_state;
 
-  string _done_event;
+  std::string _done_event;
 
   // Tasks and gathering futures waiting for this one to complete.
   Futures _waiting;
@@ -152,7 +152,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncFuture &fut) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncFuture &fut) {
   fut.output(out);
   return out;
 };
@@ -160,7 +160,7 @@ INLINE ostream &operator << (ostream &out, const AsyncFuture &fut) {
 /**
  * Specific future that collects the results of several futures.
  */
-class EXPCL_PANDA_EVENT AsyncGatheringFuture FINAL : public AsyncFuture {
+class EXPCL_PANDA_EVENT AsyncGatheringFuture final : public AsyncFuture {
 private:
   AsyncGatheringFuture(AsyncFuture::Futures futures);
 

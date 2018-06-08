@@ -7,9 +7,10 @@ from direct.distributed.DoCollectionManager import DoCollectionManager
 from direct.showbase import GarbageReport
 from .PyDatagramIterator import PyDatagramIterator
 
-import types
+import inspect
 import gc
 
+__all__ = ["ConnectionRepository", "GCTrigger"]
 
 class ConnectionRepository(
         DoInterestManager, DoCollectionManager, CConnectionRepository):
@@ -326,13 +327,13 @@ class ConnectionRepository(
             if classDef is None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
-                if type(classDef) == types.ModuleType:
+                if inspect.ismodule(classDef):
                     if not hasattr(classDef, className):
                         self.notify.warning("Module %s does not define class %s." % (className, className))
                         continue
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                if not inspect.isclass(classDef):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)
@@ -387,7 +388,7 @@ class ConnectionRepository(
                     if classDef is None:
                         self.notify.error("No class definition for %s." % className)
                     else:
-                        if type(classDef) == types.ModuleType:
+                        if inspect.ismodule(classDef):
                             if not hasattr(classDef, className):
                                 self.notify.error("Module %s does not define class %s." % (className, className))
                             classDef = getattr(classDef, className)

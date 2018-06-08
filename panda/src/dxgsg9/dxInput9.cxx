@@ -32,9 +32,9 @@ BOOL CALLBACK EnumGameCtrlsCallback( const DIDEVICEINSTANCE* pdidInstance,
 extern BOOL CALLBACK EnumObjectsCallbackJoystick(const DIDEVICEOBJECTINSTANCE* pdidoi,VOID* pContext);
 
 DInput9Info::DInput9Info() {
-    _pDInput9 = NULL;
-    _hDInputDLL = NULL;
-    _JoystickPollTimer = NULL;
+    _pDInput9 = nullptr;
+    _hDInputDLL = nullptr;
+    _JoystickPollTimer = nullptr;
 }
 
 DInput9Info::~DInput9Info() {
@@ -48,7 +48,7 @@ DInput9Info::~DInput9Info() {
   SAFE_RELEASE(_pDInput9);
   if(_hDInputDLL) {
       FreeLibrary(_hDInputDLL);
-      _hDInputDLL=NULL;
+      _hDInputDLL=nullptr;
   }
 }
 
@@ -70,15 +70,15 @@ bool DInput9Info::InitDirectInput() {
     LPDIRECTINPUT9CREATE pDInputCreate9;
 
     pDInputCreate9 = (LPDIRECTINPUT9CREATE) GetProcAddress(_hDInputDLL,DINPUTCREATE);
-    if(pDInputCreate9 == NULL) {
+    if(pDInputCreate9 == nullptr) {
         wdxdisplay_cat.fatal() << "GetProcAddr failed for " << DINPUTCREATE << endl;
         exit(1);
     }
 
     // Register with the DirectInput subsystem and get a pointer to a
     // IDirectInput interface we can use.  Create a DInput object
-    if( FAILED( hr = (*pDInputCreate9)(GetModuleHandle(NULL), DIRECTINPUT_VERSION,
-                                         IID_IDirectInput9, (VOID**)&_pDInput9, NULL ) ) ) {
+    if( FAILED( hr = (*pDInputCreate9)(GetModuleHandle(nullptr), DIRECTINPUT_VERSION,
+                                         IID_IDirectInput9, (VOID**)&_pDInput9, nullptr ) ) ) {
         wdxdisplay_cat.error() << DINPUTCREATE << "failed" << D3DERRORSTRING(hr);
         return false;
     }
@@ -97,7 +97,7 @@ bool DInput9Info::InitDirectInput() {
 bool DInput9Info::CreateJoystickOrPad(HWND _window) {
     bool bFoundDev = false;
     UINT devnum=0;
-    char *errstr=NULL;
+    char *errstr=nullptr;
 
     // look through the list for the first joystick or gamepad
     for(;devnum<_DevInfos.size();devnum++) {
@@ -116,13 +116,13 @@ bool DInput9Info::CreateJoystickOrPad(HWND _window) {
     LPDIRECTINPUTDEVICE9 pJoyDevice;
 
     // Obtain an interface to the enumerated joystick.
-    HRESULT hr = _pDInput9->CreateDevice(_DevInfos[devnum].guidInstance, &pJoyDevice, NULL );
+    HRESULT hr = _pDInput9->CreateDevice(_DevInfos[devnum].guidInstance, &pJoyDevice, nullptr );
     if(FAILED(hr)) {
         errstr="CreateDevice";
         goto handle_error;
     }
 
-    assert(pJoyDevice!=NULL);
+    assert(pJoyDevice!=nullptr);
     _DeviceList.push_back(pJoyDevice);
 
     // Set the data format to "simple joystick" - a predefined data format A
@@ -210,7 +210,7 @@ BOOL CALLBACK EnumObjectsCallbackJoystick( const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 bool DInput9Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
     LPDIRECTINPUTDEVICE9 pJoystick = _DeviceList[devnum];
-    assert(pJoystick!=NULL);
+    assert(pJoystick!=nullptr);
     HRESULT hr;
     char *errstr;
 

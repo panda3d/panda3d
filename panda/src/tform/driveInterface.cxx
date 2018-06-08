@@ -383,7 +383,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   }
 
   // Look for keyboard events.
-  if (required_buttons_match && button_events != (const ButtonEventList *)NULL) {
+  if (required_buttons_match && button_events != nullptr) {
 
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {

@@ -88,16 +88,16 @@ PUBLISHED:
   virtual PhysicsObject *make_copy() const;
 
   #ifndef NDEBUG
-    void set_name(const string &name) {
+    void set_name(const std::string &name) {
       _name = name;
     }
-    const string& get_name() {
+    const std::string& get_name() {
       return _name;
     }
   #endif
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   // physical
@@ -116,7 +116,7 @@ private:
   bool _oriented;
 
   #ifndef NDEBUG
-    string _name;
+    std::string _name;
   #endif
 
 public:

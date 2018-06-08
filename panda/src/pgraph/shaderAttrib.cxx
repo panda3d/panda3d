@@ -25,6 +25,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "nodePath.h"
+#include "paramNodePath.h"
+#include "paramTexture.h"
 #include "shaderBuffer.h"
 
 TypeHandle ShaderAttrib::_type_handle;
@@ -37,7 +39,7 @@ int ShaderAttrib::_attrib_slot;
 CPT(RenderAttrib) ShaderAttrib::
 make_off() {
   static CPT(RenderAttrib) _off_attrib;
-  if (_off_attrib == 0) {
+  if (_off_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
     attrib->_has_shader = true;
     _off_attrib = return_new(attrib);
@@ -51,12 +53,12 @@ make_off() {
 CPT(RenderAttrib) ShaderAttrib::
 make(const Shader *shader, int priority) {
   static CPT(RenderAttrib) _null_attrib;
-  if (_null_attrib == 0) {
+  if (_null_attrib == nullptr) {
     ShaderAttrib *attrib = new ShaderAttrib;
     _null_attrib = return_new(attrib);
   }
 
-  if (shader == NULL) {
+  if (shader == nullptr) {
     return _null_attrib;
   } else {
     return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader, priority);
@@ -91,7 +93,7 @@ set_shader(const Shader *s, int priority) const {
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_off(int priority) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  result->_shader = NULL;
+  result->_shader = nullptr;
   result->_shader_priority = priority;
   result->_auto_shader = false;
   result->_auto_normal_on = false;
@@ -110,7 +112,7 @@ set_shader_off(int priority) const {
 CPT(RenderAttrib) ShaderAttrib::
 set_shader_auto(int priority) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  result->_shader = NULL;
+  result->_shader = nullptr;
   result->_shader_priority = priority;
   result->_auto_shader = true;
   result->_has_shader = true;
@@ -130,7 +132,7 @@ CPT(RenderAttrib) ShaderAttrib::
 set_shader_auto(BitMask32 shader_switch, int priority) const {
 
   ShaderAttrib *result = new ShaderAttrib(*this);
-  result->_shader = NULL;
+  result->_shader = nullptr;
   result->_shader_priority = priority;
   result->_auto_shader = true;
   result->_has_shader = true;
@@ -149,7 +151,7 @@ set_shader_auto(BitMask32 shader_switch, int priority) const {
 CPT(RenderAttrib) ShaderAttrib::
 clear_shader() const {
   ShaderAttrib *result = new ShaderAttrib(*this);
-  result->_shader = NULL;
+  result->_shader = nullptr;
   result->_shader_priority = 0;
   result->_auto_shader = false;
   result->_has_shader = false;
@@ -193,7 +195,22 @@ clear_flag(int flag) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-set_shader_input(ShaderInput input) const {
+set_shader_input(const ShaderInput &input) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  Inputs::iterator i = result->_inputs.find(input.get_name());
+  if (i == result->_inputs.end()) {
+    result->_inputs.insert(Inputs::value_type(input.get_name(), input));
+  } else {
+    i->second = input;
+  }
+  return return_new(result);
+}
+
+/**
+ *
+ */
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_input(ShaderInput &&input) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   Inputs::iterator i = result->_inputs.find(input.get_name());
   if (i == result->_inputs.end()) {
@@ -338,7 +355,7 @@ get_shader_input_vector(InternalName *id) const {
     } else if (p.get_value_type() == ShaderInput::M_param) {
       // Temporary solution until the new param system
       TypedWritableReferenceCount *param = p.get_value();
-      if (param != NULL && param->is_of_type(ParamVecBase4::get_class_type())) {
+      if (param != nullptr && param->is_of_type(ParamVecBase4::get_class_type())) {
         return ((const ParamVecBase4 *)param)->get_value();
       }
     }
@@ -368,14 +385,14 @@ get_shader_input_ptr(const InternalName *id) const {
       ostringstream strm;
       strm << "Shader input " << id->get_name() << " is not a PTA(float/double) type.\n";
       nassert_raise(strm.str());
-      return NULL;
+      return nullptr;
     }
     return &(p.get_ptr());
   } else {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -414,14 +431,14 @@ get_shader_input_texture(const InternalName *id, SamplerState *sampler) const {
       ostringstream strm;
       strm <<  "Shader input " << id->get_name() << " is not a texture.\n";
       nassert_raise(strm.str());
-      return NULL;
+      return nullptr;
     }
 
   } else {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -489,20 +506,20 @@ get_shader_input_buffer(const InternalName *id) const {
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not present.\n";
     nassert_raise(strm.str());
-    return NULL;
+    return nullptr;
   } else {
     const ShaderInput &p = (*i).second;
 
     if (p.get_value_type() == ShaderInput::M_buffer) {
       ShaderBuffer *value;
-      DCAST_INTO_R(value, p._value, NULL);
+      DCAST_INTO_R(value, p._value, nullptr);
       return value;
     }
 
     ostringstream strm;
     strm << "Shader input " << id->get_name() << " is not a ShaderBuffer.\n";
     nassert_raise(strm.str());
-    return NULL;
+    return nullptr;
   }
 }
 

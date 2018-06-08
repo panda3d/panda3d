@@ -15,7 +15,7 @@
  *
  */
 inline HandleStream::
-HandleStream() : iostream(&_buf) {
+HandleStream() : std::iostream(&_buf) {
 }
 
 /**
@@ -32,10 +32,10 @@ inline HandleStream::
  */
 inline void HandleStream::
 open_read(FHandle handle) {
-  clear((ios::iostate)0);
+  clear((std::ios::iostatetate)0);
   _buf.open_read(handle);
   if (!_buf.is_open_read()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 
@@ -45,10 +45,10 @@ open_read(FHandle handle) {
  */
 inline void HandleStream::
 open_write(FHandle handle) {
-  clear((ios::iostate)0);
+  clear((std::ios::iostatetate)0);
   _buf.open_write(handle);
   if (!_buf.is_open_write()) {
-    clear(ios::failbit);
+    clear(std::ios::failbit);
   }
 }
 

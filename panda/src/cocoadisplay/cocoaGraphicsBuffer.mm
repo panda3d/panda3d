@@ -105,6 +105,12 @@ open_buffer() {
     }
   }
 
+  if (cocoagsg->_context == nil) {
+    // Could not obtain a proper context.
+    _gsg.clear();
+    return false;
+  }
+
   FrameBufferProperties desired_props(_fb_properties);
 
   // Lock the context, so we can safely operate on it.

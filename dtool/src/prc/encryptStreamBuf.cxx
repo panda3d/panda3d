@@ -23,11 +23,6 @@
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 
@@ -36,9 +31,9 @@ static const int iteration_count_factor = 1000;
  */
 EncryptStreamBuf::
 EncryptStreamBuf() {
-  _source = (istream *)NULL;
+  _source = nullptr;
   _owns_source = false;
-  _dest = (ostream *)NULL;
+  _dest = nullptr;
   _owns_dest = false;
 
   ConfigVariableString encryption_algorithm
@@ -74,10 +69,10 @@ EncryptStreamBuf() {
   _key_length = encryption_key_length;
   _iteration_count = encryption_iteration_count;
 
-  _read_ctx = NULL;
-  _write_ctx = NULL;
+  _read_ctx = nullptr;
+  _write_ctx = nullptr;
 
-  _read_overflow_buffer = NULL;
+  _read_overflow_buffer = nullptr;
   _in_read_overflow_buffer = 0;
 
 #ifdef PHAVE_IOSTREAM
@@ -112,9 +107,9 @@ open_read(istream *source, bool owns_source, const string &password) {
   _source = source;
   _owns_source = owns_source;
 
-  if (_read_ctx != NULL) {
+  if (_read_ctx != nullptr) {
     EVP_CIPHER_CTX_free(_read_ctx);
-    _read_ctx = NULL;
+    _read_ctx = nullptr;
   }
 
   // Now read the header information.
@@ -125,7 +120,7 @@ open_read(istream *source, bool owns_source, const string &password) {
 
   const EVP_CIPHER *cipher = EVP_get_cipherbynid(nid);
 
-  if (cipher == NULL) {
+  if (cipher == nullptr) {
     prc_cat.error()
       << "Unknown encryption algorithm in stream.\n";
     return;
@@ -146,14 +141,15 @@ open_read(istream *source, bool owns_source, const string &password) {
   int iv_length = EVP_CIPHER_iv_length(cipher);
   _read_block_size = EVP_CIPHER_block_size(cipher);
 
-  string iv = sr.extract_bytes(iv_length);
+  unsigned char *iv = (unsigned char *)alloca(iv_length);
+  iv_length = (int)sr.extract_bytes(iv, iv_length);
 
   _read_ctx = EVP_CIPHER_CTX_new();
-  nassertv(_read_ctx != NULL);
+  nassertv(_read_ctx != nullptr);
 
   // Initialize the context
   int result;
-  result = EVP_DecryptInit(_read_ctx, cipher, NULL, (unsigned char *)iv.data());
+  result = EVP_DecryptInit(_read_ctx, cipher, nullptr, (unsigned char *)iv);
   nassertv(result > 0);
 
   result = EVP_CIPHER_CTX_set_key_length(_read_ctx, key_length);
@@ -162,7 +158,7 @@ open_read(istream *source, bool owns_source, const string &password) {
       << "Invalid key length " << key_length * 8 << " bits for algorithm "
       << OBJ_nid2sn(nid) << "\n";
     EVP_CIPHER_CTX_free(_read_ctx);
-    _read_ctx = NULL;
+    _read_ctx = nullptr;
     return;
   }
 
@@ -170,13 +166,13 @@ open_read(istream *source, bool owns_source, const string &password) {
   unsigned char *key = (unsigned char *)alloca(key_length);
   result =
     PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
-                           (unsigned char *)iv.data(), iv.length(),
+                           iv, iv_length,
                            count * iteration_count_factor + 1,
                            key_length, key);
   nassertv(result > 0);
 
   // Store the key within the context.
-  result = EVP_DecryptInit(_read_ctx, NULL, key, NULL);
+  result = EVP_DecryptInit(_read_ctx, nullptr, key, nullptr);
   nassertv(result > 0);
 
   _read_overflow_buffer = new unsigned char[_read_block_size];
@@ -189,22 +185,22 @@ open_read(istream *source, bool owns_source, const string &password) {
  */
 void EncryptStreamBuf::
 close_read() {
-  if (_read_ctx != NULL) {
+  if (_read_ctx != nullptr) {
     EVP_CIPHER_CTX_free(_read_ctx);
-    _read_ctx = NULL;
+    _read_ctx = nullptr;
   }
 
-  if (_read_overflow_buffer != (unsigned char *)NULL) {
+  if (_read_overflow_buffer != nullptr) {
     delete[] _read_overflow_buffer;
-    _read_overflow_buffer = NULL;
+    _read_overflow_buffer = nullptr;
   }
 
-  if (_source != (istream *)NULL) {
+  if (_source != nullptr) {
     if (_owns_source) {
       delete _source;
       _owns_source = false;
     }
-    _source = (istream *)NULL;
+    _source = nullptr;
   }
 }
 
@@ -222,7 +218,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   const EVP_CIPHER *cipher =
     EVP_get_cipherbyname(_algorithm.c_str());
 
-  if (cipher == NULL) {
+  if (cipher == nullptr) {
     prc_cat.error()
       << "Unknown encryption algorithm: " << _algorithm << "\n";
     return;
@@ -239,10 +235,10 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   RAND_bytes(iv, iv_length);
 
   _write_ctx = EVP_CIPHER_CTX_new();
-  nassertv(_write_ctx != NULL);
+  nassertv(_write_ctx != nullptr);
 
   int result;
-  result = EVP_EncryptInit(_write_ctx, cipher, NULL, iv);
+  result = EVP_EncryptInit(_write_ctx, cipher, nullptr, iv);
   nassertv(result > 0);
 
   // Store the appropriate key length in the context.
@@ -256,7 +252,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
       << "Invalid key length " << key_length * 8 << " bits for algorithm "
       << OBJ_nid2sn(nid) << "\n";
     EVP_CIPHER_CTX_free(_write_ctx);
-    _write_ctx = NULL;
+    _write_ctx = nullptr;
     return;
   }
 
@@ -280,7 +276,7 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
   nassertv(result > 0);
 
   // Store the key in the context.
-  result = EVP_EncryptInit(_write_ctx, NULL, key, NULL);
+  result = EVP_EncryptInit(_write_ctx, nullptr, key, nullptr);
   nassertv(result > 0);
 
   // Now write the header information to the stream.
@@ -301,12 +297,12 @@ open_write(ostream *dest, bool owns_dest, const string &password) {
  */
 void EncryptStreamBuf::
 close_write() {
-  if (_dest != (ostream *)NULL) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n);
     pbump(-(int)n);
 
-    if (_write_ctx != NULL) {
+    if (_write_ctx != nullptr) {
       unsigned char *write_buffer = (unsigned char *)alloca(_write_block_size);
       int bytes_written = 0;
       EVP_EncryptFinal(_write_ctx, write_buffer, &bytes_written);
@@ -315,14 +311,14 @@ close_write() {
       _dest->write((const char *)write_buffer, bytes_written);
 
       EVP_CIPHER_CTX_free(_write_ctx);
-      _write_ctx = NULL;
+      _write_ctx = nullptr;
     }
 
     if (_owns_dest) {
       delete _dest;
       _owns_dest = false;
     }
-    _dest = (ostream *)NULL;
+    _dest = nullptr;
   }
 }
 
@@ -353,12 +349,12 @@ overflow(int ch) {
  */
 int EncryptStreamBuf::
 sync() {
-  if (_source != (istream *)NULL) {
+  if (_source != nullptr) {
     size_t n = egptr() - gptr();
     gbump((int)n);
   }
 
-  if (_dest != (ostream *)NULL) {
+  if (_dest != nullptr) {
     size_t n = pptr() - pbase();
     write_chars(pbase(), n);
     pbump(-(int)n);
@@ -427,7 +423,7 @@ read_chars(char *start, size_t length) {
 
   do {
     // Get more bytes from the stream.
-    if (_read_ctx == NULL) {
+    if (_read_ctx == nullptr) {
       return 0;
     }
 
@@ -444,15 +440,15 @@ read_chars(char *start, size_t length) {
       result =
         EVP_DecryptFinal(_read_ctx, read_buffer, &bytes_read);
       EVP_CIPHER_CTX_free(_read_ctx);
-      _read_ctx = NULL;
+      _read_ctx = nullptr;
     }
 
     if (result <= 0) {
       prc_cat.error()
         << "Error decrypting stream.\n";
-      if (_read_ctx != NULL) {
+      if (_read_ctx != nullptr) {
         EVP_CIPHER_CTX_free(_read_ctx);
-        _read_ctx = NULL;
+        _read_ctx = nullptr;
       }
     }
     thread_consider_yield();
@@ -482,7 +478,7 @@ read_chars(char *start, size_t length) {
  */
 void EncryptStreamBuf::
 write_chars(const char *start, size_t length) {
-  if (_write_ctx != NULL && length != 0) {
+  if (_write_ctx != nullptr && length != 0) {
     size_t max_write_buffer = length + _write_block_size;
     unsigned char *write_buffer = (unsigned char *)alloca(max_write_buffer);
 

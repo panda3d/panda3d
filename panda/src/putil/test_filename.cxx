@@ -12,7 +12,7 @@
  */
 
 #include "filename.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 #include "dSearchPath.h"
 

@@ -37,7 +37,7 @@ class HashGenerator;
 class DCField : public DCPackerInterface, public DCKeywordList {
 public:
   DCField();
-  DCField(const string &name, DCClass *dclass);
+  DCField(const std::string &name, DCClass *dclass);
   virtual ~DCField();
 
 PUBLISHED:
@@ -53,13 +53,13 @@ PUBLISHED:
   virtual DCParameter *as_parameter();
   virtual const DCParameter *as_parameter() const;
 
-  string format_data(const string &packed_data, bool show_field_names = true);
-  string parse_string(const string &formatted_string);
+  std::string format_data(const std::string &packed_data, bool show_field_names = true);
+  std::string parse_string(const std::string &formatted_string);
 
-  bool validate_ranges(const string &packed_data) const;
+  bool validate_ranges(const std::string &packed_data) const;
 
   INLINE bool has_default_value() const;
-  INLINE const string &get_default_value() const;
+  INLINE const std::string &get_default_value() const;
 
   INLINE bool is_bogus_field() const;
 
@@ -73,8 +73,8 @@ PUBLISHED:
   INLINE bool is_ownrecv() const;
   INLINE bool is_airecv() const;
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out, int indent_level) const;
+  INLINE void output(std::ostream &out) const;
+  INLINE void write(std::ostream &out, int indent_level) const;
 
 #ifdef HAVE_PYTHON
   bool pack_args(DCPacker &packer, PyObject *sequence) const;
@@ -90,18 +90,18 @@ PUBLISHED:
 #endif
 
 public:
-  virtual void output(ostream &out, bool brief) const=0;
-  virtual void write(ostream &out, bool brief, int indent_level) const=0;
+  virtual void output(std::ostream &out, bool brief) const=0;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
-  virtual void set_name(const string &name);
+  virtual void set_name(const std::string &name);
 
   INLINE void set_number(int number);
   INLINE void set_class(DCClass *dclass);
-  INLINE void set_default_value(const string &default_value);
+  INLINE void set_default_value(const std::string &default_value);
 
 #ifdef HAVE_PYTHON
-  static string get_pystr(PyObject *value);
+  static std::string get_pystr(PyObject *value);
 #endif
 
 protected:
@@ -115,14 +115,14 @@ protected:
   bool _bogus_field;
 
 private:
-  string _default_value;
+  std::string _default_value;
 
 #ifdef WITHIN_PANDA
   PStatCollector _field_update_pcollector;
 #endif
 };
 
-INLINE ostream &operator << (ostream &out, const DCField &field) {
+INLINE std::ostream &operator << (std::ostream &out, const DCField &field) {
   field.output(out);
   return out;
 }

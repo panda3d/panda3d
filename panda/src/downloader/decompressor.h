@@ -48,9 +48,9 @@ private:
 
   Filename _source_filename;
 
-  istream *_source;
-  istream *_decompress;
-  ostream *_dest;
+  std::istream *_source;
+  std::istream *_decompress;
+  std::ostream *_dest;
 
   size_t _source_length;
 };

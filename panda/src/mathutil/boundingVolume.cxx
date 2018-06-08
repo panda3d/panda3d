@@ -84,7 +84,7 @@ write(ostream &out, int indent_level) const {
  */
 GeometricBoundingVolume *BoundingVolume::
 as_geometric_bounding_volume() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -93,7 +93,7 @@ as_geometric_bounding_volume() {
  */
 const GeometricBoundingVolume *BoundingVolume::
 as_geometric_bounding_volume() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -102,7 +102,7 @@ as_geometric_bounding_volume() const {
  */
 const FiniteBoundingVolume *BoundingVolume::
 as_finite_bounding_volume() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -111,7 +111,7 @@ as_finite_bounding_volume() const {
  */
 const BoundingSphere *BoundingVolume::
 as_bounding_sphere() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -120,7 +120,7 @@ as_bounding_sphere() const {
  */
 const BoundingBox *BoundingVolume::
 as_bounding_box() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -129,7 +129,7 @@ as_bounding_box() const {
  */
 const BoundingHexahedron *BoundingVolume::
 as_bounding_hexahedron() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -138,7 +138,7 @@ as_bounding_hexahedron() const {
  */
 const BoundingLine *BoundingVolume::
 as_bounding_line() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -147,7 +147,7 @@ as_bounding_line() const {
  */
 const BoundingPlane *BoundingVolume::
 as_bounding_plane() const {
-  return NULL;
+  return nullptr;
 }
 
 /**

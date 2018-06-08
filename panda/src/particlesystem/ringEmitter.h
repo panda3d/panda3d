@@ -37,8 +37,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_radius_spread() const;
   INLINE int get_uniform_emission() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   PN_stdfloat _radius;

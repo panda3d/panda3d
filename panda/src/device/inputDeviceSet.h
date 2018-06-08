@@ -44,8 +44,8 @@ PUBLISHED:
   INLINE InputDevice *operator [] (size_t index) const;
   INLINE size_t size() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   // This is currently implemented as ov_set instead of a regular set so that
@@ -54,7 +54,7 @@ private:
   InputDevices _devices;
 };
 
-INLINE ostream &operator << (ostream &out, const InputDeviceSet &col) {
+INLINE std::ostream &operator << (std::ostream &out, const InputDeviceSet &col) {
   col.output(out);
   return out;
 }

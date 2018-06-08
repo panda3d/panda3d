@@ -12,6 +12,7 @@
  */
 
 #include "py_compat.h"
+#include "py_panda.h"
 
 #ifdef HAVE_PYTHON
 

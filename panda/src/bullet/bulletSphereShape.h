@@ -28,12 +28,11 @@
 class EXPCL_PANDABULLET BulletSphereShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletSphereShape() : _shape(NULL) {};
+  INLINE BulletSphereShape() : _shape(nullptr) {};
 
 PUBLISHED:
   explicit BulletSphereShape(PN_stdfloat radius);
-  INLINE BulletSphereShape(const BulletSphereShape &copy);
-  INLINE void operator = (const BulletSphereShape &copy);
+  BulletSphereShape(const BulletSphereShape &copy);
   INLINE ~BulletSphereShape();
 
   INLINE PN_stdfloat get_radius() const;

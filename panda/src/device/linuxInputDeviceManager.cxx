@@ -249,7 +249,7 @@ update() {
   while (ptr < end) {
     inotify_event *event = (inotify_event *)ptr;
 
-    string name(event->name);
+    std::string name(event->name);
 
     if (event->mask & IN_DELETE) {
       // The device was deleted.  If we have it, remove it.

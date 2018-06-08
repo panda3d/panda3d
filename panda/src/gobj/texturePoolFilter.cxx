@@ -32,7 +32,7 @@ TexturePoolFilter::
 PT(Texture) TexturePoolFilter::
 pre_load(const Filename &, const Filename &, int, int, bool,
          const LoaderOptions &) {
-  return NULL;
+  return nullptr;
 }
 
 /**

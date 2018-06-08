@@ -46,8 +46,8 @@ PUBLISHED:
   INLINE void operator += (const PhysicsObjectCollection &other);
   INLINE PhysicsObjectCollection operator + (const PhysicsObjectCollection &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(PT(PhysicsObject)) PhysicsObjects;

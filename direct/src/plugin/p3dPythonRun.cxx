@@ -28,7 +28,7 @@ extern "C" {
 // There is only one P3DPythonRun object in any given process space.  Makes
 // the statics easier to deal with, and we don't need multiple instances of
 // this thing.
-P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
+P3DPythonRun *P3DPythonRun::_global_ptr = nullptr;
 
 TypeHandle P3DPythonRun::P3DWindowHandle::_type_handle;
 
@@ -45,7 +45,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   _read_thread_continue = false;
   _program_continue = true;
   _session_terminated = false;
-  _taskMgr = NULL;
+  _taskMgr = nullptr;
 
   INIT_LOCK(_commands_lock);
   INIT_THREAD(_read_thread);
@@ -55,7 +55,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 
   _interactive_console = interactive_console;
 
-  if (program_name != NULL) {
+  if (program_name != nullptr) {
 #if PY_MAJOR_VERSION >= 3
     // Python 3 case: we have to convert it to a wstring.
     TextEncoder enc;
@@ -66,7 +66,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
     _program_name = program_name;
 #endif
   }
-  if (archive_file != NULL) {
+  if (archive_file != nullptr) {
     _archive_file = Filename::from_os_specific(archive_file);
   }
 
@@ -76,7 +76,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 #else
   _py_argv[0] = (char *)_program_name.c_str();
 #endif
-  _py_argv[1] = NULL;
+  _py_argv[1] = nullptr;
 
 #ifdef NDEBUG
   // In OPTIMIZE 4 compilation mode, run Python in optimized mode too.
@@ -113,7 +113,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   PySys_SetArgvEx(_py_argc, _py_argv, 0);
 
   // Open the error output before we do too much more.
-  if (log_pathname != NULL && *log_pathname != '\0') {
+  if (log_pathname != nullptr && *log_pathname != '\0') {
     Filename f = Filename::from_os_specific(log_pathname);
     f.set_text();
     if (f.open_write(_error_log)) {
@@ -178,7 +178,7 @@ run_python() {
   // We could simply freeze it, but Python has a bug setting __path__ of
   // frozen modules properly.
   PyObject *panda3d_module = PyImport_AddModule("panda3d");
-  if (panda3d_module == NULL) {
+  if (panda3d_module == nullptr) {
     nout << "Failed to add panda3d module:\n";
     PyErr_Print();
     return 1;
@@ -192,7 +192,7 @@ run_python() {
 
   // Import the VFSImporter module that was frozen in.
   PyObject *vfsimporter_module = PyImport_ImportModule("direct.showbase.VFSImporter");
-  if (vfsimporter_module == NULL) {
+  if (vfsimporter_module == nullptr) {
     nout << "Failed to import VFSImporter:\n";
     PyErr_Print();
     return 1;
@@ -203,14 +203,14 @@ run_python() {
   // such that we can still find the other direct modules.
   Filename direct_dir(dir, "direct");
   PyObject *direct_module = PyImport_AddModule("direct");
-  if (direct_module != NULL) {
+  if (direct_module != nullptr) {
     dir_str = direct_dir.to_os_specific();
     PyModule_AddObject(direct_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
     PyModule_AddStringConstant(direct_module, "__package__", "direct");
   }
 
   PyObject *showbase_module = PyImport_AddModule("direct.showbase");
-  if (showbase_module != NULL) {
+  if (showbase_module != nullptr) {
     Filename showbase_dir(direct_dir, "showbase");
     dir_str = showbase_dir.to_os_specific();
     PyModule_AddObject(showbase_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
@@ -218,7 +218,7 @@ run_python() {
   }
 
   PyObject *stdpy_module = PyImport_AddModule("direct.stdpy");
-  if (stdpy_module != NULL) {
+  if (stdpy_module != nullptr) {
     Filename stdpy_dir(direct_dir, "stdpy");
     dir_str = stdpy_dir.to_os_specific();
     PyModule_AddObject(stdpy_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
@@ -229,7 +229,7 @@ run_python() {
   // bunch of encodings modules as part of the frozen bundle.
   Filename encodings_dir(dir, "encodings");
   PyObject *encodings_module = PyImport_AddModule("encodings");
-  if (encodings_module != NULL) {
+  if (encodings_module != nullptr) {
     dir_str = encodings_dir.to_os_specific();
     PyModule_AddObject(encodings_module, "__path__", Py_BuildValue("[s#]", dir_str.data(), dir_str.length()));
     PyModule_AddStringConstant(encodings_module, "__package__", "encodings");
@@ -237,7 +237,7 @@ run_python() {
 
   // And register the VFSImporter.
   PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
-  if (result == NULL) {
+  if (result == nullptr) {
     nout << "Failed to call VFSImporter.register():\n";
     PyErr_Print();
     return 1;
@@ -261,7 +261,7 @@ run_python() {
 
   // And finally, we can import the startup module.
   PyObject *app_runner_module = PyImport_ImportModule("direct.p3d.AppRunner");
-  if (app_runner_module == NULL) {
+  if (app_runner_module == nullptr) {
     nout << "Failed to import direct.p3d.AppRunner\n";
     PyErr_Print();
     return 1;
@@ -269,7 +269,7 @@ run_python() {
 
   // Get the pointers to the objects needed within the module.
   PyObject *app_runner_class = PyObject_GetAttrString(app_runner_module, "AppRunner");
-  if (app_runner_class == NULL) {
+  if (app_runner_class == nullptr) {
     nout << "Failed to get AppRunner class\n";
     PyErr_Print();
     return 1;
@@ -277,7 +277,7 @@ run_python() {
 
   // Construct an instance of AppRunner.
   _runner = PyObject_CallFunction(app_runner_class, (char *)"");
-  if (_runner == NULL) {
+  if (_runner == nullptr) {
     nout << "Failed to construct AppRunner instance\n";
     PyErr_Print();
     return 1;
@@ -286,7 +286,7 @@ run_python() {
 
   // Import the JavaScript module.
   PyObject *javascript_module = PyImport_ImportModule("direct.p3d.JavaScript");
-  if (javascript_module == NULL) {
+  if (javascript_module == nullptr) {
     nout << "Failed to import direct.p3d.JavaScript\n";
     PyErr_Print();
     return false;
@@ -294,35 +294,35 @@ run_python() {
 
   // Get the UndefinedObject class.
   _undefined_object_class = PyObject_GetAttrString(javascript_module, "UndefinedObject");
-  if (_undefined_object_class == NULL) {
+  if (_undefined_object_class == nullptr) {
     PyErr_Print();
     return 1;
   }
 
   // And the "Undefined" instance.
   _undefined = PyObject_GetAttrString(javascript_module, "Undefined");
-  if (_undefined == NULL) {
+  if (_undefined == nullptr) {
     PyErr_Print();
     return 1;
   }
 
   // Get the ConcreteStruct class.
   _concrete_struct_class = PyObject_GetAttrString(javascript_module, "ConcreteStruct");
-  if (_concrete_struct_class == NULL) {
+  if (_concrete_struct_class == nullptr) {
     PyErr_Print();
     return 1;
   }
 
   // Get the BrowserObject class.
   _browser_object_class = PyObject_GetAttrString(javascript_module, "BrowserObject");
-  if (_browser_object_class == NULL) {
+  if (_browser_object_class == nullptr) {
     PyErr_Print();
     return 1;
   }
 
   // Get the global TaskManager.
   _taskMgr = PyObject_GetAttrString(app_runner_module, "taskMgr");
-  if (_taskMgr == NULL) {
+  if (_taskMgr == nullptr) {
     PyErr_Print();
     return 1;
   }
@@ -337,28 +337,28 @@ run_python() {
       "Poll for communications from the parent process" },
     { "request_func", P3DPythonRun::st_request_func, METH_VARARGS,
       "Send an asynchronous request to the plugin host" },
-    { NULL, NULL, 0, NULL }        /* Sentinel */
+    { nullptr, nullptr, 0, nullptr }        /* Sentinel */
   };
 
 #if PY_MAJOR_VERSION >= 3
   static PyModuleDef p3dpython_module = {
     PyModuleDef_HEAD_INIT,
     "p3dpython",
-    NULL,
+    nullptr,
     -1,
     p3dpython_methods,
-    NULL, NULL, NULL, NULL
+    nullptr, nullptr, nullptr, nullptr
   };
   PyObject *p3dpython = PyModule_Create(&p3dpython_module);
 #else
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
 #endif
-  if (p3dpython == NULL) {
+  if (p3dpython == nullptr) {
     PyErr_Print();
     return 1;
   }
   PyObject *request_func = PyObject_GetAttrString(p3dpython, "request_func");
-  if (request_func == NULL) {
+  if (request_func == nullptr) {
     PyErr_Print();
     return 1;
   }
@@ -366,7 +366,7 @@ run_python() {
   // Now pass that func pointer back to our AppRunner instance, so it can call
   // up to us.
   result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"N", request_func);
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     return 1;
   }
@@ -384,7 +384,7 @@ run_python() {
   chain->set_thread_priority(TP_low);
 
   PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
-  if (check_comm == NULL) {
+  if (check_comm == nullptr) {
     PyErr_Print();
     return 1;
   }
@@ -392,7 +392,7 @@ run_python() {
   // Add it to the task manager.  We do this instead of constructing a
   // PythonTask because linking p3dpython with core.pyd is problematic.
   result = PyObject_CallMethod(_taskMgr, (char *)"add", (char *)"Ns", check_comm, "check_comm");
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     return 1;
   }
@@ -401,7 +401,7 @@ run_python() {
   // Finally, get lost in AppRunner.run() (which is really a call to
   // taskMgr.run()).
   PyObject *done = PyObject_CallMethod(_runner, (char *)"run", (char *)"");
-  if (done == NULL) {
+  if (done == nullptr) {
     int status = 1;
 
     // An uncaught application exception, and not handled by
@@ -409,10 +409,10 @@ run_python() {
     // status that we should return.
     if (PyErr_ExceptionMatches(PyExc_SystemExit)) {
       PyObject *ptype, *ptraceback;
-      PyObject *value = NULL;
+      PyObject *value = nullptr;
       PyErr_Fetch(&ptype, &value, &ptraceback);
 
-      if (value != NULL && PyExceptionInstance_Check(value)) {
+      if (value != nullptr && PyExceptionInstance_Check(value)) {
         PyObject *code = PyObject_GetAttrString(value, "code");
         if (code) {
           Py_DECREF(value);
@@ -420,7 +420,7 @@ run_python() {
         }
       }
 
-      if (value == NULL || value == Py_None) {
+      if (value == nullptr || value == Py_None) {
         status = 0;
 #if PY_MAJOR_VERSION >= 3
       } else if (PyLong_Check(value)) {
@@ -510,13 +510,13 @@ void P3DPythonRun::
 run_interactive_console() {
 #ifdef _WIN32
   // Make sure that control-C support is enabled for the interpreter.
-  SetConsoleCtrlHandler(NULL, false);
+  SetConsoleCtrlHandler(nullptr, false);
 #endif
 
   // The "readline" module makes the Python prompt friendlier, with command
   // history and everything.  Simply importing it is sufficient.
   PyObject *readline_module = PyImport_ImportModule("readline");
-  if (readline_module == NULL) {
+  if (readline_module == nullptr) {
     // But, the module might not exist on certain platforms.  If not, no
     // sweat.
     PyErr_Clear();
@@ -536,7 +536,7 @@ run_interactive_console() {
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
   TiXmlElement *xcommand = doc->FirstChildElement("command");
-  if (xcommand != NULL) {
+  if (xcommand != nullptr) {
     bool needs_response = false;
     int want_response_id;
     if (xcommand->QueryIntAttribute("want_response_id", &want_response_id) == TIXML_SUCCESS) {
@@ -545,7 +545,7 @@ handle_command(TiXmlDocument *doc) {
     }
 
     const char *cmd = xcommand->Attribute("cmd");
-    if (cmd != NULL) {
+    if (cmd != nullptr) {
       if (strcmp(cmd, "init") == 0) {
         assert(!needs_response);
 
@@ -565,7 +565,7 @@ handle_command(TiXmlDocument *doc) {
       } else if (strcmp(cmd, "start_instance") == 0) {
         assert(!needs_response);
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
-        if (xinstance != (TiXmlElement *)NULL) {
+        if (xinstance != nullptr) {
           P3DCInstance *inst = new P3DCInstance(xinstance);
           start_instance(inst, xinstance);
         }
@@ -581,7 +581,7 @@ handle_command(TiXmlDocument *doc) {
         assert(!needs_response);
         int instance_id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
-        if (xwparams != (TiXmlElement *)NULL &&
+        if (xwparams != nullptr &&
             xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
           setup_window(instance_id, xwparams);
         }
@@ -657,11 +657,11 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   doc.LinkEndChild(xresponse);
 
   const char *op = xcommand->Attribute("op");
-  if (op != NULL && !PyErr_Occurred()) {
+  if (op != nullptr && !PyErr_Occurred()) {
     if (strcmp(op, "get_panda_script_object") == 0) {
       // Get Panda's toplevel Python object.
       PyObject *obj = PyObject_CallMethod(_runner, (char*)"getPandaScriptObject", (char *)"");
-      if (obj != NULL) {
+      if (obj != nullptr) {
         xresponse->LinkEndChild(pyobj_to_xml(obj));
         Py_DECREF(obj);
       }
@@ -670,7 +670,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
       // Set the Browser's toplevel window object.
       PyObject *obj;
       TiXmlElement *xvalue = xcommand->FirstChildElement("value");
-      if (xvalue != NULL) {
+      if (xvalue != nullptr) {
         obj = xml_to_pyobj(xvalue);
       } else {
         obj = Py_None;
@@ -684,7 +684,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
       // Call the named method on the indicated object, or the object itself
       // if method_name isn't given.
       TiXmlElement *xobject = xcommand->FirstChildElement("object");
-      if (xobject != NULL) {
+      if (xobject != nullptr) {
         PyObject *obj = xml_to_pyobj(xobject);
 
         const char *method_name = xcommand->Attribute("method_name");
@@ -693,7 +693,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         PyObject *list = PyList_New(0);
 
         TiXmlElement *xchild = xcommand->FirstChildElement("value");
-        while (xchild != NULL) {
+        while (xchild != nullptr) {
           PyObject *child = xml_to_pyobj(xchild);
           PyList_Append(list, child);
           Py_DECREF(child);
@@ -705,8 +705,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         Py_DECREF(list);
 
         // Now call the method.
-        PyObject *result = NULL;
-        if (method_name == NULL) {
+        PyObject *result = nullptr;
+        if (method_name == nullptr) {
           // No method name; call the object directly.
           result = PyObject_CallObject(obj, params);
 
@@ -811,7 +811,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 
             if (PyObject_HasAttrString(obj, property_name)) {
               result = PyObject_GetAttrString(obj, property_name);
-              if (result != NULL) {
+              if (result != nullptr) {
                 success = true;
               } else {
                 PyErr_Clear();
@@ -821,7 +821,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
             if (!success) {
               if (PyMapping_HasKeyString(obj, property_name)) {
                 result = PyMapping_GetItemString(obj, property_name);
-                if (result != NULL) {
+                if (result != nullptr) {
                   success = true;
                 } else {
                   PyErr_Clear();
@@ -830,7 +830,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
             }
 
             if (!success) {
-              result = NULL;
+              result = nullptr;
             }
           }
 
@@ -859,7 +859,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         } else {
           // Not a special-case name.  Call the named method.
           PyObject *method = PyObject_GetAttrString(obj, (char *)method_name);
-          if (method != NULL) {
+          if (method != nullptr) {
             result = PyObject_CallObject(method, params);
             Py_DECREF(method);
           }
@@ -867,7 +867,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         Py_DECREF(params);
 
         // Feed the return value back through the XML pipe to the caller.
-        if (result != NULL) {
+        if (result != nullptr) {
           xresponse->LinkEndChild(pyobj_to_xml(result));
           Py_DECREF(result);
         } else {
@@ -948,10 +948,10 @@ wait_script_response(int response_id) {
       TiXmlDocument *doc = (*ci);
 
       TiXmlElement *xcommand = doc->FirstChildElement("command");
-      if (xcommand != NULL) {
+      if (xcommand != nullptr) {
         const char *cmd = xcommand->Attribute("cmd");
-        if ((cmd != NULL && strcmp(cmd, "script_response") == 0) ||
-            xcommand->Attribute("want_response_id") != NULL) {
+        if ((cmd != nullptr && strcmp(cmd, "script_response") == 0) ||
+            xcommand->Attribute("want_response_id") != nullptr) {
 
           // This is either a response, or it's a command that will want a
           // response itself.  In either case we should handle it right away.
@@ -960,7 +960,7 @@ wait_script_response(int response_id) {
           RELEASE_LOCK(_commands_lock);
           handle_command(doc);
           if (_session_terminated) {
-            return NULL;
+            return nullptr;
           }
           ACQUIRE_LOCK(_commands_lock);
           break;
@@ -976,9 +976,9 @@ wait_script_response(int response_id) {
       TiXmlDocument *doc = (*ci);
 
       TiXmlElement *xcommand = doc->FirstChildElement("command");
-      assert(xcommand != NULL);
+      assert(xcommand != nullptr);
       const char *cmd = xcommand->Attribute("cmd");
-      assert(cmd != NULL && strcmp(cmd, "script_response") == 0);
+      assert(cmd != nullptr && strcmp(cmd, "script_response") == 0);
 
       int unique_id;
       if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
@@ -995,7 +995,7 @@ wait_script_response(int response_id) {
 
     if (!_program_continue) {
       terminate_session();
-      return NULL;
+      return nullptr;
     }
 
 #ifdef _WIN32
@@ -1005,7 +1005,7 @@ wait_script_response(int response_id) {
     // We appear to be best off with just a single PeekMessage() call here;
     // the full message pump seems to cause problems.
     MSG msg;
-    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+    PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE | PM_NOYIELD);
 #endif  // _WIN32
 
     // nout << ".";
@@ -1027,7 +1027,7 @@ py_request_func(PyObject *args) {
   const char *request_type;
   PyObject *extra_args;
   if (!PyArg_ParseTuple(args, "isO", &instance_id, &request_type, &extra_args)) {
-    return NULL;
+    return nullptr;
   }
 
   if (strcmp(request_type, "wait_script_response") == 0) {
@@ -1035,20 +1035,20 @@ py_request_func(PyObject *args) {
     // means to wait for a particular script_response to come in on the wire.
     int response_id;
     if (!PyArg_ParseTuple(extra_args, "i", &response_id)) {
-      return NULL;
+      return nullptr;
     }
 
     TiXmlDocument *doc = wait_script_response(response_id);
     if (_session_terminated) {
       return Py_BuildValue("");
     }
-    assert(doc != NULL);
+    assert(doc != nullptr);
     TiXmlElement *xcommand = doc->FirstChildElement("command");
-    assert(xcommand != NULL);
+    assert(xcommand != nullptr);
     TiXmlElement *xvalue = xcommand->FirstChildElement("value");
 
-    PyObject *value = NULL;
-    if (xvalue != NULL) {
+    PyObject *value = nullptr;
+    if (xvalue != nullptr) {
       value = xml_to_pyobj(xvalue);
     } else {
       // An absence of a <value> element is an exception.  We will return NULL
@@ -1070,7 +1070,7 @@ py_request_func(PyObject *args) {
     // A general notification to be sent directly to the instance.
     const char *message;
     if (!PyArg_ParseTuple(extra_args, "s", &message)) {
-      return NULL;
+      return nullptr;
     }
 
     xrequest->SetAttribute("message", message);
@@ -1087,7 +1087,7 @@ py_request_func(PyObject *args) {
     if (!PyArg_ParseTuple(extra_args, "sOsOii",
                           &operation, &object, &property_name, &value,
                           &needs_response, &unique_id)) {
-      return NULL;
+      return nullptr;
     }
 
     xrequest->SetAttribute("operation", operation);
@@ -1106,7 +1106,7 @@ py_request_func(PyObject *args) {
     // Release a particular P3D_object that we were holding a reference to.
     int object_id;
     if (!PyArg_ParseTuple(extra_args, "i", &object_id)) {
-      return NULL;
+      return nullptr;
     }
 
     xrequest->SetAttribute("object_id", object_id);
@@ -1119,7 +1119,7 @@ py_request_func(PyObject *args) {
     const char *package_name;
     const char *package_version;
     if (!PyArg_ParseTuple(extra_args, "sss", &host_url, &package_name, &package_version)) {
-      return NULL;
+      return nullptr;
     }
 
     xrequest->SetAttribute("host_url", host_url);
@@ -1134,7 +1134,7 @@ py_request_func(PyObject *args) {
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
     PyErr_SetString(PyExc_ValueError, message.c_str());
-    return NULL;
+    return nullptr;
   }
 
   return Py_BuildValue("");
@@ -1185,18 +1185,18 @@ start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   set_instance_info(inst, xinstance);
 
   TiXmlElement *xpackage = xinstance->FirstChildElement("package");
-  while (xpackage != (TiXmlElement *)NULL) {
+  while (xpackage != nullptr) {
     add_package_info(inst, xpackage);
     xpackage = xpackage->NextSiblingElement("package");
   }
 
   TiXmlElement *xfparams = xinstance->FirstChildElement("fparams");
-  if (xfparams != (TiXmlElement *)NULL) {
+  if (xfparams != nullptr) {
     set_p3d_filename(inst, xfparams);
   }
 
   TiXmlElement *xwparams = xinstance->FirstChildElement("wparams");
-  if (xwparams != (TiXmlElement *)NULL) {
+  if (xwparams != nullptr) {
     setup_window(inst, xwparams);
   }
 }
@@ -1228,12 +1228,12 @@ terminate_instance(int id) {
 void P3DPythonRun::
 set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   const char *root_dir = xinstance->Attribute("root_dir");
-  if (root_dir == NULL) {
+  if (root_dir == nullptr) {
     root_dir = "";
   }
 
   const char *log_directory = xinstance->Attribute("log_directory");
-  if (log_directory == NULL) {
+  if (log_directory == nullptr) {
     log_directory = "";
   }
 
@@ -1241,14 +1241,14 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
   xinstance->Attribute("verify_contents", &verify_contents);
 
   const char *super_mirror = xinstance->Attribute("super_mirror");
-  if (super_mirror == NULL) {
+  if (super_mirror == nullptr) {
     super_mirror = "";
   }
 
   // Get the initial "main" object, if specified.
   PyObject *main;
   TiXmlElement *xmain = xinstance->FirstChildElement("main");
-  if (xmain != NULL) {
+  if (xmain != nullptr) {
     main = xml_to_pyobj(xmain);
   } else {
     main = Py_None;
@@ -1262,7 +1262,7 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
     (_runner, (char *)"setInstanceInfo", (char *)"sssiNi", root_dir,
      log_directory, super_mirror, verify_contents, main, respect_per_platform);
 
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     if (_interactive_console) {
       run_interactive_console();
@@ -1282,16 +1282,16 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   const char *version = xpackage->Attribute("version");
   const char *host = xpackage->Attribute("host");
   const char *host_dir = xpackage->Attribute("host_dir");
-  if (name == NULL || host == NULL) {
+  if (name == nullptr || host == nullptr) {
     return;
   }
-  if (version == NULL) {
+  if (version == nullptr) {
     version = "";
   }
-  if (platform == NULL) {
+  if (platform == nullptr) {
     platform = "";
   }
-  if (host_dir == NULL) {
+  if (host_dir == nullptr) {
     host_dir = "";
   }
 
@@ -1299,7 +1299,7 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
     (_runner, (char *)"addPackageInfo", (char *)"sssss",
      name, platform, version, host, host_dir);
 
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     if (_interactive_console) {
       run_interactive_console();
@@ -1317,7 +1317,7 @@ void P3DPythonRun::
 set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   string p3d_filename;
   const char *p3d_filename_c = xfparams->Attribute("p3d_filename");
-  if (p3d_filename_c != NULL) {
+  if (p3d_filename_c != nullptr) {
     p3d_filename = p3d_filename_c;
   }
 
@@ -1326,21 +1326,21 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
   string p3d_url;
   const char *p3d_url_c = xfparams->Attribute("p3d_url");
-  if (p3d_url_c != NULL) {
+  if (p3d_url_c != nullptr) {
     p3d_url = p3d_url_c;
   }
 
   PyObject *token_list = PyList_New(0);
   TiXmlElement *xtoken = xfparams->FirstChildElement("token");
-  while (xtoken != NULL) {
+  while (xtoken != nullptr) {
     string keyword, value;
     const char *keyword_c = xtoken->Attribute("keyword");
-    if (keyword_c != NULL) {
+    if (keyword_c != nullptr) {
       keyword = keyword_c;
     }
 
     const char *value_c = xtoken->Attribute("value");
-    if (value_c != NULL) {
+    if (value_c != nullptr) {
       value = value_c;
     }
 
@@ -1354,10 +1354,10 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
   PyObject *arg_list = PyList_New(0);
   TiXmlElement *xarg = xfparams->FirstChildElement("arg");
-  while (xarg != NULL) {
+  while (xarg != nullptr) {
     string value;
     const char *value_c = xarg->Attribute("value");
-    if (value_c != NULL) {
+    if (value_c != nullptr) {
       value = value_c;
     }
 
@@ -1373,7 +1373,7 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
      token_list, arg_list, inst->get_instance_id(), _interactive_console, p3d_offset,
      p3d_url.c_str());
 
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     if (_interactive_console) {
       run_interactive_console();
@@ -1405,7 +1405,7 @@ void P3DPythonRun::
 setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   string window_type;
   const char *window_type_c = xwparams->Attribute("window_type");
-  if (window_type_c != NULL) {
+  if (window_type_c != nullptr) {
     window_type = window_type_c;
   }
 
@@ -1429,7 +1429,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   // to go through this subprocess-window nonsense.
 
   const char *subprocess_window = xwparams->Attribute("subprocess_window");
-  if (subprocess_window != NULL) {
+  if (subprocess_window != nullptr) {
     Filename filename = Filename::from_os_specific(subprocess_window);
     parent_window_handle = NativeWindowHandle::make_subprocess(filename);
   }
@@ -1437,7 +1437,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
 #elif defined(HAVE_X11)
   // Use stringstream to decode the "long" attribute.
   const char *parent_cstr = xwparams->Attribute("parent_xwindow");
-  if (parent_cstr != NULL) {
+  if (parent_cstr != nullptr) {
     long window;
     istringstream strm(parent_cstr);
     strm >> window;
@@ -1446,7 +1446,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
 #endif
 
   PyObject *py_handle = Py_None;
-  if (parent_window_handle != NULL) {
+  if (parent_window_handle != nullptr) {
 
     // We have a valid parent WindowHandle, but replace it with a
     // P3DWindowHandle so we can get the callbacks.
@@ -1467,7 +1467,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
     (_runner, (char *)"setupWindow", (char *)"siiiiN", window_type.c_str(),
      win_x, win_y, win_width, win_height, py_handle);
 
-  if (result == NULL) {
+  if (result == nullptr) {
     PyErr_Print();
     if (_interactive_console) {
       run_interactive_console();
@@ -1489,7 +1489,7 @@ send_windows_message(int id, unsigned int msg, int wparam, int lparam) {
   }
 
   P3DCInstance *inst = (*ii).second;
-  if (inst->_parent_window_handle != (WindowHandle *)NULL) {
+  if (inst->_parent_window_handle != nullptr) {
     inst->_parent_window_handle->send_windows_message(msg, wparam, lparam);
   }
 }
@@ -1507,9 +1507,9 @@ terminate_session() {
   _instances.clear();
 
   if (!_session_terminated) {
-    if (_taskMgr != NULL) {
+    if (_taskMgr != nullptr) {
       PyObject *result = PyObject_CallMethod(_taskMgr, (char *)"stop", (char *)"");
-      if (result == NULL) {
+      if (result == nullptr) {
         PyErr_Print();
       } else {
         Py_DECREF(result);
@@ -1573,13 +1573,13 @@ pyobj_to_xml(PyObject *value) {
     // function for getting the UTF-8 encoded version.
     Py_ssize_t length = 0;
     char *buffer = PyUnicode_AsUTF8AndSize(value, &length);
-    if (buffer != NULL) {
+    if (buffer != nullptr) {
       string str(buffer, length);
       xvalue->SetAttribute("value", str);
     }
 #else
     PyObject *as_str = PyUnicode_AsUTF8String(value);
-    if (as_str != NULL) {
+    if (as_str != nullptr) {
       char *buffer;
       Py_ssize_t length;
       if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
@@ -1594,13 +1594,13 @@ pyobj_to_xml(PyObject *value) {
     // using the standard encoding, then re-encoding it.
     xvalue->SetAttribute("type", "string");
 
-    PyObject *ustr = PyUnicode_FromEncodedObject(value, NULL, NULL);
-    if (ustr == NULL) {
+    PyObject *ustr = PyUnicode_FromEncodedObject(value, nullptr, nullptr);
+    if (ustr == nullptr) {
       PyErr_Print();
       return xvalue;
     } else {
       PyObject *as_str = PyUnicode_AsUTF8String(ustr);
-      if (as_str != NULL) {
+      if (as_str != nullptr) {
         char *buffer;
         Py_ssize_t length;
         if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
@@ -1620,7 +1620,7 @@ pyobj_to_xml(PyObject *value) {
     Py_ssize_t length = PySequence_Length(value);
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject *item = PySequence_GetItem(value, i);
-      if (item != NULL) {
+      if (item != nullptr) {
         xvalue->LinkEndChild(pyobj_to_xml(item));
         Py_DECREF(item);
       }
@@ -1631,7 +1631,7 @@ pyobj_to_xml(PyObject *value) {
     xvalue->SetAttribute("type", "concrete_struct");
 
     PyObject *items = PyObject_CallMethod(value, (char *)"getConcreteProperties", (char *)"");
-    if (items == NULL) {
+    if (items == nullptr) {
       PyErr_Print();
       return xvalue;
     }
@@ -1639,11 +1639,11 @@ pyobj_to_xml(PyObject *value) {
     Py_ssize_t length = PySequence_Length(items);
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject *item = PySequence_GetItem(items, i);
-      if (item != NULL) {
+      if (item != nullptr) {
         PyObject *a = PySequence_GetItem(item, 0);
-        if (a != NULL) {
+        if (a != nullptr) {
           PyObject *b = PySequence_GetItem(item, 1);
-          if (b != NULL) {
+          if (b != nullptr) {
             TiXmlElement *xitem = pyobj_to_xml(b);
             Py_DECREF(b);
 
@@ -1664,7 +1664,7 @@ pyobj_to_xml(PyObject *value) {
             Py_ssize_t length;
 #if PY_MAJOR_VERSION >= 3
             buffer = PyUnicode_AsUTF8AndSize(as_str, &length);
-            if (buffer != NULL) {
+            if (buffer != nullptr) {
 #else
             if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
 #endif
@@ -1694,7 +1694,7 @@ pyobj_to_xml(PyObject *value) {
     // This is a BrowserObject, a reference to an object that actually exists
     // in the host namespace.  So, pass up the appropriate object ID.
     PyObject *objectId = PyObject_GetAttrString(value, (char *)"_BrowserObject__objectId");
-    if (objectId != NULL) {
+    if (objectId != nullptr) {
       int object_id = PyInt_AsLong(objectId);
       xvalue->SetAttribute("type", "browser");
       xvalue->SetAttribute("object_id", object_id);
@@ -1764,8 +1764,8 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     // Using the string form here instead of the char * form, so we don't get
     // tripped up on embedded null characters.
     const string *value = xvalue->Attribute(string("value"));
-    if (value != NULL) {
-      return PyUnicode_DecodeUTF8(value->data(), value->length(), NULL);
+    if (value != nullptr) {
+      return PyUnicode_DecodeUTF8(value->data(), value->length(), nullptr);
     }
 
   } else if (strcmp(type, "undefined") == 0) {
@@ -1785,9 +1785,9 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     PyObject *list = PyList_New(0);
 
     TiXmlElement *xitem = xvalue->FirstChildElement("value");
-    while (xitem != NULL) {
+    while (xitem != nullptr) {
       PyObject *item = xml_to_pyobj(xitem);
-      if (item != NULL) {
+      if (item != nullptr) {
         PyList_Append(list, item);
         Py_DECREF(item);
       }
@@ -1802,13 +1802,13 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     // Receive a concrete struct as a new ConcreteStruct instance.
     PyObject *obj = PyObject_CallFunction(_concrete_struct_class, (char *)"");
 
-    if (obj != NULL) {
+    if (obj != nullptr) {
       TiXmlElement *xitem = xvalue->FirstChildElement("value");
-      while (xitem != NULL) {
+      while (xitem != nullptr) {
         const char *key = xitem->Attribute("key");
-        if (key != NULL) {
+        if (key != nullptr) {
           PyObject *item = xml_to_pyobj(xitem);
-          if (item != NULL) {
+          if (item != nullptr) {
             PyObject_SetAttrString(obj, (char *)key, item);
             Py_DECREF(item);
           }
@@ -1847,7 +1847,7 @@ void P3DPythonRun::
 rt_thread_run() {
   while (_read_thread_continue) {
     TiXmlDocument *doc = read_xml(_pipe_read, nout);
-    if (doc == NULL) {
+    if (doc == nullptr) {
       // Some error on reading.  Abort.
       _program_continue = false;
       return;
@@ -1858,9 +1858,9 @@ rt_thread_run() {
     // Check for one special case: the "exit" command means we shut down the
     // read thread along with everything else.
     TiXmlElement *xcommand = doc->FirstChildElement("command");
-    if (xcommand != NULL) {
+    if (xcommand != nullptr) {
       const char *cmd = xcommand->Attribute("cmd");
-      if (cmd != NULL) {
+      if (cmd != nullptr) {
         if (strcmp(cmd, "exit") == 0) {
           _read_thread_continue = false;
         }

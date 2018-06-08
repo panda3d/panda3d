@@ -57,12 +57,12 @@ public:
   INLINE void set_bio(BIO *bio);
   INLINE BIO *get_bio() const;
 
-  INLINE const string &get_server_name() const;
+  INLINE const std::string &get_server_name() const;
   INLINE int get_port() const;
 
 private:
   BIO *_bio;
-  string _server_name;
+  std::string _server_name;
   int _port;
   struct sockaddr_storage _addr;
   socklen_t _addrlen;

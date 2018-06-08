@@ -40,7 +40,7 @@ get_try_all_direct() const {
 INLINE void HTTPClient::
 set_client_certificate_filename(const Filename &filename) {
   _client_certificate_filename = filename;
-  _client_certificate_pem = string();
+  _client_certificate_pem = std::string();
   unload_client_certificate();
 }
 
@@ -51,7 +51,7 @@ set_client_certificate_filename(const Filename &filename) {
  * client certificate.
  */
 INLINE void HTTPClient::
-set_client_certificate_pem(const string &pem) {
+set_client_certificate_pem(const std::string &pem) {
   _client_certificate_pem = pem;
   _client_certificate_filename = Filename();
   unload_client_certificate();
@@ -62,7 +62,7 @@ set_client_certificate_pem(const string &pem) {
  * named by set_client_certificate_filename() or set_client_certificate_pem().
  */
 INLINE void HTTPClient::
-set_client_certificate_passphrase(const string &passphrase) {
+set_client_certificate_passphrase(const std::string &passphrase) {
   _client_certificate_passphrase = passphrase;
   unload_client_certificate();
 }
@@ -116,7 +116,7 @@ get_verify_ssl() const {
  * to use the built-in OpenSSL default value.
  */
 INLINE void HTTPClient::
-set_cipher_list(const string &cipher_list) {
+set_cipher_list(const std::string &cipher_list) {
   _cipher_list = cipher_list;
 }
 
@@ -124,7 +124,7 @@ set_cipher_list(const string &cipher_list) {
  * Returns the set of ciphers as set by set_cipher_list().  See
  * set_cipher_list().
  */
-INLINE const string &HTTPClient::
+INLINE const std::string &HTTPClient::
 get_cipher_list() const {
   return _cipher_list;
 }
@@ -134,8 +134,8 @@ get_cipher_list() const {
  * as a convenient place to publish it for access by the scripting language;
  * C++ code should probably use HTTPAuthorization directly.
  */
-INLINE string HTTPClient::
-base64_encode(const string &s) {
+INLINE std::string HTTPClient::
+base64_encode(const std::string &s) {
   return HTTPAuthorization::base64_encode(s);
 }
 
@@ -144,7 +144,7 @@ base64_encode(const string &s) {
  * as a convenient place to publish it for access by the scripting language;
  * C++ code should probably use HTTPAuthorization directly.
  */
-INLINE string HTTPClient::
-base64_decode(const string &s) {
+INLINE std::string HTTPClient::
+base64_decode(const std::string &s) {
   return HTTPAuthorization::base64_decode(s);
 }

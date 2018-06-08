@@ -19,15 +19,15 @@
 // memory foot pront and user time by a bunch on pc cygwin from  3 minutes to
 // 17 seconds ?? really need to explore interigate to figure out what is going
 // on ..
-template<class Key, class Compare = less<int>, class Vector = pvector<Key> > class ov_multiset
+template<class Key, class Compare = std::less<int>, class Vector = pvector<Key> > class ov_multiset
 {
 };
 
-template<class Key, class Compare = less<int>, class Vector = pvector<Key> > class ov_set
+template<class Key, class Compare = std::less<int>, class Vector = pvector<Key> > class ov_set
 {
 };
 
-template<class Key, class Compare = less<int>, class Vector = pvector<Key> > class ordered_vector
+template<class Key, class Compare = std::less<int>, class Vector = pvector<Key> > class ordered_vector
 {
 };
 
@@ -91,7 +91,7 @@ template<class Key, class Compare = less<int>, class Vector = pvector<Key> > cla
  *
  * (4) Random access into the set is easy with the [] operator.
  */
-template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
+template<class Key, class Compare = std::less<Key>, class Vector = pvector<Key> >
 class ordered_vector {
 public:
   // Typedefs
@@ -105,13 +105,13 @@ public:
   // Be careful when using the non-const iterators that you do not disturb the
   // sorted order of the vector, or that if you do, you call sort() when you
   // are done.
-  typedef TYPENAME Vector::iterator ITERATOR;
-  typedef TYPENAME Vector::const_iterator CONST_ITERATOR;
-  typedef TYPENAME Vector::reverse_iterator REVERSE_ITERATOR;
-  typedef TYPENAME Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
+  typedef typename Vector::iterator ITERATOR;
+  typedef typename Vector::const_iterator CONST_ITERATOR;
+  typedef typename Vector::reverse_iterator REVERSE_ITERATOR;
+  typedef typename Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
 
-  typedef TYPENAME Vector::difference_type DIFFERENCE_TYPE;
-  typedef TYPENAME Vector::size_type SIZE_TYPE;
+  typedef typename Vector::difference_type DIFFERENCE_TYPE;
+  typedef typename Vector::size_type SIZE_TYPE;
 
   // Since the #define symbols do not actually expand to the correct names, we
   // have to re-typedef them so callers can reference them by their correct,
@@ -179,7 +179,7 @@ public:
   // Insert operations.
   ITERATOR insert_unique(ITERATOR position, const VALUE_TYPE &key);
   ITERATOR insert_nonunique(ITERATOR position, const VALUE_TYPE &key);
-  INLINE pair<ITERATOR, bool> insert_unique(const VALUE_TYPE &key);
+  INLINE std::pair<ITERATOR, bool> insert_unique(const VALUE_TYPE &key);
   INLINE ITERATOR insert_nonunique(const VALUE_TYPE &key);
   INLINE ITERATOR insert_unverified(ITERATOR position, const VALUE_TYPE &key);
 
@@ -200,8 +200,8 @@ public:
   INLINE CONST_ITERATOR lower_bound(const KEY_TYPE &key) const;
   INLINE ITERATOR upper_bound(const KEY_TYPE &key);
   INLINE CONST_ITERATOR upper_bound(const KEY_TYPE &key) const;
-  INLINE pair<ITERATOR, ITERATOR> equal_range(const KEY_TYPE &key);
-  INLINE pair<CONST_ITERATOR, CONST_ITERATOR> equal_range(const KEY_TYPE &key) const;
+  INLINE std::pair<ITERATOR, ITERATOR> equal_range(const KEY_TYPE &key);
+  INLINE std::pair<CONST_ITERATOR, CONST_ITERATOR> equal_range(const KEY_TYPE &key) const;
 
   // Special operations.
   INLINE void swap(ordered_vector<Key, Compare, Vector> &other);
@@ -235,7 +235,7 @@ private:
                                const KEY_TYPE &key) const;
   CONST_ITERATOR r_upper_bound(CONST_ITERATOR first, CONST_ITERATOR last,
                                const KEY_TYPE &key) const;
-  pair<CONST_ITERATOR, CONST_ITERATOR>
+  std::pair<CONST_ITERATOR, CONST_ITERATOR>
   r_equal_range(CONST_ITERATOR first, CONST_ITERATOR last,
                 const KEY_TYPE &key) const;
 
@@ -265,18 +265,18 @@ private:
  * A specialization of ordered_vector that emulates a standard STL set: one
  * copy of each element is allowed.
  */
-template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
+template<class Key, class Compare = std::less<Key>, class Vector = pvector<Key> >
 class ov_set : public ordered_vector<Key, Compare, Vector> {
 public:
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
+  typedef typename ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
+  typedef typename ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_set(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_set(const Compare &compare,
                 TypeHandle type_handle = ov_set_type_handle);
 
   INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key0);
-  INLINE pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
+  INLINE std::pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
 
   INLINE void sort();
   INLINE bool verify_list() const;
@@ -286,11 +286,11 @@ public:
  * A specialization of ordered_vector that emulates a standard STL set: many
  * copies of each element are allowed.
  */
-template<class Key, class Compare = less<Key>, class Vector = pvector<Key> >
+template<class Key, class Compare = std::less<Key>, class Vector = pvector<Key> >
 class ov_multiset : public ordered_vector<Key, Compare, Vector> {
 public:
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
-  typedef TYPENAME ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
+  typedef typename ordered_vector<Key, Compare, Vector>::ITERATOR ITERATOR;
+  typedef typename ordered_vector<Key, Compare, Vector>::VALUE_TYPE VALUE_TYPE;
 
   INLINE ov_multiset(TypeHandle type_handle = ov_set_type_handle);
   INLINE ov_multiset(const Compare &compare,

@@ -15,7 +15,7 @@
 #include "pnotify.h"
 
 #include "typedWritable.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
@@ -94,6 +94,10 @@ BamWriter::
   for (si = _state_map.begin(); si != _state_map.end(); ++si) {
     TypedWritable *object = (TypedWritable *)(*si).first;
     object->remove_bam_writer(this);
+
+    if ((*si).second._refcount != nullptr) {
+      unref_delete((*si).second._refcount);
+    }
   }
 }
 
@@ -103,12 +107,12 @@ BamWriter::
  */
 void BamWriter::
 set_target(DatagramSink *target) {
-  if (_target != NULL) {
+  if (_target != nullptr) {
     _target->flush();
   }
   _target = target;
 
-  if (_needs_init && _target != NULL) {
+  if (_needs_init && _target != nullptr) {
     init();
   }
 }
@@ -122,7 +126,7 @@ set_target(DatagramSink *target) {
  */
 bool BamWriter::
 init() {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
   nassertr(_needs_init, false);
   _needs_init = false;
 
@@ -179,7 +183,7 @@ init() {
  */
 bool BamWriter::
 write_object(const TypedWritable *object) {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
 
   // Increment the _writing_seq, so we can check for newly stale objects
   // during this operation.
@@ -242,7 +246,7 @@ has_object(const TypedWritable *object) const {
  */
 void BamWriter::
 flush() {
-  nassertv(_target != NULL);
+  nassertv(_target != nullptr);
   _target->flush();
 }
 
@@ -294,7 +298,7 @@ void BamWriter::
 write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an object ID
   // and leave it at that.
-  if (object == (const TypedWritable *)NULL) {
+  if (object == nullptr) {
     write_object_id(packet, 0);
 
   } else {
@@ -432,7 +436,7 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
  */
 bool BamWriter::
 register_pta(Datagram &packet, const void *ptr) {
-  if (ptr == (const void *)NULL) {
+  if (ptr == nullptr) {
     // A zero for the PTA ID indicates a NULL pointer.  This is a special
     // case.
     write_pta_id(packet, 0);
@@ -529,6 +533,9 @@ object_destructs(TypedWritable *object) {
     // we're in trouble when we do write it out.
     nassertv(!(*si).second._written_seq.is_initial());
 
+    // This cannot be called if we are still holding a reference to it.
+    nassertv((*si).second._refcount == nullptr);
+
     int object_id = (*si).second._object_id;
     _freed_object_ids.push_back(object_id);
 
@@ -606,14 +613,24 @@ enqueue_object(const TypedWritable *object) {
     // No, it hasn't, so assign it the next number in sequence arbitrarily.
     object_id = _next_object_id;
 
-    bool inserted =
-      _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
+    StateMap::iterator si;
+    bool inserted;
+    tie(si, inserted) =
+      _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id)));
     nassertr(inserted, false);
 
     // Store ourselves on the TypedWritable so that we get notified when it
     // destructs.
     (const_cast<TypedWritable*>(object))->add_bam_writer(this);
     _next_object_id++;
+
+    // Increase the reference count if this inherits from ReferenceCount,
+    // until we get a chance to write this object for the first time.
+    const ReferenceCount *rc = ((TypedWritable *)object)->as_reference_count();
+    if (rc != nullptr) {
+      rc->ref();
+      (*si).second._refcount = rc;
+    }
 
   } else {
     // Yes, it has; get the object ID.
@@ -632,7 +649,7 @@ enqueue_object(const TypedWritable *object) {
  */
 bool BamWriter::
 flush_queue() {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
   // Each object we write may append more to the queue.
   while (!_object_queue.empty()) {
     const TypedWritable *object = _object_queue.front();
@@ -702,6 +719,15 @@ flush_queue() {
 
       (*si).second._written_seq = _writing_seq;
       (*si).second._modified = object->get_bam_modified();
+
+      // Now release any reference we hold to it, so that it may destruct.
+      const ReferenceCount *rc = (*si).second._refcount;
+      if (rc != nullptr) {
+        // We need to assign this pointer to null before deleting the object,
+        // since that may end up calling object_destructs.
+        (*si).second._refcount = nullptr;
+        unref_delete(rc);
+      }
 
     } else {
       // On subsequent times when we write a particular object, we write

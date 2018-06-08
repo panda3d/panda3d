@@ -108,7 +108,7 @@ set_size_and_recalc(int x, int y) {
  */
 bool ParasiteBuffer::
 flip_ready() const {
-  nassertr(_host != NULL, false);
+  nassertr(_host != nullptr, false);
   return _host->flip_ready();
 }
 
@@ -125,7 +125,7 @@ flip_ready() const {
  */
 void ParasiteBuffer::
 begin_flip() {
-  nassertv(_host != NULL);
+  nassertv(_host != nullptr);
   _host->begin_flip();
 }
 
@@ -140,7 +140,7 @@ begin_flip() {
  */
 void ParasiteBuffer::
 ready_flip() {
-  nassertv(_host != NULL);
+  nassertv(_host != nullptr);
   _host->ready_flip();
 }
 
@@ -153,7 +153,7 @@ ready_flip() {
  */
 void ParasiteBuffer::
 end_flip() {
-  nassertv(_host != NULL);
+  nassertv(_host != nullptr);
   _host->end_flip();
   _flip_ready = false;
 }
@@ -198,7 +198,7 @@ void ParasiteBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   _host->end_frame(FM_parasite, current_thread);
 

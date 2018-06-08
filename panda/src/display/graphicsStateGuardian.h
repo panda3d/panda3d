@@ -228,7 +228,7 @@ PUBLISHED:
   MAKE_PROPERTY(shader_model, get_shader_model, set_shader_model);
 
   virtual int get_supported_geom_rendering() const;
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
 
   INLINE bool get_color_scale_via_lighting() const;
   INLINE bool get_alpha_scale_via_texture() const;
@@ -267,11 +267,11 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
-  virtual bool has_extension(const string &extension) const;
+  virtual bool has_extension(const std::string &extension) const;
 
-  virtual string get_driver_vendor();
-  virtual string get_driver_renderer();
-  virtual string get_driver_version();
+  virtual std::string get_driver_vendor();
+  virtual std::string get_driver_renderer();
+  virtual std::string get_driver_version();
   virtual int get_driver_version_major();
   virtual int get_driver_version_minor();
   virtual int get_driver_shader_version_major();
@@ -286,11 +286,11 @@ PUBLISHED:
   MAKE_PROPERTY(driver_shader_version_minor, get_driver_shader_version_minor);
 
   bool set_scene(SceneSetup *scene_setup);
-  virtual SceneSetup *get_scene() const FINAL;
+  virtual SceneSetup *get_scene() const final;
   MAKE_PROPERTY(scene, get_scene, set_scene);
 
 public:
-  virtual TextureContext *prepare_texture(Texture *tex);
+  virtual TextureContext *prepare_texture(Texture *tex, int view);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
@@ -371,16 +371,24 @@ public:
                                      bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
                               bool force);
+  virtual bool draw_tristrips_adj(const GeomPrimitivePipelineReader *reader,
+                                  bool force);
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_patches(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
                           bool force);
+  virtual bool draw_lines_adj(const GeomPrimitivePipelineReader *reader,
+                              bool force);
   virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader,
                                bool force);
+  virtual bool draw_linestrips_adj(const GeomPrimitivePipelineReader *reader,
+                                   bool force);
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
                            bool force);
   virtual void end_draw_primitives();
@@ -422,7 +430,7 @@ public:
 
   static void create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
-  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=NULL);
+  PT(Texture) get_shadow_map(const NodePath &light_np, GraphicsOutputBase *host=nullptr);
   PT(Texture) get_dummy_shadow_map(Texture::TextureType texture_type) const;
   virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
@@ -752,7 +760,7 @@ private:
   friend class GraphicsEngine;
 };
 
-EXPCL_PANDA_DISPLAY ostream &operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm);
+EXPCL_PANDA_DISPLAY std::ostream &operator << (std::ostream &out, GraphicsStateGuardian::ShaderModel sm);
 
 #include "graphicsStateGuardian.I"
 

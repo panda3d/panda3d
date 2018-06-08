@@ -50,11 +50,12 @@ protected:
 
 private:
   RenderState(const RenderState &copy);
-  void operator = (const RenderState &copy);
 
 public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
+
+  RenderState &operator = (const RenderState &copy) = delete;
 
   typedef RenderAttribRegistry::SlotMask SlotMask;
 
@@ -130,8 +131,8 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   static int get_max_priority();
 
@@ -140,8 +141,8 @@ PUBLISHED:
   static int clear_cache();
   static void clear_munger_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
 
@@ -226,7 +227,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const RenderState *, nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
+  typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
   static States *_states;
   static const RenderState *_empty_state;
 
@@ -372,7 +373,7 @@ private:
 template<>
 INLINE void PointerToBase<RenderState>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const RenderState &state) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderState &state) {
   state.output(out);
   return out;
 }

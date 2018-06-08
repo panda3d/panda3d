@@ -16,7 +16,7 @@
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariable::
-ConfigVariable(const string &name, ConfigVariable::ValueType value_type) :
+ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type) :
   ConfigVariableBase(name, value_type)
 {
 }
@@ -26,8 +26,8 @@ ConfigVariable(const string &name, ConfigVariable::ValueType value_type) :
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariable::
-ConfigVariable(const string &name, ConfigVariable::ValueType value_type,
-               const string &description, int flags) :
+ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type,
+               const std::string &description, int flags) :
   ConfigVariableBase(name, value_type, description, flags)
 {
 }
@@ -38,7 +38,7 @@ ConfigVariable(const string &name, ConfigVariable::ValueType value_type,
  * ConfigVariable of a specific type, without having to know what type it is.
  */
 INLINE ConfigVariable::
-ConfigVariable(const string &name) :
+ConfigVariable(const std::string &name) :
   ConfigVariableBase(name, VT_undefined)
 {
   _core->set_used();
@@ -57,16 +57,16 @@ INLINE ConfigVariable::
  */
 INLINE const ConfigDeclaration *ConfigVariable::
 get_default_value() const {
-  nassertr(is_constructed(), (ConfigDeclaration *)NULL);
+  nassertr(is_constructed(), nullptr);
   return _core->get_default_value();
 }
 
 /**
  * Returns the toplevel value of the variable, formatted as a string.
  */
-INLINE const string &ConfigVariable::
+INLINE const std::string &ConfigVariable::
 get_string_value() const {
-  nassertr(is_constructed(), *new string());
+  nassertr(is_constructed(), *new std::string());
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_value();
 }
@@ -77,7 +77,7 @@ get_string_value() const {
  * clear_local_value() is called.
  */
 INLINE void ConfigVariable::
-set_string_value(const string &string_value) {
+set_string_value(const std::string &string_value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_string_value(string_value);
 }
@@ -163,9 +163,9 @@ has_double_word(size_t n) const {
  * Returns the string value of the nth word of the variable's value, or empty
  * string if there is no nth value.  See also has_string_word().
  */
-INLINE string ConfigVariable::
+INLINE std::string ConfigVariable::
 get_string_word(size_t n) const {
-  nassertr(is_constructed(), string());
+  nassertr(is_constructed(), std::string());
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_word(n);
 }
@@ -219,7 +219,7 @@ get_double_word(size_t n) const {
  * words.
  */
 INLINE void ConfigVariable::
-set_string_word(size_t n, const string &value) {
+set_string_word(size_t n, const std::string &value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_string_word(n, value);
 }
@@ -273,7 +273,7 @@ set_double_word(size_t n, double value) {
 INLINE bool ConfigVariable::
 is_constructed() const {
 #ifndef NDEBUG
-  if (_core == (ConfigVariableCore *)NULL) {
+  if (_core == nullptr) {
     report_unconstructed();
     return false;
   }

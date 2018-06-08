@@ -29,7 +29,7 @@ class WinRawInputDevice;
  * This is the Windows implementation of InputDeviceManager, managing both
  * XInput controllers and raw input devices.
  */
-class EXPCL_PANDA_DEVICE WinInputDeviceManager FINAL : public InputDeviceManager {
+class EXPCL_PANDA_DEVICE WinInputDeviceManager final : public InputDeviceManager {
 private:
   WinInputDeviceManager();
   ~WinInputDeviceManager();
@@ -50,7 +50,7 @@ private:
 
   HWND _message_hwnd;
   pmap<HANDLE, WinRawInputDevice *> _raw_devices;
-  pmap<string, WinRawInputDevice *> _raw_devices_by_path;
+  pmap<std::string, WinRawInputDevice *> _raw_devices_by_path;
 
   static LRESULT WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 

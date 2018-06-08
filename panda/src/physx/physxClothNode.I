@@ -30,7 +30,7 @@ PhysxClothNode(const char *name) : GeomNode(name) {
   this->add_geom(_geom);
 
   _numTexcoords = 0;
-  _texcoords = NULL;
+  _texcoords = nullptr;
 }
 
 /**

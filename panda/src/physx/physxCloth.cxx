@@ -46,13 +46,13 @@ void PhysxCloth::
 unlink() {
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
   scene->_cloths.remove(this);
 
-  _node = NULL;
+  _node = nullptr;
 }
 
 /**
@@ -65,7 +65,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseCloth(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -95,7 +95,7 @@ update() {
 PhysxScene *PhysxCloth::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)_ptr->getScene().userData;
 }
 
@@ -105,7 +105,7 @@ get_scene() const {
 PhysxClothNode *PhysxCloth::
 get_cloth_node() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return _node;
 }
 
@@ -115,7 +115,7 @@ get_cloth_node() const {
 PhysxClothNode *PhysxCloth::
 create_cloth_node(const char *name) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   _node = new PhysxClothNode(name);
   _node->allocate(this);
@@ -455,11 +455,11 @@ get_vertex_attachment_status(unsigned int vertexId) const {
 PhysxShape *PhysxCloth::
 get_vertex_attachment_shape(unsigned int vertexId) const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   // --TODO-- nassertr(vertexId < _ptr->getNumberOfParticles(), NULL);
 
   NxShape *shapePtr = _ptr->getVertexAttachmentShape(vertexId);
-  PhysxShape *shape = shapePtr ? (PhysxShape *)(shapePtr->userData) : NULL;
+  PhysxShape *shape = shapePtr ? (PhysxShape *)(shapePtr->userData) : nullptr;
 
   return shape;
 }

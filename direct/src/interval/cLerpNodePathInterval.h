@@ -23,9 +23,9 @@
  * An interval that lerps one or more properties (like pos, hpr, etc.) on a
  * NodePath over time.
  */
-class EXPCL_DIRECT CLerpNodePathInterval : public CLerpInterval {
+class EXPCL_DIRECT_INTERVAL CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
-  explicit CLerpNodePathInterval(const string &name, double duration,
+  explicit CLerpNodePathInterval(const std::string &name, double duration,
                                  BlendType blend_type, bool bake_in_start,
                                  bool fluid,
                                  const NodePath &node, const NodePath &other);
@@ -68,7 +68,7 @@ PUBLISHED:
   virtual void priv_reverse_initialize(double t);
   virtual void priv_reverse_instant();
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   void setup_slerp();

@@ -86,7 +86,7 @@ PUBLISHED:
   };
 
 protected:
-  InputDevice(const string &name, DeviceClass dev_class, int flags);
+  InputDevice(const std::string &name, DeviceClass dev_class, int flags);
 
 public:
   InputDevice();
@@ -126,8 +126,8 @@ PUBLISHED:
     C_brake,
   };
 
-  INLINE string get_name() const;
-  INLINE string get_manufacturer() const;
+  INLINE std::string get_name() const;
+  INLINE std::string get_manufacturer() const;
   INLINE unsigned short get_vendor_id() const;
   INLINE unsigned short get_product_id() const;
   INLINE bool is_connected() const;
@@ -189,9 +189,9 @@ PUBLISHED:
   bool has_pointer_event() const;
   PT(PointerEventList) get_pointer_events();
 
-  virtual void output(ostream &out) const;
-  static string format_device_class(DeviceClass dc);
-  static string format_axis(ControlAxis axis);
+  virtual void output(std::ostream &out) const;
+  static std::string format_device_class(DeviceClass dc);
+  static std::string format_axis(ControlAxis axis);
 
 protected:
   // Called during the constructor to add new controls or buttons
@@ -221,9 +221,9 @@ public:
   INLINE bool operator != (const InputDevice &other) const;
   INLINE bool operator < (const InputDevice &other) const;
 
-  void output_buttons(ostream &out) const;
-  void write_buttons(ostream &out, int indent_level) const;
-  void write_controls(ostream &out, int indent_level) const;
+  void output_buttons(std::ostream &out) const;
+  void write_buttons(std::ostream &out, int indent_level) const;
+  void write_controls(std::ostream &out, int indent_level) const;
 
 protected:
   enum InputDeviceFlags {
@@ -248,9 +248,9 @@ protected:
 
   LightMutex _lock;
 
-  string _name;
-  string _serial_number;
-  string _manufacturer;
+  std::string _name;
+  std::string _serial_number;
+  std::string _manufacturer;
   DeviceClass _device_class;
   int _flags;
   int _event_sequence;
@@ -331,13 +331,13 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const InputDevice &device) {
+INLINE std::ostream &operator << (std::ostream &out, const InputDevice &device) {
   device.output(out);
   return out;
 }
 
-EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::DeviceClass dc);
-EXPCL_PANDA_DEVICE ostream &operator << (ostream &out, InputDevice::ControlAxis axis);
+EXPCL_PANDA_DEVICE std::ostream &operator << (std::ostream &out, InputDevice::DeviceClass dc);
+EXPCL_PANDA_DEVICE std::ostream &operator << (std::ostream &out, InputDevice::ControlAxis axis);
 
 #include "inputDevice.I"
 

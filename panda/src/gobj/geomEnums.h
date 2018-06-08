@@ -132,6 +132,9 @@ PUBLISHED:
     // If a particular non-fill polygon mode is used.
     GR_render_mode_wireframe= 0x40000,
     GR_render_mode_point    = 0x80000,
+
+    // The primitive has adjacency information.
+    GR_adjacency            = 0x100000,
   };
 
   // The shade model specifies whether the per-vertex colors and normals
@@ -217,9 +220,9 @@ PUBLISHED:
   };
 };
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::UsageHint usage_hint);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, GeomEnums::UsageHint &usage_hint);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::Contents contents);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::UsageHint usage_hint);
+EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, GeomEnums::UsageHint &usage_hint);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::NumericType numeric_type);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::Contents contents);
 
 #endif

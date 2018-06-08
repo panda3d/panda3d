@@ -22,9 +22,9 @@
  * A constraint interval that will constrain the transform of one node to the
  * transform of another.
  */
-class EXPCL_DIRECT CConstrainTransformInterval : public CConstraintInterval {
+class EXPCL_DIRECT_INTERVAL CConstrainTransformInterval : public CConstraintInterval {
 PUBLISHED:
-  explicit CConstrainTransformInterval(const string &name, double duration,
+  explicit CConstrainTransformInterval(const std::string &name, double duration,
                                        const NodePath &node,
                                        const NodePath &target, bool wrt);
 
@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE const NodePath &get_target() const;
 
   virtual void priv_step(double t);
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   NodePath _node;

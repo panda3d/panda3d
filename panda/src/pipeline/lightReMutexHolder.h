@@ -27,10 +27,10 @@ public:
   INLINE LightReMutexHolder(const LightReMutex &mutex);
   INLINE LightReMutexHolder(const LightReMutex &mutex, Thread *current_thread);
   INLINE LightReMutexHolder(LightReMutex *&mutex);
+  LightReMutexHolder(const LightReMutexHolder &copy) = delete;
   INLINE ~LightReMutexHolder();
-private:
-  INLINE LightReMutexHolder(const LightReMutexHolder &copy);
-  INLINE void operator = (const LightReMutexHolder &copy);
+
+  LightReMutexHolder &operator = (const LightReMutexHolder &copy) = delete;
 
 private:
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)

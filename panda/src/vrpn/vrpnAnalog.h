@@ -37,10 +37,10 @@ class VrpnAnalogDevice;
  */
 class VrpnAnalog {
 public:
-  VrpnAnalog(const string &analog_name, vrpn_Connection *connection);
+  VrpnAnalog(const std::string &analog_name, vrpn_Connection *connection);
   ~VrpnAnalog();
 
-  INLINE const string &get_analog_name() const;
+  INLINE const std::string &get_analog_name() const;
   INLINE bool is_empty() const;
 
   void mark(VrpnAnalogDevice *device);
@@ -48,22 +48,22 @@ public:
 
   INLINE void poll();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   static void VRPN_CALLBACK
   vrpn_analog_callback(void *userdata, const vrpn_ANALOGCB info);
 
 private:
-  string _analog_name;
+  std::string _analog_name;
   vrpn_Analog_Remote *_analog;
 
   typedef pvector<VrpnAnalogDevice *> Devices;
   Devices _devices;
 };
 
-INLINE ostream &operator << (ostream &out, const VrpnAnalog &analog) {
+INLINE std::ostream &operator << (std::ostream &out, const VrpnAnalog &analog) {
   analog.output(out);
   return out;
 }

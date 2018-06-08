@@ -126,11 +126,11 @@ PUBLISHED:
   INLINE bool uses_mipmaps() const;
   INLINE static bool is_mipmap(FilterType type);
 
-  static string format_filter_type(FilterType ft);
-  static FilterType string_filter_type(const string &str);
+  static std::string format_filter_type(FilterType ft);
+  static FilterType string_filter_type(const std::string &str);
 
-  static string format_wrap_mode(WrapMode wm);
-  static WrapMode string_wrap_mode(const string &str);
+  static std::string format_wrap_mode(WrapMode wm);
+  static WrapMode string_wrap_mode(const std::string &str);
 
   INLINE bool operator == (const SamplerState &other) const;
   INLINE bool operator != (const SamplerState &other) const;
@@ -146,8 +146,8 @@ PUBLISHED:
 public:
   int compare_to(const SamplerState &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent) const;
 
 private:
   LColor _border_color;
@@ -194,28 +194,28 @@ extern EXPCL_PANDA_GOBJ ConfigVariableEnum<SamplerState::FilterType> texture_min
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<SamplerState::FilterType> texture_magfilter;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt texture_anisotropic_degree;
 
-INLINE ostream &operator << (ostream &out, const SamplerState &m) {
+INLINE std::ostream &operator << (std::ostream &out, const SamplerState &m) {
   m.output(out);
   return out;
 }
 
-INLINE ostream &operator << (ostream &out, SamplerState::FilterType ft) {
+INLINE std::ostream &operator << (std::ostream &out, SamplerState::FilterType ft) {
   return out << SamplerState::format_filter_type(ft);
 }
 
-INLINE istream &operator >> (istream &in, SamplerState::FilterType &ft) {
-  string word;
+INLINE std::istream &operator >> (std::istream &in, SamplerState::FilterType &ft) {
+  std::string word;
   in >> word;
   ft = SamplerState::string_filter_type(word);
   return in;
 }
 
-INLINE ostream &operator << (ostream &out, SamplerState::WrapMode wm) {
+INLINE std::ostream &operator << (std::ostream &out, SamplerState::WrapMode wm) {
   return out << SamplerState::format_wrap_mode(wm);
 }
 
-INLINE istream &operator >> (istream &in, SamplerState::WrapMode &wm) {
-  string word;
+INLINE std::istream &operator >> (std::istream &in, SamplerState::WrapMode &wm) {
+  std::string word;
   in >> word;
   wm = SamplerState::string_wrap_mode(word);
   return in;

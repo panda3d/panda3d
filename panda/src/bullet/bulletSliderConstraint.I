@@ -19,21 +19,3 @@ INLINE BulletSliderConstraint::
 
   delete _constraint;
 }
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletSliderConstraint::
-get_frame_a() const {
-
-  return btTrans_to_TransformState(_constraint->getFrameOffsetA());
-}
-
-/**
- *
- */
-INLINE CPT(TransformState) BulletSliderConstraint::
-get_frame_b() const {
-
-  return btTrans_to_TransformState(_constraint->getFrameOffsetB());
-}

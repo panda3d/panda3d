@@ -84,7 +84,7 @@ DEFINE_KEYBD_BUTTON_HANDLE(rmeta)
 
 /**
  * This is intended to be called only once, by the static initialization
- * performed in config_util.cxx.
+ * performed in config_putil.cxx.
  */
 void KeyboardButton::
 init_keyboard_buttons() {

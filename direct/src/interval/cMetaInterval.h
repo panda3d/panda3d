@@ -29,9 +29,9 @@
  * own begin and end times.  Some of them may overlap and some of them may
  * not.
  */
-class EXPCL_DIRECT CMetaInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL CMetaInterval : public CInterval {
 PUBLISHED:
-  explicit CMetaInterval(const string &name);
+  explicit CMetaInterval(const std::string &name);
   virtual ~CMetaInterval();
 
   enum RelativeStart {
@@ -44,20 +44,20 @@ PUBLISHED:
   INLINE double get_precision() const;
 
   void clear_intervals();
-  int push_level(const string &name,
+  int push_level(const std::string &name,
                  double rel_time, RelativeStart rel_to);
   int add_c_interval(CInterval *c_interval,
                      double rel_time = 0.0f,
                      RelativeStart rel_to = RS_previous_end);
-  int add_ext_index(int ext_index, const string &name,
+  int add_ext_index(int ext_index, const std::string &name,
                     double duration, bool open_ended,
                     double rel_time, RelativeStart rel_to);
   int pop_level(double duration = -1.0);
 
-  bool set_interval_start_time(const string &name, double rel_time,
+  bool set_interval_start_time(const std::string &name, double rel_time,
                                RelativeStart rel_to = RS_level_begin);
-  double get_interval_start_time(const string &name) const;
-  double get_interval_end_time(const string &name) const;
+  double get_interval_start_time(const std::string &name) const;
+  double get_interval_end_time(const std::string &name) const;
 
   enum DefType {
     DT_c_interval,
@@ -86,8 +86,8 @@ PUBLISHED:
   INLINE EventType get_event_type() const;
   void pop_event();
 
-  virtual void write(ostream &out, int indent_level) const;
-  void timeline(ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
+  void timeline(std::ostream &out) const;
 
 protected:
   virtual void do_recompute();
@@ -98,7 +98,7 @@ private:
     DefType _type;
     PT(CInterval) _c_interval;
     int _ext_index;
-    string _ext_name;
+    std::string _ext_name;
     double _ext_duration;
     bool _ext_open_ended;
     double _rel_time;
@@ -159,7 +159,7 @@ private:
   int get_begin_time(const IntervalDef &def, int level_begin,
                      int previous_begin, int previous_end);
 
-  void write_event_desc(ostream &out, const IntervalDef &def,
+  void write_event_desc(std::ostream &out, const IntervalDef &def,
                         int &extra_indent_level) const;
 
 

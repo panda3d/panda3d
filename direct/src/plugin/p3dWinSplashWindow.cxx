@@ -28,14 +28,14 @@ P3DWinSplashWindow::
 P3DWinSplashWindow(P3DInstance *inst, bool make_visible) :
   P3DSplashWindow(inst, make_visible)
 {
-  _thread = NULL;
+  _thread = nullptr;
   _thread_id = 0;
-  _hwnd = NULL;
-  _font = NULL;
-  _fg_brush = NULL;
-  _bg_brush = NULL;
-  _bar_brush = NULL;
-  _bar_bg_brush = NULL;
+  _hwnd = nullptr;
+  _font = nullptr;
+  _fg_brush = nullptr;
+  _bg_brush = nullptr;
+  _bar_brush = nullptr;
+  _bar_bg_brush = nullptr;
   _thread_running = false;
   _install_progress = 0.0;
   _progress_known = true;
@@ -97,7 +97,7 @@ set_visible(bool visible) {
 void P3DWinSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
-  WinImageData *image = NULL;
+  WinImageData *image = nullptr;
   switch (image_placement) {
   case IP_background:
     image = &_background_image;
@@ -116,7 +116,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
     image = &_button_click_image;
     break;
   }
-  if (image != NULL) {
+  if (image != nullptr) {
     ACQUIRE_LOCK(_install_lock);
     if (image->_filename != image_filename) {
       image->_filename = image_filename;
@@ -211,13 +211,13 @@ request_keyboard_focus() {
 void P3DWinSplashWindow::
 register_window_class() {
   if (!_registered_window_class) {
-    HINSTANCE application = GetModuleHandle(NULL);
+    HINSTANCE application = GetModuleHandle(nullptr);
 
     WNDCLASS wc;
     ZeroMemory(&wc, sizeof(WNDCLASS));
     wc.lpfnWndProc = (WNDPROC)st_window_proc;
     wc.hInstance = application;
-    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wc.lpszClassName = "panda3d_splash";
 
     if (!RegisterClass(&wc)) {
@@ -234,7 +234,7 @@ register_window_class() {
 void P3DWinSplashWindow::
 unregister_window_class() {
   if (_registered_window_class) {
-    HINSTANCE application = GetModuleHandle(NULL);
+    HINSTANCE application = GetModuleHandle(nullptr);
 
     if (!UnregisterClass("panda3d_splash", application)) {
       nout << "Could not unregister window class panda3d_splash\n";
@@ -261,8 +261,8 @@ void P3DWinSplashWindow::
 start_thread() {
   _thread_continue = true;
   _thread_running = true;
-  _thread = CreateThread(NULL, 0, &win_thread_run, this, 0, &_thread_id);
-  if (_thread == NULL) {
+  _thread = CreateThread(nullptr, 0, &win_thread_run, this, 0, &_thread_id);
+  if (_thread == nullptr) {
     // Thread never got started.
     _thread_running = false;
   }
@@ -280,17 +280,17 @@ stop_thread() {
     PostThreadMessage(_thread_id, WM_USER, 0, 0);
   }
 
-  if (_thread != NULL){
+  if (_thread != nullptr){
     // If the thread doesn't close right away, call PeekMessage() to check for
     // Windows messages that the thread might be waiting for.
     while (WaitForSingleObject(_thread, 200) == WAIT_TIMEOUT) {
       MSG msg;
-      PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+      PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE | PM_NOYIELD);
       nout << "Waiting for thread\n";
     }
 
     CloseHandle(_thread);
-    _thread = NULL;
+    _thread = nullptr;
 
     // Now that the thread has exited, we can safely close its window.  (We
     // couldn't close the window in the thread, because that would cause a
@@ -310,7 +310,7 @@ thread_run() {
   int last_focus_seq = 0;
   MSG msg;
   int retval;
-  retval = GetMessage(&msg, NULL, 0, 0);
+  retval = GetMessage(&msg, nullptr, 0, 0);
   while (retval != 0 && _thread_continue) {
     if (retval == -1) {
       nout << "Error processing message queue.\n";
@@ -329,7 +329,7 @@ thread_run() {
     if (_drawn_label != _install_label) {
       // The label has changed.  Redraw.
       _drawn_label = _install_label;
-      InvalidateRect(_hwnd, NULL, TRUE);
+      InvalidateRect(_hwnd, nullptr, TRUE);
     }
 
     // Also redraw when the progress bar changes.
@@ -349,25 +349,25 @@ thread_run() {
       _drawn_progress = _install_progress;
       _drawn_progress_known = _progress_known;
       _drawn_received_data = _received_data;
-      InvalidateRect(_hwnd, NULL, TRUE);
+      InvalidateRect(_hwnd, nullptr, TRUE);
     }
 
     if (_drawn_bstate != _bstate) {
       // The button has changed state.  Redraw it.
       _drawn_bstate = _bstate;
-      InvalidateRect(_hwnd, NULL, TRUE);
+      InvalidateRect(_hwnd, nullptr, TRUE);
     }
 
     if (_focus_seq != last_focus_seq) {
       last_focus_seq = _focus_seq;
-      if (SetFocus(_hwnd) == NULL && GetLastError() != 0) {
+      if (SetFocus(_hwnd) == nullptr && GetLastError() != 0) {
         nout << "SetFocus(" << _hwnd << ") failed: " << GetLastError() << "\n";
       }
     }
 
     RELEASE_LOCK(_install_lock);
 
-    retval = GetMessage(&msg, NULL, 0, 0);
+    retval = GetMessage(&msg, nullptr, 0, 0);
   }
 
   // Tell our parent thread that we're done.
@@ -392,7 +392,7 @@ win_thread_run(LPVOID data) {
 void P3DWinSplashWindow::
 make_window() {
   register_window_class();
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
 
   int width = 320;
   int height = 240;
@@ -420,7 +420,7 @@ make_window() {
     _hwnd =
       CreateWindow("panda3d_splash", "Panda3D", window_style,
                    x, y, width, height,
-                   parent_hwnd, NULL, application, 0);
+                   parent_hwnd, nullptr, application, 0);
 
     if (!_hwnd) {
       nout << "Could not create embedded window!\n";
@@ -442,7 +442,7 @@ make_window() {
                    x, y,
                    win_rect.right - win_rect.left,
                    win_rect.bottom - win_rect.top,
-                   NULL, NULL, application, 0);
+                   nullptr, nullptr, application, 0);
     if (!_hwnd) {
       nout << "Could not create toplevel window!\n";
       return;
@@ -463,7 +463,7 @@ make_window() {
                       ANSI_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
                       CLEARTYPE_QUALITY, VARIABLE_PITCH, _font_family.c_str());
 
-  if (_font == NULL) {
+  if (_font == nullptr) {
     nout << "CreateFont failed: " << GetLastError() << "\n";
     _font = (HFONT)GetStockObject(ANSI_VAR_FONT);
   }
@@ -490,7 +490,7 @@ update_image(WinImageData &image) {
   image.dump_image();
 
   // Since we'll be displaying a new image, we need to refresh the window.
-  InvalidateRect(_hwnd, NULL, TRUE);
+  InvalidateRect(_hwnd, nullptr, TRUE);
 
   // Go read the image.
   string data;
@@ -583,27 +583,27 @@ update_image(WinImageData &image) {
  */
 void P3DWinSplashWindow::
 close_window() {
-  if (_hwnd != NULL) {
+  if (_hwnd != nullptr) {
     ShowWindow(_hwnd, SW_HIDE);
     CloseWindow(_hwnd);
-    _hwnd = NULL;
+    _hwnd = nullptr;
   }
 
-  if (_fg_brush != NULL) {
+  if (_fg_brush != nullptr) {
     DeleteObject(_fg_brush);
-    _fg_brush = NULL;
+    _fg_brush = nullptr;
   }
-  if (_bg_brush != NULL) {
+  if (_bg_brush != nullptr) {
     DeleteObject(_bg_brush);
-    _bg_brush = NULL;
+    _bg_brush = nullptr;
   }
-  if (_bar_brush != NULL) {
+  if (_bar_brush != nullptr) {
     DeleteObject(_bar_brush);
-    _bar_brush = NULL;
+    _bar_brush = nullptr;
   }
-  if (_bar_bg_brush != NULL) {
+  if (_bar_bg_brush != nullptr) {
     DeleteObject(_bar_bg_brush);
-    _bar_bg_brush = NULL;
+    _bar_bg_brush = nullptr;
   }
 
   _background_image.dump_image();
@@ -677,7 +677,7 @@ paint_window(HDC dc) {
  */
 bool P3DWinSplashWindow::
 paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
-  if (image._bitmap == NULL) {
+  if (image._bitmap == nullptr) {
     return false;
   }
 
@@ -738,7 +738,7 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
     }
   }
 
-  SelectObject(mem_dc, NULL);
+  SelectObject(mem_dc, nullptr);
   DeleteDC(mem_dc);
 
   return true;
@@ -831,7 +831,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_SIZE:
-    InvalidateRect(hwnd, NULL, FALSE);
+    InvalidateRect(hwnd, nullptr, FALSE);
     break;
 
   case WM_ERASEBKGND:
@@ -869,7 +869,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     {
       int elapsed = GetTickCount() - _request_focus_tick;
       if (elapsed < 200) {
-        if (SetFocus(_hwnd) == NULL && GetLastError() != 0) {
+        if (SetFocus(_hwnd) == nullptr && GetLastError() != 0) {
           nout << "Secondary SetFocus failed: " << GetLastError() << "\n";
         }
       }
@@ -889,7 +889,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   case WM_KEYDOWN:
   case WM_SYSKEYUP:
   case WM_KEYUP:
-    if (_inst->get_session() != NULL) {
+    if (_inst->get_session() != nullptr) {
       _inst->get_session()->send_windows_message(_inst, msg, wparam, lparam);
     }
     break;
@@ -904,7 +904,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 LRESULT P3DWinSplashWindow::
 st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   LONG_PTR self = GetWindowLongPtr(hwnd, GWLP_USERDATA);
-  if (self == NULL) {
+  if (self == nullptr) {
     // We haven't assigned the pointer yet.
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
@@ -917,9 +917,9 @@ st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
  */
 void P3DWinSplashWindow::WinImageData::
 dump_image() {
-  if (_bitmap != NULL) {
+  if (_bitmap != nullptr) {
     DeleteObject(_bitmap);
-    _bitmap = NULL;
+    _bitmap = nullptr;
   }
 }
 

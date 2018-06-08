@@ -29,7 +29,7 @@ LoaderFileTypeAssimp() : _loader(new AssimpLoader) {
  */
 LoaderFileTypeAssimp::
 ~LoaderFileTypeAssimp() {
-  if (_loader != NULL) {
+  if (_loader != nullptr) {
     delete _loader;
   }
 }
@@ -81,7 +81,7 @@ load_file(const Filename &path, const LoaderOptions &options,
     << "Reading " << path << "\n";
 
   if (!_loader->read(path)) {
-    return NULL;
+    return nullptr;
   }
 
   _loader->build_graph();

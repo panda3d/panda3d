@@ -348,10 +348,10 @@
         int n;
 #ifdef INTERP_Z
         ZPOINT *pz;
-        unsigned int z,zz;
+        UNUSED unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB
-        unsigned int or1,og1,ob1,oa1;
+        UNUSED unsigned int or1,og1,ob1,oa1;
 #endif
 #ifdef INTERP_ST
         unsigned int s,t;

@@ -24,13 +24,13 @@
  */
 class EXPCL_PANDAEGG EggExternalReference : public EggFilenameNode {
 PUBLISHED:
-  explicit EggExternalReference(const string &node_name, const string &filename);
+  explicit EggExternalReference(const std::string &node_name, const std::string &filename);
   EggExternalReference(const EggExternalReference &copy);
   EggExternalReference &operator = (const EggExternalReference &copy);
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
-  virtual string get_default_extension() const;
+  virtual std::string get_default_extension() const;
 
 
 public:

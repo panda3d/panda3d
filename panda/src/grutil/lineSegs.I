@@ -117,7 +117,7 @@ create(bool dynamic) {
  */
 INLINE int LineSegs::
 get_num_vertices() const {
-  if (_created_data == (GeomVertexData *)NULL) {
+  if (_created_data == nullptr) {
     return 0;
   }
   return _created_data->get_num_rows();

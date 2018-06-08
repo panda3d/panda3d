@@ -27,6 +27,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_GRUTIL)
+  #error Buildsystem error: BUILDING_PANDA_GRUTIL not defined
+#endif
+
 Configure(config_grutil);
 NotifyCategoryDef(grutil, "");
 

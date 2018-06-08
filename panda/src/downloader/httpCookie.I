@@ -26,7 +26,7 @@ HTTPCookie() :
  * the string with this constructor.
  */
 INLINE HTTPCookie::
-HTTPCookie(const string &format, const URLSpec &url) {
+HTTPCookie(const std::string &format, const URLSpec &url) {
   parse_set_cookie(format, url);
 }
 
@@ -36,7 +36,7 @@ HTTPCookie(const string &format, const URLSpec &url) {
  * the HTTPClient.
  */
 INLINE HTTPCookie::
-HTTPCookie(const string &name, const string &path, const string &domain) :
+HTTPCookie(const std::string &name, const std::string &path, const std::string &domain) :
   _name(name),
   _path(path),
   _domain(domain),
@@ -55,7 +55,7 @@ INLINE HTTPCookie::
  *
  */
 INLINE void HTTPCookie::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
 }
 
@@ -63,7 +63,7 @@ set_name(const string &name) {
  * Returns the name of the cookie.  This is the key value specified by the
  * server.
  */
-INLINE const string &HTTPCookie::
+INLINE const std::string &HTTPCookie::
 get_name() const {
   return _name;
 }
@@ -72,7 +72,7 @@ get_name() const {
  *
  */
 INLINE void HTTPCookie::
-set_value(const string &value) {
+set_value(const std::string &value) {
   _value = value;
 }
 
@@ -80,7 +80,7 @@ set_value(const string &value) {
  * Returns the value of the cookie.  This is the arbitrary string associated
  * with the cookie's name, as specified by the server.
  */
-INLINE const string &HTTPCookie::
+INLINE const std::string &HTTPCookie::
 get_value() const {
   return _value;
 }
@@ -89,14 +89,14 @@ get_value() const {
  *
  */
 INLINE void HTTPCookie::
-set_domain(const string &domain) {
+set_domain(const std::string &domain) {
   _domain = domain;
 }
 
 /**
  *
  */
-INLINE const string &HTTPCookie::
+INLINE const std::string &HTTPCookie::
 get_domain() const {
   return _domain;
 }
@@ -105,7 +105,7 @@ get_domain() const {
  *
  */
 INLINE void HTTPCookie::
-set_path(const string &path) {
+set_path(const std::string &path) {
   _path = path;
 }
 
@@ -113,7 +113,7 @@ set_path(const string &path) {
  * Returns the prefix of the URL paths on the server for which this cookie
  * will be sent.
  */
-INLINE const string &HTTPCookie::
+INLINE const std::string &HTTPCookie::
 get_path() const {
   return _path;
 }
@@ -177,7 +177,7 @@ is_expired(const HTTPDate &now) const {
   return _expires.is_valid() && _expires < now;
 }
 
-INLINE ostream &operator << (ostream &out, const HTTPCookie &cookie) {
+INLINE std::ostream &operator << (std::ostream &out, const HTTPCookie &cookie) {
   cookie.output(out);
   return out;
 }

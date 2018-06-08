@@ -119,7 +119,7 @@ class MaxEggPlugin : public HelperObject
 
   void AddEgg(MaxOptionsDialog *newEgg);
   void RemoveEgg(int i);
-  MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : NULL; }
+  MaxOptionsDialog *GetEgg(int i) { return (i >= 0 && i < numEggs) ? eggList[i] : nullptr; }
 
   // Required implimented virtual methods: inherited virtual methods for
   // Reference-management

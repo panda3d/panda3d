@@ -38,7 +38,7 @@ public:
   static PT(OdeTriMeshData) get_data(dGeomID id);
   static void unlink_data(dGeomID id);
   static void remove_data(OdeTriMeshData *data);
-  static void print_data(const string &marker);
+  static void print_data(const std::string &marker);
 
 private:
   typedef pmap<dGeomID, PT(OdeTriMeshData)> TriMeshDataMap;
@@ -59,8 +59,8 @@ PUBLISHED:
   // data_id); INLINE void get_buffer(unsigned char** buf, int* buf_len)
   // const; INLINE void set_buffer(unsigned char* buf); INLINE void update();
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
-  void write_faces(ostream &out) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
+  void write_faces(std::ostream &out) const;
 
 public:
   INLINE void build_single(const void* vertices, int vertex_stride, int vertex_count, \

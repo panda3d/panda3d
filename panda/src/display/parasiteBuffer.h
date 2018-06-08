@@ -42,7 +42,7 @@
  */
 class EXPCL_PANDA_DISPLAY ParasiteBuffer : public GraphicsOutput {
 public:
-  ParasiteBuffer(GraphicsOutput *host, const string &name,
+  ParasiteBuffer(GraphicsOutput *host, const std::string &name,
                  int x_size, int y_size, int flags);
 
 PUBLISHED:

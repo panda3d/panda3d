@@ -30,14 +30,14 @@
  */
 SoftNodeTree::
 SoftNodeTree() {
-  _root = new SoftNodeDesc(NULL, "----root");
+  _root = new SoftNodeDesc(nullptr, "----root");
   _root->fullname = "----root";
   _fps = 0.0;
   _use_prefix = 0;
-  _search_prefix = NULL;
-  _egg_data = (EggData *)NULL;
-  _egg_root = (EggGroupNode *)NULL;
-  _skeleton_node = (EggGroupNode *)NULL;
+  _search_prefix = nullptr;
+  _egg_data = nullptr;
+  _egg_root = nullptr;
+  _skeleton_node = nullptr;
 }
 /**
  * Given an element, return a copy of the element's name WITHOUT prefix.
@@ -91,7 +91,7 @@ GetFullName( SAA_Scene *scene, SAA_Elem *element )
 char *SoftNodeTree::
 GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
   int size;
-  char *modelNote = NULL;
+  char *modelNote = nullptr;
   SAA_Boolean bigEndian;
 
   SAA_elementGetUserDataSize( scene, model, "MNOT", &size );
@@ -106,7 +106,7 @@ GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
 
     // strip off newline, if present
     char *eol = (char *)memchr( modelNote, '\n', size );
-    if ( eol != NULL)
+    if ( eol != nullptr)
       *eol = '\0';
     else
       modelNote[size] = '\0';
@@ -130,7 +130,7 @@ GetRootName( const char *name ) {
   hyphen = strchr( name, '-' );
   len = hyphen-name;
 
-  if ( (hyphen != NULL) && len ) {
+  if ( (hyphen != nullptr) && len ) {
     root = new char[len+1];
     strncpy( root, name, len );
     root[len] = '\0';
@@ -164,7 +164,7 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   if ( numModels ) {
     // allocate array of models
     models = (SAA_Elem *) new SAA_Elem[numModels];
-    if ( models != NULL ) {
+    if ( models != nullptr ) {
       if ((status = SAA_sceneGetModels( &scene, numModels, models )) != SI_SUCCESS) {
         return false;
       }
@@ -200,7 +200,7 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   softegg_cat.spam() << "========================================================\n";
 
   // find _parentJoint for each node
-  _root->set_parentJoint(&scene, NULL);
+  _root->set_parentJoint(&scene, nullptr);
 
   return all_ok;
 }
@@ -280,7 +280,7 @@ get_num_nodes() const {
  */
 SoftNodeDesc *SoftNodeTree::
 get_node(int n) const {
-  nassertr(n >= 0 && n < (int)_nodes.size(), NULL);
+  nassertr(n >= 0 && n < (int)_nodes.size(), nullptr);
   return _nodes[n];
 }
 
@@ -292,7 +292,7 @@ get_node(string name) const {
   NodesByName::const_iterator ni = _nodes_by_name.find(name);
   if (ni != _nodes_by_name.end())
     return (*ni).second;
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -314,7 +314,7 @@ clear_egg(EggData *egg_data, EggGroupNode *egg_root,
  */
 EggGroup *SoftNodeTree::
 get_egg_group(SoftNodeDesc *node_desc) {
-  nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
+  nassertr(_egg_root != nullptr, nullptr);
 
   // lets print some relationship
   softegg_cat.spam() << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
@@ -324,7 +324,7 @@ get_egg_group(SoftNodeDesc *node_desc) {
     softegg_cat.spam() << " parent " << node_desc->_parent;
   softegg_cat.spam() << endl;
 
-  if (node_desc->_egg_group == (EggGroup *)NULL) {
+  if (node_desc->_egg_group == nullptr) {
     // We need to make a new group node.
     EggGroup *egg_group;
 
@@ -355,8 +355,8 @@ get_egg_group(SoftNodeDesc *node_desc) {
  */
 EggTable *SoftNodeTree::
 get_egg_table(SoftNodeDesc *node_desc) {
-  nassertr(_skeleton_node != (EggGroupNode *)NULL, NULL);
-  nassertr(node_desc->is_joint(), NULL);
+  nassertr(_skeleton_node != nullptr, nullptr);
+  nassertr(node_desc->is_joint(), nullptr);
 
   // lets print some relationship
   softegg_cat.spam() << " group " << node_desc->get_name() << "(" << node_desc->_egg_group << ")";
@@ -366,7 +366,7 @@ get_egg_table(SoftNodeDesc *node_desc) {
     softegg_cat.spam() << " parent " << node_desc->_parent;
   softegg_cat.spam() << endl;
 
-  if (node_desc->_egg_table == (EggTable *)NULL) {
+  if (node_desc->_egg_table == nullptr) {
     softegg_cat.spam() << "creating a new table\n";
     // We need to make a new table node.  nassertr(node_desc->_parent !=
     // (SoftNodeDesc *)NULL, NULL);
@@ -433,7 +433,7 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, const char *node_name) {
     // check to see if this NULL is used as a skeleton or is animated via
     // constraint only ( these nodes are tagged by the animator with the
     // keyword "joint" somewhere in the nodes name)
-    if ( isSkeleton || (strstr( name, "joint" ) != NULL) ) {
+    if ( isSkeleton || (strstr( name, "joint" ) != nullptr) ) {
       // MakeJoint( &scene, lastJoint, lastAnim, model, name );
       node_desc->set_joint();
       softegg_cat.spam() << " animating Standard null!!!\n";
@@ -466,7 +466,7 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
 
   node_name = name;
 
-  SoftNodeDesc *node_desc = r_build_node(NULL, node_name);
+  SoftNodeDesc *node_desc = r_build_node(nullptr, node_name);
 
   node_desc->fullname = fullname;
   node_desc->set_model(model);
@@ -475,7 +475,7 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
   // find out what type of node we're dealing with
   SAA_modelGetType( scene, node_desc->get_model(), &type );
 
-  if (type == SAA_MJNT || isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != NULL))
+  if (type == SAA_MJNT || isSkeleton || (strstr(node_desc->get_name().c_str(), "joint") != nullptr))
     node_desc->set_joint();
 
   // treat the MNILL differently, because it needs to detect and set some
@@ -514,7 +514,7 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
       // find out what type of node we're dealing with
       SAA_modelGetType( scene, node_child->get_model(), &type );
 
-      if (type == SAA_MJNT || isSkeleton || (strstr(node_child->get_name().c_str(), "joint") != NULL))
+      if (type == SAA_MJNT || isSkeleton || (strstr(node_child->get_name().c_str(), "joint") != nullptr))
         node_child->set_joint();
 
       // treat the MNILL differently, because it needs to detect and set some

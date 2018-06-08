@@ -79,7 +79,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -129,7 +129,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void AndroidGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -153,7 +153,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void AndroidGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -185,9 +185,9 @@ process_events() {
   struct android_poll_source* source;
 
   // Loop until all events are read.
-  while ((looper_id = ALooper_pollAll(0, NULL, &events, (void**)&source)) >= 0) {
+  while ((looper_id = ALooper_pollAll(0, nullptr, &events, (void**)&source)) >= 0) {
     // Process this event.
-    if (source != NULL) {
+    if (source != nullptr) {
       source->process(_app, source);
     }
   }
@@ -207,7 +207,7 @@ process_events() {
  */
 void AndroidGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (_pipe == (GraphicsPipe *)NULL) {
+  if (_pipe == nullptr) {
     // If the pipe is null, we're probably closing down.
     GraphicsWindow::set_properties_now(properties);
     return;
@@ -242,7 +242,7 @@ void AndroidGraphicsWindow::
 close_window() {
   destroy_surface();
 
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     _gsg.clear();
   }
 
@@ -266,7 +266,7 @@ open_window() {
   AndroidGraphicsStateGuardian *androidgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    androidgsg = new AndroidGraphicsStateGuardian(_engine, _pipe, NULL);
+    androidgsg = new AndroidGraphicsStateGuardian(_engine, _pipe, nullptr);
     androidgsg->choose_pixel_format(_fb_properties, false, false);
     _gsg = androidgsg;
   } else {
@@ -281,13 +281,13 @@ open_window() {
   }
 
   // Register the callbacks
-  assert(_app != NULL);
+  assert(_app != nullptr);
   _app->userData = this;
   _app->onAppCmd = handle_command;
   _app->onInputEvent = handle_input_event;
 
   // Wait until Android has opened the window.
-  while (_app->window == NULL) {
+  while (_app->window == nullptr) {
     process_events();
   }
 
@@ -309,8 +309,6 @@ open_window() {
 
   _fb_properties = androidgsg->get_fb_properties();
 
-  androiddisplay_cat.error() << "open_window done\n";
-
   return true;
 }
 
@@ -328,7 +326,7 @@ destroy_surface() {
   }
 
   // Destroy the current context.
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     AndroidGraphicsStateGuardian *androidgsg;
     DCAST_INTO_V(androidgsg, _gsg);
     androidgsg->destroy_context();
@@ -357,7 +355,7 @@ create_surface() {
   ANativeActivity_setWindowFlags(_app->activity, add_flags, del_flags);
 
   // Create the EGL surface.
-  _egl_surface = eglCreateWindowSurface(_egl_display, androidgsg->_fbconfig, _app->window, NULL);
+  _egl_surface = eglCreateWindowSurface(_egl_display, androidgsg->_fbconfig, _app->window, nullptr);
   if (eglGetError() != EGL_SUCCESS) {
     androiddisplay_cat.error()
       << "Failed to create window surface.\n";
@@ -366,7 +364,6 @@ create_surface() {
 
   // Create a context.
   if (androidgsg->_context == EGL_NO_CONTEXT) {
-    androiddisplay_cat.error() << "creating context\n";
     if (!androidgsg->create_context()) {
       return false;
     }
@@ -396,8 +393,10 @@ create_surface() {
  */
 void AndroidGraphicsWindow::
 handle_command(struct android_app *app, int32_t command) {
-  AndroidGraphicsWindow* window = (AndroidGraphicsWindow*) app->userData;
-  window->ns_handle_command(command);
+  AndroidGraphicsWindow *window = (AndroidGraphicsWindow *)app->userData;
+  if (window != nullptr) {
+    window->ns_handle_command(command);
+  }
 }
 
 /**
@@ -416,7 +415,7 @@ ns_handle_command(int32_t command) {
       break;
     case APP_CMD_INIT_WINDOW:
       // The window is being shown, get it ready.
-      if (_app->window != NULL) {
+      if (_app->window != nullptr) {
         create_surface();
         properties.set_size(ANativeWindow_getWidth(_app->window),
                             ANativeWindow_getHeight(_app->window));
@@ -517,11 +516,15 @@ handle_key_event(const AInputEvent *event) {
   // Is it an up or down event?
   int32_t action = AKeyEvent_getAction(event);
   if (action == AKEY_EVENT_ACTION_DOWN) {
-    _input_devices[0].button_down(button);
+    if (AKeyEvent_getRepeatCount(event) > 0) {
+      _input_devices[0].button_resume_down(button);
+    } else {
+      _input_devices[0].button_down(button);
+    }
   } else if (action == AKEY_EVENT_ACTION_UP) {
     _input_devices[0].button_up(button);
   }
-  // TODO getRepeatCount, ACTION_MULTIPLE
+  // TODO AKEY_EVENT_ACTION_MULTIPLE
 
   return 1;
 }
@@ -539,6 +542,9 @@ handle_motion_event(const AInputEvent *event) {
     // The up event doesn't let us know which button is up, so we need to
     // keep track of the button state ourselves.
     int32_t button_state = AMotionEvent_getButtonState(event);
+    if (button_state == 0 && action == AMOTION_EVENT_ACTION_DOWN) {
+      button_state = AMOTION_EVENT_BUTTON_PRIMARY;
+    }
     int32_t changed = _mouse_button_state ^ button_state;
     if (changed != 0) {
       if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {

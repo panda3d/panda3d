@@ -46,7 +46,7 @@ remove(PT(T) object) {
   }
   else
   {
-    physx_cat.warning() << "object not found in collection" << endl;
+    physx_cat.warning() << "object not found in collection" << std::endl;
   }
 }
 
@@ -58,7 +58,7 @@ template <class T>
 INLINE T *PhysxObjectCollection<T>::
 get(unsigned int index) const {
 
-  nassertr(index < _objects.size(), NULL);
+  nassertr(index < _objects.size(), nullptr);
   return _objects[index];
 }
 
@@ -70,7 +70,7 @@ template <class T>
 INLINE T *PhysxObjectCollection<T>::
 operator [] (unsigned int index) const {
 
-  nassertr(index < _objects.size(), NULL);
+  nassertr(index < _objects.size(), nullptr);
   return _objects[index];
 }
 
@@ -89,7 +89,7 @@ ls() const {
  */
 template <class T>
 INLINE void PhysxObjectCollection<T>::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
 
   for (unsigned int i=0; i < size(); i++) {
     get(i)->ls(out, indent_level + 2);

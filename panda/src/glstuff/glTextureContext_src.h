@@ -42,7 +42,7 @@ public:
 #endif
 
 #ifdef OPENGLES_1
-  static CONSTEXPR bool needs_barrier(GLbitfield barrier) { return false; };
+  static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
 #else
   bool needs_barrier(GLbitfield barrier);
   void mark_incoherent(bool wrote);

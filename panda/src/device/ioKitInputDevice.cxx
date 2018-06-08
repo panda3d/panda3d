@@ -110,7 +110,7 @@ IOKitInputDevice(IOHIDDeviceRef device) :
     _device_class = DC_gamepad;
   }
 
-  CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, NULL, 0);
+  CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, nullptr, 0);
   CFIndex count = CFArrayGetCount(elements);
   for (CFIndex i = 0; i < count; ++i) {
     IOHIDElementRef element = (IOHIDElementRef)CFArrayGetValueAtIndex(elements, i);

@@ -19,8 +19,8 @@ ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
   _external_mutex = &mutex._lock;
 
   // Create an auto-reset event and a manual-reset event.
-  _event_signal = CreateEvent(NULL, false, false, NULL);
-  _event_broadcast = CreateEvent(NULL, true, false, NULL);
+  _event_signal = CreateEvent(nullptr, false, false, nullptr);
+  _event_broadcast = CreateEvent(nullptr, true, false, nullptr);
 
   _waiters_count = 0;
 }

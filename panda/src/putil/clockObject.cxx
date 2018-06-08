@@ -12,7 +12,7 @@
  */
 
 #include "clockObject.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "configVariableEnum.h"
 #include "string_utils.h"
 #include "thread.h"

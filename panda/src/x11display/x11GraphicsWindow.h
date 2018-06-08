@@ -26,7 +26,7 @@
 class x11GraphicsWindow : public GraphicsWindow {
 public:
   x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -70,7 +70,7 @@ protected:
 
 private:
   X11_Cursor get_cursor(const Filename &filename);
-  X11_Cursor read_ico(istream &ico);
+  X11_Cursor read_ico(std::istream &ico);
 
 protected:
   X11_Display *_display;

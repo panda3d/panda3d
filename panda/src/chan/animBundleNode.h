@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_CHAN AnimBundleNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit AnimBundleNode(const string &name, AnimBundle *bundle);
+  INLINE explicit AnimBundleNode(const std::string &name, AnimBundle *bundle);
 
 protected:
   INLINE AnimBundleNode();

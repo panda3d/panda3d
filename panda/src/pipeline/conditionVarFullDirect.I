@@ -25,32 +25,6 @@ ConditionVarFullDirect(MutexDirect &mutex) :
 }
 
 /**
- *
- */
-INLINE ConditionVarFullDirect::
-~ConditionVarFullDirect() {
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVarFullDirect::
-ConditionVarFullDirect(const ConditionVarFullDirect &copy) :
-  _mutex(copy._mutex),
-  _impl(_mutex._impl)
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVarFullDirect::
-operator = (const ConditionVarFullDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE MutexDirect &ConditionVarFullDirect::

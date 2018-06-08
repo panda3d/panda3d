@@ -39,7 +39,7 @@ public:
     DT_acceleration
   };
 
-  VrpnTrackerDevice(VrpnClient *client, const string &device_name,
+  VrpnTrackerDevice(VrpnClient *client, const std::string &device_name,
                     int sensor, DataType data_type,
                     VrpnTracker *vrpn_tracker);
   virtual ~VrpnTrackerDevice();

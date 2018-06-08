@@ -26,5 +26,5 @@ PhysxUtilLib() {
 INLINE PhysxUtilLib::
 ~PhysxUtilLib() {
 
-  _ptr = NULL;
+  _ptr = nullptr;
 }

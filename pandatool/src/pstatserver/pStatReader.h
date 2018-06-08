@@ -52,7 +52,7 @@ public:
   PStatMonitor *get_monitor();
 
 private:
-  string get_hostname();
+  std::string get_hostname();
   void send_hello();
 
   virtual void receive_datagram(const NetDatagram &datagram);
@@ -72,7 +72,7 @@ private:
 
   PT(PStatClientData) _client_data;
 
-  string _hostname;
+  std::string _hostname;
 
   class FrameData {
   public:

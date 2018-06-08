@@ -20,11 +20,11 @@
 #include "configVariableDouble.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(interval, EXPCL_DIRECT, EXPTP_DIRECT);
+NotifyCategoryDecl(interval, EXPCL_DIRECT_INTERVAL, EXPTP_DIRECT_INTERVAL);
 
 extern ConfigVariableDouble interval_precision;
-extern EXPCL_DIRECT ConfigVariableBool verify_intervals;
+extern EXPCL_DIRECT_INTERVAL ConfigVariableBool verify_intervals;
 
-extern EXPCL_DIRECT void init_libinterval();
+extern EXPCL_DIRECT_INTERVAL void init_libinterval();
 
 #endif

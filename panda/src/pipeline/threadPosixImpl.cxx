@@ -24,6 +24,8 @@
 #ifdef ANDROID
 #include "config_express.h"
 #include <jni.h>
+
+static JavaVM *java_vm = nullptr;
 #endif
 
 pthread_key_t ThreadPosixImpl::_pt_ptr_index = 0;
@@ -39,14 +41,14 @@ ThreadPosixImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
-  _mutex.acquire();
+  _mutex.lock();
 
   if (!_detached) {
     pthread_detach(_thread);
     _detached = true;
   }
 
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -63,13 +65,13 @@ setup_main_thread() {
  */
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool joinable) {
-  _mutex.acquire();
+  _mutex.lock();
   if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
 
   nassertd(_status == S_new) {
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
@@ -146,12 +148,12 @@ start(ThreadPriority priority, bool joinable) {
     // Oops, we couldn't start the thread.  Be sure to decrement the reference
     // count we incremented above, and return false to indicate failure.
     unref_delete(_parent_obj);
-    _mutex.release();
+    _mutex.unlock();
     return false;
   }
 
   // Thread was successfully started.
-  _mutex.release();
+  _mutex.unlock();
   return true;
 }
 
@@ -161,15 +163,15 @@ start(ThreadPriority priority, bool joinable) {
  */
 void ThreadPosixImpl::
 join() {
-  _mutex.acquire();
+  _mutex.lock();
   if (!_detached) {
-    _mutex.release();
+    _mutex.unlock();
     void *return_val;
     pthread_join(_thread, &return_val);
     _detached = true;
     return;
   }
-  _mutex.release();
+  _mutex.unlock();
 }
 
 /**
@@ -183,6 +185,53 @@ get_unique_id() const {
   return strm.str();
 }
 
+#ifdef ANDROID
+/**
+ * Attaches the thread to the Java virtual machine.  If this returns true, a
+ * JNIEnv pointer can be acquired using get_jni_env().
+ */
+bool ThreadPosixImpl::
+attach_java_vm() {
+  JNIEnv *env;
+  string thread_name = _parent_obj->get_name();
+  JavaVMAttachArgs args;
+  args.version = JNI_VERSION_1_2;
+  args.name = thread_name.c_str();
+  args.group = nullptr;
+  if (java_vm->AttachCurrentThread(&env, &args) != 0) {
+    thread_cat.error()
+      << "Failed to attach Java VM to thread "
+      << _parent_obj->get_name() << "!\n";
+    _jni_env = nullptr;
+    return false;
+  }
+  _jni_env = env;
+  return true;
+}
+
+/**
+ * Binds the Panda thread to the current thread, assuming that the current
+ * thread is already a valid attached Java thread.  Called by JNI_OnLoad.
+ */
+void ThreadPosixImpl::
+bind_java_thread() {
+  Thread *thread = Thread::get_current_thread();
+  nassertv(thread != nullptr);
+
+  // Get the JNIEnv for this Java thread, and store it on the corresponding
+  // Panda thread object.
+  JNIEnv *env;
+  if (java_vm->GetEnv((void **)&env, JNI_VERSION_1_4) == JNI_OK) {
+    nassertv(thread->_impl._jni_env == nullptr || thread->_impl._jni_env == env);
+    thread->_impl._jni_env = env;
+  } else {
+    thread_cat->error()
+      << "Called bind_java_thread() on thread "
+      << *thread << ", which is not attached to Java VM!\n";
+  }
+}
+#endif  // ANDROID
+
 /**
  * The entry point of each thread.
  */
@@ -194,29 +243,22 @@ root_func(void *data) {
 
     ThreadPosixImpl *self = (ThreadPosixImpl *)data;
     int result = pthread_setspecific(_pt_ptr_index, self->_parent_obj);
-    nassertr(result == 0, NULL);
+    nassertr(result == 0, nullptr);
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_start_called) {
-        self->_mutex.release();
-        return NULL;
+        self->_mutex.unlock();
+        return nullptr;
       }
 
       self->_status = S_running;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID
     // Attach the Java VM to allow calling Java functions in this thread.
-    JavaVM *jvm = get_java_vm();
-    JNIEnv *env;
-    if (jvm == NULL || jvm->AttachCurrentThread(&env, NULL) != 0) {
-      thread_cat.error()
-        << "Failed to attach Java VM to thread "
-        << self->_parent_obj->get_name() << "!\n";
-      env = NULL;
-    }
+    self->attach_java_vm();
 #endif
 
     self->_parent_obj->thread_main();
@@ -228,18 +270,20 @@ root_func(void *data) {
     }
 
     {
-      self->_mutex.acquire();
+      self->_mutex.lock();
       nassertd(self->_status == S_running) {
-        self->_mutex.release();
-        return NULL;
+        self->_mutex.unlock();
+        return nullptr;
       }
       self->_status = S_finished;
-      self->_mutex.release();
+      self->_mutex.unlock();
     }
 
 #ifdef ANDROID
-    if (env != NULL) {
-      jvm->DetachCurrentThread();
+    // We cannot let the thread end without detaching it.
+    if (self->_jni_env != nullptr) {
+      java_vm->DetachCurrentThread();
+      self->_jni_env = nullptr;
     }
 #endif
 
@@ -249,7 +293,7 @@ root_func(void *data) {
     unref_delete(self->_parent_obj);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -260,7 +304,7 @@ void ThreadPosixImpl::
 init_pt_ptr_index() {
   nassertv(!_got_pt_ptr_index);
 
-  int result = pthread_key_create(&_pt_ptr_index, NULL);
+  int result = pthread_key_create(&_pt_ptr_index, nullptr);
   if (result != 0) {
     thread_cat->error()
       << "Unable to associate Thread pointers with threads.\n";
@@ -275,5 +319,18 @@ init_pt_ptr_index() {
   result = pthread_setspecific(_pt_ptr_index, main_thread_obj);
   nassertv(result == 0);
 }
+
+#ifdef ANDROID
+/**
+ * Called by Java when loading this library from the Java virtual machine.
+ */
+jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
+  // Store the JVM pointer globally.
+  java_vm = jvm;
+
+  ThreadPosixImpl::bind_java_thread();
+  return JNI_VERSION_1_4;
+}
+#endif  // ANDROID
 
 #endif  // THREAD_POSIX_IMPL

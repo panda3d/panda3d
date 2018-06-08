@@ -66,7 +66,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -118,7 +118,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void eglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -142,7 +142,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void eglGraphicsWindow::
 end_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
+  if (_gsg != nullptr && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics context is
     // current before flipping the windows, and insisting on doing so can be a
@@ -161,7 +161,7 @@ end_flip() {
  */
 void eglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";
@@ -169,9 +169,9 @@ close_window() {
     _gsg.clear();
   }
 
-  if (_ic != (XIC)NULL) {
+  if (_ic != (XIC)nullptr) {
     XDestroyIC(_ic);
-    _ic = (XIC)NULL;
+    _ic = (XIC)nullptr;
   }
 
   if (_egl_surface != 0) {
@@ -181,9 +181,9 @@ close_window() {
     }
   }
 
-  if (_xwindow != (X11_Window)NULL) {
+  if (_xwindow != (X11_Window)nullptr) {
     XDestroyWindow(_display, _xwindow);
-    _xwindow = (X11_Window)NULL;
+    _xwindow = (X11_Window)nullptr;
 
     // This may be necessary if we just closed the last X window in an
     // application, so the server hears the close request.
@@ -205,7 +205,7 @@ open_window() {
   eglGraphicsStateGuardian *eglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, NULL);
+    eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, nullptr);
     eglgsg->choose_pixel_format(_fb_properties, egl_pipe->get_display(), egl_pipe->get_screen(), false, false);
     _gsg = eglgsg;
   } else {
@@ -220,7 +220,7 @@ open_window() {
   }
 
   _visual_info = eglgsg->_visual;
-  if (_visual_info == NULL) {
+  if (_visual_info == nullptr) {
     // No X visual for this fbconfig; how can we open the window?
     egldisplay_cat.error()
       << "No X visual: cannot open window.\n";
@@ -233,7 +233,7 @@ open_window() {
     return false;
   }
 
-  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, NULL);
+  _egl_surface = eglCreateWindowSurface(_egl_display, eglgsg->_fbconfig, (NativeWindowType) _xwindow, nullptr);
   if (eglGetError() != EGL_SUCCESS) {
     egldisplay_cat.error()
       << "Failed to create window surface.\n";

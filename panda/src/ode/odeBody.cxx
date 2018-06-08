@@ -63,8 +63,8 @@ get_data() const {
 
 OdeJoint OdeBody::
 get_joint(int index) const {
-  nassertr(_id != 0, OdeJoint(0));
-  nassertr(index < get_num_joints(), OdeJoint(0));
+  nassertr(_id != nullptr, OdeJoint(nullptr));
+  nassertr(index < get_num_joints(), OdeJoint(nullptr));
   return OdeJoint(dBodyGetJoint(_id, index));
 }
 
@@ -77,5 +77,5 @@ write(ostream &out, unsigned int indent) const {
 
 OdeBody::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }

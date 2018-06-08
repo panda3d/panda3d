@@ -26,28 +26,28 @@
  * at the time of execution.  This is encapsulated to support accessing these
  * things during static init time, which seems to be risky at best.
  */
-class EXPCL_DTOOL ExecutionEnvironment {
+class EXPCL_DTOOL_DTOOLUTIL ExecutionEnvironment {
 private:
   ExecutionEnvironment();
 
 PUBLISHED:
-  INLINE static bool has_environment_variable(const string &var);
-  INLINE static string get_environment_variable(const string &var);
-  INLINE static void set_environment_variable(const string &var, const string &value);
+  INLINE static bool has_environment_variable(const std::string &var);
+  INLINE static std::string get_environment_variable(const std::string &var);
+  INLINE static void set_environment_variable(const std::string &var, const std::string &value);
 
-  INLINE static void shadow_environment_variable(const string &var, const string &value);
-  INLINE static void clear_shadow(const string &var);
+  INLINE static void shadow_environment_variable(const std::string &var, const std::string &value);
+  INLINE static void clear_shadow(const std::string &var);
 
-  static string expand_string(const string &str);
+  static std::string expand_string(const std::string &str);
 
   INLINE static size_t get_num_args();
-  INLINE static string get_arg(size_t n);
+  INLINE static std::string get_arg(size_t n);
 
-  INLINE static string get_binary_name();
-  INLINE static string get_dtool_name();
+  INLINE static std::string get_binary_name();
+  INLINE static std::string get_dtool_name();
 
-  INLINE static void set_binary_name(const string &name);
-  INLINE static void set_dtool_name(const string &name);
+  INLINE static void set_binary_name(const std::string &name);
+  INLINE static void set_dtool_name(const std::string &name);
 
   static Filename get_cwd();
 
@@ -61,17 +61,17 @@ PUBLISHED:
   MAKE_PROPERTY(cwd, get_cwd);
 
 private:
-  bool ns_has_environment_variable(const string &var) const;
-  string ns_get_environment_variable(const string &var) const;
-  void ns_set_environment_variable(const string &var, const string &value);
-  void ns_shadow_environment_variable(const string &var, const string &value);
-  void ns_clear_shadow(const string &var);
+  bool ns_has_environment_variable(const std::string &var) const;
+  std::string ns_get_environment_variable(const std::string &var) const;
+  void ns_set_environment_variable(const std::string &var, const std::string &value);
+  void ns_shadow_environment_variable(const std::string &var, const std::string &value);
+  void ns_clear_shadow(const std::string &var);
 
   size_t ns_get_num_args() const;
-  string ns_get_arg(size_t n) const;
+  std::string ns_get_arg(size_t n) const;
 
-  string ns_get_binary_name() const;
-  string ns_get_dtool_name() const;
+  std::string ns_get_binary_name() const;
+  std::string ns_get_dtool_name() const;
 
   static ExecutionEnvironment *get_ptr();
 
@@ -79,14 +79,14 @@ private:
   void read_args();
 
 private:
-  typedef map<string, string> EnvironmentVariables;
+  typedef std::map<std::string, std::string> EnvironmentVariables;
   EnvironmentVariables _variables;
 
   typedef vector_string CommandArguments;
   CommandArguments _args;
 
-  string _binary_name;
-  string _dtool_name;
+  std::string _binary_name;
+  std::string _dtool_name;
 
   static ExecutionEnvironment *_global_ptr;
 };

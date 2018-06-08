@@ -31,13 +31,13 @@ private:
 
 PUBLISHED:
   explicit BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii);
-  INLINE BulletMultiSphereShape(const BulletMultiSphereShape &copy);
-  INLINE void operator = (const BulletMultiSphereShape &copy);
+  BulletMultiSphereShape(const BulletMultiSphereShape &copy);
+  void operator = (const BulletMultiSphereShape &copy);
   INLINE ~BulletMultiSphereShape();
 
-  INLINE int get_sphere_count() const;
-  INLINE LPoint3 get_sphere_pos(int index) const;
-  INLINE PN_stdfloat get_sphere_radius(int index) const;
+  int get_sphere_count() const;
+  LPoint3 get_sphere_pos(int index) const;
+  PN_stdfloat get_sphere_radius(int index) const;
 
   MAKE_PROPERTY(sphere_count, get_sphere_count);
   MAKE_SEQ_PROPERTY(sphere_pos, get_sphere_count, get_sphere_pos);

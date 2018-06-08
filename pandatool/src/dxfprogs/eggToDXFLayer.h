@@ -35,10 +35,10 @@ public:
   void add_color(const LColor &color);
   void choose_overall_color();
 
-  void write_layer(ostream &out);
-  void write_polyline(EggPolygon *poly, ostream &out);
-  void write_3d_face(EggPolygon *poly, ostream &out);
-  void write_entities(ostream &out);
+  void write_layer(std::ostream &out);
+  void write_polyline(EggPolygon *poly, std::ostream &out);
+  void write_3d_face(EggPolygon *poly, std::ostream &out);
+  void write_entities(std::ostream &out);
 
 private:
   int get_autocad_color(const LColor &color);

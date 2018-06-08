@@ -14,6 +14,10 @@
 #include "dtoolbase.h"
 #include "memoryHook.h"
 
+#if !defined(CPPPARSER) && !defined(BUILDING_DTOOL_DTOOLBASE)
+  #error Buildsystem error: BUILDING_DTOOL_DTOOLBASE not defined
+#endif
+
 #if defined(USE_TAU) && defined(WIN32)
 // Hack around tau's lack of DLL export declarations for Profiler class.
 bool __tau_shutdown = false;
@@ -32,7 +36,7 @@ MemoryHook *memory_hook;
  */
 void
 init_memory_hook() {
-  if (memory_hook == NULL) {
+  if (memory_hook == nullptr) {
     memory_hook = new MemoryHook;
   }
 }

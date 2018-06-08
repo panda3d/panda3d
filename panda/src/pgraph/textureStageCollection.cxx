@@ -184,7 +184,7 @@ find_texture_stage(const string &name) const {
       return texture_stage;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -200,7 +200,7 @@ get_num_texture_stages() const {
  */
 TextureStage *TextureStageCollection::
 get_texture_stage(int index) const {
-  nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
+  nassertr(index >= 0 && index < (int)_texture_stages.size(), nullptr);
 
   return _texture_stages[index];
 }
@@ -211,7 +211,7 @@ get_texture_stage(int index) const {
  */
 TextureStage *TextureStageCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
+  nassertr(index >= 0 && index < (int)_texture_stages.size(), nullptr);
 
   return _texture_stages[index];
 }
@@ -231,8 +231,8 @@ size() const {
  */
 void TextureStageCollection::
 sort() {
-  ::sort(_texture_stages.begin(), _texture_stages.end(),
-         CompareTextureStageSort());
+  std::sort(_texture_stages.begin(), _texture_stages.end(),
+            CompareTextureStageSort());
 }
 
 /**

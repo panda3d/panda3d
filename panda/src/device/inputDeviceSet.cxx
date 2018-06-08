@@ -115,7 +115,7 @@ reserve(size_t num) {
  * output stream.
  */
 void InputDeviceSet::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_devices.size() == 1) {
     out << "1 input device";
   } else {
@@ -128,7 +128,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void InputDeviceSet::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   output(indent(out, indent_level));
   out << ":\n";
   indent_level += 2;

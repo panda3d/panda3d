@@ -49,11 +49,11 @@ protected:
 PUBLISHED:
   INLINE void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const ThreadSafePointerToBase<T> &pointer) {
+INLINE std::ostream &operator <<(std::ostream &out, const ThreadSafePointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }

@@ -21,9 +21,9 @@
 /**
  * An interval that calls NodePath::show().
  */
-class EXPCL_DIRECT ShowInterval : public CInterval {
+class EXPCL_DIRECT_INTERVAL ShowInterval : public CInterval {
 PUBLISHED:
-  explicit ShowInterval(const NodePath &node, const string &name = string());
+  explicit ShowInterval(const NodePath &node, const std::string &name = std::string());
 
   virtual void priv_instant();
   virtual void priv_reverse_instant();

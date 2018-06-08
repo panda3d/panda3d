@@ -34,7 +34,7 @@ InputDevice() :
 /**
  * Returns a human-readable name for the device.  Not necessarily unique.
  */
-INLINE string InputDevice::
+INLINE std::string InputDevice::
 get_name() const {
   LightMutexHolder holder(_lock);
   return _name;
@@ -44,7 +44,7 @@ get_name() const {
  * Returns a string containing the manufacturer of the device, if this
  * information is known.
  */
-INLINE string InputDevice::
+INLINE std::string InputDevice::
 get_manufacturer() const {
   LightMutexHolder holder(_lock);
   return _manufacturer;

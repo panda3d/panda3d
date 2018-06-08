@@ -22,6 +22,8 @@
 
 #include <stdtypedefs.h>
 
+inline namespace std {
+
 template<class element>
 class vector {
 public:
@@ -39,5 +41,7 @@ public:
   typedef size_t difference_type;
   typedef size_t size_type;
 };
+
+}
 
 #endif

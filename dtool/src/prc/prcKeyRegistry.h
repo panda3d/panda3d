@@ -33,7 +33,7 @@ typedef struct evp_pkey_st EVP_PKEY;
  *
  * This class requires the OpenSSL library.
  */
-class EXPCL_DTOOLCONFIG PrcKeyRegistry {
+class EXPCL_DTOOL_PRC PrcKeyRegistry {
 protected:
   PrcKeyRegistry();
   ~PrcKeyRegistry();
@@ -63,7 +63,7 @@ private:
     time_t _generated_time;
   };
 
-  typedef vector<Key> Keys;
+  typedef std::vector<Key> Keys;
   Keys _keys;
 
   static PrcKeyRegistry *_global_ptr;

@@ -88,7 +88,7 @@ EggVertexUV::
  */
 PT(EggVertexUV) EggVertexUV::
 make_average(const EggVertexUV *first, const EggVertexUV *second) {
-  nassertr(first->get_name() == second->get_name(), NULL);
+  nassertr(first->get_name() == second->get_name(), nullptr);
   int flags = first->_flags & second->_flags;
 
   LTexCoord3d uvw = (first->_uvw + second->_uvw) / 2;

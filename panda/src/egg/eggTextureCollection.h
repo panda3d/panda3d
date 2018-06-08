@@ -98,7 +98,7 @@ PUBLISHED:
   EggTexture *create_unique_texture(const EggTexture &copy, int eq);
 
   // Find a texture with a particular TRef name.
-  EggTexture *find_tref(const string &tref_name) const;
+  EggTexture *find_tref(const std::string &tref_name) const;
 
   // Find a texture with a particular filename.
   EggTexture *find_filename(const Filename &filename) const;

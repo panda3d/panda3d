@@ -51,8 +51,8 @@ bool P3DPythonObject::
 get_bool() {
   bool bresult = 0;
 
-  P3D_object *result = call("__bool__", true, NULL, 0);
-  if (result != NULL) {
+  P3D_object *result = call("__bool__", true, nullptr, 0);
+  if (result != nullptr) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
   }
@@ -67,8 +67,8 @@ int P3DPythonObject::
 get_int() {
   int iresult = 0;
 
-  P3D_object *result = call("__int__", true, NULL, 0);
-  if (result != NULL) {
+  P3D_object *result = call("__int__", true, nullptr, 0);
+  if (result != nullptr) {
     iresult = P3D_OBJECT_GET_INT(result);
     P3D_OBJECT_DECREF(result);
   }
@@ -83,8 +83,8 @@ double P3DPythonObject::
 get_float() {
   double fresult = 0.0;
 
-  P3D_object *result = call("__float__", true, NULL, 0);
-  if (result != NULL) {
+  P3D_object *result = call("__float__", true, nullptr, 0);
+  if (result != nullptr) {
     fresult = P3D_OBJECT_GET_FLOAT(result);
     P3D_OBJECT_DECREF(result);
   }
@@ -98,9 +98,9 @@ get_float() {
  */
 void P3DPythonObject::
 make_string(string &value) {
-  P3D_object *result = call("__str__", true, NULL, 0);
-  if (result != NULL) {
-    int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
+  P3D_object *result = call("__str__", true, nullptr, 0);
+  if (result != nullptr) {
+    int size = P3D_OBJECT_GET_STRING(result, nullptr, 0);
     char *buffer = new char[size];
     P3D_OBJECT_GET_STRING(result, buffer, size);
     value = string(buffer, size);
@@ -150,9 +150,9 @@ set_property_insecure(const string &property, bool needs_response,
   P3D_object *params[2];
   params[0] = new P3DStringObject(property);
 
-  P3D_object *result = NULL;
+  P3D_object *result = nullptr;
 
-  if (value == NULL) {
+  if (value == nullptr) {
     // Delete an attribute.
     result = call_insecure("__del_property__", needs_response, params, 1);
 
@@ -164,7 +164,7 @@ set_property_insecure(const string &property, bool needs_response,
 
   P3D_OBJECT_DECREF(params[0]);
 
-  if (result != NULL) {
+  if (result != nullptr) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
   }
@@ -193,7 +193,7 @@ has_method(const string &method_name) {
   P3D_object *result = call("__has_method__", true, params, 1);
   P3D_OBJECT_DECREF(params[0]);
 
-  if (result != NULL) {
+  if (result != nullptr) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
   }
@@ -219,7 +219,7 @@ call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
   if (!_session->get_matches_script_origin()) {
     // If you can't be scripting us, you can't be calling methods.
-    return NULL;
+    return nullptr;
   }
 
   return call_insecure(method_name, needs_response, params, num_params);
@@ -255,18 +255,18 @@ call_insecure(const string &method_name, bool needs_response,
   // NULL.
   if (!needs_response) {
     _session->send_command(doc);
-    return NULL;
+    return nullptr;
   }
 
   // If a response is requested, we have to send the command and wait for it.
   TiXmlDocument *response = _session->command_and_response(doc);
 
-  P3D_object *result = NULL;
-  if (response != NULL) {
+  P3D_object *result = nullptr;
+  if (response != nullptr) {
     TiXmlElement *xresponse = response->FirstChildElement("response");
-    if (xresponse != NULL) {
+    if (xresponse != nullptr) {
       TiXmlElement *xvalue = xresponse->FirstChildElement("value");
-      if (xvalue != NULL) {
+      if (xvalue != nullptr) {
         result = _session->xml_to_p3dobj(xvalue);
       }
     }
@@ -282,9 +282,9 @@ call_insecure(const string &method_name, bool needs_response,
  */
 void P3DPythonObject::
 output(ostream &out) {
-  P3D_object *result = call("__repr__", true, NULL, 0);
+  P3D_object *result = call("__repr__", true, nullptr, 0);
   out << "Python " << _object_id;
-  if (result != NULL) {
+  if (result != nullptr) {
     out << ": " << *result;
     P3D_OBJECT_DECREF(result);
   }

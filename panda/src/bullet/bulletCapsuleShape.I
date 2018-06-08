@@ -18,7 +18,8 @@ INLINE BulletCapsuleShape::
 BulletCapsuleShape() :
   _shape(nullptr),
   _radius(0),
-  _height(0) {
+  _height(0),
+  _up(X_up) {
 }
 
 /**
@@ -28,26 +29,6 @@ INLINE BulletCapsuleShape::
 ~BulletCapsuleShape() {
 
   delete _shape;
-}
-
-/**
- *
- */
-INLINE BulletCapsuleShape::
-BulletCapsuleShape(const BulletCapsuleShape &copy) :
-  _shape(copy._shape),
-  _radius(copy._radius),
-  _height(copy._height) {
-}
-
-/**
- *
- */
-INLINE void BulletCapsuleShape::
-operator = (const BulletCapsuleShape &copy) {
-  _shape = copy._shape;
-  _radius = copy._radius;
-  _height = copy._height;
 }
 
 /**

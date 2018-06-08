@@ -59,7 +59,7 @@ get_num_transforms() const {
  */
 INLINE const VertexTransform *TransformTable::
 get_transform(size_t n) const {
-  nassertr(n < _transforms.size(), NULL);
+  nassertr(n < _transforms.size(), nullptr);
   return _transforms[n];
 }
 

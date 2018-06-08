@@ -39,7 +39,7 @@ public:
 
   INLINE int get_num_labels() const;
   INLINE int get_label_collector(int n) const;
-  INLINE string get_label_name(int n) const;
+  INLINE std::string get_label_name(int n) const;
   INLINE LRGBColor get_label_color(int n) const;
 
   INLINE void set_target_frame_rate(double frame_rate);
@@ -56,11 +56,11 @@ public:
 
   class GuideBar {
   public:
-    GuideBar(double height, const string &label, GuideBarStyle style);
+    GuideBar(double height, const std::string &label, GuideBarStyle style);
     GuideBar(const GuideBar &copy);
 
     double _height;
-    string _label;
+    std::string _label;
     GuideBarStyle _style;
   };
 
@@ -83,12 +83,12 @@ public:
 
   INLINE void set_guide_bar_units(int unit_mask);
   INLINE int get_guide_bar_units() const;
-  INLINE void set_guide_bar_unit_name(const string &unit_name);
-  INLINE const string &get_guide_bar_unit_name() const;
+  INLINE void set_guide_bar_unit_name(const std::string &unit_name);
+  INLINE const std::string &get_guide_bar_unit_name() const;
 
-  static string format_number(double value);
-  static string format_number(double value, int guide_bar_units,
-                              const string &unit_name = string());
+  static std::string format_number(double value);
+  static std::string format_number(double value, int guide_bar_units,
+                              const std::string &unit_name = std::string());
 
 protected:
   virtual void normal_guide_bars()=0;
@@ -113,7 +113,7 @@ protected:
   typedef pvector<GuideBar> GuideBars;
   GuideBars _guide_bars;
   int _guide_bar_units;
-  string _unit_name;
+  std::string _unit_name;
 };
 
 #include "pStatGraph.I"

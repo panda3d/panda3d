@@ -38,7 +38,7 @@ link(NxJoint *jointPtr) {
 void PhysxFixedJoint::
 unlink() {
 
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;

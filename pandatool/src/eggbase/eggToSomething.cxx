@@ -93,13 +93,13 @@ add_units_options() {
      "specified, the vertices in the egg file will be scaled as "
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
-     &EggToSomething::dispatch_units, NULL, &_input_units);
+     &EggToSomething::dispatch_units, nullptr, &_input_units);
 
   add_option
     ("uo", "units", 40,
      "Specify the units of the resulting " + _format_name +
      " file.  Normally, the default units for the format are used.",
-     &EggToSomething::dispatch_units, NULL, &_output_units);
+     &EggToSomething::dispatch_units, nullptr, &_output_units);
 }
 
 /**

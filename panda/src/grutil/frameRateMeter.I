@@ -56,7 +56,7 @@ get_update_interval() const {
  * per second.
  */
 INLINE void FrameRateMeter::
-set_text_pattern(const string &text_pattern) {
+set_text_pattern(const std::string &text_pattern) {
   _text_pattern = text_pattern;
   Thread *current_thread = Thread::get_current_thread();
   do_update(current_thread);
@@ -65,7 +65,7 @@ set_text_pattern(const string &text_pattern) {
 /**
  * Returns the sprintf() pattern that is used to format the text.
  */
-INLINE const string &FrameRateMeter::
+INLINE const std::string &FrameRateMeter::
 get_text_pattern() const {
   return _text_pattern;
 }

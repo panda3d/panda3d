@@ -45,6 +45,7 @@ class PointerSlotStorage {};
 using std::tr1::array;
 #else
 #include <array>
+using std::array;
 #endif
 
 /**
@@ -202,7 +203,7 @@ public:
     nassertv(slot >= 0 && slot < SIZE);
     nassertv(_data[slot] == nullptr); // Slot already taken!
     nassertv(ptr != nullptr); // nullptr passed as argument!
-    _max_index = max(_max_index, (int)slot);
+    _max_index = std::max(_max_index, (int)slot);
     _data[slot] = ptr;
     _num_entries++;
   }

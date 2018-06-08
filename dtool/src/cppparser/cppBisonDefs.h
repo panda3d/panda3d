@@ -66,7 +66,7 @@ extern CPPPreprocessor *current_lexer;
 
 class cppyystype {
 public:
-  string str;
+  std::string str;
   union {
     unsigned long long integer;
     long double real;

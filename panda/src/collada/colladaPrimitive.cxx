@@ -65,7 +65,7 @@ ColladaPrimitive(GeomPrimitive *prim, daeTArray<domInput_local_offsetRef> &input
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domLines &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -77,7 +77,7 @@ from_dom(domLines &prim) {
   prim.setUserData(new_prim);
 
   domPRef p = prim.getP();
-  if (p != NULL) {
+  if (p != nullptr) {
     new_prim->load_primitive(*p);
   }
 
@@ -91,7 +91,7 @@ from_dom(domLines &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domLinestrips &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -114,7 +114,7 @@ from_dom(domLinestrips &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domPolygons &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -145,7 +145,7 @@ from_dom(domPolygons &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domPolylist &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -162,7 +162,7 @@ from_dom(domPolylist &prim) {
 
   domPRef p = prim.getP();
   domPolylist::domVcountRef vcounts = prim.getVcount();
-  if (p == NULL || vcounts == NULL) {
+  if (p == nullptr || vcounts == nullptr) {
     return new_prim;
   }
 
@@ -185,7 +185,7 @@ from_dom(domPolylist &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTriangles &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -197,7 +197,7 @@ from_dom(domTriangles &prim) {
   prim.setUserData(new_prim);
 
   domPRef p = prim.getP();
-  if (p != NULL) {
+  if (p != nullptr) {
     new_prim->load_primitive(*p);
   }
 
@@ -211,7 +211,7 @@ from_dom(domTriangles &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTrifans &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 
@@ -234,7 +234,7 @@ from_dom(domTrifans &prim) {
 ColladaPrimitive *ColladaPrimitive::
 from_dom(domTristrips &prim) {
   // If we already loaded it before, use that.
-  if (prim.getUserData() != NULL) {
+  if (prim.getUserData() != nullptr) {
     return (ColladaPrimitive *) prim.getUserData();
   }
 

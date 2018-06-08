@@ -68,7 +68,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearJitterForce::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearJitterForce:\n";
   LinearRandomForce::write(out, indent+2);

@@ -20,14 +20,14 @@
  */
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
-  INLINE_LINMATH FLOATNAME(LVector3)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVector3)() = default;
   INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
   INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LVector3) &zero();
   INLINE_LINMATH static const FLOATNAME(LVector3) &unit_x();
@@ -85,7 +85,7 @@ PUBLISHED:
   INLINE_LINMATH static FLOATNAME(LVector3) rfu(FLOATTYPE right,
                                         FLOATTYPE fwd,FLOATTYPE up,     CoordinateSystem cs = CS_default);
 
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

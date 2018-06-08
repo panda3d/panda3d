@@ -34,9 +34,9 @@ public:
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_visible(bool visible);
-  virtual void set_image_filename(const string &image_filename,
+  virtual void set_image_filename(const std::string &image_filename,
                                   ImagePlacement image_placement);
-  virtual void set_install_label(const string &install_label);
+  virtual void set_install_label(const std::string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
 
@@ -85,12 +85,12 @@ private:
 
   void update_image(X11ImageData &image);
   void compose_image();
-  bool scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height,
+  bool scale_image(std::vector<unsigned char> &image0, int &image0_width, int &image0_height,
                    X11ImageData &image);
 
-  void compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0_height,
-                          const vector<unsigned char> &image1, int image1_width, int image1_height,
-                          const vector<unsigned char> &image2, int image2_width, int image2_height);
+  void compose_two_images(std::vector<unsigned char> &image0, int &image0_width, int &image0_height,
+                          const std::vector<unsigned char> &image1, int image1_width, int image1_height,
+                          const std::vector<unsigned char> &image2, int image2_width, int image2_height);
 
 private:
   // Data members that are stored in the subprocess.
@@ -99,9 +99,9 @@ private:
     inline X11ImageData();
     inline ~X11ImageData();
 
-    string _filename;
+    std::string _filename;
     bool _filename_changed;
-    string _data;
+    std::string _data;
   };
 
   X11ImageData _background_image;
@@ -116,12 +116,12 @@ private:
   bool _subprocess_continue;
 
   bool _own_display;
-  string _install_label;
+  std::string _install_label;
   double _install_progress;
   bool _progress_known;
   size_t _received_data;
 
-  string _label_text;
+  std::string _label_text;
 
   X11_Display *_display;
   int _screen;

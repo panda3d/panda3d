@@ -305,7 +305,7 @@ has_keyboard(int device) const {
  */
 ButtonMap *GraphicsWindow::
 get_keyboard_map() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -597,13 +597,13 @@ close_window() {
     << "Closing " << get_type() << "\n";
 
   // Tell our parent window (if any) that we're no longer its child.
-  if (_window_handle != (WindowHandle *)NULL &&
-      _parent_window_handle != (WindowHandle *)NULL) {
+  if (_window_handle != nullptr &&
+      _parent_window_handle != nullptr) {
     _parent_window_handle->detach_child(_window_handle);
   }
 
-  _window_handle = NULL;
-  _parent_window_handle = NULL;
+  _window_handle = nullptr;
+  _parent_window_handle = nullptr;
   _is_valid = false;
 }
 

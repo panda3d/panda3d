@@ -51,7 +51,7 @@ public:
   bool resize_image(int x_size, int y_size);
   void resize_swapped_image(int x_size, int y_size);
 
-  void write_placements(ostream &out, int indent_level = 0) const;
+  void write_placements(std::ostream &out, int indent_level = 0) const;
   void reset_image();
   void setup_shadow_image();
   void update_image(bool redo_all);
@@ -96,7 +96,7 @@ private:
 
   PalettePage *_page;
   int _index;
-  string _basename;
+  std::string _basename;
 
   bool _new_image;
   bool _got_image;

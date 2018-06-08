@@ -29,7 +29,7 @@ public:
   void run();
 
 private:
-  static bool dispatch_channels(const string &opt, const string &arg, void *var);
+  static bool dispatch_channels(const std::string &opt, const std::string &arg, void *var);
   void extract_alpha();
 
   enum Channels {

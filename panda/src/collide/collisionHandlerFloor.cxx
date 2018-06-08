@@ -62,13 +62,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   bool got_min = false;
   PN_stdfloat max_height = 0.0f;
   PN_stdfloat min_height = 0.0f;
-  CollisionEntry *highest = NULL;
-  CollisionEntry *lowest = NULL;
+  CollisionEntry *highest = nullptr;
+  CollisionEntry *lowest = nullptr;
 
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
-    nassertr(entry != (CollisionEntry *)NULL, 0.0f);
+    nassertr(entry != nullptr, 0.0f);
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {
@@ -159,12 +159,12 @@ handle_entries() {
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
         PN_stdfloat max_height = 0.0f;
-        CollisionEntry *max_entry = NULL;
+        CollisionEntry *max_entry = nullptr;
 
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
+          nassertr(entry != nullptr, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
 
           if (entry->has_surface_point()) {

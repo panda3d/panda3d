@@ -45,8 +45,8 @@ SimpleLru::
   // explicitly evict it (that would force vertex buffers to write themselves
   // to disk unnecessarily).
   while (_next != (LinkedListNode *)this) {
-    nassertv(_next != (LinkedListNode *)NULL);
-    ((SimpleLruPage *)_next)->_lru = NULL;
+    nassertv(_next != nullptr);
+    ((SimpleLruPage *)_next)->_lru = nullptr;
     ((SimpleLruPage *)_next)->remove_from_list();
   }
 #endif
@@ -63,22 +63,22 @@ enqueue_lru(SimpleLru *lru) {
   LightMutexHolder holder(SimpleLru::_global_lock);
 
   if (_lru == lru) {
-    if (_lru != (SimpleLru *)NULL) {
+    if (_lru != nullptr) {
       remove_from_list();
       insert_before(_lru);
     }
     return;
   }
 
-  if (_lru != (SimpleLru *)NULL) {
+  if (_lru != nullptr) {
     remove_from_list();
     _lru->_total_size -= _lru_size;
-    _lru = NULL;
+    _lru = nullptr;
   }
 
   _lru = lru;
 
-  if (_lru != (SimpleLru *)NULL) {
+  if (_lru != nullptr) {
     _lru->_total_size += _lru_size;
     insert_before(_lru);
   }
@@ -169,9 +169,9 @@ do_evict_to(size_t target_size, bool hard_evict) {
     SimpleLruPage *next = (SimpleLruPage *)node->_next;
 
     // We must release the lock while we call evict_lru().
-    _global_lock.release();
+    _global_lock.unlock();
     node->evict_lru();
-    _global_lock.acquire();
+    _global_lock.lock();
 
     if (node == end || node == _prev) {
       // If we reach the original tail of the list, stop.
@@ -208,7 +208,7 @@ do_validate() {
  */
 SimpleLruPage::
 ~SimpleLruPage() {
-  if (_lru != NULL) {
+  if (_lru != nullptr) {
     dequeue_lru();
   }
 }

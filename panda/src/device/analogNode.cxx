@@ -29,11 +29,11 @@ AnalogNode(ClientBase *client, const string &device_name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _xy = new EventStoreVec2(LPoint2(0));
 
-  nassertv(client != (ClientBase *)NULL);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientAnalogDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)NULL) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open analog device " << device_name << "\n";
     return;
@@ -49,11 +49,9 @@ AnalogNode(ClientBase *client, const string &device_name) :
   _analog = device;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: AnalogNode::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
+/**
+ *
+ */
 AnalogNode::
 AnalogNode(InputDevice *device) :
   DataNode(device->get_name()),
@@ -62,7 +60,7 @@ AnalogNode(InputDevice *device) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _xy = new EventStoreVec2(LPoint2(0));
 
-  nassertv(device != (InputDevice *)NULL);
+  nassertv(device != nullptr);
 }
 
 /**
@@ -82,7 +80,7 @@ void AnalogNode::
 write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_analog != (ClientAnalogDevice *)NULL) {
+  if (_analog != nullptr) {
     _analog->write_controls(out, indent_level + 2);
   }
 }

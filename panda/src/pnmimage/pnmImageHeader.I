@@ -21,7 +21,7 @@ PNMImageHeader() {
   _num_channels = 0;
   _maxval = 255;
   _color_space = CS_unspecified;
-  _type = (PNMFileType *)NULL;
+  _type = nullptr;
 }
 
 /**
@@ -166,7 +166,7 @@ get_size() const {
 /**
  * Gets the user comment from the file.
  */
-INLINE string PNMImageHeader::
+INLINE std::string PNMImageHeader::
 get_comment() const {
   return _comment;
 }
@@ -175,7 +175,7 @@ get_comment() const {
  * Writes a user comment string to the image (header).
  */
 INLINE void PNMImageHeader::
-set_comment(const string& comment) {
+set_comment(const std::string& comment) {
   _comment = comment;
 }
 
@@ -184,7 +184,7 @@ set_comment(const string& comment) {
  */
 INLINE bool PNMImageHeader::
 has_type() const {
-  return _type != (PNMFileType *)NULL;
+  return _type != nullptr;
 }
 
 /**

@@ -7,6 +7,8 @@ from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 
+import inspect
+
 
 class ServerRepository:
 
@@ -273,12 +275,12 @@ class ServerRepository:
             if classDef == None:
                 self.notify.debug("No class definition for %s." % (className))
             else:
-                if type(classDef) == types.ModuleType:
+                if inspect.ismodule(classDef):
                     if not hasattr(classDef, className):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
 
-                if type(classDef) != types.ClassType and type(classDef) != types.TypeType:
+                if not inspect.isclass(classDef):
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
                     dclass.setClassDef(classDef)

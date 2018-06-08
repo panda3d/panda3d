@@ -49,7 +49,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseSoftBodyMesh(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 
   PhysxMeshPool::release_soft_body_mesh(this);
 }

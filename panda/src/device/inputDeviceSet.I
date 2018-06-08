@@ -23,7 +23,7 @@ INLINE InputDeviceSet::
  */
 INLINE InputDevice *InputDeviceSet::
 operator [] (size_t index) const {
-  nassertr(index < _devices.size(), NULL);
+  nassertr(index < _devices.size(), nullptr);
   return _devices[index];
 }
 

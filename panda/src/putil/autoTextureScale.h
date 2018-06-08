@@ -26,7 +26,7 @@ enum AutoTextureScale {
 };
 END_PUBLISH
 
-EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, AutoTextureScale ats);
-EXPCL_PANDA_PUTIL istream &operator >> (istream &in, AutoTextureScale &ats);
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, AutoTextureScale ats);
+EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, AutoTextureScale &ats);
 
 #endif

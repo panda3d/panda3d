@@ -28,13 +28,13 @@ AndroidGraphicsPipe::
 AndroidGraphicsPipe() {
   _is_valid = false;
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
-  _egl_display = NULL;
+  _egl_display = nullptr;
 
   _display_width = 0;
   _display_height = 0;
 
   _egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-  if (!eglInitialize(_egl_display, NULL, NULL)) {
+  if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     androiddisplay_cat.error()
       << "Couldn't initialize the EGL display: "
       << get_egl_error_string(eglGetError()) << "\n";
@@ -110,12 +110,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   AndroidGraphicsStateGuardian *androidgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(androidgsg, gsg, NULL);
+    DCAST_INTO_R(androidgsg, gsg, nullptr);
   }
 
   // First thing to try: an eglGraphicsWindow
@@ -128,7 +128,7 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new AndroidGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
@@ -212,5 +212,5 @@ make_output(const string &name,
   }*/
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }

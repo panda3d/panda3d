@@ -21,18 +21,17 @@
  * A fake mutex implementation for single-threaded applications that don't
  * need any synchronization control.  This does nothing at all.
  */
-class EXPCL_DTOOL MutexDummyImpl {
+class EXPCL_DTOOL_DTOOLBASE MutexDummyImpl {
 public:
-  CONSTEXPR MutexDummyImpl() DEFAULT_CTOR;
+  constexpr MutexDummyImpl() = default;
+  MutexDummyImpl(const MutexDummyImpl &copy) = delete;
 
-private:
-  MutexDummyImpl(const MutexDummyImpl &copy) DELETED;
-  MutexDummyImpl &operator = (const MutexDummyImpl &copy) DELETED_ASSIGN;
+  MutexDummyImpl &operator = (const MutexDummyImpl &copy) = delete;
 
 public:
-  ALWAYS_INLINE void acquire();
-  ALWAYS_INLINE bool try_acquire();
-  ALWAYS_INLINE void release();
+  ALWAYS_INLINE void lock();
+  ALWAYS_INLINE bool try_lock();
+  ALWAYS_INLINE void unlock();
 };
 
 #include "mutexDummyImpl.I"

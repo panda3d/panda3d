@@ -101,7 +101,7 @@ load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   loader_cat.error()
     << get_type() << " cannot read PandaNode objects.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**

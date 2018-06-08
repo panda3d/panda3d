@@ -14,7 +14,7 @@
 /**
  * Returns the interval's name.
  */
-INLINE const string &CInterval::
+INLINE const std::string &CInterval::
 get_name() const {
   return _name;
 }
@@ -64,7 +64,7 @@ is_stopped() const {
  * own.
  */
 INLINE void CInterval::
-set_done_event(const string &event) {
+set_done_event(const std::string &event) {
   _done_event = event;
 }
 
@@ -73,7 +73,7 @@ set_done_event(const string &event) {
  * state, whether it is explicitly finished or whether it gets there on its
  * own.
  */
-INLINE const string &CInterval::
+INLINE const std::string &CInterval::
 get_done_event() const {
   return _done_event;
 }
@@ -219,8 +219,8 @@ check_started(TypeHandle type, const char *method_name) const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const CInterval &ival) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CInterval &ival) {
   ival.output(out);
   return out;
 }

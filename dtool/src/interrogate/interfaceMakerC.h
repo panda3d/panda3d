@@ -30,27 +30,27 @@ public:
   InterfaceMakerC(InterrogateModuleDef *def);
   virtual ~InterfaceMakerC();
 
-  virtual void write_prototypes(ostream &out,ostream *out_h);
-  virtual void write_functions(ostream &out);
+  virtual void write_prototypes(std::ostream &out,std::ostream *out_h);
+  virtual void write_functions(std::ostream &out);
 
   virtual ParameterRemap *remap_parameter(CPPType *struct_type, CPPType *param_type);
 
   virtual bool synthesize_this_parameter();
 
 protected:
-  virtual string get_wrapper_prefix();
-  virtual string get_unique_prefix();
+  virtual std::string get_wrapper_prefix();
+  virtual std::string get_unique_prefix();
 
   virtual void
   record_function_wrapper(InterrogateFunction &ifunc,
                           FunctionWrapperIndex wrapper_index);
 
 private:
-  void write_prototype_for(ostream &out, Function *func);
-  void write_function_for(ostream &out, Function *func);
-  void write_function_instance(ostream &out, Function *func,
+  void write_prototype_for(std::ostream &out, Function *func);
+  void write_function_for(std::ostream &out, Function *func);
+  void write_function_instance(std::ostream &out, Function *func,
                                FunctionRemap *remap);
-  void write_function_header(ostream &out, Function *func,
+  void write_function_header(std::ostream &out, Function *func,
                              FunctionRemap *remap, bool newline);
 };
 

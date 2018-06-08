@@ -51,11 +51,11 @@ get_geom(Geom::UsageHint usage_hint) const {
     if (_has_quad) {
       ((TextGlyph *)this)->make_quad_geom();
       if (_geom.is_null()) {
-        return (Geom *)NULL;
+        return nullptr;
       }
     } else {
       // Nope.
-      return (Geom *)NULL;
+      return nullptr;
     }
   }
 
@@ -67,7 +67,7 @@ get_geom(Geom::UsageHint usage_hint) const {
   PT(Geom) new_geom = new GeomTextGlyph(*_geom, this);
   new_geom->set_usage_hint(usage_hint);
   const GeomVertexData *vdata = new_geom->get_vertex_data();
-  nassertr(vdata != NULL, new_geom);
+  nassertr(vdata != nullptr, new_geom);
   if (vdata->get_usage_hint() != usage_hint) {
     new_geom->modify_vertex_data()->set_usage_hint(usage_hint);
   }

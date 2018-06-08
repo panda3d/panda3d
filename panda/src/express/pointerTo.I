@@ -16,7 +16,7 @@
  */
 template<class T>
 ALWAYS_INLINE PointerTo<T>::
-PointerTo(To *ptr) NOEXCEPT : PointerToBase<T>(ptr) {
+PointerTo(To *ptr) noexcept : PointerToBase<T>(ptr) {
 }
 
 /**
@@ -29,14 +29,13 @@ PointerTo(const PointerTo<T> &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class T>
 INLINE PointerTo<T>::
-PointerTo(PointerTo<T> &&from) NOEXCEPT :
-  PointerToBase<T>(move(from))
+PointerTo(PointerTo<T> &&from) noexcept :
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -45,18 +44,17 @@ PointerTo(PointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
-operator = (PointerTo<T> &&from) NOEXCEPT {
-  this->reassign(move(from));
+operator = (PointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
  */
 template<class T>
-CONSTEXPR TYPENAME PointerTo<T>::To &PointerTo<T>::
-operator *() const NOEXCEPT {
+constexpr typename PointerTo<T>::To &PointerTo<T>::
+operator *() const noexcept {
   return *((To *)(this->_void_ptr));
 }
 
@@ -64,8 +62,8 @@ operator *() const NOEXCEPT {
  *
  */
 template<class T>
-CONSTEXPR TYPENAME PointerTo<T>::To *PointerTo<T>::
-operator -> () const NOEXCEPT {
+constexpr typename PointerTo<T>::To *PointerTo<T>::
+operator -> () const noexcept {
   return (To *)(this->_void_ptr);
 }
 
@@ -76,8 +74,8 @@ operator -> () const NOEXCEPT {
  * goes because either will be correct.
  */
 template<class T>
-CONSTEXPR PointerTo<T>::
-operator T * () const NOEXCEPT {
+constexpr PointerTo<T>::
+operator T * () const noexcept {
   return (To *)(this->_void_ptr);
 }
 
@@ -99,8 +97,8 @@ cheat() {
  * compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-CONSTEXPR TYPENAME PointerTo<T>::To *PointerTo<T>::
-p() const NOEXCEPT {
+constexpr typename PointerTo<T>::To *PointerTo<T>::
+p() const noexcept {
   return (To *)(this->_void_ptr);
 }
 
@@ -129,8 +127,8 @@ operator = (const PointerTo<T> &copy) {
  */
 template<class T>
 ALWAYS_INLINE ConstPointerTo<T>::
-ConstPointerTo(const TYPENAME ConstPointerTo<T>::To *ptr) NOEXCEPT :
-  PointerToBase<T>((TYPENAME ConstPointerTo<T>::To *)ptr)
+ConstPointerTo(const typename ConstPointerTo<T>::To *ptr) noexcept :
+  PointerToBase<T>((typename ConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -154,14 +152,13 @@ ConstPointerTo(const ConstPointerTo<T> &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(PointerTo<T> &&from) NOEXCEPT :
-  PointerToBase<T>(move(from))
+ConstPointerTo(PointerTo<T> &&from) noexcept :
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -170,8 +167,8 @@ ConstPointerTo(PointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT :
-  PointerToBase<T>(move(from))
+ConstPointerTo(ConstPointerTo<T> &&from) noexcept :
+  PointerToBase<T>(std::move(from))
 {
 }
 
@@ -180,8 +177,8 @@ ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT :
  */
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
-operator = (PointerTo<T> &&from) NOEXCEPT {
-  this->reassign(move(from));
+operator = (PointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
   return *this;
 }
 
@@ -190,18 +187,17 @@ operator = (PointerTo<T> &&from) NOEXCEPT {
  */
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
-operator = (ConstPointerTo<T> &&from) NOEXCEPT {
-  this->reassign(move(from));
+operator = (ConstPointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
  */
 template<class T>
-CONSTEXPR const TYPENAME ConstPointerTo<T>::To &ConstPointerTo<T>::
-operator *() const NOEXCEPT {
+constexpr const typename ConstPointerTo<T>::To &ConstPointerTo<T>::
+operator *() const noexcept {
   return *((To *)(this->_void_ptr));
 }
 
@@ -209,8 +205,8 @@ operator *() const NOEXCEPT {
  *
  */
 template<class T>
-CONSTEXPR const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
-operator -> () const NOEXCEPT {
+constexpr const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
+operator -> () const noexcept {
   return (To *)(this->_void_ptr);
 }
 
@@ -221,8 +217,8 @@ operator -> () const NOEXCEPT {
  * don't care which way it goes because either will be correct.
  */
 template<class T>
-CONSTEXPR ConstPointerTo<T>::
-operator const T * () const NOEXCEPT {
+constexpr ConstPointerTo<T>::
+operator const T * () const noexcept {
 return (To *)(this->_void_ptr);
 }
 
@@ -244,8 +240,8 @@ cheat() {
  * around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-CONSTEXPR const TYPENAME ConstPointerTo<T>::To *ConstPointerTo<T>::
-p() const NOEXCEPT {
+constexpr const typename ConstPointerTo<T>::To *ConstPointerTo<T>::
+p() const noexcept {
   return (To *)(this->_void_ptr);
 }
 

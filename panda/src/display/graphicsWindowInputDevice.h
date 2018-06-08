@@ -27,7 +27,7 @@ class GraphicsWindow;
  */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice : public InputDevice {
 private:
-  GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags);
+  GraphicsWindowInputDevice(GraphicsWindow *host, const std::string &name, int flags);
 
 public:
   static PT(GraphicsWindowInputDevice) pointer_only(GraphicsWindow *host, const string &name);

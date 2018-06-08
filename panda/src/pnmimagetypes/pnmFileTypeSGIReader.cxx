@@ -86,7 +86,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   eof_err = false;
-  table = NULL;
+  table = nullptr;
 
   if (!read_magic_number(_file, magic_number, 4)) {
     // No magic number.  No image.
@@ -146,7 +146,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
  */
 PNMFileTypeSGI::Reader::
 ~Reader() {
-  if (table != NULL) {
+  if (table != nullptr) {
     free(table);
   }
 }
@@ -333,7 +333,7 @@ read_channel(istream *ifp,
              TabEntry *table,
              ScanElem *channel_data, long table_start,
              int channel, int row) {
-    ScanElem *temp = NULL;
+    ScanElem *temp = nullptr;
     int sgi_index, i;
     long offset, length;
 
@@ -486,10 +486,10 @@ xmalloc(int bytes) {
     void *mem;
 
     if( bytes == 0 )
-        return NULL;
+        return nullptr;
 
     mem = malloc(bytes);
-    if( mem == NULL )
+    if( mem == nullptr )
         pm_error("out of memory allocating %d bytes", bytes);
     return mem;
 }

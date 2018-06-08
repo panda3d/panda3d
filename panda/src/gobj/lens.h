@@ -64,8 +64,8 @@ PUBLISHED:
   INLINE bool project(const LPoint3 &point3d, LPoint3 &point2d) const;
   INLINE bool project(const LPoint3 &point3d, LPoint2 &point2d) const;
 
-  INLINE void set_change_event(const string &event);
-  INLINE const string &get_change_event() const;
+  INLINE void set_change_event(const std::string &event);
+  INLINE const std::string &get_change_event() const;
   MAKE_PROPERTY(change_event, get_change_event, set_change_event);
 
   void set_coordinate_system(CoordinateSystem cs);
@@ -182,8 +182,8 @@ PUBLISHED:
   INLINE const LMatrix4 &get_lens_mat() const;
   INLINE const LMatrix4 &get_lens_mat_inv() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE UpdateSeq get_last_change() const;
 
@@ -322,7 +322,7 @@ protected:
 
     void clear();
 
-    string _change_event;
+    std::string _change_event;
     UpdateSeq _last_change;
     CoordinateSystem _cs;
 
@@ -399,7 +399,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_GOBJ INLINE ostream &operator << (ostream &out, const Lens &lens);
+EXPCL_PANDA_GOBJ INLINE std::ostream &operator << (std::ostream &out, const Lens &lens);
 
 #include "lens.I"
 

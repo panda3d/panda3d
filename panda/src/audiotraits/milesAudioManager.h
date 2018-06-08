@@ -42,9 +42,9 @@ public:
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const string &file_name, bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(const std::string &file_name, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
-  virtual void uncache_sound(const string &file_name);
+  virtual void uncache_sound(const std::string &file_name);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
@@ -81,10 +81,10 @@ public:
   virtual PN_stdfloat audio_3d_get_doppler_factor() const;
   virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
-  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
+  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=nullptr, LVecBase3 *speaker3=nullptr, LVecBase3 *speaker4=nullptr, LVecBase3 *speaker5=nullptr, LVecBase3 *speaker6=nullptr, LVecBase3 *speaker7=nullptr, LVecBase3 *speaker8=nullptr, LVecBase3 *speaker9=nullptr);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 private:
   bool do_is_valid();
@@ -94,7 +94,7 @@ private:
   void start_service_stream(HSTREAM stream);
   void stop_service_stream(HSTREAM stream);
 
-  void most_recently_used(const string &path);
+  void most_recently_used(const std::string &path);
   void uncache_a_sound();
 
   void starting_sound(MilesAudioSound *audio);
@@ -130,7 +130,7 @@ private:
     bool _has_length;
     PN_stdfloat _length;  // in seconds.
   };
-  typedef pmap<string, PT(SoundData) > SoundMap;
+  typedef pmap<std::string, PT(SoundData) > SoundMap;
   SoundMap _sounds;
 
   typedef pset<MilesAudioSound *> AudioSet;
@@ -142,7 +142,7 @@ private:
   SoundsPlaying _sounds_playing;
 
   // The Least Recently Used mechanism:
-  typedef pdeque<const string *> LRU;
+  typedef pdeque<const std::string *> LRU;
   LRU _lru;
   // State:
   PN_stdfloat _volume;

@@ -39,7 +39,7 @@ public:
   bool is_scoped() const;
   CPPType *get_underlying_type();
 
-  CPPInstance *add_element(const string &name, CPPExpression *value,
+  CPPInstance *add_element(const std::string &name, CPPExpression *value,
                            CPPPreprocessor *preprocessor, const cppyyltype &pos);
 
   virtual bool is_incomplete() const;
@@ -49,7 +49,7 @@ public:
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
@@ -59,7 +59,7 @@ public:
   CPPScope *_scope;
   CPPType *_element_type;
 
-  typedef vector<CPPInstance *> Elements;
+  typedef std::vector<CPPInstance *> Elements;
   Elements _elements;
   CPPExpression *_last_value;
 };

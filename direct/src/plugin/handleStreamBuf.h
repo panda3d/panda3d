@@ -23,7 +23,7 @@ using namespace std;
 /**
  *
  */
-class HandleStreamBuf : public streambuf {
+class HandleStreamBuf : public std::streambuf {
 public:
   HandleStreamBuf();
   virtual ~HandleStreamBuf();

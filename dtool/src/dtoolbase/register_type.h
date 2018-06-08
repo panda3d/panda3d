@@ -27,23 +27,23 @@
  * Register() and record_derivation() yourself.
  */
 INLINE void
-register_type(TypeHandle &type_handle, const string &name);
+register_type(TypeHandle &type_handle, const std::string &name);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3, TypeHandle parent4);
 
@@ -55,39 +55,39 @@ register_type(TypeHandle &type_handle, const string &name,
  * reference.
  */
 INLINE TypeHandle
-register_dynamic_type(const string &name);
+register_dynamic_type(const std::string &name);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name, TypeHandle parent1);
+register_dynamic_type(const std::string &name, TypeHandle parent1);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4);
 
 
 // A few system-wide TypeHandles are defined for some basic types.
-extern TypeHandle EXPCL_DTOOL long_type_handle;
-extern TypeHandle EXPCL_DTOOL int_type_handle;
-extern TypeHandle EXPCL_DTOOL uint_type_handle;
-extern TypeHandle EXPCL_DTOOL short_type_handle;
-extern TypeHandle EXPCL_DTOOL ushort_type_handle;
-extern TypeHandle EXPCL_DTOOL char_type_handle;
-extern TypeHandle EXPCL_DTOOL uchar_type_handle;
-extern TypeHandle EXPCL_DTOOL bool_type_handle;
-extern TypeHandle EXPCL_DTOOL double_type_handle;
-extern TypeHandle EXPCL_DTOOL float_type_handle;
-extern TypeHandle EXPCL_DTOOL string_type_handle;
-extern TypeHandle EXPCL_DTOOL wstring_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE long_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE int_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE uint_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE short_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE ushort_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE char_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE uchar_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE bool_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE double_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE float_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE string_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE wstring_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;
@@ -98,14 +98,14 @@ extern TypeHandle double_p_type_handle;
 extern TypeHandle float_p_type_handle;
 extern TypeHandle void_p_type_handle;
 
-extern TypeHandle EXPCL_DTOOL pvector_type_handle;
-extern TypeHandle EXPCL_DTOOL ov_set_type_handle;
-extern TypeHandle EXPCL_DTOOL pdeque_type_handle;
-extern TypeHandle EXPCL_DTOOL plist_type_handle;
-extern TypeHandle EXPCL_DTOOL pmap_type_handle;
-extern TypeHandle EXPCL_DTOOL pset_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE pvector_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE ov_set_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE pdeque_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE plist_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE pmap_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE pset_type_handle;
 
-void EXPCL_DTOOL init_system_type_handles();
+void EXPCL_DTOOL_DTOOLBASE init_system_type_handles();
 
 // The following template function and its specializations will return a
 // TypeHandle for any type in the world, from a pointer to that type.
@@ -166,12 +166,12 @@ INLINE TypeHandle _get_type_handle(const float *) {
 }
 
 template<>
-INLINE TypeHandle _get_type_handle(const string *) {
+INLINE TypeHandle _get_type_handle(const std::string *) {
   return string_type_handle;
 }
 
 template<>
-INLINE TypeHandle _get_type_handle(const wstring *) {
+INLINE TypeHandle _get_type_handle(const std::wstring *) {
   return wstring_type_handle;
 }
 

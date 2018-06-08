@@ -239,7 +239,7 @@ write(ostream &out, int indent_level) const {
     out << "]";
 
     const ClipPlaneAttrib *cpa = get_into_clip_planes();
-    if (cpa != (ClipPlaneAttrib *)NULL) {
+    if (cpa != nullptr) {
       out << " (clipped)";
     }
     out << "\n";

@@ -49,7 +49,7 @@ class AsyncTaskManager;
  */
 class EXPCL_PANDA_EVENT AsyncTaskChain : public TypedReferenceCount, public Namable {
 public:
-  AsyncTaskChain(AsyncTaskManager *manager, const string &name);
+  AsyncTaskChain(AsyncTaskManager *manager, const std::string &name);
   ~AsyncTaskChain();
 
 PUBLISHED:
@@ -88,8 +88,8 @@ PUBLISHED:
   void poll();
   double get_next_wake_time() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   class AsyncTaskChainThread;
@@ -115,15 +115,15 @@ protected:
   void cleanup_pickup_mode();
   INLINE double do_get_next_wake_time() const;
   static INLINE double get_wake_time(AsyncTask *task);
-  void do_output(ostream &out) const;
-  void do_write(ostream &out, int indent_level) const;
+  void do_output(std::ostream &out) const;
+  void do_write(std::ostream &out, int indent_level) const;
 
-  void write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) const;
+  void write_task_line(std::ostream &out, int indent_level, AsyncTask *task, double now) const;
 
 protected:
   class AsyncTaskChainThread : public Thread {
   public:
-    AsyncTaskChainThread(const string &name, AsyncTaskChain *chain);
+    AsyncTaskChainThread(const std::string &name, AsyncTaskChain *chain);
     virtual void thread_main();
 
     AsyncTaskChain *_chain;
@@ -146,7 +146,12 @@ protected:
       if (a->get_priority() != b->get_priority()) {
         return a->get_priority() < b->get_priority();
       }
-      return a->get_start_time() > b->get_start_time();
+      if (a->get_start_time() != b->get_start_time()) {
+        return a->get_start_time() > b->get_start_time();
+      }
+      // Failing any other ordering criteria, we sort the tasks based on the
+      // order in which they were added to the task chain.
+      return a->_implicit_sort > b->_implicit_sort;
     }
   };
 
@@ -186,6 +191,8 @@ protected:
   double _time_in_frame;
   bool _block_till_next_frame;
 
+  unsigned int _next_implicit_sort;
+
   static PStatCollector _task_pcollector;
   static PStatCollector _wait_pcollector;
 
@@ -213,7 +220,7 @@ private:
   friend class AsyncTaskSortWakeTime;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTaskChain &chain) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskChain &chain) {
   chain.output(out);
   return out;
 };

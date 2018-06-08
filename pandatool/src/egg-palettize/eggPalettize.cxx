@@ -571,7 +571,7 @@ run() {
   // instead.
   Notify *notify = Notify::ptr();
   NotifyCategory *loader_cat = notify->get_category(":loader");
-  if (loader_cat != (NotifyCategory *)NULL &&
+  if (loader_cat != nullptr &&
       loader_cat->get_severity() == NS_info) {
     loader_cat->set_severity(NS_warning);
   }
@@ -639,7 +639,7 @@ run() {
     }
 
     TypedWritable *obj = state_file.read_object();
-    if (obj == (TypedWritable *)NULL || !state_file.resolve()) {
+    if (obj == nullptr || !state_file.resolve()) {
       nout << FilenameUnifier::make_user_filename(state_filename)
            << " exists, but appears to be corrupt.  Perhaps you "
            << "should remove it so a new one can be created.\n";
@@ -701,7 +701,7 @@ run() {
 
   } else {
     _txa_filename.set_text();
-    ifstream txa_file;
+    std::ifstream txa_file;
     if (!_txa_filename.open_read(txa_file)) {
       nout << "Unable to open " << _txa_filename << "\n";
       exit(1);

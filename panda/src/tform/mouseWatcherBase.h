@@ -37,7 +37,7 @@ PUBLISHED:
   void add_region(MouseWatcherRegion *region);
   bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
-  MouseWatcherRegion *find_region(const string &name) const;
+  MouseWatcherRegion *find_region(const std::string &name) const;
   void clear_regions();
 
   void sort_regions();
@@ -49,12 +49,12 @@ PUBLISHED:
   MAKE_SEQ(get_regions, get_num_regions, get_region);
   MAKE_SEQ_PROPERTY(regions, get_num_regions, get_region);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 #ifndef NDEBUG
   void show_regions(const NodePath &render2d,
-                    const string &bin_name, int draw_order);
+                    const std::string &bin_name, int draw_order);
   void set_color(const LColor &color);
   void hide_regions();
 
@@ -67,7 +67,7 @@ protected:
 
 #ifndef NDEBUG
   virtual void do_show_regions(const NodePath &render2d,
-                               const string &bin_name, int draw_order);
+                               const std::string &bin_name, int draw_order);
   virtual void do_hide_regions();
   void do_update_regions();
 #endif  // NDEBUG

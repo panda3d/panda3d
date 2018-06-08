@@ -52,6 +52,18 @@ ConfigVariableInt stm_max_views
           "with. Each camera rendering the terrain corresponds to a view. Lowering this "
           "value will reduce the data that has to be transferred to the GPU."));
 
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_minfilter
+("stm-heightfield-minfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the minfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
+
+ConfigVariableEnum<SamplerState::FilterType> stm_heightfield_magfilter
+("stm-heightfield-magfilter", SamplerState::FT_linear,
+ PRC_DESC("This specifies the magfilter that is applied for a heightfield texture. This "
+         "can be used to create heightfield that is visual correct with collision "
+         "geometry (for example bullet terrain mesh) by changing it to nearest"));
+
 PStatCollector ShaderTerrainMesh::_basic_collector("Cull:ShaderTerrainMesh:Setup");
 PStatCollector ShaderTerrainMesh::_lod_collector("Cull:ShaderTerrainMesh:CollectLOD");
 
@@ -82,13 +94,13 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _size(0),
   _chunk_size(32),
   _generate_patches(false),
-  _data_texture(NULL),
-  _chunk_geom(NULL),
+  _data_texture(nullptr),
+  _chunk_geom(nullptr),
   _current_view_index(0),
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
   _update_enabled(true),
-  _heightfield_tex(NULL)
+  _heightfield_tex(nullptr)
 {
   set_final(true);
   set_bounds(new OmniBoundingVolume());
@@ -148,8 +160,10 @@ void ShaderTerrainMesh::do_extract_heightfield() {
   } else {
     _heightfield_tex->set_format(Texture::F_r16);
   }
-  _heightfield_tex->set_minfilter(SamplerState::FT_linear);
-  _heightfield_tex->set_magfilter(SamplerState::FT_linear);
+  _heightfield_tex->set_minfilter(stm_heightfield_minfilter);
+  _heightfield_tex->set_magfilter(stm_heightfield_magfilter);
+  _heightfield_tex->set_wrap_u(SamplerState::WM_clamp);
+  _heightfield_tex->set_wrap_v(SamplerState::WM_clamp);
 }
 
 /**
@@ -247,7 +261,7 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
   } else {
     // Final chunk, initialize all children to zero
     for (size_t i = 0; i < 4; ++i) {
-      chunk->children[i] = NULL;
+      chunk->children[i] = nullptr;
     }
   }
 }
@@ -361,7 +375,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
   GeomVertexWriter vertex_writer(gvd, "vertex");
 
   // Create primitive
-  PT(GeomPrimitive) triangles = NULL;
+  PT(GeomPrimitive) triangles = nullptr;
   if (_generate_patches) {
     triangles = new GeomPatches(3, Geom::UH_static);
   } else {
@@ -446,8 +460,8 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
 
   // Make sure the terrain was properly initialized, and the geom was created
   // successfully
-  nassertv(_data_texture != NULL);
-  nassertv(_chunk_geom != NULL);
+  nassertv(_data_texture != nullptr);
+  nassertv(_chunk_geom != nullptr);
 
   _basic_collector.start();
 
@@ -510,7 +524,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   // Should never happen
-  nassertv(current_shader_attrib != NULL);
+  nassertv(current_shader_attrib != nullptr);
 
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
     ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)));
@@ -693,11 +707,11 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
  * @return World-Space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
-  nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
+  nassertr(_heightfield_tex != nullptr, LPoint3(0)); // Heightfield not set yet
   nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
 
   PT(TexturePeeker) peeker = _heightfield_tex->peek();
-  nassertr(peeker != NULL, LPoint3(0));
+  nassertr(peeker != nullptr, LPoint3(0));
 
   LColor result;
   if (!peeker->lookup_bilinear(result, coord.get_x(), coord.get_y())) {

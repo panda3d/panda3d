@@ -42,18 +42,18 @@
  * and/or ConfigDeclaration, more or less duplicating the interface presented
  * there.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableBase : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigVariableBase : public ConfigFlags {
 protected:
-  INLINE ConfigVariableBase(const string &name, ValueType type);
-  ConfigVariableBase(const string &name, ValueType type,
-                     const string &description, int flags);
+  INLINE ConfigVariableBase(const std::string &name, ValueType type);
+  ConfigVariableBase(const std::string &name, ValueType type,
+                     const std::string &description, int flags);
   INLINE ~ConfigVariableBase();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   INLINE ValueType get_value_type() const;
-  INLINE const string &get_description() const;
+  INLINE const std::string &get_description() const;
   INLINE int get_flags() const;
   INLINE bool is_closed() const;
   INLINE int get_trust_level() const;
@@ -70,8 +70,8 @@ PUBLISHED:
   INLINE bool has_local_value() const;
   INLINE bool has_value() const;
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
+  INLINE void write(std::ostream &out) const;
 
 protected:
   void record_unconstructed() const;
@@ -83,7 +83,7 @@ protected:
   static Unconstructed *_unconstructed;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigVariableBase &variable);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigVariableBase &variable);
 
 #include "configVariableBase.I"
 

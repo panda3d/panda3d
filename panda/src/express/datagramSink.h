@@ -39,7 +39,7 @@ PUBLISHED:
 
   virtual const Filename &get_filename();
   virtual const FileReference *get_file();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
 
   MAKE_PROPERTY(filename, get_filename);
   MAKE_PROPERTY(file, get_file);

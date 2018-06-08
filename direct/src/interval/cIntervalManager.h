@@ -36,7 +36,7 @@ class EventQueue;
  * It is also possible to create multiple IntervalManager objects for special
  * needs.
  */
-class EXPCL_DIRECT CIntervalManager {
+class EXPCL_DIRECT_INTERVAL CIntervalManager {
 PUBLISHED:
   CIntervalManager();
   ~CIntervalManager();
@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE EventQueue *get_event_queue() const;
 
   int add_c_interval(CInterval *interval, bool external);
-  int find_c_interval(const string &name) const;
+  int find_c_interval(const std::string &name) const;
 
   CInterval *get_c_interval(int index) const;
   void remove_c_interval(int index);
@@ -58,8 +58,8 @@ PUBLISHED:
   int get_next_event();
   int get_next_removal();
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
   static CIntervalManager *get_global_ptr();
 
@@ -79,7 +79,7 @@ private:
   };
   typedef pvector<IntervalDef> Intervals;
   Intervals _intervals;
-  typedef pmap<string, int> NameIndex;
+  typedef pmap<std::string, int> NameIndex;
   NameIndex _name_index;
   typedef vector_int Removed;
   Removed _removed;
@@ -93,7 +93,7 @@ private:
   static CIntervalManager *_global_ptr;
 };
 
-INLINE ostream &operator << (ostream &out, const CInterval &ival_mgr);
+INLINE std::ostream &operator << (std::ostream &out, const CInterval &ival_mgr);
 
 #include "cIntervalManager.I"
 

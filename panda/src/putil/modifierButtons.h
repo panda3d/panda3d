@@ -61,10 +61,10 @@ PUBLISHED:
   INLINE bool is_down(int index) const;
   INLINE bool is_any_down() const;
 
-  string get_prefix() const;
+  std::string get_prefix() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   void modify_button_list();
@@ -74,7 +74,7 @@ private:
   BitmaskType _state;
 };
 
-INLINE ostream &operator << (ostream &out, const ModifierButtons &mb) {
+INLINE std::ostream &operator << (std::ostream &out, const ModifierButtons &mb) {
   mb.output(out);
   return out;
 }

@@ -30,13 +30,13 @@ class NotifyCategory;
  * independently enabled or disabled, so that error messages may be squelched
  * or respected according to the wishes of the user.
  */
-class EXPCL_DTOOLCONFIG Notify {
+class EXPCL_DTOOL_PRC Notify {
 PUBLISHED:
   Notify();
   ~Notify();
 
-  void set_ostream_ptr(ostream *ostream_ptr, bool delete_later);
-  ostream *get_ostream_ptr() const;
+  void set_ostream_ptr(std::ostream *ostream_ptr, bool delete_later);
+  std::ostream *get_ostream_ptr() const;
 
   typedef bool AssertHandler(const char *expression, int line,
                              const char *source_file);
@@ -47,45 +47,45 @@ PUBLISHED:
   AssertHandler *get_assert_handler() const;
 
   INLINE bool has_assert_failed() const;
-  INLINE const string &get_assert_error_message() const;
+  INLINE const std::string &get_assert_error_message() const;
   INLINE void clear_assert_failed();
 
   NotifyCategory *get_top_category();
-  NotifyCategory *get_category(const string &basename,
+  NotifyCategory *get_category(const std::string &basename,
                                NotifyCategory *parent_category);
-  NotifyCategory *get_category(const string &basename,
-                               const string &parent_fullname);
-  NotifyCategory *get_category(const string &fullname);
+  NotifyCategory *get_category(const std::string &basename,
+                               const std::string &parent_fullname);
+  NotifyCategory *get_category(const std::string &fullname);
 
-  static ostream &out();
-  static ostream &null();
-  static void write_string(const string &str);
+  static std::ostream &out();
+  static std::ostream &null();
+  static void write_string(const std::string &str);
   static Notify *ptr();
 
 public:
   static ios_fmtflags get_literal_flag();
 
-  bool assert_failure(const string &expression, int line,
+  bool assert_failure(const std::string &expression, int line,
                       const char *source_file);
   bool assert_failure(const char *expression, int line,
                       const char *source_file);
 
-  static NotifySeverity string_severity(const string &string);
+  static NotifySeverity string_severity(const std::string &string);
 
   void config_initialized();
 
 private:
-  ostream *_ostream_ptr;
+  std::ostream *_ostream_ptr;
   bool _owns_ostream_ptr;
-  ostream *_null_ostream_ptr;
+  std::ostream *_null_ostream_ptr;
 
   AssertHandler *_assert_handler;
   bool _assert_failed;
-  string _assert_error_message;
+  std::string _assert_error_message;
 
   // This shouldn't be a pmap, since it might be invoked before we initialize
   // the global malloc pointers.
-  typedef map<string, NotifyCategory *> Categories;
+  typedef std::map<std::string, NotifyCategory *> Categories;
   Categories _categories;
 
   static Notify *_global_ptr;
