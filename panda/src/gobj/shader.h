@@ -33,6 +33,7 @@
 #include "pta_LVecBase2.h"
 #include "epvector.h"
 #include "asyncFuture.h"
+#include "bamCacheRecord.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -41,8 +42,6 @@ typedef struct _CGcontext   *CGcontext;
 typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
-
-class BamCacheRecord;
 
 /**
 
