@@ -45,7 +45,7 @@ set(P3EVENT_IGATEEXT
 )
 
 composite_sources(p3event P3EVENT_SOURCES)
-add_component_library(p3event SYMBOL BUILDING_PANDA_EVENT
+add_component_library(p3event NOINIT SYMBOL BUILDING_PANDA_EVENT
   ${P3EVENT_HEADERS} ${P3EVENT_SOURCES})
 target_link_libraries(p3event p3linmath p3pstatclient)
 target_interrogate(p3event ALL EXTENSIONS ${P3EVENT_IGATEEXT})

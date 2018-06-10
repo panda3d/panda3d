@@ -70,7 +70,7 @@ set(P3PRC_IGATEEXT
 
 composite_sources(p3prc P3PRC_SOURCES)
 
-add_component_library(p3prc SYMBOL BUILDING_DTOOL_PRC
+add_component_library(p3prc NOINIT SYMBOL BUILDING_DTOOL_PRC
   ${P3PRC_HEADERS} ${P3PRC_SOURCES})
 target_include_directories(p3prc PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 # The extensions need py_panda.h and extension.h from interrogatedb

@@ -11,7 +11,7 @@ if(HAVE_FREETYPE)
   list(APPEND PANDA_LINK_TARGETS p3pnmtext)
 endif()
 
-add_metalib(panda panda.cxx COMPONENTS ${PANDA_LINK_TARGETS})
+add_metalib(panda INIT init_libpanda panda.h COMPONENTS ${PANDA_LINK_TARGETS})
 set_target_properties(panda PROPERTIES DEFINE_SYMBOL BUILDING_LIBPANDA)
 
 install(TARGETS panda DESTINATION lib)

@@ -46,7 +46,7 @@ set(P3DCPARSER_PARSER_SOURCES
     dcLexer.cxx)
 
 composite_sources(p3dcparser P3DCPARSER_SOURCES)
-add_component_library(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES}
+add_component_library(p3dcparser NOINIT ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES}
   ${P3DCPARSER_PARSER_SOURCES})
 target_compile_definitions(p3dcparser PUBLIC WITHIN_PANDA)
 target_link_libraries(p3dcparser p3directbase panda)

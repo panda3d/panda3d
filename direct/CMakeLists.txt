@@ -14,14 +14,13 @@ add_subdirectory(src/interval)
 add_subdirectory(src/motiontrail)
 add_subdirectory(src/showbase)
 
-# TODO: p3direct needs a source file!
 set(P3DIRECT_COMPONENTS
   p3dcparser p3deadrec p3directbase
   p3interval p3motiontrail p3showbase)
 if(HAVE_PYTHON)
   list(APPEND P3DIRECT_COMPONENTS p3distributed)
 endif()
-add_metalib(p3direct COMPONENTS ${P3DIRECT_COMPONENTS})
+add_metalib(p3direct INIT init_libdirect direct.h COMPONENTS ${P3DIRECT_COMPONENTS})
 set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
 
 if(HAVE_PYTHON)

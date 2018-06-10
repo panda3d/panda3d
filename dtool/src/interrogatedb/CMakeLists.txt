@@ -34,7 +34,7 @@ set(P3INTERROGATEDB_IGATE
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 
-add_component_library(p3interrogatedb SYMBOL SYMBOL BUILDING_INTERROGATEDB
+add_component_library(p3interrogatedb NOINIT SYMBOL BUILDING_INTERROGATEDB
   ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
 target_link_libraries(p3interrogatedb p3dconfig)
 target_use_packages(p3interrogatedb PYTHON)

@@ -7,7 +7,8 @@ set(P3DIRECTBASE_HEADERS
 )
 
 # Not worth compositing sources, there's really only one.
-add_component_library(p3directbase ${P3DIRECTBASE_HEADERS} ${P3DIRECTBASE_SOURCES})
+add_component_library(p3directbase NOINIT
+  ${P3DIRECTBASE_HEADERS} ${P3DIRECTBASE_SOURCES})
 target_link_libraries(p3directbase panda)
 
 install(TARGETS p3directbase DESTINATION lib)

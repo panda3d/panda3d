@@ -83,7 +83,7 @@ set(P3DTOOLBASE_IGATEEXT
 
 composite_sources(p3dtoolbase P3DTOOLBASE_SOURCES)
 
-add_component_library(p3dtoolbase SYMBOL BUILDING_DTOOL_DTOOLBASE
+add_component_library(p3dtoolbase NOINIT SYMBOL BUILDING_DTOOL_DTOOLBASE
   ${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})
 # The extensions need py_panda.h and extension.h from interrogatedb
 target_include_directories(p3dtoolbase PUBLIC
