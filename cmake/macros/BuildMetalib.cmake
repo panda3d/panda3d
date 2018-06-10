@@ -30,24 +30,29 @@ function(target_link_libraries target)
       set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
       set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
 
-      # Also build with the same BUILDING_ macros, because these will all end
-      # up in the same library.
-      set(compile_definitions "$<$<BOOL:$<TARGET_PROPERTY:${library},IS_COMPONENT>>:$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>>")
-      set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
-
       # Libraries are only linked transitively if they aren't components.
       # Unfortunately, it seems like INTERFACE_LINK_LIBRARIES can't have
       # generator expressions on an object library(?) so we resort to taking
       # care of this at configuration time.
       if(TARGET "${library}")
-        get_target_property(is_component "${library}" IS_COMPONENT)
+        get_target_property(target_type "${library}" TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+          get_target_property(is_component "${library}" IS_COMPONENT)
+        else()
+          set(is_component OFF)
+        endif()
       else()
         # This is a safe assumption, since we define all component libraries
         # before the metalib they appear in:
         set(is_component OFF)
       endif()
 
-      if(NOT is_component)
+      if(is_component)
+        # Also build with the same BUILDING_ macros, because these will all end
+        # up in the same library.
+        set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
+        set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
+      else()
         set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
       endif()
     else()

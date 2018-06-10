@@ -6,10 +6,8 @@ set(P3DIRECTBASE_HEADERS
   directbase.h directsymbols.h
 )
 
-# Not worth compositing sources, there's really only one.
-add_component_library(p3directbase NOINIT
-  ${P3DIRECTBASE_HEADERS} ${P3DIRECTBASE_SOURCES})
-target_link_libraries(p3directbase panda)
+# Yes, INTERFACE: don't build it, there's no code!
+add_library(p3directbase INTERFACE)
+target_link_libraries(p3directbase INTERFACE panda)
 
-install(TARGETS p3directbase DESTINATION lib)
 install(FILES ${P3DIRECTBASE_HEADERS} DESTINATION include/panda3d)
