@@ -37,7 +37,7 @@ class AnimChannelBase;
  */
 class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(const string &name, PartBundle *part,
+  AnimControl(const std::string &name, PartBundle *part,
               double frame_rate, int num_frames);
   void setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
                   const BitArray &bound_joints);
@@ -50,8 +50,8 @@ PUBLISHED:
   INLINE bool is_pending() const;
   void wait_pending();
   INLINE bool has_anim() const;
-  void set_pending_done_event(const string &done_event);
-  string get_pending_done_event() const;
+  void set_pending_done_event(const std::string &done_event);
+  std::string get_pending_done_event() const;
 
   PartBundle *get_part() const;
   INLINE AnimBundle *get_anim() const;
@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE void set_anim_model(PandaNode *model);
   INLINE PandaNode *get_anim_model() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   // The following functions aren't really part of the public interface;
@@ -75,7 +75,7 @@ protected:
 
 private:
   bool _pending;
-  string _pending_done_event;
+  std::string _pending_done_event;
   Mutex _pending_lock;  // protects the above two.
   ConditionVarFull _pending_cvar; // signals when _pending goes true.
 
@@ -118,7 +118,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AnimControl &control);
+INLINE std::ostream &operator << (std::ostream &out, const AnimControl &control);
 
 #include "animControl.I"
 

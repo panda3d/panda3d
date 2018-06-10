@@ -219,7 +219,7 @@ get_seq() const {
  *
  */
 INLINE void UpdateSeq::
-output(ostream &out) const {
+output(std::ostream &out) const {
   AtomicAdjust::Integer seq = AtomicAdjust::get(_seq);
   switch (seq) {
   case (AtomicAdjust::Integer)SC_initial:
@@ -271,7 +271,7 @@ priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
   return (a == b) || priv_lt(a, b);
 }
 
-INLINE ostream &operator << (ostream &out, const UpdateSeq &value) {
+INLINE std::ostream &operator << (std::ostream &out, const UpdateSeq &value) {
   value.output(out);
   return out;
 }

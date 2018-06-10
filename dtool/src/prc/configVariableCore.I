@@ -14,7 +14,7 @@
 /**
  * Returns the name of the variable.
  */
-INLINE const string &ConfigVariableCore::
+INLINE const std::string &ConfigVariableCore::
 get_name() const {
   return _name;
 }
@@ -40,7 +40,7 @@ get_value_type() const {
 /**
  * Returns the brief description of this variable, if it has been defined.
  */
-INLINE const string &ConfigVariableCore::
+INLINE const std::string &ConfigVariableCore::
 get_description() const {
   return _description;
 }
@@ -208,8 +208,8 @@ check_sort_declarations() const {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableCore &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableCore &variable) {
   variable.output(out);
   return out;
 }

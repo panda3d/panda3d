@@ -57,9 +57,9 @@ PUBLISHED:
 public:
   virtual BaseParticleRenderer *make_copy();
 
-  virtual void output(ostream &out) const;
-  virtual void write_linear_forces(ostream &out, int indent=0) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_linear_forces(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PT(PandaNode) _geom_node;

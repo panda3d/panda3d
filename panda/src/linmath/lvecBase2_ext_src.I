@@ -27,9 +27,9 @@
 /**
  *
  */
-INLINE_LINMATH string Extension<FLOATNAME(LVecBase2)>::
+INLINE_LINMATH std::string Extension<FLOATNAME(LVecBase2)>::
 __repr__() const {
-  ostringstream out;
+  std::ostringstream out;
   out << "LVecBase2" << FLOATTOKEN << "("
       << MAYBE_ZERO(_this->_v(0)) << ", "
       << MAYBE_ZERO(_this->_v(1)) << ")";
@@ -69,7 +69,7 @@ __reduce__(PyObject *self) const {
  * This is used to implement swizzle masks.
  */
 INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
-__getattr__(PyObject *self, const string &attr_name) const {
+__getattr__(PyObject *self, const std::string &attr_name) const {
 #ifndef CPPPARSER
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
   extern struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
@@ -77,7 +77,7 @@ __getattr__(PyObject *self, const string &attr_name) const {
 #endif
 
   // Validate the attribute name.
-  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+  for (std::string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it != 'x' && *it != 'y') {
       return Dtool_Raise_AttributeError(self, attr_name.c_str());
     }
@@ -117,10 +117,10 @@ __getattr__(PyObject *self, const string &attr_name) const {
  * This is used to implement write masks.
  */
 INLINE_LINMATH int Extension<FLOATNAME(LVecBase2)>::
-__setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
+__setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
 #ifndef NDEBUG
   // Validate the attribute name.
-  for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+  for (std::string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it != 'x' && *it != 'y') {
       Dtool_Raise_AttributeError(self, attr_name.c_str());
       return -1;
@@ -189,7 +189,7 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
 
     // Loop through the components in the attribute name, and assign the
     // floating-point value to every one of them.
-    for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
+    for (std::string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
       _this->_v((*it) - 'x') = value;
     }
   }

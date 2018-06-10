@@ -306,7 +306,7 @@ template<class Key, class Value>
 INLINE void WeakKeyHashMap<Key, Value>::
 set_data(size_t n, Value &&data) {
   nassertv(has_element(n));
-  _table[n]._data = move(data);
+  _table[n]._data = std::move(data);
 }
 
 /**
@@ -390,7 +390,7 @@ is_empty() const {
  */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "WeakKeyHashMap (" << _num_entries << " entries): [";
   for (size_t i = 0; i < _table_size; ++i) {
     if (get_exists_array()[i] == 0) {
@@ -414,7 +414,7 @@ output(ostream &out) const {
  */
 template<class Key, class Value>
 void WeakKeyHashMap<Key, Value>::
-write(ostream &out) const {
+write(std::ostream &out) const {
   output(out);
   out << "\n";
 }

@@ -26,7 +26,7 @@ NodePath() :
  * PandaNode is created with the indicated name.
  */
 INLINE NodePath::
-NodePath(const string &top_node_name, Thread *current_thread) :
+NodePath(const std::string &top_node_name, Thread *current_thread) :
   _error_type(ET_ok)
 {
   PandaNode *top_node = new PandaNode(top_node_name);
@@ -95,7 +95,7 @@ operator = (const NodePath &copy) {
  */
 INLINE NodePath::
 NodePath(NodePath &&from) noexcept :
-  _head(move(from._head)),
+  _head(std::move(from._head)),
   _backup_key(from._backup_key),
   _error_type(from._error_type)
 {
@@ -106,7 +106,7 @@ NodePath(NodePath &&from) noexcept :
  */
 INLINE void NodePath::
 operator = (NodePath &&from) noexcept {
-  _head = move(from._head);
+  _head = std::move(from._head);
   _backup_key = from._backup_key;
   _error_type = from._error_type;
 }
@@ -386,7 +386,7 @@ get_parent(Thread *current_thread) const {
  * returning a new NodePath that references it.
  */
 INLINE NodePath NodePath::
-attach_new_node(const string &name, int sort, Thread *current_thread) const {
+attach_new_node(const std::string &name, int sort, Thread *current_thread) const {
   nassertr(verify_complete(current_thread), NodePath::fail());
 
   return attach_new_node(new PandaNode(name), sort, current_thread);
@@ -404,7 +404,7 @@ ls() const {
  * Lists the hierarchy at and below the referenced node.
  */
 INLINE void NodePath::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
   if (is_empty()) {
     out << "(empty)\n";
   } else {
@@ -1078,7 +1078,7 @@ get_sa() const {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1086,7 +1086,7 @@ set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1094,7 +1094,7 @@ set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_int &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1102,7 +1102,7 @@ set_shader_input(CPT_InternalName id, const PTA_int &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1110,7 +1110,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 
@@ -1119,7 +1119,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1127,7 +1127,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1135,7 +1135,7 @@ set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1143,7 +1143,7 @@ set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1151,7 +1151,7 @@ set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1159,7 +1159,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase4i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 
@@ -1168,7 +1168,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase3i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1176,7 +1176,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase2i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1184,7 +1184,7 @@ set_shader_input(CPT_InternalName id, const LVecBase4i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1192,7 +1192,7 @@ set_shader_input(CPT_InternalName id, const LVecBase3i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1200,7 +1200,7 @@ set_shader_input(CPT_InternalName id, const LVecBase2i &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1208,7 +1208,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1216,7 +1216,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1224,7 +1224,7 @@ set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) {
-  set_shader_input(ShaderInput(move(id), v, priority));
+  set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -1232,7 +1232,7 @@ set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, int priority) {
-  set_shader_input(ShaderInput(move(id), tex, priority));
+  set_shader_input(ShaderInput(std::move(id), tex, priority));
 }
 
 /**
@@ -1240,7 +1240,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler, int priority) {
-  set_shader_input(ShaderInput(move(id), tex, sampler, priority));
+  set_shader_input(ShaderInput(std::move(id), tex, sampler, priority));
 }
 
 /**
@@ -1248,7 +1248,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, const SamplerState &sampler,
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z, int n, int priority) {
-  set_shader_input(ShaderInput(move(id), tex, read, write, z, n, priority));
+  set_shader_input(ShaderInput(std::move(id), tex, read, write, z, n, priority));
 }
 
 /**
@@ -1256,7 +1256,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, bool read, bool write, int z
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority) {
-  set_shader_input(ShaderInput(move(id), buf, priority));
+  set_shader_input(ShaderInput(std::move(id), buf, priority));
 }
 
 /**
@@ -1264,7 +1264,7 @@ set_shader_input(CPT_InternalName id, ShaderBuffer *buf, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
-  set_shader_input(ShaderInput(move(id), np, priority));
+  set_shader_input(ShaderInput(std::move(id), np, priority));
 }
 
 /**
@@ -1272,7 +1272,7 @@ set_shader_input(CPT_InternalName id, const NodePath &np, int priority) {
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, int n1, int n2, int n3, int n4, int priority) {
-  set_shader_input(ShaderInput(move(id), LVecBase4i(n1, n2, n3, n4), priority));
+  set_shader_input(ShaderInput(std::move(id), LVecBase4i(n1, n2, n3, n4), priority));
 }
 
 /**
@@ -1280,7 +1280,7 @@ set_shader_input(CPT_InternalName id, int n1, int n2, int n3, int n4, int priori
  */
 INLINE void NodePath::
 set_shader_input(CPT_InternalName id, PN_stdfloat n1, PN_stdfloat n2, PN_stdfloat n3, PN_stdfloat n4, int priority) {
-  set_shader_input(ShaderInput(move(id), LVecBase4(n1, n2, n3, n4), priority));
+  set_shader_input(ShaderInput(std::move(id), LVecBase4(n1, n2, n3, n4), priority));
 }
 
 /**
@@ -1733,7 +1733,7 @@ clear_project_texture(TextureStage *stage) {
  * string for the default texture coordinate set.
  */
 INLINE bool NodePath::
-has_texcoord(const string &texcoord_name) const {
+has_texcoord(const std::string &texcoord_name) const {
   return has_vertex_column(InternalName::get_texcoord_name(texcoord_name));
 }
 
@@ -1986,7 +1986,7 @@ clear_model_nodes() {
  * of any one key's value.
  */
 INLINE void NodePath::
-set_tag(const string &key, const string &value) {
+set_tag(const std::string &key, const std::string &value) {
   nassertv_always(!is_empty());
   node()->set_tag(key, value);
 }
@@ -1996,12 +1996,12 @@ set_tag(const string &key, const string &value) {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.  See also get_net_tag().
  */
-INLINE string NodePath::
-get_tag(const string &key) const {
+INLINE std::string NodePath::
+get_tag(const std::string &key) const {
   // An empty NodePath quietly returns no tags.  This makes get_net_tag()
   // easier to implement.
   if (is_empty()) {
-    return string();
+    return std::string();
   }
   return node()->get_tag(key);
 }
@@ -2024,7 +2024,7 @@ get_tag_keys(vector_string &keys) const {
  * set.  See also has_net_tag().
  */
 INLINE bool NodePath::
-has_tag(const string &key) const {
+has_tag(const std::string &key) const {
   // An empty NodePath quietly has no tags.  This makes has_net_tag() easier
   // to implement.
   if (is_empty()) {
@@ -2038,7 +2038,7 @@ has_tag(const string &key) const {
  * call to clear_tag(), has_tag() will return false for the indicated key.
  */
 INLINE void NodePath::
-clear_tag(const string &key) {
+clear_tag(const std::string &key) {
   nassertv_always(!is_empty());
   node()->clear_tag(key);
 }
@@ -2049,8 +2049,8 @@ clear_tag(const string &key) {
  * indicated key on any ancestor node, returns the empty string.  See also
  * get_tag().
  */
-INLINE string NodePath::
-get_net_tag(const string &key) const {
+INLINE std::string NodePath::
+get_net_tag(const std::string &key) const {
   return find_net_tag(key).get_tag(key);
 }
 
@@ -2059,7 +2059,7 @@ get_net_tag(const string &key) const {
  * any ancestor node, or false otherwise.  See also has_tag().
  */
 INLINE bool NodePath::
-has_net_tag(const string &key) const {
+has_net_tag(const std::string &key) const {
   return !find_net_tag(key).is_empty();
 }
 
@@ -2079,7 +2079,7 @@ list_tags() const {
  * Changes the name of the referenced node.
  */
 INLINE void NodePath::
-set_name(const string &name) {
+set_name(const std::string &name) {
   nassertv_always(!is_empty());
   node()->set_name(name);
 }
@@ -2087,9 +2087,9 @@ set_name(const string &name) {
 /**
  * Returns the name of the referenced node.
  */
-INLINE string NodePath::
+INLINE std::string NodePath::
 get_name() const {
-  nassertr_always(!is_empty(), string());
+  nassertr_always(!is_empty(), std::string());
   return node()->get_name();
 }
 
@@ -2111,7 +2111,7 @@ encode_to_bam_stream() const {
 }
 
 
-INLINE ostream &operator << (ostream &out, const NodePath &node_path) {
+INLINE std::ostream &operator << (std::ostream &out, const NodePath &node_path) {
   node_path.output(out);
   return out;
 }

@@ -84,7 +84,7 @@ get_hash() const {
  * owns this TypeHandle.  It is only used in case the TypeHandle is
  * inadvertantly undefined.
  */
-INLINE string TypeHandle::
+INLINE std::string TypeHandle::
 get_name(TypedObject *object) const {
   if ((*this) == TypeHandle::none()) {
     return "none";
@@ -187,7 +187,7 @@ get_index() const {
  *
  */
 INLINE void TypeHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
 }
 

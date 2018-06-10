@@ -231,7 +231,7 @@ almost_same_direction(const FLOATNAME(LQuaternion) &other,
  *
  */
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
-output(ostream& os) const {
+output(std::ostream& os) const {
   os << MAYBE_ZERO(_v(0)) << " + "
      << MAYBE_ZERO(_v(1)) << "i + "
      << MAYBE_ZERO(_v(2)) << "j + "

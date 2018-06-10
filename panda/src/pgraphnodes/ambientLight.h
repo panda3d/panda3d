@@ -25,14 +25,14 @@
  */
 class EXPCL_PANDA_PGRAPHNODES AmbientLight : public LightNode {
 PUBLISHED:
-  explicit AmbientLight(const string &name);
+  explicit AmbientLight(const std::string &name);
 
 protected:
   AmbientLight(const AmbientLight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
   virtual bool is_ambient_light() const final;
 
 PUBLISHED:
@@ -68,7 +68,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AmbientLight &light) {
+INLINE std::ostream &operator << (std::ostream &out, const AmbientLight &light) {
   light.output(out);
   return out;
 }

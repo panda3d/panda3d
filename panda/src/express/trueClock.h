@@ -30,7 +30,7 @@
  * zero, this value can only be meaningfully used to measure elapsed time, by
  * sampling it at two different times and subtracting.
  */
-class EXPCL_PANDAEXPRESS TrueClock {
+class EXPCL_PANDA_EXPRESS TrueClock {
 PUBLISHED:
   // get_long_time() returns the most accurate timer we have over a long
   // interval.  It may not be very precise for measuring short intervals, but

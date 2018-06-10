@@ -30,7 +30,7 @@ class EXPCL_MILES_AUDIO MilesAudioSample : public MilesAudioSound {
 private:
   MilesAudioSample(MilesAudioManager *manager,
                    MilesAudioManager::SoundData *sd,
-                   const string &file_name);
+                   const std::string &file_name);
 
 public:
   virtual ~MilesAudioSample();
@@ -49,7 +49,7 @@ public:
   virtual AudioSound::SoundStatus status() const;
 
   virtual void cleanup();
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   // 3D spatialized sound support.  Spatialized sound was originally added for
   // FMOD, so there are parts of the interface in the Miles implementation

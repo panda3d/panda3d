@@ -31,11 +31,11 @@ private:
 
   friend class WebcamVideoCursorV4L;
   friend void find_all_webcams_v4l();
-  static void add_options_for_size(int fd, const string &dev, const char *name,
+  static void add_options_for_size(int fd, const std::string &dev, const char *name,
                                    unsigned width, unsigned height,
                                    unsigned pixelformat);
 
-  string _device;
+  std::string _device;
   uint32_t _pformat;
 
 public:

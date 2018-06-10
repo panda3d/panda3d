@@ -505,7 +505,7 @@ refresh() const {
  */
 template<class T>
 INLINE void WeakPointerToBase<T>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _void_ptr;
   if (was_deleted()) {
     out << ":deleted";

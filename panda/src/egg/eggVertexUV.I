@@ -16,10 +16,10 @@
  * Usually this is the same string that is input, but for historical reasons
  * the texture coordinate name "default" is mapped to the empty string.
  */
-INLINE string EggVertexUV::
-filter_name(const string &name) {
+INLINE std::string EggVertexUV::
+filter_name(const std::string &name) {
   if (name == "default") {
-    return string();
+    return std::string();
   }
   return name;
 }
@@ -28,7 +28,7 @@ filter_name(const string &name) {
  *
  */
 INLINE void EggVertexUV::
-set_name(const string &name) {
+set_name(const std::string &name) {
   Namable::set_name(filter_name(name));
 }
 

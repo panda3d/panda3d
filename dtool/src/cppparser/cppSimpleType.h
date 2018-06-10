@@ -79,9 +79,9 @@ public:
   virtual bool is_destructible() const;
   virtual bool is_parameter_expr() const;
 
-  virtual string get_preferred_name() const;
+  virtual std::string get_preferred_name() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 

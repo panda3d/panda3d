@@ -95,8 +95,8 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(off_lights, get_num_off_lights, get_off_light);
 
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;

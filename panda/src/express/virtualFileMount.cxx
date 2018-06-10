@@ -124,7 +124,7 @@ is_writable(const Filename &file) const {
  */
 bool VirtualFileMount::
 read_file(const Filename &file, bool do_uncompress,
-          pvector<unsigned char> &result) const {
+          vector_uchar &result) const {
   result.clear();
 
   istream *in = open_read_file(file, do_uncompress);

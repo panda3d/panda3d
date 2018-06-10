@@ -31,7 +31,7 @@ class XFileParseData {
 public:
   XFileParseData();
 
-  void yyerror(const string &message) const;
+  void yyerror(const std::string &message) const;
 
   enum ParseFlags {
     PF_object     = 0x001,
@@ -45,12 +45,12 @@ public:
   PT(XFileDataObject) _object;
   PTA_double _double_list;
   PTA_int _int_list;
-  string _string;
+  std::string _string;
   int _parse_flags;
 
   int _line_number;
   int _col_number;
-  string _current_line;
+  std::string _current_line;
 };
 
 /**

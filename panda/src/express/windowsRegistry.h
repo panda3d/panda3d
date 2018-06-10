@@ -25,7 +25,7 @@
  * encoding and stores them in Unicode (and conversely reconverts them on
  * retrieval).
  */
-class EXPCL_PANDAEXPRESS WindowsRegistry
+class EXPCL_PANDA_EXPRESS WindowsRegistry
 {
 PUBLISHED:
   enum RegLevel {
@@ -33,27 +33,27 @@ PUBLISHED:
       rl_user = 1
   };
 
-  static bool set_string_value(const string &key, const string &name,
-                               const string &value, RegLevel rl = rl_machine);
-  static bool set_int_value(const string &key, const string &name, int value, RegLevel rl = rl_machine);
+  static bool set_string_value(const std::string &key, const std::string &name,
+                               const std::string &value, RegLevel rl = rl_machine);
+  static bool set_int_value(const std::string &key, const std::string &name, int value, RegLevel rl = rl_machine);
 
   enum Type {
     T_none,
     T_int,
     T_string,
   };
-  static Type get_key_type(const string &key, const string &name, RegLevel rl = rl_machine);
-  static string get_string_value(const string &key, const string &name,
-                                 const string &default_value, RegLevel rl = rl_machine);
-  static int get_int_value(const string &key, const string &name,
+  static Type get_key_type(const std::string &key, const std::string &name, RegLevel rl = rl_machine);
+  static std::string get_string_value(const std::string &key, const std::string &name,
+                                 const std::string &default_value, RegLevel rl = rl_machine);
+  static int get_int_value(const std::string &key, const std::string &name,
                            int default_value, RegLevel rl = rl_machine);
 
 private:
-  static bool do_set(const string &key, const string &name,
+  static bool do_set(const std::string &key, const std::string &name,
                      int data_type, const void *data, int data_length, const RegLevel rl);
-  static bool do_get(const string &key, const string &name,
-                     int &data_type, string &data, const RegLevel rl);
-  static string format_message(int error_code);
+  static bool do_get(const std::string &key, const std::string &name,
+                     int &data_type, std::string &data, const RegLevel rl);
+  static std::string format_message(int error_code);
 };
 
 #endif  // WIN32_VC

@@ -32,8 +32,8 @@ public:
                  PN_stdfloat dt);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   LinearIntegrator();

@@ -32,7 +32,7 @@ class GraphicsStateGuardian;
  */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
-  explicit LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
+  explicit LightLensNode(const std::string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
 
   INLINE bool has_specular_color() const;
@@ -82,8 +82,8 @@ public:
 PUBLISHED:
   // We have to explicitly publish these because they resolve the multiple
   // inheritance.
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -113,7 +113,7 @@ private:
   friend class GraphicsStateGuardian;
 };
 
-INLINE ostream &operator << (ostream &out, const LightLensNode &light) {
+INLINE std::ostream &operator << (std::ostream &out, const LightLensNode &light) {
   light.output(out);
   return out;
 }

@@ -43,7 +43,7 @@ open(const Filename &filename) {
 /**
  * Returns the istream represented by the input file.
  */
-INLINE istream &DatagramInputFile::
+INLINE std::istream &DatagramInputFile::
 get_stream() {
   static std::ifstream null_stream;
   nassertr(_in != nullptr, null_stream);

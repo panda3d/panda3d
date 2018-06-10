@@ -34,7 +34,7 @@ get_geom() const {
  * Returns the name of this primitive's material, or the empty string if none
  * was assigned.
  */
-INLINE const string &ColladaPrimitive::
+INLINE const std::string &ColladaPrimitive::
 get_material() const {
   return _material;
 }

@@ -202,8 +202,8 @@ intersects_line(FLOATTYPE &t,
   return true;
 }
 
-INLINE_MATHUTIL ostream &
-operator << (ostream &out, const FLOATNAME(LPlane) &p) {
+INLINE_MATHUTIL std::ostream &
+operator << (std::ostream &out, const FLOATNAME(LPlane) &p) {
   p.output(out);
   return out;
 }

@@ -60,15 +60,15 @@ class MFloatArray;
  */
 class MayaToEggConverter : public SomethingToEggConverter {
 public:
-  MayaToEggConverter(const string &program_name = "");
+  MayaToEggConverter(const std::string &program_name = "");
   MayaToEggConverter(const MayaToEggConverter &copy);
   virtual ~MayaToEggConverter();
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
-  virtual string get_additional_extensions() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
+  virtual std::string get_additional_extensions() const;
 
   virtual bool convert_file(const Filename &filename);
   virtual DistanceUnit get_input_units();
@@ -84,11 +84,11 @@ public:
 
   void clear_ignore_sliders();
   void add_ignore_slider(const GlobPattern &glob);
-  bool ignore_slider(const string &name) const;
+  bool ignore_slider(const std::string &name) const;
 
   void clear_force_joints();
   void add_force_joint(const GlobPattern &glob);
-  bool force_joint(const string &name) const;
+  bool force_joint(const std::string &name) const;
 
   void set_from_selection(bool from_selection);
 
@@ -123,7 +123,7 @@ private:
                           MFnNurbsSurface &surface,
                           EggGroup *group);
   EggNurbsCurve *make_trim_curve(const MFnNurbsCurve &curve,
-                                 const string &nurbs_name,
+                                 const std::string &nurbs_name,
                                  EggGroupNode *egg_group,
                                  int trim_curve_index);
   void make_nurbs_curve(const MDagPath &dag_path,
@@ -167,10 +167,10 @@ private:
 
   int round(double value);
 
-  string _program_name;
+  std::string _program_name;
 
   bool _from_selection;
-  string _subroot;
+  std::string _subroot;
   typedef pvector<GlobPattern> Globs;
   Globs _subsets;
   Globs _subroots;
@@ -205,7 +205,7 @@ public:
   };
   TransformType _transform_type;
 
-  static TransformType string_transform_type(const string &arg);
+  static TransformType string_transform_type(const std::string &arg);
 };
 
 

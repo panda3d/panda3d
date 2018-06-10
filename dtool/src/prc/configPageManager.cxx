@@ -13,6 +13,7 @@
 
 #include "configPageManager.h"
 #include "configDeclaration.h"
+#include "configVariableBool.h"
 #include "configVariableString.h"
 #include "configPage.h"
 #include "prcKeyRegistry.h"

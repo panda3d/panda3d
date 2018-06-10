@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
 PUBLISHED:
-  INLINE explicit EggSAnimData(const string &name = "");
+  INLINE explicit EggSAnimData(const std::string &name = "");
   INLINE EggSAnimData(const EggSAnimData &copy);
   INLINE EggSAnimData &operator = (const EggSAnimData &copy);
 
@@ -34,7 +34,7 @@ PUBLISHED:
 
   void optimize();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
 

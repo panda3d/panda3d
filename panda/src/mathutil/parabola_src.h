@@ -35,8 +35,8 @@ PUBLISHED:
 
   INLINE_MATHUTIL FLOATNAME(LPoint3) calc_point(FLOATTYPE t) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   void write_datagram_fixed(Datagram &destination) const;
   void read_datagram_fixed(DatagramIterator &source);
@@ -47,8 +47,8 @@ private:
   FLOATNAME(LVecBase3) _a, _b, _c;
 };
 
-inline ostream &
-operator << (ostream &out, const FLOATNAME(LParabola) &p) {
+inline std::ostream &
+operator << (std::ostream &out, const FLOATNAME(LParabola) &p) {
   p.output(out);
   return out;
 }

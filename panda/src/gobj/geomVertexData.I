@@ -15,7 +15,7 @@
  * Returns the name passed to the constructor, if any.  This name is reported
  * on the PStats graph for vertex computations.
  */
-INLINE const string &GeomVertexData::
+INLINE const std::string &GeomVertexData::
 get_name() const {
   return _name;
 }
@@ -476,7 +476,7 @@ unpack_ufloat_c(uint32_t data) {
 INLINE int GeomVertexData::
 add_transform(TransformTable *table, const VertexTransform *transform,
               TransformMap &already_added) {
-  pair<TransformMap::iterator, bool> result = already_added.insert(TransformMap::value_type(transform, table->get_num_transforms()));
+  std::pair<TransformMap::iterator, bool> result = already_added.insert(TransformMap::value_type(transform, table->get_num_transforms()));
 
   if (result.second) {
     table->add_transform(transform);
@@ -886,8 +886,8 @@ get_array_writer(size_t i) const {
   return _array_writers[i];
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexData &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexData &obj) {
   obj.output(out);
   return out;
 }

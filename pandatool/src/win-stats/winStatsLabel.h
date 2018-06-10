@@ -59,7 +59,7 @@ private:
   WinStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
-  string _text;
+  std::string _text;
   HWND _window;
   COLORREF _bg_color;
   COLORREF _fg_color;

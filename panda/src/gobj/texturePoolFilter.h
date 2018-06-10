@@ -51,7 +51,7 @@ public:
                                const LoaderOptions &options);
   virtual PT(Texture) post_load(Texture *tex);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   static TypeHandle get_class_type() {
@@ -71,7 +71,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const TexturePoolFilter &filter) {
+INLINE std::ostream &operator << (std::ostream &out, const TexturePoolFilter &filter) {
   filter.output(out);
   return out;
 }

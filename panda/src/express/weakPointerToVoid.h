@@ -23,7 +23,7 @@
  * This is the specialization of PointerToVoid for weak pointers.  It needs an
  * additional flag to indicate that the pointer has been deleted.
  */
-class EXPCL_PANDAEXPRESS WeakPointerToVoid : public PointerToVoid {
+class EXPCL_PANDA_EXPRESS WeakPointerToVoid : public PointerToVoid {
 protected:
   INLINE WeakPointerToVoid();
 

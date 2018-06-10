@@ -39,9 +39,9 @@ PUBLISHED:
   void do_particles(PN_stdfloat dt);
   void do_particles(PN_stdfloat dt, ParticleSystem * ps, bool do_render = true);
 
-  virtual void output(ostream &out) const;
-  virtual void write_ps_list(ostream &out, int indent=0) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_ps_list(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   plist< PT(ParticleSystem) > _ps_list;

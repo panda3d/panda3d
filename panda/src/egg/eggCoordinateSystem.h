@@ -34,7 +34,7 @@ PUBLISHED:
   INLINE void set_value(CoordinateSystem value);
   INLINE CoordinateSystem get_value() const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
   CoordinateSystem _value;

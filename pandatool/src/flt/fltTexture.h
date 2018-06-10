@@ -30,7 +30,7 @@ public:
 
   virtual void apply_converted_filenames();
 
-  string _orig_filename;
+  std::string _orig_filename;
   Filename _converted_filename;
   int _pattern_index;
   int _x_location;
@@ -157,7 +157,7 @@ public:
   typedef pvector<GeospecificControlPoint> GeospecificControlPoints;
 
   struct SubtextureDef {
-    string _name;
+    std::string _name;
     int _left;
     int _bottom;
     int _right;
@@ -216,7 +216,7 @@ public:
   ImageOrigin _image_origin;
   PointsUnits _geospecific_points_units;
   Hemisphere _geospecific_hemisphere;
-  string _comment;
+  std::string _comment;
   int _file_version;
   GeospecificControlPoints _geospecific_control_points;
   SubtextureDefs _subtexture_defs;

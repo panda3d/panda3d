@@ -74,11 +74,11 @@ PUBLISHED:
 
   // Set (or clear) the event that will be thrown when the sound finishes
   // playing.  To clear the event, pass an empty string.
-  virtual void set_finished_event(const string& event) = 0;
-  virtual const string& get_finished_event() const = 0;
+  virtual void set_finished_event(const std::string& event) = 0;
+  virtual const std::string& get_finished_event() const = 0;
 
   // There is no set_name(), this is intentional.
-  virtual const string& get_name() const = 0;
+  virtual const std::string& get_name() const = 0;
 
   // return: playing time in seconds.
   virtual PN_stdfloat length() const = 0;
@@ -123,8 +123,8 @@ PUBLISHED:
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 protected:
   AudioSound();
@@ -149,15 +149,15 @@ private:
   static TypeHandle _type_handle;
 };
 
-inline ostream &
-operator << (ostream &out, const AudioSound &sound) {
+inline std::ostream &
+operator << (std::ostream &out, const AudioSound &sound) {
   sound.output(out);
   return out;
 }
 
 #include "audioSound.I"
 
-EXPCL_PANDA_AUDIO ostream &
-operator << (ostream &out, AudioSound::SoundStatus status);
+EXPCL_PANDA_AUDIO std::ostream &
+operator << (std::ostream &out, AudioSound::SoundStatus status);
 
 #endif /* __AUDIOSOUND_H__ */

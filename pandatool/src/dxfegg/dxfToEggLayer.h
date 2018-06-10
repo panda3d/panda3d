@@ -34,7 +34,7 @@ class DXFToEggConverter;
  */
 class DXFToEggLayer : public DXFLayer {
 public:
-  DXFToEggLayer(const string &name, EggGroupNode *parent);
+  DXFToEggLayer(const std::string &name, EggGroupNode *parent);
 
   void add_polygon(const DXFToEggConverter *entity);
   void add_line(const DXFToEggConverter *entity);

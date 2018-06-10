@@ -59,7 +59,7 @@ is_regular_file(const Filename &file) const {
  */
 bool VirtualFileMountMultifile::
 read_file(const Filename &file, bool do_uncompress,
-          pvector<unsigned char> &result) const {
+          vector_uchar &result) const {
   if (do_uncompress) {
     // If the file is to be decompressed, we'd better just use the higher-
     // level implementation, which includes support for on-the-fly

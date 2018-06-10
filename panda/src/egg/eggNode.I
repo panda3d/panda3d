@@ -15,7 +15,7 @@
  *
  */
 INLINE EggNode::
-EggNode(const string &name) : EggNamedObject(name) {
+EggNode(const std::string &name) : EggNamedObject(name) {
   _parent = nullptr;
   _depth = 0;
   _under_flags = 0;

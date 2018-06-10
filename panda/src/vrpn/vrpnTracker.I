@@ -15,7 +15,7 @@
  * Returns the name of the tracker device that was used to create this
  * VrpnTracker.
  */
-INLINE const string &VrpnTracker::
+INLINE const std::string &VrpnTracker::
 get_tracker_name() const {
   return _tracker_name;
 }

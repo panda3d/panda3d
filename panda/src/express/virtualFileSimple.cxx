@@ -372,7 +372,7 @@ atomic_read_contents(string &contents) const {
  * regular file.  Returns true on success, false otherwise.
  */
 bool VirtualFileSimple::
-read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(vector_uchar &result, bool auto_unwrap) const {
 
   // Will we be automatically unwrapping a .pz file?
   bool do_uncompress = (_implicit_pz_file ||

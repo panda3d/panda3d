@@ -58,12 +58,12 @@ private:
   // Here begins the actual public interface to EggGroupNode.
 
 PUBLISHED:
-  explicit EggGroupNode(const string &name = "") : EggNode(name) { }
+  explicit EggGroupNode(const std::string &name = "") : EggNode(name) { }
   EggGroupNode(const EggGroupNode &copy);
   EggGroupNode &operator = (const EggGroupNode &copy);
   virtual ~EggGroupNode();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   // The EggGroupNode itself appears to be an STL container of pointers to
   // EggNodes.  The set of children is read-only, however, except through the
@@ -114,7 +114,7 @@ PUBLISHED:
   PT(EggNode) remove_child(EggNode *node);
   void steal_children(EggGroupNode &other);
 
-  EggNode *find_child(const string &name) const;
+  EggNode *find_child(const std::string &name) const;
 
   bool has_absolute_pathnames() const;
   void resolve_filenames(const DSearchPath &searchpath);
@@ -219,7 +219,7 @@ private:
     INLINE bool operator < (const TBNVertexValue &other) const;
     LVertexd _pos;
     LNormald _normal;
-    string _uv_name;
+    std::string _uv_name;
     LTexCoordd _uv;
     bool _facing;
   };

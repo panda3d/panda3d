@@ -22,7 +22,7 @@ get_dc_file() const {
 /**
  * Returns the name of this class.
  */
-INLINE const string &DCClass::
+INLINE const std::string &DCClass::
 get_name() const {
   return _name;
 }

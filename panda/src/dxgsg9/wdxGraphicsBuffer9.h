@@ -29,7 +29,7 @@
 class EXPCL_PANDADX wdxGraphicsBuffer9 : public GraphicsBuffer {
 public:
   wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                     const string &name,
+                     const std::string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,
@@ -74,7 +74,7 @@ private:
   int _backing_sizey;
 
   wdxGraphicsBuffer9 *_shared_depth_buffer;
-  list <wdxGraphicsBuffer9 *> _shared_depth_buffer_list;
+  std::list <wdxGraphicsBuffer9 *> _shared_depth_buffer_list;
 
   wdxGraphicsBuffer9 **_this;
 

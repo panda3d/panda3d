@@ -30,7 +30,7 @@
  *
  * This is the base class for PointerToBase<T>.
  */
-class EXPCL_PANDAEXPRESS PointerToVoid : public MemoryBase {
+class EXPCL_PANDA_EXPRESS PointerToVoid : public MemoryBase {
 protected:
   constexpr PointerToVoid() noexcept;
   //INLINE ~PointerToVoid();

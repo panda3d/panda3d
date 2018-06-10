@@ -73,7 +73,7 @@ public:
     SC_parameter_pack = 0x40000,
   };
 
-  CPPInstance(CPPType *type, const string &name, int storage_class = 0);
+  CPPInstance(CPPType *type, const std::string &name, int storage_class = 0);
   CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class = 0);
   CPPInstance(CPPType *type, CPPInstanceIdentifier *ii,
               int storage_class, const CPPFile &file);
@@ -96,9 +96,9 @@ public:
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
                       CPPPreprocessor *error_sink = nullptr) const;
 
-  string get_simple_name() const;
-  string get_local_name(CPPScope *scope = nullptr) const;
-  string get_fully_scoped_name() const;
+  std::string get_simple_name() const;
+  std::string get_local_name(CPPScope *scope = nullptr) const;
+  std::string get_fully_scoped_name() const;
 
   void check_for_constructor(CPPScope *current_scope, CPPScope *global_scope);
 
@@ -112,9 +112,9 @@ public:
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
-  void output(ostream &out, int indent_level, CPPScope *scope,
+  void output(std::ostream &out, int indent_level, CPPScope *scope,
               bool complete, int num_default_parameters) const;
   virtual SubType get_subtype() const;
 
@@ -129,7 +129,7 @@ public:
   int _bit_width;
 
 private:
-  typedef map<const CPPTemplateParameterList *, CPPInstance *, CPPTPLCompare> Instantiations;
+  typedef std::map<const CPPTemplateParameterList *, CPPInstance *, CPPTPLCompare> Instantiations;
   Instantiations _instantiations;
 };
 

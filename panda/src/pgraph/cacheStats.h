@@ -27,7 +27,7 @@ public:
   constexpr CacheStats() = default;
   void init();
   void reset(double now);
-  void write(ostream &out, const char *name) const;
+  void write(std::ostream &out, const char *name) const;
   INLINE void maybe_report(const char *name);
 
   INLINE void inc_hits();

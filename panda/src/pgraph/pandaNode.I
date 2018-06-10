@@ -345,14 +345,14 @@ has_dirty_prev_transform() const {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.
  */
-INLINE string PandaNode::
-get_tag(const string &key, Thread *current_thread) const {
+INLINE std::string PandaNode::
+get_tag(const std::string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   int index = cdata->_tag_data.find(key);
   if (index >= 0) {
     return cdata->_tag_data.get_data((size_t)index);
   } else {
-    return string();
+    return std::string();
   }
 }
 
@@ -362,7 +362,7 @@ get_tag(const string &key, Thread *current_thread) const {
  * set.
  */
 INLINE bool PandaNode::
-has_tag(const string &key, Thread *current_thread) const {
+has_tag(const std::string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   return cdata->_tag_data.find(key) >= 0;
 }
@@ -379,7 +379,7 @@ get_num_tags() const {
 /**
  * Returns the key of the nth tag applied to this node.
  */
-INLINE string PandaNode::
+INLINE std::string PandaNode::
 get_tag_key(size_t i) const {
   CDReader cdata(_cycler);
   return cdata->_tag_data.get_key(i);
@@ -410,7 +410,7 @@ has_tags() const {
  * Lists all the nodes at and below the current path hierarchically.
  */
 INLINE void PandaNode::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
   r_list_descendants(out, indent_level);
 }
 
@@ -934,7 +934,7 @@ operator = (const PandaNode::Children &copy) {
  */
 INLINE PandaNode::Children::
 Children(PandaNode::Children &&from) noexcept :
-  _down(move(from._down))
+  _down(std::move(from._down))
 {
 }
 
@@ -943,7 +943,7 @@ Children(PandaNode::Children &&from) noexcept :
  */
 INLINE void PandaNode::Children::
 operator = (PandaNode::Children &&from) noexcept {
-  _down = move(from._down);
+  _down = std::move(from._down);
 }
 
 /**
@@ -1456,13 +1456,13 @@ get_prev_transform() const {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.
  */
-INLINE string PandaNodePipelineReader::
-get_tag(const string &key) const {
+INLINE std::string PandaNodePipelineReader::
+get_tag(const std::string &key) const {
   int index = _cdata->_tag_data.find(key);
   if (index >= 0) {
     return _cdata->_tag_data.get_data((size_t)index);
   } else {
-    return string();
+    return std::string();
   }
 }
 
@@ -1472,7 +1472,7 @@ get_tag(const string &key) const {
  * set.
  */
 INLINE bool PandaNodePipelineReader::
-has_tag(const string &key) const {
+has_tag(const std::string &key) const {
   return _cdata->_tag_data.find(key) >= 0;
 }
 

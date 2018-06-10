@@ -122,7 +122,7 @@ PUBLISHED:
 // INLINE unsigned char get_sec_code() const;
   BLOCKING INLINE unsigned int get_msg_type() const;
 
-  INLINE static const string &get_overflow_event_name();
+  INLINE static const std::string &get_overflow_event_name();
 
   BLOCKING bool is_connected();
 
@@ -161,7 +161,7 @@ private:
   bool handle_update_field();
   bool handle_update_field_owner();
 
-  void describe_message(ostream &out, const string &prefix,
+  void describe_message(std::ostream &out, const std::string &prefix,
                         const Datagram &dg) const;
 
 private:
@@ -205,11 +205,11 @@ private:
   CHANNEL_TYPE                          _msg_sender;
   unsigned int                          _msg_type;
 
-  static const string _overflow_event_name;
+  static const std::string _overflow_event_name;
 
   bool _want_message_bundling;
   unsigned int _bundling_msgs;
-  typedef std::vector< string > BundledMsgVector;
+  typedef std::vector< std::string > BundledMsgVector;
   BundledMsgVector _bundle_msgs;
 
   static PStatCollector _update_pcollector;

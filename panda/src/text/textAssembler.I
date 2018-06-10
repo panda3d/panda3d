@@ -319,7 +319,7 @@ TextCharacter(wchar_t character,
  *
  */
 INLINE TextAssembler::TextCharacter::
-TextCharacter(const TextGraphic *graphic, const wstring &graphic_wname,
+TextCharacter(const TextGraphic *graphic, const std::wstring &graphic_wname,
               TextAssembler::ComputedProperties *cprops) :
   _character(0),
   _graphic(graphic),
@@ -405,7 +405,7 @@ ComputedProperties(const TextProperties &orig_properties) :
  *
  */
 INLINE TextAssembler::ComputedProperties::
-ComputedProperties(ComputedProperties *based_on, const wstring &wname,
+ComputedProperties(ComputedProperties *based_on, const std::wstring &wname,
                    TextEncoder *encoder) :
   _based_on(based_on),
   _depth(_based_on->_depth + 1),
@@ -417,7 +417,7 @@ ComputedProperties(ComputedProperties *based_on, const wstring &wname,
 
   // Now we have to encode the wstring into a string, for lookup in the
   // TextPropertiesManager.
-  string name = encoder->encode_wtext(wname);
+  std::string name = encoder->encode_wtext(wname);
 
   const TextProperties *named_props = manager->get_properties_ptr(name);
   if (named_props != nullptr) {

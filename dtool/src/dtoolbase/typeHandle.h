@@ -108,7 +108,7 @@ PUBLISHED:
   INLINE int compare_to(const TypeHandle &other) const;
   INLINE size_t get_hash() const;
 
-  INLINE string get_name(TypedObject *object = nullptr) const;
+  INLINE std::string get_name(TypedObject *object = nullptr) const;
   INLINE bool is_derived_from(TypeHandle parent,
                               TypedObject *object = nullptr) const;
 
@@ -128,7 +128,7 @@ PUBLISHED:
   void dec_memory_usage(MemoryClass memory_class, size_t size);
 
   INLINE int get_index() const;
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
   constexpr static TypeHandle none() { return TypeHandle(0); }
   INLINE operator bool () const;
 
@@ -157,12 +157,12 @@ private:
 
 // It's handy to be able to output a TypeHandle directly, and see the type
 // name.
-INLINE ostream &operator << (ostream &out, TypeHandle type) {
+INLINE std::ostream &operator << (std::ostream &out, TypeHandle type) {
   type.output(out);
   return out;
 }
 
-EXPCL_DTOOL_DTOOLBASE ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
+EXPCL_DTOOL_DTOOLBASE std::ostream &operator << (std::ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from our
 // inline functions.  This is a circular include that is strategically placed

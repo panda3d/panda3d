@@ -2147,7 +2147,7 @@ rescale_texture() {
  * power-2.
  */
 INLINE bool Texture::
-adjust_this_size(int &x_size, int &y_size, const string &name,
+adjust_this_size(int &x_size, int &y_size, const std::string &name,
                  bool for_padding) const {
   CDReader cdata(_cycler);
   return do_adjust_this_size(cdata, x_size, y_size, name, for_padding);
@@ -2385,7 +2385,7 @@ get_half_float(const unsigned char *&p) {
  */
 INLINE bool Texture::
 is_txo_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2400,7 +2400,7 @@ is_txo_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_dds_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2415,7 +2415,7 @@ is_dds_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_ktx_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();

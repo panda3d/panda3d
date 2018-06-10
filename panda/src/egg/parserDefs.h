@@ -29,7 +29,7 @@ class LightMutex;
 
 extern LightMutex egg_lock;
 
-void egg_init_parser(istream &in, const string &filename,
+void egg_init_parser(std::istream &in, const std::string &filename,
                      EggObject *tos, EggGroupNode *egg_top_node);
 
 void egg_cleanup_parser();
@@ -44,7 +44,7 @@ class EXPCL_PANDAEGG EggTokenType {
 public:
   double _number;
   unsigned long _ulong;
-  string _string;
+  std::string _string;
   PT(EggObject) _egg;
   PTA_double _number_list;
 };

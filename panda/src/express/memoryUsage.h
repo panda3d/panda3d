@@ -32,7 +32,7 @@ class MemoryUsagePointers;
  * When compiled with NDEBUG set, this entire class does nothing and compiles
  * to a stub.
  */
-class EXPCL_PANDAEXPRESS MemoryUsage : public MemoryHook {
+class EXPCL_PANDA_EXPRESS MemoryUsage : public MemoryHook {
 public:
   ALWAYS_INLINE static bool get_track_memory_usage();
 
@@ -179,7 +179,7 @@ private:
 
   private:
     // Cannot use a pmap, since that would be recursive!
-    typedef map<TypeHandle, MemoryUsagePointerCounts> Counts;
+    typedef std::map<TypeHandle, MemoryUsagePointerCounts> Counts;
     Counts _counts;
   };
   TypeHistogram _trend_types;

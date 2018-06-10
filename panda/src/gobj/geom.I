@@ -448,8 +448,8 @@ CacheKey(const CacheKey &copy) :
  */
 INLINE Geom::CacheKey::
 CacheKey(CacheKey &&from) noexcept :
-  _source_data(move(from._source_data)),
-  _modifier(move(from._modifier))
+  _source_data(std::move(from._source_data)),
+  _modifier(std::move(from._modifier))
 {
 }
 
@@ -497,7 +497,7 @@ CacheEntry(Geom *source, const Geom::CacheKey &key) :
 INLINE Geom::CacheEntry::
 CacheEntry(Geom *source, Geom::CacheKey &&key) noexcept :
   _source(source),
-  _key(move(key))
+  _key(std::move(key))
 {
 }
 
@@ -696,8 +696,8 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   return ((Geom *)_object)->prepare_now(prepared_objects, gsg);
 }
 
-INLINE ostream &
-operator << (ostream &out, const Geom &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Geom &obj) {
   obj.output(out);
   return out;
 }

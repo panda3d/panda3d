@@ -16,7 +16,7 @@
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariableBase::
-ConfigVariableBase(const string &name,
+ConfigVariableBase(const std::string &name,
                    ConfigVariableBase::ValueType value_type) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
@@ -35,9 +35,9 @@ INLINE ConfigVariableBase::
 /**
  * Returns the name of the variable.
  */
-INLINE const string &ConfigVariableBase::
+INLINE const std::string &ConfigVariableBase::
 get_name() const {
-  nassertr(_core != nullptr, *new string());
+  nassertr(_core != nullptr, *new std::string());
   return _core->get_name();
 }
 
@@ -54,9 +54,9 @@ get_value_type() const {
 /**
  * Returns the brief description of this variable, if it has been defined.
  */
-INLINE const string &ConfigVariableBase::
+INLINE const std::string &ConfigVariableBase::
 get_description() const {
-  nassertr(_core != nullptr, *new string());
+  nassertr(_core != nullptr, *new std::string());
   return _core->get_description();
 }
 
@@ -151,7 +151,7 @@ has_value() const {
  *
  */
 INLINE void ConfigVariableBase::
-output(ostream &out) const {
+output(std::ostream &out) const {
   nassertv(_core != nullptr);
   _core->output(out);
 }
@@ -160,13 +160,13 @@ output(ostream &out) const {
  *
  */
 INLINE void ConfigVariableBase::
-write(ostream &out) const {
+write(std::ostream &out) const {
   nassertv(_core != nullptr);
   _core->write(out);
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableBase &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableBase &variable) {
   variable.output(out);
   return out;
 }

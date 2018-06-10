@@ -18,6 +18,6 @@
 #include "filename.h"
 
 VrmlScene *parse_vrml(Filename filename);
-VrmlScene *parse_vrml(istream &in, const string &filename);
+VrmlScene *parse_vrml(std::istream &in, const std::string &filename);
 
 #endif

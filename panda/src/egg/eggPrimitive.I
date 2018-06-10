@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPrimitive::
-EggPrimitive(const string &name): EggNode(name) {
+EggPrimitive(const std::string &name): EggNode(name) {
   _bface = false;
   _connected_shading = S_unknown;
 }
@@ -67,13 +67,13 @@ INLINE EggPrimitive::
  * Presently, this is defined as the primitive name itself, unless it begins
  * with a digit.
  */
-INLINE string EggPrimitive::
+INLINE std::string EggPrimitive::
 get_sort_name() const {
-  const string &name = get_name();
+  const std::string &name = get_name();
   if (!name.empty() && !isdigit(name[0])) {
     return name;
   }
-  return string();
+  return std::string();
 }
 
 /**

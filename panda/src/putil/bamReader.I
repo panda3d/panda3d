@@ -153,7 +153,7 @@ get_vfile() {
  * pointing to the first byte following the datagram returned after a call to
  * get_datagram().
  */
-INLINE streampos BamReader::
+INLINE std::streampos BamReader::
 get_file_pos() {
   nassertr(_source != nullptr, 0);
   return _source->get_file_pos();

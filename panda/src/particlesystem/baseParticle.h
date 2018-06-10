@@ -48,8 +48,8 @@ public:
   // from PhysicsObject
   virtual PhysicsObject *make_copy() const = 0;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   BaseParticle(PN_stdfloat lifespan = 1.0f, bool alive = false);

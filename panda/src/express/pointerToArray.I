@@ -85,7 +85,7 @@ PointerToArray(const Element *begin, const Element *end, TypeHandle type_handle)
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(PointerToArray<Element> &&from) noexcept :
-  PointerToArrayBase<Element>(move(from)),
+  PointerToArrayBase<Element>(std::move(from)),
   _type_handle(from._type_handle)
 {
 }
@@ -96,7 +96,7 @@ PointerToArray(PointerToArray<Element> &&from) noexcept :
 template<class Element>
 INLINE PointerToArray<Element>::
 PointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
-  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(std::move(from))),
   _type_handle(type_handle)
 {
 }
@@ -443,7 +443,7 @@ set_element(size_type n, const Element &value) {
  * string.
  */
 template<class Element>
-INLINE string PointerToArray<Element>::
+INLINE std::string PointerToArray<Element>::
 get_data() const {
   return get_subdata(0, size());
 }
@@ -457,7 +457,7 @@ get_data() const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_data(const string &data) {
+set_data(const std::string &data) {
   set_subdata(0, size(), data);
 }
 
@@ -469,12 +469,12 @@ set_data(const string &data) {
  * through element (n + count - 1)--as a block of raw data in a string.
  */
 template<class Element>
-INLINE string PointerToArray<Element>::
+INLINE std::string PointerToArray<Element>::
 get_subdata(size_type n, size_type count) const {
-  n = min(n, size());
-  count = max(count, n);
-  count = min(count, size() - n);
-  return string((const char *)(p() + n), sizeof(Element) * count);
+  n = std::min(n, size());
+  count = std::max(count, n);
+  count = std::min(count, size() - n);
+  return std::string((const char *)(p() + n), sizeof(Element) * count);
 }
 
 /**
@@ -489,7 +489,7 @@ get_subdata(size_type n, size_type count) const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_subdata(size_type n, size_type count, const string &data) {
+set_subdata(size_type n, size_type count, const std::string &data) {
   nassertv((data.length() % sizeof(Element)) == 0);
   nassertv(n <= size() && n + count <= size());
   if ((this->_void_ptr) == nullptr) {
@@ -631,7 +631,7 @@ template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
 operator = (PointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
-  ((PointerToArray<Element> *)this)->reassign(move(from));
+  ((PointerToArray<Element> *)this)->reassign(std::move(from));
   return *this;
 }
 
@@ -697,7 +697,7 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(PointerToArray<Element> &&from) noexcept :
-  PointerToArrayBase<Element>(move(from)),
+  PointerToArrayBase<Element>(std::move(from)),
   _type_handle(from._type_handle)
 {
 }
@@ -708,7 +708,7 @@ ConstPointerToArray(PointerToArray<Element> &&from) noexcept :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(ConstPointerToArray<Element> &&from) noexcept :
-  PointerToArrayBase<Element>(move(from)),
+  PointerToArrayBase<Element>(std::move(from)),
   _type_handle(from._type_handle)
 {
 }
@@ -719,7 +719,7 @@ ConstPointerToArray(ConstPointerToArray<Element> &&from) noexcept :
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 ConstPointerToArray(pvector<Element> &&from, TypeHandle type_handle) :
-  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(move(from))),
+  PointerToArrayBase<Element>(new ReferenceCountedVector<Element>(std::move(from))),
   _type_handle(type_handle)
 {
 }
@@ -950,7 +950,7 @@ get_element(size_type n) const {
  * string.
  */
 template<class Element>
-INLINE string ConstPointerToArray<Element>::
+INLINE std::string ConstPointerToArray<Element>::
 get_data() const {
   return get_subdata(0, size());
 }
@@ -963,12 +963,12 @@ get_data() const {
  * through element (n + count - 1)--as a block of raw data in a string.
  */
 template<class Element>
-INLINE string ConstPointerToArray<Element>::
+INLINE std::string ConstPointerToArray<Element>::
 get_subdata(size_type n, size_type count) const {
-  n = min(n, size());
-  count = max(count, n);
-  count = min(count, size() - n);
-  return string((const char *)(p() + n), sizeof(Element) * count);
+  n = std::min(n, size());
+  count = std::max(count, n);
+  count = std::min(count, size() - n);
+  return std::string((const char *)(p() + n), sizeof(Element) * count);
 }
 
 /**
@@ -1085,7 +1085,7 @@ template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
 operator = (PointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
-  ((ConstPointerToArray<Element> *)this)->reassign(move(from));
+  ((ConstPointerToArray<Element> *)this)->reassign(std::move(from));
   return *this;
 }
 
@@ -1096,7 +1096,7 @@ template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
 operator = (ConstPointerToArray<Element> &&from) noexcept {
   _type_handle = from._type_handle;
-  ((ConstPointerToArray<Element> *)this)->reassign(move(from));
+  ((ConstPointerToArray<Element> *)this)->reassign(std::move(from));
   return *this;
 }
 

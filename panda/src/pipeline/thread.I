@@ -17,7 +17,7 @@
  * the benefit of PStats; threads with the same sync name can be ticked all at
  * once via the thread_tick() call.
  */
-INLINE const string &Thread::
+INLINE const std::string &Thread::
 get_sync_name() const {
   return _sync_name;
 }
@@ -46,7 +46,7 @@ get_python_index() const {
  * Returns a string that is guaranteed to be unique to this thread, across all
  * processes on the machine, during at least the lifetime of this process.
  */
-INLINE string Thread::
+INLINE std::string Thread::
 get_unique_id() const {
   return _impl.get_unique_id();
 }
@@ -75,7 +75,7 @@ get_pipeline_stage() const {
  */
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  set_pipeline_stage(max(_pipeline_stage, min_pipeline_stage));
+  set_pipeline_stage(std::max(_pipeline_stage, min_pipeline_stage));
 }
 
 /**
@@ -323,8 +323,8 @@ get_pstats_callback() const {
   return _pstats_callback;
 }
 
-INLINE ostream &
-operator << (ostream &out, const Thread &thread) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Thread &thread) {
   thread.output(out);
   return out;
 }

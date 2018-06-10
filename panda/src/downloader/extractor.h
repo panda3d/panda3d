@@ -32,7 +32,7 @@
  * Multifile.  Call run() whenever you have spare cycles until run() returns
  * EU_success.
  */
-class EXPCL_PANDAEXPRESS Extractor {
+class EXPCL_PANDA_DOWNLOADER Extractor {
 PUBLISHED:
   Extractor();
   ~Extractor();
@@ -71,7 +71,7 @@ private:
   size_t _subfile_pos;
   size_t _subfile_length;
   size_t _total_bytes_extracted;
-  istream *_read;
+  std::istream *_read;
   pofstream _write;
   Filename _subfile_filename;
 };

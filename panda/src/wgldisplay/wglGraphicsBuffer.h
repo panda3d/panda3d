@@ -35,7 +35,7 @@
 class EXPCL_PANDAGL wglGraphicsBuffer : public GraphicsBuffer {
 public:
   wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,

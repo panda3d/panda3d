@@ -1,6 +1,12 @@
 from panda3d.core import FrameBufferProperties
 
 
+def test_fbprops_copy_ctor():
+    default = FrameBufferProperties.get_default()
+    fbprops = FrameBufferProperties(default)
+    assert fbprops == default
+
+
 def test_fbquality_depth():
     # We check common framebuffer depth configurations to make sure they
     # are rated predictably with respect to each other when requesting 1 bit.

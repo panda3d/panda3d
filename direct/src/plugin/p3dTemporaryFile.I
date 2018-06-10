@@ -14,7 +14,7 @@
 /**
  * Returns the temporary filename.
  */
-inline const string &P3DTemporaryFile::
+inline const std::string &P3DTemporaryFile::
 get_filename() const {
   return _filename;
 }

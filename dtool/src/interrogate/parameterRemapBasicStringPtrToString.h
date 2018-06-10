@@ -25,8 +25,8 @@ class ParameterRemapBasicStringPtrToString : public ParameterRemapToString {
 public:
   ParameterRemapBasicStringPtrToString(CPPType *orig_type);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string get_return_expr(const string &expression);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string get_return_expr(const std::string &expression);
 };
 
 /**
@@ -36,8 +36,8 @@ class ParameterRemapBasicWStringPtrToWString : public ParameterRemapToWString {
 public:
   ParameterRemapBasicWStringPtrToWString(CPPType *orig_type);
 
-  virtual void pass_parameter(ostream &out, const string &variable_name);
-  virtual string get_return_expr(const string &expression);
+  virtual void pass_parameter(std::ostream &out, const std::string &variable_name);
+  virtual std::string get_return_expr(const std::string &expression);
 };
 
 #endif

@@ -34,10 +34,10 @@ using std::list;
  * allocated memory.
  */
 template<class Type>
-class plist : public list<Type, pallocator_single<Type> > {
+class plist : public std::list<Type, pallocator_single<Type> > {
 public:
   typedef pallocator_single<Type> allocator;
-  typedef list<Type, allocator> base_class;
+  typedef std::list<Type, allocator> base_class;
   typedef typename base_class::size_type size_type;
   plist(TypeHandle type_handle = plist_type_handle) : base_class(allocator(type_handle)) { }
   plist(size_type n, TypeHandle type_handle = plist_type_handle) : base_class(n, Type(), allocator(type_handle)) { }

@@ -67,7 +67,7 @@ get_next(int pipeline_stage, Thread *current_thread) const {
   return cdata->_next;
 }
 
-INLINE ostream &operator << (ostream &out, const NodePathComponent &comp) {
+INLINE std::ostream &operator << (std::ostream &out, const NodePathComponent &comp) {
   comp.output(out);
   return out;
 }

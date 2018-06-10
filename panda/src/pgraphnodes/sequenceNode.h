@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
-  INLINE explicit SequenceNode(const string &name);
+  INLINE explicit SequenceNode(const std::string &name);
 
 protected:
   SequenceNode(const SequenceNode &copy);
@@ -45,7 +45,7 @@ public:
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 public:
   static void register_with_read_factory();

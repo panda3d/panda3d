@@ -75,8 +75,8 @@ PUBLISHED:
   INLINE LVecBase2i get_size() const;
   MAKE_PROPERTY(size, get_size);
 
-  INLINE string get_comment() const;
-  INLINE void set_comment(const string &comment);
+  INLINE std::string get_comment() const;
+  INLINE void set_comment(const std::string &comment);
   MAKE_PROPERTY(comment, get_comment, set_comment);
 
   INLINE bool has_type() const;
@@ -86,28 +86,28 @@ PUBLISHED:
 
   BLOCKING bool read_header(const Filename &filename, PNMFileType *type = nullptr,
                             bool report_unknown_type = true);
-  BLOCKING bool read_header(istream &data, const string &filename = string(),
+  BLOCKING bool read_header(std::istream &data, const std::string &filename = std::string(),
                             PNMFileType *type = nullptr, bool report_unknown_type = true);
 
   PNMReader *make_reader(const Filename &filename,
                          PNMFileType *type = nullptr,
                          bool report_unknown_type = true) const;
-  PNMReader *make_reader(istream *file, bool owns_file = true,
+  PNMReader *make_reader(std::istream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
-                         string magic_number = string(),
+                         std::string magic_number = std::string(),
                          PNMFileType *type = nullptr,
                          bool report_unknown_type = true) const;
 
   PNMWriter *make_writer(const Filename &filename,
                          PNMFileType *type = nullptr) const;
-  PNMWriter *make_writer(ostream *file, bool owns_file = true,
+  PNMWriter *make_writer(std::ostream *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          PNMFileType *type = nullptr) const;
 
-  static bool read_magic_number(istream *file, string &magic_number,
+  static bool read_magic_number(std::istream *file, std::string &magic_number,
                                 int num_bytes);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   // Contains a single pixel specification used in compute_histogram() and
   // make_histogram().  Note that pixels are stored by integer value, not by
@@ -141,7 +141,7 @@ PUBLISHED:
     INLINE xelval operator [](int n) const;
     INLINE static int size();
 
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
   public:
     xelval _red, _green, _blue, _alpha;
@@ -173,7 +173,7 @@ PUBLISHED:
     INLINE int get_count(const PixelSpec &pixel) const;
     MAKE_SEQ(get_pixels, get_num_pixels, get_pixel);
 
-    void write(ostream &out) const;
+    void write(std::ostream &out) const;
 
   public:
     INLINE void swap(PixelCount &pixels, HistMap &hist_map);
@@ -194,16 +194,16 @@ protected:
   int _num_channels;
   xelval _maxval;
   ColorSpace _color_space;
-  string _comment;
+  std::string _comment;
   PNMFileType *_type;
 };
 
-INLINE ostream &operator << (ostream &out, const PNMImageHeader &header) {
+INLINE std::ostream &operator << (std::ostream &out, const PNMImageHeader &header) {
   header.output(out);
   return out;
 }
 
-INLINE ostream &operator << (ostream &out, const PNMImageHeader::PixelSpec &pixel) {
+INLINE std::ostream &operator << (std::ostream &out, const PNMImageHeader::PixelSpec &pixel) {
   pixel.output(out);
   return out;
 }

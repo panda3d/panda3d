@@ -28,7 +28,7 @@ public:
 public:
   virtual P3D_object_type get_type();
   virtual bool get_bool();
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 };
 
 #endif

@@ -41,8 +41,8 @@ public:
 
   CVSSourceDirectory *get_root() const;
   CVSSourceDirectory *find_directory(const Filename &path);
-  CVSSourceDirectory *find_relpath(const string &relpath);
-  CVSSourceDirectory *find_dirname(const string &dirname);
+  CVSSourceDirectory *find_relpath(const std::string &relpath);
+  CVSSourceDirectory *find_dirname(const std::string &dirname);
 
   // This nested class represents the selection of a particular directory in
   // which to place a given file, given its basename.  The basename of the
@@ -52,17 +52,17 @@ public:
   class FilePath {
   public:
     FilePath();
-    FilePath(CVSSourceDirectory *dir, const string &basename);
+    FilePath(CVSSourceDirectory *dir, const std::string &basename);
     bool is_valid() const;
     Filename get_path() const;
     Filename get_fullpath() const;
     Filename get_rel_from(const CVSSourceDirectory *other) const;
 
     CVSSourceDirectory *_dir;
-    string _basename;
+    std::string _basename;
   };
 
-  FilePath choose_directory(const string &basename,
+  FilePath choose_directory(const std::string &basename,
                             CVSSourceDirectory *suggested_dir,
                             bool force, bool interactive);
 
@@ -73,22 +73,22 @@ public:
   static void restore_cwd();
 
 public:
-  void add_file(const string &basename, CVSSourceDirectory *dir);
+  void add_file(const std::string &basename, CVSSourceDirectory *dir);
 
 private:
   typedef pvector<FilePath> FilePaths;
 
   FilePath
-  prompt_user(const string &basename, CVSSourceDirectory *suggested_dir,
+  prompt_user(const std::string &basename, CVSSourceDirectory *suggested_dir,
               const FilePaths &paths, bool force, bool interactive);
 
-  FilePath ask_existing(const string &filename, const FilePath &path);
-  FilePath ask_existing(const string &filename, const FilePaths &paths,
+  FilePath ask_existing(const std::string &filename, const FilePath &path);
+  FilePath ask_existing(const std::string &filename, const FilePaths &paths,
                         CVSSourceDirectory *suggested_dir);
-  FilePath ask_new(const string &filename, CVSSourceDirectory *dir);
-  FilePath ask_any(const string &filename, const FilePaths &paths);
+  FilePath ask_new(const std::string &filename, CVSSourceDirectory *dir);
+  FilePath ask_any(const std::string &filename, const FilePaths &paths);
 
-  string prompt(const string &message);
+  std::string prompt(const std::string &message);
 
   static Filename get_actual_fullpath(const Filename &path);
   static Filename get_start_fullpath();
@@ -97,7 +97,7 @@ private:
   Filename _path;
   CVSSourceDirectory *_root;
 
-  typedef pmap<string, FilePaths> Basenames;
+  typedef pmap<std::string, FilePaths> Basenames;
   Basenames _basenames;
 
   static bool _got_start_fullpath;

@@ -266,8 +266,8 @@ get_frac() const {
   return get_full_fframe() - (double)get_full_frame(0);
 }
 
-INLINE ostream &
-operator << (ostream &out, const AnimInterface &ai) {
+INLINE std::ostream &
+operator << (std::ostream &out, const AnimInterface &ai) {
   ai.output(out);
   return out;
 }

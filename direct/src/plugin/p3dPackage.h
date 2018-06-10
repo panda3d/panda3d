@@ -38,10 +38,10 @@ class P3DTemporaryFile;
 class P3DPackage {
 private:
   P3DPackage(P3DHost *host,
-             const string &package_name,
-             const string &package_version,
-             const string &package_platform,
-             const string &alt_host);
+             const std::string &package_name,
+             const std::string &package_version,
+             const std::string &package_platform,
+             const std::string &alt_host);
   ~P3DPackage();
 
 public:
@@ -52,17 +52,17 @@ public:
   inline bool get_ready() const;
   inline bool get_failed() const;
   inline P3DHost *get_host() const;
-  inline const string &get_package_dir() const;
-  inline const string &get_package_name() const;
-  inline const string &get_package_version() const;
-  inline const string &get_package_platform() const;
-  inline const string &get_package_display_name() const;
-  string get_formatted_name() const;
+  inline const std::string &get_package_dir() const;
+  inline const std::string &get_package_name() const;
+  inline const std::string &get_package_version() const;
+  inline const std::string &get_package_platform() const;
+  inline const std::string &get_package_display_name() const;
+  std::string get_formatted_name() const;
   inline const TiXmlElement *get_xconfig() const;
 
-  inline const string &get_desc_file_pathname() const;
-  inline const string &get_desc_file_dirname() const;
-  inline string get_archive_file_pathname() const;
+  inline const std::string &get_desc_file_pathname() const;
+  inline const std::string &get_desc_file_dirname() const;
+  inline std::string get_archive_file_pathname() const;
 
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);
@@ -73,7 +73,7 @@ public:
   TiXmlElement *make_xml();
 
 private:
-  typedef vector<FileSpec> Extracts;
+  typedef std::vector<FileSpec> Extracts;
 
   enum DownloadType {
     DT_contents_file,
@@ -82,7 +82,7 @@ private:
     DT_install_step,
   };
 
-  typedef vector<string> TryUrls;
+  typedef std::vector<std::string> TryUrls;
 
   class Download : public P3DFileDownload {
   public:
@@ -123,7 +123,7 @@ private:
     virtual ~InstallStep();
 
     virtual InstallToken do_step(bool download_finished) = 0;
-    virtual void output(ostream &out) = 0;
+    virtual void output(std::ostream &out) = 0;
 
     inline double get_effort() const;
     inline double get_progress() const;
@@ -141,10 +141,10 @@ private:
     virtual ~InstallStepDownloadFile();
 
     virtual InstallToken do_step(bool download_finished);
-    virtual void output(ostream &out);
+    virtual void output(std::ostream &out);
 
-    string _urlbase;
-    string _pathname;
+    std::string _urlbase;
+    std::string _pathname;
     FileSpec _file;
     Download *_download;
   };
@@ -174,7 +174,7 @@ private:
     InstallStepUncompressFile(P3DPackage *package, const FileSpec &source,
                               const FileSpec &target, bool verify_target);
     virtual InstallToken thread_step();
-    virtual void output(ostream &out);
+    virtual void output(std::ostream &out);
 
     FileSpec _source;
     FileSpec _target;
@@ -185,7 +185,7 @@ private:
   public:
     InstallStepUnpackArchive(P3DPackage *package, size_t unpack_size);
     virtual InstallToken thread_step();
-    virtual void output(ostream &out);
+    virtual void output(std::ostream &out);
   };
 
   class InstallStepApplyPatch : public InstallStepThreaded {
@@ -195,13 +195,13 @@ private:
                           const FileSpec &source,
                           const FileSpec &target);
     virtual InstallToken thread_step();
-    virtual void output(ostream &out);
+    virtual void output(std::ostream &out);
 
     P3DPatchfileReader _reader;
   };
 
-  typedef deque<InstallStep *> InstallPlan;
-  typedef deque<InstallPlan> InstallPlans;
+  typedef std::deque<InstallStep *> InstallPlan;
+  typedef std::deque<InstallPlan> InstallPlans;
   InstallPlans _install_plans;
 
   bool _computed_plan_size;
@@ -230,52 +230,52 @@ private:
   void report_progress(InstallStep *step);
   void report_info_ready();
   void report_done(bool success);
-  Download *start_download(DownloadType dtype, const string &urlbase,
-                           const string &pathname, const FileSpec &file_spec);
+  Download *start_download(DownloadType dtype, const std::string &urlbase,
+                           const std::string &pathname, const FileSpec &file_spec);
   void set_active_download(Download *download);
   void set_saved_download(Download *download);
 
-  bool is_extractable(FileSpec &file, const string &filename) const;
+  bool is_extractable(FileSpec &file, const std::string &filename) const;
   bool instance_terminating(P3DInstance *instance);
   void set_fullname();
 
 public:
   class RequiredPackage {
   public:
-    inline RequiredPackage(const string &package_name,
-                           const string &package_version,
-                           const string &package_seq,
+    inline RequiredPackage(const std::string &package_name,
+                           const std::string &package_version,
+                           const std::string &package_seq,
                            P3DHost *host);
-    string _package_name;
-    string _package_version;
-    string _package_seq;
+    std::string _package_name;
+    std::string _package_version;
+    std::string _package_seq;
     P3DHost *_host;
   };
-  typedef vector<RequiredPackage> Requires;
+  typedef std::vector<RequiredPackage> Requires;
   Requires _requires;
 
 private:
   P3DHost *_host;
   int _host_contents_iseq;
 
-  string _package_name;
-  string _package_version;
-  string _package_platform;
+  std::string _package_name;
+  std::string _package_version;
+  std::string _package_platform;
   bool _per_platform;
   int _patch_version;
-  string _alt_host;
+  std::string _alt_host;
   bool _package_solo;
-  string _package_display_name;
-  string _package_fullname;
-  string _package_dir;
+  std::string _package_display_name;
+  std::string _package_fullname;
+  std::string _package_dir;
   TiXmlElement *_xconfig;
 
   P3DTemporaryFile *_temp_contents_file;
 
   FileSpec _desc_file;
-  string _desc_file_dirname;
-  string _desc_file_basename;
-  string _desc_file_pathname;
+  std::string _desc_file_dirname;
+  std::string _desc_file_basename;
+  std::string _desc_file_pathname;
 
   bool _info_ready;
   bool _allow_data_download;
@@ -284,7 +284,7 @@ private:
   Download *_active_download;
   Download *_saved_download;
 
-  typedef vector<P3DInstance *> Instances;
+  typedef std::vector<P3DInstance *> Instances;
   Instances _instances;
 
   FileSpec _compressed_archive;

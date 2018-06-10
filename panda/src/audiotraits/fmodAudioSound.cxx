@@ -26,6 +26,7 @@
 #include "subfileInfo.h"
 #include "reMutexHolder.h"
 #include "virtualFileSystem.h"
+#include "vector_uchar.h"
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -107,7 +108,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     const char *name_or_data = _file_name.c_str();
     string os_filename;
 
-    pvector<unsigned char> mem_buffer;
+    vector_uchar mem_buffer;
     SubfileInfo info;
     if (preload) {
       // Pre-read the file right now, and pass it in as a memory buffer.  This

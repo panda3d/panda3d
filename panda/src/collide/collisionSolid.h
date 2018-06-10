@@ -89,8 +89,8 @@ public:
   virtual PStatCollector &get_test_pcollector();
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   INLINE bool do_is_tangible() const;
@@ -183,7 +183,7 @@ private:
   friend class CollisionBox;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {
+INLINE std::ostream &operator << (std::ostream &out, const CollisionSolid &cs) {
   cs.output(out);
   return out;
 }

@@ -35,7 +35,7 @@ PUBLISHED:
 public:
   INLINE explicit LightReMutex(const char *name);
 PUBLISHED:
-  INLINE explicit LightReMutex(const string &name);
+  INLINE explicit LightReMutex(const std::string &name);
   LightReMutex(const LightReMutex &copy) = delete;
   ~LightReMutex() = default;
 

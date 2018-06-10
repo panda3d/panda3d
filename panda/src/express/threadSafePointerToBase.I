@@ -124,7 +124,7 @@ clear() {
  */
 template<class T>
 INLINE void ThreadSafePointerToBase<T>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _void_ptr;
   if (_void_ptr != nullptr) {
     out << ":" << ((To *)_void_ptr)->get_ref_count();

@@ -59,7 +59,7 @@ PUBLISHED:
   INLINE EggData *get_egg_data() const;
 
 private:
-  typedef pmap<const CharacterJoint*, pvector<pair<EggVertex*,PN_stdfloat> > > CharacterJointMap;
+  typedef pmap<const CharacterJoint*, pvector<std::pair<EggVertex*,PN_stdfloat> > > CharacterJointMap;
 
   void convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                     bool has_decal, CharacterJointMap *joint_map);
@@ -95,7 +95,7 @@ private:
   bool apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage = true);
   bool apply_state_properties(EggRenderMode *egg_render_mode, const RenderState *state);
   bool apply_tags(EggGroup *egg_group, PandaNode *node);
-  bool apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag);
+  bool apply_tag(EggGroup *egg_group, PandaNode *node, const std::string &tag);
 
   EggMaterial *get_egg_material(Material *tex);
   EggTexture *get_egg_texture(Texture *tex);

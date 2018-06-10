@@ -477,11 +477,11 @@ generic_read_datagram(double &result, DatagramIterator &source) {
 }
 
 INLINE void
-generic_read_datagram(string &result, DatagramIterator &source) {
+generic_read_datagram(std::string &result, DatagramIterator &source) {
   result = source.get_string();
 }
 
 INLINE void
-generic_read_datagram(wstring &result, DatagramIterator &source) {
+generic_read_datagram(std::wstring &result, DatagramIterator &source) {
   result = source.get_wstring();
 }

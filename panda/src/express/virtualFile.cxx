@@ -351,7 +351,7 @@ bool VirtualFile::
 read_file(string &result, bool auto_unwrap) const {
   result = string();
 
-  pvector<unsigned char> pv;
+  vector_uchar pv;
   if (!read_file(pv, auto_unwrap)) {
     return false;
   }
@@ -368,7 +368,7 @@ read_file(string &result, bool auto_unwrap) const {
  * regular file.  Returns true on success, false otherwise.
  */
 bool VirtualFile::
-read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(vector_uchar &result, bool auto_unwrap) const {
   return false;
 }
 
@@ -387,7 +387,7 @@ write_file(const unsigned char *data, size_t data_size, bool auto_wrap) {
  * entry, the data read from the file will be appended onto it.
  */
 bool VirtualFile::
-simple_read_file(istream *in, pvector<unsigned char> &result) {
+simple_read_file(istream *in, vector_uchar &result) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
@@ -408,7 +408,7 @@ simple_read_file(istream *in, pvector<unsigned char> &result) {
  * max_bytes bytes from the file.
  */
 bool VirtualFile::
-simple_read_file(istream *in, pvector<unsigned char> &result, size_t max_bytes) {
+simple_read_file(istream *in, vector_uchar &result, size_t max_bytes) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
