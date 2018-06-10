@@ -357,7 +357,7 @@ setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
 
 #ifdef NOTIFY_DEBUG
 
-// typedef enum {Software, MCD, ICD} OGLDriverType;
+typedef enum {Software, MCD, ICD} OGLDriverType;
 static const char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 
 /**

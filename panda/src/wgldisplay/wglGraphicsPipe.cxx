@@ -18,8 +18,6 @@
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsStateGuardian.h"
 
-typedef enum {Software, MCD, ICD} OGLDriverType;
-
 TypeHandle wglGraphicsPipe::_type_handle;
 bool    wglGraphicsPipe::_current_valid;
 HDC     wglGraphicsPipe::_current_hdc;
