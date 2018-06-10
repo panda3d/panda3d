@@ -1,6 +1,5 @@
 set(P3EXPRESS_HEADERS
   buffer.I buffer.h
-  ca_bundle_data_src.c
   checksumHashGenerator.I checksumHashGenerator.h circBuffer.I
   circBuffer.h
   compress_string.h
