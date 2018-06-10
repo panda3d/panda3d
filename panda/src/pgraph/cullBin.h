@@ -74,7 +74,7 @@ protected:
   GraphicsStateGuardianBase *_gsg;
 
   // Used in make_result_graph() and fill_result_graph().
-  class ResultGraphBuilder {
+  class EXPCL_PANDA_PGRAPH ResultGraphBuilder {
   public:
     ResultGraphBuilder(PandaNode *root_node);
     void add_object(CullableObject *object);

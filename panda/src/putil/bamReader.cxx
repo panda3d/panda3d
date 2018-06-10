@@ -1544,10 +1544,3 @@ finalize() {
     }
   }
 }
-
-/**
- *
- */
-BamReader::AuxData::
-~AuxData() {
-}

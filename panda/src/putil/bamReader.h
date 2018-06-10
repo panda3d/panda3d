@@ -228,7 +228,7 @@ public:
   class AuxData : public ReferenceCount {
   public:
     INLINE AuxData();
-    virtual ~AuxData();
+    virtual ~AuxData() = default;
   };
 
 private:
