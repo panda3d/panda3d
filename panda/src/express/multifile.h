@@ -159,7 +159,7 @@ public:
 #endif  // HAVE_OPENSSL
 
   bool read_subfile(int index, std::string &result);
-  bool read_subfile(int index, pvector<unsigned char> &result);
+  bool read_subfile(int index, vector_uchar &result);
 
 private:
   enum SubfileFlags {

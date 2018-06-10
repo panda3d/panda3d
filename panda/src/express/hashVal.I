@@ -191,7 +191,7 @@ hash_string(const std::string &data) {
  * functionality) available.
  */
 INLINE void HashVal::
-hash_bytes(const pvector<unsigned char> &data) {
+hash_bytes(const vector_uchar &data) {
   hash_buffer((const char *)&data[0], data.size());
 }
 #endif  // HAVE_OPENSSL

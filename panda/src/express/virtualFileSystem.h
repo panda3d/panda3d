@@ -118,7 +118,7 @@ public:
   bool atomic_read_contents(const Filename &filename, std::string &contents) const;
 
   INLINE bool read_file(const Filename &filename, std::string &result, bool auto_unwrap) const;
-  INLINE bool read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const;
+  INLINE bool read_file(const Filename &filename, vector_uchar &result, bool auto_unwrap) const;
   INLINE bool write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap);
 
   void scan_mount_points(vector_string &names, const Filename &path) const;

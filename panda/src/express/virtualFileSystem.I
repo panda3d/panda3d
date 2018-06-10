@@ -140,7 +140,7 @@ read_file(const Filename &filename, std::string &result, bool auto_unwrap) const
  * extension .pz is *not* given.
  */
 INLINE bool VirtualFileSystem::
-read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(const Filename &filename, vector_uchar &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
   return (file != nullptr && file->read_file(result, auto_unwrap));
 }

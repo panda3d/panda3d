@@ -21,7 +21,7 @@
 #include "pointerTo.h"
 #include "typedReferenceCount.h"
 #include "ordered_vector.h"
-#include "pvector.h"
+#include "vector_uchar.h"
 
 class VirtualFileMount;
 class VirtualFileList;
@@ -85,11 +85,11 @@ public:
 
   INLINE void set_original_filename(const Filename &filename);
   bool read_file(std::string &result, bool auto_unwrap) const;
-  virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+  virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
   virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
-  static bool simple_read_file(std::istream *stream, pvector<unsigned char> &result);
-  static bool simple_read_file(std::istream *stream, pvector<unsigned char> &result, size_t max_bytes);
+  static bool simple_read_file(std::istream *stream, vector_uchar &result);
+  static bool simple_read_file(std::istream *stream, vector_uchar &result, size_t max_bytes);
 
 protected:
   virtual bool scan_local_directory(VirtualFileList *file_list,

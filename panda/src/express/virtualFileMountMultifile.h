@@ -36,7 +36,7 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
-                         pvector<unsigned char> &result) const;
+                         vector_uchar &result) const;
 
   virtual std::istream *open_read_file(const Filename &file) const;
   virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;

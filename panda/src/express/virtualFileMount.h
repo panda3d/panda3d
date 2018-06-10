@@ -54,7 +54,7 @@ public:
   virtual bool is_writable(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
-                         pvector<unsigned char> &result) const;
+                         vector_uchar &result) const;
   virtual bool write_file(const Filename &file, bool do_compress,
                           const unsigned char *data, size_t data_size);
 
