@@ -29,6 +29,7 @@ if(HAVE_PYTHON)
 endif()
 
 # Installation:
+install(TARGETS p3direct DESTINATION lib)
 if(HAVE_PYTHON)
   set(DIRECT_INSTALL_DIRECTORIES
       actor cluster controls directbase directdevices directnotify directscripts
