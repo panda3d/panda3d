@@ -1459,7 +1459,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   if (force_base_functions) {
     out << "  // Support Function For Dtool_types ... for now in each module ??\n";
     out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference, METH_VARARGS, \"Used to borrow 'this' pointer (to, from)\\nAssumes no ownership.\"},\n";
-    out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
+    //out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
   }
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";

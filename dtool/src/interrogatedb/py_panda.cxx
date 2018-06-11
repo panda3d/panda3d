@@ -704,7 +704,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
 
 // We do expose a dictionay for dtool classes .. this should be removed at
 // some point..
-PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
+EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
   PyObject *key;

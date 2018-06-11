@@ -329,10 +329,6 @@ EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const
 // historical inharatence in the for of "is this instance of"..
 EXPCL_INTERROGATEDB PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args);
 
-// We do expose a dictionay for dtool classes .. this should be removed at
-// some point..
-EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
-
 #define DTOOL_PyObject_HashPointer DtoolInstance_HashPointer
 #define DTOOL_PyObject_ComparePointers DtoolInstance_ComparePointers
 
