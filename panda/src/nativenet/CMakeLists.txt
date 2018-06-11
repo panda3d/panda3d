@@ -30,7 +30,7 @@ set(P3NATIVENET_SOURCES
 composite_sources(p3nativenet P3NATIVENET_SOURCES)
 add_component_library(p3nativenet SYMBOL BUILDING_PANDA_NATIVENET
   ${P3NATIVENET_HEADERS} ${P3NATIVENET_SOURCES})
-target_link_libraries(p3nativenet p3express p3pandabase p3downloader)
+target_link_libraries(p3nativenet p3pandabase pandaexpress)
 target_interrogate(p3nativenet ALL)
 
 install(TARGETS p3nativenet DESTINATION lib)

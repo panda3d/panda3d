@@ -46,7 +46,7 @@ set(P3LINMATH_SOURCES
 composite_sources(p3linmath P3LINMATH_SOURCES)
 add_component_library(p3linmath SYMBOL BUILDING_PANDA_LINMATH
   ${P3LINMATH_HEADERS} ${P3LINMATH_SOURCES})
-target_link_libraries(p3linmath p3express p3pandabase)
+target_link_libraries(p3linmath p3pandabase pandaexpress)
 target_use_packages(p3linmath EIGEN)
 target_interrogate(p3linmath ALL)
 

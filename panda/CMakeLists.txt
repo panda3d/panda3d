@@ -73,6 +73,7 @@ add_subdirectory(src/ode)
 
 # Include panda metalibs
 add_subdirectory(metalibs/panda)
+add_subdirectory(metalibs/pandaexpress)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
 add_subdirectory(metalibs/pandaphysics)

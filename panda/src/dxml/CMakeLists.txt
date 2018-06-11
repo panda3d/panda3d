@@ -14,7 +14,7 @@ composite_sources(p3dxml P3DXML_SOURCES)
 add_definitions(-DTIXML_USE_STL)
 add_component_library(p3dxml SYMBOL BUILDING_PANDA_DXML
   ${P3DXML_HEADERS} ${P3DXML_SOURCES})
-target_link_libraries(p3dxml p3express)
+target_link_libraries(p3dxml pandaexpress)
 target_interrogate(p3dxml ALL)
 
 install(TARGETS p3dxml DESTINATION lib)

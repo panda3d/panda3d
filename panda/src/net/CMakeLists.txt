@@ -31,7 +31,7 @@ set(P3NET_SOURCES
 composite_sources(p3net P3NET_SOURCES)
 add_component_library(p3net SYMBOL BUILDING_PANDA_NET
   ${P3NET_HEADERS} ${P3NET_SOURCES})
-target_link_libraries(p3net p3express p3downloader p3pandabase p3nativenet p3pipeline)
+target_link_libraries(p3net p3nativenet p3pipeline p3pandabase pandaexpress)
 target_interrogate(p3net ALL)
 
 if(WIN32)

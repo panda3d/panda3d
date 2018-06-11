@@ -130,7 +130,7 @@ set(P3PIPELINE_IGATEEXT
 composite_sources(p3pipeline P3PIPELINE_SOURCES)
 add_component_library(p3pipeline SYMBOL BUILDING_PANDA_PIPELINE
   ${P3PIPELINE_HEADERS} ${P3PIPELINE_SOURCES})
-target_link_libraries(p3pipeline p3express)
+target_link_libraries(p3pipeline pandaexpress)
 target_interrogate(p3pipeline ALL EXTENSIONS ${P3PIPELINE_IGATEEXT})
 
 install(TARGETS p3pipeline DESTINATION lib)
