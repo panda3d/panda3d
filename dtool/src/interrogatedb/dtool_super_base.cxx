@@ -79,13 +79,13 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
 #if PY_MAJOR_VERSION >= 3
     nullptr, // tp_compare
 #else
-    &DTOOL_PyObject_ComparePointers,
+    &DtoolInstance_ComparePointers,
 #endif
     nullptr, // tp_repr
     nullptr, // tp_as_number
     nullptr, // tp_as_sequence
     nullptr, // tp_as_mapping
-    &DTOOL_PyObject_HashPointer,
+    &DtoolInstance_HashPointer,
     nullptr, // tp_call
     nullptr, // tp_str
     PyObject_GenericGetAttr,
@@ -96,7 +96,7 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE = {
     nullptr, // tp_traverse
     nullptr, // tp_clear
 #if PY_MAJOR_VERSION >= 3
-    &DTOOL_PyObject_RichCompare,
+    &DtoolInstance_RichComparePointers,
 #else
     nullptr, // tp_richcompare
 #endif
