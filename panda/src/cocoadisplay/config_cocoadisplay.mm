@@ -20,8 +20,8 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGL)
-  #error Buildsystem error: BUILDING_PANDAGL not defined
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_COCOADISPLAY)
+  #error Buildsystem error: BUILDING_PANDA_COCOADISPLAY not defined
 #endif
 
 Configure(config_cocoadisplay);

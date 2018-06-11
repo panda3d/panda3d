@@ -20,7 +20,7 @@
 /**
  * A single graphics window for rendering OpenGL under Microsoft Windows.
  */
-class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
+class EXPCL_PANDA_WGLDISPLAY wglGraphicsWindow : public WinGraphicsWindow {
 public:
   wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const std::string &name,
