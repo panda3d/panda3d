@@ -36,7 +36,7 @@ class EggPrimitive;
  * Any one-, two-, three-, or four-component vertex, possibly with attributes
  * such as a normal.
  */
-class EXPCL_PANDAEGG EggVertex : public EggObject, public EggAttributes {
+class EXPCL_PANDA_EGG EggVertex : public EggObject, public EggAttributes {
 public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
@@ -211,7 +211,7 @@ INLINE std::ostream &operator << (std::ostream &out, const EggVertex &vert) {
  * Returns true if the two referenced EggVertex pointers are in sorted order,
  * false otherwise.
  */
-class EXPCL_PANDAEGG UniqueEggVertices {
+class EXPCL_PANDA_EGG UniqueEggVertices {
 public:
   INLINE bool operator ()(const EggVertex *v1, const EggVertex *v2) const;
 };

@@ -42,7 +42,7 @@ class PandaNode;
  * Converts an EggGroup hierarchy, beginning with a group with <Dart> set, to
  * a character node with joints.
  */
-class EXPCL_PANDAEGG CharacterMaker {
+class EXPCL_PANDA_EGG2PG CharacterMaker {
 public:
   CharacterMaker(EggGroup *root, EggLoader &loader, bool structured = false);
 

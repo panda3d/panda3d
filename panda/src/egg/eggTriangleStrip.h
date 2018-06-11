@@ -22,7 +22,7 @@
  * A connected strip of triangles.  This does not normally appear in an egg
  * file; it is typically generated as a result of meshing.
  */
-class EXPCL_PANDAEGG EggTriangleStrip : public EggCompositePrimitive {
+class EXPCL_PANDA_EGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
   INLINE explicit EggTriangleStrip(const std::string &name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);

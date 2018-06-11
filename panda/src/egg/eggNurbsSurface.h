@@ -24,7 +24,7 @@
 /**
  * A parametric NURBS surface.
  */
-class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
+class EXPCL_PANDA_EGG EggNurbsSurface : public EggSurface {
 PUBLISHED:
   typedef plist< PT(EggNurbsCurve) > Curves;
   typedef Curves Loop;

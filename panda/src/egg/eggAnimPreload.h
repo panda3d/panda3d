@@ -21,7 +21,7 @@
 /**
  * This corresponds to an <AnimPreload> entry.
  */
-class EXPCL_PANDAEGG EggAnimPreload : public EggNode {
+class EXPCL_PANDA_EGG EggAnimPreload : public EggNode {
 PUBLISHED:
   INLINE explicit EggAnimPreload(const std::string &name = "");
   INLINE EggAnimPreload(const EggAnimPreload &copy);

@@ -22,7 +22,7 @@
  * A line segment, or a series of connected line segments, defined by a <Line>
  * entry.
  */
-class EXPCL_PANDAEGG EggLine : public EggCompositePrimitive {
+class EXPCL_PANDA_EGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
   INLINE explicit EggLine(const std::string &name = "");
   INLINE EggLine(const EggLine &copy);

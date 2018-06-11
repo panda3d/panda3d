@@ -27,7 +27,7 @@
  * the vertex data, but will not otherwise interpret it.  Presumably, a shader
  * will process the data later.
  */
-class EXPCL_PANDAEGG EggVertexAux : public EggNamedObject {
+class EXPCL_PANDA_EGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
   explicit EggVertexAux(const std::string &name, const LVecBase4d &aux);
   EggVertexAux(const EggVertexAux &copy);

@@ -32,7 +32,7 @@ class AnimChannelMatrixXfmTable;
  * Converts an EggTable hierarchy, beginning with a <Bundle> entry, into an
  * AnimBundle hierarchy.
  */
-class EXPCL_PANDAEGG AnimBundleMaker {
+class EXPCL_PANDA_EGG2PG AnimBundleMaker {
 public:
   explicit AnimBundleMaker(EggTable *root);
 

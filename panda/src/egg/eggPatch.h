@@ -22,7 +22,7 @@
  * A single "patch", a special primitive to be rendered only with a
  * tessellation shader.
  */
-class EXPCL_PANDAEGG EggPatch : public EggPrimitive {
+class EXPCL_PANDA_EGG EggPatch : public EggPrimitive {
 PUBLISHED:
   INLINE explicit EggPatch(const std::string &name = "");
   INLINE EggPatch(const EggPatch &copy);

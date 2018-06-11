@@ -56,7 +56,7 @@ class EggNode;
  * hierarchy.  It is an abstract class; to use it you must subclass off of it.
  * See the comment above.
  */
-class EXPCL_PANDAEGG EggNameUniquifier : public EggObject {
+class EXPCL_PANDA_EGG EggNameUniquifier : public EggObject {
 PUBLISHED:
   EggNameUniquifier();
   ~EggNameUniquifier();

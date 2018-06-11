@@ -30,7 +30,7 @@
  * EggPolygon level with multiple appearances of the EggObject base class.
  * And making EggObject a virtual base class is just no fun.
  */
-class EXPCL_PANDAEGG EggAttributes : public MemoryBase {
+class EXPCL_PANDA_EGG EggAttributes : public MemoryBase {
 PUBLISHED:
   EggAttributes();
   EggAttributes(const EggAttributes &copy);

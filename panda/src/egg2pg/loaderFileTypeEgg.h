@@ -21,7 +21,7 @@
 /**
  * This defines the Loader interface to read Egg files.
  */
-class EXPCL_PANDAEGG LoaderFileTypeEgg : public LoaderFileType {
+class EXPCL_PANDA_EGG2PG LoaderFileTypeEgg : public LoaderFileType {
 public:
   LoaderFileTypeEgg();
 
