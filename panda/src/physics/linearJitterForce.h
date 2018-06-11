@@ -20,7 +20,7 @@
  * Completely random noise force vector.  Not repeatable, reliable, or
  * predictable.
  */
-class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
+class EXPCL_PANDA_PHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
   explicit LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);

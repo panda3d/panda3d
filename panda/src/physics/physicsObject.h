@@ -24,7 +24,7 @@
  * motion to your class, do NOT derive from this.  Derive from Physical
  * instead.
  */
-class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS PhysicsObject : public TypedReferenceCount {
 public:
   typedef pvector<PT(PhysicsObject)> Vector;
 

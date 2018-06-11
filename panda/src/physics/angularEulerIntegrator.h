@@ -20,7 +20,7 @@
  * Performs Euler integration on a vector of physically modelable objects
  * given a quantum dt.
  */
-class EXPCL_PANDAPHYSICS AngularEulerIntegrator : public AngularIntegrator {
+class EXPCL_PANDA_PHYSICS AngularEulerIntegrator : public AngularIntegrator {
 PUBLISHED:
   AngularEulerIntegrator();
   virtual ~AngularEulerIntegrator();

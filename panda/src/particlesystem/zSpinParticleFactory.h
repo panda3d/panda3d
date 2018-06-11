@@ -19,7 +19,7 @@
 /**
  *
  */
-class EXPCL_PANDAPHYSICS ZSpinParticleFactory : public BaseParticleFactory {
+class EXPCL_PANDA_PARTICLESYSTEM ZSpinParticleFactory : public BaseParticleFactory {
 PUBLISHED:
   ZSpinParticleFactory();
   ZSpinParticleFactory(const ZSpinParticleFactory &copy);

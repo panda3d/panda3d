@@ -18,10 +18,10 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
-NotifyCategoryDecl(physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
+ConfigureDecl(config_physics, EXPCL_PANDA_PHYSICS, EXPTP_PANDA_PHYSICS);
+NotifyCategoryDecl(physics, EXPCL_PANDA_PHYSICS, EXPTP_PANDA_PHYSICS);
 
-extern EXPCL_PANDAPHYSICS void init_libphysics();
+extern EXPCL_PANDA_PHYSICS void init_libphysics();
 
 // These macros get stripped out in a non-debug build (like asserts). Use them
 // like cout but with paranthesis aroud the cout input.  e.g.  foo_debug("The

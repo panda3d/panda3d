@@ -37,7 +37,7 @@ class ParticleSystemManager;
 /**
  * Contains and manages a particle system.
  */
-class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
+class EXPCL_PANDA_PARTICLESYSTEM ParticleSystem : public Physical {
 PUBLISHED:
   // constructordestructor
 

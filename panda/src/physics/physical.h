@@ -34,7 +34,7 @@ class PhysicsManager;
  * Defines a set of physically modeled attributes.  If you want physics
  * applied to your class, derive it from this.
  */
-class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS Physical : public TypedReferenceCount {
 public:
   // typedef pvector<PT(PhysicsObject)> PhysicsObjectVector;
   typedef pvector<PT(LinearForce)> LinearForceVector;

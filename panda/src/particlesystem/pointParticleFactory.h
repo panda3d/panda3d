@@ -20,7 +20,7 @@
  * Creates point particles to user specs
  */
 
-class EXPCL_PANDAPHYSICS PointParticleFactory : public BaseParticleFactory {
+class EXPCL_PANDA_PARTICLESYSTEM PointParticleFactory : public BaseParticleFactory {
 PUBLISHED:
   PointParticleFactory();
   PointParticleFactory(const PointParticleFactory &copy);

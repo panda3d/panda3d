@@ -19,7 +19,7 @@
 /**
  * Describes a curved space in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS SphereSurfaceEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM SphereSurfaceEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereSurfaceEmitter();
   SphereSurfaceEmitter(const SphereSurfaceEmitter &copy);

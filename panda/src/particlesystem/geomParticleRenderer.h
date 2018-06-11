@@ -23,7 +23,7 @@
 #include "pvector.h"
 #include "pStatCollector.h"
 
-class EXPCL_PANDAPHYSICS GeomParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM GeomParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   explicit GeomParticleRenderer(ParticleRendererAlphaMode am = PR_ALPHA_NONE,
                                 PandaNode *geom_node = nullptr);

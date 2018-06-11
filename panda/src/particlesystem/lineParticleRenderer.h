@@ -28,7 +28,7 @@
  * sparks, etc.
  */
 
-class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);

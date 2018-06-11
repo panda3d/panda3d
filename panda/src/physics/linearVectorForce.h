@@ -20,7 +20,7 @@
  * Simple directed vector force.  Suitable for gravity, non-turbulent wind,
  * etc...
  */
-class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearVectorForce : public LinearForce {
 PUBLISHED:
   explicit LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);
   explicit LinearVectorForce(PN_stdfloat x = 0.0f, PN_stdfloat y = 0.0f, PN_stdfloat z = 0.0f,

@@ -20,7 +20,7 @@
  * Describes a planar ring region in which tangent particles are generated,
  * and particles fly off tangential to the ring.
  */
-class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM TangentRingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   TangentRingEmitter();
   TangentRingEmitter(const TangentRingEmitter &copy);

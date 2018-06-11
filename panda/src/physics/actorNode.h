@@ -23,7 +23,7 @@
  * will be reflected as transforms.  This relation goes both ways; changes in
  * the transform will update the object's position (shoves).
  */
-class EXPCL_PANDAPHYSICS ActorNode : public PhysicalNode {
+class EXPCL_PANDA_PHYSICS ActorNode : public PhysicalNode {
 PUBLISHED:
   explicit ActorNode(const std::string &name = "");
   ActorNode(const ActorNode &copy);

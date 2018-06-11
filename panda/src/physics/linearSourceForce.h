@@ -19,7 +19,7 @@
 /**
  * Repellant force.
  */
-class EXPCL_PANDAPHYSICS LinearSourceForce : public LinearDistanceForce {
+class EXPCL_PANDA_PHYSICS LinearSourceForce : public LinearDistanceForce {
 PUBLISHED:
   explicit LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
                              PN_stdfloat a = 1.0f, bool mass = true);

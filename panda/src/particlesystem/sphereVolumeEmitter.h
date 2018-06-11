@@ -19,7 +19,7 @@
 /**
  * Describes a voluminous spherical region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM SphereVolumeEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereVolumeEmitter();
   SphereVolumeEmitter(const SphereVolumeEmitter &copy);

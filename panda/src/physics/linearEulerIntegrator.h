@@ -20,7 +20,7 @@
  * Performs Euler integration on a vector of physically modelable objects
  * given a quantum dt.
  */
-class EXPCL_PANDAPHYSICS LinearEulerIntegrator : public LinearIntegrator {
+class EXPCL_PANDA_PHYSICS LinearEulerIntegrator : public LinearIntegrator {
 PUBLISHED:
   LinearEulerIntegrator();
   virtual ~LinearEulerIntegrator();

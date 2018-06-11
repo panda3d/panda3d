@@ -19,7 +19,7 @@
 /**
  * Friction-based drag force
  */
-class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
   explicit LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);

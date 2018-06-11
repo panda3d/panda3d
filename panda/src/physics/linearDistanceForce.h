@@ -21,7 +21,7 @@ class BamReader;
 /**
  * Pure virtual class for sinks and sources
  */
-class EXPCL_PANDAPHYSICS LinearDistanceForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearDistanceForce : public LinearForce {
 PUBLISHED:
   enum FalloffType {
     FT_ONE_OVER_R,
