@@ -290,10 +290,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   int whence;
   switch (dir) {
-  case ios_base::beg:
+  case std::ios_base::beg:
     whence = SEEK_SET;
     break;
-  case ios_base::cur:
+  case std::ios_base::cur:
     if (off == 0) {
       // Just requesting the current position, no need to void the buffer.
       return AAsset_seek(_asset, 0, SEEK_CUR) - n;
@@ -305,7 +305,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     }
     whence = SEEK_CUR;
     break;
-  case ios_base::end:
+  case std::ios_base::end:
     whence = SEEK_END;
     break;
   default:
