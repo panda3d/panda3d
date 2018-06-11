@@ -33,7 +33,7 @@ set(P3EGG2PG_SOURCES
 )
 
 composite_sources(p3egg2pg P3EGG2PG_SOURCES)
-add_component_library(p3egg2pg SYMBOL BUILDING_PANDAEGG
+add_component_library(p3egg2pg SYMBOL BUILDING_PANDA_EGG2PG
   ${P3EGG2PG_HEADERS} ${P3EGG2PG_SOURCES})
 target_link_libraries(p3egg2pg panda p3egg)
 target_interrogate(p3egg2pg ALL)

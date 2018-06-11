@@ -36,7 +36,7 @@ set(P3PHYSICS_SOURCES
     physicsObjectCollection.cxx)
 
 composite_sources(p3physics P3PHYSICS_SOURCES)
-add_component_library(p3physics SYMBOL BUILDING_PANDAPHYSICS
+add_component_library(p3physics SYMBOL BUILDING_PANDA_PHYSICS
   ${P3PHYSICS_HEADERS} ${P3PHYSICS_SOURCES})
 target_link_libraries(p3physics panda)
 target_interrogate(p3physics ALL)

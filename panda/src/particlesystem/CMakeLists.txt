@@ -38,7 +38,7 @@ set(P3PARTICLESYSTEM_SOURCES
 
 
 composite_sources(p3particlesystem P3PARTICLESYSTEM_SOURCES)
-add_component_library(p3particlesystem SYMBOL BUILDING_PANDAPHYSICS
+add_component_library(p3particlesystem SYMBOL BUILDING_PANDA_PARTICLESYSTEM
   ${P3PARTICLESYSTEM_HEADERS} ${P3PARTICLESYSTEM_SOURCES})
 target_link_libraries(p3particlesystem p3physics panda)
 target_interrogate(p3particlesystem ALL)

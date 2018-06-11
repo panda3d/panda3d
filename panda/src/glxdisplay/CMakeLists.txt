@@ -24,7 +24,7 @@ set(P3GLXDISPLAY_SOURCES
 )
 
 composite_sources(p3glxdisplay P3GLXDISPLAY_SOURCES)
-add_component_library(p3glxdisplay SYMBOL BUILDING_PANDAGL
+add_component_library(p3glxdisplay SYMBOL BUILDING_PANDA_GLXDISPLAY
   ${P3GLXDISPLAY_HEADERS} ${P3GLXDISPLAY_SOURCES})
 target_link_libraries(p3glxdisplay p3glgsg p3x11display)
 
