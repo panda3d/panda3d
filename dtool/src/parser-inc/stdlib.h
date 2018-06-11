@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdtypedefs.h>
 
 #define EXIT_SUCCESS 0
