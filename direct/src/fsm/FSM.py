@@ -147,6 +147,12 @@ class FSM(DirectObject):
     # must be approved by some filter function.
     defaultTransitions = None
 
+    # An enum class for special states like the DEFAULT or ANY state,
+    # that should be treatened by the FSM in a special way
+    class EnumStates():
+        ANY = 1
+        DEFAULT = 2
+
     def __init__(self, name):
         self.fsmLock = RLock()
         self._name = name
@@ -376,20 +382,25 @@ class FSM(DirectObject):
                 # accept it.
                 return (request,) + args
 
-            elif '*' in self.defaultTransitions.get(self.state, []):
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(self.state, []):
                 # Whenever we have a '*' as our to transition, we allow
                 # to transit to any other state
                 return (request,) + args
 
-            elif request in self.defaultTransitions.get('*', []):
+            elif request in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
                 # If the requested state is in the default transitions
                 # from any state list, we also alow to transit to the
                 # new state
                 return (request,) + args
 
-            elif '*' in self.defaultTransitions.get('*', []):
+            elif FSM.EnumStates.ANY in self.defaultTransitions.get(FSM.EnumStates.ANY, []):
                 # This is like we had set the defaultTransitions to None.
                 # Any state can transit to any other state
+                return (request,) + args
+
+            elif request in self.defaultTransitions.get(FSM.EnumStates.DEFAULT, []):
+                # This is the fallback state that we use whenever no
+                # other trnasition was possible
                 return (request,) + args
 
             # If self.defaultTransitions is not None, it is an error
