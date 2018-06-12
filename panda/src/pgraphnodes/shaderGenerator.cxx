@@ -404,6 +404,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         info._flags |= ShaderKey::TF_uses_last_saved_result;
       }
       break;
+
+    default:
+      break;
     }
 
     // In fact, perhaps this stage should be disabled altogether?
@@ -437,6 +440,8 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       } else {
         skip = true;
       }
+      break;
+    default:
       break;
     }
     // We can't just drop a disabled slot from the list, since then the

@@ -560,7 +560,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         // Get an arbitrary vector on the plane by taking the cross product
         // with any vector, as long as it is different.
         LVector3 vec1;
-        if (abs(normal[2]) > abs(normal[1])) {
+        if (std::fabs(normal[2]) > std::fabs(normal[1])) {
           vec1 = normal.cross(LVector3(0, 1, 0));
         } else {
           vec1 = normal.cross(LVector3(0, 0, 1));
@@ -626,7 +626,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         // Also get an arbitrary vector perpendicular to the tube.
         LVector3 axis = point_b - point_a;
         LVector3 sideways;
-        if (abs(axis[2]) > abs(axis[1])) {
+        if (std::fabs(axis[2]) > std::fabs(axis[1])) {
           sideways = axis.cross(LVector3(0, 1, 0));
         } else {
           sideways = axis.cross(LVector3(0, 0, 1));

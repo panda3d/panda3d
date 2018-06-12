@@ -57,7 +57,7 @@ apply_first_attribute() {
   // In the case of a triangle fan, the first vertex of the fan is the common
   // vertex, so we consider the second vertex to be the key vertex of the
   // first triangle, and move from there.
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i + 1, component);
   }

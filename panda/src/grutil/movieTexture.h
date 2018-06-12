@@ -102,6 +102,9 @@ protected:
   virtual bool do_load_one(Texture::CData *cdata,
                            const PNMImage &pnmimage, const std::string &name,
                            int z, int n, const LoaderOptions &options);
+  virtual bool do_load_one(Texture::CData *cdata,
+                           const PfmFile &pfm, const std::string &name,
+                           int z, int n, const LoaderOptions &options);
   bool do_load_one(Texture::CData *cdata,
                    PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha,
                    int z, const LoaderOptions &options);

@@ -661,7 +661,7 @@ protected:
 
 #ifndef OPENGLES_1
   BitMask32 _enabled_vertex_attrib_arrays;
-  GLint _vertex_attrib_divisors[32];
+  GLuint _vertex_attrib_divisors[32];
 
   PT(Shader) _current_shader;
   ShaderContext *_current_shader_context;

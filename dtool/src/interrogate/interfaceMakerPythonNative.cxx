@@ -103,11 +103,6 @@ RenameSet methodRenameDictionary[] = {
   { nullptr, nullptr, -1 }
 };
 
-RenameSet classRenameDictionary[] = {
-  // No longer used, now empty.
-  { nullptr, nullptr, -1 }
-};
-
 const char *pythonKeywords[] = {
   "and",
   "as",
@@ -193,12 +188,6 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
     }
   }
 
-  for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-    if (cppName == classRenameDictionary[x]._from) {
-      className = classRenameDictionary[x]._to;
-    }
-  }
-
   if (className.empty()) {
     std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
     printf("%s", text.c_str());
@@ -250,15 +239,6 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
   for (int x = 0; methodRenameDictionary[x]._from != nullptr; x++) {
     if (origName == methodRenameDictionary[x]._from) {
       methodName = methodRenameDictionary[x]._to;
-    }
-  }
-
-  if (className.size() > 0) {
-    string lookup_name = className + '.' + cppName;
-    for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-      if (lookup_name == methodRenameDictionary[x]._from) {
-        methodName = methodRenameDictionary[x]._to;
-      }
     }
   }
 

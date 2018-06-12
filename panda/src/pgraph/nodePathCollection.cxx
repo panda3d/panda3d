@@ -188,8 +188,8 @@ get_path(int index) const {
  * get_path(), but it may be a more convenient way to access it.
  */
 NodePath NodePathCollection::
-operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_node_paths.size(), NodePath());
+operator [] (size_t index) const {
+  nassertr(index < _node_paths.size(), NodePath());
 
   return _node_paths[index];
 }
@@ -198,7 +198,7 @@ operator [] (int index) const {
  * Returns the number of paths in the collection.  This is the same thing as
  * get_num_paths().
  */
-int NodePathCollection::
+size_t NodePathCollection::
 size() const {
   return _node_paths.size();
 }

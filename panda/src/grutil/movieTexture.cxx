@@ -289,6 +289,17 @@ do_load_one(Texture::CData *cdata_tex,
 }
 
 /**
+ * Loading a static image into a MovieTexture is an error.
+ */
+bool MovieTexture::
+do_load_one(Texture::CData *cdata_tex,
+            const PfmFile &pfm, const std::string &name, int z, int n,
+            const LoaderOptions &options) {
+  grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
+  return false;
+}
+
+/**
  * Called internally by do_reconsider_z_size() to allocate new memory in
  * _ram_images[0] for the new number of pages.
  *

@@ -3007,7 +3007,7 @@ reset() {
 
 #ifndef OPENGLES_1
   _enabled_vertex_attrib_arrays.clear();
-  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+  memset(_vertex_attrib_divisors, 0, sizeof(GLuint) * 32);
 #endif
 
   // Dither is on by default in GL; let's turn it off
