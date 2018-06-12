@@ -1,3 +1,5 @@
-add_metalib(pandaphysics pandaphysics.cxx COMPONENTS p3physics p3particlesystem)
+add_metalib(pandaphysics
+  INIT init_libpandaphysics pandaphysics.h
+  COMPONENTS p3physics p3particlesystem)
 
 install(TARGETS pandaphysics DESTINATION lib)
