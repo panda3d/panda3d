@@ -436,7 +436,7 @@ public:
     ShaderPtrType     _type;
   };
 
-  class ShaderCaps {
+  class EXPCL_PANDA_GOBJ ShaderCaps {
   public:
     void clear();
     INLINE bool operator == (const ShaderCaps &other) const;

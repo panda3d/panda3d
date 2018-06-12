@@ -33,7 +33,7 @@
  * This class exists for name scoping only.  Don't use the constructor
  * directly; use one of the make_* methods.
  */
-class EXPCL_PANDA_DISPLAY NativeWindowHandle : public WindowHandle {
+class EXPCL_PANDA_DISPLAY NativeWindowHandle final : public WindowHandle {
 private:
   INLINE NativeWindowHandle();
   INLINE NativeWindowHandle(const NativeWindowHandle &copy);

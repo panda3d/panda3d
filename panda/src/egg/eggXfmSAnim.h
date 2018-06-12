@@ -25,7 +25,7 @@ class EggXfmAnimData;
  * It's implemented as a group that can contain any number of EggSAnimData
  * children.
  */
-class EXPCL_PANDAEGG EggXfmSAnim : public EggGroupNode {
+class EXPCL_PANDA_EGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
   INLINE explicit EggXfmSAnim(const std::string &name = "",
                               CoordinateSystem cs = CS_default);

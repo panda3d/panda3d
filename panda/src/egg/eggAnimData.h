@@ -27,7 +27,7 @@
  * A base class for EggSAnimData and EggXfmAnimData, which contain rows and
  * columns of numbers.
  */
-class EXPCL_PANDAEGG EggAnimData : public EggNode {
+class EXPCL_PANDA_EGG EggAnimData : public EggNode {
 PUBLISHED:
   INLINE explicit EggAnimData(const std::string &name = "");
   INLINE EggAnimData(const EggAnimData &copy);

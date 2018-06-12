@@ -169,7 +169,7 @@ private:
 
   // This is where the meat of the Collector data is stored.  (All the stuff
   // in PStatCollector and PStatCollectorDef is just fluff.)
-  class Collector {
+  class EXPCL_PANDA_PSTATCLIENT Collector {
   public:
     INLINE Collector(int parent_index, const std::string &name);
     INLINE int get_parent_index() const;

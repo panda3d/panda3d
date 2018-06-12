@@ -1242,7 +1242,7 @@ apply_collect_changes() {
  */
 void GeomTransformer::NewCollectedData::
 append_vdata(const GeomVertexData *vdata, int vertex_offset) {
-  for (int i = 0; i < vdata->get_num_arrays(); ++i) {
+  for (size_t i = 0; i < vdata->get_num_arrays(); ++i) {
     PT(GeomVertexArrayDataHandle) new_handle = _new_data->modify_array_handle(i);
     CPT(GeomVertexArrayDataHandle) old_handle = vdata->get_array_handle(i);
     size_t stride = (size_t)_new_format->get_array(i)->get_stride();

@@ -143,13 +143,6 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
   return nullptr;
 }
 
-void *DTOOL_Call_GetPointerThis(PyObject *self) {
-  if (self != nullptr && DtoolInstance_Check(self)) {
-    return DtoolInstance_VOID_PTR(self);
-  }
-  return nullptr;
-}
-
 /**
  * This is similar to a PyErr_Occurred() check, except that it also checks
  * Notify to see if an assertion has occurred.  If that is the case, then it
@@ -588,10 +581,6 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
       return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
     }
 
-#ifdef Py_TRACE_REFS
-    _Py_AddToAllObjects((PyObject *)&Dtool_EmptyTuple, 0);
-#endif
-
     // Initialize the base class of everything.
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(nullptr);
   }
@@ -715,7 +704,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
 
 // We do expose a dictionay for dtool classes .. this should be removed at
 // some point..
-PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
+EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
   PyObject *key;
@@ -732,127 +721,6 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   }
   Py_INCREF(Py_None);
   return Py_None;
-}
-
-Py_hash_t DTOOL_PyObject_HashPointer(PyObject *self) {
-  if (self != nullptr && DtoolInstance_Check(self)) {
-    return (Py_hash_t)(intptr_t)DtoolInstance_VOID_PTR(self);
-  }
-  return -1;
-}
-
-/* Compare v to w.  Return
-   -1 if v <  w or exception (PyErr_Occurred() true in latter case).
-    0 if v == w.
-    1 if v > w.
-   XXX The docs (C API manual) say the return value is undefined in case
-   XXX of error.
-*/
-
-int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2) {
-  // try this compare
-  void *v1_this = DTOOL_Call_GetPointerThis(v1);
-  void *v2_this = DTOOL_Call_GetPointerThis(v2);
-  if (v1_this != nullptr && v2_this != nullptr) { // both are our types...
-    if (v1_this < v2_this) {
-      return -1;
-    }
-    if (v1_this > v2_this) {
-      return 1;
-    }
-    return 0;
-  }
-
-  // ok self compare...
-  if (v1 < v2) {
-    return -1;
-  }
-  if (v1 > v2) {
-    return 1;
-  }
-  return 0;
-}
-
-int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
-  // First try compareTo function..
-  PyObject * func = PyObject_GetAttrString(v1, "compare_to");
-  if (func == nullptr) {
-    PyErr_Clear();
-  } else {
-#if PY_VERSION_HEX >= 0x03060000
-    PyObject *res = _PyObject_FastCall(func, &v2, 1);
-#else
-    PyObject *res = nullptr;
-    PyObject *args = PyTuple_Pack(1, v2);
-    if (args != nullptr) {
-      res = PyObject_Call(func, args, nullptr);
-      Py_DECREF(args);
-    }
-#endif
-    Py_DECREF(func);
-    PyErr_Clear(); // just in case the function threw an error
-    // only use if the function returns an INT... hmm
-    if (res != nullptr) {
-      if (PyLong_Check(res)) {
-        long answer = PyLong_AsLong(res);
-        Py_DECREF(res);
-
-        // Python really wants us to return strictly -1, 0, or 1.
-        if (answer < 0) {
-          return -1;
-        } else if (answer > 0) {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
-#if PY_MAJOR_VERSION < 3
-      else if (PyInt_Check(res)) {
-        long answer = PyInt_AsLong(res);
-        Py_DECREF(res);
-
-        // Python really wants us to return strictly -1, 0, or 1.
-        if (answer < 0) {
-          return -1;
-        } else if (answer > 0) {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
-#endif
-      Py_DECREF(res);
-    }
-  }
-
-  return DTOOL_PyObject_ComparePointers(v1, v2);
-}
-
-PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
-  int cmpval = DTOOL_PyObject_Compare(v1, v2);
-  bool result;
-  switch (op) {
-  NODEFAULT
-  case Py_LT:
-    result = (cmpval < 0);
-    break;
-  case Py_LE:
-    result = (cmpval <= 0);
-    break;
-  case Py_EQ:
-    result = (cmpval == 0);
-    break;
-  case Py_NE:
-    result = (cmpval != 0);
-    break;
-  case Py_GT:
-    result = (cmpval > 0);
-    break;
-  case Py_GE:
-    result = (cmpval >= 0);
-    break;
-  }
-  return PyBool_FromLong(result);
 }
 
 /**
@@ -875,15 +743,7 @@ PyObject *copy_from_make_copy(PyObject *self, PyObject *noargs) {
  */
 PyObject *copy_from_copy_constructor(PyObject *self, PyObject *noargs) {
   PyObject *callable = (PyObject *)Py_TYPE(self);
-
-#if PY_VERSION_HEX >= 0x03060000
-  PyObject *result = _PyObject_FastCall(callable, &self, 1);
-#else
-  PyObject *args = PyTuple_Pack(1, self);
-  PyObject *result = PyObject_Call(callable, args, nullptr);
-  Py_DECREF(args);
-#endif
-  return result;
+  return _PyObject_FastCall(callable, &self, 1);
 }
 
 /**

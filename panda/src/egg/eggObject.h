@@ -26,7 +26,7 @@ class EggTransform;
  * The highest-level base class in the egg directory.  (Almost) all things egg
  * inherit from this.
  */
-class EXPCL_PANDAEGG EggObject : public TypedReferenceCount {
+class EXPCL_PANDA_EGG EggObject : public TypedReferenceCount {
 PUBLISHED:
   EggObject();
   EggObject(const EggObject &copy);

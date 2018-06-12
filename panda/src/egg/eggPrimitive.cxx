@@ -227,7 +227,7 @@ get_shading() const {
     if (!first_vertex->has_normal()) {
       first_vertex = this;
     }
-    for (int i = 1; i < get_num_vertices(); i++) {
+    for (size_t i = 1; i < get_num_vertices(); ++i) {
       const EggAttributes *vertex = get_vertex(i);
       if (!vertex->has_normal()) {
         vertex = this;
@@ -244,7 +244,7 @@ get_shading() const {
     if (!first_vertex->has_color()) {
       first_vertex = this;
     }
-    for (int i = 1; i < get_num_vertices(); i++) {
+    for (size_t i = 1; i < get_num_vertices(); ++i) {
       const EggAttributes *vertex = get_vertex(i);
       if (!vertex->has_color()) {
         vertex = this;
@@ -461,9 +461,7 @@ apply_first_attribute() {
 void EggPrimitive::
 post_apply_flat_attribute() {
   if (!empty()) {
-    for (int i = 0; i < (int)size(); i++) {
-      EggVertex *vertex = get_vertex(i);
-
+    for (EggVertex *vertex : _vertices) {
       // Use set_normal() instead of copy_normal(), to avoid getting the
       // morphs--we don't want them here, since we're just putting a bogus
       // value on the normal anyway.

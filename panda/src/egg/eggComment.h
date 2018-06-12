@@ -21,7 +21,7 @@
 /**
  * A comment that appears in an egg file within a <Comment> entry.
  */
-class EXPCL_PANDAEGG EggComment : public EggNode {
+class EXPCL_PANDA_EGG EggComment : public EggNode {
 PUBLISHED:
   INLINE explicit EggComment(const std::string &node_name, const std::string &comment);
   INLINE EggComment(const EggComment &copy);

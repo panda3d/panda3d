@@ -23,7 +23,7 @@
 /**
  *
  */
-class EXPCL_PANDAEGG EggMaterial : public EggNode {
+class EXPCL_PANDA_EGG EggMaterial : public EggNode {
 PUBLISHED:
   explicit EggMaterial(const std::string &mref_name);
   EggMaterial(const EggMaterial &copy);
@@ -151,7 +151,7 @@ private:
  * Returns true if the two referenced EggMaterial pointers are in sorted
  * order, false otherwise.
  */
-class EXPCL_PANDAEGG UniqueEggMaterials {
+class EXPCL_PANDA_EGG UniqueEggMaterials {
 public:
   INLINE UniqueEggMaterials(int eq = ~0);
   INLINE bool operator ()(const EggMaterial *t1, const EggMaterial *t2) const;

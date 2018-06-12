@@ -24,7 +24,7 @@ class PNMImage;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on the various OSX's.
  */
-class EXPCL_PANDAGL osxGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDA_OSXDISPLAY osxGraphicsPipe : public GraphicsPipe {
 public:
   osxGraphicsPipe();
   virtual ~osxGraphicsPipe();

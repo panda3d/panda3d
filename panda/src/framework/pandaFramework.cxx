@@ -91,7 +91,7 @@ open_framework(int &argc, char **&argv) {
   // If we're statically linking, we need to explicitly link with at least one
   // of the available renderers.
   #if defined(HAVE_GL)
-  extern EXPCL_PANDAGL void init_libpandagl();
+  extern void init_libpandagl();
   init_libpandagl();
   #elif defined(HAVE_DX9)
   extern EXPCL_PANDADX void init_libpandadx9();

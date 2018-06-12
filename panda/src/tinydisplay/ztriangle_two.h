@@ -32,7 +32,7 @@ FNAME(flat_untextured) (ZBuffer *zb,
                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   UNUSED int color;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 
@@ -160,7 +160,7 @@ FNAME(flat_textured) (ZBuffer *zb,
                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -399,7 +399,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
 {
   ZTextureDef *texture_def;
   PN_stdfloat fdzdx,fndzdx,ndszdx,ndtzdx;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_STZ
@@ -456,7 +456,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
     PIXEL *pp;                                                  \
     int s,t,z,zz;                                               \
     int n,dsdx,dtdx;                                            \
-    int or1,og1,ob1,oa1;                                        \
+    UNUSED int or1,og1,ob1,oa1;                                 \
     PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
     fz=(PN_stdfloat)z1;                                         \
@@ -596,7 +596,7 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     PIXEL *pp;                                                  \
     int s,t,z,zz;                                               \
     int n,dsdx,dtdx;                                            \
-    int or1,og1,ob1,oa1;                                        \
+    UNUSED int or1,og1,ob1,oa1;                                 \
     PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
     fz=(PN_stdfloat)z1;                                         \
@@ -727,7 +727,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
     PIXEL *pp;                                                          \
     int s,t,sa,ta,z,zz;                                                 \
     int n,dsdx,dtdx,dsadx,dtadx;                                        \
-    int or1,og1,ob1,oa1;                                                \
+    UNUSED int or1,og1,ob1,oa1;                                         \
     PN_stdfloat sz,tz,sza,tza,fz,zinv;                                  \
     n=(x2>>16)-x1;                                                      \
     fz=(PN_stdfloat)z1;                                                 \
@@ -888,7 +888,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     PIXEL *pp;                                                          \
     int s,t,sa,ta,sb,tb,z,zz;                                           \
     int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                            \
-    int or1,og1,ob1,oa1;                                                \
+    UNUSED int or1,og1,ob1,oa1;                                         \
     PN_stdfloat sz,tz,sza,tza,szb,tzb,fz,zinv;                          \
     n=(x2>>16)-x1;                                                      \
     fz=(PN_stdfloat)z1;                                                 \

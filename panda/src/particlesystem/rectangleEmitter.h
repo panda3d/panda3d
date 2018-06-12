@@ -19,7 +19,7 @@
 /**
  * Describes a planar square region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM RectangleEmitter : public BaseParticleEmitter {
 PUBLISHED:
   RectangleEmitter();
   RectangleEmitter(const RectangleEmitter &copy);

@@ -57,7 +57,7 @@ get_shading() const {
     if (!first_component->has_normal()) {
       first_component = this;
     }
-    for (int i = 1; i < get_num_components(); i++) {
+    for (size_t i = 1; i < get_num_components(); ++i) {
       const EggAttributes *component = get_component(i);
       if (!component->has_normal()) {
         component = this;
@@ -74,7 +74,7 @@ get_shading() const {
     if (!first_component->has_color()) {
       first_component = this;
     }
-    for (int i = 1; i < get_num_components(); i++) {
+    for (size_t i = 1; i < get_num_components(); ++i) {
       const EggAttributes *component = get_component(i);
       if (!component->has_color()) {
         component = this;
@@ -295,7 +295,7 @@ apply_last_attribute() {
   // The first component gets applied to the third vertex, and so on from
   // there.
   int num_lead_vertices = get_num_lead_vertices();
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i + num_lead_vertices, component);
   }
@@ -313,7 +313,7 @@ void EggCompositePrimitive::
 apply_first_attribute() {
   // The first component gets applied to the first vertex, and so on from
   // there.
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     EggAttributes *component = get_component(i);
     do_apply_flat_attribute(i, component);
   }

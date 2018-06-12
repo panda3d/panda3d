@@ -19,7 +19,7 @@
 /**
  * A programmable force that takes an evaluator function.
  */
-class EXPCL_PANDAPHYSICS LinearUserDefinedForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
   explicit LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = nullptr,
                                   PN_stdfloat a = 1.0f, bool md = false);

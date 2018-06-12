@@ -19,7 +19,7 @@
 /**
  * Describes a planar ring region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM PointEmitter : public BaseParticleEmitter {
 PUBLISHED:
   PointEmitter();
   PointEmitter(const PointEmitter &copy);

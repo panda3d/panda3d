@@ -24,9 +24,9 @@
  * template class.  It's not strictly necessary, but it doesn't hurt.
  */
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerToBase<EggTexture>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerTo<EggTexture>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, ConstPointerTo<EggTexture>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, PointerToBase<EggTexture>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, PointerTo<EggTexture>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, ConstPointerTo<EggTexture>)
 
 typedef PointerTo<EggTexture> PT_EggTexture;
 typedef ConstPointerTo<EggTexture> CPT_EggTexture;

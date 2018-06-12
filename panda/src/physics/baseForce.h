@@ -26,7 +26,7 @@ class ForceNode;
 /**
  * pure virtual base class for all forces that could POSSIBLY exist.
  */
-class EXPCL_PANDAPHYSICS BaseForce : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS BaseForce : public TypedReferenceCount {
 PUBLISHED:
   virtual ~BaseForce();
 

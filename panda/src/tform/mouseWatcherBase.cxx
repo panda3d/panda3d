@@ -40,34 +40,31 @@ MouseWatcherBase::
 }
 
 /**
- * Adds the indicated region to the set of regions in the group.  It is an
- * error to add the same region to the set more than once.
+ * Adds the indicated region to the set of regions in the group.  It is no
+ * longer an error to call this for the same region more than once.
  */
 void MouseWatcherBase::
-add_region(MouseWatcherRegion *region) {
-  PT(MouseWatcherRegion) pt = region;
-
+add_region(PT(MouseWatcherRegion) region) {
   LightMutexHolder holder(_lock);
-
-  // We will only bother to check for duplicates in the region list if we are
-  // building a development Panda.  The overhead for doing this may be too
-  // high if we have many regions.
-#ifdef _DEBUG
-  // See if the region is in the setvector already
-  Regions::const_iterator ri =
-    find(_regions.begin(), _regions.end(), pt);
-  nassertv(ri == _regions.end());
-#endif  // _DEBUG
 
 #ifndef NDEBUG
   // Also add it to the vizzes if we have them.
-  if (_show_regions) {
-    nassertv(_vizzes.size() == _regions.size());
-    _vizzes.push_back(make_viz_region(pt));
+  if (UNLIKELY(_show_regions)) {
+    // We need to check whether it is already in the set, so that we don't
+    // create a duplicate viz.
+    Regions::const_iterator ri =
+      std::find(_regions.begin(), _regions.end(), region);
+
+    if (ri == _regions.end()) {
+      nassertv(_vizzes.size() == _regions.size());
+      _vizzes.push_back(make_viz_region(region));
+    } else {
+      return;
+    }
   }
 #endif  // NDEBUG
 
-  _regions.push_back(pt);
+  _regions.push_back(std::move(region));
   _sorted = false;
 }
 
@@ -111,9 +108,7 @@ MouseWatcherRegion *MouseWatcherBase::
 find_region(const string &name) const {
   LightMutexHolder holder(_lock);
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherRegion *region : _regions) {
     if (region->get_name() == name) {
       return region;
     }
@@ -141,31 +136,15 @@ clear_regions() {
 }
 
 /**
- * Sorts all the regions in this group into pointer order.
- */
-void MouseWatcherBase::
-sort_regions() {
-  LightMutexHolder holder(_lock);
-  do_sort_regions();
-}
-
-/**
- * Returns true if the group has already been sorted, false otherwise.
- */
-bool MouseWatcherBase::
-is_sorted() const {
-  LightMutexHolder holder(_lock);
-
-  return _sorted;
-}
-
-/**
  * Returns the number of regions in the group.
  */
-int MouseWatcherBase::
+size_t MouseWatcherBase::
 get_num_regions() const {
   LightMutexHolder holder(_lock);
-
+  if (!_sorted) {
+    // Remove potential duplicates to get an accurate count.
+    ((MouseWatcherBase *)this)->do_sort_regions();
+  }
   return _regions.size();
 }
 
@@ -175,9 +154,12 @@ get_num_regions() const {
  * removed the nth region before you called this method.
  */
 MouseWatcherRegion *MouseWatcherBase::
-get_region(int n) const {
+get_region(size_t n) const {
   LightMutexHolder holder(_lock);
-  if (n >= 0 && n < (int)_regions.size()) {
+  if (!_sorted) {
+    ((MouseWatcherBase *)this)->do_sort_regions();
+  }
+  if (n < _regions.size()) {
     return _regions[n];
   }
   return nullptr;
@@ -198,9 +180,7 @@ void MouseWatcherBase::
 write(ostream &out, int indent_level) const {
   LightMutexHolder holder(_lock);
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherRegion *region : _regions) {
     region->write(out, indent_level);
   }
 }
@@ -262,7 +242,7 @@ update_regions() {
 void MouseWatcherBase::
 do_sort_regions() {
   if (!_sorted) {
-    sort(_regions.begin(), _regions.end());
+    _regions.sort_unique();
     _sorted = true;
   }
 }
@@ -345,13 +325,15 @@ do_update_regions() {
   nassertv(_lock.debug_is_locked());
 
   if (_show_regions) {
+    // Make sure we have no duplicates.
+    do_sort_regions();
+
     _show_regions_root.node()->remove_all_children();
     _vizzes.clear();
     _vizzes.reserve(_regions.size());
 
-    Regions::const_iterator ri;
-    for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-      _vizzes.push_back(make_viz_region(*ri));
+    for (MouseWatcherRegion *region : _regions) {
+      _vizzes.push_back(make_viz_region(region));
     }
   }
 }

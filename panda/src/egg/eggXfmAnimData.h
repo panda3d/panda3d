@@ -26,7 +26,7 @@
  * is an older syntax of egg anim table, not often used currently--it's
  * replaced by EggXfmSAnim.
  */
-class EXPCL_PANDAEGG EggXfmAnimData : public EggAnimData {
+class EXPCL_PANDA_EGG EggXfmAnimData : public EggAnimData {
 PUBLISHED:
   INLINE explicit EggXfmAnimData(const std::string &name = "",
                                  CoordinateSystem cs = CS_default);

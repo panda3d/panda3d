@@ -103,11 +103,6 @@ RenameSet methodRenameDictionary[] = {
   { nullptr, nullptr, -1 }
 };
 
-RenameSet classRenameDictionary[] = {
-  // No longer used, now empty.
-  { nullptr, nullptr, -1 }
-};
-
 const char *pythonKeywords[] = {
   "and",
   "as",
@@ -193,12 +188,6 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
     }
   }
 
-  for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-    if (cppName == classRenameDictionary[x]._from) {
-      className = classRenameDictionary[x]._to;
-    }
-  }
-
   if (className.empty()) {
     std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
     printf("%s", text.c_str());
@@ -250,15 +239,6 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
   for (int x = 0; methodRenameDictionary[x]._from != nullptr; x++) {
     if (origName == methodRenameDictionary[x]._from) {
       methodName = methodRenameDictionary[x]._to;
-    }
-  }
-
-  if (className.size() > 0) {
-    string lookup_name = className + '.' + cppName;
-    for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-      if (lookup_name == methodRenameDictionary[x]._from) {
-        methodName = methodRenameDictionary[x]._to;
-      }
     }
   }
 
@@ -1459,7 +1439,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   if (force_base_functions) {
     out << "  // Support Function For Dtool_types ... for now in each module ??\n";
     out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference, METH_VARARGS, \"Used to borrow 'this' pointer (to, from)\\nAssumes no ownership.\"},\n";
-    out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
+    //out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
   }
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";
@@ -2536,7 +2516,7 @@ write_module_class(ostream &out, Object *obj) {
     }
   }
 
-  if (NeedsARichCompareFunction(obj->_itype)) {
+  if (NeedsARichCompareFunction(obj->_itype) || slots.count("tp_compare")) {
     out << "//////////////////\n";
     out << "//  A rich comparison function\n";
     out << "//     " << ClassName << "\n";
@@ -2547,7 +2527,6 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
-    out << "  switch (op) {\n";
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
       std::set<FunctionRemap*> remaps;
       Function *func = (*fi);
@@ -2564,21 +2543,28 @@ write_module_class(ostream &out, Object *obj) {
         }
       }
       const string &fname = func->_ifunc.get_name();
+      const char *op_type;
       if (fname == "operator <") {
-        out << "  case Py_LT:\n";
+        op_type = "Py_LT";
       } else if (fname == "operator <=") {
-        out << "  case Py_LE:\n";
+        op_type = "Py_LE";
       } else if (fname == "operator ==") {
-        out << "  case Py_EQ:\n";
+        op_type = "Py_EQ";
       } else if (fname == "operator !=") {
-        out << "  case Py_NE:\n";
+        op_type = "Py_NE";
       } else if (fname == "operator >") {
-        out << "  case Py_GT:\n";
+        op_type = "Py_GT";
       } else if (fname == "operator >=") {
-        out << "  case Py_GE:\n";
+        op_type = "Py_GE";
       } else {
         continue;
       }
+      if (!has_local_richcompare) {
+        out << "  switch (op) {\n";
+        has_local_richcompare = true;
+      }
+      out << "  case " << op_type << ":\n";
+
       out << "    {\n";
 
       string expected_params;
@@ -2587,14 +2573,15 @@ write_module_class(ostream &out, Object *obj) {
 
       out << "      break;\n";
       out << "    }\n";
-      has_local_richcompare = true;
     }
 
-    out << "  }\n\n";
-
-    out << "  if (_PyErr_OCCURRED()) {\n";
-    out << "    PyErr_Clear();\n";
-    out << "  }\n\n";
+    if (has_local_richcompare) {
+      // End of switch block
+      out << "  }\n\n";
+      out << "  if (_PyErr_OCCURRED()) {\n";
+      out << "    PyErr_Clear();\n";
+      out << "  }\n\n";
+    }
 
     if (slots.count("tp_compare")) {
       // A lot of Panda code depends on comparisons being done via the
@@ -2624,6 +2611,7 @@ write_module_class(ostream &out, Object *obj) {
       out << "  case Py_GE:\n";
       out << "    return PyBool_FromLong(cmpval >= 0);\n";
       out << "  }\n";
+      has_local_richcompare = true;
     }
 
     out << "  Py_INCREF(Py_NotImplemented);\n";
@@ -2850,7 +2838,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "#else\n";
   if (has_hash_compare) {
     write_function_slot(out, 4, slots, "tp_compare",
-                        "&DTOOL_PyObject_ComparePointers");
+                        "&DtoolInstance_ComparePointers");
   } else {
     out << "    nullptr, // tp_compare\n";
   }
@@ -2880,7 +2868,7 @@ write_module_class(ostream &out, Object *obj) {
 
   // hashfunc tp_hash;
   if (has_hash_compare) {
-    write_function_slot(out, 4, slots, "tp_hash", "&DTOOL_PyObject_HashPointer");
+    write_function_slot(out, 4, slots, "tp_hash", "&DtoolInstance_HashPointer");
   } else {
     out << "    nullptr, // tp_hash\n";
   }
@@ -2951,7 +2939,7 @@ write_module_class(ostream &out, Object *obj) {
   } else if (has_hash_compare) {
     // All hashable types need to be comparable.
     out << "#if PY_MAJOR_VERSION >= 3\n";
-    out << "    &DTOOL_PyObject_RichCompare,\n";
+    out << "    &DtoolInstance_RichComparePointers,\n";
     out << "#else\n";
     out << "    nullptr, // tp_richcompare\n";
     out << "#endif\n";
@@ -5038,7 +5026,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                            "value %ld out of range for unsigned byte",
                            param_name);
       } else {
-        extra_convert << "if (" << param_name << " < CHAR_MIN || " << param_name << " > CHAR_MAX) {\n";
+        extra_convert << "if (" << param_name << " < SCHAR_MIN || " << param_name << " > SCHAR_MAX) {\n";
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed byte",
                            param_name);

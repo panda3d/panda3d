@@ -24,7 +24,7 @@
  * EggSAnimData or an EggXfmAnimData, which do.  It may also be a parent to
  * another <Table> or <Bundle>, establishing a hierarchy of tables.
  */
-class EXPCL_PANDAEGG EggTable : public EggGroupNode {
+class EXPCL_PANDA_EGG EggTable : public EggGroupNode {
 PUBLISHED:
   enum TableType {
     TT_invalid,

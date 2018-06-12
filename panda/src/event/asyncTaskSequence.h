@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE void set_repeat_count(int repeat_count);
   INLINE int get_repeat_count() const;
 
-  INLINE int get_current_task_index() const;
+  INLINE size_t get_current_task_index() const;
 
 protected:
   virtual bool is_runnable();
@@ -51,7 +51,7 @@ private:
   void set_current_task(AsyncTask *task, bool clean_exit);
 
   int _repeat_count;
-  int _task_index;
+  size_t _task_index;
   PT(AsyncTask) _current_task;
 
 public:

@@ -23,7 +23,7 @@
  * textures, materials, and vertex pools prior to writing out an egg file.
  * It's automatically called by EggData prior to writing out an egg file.
  */
-class EXPCL_PANDAEGG EggPoolUniquifier : public EggNameUniquifier {
+class EXPCL_PANDA_EGG EggPoolUniquifier : public EggNameUniquifier {
 PUBLISHED:
   EggPoolUniquifier();
 

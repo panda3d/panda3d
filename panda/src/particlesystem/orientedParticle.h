@@ -20,7 +20,7 @@
  * Describes a particle that has angular characteristics (velocity,
  * orientation).
  */
-class EXPCL_PANDAPHYSICS OrientedParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM OrientedParticle : public BaseParticle {
 public:
   OrientedParticle(int lifespan = 0, bool alive = false);
   OrientedParticle(const OrientedParticle &copy);

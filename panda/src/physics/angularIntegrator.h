@@ -22,7 +22,7 @@
  * Pure virtual base class for physical modeling.  Takes physically modelable
  * objects and applies forces to them.
  */
-class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
+class EXPCL_PANDA_PHYSICS AngularIntegrator : public BaseIntegrator {
 PUBLISHED:
   virtual ~AngularIntegrator();
 public:

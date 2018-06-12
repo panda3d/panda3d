@@ -22,7 +22,7 @@
  * A single point, or a collection of points as defined by a single
  * <PointLight> entry.
  */
-class EXPCL_PANDAEGG EggPoint : public EggPrimitive {
+class EXPCL_PANDA_EGG EggPoint : public EggPrimitive {
 PUBLISHED:
   INLINE explicit EggPoint(const std::string &name = "");
   INLINE EggPoint(const EggPoint &copy);

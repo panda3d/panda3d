@@ -30,7 +30,7 @@
  * BillboardParticleRenderer for that.
  */
 
-class EXPCL_PANDAPHYSICS PointParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM PointParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   enum PointParticleBlendType {
     PP_ONE_COLOR,

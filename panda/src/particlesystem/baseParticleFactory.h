@@ -25,7 +25,7 @@
 /**
  * Pure Virtual base class for creating particles
  */
-class EXPCL_PANDAPHYSICS BaseParticleFactory : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticleFactory : public ReferenceCount {
 PUBLISHED:
   virtual ~BaseParticleFactory();
 

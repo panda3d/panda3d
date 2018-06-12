@@ -26,7 +26,7 @@
  * with the enum EggData::CoordinateSystem, which is the value contained by
  * this entry.
  */
-class EXPCL_PANDAEGG EggCoordinateSystem : public EggNode {
+class EXPCL_PANDA_EGG EggCoordinateSystem : public EggNode {
 PUBLISHED:
   INLINE EggCoordinateSystem(CoordinateSystem value = CS_default);
   INLINE EggCoordinateSystem(const EggCoordinateSystem &copy);

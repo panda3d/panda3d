@@ -27,7 +27,7 @@
  * materials from an egg file and sort them all together; it can also manage
  * the creation of unique materials and the assignment of unique MRef names.
  */
-class EXPCL_PANDAEGG EggMaterialCollection {
+class EXPCL_PANDA_EGG EggMaterialCollection {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggMaterialCollection as an STL

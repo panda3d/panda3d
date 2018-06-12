@@ -33,7 +33,7 @@
  * Physics don't get much higher-level than this.  Attach as many Physicals
  * (particle systems, etc..) as you want, pick an integrator and go.
  */
-class EXPCL_PANDAPHYSICS PhysicsManager {
+class EXPCL_PANDA_PHYSICS PhysicsManager {
 public:
   // NOTE that the physicals container is NOT reference counted.  this does
   // indeed mean that you are NOT supposed to use this as a primary storage

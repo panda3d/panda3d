@@ -20,7 +20,7 @@
  * A force that acts on a PhysicsObject by way of an Integrator.  This is a
  * pure virtual base class.
  */
-class EXPCL_PANDAPHYSICS LinearForce : public BaseForce {
+class EXPCL_PANDA_PHYSICS LinearForce : public BaseForce {
 PUBLISHED:
   ~LinearForce();
 

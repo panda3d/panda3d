@@ -20,7 +20,7 @@
 /**
  * An individual, physically-modelable particle abstract base class.
  */
-class EXPCL_PANDAPHYSICS BaseParticle : public PhysicsObject {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticle : public PhysicsObject {
 public:
   // local methods
   INLINE void set_age(PN_stdfloat age);

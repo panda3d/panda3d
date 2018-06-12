@@ -21,7 +21,7 @@
 /**
  * Creates particles that are affected by angular forces.
  */
-class EXPCL_PANDAPHYSICS OrientedParticleFactory : public BaseParticleFactory {
+class EXPCL_PANDA_PARTICLESYSTEM OrientedParticleFactory : public BaseParticleFactory {
 PUBLISHED:
   OrientedParticleFactory();
   OrientedParticleFactory(const OrientedParticleFactory &copy);

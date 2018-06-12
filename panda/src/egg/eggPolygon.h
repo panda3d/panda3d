@@ -21,7 +21,7 @@
 /**
  * A single polygon.
  */
-class EXPCL_PANDAEGG EggPolygon : public EggPrimitive {
+class EXPCL_PANDA_EGG EggPolygon : public EggPrimitive {
 PUBLISHED:
   INLINE explicit EggPolygon(const std::string &name = "");
   INLINE EggPolygon(const EggPolygon &copy);

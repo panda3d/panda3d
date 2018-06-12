@@ -2381,7 +2381,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
 
   PT(Geom) geom = _glyph->get_geom(GeomEnums::UH_static);
 
-  int p, sp, s, e, i;
+  int sp, s, e, i;
 
   const GeomVertexData *vdata = geom->get_vertex_data();
   CPT(RenderState) rs = _glyph->get_state()->compose(state);
@@ -2398,7 +2398,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
   // that we don't needlessly duplicate vertices into our output vertex data.
   VertexIndexMap vimap;
 
-  for (p = 0; p < geom->get_num_primitives(); p++) {
+  for (size_t p = 0; p < geom->get_num_primitives(); ++p) {
     CPT(GeomPrimitive) primitive = geom->get_primitive(p)->decompose();
 
     // Get a new GeomPrimitive of the corresponding type.

@@ -27,7 +27,7 @@
 /**
  * Defines a texture map that may be applied to geometry.
  */
-class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
+class EXPCL_PANDA_EGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   explicit EggTexture(const std::string &tref_name, const Filename &filename);
   EggTexture(const EggTexture &copy);
@@ -458,7 +458,7 @@ private:
  * Returns true if the two referenced EggTexture pointers are in sorted order,
  * false otherwise.
  */
-class EXPCL_PANDAEGG UniqueEggTextures {
+class EXPCL_PANDA_EGG UniqueEggTextures {
 public:
   INLINE UniqueEggTextures(int eq = ~0);
   INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
@@ -470,18 +470,18 @@ INLINE std::ostream &operator << (std::ostream &out, const EggTexture &n) {
   return out << n.get_filename();
 }
 
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::TextureType texture_type);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::Format format);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::CompressionMode mode);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::WrapMode mode);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::FilterType type);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::EnvType type);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::CombineMode cm);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::CombineChannel cc);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::CombineSource cs);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::CombineOperand co);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::TexGen tex_gen);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggTexture::QualityLevel quality_level);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::TextureType texture_type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::Format format);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CompressionMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::WrapMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::FilterType type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::EnvType type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineMode cm);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineChannel cc);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineSource cs);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineOperand co);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::TexGen tex_gen);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::QualityLevel quality_level);
 
 #include "eggTexture.I"
 

@@ -192,6 +192,7 @@ extern "C" {
   EXPCL_PYSTUB int _PyArg_Parse_SizeT(...);
   EXPCL_PYSTUB int _PyErr_BadInternalCall(...);
   EXPCL_PYSTUB int _PyLong_AsByteArray(...);
+  EXPCL_PYSTUB int _PyLong_Sign(...);
   EXPCL_PYSTUB int _PyObject_CallFunction_SizeT(...);
   EXPCL_PYSTUB int _PyObject_CallMethod_SizeT(...);
   EXPCL_PYSTUB int _PyObject_DebugFree(...);
@@ -421,6 +422,7 @@ int _PyArg_ParseTupleAndKeywords_SizeT(...) { return 0; };
 int _PyArg_Parse_SizeT(...) { return 0; };
 int _PyErr_BadInternalCall(...) { return 0; };
 int _PyLong_AsByteArray(...) { return 0; };
+int _PyLong_Sign(...) { return 0; };
 int _PyObject_CallFunction_SizeT(...) { return 0; };
 int _PyObject_CallMethod_SizeT(...) { return 0; };
 int _PyObject_DebugFree(...) { return 0; };

@@ -22,7 +22,7 @@
 
 #include "mathNumbers.h"
 
-class EXPCL_PANDAPHYSICS BaseParticleEmitter : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticleEmitter : public ReferenceCount {
 PUBLISHED:
   enum emissionType {
     ET_EXPLICIT, // all particles are emitted in parallel along the same vector
