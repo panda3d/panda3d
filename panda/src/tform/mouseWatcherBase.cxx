@@ -136,25 +136,6 @@ clear_regions() {
 }
 
 /**
- * Sorts all the regions in this group into pointer order.
- */
-void MouseWatcherBase::
-sort_regions() {
-  LightMutexHolder holder(_lock);
-  do_sort_regions();
-}
-
-/**
- * Returns true if the group has already been sorted, false otherwise.
- */
-bool MouseWatcherBase::
-is_sorted() const {
-  LightMutexHolder holder(_lock);
-
-  return _sorted;
-}
-
-/**
  * Returns the number of regions in the group.
  */
 size_t MouseWatcherBase::
@@ -261,7 +242,7 @@ update_regions() {
 void MouseWatcherBase::
 do_sort_regions() {
   if (!_sorted) {
-    sort(_regions.begin(), _regions.end());
+    _regions.sort_unique();
     _sorted = true;
   }
 }

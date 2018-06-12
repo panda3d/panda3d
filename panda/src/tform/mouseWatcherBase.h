@@ -41,8 +41,8 @@ PUBLISHED:
   MouseWatcherRegion *find_region(const std::string &name) const;
   void clear_regions();
 
-  void sort_regions();
-  bool is_sorted() const;
+  INLINE void sort_regions();
+  INLINE bool is_sorted() const;
   MAKE_PROPERTY(sorted, is_sorted);
 
   size_t get_num_regions() const;
@@ -109,5 +109,7 @@ private:
   friend class MouseWatcher;
   friend class BlobWatcher;
 };
+
+#include "mouseWatcherBase.I"
 
 #endif

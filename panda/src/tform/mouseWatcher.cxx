@@ -491,11 +491,13 @@ output(ostream &out) const {
   LightMutexHolder holder(_lock);
   DataNode::output(out);
 
-  int count = _regions.size();
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    count += group->_regions.size();
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
+
+  size_t count = _regions.size();
+  for (MouseWatcherGroup *group : _groups) {
+    count += group->get_num_regions();
   }
 
   out << " (" << count << " regions)";
@@ -511,14 +513,10 @@ write(ostream &out, int indent_level) const {
   MouseWatcherBase::write(out, indent_level + 2);
 
   LightMutexHolder holder(_lock);
-  if (!_groups.empty()) {
-    Groups::const_iterator gi;
-    for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-      MouseWatcherGroup *group = (*gi);
-      indent(out, indent_level + 2)
-        << "Subgroup:\n";
-      group->write(out, indent_level + 4);
-    }
+  for (MouseWatcherGroup *group : _groups) {
+    indent(out, indent_level + 2)
+      << "Subgroup:\n";
+    group->write(out, indent_level + 4);
   }
 }
 
@@ -540,9 +538,12 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
   // Ensure the vector is empty before we begin.
   regions.clear();
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
+
+  for (MouseWatcherRegion *region : _regions) {
     const LVecBase4 &frame = region->get_frame();
 
     if (region->get_active() &&
@@ -554,11 +555,10 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
   }
 
   // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
+
+    for (MouseWatcherRegion *region : group->_regions) {
       const LVecBase4 &frame = region->get_frame();
 
       if (region->get_active() &&
@@ -750,9 +750,7 @@ do_show_regions(const NodePath &render2d, const string &bin_name,
   _show_regions_bin_name = bin_name;
   _show_regions_draw_order = draw_order;
 
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
+  for (MouseWatcherGroup *group : _groups) {
     group->show_regions(render2d, bin_name, draw_order);
   }
 }
@@ -770,9 +768,7 @@ do_hide_regions() {
   _show_regions_bin_name = string();
   _show_regions_draw_order = 0;
 
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
+  for (MouseWatcherGroup *group : _groups) {
     group->hide_regions();
   }
 }
@@ -1026,15 +1022,17 @@ keystroke(int keycode) {
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
+
   // Keystrokes go to all those regions that want keyboard events, regardless
   // of which is the "preferred" region (that is, without respect to the mouse
   // position).  However, we do set the outside flag according to whether the
   // given region is the preferred region or not.
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-
+  for (MouseWatcherRegion *region : _regions) {
     if (region->get_keyboard()) {
       param.set_outside(region != _preferred_region);
       region->keystroke(param);
@@ -1043,12 +1041,10 @@ keystroke(int keycode) {
   }
 
   // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
 
+    for (MouseWatcherRegion *region : group->_regions) {
       if (region->get_keyboard()) {
         param.set_outside(region != _preferred_region);
         region->keystroke(param);
@@ -1072,13 +1068,15 @@ candidate(const wstring &candidate_string, size_t highlight_start,
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
+
   // Candidate strings go to all those regions that want keyboard events,
   // exactly like keystrokes, above.
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-
+  for (MouseWatcherRegion *region : _regions) {
     if (region->get_keyboard()) {
       param.set_outside(region != _preferred_region);
       region->candidate(param);
@@ -1086,12 +1084,10 @@ candidate(const wstring &candidate_string, size_t highlight_start,
   }
 
   // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
 
+    for (MouseWatcherRegion *region : group->_regions) {
       if (region->get_keyboard()) {
         param.set_outside(region != _preferred_region);
         region->candidate(param);
@@ -1109,10 +1105,12 @@ void MouseWatcher::
 global_keyboard_press(const MouseWatcherParameter &param) {
   nassertv(_lock.debug_is_locked());
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
 
+  for (MouseWatcherRegion *region : _regions) {
     if (region != _preferred_region && region->get_keyboard()) {
       region->press(param);
       consider_keyboard_suppress(region);
@@ -1120,12 +1118,10 @@ global_keyboard_press(const MouseWatcherParameter &param) {
   }
 
   // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
 
+    for (MouseWatcherRegion *region : group->_regions) {
       if (region != _preferred_region && region->get_keyboard()) {
         region->press(param);
         consider_keyboard_suppress(region);
@@ -1142,22 +1138,22 @@ void MouseWatcher::
 global_keyboard_release(const MouseWatcherParameter &param) {
   nassertv(_lock.debug_is_locked());
 
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
 
+  for (MouseWatcherRegion *region : _regions) {
     if (region != _preferred_region && region->get_keyboard()) {
       region->release(param);
     }
   }
 
   // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
 
+    for (MouseWatcherRegion *region : group->_regions) {
       if (region != _preferred_region && region->get_keyboard()) {
         region->release(param);
       }
