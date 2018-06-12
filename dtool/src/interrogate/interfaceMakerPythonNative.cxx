@@ -5046,7 +5046,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                            "value %ld out of range for unsigned byte",
                            param_name);
       } else {
-        extra_convert << "if (" << param_name << " < CHAR_MIN || " << param_name << " > CHAR_MAX) {\n";
+        extra_convert << "if (" << param_name << " < SCHAR_MIN || " << param_name << " > SCHAR_MAX) {\n";
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed byte",
                            param_name);
