@@ -20,6 +20,7 @@
 #include "pStatCollector.h"
 #include "pointerTo.h"
 #include "luse.h"
+#include "geomNode.h"
 
 class CullableObject;
 class GraphicsStateGuardianBase;
@@ -27,7 +28,6 @@ class SceneSetup;
 class TransformState;
 class RenderState;
 class PandaNode;
-class GeomNode;
 
 /**
  * A collection of Geoms and their associated state, for a particular scene.
