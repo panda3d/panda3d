@@ -15,7 +15,6 @@
 #define WSTRING_ENCODE_H
 
 #include <string>
-using namespace std;
 
 // Presently, these two functions are implemented only for Windows, which is
 // the only place they are needed.  (Only Windows requires wstrings for

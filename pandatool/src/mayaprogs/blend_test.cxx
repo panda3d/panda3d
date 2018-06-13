@@ -24,8 +24,6 @@
 using std::cerr;
 using std::ios;
 
-using namespace std;
-
 void
 scan_nodes() {
   MStatus status;

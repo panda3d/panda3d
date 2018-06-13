@@ -26,8 +26,6 @@
 using std::cerr;
 using std::endl;
 
-using namespace std;
-
 void
 scan_nodes() {
   MStatus status;

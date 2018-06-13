@@ -27,8 +27,6 @@
 
 #else
 
-using std::deque;
-
 /**
  * This is our own Panda specialization on the default STL deque.  Its main
  * purpose is to call the hooks for MemoryUsage to properly track STL-

@@ -20,8 +20,6 @@
 #include "deletedChain.h"
 #include "typeHandle.h"
 
-using std::allocator;
-
 /**
  * This is our own Panda specialization on the default STL allocator.  Its
  * main purpose is to call the hooks for MemoryUsage to properly track STL-

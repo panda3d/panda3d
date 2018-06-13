@@ -25,8 +25,6 @@
 #include <map>
 #include <set>
 
-using namespace std;
-
 class CPPInstance;
 class CPPTemplateParameterList;
 class CPPTypedefType;
