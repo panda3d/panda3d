@@ -20,7 +20,6 @@
 using std::cerr;
 using std::endl;
 
-string password;
 std::string password;
 bool got_password = false;
 
