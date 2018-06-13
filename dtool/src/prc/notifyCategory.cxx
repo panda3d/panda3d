@@ -25,6 +25,9 @@
 #include <time.h>  // for strftime().
 #include <assert.h>
 
+using std::ostream;
+using std::string;
+
 long NotifyCategory::_server_delta = 0;
 
 /**

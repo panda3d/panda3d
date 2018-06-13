@@ -28,6 +28,8 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
+using std::ostream;
+
 TypeHandle CollisionRay::_type_handle;
 
 

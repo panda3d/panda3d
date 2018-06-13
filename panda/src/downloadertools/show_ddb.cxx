@@ -15,6 +15,9 @@
 #include "downloadDb.h"
 #include "filename.h"
 
+using std::cerr;
+using std::cout;
+
 int
 main(int argc, char *argv[]) {
   if (argc != 3) {

@@ -25,6 +25,11 @@
 #include "lightMutexHolder.h"
 #include "config_mathutil.h"
 
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
 

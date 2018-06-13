@@ -24,6 +24,10 @@
 #include <windows.h>
 #include <Tlhelp32.h>
 
+using std::istringstream;
+using std::string;
+using std::wstring;
+
 /**
  *
  */

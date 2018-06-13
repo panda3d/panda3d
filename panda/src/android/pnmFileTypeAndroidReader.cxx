@@ -21,6 +21,12 @@
 #include <android/bitmap.h>
 #include <jni.h>
 
+using std::istream;
+using std::max;
+using std::min;
+using std::streampos;
+using std::string;
+
 // These tables linearly map 4-bit, 5-bit or 6-bit to 8-bit values.
 static uint8_t scale_table_4[16];
 static uint8_t scale_table_5[32];

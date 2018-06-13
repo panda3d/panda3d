@@ -41,6 +41,10 @@
 
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionPolygon::_volume_pcollector("Collision Volumes:CollisionPolygon");
 PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPolygon");
 TypeHandle CollisionPolygon::_type_handle;

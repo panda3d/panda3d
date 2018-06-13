@@ -13,6 +13,9 @@
 
 #include "showInterval.h"
 
+using std::ostringstream;
+using std::string;
+
 int ShowInterval::_unique_index;
 TypeHandle ShowInterval::_type_handle;
 

@@ -17,6 +17,8 @@
 #ifdef HAVE_OPENSSL
 #include "httpChannel.h"
 
+using std::min;
+
 /**
  *
  */

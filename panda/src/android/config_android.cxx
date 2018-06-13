@@ -17,6 +17,8 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+using std::string;
+
 NotifyCategoryDef(android, "");
 
 struct android_app *panda_android_app = nullptr;

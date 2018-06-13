@@ -15,6 +15,9 @@
 
 #ifdef HAVE_PYTHON
 
+using std::min;
+using std::string;
+
 /**
  * Extracts the indicated number of bytes in the stream and returns them as a
  * string (or bytes, in Python 3).  Returns empty string at end-of-file.

@@ -23,6 +23,8 @@
 #include "thread.h"
 #include "pset.h"
 
+using std::string;
+
 int
 main(int argc, char *argv[]) {
   if (argc != 2) {

@@ -15,6 +15,9 @@
 #include "parametricCurve.h"
 #include "config_parametrics.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle NurbsCurveInterface::_type_handle;
 
 /**

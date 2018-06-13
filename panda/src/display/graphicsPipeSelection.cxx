@@ -23,6 +23,9 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::string;
+
 GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = nullptr;
 
 /**

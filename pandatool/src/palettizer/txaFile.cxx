@@ -20,6 +20,10 @@
 #include "pnotify.h"
 #include "pnmFileTypeRegistry.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

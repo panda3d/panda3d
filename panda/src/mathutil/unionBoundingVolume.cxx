@@ -16,6 +16,8 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle UnionBoundingVolume::_type_handle;
 
 /**

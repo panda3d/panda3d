@@ -20,6 +20,9 @@
 #include "omniBoundingVolume.h"
 #include "config_pgraph.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle CallbackNode::_type_handle;
 
 /**

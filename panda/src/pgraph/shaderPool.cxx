@@ -19,6 +19,9 @@
 #include "shader.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 ShaderPool *ShaderPool::_global_ptr = nullptr;
 
 /**

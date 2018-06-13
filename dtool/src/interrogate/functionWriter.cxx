@@ -13,6 +13,9 @@
 
 #include "functionWriter.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

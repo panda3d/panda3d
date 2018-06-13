@@ -22,6 +22,9 @@
 #include "eggBin.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

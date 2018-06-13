@@ -15,6 +15,8 @@
 #include "config_collide.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle CollisionHandlerQueue::_type_handle;
 
 // This class is used in sort_entries(), below.

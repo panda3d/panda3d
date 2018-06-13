@@ -25,6 +25,8 @@
 #include "bamCacheRecord.h"
 #include "bamCacheIndex.h"
 
+using std::string;
+
 /**
  *
  */

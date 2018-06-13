@@ -15,6 +15,8 @@
 #include "indent.h"
 #include "config_putil.h"
 
+using std::ostream;
+
 /**
  *
  */

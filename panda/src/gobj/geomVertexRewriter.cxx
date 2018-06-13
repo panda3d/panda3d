@@ -13,6 +13,8 @@
 
 #include "geomVertexRewriter.h"
 
+using std::ostream;
+
 /**
  *
  */

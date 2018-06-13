@@ -15,6 +15,13 @@
 
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 static const int num_weekdays = 7;
 static const char * const weekdays[num_weekdays] = {
   "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"

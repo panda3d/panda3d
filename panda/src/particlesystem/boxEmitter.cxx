@@ -13,6 +13,8 @@
 
 #include "boxEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

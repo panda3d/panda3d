@@ -15,6 +15,8 @@
 #include "scissorEffect.h"
 #include "sceneGraphReducer.h"
 
+using std::string;
+
 TypeHandle PGVirtualFrame::_type_handle;
 
 /**

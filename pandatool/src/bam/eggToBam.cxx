@@ -32,6 +32,8 @@
 #include "windowProperties.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 /**
  *
  */

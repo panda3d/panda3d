@@ -19,6 +19,9 @@
 #include "indent.h"
 #include "pStatTimer.h"
 
+using std::min;
+using std::ostream;
+
 PStatCollector SparkleParticleRenderer::_render_collector("App:Particles:Sparkle:Render");
 
 /**

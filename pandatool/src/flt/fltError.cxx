@@ -13,6 +13,8 @@
 
 #include "fltError.h"
 
+using std::ostream;
+
 ostream &
 operator << (ostream &out, FltError error) {
   switch (error) {

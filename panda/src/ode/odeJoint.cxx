@@ -26,6 +26,8 @@
 #include "odeLMotorJoint.h"
 #include "odeBody.h"
 
+using std::ostream;
+
 TypeHandle OdeJoint::_type_handle;
 
 OdeJoint::

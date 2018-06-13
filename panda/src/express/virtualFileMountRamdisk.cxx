@@ -15,6 +15,13 @@
 #include "subStream.h"
 #include "dcast.h"
 
+using std::iostream;
+using std::istream;
+using std::max;
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileMountRamdisk::_type_handle;
 TypeHandle VirtualFileMountRamdisk::FileBase::_type_handle;
 TypeHandle VirtualFileMountRamdisk::File::_type_handle;

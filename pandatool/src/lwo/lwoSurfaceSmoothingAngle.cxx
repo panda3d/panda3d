@@ -18,6 +18,8 @@
 #include "indent.h"
 #include "deg_2_rad.h"
 
+using std::ostream;
+
 TypeHandle LwoSurfaceSmoothingAngle::_type_handle;
 
 /**

@@ -28,6 +28,10 @@
 #include "math.h"
 #include "audioSound.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle MovieTexture::_type_handle;
 
 /**

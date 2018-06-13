@@ -17,6 +17,9 @@
 #include "clockObject.h"
 #include "config_gobj.h"
 
+using std::max;
+using std::string;
+
 TypeHandle VideoTexture::_type_handle;
 
 /**

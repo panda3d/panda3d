@@ -48,6 +48,9 @@
 #include <hb-ft.h>
 #endif
 
+using std::ostream;
+using std::string;
+
 TypeHandle DynamicTextFont::_type_handle;
 
 

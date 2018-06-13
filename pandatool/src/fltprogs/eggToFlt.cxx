@@ -35,6 +35,9 @@
 #include "string_utils.h"
 #include "vector_string.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

@@ -13,6 +13,9 @@
 
 #include "p3dFloatObject.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

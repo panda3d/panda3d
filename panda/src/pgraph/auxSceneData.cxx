@@ -14,6 +14,8 @@
 #include "auxSceneData.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle AuxSceneData::_type_handle;
 
 /**

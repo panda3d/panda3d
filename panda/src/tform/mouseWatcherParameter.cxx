@@ -13,6 +13,8 @@
 
 #include "mouseWatcherParameter.h"
 
+using std::ostream;
+
 /**
  *
  */

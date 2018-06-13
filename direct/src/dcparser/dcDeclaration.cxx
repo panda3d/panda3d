@@ -13,6 +13,8 @@
 
 #include "dcDeclaration.h"
 
+using std::ostream;
+
 
 /**
  *

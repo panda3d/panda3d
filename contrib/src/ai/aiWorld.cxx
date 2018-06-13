@@ -13,6 +13,11 @@
 
 #include "aiWorld.h"
 
+using std::cout;
+using std::endl;
+using std::move;
+using std::string;
+
 AIWorld::AIWorld(NodePath render) {
   _render = move(render);
 }

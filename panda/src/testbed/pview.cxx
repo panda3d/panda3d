@@ -29,6 +29,12 @@
 #include "asyncTask.h"
 #include "boundingSphere.h"
 
+using std::cerr;
+using std::endl;
+using std::max;
+using std::min;
+using std::string;
+
 PandaFramework framework;
 
 ConfigVariableBool pview_test_hack

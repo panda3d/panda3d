@@ -13,6 +13,8 @@
 
 #include "angularForce.h"
 
+using std::ostream;
+
 TypeHandle AngularForce::_type_handle;
 
 /**

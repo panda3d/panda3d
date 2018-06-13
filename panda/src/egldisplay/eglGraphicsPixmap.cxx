@@ -20,6 +20,8 @@
 #include "graphicsPipe.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle eglGraphicsPixmap::_type_handle;
 
 /**

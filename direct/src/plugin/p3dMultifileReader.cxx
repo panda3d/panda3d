@@ -23,6 +23,15 @@
 #include <io.h>
 #endif
 
+using std::ios;
+using std::max;
+using std::min;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+using std::string;
+using std::wstring;
+
 // This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char P3DMultifileReader::_header[] = "pmf\0\n\r";
 const size_t P3DMultifileReader::_header_size = 6;

@@ -16,6 +16,8 @@
 #include "config_movies.h"
 #include "movieTypeRegistry.h"
 
+using std::string;
+
 TypeHandle MovieAudio::_type_handle;
 
 /**

@@ -26,6 +26,11 @@
 #include "lightMutexHolder.h"
 #include "zStream.h"
 
+using std::istream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 extern int eggyyparse();
 #include "parserDefs.h"
 #include "lexerDefs.h"

@@ -15,6 +15,10 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
+using std::cerr;
+using std::cout;
+using std::string;
+
 bool output_decimal = false;
 bool suppress_filename = false;
 pofstream binary_output;

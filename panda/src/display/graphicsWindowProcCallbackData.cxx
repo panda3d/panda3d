@@ -14,6 +14,8 @@
 #include "graphicsWindowProcCallbackData.h"
 #include "graphicsWindow.h"
 
+using std::ostream;
+
 TypeHandle GraphicsWindowProcCallbackData::_type_handle;
 
 /**

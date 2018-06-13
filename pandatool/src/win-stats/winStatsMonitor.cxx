@@ -21,6 +21,9 @@
 #include "pStatCollectorDef.h"
 #include "indent.h"
 
+using std::ostringstream;
+using std::string;
+
 bool WinStatsMonitor::_window_class_registered = false;
 const char * const WinStatsMonitor::_window_class_name = "monitor";
 

@@ -22,6 +22,8 @@
 #include "string_utils.h"
 #include "dcast.h"
 
+using std::cin;
+
 /**
  *
  */

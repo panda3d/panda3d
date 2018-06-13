@@ -16,6 +16,9 @@
 #include "cppInstance.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

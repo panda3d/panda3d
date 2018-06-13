@@ -13,6 +13,12 @@
 
 #include "binToC.h"
 
+using std::dec;
+using std::hex;
+using std::setfill;
+using std::setw;
+using std::string;
+
 // The number of bytes across the page to write.
 static const int col_width = 11;
 

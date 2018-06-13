@@ -13,6 +13,13 @@
 
 #include "depthWriteAttrib.h"
 
+using std::list;
+using std::max;
+using std::min;
+using std::ostringstream;
+using std::string;
+using std::swap;
+
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
 /**

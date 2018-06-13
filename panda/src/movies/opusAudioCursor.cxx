@@ -18,6 +18,10 @@
 
 #include <opus/opusfile.h>
 
+using std::ios;
+using std::istream;
+using std::max;
+
 /**
  * Callbacks passed to libopusfile to implement file I/O via the
  * VirtualFileSystem.

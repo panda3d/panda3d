@@ -20,6 +20,11 @@
 #include "cppExtensionType.h"
 #include <algorithm>
 
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 CPPType::Types CPPType::_types;
 CPPType::PreferredNames CPPType::_preferred_names;
 CPPType::AltNames CPPType::_alt_names;

@@ -19,6 +19,8 @@
 #include "graphicsPipe.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle eglGraphicsBuffer::_type_handle;
 
 /**

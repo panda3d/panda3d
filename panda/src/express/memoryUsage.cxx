@@ -27,6 +27,9 @@
 #include <algorithm>
 #include <iterator>
 
+using std::pair;
+using std::vector;
+
 MemoryUsage *MemoryUsage::_global_ptr;
 
 // This flag is used to protect the operator newdelete handlers against

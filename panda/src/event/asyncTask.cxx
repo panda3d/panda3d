@@ -18,6 +18,11 @@
 #include "throw_event.h"
 #include "eventParameter.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 AtomicAdjust::Integer AsyncTask::_next_task_id;
 PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
 TypeHandle AsyncTask::_type_handle;

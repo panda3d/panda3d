@@ -25,6 +25,8 @@ extern "C" {
   #include "AR/ar.h"
 };
 
+using std::string;
+
 ARToolKit::PatternTable ARToolKit::_pattern_table;
 
 static void change_size( ARParam *source, int xsize, int ysize, ARParam *newparam )

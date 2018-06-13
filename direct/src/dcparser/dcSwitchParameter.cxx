@@ -15,6 +15,9 @@
 #include "dcSwitch.h"
 #include "hashGenerator.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

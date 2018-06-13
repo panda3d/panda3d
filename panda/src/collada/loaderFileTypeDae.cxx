@@ -14,6 +14,8 @@
 #include "loaderFileTypeDae.h"
 #include "load_collada_file.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeDae::_type_handle;
 
 /**

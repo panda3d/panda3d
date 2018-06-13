@@ -15,6 +15,8 @@
 
 #include "dcast.h"
 
+using std::string;
+
 TypeHandle EggScalarTablePointer::_type_handle;
 
 /**

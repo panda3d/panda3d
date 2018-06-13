@@ -18,6 +18,10 @@
 #include "deg_2_rad.h"
 #include "cmath.h"
 
+using std::cerr;
+using std::ostream;
+using std::string;
+
 TypeHandle PointerEventList::_type_handle;
 
 /**

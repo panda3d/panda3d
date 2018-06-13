@@ -14,6 +14,8 @@
 #include "config_ode.h"
 #include "odeMass.h"
 
+using std::ostream;
+
 TypeHandle OdeMass::_type_handle;
 
 OdeMass::

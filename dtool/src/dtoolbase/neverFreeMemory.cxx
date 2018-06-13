@@ -15,6 +15,8 @@
 #include "atomicAdjust.h"
 #include "memoryHook.h"
 
+using std::max;
+
 NeverFreeMemory * TVOLATILE NeverFreeMemory::_global_ptr;
 
 // If a page has fewer than this many bytes remaining, never mind about it.

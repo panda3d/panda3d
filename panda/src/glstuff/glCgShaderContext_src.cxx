@@ -21,6 +21,11 @@
 
 #include "pStatGPUTimer.h"
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+
 TypeHandle CLP(CgShaderContext)::_type_handle;
 
 #ifndef NDEBUG

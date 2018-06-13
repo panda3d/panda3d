@@ -21,6 +21,9 @@
 #include "pythonThread.h"
 #include "asyncTaskManager.h"
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle PythonTask::_type_handle;
 
 #ifndef CPPPARSER

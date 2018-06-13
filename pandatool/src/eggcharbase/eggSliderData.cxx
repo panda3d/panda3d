@@ -21,6 +21,8 @@
 #include "eggSAnimData.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggSliderData::_type_handle;
 
 /**

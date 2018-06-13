@@ -26,6 +26,9 @@
 #include "indirectCompareNames.h"
 #include "pvector.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle PaletteGroup::_type_handle;
 
 /**

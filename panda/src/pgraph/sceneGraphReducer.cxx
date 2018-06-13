@@ -23,6 +23,11 @@
 #include "config_gobj.h"
 #include "thread.h"
 
+using std::dec;
+using std::hex;
+using std::min;
+using std::string;
+
 PStatCollector SceneGraphReducer::_flatten_collector("*:Flatten:flatten");
 PStatCollector SceneGraphReducer::_apply_collector("*:Flatten:apply");
 PStatCollector SceneGraphReducer::_remove_column_collector("*:Flatten:remove column");

@@ -13,6 +13,8 @@
 
 #include "tangentRingEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

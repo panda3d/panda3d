@@ -15,6 +15,8 @@
 
 #include "eggData.h"
 
+using std::string;
+
 /**
  *
  */

@@ -25,6 +25,11 @@
 #include "vertexDataBuffer.h"
 #include "texture.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 ConfigVariableInt max_independent_vertex_data
 ("max-independent-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "

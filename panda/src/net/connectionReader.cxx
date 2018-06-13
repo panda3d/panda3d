@@ -27,6 +27,9 @@
 #include "atomicAdjust.h"
 #include "config_downloader.h"
 
+using std::min;
+using std::string;
+
 static const int read_buffer_size = maximum_udp_datagram + datagram_udp_header_size;
 
 /**

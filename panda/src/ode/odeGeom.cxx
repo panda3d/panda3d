@@ -26,6 +26,8 @@
 #include "odeRayGeom.h"
 #include "odeSphereGeom.h"
 
+using std::ostream;
+
 // OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
 // OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;
 TypeHandle OdeGeom::_type_handle;

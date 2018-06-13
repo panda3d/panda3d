@@ -76,6 +76,10 @@
 #include <maya/MSelectionList.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::ostringstream;
+using std::string;
+
 
 /**
  *

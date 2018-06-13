@@ -13,6 +13,8 @@
 
 #include "indexBufferContext.h"
 
+using std::ostream;
+
 TypeHandle IndexBufferContext::_type_handle;
 
 /**

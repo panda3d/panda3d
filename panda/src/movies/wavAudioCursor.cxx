@@ -16,6 +16,11 @@
 #include "virtualFileSystem.h"
 #include "wavAudio.h"
 
+using std::istream;
+using std::max;
+using std::min;
+using std::streampos;
+
 // Tables for decompressing mu-law and A-law wav files.
 static int16_t mulaw_table[256] = {
   -32124,-31100,-30076,-29052,-28028,-27004,-25980,-24956,

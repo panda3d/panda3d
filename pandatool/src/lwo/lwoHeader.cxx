@@ -17,6 +17,8 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle LwoHeader::_type_handle;
 
 /**

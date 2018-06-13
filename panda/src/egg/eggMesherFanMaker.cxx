@@ -16,6 +16,8 @@
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
+using std::ostream;
+
 /**
  *
  */

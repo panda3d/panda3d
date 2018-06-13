@@ -14,6 +14,9 @@
 #include "stTree.h"
 #include "speedTreeNode.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle STTree::_type_handle;
 
 /**

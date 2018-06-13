@@ -15,6 +15,8 @@
 
 #ifndef WITHIN_PANDA
 
+using std::ostream;
+
 /**
  *
  */

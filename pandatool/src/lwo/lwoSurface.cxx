@@ -21,6 +21,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle LwoSurface::_type_handle;
 
 /**

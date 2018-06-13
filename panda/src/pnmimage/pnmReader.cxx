@@ -15,6 +15,8 @@
 #include "virtualFileSystem.h"
 #include "thread.h"
 
+using std::max;
+
 /**
  *
  */

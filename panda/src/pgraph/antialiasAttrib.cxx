@@ -20,6 +20,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle AntialiasAttrib::_type_handle;
 int AntialiasAttrib::_attrib_slot;
 

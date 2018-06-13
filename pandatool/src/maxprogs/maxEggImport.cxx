@@ -34,6 +34,8 @@
 #include <iostream>
 #include <sstream>
 
+using std::string;
+
 class MaxEggImporter : public SceneImport
 {
 public:

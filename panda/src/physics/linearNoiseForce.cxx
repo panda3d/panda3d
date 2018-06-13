@@ -16,6 +16,8 @@
 
 #include "linearNoiseForce.h"
 
+using std::ostream;
+
 // declare the statics
 
 ConfigVariableInt LinearNoiseForce::_random_seed

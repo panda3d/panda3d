@@ -16,6 +16,8 @@
 
 #include "config_putil.h"
 
+using std::string;
+
 /**
  * The first parameter to the constructor should be the one-word name of the
  * file format that is to be read, for instance "OpenFlight" or "Alias".  It's

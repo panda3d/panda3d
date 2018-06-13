@@ -31,6 +31,8 @@
 #include <fcntl.h>
 #endif
 
+using std::string;
+
 #ifdef _WIN32
 static string format_error() {
   PVOID buffer;

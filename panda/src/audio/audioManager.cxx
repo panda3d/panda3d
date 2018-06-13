@@ -25,6 +25,9 @@
 #include <windows.h>  // For GetSystemDirectory()
 #endif
 
+using std::ostream;
+using std::string;
+
 
 TypeHandle AudioManager::_type_handle;
 

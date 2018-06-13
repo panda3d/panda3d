@@ -13,6 +13,8 @@
 
 #include "linearSourceForce.h"
 
+using std::ostream;
+
 TypeHandle LinearSourceForce::_type_handle;
 
 /**

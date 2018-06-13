@@ -22,6 +22,9 @@
 #include "eggData.h"
 #include "deg_2_rad.h"
 
+using std::cerr;
+using std::string;
+
 /**
  *
  */

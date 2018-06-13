@@ -33,6 +33,10 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionSphere::_volume_pcollector(
   "Collision Volumes:CollisionSphere");
 PStatCollector CollisionSphere::_test_pcollector(

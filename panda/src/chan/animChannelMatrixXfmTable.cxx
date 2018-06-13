@@ -24,6 +24,10 @@
 #include "fftCompressor.h"
 #include "config_linmath.h"
 
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
 /**

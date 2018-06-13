@@ -53,6 +53,15 @@
 #include <sys/file.h>
 #endif
 
+using std::cerr;
+using std::ios;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::streamsize;
+using std::string;
+using std::wstring;
+
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
 TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;

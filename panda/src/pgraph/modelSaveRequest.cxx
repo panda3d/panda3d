@@ -15,6 +15,8 @@
 #include "loader.h"
 #include "config_pgraph.h"
 
+using std::string;
+
 TypeHandle ModelSaveRequest::_type_handle;
 
 /**

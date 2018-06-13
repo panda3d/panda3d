@@ -16,6 +16,8 @@
 #include "nearly_zero.h"
 #include "cmath.h"
 
+using std::ostream;
+
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
 /**

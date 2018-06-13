@@ -14,6 +14,9 @@
 #include "xFileTemplate.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle XFileTemplate::_type_handle;
 
 /**

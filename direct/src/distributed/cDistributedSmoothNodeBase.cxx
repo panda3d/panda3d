@@ -18,6 +18,10 @@
 #include "dcmsgtypes.h"
 #include "config_distributed.h"
 
+using std::cout;
+using std::ostringstream;
+using std::string;
+
 static const PN_stdfloat smooth_node_epsilon = 0.01;
 static const double network_time_precision = 100.0;  // Matches ClockDelta.py
 

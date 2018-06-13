@@ -24,6 +24,11 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::pair;
+
 LightReMutex *TransformState::_states_lock = nullptr;
 TransformState::States *TransformState::_states = nullptr;
 CPT(TransformState) TransformState::_identity_state;

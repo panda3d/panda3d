@@ -16,6 +16,9 @@
 #include "lens.h"
 #include "throw_event.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle Camera::_type_handle;
 
 /**

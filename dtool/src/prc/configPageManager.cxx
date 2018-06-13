@@ -38,6 +38,11 @@
 #include <algorithm>
 #include <ctype.h>
 
+using std::cerr;
+using std::ostream;
+using std::set;
+using std::string;
+
 ConfigPageManager *ConfigPageManager::_global_ptr = nullptr;
 
 /**

@@ -18,6 +18,8 @@
 #include "dataNodeTransmit.h"
 #include "graphicsWindow.h"
 
+using std::string;
+
 TypeHandle MouseAndKeyboard::_type_handle;
 
 /**

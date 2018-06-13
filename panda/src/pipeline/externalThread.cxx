@@ -13,6 +13,8 @@
 
 #include "externalThread.h"
 
+using std::string;
+
 TypeHandle ExternalThread::_type_handle;
 
 /**

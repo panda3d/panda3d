@@ -28,6 +28,12 @@
 #include <sys/file.h>
 #endif
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

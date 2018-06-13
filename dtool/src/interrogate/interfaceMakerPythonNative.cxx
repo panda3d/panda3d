@@ -39,6 +39,21 @@
 #include <set>
 #include <map>
 
+using std::boolalpha;
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::oct;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::set;
+using std::setw;
+using std::string;
+using std::vector;
+
 extern          InterrogateType dummy_type;
 extern std::string EXPORT_IMPORT_PREFIX;
 

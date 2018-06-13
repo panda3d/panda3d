@@ -19,6 +19,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+
 TypeHandle AnimBundle::_type_handle;
 
 /**

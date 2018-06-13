@@ -30,6 +30,9 @@
 #include "boundingBox.h"
 #include "config_mathutil.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle CollisionNode::_type_handle;
 
 

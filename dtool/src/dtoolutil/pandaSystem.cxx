@@ -15,6 +15,11 @@
 #include "pandaVersion.h"
 #include "dtool_platform.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 PandaSystem *PandaSystem::_global_ptr = nullptr;
 TypeHandle PandaSystem::_type_handle;
 

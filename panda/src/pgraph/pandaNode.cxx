@@ -28,6 +28,11 @@
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
 
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 // This category is just temporary for debugging convenience.
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDef(drawmask, "");

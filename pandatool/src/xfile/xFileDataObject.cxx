@@ -21,6 +21,9 @@
 #include "config_xfile.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle XFileDataObject::_type_handle;
 
 /**

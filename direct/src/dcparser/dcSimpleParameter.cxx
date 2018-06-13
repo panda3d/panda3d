@@ -20,6 +20,9 @@
 #include "hashGenerator.h"
 #include <math.h>
 
+using std::ostream;
+using std::string;
+
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
 DCClassParameter *DCSimpleParameter::_uint32uint8_type = nullptr;
 

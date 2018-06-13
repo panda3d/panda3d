@@ -16,6 +16,10 @@
 #include "shaderInput_ext.h"
 #include "shaderAttrib.h"
 
+using std::move;
+using std::ostringstream;
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

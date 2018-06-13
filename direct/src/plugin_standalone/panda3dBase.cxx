@@ -35,6 +35,10 @@
 #include <sstream>
 #include <algorithm>
 
+using std::cerr;
+using std::istringstream;
+using std::string;
+
 // The amount of time in seconds to wait for new messages.
 static const double wait_cycle = 0.2;
 

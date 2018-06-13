@@ -13,6 +13,7 @@
 
 #include "geomVertexReader.h"
 
+using std::ostream;
 
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL to

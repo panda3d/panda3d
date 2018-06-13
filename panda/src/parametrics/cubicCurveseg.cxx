@@ -21,6 +21,9 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
+using std::cerr;
+using std::endl;
+
 TypeHandle CubicCurveseg::_type_handle;
 
 /**

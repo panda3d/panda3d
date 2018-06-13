@@ -21,6 +21,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle CharacterJointEffect::_type_handle;
 
 /**

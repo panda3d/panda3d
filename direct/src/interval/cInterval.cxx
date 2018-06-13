@@ -19,6 +19,10 @@
 #include "eventQueue.h"
 #include "pStatTimer.h"
 
+using std::max;
+using std::ostream;
+using std::string;
+
 PStatCollector CInterval::_root_pcollector("App:Show code:ivalLoop");
 TypeHandle CInterval::_type_handle;
 

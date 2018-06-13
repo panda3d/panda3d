@@ -31,6 +31,12 @@
 #include "light.h"
 #include "lightMutexHolder.h"
 
+using std::dec;
+using std::hex;
+using std::move;
+using std::ostream;
+using std::swap;
+
 CullableObject::FormatMap CullableObject::_format_map;
 LightMutex CullableObject::_format_lock;
 

@@ -13,6 +13,9 @@
 
 #include "functionWriters.h"
 
+using std::ostream;
+using std::pair;
+
 /**
  *
  */

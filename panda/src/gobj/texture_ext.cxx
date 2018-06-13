@@ -13,6 +13,9 @@
 
 #include "texture_ext.h"
 
+using std::move;
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

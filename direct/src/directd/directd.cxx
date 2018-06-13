@@ -34,6 +34,12 @@
   #error Buildsystem error: BUILDING_DIRECT_DIRECTD not defined
 #endif
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::stringstream;
+using std::string;
+
 namespace {
   // ...This section is part of the old stuff from the original
   // implementation.  The new stuff that uses job objects doesn't need this

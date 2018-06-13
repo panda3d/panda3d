@@ -22,6 +22,11 @@
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
 
+using std::istringstream;
+using std::ostream;
+using std::string;
+using std::swap;
+
 PT(TextFont) TextProperties::_default_font;
 bool TextProperties::_loaded_default_font = false;
 

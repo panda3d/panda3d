@@ -13,6 +13,9 @@
 
 #include "physxGroupsMask.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * Returns a PhysxGroupsMask whose bits are all on.
  */

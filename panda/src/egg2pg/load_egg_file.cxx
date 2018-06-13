@@ -19,6 +19,8 @@
 #include "config_putil.h"
 #include "bamCacheRecord.h"
 
+using std::istream;
+
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {
   loader._data->load_externals(DSearchPath(), loader._record);

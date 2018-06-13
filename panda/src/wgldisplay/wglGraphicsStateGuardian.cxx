@@ -17,6 +17,9 @@
 #include "wglGraphicsPipe.h"
 #include "string_utils.h"
 
+using std::endl;
+using std::min;
+
 TypeHandle wglGraphicsStateGuardian::_type_handle;
 
 const char * const wglGraphicsStateGuardian::_twindow_class_name = "wglGraphicsStateGuardian";

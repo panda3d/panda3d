@@ -35,6 +35,15 @@
   #undef X509_NAME
 #endif  // WIN32_VC
 
+using std::ios;
+using std::istream;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::streamsize;
+using std::string;
+
 TypeHandle HTTPChannel::_type_handle;
 
 #define _NOTIFY_HTTP_CHANNEL_ID   "[" << this << "] "

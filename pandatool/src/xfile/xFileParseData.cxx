@@ -14,6 +14,8 @@
 #include "xFileParseData.h"
 #include "xLexerDefs.h"
 
+using std::string;
+
 
 /**
  *

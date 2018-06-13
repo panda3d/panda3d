@@ -28,6 +28,9 @@
 #include "virtualFileSystem.h"
 #include "vector_uchar.h"
 
+using std::istream;
+using std::string;
+
 TypeHandle FmodAudioSound::_type_handle;
 
 /**

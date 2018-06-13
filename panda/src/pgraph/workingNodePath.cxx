@@ -13,6 +13,8 @@
 
 #include "workingNodePath.h"
 
+using std::ostream;
+
 
 /**
  * Returns true if the WorkingNodePath object appears to be a valid NodePath

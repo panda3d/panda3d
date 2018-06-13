@@ -15,6 +15,9 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
+using std::istream;
+using std::ostream;
+
 /**
  * Formats the InterrogateMakeSeq data for output to a data file.
  */

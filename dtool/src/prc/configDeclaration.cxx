@@ -17,6 +17,9 @@
 #include "pstrtod.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * Use the ConfigPage::make_declaration() interface to create a new
  * declaration.

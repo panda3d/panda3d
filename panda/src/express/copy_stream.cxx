@@ -13,6 +13,9 @@
 
 #include "copy_stream.h"
 
+using std::istream;
+using std::ostream;
+
 /**
  * Reads the source stream from its current position to the end of the stream,
  * and writes that data to the dest stream at its current position.  Returns

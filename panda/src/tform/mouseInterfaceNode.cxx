@@ -17,6 +17,8 @@
 #include "dataNodeTransmit.h"
 #include "mouseData.h"
 
+using std::string;
+
 TypeHandle MouseInterfaceNode::_type_handle;
 
 /**

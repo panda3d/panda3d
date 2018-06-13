@@ -37,6 +37,9 @@
 #include "pnmImage.h"
 #include "pfmFile.h"
 
+using std::max;
+using std::min;
+
 // WorkType is an abstraction that allows the filtering process to be
 // recompiled to use either floating-point or integer arithmetic.  On SGI
 // machines, there doesn't seem to be much of a performance difference-- if

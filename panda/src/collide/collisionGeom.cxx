@@ -13,6 +13,8 @@
 
 #include "collisionGeom.h"
 
+using std::ostream;
+
 PStatCollector CollisionGeom::_volume_pcollector("Collision Volumes:CollisionGeom");
 PStatCollector CollisionGeom::_test_pcollector("Collision Tests:CollisionGeom");
 TypeHandle CollisionGeom::_type_handle;

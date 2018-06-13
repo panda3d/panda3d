@@ -19,6 +19,9 @@
 #include "threadSimpleManager.h"
 #include "thread.h"
 
+using std::ostringstream;
+using std::string;
+
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
 int ThreadSimpleImpl::_next_unique_id = 1;

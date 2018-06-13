@@ -14,6 +14,10 @@
 #include "documentSpec.h"
 #include "indent.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 
 /**
  *

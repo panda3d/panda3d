@@ -17,6 +17,8 @@
 #include "compose_matrix.h"
 #include "globPattern.h"
 
+using std::string;
+
 /**
  * Egg-writing type programs may specify their output file using either the
  * last-filename convention, the -o convention, and/or implicitly writing the

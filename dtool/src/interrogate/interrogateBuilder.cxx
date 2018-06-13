@@ -50,6 +50,14 @@
 #include <ctype.h>
 #include <algorithm>
 
+using std::cerr;
+using std::istream;
+using std::map;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 InterrogateBuilder builder;
 std::string EXPORT_IMPORT_PREFIX;
 

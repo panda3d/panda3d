@@ -18,6 +18,8 @@
 #include "cullableObject.h"
 #include "cullHandler.h"
 
+using std::ostream;
+
 TypeHandle NodeCullCallbackData::_type_handle;
 
 /**

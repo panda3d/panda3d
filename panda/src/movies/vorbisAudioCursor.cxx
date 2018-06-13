@@ -16,6 +16,10 @@
 
 #ifdef HAVE_VORBIS
 
+using std::ios;
+using std::istream;
+using std::max;
+
 TypeHandle VorbisAudioCursor::_type_handle;
 
 /**

@@ -14,6 +14,9 @@
 #include "parameterRemapBasicStringRefToString.h"
 #include "interrogate.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

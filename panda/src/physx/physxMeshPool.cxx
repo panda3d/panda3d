@@ -20,6 +20,9 @@
 #include "physxFileStream.h"
 #include "virtualFileSystem.h"
 
+using std::endl;
+using std::ostream;
+
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
 PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;

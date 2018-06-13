@@ -14,6 +14,8 @@
 #include "xFileDataNode.h"
 #include "indent.h"
 
+using std::string;
+
 TypeHandle XFileDataNode::_type_handle;
 
 /**

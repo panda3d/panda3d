@@ -28,6 +28,12 @@
 #define int32 tiff_int32
 #define uint32 tiff_uint32
 
+using std::ios;
+using std::istream;
+using std::min;
+using std::ostream;
+using std::string;
+
 extern "C" {
 #include <tiff.h>
 #include <tiffio.h>

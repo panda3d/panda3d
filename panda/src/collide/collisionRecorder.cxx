@@ -16,6 +16,8 @@
 
 #ifdef DO_COLLISION_RECORDING
 
+using std::ostream;
+
 TypeHandle CollisionRecorder::_type_handle;
 
 /**

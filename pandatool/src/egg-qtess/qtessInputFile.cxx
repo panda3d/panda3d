@@ -15,6 +15,9 @@
 #include "config_egg_qtess.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

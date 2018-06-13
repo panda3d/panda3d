@@ -25,6 +25,9 @@
 // resize box in the window corner.
 #include "resize_box.rgb.c"
 
+using std::istringstream;
+using std::string;
+
 TypeHandle osxGraphicsStateGuardian::_type_handle;
 
 /**

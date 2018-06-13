@@ -20,6 +20,8 @@
 #include "datagramIterator.h"
 #include "textureStagePool.h"
 
+using std::ostream;
+
 CPT(RenderAttrib) TexMatrixAttrib::_empty_attrib;
 TypeHandle TexMatrixAttrib::_type_handle;
 int TexMatrixAttrib::_attrib_slot;

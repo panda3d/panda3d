@@ -28,6 +28,10 @@
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
 
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle Character::_type_handle;
 
 PStatCollector Character::_animation_pcollector("*:Animation");

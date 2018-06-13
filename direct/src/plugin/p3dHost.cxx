@@ -25,6 +25,15 @@
 #include <unistd.h>
 #endif
 
+using std::ios;
+using std::max;
+using std::min;
+using std::ostringstream;
+using std::streamsize;
+using std::string;
+using std::vector;
+using std::wstring;
+
 /**
  * Use P3DInstanceManager::get_host() to construct a new P3DHost.
  */

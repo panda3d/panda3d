@@ -19,6 +19,9 @@
 #include "datagramIterator.h"
 #include "config_pgraphnodes.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle PointLight::_type_handle;
 
 /**

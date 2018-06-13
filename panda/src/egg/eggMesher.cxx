@@ -25,6 +25,9 @@
 
 #include <stdlib.h>
 
+using std::ostream;
+using std::pair;
+
 /**
  *
  */

@@ -19,6 +19,8 @@
 #include "py_panda.h"
 #endif
 
+using std::ostream;
+
 TypeHandle OdeBody::_type_handle;
 
 OdeBody::

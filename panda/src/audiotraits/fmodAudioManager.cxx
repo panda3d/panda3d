@@ -33,6 +33,8 @@
 
 #define USER_DSP_MAGIC ((void*)0x7012AB35)
 
+using std::string;
+
 TypeHandle FmodAudioManager::_type_handle;
 
 ReMutex FmodAudioManager::_lock;

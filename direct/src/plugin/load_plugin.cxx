@@ -24,6 +24,10 @@
 #include <dlfcn.h>
 #endif
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 #ifdef _WIN32
 static const string dll_ext = ".dll";
 #elif defined(__APPLE__)

@@ -18,6 +18,8 @@
 #include "config_pipeline.h"
 #include "pipeline.h"
 
+using std::ostream;
+
 /**
  *
  */

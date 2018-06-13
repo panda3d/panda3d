@@ -22,6 +22,10 @@
 
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle BoundingSphere::_type_handle;
 
 /**

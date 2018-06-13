@@ -15,6 +15,9 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle FltBeadID::_type_handle;
 
 /**

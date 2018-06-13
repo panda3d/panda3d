@@ -16,6 +16,8 @@
 
 #ifndef DEBUG_THREADS
 
+using std::ostream;
+
 /**
  * This method is declared virtual in MutexDebug, but non-virtual in
  * LightReMutexDirect.

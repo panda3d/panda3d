@@ -19,6 +19,11 @@
 #include "config_putil.h"
 #include "hashVal.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostringstream;
+using std::string;
+
 /**
  * A convenience function for loading explicit prc files from a disk file or
  * from within a multifile (via the virtual file system).  Save the return

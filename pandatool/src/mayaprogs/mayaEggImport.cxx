@@ -44,6 +44,8 @@
 #include "mayaEggLoader.h"
 #include "notifyCategoryProxy.h"
 
+using std::string;
+
 
 class MayaEggImporter : public MPxFileTranslator
 {

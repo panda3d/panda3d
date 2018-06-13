@@ -16,6 +16,9 @@
 
 #include <stdio.h>  // for sscanf, sprintf
 
+using std::ostream;
+using std::string;
+
 /**
  * Parses the hex representation in the indicated string and stores it in the
  * WindowsGuid object.  Returns true if successful, false if the string

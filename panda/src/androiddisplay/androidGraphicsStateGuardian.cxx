@@ -17,6 +17,8 @@
 
 #include <dlfcn.h>
 
+using std::string;
+
 TypeHandle AndroidGraphicsStateGuardian::_type_handle;
 
 /**

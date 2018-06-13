@@ -18,6 +18,8 @@
 #include "geomNode.h"
 #include "geomVertexReader.h"
 
+using std::endl;
+
 TypeHandle BulletTriangleMeshShape::_type_handle;
 
 /**

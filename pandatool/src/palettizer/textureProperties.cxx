@@ -20,6 +20,9 @@
 #include "bamWriter.h"
 #include "string_utils.h"
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle TextureProperties::_type_handle;
 
 /**

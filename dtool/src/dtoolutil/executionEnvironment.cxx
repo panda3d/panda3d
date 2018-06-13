@@ -18,6 +18,10 @@
 #include <errno.h>
 #include <stdio.h>  // for perror
 
+using std::cerr;
+using std::string;
+using std::wstring;
+
 #ifdef __APPLE__
 #include <sys/param.h>  // for realpath
 #endif  // __APPLE__

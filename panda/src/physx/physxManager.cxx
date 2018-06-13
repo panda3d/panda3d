@@ -15,6 +15,9 @@
 #include "physxScene.h"
 #include "physxSceneDesc.h"
 
+using std::endl;
+using std::stringstream;
+
 PhysxManager *PhysxManager::_global_ptr;
 PhysxManager::PhysxOutputStream PhysxManager::_outputStream;
 

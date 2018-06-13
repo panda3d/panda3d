@@ -30,6 +30,16 @@
 #include "openssl/bio.h"
 #include "openssl/evp.h"
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 string progname = PROGNAME;
 
 /**

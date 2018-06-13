@@ -18,6 +18,8 @@
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
 
+using std::string;
+
 /**
  * Copy the Objective-C string to a C++ string.
  */

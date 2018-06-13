@@ -25,6 +25,8 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle LwoSurfaceBlock::_type_handle;
 
 /**

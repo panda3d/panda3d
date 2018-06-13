@@ -24,6 +24,12 @@
 #define DEBUG_SURFACES false
 #define DEBUG_TEXTURES true
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::max;
+using std::min;
+
 TypeHandle DXTextureContext9::_type_handle;
 
 static const DWORD g_LowByteMask = 0x000000FF;

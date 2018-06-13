@@ -13,6 +13,8 @@
 
 #include "cConstraintInterval.h"
 
+using std::string;
+
 TypeHandle CConstraintInterval::_type_handle;
 
 /**

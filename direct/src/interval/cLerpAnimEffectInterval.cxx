@@ -15,6 +15,8 @@
 #include "lerp_helpers.h"
 #include "partBundle.h"
 
+using std::ostream;
+
 TypeHandle CLerpAnimEffectInterval::_type_handle;
 
 /**

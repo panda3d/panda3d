@@ -27,6 +27,11 @@
 #include "config_gobj.h"
 #include "throw_event.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 TypeHandle PreparedGraphicsObjects::EnqueuedObject::_type_handle;
 
 int PreparedGraphicsObjects::_name_index = 0;

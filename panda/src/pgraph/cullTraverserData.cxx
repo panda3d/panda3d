@@ -26,6 +26,10 @@
 #include "polylightEffect.h"
 #include "renderState.h"
 
+using std::dec;
+using std::hex;
+using std::string;
+
 
 /**
  * Applies the transform and state from the current node onto the current

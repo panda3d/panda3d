@@ -29,6 +29,10 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionInvSphere::_volume_pcollector("Collision Volumes:CollisionInvSphere");
 PStatCollector CollisionInvSphere::_test_pcollector("Collision Tests:CollisionInvSphere");
 TypeHandle CollisionInvSphere::_type_handle;

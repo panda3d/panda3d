@@ -13,6 +13,8 @@
 
 #include "pointEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

@@ -13,6 +13,8 @@
 
 #include "lineEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

@@ -13,6 +13,9 @@
 
 #include "physxMask.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * Returns a PhysxMask whose bits are all on.
  */

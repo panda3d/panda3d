@@ -15,6 +15,8 @@
 
 #ifndef DEBUG_THREADS
 
+using std::ostream;
+
 /**
  * This method is declared virtual in ConditionVarDebug, but non-virtual in
  * ConditionVarDirect.

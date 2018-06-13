@@ -18,6 +18,10 @@
 
 #include <algorithm>
 
+using std::istream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

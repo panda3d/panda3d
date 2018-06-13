@@ -15,6 +15,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle UserVertexTransform::_type_handle;
 
 /**

@@ -22,6 +22,10 @@
 #include "fftCompressor.h"
 #include "zStream.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle EggJointData::_type_handle;
 
 

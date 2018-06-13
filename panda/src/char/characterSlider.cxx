@@ -18,6 +18,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle CharacterSlider::_type_handle;
 
 /**

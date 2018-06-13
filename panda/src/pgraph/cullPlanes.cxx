@@ -18,6 +18,11 @@
 #include "occluderEffect.h"
 #include "boundingBox.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::swap;
+
 /**
  * Returns a pointer to an empty CullPlanes object.
  */

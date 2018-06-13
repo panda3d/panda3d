@@ -49,6 +49,8 @@
 #define SEPARATE_PVIEW 1
 #endif  // WIN32_VC
 
+using std::string;
+
 /**
  *
  */

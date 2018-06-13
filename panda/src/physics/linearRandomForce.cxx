@@ -13,6 +13,8 @@
 
 #include "linearRandomForce.h"
 
+using std::ostream;
+
 TypeHandle LinearRandomForce::_type_handle;
 
 /**

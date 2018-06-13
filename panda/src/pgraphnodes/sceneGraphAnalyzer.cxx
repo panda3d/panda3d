@@ -32,6 +32,9 @@
 #include "pta_ushort.h"
 #include "geomVertexReader.h"
 
+using std::ostream;
+using std::pair;
+
 /**
  *
  */

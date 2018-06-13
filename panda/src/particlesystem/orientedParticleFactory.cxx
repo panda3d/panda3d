@@ -14,6 +14,8 @@
 #include "orientedParticleFactory.h"
 #include "orientedParticle.h"
 
+using std::ostream;
+
 /**
  * Constructor
  */

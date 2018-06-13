@@ -17,6 +17,10 @@
 #include "geomVertexData.h"
 #include "geomVertexReader.h"
 
+using std::endl;
+using std::move;
+using std::ostream;
+
 TypeHandle BulletTriangleMesh::_type_handle;
 
 /**

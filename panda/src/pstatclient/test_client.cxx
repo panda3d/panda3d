@@ -26,6 +26,8 @@
 #include <signal.h>
 #include <algorithm>
 
+using std::string;
+
 static bool user_interrupted = false;
 
 // Define a signal handler so we can clean up on control-C.

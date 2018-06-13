@@ -19,6 +19,10 @@
 #include <math.h>
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle BoundingHexahedron::_type_handle;
 
 /**

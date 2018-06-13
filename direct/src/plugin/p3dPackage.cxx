@@ -29,6 +29,15 @@
 #include <io.h>    // chmod()
 #endif
 
+using std::ios;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::streamsize;
+using std::string;
+using std::vector;
+using std::wstring;
+
 // Weight factors for computing download progress.  This attempts to reflect
 // the relative time-per-byte of each of these operations.
 const double P3DPackage::_download_factor = 1.0;

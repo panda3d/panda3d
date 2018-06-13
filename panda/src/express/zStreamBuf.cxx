@@ -18,6 +18,13 @@
 #include "pnotify.h"
 #include "config_express.h"
 
+using std::ios;
+using std::istream;
+using std::ostream;
+using std::streamoff;
+using std::streampos;
+using std::stringstream;
+
 #if !defined(USE_MEMORY_NOWRAPPERS) && !defined(CPPPARSER)
 // Define functions that hook zlib into panda's memory allocation system.
 static void *

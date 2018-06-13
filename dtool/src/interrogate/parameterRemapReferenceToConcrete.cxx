@@ -20,6 +20,9 @@
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

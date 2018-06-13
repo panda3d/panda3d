@@ -18,6 +18,8 @@
 #include "pnmImage.h"
 #include "graphicsOutput.h"
 
+using std::string;
+
 IPhoneGraphicsPipe *IPhoneGraphicsPipe::_global_ptr;
 TypeHandle IPhoneGraphicsPipe::_type_handle;
 

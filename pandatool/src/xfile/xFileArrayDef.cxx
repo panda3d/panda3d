@@ -15,6 +15,8 @@
 #include "xFileDataDef.h"
 #include "xFileDataObject.h"
 
+using std::ostream;
+
 /**
  * Returns the size of the array dimension.  If this is a fixed array, the
  * size is trivial; if it is dynamic, the size is determined by looking up the

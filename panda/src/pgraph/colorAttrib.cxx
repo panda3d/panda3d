@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle ColorAttrib::_type_handle;
 int ColorAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorAttrib::_off;

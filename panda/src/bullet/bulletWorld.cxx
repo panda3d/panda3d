@@ -21,6 +21,13 @@
 
 #define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
 
+using std::endl;
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle BulletWorld::_type_handle;
 
 PStatCollector BulletWorld::_pstat_physics("App:Bullet:DoPhysics");

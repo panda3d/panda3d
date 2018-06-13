@@ -19,6 +19,9 @@
 #include "softToEggConverter.h"
 #include "dcast.h"
 
+using std::endl;
+using std::string;
+
 TypeHandle SoftNodeDesc::_type_handle;
 
 /**

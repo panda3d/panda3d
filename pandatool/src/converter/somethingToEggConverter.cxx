@@ -16,6 +16,8 @@
 #include "eggData.h"
 #include "eggExternalReference.h"
 
+using std::string;
+
 /**
  *
  */

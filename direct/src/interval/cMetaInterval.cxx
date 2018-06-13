@@ -21,6 +21,10 @@
 #include <math.h>   // for log10()
 #include <stdio.h>  // for sprintf()
 
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle CMetaInterval::_type_handle;
 
 /**

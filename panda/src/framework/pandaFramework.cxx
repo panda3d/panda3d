@@ -37,6 +37,13 @@
 #endif
 #endif
 
+using std::cout;
+using std::endl;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 LoaderOptions PandaFramework::_loader_options;
 
 /**

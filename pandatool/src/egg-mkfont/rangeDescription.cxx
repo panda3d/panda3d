@@ -15,6 +15,9 @@
 #include "string_utils.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

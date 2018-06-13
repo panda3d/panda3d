@@ -14,6 +14,9 @@
 #include "p3dConcreteSequence.h"
 #include "p3dSession.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

@@ -29,6 +29,12 @@
 #include <stdio.h>
 #include <errno.h>
 
+using std::endl;
+using std::ios;
+using std::istringstream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

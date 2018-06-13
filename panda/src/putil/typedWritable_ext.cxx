@@ -13,6 +13,9 @@
 
 #include "typedWritable_ext.h"
 
+using std::ostringstream;
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 #include "bamWriter.h"

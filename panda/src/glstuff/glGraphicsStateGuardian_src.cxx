@@ -73,6 +73,16 @@
 
 #include <algorithm>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");

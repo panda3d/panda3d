@@ -17,6 +17,11 @@
 
 #include "milesAudioManager.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 
 TypeHandle MilesAudioSample::_type_handle;
 

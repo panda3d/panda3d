@@ -13,6 +13,8 @@
 
 #include "cacheStats.h"
 
+using std::ostream;
+
 /**
  * Initializes the CacheStats for the first time.  We don't use the
  * constructor for this, since we can't guarantee ordering of static

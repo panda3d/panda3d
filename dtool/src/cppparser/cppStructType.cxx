@@ -24,6 +24,9 @@
 #include "indent.h"
 #include "cppParser.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

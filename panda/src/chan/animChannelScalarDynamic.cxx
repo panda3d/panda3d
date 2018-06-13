@@ -22,6 +22,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle AnimChannelScalarDynamic::_type_handle;
 
 /**

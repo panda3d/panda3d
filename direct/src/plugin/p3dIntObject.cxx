@@ -13,6 +13,9 @@
 
 #include "p3dIntObject.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

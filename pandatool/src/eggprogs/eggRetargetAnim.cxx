@@ -22,6 +22,8 @@
 #include "eggTable.h"
 #include "compose_matrix.h"
 
+using std::string;
+
 /**
  *
  */

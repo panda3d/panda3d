@@ -17,6 +17,9 @@
 
 #ifdef HAVE_FREETYPE
 
+using std::min;
+using std::ostringstream;
+
 
 TypeHandle DynamicTextPage::_type_handle;
 

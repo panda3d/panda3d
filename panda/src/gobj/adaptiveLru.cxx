@@ -16,6 +16,12 @@
 #include "clockObject.h"
 #include "indent.h"
 
+using std::cerr;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 static const int HIGH_PRIORITY_SCALE = 4;
 static const int LOW_PRIORITY_RANGE = 25;
 

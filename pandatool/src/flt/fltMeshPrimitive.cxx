@@ -17,6 +17,8 @@
 #include "fltHeader.h"
 #include "fltMaterial.h"
 
+using std::max;
+
 TypeHandle FltMeshPrimitive::_type_handle;
 
 /**

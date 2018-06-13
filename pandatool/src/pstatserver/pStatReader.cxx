@@ -23,6 +23,8 @@
 #include "datagramIterator.h"
 #include "connectionManager.h"
 
+using std::string;
+
 /**
  *
  */

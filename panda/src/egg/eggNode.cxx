@@ -20,6 +20,9 @@
 
 #include <algorithm>
 
+using std::istringstream;
+using std::string;
+
 extern int eggyyparse();
 #include "parserDefs.h"
 #include "lexerDefs.h"

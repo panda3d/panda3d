@@ -14,6 +14,9 @@
 #include "cppMakeProperty.h"
 #include "cppFunctionGroup.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

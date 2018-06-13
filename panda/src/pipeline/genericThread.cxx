@@ -14,6 +14,8 @@
 #include "genericThread.h"
 #include "pnotify.h"
 
+using std::string;
+
 TypeHandle GenericThread::_type_handle;
 
 /**

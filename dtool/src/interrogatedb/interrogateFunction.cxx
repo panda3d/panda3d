@@ -16,6 +16,9 @@
 #include "interrogate_datafile.h"
 #include "interrogateDatabase.h"
 
+using std::istream;
+using std::ostream;
+
 /**
  *
  */

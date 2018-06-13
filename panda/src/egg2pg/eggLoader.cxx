@@ -100,6 +100,11 @@
 #include <ctype.h>
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::pair;
+using std::string;
+
 // This class is used in make_node(EggBin *) to sort LOD instances in order by
 // switching distance.
 class LODInstance {

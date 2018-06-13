@@ -14,6 +14,9 @@
 #include "rocketFileInterface.h"
 #include "virtualFileSystem.h"
 
+using std::ios;
+using std::istream;
+
 /**
  * Constructs a RocketFileInterface for the given VFS, or the default if NULL
  * is given.

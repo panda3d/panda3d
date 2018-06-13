@@ -24,6 +24,10 @@
 // recursion.
 #include <assert.h>
 
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 /**
  * Closes or deletes the relevant pointers, if _owns_obj is true.
  */

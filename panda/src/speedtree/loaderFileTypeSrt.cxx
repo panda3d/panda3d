@@ -15,6 +15,8 @@
 #include "speedTreeNode.h"
 #include "stTree.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeSrt::_type_handle;
 
 /**

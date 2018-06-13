@@ -13,6 +13,8 @@
 
 #include "nurbsSurfaceEvaluator.h"
 
+using std::ostream;
+
 /**
  *
  */

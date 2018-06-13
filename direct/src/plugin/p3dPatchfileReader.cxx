@@ -14,6 +14,13 @@
 #include "p3dPatchfileReader.h"
 #include "wstring_encode.h"
 
+using std::ios;
+using std::istream;
+using std::min;
+using std::streamsize;
+using std::string;
+using std::wstring;
+
 /**
  *
  */

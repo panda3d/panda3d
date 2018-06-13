@@ -15,6 +15,9 @@
 #include "config_interval.h"
 #include "lvecBase3.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle CConstrainHprInterval::_type_handle;
 
 /**

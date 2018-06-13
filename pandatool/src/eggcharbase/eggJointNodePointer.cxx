@@ -18,6 +18,8 @@
 #include "eggGroup.h"
 #include "pointerTo.h"
 
+using std::string;
+
 
 TypeHandle EggJointNodePointer::_type_handle;
 

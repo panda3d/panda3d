@@ -17,6 +17,9 @@
 #include "fltHeader.h"
 #include "pathReplace.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle FltExternalReference::_type_handle;
 
 /**

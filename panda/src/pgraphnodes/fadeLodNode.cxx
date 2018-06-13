@@ -22,6 +22,9 @@
 #include "cullBinAttrib.h"
 #include "depthOffsetAttrib.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle FadeLODNode::_type_handle;
 
 /**

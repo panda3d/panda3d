@@ -13,6 +13,8 @@
 
 #include "bulletHeightfieldShape.h"
 
+using std::endl;
+
 TypeHandle BulletHeightfieldShape::_type_handle;
 
 /**

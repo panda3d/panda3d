@@ -25,6 +25,12 @@
 #include "py_panda.h"
 #endif
 
+using std::cerr;
+using std::endl;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 #ifdef WITHIN_PANDA
 #include "pStatTimer.h"
 

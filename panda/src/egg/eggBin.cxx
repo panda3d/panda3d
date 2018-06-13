@@ -13,6 +13,8 @@
 
 #include "eggBin.h"
 
+using std::string;
+
 
 TypeHandle EggBin::_type_handle;
 

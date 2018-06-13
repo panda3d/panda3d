@@ -21,6 +21,8 @@
 #include "config_pgraph.h"
 #include "attribNodeRegistry.h"
 
+using std::ostream;
+
 CPT(RenderEffect) OccluderEffect::_empty_effect;
 TypeHandle OccluderEffect::_type_handle;
 

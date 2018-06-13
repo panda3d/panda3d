@@ -13,6 +13,8 @@
 
 #include "dcSubatomicType.h"
 
+using std::ostream;
+
 ostream &
 operator << (ostream &out, DCSubatomicType type) {
   switch (type) {

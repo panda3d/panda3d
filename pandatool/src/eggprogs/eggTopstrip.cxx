@@ -22,6 +22,9 @@
 #include "eggTable.h"
 #include "compose_matrix.h"
 
+using std::max;
+using std::string;
+
 /**
  *
  */

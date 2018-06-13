@@ -23,6 +23,9 @@
 #endif
 #endif
 
+using std::ostream;
+using std::string;
+
 /**
  * Returns true if these two DisplayModes are identical.
  */

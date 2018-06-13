@@ -14,6 +14,8 @@
 #include "shaderInput_ext.h"
 #include "paramNodePath.h"
 
+using std::move;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

@@ -17,6 +17,9 @@
 #include "buttonEventList.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ButtonNode::_type_handle;
 
 /**

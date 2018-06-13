@@ -25,6 +25,10 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 // Specifies the UV range of textures applied to the frame.  Maybe we'll have
 // a reason to make this a parameter of the frame style one day, but for now
 // it's hardcoded to fit the entire texture over the rectangular frame.

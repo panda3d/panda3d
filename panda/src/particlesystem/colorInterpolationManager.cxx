@@ -14,6 +14,9 @@
 #include "colorInterpolationManager.h"
 #include "mathNumbers.h"
 
+using std::max;
+using std::min;
+
 TypeHandle ColorInterpolationFunction::_type_handle;
 TypeHandle ColorInterpolationFunctionConstant::_type_handle;
 TypeHandle ColorInterpolationFunctionLinear::_type_handle;

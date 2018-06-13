@@ -16,6 +16,9 @@
 
 #ifndef DEBUG_THREADS
 
+using std::ostream;
+using std::ostringstream;
+
 /**
  * This method is declared virtual in MutexDebug, but non-virtual in
  * ReMutexDirect.

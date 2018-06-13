@@ -14,6 +14,8 @@
 #include "linearFrictionForce.h"
 #include "config_physics.h"
 
+using std::ostream;
+
 TypeHandle LinearFrictionForce::_type_handle;
 
 /**

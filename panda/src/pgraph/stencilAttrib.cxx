@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle StencilAttrib::_type_handle;
 int StencilAttrib::_attrib_slot;
 

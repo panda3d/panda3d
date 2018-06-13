@@ -18,6 +18,9 @@
 // for sprintf().
 #include <stdio.h>
 
+using std::ostream;
+using std::wstring;
+
 TypeHandle Datagram::_type_handle;
 
 /**

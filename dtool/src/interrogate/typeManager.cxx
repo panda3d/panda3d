@@ -30,6 +30,9 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
  * we were given; instead, we ask CPPParser to parse a new type of the same

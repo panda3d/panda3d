@@ -16,6 +16,8 @@
 
 #include "pStatCollectorDef.h"
 
+using std::string;
+
 PStatCollectorDef PStatClientData::_null_collector(-1, "Unknown");
 
 

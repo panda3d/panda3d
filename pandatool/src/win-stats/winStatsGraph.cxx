@@ -15,6 +15,9 @@
 #include "winStatsMonitor.h"
 #include "winStatsLabelStack.h"
 
+using std::max;
+using std::string;
+
 bool WinStatsGraph::_graph_window_class_registered = false;
 const char * const WinStatsGraph::_graph_window_class_name = "graph";
 

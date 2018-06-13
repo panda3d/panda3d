@@ -19,6 +19,9 @@
 #include "dcast.h"
 #include "pnotify.h"
 
+using std::pair;
+using std::string;
+
 TypeHandle EggBinMaker::_type_handle;
 
 

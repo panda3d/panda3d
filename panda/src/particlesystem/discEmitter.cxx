@@ -13,6 +13,8 @@
 
 #include "discEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

@@ -14,6 +14,8 @@
 #include "userDataAudio.h"
 #include "userDataAudioCursor.h"
 
+using std::string;
+
 TypeHandle UserDataAudio::_type_handle;
 
 /**

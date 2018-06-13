@@ -21,6 +21,9 @@
 #include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 
+using std::cerr;
+using std::ios;
+
 using namespace std;
 
 void

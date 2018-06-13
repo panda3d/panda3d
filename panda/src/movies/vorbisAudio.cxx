@@ -18,6 +18,8 @@
 
 #ifdef HAVE_VORBIS
 
+using std::istream;
+
 TypeHandle VorbisAudio::_type_handle;
 
 /**

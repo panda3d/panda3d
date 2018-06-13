@@ -29,6 +29,10 @@
 
 #include "collideMask.h"
 
+using std::max;
+using std::min;
+using std::ostringstream;
+
 static ConfigVariableBool geomipterrain_incorrect_normals
 ("geomipterrain-incorrect-normals", false,
  PRC_DESC("If true, uses the incorrect normal vector calculation that "

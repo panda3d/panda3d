@@ -18,6 +18,8 @@
 #include "indent.h"
 #include "sliderTable.h"
 
+using std::ostream;
+
 TypeHandle VertexSlider::_type_handle;
 
 /**

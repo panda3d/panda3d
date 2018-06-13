@@ -15,6 +15,8 @@
 #include "eggTextureCollection.h"
 #include "pnmImageHeader.h"
 
+using std::cout;
+
 /**
  *
  */

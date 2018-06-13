@@ -13,6 +13,8 @@
 
 #include "cppTypeDeclaration.h"
 
+using std::ostream;
+
 /**
  * Constructs a new CPPTypeDeclaration object for the given type.
  */

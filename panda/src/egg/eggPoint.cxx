@@ -15,6 +15,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggPoint::_type_handle;
 
 /**

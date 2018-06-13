@@ -40,6 +40,10 @@
 #include "config_mathutil.h"
 #include "preparedGraphicsObjects.h"
 
+using std::move;
+using std::ostream;
+using std::string;
+
 
 bool allow_flatten_color = ConfigVariableBool
     ("allow-flatten-color", false,

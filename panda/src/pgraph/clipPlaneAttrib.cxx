@@ -22,6 +22,9 @@
 #include "attribNodeRegistry.h"
 #include <iterator>
 
+using std::ostream;
+using std::pair;
+
 CPT(RenderAttrib) ClipPlaneAttrib::_empty_attrib;
 CPT(RenderAttrib) ClipPlaneAttrib::_all_off_attrib;
 TypeHandle ClipPlaneAttrib::_type_handle;

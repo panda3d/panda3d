@@ -31,6 +31,8 @@
 #define getFx_profile_array getFx_profile_abstract_array
 #endif
 
+using std::string;
+
 /**
  * Returns the material to be applied to the given primitive, or NULL if there
  * was none bound.

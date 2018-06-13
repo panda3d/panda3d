@@ -18,6 +18,8 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle osxGraphicsBuffer::_type_handle;
 
 /**

@@ -13,6 +13,8 @@
 
 #include "dxfLayer.h"
 
+using std::string;
+
 
 /**
  *

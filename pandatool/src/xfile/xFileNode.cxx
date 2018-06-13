@@ -21,6 +21,9 @@
 #include "filename.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle XFileNode::_type_handle;
 
 /**

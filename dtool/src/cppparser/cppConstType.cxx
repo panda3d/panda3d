@@ -13,6 +13,9 @@
 
 #include "cppConstType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

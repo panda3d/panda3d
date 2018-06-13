@@ -33,6 +33,11 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 #include <algorithm>
+
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionFloorMesh::_volume_pcollector("Collision Volumes:CollisionFloorMesh");
 PStatCollector CollisionFloorMesh::_test_pcollector("Collision Tests:CollisionFloorMesh");
 TypeHandle CollisionFloorMesh::_type_handle;

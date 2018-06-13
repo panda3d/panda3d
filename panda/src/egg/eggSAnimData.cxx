@@ -19,6 +19,8 @@
 
 #include <math.h>
 
+using std::ostream;
+
 TypeHandle EggSAnimData::_type_handle;
 
 /**

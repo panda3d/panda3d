@@ -13,6 +13,9 @@
 
 #include "panda3d.h"
 
+using std::string;
+using std::vector;
+
 // On Windows, we may need to build panda3dw.exe, a non-console version of
 // this program.
 

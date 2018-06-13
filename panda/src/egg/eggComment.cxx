@@ -17,6 +17,8 @@
 #include "indent.h"
 #include "string_utils.h"
 
+using std::ostream;
+
 TypeHandle EggComment::_type_handle;
 
 

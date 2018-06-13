@@ -13,6 +13,9 @@
 
 #include "p3dDownload.h"
 
+using std::max;
+using std::string;
+
 /**
  *
  */

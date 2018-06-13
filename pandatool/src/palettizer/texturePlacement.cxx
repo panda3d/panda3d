@@ -27,6 +27,11 @@
 #include "bamWriter.h"
 #include "pnmImage.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle TexturePlacement::_type_handle;
 
 /**

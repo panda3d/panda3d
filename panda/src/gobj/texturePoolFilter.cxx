@@ -13,6 +13,8 @@
 
 #include "texturePoolFilter.h"
 
+using std::ostream;
+
 TypeHandle TexturePoolFilter::_type_handle;
 
 /**

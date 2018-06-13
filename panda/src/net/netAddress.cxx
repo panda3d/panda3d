@@ -14,6 +14,9 @@
 #include "netAddress.h"
 #include "config_net.h"
 
+using std::ostream;
+using std::string;
+
 
 /**
  * Constructs an unspecified address.

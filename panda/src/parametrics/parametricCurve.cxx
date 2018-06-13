@@ -22,6 +22,9 @@
 #include "bamReader.h"
 #include "omniBoundingVolume.h"
 
+using std::ostream;
+using std::string;
+
 static const PN_stdfloat tolerance_divisor = 100000.0f;
 
 TypeHandle ParametricCurve::_type_handle;

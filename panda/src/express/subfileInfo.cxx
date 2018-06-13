@@ -13,6 +13,8 @@
 
 #include "subfileInfo.h"
 
+using std::ostream;
+
 /**
  *
  */

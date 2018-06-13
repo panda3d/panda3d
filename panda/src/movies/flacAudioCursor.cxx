@@ -21,6 +21,10 @@ extern "C" {
   #include "dr_flac.h"
 }
 
+using std::ios;
+using std::istream;
+using std::max;
+
 /**
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */

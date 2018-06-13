@@ -14,6 +14,9 @@
 #include "animChannelMatrixFixed.h"
 #include "compose_matrix.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle AnimChannelMatrixFixed::_type_handle;
 
 /**

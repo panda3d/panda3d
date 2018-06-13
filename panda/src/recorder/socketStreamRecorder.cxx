@@ -18,6 +18,8 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::move;
+
 TypeHandle SocketStreamRecorder::_type_handle;
 
 /**

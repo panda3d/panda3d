@@ -13,6 +13,9 @@
 
 #include "textureCollection_ext.h"
 
+using std::ostringstream;
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

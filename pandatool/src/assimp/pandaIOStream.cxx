@@ -13,6 +13,10 @@
 
 #include "pandaIOStream.h"
 
+using std::ios;
+using std::istream;
+using std::streampos;
+
 
 /**
  *

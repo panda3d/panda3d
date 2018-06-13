@@ -15,6 +15,8 @@
 #include "config_gobj.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+
 MaterialPool *MaterialPool::_global_ptr = nullptr;
 
 

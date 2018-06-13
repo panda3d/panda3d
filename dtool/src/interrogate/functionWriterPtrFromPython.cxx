@@ -18,6 +18,8 @@
 
 #include "cppPointerType.h"
 
+using std::ostream;
+
 /**
  *
  */

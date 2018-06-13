@@ -17,6 +17,8 @@
 #include "paramValue.h"
 #include "pythonTask.h"
 
+using std::move;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

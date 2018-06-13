@@ -14,6 +14,8 @@
 #include "savedContext.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle SavedContext::_type_handle;
 
 /**

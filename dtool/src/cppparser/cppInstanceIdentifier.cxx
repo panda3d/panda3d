@@ -21,6 +21,9 @@
 #include "cppParameterList.h"
 #include "cppIdentifier.h"
 
+using std::cerr;
+using std::string;
+
 /**
  *
  */

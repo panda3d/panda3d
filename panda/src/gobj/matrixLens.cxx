@@ -16,6 +16,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+
 TypeHandle MatrixLens::_type_handle;
 
 

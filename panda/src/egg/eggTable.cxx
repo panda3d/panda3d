@@ -16,6 +16,9 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggTable::_type_handle;
 
 /**

@@ -49,6 +49,8 @@
 
 #include "bulletContactCallbacks.h"
 
+using std::endl;
+
 extern ContactAddedCallback gContactAddedCallback;
 extern ContactProcessedCallback gContactProcessedCallback;
 extern ContactDestroyedCallback gContactDestroyedCallback;

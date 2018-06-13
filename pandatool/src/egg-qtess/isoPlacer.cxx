@@ -17,6 +17,9 @@
 #include "nurbsSurfaceResult.h"
 #include "pvector.h"
 
+using std::max;
+using std::min;
+
 
 /**
  *

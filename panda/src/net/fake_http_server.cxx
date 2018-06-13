@@ -24,6 +24,9 @@
 
 #include <ctype.h>
 
+using std::cerr;
+using std::string;
+
 QueuedConnectionManager cm;
 QueuedConnectionReader reader(&cm, 10);
 ConnectionWriter writer(&cm, 10);

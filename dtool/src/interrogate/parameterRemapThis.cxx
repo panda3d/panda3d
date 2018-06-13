@@ -19,6 +19,9 @@
 #include "cppPointerType.h"
 #include "cppConstType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

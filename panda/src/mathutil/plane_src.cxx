@@ -11,6 +11,8 @@
  * @date 2001-04-03
  */
 
+using std::ostream;
+
 /**
  * This computes a transform matrix that reflects the universe to the other
  * side of the plane, as in a mirror.

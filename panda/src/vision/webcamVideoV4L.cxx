@@ -22,6 +22,8 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 
+using std::string;
+
 #ifndef CPPPARSER
 #ifndef VIDIOC_ENUM_FRAMESIZES
 enum v4l2_frmsizetypes {

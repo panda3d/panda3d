@@ -16,6 +16,10 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle BitArray::_type_handle;
 
 /**

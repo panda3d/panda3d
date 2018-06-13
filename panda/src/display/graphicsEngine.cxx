@@ -57,6 +57,9 @@
   #include <sys/time.h>
 #endif
 
+using std::move;
+using std::string;
+
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");

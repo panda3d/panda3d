@@ -11,6 +11,8 @@
  * @date 1999-01-29
  */
 
+using std::ostream;
+
 TypeHandle FLOATNAME(LMatrix3)::_type_handle;
 
 const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =

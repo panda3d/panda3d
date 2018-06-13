@@ -16,6 +16,8 @@
 
 #include "pnotify.h"
 
+using std::ostream;
+
 TypeHandle LwoGroupChunk::_type_handle;
 
 /**

@@ -27,6 +27,14 @@
 #include "configVariableFilename.h"
 #include "virtualFileSystem.h"
 
+using std::hex;
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 BamCache *BamCache::_global_ptr = nullptr;
 
 /**

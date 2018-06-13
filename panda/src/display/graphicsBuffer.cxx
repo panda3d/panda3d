@@ -13,6 +13,8 @@
 
 #include "graphicsBuffer.h"
 
+using std::string;
+
 TypeHandle GraphicsBuffer::_type_handle;
 
 /**

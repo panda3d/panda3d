@@ -20,6 +20,8 @@
 
 #include "dcast.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeBam::_type_handle;
 
 /**

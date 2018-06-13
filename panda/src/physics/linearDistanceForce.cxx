@@ -13,6 +13,8 @@
 
 #include "linearDistanceForce.h"
 
+using std::ostream;
+
 TypeHandle LinearDistanceForce::_type_handle;
 
 /**

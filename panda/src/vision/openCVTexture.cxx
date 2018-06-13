@@ -37,6 +37,9 @@
 
 #endif  // OPENCV_VER_23
 
+using std::max;
+using std::string;
+
 TypeHandle OpenCVTexture::_type_handle;
 
 /**

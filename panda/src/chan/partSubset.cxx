@@ -13,6 +13,9 @@
 
 #include "partSubset.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

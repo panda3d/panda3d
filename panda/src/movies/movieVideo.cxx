@@ -18,6 +18,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle MovieVideo::_type_handle;
 
 /**

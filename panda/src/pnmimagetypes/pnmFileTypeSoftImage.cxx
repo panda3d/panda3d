@@ -20,6 +20,11 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::ios;
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const float imageVersionNumber = 3.0;
 static const int imageCommentLength = 80;
 static const char imageComment[imageCommentLength+1] =

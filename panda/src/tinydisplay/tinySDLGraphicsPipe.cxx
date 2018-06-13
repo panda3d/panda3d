@@ -21,6 +21,8 @@
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle TinySDLGraphicsPipe::_type_handle;
 
 /**

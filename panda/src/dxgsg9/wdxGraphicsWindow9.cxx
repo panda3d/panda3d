@@ -26,6 +26,11 @@
 #include <math.h>
 #include <tchar.h>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::string;
+
 TypeHandle wdxGraphicsWindow9::_type_handle;
 
 /**

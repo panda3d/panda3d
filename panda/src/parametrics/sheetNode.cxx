@@ -28,6 +28,9 @@
 #include "colorAttrib.h"
 #include "renderState.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle SheetNode::_type_handle;
 
 PStatCollector SheetNode::_sheet_node_pcollector("*:SheetNode");

@@ -16,6 +16,10 @@
 
 #include "throw_event.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle PGWaitBar::_type_handle;
 
 /**

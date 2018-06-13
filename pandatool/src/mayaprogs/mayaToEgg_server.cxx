@@ -20,6 +20,9 @@
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
 
+using std::string;
+using std::vector;
+
 /**
  *
  */

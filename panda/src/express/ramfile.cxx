@@ -13,6 +13,9 @@
 
 #include "ramfile.h"
 
+using std::min;
+using std::string;
+
 /**
  * Extracts and returns the indicated number of characters from the current
  * data pointer, and advances the data pointer.  If the data pointer exceeds

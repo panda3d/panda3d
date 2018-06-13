@@ -16,6 +16,8 @@
 #include "forceNode.h"
 #include "nodePath.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

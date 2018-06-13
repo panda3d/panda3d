@@ -13,6 +13,8 @@
 
 #include "stTransform.h"
 
+using std::ostream;
+
 STTransform STTransform::_ident_mat;
 
 /**

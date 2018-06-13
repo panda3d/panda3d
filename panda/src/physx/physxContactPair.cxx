@@ -16,6 +16,8 @@
 #include "physxActor.h"
 #include "physxContactPoint.h"
 
+using std::endl;
+
 TypeHandle PhysxContactPair::_type_handle;
 
 /**

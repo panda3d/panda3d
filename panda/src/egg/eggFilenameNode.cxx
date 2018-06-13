@@ -13,6 +13,8 @@
 
 #include "eggFilenameNode.h"
 
+using std::string;
+
 TypeHandle EggFilenameNode::_type_handle;
 
 /**

@@ -21,6 +21,8 @@
 
 #include <string.h>  // for strcmp, strdup
 
+using std::string;
+
 /**
  *
  */

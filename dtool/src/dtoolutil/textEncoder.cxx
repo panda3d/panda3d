@@ -16,6 +16,11 @@
 #include "unicodeLatinMap.h"
 #include "config_dtoolutil.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+using std::wstring;
+
 TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_iso8859;
 
 /**

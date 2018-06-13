@@ -14,6 +14,8 @@
 #include "interfaceMakerPython.h"
 #include "interrogate.h"
 
+using std::ostream;
+
 /**
  *
  */

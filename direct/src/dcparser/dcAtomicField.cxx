@@ -19,6 +19,9 @@
 
 #include <math.h>
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

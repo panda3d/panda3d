@@ -28,6 +28,9 @@ extern "C" {
 #endif
 }
 
+using std::max;
+using std::ostringstream;
+
 ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
 TypeHandle FfmpegVideoCursor::FfmpegBuffer::_type_handle;

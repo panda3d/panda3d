@@ -17,6 +17,9 @@
 #include "wdxGraphicsBuffer9.h"
 #include "config_dxgsg9.h"
 
+using std::endl;
+using std::string;
+
 TypeHandle wdxGraphicsPipe9::_type_handle;
 
 static bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {

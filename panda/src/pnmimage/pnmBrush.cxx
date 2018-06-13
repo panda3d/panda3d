@@ -16,6 +16,9 @@
 #include "config_pnmimage.h"
 #include "cmath.h"
 
+using std::max;
+using std::min;
+
 // A PNMTransparentBrush doesn't draw or fill anything.
 class EXPCL_PANDA_PNMIMAGE PNMTransparentBrush : public PNMBrush {
 public:

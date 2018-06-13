@@ -14,6 +14,8 @@
 
 #include "nullAudioManager.h"
 
+using std::string;
+
 TypeHandle NullAudioManager::_type_handle;
 
 // namespace { static const string blank=""; static PN_stdfloat

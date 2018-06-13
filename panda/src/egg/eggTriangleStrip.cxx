@@ -16,6 +16,8 @@
 #include "eggPolygon.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggTriangleStrip::_type_handle;
 
 /**

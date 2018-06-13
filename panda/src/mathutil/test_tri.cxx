@@ -15,6 +15,8 @@
 
 #include "triangulator.h"
 
+using std::cerr;
+
 int main(int argc, char *argv[]) {
   Triangulator t;
 

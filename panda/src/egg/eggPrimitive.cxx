@@ -21,6 +21,9 @@
 #include "indent.h"
 #include "vector_int.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggPrimitive::_type_handle;
 
 

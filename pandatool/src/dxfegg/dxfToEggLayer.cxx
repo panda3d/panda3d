@@ -21,6 +21,8 @@
 #include "eggVertex.h"
 #include "eggVertexPool.h"
 
+using std::string;
+
 
 /**
  *

@@ -16,6 +16,8 @@
 #include "bamReader.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle GeomTextGlyph::_type_handle;
 
 

@@ -16,6 +16,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::min;
+using std::ostream;
+
 TypeHandle SparseArray::_type_handle;
 
 /**

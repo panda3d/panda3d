@@ -18,6 +18,9 @@
 #include "bamReader.h"
 #include "preparedGraphicsObjects.h"
 
+using std::ostream;
+using std::string;
+
 PT(InternalName) InternalName::_root;
 PT(InternalName) InternalName::_error;
 PT(InternalName) InternalName::_default;

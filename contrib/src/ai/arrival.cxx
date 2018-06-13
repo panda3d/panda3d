@@ -13,6 +13,9 @@
 
 #include "arrival.h"
 
+using std::cout;
+using std::endl;
+
 Arrival::Arrival(AICharacter *ai_ch, double distance) {
   _ai_char = ai_ch;
 

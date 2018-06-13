@@ -29,6 +29,10 @@
 
 #include <algorithm>
 
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle PaletteImage::_type_handle;
 
 /**

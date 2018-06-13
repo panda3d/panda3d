@@ -16,6 +16,10 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 /**
  *
  */

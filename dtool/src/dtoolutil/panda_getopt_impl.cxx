@@ -22,6 +22,8 @@
 // If the system does lack one or the other of these functions, then we'll go
 // ahead and provide it instead.
 
+using std::cerr;
+using std::string;
 
 char *optarg = nullptr;
 int optind = 0;

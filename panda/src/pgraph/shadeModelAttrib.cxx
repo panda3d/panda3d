@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle ShadeModelAttrib::_type_handle;
 int ShadeModelAttrib::_attrib_slot;
 

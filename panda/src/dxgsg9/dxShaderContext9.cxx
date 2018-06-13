@@ -28,6 +28,9 @@
 
 #define DEBUG_SHADER 0
 
+using std::min;
+using std::string;
+
 TypeHandle DXShaderContext9::_type_handle;
 
 /**

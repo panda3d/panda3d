@@ -29,6 +29,10 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::min;
+using std::vector;
+
 NotifyCategoryDef(lightmgr, "");
 
 

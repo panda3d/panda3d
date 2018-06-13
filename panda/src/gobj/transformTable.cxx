@@ -15,6 +15,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+
 TypeHandle TransformTable::_type_handle;
 
 /**

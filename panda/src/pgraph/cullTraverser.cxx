@@ -35,6 +35,8 @@
 #include "geomLines.h"
 #include "geomVertexWriter.h"
 
+using std::move;
+
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
 PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
 PStatCollector CullTraverser::_geoms_pcollector("Geoms");

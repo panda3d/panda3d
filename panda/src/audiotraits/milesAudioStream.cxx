@@ -17,6 +17,10 @@
 #include "milesAudioManager.h"
 #include "pnotify.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle MilesAudioStream::_type_handle;
 
 #undef miles_audio_debug

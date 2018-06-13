@@ -20,6 +20,8 @@
 #include "dcast.h"
 #include "config_egg.h"
 
+using std::ostream;
+
 /**
  *
  */

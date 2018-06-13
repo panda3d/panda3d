@@ -13,6 +13,8 @@
 
 #include "nurbsCurveEvaluator.h"
 
+using std::ostream;
+
 /**
  *
  */

@@ -34,6 +34,11 @@
 #include "config_grutil.h"
 #include "typeHandle.h"
 
+using std::endl;
+using std::max;
+using std::min;
+using std::move;
+
 ConfigVariableBool stm_use_hexagonal_layout
 ("stm-use-hexagonal-layout", false,
  PRC_DESC("Set this to true to use a hexagonal vertex layout. This approximates "

@@ -23,6 +23,10 @@
 
 #include <time.h>
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle DisplayRegion::_type_handle;
 TypeHandle DisplayRegionPipelineReader::_type_handle;
 

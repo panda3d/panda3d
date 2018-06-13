@@ -30,6 +30,10 @@
 #include "pnotify.h"
 #include "pstrtod.h"
 
+using std::cerr;
+using std::istream;
+using std::string;
+
 static int yyinput(void);        // declared by flex.
 extern "C" int vrmlyywrap();
 

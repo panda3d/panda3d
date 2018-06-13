@@ -15,6 +15,8 @@
 
 #include "daeToEggConverter.h"
 
+using std::cerr;
+
 /**
  *
  */

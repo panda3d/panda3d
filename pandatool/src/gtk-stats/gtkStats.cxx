@@ -16,6 +16,9 @@
 #include "gtkStatsServer.h"
 #include "config_pstatclient.h"
 
+using std::ostringstream;
+using std::string;
+
 GtkWidget *main_window;
 static GtkStatsServer *server = nullptr;
 

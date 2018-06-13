@@ -15,6 +15,9 @@
 #include "interrogate.h"
 #include "typeManager.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

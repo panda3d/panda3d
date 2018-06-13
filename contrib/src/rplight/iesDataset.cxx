@@ -32,6 +32,8 @@
 #endif
 #include <math.h>
 
+using std::endl;
+
 NotifyCategoryDef(iesdataset, "")
 
 /**

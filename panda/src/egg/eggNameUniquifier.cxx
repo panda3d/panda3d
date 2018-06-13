@@ -19,6 +19,9 @@
 
 #include "pnotify.h"
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle EggNameUniquifier::_type_handle;
 
 

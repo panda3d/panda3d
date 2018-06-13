@@ -26,6 +26,10 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+using std::istream;
+using std::string;
+using std::vector;
+
 // struct android_app* panda_android_app = NULL;
 
 extern int main(int argc, const char **argv);

@@ -16,6 +16,8 @@
 #include "bamWriter.h"
 #include "vertexTransform.h"
 
+using std::ostream;
+
 SparseArray SliderTable::_empty_array;
 TypeHandle SliderTable::_type_handle;
 

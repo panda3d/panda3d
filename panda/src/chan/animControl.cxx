@@ -19,6 +19,9 @@
 #include "mutexHolder.h"
 #include "throw_event.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle AnimControl::_type_handle;
 
 /**

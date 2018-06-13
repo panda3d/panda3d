@@ -26,6 +26,10 @@
 #include <unistd.h>
 #endif
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 /**
  * Returns the directory component of the indicated pathname, or the empty
  * string if there is no directory prefix.

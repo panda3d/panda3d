@@ -16,6 +16,9 @@
 #include "clockObject.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");
 
 /**

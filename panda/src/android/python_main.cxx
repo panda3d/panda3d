@@ -24,6 +24,8 @@
 
 #include <dlfcn.h>
 
+using std::string;
+
 /**
  * The main entry point for the Python activity.  Called by android_main.
  */

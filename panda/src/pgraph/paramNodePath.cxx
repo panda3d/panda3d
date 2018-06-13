@@ -15,6 +15,8 @@
 #include "dcast.h"
 #include "pandaNode.h"
 
+using std::ostream;
+
 TypeHandle ParamNodePath::_type_handle;
 
 /**

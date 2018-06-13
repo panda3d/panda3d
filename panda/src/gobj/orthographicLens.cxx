@@ -15,6 +15,8 @@
 #include "indent.h"
 #include "bamReader.h"
 
+using std::ostream;
+
 TypeHandle OrthographicLens::_type_handle;
 
 

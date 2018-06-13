@@ -13,6 +13,8 @@
 
 #include "baseParticleFactory.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

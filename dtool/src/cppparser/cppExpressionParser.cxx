@@ -14,6 +14,10 @@
 #include "cppExpressionParser.h"
 #include "cppExpression.h"
 
+using std::cerr;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

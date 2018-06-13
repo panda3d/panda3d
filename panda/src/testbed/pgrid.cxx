@@ -22,6 +22,9 @@
 
 #define RANDFRAC (rand()/(PN_stdfloat)(RAND_MAX))
 
+using std::max;
+using std::string;
+
 class GriddedFilename {
 public:
   Filename _filename;

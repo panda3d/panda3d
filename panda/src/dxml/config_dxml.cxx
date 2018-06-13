@@ -15,6 +15,10 @@
 #include "dconfig.h"
 #include <stdio.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 BEGIN_PUBLISH
 #include "tinyxml.h"
 END_PUBLISH

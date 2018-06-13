@@ -17,6 +17,9 @@
 #include "xLexerDefs.h"
 #include "config_xfile.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle XFileDataNodeTemplate::_type_handle;
 
 /**

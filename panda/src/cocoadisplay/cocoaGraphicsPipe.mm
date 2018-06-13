@@ -27,6 +27,8 @@
 
 #include <mach-o/arch.h>
 
+using std::string;
+
 TypeHandle CocoaGraphicsPipe::_type_handle;
 
 /**

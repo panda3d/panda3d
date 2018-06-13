@@ -16,6 +16,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+using std::ostream;
+
 TypeHandle TransformBlendTable::_type_handle;
 
 /**

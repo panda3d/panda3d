@@ -13,6 +13,8 @@
 
 #include "sphereSurfaceEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

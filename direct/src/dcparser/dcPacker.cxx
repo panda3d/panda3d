@@ -23,6 +23,13 @@
 #include "py_panda.h"
 #endif
 
+using std::cerr;
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 DCPacker::StackElement *DCPacker::StackElement::_deleted_chain = nullptr;
 int DCPacker::StackElement::_num_ever_allocated = 0;
 

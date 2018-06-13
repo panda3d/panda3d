@@ -13,6 +13,8 @@
 
 #include "virtualFileComposite.h"
 
+using std::string;
+
 TypeHandle VirtualFileComposite::_type_handle;
 
 

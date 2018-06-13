@@ -14,6 +14,10 @@
 #include "interrogateComponent.h"
 #include "interrogate_datafile.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 // This static string is just kept around as a handy bogus return value for
 // functions that must return a const string reference.
 string InterrogateComponent::_empty_string;

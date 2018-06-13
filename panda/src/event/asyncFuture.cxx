@@ -19,6 +19,9 @@
 #include "pStatTimer.h"
 #include "throw_event.h"
 
+using std::move;
+using std::ostream;
+
 TypeHandle AsyncFuture::_type_handle;
 TypeHandle AsyncGatheringFuture::_type_handle;
 

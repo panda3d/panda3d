@@ -14,6 +14,8 @@
 #include "vrpnTrackerDevice.h"
 #include "vrpnClient.h"
 
+using std::string;
+
 TypeHandle VrpnTrackerDevice::_type_handle;
 
 /**

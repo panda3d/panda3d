@@ -13,6 +13,8 @@
 
 #include "eggBackPointer.h"
 
+using std::string;
+
 
 TypeHandle EggBackPointer::_type_handle;
 

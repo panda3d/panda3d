@@ -23,6 +23,10 @@
 #include "pset.h"
 #include "pmap.h"
 
+using std::max;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

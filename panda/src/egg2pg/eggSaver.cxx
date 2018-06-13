@@ -75,6 +75,11 @@
 #include "eggTable.h"
 #include "dcast.h"
 
+using std::min;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

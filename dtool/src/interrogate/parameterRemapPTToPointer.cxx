@@ -21,6 +21,9 @@
 #include "cppDeclaration.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

@@ -11,6 +11,8 @@
  * @date 1999-01-15
  */
 
+using std::ostream;
+
 TypeHandle FLOATNAME(LMatrix4)::_type_handle;
 TypeHandle FLOATNAME(UnalignedLMatrix4)::_type_handle;
 

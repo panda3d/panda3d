@@ -16,6 +16,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::string;
+
 
 /**
  *

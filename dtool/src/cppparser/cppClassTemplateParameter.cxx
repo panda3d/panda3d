@@ -14,6 +14,8 @@
 #include "cppClassTemplateParameter.h"
 #include "cppIdentifier.h"
 
+using std::ostream;
+
 /**
  *
  */

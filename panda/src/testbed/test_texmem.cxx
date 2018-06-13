@@ -18,6 +18,8 @@
 #include "cmath.h"
 #include "mathNumbers.h"
 
+using std::cerr;
+
 NodePath bogus_scene;
 NodePath old_bogus_scene;
 

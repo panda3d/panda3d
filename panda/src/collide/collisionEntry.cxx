@@ -15,6 +15,8 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle CollisionEntry::_type_handle;
 
 /**

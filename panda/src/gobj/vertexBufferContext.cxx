@@ -14,6 +14,8 @@
 #include "vertexBufferContext.h"
 #include "config_gobj.h"
 
+using std::ostream;
+
 TypeHandle VertexBufferContext::_type_handle;
 
 /**

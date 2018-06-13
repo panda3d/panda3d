@@ -28,6 +28,8 @@
 #include "shadowAtlas.h"
 #include <string.h>
 
+using std::endl;
+
 NotifyCategoryDef(shadowatlas, "");
 
 /**

@@ -14,6 +14,8 @@
 #include "datagramSink.h"
 #include "fileReference.h"
 
+using std::streampos;
+
 /**
  * Does nothing since this is class is just the definition of an interface
  */

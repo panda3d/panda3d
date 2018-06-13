@@ -15,6 +15,8 @@
 
 #include <stdlib.h>
 
+using std::ostream;
+
 /**
  * constructor
  */

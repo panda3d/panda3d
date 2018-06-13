@@ -14,6 +14,8 @@
 #include "eventParameter.h"
 #include "dcast.h"
 
+using std::ostream;
+
 template class ParamValue<int>;
 template class ParamValue<double>;
 

@@ -14,6 +14,10 @@
 #include "cppTypeParser.h"
 #include "cppType.h"
 
+using std::cerr;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

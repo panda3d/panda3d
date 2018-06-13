@@ -13,6 +13,8 @@
 
 #include "ringEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

@@ -30,6 +30,8 @@
 #include "lightReMutexHolder.h"
 #include "nativeWindowHandle.h"
 
+using std::string;
+
 TypeHandle TinyXGraphicsWindow::_type_handle;
 
 /**

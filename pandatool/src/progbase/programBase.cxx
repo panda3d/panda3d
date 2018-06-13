@@ -45,6 +45,14 @@
   #endif  // TIOCGWINSZ
 #endif  // IOCTL_TERMINAL_WIDTH
 
+using std::cerr;
+using std::cout;
+using std::ios;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 bool ProgramBase::SortOptionsByIndex::
 operator () (const Option *a, const Option *b) const {
   if (a->_index_group != b->_index_group) {

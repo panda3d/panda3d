@@ -31,6 +31,10 @@
 
 #include <iterator>
 
+using std::ostream;
+using std::pair;
+using std::string;
+
 TypeHandle TextureImage::_type_handle;
 
 /**

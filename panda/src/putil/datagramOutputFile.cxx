@@ -16,6 +16,13 @@
 #include "zStream.h"
 #include <algorithm>
 
+using std::istream;
+using std::min;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 /**
  * Opens the indicated filename for writing.  Returns true if successful,
  * false on failure.

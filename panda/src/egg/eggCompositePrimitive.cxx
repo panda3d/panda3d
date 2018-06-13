@@ -15,6 +15,9 @@
 #include "eggGroupNode.h"
 #include "eggVertexPool.h"
 
+using std::max;
+using std::ostream;
+
 TypeHandle EggCompositePrimitive::_type_handle;
 
 

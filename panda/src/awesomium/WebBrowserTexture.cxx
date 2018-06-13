@@ -14,6 +14,8 @@
 #include "config_awesomium.h"
 #include "WebBrowserTexture.h"
 
+using std::string;
+
 TypeHandle WebBrowserTexture::_type_handle;
 
 /**

@@ -31,6 +31,11 @@
 
 #include <algorithm>
 
+using std::ostream;
+using std::pair;
+using std::streamsize;
+using std::string;
+
 
 TypeHandle MilesAudioManager::_type_handle;
 

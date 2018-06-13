@@ -17,6 +17,8 @@
 #include "lightMutexHolder.h"
 #include "virtualFileSystem.h"
 
+using std::ostream;
+
 
 ModelPool *ModelPool::_global_ptr = nullptr;
 

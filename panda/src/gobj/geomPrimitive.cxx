@@ -31,6 +31,11 @@
 #include "indent.h"
 #include "pStatTimer.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::pair;
+
 TypeHandle GeomPrimitive::_type_handle;
 TypeHandle GeomPrimitive::CData::_type_handle;
 TypeHandle GeomPrimitivePipelineReader::_type_handle;

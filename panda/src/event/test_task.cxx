@@ -16,6 +16,11 @@
 #include "asyncTaskManager.h"
 #include "perlinNoise2.h"
 
+using std::cerr;
+using std::max;
+using std::ostringstream;
+using std::string;
+
 class MyTask : public AsyncTask {
 public:
   MyTask(const string &name, double length, int repeat_count) :

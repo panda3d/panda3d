@@ -30,6 +30,15 @@
 #include "openssl/rand.h"
 #include "openssl/bio.h"
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 class KeyNumber {
 public:
   int _number;

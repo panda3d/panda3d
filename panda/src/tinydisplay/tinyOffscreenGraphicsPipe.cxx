@@ -19,6 +19,8 @@
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle TinyOffscreenGraphicsPipe::_type_handle;
 
 /**

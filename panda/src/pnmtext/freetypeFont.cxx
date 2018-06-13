@@ -25,6 +25,11 @@
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
 #include FT_OUTLINE_H
 
+using std::istream;
+using std::min;
+using std::ostream;
+using std::string;
+
 // This constant determines how big a particular point size font appears to
 // be.  By convention, 10 points is 1 unit (e.g.  1 foot) high.
 const PN_stdfloat FreetypeFont::_points_per_unit = 10.0f;

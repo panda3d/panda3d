@@ -20,6 +20,11 @@
 #include <sys/stat.h>
 #endif
 
+using std::istream;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+
 TypeHandle VirtualFileMountAndroidAsset::_type_handle;
 
 /**

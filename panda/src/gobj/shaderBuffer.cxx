@@ -14,6 +14,8 @@
 #include "shaderBuffer.h"
 #include "preparedGraphicsObjects.h"
 
+using std::ostream;
+
 TypeHandle ShaderBuffer::_type_handle;
 
 /**

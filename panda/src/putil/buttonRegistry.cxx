@@ -16,6 +16,9 @@
 
 #include <stdio.h>
 
+using std::ostream;
+using std::string;
+
 // In general, we use the util_cat->info() syntax in this file (instead of
 // util_cat.info()), because much of this work is done at static init time,
 // and we must use the arrow syntax to force initialization of the util_cat

@@ -15,6 +15,10 @@
 #include "pnotify.h"
 #include "config_deadrec.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 /**
  *
  */

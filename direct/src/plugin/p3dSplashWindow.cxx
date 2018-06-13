@@ -20,6 +20,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 // The number of pixels to move the block per byte downloaded, when we don't
 // know the actual file size we're downloading.
 const double P3DSplashWindow::_unknown_progress_rate = 1.0 / 4096;

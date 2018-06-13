@@ -22,6 +22,8 @@
 #include "cullFaceAttrib.h"
 #include "config_pgraph.h"
 
+using std::ostream;
+
 
 /**
  *

@@ -23,6 +23,10 @@
 #include "pnmImage.h"
 #include "config_grutil.h"
 
+using std::max;
+using std::min;
+using std::ostringstream;
+
 /**
  * The PfmVizzer constructor receives a reference to a PfmFile which it will
  * operate on.  It does not keep ownership of this reference; it is your

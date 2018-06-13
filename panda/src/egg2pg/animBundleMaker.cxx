@@ -25,6 +25,9 @@
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
 
+using std::min;
+using std::string;
+
 /**
  *
  */

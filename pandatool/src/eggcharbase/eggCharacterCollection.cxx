@@ -29,6 +29,9 @@
 
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+
 
 /**
  *

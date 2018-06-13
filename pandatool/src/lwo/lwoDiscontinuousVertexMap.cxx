@@ -19,6 +19,9 @@
 
 #include <algorithm>
 
+using std::ostream;
+using std::pair;
+
 TypeHandle LwoDiscontinuousVertexMap::_type_handle;
 
 

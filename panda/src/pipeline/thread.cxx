@@ -19,6 +19,9 @@
 #include "conditionVarDebug.h"
 #include "conditionVarFullDebug.h"
 
+using std::ostream;
+using std::string;
+
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
 TypeHandle Thread::_type_handle;

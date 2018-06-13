@@ -13,6 +13,8 @@
 
 #include "eggJointPointer.h"
 
+using std::string;
+
 
 TypeHandle EggJointPointer::_type_handle;
 

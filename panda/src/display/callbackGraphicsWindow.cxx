@@ -13,6 +13,8 @@
 
 #include "callbackGraphicsWindow.h"
 
+using std::string;
+
 TypeHandle CallbackGraphicsWindow::_type_handle;
 TypeHandle CallbackGraphicsWindow::WindowCallbackData::_type_handle;
 TypeHandle CallbackGraphicsWindow::EventsCallbackData::_type_handle;

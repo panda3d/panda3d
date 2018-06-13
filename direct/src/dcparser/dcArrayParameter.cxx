@@ -16,6 +16,10 @@
 #include "dcClassParameter.h"
 #include "hashGenerator.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

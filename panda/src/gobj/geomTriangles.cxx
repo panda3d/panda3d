@@ -19,6 +19,10 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomTrianglesAdjacency.h"
 
+using std::map;
+using std::move;
+using std::pair;
+
 TypeHandle GeomTriangles::_type_handle;
 
 /**

@@ -19,6 +19,9 @@
 #include <set>
 #include <assert.h>
 
+using std::cerr;
+using std::string;
+
 bool cppparser_output_class_keyword = false;
 
 /**

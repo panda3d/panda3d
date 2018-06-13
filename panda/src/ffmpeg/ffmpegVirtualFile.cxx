@@ -17,6 +17,11 @@
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
 
+using std::ios;
+using std::istream;
+using std::streampos;
+using std::streamsize;
+
 extern "C" {
   #include "libavcodec/avcodec.h"
   #include "libavformat/avformat.h"

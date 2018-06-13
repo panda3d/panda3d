@@ -31,6 +31,14 @@
 
 #include <assert.h>
 
+using std::cerr;
+using std::dec;
+using std::oct;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 /**
  *
  */

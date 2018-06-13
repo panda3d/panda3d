@@ -18,6 +18,9 @@
 #include "recorderController.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle RecorderTable::_type_handle;
 
 /**

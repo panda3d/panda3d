@@ -18,6 +18,11 @@
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsStateGuardian.h"
 
+using std::dec;
+using std::hex;
+using std::ostringstream;
+using std::string;
+
 TypeHandle wglGraphicsPipe::_type_handle;
 bool    wglGraphicsPipe::_current_valid;
 HDC     wglGraphicsPipe::_current_hdc;

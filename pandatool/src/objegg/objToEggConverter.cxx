@@ -27,6 +27,10 @@
 #include "triangulator3.h"
 #include "config_egg2pg.h"
 
+using std::istream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

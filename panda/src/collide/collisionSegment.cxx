@@ -31,6 +31,8 @@
 #include "geomVertexWriter.h"
 #include "look_at.h"
 
+using std::ostream;
+
 TypeHandle CollisionSegment::_type_handle;
 
 

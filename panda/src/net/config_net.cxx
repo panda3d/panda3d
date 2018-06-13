@@ -22,6 +22,9 @@
   #error Buildsystem error: BUILDING_PANDA_NET not defined
 #endif
 
+using std::ostringstream;
+using std::string;
+
 Configure(config_net);
 NotifyCategoryDef(net, "");
 

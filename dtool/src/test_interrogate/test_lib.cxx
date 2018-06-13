@@ -13,6 +13,9 @@
 
 #include "test_lib.h"
 
+using std::cerr;
+using std::endl;
+
 int non_member1(float x, float y) {
    return (int)(x + y);
 }

@@ -16,6 +16,8 @@
 #include "geomVertexWriter.h"
 #include "config_dxgsg9.h"
 
+using std::max;
+
 GeomMunger *DXGeomMunger9::_deleted_chain = nullptr;
 TypeHandle DXGeomMunger9::_type_handle;
 

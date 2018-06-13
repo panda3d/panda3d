@@ -16,6 +16,8 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggAnimPreload::_type_handle;
 
 /**

@@ -18,6 +18,9 @@
 
 #include <ctype.h>
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle EggGroupUniquifier::_type_handle;
 
 

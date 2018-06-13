@@ -17,6 +17,9 @@
 #include "indent.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggExternalReference::_type_handle;
 
 

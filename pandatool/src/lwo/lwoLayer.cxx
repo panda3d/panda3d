@@ -17,6 +17,10 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::dec;
+using std::hex;
+using std::ostream;
+
 TypeHandle LwoLayer::_type_handle;
 
 /**

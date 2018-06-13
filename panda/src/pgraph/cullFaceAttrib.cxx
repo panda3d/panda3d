@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle CullFaceAttrib::_type_handle;
 int CullFaceAttrib::_attrib_slot;
 

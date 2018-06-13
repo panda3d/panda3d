@@ -13,6 +13,9 @@
 
 #include "streamWrapper.h"
 
+using std::ios;
+using std::streamsize;
+
 /**
  *
  */

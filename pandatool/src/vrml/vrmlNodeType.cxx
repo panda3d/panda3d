@@ -20,6 +20,9 @@
 
 #include <stdio.h>  // for sprintf()
 
+using std::cerr;
+using std::ostream;
+
 
 //
 // Static list of node types.

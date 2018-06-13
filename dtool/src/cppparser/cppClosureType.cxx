@@ -15,6 +15,10 @@
 #include "cppParameterList.h"
 #include "cppExpression.h"
 
+using std::move;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

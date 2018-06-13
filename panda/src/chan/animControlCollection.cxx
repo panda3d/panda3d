@@ -13,6 +13,9 @@
 
 #include "animControlCollection.h"
 
+using std::ostream;
+using std::string;
+
 
 /**
  * Returns the AnimControl associated with the given name, or NULL if no such

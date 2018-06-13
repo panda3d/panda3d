@@ -24,6 +24,9 @@
 #include "omniBoundingVolume.h"
 #include "pStatTimer.h"
 
+using std::endl;
+using std::move;
+
 TypeHandle BulletDebugNode::_type_handle;
 PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
 

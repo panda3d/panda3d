@@ -23,6 +23,8 @@
 #define _COLLECTIONS_ABC "_abcoll"
 #endif
 
+using std::max;
+
 static void _register_collection(PyTypeObject *type, const char *abc) {
   PyObject *sys_modules = PyImport_GetModuleDict();
   if (sys_modules != nullptr) {

@@ -34,6 +34,9 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionPlane::_volume_pcollector("Collision Volumes:CollisionPlane");
 PStatCollector CollisionPlane::_test_pcollector("Collision Tests:CollisionPlane");
 TypeHandle CollisionPlane::_type_handle;

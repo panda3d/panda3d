@@ -30,6 +30,9 @@
 #include <iomanip>
 #include <stdlib.h>
 
+using std::endl;
+using std::ostream;
+
 
 NotifyCategoryDef(gpucommand, "");
 

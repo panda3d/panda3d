@@ -33,6 +33,8 @@
 #include "transparencyAttrib.h"
 #include "geomNode.h"
 
+using std::ostream;
+
 PStatCollector CollisionSolid::_volume_pcollector(
   "Collision Volumes:CollisionSolid");
 PStatCollector CollisionSolid::_test_pcollector(

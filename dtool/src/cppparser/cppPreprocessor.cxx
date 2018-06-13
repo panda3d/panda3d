@@ -35,6 +35,12 @@
 #include <assert.h>
 #include <ctype.h>
 
+using std::cerr;
+using std::istringstream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 // We manage our own visibility counter, in addition to that managed by
 // cppBison.y.  We do this just so we can define manifests with the correct
 // visibility when they are declared.  (Asking the parser for the current

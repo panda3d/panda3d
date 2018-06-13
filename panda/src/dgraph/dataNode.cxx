@@ -16,6 +16,9 @@
 #include "config_dgraph.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle DataNode::_type_handle;
 
 /**

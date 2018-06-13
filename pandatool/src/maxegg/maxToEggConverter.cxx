@@ -27,6 +27,9 @@
 #include "maxEgg.h"
 #include "config_putil.h"
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

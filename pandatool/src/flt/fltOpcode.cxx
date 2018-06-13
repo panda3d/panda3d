@@ -13,6 +13,8 @@
 
 #include "fltOpcode.h"
 
+using std::ostream;
+
 ostream &
 operator << (ostream &out, FltOpcode opcode) {
   switch (opcode) {

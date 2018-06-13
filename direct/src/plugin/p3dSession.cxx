@@ -43,6 +43,12 @@
 #include <crt_externs.h>
 #endif
 
+using std::ostringstream;
+using std::stringstream;
+using std::string;
+using std::vector;
+using std::wstring;
+
 /**
  * Creates a new session, corresponding to a new subprocess with its own copy
  * of Python.  The initial parameters for the session are taken from the

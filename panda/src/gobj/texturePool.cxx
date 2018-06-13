@@ -28,6 +28,12 @@
 #include "mutexHolder.h"
 #include "dcast.h"
 
+using std::endl;
+using std::istream;
+using std::max;
+using std::ostream;
+using std::string;
+
 TexturePool *TexturePool::_global_ptr;
 
 /**

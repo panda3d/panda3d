@@ -20,6 +20,8 @@
 #include "graphicsStateGuardian.h"
 #include "sceneSetup.h"
 
+using std::ostream;
+
 TypeHandle DisplayRegionDrawCallbackData::_type_handle;
 
 

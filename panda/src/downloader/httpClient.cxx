@@ -26,6 +26,11 @@
 
 #include "openSSLWrapper.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 PT(HTTPClient) HTTPClient::_global_ptr;
 
 /**

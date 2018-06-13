@@ -23,6 +23,11 @@
 #include <assert.h>
 #include <math.h>
 
+using std::istream;
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle FltHeader::_type_handle;
 
 /**

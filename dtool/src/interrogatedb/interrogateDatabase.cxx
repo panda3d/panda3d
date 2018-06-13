@@ -16,6 +16,11 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
+using std::istream;
+using std::map;
+using std::ostream;
+using std::string;
+
 InterrogateDatabase *InterrogateDatabase::_global_ptr = nullptr;
 int InterrogateDatabase::_file_major_version = 0;
 int InterrogateDatabase::_file_minor_version = 0;

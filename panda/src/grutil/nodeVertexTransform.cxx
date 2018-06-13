@@ -13,6 +13,8 @@
 
 #include "nodeVertexTransform.h"
 
+using std::ostream;
+
 TypeHandle NodeVertexTransform::_type_handle;
 
 /**

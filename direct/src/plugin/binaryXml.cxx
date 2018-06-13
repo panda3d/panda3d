@@ -15,6 +15,11 @@
 #include "p3d_lock.h"
 #include <sstream>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 static const bool debug_xml_output = false;
 
 static LOCK xml_lock;

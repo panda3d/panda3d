@@ -18,6 +18,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggAttributes::_type_handle;
 
 

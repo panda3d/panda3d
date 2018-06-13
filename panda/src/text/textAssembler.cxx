@@ -40,6 +40,14 @@
 #include <hb.h>
 #endif
 
+using std::max;
+using std::min;
+using std::move;
+using std::pair;
+using std::string;
+using std::swap;
+using std::wstring;
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 

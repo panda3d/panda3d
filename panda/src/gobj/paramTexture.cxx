@@ -14,6 +14,8 @@
 #include "paramTexture.h"
 #include "dcast.h"
 
+using std::ostream;
+
 TypeHandle ParamTextureSampler::_type_handle;
 TypeHandle ParamTextureImage::_type_handle;
 

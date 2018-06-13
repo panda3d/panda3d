@@ -22,6 +22,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+
 TypeHandle DestTextureImage::_type_handle;
 
 

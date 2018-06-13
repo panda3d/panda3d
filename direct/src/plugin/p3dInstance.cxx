@@ -34,6 +34,15 @@
 #include <sys/mman.h>
 #include <ApplicationServices/ApplicationServices.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::set;
+using std::stringstream;
+using std::string;
+using std::vector;
+
 // Lifted from NSEvent.h (which is Objective-C).
 enum {
    NSAlphaShiftKeyMask = 1 << 16,

@@ -18,6 +18,8 @@
 #include "colorAttrib.h"
 #include "compassEffect.h"
 
+using std::ostream;
+
 /**
  * Default Constructor
  */

@@ -23,6 +23,12 @@
 #include <malloc.h>
 #endif
 
+using std::cerr;
+using std::ios;
+using std::ostream;
+using std::string;
+using std::wstring;
+
 static ofstream logfile;
 ostream *nout_stream = &logfile;
 

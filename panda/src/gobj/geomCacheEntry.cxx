@@ -17,6 +17,8 @@
 #include "config_gobj.h"
 #include "clockObject.h"
 
+using std::ostream;
+
 TypeHandle GeomCacheEntry::_type_handle;
 
 /**

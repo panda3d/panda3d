@@ -21,6 +21,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle BillboardEffect::_type_handle;
 
 /**

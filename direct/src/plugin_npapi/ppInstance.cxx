@@ -41,6 +41,15 @@
 #include <sys/wait.h>
 #endif  // HAVE_X11
 
+using std::ios;
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+using std::vector;
+using std::wstring;
+
 
 PPInstance::FileDatas PPInstance::_file_datas;
 

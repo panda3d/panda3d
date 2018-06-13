@@ -32,6 +32,10 @@
 #include "interrogateType.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

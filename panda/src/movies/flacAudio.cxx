@@ -16,6 +16,8 @@
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
+using std::istream;
+
 TypeHandle FlacAudio::_type_handle;
 
 /**

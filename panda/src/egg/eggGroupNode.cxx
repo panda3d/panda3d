@@ -39,6 +39,10 @@
 
 #include <algorithm>
 
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle EggGroupNode::_type_handle;
 
 

@@ -21,6 +21,8 @@
 #include "pnmWriter.h"
 #include "thread.h"
 
+using std::ostream;
+
 
 // The following bit of code, for setting up jpeg_ostream_src(), was lifted
 // from jpeglib, and modified to work with ostream instead of stdio.

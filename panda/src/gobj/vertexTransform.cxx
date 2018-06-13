@@ -17,6 +17,8 @@
 #include "indent.h"
 #include "transformTable.h"
 
+using std::ostream;
+
 PipelineCycler<VertexTransform::CData> VertexTransform::_global_cycler;
 UpdateSeq VertexTransform::_next_modified;
 

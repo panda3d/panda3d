@@ -17,6 +17,9 @@
 
 #include "uniqueIdAllocator.h"
 
+using std::endl;
+using std::ostream;
+
 NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDef(uniqueIdAllocator, "");
 

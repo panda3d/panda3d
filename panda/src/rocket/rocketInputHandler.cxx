@@ -22,6 +22,8 @@
 #ifndef CPPPARSER
 #include <Rocket/Core/Input.h>
 
+using std::string;
+
 using namespace Rocket::Core::Input;
 #endif
 

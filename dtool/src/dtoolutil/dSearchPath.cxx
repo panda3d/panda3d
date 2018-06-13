@@ -17,6 +17,9 @@
 #include <algorithm>
 #include <iterator>
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

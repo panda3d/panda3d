@@ -14,6 +14,9 @@
 #include "textPropertiesManager.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TextPropertiesManager *TextPropertiesManager::_global_ptr = nullptr;
 
 /**

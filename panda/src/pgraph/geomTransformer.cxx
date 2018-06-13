@@ -31,6 +31,8 @@
 #include "colorAttrib.h"
 #include "config_pgraph.h"
 
+using std::move;
+
 PStatCollector GeomTransformer::_apply_vertex_collector("*:Flatten:apply:vertex");
 PStatCollector GeomTransformer::_apply_texcoord_collector("*:Flatten:apply:texcoord");
 PStatCollector GeomTransformer::_apply_set_color_collector("*:Flatten:apply:set color");

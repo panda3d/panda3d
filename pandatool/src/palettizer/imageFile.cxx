@@ -24,6 +24,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ImageFile::_type_handle;
 
 /**

@@ -33,6 +33,15 @@
 #include <ifaddrs.h>
 #endif
 
+using std::hex;
+using std::min;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::stringstream;
+using std::string;
+using std::wstring;
+
 /**
  *
  */

@@ -18,6 +18,8 @@
 
 #include "omniBoundingVolume.h"
 
+using std::string;
+
 TypeHandle PGTop::_type_handle;
 
 /**

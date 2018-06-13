@@ -14,6 +14,10 @@
 #include "load_dso.h"
 #include "executionEnvironment.h"
 
+using std::ostringstream;
+using std::string;
+using std::wstring;
+
 static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
   if (filename.is_local()) {
     if ((path.get_num_directories()==1)&&(path.get_directory(0)=="<auto>")) {

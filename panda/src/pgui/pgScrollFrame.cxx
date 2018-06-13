@@ -13,6 +13,8 @@
 
 #include "pgScrollFrame.h"
 
+using std::string;
+
 TypeHandle PGScrollFrame::_type_handle;
 
 /**

@@ -15,6 +15,8 @@
 
 #include "compose_matrix.h"
 
+using std::ostream;
+
 template class AnimChannel<ACMatrixSwitchType>;
 template class AnimChannel<ACScalarSwitchType>;
 

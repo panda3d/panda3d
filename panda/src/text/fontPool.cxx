@@ -21,6 +21,10 @@
 #include "loader.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 FontPool *FontPool::_global_ptr = nullptr;
 
 /**

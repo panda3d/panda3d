@@ -14,6 +14,11 @@
 #include "stringDecoder.h"
 #include "config_dtoolutil.h"
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::ostream;
+
 ostream *StringDecoder::_notify_ptr = &cerr;
 
 /**

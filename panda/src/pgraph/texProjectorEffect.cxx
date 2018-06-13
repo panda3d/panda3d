@@ -22,6 +22,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 CPT(RenderEffect) TexProjectorEffect::_empty_effect;
 TypeHandle TexProjectorEffect::_type_handle;
 

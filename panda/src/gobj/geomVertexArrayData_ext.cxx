@@ -15,6 +15,9 @@
 
 #ifdef HAVE_PYTHON
 
+using std::min;
+using std::string;
+
 struct InternalBufferData {
   CPT(GeomVertexArrayDataHandle) _handle;
   Py_ssize_t _num_rows;

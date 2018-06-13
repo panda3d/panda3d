@@ -18,6 +18,11 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::istream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileHTTP::_type_handle;
 
 

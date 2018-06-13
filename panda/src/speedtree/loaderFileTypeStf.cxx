@@ -14,6 +14,8 @@
 #include "loaderFileTypeStf.h"
 #include "speedTreeNode.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeStf::_type_handle;
 
 /**

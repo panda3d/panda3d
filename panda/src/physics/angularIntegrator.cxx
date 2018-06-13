@@ -13,6 +13,8 @@
 
 #include "angularIntegrator.h"
 
+using std::ostream;
+
 ConfigVariableDouble AngularIntegrator::_max_angular_dt
 ("default_max_angular_dt", 1.0f / 30.0f);
 

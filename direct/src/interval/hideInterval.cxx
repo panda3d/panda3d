@@ -13,6 +13,9 @@
 
 #include "hideInterval.h"
 
+using std::ostringstream;
+using std::string;
+
 int HideInterval::_unique_index;
 TypeHandle HideInterval::_type_handle;
 

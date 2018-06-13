@@ -13,6 +13,8 @@
 
 #include "arcEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

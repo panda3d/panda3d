@@ -13,6 +13,10 @@
 
 #include "pmap.h"
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 // See ProfileTimer.h for documentation.
 
 

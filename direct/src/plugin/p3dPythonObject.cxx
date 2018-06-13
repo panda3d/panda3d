@@ -13,6 +13,10 @@
 
 #include "p3dPythonObject.h"
 
+using std::ostream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

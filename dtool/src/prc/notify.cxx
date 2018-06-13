@@ -29,6 +29,14 @@
 #include <android/log.h>
 #endif
 
+using std::cerr;
+using std::cout;
+using std::ios;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 Notify *Notify::_global_ptr = nullptr;
 
 /**

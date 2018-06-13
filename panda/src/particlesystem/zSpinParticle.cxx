@@ -14,6 +14,8 @@
 #include "zSpinParticle.h"
 #include "cmath.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

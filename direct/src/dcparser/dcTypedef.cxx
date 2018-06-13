@@ -16,6 +16,10 @@
 #include "dcSimpleParameter.h"
 #include "dcindent.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  * The DCTypedef object becomes the owner of the supplied parameter pointer
  * and will delete it upon destruction.

@@ -47,6 +47,9 @@
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG

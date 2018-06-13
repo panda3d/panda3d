@@ -13,6 +13,8 @@
 
 #include "p3dNoneObject.h"
 
+using std::string;
+
 /**
  *
  */

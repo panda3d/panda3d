@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle TransparencyAttrib::_type_handle;
 int TransparencyAttrib::_attrib_slot;
 

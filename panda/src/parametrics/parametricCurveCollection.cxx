@@ -21,6 +21,11 @@
 #include "string_utils.h"
 #include "look_at.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

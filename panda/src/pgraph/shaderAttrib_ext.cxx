@@ -16,6 +16,9 @@
 
 #ifdef HAVE_PYTHON
 
+using std::move;
+using std::string;
+
 /**
  * Returns a new ShaderAttrib with the given shader input set.
  */

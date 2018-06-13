@@ -48,6 +48,9 @@
 #include <intrin.h>
 #endif
 
+using std::string;
+using std::swap;
+
 union cpuid_info {
   char str[16];
   struct {

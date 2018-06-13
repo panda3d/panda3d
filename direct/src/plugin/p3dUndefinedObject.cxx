@@ -13,6 +13,8 @@
 
 #include "p3dUndefinedObject.h"
 
+using std::string;
+
 /**
  *
  */

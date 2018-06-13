@@ -20,6 +20,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle CharacterJoint::_type_handle;
 
 /**

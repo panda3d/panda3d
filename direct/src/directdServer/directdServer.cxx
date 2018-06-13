@@ -13,6 +13,12 @@
 
 #include "directdServer.h"
 
+using std::cerr;
+using std::endl;
+using std::ios;
+using std::stringstream;
+using std::string;
+
 DirectDServer::DirectDServer() {
 }
 

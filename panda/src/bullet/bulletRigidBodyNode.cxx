@@ -14,6 +14,8 @@
 #include "bulletRigidBodyNode.h"
 #include "bulletShape.h"
 
+using std::ostream;
+
 TypeHandle BulletRigidBodyNode::_type_handle;
 
 /**

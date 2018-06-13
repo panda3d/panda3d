@@ -15,6 +15,11 @@
 #include "pnotify.h"
 #include "config_express.h"
 
+using std::ios;
+using std::min;
+using std::streamoff;
+using std::streampos;
+
 /**
  *
  */

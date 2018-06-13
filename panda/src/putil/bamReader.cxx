@@ -20,6 +20,11 @@
 #include "config_putil.h"
 #include "pipelineCyclerBase.h"
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::string;
+
 TypeHandle BamReaderAuxData::_type_handle;
 
 WritableFactory *BamReader::_factory = nullptr;

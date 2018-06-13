@@ -20,6 +20,10 @@
 #include "transformState.h"
 #include "mouseButton.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle PGSliderBar::_type_handle;
 
 /**

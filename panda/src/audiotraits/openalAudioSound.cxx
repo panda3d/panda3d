@@ -17,6 +17,8 @@
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
 
+using std::string;
+
 TypeHandle OpenALAudioSound::_type_handle;
 
 

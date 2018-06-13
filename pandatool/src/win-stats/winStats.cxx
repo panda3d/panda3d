@@ -18,6 +18,9 @@
 
 #include <windows.h>
 
+using std::ostringstream;
+using std::string;
+
 static const char *toplevel_class_name = "pstats";
 static WinStatsServer *server = nullptr;
 

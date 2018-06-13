@@ -1,6 +1,8 @@
 
 #include "pathFollow.h"
 
+using std::string;
+
 PathFollow::PathFollow(AICharacter *ai_ch, float follow_wt) {
     _follow_weight = follow_wt;
   _curr_path_waypoint = -1;

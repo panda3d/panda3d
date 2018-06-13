@@ -18,6 +18,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle MaterialAttrib::_type_handle;
 int MaterialAttrib::_attrib_slot;
 

@@ -20,6 +20,8 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 
+using std::ostream;
+
 TypeHandle ColorScaleAttrib::_type_handle;
 int ColorScaleAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;

@@ -15,6 +15,8 @@
 #include "modifierButtons.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle ButtonEventList::_type_handle;
 
 /**

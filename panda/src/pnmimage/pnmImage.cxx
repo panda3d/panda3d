@@ -21,6 +21,12 @@
 #include "stackedPerlinNoise2.h"
 #include <algorithm>
 
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

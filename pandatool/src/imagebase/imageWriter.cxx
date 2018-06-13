@@ -13,6 +13,8 @@
 
 #include "imageWriter.h"
 
+using std::string;
+
 /**
  * Image-writing type programs *must* specify their output file using -o.
  */

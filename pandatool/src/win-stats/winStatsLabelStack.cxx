@@ -15,6 +15,8 @@
 #include "winStatsLabel.h"
 #include "pnotify.h"
 
+using std::max;
+
 bool WinStatsLabelStack::_window_class_registered = false;
 const char * const WinStatsLabelStack::_window_class_name = "stack";
 

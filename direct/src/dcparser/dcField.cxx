@@ -26,6 +26,12 @@
 #include "pStatTimer.h"
 #endif
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

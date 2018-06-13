@@ -13,6 +13,8 @@
 
 #include "linearUserDefinedForce.h"
 
+using std::ostream;
+
 TypeHandle LinearUserDefinedForce::_type_handle;
 
 /**

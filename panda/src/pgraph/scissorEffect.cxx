@@ -23,6 +23,10 @@
 #include "boundingHexahedron.h"
 #include "lens.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle ScissorEffect::_type_handle;
 
 /**

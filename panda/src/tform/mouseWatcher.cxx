@@ -35,6 +35,11 @@
 
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+using std::vector;
+using std::wstring;
+
 TypeHandle MouseWatcher::_type_handle;
 
 /**

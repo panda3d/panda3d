@@ -14,6 +14,8 @@
 #include "configVariableBase.h"
 #include "config_prc.h"
 
+using std::string;
+
 ConfigVariableBase::Unconstructed *ConfigVariableBase::_unconstructed;
 
 /**

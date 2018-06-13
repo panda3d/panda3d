@@ -23,6 +23,8 @@
 #include "subprocessWindow.h"
 #include "nativeWindowHandle.h"
 
+using std::string;
+
 TypeHandle TinyOsxGraphicsPipe::_type_handle;
 
 /**

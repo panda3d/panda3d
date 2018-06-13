@@ -19,6 +19,8 @@
 #include "bam.h"
 #include "clockObject.h"
 
+using std::string;
+
 TypeHandle RecorderController::_type_handle;
 RecorderController::RecorderFactory *RecorderController::_factory = nullptr;
 

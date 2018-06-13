@@ -17,6 +17,8 @@
 
 #include "eggData.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeEgg::_type_handle;
 
 /**

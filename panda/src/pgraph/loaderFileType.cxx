@@ -15,6 +15,8 @@
 #include "loaderOptions.h"
 #include "config_pgraph.h"
 
+using std::string;
+
 
 TypeHandle LoaderFileType::_type_handle;
 

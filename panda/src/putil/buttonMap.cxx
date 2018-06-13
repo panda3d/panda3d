@@ -14,6 +14,9 @@
 #include "buttonMap.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ButtonMap::_type_handle;
 
 /**

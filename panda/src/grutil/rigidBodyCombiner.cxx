@@ -23,6 +23,8 @@
 #include "omniBoundingVolume.h"
 #include "cullTraverserData.h"
 
+using std::string;
+
 TypeHandle RigidBodyCombiner::_type_handle;
 
 

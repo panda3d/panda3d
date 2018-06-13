@@ -13,6 +13,8 @@
 
 #include "linearSinkForce.h"
 
+using std::ostream;
+
 TypeHandle LinearSinkForce::_type_handle;
 
 /**

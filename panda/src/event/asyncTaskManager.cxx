@@ -22,6 +22,10 @@
 #include "config_event.h"
 #include <algorithm>
 
+using std::min;
+using std::ostream;
+using std::string;
+
 AsyncTaskManager *AsyncTaskManager::_global_ptr = nullptr;
 
 TypeHandle AsyncTaskManager::_type_handle;

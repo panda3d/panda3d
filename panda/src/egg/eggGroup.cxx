@@ -22,6 +22,9 @@
 #include "lmatrix.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 
 TypeHandle EggGroup::_type_handle;
 

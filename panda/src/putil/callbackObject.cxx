@@ -13,6 +13,8 @@
 
 #include "callbackObject.h"
 
+using std::ostream;
+
 TypeHandle CallbackObject::_type_handle;
 
 

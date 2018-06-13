@@ -20,6 +20,8 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 
+using std::ostream;
+
 CPT(RenderAttrib) AudioVolumeAttrib::_identity_attrib;
 TypeHandle AudioVolumeAttrib::_type_handle;
 int AudioVolumeAttrib::_attrib_slot;

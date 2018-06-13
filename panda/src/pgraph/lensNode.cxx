@@ -20,6 +20,9 @@
 #include "perspectiveLens.h"
 #include "geomNode.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle LensNode::_type_handle;
 
 /**

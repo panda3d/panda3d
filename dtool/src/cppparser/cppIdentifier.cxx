@@ -19,6 +19,9 @@
 #include "cppTBDType.h"
 #include "cppStructType.h"
 
+using std::ostream;
+using std::string;
+
 
 /**
  *

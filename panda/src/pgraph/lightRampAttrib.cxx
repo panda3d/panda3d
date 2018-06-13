@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle LightRampAttrib::_type_handle;
 int LightRampAttrib::_attrib_slot;
 CPT(RenderAttrib) LightRampAttrib::_default;

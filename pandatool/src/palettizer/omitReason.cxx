@@ -13,6 +13,8 @@
 
 #include "omitReason.h"
 
+using std::ostream;
+
 ostream &
 operator << (ostream &out, OmitReason omit) {
   switch (omit) {

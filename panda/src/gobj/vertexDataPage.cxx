@@ -25,6 +25,11 @@
 #include <zlib.h>
 #endif
 
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 ConfigVariableInt max_resident_vertex_data
 ("max-resident-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "

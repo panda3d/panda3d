@@ -16,6 +16,10 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 
+using std::ios;
+using std::string;
+using std::wstring;
+
 /**
  *
  */

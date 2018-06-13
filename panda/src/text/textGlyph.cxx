@@ -17,6 +17,10 @@
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle TextGlyph::_type_handle;
 
 /**

@@ -15,6 +15,8 @@
 #include "config_gobj.h"
 #include "pStatTimer.h"
 
+using std::min;
+
 TypeHandle VertexDataBuffer::_type_handle;
 
 /**

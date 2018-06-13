@@ -21,6 +21,8 @@
 #include "tinyWinGraphicsWindow.h"
 #include "tinyGraphicsBuffer.h"
 
+using std::string;
+
 TypeHandle TinyWinGraphicsPipe::_type_handle;
 
 /**

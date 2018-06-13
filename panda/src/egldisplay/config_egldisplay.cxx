@@ -23,6 +23,8 @@
   #error Buildsystem error: BUILDING_PANDAGLES(2) not defined
 #endif
 
+using std::string;
+
 Configure(config_egldisplay);
 NotifyCategoryDef(egldisplay, "display");
 

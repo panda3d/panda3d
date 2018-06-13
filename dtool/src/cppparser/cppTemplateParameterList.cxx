@@ -16,6 +16,10 @@
 #include "cppInstance.h"
 #include "cppExpression.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

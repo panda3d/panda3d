@@ -35,6 +35,10 @@
 
 #ifdef DO_COLLISION_RECORDING
 
+using std::move;
+using std::ostream;
+using std::string;
+
 TypeHandle CollisionVisualizer::_type_handle;
 
 /**

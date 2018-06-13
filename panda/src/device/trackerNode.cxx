@@ -15,6 +15,8 @@
 #include "config_device.h"
 #include "dataNodeTransmit.h"
 
+using std::string;
+
 TypeHandle TrackerNode::_type_handle;
 
 /**

@@ -22,6 +22,9 @@
 
 #include <algorithm>
 
+using std::pair;
+using std::string;
+
 /**
  *
  */

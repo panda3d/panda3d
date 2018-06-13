@@ -13,6 +13,8 @@
 
 #include "odeUtil.h"
 
+using std::min;
+
 dReal OdeUtil::OC_infinity = dInfinity;
 
 /**

@@ -13,6 +13,8 @@
 
 #include "weakNodePath.h"
 
+using std::ostream;
+
 /**
  *
  */

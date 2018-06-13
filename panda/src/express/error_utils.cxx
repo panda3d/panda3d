@@ -21,6 +21,9 @@
   #include <winsock2.h>
 #endif
 
+using std::endl;
+using std::string;
+
 /**
  *
  */

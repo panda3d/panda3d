@@ -20,6 +20,8 @@
 #include "datagramIterator.h"
 #include "auxBitplaneAttrib.h"
 
+using std::ostream;
+
 TypeHandle AlphaTestAttrib::_type_handle;
 int AlphaTestAttrib::_attrib_slot;
 

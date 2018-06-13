@@ -13,6 +13,8 @@
 
 #include "fadeLodNodeData.h"
 
+using std::ostream;
+
 TypeHandle FadeLODNodeData::_type_handle;
 
 

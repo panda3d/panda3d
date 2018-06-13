@@ -18,6 +18,12 @@
 
 #include <math.h>
 
+using std::istream;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 extern "C" int eggyywrap(void);  // declared below.
 
 static int yyinput(void);        // declared by flex.

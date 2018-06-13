@@ -29,6 +29,8 @@
 #include <errno.h>
 #include <sys/time.h>
 
+using std::string;
+
 TypeHandle glxGraphicsWindow::_type_handle;
 
 /**

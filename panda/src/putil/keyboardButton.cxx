@@ -16,6 +16,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 /**
  * Returns the ButtonHandle associated with the particular ASCII character, if
  * there is one, or ButtonHandle::none() if there is not.

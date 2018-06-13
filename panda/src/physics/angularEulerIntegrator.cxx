@@ -16,6 +16,8 @@
 #include "physicalNode.h"
 #include "config_physics.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

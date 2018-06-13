@@ -30,6 +30,12 @@
 #include "zStream.h"
 #include "virtualFileSystem.h"
 
+using std::cerr;
+using std::cout;
+using std::istream;
+using std::istringstream;
+using std::string;
+
 extern int vrmlyyparse();
 extern void vrmlyyResetLineNumber();
 extern int vrmlyydebug;

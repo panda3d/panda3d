@@ -24,6 +24,10 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 TypeHandle AnimGroup::_type_handle;
 
 

@@ -13,6 +13,9 @@
 
 #include "aiPathFinder.h"
 
+using std::cout;
+using std::endl;
+
 PathFinder::PathFinder(NavMesh nav_mesh) {
   _grid = nav_mesh;
 }

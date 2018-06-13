@@ -14,6 +14,8 @@
 #include "genericAsyncTask.h"
 #include "pnotify.h"
 
+using std::string;
+
 TypeHandle GenericAsyncTask::_type_handle;
 
 /**

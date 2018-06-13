@@ -18,6 +18,12 @@
 #include "config_pnmimagetypes.h"
 #include "thread.h"
 
+using std::endl;
+using std::istream;
+using std::max;
+using std::min;
+using std::string;
+
 // The following bit of code, for setting up jpeg_istream_src(), was lifted
 // from jpeglib, and modified to work with istream instead of stdio.
 

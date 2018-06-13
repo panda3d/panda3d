@@ -13,6 +13,8 @@
 
 #include "typedObject.h"
 
+using std::cerr;
+
 TypeHandle TypedObject::_type_handle;
 
 /**

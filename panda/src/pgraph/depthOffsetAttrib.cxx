@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle DepthOffsetAttrib::_type_handle;
 int DepthOffsetAttrib::_attrib_slot;
 

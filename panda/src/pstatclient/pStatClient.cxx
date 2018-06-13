@@ -27,6 +27,9 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
+using std::ostringstream;
+using std::string;
+
 PStatCollector PStatClient::_heap_total_size_pcollector("System memory:Heap");
 PStatCollector PStatClient::_heap_overhead_size_pcollector("System memory:Heap:Overhead");
 PStatCollector PStatClient::_heap_single_size_pcollector("System memory:Heap:Single");

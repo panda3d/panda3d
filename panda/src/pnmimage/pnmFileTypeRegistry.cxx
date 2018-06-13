@@ -21,6 +21,10 @@
 
 #include <algorithm>
 
+using std::max;
+using std::ostream;
+using std::string;
+
 PNMFileTypeRegistry *PNMFileTypeRegistry::_global_ptr;
 
 /**

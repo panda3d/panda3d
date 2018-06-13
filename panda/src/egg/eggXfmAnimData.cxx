@@ -23,6 +23,8 @@
 #include "compose_matrix.h"
 #include "dcast.h"
 
+using std::ostream;
+
 TypeHandle EggXfmAnimData::_type_handle;
 
 

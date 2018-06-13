@@ -18,6 +18,9 @@
 #include "string_utils.h"
 #include "configVariableColor.h"
 
+using std::ostream;
+using std::string;
+
 CullBinManager *CullBinManager::_global_ptr = nullptr;
 
 /**

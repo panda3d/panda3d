@@ -17,6 +17,9 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
+using std::istringstream;
+using std::string;
+
 /**
  *
  */

@@ -15,6 +15,10 @@
 #include "qtessGlobals.h"
 #include "dcast.h"
 
+using std::cerr;
+using std::max;
+using std::ostream;
+
 /**
  *
  */

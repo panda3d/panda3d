@@ -16,6 +16,9 @@
 #include "indent.h"
 #include "config_pgraph.h"
 
+using std::ostream;
+using std::pair;
+
 RenderEffect::Effects *RenderEffect::_effects = nullptr;
 TypeHandle RenderEffect::_type_handle;
 

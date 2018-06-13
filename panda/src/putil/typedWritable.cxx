@@ -18,6 +18,9 @@
 #include "lightMutexHolder.h"
 #include "bam.h"
 
+using std::move;
+using std::string;
+
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = nullptr;
 

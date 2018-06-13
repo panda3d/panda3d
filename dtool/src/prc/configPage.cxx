@@ -25,6 +25,11 @@
 #include "openssl/evp.h"
 #endif
 
+using std::istream;
+using std::min;
+using std::ostream;
+using std::string;
+
 ConfigPage *ConfigPage::_default_page = nullptr;
 ConfigPage *ConfigPage::_local_page = nullptr;
 

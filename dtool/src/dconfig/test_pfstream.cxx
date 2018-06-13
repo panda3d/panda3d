@@ -14,6 +14,10 @@
 #include "pfstream.h"
 #include <string>
 
+using std::cout;
+using std::endl;
+using std::istream;
+
 void ReadIt(istream& ifs) {
    std::string line;
 

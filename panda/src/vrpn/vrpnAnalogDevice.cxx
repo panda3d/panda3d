@@ -14,6 +14,8 @@
 #include "vrpnAnalogDevice.h"
 #include "vrpnClient.h"
 
+using std::string;
+
 TypeHandle VrpnAnalogDevice::_type_handle;
 
 /**

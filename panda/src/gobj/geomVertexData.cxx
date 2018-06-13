@@ -22,6 +22,12 @@
 #include "pset.h"
 #include "indent.h"
 
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+using std::string;
+
 TypeHandle GeomVertexData::_type_handle;
 TypeHandle GeomVertexData::CDataCache::_type_handle;
 TypeHandle GeomVertexData::CacheEntry::_type_handle;

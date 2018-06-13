@@ -37,6 +37,9 @@
 
 #include <assert.h>
 
+using std::ostream;
+using std::string;
+
 TypeHandle FltRecord::_type_handle;
 
 /**

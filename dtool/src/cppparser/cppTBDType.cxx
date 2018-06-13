@@ -16,6 +16,9 @@
 
 #include "cppSimpleType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

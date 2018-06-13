@@ -16,6 +16,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle IffChunk::_type_handle;
 
 /**

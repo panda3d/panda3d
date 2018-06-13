@@ -13,6 +13,8 @@
 
 #include "angularVectorForce.h"
 
+using std::ostream;
+
 TypeHandle AngularVectorForce::_type_handle;
 
 /**

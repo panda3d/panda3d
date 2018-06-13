@@ -19,6 +19,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle AnimPreloadTable::_type_handle;
 
 /**

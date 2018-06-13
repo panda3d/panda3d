@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle RenderModeAttrib::_type_handle;
 int RenderModeAttrib::_attrib_slot;
 

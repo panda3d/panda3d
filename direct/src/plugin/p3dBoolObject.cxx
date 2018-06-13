@@ -13,6 +13,8 @@
 
 #include "p3dBoolObject.h"
 
+using std::string;
+
 /**
  *
  */

@@ -21,6 +21,9 @@
 #endif
 #include <windows.h>
 
+using std::string;
+using std::wstring;
+
 /**
  * Sets the registry key to the indicated value as a string.  The supplied
  * string value is automatically converted from whatever encoding is set by

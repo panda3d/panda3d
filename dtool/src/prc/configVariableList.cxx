@@ -13,6 +13,8 @@
 
 #include "configVariableList.h"
 
+using std::ostream;
+
 /**
  *
  */

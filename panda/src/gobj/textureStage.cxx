@@ -16,6 +16,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+using std::string;
+
 PT(TextureStage) TextureStage::_default_stage;
 UpdateSeq TextureStage::_sort_seq;
 

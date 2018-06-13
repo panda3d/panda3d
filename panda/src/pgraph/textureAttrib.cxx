@@ -21,6 +21,9 @@
 #include "dcast.h"
 #include "textureStagePool.h"
 
+using std::max;
+using std::ostream;
+
 CPT(RenderAttrib) TextureAttrib::_empty_attrib;
 CPT(RenderAttrib) TextureAttrib::_all_off_attrib;
 TypeHandle TextureAttrib::_type_handle;

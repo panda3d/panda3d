@@ -14,6 +14,9 @@
 #include "forceNode.h"
 #include "config_physics.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ForceNode::_type_handle;
 
 /**

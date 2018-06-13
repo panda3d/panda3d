@@ -13,6 +13,9 @@
 
 #include "parameterRemap.h"
 
+using std::ostream;
+using std::string;
+
 
 /**
  *

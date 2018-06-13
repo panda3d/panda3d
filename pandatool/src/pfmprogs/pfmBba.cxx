@@ -15,6 +15,8 @@
 #include "config_pfmprogs.h"
 #include "pfmFile.h"
 
+using std::cerr;
+
 /**
  *
  */

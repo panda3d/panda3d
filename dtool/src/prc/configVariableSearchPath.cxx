@@ -14,6 +14,8 @@
 #include "configVariableSearchPath.h"
 #include "executionEnvironment.h"
 
+using std::string;
+
 /**
  * Recopies the config variable into the search path for returning its value.
  */

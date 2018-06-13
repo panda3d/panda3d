@@ -16,6 +16,8 @@
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
 
+using std::endl;
+
 TypeHandle PhysxDebugGeomNode::_type_handle;
 
 /**

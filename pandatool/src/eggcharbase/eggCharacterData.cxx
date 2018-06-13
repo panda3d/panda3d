@@ -20,6 +20,10 @@
 
 #include <algorithm>
 
+using std::max;
+using std::ostream;
+using std::string;
+
 // An STL function object to sort the joint list in order from highest to
 // lowest in the new hierarchy.  Used in do_reparent().
 class OrderJointsByNewDepth {

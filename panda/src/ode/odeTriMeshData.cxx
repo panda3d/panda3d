@@ -13,6 +13,9 @@
 
 #include "odeTriMeshData.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle OdeTriMeshData::_type_handle;
 OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
 

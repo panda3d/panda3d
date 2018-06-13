@@ -18,6 +18,10 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle AnimInterface::_type_handle;
 
 /**

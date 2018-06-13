@@ -17,6 +17,8 @@
 #include <locale.h>
 #endif
 
+using std::cerr;
+
 int
 main(int argc, char *argv[]) {
 #ifndef _WIN32

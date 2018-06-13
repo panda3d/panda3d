@@ -14,6 +14,8 @@
 #include "mouseSubregion.h"
 #include "dataNodeTransmit.h"
 
+using std::string;
+
 TypeHandle MouseSubregion::_type_handle;
 
 /**

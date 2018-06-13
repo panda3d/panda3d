@@ -15,6 +15,8 @@
 #include "bufferContext.h"
 #include "indent.h"
 
+using std::ostream;
+
 /**
  * Returns the first BufferContext object stored in the tracker.  You can walk
  * through the entire list of objects stored on the tracker by calling

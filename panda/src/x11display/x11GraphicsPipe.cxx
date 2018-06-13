@@ -19,6 +19,8 @@
 
 #include <dlfcn.h>
 
+using std::string;
+
 TypeHandle x11GraphicsPipe::_type_handle;
 
 bool x11GraphicsPipe::_error_handlers_installed = false;

@@ -13,6 +13,8 @@
 
 #include "orientedParticle.h"
 
+using std::ostream;
+
 /**
  * simple constructor
  */

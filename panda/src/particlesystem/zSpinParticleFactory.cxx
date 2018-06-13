@@ -14,6 +14,8 @@
 #include "zSpinParticleFactory.h"
 #include "zSpinParticle.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

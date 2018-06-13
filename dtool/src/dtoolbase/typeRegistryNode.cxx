@@ -16,6 +16,12 @@
 #include <algorithm>
 #include <string.h>
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::max;
+using std::string;
+
 bool TypeRegistryNode::_paranoid_inheritance = false;
 
 /**

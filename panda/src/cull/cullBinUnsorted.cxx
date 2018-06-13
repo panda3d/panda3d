@@ -16,6 +16,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 
 TypeHandle CullBinUnsorted::_type_handle;
 

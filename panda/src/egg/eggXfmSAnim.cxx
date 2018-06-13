@@ -23,6 +23,10 @@
 
 #include <math.h>
 
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle EggXfmSAnim::_type_handle;
 
 const string EggXfmSAnim::_standard_order = "srpht";

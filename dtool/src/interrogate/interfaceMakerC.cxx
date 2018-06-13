@@ -24,6 +24,9 @@
 #include "interrogateFunction.h"
 #include "cppFunctionType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

@@ -42,6 +42,12 @@
 #include "dxGraphicsStateGuardian9.h"
 #endif
 
+using std::istream;
+using std::max;
+using std::ostream;
+using std::pair;
+using std::string;
+
 double SpeedTreeNode::_global_time_delta = 0.0;
 bool SpeedTreeNode::_authorized;
 bool SpeedTreeNode::_done_first_init;

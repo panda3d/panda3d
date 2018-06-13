@@ -17,6 +17,11 @@
 
 #include <zlib.h>
 
+using std::cerr;
+using std::cout;
+using std::istream;
+using std::string;
+
 void
 stream_decompress(istream &source) {
   IDecompressStream zstream(&source, false);

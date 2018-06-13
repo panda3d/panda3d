@@ -16,6 +16,9 @@
 
 #include <ctype.h>
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

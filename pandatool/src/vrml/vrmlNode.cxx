@@ -17,6 +17,9 @@
 #include "indent.h"
 #include "pnotify.h"
 
+using std::cerr;
+using std::ostream;
+
 VrmlNode::
 VrmlNode(const VrmlNodeType *type) {
   _type = type;

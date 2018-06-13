@@ -27,6 +27,14 @@
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
 
+using std::dec;
+using std::hex;
+using std::ios;
+using std::istringstream;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**

@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle AuxBitplaneAttrib::_type_handle;
 int AuxBitplaneAttrib::_attrib_slot;
 CPT(RenderAttrib) AuxBitplaneAttrib::_default;

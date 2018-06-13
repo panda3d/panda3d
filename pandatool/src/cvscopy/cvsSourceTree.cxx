@@ -28,6 +28,9 @@
 #include <direct.h>  // for chdir
 #endif
 
+using std::cerr;
+using std::string;
+
 bool CVSSourceTree::_got_start_fullpath = false;
 Filename CVSSourceTree::_start_fullpath;
 

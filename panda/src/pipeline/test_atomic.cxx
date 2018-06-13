@@ -17,6 +17,8 @@
 #include "mutexHolder.h"
 #include "atomicAdjust.h"
 
+using std::string;
+
 // The number of threads to spawn.
 static const int number_of_threads = 4;
 

@@ -20,6 +20,8 @@
 #include "pnotify.h"
 #include "config_downloader.h"
 
+using std::string;
+
 /**
  *
  */

@@ -21,6 +21,11 @@
 
 #include <wingdi.h>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::string;
+
 TypeHandle wglGraphicsWindow::_type_handle;
 
 /**

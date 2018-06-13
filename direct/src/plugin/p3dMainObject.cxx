@@ -18,6 +18,14 @@
 #include "p3dStringObject.h"
 #include "p3dInstanceManager.h"
 
+using std::ios;
+using std::max;
+using std::ostream;
+using std::ostringstream;
+using std::streamsize;
+using std::string;
+using std::vector;
+
 /**
  *
  */

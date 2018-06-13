@@ -22,6 +22,10 @@
 #include "pnotify.h"
 #include "pnmFileType.h"
 
+using std::max;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

@@ -18,7 +18,11 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>  // strrchr
-using namespace std;
+
+using std::cerr;
+using std::stringstream;
+using std::string;
+using std::vector;
 
 #if defined(_WIN32) && defined(NON_CONSOLE)
 // On Windows, we may need to build p3dpythonw.exe, a non-console version of

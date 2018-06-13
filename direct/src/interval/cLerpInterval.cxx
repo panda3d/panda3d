@@ -14,6 +14,10 @@
 #include "cLerpInterval.h"
 #include "string_utils.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLerpInterval::_type_handle;
 
 /**

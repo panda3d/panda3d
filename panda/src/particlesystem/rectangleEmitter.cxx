@@ -13,6 +13,8 @@
 
 #include "rectangleEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

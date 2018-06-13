@@ -18,6 +18,8 @@
 
 #include <math.h>
 
+using std::ostream;
+
 TypeHandle BoundingLine::_type_handle;
 
 /**

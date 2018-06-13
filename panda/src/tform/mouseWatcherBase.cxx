@@ -16,6 +16,9 @@
 #include "indent.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle MouseWatcherBase::_type_handle;
 
 /**

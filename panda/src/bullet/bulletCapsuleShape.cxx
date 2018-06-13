@@ -13,6 +13,8 @@
 
 #include "bulletCapsuleShape.h"
 
+using std::endl;
+
 TypeHandle BulletCapsuleShape::_type_handle;
 
 /**

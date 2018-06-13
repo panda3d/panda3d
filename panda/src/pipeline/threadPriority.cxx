@@ -15,6 +15,10 @@
 #include "pnotify.h" // nassertr
 #include "pipeline.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 ostream &
 operator << (ostream &out, ThreadPriority pri) {
   switch (pri) {

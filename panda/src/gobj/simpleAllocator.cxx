@@ -13,6 +13,8 @@
 
 #include "simpleAllocator.h"
 
+using std::ostream;
+
 /**
  *
  */

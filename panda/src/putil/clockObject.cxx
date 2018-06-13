@@ -17,6 +17,12 @@
 #include "string_utils.h"
 #include "thread.h"
 
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_stop_clock_wait)() = ClockObject::dummy_clock_wait;

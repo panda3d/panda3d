@@ -26,6 +26,9 @@
 #include <maya/MFnMesh.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 TypeHandle MayaNodeDesc::_type_handle;
 
 // This is a list of the names of Maya connections that count as a transform.

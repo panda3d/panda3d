@@ -28,6 +28,9 @@ extern "C" {
 #include <setjmp.h>
 #endif
 
+using std::max;
+using std::min;
+
 TypeHandle WebcamVideoCursorV4L::_type_handle;
 
 #define clamp(x) min(max(x, 0.0), 255.0)

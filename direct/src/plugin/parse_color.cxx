@@ -14,6 +14,8 @@
 #include "parse_color.h"
 #include <ctype.h>
 
+using std::string;
+
 static bool parse_hexdigit(int &result, char digit);
 
 /**

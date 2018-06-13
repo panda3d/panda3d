@@ -17,6 +17,9 @@
 #include "indent.h"
 #include "virtualFileSystem.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

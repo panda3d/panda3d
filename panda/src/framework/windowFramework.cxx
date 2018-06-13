@@ -62,6 +62,12 @@
 // shuttle_controls.bam_src.c.
 #include "shuttle_controls.bam_src.c"
 
+using std::istringstream;
+using std::max;
+using std::min;
+using std::ostringstream;
+using std::string;
+
 // This number is chosen arbitrarily to override any settings in model files.
 static const int override_priority = 100;
 

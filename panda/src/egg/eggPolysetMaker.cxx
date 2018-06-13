@@ -14,6 +14,8 @@
 #include "eggPolysetMaker.h"
 #include "eggPolygon.h"
 
+using std::min;
+
 TypeHandle EggPolysetMaker::_type_handle;
 
 /**

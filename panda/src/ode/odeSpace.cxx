@@ -21,6 +21,8 @@
 
 #include "throw_event.h"
 
+using std::ostream;
+
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
 const int OdeSpace::MAX_CONTACTS = 16;

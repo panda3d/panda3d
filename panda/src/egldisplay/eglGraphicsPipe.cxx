@@ -19,6 +19,8 @@
 #include "config_egldisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle eglGraphicsPipe::_type_handle;
 
 /**

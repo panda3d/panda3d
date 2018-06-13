@@ -14,6 +14,8 @@
 #include "cppParameterList.h"
 #include "cppInstance.h"
 
+using std::ostream;
+
 /**
  *
  */

@@ -18,6 +18,8 @@
 #include "tinyGraphicsStateGuardian.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle TinyGraphicsBuffer::_type_handle;
 
 /**

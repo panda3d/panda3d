@@ -24,6 +24,10 @@
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
+using std::min;
+using std::pair;
+using std::string;
+
 /**
  *
  */

@@ -17,6 +17,10 @@
 #include "configVariableEnum.h"
 #include "string_utils.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TextureStagePool *TextureStagePool::_global_ptr = nullptr;
 
 

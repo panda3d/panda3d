@@ -22,6 +22,9 @@
 #include "bamWriter.h"
 #include "fftCompressor.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle AnimChannelScalarTable::_type_handle;
 
 /**

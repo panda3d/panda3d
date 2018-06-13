@@ -18,6 +18,8 @@
 
 #include "linearControlForce.h"
 
+using std::ostream;
+
 TypeHandle LinearControlForce::_type_handle;
 
 /**

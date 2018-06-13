@@ -15,6 +15,10 @@
 #include "eventQueue.h"
 #include "config_event.h"
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 TypeHandle EventHandler::_type_handle;
 
 EventHandler *EventHandler::_global_event_handler = nullptr;

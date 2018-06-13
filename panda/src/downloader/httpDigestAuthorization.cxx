@@ -21,6 +21,13 @@
 #include "openssl/md5.h"
 #include <time.h>
 
+using std::hex;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 const string HTTPDigestAuthorization::_mechanism = "digest";
 
 /**

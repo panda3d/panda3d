@@ -13,6 +13,8 @@
 
 #include "samplerContext.h"
 
+using std::ostream;
+
 TypeHandle SamplerContext::_type_handle;
 
 /**

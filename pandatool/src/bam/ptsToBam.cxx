@@ -22,6 +22,10 @@
 #include "string_utils.h"
 #include "config_egg2pg.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 /**
  *
  */

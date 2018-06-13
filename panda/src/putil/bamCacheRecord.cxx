@@ -19,6 +19,10 @@
 #include "indent.h"
 #include "config_putil.h" // util_cat
 
+using std::ostream;
+using std::setw;
+using std::string;
+
 TypeHandle BamCacheRecord::_type_handle;
 
 /**

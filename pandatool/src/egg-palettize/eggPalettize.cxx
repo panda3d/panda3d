@@ -26,6 +26,9 @@
 
 #include <stdio.h>
 
+using std::istringstream;
+using std::string;
+
 /**
  *
  */

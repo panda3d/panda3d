@@ -16,6 +16,8 @@
 #include "fltHeader.h"
 #include "indent.h"
 
+using std::cout;
+
 /**
  *
  */

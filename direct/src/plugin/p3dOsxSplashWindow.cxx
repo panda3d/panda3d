@@ -26,6 +26,9 @@
   #endif
 #endif
 
+using std::min;
+using std::string;
+
 /**
  *
  */

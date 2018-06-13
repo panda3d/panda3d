@@ -23,6 +23,11 @@
 
 #include <algorithm>
 
+using std::dec;
+using std::hex;
+using std::ostream;
+using std::string;
+
 
 /**
  * Use the ConfigVariableManager::make_variable() interface to create a new

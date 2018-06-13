@@ -27,6 +27,8 @@
 #include "nativeWindowHandle.h"
 #include "get_x11.h"
 
+using std::string;
+
 TypeHandle eglGraphicsWindow::_type_handle;
 
 /**

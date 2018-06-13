@@ -19,6 +19,9 @@
 #include "colorAttrib.h"
 #include "pStatTimer.h"
 
+using std::min;
+using std::ostream;
+
 PStatCollector GeomParticleRenderer::_render_collector("App:Particles:Geom:Render");
 
 /**

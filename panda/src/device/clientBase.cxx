@@ -14,6 +14,9 @@
 #include "clientBase.h"
 #include "config_device.h"
 
+using std::endl;
+using std::string;
+
 TypeHandle ClientBase::_type_handle;
 
 /**

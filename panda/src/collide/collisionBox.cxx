@@ -35,6 +35,10 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionBox::_volume_pcollector("Collision Volumes:CollisionBox");
 PStatCollector CollisionBox::_test_pcollector("Collision Tests:CollisionBox");
 TypeHandle CollisionBox::_type_handle;

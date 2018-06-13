@@ -23,6 +23,8 @@
 #include "omniBoundingVolume.h"
 #include <stdio.h>  // For sprintf/snprintf
 
+using std::string;
+
 PStatCollector FrameRateMeter::_show_fps_pcollector("*:Show fps");
 
 TypeHandle FrameRateMeter::_type_handle;

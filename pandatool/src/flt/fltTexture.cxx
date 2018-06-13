@@ -18,6 +18,10 @@
 #include "pathReplace.h"
 #include "config_putil.h"
 
+using std::ios;
+using std::streampos;
+using std::string;
+
 TypeHandle FltTexture::_type_handle;
 
 /**

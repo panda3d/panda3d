@@ -15,6 +15,9 @@
 
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggMaterial::_type_handle;
 
 

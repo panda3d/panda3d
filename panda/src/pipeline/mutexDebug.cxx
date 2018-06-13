@@ -17,6 +17,10 @@
 
 #ifdef DEBUG_THREADS
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 int MutexDebug::_pstats_count = 0;
 MutexTrueImpl *MutexDebug::_global_lock;
 

@@ -30,6 +30,11 @@
 #include "config_particlesystem.h"
 #include "pStatTimer.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 PStatCollector SpriteParticleRenderer::_render_collector("App:Particles:Sprite:Render");
 
 /**

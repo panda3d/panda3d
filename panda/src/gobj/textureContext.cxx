@@ -13,6 +13,8 @@
 
 #include "textureContext.h"
 
+using std::ostream;
+
 TypeHandle TextureContext::_type_handle;
 
 /**

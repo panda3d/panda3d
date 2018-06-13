@@ -20,6 +20,9 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomTristripsAdjacency.h"
 
+using std::map;
+using std::pair;
+
 TypeHandle GeomTristrips::_type_handle;
 
 /**

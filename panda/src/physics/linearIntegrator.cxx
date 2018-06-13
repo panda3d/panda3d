@@ -16,6 +16,8 @@
 #include "physicalNode.h"
 #include "forceNode.h"
 
+using std::ostream;
+
 ConfigVariableDouble LinearIntegrator::_max_linear_dt
 ("default_max_linear_dt", 1.0f / 30.0f);
 

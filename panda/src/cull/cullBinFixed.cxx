@@ -20,6 +20,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 TypeHandle CullBinFixed::_type_handle;
 

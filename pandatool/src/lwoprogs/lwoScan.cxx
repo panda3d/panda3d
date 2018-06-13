@@ -17,6 +17,8 @@
 #include "lwoChunk.h"
 #include "config_lwo.h"
 
+using std::cout;
+
 /**
  *
  */

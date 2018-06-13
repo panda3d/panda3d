@@ -14,6 +14,10 @@
 #include "cppNameComponent.h"
 #include "cppTemplateParameterList.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

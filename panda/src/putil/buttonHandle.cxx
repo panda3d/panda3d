@@ -14,6 +14,8 @@
 #include "buttonHandle.h"
 #include "buttonRegistry.h"
 
+using std::string;
+
 // This is initialized to zero by static initialization.
 ButtonHandle ButtonHandle::_none;
 

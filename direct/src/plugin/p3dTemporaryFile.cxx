@@ -14,6 +14,8 @@
 #include "p3dTemporaryFile.h"
 #include "p3dInstanceManager.h"
 
+using std::string;
+
 /**
  * Constructs a new, unique temporary filename.
  */

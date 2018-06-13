@@ -22,6 +22,9 @@
 
 #include <math.h>
 
+using std::endl;
+using std::ostream;
+
 TypeHandle PolylightEffect::_type_handle;
 
 /**

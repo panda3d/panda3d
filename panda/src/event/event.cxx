@@ -14,6 +14,9 @@
 #include "event.h"
 #include "config_event.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle Event::_type_handle;
 
 /**

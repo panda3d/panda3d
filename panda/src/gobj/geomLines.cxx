@@ -20,6 +20,9 @@
 #include "geomVertexWriter.h"
 #include "geomLinesAdjacency.h"
 
+using std::map;
+using std::move;
+
 TypeHandle GeomLines::_type_handle;
 
 /**

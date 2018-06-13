@@ -13,6 +13,9 @@
 
 #include "ordered_vector.h"
 
+using std::cerr;
+using std::pair;
+
 typedef ov_multiset<int> myvec;
 
 void

@@ -17,6 +17,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle CharacterJointBundle::_type_handle;
 
 /**

@@ -13,6 +13,8 @@
 
 #include "texturePeeker.h"
 
+using std::endl;
+
 
 /**
  * Use Texture::peek() to construct a TexturePeeker.

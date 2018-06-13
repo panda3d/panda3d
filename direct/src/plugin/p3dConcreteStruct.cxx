@@ -13,6 +13,10 @@
 
 #include "p3dConcreteStruct.h"
 
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

@@ -16,6 +16,8 @@
 #include "dataNodeTransmit.h"
 #include "dcast.h"
 
+using std::string;
+
 TypeHandle DialNode::_type_handle;
 
 /**

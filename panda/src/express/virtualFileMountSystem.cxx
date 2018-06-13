@@ -14,6 +14,14 @@
 #include "virtualFileMountSystem.h"
 #include "virtualFileSystem.h"
 
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileMountSystem::_type_handle;
 
 

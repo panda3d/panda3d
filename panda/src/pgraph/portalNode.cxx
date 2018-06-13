@@ -30,6 +30,10 @@
 
 #include "plane.h"
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 TypeHandle PortalNode::_type_handle;
 
 

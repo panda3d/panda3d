@@ -13,6 +13,8 @@
 
 #include "cppVisibility.h"
 
+using std::ostream;
+
 ostream &
 operator << (ostream &out, CPPVisibility vis) {
   switch (vis) {

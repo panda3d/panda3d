@@ -17,6 +17,8 @@
 #include "boundingHexahedron.h"
 #include "config_mathutil.h"
 
+using std::ostream;
+
 TypeHandle BoundingPlane::_type_handle;
 
 /**

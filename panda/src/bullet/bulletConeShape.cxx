@@ -13,6 +13,8 @@
 
 #include "bulletConeShape.h"
 
+using std::endl;
+
 TypeHandle BulletConeShape::_type_handle;
 
 /**

@@ -13,6 +13,8 @@
 
 #include "sphereVolumeEmitter.h"
 
+using std::ostream;
+
 /**
  * constructor
  */

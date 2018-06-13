@@ -20,6 +20,12 @@
 #include "virtualFileSystem.h"
 #include "zStream.h"
 
+using std::cin;
+using std::cout;
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  * Opens up the image file and tries to read its header information to
  * determine its size, number of channels, etc.  If successful, updates the

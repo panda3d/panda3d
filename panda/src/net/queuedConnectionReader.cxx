@@ -16,6 +16,8 @@
 #include "trueClock.h"
 #include "lightMutexHolder.h"
 
+using std::max;
+
 template class QueuedReturn<NetDatagram>;
 
 /**

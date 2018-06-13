@@ -25,6 +25,10 @@
 #include "dataNodeTransmit.h"
 #include "dataGraphTraverser.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle DriveInterface::_type_handle;
 const PN_stdfloat DriveInterface::_hpr_quantize = 0.001;
 

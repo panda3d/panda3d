@@ -47,6 +47,8 @@
 
 #define TOSTRING(x) (x == nullptr ? "" : x)
 
+using std::string;
+
 /**
  *
  */

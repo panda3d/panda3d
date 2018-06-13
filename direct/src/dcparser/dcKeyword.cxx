@@ -15,6 +15,9 @@
 #include "hashGenerator.h"
 #include "dcindent.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

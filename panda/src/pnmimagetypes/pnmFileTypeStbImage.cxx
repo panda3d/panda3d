@@ -60,6 +60,11 @@
 
 #include "stb_image.h"
 
+using std::ios;
+using std::istream;
+using std::streampos;
+using std::string;
+
 static const char *const stb_extensions[] = {
   // Expose the extensions that we don't already expose through other loaders.
 #if !defined(HAVE_JPEG) && !defined(ANDROID)

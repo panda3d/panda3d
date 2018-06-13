@@ -22,6 +22,9 @@
 #include "xFileDataObjectArray.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle XFileDataDef::_type_handle;
 
 /**

@@ -16,6 +16,8 @@
 #include "pnotify.h"
 #include "eggData.h"
 
+using std::string;
+
 /**
  *
  */

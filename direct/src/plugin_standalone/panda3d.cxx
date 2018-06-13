@@ -29,6 +29,12 @@
 #include <signal.h>
 #endif
 
+using std::cerr;
+using std::cout;
+using std::min;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

@@ -14,6 +14,8 @@
 #include "asyncTaskSequence.h"
 #include "asyncTaskManager.h"
 
+using std::string;
+
 TypeHandle AsyncTaskSequence::_type_handle;
 
 /**

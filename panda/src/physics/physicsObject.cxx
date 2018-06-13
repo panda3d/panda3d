@@ -13,6 +13,8 @@
 
 #include "physicsObject.h"
 
+using std::ostream;
+
 ConfigVariableDouble PhysicsObject::_default_terminal_velocity
 ("default_terminal_velocity", 400.0f);
 

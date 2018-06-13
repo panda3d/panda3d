@@ -17,6 +17,10 @@
 #include "load_plugin.h"
 #include "find_root_dir.h"
 
+using std::cerr;
+using std::streampos;
+using std::string;
+
 /**
  *
  */

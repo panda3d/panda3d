@@ -17,6 +17,9 @@
 #include "indirectLess.h"
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

@@ -15,6 +15,9 @@
 #include "transformState.h"
 #include "config_interval.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle CConstrainTransformInterval::_type_handle;
 
 /**

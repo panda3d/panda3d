@@ -18,6 +18,8 @@
 #include "bamWriter.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+
 TypeHandle JointVertexTransform::_type_handle;
 
 /**

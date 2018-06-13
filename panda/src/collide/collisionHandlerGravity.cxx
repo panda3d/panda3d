@@ -18,6 +18,10 @@
 #include "collisionPlane.h"
 #include "clockObject.h"
 
+using std::cout;
+using std::endl;
+using std::max;
+
 TypeHandle CollisionHandlerGravity::_type_handle;
 
 /**

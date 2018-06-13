@@ -20,6 +20,11 @@
 
 #include "py_panda.h"
 
+using std::cerr;
+using std::ios;
+using std::istringstream;
+using std::string;
+
 extern "C" {
   // This has been compiled-in by the build system, if all is well.
   extern struct _frozen _PyImport_FrozenModules[];

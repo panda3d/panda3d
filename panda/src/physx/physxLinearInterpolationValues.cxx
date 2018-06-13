@@ -13,6 +13,11 @@
 
 #include "physxLinearInterpolationValues.h"
 
+using std::cout;
+using std::max;
+using std::min;
+using std::ostream;
+
 /**
  *
  */

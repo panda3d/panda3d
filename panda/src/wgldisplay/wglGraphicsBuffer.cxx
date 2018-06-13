@@ -20,6 +20,8 @@
 
 #include <wingdi.h>
 
+using std::string;
+
 TypeHandle wglGraphicsBuffer::_type_handle;
 
 

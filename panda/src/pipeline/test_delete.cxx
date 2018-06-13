@@ -17,6 +17,9 @@
 #include "mutexHolder.h"
 #include "deletedChain.h"
 
+using std::min;
+using std::string;
+
 // This is the number of passes to make per thread.
 static const int num_passes = 100;
 

@@ -14,6 +14,8 @@
 #include "imageResize.h"
 #include "string_utils.h"
 
+using std::string;
+
 /**
  *
  */

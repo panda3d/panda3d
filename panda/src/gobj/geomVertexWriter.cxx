@@ -13,6 +13,7 @@
 
 #include "geomVertexWriter.h"
 
+using std::ostream;
 
 #ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to

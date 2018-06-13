@@ -18,6 +18,8 @@
 
 #include <assert.h>
 
+using std::istream;
+
 /**
  *
  */

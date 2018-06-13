@@ -16,6 +16,9 @@
 
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggVertexUV::_type_handle;
 
 /**

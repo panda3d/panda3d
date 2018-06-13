@@ -16,6 +16,8 @@
 #include "configVariableInt.h"
 #include "config_pipeline.h"
 
+using std::string;
+
 Pipeline *Pipeline::_render_pipeline = nullptr;
 
 /**

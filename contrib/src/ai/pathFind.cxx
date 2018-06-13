@@ -13,6 +13,11 @@
 
 #include "pathFind.h"
 
+using std::cout;
+using std::endl;
+using std::stringstream;
+using std::string;
+
 PathFind::PathFind(AICharacter *ai_ch) {
   _ai_char = ai_ch;
 

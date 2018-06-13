@@ -16,7 +16,8 @@
 
 #include <iostream>
 #include <fstream>
-using namespace std;
+
+using std::cerr;
 
 // Having a global Panda3DMac object just makes things easier.
 static Panda3DMac *this_prog;

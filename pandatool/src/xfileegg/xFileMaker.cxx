@@ -30,6 +30,8 @@
 #include "string_utils.h"
 #include "datagram.h"
 
+using std::string;
+
 /**
  *
  */

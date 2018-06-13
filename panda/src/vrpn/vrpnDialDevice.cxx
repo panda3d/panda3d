@@ -14,6 +14,8 @@
 #include "vrpnDialDevice.h"
 #include "vrpnClient.h"
 
+using std::string;
+
 TypeHandle VrpnDialDevice::_type_handle;
 
 /**

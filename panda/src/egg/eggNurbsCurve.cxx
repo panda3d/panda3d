@@ -15,6 +15,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggNurbsCurve::_type_handle;
 
 /**

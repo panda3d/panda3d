@@ -24,6 +24,8 @@
 #include "py_panda.h"
 #endif
 
+using std::string;
+
 TypeHandle RocketRegion::_type_handle;
 
 /**

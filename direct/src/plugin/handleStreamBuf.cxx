@@ -28,6 +28,10 @@
 #include <libio.h>
 #endif // !_WIN32 && !__APPLE__ && !__FreeBSD__
 
+using std::cerr;
+using std::dec;
+using std::hex;
+
 static const size_t handle_buffer_size = 4096;
 
 /**

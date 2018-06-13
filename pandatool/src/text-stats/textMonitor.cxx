@@ -18,6 +18,9 @@
 #include "indent.h"
 #include <stdio.h>  // sprintf
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

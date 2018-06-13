@@ -17,6 +17,10 @@
 #include "config_display.h"
 #include "texture.h"
 
+using std::min;
+using std::ostream;
+using std::string;
+
 /**
  * Returns true if this set of properties makes strictly greater or equal
  * demands of the framebuffer than the other set of framebuffer properties.

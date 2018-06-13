@@ -28,6 +28,20 @@
 
 #include "openSSLWrapper.h"
 
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+using std::stringstream;
+using std::string;
+
 // This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char Multifile::_header[] = "pmf\0\n\r";
 const size_t Multifile::_header_size = 6;

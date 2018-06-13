@@ -20,6 +20,10 @@
 
 #include <iterator>
 
+using std::max;
+using std::ostream;
+using std::string;
+
 TypeHandle EggVertexPool::_type_handle;
 
 /**

@@ -16,6 +16,8 @@
 
 #include <stdlib.h>
 
+using std::ostream;
+
 /**
  * default constructor
  */

@@ -18,6 +18,8 @@
 #include "webcamVideoCursorOpenCV.h"
 #include "configVariableInt.h"
 
+using std::ostringstream;
+
 TypeHandle WebcamVideoOpenCV::_type_handle;
 
 /**

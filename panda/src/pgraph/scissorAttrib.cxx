@@ -19,6 +19,10 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle ScissorAttrib::_type_handle;
 int ScissorAttrib::_attrib_slot;
 CPT(RenderAttrib) ScissorAttrib::_off_attrib;

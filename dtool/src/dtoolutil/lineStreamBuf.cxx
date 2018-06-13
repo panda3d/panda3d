@@ -13,6 +13,9 @@
 
 #include "lineStreamBuf.h"
 
+using std::streamsize;
+using std::string;
+
 /**
  *
  */

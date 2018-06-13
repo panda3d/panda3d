@@ -49,6 +49,10 @@
 
 #include <stdio.h>
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 TypeHandle TextNode::_type_handle;
 
 PStatCollector TextNode::_text_generate_pcollector("*:Generate Text");

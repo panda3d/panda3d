@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+using std::ostream;
+
 PStatCollector ParticleSystemManager::_do_particles_collector("App:Particles:Do Particles");
 
 /**

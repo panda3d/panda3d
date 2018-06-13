@@ -71,6 +71,13 @@
 
 #include "mayaEggLoader.h"
 
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::pair;
+using std::string;
+using std::vector;
+
 class MayaEggGroup;
 class MayaEggGeom;
 class MayaEggMesh;

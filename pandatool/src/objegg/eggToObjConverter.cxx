@@ -23,6 +23,9 @@
 #include "eggLine.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

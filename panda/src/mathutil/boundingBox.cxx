@@ -22,6 +22,10 @@
 #include <math.h>
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 const int BoundingBox::plane_def[6][3] = {
   { 0, 4, 5 },
   { 4, 6, 7 },

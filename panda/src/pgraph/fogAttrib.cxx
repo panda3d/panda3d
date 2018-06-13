@@ -18,6 +18,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle FogAttrib::_type_handle;
 int FogAttrib::_attrib_slot;
 

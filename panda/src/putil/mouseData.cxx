@@ -13,6 +13,8 @@
 
 #include "mouseData.h"
 
+using std::ostream;
+
 /**
  *
  */

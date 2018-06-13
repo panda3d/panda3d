@@ -14,6 +14,8 @@
 #include "baseForce.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle BaseForce::_type_handle;
 
 /**

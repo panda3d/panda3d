@@ -34,6 +34,10 @@
 #include "throw_event.h"
 #include "config_gobj.h"
 
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle GraphicsOutput::_type_handle;
 
 PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");

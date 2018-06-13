@@ -35,6 +35,11 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle TextureReference::_type_handle;
 
 /**

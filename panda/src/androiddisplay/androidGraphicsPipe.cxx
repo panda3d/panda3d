@@ -19,6 +19,8 @@
 #include "config_androiddisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle AndroidGraphicsPipe::_type_handle;
 
 /**

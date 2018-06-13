@@ -30,6 +30,11 @@
 #include "sphereSurfaceEmitter.h"
 #include "pStatTimer.h"
 
+using std::cout;
+using std::endl;
+using std::min;
+using std::ostream;
+
 TypeHandle ParticleSystem::_type_handle;
 
 PStatCollector ParticleSystem::_update_collector("App:Particles:Update");

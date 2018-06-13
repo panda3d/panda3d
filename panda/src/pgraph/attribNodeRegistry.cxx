@@ -14,6 +14,10 @@
 #include "attribNodeRegistry.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+using std::pair;
+using std::string;
+
 AttribNodeRegistry * TVOLATILE AttribNodeRegistry::_global_ptr;
 
 /**

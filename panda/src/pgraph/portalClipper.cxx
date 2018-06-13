@@ -30,6 +30,10 @@
 #include "geomLinestrips.h"
 #include "geomPoints.h"
 
+using std::endl;
+using std::max;
+using std::min;
+
 TypeHandle PortalClipper::_type_handle;
 
 /**

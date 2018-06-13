@@ -22,6 +22,8 @@
 #include "loaderOptions.h"
 #include "bamCacheRecord.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypePandatool::_type_handle;
 
 /**

@@ -16,6 +16,8 @@
 #include "numeric_types.h"
 #include "gtkStatsLabelStack.h"
 
+using std::string;
+
 static const int default_piano_roll_width = 400;
 static const int default_piano_roll_height = 200;
 

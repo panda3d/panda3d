@@ -32,6 +32,9 @@
 
 #include <ctype.h>
 
+using std::istringstream;
+using std::string;
+
 /**
  *
  */

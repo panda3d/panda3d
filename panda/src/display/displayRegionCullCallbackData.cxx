@@ -16,6 +16,8 @@
 #include "sceneSetup.h"
 #include "graphicsEngine.h"
 
+using std::ostream;
+
 TypeHandle DisplayRegionCullCallbackData::_type_handle;
 
 

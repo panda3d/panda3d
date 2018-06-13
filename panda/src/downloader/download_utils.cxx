@@ -19,6 +19,9 @@
 #include "config_downloader.h"
 #include <zlib.h>
 
+using std::endl;
+using std::ios;
+
 unsigned long
 check_crc(Filename name) {
   pifstream read_stream;

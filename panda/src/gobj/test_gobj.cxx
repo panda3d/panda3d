@@ -14,6 +14,8 @@
 #include "geom.h"
 #include "perspectiveProjection.h"
 
+using std::endl;
+
 int main() {
   nout << "running test_gobj" << endl;
   PT(GeomTri) triangle = new GeomTri;

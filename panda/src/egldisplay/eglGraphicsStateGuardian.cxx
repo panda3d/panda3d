@@ -17,6 +17,8 @@
 
 #include <dlfcn.h>
 
+using std::string;
+
 TypeHandle eglGraphicsStateGuardian::_type_handle;
 
 /**

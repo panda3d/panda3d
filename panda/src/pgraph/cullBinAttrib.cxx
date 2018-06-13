@@ -17,6 +17,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle CullBinAttrib::_type_handle;
 int CullBinAttrib::_attrib_slot;
 

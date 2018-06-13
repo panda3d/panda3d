@@ -15,6 +15,8 @@
 #include "AwMouseAndKeyboard.h"
 #include "dataNodeTransmit.h"
 
+using std::string;
+
 TypeHandle AwMouseAndKeyboard::_type_handle;
 
 AwMouseAndKeyboard::AwMouseAndKeyboard(const string &name):

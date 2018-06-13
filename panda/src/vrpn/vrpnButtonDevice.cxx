@@ -14,6 +14,8 @@
 #include "vrpnButtonDevice.h"
 #include "vrpnClient.h"
 
+using std::string;
+
 TypeHandle VrpnButtonDevice::_type_handle;
 
 /**

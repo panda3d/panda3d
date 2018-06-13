@@ -13,6 +13,8 @@
 
 #include "datagramBuffer.h"
 
+using std::string;
+
 /**
  * Writes a sequence of bytes to the beginning of the datagram file.  This may
  * be called any number of times after the file has been opened and before the

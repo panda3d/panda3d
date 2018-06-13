@@ -18,6 +18,10 @@
 #include "indent.h"
 #include <algorithm>
 
+using std::ostream;
+using std::pair;
+using std::setw;
+
 TypeHandle BamCacheIndex::_type_handle;
 
 

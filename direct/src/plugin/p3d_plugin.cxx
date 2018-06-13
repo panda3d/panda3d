@@ -26,6 +26,8 @@
 #include <assert.h>
 #include <math.h>
 
+using std::string;
+
 // Use a simple lock to protect the C-style API functions in this module from
 // parallel access by multiple threads in the host.
 

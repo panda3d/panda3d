@@ -18,6 +18,8 @@
 
 #include "pnotify.h"
 
+using std::ostringstream;
+
 /**
  * This constructor creates a header based on an already-constructed
  * NetDatagram.

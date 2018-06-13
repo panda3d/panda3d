@@ -17,6 +17,10 @@
 
 #include <math.h>  // for fabs()
 
+using std::endl;
+using std::max;
+using std::min;
+
 TrueClock *TrueClock::_global_ptr = nullptr;
 
 #if defined(WIN32_VC) || defined(WIN64_VC)

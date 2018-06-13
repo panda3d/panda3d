@@ -17,6 +17,9 @@
 #include "findApproxLevelEntry.h"
 #include "clockObject.h"
 
+using std::cerr;
+using std::string;
+
 NodePath
 build_tree(const string &name, int depth) {
   NodePath node(name);

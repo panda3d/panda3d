@@ -17,6 +17,9 @@
 #include "dcindent.h"
 #include "dcTypedef.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

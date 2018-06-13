@@ -32,6 +32,8 @@
 #include <windows.h>
 #endif
 
+using std::string;
+
 /**
  *
  */

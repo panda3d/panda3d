@@ -16,6 +16,12 @@
 #include "virtualFileList.h"
 #include "dcast.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileSimple::_type_handle;
 
 

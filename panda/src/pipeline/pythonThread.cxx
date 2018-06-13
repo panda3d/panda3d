@@ -17,6 +17,8 @@
 #ifdef HAVE_PYTHON
 #include "py_panda.h"
 
+using std::string;
+
 TypeHandle PythonThread::_type_handle;
 
 /**

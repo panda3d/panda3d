@@ -22,6 +22,13 @@
 #include "streamReader.h"
 #include "thread.h"
 
+using std::ios;
+using std::istream;
+using std::min;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 /**
  * Opens the indicated filename for reading.  Returns true on success, false
  * on failure.

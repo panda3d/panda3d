@@ -15,6 +15,8 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle XFileDataObjectArray::_type_handle;
 
 /**

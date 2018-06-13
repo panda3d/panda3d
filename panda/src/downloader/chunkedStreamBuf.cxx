@@ -18,6 +18,9 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
+using std::min;
+using std::string;
+
 /**
  *
  */

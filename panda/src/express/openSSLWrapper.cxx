@@ -18,6 +18,8 @@
 #include "virtualFileSystem.h"
 #include "ca_bundle_data_src.c"
 
+using std::string;
+
 OpenSSLWrapper *OpenSSLWrapper::_global_ptr = nullptr;
 
 /**

@@ -15,6 +15,10 @@
 #include "config_display.h"
 #include "nativeWindowHandle.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 WindowProperties *WindowProperties::_default_properties = nullptr;
 
 /**

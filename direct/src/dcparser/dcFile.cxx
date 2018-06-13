@@ -28,6 +28,11 @@
 #include "configVariableList.h"
 #endif
 
+using std::cerr;
+using std::istream;
+using std::ostream;
+using std::string;
+
 
 /**
  *

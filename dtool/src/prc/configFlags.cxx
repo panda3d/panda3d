@@ -13,6 +13,8 @@
 
 #include "configFlags.h"
 
+using std::ostream;
+
 TVOLATILE AtomicAdjust::Integer ConfigFlags::_global_modified;
 
 /**

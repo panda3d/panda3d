@@ -37,6 +37,8 @@
 #include "config_gobj.h"
 #include "config_egg2pg.h"
 
+using std::string;
+
 
 /**
  * Sets up the state as appropriate for the indicated primitive.

@@ -16,6 +16,9 @@
 #include "referenceCount.h"
 #include "typedReferenceCount.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

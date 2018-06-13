@@ -23,6 +23,8 @@
 #include "asyncTaskManager.h"
 #include "genericAsyncTask.h"
 
+using std::string;
+
 /**
  *
  */

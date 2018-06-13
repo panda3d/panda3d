@@ -14,6 +14,8 @@
 #include "p3d_plugin_common.h"
 #include "xml_helpers.h"
 
+using std::string;
+
 
 /**
  * Examines the indicated attrib from the XML attrib and returns its true or

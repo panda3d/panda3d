@@ -21,6 +21,8 @@
 #include "pStatTimer.h"
 #include <stdio.h>  // For sprintf/snprintf
 
+using std::string;
+
 PStatCollector SceneGraphAnalyzerMeter::_show_analyzer_pcollector("*:Show scene graph analysis");
 
 TypeHandle SceneGraphAnalyzerMeter::_type_handle;

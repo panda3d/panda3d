@@ -13,6 +13,8 @@
 
 #include "checksumHashGenerator.h"
 
+using std::string;
+
 /**
  * Adds a string to the hash, by breaking it down into a sequence of integers.
  */

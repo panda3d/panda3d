@@ -13,6 +13,8 @@
 
 #include "mayaToEgg_client.h"
 
+using std::string;
+
 /**
  *
  */

@@ -50,6 +50,13 @@
 
 #include <stdio.h>
 
+using std::cerr;
+using std::ios;
+using std::ostream;
+using std::string;
+using std::vector;
+using std::wstring;
+
 static ofstream logfile;
 ostream *nout_stream = &logfile;
 

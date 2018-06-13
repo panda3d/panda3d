@@ -18,6 +18,8 @@
 #include "pointerTo.h"
 #include "trueClock.h"
 
+using std::string;
+
 // The number of iterations to spin within each thread, before printing
 // output.
 static const long long iterations_per_output = 100000000;

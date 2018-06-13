@@ -13,6 +13,8 @@
 
 #include "cycleData.h"
 
+using std::ostream;
+
 
 /**
  *

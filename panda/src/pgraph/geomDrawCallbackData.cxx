@@ -15,6 +15,8 @@
 #include "cullableObject.h"
 #include "graphicsStateGuardianBase.h"
 
+using std::ostream;
+
 TypeHandle GeomDrawCallbackData::_type_handle;
 
 /**

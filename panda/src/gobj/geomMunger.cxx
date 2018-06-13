@@ -18,6 +18,9 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
+using std::move;
+using std::ostream;
+
 GeomMunger::Registry *GeomMunger::_registry = nullptr;
 TypeHandle GeomMunger::_type_handle;
 

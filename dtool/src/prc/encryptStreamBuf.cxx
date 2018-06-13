@@ -23,6 +23,11 @@
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 
+using std::istream;
+using std::min;
+using std::ostream;
+using std::string;
+
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 

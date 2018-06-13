@@ -21,6 +21,8 @@
 #include <windows.h>
 #endif  // _WIN32
 
+using std::string;
+using std::wstring;
 
 #ifdef _WIN32
 /**

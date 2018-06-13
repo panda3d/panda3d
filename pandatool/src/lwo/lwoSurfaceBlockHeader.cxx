@@ -21,6 +21,13 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::dec;
+using std::hex;
+using std::ostream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 TypeHandle LwoSurfaceBlockHeader::_type_handle;
 
 /**

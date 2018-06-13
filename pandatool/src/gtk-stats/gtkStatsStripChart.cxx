@@ -16,6 +16,8 @@
 #include "pStatCollectorDef.h"
 #include "numeric_types.h"
 
+using std::string;
+
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
 

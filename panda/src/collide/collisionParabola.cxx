@@ -24,6 +24,10 @@
 #include "boundingSphere.h"
 #include "look_at.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionParabola::_volume_pcollector(
   "Collision Volumes:CollisionParabola");
 PStatCollector CollisionParabola::_test_pcollector(

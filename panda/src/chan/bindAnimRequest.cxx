@@ -16,6 +16,8 @@
 #include "animControl.h"
 #include "partBundle.h"
 
+using std::string;
+
 TypeHandle BindAnimRequest::_type_handle;
 
 /**

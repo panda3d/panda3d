@@ -17,6 +17,9 @@
 #include "eventQueue.h"
 #include "mutexHolder.h"
 
+using std::ostream;
+using std::string;
+
 CIntervalManager *CIntervalManager::_global_ptr;
 
 /**

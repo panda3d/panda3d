@@ -24,6 +24,10 @@
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

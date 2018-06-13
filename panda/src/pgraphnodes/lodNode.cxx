@@ -38,6 +38,11 @@
 #include "colorAttrib.h"
 #include "clipPlaneAttrib.h"
 
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle LODNode::_type_handle;
 
 /**

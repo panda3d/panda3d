@@ -18,6 +18,9 @@
 #include "ctype.h"
 #include "httpChannel.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * The sorting operator allows the cookies to be stored in a single
  * dictionary; it returns nonequal only if the cookies are different in name,

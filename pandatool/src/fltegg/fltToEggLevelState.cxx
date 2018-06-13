@@ -22,6 +22,8 @@
 #include "dcast.h"
 #include "look_at.h"
 
+using std::string;
+
 
 /**
  *

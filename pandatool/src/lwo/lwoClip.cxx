@@ -17,6 +17,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle LwoClip::_type_handle;
 
 /**

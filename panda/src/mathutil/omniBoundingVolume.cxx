@@ -17,6 +17,8 @@
 
 #include <math.h>
 
+using std::ostream;
+
 TypeHandle OmniBoundingVolume::_type_handle;
 
 /**

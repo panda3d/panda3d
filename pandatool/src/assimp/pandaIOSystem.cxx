@@ -14,6 +14,8 @@
 #include "pandaIOSystem.h"
 #include "pandaIOStream.h"
 
+using std::istream;
+
 /**
  * Initializes the object with the given VFS, or the global one if none was
  * specified.

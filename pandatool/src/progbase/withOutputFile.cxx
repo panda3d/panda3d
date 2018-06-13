@@ -17,6 +17,9 @@
 
 #include "pnotify.h"
 
+using std::cout;
+using std::ostream;
+
 /**
  *
  */

@@ -13,6 +13,8 @@
 
 #include "wordWrapStream.h"
 
+using std::ostream;
+
 
 /**
  *

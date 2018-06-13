@@ -21,6 +21,11 @@
 #include "indent.h"
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::pair;
+
 /**
  *
  */

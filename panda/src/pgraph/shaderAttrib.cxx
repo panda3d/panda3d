@@ -29,6 +29,11 @@
 #include "paramTexture.h"
 #include "shaderBuffer.h"
 
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
 

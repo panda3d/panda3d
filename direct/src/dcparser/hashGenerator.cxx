@@ -14,6 +14,8 @@
 #include "hashGenerator.h"
 #include "primeNumberGenerator.h"
 
+using std::string;
+
 // We multiply each consecutive integer by the next prime number and add it to
 // the total.  This will generate pretty evenly-distributed hash numbers for
 // an arbitrary sequence of ints.

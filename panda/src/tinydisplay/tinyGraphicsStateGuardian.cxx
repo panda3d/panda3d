@@ -40,6 +40,11 @@
 #include "store_pixel_table.h"
 #include "graphicsEngine.h"
 
+using std::endl;
+using std::max;
+using std::min;
+using std::pair;
+
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");

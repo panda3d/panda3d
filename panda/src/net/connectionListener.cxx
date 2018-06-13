@@ -19,6 +19,8 @@
 #include "config_net.h"
 #include "socket_tcp_listen.h"
 
+using std::string;
+
 static string
 listener_thread_name(const string &thread_name) {
   if (!thread_name.empty()) {

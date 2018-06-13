@@ -32,6 +32,8 @@
 #include "FCDocument/FCDAnimationCurve.h"
 #include "FCDocument/FCDAnimationKey.h"
 
+using std::string;
+
 TypeHandle DaeCharacter::_type_handle;
 
 /**

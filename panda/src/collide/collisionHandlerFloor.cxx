@@ -18,6 +18,10 @@
 
 #include "clockObject.h"
 
+using std::cout;
+using std::endl;
+using std::max;
+
 TypeHandle CollisionHandlerFloor::_type_handle;
 
 /**

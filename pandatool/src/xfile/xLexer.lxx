@@ -13,6 +13,9 @@
 #include "string_utils.h"
 #include "config_xfile.h"
 
+using std::istream;
+using std::string;
+
 static int yyinput(void);        // declared by flex.
 extern "C" int xyywrap();
 

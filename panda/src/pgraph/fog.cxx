@@ -25,6 +25,9 @@
 
 #include <stddef.h>
 
+using std::ostream;
+using std::string;
+
 TypeHandle Fog::_type_handle;
 
 ostream &

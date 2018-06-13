@@ -14,6 +14,9 @@
 #include "cppSimpleType.h"
 #include "cppGlobals.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

@@ -24,6 +24,11 @@
 #include <signal.h>
 #include <stdint.h>
 
+using std::max;
+using std::min;
+using std::string;
+using std::vector;
+
 /**
  *
  */

@@ -14,6 +14,8 @@
 #include "memoryUsagePointerCounts.h"
 #include "memoryInfo.h"
 
+using std::ostream;
+
 /**
  * Adds a pointer definition to the counter.
  */

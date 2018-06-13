@@ -20,6 +20,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 TypeHandle CullBinBackToFront::_type_handle;
 

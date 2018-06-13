@@ -17,6 +17,10 @@
 
 #include "pnotify.h"
 
+using std::cerr;
+using std::streamsize;
+using std::string;
+
 /**
  *
  */

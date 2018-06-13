@@ -14,6 +14,8 @@
 #include "mayaBlendDesc.h"
 #include "config_mayaegg.h"
 
+using std::ostringstream;
+
 TypeHandle MayaBlendDesc::_type_handle;
 
 /**

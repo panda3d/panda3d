@@ -19,6 +19,9 @@
 #include "dcast.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle MovingPartBase::_type_handle;
 
 

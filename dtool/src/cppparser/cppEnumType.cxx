@@ -21,6 +21,9 @@
 #include "cppIdentifier.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * Creates an untyped enum.
  */

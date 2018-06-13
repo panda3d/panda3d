@@ -24,6 +24,8 @@
 
 #include <wingdi.h>
 
+using std::string;
+
 TypeHandle TinyWinGraphicsWindow::_type_handle;
 
 /**

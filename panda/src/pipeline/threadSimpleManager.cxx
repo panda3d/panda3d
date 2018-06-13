@@ -24,6 +24,9 @@
 #include <windows.h>
 #endif
 
+using std::max;
+using std::ostream;
+
 bool ThreadSimpleManager::_pointers_initialized;
 ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 

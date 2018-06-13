@@ -17,6 +17,8 @@
 #include "buttonRegistry.h"
 #include "textEncoder.h"
 
+using std::ostream;
+
 /**
  *
  */

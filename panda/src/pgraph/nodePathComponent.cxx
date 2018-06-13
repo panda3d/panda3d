@@ -14,6 +14,8 @@
 #include "nodePathComponent.h"
 #include "lightMutexHolder.h"
 
+using std::ostream;
+
 // We start the key counters off at 1, since 0 is reserved for an empty
 // NodePath (and also for an unassigned key).
 int NodePathComponent::_next_key = 1;

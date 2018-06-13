@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+using std::ostream;
+
 TypeHandle EggPatch::_type_handle;
 
 /**

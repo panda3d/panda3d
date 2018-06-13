@@ -40,6 +40,9 @@
 
 #include "plane.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle OccluderNode::_type_handle;
 PT(Texture) OccluderNode::_viz_tex;
 

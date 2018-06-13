@@ -23,6 +23,8 @@
 #include "keyboardButton.h"
 #include "graphicsPipe.h"
 
+using std::string;
+
 TypeHandle TinySDLGraphicsWindow::_type_handle;
 
 /**

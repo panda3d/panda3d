@@ -17,6 +17,9 @@
 
 #include "transformState.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ActorNode::_type_handle;
 
 /**

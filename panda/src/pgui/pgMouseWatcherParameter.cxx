@@ -13,6 +13,8 @@
 
 #include "pgMouseWatcherParameter.h"
 
+using std::ostream;
+
 TypeHandle PGMouseWatcherParameter::_type_handle;
 
 /**

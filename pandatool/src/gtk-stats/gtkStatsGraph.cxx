@@ -15,6 +15,8 @@
 #include "gtkStatsMonitor.h"
 #include "gtkStatsLabelStack.h"
 
+using std::max;
+
 const GdkColor GtkStatsGraph::rgb_white = {
   0, 0xffff, 0xffff, 0xffff
 };

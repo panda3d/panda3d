@@ -17,6 +17,8 @@
 #include "eventParameter.h"
 #include "throw_event.h"
 
+using std::string;
+
 
 TypeHandle CollisionHandlerEvent::_type_handle;
 

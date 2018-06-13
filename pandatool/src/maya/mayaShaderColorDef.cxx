@@ -29,6 +29,10 @@
 #include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

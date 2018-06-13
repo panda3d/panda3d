@@ -13,6 +13,9 @@
 
 #include "p3dPatchFinder.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

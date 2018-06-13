@@ -15,6 +15,15 @@
 #include "openSSLWrapper.h"
 #include <stdio.h>
 
+using std::cerr;
+using std::dec;
+using std::hex;
+using std::istream;
+using std::setfill;
+using std::setw;
+using std::stringstream;
+using std::string;
+
 static const char *source_filename = "ca-bundle.crt";
 static const char *target_filename = "ca_bundle_data_src.c";
 

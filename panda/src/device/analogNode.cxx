@@ -16,6 +16,9 @@
 #include "dataNodeTransmit.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 
 TypeHandle AnalogNode::_type_handle;
 

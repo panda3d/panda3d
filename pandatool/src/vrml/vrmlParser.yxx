@@ -44,6 +44,10 @@
 #include <stack>
 #include <stdio.h>  // for sprintf()
 
+using std::cerr;
+using std::istream;
+using std::string;
+
 //#define YYDEBUG 1
 
 // Currently-being-define proto.  Prototypes may be nested, so a stack

@@ -30,6 +30,11 @@
 #include <unistd.h>
 #endif
 
+using std::ostringstream;
+using std::string;
+using std::vector;
+using std::wstring;
+
 /**
  *
  */

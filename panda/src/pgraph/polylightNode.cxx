@@ -23,6 +23,10 @@
 #include <time.h>
 #include <math.h>
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 TypeHandle PolylightNode::_type_handle;
 
 /**

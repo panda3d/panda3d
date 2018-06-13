@@ -20,6 +20,9 @@
 #include "samplerContext.h"
 #include "preparedGraphicsObjects.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle SamplerState::_type_handle;
 SamplerState SamplerState::_default;
 

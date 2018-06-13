@@ -13,6 +13,9 @@
 
 #include "movieAudioCursor.h"
 
+using std::ostringstream;
+using std::string;
+
 TypeHandle MovieAudioCursor::_type_handle;
 
 /**

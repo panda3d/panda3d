@@ -22,6 +22,9 @@
 #include "virtualFileSystem.h"
 #include "config_putil.h"
 
+using std::istream;
+using std::string;
+
 NotifyCategoryDeclNoExport(txafile);
 NotifyCategoryDef(txafile, "");
 

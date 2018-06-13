@@ -20,6 +20,9 @@
 #include "cullFaceAttrib.h"
 #include "colorWriteAttrib.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle LightLensNode::_type_handle;
 
 /**

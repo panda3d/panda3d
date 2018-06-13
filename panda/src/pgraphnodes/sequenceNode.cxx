@@ -15,6 +15,8 @@
 #include "sequenceNode.h"
 #include "cullTraverser.h"
 
+using std::ostream;
+
 TypeHandle SequenceNode::_type_handle;
 
 /**

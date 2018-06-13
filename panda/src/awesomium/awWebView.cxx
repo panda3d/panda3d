@@ -14,6 +14,8 @@
 #include "config_awesomium.h"
 #include "awWebView.h"
 
+using std::string;
+
 TypeHandle AwWebView::_type_handle;
 
 AwWebView::

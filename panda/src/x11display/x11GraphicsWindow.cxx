@@ -38,6 +38,12 @@
 #include <linux/input.h>
 #endif
 
+using std::dec;
+using std::hex;
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 struct _XcursorFile {
   void *closure;
   int (*read)(XcursorFile *, unsigned char *, int);

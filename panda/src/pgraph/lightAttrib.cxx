@@ -24,6 +24,9 @@
 #include "indent.h"
 #include <iterator>
 
+using std::ostream;
+using std::pair;
+
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 int LightAttrib::_attrib_slot;
 CPT(RenderAttrib) LightAttrib::_all_off_attrib;

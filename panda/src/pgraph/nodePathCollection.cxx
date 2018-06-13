@@ -19,6 +19,11 @@
 #include "colorAttrib.h"
 #include "indent.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 /**
  * Adds a new NodePath to the collection.
  */

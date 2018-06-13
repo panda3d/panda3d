@@ -21,6 +21,8 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle glxGraphicsPixmap::_type_handle;
 
 /**

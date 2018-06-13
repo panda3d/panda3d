@@ -77,6 +77,13 @@
 #define SDK_VERSION(major,minor) tostring(major) << "." << tostring(minor)
 #define DIRECTX_SDK_VERSION  SDK_VERSION (_DXSDK_PRODUCT_MAJOR, _DXSDK_PRODUCT_MINOR) << "." << SDK_VERSION (_DXSDK_BUILD_MAJOR, _DXSDK_BUILD_MINOR)
 
+using std::endl;
+using std::list;
+using std::max;
+using std::min;
+using std::pair;
+using std::string;
+
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
 
 D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;

@@ -26,6 +26,9 @@
 #include "socket_udp.h"
 #include "dcast.h"
 
+using std::min;
+using std::string;
+
 
 /**
  * Creates a connection.  Normally this constructor should not be used

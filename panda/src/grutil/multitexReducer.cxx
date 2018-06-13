@@ -37,6 +37,11 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 
+using std::cerr;
+using std::max;
+using std::min;
+using std::ostringstream;
+
 /**
  *
  */

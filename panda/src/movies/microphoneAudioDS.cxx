@@ -28,6 +28,8 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+using std::ostringstream;
+
 /**
  * The directshow implementation of microphones.
  */

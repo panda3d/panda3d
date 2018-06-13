@@ -21,6 +21,9 @@
 #include "collisionSphere.h"
 #include "collisionPolygon.h"
 
+using std::endl;
+using std::ostream;
+
 TypeHandle BulletBodyNode::_type_handle;
 
 /**

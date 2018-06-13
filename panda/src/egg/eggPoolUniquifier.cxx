@@ -19,6 +19,8 @@
 
 #include "pnotify.h"
 
+using std::string;
+
 TypeHandle EggPoolUniquifier::_type_handle;
 
 

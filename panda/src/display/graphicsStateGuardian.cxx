@@ -63,6 +63,11 @@
 #include <algorithm>
 #include <limits.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");

@@ -14,6 +14,11 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+
 TypeHandle VirtualFileMountMultifile::_type_handle;
 
 

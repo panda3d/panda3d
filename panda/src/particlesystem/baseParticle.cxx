@@ -13,6 +13,8 @@
 
 #include "baseParticle.h"
 
+using std::ostream;
+
 /**
  * Default Constructor
  */

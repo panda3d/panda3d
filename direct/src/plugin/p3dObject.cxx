@@ -19,6 +19,10 @@
 #include "p3dInstanceManager.h"
 #include <string.h>  // strncpy
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 // The following functions are C-style wrappers around the below P3DObject
 // virtual methods; they are defined to allow us to create the C-style
 // P3D_class_definition method table to store in the P3D_object structure.

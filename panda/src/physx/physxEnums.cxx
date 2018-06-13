@@ -16,6 +16,10 @@
 #include "string_utils.h"
 #include "config_putil.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 ostream &
 operator << (ostream &out, PhysxEnums::PhysxUpAxis axis) {
 

@@ -17,6 +17,8 @@
 #include "test_bam.h"
 #include "datagramOutputFile.h"
 
+using std::string;
+
 int main(int argc, char* argv[])
 {
    string test_file("bamTest.out");

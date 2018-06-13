@@ -27,6 +27,11 @@
 
 #include <algorithm>
 
+using std::cerr;
+using std::move;
+using std::ostream;
+using std::string;
+
 Filename output_code_filename;
 string module_name;
 string library_name;

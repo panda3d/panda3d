@@ -37,6 +37,9 @@
 
 #endif  // WIN32
 
+using std::cerr;
+using std::min;
+
 // Ensure we made the right decisions about the alignment size.
 static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(size_t),
               "MEMORY_HOOK_ALIGNMENT should at least be sizeof(size_t)");

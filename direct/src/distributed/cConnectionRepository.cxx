@@ -28,6 +28,11 @@
 #include "py_panda.h"
 #endif
 
+using std::endl;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 #ifndef CPPPARSER

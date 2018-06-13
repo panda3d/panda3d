@@ -13,6 +13,9 @@
 
 #include "ppPandaObject.h"
 
+using std::ostringstream;
+using std::string;
+
 NPClass PPPandaObject::_object_class = {
   NP_CLASS_STRUCT_VERSION,
   &PPPandaObject::NPAllocate,

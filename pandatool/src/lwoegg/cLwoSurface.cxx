@@ -26,6 +26,8 @@
 #include "mathNumbers.h"
 #include "dcast.h"
 
+using std::max;
+
 
 /**
  *

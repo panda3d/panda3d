@@ -16,6 +16,12 @@
 #include "memoryUsage.h"
 #include "clockObject.h"
 
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::string;
+using std::vector;
+
 class Alpha {
 public:
   Alpha(const string &str) : _str(str) { }

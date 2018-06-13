@@ -17,6 +17,8 @@
 #include "filename.h"
 #include "error_utils.h"
 
+using std::min;
+
 
 /**
  *

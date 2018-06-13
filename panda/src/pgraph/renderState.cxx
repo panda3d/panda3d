@@ -36,6 +36,12 @@
 #include "thread.h"
 #include "renderAttribRegistry.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::pair;
+using std::string;
+
 LightReMutex *RenderState::_states_lock = nullptr;
 RenderState::States *RenderState::_states = nullptr;
 const RenderState *RenderState::_empty_state = nullptr;

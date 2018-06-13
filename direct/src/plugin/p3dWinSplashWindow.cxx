@@ -19,6 +19,9 @@
 #define WM_MOUSEWHEEL 0x20a
 #endif
 
+using std::min;
+using std::string;
+
 bool P3DWinSplashWindow::_registered_window_class = false;
 
 /**

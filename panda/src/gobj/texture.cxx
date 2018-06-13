@@ -49,6 +49,17 @@
 
 #include <stddef.h>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::istream;
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+using std::string;
+using std::swap;
+
 ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
 ("texture-quality-level", Texture::QL_normal,
  PRC_DESC("This specifies a global quality level for all textures.  You "

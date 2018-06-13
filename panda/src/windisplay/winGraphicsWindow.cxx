@@ -37,6 +37,13 @@
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
 
+using std::endl;
+using std::max;
+using std::min;
+using std::pair;
+using std::string;
+using std::wstring;
+
 DECLARE_HANDLE(HTOUCHINPUT);
 #endif
 

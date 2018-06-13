@@ -15,6 +15,8 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle EggSwitchCondition::_type_handle;
 TypeHandle EggSwitchConditionDistance::_type_handle;
 

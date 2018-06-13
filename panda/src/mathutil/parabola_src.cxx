@@ -11,6 +11,8 @@
  * @date 2007-10-10
  */
 
+using std::ostream;
+
 /**
  * Transforms the parabola by the indicated matrix.
  */

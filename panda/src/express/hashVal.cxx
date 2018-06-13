@@ -20,6 +20,13 @@
 #include "openssl/md5.h"
 #endif  // HAVE_OPENSSL
 
+using std::ios;
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 
 /**
  * Outputs the HashVal as a 32-digit hexadecimal number.

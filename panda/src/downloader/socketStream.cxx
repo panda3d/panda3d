@@ -19,6 +19,11 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+
 /**
  *
  */

@@ -14,6 +14,10 @@
 #include "datagramIterator.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 TypeHandle DatagramIterator::_type_handle;
 
 /**

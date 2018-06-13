@@ -27,6 +27,16 @@
 #include <Cg/cg.h>
 #endif
 
+using std::ios;
+using std::istream;
+using std::max;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::set;
+using std::string;
+using std::swap;
+
 TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;

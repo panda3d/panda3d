@@ -14,6 +14,9 @@
 #include "physicalNode.h"
 #include "physicsManager.h"
 
+using std::ostream;
+using std::string;
+
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
 

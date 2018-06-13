@@ -14,6 +14,8 @@
 #include "virtualMouse.h"
 #include "dataNodeTransmit.h"
 
+using std::string;
+
 TypeHandle VirtualMouse::_type_handle;
 
 /**

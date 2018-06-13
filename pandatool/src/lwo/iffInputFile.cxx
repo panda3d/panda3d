@@ -17,6 +17,9 @@
 #include "datagramIterator.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::string;
+
 TypeHandle IffInputFile::_type_handle;
 
 /**

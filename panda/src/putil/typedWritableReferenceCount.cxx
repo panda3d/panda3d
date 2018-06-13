@@ -14,6 +14,8 @@
 #include "typedWritableReferenceCount.h"
 #include "dcast.h"
 
+using std::move;
+
 TypeHandle TypedWritableReferenceCount::_type_handle;
 
 /**

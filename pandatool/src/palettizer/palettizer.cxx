@@ -29,6 +29,12 @@
 #include "bamWriter.h"
 #include "indent.h"
 
+using std::cout;
+using std::istream;
+using std::ostream;
+using std::pair;
+using std::string;
+
 Palettizer *pal = nullptr;
 
 // This number is written out as the first number to the pi file, to indicate

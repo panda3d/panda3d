@@ -15,6 +15,8 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
+using std::ostream;
+
 TypeHandle FltUnsupportedRecord::_type_handle;
 
 /**

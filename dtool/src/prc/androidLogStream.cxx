@@ -18,6 +18,9 @@
 
 #include <android/log.h>
 
+using std::ostream;
+using std::streamsize;
+
 /**
  *
  */

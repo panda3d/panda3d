@@ -16,6 +16,8 @@
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
 
+using std::ostream;
+
 TypeHandle FltVertexList::_type_handle;
 
 /**

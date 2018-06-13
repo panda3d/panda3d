@@ -16,6 +16,8 @@
 #include "pandaNode.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle FindApproxLevelEntry::_type_handle;
 
 /**

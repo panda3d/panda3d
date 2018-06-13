@@ -25,6 +25,9 @@
 #include "cullHandler.h"
 #include "boundingPlane.h"
 
+using std::ostream;
+using std::string;
+
 UpdateSeq PlaneNode::_sort_seq;
 
 TypeHandle PlaneNode::_type_handle;

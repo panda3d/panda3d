@@ -21,6 +21,10 @@
 #include "hermiteCurve.h"
 #include <algorithm>
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle CurveFitter::_type_handle;
 
 /**

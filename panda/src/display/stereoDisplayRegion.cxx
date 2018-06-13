@@ -14,6 +14,8 @@
 #include "stereoDisplayRegion.h"
 #include "pandaNode.h"
 
+using std::ostream;
+
 TypeHandle StereoDisplayRegion::_type_handle;
 
 /**

@@ -21,6 +21,9 @@
 #include "bamReader.h"
 #include "epvector.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle NurbsCurve::_type_handle;
 
 /**

@@ -26,6 +26,10 @@
 #include <mmsystem.h>
 #endif
 
+using std::ios;
+using std::istream;
+using std::string;
+
 GlobalMilesManager *GlobalMilesManager::_global_ptr;
 
 /**

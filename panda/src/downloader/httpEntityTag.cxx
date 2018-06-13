@@ -13,6 +13,9 @@
 
 #include "httpEntityTag.h"
 
+using std::ostringstream;
+using std::string;
+
 
 /**
  * This constructor accepts a string as formatted from an HTTP server (e.g.

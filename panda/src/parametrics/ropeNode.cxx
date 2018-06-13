@@ -30,6 +30,9 @@
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle RopeNode::_type_handle;
 
 PStatCollector RopeNode::_rope_node_pcollector("*:RopeNode");

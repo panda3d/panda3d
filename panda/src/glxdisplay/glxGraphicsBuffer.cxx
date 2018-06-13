@@ -20,6 +20,8 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle glxGraphicsBuffer::_type_handle;
 
 /**

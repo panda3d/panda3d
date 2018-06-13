@@ -14,6 +14,9 @@
 #include "dtoolbase.h"
 #include "pfstream.h"
 
+using std::cout;
+using std::string;
+
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {

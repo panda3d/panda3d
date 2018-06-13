@@ -17,6 +17,9 @@
 #include "cppIdentifier.h"
 #include "cppTypedefType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

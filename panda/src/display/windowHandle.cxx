@@ -13,6 +13,8 @@
 
 #include "windowHandle.h"
 
+using std::ostream;
+
 TypeHandle WindowHandle::_type_handle;
 TypeHandle WindowHandle::OSHandle::_type_handle;
 

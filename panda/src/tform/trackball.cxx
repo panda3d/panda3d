@@ -23,6 +23,8 @@
 #include "keyboardButton.h"
 #include "config_tform.h"
 
+using std::string;
+
 TypeHandle Trackball::_type_handle;
 
 // These are used internally.

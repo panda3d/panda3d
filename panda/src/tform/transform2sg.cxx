@@ -16,6 +16,8 @@
 #include "dataNodeTransmit.h"
 #include "dataGraphTraverser.h"
 
+using std::string;
+
 
 TypeHandle Transform2SG::_type_handle;
 

@@ -25,6 +25,8 @@
 #include "graphicsStateGuardian.h"
 #include "displayRegion.h"
 
+using std::min;
+
 /**
  * Resets all the parameters to their initial defaults.
  */

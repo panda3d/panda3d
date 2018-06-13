@@ -18,6 +18,13 @@
 #include "pvector.h"
 #include <iterator>
 
+using std::iostream;
+using std::istream;
+using std::min;
+using std::ostream;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFile::_type_handle;
 
 /**

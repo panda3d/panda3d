@@ -17,6 +17,9 @@
 #include "config_audio.h"
 #include <ipc_traits.h>
 
+using std::cerr;
+using std::endl;
+
 int
 main(int argc, char* argv[]) {
 

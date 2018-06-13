@@ -24,6 +24,8 @@
 #include "config_distort.h"
 #include "cullTraverserData.h"
 
+using std::string;
+
 TypeHandle ProjectionScreen::_type_handle;
 
 /**

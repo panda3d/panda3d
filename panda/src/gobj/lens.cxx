@@ -23,6 +23,10 @@
 #include "config_gobj.h"
 #include "plane.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 TypeHandle Lens::_type_handle;
 TypeHandle Lens::CData::_type_handle;
 

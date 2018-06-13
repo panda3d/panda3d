@@ -14,6 +14,8 @@
 #include "deletedBufferChain.h"
 #include "memoryHook.h"
 
+using std::max;
+
 /**
  * Use the global MemoryHook to get a new DeletedBufferChain of the
  * appropriate size.

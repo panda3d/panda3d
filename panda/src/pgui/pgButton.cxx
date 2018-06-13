@@ -20,6 +20,8 @@
 #include "colorAttrib.h"
 #include "transformState.h"
 
+using std::string;
+
 TypeHandle PGButton::_type_handle;
 
 /**

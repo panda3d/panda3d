@@ -24,6 +24,13 @@
 
 #include <math.h>
 
+using std::cerr;
+using std::endl;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle HermiteCurve::_type_handle;
 
 static const LVecBase3 zerovec_3 = LVecBase3(0.0f, 0.0f, 0.0f);

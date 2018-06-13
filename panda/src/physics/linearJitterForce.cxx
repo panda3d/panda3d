@@ -13,6 +13,8 @@
 
 #include "linearJitterForce.h"
 
+using std::ostream;
+
 TypeHandle LinearJitterForce::_type_handle;
 
 /**

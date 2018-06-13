@@ -25,6 +25,9 @@
 #include <windows.h>
 #endif
 
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

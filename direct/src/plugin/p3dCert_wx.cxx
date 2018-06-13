@@ -20,6 +20,11 @@
 
 #include "ca_bundle_data_src.c"
 
+using std::cerr;
+using std::max;
+using std::string;
+using std::wstring;
+
 static const wxString
 self_signed_cert_text =
   _T("This Panda3D application uses a self-signed certificate.  ")

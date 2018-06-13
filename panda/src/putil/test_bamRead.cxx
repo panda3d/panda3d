@@ -18,6 +18,9 @@
 #include "bamReader.h"
 #include "datagramInputFile.h"
 
+using std::endl;
+using std::string;
+
 int main(int argc, char* argv[])
 {
   string test_file = "bamTest.out";

@@ -32,6 +32,10 @@
 #include <maya/MStatus.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::ostream;
+using std::string;
+
 /**
  * Reads the Maya "shading engine" to determine the relevant shader
  * properties.

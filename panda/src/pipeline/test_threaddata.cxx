@@ -17,6 +17,9 @@
 #include "mutexHolder.h"
 #include "pointerTo.h"
 
+using std::cout;
+using std::string;
+
 Mutex *cout_mutex = nullptr;
 
 // Test forking a thread with some private data.

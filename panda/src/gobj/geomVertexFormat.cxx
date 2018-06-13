@@ -19,6 +19,10 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+using std::ostream;
+using std::pair;
+
 GeomVertexFormat::Registry *GeomVertexFormat::_registry = nullptr;
 TypeHandle GeomVertexFormat::_type_handle;
 

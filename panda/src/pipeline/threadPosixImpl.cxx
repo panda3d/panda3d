@@ -21,6 +21,9 @@
 #include "config_pipeline.h"
 #include <sched.h>
 
+using std::ostringstream;
+using std::string;
+
 #ifdef ANDROID
 #include "config_express.h"
 #include <jni.h>

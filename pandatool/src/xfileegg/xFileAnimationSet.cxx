@@ -20,6 +20,8 @@
 #include "eggXfmSAnim.h"
 #include "dcast.h"
 
+using std::string;
+
 /**
  *
  */

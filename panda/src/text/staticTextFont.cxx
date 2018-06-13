@@ -25,6 +25,9 @@
 #include "textureCollection.h"
 #include "nodePath.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle StaticTextFont::_type_handle;
 
 /**

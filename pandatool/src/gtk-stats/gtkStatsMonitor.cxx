@@ -22,6 +22,10 @@
 #include "pStatCollectorDef.h"
 #include "indent.h"
 
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 typedef void vc();
 
 GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {

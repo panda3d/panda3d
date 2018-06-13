@@ -16,6 +16,9 @@
 
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle ClientDevice::_type_handle;
 
 /**

@@ -17,6 +17,9 @@
 #include "configPage.h"
 #include "config_prc.h"
 
+using std::ostream;
+using std::string;
+
 ConfigVariableManager *ConfigVariableManager::_global_ptr = nullptr;
 
 /**

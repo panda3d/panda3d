@@ -15,6 +15,10 @@
 #include "cppExpression.h"
 #include "cppPointerType.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

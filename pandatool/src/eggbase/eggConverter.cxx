@@ -13,6 +13,8 @@
 
 #include "eggConverter.h"
 
+using std::string;
+
 /**
  * The first parameter to the constructor should be the one-word name of the
  * alien file format that is to be read or written, for instance "OpenFlight"

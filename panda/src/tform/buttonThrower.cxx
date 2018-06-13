@@ -21,6 +21,10 @@
 #include "indent.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 TypeHandle ButtonThrower::_type_handle;
 
 

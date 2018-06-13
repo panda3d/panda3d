@@ -18,6 +18,8 @@
 
 #include "linearVectorForce.h"
 
+using std::ostream;
+
 TypeHandle LinearVectorForce::_type_handle;
 
 /**

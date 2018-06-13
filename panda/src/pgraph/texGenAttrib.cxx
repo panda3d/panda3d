@@ -20,6 +20,8 @@
 #include "datagramIterator.h"
 #include "dcast.h"
 
+using std::ostream;
+
 CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
 int TexGenAttrib::_attrib_slot;

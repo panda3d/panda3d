@@ -16,6 +16,8 @@
 #include "config_mathutil.h"
 #include "dcast.h"
 
+using std::ostream;
+
 TypeHandle IntersectionBoundingVolume::_type_handle;
 
 /**

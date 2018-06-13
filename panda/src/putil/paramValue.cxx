@@ -14,6 +14,8 @@
 #include "paramValue.h"
 #include "dcast.h"
 
+using std::ostream;
+
 template class ParamValue<std::string>;
 template class ParamValue<std::wstring>;
 

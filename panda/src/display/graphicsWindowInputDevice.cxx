@@ -23,6 +23,9 @@
 
 #include "vector_src.cxx"
 
+using std::string;
+using std::wstring;
+
 /**
  * Defines a new InputDevice for the window.  Most windows will have exactly
  * one InputDevice: a keyboard/mouse pair.  Some may also add joystick data,

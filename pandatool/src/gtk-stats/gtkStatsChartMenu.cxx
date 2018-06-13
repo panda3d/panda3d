@@ -14,6 +14,8 @@
 #include "gtkStatsChartMenu.h"
 #include "gtkStatsMonitor.h"
 
+using std::string;
+
 /**
  *
  */

@@ -16,6 +16,12 @@
 #include "pnmImage.h"
 #include "indent.h"
 
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+
 TypeHandle STBasicTerrain::_type_handle;
 
 // VERTEX_ATTRIB_END is defined as a macro that must be evaluated within the

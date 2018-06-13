@@ -35,6 +35,10 @@
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
 
+using std::max;
+using std::min;
+using std::ostream;
+
 PStatCollector CollisionTube::_volume_pcollector("Collision Volumes:CollisionTube");
 PStatCollector CollisionTube::_test_pcollector("Collision Tests:CollisionTube");
 TypeHandle CollisionTube::_type_handle;

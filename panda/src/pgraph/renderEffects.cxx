@@ -29,6 +29,9 @@
 
 #include <iterator>
 
+using std::ostream;
+using std::pair;
+
 LightReMutex *RenderEffects::_states_lock = nullptr;
 RenderEffects::States *RenderEffects::_states = nullptr;
 CPT(RenderEffects) RenderEffects::_empty_state;

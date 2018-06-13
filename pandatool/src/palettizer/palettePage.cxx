@@ -25,6 +25,8 @@
 
 #include <algorithm>
 
+using std::ostream;
+
 TypeHandle PalettePage::_type_handle;
 
 /**

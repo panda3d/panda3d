@@ -14,6 +14,9 @@
 #include "simpleLru.h"
 #include "indent.h"
 
+using std::ostream;
+using std::string;
+
 // We define this as a reference to an allocated object, instead of as a
 // concrete object, so that it won't get destructed when the program exits.
 // (If it did, there would be an ordering issue between it and the various

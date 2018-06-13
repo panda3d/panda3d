@@ -29,6 +29,9 @@
 #include <direct.h>  // for chdir()
 #endif
 
+using std::endl;
+using std::string;
+
 MayaApi *MayaApi::_global_api = nullptr;
 
 // We need this bogus object just to force the application to link with

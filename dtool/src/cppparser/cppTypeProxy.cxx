@@ -14,6 +14,9 @@
 #include "cppTypeProxy.h"
 #include "cppFile.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */

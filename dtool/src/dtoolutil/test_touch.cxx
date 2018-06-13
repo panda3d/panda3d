@@ -14,6 +14,8 @@
 #include "dtoolbase.h"
 #include "filename.h"
 
+using std::cout;
+
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {

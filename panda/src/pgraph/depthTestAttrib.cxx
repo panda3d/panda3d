@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle DepthTestAttrib::_type_handle;
 int DepthTestAttrib::_attrib_slot;
 

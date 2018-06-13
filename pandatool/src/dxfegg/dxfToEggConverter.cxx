@@ -15,6 +15,8 @@
 #include "dxfToEggLayer.h"
 #include "eggData.h"
 
+using std::string;
+
 /**
  *
  */

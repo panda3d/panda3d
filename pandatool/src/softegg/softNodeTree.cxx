@@ -25,6 +25,9 @@
 
 #include <SAA.h>
 
+using std::endl;
+using std::string;
+
 /**
  *
  */

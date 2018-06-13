@@ -15,6 +15,8 @@
 #include "paramNodePath.h"
 #include "paramTexture.h"
 
+using std::move;
+
 /**
  * Returns a static ShaderInput object with name NULL, priority zero, type
  * INVALID, and all value-fields cleared.

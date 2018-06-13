@@ -14,6 +14,9 @@
 #include "parasiteBuffer.h"
 #include "texture.h"
 
+using std::min;
+using std::string;
+
 TypeHandle ParasiteBuffer::_type_handle;
 
 /**

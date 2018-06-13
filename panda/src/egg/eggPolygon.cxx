@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+using std::ostream;
+
 TypeHandle EggPolygon::_type_handle;
 
 /**

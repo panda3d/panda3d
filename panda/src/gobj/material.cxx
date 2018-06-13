@@ -19,6 +19,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+
 TypeHandle Material::_type_handle;
 PT(Material) Material::_default;
 

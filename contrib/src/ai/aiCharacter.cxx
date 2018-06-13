@@ -13,6 +13,8 @@
 
 #include "aiCharacter.h"
 
+using std::string;
+
 AICharacter::AICharacter(string model_name, NodePath model_np, double mass, double movt_force, double max_force) {
   _name = model_name;
   _ai_char_np = model_np;

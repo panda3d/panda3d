@@ -14,6 +14,8 @@
 #include "cppDeclaration.h"
 #include "cppPreprocessor.h"
 
+using std::ostream;
+
 /**
  *
  */

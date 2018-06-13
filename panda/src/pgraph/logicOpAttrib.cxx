@@ -19,6 +19,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::ostream;
+
 TypeHandle LogicOpAttrib::_type_handle;
 int LogicOpAttrib::_attrib_slot;
 

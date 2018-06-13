@@ -19,6 +19,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 TypeHandle CullBinStateSorted::_type_handle;
 

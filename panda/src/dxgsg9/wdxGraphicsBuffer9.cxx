@@ -19,6 +19,11 @@
 
 #define FL << "\n" << __FILE__ << " " << __LINE__ << "\n"
 
+using std::cout;
+using std::endl;
+using std::list;
+using std::string;
+
 TypeHandle wdxGraphicsBuffer9::_type_handle;
 
 

@@ -18,6 +18,11 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
+using std::cerr;
+using std::max;
+using std::min;
+using std::ostream;
+
 LightReMutex *RenderAttrib::_attribs_lock = nullptr;
 RenderAttrib::Attribs *RenderAttrib::_attribs = nullptr;
 TypeHandle RenderAttrib::_type_handle;

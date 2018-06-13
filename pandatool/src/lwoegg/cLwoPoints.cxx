@@ -19,6 +19,8 @@
 #include "lwoVertexMap.h"
 #include "string_utils.h"
 
+using std::string;
+
 /**
  * Associates the indicated VertexMap with the points set.  This may define
  * such niceties as UV coordinates or per-vertex color.

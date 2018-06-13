@@ -21,6 +21,12 @@
 #include "indirectLess.h"
 #include "lightMutexHolder.h"
 
+using std::max;
+using std::min;
+using std::move;
+using std::ostream;
+using std::string;
+
 GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = nullptr;
 TypeHandle GeomVertexArrayFormat::_type_handle;
 

@@ -21,6 +21,8 @@
 
 #include "config_display.h"
 
+using std::string;
+
 Configure(config_androiddisplay);
 NotifyCategoryDef(androiddisplay, "display");
 

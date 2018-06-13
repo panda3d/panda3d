@@ -29,6 +29,8 @@
 #include "depthOffsetAttrib.h"
 #include "colorBlendAttrib.h"
 
+using std::swap;
+
 TypeHandle CullResult::_type_handle;
 
 /*

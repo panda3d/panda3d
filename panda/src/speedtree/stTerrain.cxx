@@ -14,6 +14,8 @@
 #include "stTerrain.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle STTerrain::_type_handle;
 
 /**

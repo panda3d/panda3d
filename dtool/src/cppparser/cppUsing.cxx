@@ -14,6 +14,8 @@
 #include "cppUsing.h"
 #include "cppIdentifier.h"
 
+using std::ostream;
+
 /**
  *
  */

@@ -24,6 +24,8 @@
 #include "lwoSurface.h"
 #include "lwoVertexMap.h"
 
+using std::string;
+
 TypeHandle LwoInputFile::_type_handle;
 
 /**

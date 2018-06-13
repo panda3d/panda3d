@@ -17,6 +17,8 @@
 #include "fltInstanceDefinition.h"
 #include "fltHeader.h"
 
+using std::ostream;
+
 TypeHandle FltInstanceRef::_type_handle;
 
 /**

@@ -23,6 +23,10 @@
 
 #include "pnotify.h"
 
+using std::istream;
+using std::min;
+using std::string;
+
 // Much code in this file is borrowed from Netpbm, specifically sgitopnm.c.
 
 /* sgitopnm.c - read an SGI image and and produce a portable anymap

@@ -38,6 +38,11 @@
 
 #include <algorithm>
 
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 
 PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:CollisionNode");

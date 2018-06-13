@@ -15,6 +15,11 @@
 #include "pnotify.h"
 #include "memoryHook.h"
 
+using std::ios;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+
 static const size_t substream_buffer_size = 4096;
 
 /**

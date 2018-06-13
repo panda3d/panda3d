@@ -34,6 +34,9 @@
 
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggFile::_type_handle;
 
 /**

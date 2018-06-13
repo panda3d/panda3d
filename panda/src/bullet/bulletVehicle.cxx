@@ -16,6 +16,8 @@
 #include "bulletRigidBodyNode.h"
 #include "bulletWheel.h"
 
+using std::endl;
+
 TypeHandle BulletVehicle::_type_handle;
 
 /**

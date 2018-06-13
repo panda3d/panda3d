@@ -29,6 +29,8 @@
 #define GetModeStretched(mode) GetDictionaryBoolean((mode), kCGDisplayModeIsStretched)
 #define MAX_DISPLAYS 32
 
+using std::string;
+
 Boolean GetDictionaryBoolean(CFDictionaryRef theDict, const void* key) {
   // get a boolean from the dictionary
   Boolean value = false;

@@ -14,6 +14,11 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
+using std::cerr;
+using std::endl;
+using std::streamsize;
+using std::string;
+
 PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   _dir(dir)
 {

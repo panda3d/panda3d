@@ -15,6 +15,12 @@
 
 #include <ctype.h>
 
+using std::dec;
+using std::hex;
+using std::ostream;
+using std::setfill;
+using std::setw;
+
 /**
  *
  */

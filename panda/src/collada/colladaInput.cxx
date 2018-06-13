@@ -33,6 +33,9 @@
 #define domList_of_uints domListOfUInts
 #endif
 
+using std::ostringstream;
+using std::string;
+
 /**
  * Pretty obvious what this does.
  */

@@ -14,6 +14,8 @@
 #include "winStatsChartMenu.h"
 #include "winStatsMonitor.h"
 
+using std::string;
+
 /**
  *
  */

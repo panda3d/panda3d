@@ -20,6 +20,8 @@
 #include <android/bitmap.h>
 #include <jni.h>
 
+using std::ostream;
+
 // See android/graphics/Bitmap.java
 enum class BitmapConfig : jint {
   ALPHA_8 = 1,

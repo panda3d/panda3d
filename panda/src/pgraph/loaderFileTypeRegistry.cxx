@@ -21,6 +21,11 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::max;
+using std::ostream;
+using std::string;
+
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::_global_ptr;
 
 /**

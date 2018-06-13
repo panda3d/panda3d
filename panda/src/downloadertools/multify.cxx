@@ -21,6 +21,12 @@
 #include <stdio.h>
 #include <time.h>
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::istream;
+using std::string;
+
 
 bool create = false;           // -c
 bool append = false;           // -r

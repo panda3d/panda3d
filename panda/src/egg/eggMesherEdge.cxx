@@ -14,6 +14,8 @@
 #include "eggMesherEdge.h"
 #include "eggMesherStrip.h"
 
+using std::ostream;
+
 /**
  * Removes an edge from a particular strip.
  */

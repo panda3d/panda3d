@@ -17,6 +17,10 @@
 
 #include "config_pnmimagetypes.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  *
  */

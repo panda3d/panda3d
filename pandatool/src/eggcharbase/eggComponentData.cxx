@@ -17,6 +17,8 @@
 
 #include "indent.h"
 
+using std::string;
+
 TypeHandle EggComponentData::_type_handle;
 
 

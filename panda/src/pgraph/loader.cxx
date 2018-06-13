@@ -32,6 +32,11 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::string;
+
 bool Loader::_file_types_loaded = false;
 PT(Loader) Loader::_global_ptr;
 TypeHandle Loader::_type_handle;

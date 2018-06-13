@@ -39,6 +39,10 @@
 
 #include "maxEggLoader.h"
 
+using std::pair;
+using std::string;
+using std::vector;
+
 class MaxEggMesh;
 class MaxEggJoint;
 class MaxEggTex;

@@ -22,6 +22,9 @@
 #include "config_pgraph.h"
 #include "pnmImage.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle Spotlight::_type_handle;
 
 /**

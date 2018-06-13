@@ -18,6 +18,9 @@
 #include "pointerTo.h"
 #include "trueClock.h"
 
+using std::cerr;
+using std::string;
+
 static const double thread_duration = 5.0;
 
 class MyThread : public Thread {

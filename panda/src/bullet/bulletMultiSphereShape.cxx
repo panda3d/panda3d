@@ -15,6 +15,8 @@
 
 #include "geomVertexReader.h"
 
+using std::min;
+
 TypeHandle BulletMultiSphereShape::_type_handle;
 
 /**

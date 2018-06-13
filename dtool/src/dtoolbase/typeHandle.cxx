@@ -15,6 +15,9 @@
 #include "typeRegistryNode.h"
 #include "atomicAdjust.h"
 
+using std::cerr;
+using std::ostream;
+
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
 

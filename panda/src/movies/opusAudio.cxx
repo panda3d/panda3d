@@ -18,6 +18,8 @@
 
 #ifdef HAVE_OPUS
 
+using std::istream;
+
 TypeHandle OpusAudio::_type_handle;
 
 /**
