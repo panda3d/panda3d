@@ -13,15 +13,13 @@
 
 #include "pgScrollFrame.h"
 
-using std::string;
-
 TypeHandle PGScrollFrame::_type_handle;
 
 /**
  *
  */
 PGScrollFrame::
-PGScrollFrame(const string &name) : PGVirtualFrame(name)
+PGScrollFrame(const std::string &name) : PGVirtualFrame(name)
 {
   set_cull_callback();
 

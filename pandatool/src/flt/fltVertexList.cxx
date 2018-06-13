@@ -16,8 +16,6 @@
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
 
-using std::ostream;
-
 TypeHandle FltVertexList::_type_handle;
 
 /**
@@ -67,7 +65,7 @@ add_vertex(FltVertex *vertex) {
  * flt file, use FltHeader::write_flt().
  */
 void FltVertexList::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _vertices.size() << " vertices";
 }
 

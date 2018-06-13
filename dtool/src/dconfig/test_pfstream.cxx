@@ -14,17 +14,13 @@
 #include "pfstream.h"
 #include <string>
 
-using std::cout;
-using std::endl;
-using std::istream;
-
-void ReadIt(istream& ifs) {
+void ReadIt(std::istream& ifs) {
    std::string line;
 
    while (!ifs.eof()) {
       std::getline(ifs, line);
       if (line.length() != 0)
-         cout << line << endl;
+         std::cout << line << std::endl;
    }
 }
 

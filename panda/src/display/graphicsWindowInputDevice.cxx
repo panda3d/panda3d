@@ -24,7 +24,6 @@
 #include "vector_src.cxx"
 
 using std::string;
-using std::wstring;
 
 /**
  * Defines a new InputDevice for the window.  Most windows will have exactly
@@ -284,7 +283,7 @@ keystroke(int keycode, double time) {
  * especially Chinese/Japanese/Korean.
  */
 void GraphicsWindowInputDevice::
-candidate(const wstring &candidate_string, size_t highlight_start,
+candidate(const std::wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(candidate_string,

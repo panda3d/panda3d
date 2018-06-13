@@ -16,7 +16,6 @@
 
 #include <ctype.h>
 
-using std::ostream;
 using std::string;
 
 /**
@@ -255,7 +254,7 @@ determine_type() const {
  *
  */
 void CPPManifest::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name;
 
   if (_has_parameters) {

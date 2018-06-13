@@ -25,16 +25,13 @@
 #include <time.h>  // for strftime().
 #include <assert.h>
 
-using std::ostream;
-using std::string;
-
 long NotifyCategory::_server_delta = 0;
 
 /**
  *
  */
 NotifyCategory::
-NotifyCategory(const string &fullname, const string &basename,
+NotifyCategory(const std::string &fullname, const std::string &basename,
                NotifyCategory *parent) :
   _fullname(fullname),
   _basename(basename),
@@ -58,7 +55,7 @@ NotifyCategory(const string &fullname, const string &basename,
  * the Notify::out() stream and returns that.  If the severity level is
  * disabled, this returns Notify::null().
  */
-ostream &NotifyCategory::
+std::ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
 
@@ -154,9 +151,9 @@ set_server_delta(long delta) {
  * Returns the name of the config variable that controls this category.  This
  * is called at construction time.
  */
-string NotifyCategory::
+std::string NotifyCategory::
 get_config_name() const {
-  string config_name;
+  std::string config_name;
 
   if (_fullname.empty()) {
     config_name = "notify-level";

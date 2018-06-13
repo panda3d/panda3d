@@ -14,10 +14,8 @@
 #include "geom.h"
 #include "perspectiveProjection.h"
 
-using std::endl;
-
 int main() {
-  nout << "running test_gobj" << endl;
+  nout << "running test_gobj" << std::endl;
   PT(GeomTri) triangle = new GeomTri;
   Frustumf frust;
   PT(PerspectiveProjection) proj = new PerspectiveProjection(frust);

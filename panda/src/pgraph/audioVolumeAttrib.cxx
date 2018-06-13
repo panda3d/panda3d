@@ -20,8 +20,6 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 
-using std::ostream;
-
 CPT(RenderAttrib) AudioVolumeAttrib::_identity_attrib;
 TypeHandle AudioVolumeAttrib::_type_handle;
 int AudioVolumeAttrib::_attrib_slot;
@@ -101,7 +99,7 @@ set_volume(PN_stdfloat volume) const {
  *
  */
 void AudioVolumeAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "off";

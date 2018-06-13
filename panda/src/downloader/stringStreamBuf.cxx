@@ -16,7 +16,6 @@
 #include "config_express.h"
 
 using std::ios;
-using std::min;
 using std::streamoff;
 using std::streampos;
 
@@ -87,7 +86,7 @@ read_chars(char *start, size_t length) {
     return 0;
   }
 
-  length = min(length, _data.size() - _gpos);
+  length = std::min(length, _data.size() - _gpos);
   memcpy(start, &_data[_gpos], length);
   _gpos += length;
   return length;
@@ -107,7 +106,7 @@ write_chars(const char *start, size_t length) {
     if (_data.size() > _ppos) {
       // We are overwriting some data.
       size_t remaining_length = _data.size() - _ppos;
-      size_t overwrite_length = min(remaining_length, length);
+      size_t overwrite_length = std::min(remaining_length, length);
       memcpy(&_data[_ppos], start, overwrite_length);
       length -= overwrite_length;
       _ppos += overwrite_length;

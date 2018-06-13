@@ -15,8 +15,6 @@
 #include "dxfToEggLayer.h"
 #include "eggData.h"
 
-using std::string;
-
 /**
  *
  */
@@ -52,7 +50,7 @@ make_copy() {
 /**
  * Returns the English name of the file type this converter supports.
  */
-string DXFToEggConverter::
+std::string DXFToEggConverter::
 get_name() const {
   return "DXF";
 }
@@ -60,7 +58,7 @@ get_name() const {
 /**
  * Returns the common extension of the file type this converter supports.
  */
-string DXFToEggConverter::
+std::string DXFToEggConverter::
 get_extension() const {
   return "dxf";
 }
@@ -94,7 +92,7 @@ convert_file(const Filename &filename) {
  *
  */
 DXFLayer *DXFToEggConverter::
-new_layer(const string &name) {
+new_layer(const std::string &name) {
   return new DXFToEggLayer(name, get_egg_data());
 }
 

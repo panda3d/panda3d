@@ -16,8 +16,6 @@
 #include "bamWriter.h"
 #include "vertexTransform.h"
 
-using std::ostream;
-
 SparseArray SliderTable::_empty_array;
 TypeHandle SliderTable::_type_handle;
 
@@ -126,7 +124,7 @@ add_slider(const VertexSlider *slider, const SparseArray &rows) {
  *
  */
 void SliderTable::
-write(ostream &out) const {
+write(std::ostream &out) const {
   for (size_t i = 0; i < _sliders.size(); ++i) {
     out << i << ". " << *_sliders[i]._slider << " "
         << _sliders[i]._rows << "\n";

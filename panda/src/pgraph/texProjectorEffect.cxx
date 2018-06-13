@@ -22,8 +22,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 CPT(RenderEffect) TexProjectorEffect::_empty_effect;
 TypeHandle TexProjectorEffect::_type_handle;
 
@@ -144,7 +142,7 @@ get_lens_index(TextureStage *stage) const {
  *
  */
 void TexProjectorEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

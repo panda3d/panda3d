@@ -21,12 +21,6 @@
 #include <android/bitmap.h>
 #include <jni.h>
 
-using std::istream;
-using std::max;
-using std::min;
-using std::streampos;
-using std::string;
-
 // These tables linearly map 4-bit, 5-bit or 6-bit to 8-bit values.
 static uint8_t scale_table_4[16];
 static uint8_t scale_table_5[32];
@@ -66,11 +60,11 @@ static void conv_rgba4444(uint16_t in, xel &rgb, xelval &alpha) {
  *
  */
 PNMFileTypeAndroid::Reader::
-Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string magic_number) :
   PNMReader(type, file, owns_file), _bitmap(nullptr)
 {
   // Hope we can putback() more than one character.
-  for (string::reverse_iterator mi = magic_number.rbegin();
+  for (std::string::reverse_iterator mi = magic_number.rbegin();
        mi != magic_number.rend(); ++mi) {
     _file->putback(*mi);
   };
@@ -81,7 +75,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     return;
   }
 
-  streampos pos = _file->tellg();
+  std::streampos pos = _file->tellg();
 
   Thread *current_thread = Thread::get_current_thread();
   _env = current_thread->get_jni_env();
@@ -149,7 +143,7 @@ prepare_read() {
     int x_reduction = _orig_x_size / _read_x_size;
     int y_reduction = _orig_y_size / _read_y_size;
 
-    _sample_size = max(min(x_reduction, y_reduction), 1);
+    _sample_size = std::max(std::min(x_reduction, y_reduction), 1);
   }
 
   _bitmap = _env->CallStaticObjectMethod(jni_PandaActivity,

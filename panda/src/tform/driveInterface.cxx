@@ -27,7 +27,6 @@
 
 using std::max;
 using std::min;
-using std::string;
 
 TypeHandle DriveInterface::_type_handle;
 const PN_stdfloat DriveInterface::_hpr_quantize = 0.001;
@@ -99,7 +98,7 @@ operator < (const DriveInterface::KeyHeld &other) const {
  *
  */
 DriveInterface::
-DriveInterface(const string &name) :
+DriveInterface(const std::string &name) :
   MouseInterfaceNode(name)
 {
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());

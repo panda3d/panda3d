@@ -22,8 +22,6 @@
 #ifndef CPPPARSER
 #include <Rocket/Core/Input.h>
 
-using std::string;
-
 using namespace Rocket::Core::Input;
 #endif
 
@@ -33,7 +31,7 @@ TypeHandle RocketInputHandler::_type_handle;
  *
  */
 RocketInputHandler::
-RocketInputHandler(const string &name) :
+RocketInputHandler(const std::string &name) :
   DataNode(name),
   _mouse_xy(-1),
   _mouse_xy_changed(false),

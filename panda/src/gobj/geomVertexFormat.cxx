@@ -19,10 +19,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::max;
-using std::ostream;
-using std::pair;
-
 GeomVertexFormat::Registry *GeomVertexFormat::_registry = nullptr;
 TypeHandle GeomVertexFormat::_type_handle;
 
@@ -177,7 +173,7 @@ get_union_format(const GeomVertexFormat *other) const {
   // D, E) in array 1.  In general, a column will appear in the result in the
   // first array it appears in either of the inputs.
 
-  size_t num_arrays = max(_arrays.size(), other->_arrays.size());
+  size_t num_arrays = std::max(_arrays.size(), other->_arrays.size());
   for (size_t ai = 0; ai < num_arrays; ++ai) {
     PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
 
@@ -569,7 +565,7 @@ maybe_align_columns_for_animation() {
  *
  */
 void GeomVertexFormat::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_arrays.empty()) {
     out << "(empty)";
 
@@ -593,7 +589,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexFormat::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (size_t i = 0; i < _arrays.size(); i++) {
     indent(out, indent_level)
       << "Array " << i << ":\n";
@@ -610,7 +606,7 @@ write(ostream &out, int indent_level) const {
  *
  */
 void GeomVertexFormat::
-write_with_data(ostream &out, int indent_level,
+write_with_data(std::ostream &out, int indent_level,
                 const GeomVertexData *data) const {
   indent(out, indent_level)
     << data->get_num_rows() << " rows.\n";
@@ -720,7 +716,7 @@ do_register() {
     int num_columns = array_format->get_num_columns();
     for (int i = 0; i < num_columns; i++) {
       const GeomVertexColumn *column = array_format->get_column(i);
-      pair<DataTypesByName::iterator, bool> result;
+      std::pair<DataTypesByName::iterator, bool> result;
       result = _columns_by_name.insert(DataTypesByName::value_type(column->get_name(), DataTypeRecord()));
       if (!result.second) {
         gobj_cat.warning()

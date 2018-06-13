@@ -29,9 +29,6 @@
 
 #include <iterator>
 
-using std::ostream;
-using std::pair;
-
 LightReMutex *RenderEffects::_states_lock = nullptr;
 RenderEffects::States *RenderEffects::_states = nullptr;
 CPT(RenderEffects) RenderEffects::_empty_state;
@@ -354,7 +351,7 @@ unref() const {
  *
  */
 void RenderEffects::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "E:";
   if (_effects.empty()) {
     out << "(empty)";
@@ -375,7 +372,7 @@ output(ostream &out) const {
  *
  */
 void RenderEffects::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << _effects.size() << " effects:\n";
   Effects::const_iterator ai;
   for (ai = _effects.begin(); ai != _effects.end(); ++ai) {
@@ -403,7 +400,7 @@ get_num_states() {
  * prepared.
  */
 void RenderEffects::
-list_states(ostream &out) {
+list_states(std::ostream &out) {
   out << _states->size() << " states:\n";
   States::const_iterator si;
   for (si = _states->begin(); si != _states->end(); ++si) {
@@ -541,7 +538,7 @@ return_new(RenderEffects *state) {
   // of this function if no one else uses it.
   CPT(RenderEffects) pt_state = state;
 
-  pair<States::iterator, bool> result = _states->insert(state);
+  std::pair<States::iterator, bool> result = _states->insert(state);
   if (result.second) {
     // The state was inserted; save the iterator and return the input state.
     state->_saved_entry = result.first;

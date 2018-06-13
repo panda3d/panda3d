@@ -15,8 +15,6 @@
 #include "config_gobj.h"
 #include "pStatTimer.h"
 
-using std::min;
-
 TypeHandle VertexDataBuffer::_type_handle;
 
 /**
@@ -104,7 +102,7 @@ do_clean_realloc(size_t reserved_size) {
     _reserved_size = reserved_size;
   }
 
-  _size = min(_size, _reserved_size);
+  _size = std::min(_size, _reserved_size);
 }
 
 /**

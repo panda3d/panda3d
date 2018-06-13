@@ -15,7 +15,6 @@
 #include "config_egg_qtess.h"
 #include "string_utils.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -309,7 +308,7 @@ count_tris() {
  *
  */
 void QtessInputFile::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     (*ei).write(out, indent_level);

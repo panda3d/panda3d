@@ -34,9 +34,6 @@
 
 #include <algorithm>
 
-using std::ostream;
-using std::string;
-
 TypeHandle EggFile::_type_handle;
 
 /**
@@ -60,7 +57,7 @@ bool EggFile::
 from_command_line(EggData *data,
                   const Filename &source_filename,
                   const Filename &dest_filename,
-                  const string &egg_comment) {
+                  const std::string &egg_comment) {
   _data = data;
   _had_data = true;
   remove_backstage(_data);
@@ -591,7 +588,7 @@ write_egg() {
  * the indicated output stream.
  */
 void EggFile::
-write_description(ostream &out, int indent_level) const {
+write_description(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_name() << ": ";
   if (_explicitly_assigned_groups.empty()) {
     if (_default_group != nullptr) {
@@ -612,7 +609,7 @@ write_description(ostream &out, int indent_level) const {
  * per line.
  */
 void EggFile::
-write_texture_refs(ostream &out, int indent_level) const {
+write_texture_refs(std::ostream &out, int indent_level) const {
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureReference *reference = (*ti);
@@ -666,7 +663,7 @@ rescan_textures() {
   // Make sure each tref name is unique within a given file.
   tc.uniquify_trefs();
 
-  typedef pmap<string, TextureReference *> ByTRefName;
+  typedef pmap<std::string, TextureReference *> ByTRefName;
   ByTRefName by_tref_name;
   for (Textures::const_iterator ti = _textures.begin();
        ti != _textures.end();

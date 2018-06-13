@@ -14,8 +14,6 @@
 #include "mayaBlendDesc.h"
 #include "config_mayaegg.h"
 
-using std::ostringstream;
-
 TypeHandle MayaBlendDesc::_type_handle;
 
 /**
@@ -26,7 +24,7 @@ MayaBlendDesc(MFnBlendShapeDeformer &deformer, int weight_index) :
   _deformer(deformer.object()),
   _weight_index(weight_index)
 {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _deformer.name().asChar() << "." << _weight_index;
   set_name(strm.str());
 

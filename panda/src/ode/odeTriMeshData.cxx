@@ -14,7 +14,6 @@
 #include "odeTriMeshData.h"
 
 using std::ostream;
-using std::string;
 
 TypeHandle OdeTriMeshData::_type_handle;
 OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
@@ -46,7 +45,7 @@ unlink_data(dGeomID id) {
 }
 
 void OdeTriMeshData::
-print_data(const string &marker) {
+print_data(const std::string &marker) {
   odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
   const TriMeshDataMap &data_map = get_tri_mesh_data_map();
   TriMeshDataMap::const_iterator iter = data_map.begin();

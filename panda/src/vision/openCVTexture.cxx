@@ -37,16 +37,13 @@
 
 #endif  // OPENCV_VER_23
 
-using std::max;
-using std::string;
-
 TypeHandle OpenCVTexture::_type_handle;
 
 /**
  * Sets up the texture to read frames from a camera
  */
 OpenCVTexture::
-OpenCVTexture(const string &name) :
+OpenCVTexture(const std::string &name) :
   VideoTexture(name)
 {
 }
@@ -73,7 +70,7 @@ consider_update() {
     } else {
       // Loop through the pages to see if there's any camera stream to update.
       Texture::CDWriter cdata(Texture::_cycler, false);
-      int max_z = max(cdata->_z_size, (int)_pages.size());
+      int max_z = std::max(cdata->_z_size, (int)_pages.size());
       for (int z = 0; z < max_z; ++z) {
         VideoPage &page = _pages[z];
         if (!page._color.is_from_file() || !page._alpha.is_from_file()) {
@@ -261,7 +258,7 @@ make_texture() {
  */
 void OpenCVTexture::
 do_update_frame(Texture::CData *cdata, int frame) {
-  int max_z = max(cdata->_z_size, (int)_pages.size());
+  int max_z = std::max(cdata->_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
     do_update_frame(cdata, frame, z);
   }
@@ -449,7 +446,7 @@ do_read_one(Texture::CData *cdata,
  */
 bool OpenCVTexture::
 do_load_one(Texture::CData *cdata,
-            const PNMImage &pnmimage, const string &name,
+            const PNMImage &pnmimage, const std::string &name,
             int z, int n, const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = do_modify_page(cdata, z);
@@ -584,7 +581,7 @@ bool OpenCVTexture::VideoStream::
 read(const Filename &filename) {
   clear();
 
-  string os_specific = filename.to_os_specific();
+  std::string os_specific = filename.to_os_specific();
   _capture = cvCaptureFromFile(os_specific.c_str());
   if (_capture == nullptr) {
     return false;

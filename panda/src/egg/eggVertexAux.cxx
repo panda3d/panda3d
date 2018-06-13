@@ -16,16 +16,13 @@
 
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle EggVertexAux::_type_handle;
 
 /**
  *
  */
 EggVertexAux::
-EggVertexAux(const string &name, const LVecBase4d &aux) :
+EggVertexAux(const std::string &name, const LVecBase4d &aux) :
   EggNamedObject(name),
   _aux(aux)
 {
@@ -75,8 +72,8 @@ make_average(const EggVertexAux *first, const EggVertexAux *second) {
  *
  */
 void EggVertexAux::
-write(ostream &out, int indent_level) const {
-  string inline_name = get_name();
+write(std::ostream &out, int indent_level) const {
+  std::string inline_name = get_name();
   if (!inline_name.empty()) {
     inline_name += ' ';
   }

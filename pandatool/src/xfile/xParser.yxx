@@ -30,7 +30,6 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
-using std::istream;
 using std::string;
 
 static XFile *x_file = nullptr;
@@ -42,7 +41,7 @@ static PT(XFileDataDef) current_data_def;
 ////////////////////////////////////////////////////////////////////
 
 void
-x_init_parser(istream &in, const string &filename, XFile &file) {
+x_init_parser(std::istream &in, const string &filename, XFile &file) {
   x_file = &file;
   current_node = &file;
   x_init_lexer(in, filename);

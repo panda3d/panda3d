@@ -28,9 +28,7 @@
 #include "mutexHolder.h"
 #include "dcast.h"
 
-using std::endl;
 using std::istream;
-using std::max;
 using std::ostream;
 using std::string;
 
@@ -134,7 +132,7 @@ write_texture_types(ostream &out, int indent_level) const {
       PT(Texture) tex = func();
       string name = tex->get_type().get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0))
+      indent(out, std::max(30 - (int)name.length(), 0))
         << "  ." << extension << "\n";
     }
   }
@@ -395,7 +393,7 @@ ns_load_texture(const Filename &orig_filename,
     // needs to be loaded from its source image(s).
     gobj_cat.info()
       << "Loading texture " << filename << " and alpha component "
-      << alpha_filename << endl;
+      << alpha_filename << std::endl;
     tex = ns_make_texture(filename.get_extension());
     if (!tex->read(filename, alpha_filename, primary_file_num_channels,
                    alpha_file_channel, 0, 0, false, read_mipmaps, nullptr,
@@ -1251,11 +1249,11 @@ load_filters() {
 
     Filename dlname = Filename::dso_filename("lib" + name + ".so");
     gobj_cat->info()
-      << "loading texture filter: " << dlname.to_os_specific() << endl;
+      << "loading texture filter: " << dlname.to_os_specific() << std::endl;
     void *tmp = load_dso(get_plugin_path().get_value(), dlname);
     if (tmp == nullptr) {
       gobj_cat.info()
-        << "Unable to load: " << load_dso_error() << endl;
+        << "Unable to load: " << load_dso_error() << std::endl;
     }
   }
 }

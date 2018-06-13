@@ -13,8 +13,6 @@
 
 #include "linearRandomForce.h"
 
-using std::ostream;
-
 TypeHandle LinearRandomForce::_type_handle;
 
 /**
@@ -52,7 +50,7 @@ bounded_rand() {
  * Write a string representation of this instance to <out>.
  */
 void LinearRandomForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearRandomForce";
   #endif //] NDEBUG
@@ -62,7 +60,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearRandomForce::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearRandomForce:\n";
   LinearForce::write(out, indent+2);

@@ -28,7 +28,6 @@
 #include <iterator>
 
 using std::pair;
-using std::vector;
 
 MemoryUsage *MemoryUsage::_global_ptr;
 
@@ -82,7 +81,7 @@ show() const {
 #ifdef DO_MEMORY_USAGE
   // First, copy the relevant information to a vector so we can sort by
   // counts.  Don't use a pvector.
-  typedef vector<TypeHistogramCountSorter> CountSorter;
+  typedef std::vector<TypeHistogramCountSorter> CountSorter;
   CountSorter count_sorter;
   Counts::const_iterator ci;
   for (ci = _counts.begin(); ci != _counts.end(); ++ci) {

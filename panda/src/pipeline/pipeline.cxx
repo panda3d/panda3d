@@ -16,15 +16,13 @@
 #include "configVariableInt.h"
 #include "config_pipeline.h"
 
-using std::string;
-
 Pipeline *Pipeline::_render_pipeline = nullptr;
 
 /**
  *
  */
 Pipeline::
-Pipeline(const string &name, int num_stages) :
+Pipeline(const std::string &name, int num_stages) :
   Namable(name),
 #ifdef THREADED_PIPELINE
   _num_stages(num_stages),

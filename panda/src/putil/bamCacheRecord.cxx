@@ -19,10 +19,6 @@
 #include "indent.h"
 #include "config_putil.h" // util_cat
 
-using std::ostream;
-using std::setw;
-using std::string;
-
 TypeHandle BamCacheRecord::_type_handle;
 
 /**
@@ -194,7 +190,7 @@ add_dependent_file(const VirtualFile *file) {
  *
  */
 void BamCacheRecord::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "BamCacheRecord " << get_source_pathname();
 }
 
@@ -202,7 +198,7 @@ output(ostream &out) const {
  *
  */
 void BamCacheRecord::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BamCacheRecord " << get_source_pathname() << "\n";
   indent(out, indent_level)
@@ -216,7 +212,7 @@ write(ostream &out, int indent_level) const {
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
     indent(out, indent_level + 2)
-      << setw(10) << dfile._size << " "
+      << std::setw(10) << dfile._size << " "
       << format_timestamp(dfile._timestamp) << " "
       << dfile._pathname << "\n";
   }
@@ -225,7 +221,7 @@ write(ostream &out, int indent_level) const {
 /**
  * Returns a timestamp value formatted nicely for output.
  */
-string BamCacheRecord::
+std::string BamCacheRecord::
 format_timestamp(time_t timestamp) {
   static const size_t buffer_size = 512;
   char buffer[buffer_size];

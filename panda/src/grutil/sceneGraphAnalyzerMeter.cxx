@@ -21,8 +21,6 @@
 #include "pStatTimer.h"
 #include <stdio.h>  // For sprintf/snprintf
 
-using std::string;
-
 PStatCollector SceneGraphAnalyzerMeter::_show_analyzer_pcollector("*:Show scene graph analysis");
 
 TypeHandle SceneGraphAnalyzerMeter::_type_handle;
@@ -31,7 +29,7 @@ TypeHandle SceneGraphAnalyzerMeter::_type_handle;
  *
  */
 SceneGraphAnalyzerMeter::
-SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
+SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node) : TextNode(name) {
   set_cull_callback();
 
   Thread *current_thread = Thread::get_current_thread();

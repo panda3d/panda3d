@@ -18,8 +18,6 @@
 #include "pnmImage.h"
 #include "graphicsOutput.h"
 
-using std::string;
-
 IPhoneGraphicsPipe *IPhoneGraphicsPipe::_global_ptr;
 TypeHandle IPhoneGraphicsPipe::_type_handle;
 
@@ -53,7 +51,7 @@ IPhoneGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string IPhoneGraphicsPipe::
+std::string IPhoneGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }

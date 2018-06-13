@@ -16,10 +16,6 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 
-using std::ios;
-using std::string;
-using std::wstring;
-
 /**
  *
  */
@@ -42,7 +38,7 @@ P3DFileDownload(const P3DFileDownload &copy) :
  * success, false on failure.
  */
 bool P3DFileDownload::
-set_filename(const string &filename) {
+set_filename(const std::string &filename) {
   _filename = filename;
 
   return open_file();
@@ -61,12 +57,12 @@ open_file() {
 
   _file.clear();
 #ifdef _WIN32
-  wstring filename_w;
+  std::wstring filename_w;
   if (string_to_wstring(filename_w, _filename)) {
-    _file.open(filename_w.c_str(), ios::out | ios::trunc | ios::binary);
+    _file.open(filename_w.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
   }
 #else // _WIN32
-  _file.open(_filename.c_str(), ios::out | ios::trunc | ios::binary);
+  _file.open(_filename.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 #endif  // _WIN32
   if (!_file) {
     nout << "Failed to open " << _filename << " in write mode\n";

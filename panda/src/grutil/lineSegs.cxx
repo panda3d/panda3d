@@ -21,8 +21,6 @@
 #include "geomVertexWriter.h"
 #include "colorAttrib.h"
 
-using std::string;
-
 /**
  * Constructs a LineSegs object, which can be used to create any number of
  * disconnected lines or points of various thicknesses and colors through the
@@ -31,7 +29,7 @@ using std::string;
  * which will render the described path.
  */
 LineSegs::
-LineSegs(const string &name) : Namable(name) {
+LineSegs(const std::string &name) : Namable(name) {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _thick = 1.0f;
 }

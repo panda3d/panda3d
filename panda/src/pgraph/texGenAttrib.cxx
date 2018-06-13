@@ -20,8 +20,6 @@
 #include "datagramIterator.h"
 #include "dcast.h"
 
-using std::ostream;
-
 CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
 int TexGenAttrib::_attrib_slot;
@@ -192,7 +190,7 @@ get_constant_value(TextureStage *stage) const {
  *
  */
 void TexGenAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

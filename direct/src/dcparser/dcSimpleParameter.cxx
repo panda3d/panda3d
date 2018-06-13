@@ -20,7 +20,6 @@
 #include "hashGenerator.h"
 #include <math.h>
 
-using std::ostream;
 using std::string;
 
 DCSimpleParameter::NestedFieldMap DCSimpleParameter::_nested_field_map;
@@ -2174,7 +2173,7 @@ unpack_skip(const char *data, size_t length, size_t &p,
  * identifier.
  */
 void DCSimpleParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);

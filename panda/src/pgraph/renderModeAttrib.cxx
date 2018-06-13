@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle RenderModeAttrib::_type_handle;
 int RenderModeAttrib::_attrib_slot;
 
@@ -62,7 +60,7 @@ make_default() {
  *
  */
 void RenderModeAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_unchanged:

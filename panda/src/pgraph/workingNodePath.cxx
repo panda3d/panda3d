@@ -13,8 +13,6 @@
 
 #include "workingNodePath.h"
 
-using std::ostream;
-
 
 /**
  * Returns true if the WorkingNodePath object appears to be a valid NodePath
@@ -73,7 +71,7 @@ get_node(int index) const {
  *
  */
 void WorkingNodePath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // Cheesy and slow, but when you're outputting the thing, presumably you're
   // not in a hurry.
   get_node_path().output(out);

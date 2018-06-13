@@ -17,7 +17,6 @@
 #include "cppIdentifier.h"
 #include "cppTypedefType.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -157,7 +156,7 @@ get_fully_scoped_name() const {
  *
  */
 void CPPTemplateScope::
-output(ostream &out, CPPScope *scope) const {
+output(std::ostream &out, CPPScope *scope) const {
   CPPScope::output(out, scope);
   out << "< ";
   _parameters.output(out, scope);

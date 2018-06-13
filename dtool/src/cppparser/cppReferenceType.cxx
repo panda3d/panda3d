@@ -15,9 +15,6 @@
 #include "cppTypedefType.h"
 #include "cppStructType.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -213,7 +210,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPReferenceType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   /*
   _pointing_at->output(out, indent_level, scope, complete);
   out << " &";
@@ -227,9 +224,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPReferenceType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
 
   if (_value_category == VC_rvalue) {
     _pointing_at->output_instance(out, indent_level, scope, complete,

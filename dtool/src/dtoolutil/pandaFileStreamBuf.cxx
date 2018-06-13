@@ -34,7 +34,6 @@ using std::ostream;
 using std::streamoff;
 using std::streampos;
 using std::string;
-using std::wstring;
 
 PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
@@ -141,7 +140,7 @@ open(const char *filename, ios::openmode mode) {
   TextEncoder encoder;
   encoder.set_encoding(Filename::get_filesystem_encoding());
   encoder.set_text(_filename);
-  wstring wfilename = encoder.get_wtext();
+  std::wstring wfilename = encoder.get_wtext();
   _handle = CreateFileW(wfilename.c_str(), access, share_mode,
                         nullptr, creation_disposition, flags, nullptr);
   if (_handle != INVALID_HANDLE_VALUE) {

@@ -16,7 +16,6 @@
 #include "config_dgraph.h"
 #include "dcast.h"
 
-using std::ostream;
 using std::string;
 
 TypeHandle DataNode::_type_handle;
@@ -103,7 +102,7 @@ transmit_data(DataGraphTraverser *trav,
  * might expect to receive.
  */
 void DataNode::
-write_inputs(ostream &out) const {
+write_inputs(std::ostream &out) const {
   Wires::const_iterator wi;
   for (wi = _input_wires.begin(); wi != _input_wires.end(); ++wi) {
     const string &name = (*wi).first;
@@ -117,7 +116,7 @@ write_inputs(ostream &out) const {
  * might generate.
  */
 void DataNode::
-write_outputs(ostream &out) const {
+write_outputs(std::ostream &out) const {
   Wires::const_iterator wi;
   for (wi = _output_wires.begin(); wi != _output_wires.end(); ++wi) {
     const string &name = (*wi).first;
@@ -131,7 +130,7 @@ write_outputs(ostream &out) const {
  * showing between this DataNode and its parent(s).
  */
 void DataNode::
-write_connections(ostream &out) const {
+write_connections(std::ostream &out) const {
   DataConnections::const_iterator ci;
   for (ci = _data_connections.begin(); ci != _data_connections.end(); ++ci) {
     const DataConnection &connect = (*ci);

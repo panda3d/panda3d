@@ -13,9 +13,6 @@
 
 #include "arrival.h"
 
-using std::cout;
-using std::endl;
-
 Arrival::Arrival(AICharacter *ai_ch, double distance) {
   _ai_char = ai_ch;
 
@@ -80,7 +77,7 @@ LVecBase3 Arrival::do_arrival() {
     return(desired_force);
   }
 
-  cout<<"Arrival works only with seek and pursue"<<endl;
+  std::cout<<"Arrival works only with seek and pursue"<<std::endl;
   return(LVecBase3(0.0, 0.0, 0.0));
 }
 

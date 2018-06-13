@@ -13,13 +13,11 @@
 
 #include "mouseData.h"
 
-using std::ostream;
-
 /**
  *
  */
 void MouseData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (!_in_window) {
     out << "MouseData: Not in window";
   } else {

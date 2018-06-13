@@ -17,8 +17,6 @@
 
 #include <math.h>
 
-using std::ostream;
-
 TypeHandle OmniBoundingVolume::_type_handle;
 
 /**
@@ -48,7 +46,7 @@ xform(const LMatrix4 &) {
  *
  */
 void OmniBoundingVolume::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "omni";
 }
 

@@ -21,14 +21,12 @@
 #include "eggVertex.h"
 #include "eggVertexPool.h"
 
-using std::string;
-
 
 /**
  *
  */
 DXFToEggLayer::
-DXFToEggLayer(const string &name, EggGroupNode *parent) : DXFLayer(name) {
+DXFToEggLayer(const std::string &name, EggGroupNode *parent) : DXFLayer(name) {
   _group = new EggGroup(name);
   parent->add_child(_group);
   _vpool = new EggVertexPool(name);

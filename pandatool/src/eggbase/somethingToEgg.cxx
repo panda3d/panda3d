@@ -16,16 +16,14 @@
 
 #include "config_putil.h"
 
-using std::string;
-
 /**
  * The first parameter to the constructor should be the one-word name of the
  * file format that is to be read, for instance "OpenFlight" or "Alias".  It's
  * just used in printing error messages and such.
  */
 SomethingToEgg::
-SomethingToEgg(const string &format_name,
-               const string &preferred_extension,
+SomethingToEgg(const std::string &format_name,
+               const std::string &preferred_extension,
                bool allow_last_param, bool allow_stdout) :
   EggConverter(format_name, preferred_extension, allow_last_param, allow_stdout)
 {
@@ -318,7 +316,7 @@ post_process_egg_file() {
  * specified parameter.  var is a pointer to an AnimationConvert variable.
  */
 bool SomethingToEgg::
-dispatch_animation_convert(const string &opt, const string &arg, void *var) {
+dispatch_animation_convert(const std::string &opt, const std::string &arg, void *var) {
   AnimationConvert *ip = (AnimationConvert *)var;
   (*ip) = string_animation_convert(arg);
   if ((*ip) == AC_invalid) {

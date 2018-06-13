@@ -27,8 +27,6 @@
 
 using std::max;
 using std::min;
-using std::move;
-using std::ostream;
 
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
@@ -630,7 +628,7 @@ unify_in_place(int max_indices, bool preserve_order) {
     } else {
       // We have already encountered another primitive of this type.  Combine
       // them.
-      combine_primitives((*npi).second, move(primitive), current_thread);
+      combine_primitives((*npi).second, std::move(primitive), current_thread);
     }
   }
 
@@ -1065,7 +1063,7 @@ get_nested_vertices(Thread *current_thread) const {
  *
  */
 void Geom::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1092,7 +1090,7 @@ output(ostream &out) const {
  *
  */
 void Geom::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1557,9 +1555,9 @@ combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
   }
 
   PT(GeomVertexArrayDataHandle) a_handle =
-    new GeomVertexArrayDataHandle(move(a_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(a_vertices), current_thread);
   CPT(GeomVertexArrayDataHandle) b_handle =
-    new GeomVertexArrayDataHandle(move(b_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(b_vertices), current_thread);
 
   size_t orig_a_vertices = a_handle->get_num_rows();
 
@@ -1677,7 +1675,7 @@ evict_callback() {
  *
  */
 void Geom::CacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "geom " << (void *)_source << ", "
       << (const void *)_key._modifier;
 }

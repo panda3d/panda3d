@@ -27,15 +27,11 @@
 #include <Cg/cg.h>
 #endif
 
-using std::ios;
 using std::istream;
-using std::max;
 using std::move;
 using std::ostream;
 using std::ostringstream;
-using std::set;
 using std::string;
-using std::swap;
 
 TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
@@ -2465,7 +2461,7 @@ bool Shader::
 do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   if (_language == SL_GLSL && glsl_preprocess) {
     // Preprocess the GLSL file as we read it.
-    set<Filename> open_files;
+    std::set<Filename> open_files;
     ostringstream sstr;
     if (!r_preprocess_source(sstr, fn, Filename(), open_files, record)) {
       return false;
@@ -2492,7 +2488,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
     if (record != nullptr) {
       record->add_dependent_file(vf);
     }
-    _last_modified = max(_last_modified, vf->get_timestamp());
+    _last_modified = std::max(_last_modified, vf->get_timestamp());
     _source_files.push_back(vf->get_filename());
   }
 
@@ -2514,7 +2510,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 bool Shader::
 r_preprocess_source(ostream &out, const Filename &fn,
                     const Filename &source_dir,
-                    set<Filename> &once_files,
+                    std::set<Filename> &once_files,
                     BamCacheRecord *record, int depth) {
 
   if (depth > glsl_include_recursion_limit) {
@@ -2553,7 +2549,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
   if (record != nullptr) {
     record->add_dependent_file(vf);
   }
-  _last_modified = max(_last_modified, vf->get_timestamp());
+  _last_modified = std::max(_last_modified, vf->get_timestamp());
   _source_files.push_back(full_fn);
 
   // We give each file an unique index.  This is so that we can identify a
@@ -3178,7 +3174,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
-  swap(shader->_record, record);
+  std::swap(shader->_record, record);
   shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
   shader->_fullpath = shader->_source_files[0];
   return shader;
@@ -3243,7 +3239,7 @@ make(string body, ShaderLanguage lang) {
     shader_cat.warning() << "Dumping shader: " << fn << "\n";
 
     pofstream s;
-    s.open(fn.c_str(), ios::out | ios::trunc);
+    s.open(fn.c_str(), std::ios::out | std::ios::trunc);
     s << shader->get_text();
     s.close();
   }

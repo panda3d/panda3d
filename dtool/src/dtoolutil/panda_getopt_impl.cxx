@@ -22,7 +22,6 @@
 // If the system does lack one or the other of these functions, then we'll go
 // ahead and provide it instead.
 
-using std::cerr;
 using std::string;
 
 char *optarg = nullptr;
@@ -228,7 +227,7 @@ process(int opterr, int *longindex, char *&optarg, int &optind, int &optopt) {
   if (param._opt_index == 0 && opterr) {
     // This was an invalid character.
     optopt = param._short_option;
-    cerr << "Illegal option: -" << param._short_option << "\n";
+    std::cerr << "Illegal option: -" << param._short_option << "\n";
     return '?';
   }
 

@@ -15,8 +15,6 @@
 #include "indent.h"
 #include "bamReader.h"
 
-using std::ostream;
-
 TypeHandle OrthographicLens::_type_handle;
 
 
@@ -51,7 +49,7 @@ is_orthographic() const {
  *
  */
 void OrthographicLens::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " film size = " << get_film_size() << "\n";
 }
 

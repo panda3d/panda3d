@@ -15,8 +15,6 @@
 #include "atomicAdjust.h"
 #include "memoryHook.h"
 
-using std::max;
-
 NeverFreeMemory * TVOLATILE NeverFreeMemory::_global_ptr;
 
 // If a page has fewer than this many bytes remaining, never mind about it.
@@ -63,7 +61,7 @@ ns_alloc(size_t size) {
 
   // We have to allocate a new page.  Allocate at least min_page_size bytes,
   // and then round that up to the next _page_size bytes.
-  size_t needed_size = max(size, min_page_size);
+  size_t needed_size = std::max(size, min_page_size);
   needed_size = memory_hook->round_up_to_page_size(needed_size);
   void *start = memory_hook->mmap_alloc(needed_size, false);
   _total_alloc += needed_size;

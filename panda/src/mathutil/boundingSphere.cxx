@@ -24,7 +24,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 TypeHandle BoundingSphere::_type_handle;
 
@@ -120,7 +119,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingSphere::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bsphere, empty";
   } else if (is_infinite()) {

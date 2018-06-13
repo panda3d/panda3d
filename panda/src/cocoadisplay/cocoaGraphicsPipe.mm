@@ -27,8 +27,6 @@
 
 #include <mach-o/arch.h>
 
-using std::string;
-
 TypeHandle CocoaGraphicsPipe::_type_handle;
 
 /**
@@ -171,7 +169,7 @@ CocoaGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string CocoaGraphicsPipe::
+std::string CocoaGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }

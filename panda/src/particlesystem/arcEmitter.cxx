@@ -13,8 +13,6 @@
 
 #include "arcEmitter.h"
 
-using std::ostream;
-
 /**
  * constructor
  */
@@ -76,7 +74,7 @@ assign_initial_position(LPoint3& pos) {
  * Write a starc representation of this instance to <out>.
  */
 void ArcEmitter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"ArcEmitter";
   #endif //] NDEBUG
@@ -86,7 +84,7 @@ output(ostream &out) const {
  * Write a starc representation of this instance to <out>.
  */
 void ArcEmitter::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"ArcEmitter:\n";
   out.width(indent+2); out<<""; out<<"_start_angle "<<rad_2_deg(_start_theta)<<"\n";

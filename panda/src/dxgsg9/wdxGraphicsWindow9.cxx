@@ -26,10 +26,7 @@
 #include <math.h>
 #include <tchar.h>
 
-using std::dec;
 using std::endl;
-using std::hex;
-using std::string;
 
 TypeHandle wdxGraphicsWindow9::_type_handle;
 
@@ -38,7 +35,7 @@ TypeHandle wdxGraphicsWindow9::_type_handle;
  */
 wdxGraphicsWindow9::
 wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const string &name,
+                   const std::string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
@@ -885,10 +882,10 @@ choose_device() {
       << ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
       << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
       << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart)
-      << ")\nVendorID: 0x" << hex << adapter_info.VendorId
+      << ")\nVendorID: 0x" << std::hex << adapter_info.VendorId
       << " DeviceID: 0x" << adapter_info.DeviceId
       << " SubsysID: 0x" << adapter_info.SubSysId
-      << " Revision: 0x" << adapter_info.Revision << dec << endl;
+      << " Revision: 0x" << adapter_info.Revision << std::dec << endl;
 
     HMONITOR _monitor = dxpipe->__d3d9->GetAdapterMonitor(i);
     if (_monitor == nullptr) {

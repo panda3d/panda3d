@@ -15,8 +15,6 @@
 #include "loader.h"
 #include "config_pgraph.h"
 
-using std::string;
-
 TypeHandle ModelSaveRequest::_type_handle;
 
 /**
@@ -24,7 +22,7 @@ TypeHandle ModelSaveRequest::_type_handle;
  * to begin an asynchronous save.
  */
 ModelSaveRequest::
-ModelSaveRequest(const string &name,
+ModelSaveRequest(const std::string &name,
                  const Filename &filename, const LoaderOptions &options,
                  PandaNode *node, Loader *loader) :
   AsyncTask(name),

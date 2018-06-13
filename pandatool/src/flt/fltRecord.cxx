@@ -37,9 +37,6 @@
 
 #include <assert.h>
 
-using std::ostream;
-using std::string;
-
 TypeHandle FltRecord::_type_handle;
 
 /**
@@ -223,7 +220,7 @@ has_comment() const {
  * Retrieves the comment for this record, or empty string if the record has no
  * comment.
  */
-const string &FltRecord::
+const std::string &FltRecord::
 get_comment() const {
   return _comment;
 }
@@ -240,7 +237,7 @@ clear_comment() {
  * Changes the comment for this record.
  */
 void FltRecord::
-set_comment(const string &comment) {
+set_comment(const std::string &comment) {
   _comment = comment;
 }
 
@@ -254,7 +251,7 @@ set_comment(const string &comment) {
  * this is exactly the sort of thing we expect.
  */
 void FltRecord::
-check_remaining_size(const DatagramIterator &di, const string &name) const {
+check_remaining_size(const DatagramIterator &di, const std::string &name) const {
   if (di.get_remaining_size() == 0) {
     return;
   }
@@ -294,7 +291,7 @@ apply_converted_filenames() {
  * flt file, use FltHeader::write_flt().
  */
 void FltRecord::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -304,7 +301,7 @@ output(ostream &out) const {
  * flt file, use FltHeader::write_flt().
  */
 void FltRecord::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   write_children(out, indent_level);
 }
@@ -314,7 +311,7 @@ write(ostream &out, int indent_level) const {
  * line of the record description, writes out the list of children.
  */
 void FltRecord::
-write_children(ostream &out, int indent_level) const {
+write_children(std::ostream &out, int indent_level) const {
   if (!_ancillary.empty()) {
     out << " + " << _ancillary.size() << " ancillary";
   }

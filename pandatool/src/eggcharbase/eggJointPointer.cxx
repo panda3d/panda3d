@@ -13,8 +13,6 @@
 
 #include "eggJointPointer.h"
 
-using std::string;
-
 
 TypeHandle EggJointPointer::_type_handle;
 
@@ -71,7 +69,7 @@ expose(EggGroup::DCSType) {
  * Zeroes out the named components of the transform in the animation frames.
  */
 void EggJointPointer::
-zero_channels(const string &) {
+zero_channels(const std::string &) {
 }
 
 /**
@@ -79,7 +77,7 @@ zero_channels(const string &) {
  * quantum.
  */
 void EggJointPointer::
-quantize_channels(const string &, double) {
+quantize_channels(const std::string &, double) {
 }
 
 /**

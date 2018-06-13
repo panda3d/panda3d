@@ -22,8 +22,6 @@
 #include "geomVertexRewriter.h"
 #include "geomVertexReader.h"
 
-using std::move;
-
 TypeHandle BulletSoftBodyNode::_type_handle;
 
 /**
@@ -209,7 +207,7 @@ transform_changed() {
       _soft->scale(new_scale);
     }
 
-    _sync = move(ts);
+    _sync = std::move(ts);
   }
 }
 

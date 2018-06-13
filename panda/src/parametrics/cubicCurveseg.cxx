@@ -21,9 +21,6 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
-using std::cerr;
-using std::endl;
-
 TypeHandle CubicCurveseg::_type_handle;
 
 /**
@@ -237,7 +234,7 @@ compute_nurbs_basis(int order,
   if (mink==maxk) {
     // Huh.  What were you thinking?  This is a trivial NURBS.
     parametrics_cat->warning()
-      << "Trivial NURBS curve specified." << endl;
+      << "Trivial NURBS curve specified." << std::endl;
     memset((void *)&basis, 0, sizeof(LMatrix4));
     return;
   }
@@ -412,7 +409,7 @@ compute_seg_col(int c,
     break;
 
   default:
-    cerr << "Invalid rebuild type in compute_seg\n";
+    std::cerr << "Invalid rebuild type in compute_seg\n";
     return false;
   }
 

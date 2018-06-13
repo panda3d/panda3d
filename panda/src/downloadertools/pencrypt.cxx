@@ -19,11 +19,11 @@
 
 using std::cerr;
 using std::endl;
-using std::string;
 
 string password;
+std::string password;
 bool got_password = false;
-string algorithm;
+std::string algorithm;
 bool got_algorithm = false;
 int key_length = -1;
 bool got_key_length = false;

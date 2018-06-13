@@ -14,9 +14,6 @@
 #include "xFileDataNodeReference.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle XFileDataNodeReference::_type_handle;
 
 /**
@@ -65,7 +62,7 @@ is_complex_object() const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataNodeReference::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "{ " << _object->get_name() << " }\n";
 }
@@ -92,6 +89,6 @@ get_element(int n) {
  * name.
  */
 XFileDataObject *XFileDataNodeReference::
-get_element(const string &name) {
+get_element(const std::string &name) {
   return &((*_object)[name]);
 }

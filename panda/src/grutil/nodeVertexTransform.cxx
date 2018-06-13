@@ -13,8 +13,6 @@
 
 #include "nodeVertexTransform.h"
 
-using std::ostream;
-
 TypeHandle NodeVertexTransform::_type_handle;
 
 /**
@@ -48,7 +46,7 @@ get_matrix(LMatrix4 &matrix) const {
  *
  */
 void NodeVertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_prev != nullptr) {
     _prev->output(out);
     out << " * ";

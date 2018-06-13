@@ -24,9 +24,7 @@
 #include <windows.h>
 #include <Tlhelp32.h>
 
-using std::istringstream;
 using std::string;
-using std::wstring;
 
 /**
  *
@@ -101,7 +99,7 @@ set_command_line(const string &command_line) {
  * starts parsing this into argc, argv.
  */
 void Win32ArgParser::
-set_command_line(const wstring &command_line) {
+set_command_line(const std::wstring &command_line) {
   TextEncoder encoder;
   encoder.set_encoding(Filename::get_filesystem_encoding());
   encoder.set_wtext(command_line);
@@ -150,7 +148,7 @@ do_glob() {
   // means to do it.
   string envvar = ExecutionEnvironment::get_environment_variable("PANDA_GLOB");
   if (!envvar.empty()) {
-    istringstream strm(envvar);
+    std::istringstream strm(envvar);
     int value;
     strm >> value;
     if (!strm.fail()) {

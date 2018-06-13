@@ -20,7 +20,6 @@
 #include "openssl/md5.h"
 #endif  // HAVE_OPENSSL
 
-using std::ios;
 using std::istream;
 using std::istringstream;
 using std::ostream;
@@ -60,7 +59,7 @@ input_hex(istream &in) {
   }
 
   if (i != 32) {
-    in.clear(ios::failbit|in.rdstate());
+    in.clear(std::ios::failbit|in.rdstate());
     return;
   }
 
@@ -210,7 +209,7 @@ hash_stream(istream &stream) {
   char buffer[buffer_size];
 
   // Seek the stream to the beginning in case it wasn't there already.
-  stream.seekg(0, ios::beg);
+  stream.seekg(0, std::ios::beg);
 
   stream.read(buffer, buffer_size);
   size_t count = stream.gcount();

@@ -30,10 +30,7 @@
 #include <unistd.h>
 #endif
 
-using std::ostringstream;
 using std::string;
-using std::vector;
-using std::wstring;
 
 /**
  *
@@ -183,7 +180,7 @@ start_p3dcert() {
     nullptr
   };
 
-  wstring env_w;
+  std::wstring env_w;
 
   for (int ki = 0; keep[ki] != nullptr; ++ki) {
     wchar_t *value = _wgetenv(keep[ki]);
@@ -374,7 +371,7 @@ win_create_process() {
 
   // Construct the command-line string, containing the quoted command-line
   // arguments.
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "\"" << _p3dcert_exe << "\" \""
          << _cert_filename->get_filename() << "\" \"" << _cert_dir << "\"";
 
@@ -437,7 +434,7 @@ posix_create_process() {
     }
 
     // build up an array of char strings for the environment.
-    vector<const char *> ptrs;
+    std::vector<const char *> ptrs;
     size_t p = 0;
     size_t zero = _env.find('\0', p);
     while (zero != string::npos) {

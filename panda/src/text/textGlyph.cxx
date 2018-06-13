@@ -19,7 +19,6 @@
 
 using std::max;
 using std::min;
-using std::string;
 
 TypeHandle TextGlyph::_type_handle;
 
@@ -256,7 +255,7 @@ make_quad_geom() {
   // rather than a single triangle strip, to avoid the bad vertex duplication
   // behavior with lots of two-triangle strips.
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3t2(), Geom::UH_static);
+    (std::string(), GeomVertexFormat::get_v3t2(), Geom::UH_static);
   vdata->unclean_set_num_rows(4);
 
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);

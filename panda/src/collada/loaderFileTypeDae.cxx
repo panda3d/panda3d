@@ -14,8 +14,6 @@
 #include "loaderFileTypeDae.h"
 #include "load_collada_file.h"
 
-using std::string;
-
 TypeHandle LoaderFileTypeDae::_type_handle;
 
 /**
@@ -28,7 +26,7 @@ LoaderFileTypeDae() {
 /**
  *
  */
-string LoaderFileTypeDae::
+std::string LoaderFileTypeDae::
 get_name() const {
 #if PANDA_COLLADA_VERSION == 14
   return "COLLADA 1.4";
@@ -42,7 +40,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeDae::
+std::string LoaderFileTypeDae::
 get_extension() const {
   return "dae";
 }
@@ -51,7 +49,7 @@ get_extension() const {
  * Returns a space-separated list of extension, in addition to the one
  * returned by get_extension(), that are recognized by this loader.
  */
-string LoaderFileTypeDae::
+std::string LoaderFileTypeDae::
 get_additional_extensions() const {
   return "zae";
 }

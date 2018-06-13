@@ -25,8 +25,6 @@
 
 #include <algorithm>
 
-using std::ostream;
-
 TypeHandle PalettePage::_type_handle;
 
 /**
@@ -143,7 +141,7 @@ unplace(TexturePlacement *placement) {
  * their textures, to the indicated output stream.
  */
 void PalettePage::
-write_image_info(ostream &out, int indent_level) const {
+write_image_info(std::ostream &out, int indent_level) const {
   Images::const_iterator ii;
   for (ii = _images.begin(); ii != _images.end(); ++ii) {
     PaletteImage *image = (*ii);

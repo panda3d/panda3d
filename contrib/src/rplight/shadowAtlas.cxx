@@ -28,8 +28,6 @@
 #include "shadowAtlas.h"
 #include <string.h>
 
-using std::endl;
-
 NotifyCategoryDef(shadowatlas, "");
 
 /**
@@ -133,13 +131,13 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
 
   // Check for empty region
   if (tile_width < 1 || tile_height < 1) {
-    shadowatlas_cat.error() << "Called find_and_reserve_region with null-region!" << endl;
+    shadowatlas_cat.error() << "Called find_and_reserve_region with null-region!" << std::endl;
     return LVecBase4i(-1);
   }
 
   // Check for region bigger than the shadow atlas
   if (tile_width > _num_tiles || tile_height > _num_tiles) {
-    shadowatlas_cat.error() << "Requested region exceeds shadow atlas size!" << endl;
+    shadowatlas_cat.error() << "Requested region exceeds shadow atlas size!" << std::endl;
     return LVecBase4i(-1);
   }
 
@@ -157,7 +155,7 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
   // When we reached this part, we couldn't find a free region, so the atlas
   // seems to be full.
   shadowatlas_cat.error() << "Failed to find a free region of size " << tile_width
-              << " x " << tile_height << "!"  << endl;
+              << " x " << tile_height << "!"  << std::endl;
   return LVecBase4i(-1);
 }
 

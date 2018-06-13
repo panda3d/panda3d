@@ -21,7 +21,6 @@
 #include "config_xfile.h"
 #include "indent.h"
 
-using std::ostream;
 using std::string;
 
 TypeHandle XFileDataObject::_type_handle;
@@ -171,7 +170,7 @@ add_element(XFileDataObject *element) {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObject::
-output_data(ostream &out) const {
+output_data(std::ostream &out) const {
   out << "(" << get_type() << "::output_data() not implemented.)";
 }
 
@@ -179,7 +178,7 @@ output_data(ostream &out) const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObject::
-write_data(ostream &out, int indent_level, const char *) const {
+write_data(std::ostream &out, int indent_level, const char *) const {
   indent(out, indent_level)
     << "(" << get_type() << "::write_data() not implemented.)\n";
 }

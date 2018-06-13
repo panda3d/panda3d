@@ -15,8 +15,6 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-using std::ostream;
-
 TypeHandle FltUnsupportedRecord::_type_handle;
 
 /**
@@ -33,7 +31,7 @@ FltUnsupportedRecord(FltHeader *header) : FltRecord(header) {
  * flt file, use FltHeader::write_flt().
  */
 void FltUnsupportedRecord::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Unsupported(" << _opcode << ")";
 }
 

@@ -17,9 +17,6 @@
 #include "cppParser.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -39,7 +36,7 @@ CPPExtensionType(CPPExtensionType::Type type,
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_simple_name() const {
   if (_ident == nullptr) {
     return "";
@@ -50,7 +47,7 @@ get_simple_name() const {
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_local_name(CPPScope *scope) const {
   if (_ident == nullptr) {
     return "";
@@ -61,7 +58,7 @@ get_local_name(CPPScope *scope) const {
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_fully_scoped_name() const {
   if (_ident == nullptr) {
     return "";
@@ -212,7 +209,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPExtensionType::
-output(ostream &out, int, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int, CPPScope *scope, bool complete) const {
   if (_ident != nullptr) {
     // If we have a name, use it.
     if (complete || cppparser_output_class_keyword) {
@@ -245,8 +242,8 @@ as_extension_type() {
   return this;
 }
 
-ostream &
-operator << (ostream &out, CPPExtensionType::Type type) {
+std::ostream &
+operator << (std::ostream &out, CPPExtensionType::Type type) {
   switch (type) {
   case CPPExtensionType::T_enum:
     return out << "enum";

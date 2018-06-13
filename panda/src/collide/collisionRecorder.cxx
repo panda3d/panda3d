@@ -16,8 +16,6 @@
 
 #ifdef DO_COLLISION_RECORDING
 
-using std::ostream;
-
 TypeHandle CollisionRecorder::_type_handle;
 
 /**
@@ -44,7 +42,7 @@ CollisionRecorder::
  *
  */
 void CollisionRecorder::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "tested " << _num_missed + _num_detected << ", detected "
       << _num_detected << "\n";
 }

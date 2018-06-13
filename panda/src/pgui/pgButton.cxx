@@ -20,15 +20,13 @@
 #include "colorAttrib.h"
 #include "transformState.h"
 
-using std::string;
-
 TypeHandle PGButton::_type_handle;
 
 /**
  *
  */
 PGButton::
-PGButton(const string &name) : PGItem(name)
+PGButton(const std::string &name) : PGItem(name)
 {
   _button_down = false;
   _click_buttons.insert(MouseButton::one());
@@ -136,7 +134,7 @@ void PGButton::
 click(const MouseWatcherParameter &param) {
   LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
-  string event = get_click_event(param.get_button());
+  std::string event = get_click_event(param.get_button());
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
@@ -152,7 +150,7 @@ click(const MouseWatcherParameter &param) {
  * to the size of the text.
  */
 void PGButton::
-setup(const string &label, PN_stdfloat bevel) {
+setup(const std::string &label, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);

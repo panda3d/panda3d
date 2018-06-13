@@ -16,8 +16,6 @@
 
 #include "linearNoiseForce.h"
 
-using std::ostream;
-
 // declare the statics
 
 ConfigVariableInt LinearNoiseForce::_random_seed
@@ -138,7 +136,7 @@ get_child_vector(const PhysicsObject *po) {
  * Write a string representation of this instance to <out>.
  */
 void LinearNoiseForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<""<<"LinearNoiseForce";
   #endif //] NDEBUG
@@ -148,7 +146,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearNoiseForce::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"LinearNoiseForce:";

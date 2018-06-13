@@ -20,9 +20,6 @@
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
 
-using std::string;
-using std::vector;
-
 /**
  *
  */
@@ -332,7 +329,7 @@ run() {
  * option.
  */
 bool MayaToEggServer::
-dispatch_transform_type(const string &opt, const string &arg, void *var) {
+dispatch_transform_type(const std::string &opt, const std::string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
   (*ip) = MayaToEggConverter::string_transform_type(arg);
 
@@ -392,7 +389,7 @@ poll() {
       // track of all the pointers we're gonna malloc.  Needed later for
       // cleanup.
       vector_string vargv;
-      vector<char *> buffers;
+      std::vector<char *> buffers;
 
       // Get the strings from the datagram and put them into the string vector
       int i;
@@ -402,7 +399,7 @@ poll() {
 
       // Last string is the current directory the client was run from.  Not
       // part of the argument list, but we still need it
-      string cwd = data.get_string();
+      std::string cwd = data.get_string();
 
       // We allocate some memory to hold the pointers to the pointers we're
       // going to pass in to parse_command_line().
@@ -442,7 +439,7 @@ poll() {
       vargv.clear();
       // No, iterate through the char * vector and cleanup the malloc'd
       // pointers
-      vector<char *>::iterator vi;
+      std::vector<char *>::iterator vi;
       for ( vi = buffers.begin() ; vi != buffers.end(); vi++) {
         free(*vi);
       }

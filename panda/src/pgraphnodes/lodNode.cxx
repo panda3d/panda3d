@@ -38,11 +38,6 @@
 #include "colorAttrib.h"
 #include "clipPlaneAttrib.h"
 
-using std::min;
-using std::ostream;
-using std::ostringstream;
-using std::string;
-
 TypeHandle LODNode::_type_handle;
 
 /**
@@ -50,7 +45,7 @@ TypeHandle LODNode::_type_handle;
  * variable.
  */
 PT(LODNode) LODNode::
-make_default_lod(const string &name) {
+make_default_lod(const std::string &name) {
   switch (default_lod_type.get_value()) {
   case LNT_pop:
     return new LODNode(name);
@@ -151,7 +146,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LPoint3 center = cdata->_center * rel_transform->get_mat();
   PN_stdfloat dist2 = center.dot(center);
 
-  int num_children = min(get_num_children(), (int)cdata->_switch_vector.size());
+  int num_children = std::min(get_num_children(), (int)cdata->_switch_vector.size());
   for (int index = 0; index < num_children; ++index) {
     const Switch &sw = cdata->_switch_vector[index];
     bool in_range;
@@ -181,7 +176,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void LODNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   CDReader cdata(_cycler);
   out << " center(" << cdata->_center << ") ";
@@ -598,7 +593,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // should definitely fit entirely within a bounding sphere that contains
       // all the points of the child.
       LPoint3 box_center = (min_point + max_point) / 2.0f;
-      PN_stdfloat box_radius = min(min(max_point[0] - box_center[0],
+      PN_stdfloat box_radius = std::min(std::min(max_point[0] - box_center[0],
                                  max_point[1] - box_center[1]),
                              max_point[2] - box_center[2]);
 
@@ -647,7 +642,7 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
       PN_stdfloat suggested_radius;
       if (!do_verify_child_bounds(cdata, index, suggested_radius)) {
         const Switch &sw = cdata->_switch_vector[index];
-        ostringstream strm;
+        std::ostringstream strm;
         strm
           << "Level " << index << " geometry of " << data.get_node_path()
           << " is larger than its switch radius; suggest radius of "

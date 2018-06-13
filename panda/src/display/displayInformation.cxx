@@ -23,9 +23,6 @@
 #endif
 #endif
 
-using std::ostream;
-using std::string;
-
 /**
  * Returns true if these two DisplayModes are identical.
  */
@@ -49,7 +46,7 @@ operator != (const DisplayMode &other) const {
  *
  */
 void DisplayMode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << width << 'x' << height;
   if (bits_per_pixel > 0) {
     out << ' ' << bits_per_pixel << "bpp";
@@ -492,7 +489,7 @@ get_driver_date_year() {
 /**
  *
  */
-const string &DisplayInformation::
+const std::string &DisplayInformation::
 get_cpu_vendor_string() const {
   return _cpu_vendor_string;
 }
@@ -500,7 +497,7 @@ get_cpu_vendor_string() const {
 /**
  *
  */
-const string &DisplayInformation::
+const std::string &DisplayInformation::
 get_cpu_brand_string() const {
   return _cpu_brand_string;
 }

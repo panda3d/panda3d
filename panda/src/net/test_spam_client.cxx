@@ -21,10 +21,6 @@
 #include "datagram_ui.h"
 #include "thread.h"
 
-using std::cin;
-using std::cout;
-using std::string;
-
 int
 main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -32,7 +28,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  string hostname = argv[1];
+  std::string hostname = argv[1];
   int port = atoi(argv[2]);
 
   NetAddress host;
@@ -58,8 +54,8 @@ main(int argc, char *argv[]) {
   bool lost_connection = false;
 
   NetDatagram datagram;
-  cout << "Enter a datagram.\n";
-  cin >> datagram;
+  std::cout << "Enter a datagram.\n";
+  std::cin >> datagram;
 
   nout << "Read datagram " << datagram << "\n";
   datagram.dump_hex(nout);

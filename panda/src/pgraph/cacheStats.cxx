@@ -13,8 +13,6 @@
 
 #include "cacheStats.h"
 
-using std::ostream;
-
 /**
  * Initializes the CacheStats for the first time.  We don't use the
  * constructor for this, since we can't guarantee ordering of static
@@ -51,7 +49,7 @@ reset(double now) {
  *
  */
 void CacheStats::
-write(ostream &out, const char *name) const {
+write(std::ostream &out, const char *name) const {
 #ifndef NDEBUG
   out << name << " cache: " << _cache_hits << " hits, "
       << _cache_misses << " misses\n"

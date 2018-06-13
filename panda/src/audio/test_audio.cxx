@@ -17,9 +17,6 @@
 #include "config_audio.h"
 #include <ipc_traits.h>
 
-using std::cerr;
-using std::endl;
-
 int
 main(int argc, char* argv[]) {
 
@@ -29,9 +26,9 @@ main(int argc, char* argv[]) {
       PT(AudioSound) tester = AudioPool::load_sound(argv[1]);
       AudioManager::play(tester);
       AudioPool::release_all_sounds();
-      cerr << "all sounds but 1 released" << endl;
+      std::cerr << "all sounds but 1 released" << std::endl;
     }
-    cerr << "all sounds released" << endl;
+    std::cerr << "all sounds released" << std::endl;
   }
 
   /*

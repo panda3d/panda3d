@@ -17,8 +17,6 @@
 #include "lightMutexHolder.h"
 #include "virtualFileSystem.h"
 
-using std::ostream;
-
 
 ModelPool *ModelPool::_global_ptr = nullptr;
 
@@ -27,7 +25,7 @@ ModelPool *ModelPool::_global_ptr = nullptr;
  * with debugging.
  */
 void ModelPool::
-write(ostream &out) {
+write(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -261,7 +259,7 @@ ns_garbage_collect() {
  * The nonstatic implementation of list_contents().
  */
 void ModelPool::
-ns_list_contents(ostream &out) const {
+ns_list_contents(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << "model pool contents:\n";

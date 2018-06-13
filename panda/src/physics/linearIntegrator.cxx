@@ -16,8 +16,6 @@
 #include "physicalNode.h"
 #include "forceNode.h"
 
-using std::ostream;
-
 ConfigVariableDouble LinearIntegrator::_max_linear_dt
 ("default_max_linear_dt", 1.0f / 30.0f);
 
@@ -70,7 +68,7 @@ integrate(Physical *physical, LinearForceVector &forces,
  * Write a string representation of this instance to <out>.
  */
 void LinearIntegrator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearIntegrator";
   #endif //] NDEBUG
@@ -80,7 +78,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearIntegrator::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearIntegrator:\n";
   out.width(indent+2); out<<""; out<<"_max_linear_dt "<<_max_linear_dt<<" (class static)\n";

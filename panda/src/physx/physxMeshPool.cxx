@@ -20,9 +20,6 @@
 #include "physxFileStream.h"
 #include "virtualFileSystem.h"
 
-using std::endl;
-using std::ostream;
-
 PhysxMeshPool::ConvexMeshes PhysxMeshPool::_convex_meshes;
 PhysxMeshPool::TriangleMeshes PhysxMeshPool::_triangle_meshes;
 PhysxMeshPool::ClothMeshes PhysxMeshPool::_cloth_meshes;
@@ -35,12 +32,12 @@ bool PhysxMeshPool::
 check_filename(const Filename &fn) {
 
   if (!(VirtualFileSystem::get_global_ptr()->exists(fn))) {
-    physx_cat.error() << "File does not exists: " << fn << endl;
+    physx_cat.error() << "File does not exists: " << fn << std::endl;
     return false;
   }
 
   if (!(VirtualFileSystem::get_global_ptr()->is_regular_file(fn))) {
-    physx_cat.error() << "Not a regular file: " << fn << endl;
+    physx_cat.error() << "Not a regular file: " << fn << std::endl;
     return false;
   }
 
@@ -275,7 +272,7 @@ list_contents() {
  *
  */
 void PhysxMeshPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
 
   out << "PhysX mesh pool contents:\n";
 
@@ -288,7 +285,7 @@ list_contents(ostream &out) {
 
       out << "  " << fn.get_fullpath()
           << " (convex mesh, " << mesh->ptr()->getReferenceCount()
-          << " references)" << endl;
+          << " references)" << std::endl;
     }
   }
 

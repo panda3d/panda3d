@@ -15,9 +15,6 @@
 
 #ifdef HAVE_PYTHON
 
-using std::istream;
-using std::string;
-
 /**
  * Extracts the indicated number of bytes in the stream and returns them as a
  * string (or bytes, in Python 3).  Returns empty string at end-of-file.
@@ -44,9 +41,9 @@ extract_bytes(size_t size) {
  */
 PyObject *Extension<StreamReader>::
 readline() {
-  istream *in = _this->get_istream();
+  std::istream *in = _this->get_istream();
 
-  string line;
+  std::string line;
   int ch = in->get();
   while (!in->eof() && !in->fail()) {
     line += ch;

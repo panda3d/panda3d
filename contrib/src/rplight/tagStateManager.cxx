@@ -28,7 +28,6 @@
 #include "tagStateManager.h"
 
 using std::endl;
-using std::string;
 
 
 NotifyCategoryDef(tagstatemgr, "");
@@ -80,7 +79,7 @@ TagStateManager::
  */
 void TagStateManager::
 apply_state(StateContainer& container, NodePath np, Shader* shader,
-            const string &name, int sort) {
+            const std::string &name, int sort) {
   if (tagstatemgr_cat.is_spam()) {
     tagstatemgr_cat.spam() << "Constructing new state " << name
                  << " with shader " << shader << endl;

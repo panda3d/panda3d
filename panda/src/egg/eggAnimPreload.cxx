@@ -16,8 +16,6 @@
 #include "string_utils.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle EggAnimPreload::_type_handle;
 
 /**
@@ -25,7 +23,7 @@ TypeHandle EggAnimPreload::_type_handle;
  * Egg format.
  */
 void EggAnimPreload::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   test_under_integrity();
 
   write_header(out, indent_level, "<AnimPreload>");

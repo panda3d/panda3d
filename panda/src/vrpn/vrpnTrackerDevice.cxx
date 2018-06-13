@@ -14,15 +14,13 @@
 #include "vrpnTrackerDevice.h"
 #include "vrpnClient.h"
 
-using std::string;
-
 TypeHandle VrpnTrackerDevice::_type_handle;
 
 /**
  *
  */
 VrpnTrackerDevice::
-VrpnTrackerDevice(VrpnClient *client, const string &device_name,
+VrpnTrackerDevice(VrpnClient *client, const std::string &device_name,
                   int sensor, VrpnTrackerDevice::DataType data_type,
                   VrpnTracker *vrpn_tracker) :
   ClientTrackerDevice(client, device_name),

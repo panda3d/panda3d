@@ -44,8 +44,6 @@
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
 
-using std::string;
-
 /**
  *
  */
@@ -321,7 +319,7 @@ run() {
  * option.
  */
 bool MayaToEgg::
-dispatch_transform_type(const string &opt, const string &arg, void *var) {
+dispatch_transform_type(const std::string &opt, const std::string &arg, void *var) {
   MayaToEggConverter::TransformType *ip = (MayaToEggConverter::TransformType *)var;
   (*ip) = MayaToEggConverter::string_transform_type(arg);
 

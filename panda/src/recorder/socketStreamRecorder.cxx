@@ -18,8 +18,6 @@
 
 #ifdef HAVE_OPENSSL
 
-using std::move;
-
 TypeHandle SocketStreamRecorder::_type_handle;
 
 /**
@@ -87,7 +85,7 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
     size_t size = scan.get_uint16();
     vector_uchar packet(size);
     scan.extract_bytes(&packet[0], size);
-    _data.push_back(Datagram(move(packet)));
+    _data.push_back(Datagram(std::move(packet)));
   }
 }
 

@@ -22,11 +22,7 @@
 #include "pset.h"
 #include "indent.h"
 
-using std::max;
-using std::min;
-using std::move;
 using std::ostream;
-using std::string;
 
 TypeHandle GeomVertexData::_type_handle;
 TypeHandle GeomVertexData::CDataCache::_type_handle;
@@ -66,7 +62,7 @@ make_cow_copy() {
  *
  */
 GeomVertexData::
-GeomVertexData(const string &name,
+GeomVertexData(const std::string &name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
   _name(name),
@@ -216,7 +212,7 @@ compare_to(const GeomVertexData &other) const {
  * graph for vertex computations.
  */
 void GeomVertexData::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
   _char_pcollector = PStatCollector(_animation_pcollector, name);
   _skinning_pcollector = PStatCollector(_char_pcollector, "Skinning");
@@ -767,7 +763,7 @@ convert_to(const GeomVertexFormat *new_format) const {
   if (entry == nullptr) {
     // Create a new entry for the result.
     // We don't need the key anymore, move the pointers into the CacheEntry.
-    entry = new CacheEntry((GeomVertexData *)this, move(key));
+    entry = new CacheEntry((GeomVertexData *)this, std::move(key));
 
     {
       LightMutexHolder holder(_cache_lock);
@@ -975,7 +971,7 @@ animate_vertices(bool force, Thread *current_thread) const {
     if (!cdata->_transform_blend_table.is_null()) {
       if (cdata->_slider_table != nullptr) {
         modified =
-          max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
+          std::max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
               cdata->_slider_table->get_modified(current_thread));
       } else {
         modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
@@ -1322,7 +1318,7 @@ describe_vertex(ostream &out, int row) const {
     const GeomVertexColumn *column = format->get_column(ci);
     reader.set_column(ai, column);
 
-    int num_values = min(column->get_num_values(), 4);
+    int num_values = std::min(column->get_num_values(), 4);
     const LVecBase4 &d = reader.get_data4();
 
     out << "  " << *column->get_name();
@@ -1476,7 +1472,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
     new_format = orig_format->get_post_animated_format();
     cdata->_animated_vertices =
       new GeomVertexData(get_name(), new_format,
-                         min(get_usage_hint(), UH_dynamic));
+                         std::min(get_usage_hint(), UH_dynamic));
   }
   PT(GeomVertexData) new_data = cdata->_animated_vertices;
 

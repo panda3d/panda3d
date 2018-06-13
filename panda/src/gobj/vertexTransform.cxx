@@ -17,8 +17,6 @@
 #include "indent.h"
 #include "transformTable.h"
 
-using std::ostream;
-
 PipelineCycler<VertexTransform::CData> VertexTransform::_global_cycler;
 UpdateSeq VertexTransform::_next_modified;
 
@@ -70,7 +68,7 @@ accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
  *
  */
 void VertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -78,7 +76,7 @@ output(ostream &out) const {
  *
  */
 void VertexTransform::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << ":\n";
   LMatrix4 mat;

@@ -63,8 +63,6 @@
 #include "shuttle_controls.bam_src.c"
 
 using std::istringstream;
-using std::max;
-using std::min;
 using std::ostringstream;
 using std::string;
 
@@ -520,15 +518,15 @@ center_trackball(const NodePath &object) {
 
   if (lens != nullptr) {
     LVecBase2 fov = lens->get_fov();
-    distance = radius / ctan(deg_2_rad(min(fov[0], fov[1]) / 2.0f));
+    distance = radius / ctan(deg_2_rad(std::min(fov[0], fov[1]) / 2.0f));
 
     // Ensure the far plane is far enough back to see the entire object.
     PN_stdfloat ideal_far_plane = distance + radius * 1.5;
-    lens->set_far(max(lens->get_default_far(), ideal_far_plane));
+    lens->set_far(std::max(lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward.
     PN_stdfloat ideal_near_plane = distance - radius;
-    lens->set_near(min(lens->get_default_near(), ideal_near_plane));
+    lens->set_near(std::min(lens->get_default_near(), ideal_near_plane));
   }
 
   _trackball->set_origin(center);

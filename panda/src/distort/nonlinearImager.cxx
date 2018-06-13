@@ -23,8 +23,6 @@
 #include "asyncTaskManager.h"
 #include "genericAsyncTask.h"
 
-using std::string;
-
 /**
  *
  */
@@ -73,7 +71,7 @@ add_screen(ProjectionScreen *screen) {
  * The return value is the index number of the new screen.
  */
 int NonlinearImager::
-add_screen(const NodePath &screen, const string &name) {
+add_screen(const NodePath &screen, const std::string &name) {
   nassertr(!screen.is_empty() &&
            screen.node()->is_of_type(ProjectionScreen::get_class_type()), -1);
 

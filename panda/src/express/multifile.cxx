@@ -35,7 +35,6 @@ using std::max;
 using std::min;
 using std::ostream;
 using std::ostringstream;
-using std::pair;
 using std::streamoff;
 using std::streampos;
 using std::streamsize;
@@ -2011,7 +2010,7 @@ add_new_subfile(Subfile *subfile, int compression_level) {
     _needs_repack = true;
   }
 
-  pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
+  std::pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
   if (!insert_result.second) {
     // Hmm, unable to insert.  There must already be a subfile by that name.
     // Remove the old one.

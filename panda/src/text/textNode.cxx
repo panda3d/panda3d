@@ -49,9 +49,7 @@
 
 #include <stdio.h>
 
-using std::ostream;
 using std::string;
-using std::wstring;
 
 TypeHandle TextNode::_type_handle;
 
@@ -256,10 +254,10 @@ is_whitespace(wchar_t character) const {
  * like \1 or \3.
  */
 PN_stdfloat TextNode::
-calc_width(const wstring &line) const {
+calc_width(const std::wstring &line) const {
   PN_stdfloat width = 0.0f;
 
-  wstring::const_iterator si;
+  std::wstring::const_iterator si;
   for (si = line.begin(); si != line.end(); ++si) {
     width += calc_width(*si);
   }
@@ -271,7 +269,7 @@ calc_width(const wstring &line) const {
  *
  */
 void TextNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 
   check_rebuild();
@@ -287,7 +285,7 @@ output(ostream &out) const {
  *
  */
 void TextNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   TextProperties::write(out, indent_level + 2);
   indent(out, indent_level + 2)
@@ -350,7 +348,7 @@ generate() {
   CPT(TransformState) transform = TransformState::make_mat(mat);
   root->set_transform(transform);
 
-  wstring wtext = get_wtext();
+  std::wstring wtext = get_wtext();
 
   // Assemble the text.
   TextAssembler assembler(this);

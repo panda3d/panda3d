@@ -18,9 +18,6 @@
 // for sprintf().
 #include <stdio.h>
 
-using std::ostream;
-using std::wstring;
-
 TypeHandle Datagram::_type_handle;
 
 /**
@@ -44,7 +41,7 @@ clear() {
  * hex (and ASCII) values.
  */
 void Datagram::
-dump_hex(ostream &out, unsigned int indent) const {
+dump_hex(std::ostream &out, unsigned int indent) const {
   const char *message = (const char *)get_data();
   size_t num_bytes = get_length();
   for (size_t line = 0; line < num_bytes; line += 16) {
@@ -83,13 +80,13 @@ dump_hex(ostream &out, unsigned int indent) const {
  * Adds a variable-length wstring to the datagram.
  */
 void Datagram::
-add_wstring(const wstring &str) {
+add_wstring(const std::wstring &str) {
   // By convention, wstrings are marked with 32-bit lengths.
   add_uint32((uint32_t)str.length());
 
   // Now append each character in the string.  We store each code little-
   // endian, for no real good reason.
-  wstring::const_iterator ci;
+  std::wstring::const_iterator ci;
   for (ci = str.begin(); ci != str.end(); ++ci) {
     add_uint16((uint16_t)*ci);
   }
@@ -171,7 +168,7 @@ assign(const void *data, size_t size) {
  * Write a string representation of this instance to <out>.
  */
 void Datagram::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<""<<"Datagram";
   #endif //] NDEBUG
@@ -181,7 +178,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void Datagram::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"Datagram:\n";

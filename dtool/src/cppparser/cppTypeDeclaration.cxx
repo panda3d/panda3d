@@ -13,8 +13,6 @@
 
 #include "cppTypeDeclaration.h"
 
-using std::ostream;
-
 /**
  * Constructs a new CPPTypeDeclaration object for the given type.
  */
@@ -48,7 +46,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTypeDeclaration::
-output(ostream &out, int indent_level, CPPScope *scope, bool) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
   _type->output(out, indent_level, scope, true);
 }
 

@@ -17,10 +17,6 @@
 
 #include "milesAudioManager.h"
 
-using std::max;
-using std::min;
-using std::string;
-
 
 TypeHandle MilesAudioSequence::_type_handle;
 
@@ -38,7 +34,7 @@ TypeHandle MilesAudioSequence::_type_handle;
  */
 MilesAudioSequence::
 MilesAudioSequence(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
-                 const string &file_name) :
+                 const std::string &file_name) :
   MilesAudioSound(manager, file_name),
   _sd(sd)
 {
@@ -170,8 +166,8 @@ set_volume(PN_stdfloat volume) {
 
     // Change to Miles volume, range 0 to 127:
     S32 milesVolume = (S32)(volume * 127.0f);
-    milesVolume = min(milesVolume, 127);
-    milesVolume = max(milesVolume, 0);
+    milesVolume = std::min(milesVolume, 127);
+    milesVolume = std::max(milesVolume, 0);
 
     AIL_set_sequence_volume(_sequence, milesVolume, 0);
   }
@@ -300,7 +296,7 @@ do_set_time(PN_stdfloat time) {
     // Ensure we don't inadvertently run off the end of the sound.
   S32 length_ms;
   AIL_sequence_ms_position(_sequence, &length_ms, nullptr);
-  time_ms = min(time_ms, length_ms);
+  time_ms = std::min(time_ms, length_ms);
 
   AIL_set_sequence_ms_position(_sequence, time_ms);
 }

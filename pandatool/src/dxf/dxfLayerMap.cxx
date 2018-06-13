@@ -14,8 +14,6 @@
 #include "dxfLayerMap.h"
 #include "dxfFile.h"
 
-using std::string;
-
 /**
  * Looks up the layer name in the map, and returns a pointer to the associated
  * DXFLayer.  If this is the first time this layer name has been used, creates
@@ -24,7 +22,7 @@ using std::string;
  * this function to create a specialized time, if desired.
  */
 DXFLayer *DXFLayerMap::
-get_layer(const string &name, DXFFile *dxffile) {
+get_layer(const std::string &name, DXFFile *dxffile) {
   iterator lmi;
   lmi = find(name);
   if (lmi != end()) {

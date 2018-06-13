@@ -13,8 +13,6 @@
 
 #include "p3dNoneObject.h"
 
-using std::string;
-
 /**
  *
  */
@@ -43,6 +41,6 @@ get_bool() {
  * to a string.
  */
 void P3DNoneObject::
-make_string(string &value) {
+make_string(std::string &value) {
   value = "None";
 }

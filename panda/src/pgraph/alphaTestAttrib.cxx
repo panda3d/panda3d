@@ -20,8 +20,6 @@
 #include "datagramIterator.h"
 #include "auxBitplaneAttrib.h"
 
-using std::ostream;
-
 TypeHandle AlphaTestAttrib::_type_handle;
 int AlphaTestAttrib::_attrib_slot;
 
@@ -48,7 +46,7 @@ make_default() {
  *
  */
 void AlphaTestAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   output_comparefunc(out,_mode);
   out << "," << _reference_alpha;

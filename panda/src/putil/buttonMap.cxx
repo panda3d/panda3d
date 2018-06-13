@@ -14,16 +14,13 @@
 #include "buttonMap.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle ButtonMap::_type_handle;
 
 /**
  * Registers a new button mapping.
  */
 void ButtonMap::
-map_button(ButtonHandle raw_button, ButtonHandle button, const string &label) {
+map_button(ButtonHandle raw_button, ButtonHandle button, const std::string &label) {
   int index = raw_button.get_index();
   if (_button_map.find(index) != _button_map.end()) {
     // A button with this index was already mapped.
@@ -42,7 +39,7 @@ map_button(ButtonHandle raw_button, ButtonHandle button, const string &label) {
  *
  */
 void ButtonMap::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ButtonMap (" << get_num_buttons() << " buttons)";
 }
 
@@ -50,7 +47,7 @@ output(ostream &out) const {
  *
  */
 void ButtonMap::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "ButtonMap, " << get_num_buttons() << " buttons:\n";
 

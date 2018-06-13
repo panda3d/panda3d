@@ -18,8 +18,6 @@
 
 #include <algorithm>
 
-using std::istream;
-using std::pair;
 using std::string;
 
 /**
@@ -476,7 +474,7 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
  * reference found, increments the appropriate element file's reference count.
  */
 bool SoftCVS::
-scan_scene_file(istream &in, Multifile &multifile) {
+scan_scene_file(std::istream &in, Multifile &multifile) {
   bool okflag = true;
 
   int c = in.get();
@@ -497,7 +495,7 @@ scan_scene_file(istream &in, Multifile &multifile) {
       SoftFilename v("", word);
 
       // Increment the use count on all matching elements of the multiset.
-      pair<ElementFiles::iterator, ElementFiles::iterator> range;
+      std::pair<ElementFiles::iterator, ElementFiles::iterator> range;
       range = _element_files.equal_range(v);
 
       ElementFiles::iterator ei;

@@ -15,8 +15,6 @@
 
 #include "compose_matrix.h"
 
-using std::ostream;
-
 template class AnimChannel<ACMatrixSwitchType>;
 template class AnimChannel<ACScalarSwitchType>;
 
@@ -24,7 +22,7 @@ template class AnimChannel<ACScalarSwitchType>;
  * Outputs a very brief description of a matrix.
  */
 void ACMatrixSwitchType::
-output_value(ostream &out, const ACMatrixSwitchType::ValueType &value) {
+output_value(std::ostream &out, const ACMatrixSwitchType::ValueType &value) {
   LVecBase3 scale, shear, hpr, translate;
   if (decompose_matrix(value, scale, shear, hpr, translate)) {
     if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {

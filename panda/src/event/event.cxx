@@ -14,16 +14,13 @@
 #include "event.h"
 #include "config_event.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle Event::_type_handle;
 
 /**
  *
  */
 Event::
-Event(const string &event_name, EventReceiver *receiver) :
+Event(const std::string &event_name, EventReceiver *receiver) :
   _name(event_name)
 {
   _receiver = receiver;
@@ -120,7 +117,7 @@ clear_receiver() {
  *
  */
 void Event::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
 
   out << "(";

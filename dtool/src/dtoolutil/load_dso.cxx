@@ -14,9 +14,7 @@
 #include "load_dso.h"
 #include "executionEnvironment.h"
 
-using std::ostringstream;
 using std::string;
-using std::wstring;
 
 static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
   if (filename.is_local()) {
@@ -51,7 +49,7 @@ load_dso(const DSearchPath &path, const Filename &filename) {
   if (!abspath.is_regular_file()) {
     return nullptr;
   }
-  wstring os_specific_w = abspath.to_os_specific_w();
+  std::wstring os_specific_w = abspath.to_os_specific_w();
 
   // Try using LoadLibraryEx, if possible.
   typedef HMODULE (WINAPI *tLoadLibraryEx)(LPCWSTR, HANDLE, DWORD);
@@ -108,7 +106,7 @@ load_dso_error() {
   }
 
   // Some unknown error code.
-  ostringstream errmsg;
+  std::ostringstream errmsg;
   errmsg << "Unknown error " << last_error;
   return errmsg.str();
 }

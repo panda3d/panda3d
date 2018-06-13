@@ -17,10 +17,6 @@
 #include "dcast.h"
 #include "indent.h"
 
-using std::dec;
-using std::hex;
-using std::ostream;
-
 TypeHandle LwoLayer::_type_handle;
 
 /**
@@ -67,9 +63,9 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoLayer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { number = " << _number << ", flags = 0x"
-    << hex << _flags << dec << ", pivot = " << _pivot
+    << std::hex << _flags << std::dec << ", pivot = " << _pivot
     << ", _name = \"" << _name << "\", _parent = " << _parent << " }\n";
 }

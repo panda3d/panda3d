@@ -32,8 +32,6 @@
 #include "windowProperties.h"
 #include "frameBufferProperties.h"
 
-using std::string;
-
 /**
  *
  */
@@ -248,7 +246,7 @@ run() {
   if (_ctex_quality != "default") {
     // Override the user's config file with the command-line parameter for
     // texture compression.
-    string prc = "texture-quality-level " + _ctex_quality;
+    std::string prc = "texture-quality-level " + _ctex_quality;
     load_prc_file_data("prc", prc);
   }
 
@@ -444,7 +442,7 @@ bool EggToBam::
 make_buffer() {
   if (!_load_display.empty()) {
     // Override the user's config file with the command-line parameter.
-    string prc = "load-display " + _load_display;
+    std::string prc = "load-display " + _load_display;
     load_prc_file_data("prc", prc);
   }
 

@@ -33,7 +33,6 @@
 
 #endif
 
-using std::ios;
 using std::istream;
 using std::ostream;
 using std::string;
@@ -331,10 +330,10 @@ read_hash(const string &pathname) {
 #ifdef _WIN32
   wstring pathname_w;
   if (string_to_wstring(pathname_w, pathname)) {
-    stream.open(pathname_w.c_str(), ios::in | ios::binary);
+    stream.open(pathname_w.c_str(), std::ios::in | std::ios::binary);
   }
 #else // _WIN32
-  stream.open(pathname.c_str(), ios::in | ios::binary);
+  stream.open(pathname.c_str(), std::ios::in | std::ios::binary);
 #endif  // _WIN32
 
   if (!stream) {

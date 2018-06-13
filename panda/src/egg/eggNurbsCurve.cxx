@@ -15,8 +15,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle EggNurbsCurve::_type_handle;
 
 /**
@@ -120,7 +118,7 @@ is_closed() const {
  * Writes the nurbsCurve to the indicated output stream in Egg format.
  */
 void EggNurbsCurve::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<NurbsCurve>");
 
   if (get_curve_type() != CT_none) {

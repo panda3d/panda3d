@@ -44,8 +44,6 @@
 #include "mayaEggLoader.h"
 #include "notifyCategoryProxy.h"
 
-using std::string;
-
 
 class MayaEggImporter : public MPxFileTranslator
 {
@@ -117,7 +115,7 @@ MStatus MayaEggImporter::reader ( const MFileObject& file,
   std::ostringstream log;
   Notify::ptr()->set_ostream_ptr(&log, false);
   bool ok = MayaLoadEggFile(fileName.asChar(), merge, model, anim, false);
-  string txt = log.str();
+  std::string txt = log.str();
   if (txt != "") {
     MGlobal::displayError(txt.c_str());
   } else {

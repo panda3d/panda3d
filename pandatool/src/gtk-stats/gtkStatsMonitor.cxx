@@ -22,10 +22,6 @@
 #include "pStatCollectorDef.h"
 #include "indent.h"
 
-using std::ostringstream;
-using std::pair;
-using std::string;
-
 typedef void vc();
 
 GtkItemFactoryEntry GtkStatsMonitor::menu_entries[] = {
@@ -71,7 +67,7 @@ GtkStatsMonitor::
  * Should be redefined to return a descriptive name for the type of
  * PStatsMonitor this is.
  */
-string GtkStatsMonitor::
+std::string GtkStatsMonitor::
 get_monitor_name() {
   return "GtkStats";
 }
@@ -107,7 +103,7 @@ got_hello() {
 void GtkStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
-  ostringstream str;
+  std::ostringstream str;
   str << "Unable to honor connection attempt from "
       << get_client_progname() << " on " << get_client_hostname()
       << ": unsupported PStats version "
@@ -121,7 +117,7 @@ got_bad_version(int client_major, int client_minor,
         << ".0 through " << server_major << "." << server_minor << ").";
   }
 
-  string message = str.str();
+  std::string message = str.str();
   GtkWidget *dialog =
     gtk_message_dialog_new(GTK_WINDOW(main_window),
                            GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -283,7 +279,7 @@ open_piano_roll(int thread_index) {
  */
 const GtkStatsMonitor::MenuDef *GtkStatsMonitor::
 add_menu(const MenuDef &menu_def) {
-  pair<Menus::iterator, bool> result = _menus.insert(menu_def);
+  std::pair<Menus::iterator, bool> result = _menus.insert(menu_def);
   Menus::iterator mi = result.first;
   const GtkStatsMonitor::MenuDef &new_menu_def = (*mi);
   if (result.second) {

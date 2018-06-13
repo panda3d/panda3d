@@ -30,7 +30,6 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
-using std::ostringstream;
 using std::string;
 
 /**
@@ -2254,7 +2253,7 @@ get_function_signature(CPPInstance *function,
   CPPFunctionType *ftype = function->_type->as_function_type();
   assert(ftype != nullptr);
 
-  ostringstream out;
+  std::ostringstream out;
 
   // It's tempting to mark static methods with a different function signature
   // than non-static, because a static method doesn't have an implicit 'this'

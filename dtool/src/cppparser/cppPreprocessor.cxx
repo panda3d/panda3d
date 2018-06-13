@@ -36,9 +36,6 @@
 #include <ctype.h>
 
 using std::cerr;
-using std::istringstream;
-using std::ostringstream;
-using std::pair;
 using std::string;
 
 // We manage our own visibility counter, in addition to that managed by
@@ -143,7 +140,7 @@ connect_input(const string &input) {
   assert(_in == nullptr);
 
   _input = input;
-  _in = new istringstream(_input);
+  _in = new std::istringstream(_input);
   return !_in->fail();
 }
 
@@ -1497,7 +1494,7 @@ handle_define_directive(const string &args, const YYLTYPE &loc) {
       }
     }
 
-    pair<Manifests::iterator, bool> result =
+    std::pair<Manifests::iterator, bool> result =
       _manifests.insert(Manifests::value_type(manifest->_name, manifest));
 
     if (!result.second) {
@@ -1561,7 +1558,7 @@ handle_if_directive(const string &args, const YYLTYPE &loc) {
   if (ep.parse_expr(expr, *this)) {
     CPPExpression::Result result = ep._expr->evaluate();
     if (result._type == CPPExpression::RT_error) {
-      ostringstream strm;
+      std::ostringstream strm;
       strm << *ep._expr;
       warning("Ignoring invalid expression " + strm.str(), loc);
     } else {

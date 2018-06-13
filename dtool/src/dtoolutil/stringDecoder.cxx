@@ -14,12 +14,7 @@
 #include "stringDecoder.h"
 #include "config_dtoolutil.h"
 
-using std::cerr;
-using std::dec;
-using std::hex;
-using std::ostream;
-
-ostream *StringDecoder::_notify_ptr = &cerr;
+std::ostream *StringDecoder::_notify_ptr = &std::cerr;
 
 /**
  *
@@ -46,7 +41,7 @@ get_next_character() {
  * notify.
  */
 void StringDecoder::
-set_notify_ptr(ostream *notify_ptr) {
+set_notify_ptr(std::ostream *notify_ptr) {
   _notify_ptr = notify_ptr;
 }
 
@@ -54,7 +49,7 @@ set_notify_ptr(ostream *notify_ptr) {
  * Returns the ostream that is used to write error messages to.  See
  * set_notify_ptr().
  */
-ostream *StringDecoder::
+std::ostream *StringDecoder::
 get_notify_ptr() {
   return _notify_ptr;
 }
@@ -136,7 +131,7 @@ get_next_character() {
     // utf-8 bytes--we have an error.
     if (_notify_ptr != nullptr) {
       (*_notify_ptr)
-        << "Non utf-8 byte in string: 0x" << hex << result << dec
+        << "Non utf-8 byte in string: 0x" << std::hex << result << std::dec
         << ", string is '" << _input << "'\n";
     }
     return -1;

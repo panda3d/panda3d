@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle DepthOffsetAttrib::_type_handle;
 int DepthOffsetAttrib::_attrib_slot;
 
@@ -62,7 +60,7 @@ make_default() {
  *
  */
 void DepthOffsetAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":(" << get_offset() << ", " << get_min_value()
       << ", " << get_max_value() << ")";
 }

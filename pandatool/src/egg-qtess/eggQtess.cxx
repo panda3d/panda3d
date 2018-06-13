@@ -15,10 +15,6 @@
 #include "qtessGlobals.h"
 #include "dcast.h"
 
-using std::cerr;
-using std::max;
-using std::ostream;
-
 /**
  *
  */
@@ -159,9 +155,9 @@ run() {
   if (_total_tris != 0) {
     // Whatever number of triangles we have unaccounted for, assign to the
     // default bucket.
-    int extra_tris = max(0, _total_tris - num_tris);
+    int extra_tris = std::max(0, _total_tris - num_tris);
     if (read_qtess && default_entry.get_num_surfaces() != 0) {
-      cerr << extra_tris << " triangles unaccounted for.\n";
+      std::cerr << extra_tris << " triangles unaccounted for.\n";
     }
 
     default_entry.set_num_tris(extra_tris);
@@ -184,13 +180,13 @@ run() {
 
     int tris = 0;
 
-    ostream &out = get_output();
+    std::ostream &out = get_output();
     Surfaces::const_iterator si;
     for (si = _surfaces.begin(); si != _surfaces.end(); ++si) {
       tris += (*si)->write_qtess_parameter(out);
     }
 
-    cerr << tris << " tris generated.\n";
+    std::cerr << tris << " tris generated.\n";
 
   } else {
 
@@ -201,7 +197,7 @@ run() {
       tris += (*si)->tesselate();
     }
 
-    cerr << tris << " tris generated.\n";
+    std::cerr << tris << " tris generated.\n";
 
     // Clear out the surfaces list before removing the vertices, since each
     // surface is holding reference counts to the previously-used vertices.

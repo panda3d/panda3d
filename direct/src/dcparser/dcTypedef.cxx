@@ -16,8 +16,6 @@
 #include "dcSimpleParameter.h"
 #include "dcindent.h"
 
-using std::ostream;
-using std::ostringstream;
 using std::string;
 
 /**
@@ -76,7 +74,7 @@ get_name() const {
  */
 string DCTypedef::
 get_description() const {
-  ostringstream strm;
+  std::ostringstream strm;
   _parameter->output(strm, true);
   return strm.str();
 }
@@ -126,7 +124,7 @@ set_number(int number) {
  * Write a string representation of this instance to <out>.
  */
 void DCTypedef::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   out << "typedef ";
   _parameter->output(out, false);
 }
@@ -135,7 +133,7 @@ output(ostream &out, bool brief) const {
  *
  */
 void DCTypedef::
-write(ostream &out, bool brief, int indent_level) const {
+write(std::ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level)
     << "typedef ";
 

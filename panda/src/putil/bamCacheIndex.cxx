@@ -18,10 +18,6 @@
 #include "indent.h"
 #include <algorithm>
 
-using std::ostream;
-using std::pair;
-using std::setw;
-
 TypeHandle BamCacheIndex::_type_handle;
 
 
@@ -41,7 +37,7 @@ BamCacheIndex::
  *
  */
 void BamCacheIndex::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BamCacheIndex, " << _records.size() << " records:\n";
 
@@ -49,13 +45,13 @@ write(ostream &out, int indent_level) const {
   for (ri = _records.begin(); ri != _records.end(); ++ri) {
     BamCacheRecord *record = (*ri).second;
     indent(out, indent_level + 2)
-      << setw(10) << record->_record_size << " "
+      << std::setw(10) << record->_record_size << " "
       << record->get_cache_filename() << " "
       << record->get_source_pathname() << "\n";
   }
   out << "\n";
   indent(out, indent_level)
-    << setw(12) << _cache_size << " bytes total\n";
+    << std::setw(12) << _cache_size << " bytes total\n";
 }
 
 /**
@@ -133,7 +129,7 @@ evict_old_file() {
  */
 bool BamCacheIndex::
 add_record(BamCacheRecord *record) {
-  pair<Records::iterator, bool> result =
+  std::pair<Records::iterator, bool> result =
     _records.insert(Records::value_type(record->get_source_pathname(), record));
   if (!result.second) {
     // We already had a record for this filename; it gets replaced.

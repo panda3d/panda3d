@@ -55,7 +55,6 @@ using std::istream;
 using std::map;
 using std::ostream;
 using std::ostringstream;
-using std::pair;
 using std::string;
 
 InterrogateBuilder builder;
@@ -1707,7 +1706,7 @@ get_function(CPPInstance *function, string description,
     ifunction._flags |= flags;
 
     // Also, make sure this particular signature is defined.
-    pair<InterrogateFunction::Instances::iterator, bool> result =
+    std::pair<InterrogateFunction::Instances::iterator, bool> result =
       ifunction._instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
 
     InterrogateFunction::Instances::iterator ii = result.first;

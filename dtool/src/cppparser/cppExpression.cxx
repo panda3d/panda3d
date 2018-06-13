@@ -32,11 +32,6 @@
 #include <assert.h>
 
 using std::cerr;
-using std::dec;
-using std::oct;
-using std::ostream;
-using std::setfill;
-using std::setw;
 using std::string;
 
 /**
@@ -169,7 +164,7 @@ as_boolean() const {
  *
  */
 void CPPExpression::Result::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_type) {
   case RT_integer:
     out << _u._integer;
@@ -1559,7 +1554,7 @@ is_tbd() const {
  *
  */
 void CPPExpression::
-output(ostream &out, int indent_level, CPPScope *scope, bool) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool) const {
   switch (_type) {
   case T_nullptr:
     out << "nullptr";
@@ -1638,8 +1633,8 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
           if (isprint(*si)) {
             out << *si;
           } else {
-            out << '\\' << oct << setw(3) << setfill('0') << (int)(*si)
-                << dec << setw(0);
+            out << '\\' << std::oct << std::setw(3) << std::setfill('0') << (int)(*si)
+                << std::dec << std::setw(0);
           }
         }
       }

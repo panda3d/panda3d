@@ -13,9 +13,6 @@
 
 #include "test_lib.h"
 
-using std::cerr;
-using std::endl;
-
 int non_member1(float x, float y) {
    return (int)(x + y);
 }
@@ -37,7 +34,7 @@ int stupid_global;
 Configure(test_lib);
 
 ConfigureFn(test_lib) {
-  cerr << "In test_lib configure function!" << endl;
+  std::cerr << "In test_lib configure function!" << std::endl;
 }
 
 ConfigureLibSym;

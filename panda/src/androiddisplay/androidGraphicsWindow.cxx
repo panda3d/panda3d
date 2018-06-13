@@ -29,8 +29,6 @@
 #include <android/window.h>
 #include <android/log.h>
 
-using std::string;
-
 extern IMPORT_CLASS struct android_app* panda_android_app;
 
 TypeHandle AndroidGraphicsWindow::_type_handle;
@@ -40,7 +38,7 @@ TypeHandle AndroidGraphicsWindow::_type_handle;
  */
 AndroidGraphicsWindow::
 AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,

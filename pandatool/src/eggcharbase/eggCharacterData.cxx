@@ -20,10 +20,6 @@
 
 #include <algorithm>
 
-using std::max;
-using std::ostream;
-using std::string;
-
 // An STL function object to sort the joint list in order from highest to
 // lowest in the new hierarchy.  Used in do_reparent().
 class OrderJointsByNewDepth {
@@ -67,7 +63,7 @@ EggCharacterData::
  * as if they are expected to have the same skeleton hierarchy.
  */
 void EggCharacterData::
-rename_char(const string &name) {
+rename_char(const std::string &name) {
   Models::iterator mi;
   for (mi = _models.begin(); mi != _models.end(); ++mi) {
     (*mi)._model_root->set_name(name);
@@ -111,7 +107,7 @@ get_num_frames(int model_index) const {
       // We have a winner.  Assume all other components will be similar.
       return num_frames;
     }
-    max_num_frames = max(max_num_frames, num_frames);
+    max_num_frames = std::max(max_num_frames, num_frames);
   }
 
   // Every component had either 1 frame or 0 frames.  Return the maximum of
@@ -158,7 +154,7 @@ check_num_frames(int model_index) {
       // than 0 or 1), we have a discrepency.  This is an error condition.
       any_violations = true;
     }
-    max_num_frames = max(max_num_frames, num_frames);
+    max_num_frames = std::max(max_num_frames, num_frames);
   }
 
   if (any_violations) {
@@ -342,7 +338,7 @@ choose_optimal_hierarchy() {
  * name.
  */
 EggSliderData *EggCharacterData::
-find_slider(const string &name) const {
+find_slider(const std::string &name) const {
   SlidersByName::const_iterator si;
   si = _sliders_by_name.find(name);
   if (si != _sliders_by_name.end()) {
@@ -357,7 +353,7 @@ find_slider(const string &name) const {
  * already, creates a new one.
  */
 EggSliderData *EggCharacterData::
-make_slider(const string &name) {
+make_slider(const std::string &name) {
   SlidersByName::const_iterator si;
   si = _sliders_by_name.find(name);
   if (si != _sliders_by_name.end()) {
@@ -401,7 +397,7 @@ estimate_db_size() const {
  *
  */
 void EggCharacterData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Character " << get_name() << ":\n";
   get_root_joint()->write(out, indent_level + 2);

@@ -18,8 +18,6 @@
 #include "pointerTo.h"
 #include "trueClock.h"
 
-using std::string;
-
 // The number of iterations to spin within each thread, before printing
 // output.
 static const long long iterations_per_output = 100000000;
@@ -52,7 +50,7 @@ volatile MemBlock memblock[number_of_threads];
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name, int index) :
+  MyThread(const std::string &name, int index) :
     Thread(name, name),
     _index(index)
   {
@@ -103,7 +101,7 @@ main(int argc, char *argv[]) {
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
     Thread::sleep(delay_between_threads);
-    PT(MyThread) thread = new MyThread(string(1, name), i);
+    PT(MyThread) thread = new MyThread(std::string(1, name), i);
     threads.push_back(thread);
     thread->start(TP_normal, true);
   }

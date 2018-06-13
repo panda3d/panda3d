@@ -14,8 +14,6 @@
 #include "userDataAudio.h"
 #include "userDataAudioCursor.h"
 
-using std::string;
-
 TypeHandle UserDataAudio::_type_handle;
 
 /**
@@ -109,7 +107,7 @@ append(DatagramIterator *src, int n) {
  * but it may be convenient to deal with samples in python.
  */
 void UserDataAudio::
-append(const string &str) {
+append(const std::string &str) {
   nassertv(!_aborted);
   int samples = str.size() / (2 * _desired_channels);
   int words = samples * _desired_channels;

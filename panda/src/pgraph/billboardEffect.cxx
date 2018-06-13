@@ -21,8 +21,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle BillboardEffect::_type_handle;
 
 /**
@@ -68,7 +66,7 @@ prepare_flatten_transform(const TransformState *net_transform) const {
  *
  */
 void BillboardEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "(off)";

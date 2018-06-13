@@ -35,10 +35,6 @@
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
 
-using std::max;
-using std::min;
-using std::ostream;
-
 PStatCollector CollisionTube::_volume_pcollector("Collision Volumes:CollisionTube");
 PStatCollector CollisionTube::_test_pcollector("Collision Tests:CollisionTube");
 TypeHandle CollisionTube::_type_handle;
@@ -108,7 +104,7 @@ get_test_pcollector() {
  *
  */
 void CollisionTube::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "tube, a (" << _a << "), b (" << _b << "), r " << _radius;
 }
 
@@ -187,7 +183,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
 
   // doubles, not floats, to satisfy min and max templates.
-  actual_t = min(1.0, max(0.0, t1));
+  actual_t = std::min(1.0, std::max(0.0, t1));
   contact_point = from_a + actual_t * (from_b - from_a);
 
   if (collide_cat.is_debug()) {
@@ -828,7 +824,7 @@ intersects_parabola(double &t, const LParabola &parabola,
     return false;
   }
 
-  t = max(t1a, 0.0);
+  t = std::max(t1a, 0.0);
   return true;
 }
 

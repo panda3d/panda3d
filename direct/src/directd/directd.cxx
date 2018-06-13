@@ -37,7 +37,6 @@
 using std::cerr;
 using std::cout;
 using std::endl;
-using std::stringstream;
 using std::string;
 
 namespace {
@@ -154,7 +153,7 @@ DirectD::~DirectD() {
 int
 DirectD::client_ready(const string& server_host, int port,
     const string& cmd) {
-  stringstream ss;
+  std::stringstream ss;
   ss<<"!"<<cmd;
   send_one_message(server_host, port, ss.str());
   return 0;

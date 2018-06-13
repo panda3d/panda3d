@@ -13,8 +13,6 @@
 
 #include "geomVertexWriter.h"
 
-using std::ostream;
-
 #ifdef _DEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
@@ -93,7 +91,7 @@ reserve_num_rows(int num_rows) {
  *
  */
 void GeomVertexWriter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   const GeomVertexColumn *column = get_column();
   if (column == nullptr) {
     out << "GeomVertexWriter()";

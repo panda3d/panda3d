@@ -18,15 +18,13 @@
 #include "cullableObject.h"
 #include "cullHandler.h"
 
-using std::ostream;
-
 TypeHandle NodeCullCallbackData::_type_handle;
 
 /**
  *
  */
 void NodeCullCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_trav << ", " << (void *)&_data << ")";
 }
 

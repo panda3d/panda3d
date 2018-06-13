@@ -14,7 +14,6 @@
 #include "textPropertiesManager.h"
 #include "indent.h"
 
-using std::ostream;
 using std::string;
 
 TextPropertiesManager *TextPropertiesManager::_global_ptr = nullptr;
@@ -182,7 +181,7 @@ clear_graphic(const string &name) {
  *
  */
 void TextPropertiesManager::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Properties::const_iterator pi;
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     indent(out, indent_level)

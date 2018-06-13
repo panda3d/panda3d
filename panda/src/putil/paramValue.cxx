@@ -14,8 +14,6 @@
 #include "paramValue.h"
 #include "dcast.h"
 
-using std::ostream;
-
 template class ParamValue<std::string>;
 template class ParamValue<std::wstring>;
 
@@ -58,7 +56,7 @@ ParamTypedRefCount::
  *
  */
 void ParamTypedRefCount::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_value == nullptr) {
     out << "(empty)";
 

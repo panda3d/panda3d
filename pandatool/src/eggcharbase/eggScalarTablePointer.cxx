@@ -15,8 +15,6 @@
 
 #include "dcast.h"
 
-using std::string;
-
 TypeHandle EggScalarTablePointer::_type_handle;
 
 /**
@@ -91,7 +89,7 @@ get_frame(int n) const {
  * Applies the indicated name change to the egg file.
  */
 void EggScalarTablePointer::
-set_name(const string &name) {
+set_name(const std::string &name) {
   // Actually, let's not rename the slider table (yet), because we haven't
   // written the code to rename all of the morph targets.
 

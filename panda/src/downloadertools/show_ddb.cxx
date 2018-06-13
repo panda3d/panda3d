@@ -15,13 +15,10 @@
 #include "downloadDb.h"
 #include "filename.h"
 
-using std::cerr;
-using std::cout;
-
 int
 main(int argc, char *argv[]) {
   if (argc != 3) {
-    cerr << "Usage: show_ddb server.ddb client.ddb\n";
+    std::cerr << "Usage: show_ddb server.ddb client.ddb\n";
     return 1;
   }
 
@@ -29,7 +26,7 @@ main(int argc, char *argv[]) {
   Filename client_ddb = Filename::from_os_specific(argv[2]);
 
   DownloadDb db(server_ddb, client_ddb);
-  db.write(cout);
+  db.write(std::cout);
 
   return 0;
 }

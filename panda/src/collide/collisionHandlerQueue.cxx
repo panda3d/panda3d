@@ -15,8 +15,6 @@
 #include "config_collide.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle CollisionHandlerQueue::_type_handle;
 
 // This class is used in sort_entries(), below.
@@ -128,7 +126,7 @@ get_entry(int n) const {
  *
  */
 void CollisionHandlerQueue::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CollisionHandlerQueue, " << _entries.size() << " entries";
 }
 
@@ -136,7 +134,7 @@ output(ostream &out) const {
  *
  */
 void CollisionHandlerQueue::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionHandlerQueue, " << _entries.size() << " entries:\n";
 

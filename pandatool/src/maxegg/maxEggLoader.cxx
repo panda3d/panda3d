@@ -39,8 +39,6 @@
 
 #include "maxEggLoader.h"
 
-using std::pair;
-using std::string;
 using std::vector;
 
 class MaxEggMesh;
@@ -68,7 +66,7 @@ public:
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
   typedef phash_map<EggGroup *, MaxEggJoint *> JointTable;
   typedef second_of_pair_iterator<JointTable::const_iterator> JointIterator;
-  typedef phash_map<string, MaxEggTex *> TexTable;
+  typedef phash_map<std::string, MaxEggTex *> TexTable;
   typedef second_of_pair_iterator<TexTable::const_iterator> TexIterator;
 
   MeshTable        _mesh_tab;
@@ -300,7 +298,7 @@ void MaxEggJoint::CreateMaxBone(void)
 
 // MaxEggMesh
 
-typedef pair<double, EggGroup *> MaxEggWeight;
+typedef std::pair<double, EggGroup *> MaxEggWeight;
 
 struct MaxEggVertex
 {
@@ -348,7 +346,7 @@ class MaxEggMesh
 {
 public:
 
-  string           _name;
+  std::string           _name;
   TriObject       *_obj;
   Mesh            *_mesh;
   INode           *_node;
@@ -438,7 +436,7 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
 {
   MaxEggMesh *result = _mesh_tab[pool];
   if (result == 0) {
-    string name = pool->get_name();
+    std::string name = pool->get_name();
     int nsize = name.size();
     if ((nsize > 6) && (name.rfind(".verts")==(nsize-6)))
       name.resize(nsize-6);

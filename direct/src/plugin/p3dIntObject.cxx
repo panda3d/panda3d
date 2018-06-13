@@ -13,9 +13,6 @@
 
 #include "p3dIntObject.h"
 
-using std::ostringstream;
-using std::string;
-
 /**
  *
  */
@@ -62,8 +59,8 @@ get_int() {
  * to a string.
  */
 void P3DIntObject::
-make_string(string &value) {
-  ostringstream strm;
+make_string(std::string &value) {
+  std::ostringstream strm;
   strm << _value;
   value = strm.str();
 }

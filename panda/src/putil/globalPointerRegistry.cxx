@@ -14,8 +14,6 @@
 #include "globalPointerRegistry.h"
 #include "config_putil.h"
 
-using std::pair;
-
 // In general, we use the util_cat->info() syntax in this file (instead of
 // util_cat.info()), because much of this work is done at static init time,
 // and we must use the arrow syntax to force initialization of the util_cat
@@ -59,7 +57,7 @@ ns_store_pointer(TypeHandle type, void *ptr) {
     clear_pointer(type);
     return;
   }
-  pair<Pointers::iterator, bool> result =
+  std::pair<Pointers::iterator, bool> result =
     _pointers.insert(Pointers::value_type(type, ptr));
 
   if (!result.second) {

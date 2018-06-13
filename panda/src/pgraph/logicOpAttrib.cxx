@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle LogicOpAttrib::_type_handle;
 int LogicOpAttrib::_attrib_slot;
 
@@ -55,7 +53,7 @@ make_default() {
  *
  */
 void LogicOpAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":" << get_operation();
 }
 
@@ -140,8 +138,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 /**
  *
  */
-ostream &
-operator << (ostream &out, LogicOpAttrib::Operation op) {
+std::ostream &
+operator << (std::ostream &out, LogicOpAttrib::Operation op) {
   switch (op) {
   case LogicOpAttrib::O_none:
     return out << "none";

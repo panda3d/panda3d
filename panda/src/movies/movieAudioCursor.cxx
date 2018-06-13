@@ -13,9 +13,6 @@
 
 #include "movieAudioCursor.h"
 
-using std::ostringstream;
-using std::string;
-
 TypeHandle MovieAudioCursor::_type_handle;
 
 /**
@@ -95,9 +92,9 @@ read_samples(int n, Datagram *dg) {
  * This is not particularly efficient, but it may be a convenient way to
  * manipulate samples in python.
  */
-string MovieAudioCursor::
+std::string MovieAudioCursor::
 read_samples(int n) {
-  ostringstream result;
+  std::ostringstream result;
   int16_t tmp[4096];
   while (n > 0) {
     int blocksize = (4096 / _audio_channels);

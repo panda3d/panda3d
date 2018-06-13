@@ -42,13 +42,10 @@
 #endif  // HAVE_X11
 
 using std::ios;
-using std::max;
-using std::min;
 using std::ostream;
 using std::ostringstream;
 using std::string;
 using std::vector;
-using std::wstring;
 
 
 PPInstance::FileDatas PPInstance::_file_datas;
@@ -1163,7 +1160,7 @@ void PPInstance::
 choose_random_mirrors(vector<string> &result, int num_mirrors) {
   vector<size_t> selected;
 
-  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  size_t num_to_select = std::min(_mirrors.size(), (size_t)num_mirrors);
   while (num_to_select > 0) {
     size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
     while (find(selected.begin(), selected.end(), i) != selected.end()) {
@@ -1322,11 +1319,11 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
         xorig->Attribute("expiration", &expiration);
       }
 
-      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+      _contents_expiration = std::min(_contents_expiration, (time_t)expiration);
     }
 
     nout << "read contents.xml, max_age = " << max_age
-         << ", expires in " << max(_contents_expiration, now) - now
+         << ", expires in " << std::max(_contents_expiration, now) - now
          << " s\n";
 
     // Look for the <host> entry; it might point us at a different download
@@ -2420,7 +2417,7 @@ copy_cocoa_event(P3DCocoaEvent *p3d_event, NPCocoaEvent *np_event,
  * returns result.c_str().
  */
 const wchar_t *PPInstance::
-make_ansi_string(wstring &result, NPNSString *ns_string) {
+make_ansi_string(std::wstring &result, NPNSString *ns_string) {
   result.clear();
 
   if (ns_string != nullptr) {

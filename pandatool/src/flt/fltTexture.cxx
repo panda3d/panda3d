@@ -18,10 +18,6 @@
 #include "pathReplace.h"
 #include "config_putil.h"
 
-using std::ios;
-using std::streampos;
-using std::string;
-
 TypeHandle FltTexture::_type_handle;
 
 /**
@@ -127,7 +123,7 @@ set_texture_filename(const Filename &filename) {
  */
 Filename FltTexture::
 get_attr_filename() const {
-  string texture_filename = get_texture_filename();
+  std::string texture_filename = get_texture_filename();
   return Filename::binary_filename(texture_filename + ".attr");
 }
 
@@ -146,15 +142,15 @@ read_attr_data() {
   }
 
   // Determine the file's size so we can read it all into one big datagram.
-  attr.seekg(0, ios::end);
+  attr.seekg(0, std::ios::end);
   if (attr.fail()) {
     return FE_read_error;
   }
-  streampos length = attr.tellg();
+  std::streampos length = attr.tellg();
 
   char *buffer = new char[length];
 
-  attr.seekg(0, ios::beg);
+  attr.seekg(0, std::ios::beg);
   attr.read(buffer, length);
   if (attr.fail()) {
     return FE_read_error;

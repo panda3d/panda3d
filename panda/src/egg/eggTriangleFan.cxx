@@ -16,8 +16,6 @@
 #include "eggPolygon.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle EggTriangleFan::_type_handle;
 
 /**
@@ -40,7 +38,7 @@ make_copy() const {
  * Writes the triangle fan to the indicated output stream in Egg format.
  */
 void EggTriangleFan::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<TriangleFan>");
   write_body(out, indent_level+2);
   indent(out, indent_level) << "}\n";

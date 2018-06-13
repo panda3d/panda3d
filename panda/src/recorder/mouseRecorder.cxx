@@ -17,16 +17,13 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle MouseRecorder::_type_handle;
 
 /**
  *
  */
 MouseRecorder::
-MouseRecorder(const string &name) :
+MouseRecorder(const std::string &name) :
   DataNode(name)
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
@@ -91,7 +88,7 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
  *
  */
 void MouseRecorder::
-output(ostream &out) const {
+output(std::ostream &out) const {
   DataNode::output(out);
 }
 
@@ -99,7 +96,7 @@ output(ostream &out) const {
  *
  */
 void MouseRecorder::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 }
 

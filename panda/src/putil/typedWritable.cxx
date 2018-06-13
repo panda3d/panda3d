@@ -18,9 +18,6 @@
 #include "lightMutexHolder.h"
 #include "bam.h"
 
-using std::move;
-using std::string;
-
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = nullptr;
 
@@ -193,11 +190,11 @@ bool TypedWritable::
 decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
                            vector_uchar data, BamReader *reader) {
 
-  DatagramBuffer buffer(move(data));
+  DatagramBuffer buffer(std::move(data));
 
   if (reader == nullptr) {
     // Create a local reader.
-    string head;
+    std::string head;
     if (!buffer.read_header(head, _bam_header.size())) {
       return false;
     }

@@ -17,7 +17,6 @@
 #include "configPage.h"
 #include "config_prc.h"
 
-using std::ostream;
 using std::string;
 
 ConfigVariableManager *ConfigVariableManager::_global_ptr = nullptr;
@@ -183,7 +182,7 @@ is_variable_used(size_t n) const {
  *
  */
 void ConfigVariableManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConfigVariableManager, " << _variables.size() << " variables.";
 }
 
@@ -191,7 +190,7 @@ output(ostream &out) const {
  *
  */
 void ConfigVariableManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   VariablesByName::const_iterator ni;
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();
@@ -214,7 +213,7 @@ write(ostream &out) const {
  * state.
  */
 void ConfigVariableManager::
-write_prc_variables(ostream &out) const {
+write_prc_variables(std::ostream &out) const {
   VariablesByName::const_iterator ni;
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();

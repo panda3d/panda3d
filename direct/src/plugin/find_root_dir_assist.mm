@@ -18,8 +18,6 @@
 #include <Foundation/Foundation.h>
 #include <AppKit/AppKit.h>
 
-using std::string;
-
 /**
  * Copy the Objective-C string to a C++ string.
  */
@@ -72,7 +70,7 @@ get_osx_home_directory() {
 /**
  *
  */
-string
+std::string
 find_osx_root_dir() {
   string result = call_NSSearchPathForDirectories(NSCachesDirectory, NSUserDomainMask);
   if (!result.empty()) {

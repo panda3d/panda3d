@@ -13,9 +13,6 @@
 
 #include "typedWritable_ext.h"
 
-using std::ostringstream;
-using std::string;
-
 #ifdef HAVE_PYTHON
 
 #include "bamWriter.h"
@@ -55,9 +52,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // can't use this interface.
   PyObject *method = PyObject_GetAttrString(self, "decode_from_bam_stream");
   if (method == nullptr) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << "Cannot pickle objects of type " << _this->get_type() << "\n";
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
     return nullptr;
   }
@@ -78,9 +75,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // First, streamify the object, if possible.
   vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << "Could not bamify object of type " << _this->get_type() << "\n";
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
     return nullptr;
   }

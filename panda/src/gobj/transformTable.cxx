@@ -15,8 +15,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::ostream;
-
 TypeHandle TransformTable::_type_handle;
 
 /**
@@ -113,7 +111,7 @@ add_transform(const VertexTransform *transform) {
  *
  */
 void TransformTable::
-write(ostream &out) const {
+write(std::ostream &out) const {
   for (size_t i = 0; i < _transforms.size(); ++i) {
     out << i << ". " << *_transforms[i] << "\n";
   }

@@ -15,8 +15,6 @@
 #include "speedTreeNode.h"
 #include "stTree.h"
 
-using std::string;
-
 TypeHandle LoaderFileTypeSrt::_type_handle;
 
 /**
@@ -29,7 +27,7 @@ LoaderFileTypeSrt() {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_name() const {
   return "SpeedTree compiled tree";
 }
@@ -37,7 +35,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_extension() const {
   return "srt";
 }

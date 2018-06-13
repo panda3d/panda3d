@@ -17,8 +17,6 @@
 #include <iostream>
 #include <fstream>
 
-using std::cerr;
-
 // Having a global Panda3DMac object just makes things easier.
 static Panda3DMac *this_prog;
 
@@ -49,7 +47,7 @@ open_p3d_file(FSRef *ref) {
   UInt8 filename[buffer_size];
   err = FSRefMakePath(ref, filename, buffer_size);
   if (err) {
-    cerr << "Couldn't get filename\n";
+    std::cerr << "Couldn't get filename\n";
     return;
   }
 

@@ -16,11 +16,6 @@
 #include "virtualFileSystem.h"
 #include "wavAudio.h"
 
-using std::istream;
-using std::max;
-using std::min;
-using std::streampos;
-
 // Tables for decompressing mu-law and A-law wav files.
 static int16_t mulaw_table[256] = {
   -32124,-31100,-30076,-29052,-28028,-27004,-25980,-24956,
@@ -99,7 +94,7 @@ TypeHandle WavAudioCursor::_type_handle;
  * pointer positioned at the start of the data.
  */
 WavAudioCursor::
-WavAudioCursor(WavAudio *src, istream *stream) :
+WavAudioCursor(WavAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
   _stream(stream),
@@ -296,8 +291,8 @@ WavAudioCursor::
  */
 void WavAudioCursor::
 seek(double t) {
-  t = max(t, 0.0);
-  streampos pos = _data_start + (streampos) min((size_t) (t * _byte_rate), _data_size);
+  t = std::max(t, 0.0);
+  std::streampos pos = _data_start + (std::streampos) std::min((size_t) (t * _byte_rate), _data_size);
 
   if (_can_seek_fast) {
     _stream->seekg(pos);
@@ -308,7 +303,7 @@ seek(double t) {
   }
 
   if (!_can_seek_fast) {
-    streampos current = _stream->tellg();
+    std::streampos current = _stream->tellg();
 
     if (pos > current) {
       // It is ahead of our current position.  Skip ahead.
@@ -332,7 +327,7 @@ seek(double t) {
 void WavAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
-  int read_samples = min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
+  int read_samples = std::min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
 
   if (read_samples <= 0) {
     return;

@@ -20,7 +20,6 @@
 #include "dcast.h"
 
 using std::endl;
-using std::string;
 
 TypeHandle SoftNodeDesc::_type_handle;
 
@@ -28,7 +27,7 @@ TypeHandle SoftNodeDesc::_type_handle;
  *
  */
 SoftNodeDesc::
-SoftNodeDesc(SoftNodeDesc *parent, const string &name) :
+SoftNodeDesc(SoftNodeDesc *parent, const std::string &name) :
   Namable(name),
   _parent(parent)
 {
@@ -904,7 +903,7 @@ make_vertex_offsets(int numShapes) {
   SAA_Scene *scene = &stec.scene;
 
   EggVertexPool *vpool = nullptr;
-  string vpool_name = get_name() + ".verts";
+  std::string vpool_name = get_name() + ".verts";
   EggNode *t = stec._tree.get_egg_root()->find_child(vpool_name);
   if (t)
     DCAST_INTO_V(vpool, t);

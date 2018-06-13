@@ -14,9 +14,6 @@
 #include "cppSimpleType.h"
 #include "cppGlobals.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -136,7 +133,7 @@ is_parameter_expr() const {
 /**
  *
  */
-string CPPSimpleType::
+std::string CPPSimpleType::
 get_preferred_name() const {
   // Simple types always prefer to use their native types.
   return get_local_name();
@@ -146,7 +143,7 @@ get_preferred_name() const {
  *
  */
 void CPPSimpleType::
-output(ostream &out, int, CPPScope *, bool) const {
+output(std::ostream &out, int, CPPScope *, bool) const {
   if (_flags & F_unsigned) {
     out << "unsigned ";
   }

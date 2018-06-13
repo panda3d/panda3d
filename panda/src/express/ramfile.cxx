@@ -13,9 +13,6 @@
 
 #include "ramfile.h"
 
-using std::min;
-using std::string;
-
 /**
  * Extracts and returns the indicated number of characters from the current
  * data pointer, and advances the data pointer.  If the data pointer exceeds
@@ -24,10 +21,10 @@ using std::string;
  * The interface here is intentionally designed to be similar to that for
  * Python's file.read() function.
  */
-string Ramfile::
+std::string Ramfile::
 read(size_t length) {
   size_t orig_pos = _pos;
-  _pos = min(_pos + length, _data.length());
+  _pos = std::min(_pos + length, _data.length());
   return _data.substr(orig_pos, length);
 }
 
@@ -39,7 +36,7 @@ read(size_t length) {
  * The interface here is intentionally designed to be similar to that for
  * Python's file.readline() function.
  */
-string Ramfile::
+std::string Ramfile::
 readline() {
   size_t start = _pos;
   while (_pos < _data.length() && _data[_pos] != '\n') {

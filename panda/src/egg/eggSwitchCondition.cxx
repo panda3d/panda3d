@@ -15,8 +15,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle EggSwitchCondition::_type_handle;
 TypeHandle EggSwitchConditionDistance::_type_handle;
 
@@ -47,7 +45,7 @@ make_copy() const {
  *
  */
 void EggSwitchConditionDistance::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "<SwitchCondition> {\n";
   indent(out, indent_level+2)
     << "<Distance> { " << _switch_in << " " << _switch_out;

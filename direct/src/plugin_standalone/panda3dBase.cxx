@@ -36,7 +36,6 @@
 #include <algorithm>
 
 using std::cerr;
-using std::istringstream;
 using std::string;
 
 // The amount of time in seconds to wait for new messages.
@@ -440,7 +439,7 @@ read_p3d_info(const Filename &p3d_filename, int p3d_offset) {
 
   string p3d_info;
   mf->read_subfile(si, p3d_info);
-  istringstream strm(p3d_info);
+  std::istringstream strm(p3d_info);
   TiXmlDocument doc;
   strm >> doc;
   if (strm.fail() && !strm.eof()) {

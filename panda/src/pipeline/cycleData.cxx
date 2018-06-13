@@ -13,8 +13,6 @@
 
 #include "cycleData.h"
 
-using std::ostream;
-
 
 /**
  *
@@ -81,6 +79,6 @@ get_parent_type() const {
  * This is useful mainly for debugging.
  */
 void CycleData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_parent_type() << "::CData";
 }

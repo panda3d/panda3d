@@ -15,8 +15,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle EggLine::_type_handle;
 
 /**
@@ -39,7 +37,7 @@ make_copy() const {
  * Writes the point to the indicated output stream in Egg format.
  */
 void EggLine::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Line>");
 
   if (has_thick()) {

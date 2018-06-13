@@ -14,8 +14,6 @@
 #include "p3d_plugin_common.h"
 #include "xml_helpers.h"
 
-using std::string;
-
 
 /**
  * Examines the indicated attrib from the XML attrib and returns its true or
@@ -23,7 +21,7 @@ using std::string;
  * empty.
  */
 bool
-parse_bool_attrib(TiXmlElement *xelem, const string &attrib,
+parse_bool_attrib(TiXmlElement *xelem, const std::string &attrib,
                   bool default_value) {
   const char *value = xelem->Attribute(attrib.c_str());
   if (value == nullptr || *value == '\0') {

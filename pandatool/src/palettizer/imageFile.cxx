@@ -24,7 +24,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::ostream;
 using std::string;
 
 TypeHandle ImageFile::_type_handle;
@@ -422,7 +421,7 @@ update_egg_tex(EggTexture *egg_tex) const {
  * Writes the filename (or pair of filenames) to the indicated output stream.
  */
 void ImageFile::
-output_filename(ostream &out) const {
+output_filename(std::ostream &out) const {
   out << FilenameUnifier::make_user_filename(_filename);
   if (_properties.uses_alpha() && !_alpha_filename.empty()) {
     out << " " << FilenameUnifier::make_user_filename(_alpha_filename);

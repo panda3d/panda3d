@@ -15,11 +15,9 @@
 #include "AwMouseAndKeyboard.h"
 #include "dataNodeTransmit.h"
 
-using std::string;
-
 TypeHandle AwMouseAndKeyboard::_type_handle;
 
-AwMouseAndKeyboard::AwMouseAndKeyboard(const string &name):
+AwMouseAndKeyboard::AwMouseAndKeyboard(const std::string &name):
 DataNode(name)
 {
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
@@ -36,7 +34,7 @@ void AwMouseAndKeyboard::do_transmit_data(DataGraphTraverser *trav, const DataNo
     int num_events = button_events->get_num_events();
     for (int i = 0; i < num_events; i++) {
       const ButtonEvent &be = button_events->get_event(i);
-      string event_name = be._button.get_name();
+      std::string event_name = be._button.get_name();
       printf("Button Event! : %s with code %i and index %i ", event_name.c_str(), be._keycode, be._button.get_index());
       if(be._type == ButtonEvent::T_down) printf("down");
       if(be._type == ButtonEvent::T_repeat) printf("repeat");

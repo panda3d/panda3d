@@ -13,10 +13,8 @@
 
 #include "fltError.h"
 
-using std::ostream;
-
-ostream &
-operator << (ostream &out, FltError error) {
+std::ostream &
+operator << (std::ostream &out, FltError error) {
   switch (error) {
   case FE_ok:
     return out << "no error";

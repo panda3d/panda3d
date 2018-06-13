@@ -15,9 +15,6 @@
 #include "config_interval.h"
 #include "lvecBase3.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle CConstrainPosHprInterval::_type_handle;
 
 /**
@@ -30,7 +27,7 @@ TypeHandle CConstrainPosHprInterval::_type_handle;
  * unaltered.
  */
 CConstrainPosHprInterval::
-CConstrainPosHprInterval(const string &name, double duration,
+CConstrainPosHprInterval(const std::string &name, double duration,
                          const NodePath &node, const NodePath &target,
                          bool wrt, const LVecBase3 posOffset,
                          const LVecBase3 hprOffset) :
@@ -75,7 +72,7 @@ priv_step(double t) {
  *
  */
 void CConstrainPosHprInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
   out << " dur " << get_duration();
 }

@@ -25,11 +25,6 @@
 #include <zlib.h>
 #endif
 
-using std::min;
-using std::ostream;
-using std::ostringstream;
-using std::string;
-
 ConfigVariableInt max_resident_vertex_data
 ("max-resident-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
@@ -216,7 +211,7 @@ flush_threads() {
  *
  */
 void VertexDataPage::
-output(ostream &out) const {
+output(std::ostream &out) const {
   SimpleAllocator::output(out);
 }
 
@@ -224,7 +219,7 @@ output(ostream &out) const {
  *
  */
 void VertexDataPage::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SimpleAllocator::write(out);
 }
 
@@ -396,7 +391,7 @@ make_resident() {
     while (result != Z_STREAM_END) {
       unsigned char *start_out = (unsigned char *)z_source.next_out;
       nassertv(start_out < end_data);
-      z_source.avail_out = min((size_t)(end_data - start_out), (size_t)inflate_page_size);
+      z_source.avail_out = std::min((size_t)(end_data - start_out), (size_t)inflate_page_size);
       nassertv(z_source.avail_out != 0);
       result = inflate(&z_source, flush);
       if (result < 0 && result != Z_BUF_ERROR) {
@@ -889,7 +884,7 @@ start_threads(int num_threads) {
 
   _threads.reserve(num_threads);
   for (int i = 0; i < num_threads; ++i) {
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "VertexDataPage" << _threads.size();
     PT(PageThread) thread = new PageThread(this, name_strm.str());
     thread->start(TP_low, true);
@@ -924,7 +919,7 @@ stop_threads() {
  *
  */
 VertexDataPage::PageThread::
-PageThread(PageThreadManager *manager, const string &name) :
+PageThread(PageThreadManager *manager, const std::string &name) :
   Thread(name, name),
   _manager(manager),
   _working_cvar(_tlock)

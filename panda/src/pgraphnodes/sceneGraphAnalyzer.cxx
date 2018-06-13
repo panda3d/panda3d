@@ -32,9 +32,6 @@
 #include "pta_ushort.h"
 #include "geomVertexReader.h"
 
-using std::ostream;
-using std::pair;
-
 /**
  *
  */
@@ -114,7 +111,7 @@ add_node(PandaNode *node) {
  * Describes all the data collected.
  */
 void SceneGraphAnalyzer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _num_nodes << " total nodes (including "
     << _num_instances << " instances); " << _num_lod_nodes << " LODNodes.\n";
@@ -369,7 +366,7 @@ collect_statistics(GeomNode *geom_node) {
 void SceneGraphAnalyzer::
 collect_statistics(const Geom *geom) {
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
-  pair<VDatas::iterator, bool> result = _vdatas.insert(VDatas::value_type(vdata, VDataTracker()));
+  std::pair<VDatas::iterator, bool> result = _vdatas.insert(VDatas::value_type(vdata, VDataTracker()));
   if (result.second) {
     // This is the first time we've encountered this vertex data.
     ++_num_geom_vertex_datas;

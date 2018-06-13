@@ -21,9 +21,6 @@
 #include "indent.h"
 #include "vector_int.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle EggPrimitive::_type_handle;
 
 
@@ -824,7 +821,7 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
  * indicated output stream in Egg format.
  */
 void EggPrimitive::
-write_body(ostream &out, int indent_level) const {
+write_body(std::ostream &out, int indent_level) const {
   test_vref_integrity();
 
   EggAttributes::write(out, indent_level);
@@ -980,7 +977,7 @@ r_apply_texmats(EggTextureCollection &textures) {
       EggTexture *unique = textures.create_unique_texture(new_texture, ~0);
 
       new_textures.push_back(unique);
-      string uv_name = unique->get_uv_name();
+      std::string uv_name = unique->get_uv_name();
 
       // Now apply the matrix to the vertex UV's.  Create new vertices as
       // necessary.

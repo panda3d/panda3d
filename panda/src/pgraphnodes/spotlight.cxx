@@ -22,9 +22,6 @@
 #include "config_pgraph.h"
 #include "pnmImage.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle Spotlight::_type_handle;
 
 /**
@@ -67,7 +64,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 Spotlight::
-Spotlight(const string &name) :
+Spotlight(const std::string &name) :
   LightLensNode(name) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
@@ -107,7 +104,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void Spotlight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";

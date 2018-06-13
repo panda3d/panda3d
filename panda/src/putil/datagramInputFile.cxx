@@ -22,12 +22,8 @@
 #include "streamReader.h"
 #include "thread.h"
 
-using std::ios;
-using std::istream;
-using std::min;
 using std::streampos;
 using std::streamsize;
-using std::string;
 
 /**
  * Opens the indicated filename for reading.  Returns true on success, false
@@ -61,7 +57,7 @@ open(const FileReference *file) {
  * you are responsible for closing or deleting it when you are done.
  */
 bool DatagramInputFile::
-open(istream &in, const Filename &filename) {
+open(std::istream &in, const Filename &filename) {
   close();
 
   _in = &in;
@@ -105,7 +101,7 @@ close() {
  * has been read.
  */
 bool DatagramInputFile::
-read_header(string &header, size_t num_bytes) {
+read_header(std::string &header, size_t num_bytes) {
   nassertr(!_read_first_datagram, false);
   nassertr(_in != nullptr, false);
 
@@ -117,7 +113,7 @@ read_header(string &header, size_t num_bytes) {
     return false;
   }
 
-  header = string(buffer, num_bytes);
+  header = std::string(buffer, num_bytes);
   Thread::consider_yield();
   return true;
 }
@@ -177,7 +173,7 @@ get_datagram(Datagram &data) {
     // standards. Let's take it 4MB at a time just in case the length is
     // corrupt, so we don't allocate potentially a few GBs of RAM only to
     // find a truncated file.
-    bytes_left = min(bytes_left, (size_t)4*1024*1024);
+    bytes_left = std::min(bytes_left, (size_t)4*1024*1024);
 
     PTA_uchar buffer = data.modify_array();
     buffer.resize(buffer.size() + bytes_left);
@@ -228,7 +224,7 @@ save_datagram(SubfileInfo &info) {
   // into this file.
   if (_file != nullptr) {
     info = SubfileInfo(_file, _in->tellg(), num_bytes);
-    _in->seekg(num_bytes, ios::cur);
+    _in->seekg(num_bytes, std::ios::cur);
     return true;
   }
 
@@ -252,7 +248,7 @@ save_datagram(SubfileInfo &info) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  _in->read(buffer, min((streamsize)buffer_size, num_remaining));
+  _in->read(buffer, std::min((streamsize)buffer_size, num_remaining));
   streamsize count = _in->gcount();
   while (count != 0) {
     out.write(buffer, count);
@@ -266,7 +262,7 @@ save_datagram(SubfileInfo &info) {
     if (num_remaining == 0) {
       break;
     }
-    _in->read(buffer, min((streamsize)buffer_size, num_remaining));
+    _in->read(buffer, std::min((streamsize)buffer_size, num_remaining));
     count = _in->gcount();
   }
 

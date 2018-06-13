@@ -13,8 +13,6 @@
 
 #include "baseParticle.h"
 
-using std::ostream;
-
 /**
  * Default Constructor
  */
@@ -53,7 +51,7 @@ get_theta() const {
  * Write a string representation of this instance to <out>.
  */
 void BaseParticle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"BaseParticle";
   #endif //] NDEBUG
@@ -63,7 +61,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void BaseParticle::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseParticle:\n";
   out.width(indent+2); out<<""; out<<"_age "<<_age<<"\n";

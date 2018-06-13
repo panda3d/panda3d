@@ -14,15 +14,12 @@
 #include "pandaIOStream.h"
 
 using std::ios;
-using std::istream;
-using std::streampos;
-
 
 /**
  *
  */
 PandaIOStream::
-PandaIOStream(istream &stream) : _istream(stream) {
+PandaIOStream(std::istream &stream) : _istream(stream) {
 }
 
 /**
@@ -30,9 +27,9 @@ PandaIOStream(istream &stream) : _istream(stream) {
  */
 size_t PandaIOStream::
 FileSize() const {
-  streampos cur = _istream.tellg();
+  std::streampos cur = _istream.tellg();
   _istream.seekg(0, ios::end);
-  streampos end = _istream.tellg();
+  std::streampos end = _istream.tellg();
   _istream.seekg(cur, ios::beg);
   return end;
 }

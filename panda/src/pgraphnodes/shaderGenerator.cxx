@@ -47,7 +47,6 @@
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
 
-using std::ostringstream;
 using std::string;
 
 TypeHandle ShaderGenerator::_type_handle;
@@ -706,7 +705,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // Generate the shader's text.
 
-  ostringstream text;
+  std::ostringstream text;
 
   text << "//Cg\n";
 
@@ -1625,7 +1624,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
  */
 string ShaderGenerator::
 combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
-  ostringstream text;
+  std::ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
     text << combine_source_as_string(info, 0, alpha, texindex);
@@ -1691,7 +1690,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     c_src = UNPACK_COMBINE_SRC(info._combine_alpha, num);
     c_op = UNPACK_COMBINE_OP(info._combine_alpha, num);
   }
-  ostringstream csource;
+  std::ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
       c_op == TextureStage::CO_one_minus_src_alpha) {
     csource << "saturate(1.0f - ";

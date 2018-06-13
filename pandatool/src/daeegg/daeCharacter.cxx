@@ -32,8 +32,6 @@
 #include "FCDocument/FCDAnimationCurve.h"
 #include "FCDocument/FCDAnimationKey.h"
 
-using std::string;
-
 TypeHandle DaeCharacter::_type_handle;
 
 /**
@@ -78,7 +76,7 @@ bind_joints(JointMap &joint_map) {
   // Record the bind pose for each joint.
   for (size_t j = 0; j < num_joints; ++j) {
     const FCDSkinControllerJoint *skin_joint = _skin_controller->GetJoint(j);
-    string sid = FROM_FSTRING(skin_joint->GetId());
+    std::string sid = FROM_FSTRING(skin_joint->GetId());
     LMatrix4d bind_pose;
     bind_pose.invert_from(DAEToEggConverter::convert_matrix(
                           skin_joint->GetBindPoseInverse()));
@@ -128,7 +126,7 @@ adjust_joints(FCDSceneNode *node, const JointMap &joint_map,
   LMatrix4d this_transform = transform;
 
   if (node->IsJoint()) {
-    string sid = FROM_FSTRING(node->GetSubId());
+    std::string sid = FROM_FSTRING(node->GetSubId());
 
     JointMap::const_iterator ji = joint_map.find(sid);
     if (ji != joint_map.end()) {
@@ -254,7 +252,7 @@ build_table(EggTable *parent, FCDSceneNode* node, const pset<float> &keys) {
     return;
   }
 
-  string node_id = FROM_FSTRING(node->GetDaeId());
+  std::string node_id = FROM_FSTRING(node->GetDaeId());
   PT(EggTable) table = new EggTable(node_id);
   table->set_table_type(EggTable::TT_table);
   parent->add_child(table);

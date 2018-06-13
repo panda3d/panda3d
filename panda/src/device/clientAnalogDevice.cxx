@@ -15,8 +15,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle ClientAnalogDevice::_type_handle;
 
 
@@ -39,7 +37,7 @@ ensure_control_index(int index) {
  *
  */
 void ClientAnalogDevice::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " " << get_device_name() << ":\n";
   write_controls(out, indent_level + 2);
 }
@@ -48,7 +46,7 @@ write(ostream &out, int indent_level) const {
  * Writes a multi-line description of the current analog control states.
  */
 void ClientAnalogDevice::
-write_controls(ostream &out, int indent_level) const {
+write_controls(std::ostream &out, int indent_level) const {
   bool any_controls = false;
   Controls::const_iterator ai;
   for (ai = _controls.begin(); ai != _controls.end(); ++ai) {

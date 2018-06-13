@@ -11,8 +11,6 @@
  * @date 2007-10-10
  */
 
-using std::ostream;
-
 /**
  * Transforms the parabola by the indicated matrix.
  */
@@ -29,7 +27,7 @@ xform(const FLOATNAME(LMatrix4) &mat) {
  *
  */
 void FLOATNAME(LParabola)::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LParabola(" << _a << ", " << _b << ", " << _c << ")";
 }
 
@@ -37,7 +35,7 @@ output(ostream &out) const {
  *
  */
 void FLOATNAME(LParabola)::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 

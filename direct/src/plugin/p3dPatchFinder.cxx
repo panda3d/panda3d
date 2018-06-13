@@ -13,7 +13,6 @@
 
 #include "p3dPatchFinder.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -119,7 +118,7 @@ operator < (const PackageVersionKey &other) const {
  *
  */
 void P3DPatchFinder::PackageVersionKey::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "(" << _package_name << ", " << _platform << ", " << _version
       << ", " << _host_url << ", ";
   _file.output_hash(out);

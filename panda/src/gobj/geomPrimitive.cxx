@@ -33,8 +33,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
-using std::pair;
 
 TypeHandle GeomPrimitive::_type_handle;
 TypeHandle GeomPrimitive::CData::_type_handle;
@@ -586,7 +584,7 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
 
       // Try to add the relation { v : size() }.  If that succeeds, great; if
       // it doesn't, look up whatever we previously added for v.
-      pair<CopiedIndices::iterator, bool> result =
+      std::pair<CopiedIndices::iterator, bool> result =
         copied_indices.insert(CopiedIndices::value_type(v, (int)copied_indices.size()));
       int v2 = (*result.first).second + dest_start;
       index.add_data1i(v2);
@@ -1084,7 +1082,7 @@ request_resident(Thread *current_thread) const {
  *
  */
 void GeomPrimitive::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ", " << get_num_primitives()
       << ", " << get_num_vertices();
 }
@@ -1093,7 +1091,7 @@ output(ostream &out) const {
  *
  */
 void GeomPrimitive::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type();
   if (is_indexed()) {

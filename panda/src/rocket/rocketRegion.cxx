@@ -24,8 +24,6 @@
 #include "py_panda.h"
 #endif
 
-using std::string;
-
 TypeHandle RocketRegion::_type_handle;
 
 /**
@@ -33,7 +31,7 @@ TypeHandle RocketRegion::_type_handle;
  */
 RocketRegion::
 RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
-             const string &context_name) :
+             const std::string &context_name) :
   DisplayRegion(window, dr_dimensions) {
 
   // A hack I don't like.  libRocket's decorator system has a bug somewhere,

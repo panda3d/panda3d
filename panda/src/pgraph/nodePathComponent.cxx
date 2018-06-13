@@ -14,8 +14,6 @@
 #include "nodePathComponent.h"
 #include "lightMutexHolder.h"
 
-using std::ostream;
-
 // We start the key counters off at 1, since 0 is reserved for an empty
 // NodePath (and also for an unassigned key).
 int NodePathComponent::_next_key = 1;
@@ -123,7 +121,7 @@ fix_length(int pipeline_stage, Thread *current_thread) {
  * the end of the linked list and then outputting from there.
  */
 void NodePathComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
 

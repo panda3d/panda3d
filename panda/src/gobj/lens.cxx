@@ -25,7 +25,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 TypeHandle Lens::_type_handle;
 TypeHandle Lens::CData::_type_handle;
@@ -680,7 +679,7 @@ make_bounds() const {
  *
  */
 void Lens::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -688,7 +687,7 @@ output(ostream &out) const {
  *
  */
 void Lens::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " fov = " << get_fov() << "\n";
 }
 

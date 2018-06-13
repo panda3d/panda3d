@@ -15,14 +15,11 @@
 
 #ifdef HAVE_PYTHON
 
-using std::min;
-using std::string;
-
 struct InternalBufferData {
   CPT(GeomVertexArrayDataHandle) _handle;
   Py_ssize_t _num_rows;
   Py_ssize_t _stride;
-  string _format;
+  std::string _format;
 };
 
 /**
@@ -254,8 +251,8 @@ copy_subdata_from(size_t to_start, size_t to_size,
   }
 
   size_t from_buffer_orig_size = (size_t) view.len;
-  from_start = min(from_start, from_buffer_orig_size);
-  from_size = min(from_size, from_buffer_orig_size - from_start);
+  from_start = std::min(from_start, from_buffer_orig_size);
+  from_size = std::min(from_size, from_buffer_orig_size - from_start);
 
   _this->copy_subdata_from(to_start, to_size,
                            (const unsigned char *) view.buf,

@@ -33,8 +33,6 @@
 
 #define USER_DSP_MAGIC ((void*)0x7012AB35)
 
-using std::string;
-
 TypeHandle FmodAudioManager::_type_handle;
 
 ReMutex FmodAudioManager::_lock;
@@ -411,7 +409,7 @@ configure_filters(FilterProperties *config) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) FmodAudioManager::
-get_sound(const string &file_name, bool positional, int) {
+get_sound(const std::string &file_name, bool positional, int) {
   ReMutexHolder holder(_lock);
   // Needed so People use Panda's Generic UNIX Style Paths for Filename.
   // path.to_os_specific() converts it back to the proper OS version later on.
@@ -770,7 +768,7 @@ reduce_sounds_playing_to(unsigned int count) {
  * NOT USED FOR FMOD-EX!!! Clears a sound out of the sound cache.
  */
 void FmodAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const std::string& file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
 
 }

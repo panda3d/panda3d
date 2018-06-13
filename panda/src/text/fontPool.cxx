@@ -21,8 +21,6 @@
 #include "loader.h"
 #include "lightMutexHolder.h"
 
-using std::ostream;
-using std::ostringstream;
 using std::string;
 
 FontPool *FontPool::_global_ptr = nullptr;
@@ -31,7 +29,7 @@ FontPool *FontPool::_global_ptr = nullptr;
  * Lists the contents of the font pool to the indicated output stream.
  */
 void FontPool::
-write(ostream &out) {
+write(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -215,7 +213,7 @@ ns_garbage_collect() {
  * The nonstatic implementation of list_contents().
  */
 void FontPool::
-ns_list_contents(ostream &out) const {
+ns_list_contents(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << _fonts.size() << " fonts:\n";
@@ -256,7 +254,7 @@ lookup_filename(const string &str, string &index_str,
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(filename, get_model_path());
 
-  ostringstream strm;
+  std::ostringstream strm;
   strm << filename << ":" << face_index;
   index_str = strm.str();
 }

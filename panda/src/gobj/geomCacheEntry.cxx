@@ -17,8 +17,6 @@
 #include "config_gobj.h"
 #include "clockObject.h"
 
-using std::ostream;
-
 TypeHandle GeomCacheEntry::_type_handle;
 
 /**
@@ -135,6 +133,6 @@ evict_callback() {
  *
  */
 void GeomCacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ unknown ]";
 }

@@ -21,8 +21,6 @@
 #include "config_tinydisplay.h"
 #include "frameBufferProperties.h"
 
-using std::string;
-
 TypeHandle TinySDLGraphicsPipe::_type_handle;
 
 /**
@@ -57,7 +55,7 @@ TinySDLGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string TinySDLGraphicsPipe::
+std::string TinySDLGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
@@ -75,7 +73,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) TinySDLGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

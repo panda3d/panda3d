@@ -25,9 +25,6 @@
 #include "textureCollection.h"
 #include "nodePath.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle StaticTextFont::_type_handle;
 
 /**
@@ -117,7 +114,7 @@ make_copy() const {
  *
  */
 void StaticTextFont::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "StaticTextFont " << get_name() << "; "
     << _glyphs.size() << " characters available in font:\n";
@@ -283,7 +280,7 @@ find_character_gsets(PandaNode *root, CPT(Geom) &ch, CPT(Geom) &dot,
 void StaticTextFont::
 find_characters(PandaNode *root, const RenderState *net_state) {
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());
-  string name = root->get_name();
+  std::string name = root->get_name();
 
   bool all_digits = !name.empty();
   const char *p = name.c_str();

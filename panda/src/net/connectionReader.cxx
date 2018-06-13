@@ -28,7 +28,6 @@
 #include "config_downloader.h"
 
 using std::min;
-using std::string;
 
 static const int read_buffer_size = maximum_udp_datagram + datagram_udp_header_size;
 
@@ -63,7 +62,7 @@ get_socket() const {
  *
  */
 ConnectionReader::ReaderThread::
-ReaderThread(ConnectionReader *reader, const string &thread_name,
+ReaderThread(ConnectionReader *reader, const std::string &thread_name,
              int thread_index) :
   Thread(make_thread_name(thread_name, thread_index),
          make_thread_name(thread_name, thread_index)),
@@ -88,7 +87,7 @@ thread_main() {
  */
 ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads,
-                 const string &thread_name) :
+                 const std::string &thread_name) :
   _manager(manager)
 {
   if (!Thread::is_threading_supported()) {
@@ -114,7 +113,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads,
 
   _currently_polling_thread = -1;
 
-  string reader_thread_name = thread_name;
+  std::string reader_thread_name = thread_name;
   if (thread_name.empty()) {
     reader_thread_name = "ReaderThread";
   }

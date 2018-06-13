@@ -20,8 +20,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
-using std::swap;
 
 /**
  * Returns a pointer to an empty CullPlanes object.
@@ -205,8 +203,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
 
         if (plane.get_normal().dot(LVector3::forward()) >= 0.0) {
           if (occluder_node->is_double_sided()) {
-            swap(points_near[0], points_near[3]);
-            swap(points_near[1], points_near[2]);
+            std::swap(points_near[0], points_near[3]);
+            std::swap(points_near[1], points_near[2]);
             plane = LPlane(points_near[0], points_near[1], points_near[2]);
           } else {
             // This occluder is facing the wrong direction.  Ignore it.
@@ -434,7 +432,7 @@ remove_occluder(const NodePath &occluder) const {
  *
  */
 void CullPlanes::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "CullPlanes (" << _planes.size() << " planes and "
       << _occluders.size() << " occluders):\n";
   Planes::const_iterator pi;

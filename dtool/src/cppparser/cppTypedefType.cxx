@@ -17,7 +17,6 @@
 #include "cppTemplateScope.h"
 #include "indent.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -376,7 +375,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPTypedefType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   string name;
   if (_ident != nullptr) {
     name = _ident->get_local_name(scope);

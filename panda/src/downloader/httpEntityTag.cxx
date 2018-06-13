@@ -13,7 +13,6 @@
 
 #include "httpEntityTag.h"
 
-using std::ostringstream;
 using std::string;
 
 
@@ -55,7 +54,7 @@ HTTPEntityTag(const string &text) {
  */
 string HTTPEntityTag::
 get_string() const {
-  ostringstream result;
+  std::ostringstream result;
   if (_weak) {
     result << "W/";
   }

@@ -17,13 +17,11 @@
 #include "buttonRegistry.h"
 #include "textEncoder.h"
 
-using std::ostream;
-
 /**
  *
  */
 void ButtonEvent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_type) {
   case T_down:
     out << "button " << _button << " down";

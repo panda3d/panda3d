@@ -13,8 +13,6 @@
 
 #include "externalThread.h"
 
-using std::string;
-
 TypeHandle ExternalThread::_type_handle;
 
 /**
@@ -33,7 +31,7 @@ ExternalThread() : Thread("External", "External") {
  * external thread that is bound via Thread::bind_thread().
  */
 ExternalThread::
-ExternalThread(const string &name, const string &sync_name) :
+ExternalThread(const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
   _started = true;

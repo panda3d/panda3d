@@ -37,10 +37,8 @@
 #include "geomVertexWriter.h"
 #include "geomVertexReader.h"
 
-using std::cerr;
 using std::max;
 using std::min;
-using std::ostringstream;
 
 /**
  *
@@ -241,7 +239,7 @@ flatten(GraphicsOutput *window) {
                         window);
 
     static int multitex_id = 1;
-    ostringstream multitex_name_strm;
+    std::ostringstream multitex_name_strm;
     multitex_name_strm << "multitex" << multitex_id;
     multitex_id++;
 
@@ -442,7 +440,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     if (grutil_cat.is_debug()) {
       grutil_cat.debug()
         << "geom " << gi << " net_state =\n";
-      geom_net_state->write(cerr, 2);
+      geom_net_state->write(std::cerr, 2);
     }
 
     // Get out the net TextureAttrib and TexMatrixAttrib from the state.

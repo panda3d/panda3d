@@ -13,14 +13,12 @@
 
 #include "eggFilenameNode.h"
 
-using std::string;
-
 TypeHandle EggFilenameNode::_type_handle;
 
 /**
  * Returns the default extension for this filename type.
  */
-string EggFilenameNode::
+std::string EggFilenameNode::
 get_default_extension() const {
-  return string();
+  return std::string();
 }

@@ -20,8 +20,6 @@
 #include "geomTrianglesAdjacency.h"
 
 using std::map;
-using std::move;
-using std::pair;
 
 TypeHandle GeomTriangles::_type_handle;
 
@@ -89,7 +87,7 @@ make_adjacency() const {
   new_vertices->set_num_rows(num_vertices * 2);
 
   // First, build a map of each triangle's halfedges to its opposing vertices.
-  map<pair<int, int>, int> edge_map;
+  map<std::pair<int, int>, int> edge_map;
   for (int i = 0; i < num_vertices; i += 3) {
     int v0 = from.get_vertex(i);
     int v1 = from.get_vertex(i + 1);
@@ -139,7 +137,7 @@ make_adjacency() const {
     nassertr(to.is_at_end(), nullptr);
   }
 
-  adj->set_vertices(move(new_vertices));
+  adj->set_vertices(std::move(new_vertices));
   return adj.p();
 }
 

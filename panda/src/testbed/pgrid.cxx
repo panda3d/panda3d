@@ -22,7 +22,6 @@
 
 #define RANDFRAC (rand()/(PN_stdfloat)(RAND_MAX))
 
-using std::max;
 using std::string;
 
 class GriddedFilename {
@@ -247,7 +246,7 @@ load_gridded_models(WindowFramework *window,
   }
 
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-  wander_area_pos_offset = -max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
+  wander_area_pos_offset = -std::max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
   // Now walk through the list again, copying models into the scene graph as
   // we go.

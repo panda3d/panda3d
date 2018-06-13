@@ -17,8 +17,6 @@
 #include "dcast.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle LwoHeader::_type_handle;
 
 /**
@@ -63,7 +61,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoHeader::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " {\n";
   indent(out, indent_level + 2)

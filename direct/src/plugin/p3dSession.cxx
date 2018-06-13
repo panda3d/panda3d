@@ -43,10 +43,7 @@
 #include <crt_externs.h>
 #endif
 
-using std::ostringstream;
-using std::stringstream;
 using std::string;
-using std::vector;
 using std::wstring;
 
 /**
@@ -1053,7 +1050,7 @@ start_p3dpython(P3DInstance *inst) {
   // Check if we want to keep copies of recent logs on disk.
   if (!log_basename.empty()) {
     // Get a list of all logs on disk
-    vector<string> all_logs;
+    std::vector<string> all_logs;
     string log_directory = inst_mgr->get_log_directory();
     inst_mgr->scan_directory(log_directory, all_logs);
 
@@ -1073,7 +1070,7 @@ start_p3dpython(P3DInstance *inst) {
     // Remove all but the most recent log_history timestamped logs
     string log_basename_dash = (log_basename + string("-"));
     string log_matching_pathname;
-    vector<string> matching_logs;
+    std::vector<string> matching_logs;
     for (int i=0; i<(int)all_logs.size(); ++i) {
       if ((all_logs[i].size() > 4) &&
           (all_logs[i].find(log_basename_dash) == 0) &&
@@ -1463,7 +1460,7 @@ win_create_process() {
 
   // Construct the command-line string, containing the quoted command-line
   // arguments.
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "\"" << _p3dpython_exe << "\" \"" << _mf_filename
          << "\" \"" << _input_handle << "\" \"" << _output_handle
          << "\" \"" << _interactive_console << "\"";
@@ -1575,7 +1572,7 @@ posix_create_process() {
     }
 
     // build up an array of char strings for the environment.
-    vector<const char *> ptrs;
+    std::vector<const char *> ptrs;
     size_t p = 0;
     size_t zero = _env.find('\0', p);
     while (zero != string::npos) {
@@ -1585,11 +1582,11 @@ posix_create_process() {
     }
     ptrs.push_back(nullptr);
 
-    stringstream input_handle_stream;
+    std::stringstream input_handle_stream;
     input_handle_stream << _input_handle;
     string input_handle_str = input_handle_stream.str();
 
-    stringstream output_handle_stream;
+    std::stringstream output_handle_stream;
     output_handle_stream << _output_handle;
     string output_handle_str = output_handle_stream.str();
 

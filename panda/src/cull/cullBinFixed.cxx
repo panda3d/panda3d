@@ -20,8 +20,6 @@
 
 #include <algorithm>
 
-using std::string;
-
 
 TypeHandle CullBinFixed::_type_handle;
 
@@ -41,7 +39,7 @@ CullBinFixed::
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFixed::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
   return new CullBinFixed(name, gsg, draw_region_pcollector);
 }

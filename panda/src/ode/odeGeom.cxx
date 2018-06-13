@@ -26,8 +26,6 @@
 #include "odeRayGeom.h"
 #include "odeSphereGeom.h"
 
-using std::ostream;
-
 // OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
 // OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;
 TypeHandle OdeGeom::_type_handle;
@@ -109,7 +107,7 @@ get_space() const {
 
 
 void OdeGeom::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent);
   out << get_type() << "(id = " << _id << ")";
 }

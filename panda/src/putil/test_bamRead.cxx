@@ -18,12 +18,9 @@
 #include "bamReader.h"
 #include "datagramInputFile.h"
 
-using std::endl;
-using std::string;
-
 int main(int argc, char* argv[])
 {
-  string test_file = "bamTest.out";
+  std::string test_file = "bamTest.out";
   DatagramInputFile stream;
   bool success = stream.open(test_file);
   nassertr(success, 1);
@@ -40,11 +37,11 @@ int main(int argc, char* argv[])
   manager.resolve();
 
   dad->print_relationships();
-  nout << endl;
+  nout << std::endl;
   mom->print_relationships();
-  nout << endl;
+  nout << std::endl;
   bro->print_relationships();
-  nout << endl;
+  nout << std::endl;
   sis->print_relationships();
 
   return 0;

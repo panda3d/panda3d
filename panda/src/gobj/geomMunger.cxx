@@ -18,9 +18,6 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
-using std::move;
-using std::ostream;
-
 GeomMunger::Registry *GeomMunger::_registry = nullptr;
 TypeHandle GeomMunger::_type_handle;
 
@@ -151,7 +148,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
   if (entry == nullptr) {
     // Create a new entry for the result.
     // We don't need the key anymore, move the pointers into the CacheEntry.
-    entry = new Geom::CacheEntry(orig_geom, move(key));
+    entry = new Geom::CacheEntry(orig_geom, std::move(key));
 
     {
       LightMutexHolder holder(orig_geom->_cache_lock);
@@ -381,7 +378,7 @@ do_unregister() {
  *
  */
 void GeomMunger::CacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "munger " << _munger;
 }
 

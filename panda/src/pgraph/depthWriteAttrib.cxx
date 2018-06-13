@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle DepthWriteAttrib::_type_handle;
 int DepthWriteAttrib::_attrib_slot;
 
@@ -46,7 +44,7 @@ make_default() {
  *
  */
 void DepthWriteAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_off:

@@ -13,8 +13,6 @@
 
 #include "eggBin.h"
 
-using std::string;
-
 
 TypeHandle EggBin::_type_handle;
 
@@ -23,7 +21,7 @@ TypeHandle EggBin::_type_handle;
  *
  */
 EggBin::
-EggBin(const string &name) : EggGroup(name) {
+EggBin(const std::string &name) : EggGroup(name) {
   _bin_number = 0;
 }
 

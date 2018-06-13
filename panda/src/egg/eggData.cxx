@@ -28,8 +28,6 @@
 
 using std::istream;
 using std::ostream;
-using std::streamsize;
-using std::string;
 
 extern int eggyyparse();
 #include "parserDefs.h"
@@ -64,7 +62,7 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
  * error is the output stream to which to write error messages.
  */
 bool EggData::
-read(Filename filename, string display_name) {
+read(Filename filename, std::string display_name) {
   filename.set_text();
   set_egg_filename(filename);
 
@@ -235,8 +233,8 @@ write_egg(ostream &out) {
 
   if (egg_precision > 0) {
     // Change the egg precision as requested.
-    streamsize orig_precision = out.precision();
-    out.precision((streamsize)egg_precision);
+    std::streamsize orig_precision = out.precision();
+    out.precision((std::streamsize)egg_precision);
     write(out, 0);
     out.precision(orig_precision);
   } else {

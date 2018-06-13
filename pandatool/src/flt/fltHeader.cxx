@@ -23,11 +23,6 @@
 #include <assert.h>
 #include <math.h>
 
-using std::istream;
-using std::max;
-using std::ostream;
-using std::string;
-
 TypeHandle FltHeader::_type_handle;
 
 /**
@@ -195,7 +190,7 @@ read_flt(Filename filename) {
   _flt_filename = filename;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
+  std::istream *in = vfs->open_read_file(filename, true);
   if (in == nullptr) {
     assert(!flt_error_abort);
     return FE_could_not_open;
@@ -210,7 +205,7 @@ read_flt(Filename filename) {
  * Returns FE_ok on success, otherwise on failure.
  */
 FltError FltHeader::
-read_flt(istream &in) {
+read_flt(std::istream &in) {
   FltRecordReader reader(in);
   FltError result = reader.advance();
   if (result == FE_end_of_file) {
@@ -265,7 +260,7 @@ write_flt(Filename filename) {
  * Returns FE_ok on success, otherwise on failure.
  */
 FltError FltHeader::
-write_flt(ostream &out) {
+write_flt(std::ostream &out) {
   FltRecordWriter writer(out);
   FltError result = write_record_and_children(writer);
 
@@ -605,14 +600,14 @@ has_color_name(int color_index) const {
 /**
  * Returns the name associated with the given color, if any.
  */
-string FltHeader::
+std::string FltHeader::
 get_color_name(int color_index) const {
   ColorNames::const_iterator ni;
   ni = _color_names.find(color_index);
   if (ni != _color_names.end()) {
     return (*ni).second;
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -841,7 +836,7 @@ add_material(FltMaterial *material) {
   } else {
     // Make sure our next generated material index will be different from any
     // existing material indices.
-    _next_material_index = max(_next_material_index, material->_material_index + 1);
+    _next_material_index = std::max(_next_material_index, material->_material_index + 1);
   }
 
   _materials[material->_material_index] = material;
@@ -900,7 +895,7 @@ add_texture(FltTexture *texture) {
   } else {
     // Make sure our next generated pattern index will be different from any
     // existing texture indices.
-    _next_pattern_index = max(_next_pattern_index, texture->_pattern_index + 1);
+    _next_pattern_index = std::max(_next_pattern_index, texture->_pattern_index + 1);
   }
 
   _textures[texture->_pattern_index] = texture;
@@ -1568,7 +1563,7 @@ write_color_palette(FltRecordWriter &writer) const {
   // Now append all the names at the end.
   ColorNames::const_iterator ni;
   for (ni = _color_names.begin(); ni != _color_names.end(); ++ni) {
-    string name = (*ni).second.substr(0, 80);
+    std::string name = (*ni).second.substr(0, 80);
     int entry_length = name.length() + 8;
     datagram.add_be_uint16(entry_length);
     datagram.pad_bytes(2);

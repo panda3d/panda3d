@@ -23,9 +23,6 @@
 
 #include <algorithm>
 
-using std::dec;
-using std::hex;
-using std::ostream;
 using std::string;
 
 
@@ -131,9 +128,9 @@ set_flags(int flags) {
     if ((bits_changed & ~(F_trust_level_mask | F_dconfig)) != 0) {
       prc_cat->warning()
         << "changing flags for ConfigVariable "
-        << get_name() << " from " << hex
+        << get_name() << " from " << std::hex
         << (_flags & ~F_trust_level_mask) << " to "
-        << (flags & ~F_trust_level_mask) << dec << ".\n";
+        << (flags & ~F_trust_level_mask) << std::dec << ".\n";
     }
   }
 
@@ -330,7 +327,7 @@ get_declaration(size_t n) const {
  *
  */
 void ConfigVariableCore::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_declaration(0)->get_string_value();
 }
 
@@ -338,7 +335,7 @@ output(ostream &out) const {
  *
  */
 void ConfigVariableCore::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "ConfigVariable " << get_name() << ":\n";
 
   check_sort_declarations();

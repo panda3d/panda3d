@@ -48,9 +48,6 @@
 #include <intrin.h>
 #endif
 
-using std::string;
-using std::swap;
-
 union cpuid_info {
   char str[16];
   struct {
@@ -137,8 +134,8 @@ GraphicsPipe() :
 
   if (max_cpuid >= 1) {
     get_cpuid(0, info);
-    swap(info.ecx, info.edx);
-    _display_information->_cpu_vendor_string = string(info.str + 4, 12);
+    std::swap(info.ecx, info.edx);
+    _display_information->_cpu_vendor_string = std::string(info.str + 4, 12);
 
     get_cpuid(1, info);
     _display_information->_cpu_version_information = info.eax;
@@ -263,7 +260,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) GraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

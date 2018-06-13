@@ -78,9 +78,6 @@ using std::endl;
 using std::hex;
 using std::max;
 using std::min;
-using std::ostream;
-using std::ostringstream;
-using std::pair;
 using std::string;
 
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
@@ -7846,7 +7843,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   // State:Light:Bind:Directional"); PStatGPUTimer timer(this,
   // _draw_set_state_light_bind_directional_pcollector);
 
-  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
+  std::pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
   DirectionalLightFrameData &fdata = (*lookup.first).second;
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
@@ -8110,7 +8107,7 @@ get_error_string(GLenum error_code) {
   }
 
   // Other error, somehow?  Just display the error code then.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "GL error " << (int)error_code;
 
   return strm.str();
@@ -8317,7 +8314,7 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    ostream &out = GLCAT.debug();
+    std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
     pset<string>::const_iterator ei;

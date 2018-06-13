@@ -29,10 +29,8 @@
 #include "paramTexture.h"
 #include "shaderBuffer.h"
 
-using std::move;
 using std::ostream;
 using std::ostringstream;
-using std::string;
 
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
@@ -219,9 +217,9 @@ set_shader_input(ShaderInput &&input) const {
   ShaderAttrib *result = new ShaderAttrib(*this);
   Inputs::iterator i = result->_inputs.find(input.get_name());
   if (i == result->_inputs.end()) {
-    result->_inputs.insert(Inputs::value_type(input.get_name(), move(input)));
+    result->_inputs.insert(Inputs::value_type(input.get_name(), std::move(input)));
   } else {
-    i->second = move(input);
+    i->second = std::move(input);
   }
   return return_new(result);
 }
@@ -252,7 +250,7 @@ clear_shader_input(const InternalName *id) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-clear_shader_input(const string &id) const {
+clear_shader_input(const std::string &id) const {
   return clear_shader_input(InternalName::make(id));
 }
 
@@ -285,7 +283,7 @@ get_shader_input(const InternalName *id) const {
  * function does not return NULL --- it returns the "blank" ShaderInput.
  */
 const ShaderInput &ShaderAttrib::
-get_shader_input(const string &id) const {
+get_shader_input(const std::string &id) const {
   return get_shader_input(InternalName::make(id));
 }
 

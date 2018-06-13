@@ -17,8 +17,6 @@
 #include "lwoChunk.h"
 #include "config_lwo.h"
 
-using std::cout;
-
 /**
  *
  */
@@ -50,7 +48,7 @@ run() {
     nout << "Unable to read file.\n";
   } else {
     while (chunk != nullptr) {
-      chunk->write(cout, 0);
+      chunk->write(std::cout, 0);
       chunk = in.get_chunk();
     }
   }

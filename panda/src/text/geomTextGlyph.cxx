@@ -16,8 +16,6 @@
 #include "bamReader.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle GeomTextGlyph::_type_handle;
 
 
@@ -144,7 +142,7 @@ count_geom(const Geom *other) {
  *
  */
 void GeomTextGlyph::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Geom::output(out);
   out << ", glyphs: [";
   Glyphs::const_iterator gi;
@@ -160,7 +158,7 @@ output(ostream &out) const {
  *
  */
 void GeomTextGlyph::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Geom::write(out, indent_level);
   indent(out, indent_level)
     << "Glyphs: [";

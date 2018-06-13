@@ -15,9 +15,6 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle FltBeadID::_type_handle;
 
 /**
@@ -31,7 +28,7 @@ FltBeadID(FltHeader *header) : FltBead(header) {
  * Returns the id (name) of this particular bead.  Each MultiGen bead will
  * have a unique name.
  */
-const string &FltBeadID::
+const std::string &FltBeadID::
 get_id() const {
   return _id;
 }
@@ -41,7 +38,7 @@ get_id() const {
  * is unique to this bead.
  */
 void FltBeadID::
-set_id(const string &id) {
+set_id(const std::string &id) {
   _id = id;
 }
 
@@ -51,7 +48,7 @@ set_id(const string &id) {
  * flt file, use FltHeader::write_flt().
  */
 void FltBeadID::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   if (!_id.empty()) {
     out << " " << _id;

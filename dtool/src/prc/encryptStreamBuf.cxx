@@ -23,11 +23,6 @@
 #include "openssl/rand.h"
 #include "openssl/evp.h"
 
-using std::istream;
-using std::min;
-using std::ostream;
-using std::string;
-
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;
 
@@ -106,7 +101,7 @@ EncryptStreamBuf::
  *
  */
 void EncryptStreamBuf::
-open_read(istream *source, bool owns_source, const string &password) {
+open_read(std::istream *source, bool owns_source, const std::string &password) {
   OpenSSL_add_all_algorithms();
 
   _source = source;
@@ -213,7 +208,7 @@ close_read() {
  *
  */
 void EncryptStreamBuf::
-open_write(ostream *dest, bool owns_dest, const string &password) {
+open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
   OpenSSL_add_all_algorithms();
 
   close_write();
@@ -413,7 +408,7 @@ read_chars(char *start, size_t length) {
 
   if (_in_read_overflow_buffer != 0) {
     // Take from the overflow buffer.
-    length = min(length, _in_read_overflow_buffer);
+    length = std::min(length, _in_read_overflow_buffer);
     memcpy(start, _read_overflow_buffer, length);
     _in_read_overflow_buffer -= length;
     memcpy(_read_overflow_buffer + length, _read_overflow_buffer, _in_read_overflow_buffer);

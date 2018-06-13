@@ -23,8 +23,6 @@
 #include "omniBoundingVolume.h"
 #include <stdio.h>  // For sprintf/snprintf
 
-using std::string;
-
 PStatCollector FrameRateMeter::_show_fps_pcollector("*:Show fps");
 
 TypeHandle FrameRateMeter::_type_handle;
@@ -33,7 +31,7 @@ TypeHandle FrameRateMeter::_type_handle;
  *
  */
 FrameRateMeter::
-FrameRateMeter(const string &name) :
+FrameRateMeter(const std::string &name) :
   TextNode(name),
   _last_aspect_ratio(-1) {
 

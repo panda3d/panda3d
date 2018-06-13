@@ -34,9 +34,6 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 
-using std::min;
-using std::ostream;
-
 PStatCollector CollisionPlane::_volume_pcollector("Collision Volumes:CollisionPlane");
 PStatCollector CollisionPlane::_test_pcollector("Collision Tests:CollisionPlane");
 TypeHandle CollisionPlane::_type_handle;
@@ -92,7 +89,7 @@ get_test_pcollector() {
  *
  */
 void CollisionPlane::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cplane, (" << _plane << ")";
 }
 
@@ -400,7 +397,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
       if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
         // Both intersection points are within our segment of the parabola.
         // Choose the first of the two.
-        t = min(t1, t2);
+        t = std::min(t1, t2);
       } else {
         // Only t1 is within our segment.
         t = t1;

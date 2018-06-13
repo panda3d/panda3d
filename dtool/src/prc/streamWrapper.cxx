@@ -13,7 +13,6 @@
 
 #include "streamWrapper.h"
 
-using std::ios;
 using std::streamsize;
 
 /**
@@ -124,7 +123,7 @@ streamsize IStreamWrapper::
 seek_gpos_eof() {
   streamsize pos;
   acquire();
-  _istream->seekg(0, ios::end);
+  _istream->seekg(0, std::ios::end);
   pos = _istream->tellg();
   release();
 
@@ -207,7 +206,7 @@ void OStreamWrapper::
 seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
   acquire();
   _ostream->clear();
-  _ostream->seekp(0, ios::end);
+  _ostream->seekp(0, std::ios::end);
 
 #ifdef WIN32_VC
   if (_ostream->fail() && _stringstream_hack) {
@@ -231,7 +230,7 @@ streamsize OStreamWrapper::
 seek_ppos_eof() {
   streamsize pos;
   acquire();
-  _ostream->seekp(0, ios::end);
+  _ostream->seekp(0, std::ios::end);
 
 #ifdef WIN32_VC
   if (_ostream->fail() && _stringstream_hack) {

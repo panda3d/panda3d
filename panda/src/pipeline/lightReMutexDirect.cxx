@@ -16,14 +16,12 @@
 
 #ifndef DEBUG_THREADS
 
-using std::ostream;
-
 /**
  * This method is declared virtual in MutexDebug, but non-virtual in
  * LightReMutexDirect.
  */
 void LightReMutexDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LightReMutex " << (void *)this;
 }
 

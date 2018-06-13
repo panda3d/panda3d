@@ -13,8 +13,6 @@
 
 #include "angularVectorForce.h"
 
-using std::ostream;
-
 TypeHandle AngularVectorForce::_type_handle;
 
 /**
@@ -70,7 +68,7 @@ get_child_quat(const PhysicsObject *) {
  * Write a string representation of this instance to <out>.
  */
 void AngularVectorForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"AngularVectorForce";
   #endif //] NDEBUG
@@ -80,7 +78,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void AngularVectorForce::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularVectorForce:\n";
   out.width(indent+2); out<<""; out<<"_fvec "<<_fvec<<"\n";

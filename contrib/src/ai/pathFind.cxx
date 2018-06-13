@@ -15,7 +15,6 @@
 
 using std::cout;
 using std::endl;
-using std::stringstream;
 using std::string;
 
 PathFind::PathFind(AICharacter *ai_ch) {
@@ -73,7 +72,7 @@ void PathFind::create_nav_mesh(const char* navmesh_filename) {
     // Begin reading data from the file.
     while(!nav_mesh_file.eof()) {
       getline(nav_mesh_file, line);
-      stringstream linestream (line);
+      std::stringstream linestream (line);
 
       // Stores all the data members in the line to the array.  Data
       // structure:
@@ -130,7 +129,7 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
 
     while(!nav_mesh_file.eof()) {
       getline(nav_mesh_file, ln); // Gets main node data only. No neighbor nodes.
-      stringstream linestream (ln);
+      std::stringstream linestream (ln);
       for(int i = 0; i < 10; ++i) {
         getline(linestream, fields[i], ',');
       }
@@ -140,7 +139,7 @@ void PathFind::assign_neighbor_nodes(const char* navmesh_filename){
         gd_y = atoi(fields[3].c_str());
         for(int i = 0; i < 8; ++i) {
           getline(nav_mesh_file, ln); // Gets neighbor node data only. No main nodes.
-          stringstream linestream_n (ln);
+          std::stringstream linestream_n (ln);
           for(int j = 0; j < 10; ++j) {
             getline(linestream_n, fields_n[j], ',');
           }

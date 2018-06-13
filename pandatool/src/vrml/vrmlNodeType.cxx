@@ -20,7 +20,6 @@
 
 #include <stdio.h>  // for sprintf()
 
-using std::cerr;
 using std::ostream;
 
 
@@ -180,8 +179,8 @@ void
 VrmlNodeType::addToNameSpace(VrmlNodeType *_type)
 {
     if (find(_type->getName()) != nullptr) {
-        cerr << "PROTO " << _type->getName() << " already defined\n";
-        return;
+      std::cerr << "PROTO " << _type->getName() << " already defined\n";
+      return;
     }
     typeList.push_front(_type);
 }

@@ -13,12 +13,6 @@
 
 #include "binToC.h"
 
-using std::dec;
-using std::hex;
-using std::setfill;
-using std::setw;
-using std::string;
-
 // The number of bytes across the page to write.
 static const int col_width = 11;
 
@@ -79,13 +73,13 @@ run() {
   }
 
   std::ostream &out = get_output();
-  string static_keyword;
+  std::string static_keyword;
   if (_static_table) {
     static_keyword = "static ";
   }
 
-  string table_type = "const unsigned char ";
-  string length_type = "const int ";
+  std::string table_type = "const unsigned char ";
+  std::string length_type = "const int ";
   if (_for_string) {
     // Actually, declaring the table as "const char" causes VC7 to yell about
     // truncating all of the values >= 0x80. table_type = "const char ";
@@ -102,7 +96,7 @@ run() {
       << "#include <stddef.h>\n"
       << "\n"
       << static_keyword << table_type << _table_name << "[] = {";
-  out << hex << setfill('0');
+  out << std::hex << std::setfill('0');
   int count = 0;
   int col = 0;
   unsigned int ch;
@@ -116,14 +110,14 @@ run() {
     } else {
       out << ", ";
     }
-    out << "0x" << setw(2) << ch;
+    out << "0x" << std::setw(2) << ch;
     col++;
     count++;
     ch = in.get();
   }
   out << "\n};\n\n"
       << static_keyword << length_type << _table_name << "_len = "
-      << dec << count << ";\n\n";
+      << std::dec << count << ";\n\n";
 }
 
 /**

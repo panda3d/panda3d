@@ -13,8 +13,6 @@
 
 #include "simpleAllocator.h"
 
-using std::ostream;
-
 /**
  *
  */
@@ -34,7 +32,7 @@ SimpleAllocator::
  *
  */
 void SimpleAllocator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size
       << " allocated";
@@ -44,7 +42,7 @@ output(ostream &out) const {
  *
  */
 void SimpleAllocator::
-write(ostream &out) const {
+write(std::ostream &out) const {
   MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size
       << " allocated";
@@ -170,7 +168,7 @@ changed_contiguous() {
  *
  */
 void SimpleAllocatorBlock::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_allocator == nullptr) {
     out << "free block\n";
   } else {

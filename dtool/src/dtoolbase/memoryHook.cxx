@@ -38,7 +38,6 @@
 #endif  // WIN32
 
 using std::cerr;
-using std::min;
 
 // Ensure we made the right decisions about the alignment size.
 static_assert(MEMORY_HOOK_ALIGNMENT >= sizeof(size_t),
@@ -426,7 +425,7 @@ heap_realloc_array(void *ptr, size_t size) {
   size_t orig_delta = (char *)ptr - (char *)alloc;
   size_t new_delta = (char *)ptr1 - (char *)alloc1;
   if (orig_delta != new_delta) {
-    memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, min(size, orig_size));
+    memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, std::min(size, orig_size));
   }
 
   root[-2] = size;

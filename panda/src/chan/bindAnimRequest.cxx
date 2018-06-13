@@ -16,15 +16,13 @@
 #include "animControl.h"
 #include "partBundle.h"
 
-using std::string;
-
 TypeHandle BindAnimRequest::_type_handle;
 
 /**
  *
  */
 BindAnimRequest::
-BindAnimRequest(const string &name,
+BindAnimRequest(const std::string &name,
                 const Filename &filename, const LoaderOptions &options,
                 Loader *loader,
                 AnimControl *control, int hierarchy_match_flags,

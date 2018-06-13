@@ -19,8 +19,6 @@
 #include "py_panda.h"
 #endif
 
-using std::ostream;
-
 TypeHandle OdeBody::_type_handle;
 
 OdeBody::
@@ -71,7 +69,7 @@ get_joint(int index) const {
 }
 
 void OdeBody::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() \
                          << "(id = " << _id \
                          << ")";

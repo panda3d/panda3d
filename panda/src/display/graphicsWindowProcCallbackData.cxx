@@ -14,15 +14,13 @@
 #include "graphicsWindowProcCallbackData.h"
 #include "graphicsWindow.h"
 
-using std::ostream;
-
 TypeHandle GraphicsWindowProcCallbackData::_type_handle;
 
 /**
  *
  */
 void GraphicsWindowProcCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
 #ifdef WIN32
   out << get_type() << "(" << (void*)_graphicsWindow << ", " << _hwnd << ", "
       << _msg << ", " << _wparam << ", " << _lparam << ")";

@@ -36,7 +36,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 PStatCollector CollisionFloorMesh::_volume_pcollector("Collision Volumes:CollisionFloorMesh");
 PStatCollector CollisionFloorMesh::_test_pcollector("Collision Tests:CollisionFloorMesh");
@@ -91,7 +90,7 @@ get_collision_origin() const {
  *
  */
 void CollisionFloorMesh::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cfloor";
 }
 
@@ -411,7 +410,7 @@ register_with_read_factory() {
  *
  */
 void CollisionFloorMesh::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 

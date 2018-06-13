@@ -14,8 +14,6 @@
 #include "hashGenerator.h"
 #include "primeNumberGenerator.h"
 
-using std::string;
-
 // We multiply each consecutive integer by the next prime number and add it to
 // the total.  This will generate pretty evenly-distributed hash numbers for
 // an arbitrary sequence of ints.
@@ -50,9 +48,9 @@ add_int(int num) {
  * Adds a string to the hash, by breaking it down into a sequence of integers.
  */
 void HashGenerator::
-add_string(const string &str) {
+add_string(const std::string &str) {
   add_int(str.length());
-  string::const_iterator si;
+  std::string::const_iterator si;
   for (si = str.begin(); si != str.end(); ++si) {
     add_int(*si);
   }

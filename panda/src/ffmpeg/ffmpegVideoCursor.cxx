@@ -28,9 +28,6 @@ extern "C" {
 #endif
 }
 
-using std::max;
-using std::ostringstream;
-
 ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
 TypeHandle FfmpegVideoCursor::FfmpegBuffer::_type_handle;
@@ -250,7 +247,7 @@ start_thread() {
 
   if (_thread_status == TS_stopped && _max_readahead_frames > 0) {
     // Get a unique name for the thread's sync name.
-    ostringstream strm;
+    std::ostringstream strm;
     strm << (void *)this;
     _sync_name = strm.str();
 
@@ -328,7 +325,7 @@ set_time(double timestamp, int loop_count) {
   }
 
   // No point in trying to position before the first frame.
-  frame = max(frame, _initial_dts);
+  frame = std::max(frame, _initial_dts);
 
   if (ffmpeg_cat.is_spam() && frame != _current_frame) {
     ffmpeg_cat.spam()

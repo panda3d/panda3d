@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle AuxBitplaneAttrib::_type_handle;
 int AuxBitplaneAttrib::_attrib_slot;
 CPT(RenderAttrib) AuxBitplaneAttrib::_default;
@@ -59,7 +57,7 @@ make_default() {
  *
  */
 void AuxBitplaneAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << _outputs << ")";
 }
 

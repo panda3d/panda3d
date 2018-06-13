@@ -74,7 +74,6 @@
 using std::cerr;
 using std::endl;
 using std::ostringstream;
-using std::pair;
 using std::string;
 using std::vector;
 
@@ -624,7 +623,7 @@ void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
 
 // MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
 
-typedef pair<double, EggGroup *> MayaEggWeight;
+typedef std::pair<double, EggGroup *> MayaEggWeight;
 
 struct MayaEggVertex
 {

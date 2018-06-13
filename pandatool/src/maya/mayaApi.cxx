@@ -29,7 +29,6 @@
 #include <direct.h>  // for chdir()
 #endif
 
-using std::endl;
 using std::string;
 
 MayaApi *MayaApi::_global_api = nullptr;
@@ -258,7 +257,7 @@ read(const Filename &filename) {
 
   string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
-    maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << endl;
+    maya_cat.debug() << "cwd(read:before): " << dirname.c_str() << std::endl;
   }
 
   MFileIO::newFile(true);
@@ -296,7 +295,7 @@ write(const Filename &filename) {
 
   string dirname = _cwd.to_os_specific();
   if (maya_cat.is_debug()) {
-    maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << endl;
+    maya_cat.debug() << "cwd(write:before): " << dirname.c_str() << std::endl;
   }
 
   const char *type = "mayaBinary";

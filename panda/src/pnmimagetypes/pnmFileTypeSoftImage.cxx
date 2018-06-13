@@ -20,7 +20,6 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
-using std::ios;
 using std::istream;
 using std::ostream;
 using std::string;
@@ -327,7 +326,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   read_float(_file);
 
   // Skip comment
-  _file->seekg(imageCommentLength, ios::cur);
+  _file->seekg(imageCommentLength, std::ios::cur);
 
   char pict_id[4];
   _file->read(pict_id, 4);

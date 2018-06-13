@@ -19,7 +19,6 @@
 #include "eventQueue.h"
 #include "pStatTimer.h"
 
-using std::max;
 using std::ostream;
 using std::string;
 
@@ -45,7 +44,7 @@ CInterval(const string &name, double duration, bool open_ended) :
   _curr_t(0.0),
   _name(name),
   _pname(get_pstats_name(name)),
-  _duration(max(duration, 0.0)),
+  _duration(std::max(duration, 0.0)),
   _open_ended(open_ended),
   _dirty(false),
   _ival_pcollector(_root_pcollector, _pname)

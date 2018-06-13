@@ -15,8 +15,6 @@
 #include "config_gobj.h"
 #include "lightMutexHolder.h"
 
-using std::ostream;
-
 MaterialPool *MaterialPool::_global_ptr = nullptr;
 
 
@@ -24,7 +22,7 @@ MaterialPool *MaterialPool::_global_ptr = nullptr;
  * Lists the contents of the material pool to the indicated output stream.
  */
 void MaterialPool::
-write(ostream &out) {
+write(std::ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
 
@@ -102,7 +100,7 @@ ns_garbage_collect() {
  * The nonstatic implementation of list_contents().
  */
 void MaterialPool::
-ns_list_contents(ostream &out) const {
+ns_list_contents(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << _materials.size() << " materials:\n";

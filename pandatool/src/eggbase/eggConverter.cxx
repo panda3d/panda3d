@@ -13,8 +13,6 @@
 
 #include "eggConverter.h"
 
-using std::string;
-
 /**
  * The first parameter to the constructor should be the one-word name of the
  * alien file format that is to be read or written, for instance "OpenFlight"
@@ -23,8 +21,8 @@ using std::string;
  * with a leading dot.
  */
 EggConverter::
-EggConverter(const string &format_name,
-             const string &preferred_extension,
+EggConverter(const std::string &format_name,
+             const std::string &preferred_extension,
              bool allow_last_param,
              bool allow_stdout) :
   EggFilter(allow_last_param, allow_stdout),

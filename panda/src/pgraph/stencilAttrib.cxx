@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle StencilAttrib::_type_handle;
 int StencilAttrib::_attrib_slot;
 
@@ -266,7 +264,7 @@ make_2_sided_with_clear(
  *
  */
 void StencilAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
 
   int index;
   for (index = 0; index < SRS_total; index++) {

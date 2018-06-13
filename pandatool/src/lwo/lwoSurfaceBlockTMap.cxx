@@ -20,8 +20,6 @@
 #include "dcast.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle LwoSurfaceBlockTMap::_type_handle;
 
 /**
@@ -43,7 +41,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceBlockTMap::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " {\n";
   write_chunks(out, indent_level + 2);

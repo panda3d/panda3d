@@ -15,8 +15,6 @@
 #include "eventQueue.h"
 #include "config_event.h"
 
-using std::endl;
-using std::ostream;
 using std::string;
 
 TypeHandle EventHandler::_type_handle;
@@ -86,7 +84,7 @@ dispatch_event(const Event *event) {
         event_cat->spam()
           << "calling callback 0x" << (void*)(*fi)
           << " for event '" << event->get_name() << "'"
-          << endl;
+          << std::endl;
       }
       (*fi)(event);
     }
@@ -124,7 +122,7 @@ dispatch_event(const Event *event) {
  *
  */
 void EventHandler::
-write(ostream &out) const {
+write(std::ostream &out) const {
   Hooks::const_iterator hi;
   hi = _hooks.begin();
 
@@ -169,7 +167,7 @@ add_hook(const string &event_name, EventFunction *function) {
   if (event_cat.is_debug()) {
     event_cat.debug()
       << "adding hook for event '" << event_name
-      << "' with function 0x" << (void*)function << endl;
+      << "' with function 0x" << (void*)function << std::endl;
   }
   assert(!event_name.empty());
   assert(function);
@@ -361,7 +359,7 @@ make_global_event_handler() {
  *
  */
 void EventHandler::
-write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
+write_hook(std::ostream &out, const EventHandler::Hooks::value_type &hook) const {
   if (!hook.second.empty()) {
     out << hook.first << " has " << hook.second.size() << " functions.\n";
   }
@@ -371,7 +369,7 @@ write_hook(ostream &out, const EventHandler::Hooks::value_type &hook) const {
  *
  */
 void EventHandler::
-write_cbhook(ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
+write_cbhook(std::ostream &out, const EventHandler::CallbackHooks::value_type &hook) const {
   if (!hook.second.empty()) {
     out << hook.first << " has " << hook.second.size() << " callback functions.\n";
   }

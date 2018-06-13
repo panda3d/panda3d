@@ -14,9 +14,6 @@
 #include "textureCollection.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -184,7 +181,7 @@ reserve(size_t num) {
  * NULL if no texture has that name.
  */
 Texture *TextureCollection::
-find_texture(const string &name) const {
+find_texture(const std::string &name) const {
   int num_textures = get_num_textures();
   for (int i = 0; i < num_textures; i++) {
     Texture *texture = get_texture(i);
@@ -238,7 +235,7 @@ size() const {
  * indicated output stream.
  */
 void TextureCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_textures() == 1) {
     out << "1 Texture";
   } else {
@@ -251,7 +248,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void TextureCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_textures(); i++) {
     indent(out, indent_level) << *get_texture(i) << "\n";
   }

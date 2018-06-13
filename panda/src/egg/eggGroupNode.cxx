@@ -39,8 +39,6 @@
 
 #include <algorithm>
 
-using std::max;
-using std::ostream;
 using std::string;
 
 TypeHandle EggGroupNode::_type_handle;
@@ -83,7 +81,7 @@ EggGroupNode::
  * Egg format.
  */
 void EggGroupNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   iterator i;
 
   // Since joints tend to reference vertex pools, which sometimes appear later
@@ -742,7 +740,7 @@ triangulate_polygons(int flags) {
     }
   }
 
-  num_produced += max(0, (int)(_children.size() - children_copy.size()));
+  num_produced += std::max(0, (int)(_children.size() - children_copy.size()));
   return num_produced;
 }
 

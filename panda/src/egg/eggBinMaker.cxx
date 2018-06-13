@@ -19,9 +19,6 @@
 #include "dcast.h"
 #include "pnotify.h"
 
-using std::pair;
-using std::string;
-
 TypeHandle EggBinMaker::_type_handle;
 
 
@@ -115,9 +112,9 @@ collapse_group(const EggGroup *, int) {
  * May be overridden in derived classes to define a name for each new bin,
  * based on its bin number, and a sample child.
  */
-string EggBinMaker::
+std::string EggBinMaker::
 get_bin_name(int, const EggNode *) {
-  return string();
+  return std::string();
 }
 
 /**
@@ -165,7 +162,7 @@ collect_nodes(EggGroupNode *group) {
         // If this is the first time this group has been encountered, we need
         // to create a new entry in _group_nodes for it.
 
-        pair<GroupNodes::iterator, bool> result;
+        std::pair<GroupNodes::iterator, bool> result;
         result = _group_nodes.insert
           (GroupNodes::value_type
            (group, SortedNodes(EggBinMakerCompareNodes(this))));
@@ -289,7 +286,7 @@ setup_bin(EggBin *bin, const Nodes &nodes) {
   int bin_number = get_bin_number(nodes.front());
   bin->set_bin_number(bin_number);
 
-  string bin_name = get_bin_name(bin_number, nodes.front());
+  std::string bin_name = get_bin_name(bin_number, nodes.front());
   if (!bin_name.empty()) {
     bin->set_name(bin_name);
   }

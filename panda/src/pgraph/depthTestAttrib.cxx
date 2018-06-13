@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle DepthTestAttrib::_type_handle;
 int DepthTestAttrib::_attrib_slot;
 
@@ -46,7 +44,7 @@ make_default() {
  *
  */
 void DepthTestAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   output_comparefunc(out,_mode);
 }

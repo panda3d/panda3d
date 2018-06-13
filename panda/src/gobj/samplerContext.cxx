@@ -13,15 +13,13 @@
 
 #include "samplerContext.h"
 
-using std::ostream;
-
 TypeHandle SamplerContext::_type_handle;
 
 /**
  *
  */
 void SamplerContext::
-output(ostream &out) const {
+output(std::ostream &out) const {
   SavedContext::output(out);
 }
 
@@ -29,6 +27,6 @@ output(ostream &out) const {
  *
  */
 void SamplerContext::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }

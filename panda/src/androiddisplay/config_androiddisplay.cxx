@@ -21,8 +21,6 @@
 
 #include "config_display.h"
 
-using std::string;
-
 Configure(config_androiddisplay);
 NotifyCategoryDef(androiddisplay, "display");
 
@@ -66,7 +64,7 @@ init_libandroiddisplay() {
 /**
  * Returns the given EGL error as string.
  */
-const string get_egl_error_string(int error) {
+const std::string get_egl_error_string(int error) {
   switch (error) {
     case 0x3000: return "EGL_SUCCESS"; break;
     case 0x3001: return "EGL_NOT_INITIALIZED"; break;

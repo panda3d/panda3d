@@ -19,9 +19,6 @@
 #include <set>
 #include <assert.h>
 
-using std::cerr;
-using std::string;
-
 bool cppparser_output_class_keyword = false;
 
 /**
@@ -62,7 +59,7 @@ parse_file(const Filename &filename) {
   }
 
   if (!init_cpp(file)) {
-    cerr << "Unable to read " << filename << "\n";
+    std::cerr << "Unable to read " << filename << "\n";
     return false;
   }
   parse_cpp(this);
@@ -75,7 +72,7 @@ parse_file(const Filename &filename) {
  * an expression.  Returns NULL if the string is not a valid expression.
  */
 CPPExpression *CPPParser::
-parse_expr(const string &expr) {
+parse_expr(const std::string &expr) {
   YYLTYPE loc = {};
   return CPPPreprocessor::parse_expr(expr, this, this, loc);
 }
@@ -85,7 +82,7 @@ parse_expr(const string &expr) {
  * CPPType.  Returns NULL if the string is not a valid type.
  */
 CPPType *CPPParser::
-parse_type(const string &type) {
+parse_type(const std::string &type) {
   CPPTypeParser ep(this, this);
   ep._verbose = 0;
   if (ep.parse_type(type, *this)) {

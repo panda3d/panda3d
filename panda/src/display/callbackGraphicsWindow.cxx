@@ -13,8 +13,6 @@
 
 #include "callbackGraphicsWindow.h"
 
-using std::string;
-
 TypeHandle CallbackGraphicsWindow::_type_handle;
 TypeHandle CallbackGraphicsWindow::WindowCallbackData::_type_handle;
 TypeHandle CallbackGraphicsWindow::EventsCallbackData::_type_handle;
@@ -26,7 +24,7 @@ TypeHandle CallbackGraphicsWindow::RenderCallbackData::_type_handle;
  */
 CallbackGraphicsWindow::
 CallbackGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                       const string &name,
+                       const std::string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
                        int flags,
@@ -67,7 +65,7 @@ get_input_device(int device) {
  * Returns the index of the new device.
  */
 int CallbackGraphicsWindow::
-create_input_device(const string &name) {
+create_input_device(const std::string &name) {
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, name);
   return add_input_device(device);

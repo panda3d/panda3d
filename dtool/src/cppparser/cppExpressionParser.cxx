@@ -14,10 +14,6 @@
 #include "cppExpressionParser.h"
 #include "cppExpression.h"
 
-using std::cerr;
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -40,9 +36,9 @@ CPPExpressionParser::
  *
  */
 bool CPPExpressionParser::
-parse_expr(const string &expr) {
+parse_expr(const std::string &expr) {
   if (!init_const_expr(expr)) {
-    cerr << "Unable to parse expression\n";
+    std::cerr << "Unable to parse expression\n";
     return false;
   }
 
@@ -55,9 +51,9 @@ parse_expr(const string &expr) {
  *
  */
 bool CPPExpressionParser::
-parse_expr(const string &expr, const CPPPreprocessor &filepos) {
+parse_expr(const std::string &expr, const CPPPreprocessor &filepos) {
   if (!init_const_expr(expr)) {
-    cerr << "Unable to parse expression\n";
+    std::cerr << "Unable to parse expression\n";
     return false;
   }
 
@@ -72,7 +68,7 @@ parse_expr(const string &expr, const CPPPreprocessor &filepos) {
  *
  */
 void CPPExpressionParser::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_expr == nullptr) {
     out << "(null expr)";
   } else {

@@ -29,12 +29,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-using std::endl;
-using std::ios;
-using std::istringstream;
-using std::ostringstream;
-using std::string;
-
 /**
  *
  */
@@ -60,7 +54,7 @@ Decompressor::
  */
 int Decompressor::
 initiate(const Filename &source_file) {
-  string extension = source_file.get_extension();
+  std::string extension = source_file.get_extension();
   if (extension == "pz" || extension == "gz") {
     Filename dest_file = source_file;
     dest_file = source_file.get_fullpath_wo_extension();
@@ -70,7 +64,7 @@ initiate(const Filename &source_file) {
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "Unknown file extension for decompressor: ."
-      << extension << endl;
+      << extension << std::endl;
   }
   return EU_error_abort;
 }
@@ -96,14 +90,14 @@ initiate(const Filename &source_file, const Filename &dest_file) {
   }
 
   // Determine source file length
-  source_pfstream->seekg(0, ios::end);
+  source_pfstream->seekg(0, std::ios::end);
   _source_length = source_pfstream->tellg();
   if (_source_length == 0) {
     downloader_cat.warning()
       << "Zero length file: " << source_file << "\n";
     return EU_error_file_empty;
   }
-  source_pfstream->seekg(0, ios::beg);
+  source_pfstream->seekg(0, std::ios::beg);
 
   // Open destination file
   Filename dest_filename(dest_file);
@@ -207,8 +201,8 @@ decompress(const Filename &source_file) {
  */
 bool Decompressor::
 decompress(Ramfile &source_and_dest_file) {
-  istringstream source(source_and_dest_file._data);
-  ostringstream dest;
+  std::istringstream source(source_and_dest_file._data);
+  std::ostringstream dest;
 
   IDecompressStream decompress(&source, false);
 

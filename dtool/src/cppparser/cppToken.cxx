@@ -18,15 +18,12 @@
 
 #include <ctype.h>
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
 CPPToken::
 CPPToken(int token, int line_number, int col_number,
-         const CPPFile &file, const string &str,
+         const CPPFile &file, const std::string &str,
          const YYSTYPE &lval) :
   _token(token), _lval(lval)
 {
@@ -42,7 +39,7 @@ CPPToken(int token, int line_number, int col_number,
  *
  */
 CPPToken::
-CPPToken(int token, const YYLTYPE &loc, const string &str, const YYSTYPE &val) :
+CPPToken(int token, const YYLTYPE &loc, const std::string &str, const YYSTYPE &val) :
   _token(token), _lval(val), _lloc(loc)
 {
   _lval.str = str;
@@ -93,7 +90,7 @@ is_eof() const {
  *
  */
 void CPPToken::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_token) {
   case REAL:
     out << "REAL " << _lval.u.real;

@@ -29,8 +29,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
-using std::string;
 
 TypeHandle TexturePlacement::_type_handle;
 
@@ -93,7 +91,7 @@ TexturePlacement::
 /**
  * Returns the name of the texture that this placement represents.
  */
-const string &TexturePlacement::
+const std::string &TexturePlacement::
 get_name() const {
   return _texture->get_name();
 }
@@ -645,7 +643,7 @@ compute_tex_matrix(LMatrix3d &transform) {
  * Writes the placement position information on a line by itself.
  */
 void TexturePlacement::
-write_placed(ostream &out, int indent_level) {
+write_placed(std::ostream &out, int indent_level) {
   indent(out, indent_level)
     << get_texture()->get_name();
 

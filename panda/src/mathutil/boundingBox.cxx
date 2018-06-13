@@ -24,7 +24,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 const int BoundingBox::plane_def[6][3] = {
   { 0, 4, 5 },
@@ -115,7 +114,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingBox::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bbox, empty";
   } else if (is_infinite()) {

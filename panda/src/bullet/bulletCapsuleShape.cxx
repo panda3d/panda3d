@@ -13,8 +13,6 @@
 
 #include "bulletCapsuleShape.h"
 
-using std::endl;
-
 TypeHandle BulletCapsuleShape::_type_handle;
 
 /**
@@ -37,7 +35,7 @@ BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     _shape = new btCapsuleShapeZ(radius, height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << up << std::endl;
     break;
   }
 
@@ -67,7 +65,7 @@ BulletCapsuleShape(const BulletCapsuleShape &copy) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 
@@ -152,7 +150,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 

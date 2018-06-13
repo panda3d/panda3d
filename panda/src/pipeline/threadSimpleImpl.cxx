@@ -19,9 +19,6 @@
 #include "threadSimpleManager.h"
 #include "thread.h"
 
-using std::ostringstream;
-using std::string;
-
 ThreadSimpleImpl *volatile ThreadSimpleImpl::_st_this;
 
 int ThreadSimpleImpl::_next_unique_id = 1;
@@ -181,9 +178,9 @@ preempt() {
 /**
  *
  */
-string ThreadSimpleImpl::
+std::string ThreadSimpleImpl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
 #ifdef WIN32
   strm << GetCurrentProcessId();
 #else

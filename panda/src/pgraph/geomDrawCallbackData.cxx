@@ -15,15 +15,13 @@
 #include "cullableObject.h"
 #include "graphicsStateGuardianBase.h"
 
-using std::ostream;
-
 TypeHandle GeomDrawCallbackData::_type_handle;
 
 /**
  *
  */
 void GeomDrawCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_obj << ", " << (void *)_gsg
       << ", " << _force << ")";
 }

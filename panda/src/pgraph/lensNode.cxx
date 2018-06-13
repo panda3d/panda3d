@@ -20,16 +20,13 @@
 #include "perspectiveLens.h"
 #include "geomNode.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle LensNode::_type_handle;
 
 /**
  *
  */
 LensNode::
-LensNode(const string &name, Lens *lens) :
+LensNode(const std::string &name, Lens *lens) :
   PandaNode(name)
 {
   if (lens == nullptr) {
@@ -174,7 +171,7 @@ hide_frustum() {
  *
  */
 void LensNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 
   out << " (";
@@ -193,7 +190,7 @@ output(ostream &out) const {
  *
  */
 void LensNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
 
   for (Lenses::const_iterator li = _lenses.begin();

@@ -16,8 +16,6 @@
 #include "geomVertexWriter.h"
 #include "config_dxgsg9.h"
 
-using std::max;
-
 GeomMunger *DXGeomMunger9::_deleted_chain = nullptr;
 TypeHandle DXGeomMunger9::_type_handle;
 
@@ -142,7 +140,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear
@@ -245,7 +243,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear

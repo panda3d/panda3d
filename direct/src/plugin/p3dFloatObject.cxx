@@ -13,9 +13,6 @@
 
 #include "p3dFloatObject.h"
 
-using std::ostringstream;
-using std::string;
-
 /**
  *
  */
@@ -70,8 +67,8 @@ get_float() {
  * to a string.
  */
 void P3DFloatObject::
-make_string(string &value) {
-  ostringstream strm;
+make_string(std::string &value) {
+  std::ostringstream strm;
   strm << _value;
   value = strm.str();
 }

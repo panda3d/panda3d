@@ -14,8 +14,6 @@
 #include "eggMesherEdge.h"
 #include "eggMesherStrip.h"
 
-using std::ostream;
-
 /**
  * Removes an edge from a particular strip.
  */
@@ -54,7 +52,7 @@ change_strip(EggMesherStrip *from, EggMesherStrip *to) {
  * Formats the edge for output in some sensible way.
  */
 void EggMesherEdge::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Edge [" << _vi_a << " to " << _vi_b << "], "
       << _strips.size() << " strips:";
 

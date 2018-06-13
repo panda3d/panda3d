@@ -17,8 +17,6 @@
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
 
-using std::string;
-
 TypeHandle OpenALAudioSound::_type_handle;
 
 
@@ -838,14 +836,14 @@ get_active() const {
  *
  */
 void OpenALAudioSound::
-set_finished_event(const string& event) {
+set_finished_event(const std::string& event) {
   _finished_event = event;
 }
 
 /**
  *
  */
-const string& OpenALAudioSound::
+const std::string& OpenALAudioSound::
 get_finished_event() const {
   return _finished_event;
 }
@@ -853,7 +851,7 @@ get_finished_event() const {
 /**
  * Get name of sound file
  */
-const string& OpenALAudioSound::
+const std::string& OpenALAudioSound::
 get_name() const {
   return _basename;
 }

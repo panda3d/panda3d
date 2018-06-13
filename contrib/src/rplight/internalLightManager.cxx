@@ -30,8 +30,6 @@
 #include <algorithm>
 
 using std::endl;
-using std::min;
-using std::vector;
 
 NotifyCategoryDef(lightmgr, "");
 
@@ -359,7 +357,7 @@ bool InternalLightManager::compare_shadow_sources(const ShadowSource* a, const S
 void InternalLightManager::update_shadow_sources() {
 
   // Find all dirty shadow sources and make a list of them
-  vector<ShadowSource*> sources_to_update;
+  std::vector<ShadowSource*> sources_to_update;
    for (auto iter = _shadow_sources.begin(); iter != _shadow_sources.end(); ++iter) {
     ShadowSource* source = *iter;
     if (source) {
@@ -397,7 +395,7 @@ void InternalLightManager::update_shadow_sources() {
 
   // Free the regions of all sources which will get updated. We have to take into
   // account that only a limited amount of sources can get updated per frame.
-  size_t update_slots = min(sources_to_update.size(),
+  size_t update_slots = std::min(sources_to_update.size(),
                 _shadow_manager->get_num_update_slots_left());
   for(size_t i = 0; i < update_slots; ++i) {
     if (sources_to_update[i]->has_region()) {

@@ -17,8 +17,6 @@
 #include "dcast.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle LwoSurfaceBlockOpacity::_type_handle;
 
 /**
@@ -42,7 +40,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceBlockOpacity::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { type = " << (int)_type
     << ", opacity = " << _opacity * 100.0 << "%, envelope = " << _envelope

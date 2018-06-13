@@ -16,16 +16,13 @@
 
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle EggVertexUV::_type_handle;
 
 /**
  *
  */
 EggVertexUV::
-EggVertexUV(const string &name, const LTexCoordd &uv) :
+EggVertexUV(const std::string &name, const LTexCoordd &uv) :
   EggNamedObject(name),
   _flags(0),
   _uvw(uv[0], uv[1], 0.0)
@@ -39,7 +36,7 @@ EggVertexUV(const string &name, const LTexCoordd &uv) :
  *
  */
 EggVertexUV::
-EggVertexUV(const string &name, const LTexCoord3d &uvw) :
+EggVertexUV(const std::string &name, const LTexCoord3d &uvw) :
   EggNamedObject(name),
   _flags(F_has_w),
   _uvw(uvw)
@@ -127,8 +124,8 @@ transform(const LMatrix4d &mat) {
  *
  */
 void EggVertexUV::
-write(ostream &out, int indent_level) const {
-  string inline_name = get_name();
+write(std::ostream &out, int indent_level) const {
+  std::string inline_name = get_name();
   if (!inline_name.empty()) {
     inline_name += ' ';
   }

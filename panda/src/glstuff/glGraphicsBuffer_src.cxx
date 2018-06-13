@@ -13,12 +13,8 @@
 
 #include "depthWriteAttrib.h"
 
-using std::list;
 using std::max;
 using std::min;
-using std::ostringstream;
-using std::string;
-using std::swap;
 
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
@@ -27,7 +23,7 @@ TypeHandle CLP(GraphicsBuffer)::_type_handle;
  */
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -74,7 +70,7 @@ CLP(GraphicsBuffer)::
   // unshare all buffers that are sharing this object's depth buffer
   {
     CLP(GraphicsBuffer) *graphics_buffer;
-    list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+    std::list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 
     graphics_buffer_iterator = _shared_depth_buffer_list.begin();
     while (graphics_buffer_iterator != _shared_depth_buffer_list.end()) {
@@ -502,7 +498,7 @@ rebuild_bitplanes() {
   } else if (attach[RTP_depth_stencil] != nullptr && attach[RTP_depth] == nullptr) {
     // The depth stencil slot was assigned a texture, but we don't support it.
     // Downgrade to a regular depth texture.
-    swap(attach[RTP_depth], attach[RTP_depth_stencil]);
+    std::swap(attach[RTP_depth], attach[RTP_depth_stencil]);
   }
 
   // Knowing this, we can already be a tiny bit more accurate about the
@@ -544,9 +540,9 @@ rebuild_bitplanes() {
     if (glgsg->_use_object_labels) {
       // Assign a label for OpenGL to use when displaying debug messages.
       if (num_fbos > 1) {
-        ostringstream strm;
+        std::ostringstream strm;
         strm << _name << '[' << layer << ']';
-        string name = strm.str();
+        std::string name = strm.str();
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], name.size(), name.data());
       } else {
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
@@ -1782,7 +1778,7 @@ resolve_multisamples() {
     if (_shared_depth_buffer) {
       CLP(GraphicsBuffer) *graphics_buffer = nullptr;
       //CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
-      list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+      std::list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 
       int max_sort_order = 0;
       for (graphics_buffer_iterator = _shared_depth_buffer_list.begin();

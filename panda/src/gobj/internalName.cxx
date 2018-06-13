@@ -18,7 +18,6 @@
 #include "bamReader.h"
 #include "preparedGraphicsObjects.h"
 
-using std::ostream;
 using std::string;
 
 PT(InternalName) InternalName::_root;
@@ -251,7 +250,7 @@ get_net_basename(int n) const {
  *
  */
 void InternalName::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_parent == get_root()) {
     out << _basename;
 

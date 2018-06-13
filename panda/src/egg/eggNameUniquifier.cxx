@@ -19,7 +19,6 @@
 
 #include "pnotify.h"
 
-using std::ostringstream;
 using std::string;
 
 TypeHandle EggNameUniquifier::_type_handle;
@@ -176,7 +175,7 @@ string EggNameUniquifier::
 generate_name(EggNode *node, const string &category, int index) {
   string name = filter_name(node);
 
-  ostringstream str;
+  std::ostringstream str;
   if (name.empty()) {
     str << category << index;
   } else {

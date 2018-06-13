@@ -21,11 +21,8 @@
 #include "openssl/md5.h"
 #include <time.h>
 
-using std::hex;
 using std::ostream;
 using std::ostringstream;
-using std::setfill;
-using std::setw;
 using std::string;
 
 const string HTTPDigestAuthorization::_mechanism = "digest";
@@ -284,7 +281,7 @@ get_a2(HTTPEnum::Method method, const string &request_path,
 string HTTPDigestAuthorization::
 get_hex_nonce_count() const {
   ostringstream strm;
-  strm << hex << setfill('0') << setw(8) << _nonce_count;
+  strm << std::hex << std::setfill('0') << std::setw(8) << _nonce_count;
   return strm.str();
 }
 

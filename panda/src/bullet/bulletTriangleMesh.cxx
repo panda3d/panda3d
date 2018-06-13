@@ -18,8 +18,6 @@
 #include "geomVertexReader.h"
 
 using std::endl;
-using std::move;
-using std::ostream;
 
 TypeHandle BulletTriangleMesh::_type_handle;
 
@@ -241,7 +239,7 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
 
         CPT(GeomVertexArrayData) vertices = prim->get_vertices();
         if (vertices != nullptr) {
-          GeomVertexReader index(move(vertices), 0);
+          GeomVertexReader index(std::move(vertices), 0);
           while (!index.is_at_end()) {
             _indices.push_back(index_offset + index.get_data1i());
           }
@@ -284,7 +282,7 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
 
         CPT(GeomVertexArrayData) vertices = prim->get_vertices();
         if (vertices != nullptr) {
-          GeomVertexReader index(move(vertices), 0);
+          GeomVertexReader index(std::move(vertices), 0);
           while (!index.is_at_end()) {
             _indices.push_back(find_or_add_vertex(points[index.get_data1i()]));
           }
@@ -355,7 +353,7 @@ add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_dupli
  *
  */
 void BulletTriangleMesh::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   out << get_type() << ", " << _indices.size() / 3 << " triangles";
@@ -365,7 +363,7 @@ output(ostream &out) const {
  *
  */
 void BulletTriangleMesh::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":" << endl;
 
   const IndexedMeshArray &array = _mesh.getIndexedMeshArray();

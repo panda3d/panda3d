@@ -30,9 +30,6 @@
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle RopeNode::_type_handle;
 
 PStatCollector RopeNode::_rope_node_pcollector("*:RopeNode");
@@ -70,7 +67,7 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 RopeNode::
-RopeNode(const string &name) :
+RopeNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -180,7 +177,7 @@ is_renderable() const {
  *
  */
 void RopeNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   NurbsCurveEvaluator *curve = get_curve();
   if (curve != nullptr) {
@@ -194,7 +191,7 @@ output(ostream &out) const {
  *
  */
 void RopeNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   indent(out, indent_level) << *get_curve() << "\n";
 }

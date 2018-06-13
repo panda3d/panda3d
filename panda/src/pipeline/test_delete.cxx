@@ -17,9 +17,6 @@
 #include "mutexHolder.h"
 #include "deletedChain.h"
 
-using std::min;
-using std::string;
-
 // This is the number of passes to make per thread.
 static const int num_passes = 100;
 
@@ -83,7 +80,7 @@ TypeHandle Doober::_type_handle;
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name) : Thread(name, name)
+  MyThread(const std::string &name) : Thread(name, name)
   {
   }
 
@@ -109,7 +106,7 @@ public:
           doobers.push_back(new Doober(++counter));
         }
         int num_del = (int)random_f(max_doobers_per_chunk);
-        num_del = min(num_del, (int)doobers.size());
+        num_del = std::min(num_del, (int)doobers.size());
 
         for (int j = 0; j < num_del; ++j) {
           assert(!doobers.empty());
@@ -140,7 +137,7 @@ main(int argc, char *argv[]) {
 
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
-    PT(MyThread) thread = new MyThread(string(1, name));
+    PT(MyThread) thread = new MyThread(std::string(1, name));
     threads.push_back(thread);
     thread->start(TP_normal, true);
   }

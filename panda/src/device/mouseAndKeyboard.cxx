@@ -18,15 +18,13 @@
 #include "dataNodeTransmit.h"
 #include "graphicsWindow.h"
 
-using std::string;
-
 TypeHandle MouseAndKeyboard::_type_handle;
 
 /**
  *
  */
 MouseAndKeyboard::
-MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
+MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   DataNode(name),
   _window(window),
   _device(device)

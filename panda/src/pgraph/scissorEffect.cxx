@@ -25,7 +25,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 TypeHandle ScissorEffect::_type_handle;
 
@@ -159,7 +158,7 @@ xform(const LMatrix4 &mat) const {
  *
  */
 void ScissorEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_screen()) {
     out << "screen [" << _frame << "]";

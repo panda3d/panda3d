@@ -13,8 +13,6 @@
 
 #include "angularIntegrator.h"
 
-using std::ostream;
-
 ConfigVariableDouble AngularIntegrator::_max_angular_dt
 ("default_max_angular_dt", 1.0f / 30.0f);
 
@@ -51,7 +49,7 @@ integrate(Physical *physical, AngularForceVector& forces,
  * Write a string representation of this instance to <out>.
  */
 void AngularIntegrator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"AngularIntegrator";
   #endif //] NDEBUG
@@ -61,7 +59,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void AngularIntegrator::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularIntegrator:\n";
   out.width(indent+2); out<<""; out<<"_max_angular_dt "<<_max_angular_dt<<" (class const)\n";

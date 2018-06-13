@@ -14,8 +14,6 @@
 
 #include "nullAudioManager.h"
 
-using std::string;
-
 TypeHandle NullAudioManager::_type_handle;
 
 // namespace { static const string blank=""; static PN_stdfloat
@@ -51,7 +49,7 @@ is_valid() {
  *
  */
 PT(AudioSound) NullAudioManager::
-get_sound(const string&, bool positional, int mode) {
+get_sound(const std::string&, bool positional, int mode) {
   return get_null_sound();
 }
 
@@ -67,7 +65,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
  *
  */
 void NullAudioManager::
-uncache_sound(const string&) {
+uncache_sound(const std::string&) {
   // intentionally blank.
 }
 

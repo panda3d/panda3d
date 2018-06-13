@@ -15,13 +15,11 @@
 
 #ifdef HAVE_OPENSSL
 
-using std::ostream;
-
 /**
  *
  */
-ostream &
-operator << (ostream &out, HTTPEnum::Method method) {
+std::ostream &
+operator << (std::ostream &out, HTTPEnum::Method method) {
   switch (method) {
   case HTTPEnum::M_options:
     out << "OPTIONS";

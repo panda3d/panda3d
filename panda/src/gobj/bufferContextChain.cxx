@@ -15,8 +15,6 @@
 #include "bufferContext.h"
 #include "indent.h"
 
-using std::ostream;
-
 /**
  * Returns the first BufferContext object stored in the tracker.  You can walk
  * through the entire list of objects stored on the tracker by calling
@@ -56,7 +54,7 @@ take_from(BufferContextChain &other) {
  *
  */
 void BufferContextChain::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _count << " objects, consuming " << _total_size << " bytes:\n";
 

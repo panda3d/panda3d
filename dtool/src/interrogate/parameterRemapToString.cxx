@@ -15,7 +15,6 @@
 #include "interrogate.h"
 #include "typeManager.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -47,7 +46,7 @@ ParameterRemapToString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapToString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 
@@ -91,7 +90,7 @@ ParameterRemapToWString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapToWString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 

@@ -19,7 +19,6 @@
 using std::iostream;
 using std::istream;
 using std::ostream;
-using std::streamsize;
 using std::string;
 
 TypeHandle VirtualFileSimple::_type_handle;
@@ -314,7 +313,7 @@ close_read_write_file(iostream *stream) {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileSimple::
+std::streamsize VirtualFileSimple::
 get_file_size(istream *stream) const {
   return _mount->get_file_size(_local_filename, stream);
 }
@@ -323,7 +322,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileSimple::
+std::streamsize VirtualFileSimple::
 get_file_size() const {
   return _mount->get_file_size(_local_filename);
 }

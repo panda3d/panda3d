@@ -13,8 +13,6 @@
 
 #include "stTransform.h"
 
-using std::ostream;
-
 STTransform STTransform::_ident_mat;
 
 /**
@@ -46,7 +44,7 @@ STTransform(const TransformState *trans) {
  *
  */
 void STTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "STTransform(" << _pos << ", " << _rotate << ", " << _scale << ")";
 }
 

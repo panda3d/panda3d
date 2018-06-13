@@ -15,16 +15,13 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle UserVertexTransform::_type_handle;
 
 /**
  *
  */
 UserVertexTransform::
-UserVertexTransform(const string &name) :
+UserVertexTransform(const std::string &name) :
   _name(name)
 {
 }
@@ -42,7 +39,7 @@ get_matrix(LMatrix4 &matrix) const {
  *
  */
 void UserVertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 

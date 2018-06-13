@@ -14,7 +14,6 @@
 #include "datagramIterator.h"
 #include "pnotify.h"
 
-using std::ostream;
 using std::string;
 using std::wstring;
 
@@ -160,7 +159,7 @@ extract_bytes(unsigned char *into, size_t size) {
  * Write a string representation of this instance to <out>.
  */
 void DatagramIterator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<""<<"DatagramIterator";
   #endif //] NDEBUG
@@ -170,7 +169,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void DatagramIterator::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"DatagramIterator:\n";
   out.width(indent+2); out<<""<<"_current_index "<<_current_index;

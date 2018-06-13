@@ -21,9 +21,6 @@
 #include "config_pipeline.h"
 #include <sched.h>
 
-using std::ostringstream;
-using std::string;
-
 #ifdef ANDROID
 #include "config_express.h"
 #include <jni.h>
@@ -180,9 +177,9 @@ join() {
 /**
  *
  */
-string ThreadPosixImpl::
+std::string ThreadPosixImpl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << getpid() << "." << _thread;
 
   return strm.str();
@@ -196,7 +193,7 @@ get_unique_id() const {
 bool ThreadPosixImpl::
 attach_java_vm() {
   JNIEnv *env;
-  string thread_name = _parent_obj->get_name();
+  std::string thread_name = _parent_obj->get_name();
   JavaVMAttachArgs args;
   args.version = JNI_VERSION_1_2;
   args.name = thread_name.c_str();

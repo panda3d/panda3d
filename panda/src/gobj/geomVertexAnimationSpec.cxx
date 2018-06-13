@@ -15,13 +15,11 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 /**
  *
  */
 void GeomVertexAnimationSpec::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_animation_type) {
   case AT_none:
     out << "none";

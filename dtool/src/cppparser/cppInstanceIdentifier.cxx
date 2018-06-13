@@ -21,9 +21,6 @@
 #include "cppParameterList.h"
 #include "cppIdentifier.h"
 
-using std::cerr;
-using std::string;
-
 /**
  *
  */
@@ -122,8 +119,8 @@ add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_
   if (_ident != nullptr &&
       _ident->get_simple_name().substr(0, 9) == "operator ") {
 
-    if (_ident->get_simple_name() != string("operator ()") &&
-        _ident->get_simple_name() != string("operator []")) {
+    if (_ident->get_simple_name() != std::string("operator ()") &&
+        _ident->get_simple_name() != std::string("operator []")) {
       if (params->_parameters.empty()) {
         flags |= CPPFunctionType::F_unary_op;
       }
@@ -187,7 +184,7 @@ add_trailing_return_type(CPPType *type) {
       return;
     }
   }
-  cerr << "trailing return type can only be added to a function\n";
+  std::cerr << "trailing return type can only be added to a function\n";
 }
 
 /**
@@ -299,7 +296,7 @@ r_unroll_type(CPPType *start_type,
         if (simple_type != nullptr && simple_type->_type == CPPSimpleType::T_auto) {
           return_type = mod._trailing_return_type;
         } else {
-          cerr << "function with trailing return type needs auto\n";
+          std::cerr << "function with trailing return type needs auto\n";
         }
       }
       result = new CPPFunctionType(return_type, mod._func_params,
@@ -315,7 +312,7 @@ r_unroll_type(CPPType *start_type,
     break;
 
   default:
-    cerr << "Internal error--invalid CPPInstanceIdentifier\n";
+    std::cerr << "Internal error--invalid CPPInstanceIdentifier\n";
     abort();
   }
 

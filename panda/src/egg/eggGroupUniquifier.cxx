@@ -18,7 +18,6 @@
 
 #include <ctype.h>
 
-using std::ostringstream;
 using std::string;
 
 TypeHandle EggGroupUniquifier::_type_handle;
@@ -98,7 +97,7 @@ filter_name(EggNode *node) {
  */
 string EggGroupUniquifier::
 generate_name(EggNode *node, const string &category, int index) {
-  ostringstream str;
+  std::ostringstream str;
   str << node->get_name() << "_group" << index;
   return str.str();
 }

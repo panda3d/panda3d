@@ -21,9 +21,6 @@
 #include "dcast.h"
 #include "config_interval.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle CLerpNodePathInterval::_type_handle;
 
 /**
@@ -50,7 +47,7 @@ TypeHandle CLerpNodePathInterval::_type_handle;
  * otherwise, it is reset.
  */
 CLerpNodePathInterval::
-CLerpNodePathInterval(const string &name, double duration,
+CLerpNodePathInterval(const std::string &name, double duration,
                       CLerpInterval::BlendType blend_type,
                       bool bake_in_start, bool fluid,
                       const NodePath &node, const NodePath &other) :
@@ -547,7 +544,7 @@ priv_reverse_instant() {
  *
  */
 void CLerpNodePathInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
 
   if ((_flags & F_end_pos) != 0) {

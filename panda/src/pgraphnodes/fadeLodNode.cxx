@@ -22,16 +22,13 @@
 #include "cullBinAttrib.h"
 #include "depthOffsetAttrib.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle FadeLODNode::_type_handle;
 
 /**
  *
  */
 FadeLODNode::
-FadeLODNode(const string &name) :
+FadeLODNode(const std::string &name) :
   LODNode(name)
 {
   set_cull_callback();
@@ -244,7 +241,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void FadeLODNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LODNode::output(out);
   out << " fade time: " << _fade_time;
 }
@@ -254,7 +251,7 @@ output(ostream &out) const {
  * of the geometry during a transition.
  */
 void FadeLODNode::
-set_fade_bin(const string &name, int draw_order) {
+set_fade_bin(const std::string &name, int draw_order) {
   _fade_bin_name = name;
   _fade_bin_draw_order = draw_order;
   _fade_1_new_state.clear();

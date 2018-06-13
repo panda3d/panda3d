@@ -24,14 +24,11 @@
 #include "indent.h"
 #include "cppParser.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
 void CPPStructType::Base::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_is_virtual) {
     out << "virtual ";
   }
@@ -1243,7 +1240,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPStructType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     if (cppparser_output_class_keyword) {
@@ -1354,7 +1351,7 @@ get_virtual_funcs(VFunctions &funcs) const {
 
     } else {
       // Non-destructors we can try to match up by name.
-      string fname = inst->get_local_name();
+      std::string fname = inst->get_local_name();
       CPPScope::Functions::const_iterator fi;
       fi = _scope->_functions.find(fname);
 

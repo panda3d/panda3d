@@ -15,8 +15,6 @@
 #include "sequenceNode.h"
 #include "cullTraverser.h"
 
-using std::ostream;
-
 TypeHandle SequenceNode::_type_handle;
 
 /**
@@ -136,7 +134,7 @@ get_visible_child() const {
  *
  */
 void SequenceNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name() << ": ";
   AnimInterface::output(out);
 }

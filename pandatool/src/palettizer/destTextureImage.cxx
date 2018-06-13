@@ -22,8 +22,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::max;
-
 TypeHandle DestTextureImage::_type_handle;
 
 
@@ -50,8 +48,8 @@ DestTextureImage(TexturePlacement *placement) {
       _x_size = to_power_2(_x_size);
       _y_size = to_power_2(_y_size);
     } else {
-      _x_size = max(_x_size, 1);
-      _y_size = max(_y_size, 1);
+      _x_size = std::max(_x_size, 1);
+      _y_size = std::max(_y_size, 1);
     }
   }
 

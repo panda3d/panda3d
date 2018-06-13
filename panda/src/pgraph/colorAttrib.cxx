@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle ColorAttrib::_type_handle;
 int ColorAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorAttrib::_off;
@@ -77,7 +75,7 @@ make_default() {
  *
  */
 void ColorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_color_type()) {
   case T_vertex:

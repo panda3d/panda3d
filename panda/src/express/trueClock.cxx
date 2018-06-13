@@ -17,7 +17,6 @@
 
 #include <math.h>  // for fabs()
 
-using std::endl;
 using std::max;
 using std::min;
 
@@ -173,7 +172,7 @@ TrueClock() {
     if (_has_high_res) {
       if (int_frequency <= 0) {
         clock_cat.error()
-          << "TrueClock::get_real_time() - frequency is negative!" << endl;
+          << "TrueClock::get_real_time() - frequency is negative!" << std::endl;
         _has_high_res = false;
 
       } else {
@@ -202,7 +201,7 @@ TrueClock() {
 
   if (!_has_high_res) {
     clock_cat.warning()
-      << "No high resolution clock available." << endl;
+      << "No high resolution clock available." << std::endl;
   }
 }
 

@@ -14,8 +14,6 @@
 #include "datagramSink.h"
 #include "fileReference.h"
 
-using std::streampos;
-
 /**
  * Does nothing since this is class is just the definition of an interface
  */
@@ -82,7 +80,7 @@ get_file() {
  * pointing to the first byte following the datagram returned after a call to
  * put_datagram().
  */
-streampos DatagramSink::
+std::streampos DatagramSink::
 get_file_pos() {
   return 0;
 }

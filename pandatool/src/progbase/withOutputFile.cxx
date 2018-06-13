@@ -17,9 +17,6 @@
 
 #include "pnotify.h"
 
-using std::cout;
-using std::ostream;
-
 /**
  *
  */
@@ -49,7 +46,7 @@ WithOutputFile::
  * Returns an output stream that corresponds to the user's intended egg file
  * output--either stdout, or the named output file.
  */
-ostream &WithOutputFile::
+std::ostream &WithOutputFile::
 get_output() {
   if (_output_ptr == nullptr) {
     if (!_got_output_filename) {
@@ -58,7 +55,7 @@ get_output() {
         nout << "No output filename specified.\n";
         exit(1);
       }
-      _output_ptr = &cout;
+      _output_ptr = &std::cout;
       _owns_output_ptr = false;
 
     } else {

@@ -19,8 +19,6 @@
 #include "bam.h"
 #include "clockObject.h"
 
-using std::string;
-
 TypeHandle RecorderController::_type_handle;
 RecorderController::RecorderFactory *RecorderController::_factory = nullptr;
 
@@ -115,7 +113,7 @@ begin_playback(const Filename &filename) {
     return false;
   }
 
-  string head;
+  std::string head;
   if (!_din.read_header(head, _bam_header.size()) || head != _bam_header) {
     recorder_cat.error() << "Unable to read " << _filename << "\n";
     return false;

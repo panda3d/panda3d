@@ -22,8 +22,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::string;
-
 TypeHandle AnimChannelScalarDynamic::_type_handle;
 
 /**
@@ -53,7 +51,7 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
  *
  */
 AnimChannelScalarDynamic::
-AnimChannelScalarDynamic(const string &name)
+AnimChannelScalarDynamic(const std::string &name)
   : AnimChannelScalar(name)
 {
   _last_value = _value = TransformState::make_identity();

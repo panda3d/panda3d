@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle CullFaceAttrib::_type_handle;
 int CullFaceAttrib::_attrib_slot;
 
@@ -101,7 +99,7 @@ get_effective_mode() const {
  *
  */
 void CullFaceAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_actual_mode()) {
   case M_cull_none:

@@ -24,10 +24,7 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 
-using std::max;
-using std::min;
 using std::ostream;
-using std::pair;
 
 LightReMutex *TransformState::_states_lock = nullptr;
 TransformState::States *TransformState::_states = nullptr;
@@ -1030,7 +1027,7 @@ get_num_unused_states() {
       const TransformState *result = state->_composition_cache.get_data(i)._result;
       if (result != nullptr && result != state) {
         // Here's a TransformState that's recorded in the cache.  Count it.
-        pair<StateCount::iterator, bool> ir =
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           // If the above insert operation fails, then it's already in the
@@ -1043,7 +1040,7 @@ get_num_unused_states() {
     for (i = 0; i < cache_size; ++i) {
       const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
       if (result != nullptr && result != state) {
-        pair<StateCount::iterator, bool> ir =
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           (*(ir.first)).second++;
@@ -1175,7 +1172,7 @@ garbage_collect() {
 
   // How many elements to process this pass?
   size_t size = orig_size;
-  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
@@ -1187,7 +1184,7 @@ garbage_collect() {
     si = 0;
   }
 
-  num_this_pass = min(num_this_pass, size);
+  num_this_pass = std::min(num_this_pass, size);
   size_t stop_at_element = (si + num_this_pass) % size;
 
   do {

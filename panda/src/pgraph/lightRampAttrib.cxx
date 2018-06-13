@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle LightRampAttrib::_type_handle;
 int LightRampAttrib::_attrib_slot;
 CPT(RenderAttrib) LightRampAttrib::_default;
@@ -178,7 +176,7 @@ make_hdr2() {
  *
  */
 void LightRampAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (_mode) {
   case LRT_default:

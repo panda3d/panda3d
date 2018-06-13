@@ -35,13 +35,10 @@
   #undef X509_NAME
 #endif  // WIN32_VC
 
-using std::ios;
 using std::istream;
 using std::min;
 using std::ostream;
 using std::ostringstream;
-using std::pair;
-using std::streamsize;
 using std::string;
 
 TypeHandle HTTPChannel::_type_handle;
@@ -259,7 +256,7 @@ will_close_connection() const {
  * requests which can change their minds midstream about how much data they're
  * sending you.
  */
-streamsize HTTPChannel::
+std::streamsize HTTPChannel::
 get_file_size() const {
   if (_got_file_size) {
     return _file_size;
@@ -2687,7 +2684,7 @@ open_download_file() {
       // Windows doesn't complain if you try to seek past the end of file--it
       // happily appends enough zero bytes to make the difference.  Blecch.
       // That means we need to get the file size first to check it ourselves.
-      _download_to_stream->seekp(0, ios::end);
+      _download_to_stream->seekp(0, std::ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -2725,7 +2722,7 @@ open_download_file() {
       // Windows doesn't complain if you try to seek past the end of file--it
       // happily appends enough zero bytes to make the difference.  Blecch.
       // That means we need to get the file size first to check it ourselves.
-      _download_to_stream->seekp(0, ios::end);
+      _download_to_stream->seekp(0, std::ios::end);
       if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
         downloader_cat.info()
           << _NOTIFY_HTTP_CHANNEL_ID
@@ -3720,7 +3717,7 @@ reset_url(const URLSpec &old_url, const URLSpec &new_url) {
  */
 void HTTPChannel::
 store_header_field(const string &field_name, const string &field_value) {
-  pair<Headers::iterator, bool> insert_result =
+  std::pair<Headers::iterator, bool> insert_result =
     _headers.insert(Headers::value_type(field_name, field_value));
 
   if (!insert_result.second) {

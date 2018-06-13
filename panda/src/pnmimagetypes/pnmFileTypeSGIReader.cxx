@@ -24,7 +24,6 @@
 #include "pnotify.h"
 
 using std::istream;
-using std::min;
 using std::string;
 
 // Much code in this file is borrowed from Netpbm, specifically sgitopnm.c.
@@ -125,7 +124,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
   _x_size = head.xsize;
   _y_size = head.ysize;
-  _num_channels = min((int)head.zsize, 4);
+  _num_channels = std::min((int)head.zsize, 4);
   bpc = head.bpc;
 
   current_row = _y_size - 1;

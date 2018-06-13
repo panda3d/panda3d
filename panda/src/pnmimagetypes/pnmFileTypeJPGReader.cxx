@@ -18,12 +18,6 @@
 #include "config_pnmimagetypes.h"
 #include "thread.h"
 
-using std::endl;
-using std::istream;
-using std::max;
-using std::min;
-using std::string;
-
 // The following bit of code, for setting up jpeg_istream_src(), was lifted
 // from jpeglib, and modified to work with istream instead of stdio.
 
@@ -55,7 +49,7 @@ extern "C" {
 typedef struct {
   struct jpeg_source_mgr pub;   /* public fields */
 
-  istream * infile;             /* source stream */
+  std::istream * infile;             /* source stream */
   JOCTET * buffer;              /* start of buffer */
   boolean start_of_file;        /* have we gotten any data yet? */
 } my_source_mgr;
@@ -211,7 +205,7 @@ term_source (j_decompress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_istream_src (j_decompress_ptr cinfo, istream * infile)
+jpeg_istream_src (j_decompress_ptr cinfo, std::istream * infile)
 {
   my_src_ptr src;
 
@@ -251,11 +245,11 @@ jpeg_istream_src (j_decompress_ptr cinfo, istream * infile)
  *
  */
 PNMFileTypeJPG::Reader::
-Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string magic_number) :
   PNMReader(type, file, owns_file)
 {
   // Hope we can putback() more than one character.
-  for (string::reverse_iterator mi = magic_number.rbegin();
+  for (std::string::reverse_iterator mi = magic_number.rbegin();
        mi != magic_number.rend();
        ++mi) {
     _file->putback(*mi);
@@ -314,7 +308,7 @@ prepare_read() {
     // Attempt to get the scale close to our target scale.
     int x_reduction = _cinfo.image_width / _read_x_size;
     int y_reduction = _cinfo.image_height / _read_y_size;
-    _cinfo.scale_denom = max(min(x_reduction, y_reduction), 1);
+    _cinfo.scale_denom = std::max(std::min(x_reduction, y_reduction), 1);
   }
 
   /* Step 7: Start decompressor */
@@ -419,7 +413,7 @@ read_data(xel *array, xelval *) {
    */
   if (_jerr.pub.num_warnings) {
     pnmimage_jpg_cat.warning()
-      << "Jpeg data may be corrupt" << endl;
+      << "Jpeg data may be corrupt" << std::endl;
   }
 
   return _y_size;

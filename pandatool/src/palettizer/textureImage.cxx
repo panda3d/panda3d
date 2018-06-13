@@ -31,8 +31,6 @@
 
 #include <iterator>
 
-using std::ostream;
-using std::pair;
 using std::string;
 
 TypeHandle TextureImage::_type_handle;
@@ -665,7 +663,7 @@ copy_unplaced(bool redo_all) {
       Filename filename = dest->get_filename();
       FilenameUnifier::make_canonical(filename);
 
-      pair<Dests::iterator, bool> insert_result = generate.insert
+      std::pair<Dests::iterator, bool> insert_result = generate.insert
         (Dests::value_type(filename, dest));
       if (!insert_result.second) {
         // At least two DestTextureImages map to the same filename, no sweat.
@@ -784,7 +782,7 @@ is_newer_than(const Filename &reference_filename) {
  * to the indicated output stream, one per line.
  */
 void TextureImage::
-write_source_pathnames(ostream &out, int indent_level) const {
+write_source_pathnames(std::ostream &out, int indent_level) const {
   Sources::const_iterator si;
   for (si = _sources.begin(); si != _sources.end(); ++si) {
     SourceTextureImage *source = (*si).second;
@@ -857,7 +855,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
  * Writes the information about the texture's size and placement.
  */
 void TextureImage::
-write_scale_info(ostream &out, int indent_level) {
+write_scale_info(std::ostream &out, int indent_level) {
   SourceTextureImage *source = get_preferred_source();
   indent(out, indent_level) << get_name();
 

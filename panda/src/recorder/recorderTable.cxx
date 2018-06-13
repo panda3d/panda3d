@@ -18,7 +18,6 @@
 #include "recorderController.h"
 #include "indent.h"
 
-using std::ostream;
 using std::string;
 
 TypeHandle RecorderTable::_type_handle;
@@ -143,7 +142,7 @@ clear_flags(short flags) {
  *
  */
 void RecorderTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "RecorderTable:\n";
 

@@ -17,8 +17,6 @@
 
 #include "indent.h"
 
-using std::string;
-
 TypeHandle EggComponentData::_type_handle;
 
 
@@ -55,7 +53,7 @@ EggComponentData::
  * matched_name().
  */
 void EggComponentData::
-add_name(const string &name, NameUniquifier &uniquifier) {
+add_name(const std::string &name, NameUniquifier &uniquifier) {
   if (_names.insert(name).second) {
     // This is a new name for this component.
     if (!has_name()) {
@@ -73,7 +71,7 @@ add_name(const string &name, NameUniquifier &uniquifier) {
  * with this particular joint, false otherwise.
  */
 bool EggComponentData::
-matches_name(const string &name) const {
+matches_name(const std::string &name) const {
   if (name == get_name()) {
     return true;
   }

@@ -14,8 +14,6 @@
 #include "configVariableSearchPath.h"
 #include "executionEnvironment.h"
 
-using std::string;
-
 /**
  * Recopies the config variable into the search path for returning its value.
  */
@@ -34,7 +32,7 @@ reload_search_path() {
     Filename page_filename(page->get_name());
     Filename page_dirname = page_filename.get_dirname();
     ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
-    string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
+    std::string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
     ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
     if (!expanded.empty()) {
       Filename dir = Filename::from_os_specific(expanded);

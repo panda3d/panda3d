@@ -16,7 +16,6 @@
 #include <sstream>
 #include <string.h>  // strncpy
 
-using std::ostringstream;
 using std::string;
 
 // The following functions are C-style wrappers around the above
@@ -108,7 +107,7 @@ PPBrowserObject::
  */
 int PPBrowserObject::
 get_repr(char *buffer, int buffer_length) const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "NPObject " << _npobj;
   string result = strm.str();
   strncpy(buffer, result.c_str(), buffer_length);

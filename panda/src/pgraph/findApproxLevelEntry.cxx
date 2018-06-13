@@ -16,15 +16,13 @@
 #include "pandaNode.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle FindApproxLevelEntry::_type_handle;
 
 /**
  * Formats the entry for meaningful output.  For debugging only.
  */
 void FindApproxLevelEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "(" << _node_path << "):";
   if (is_solution(0)) {
     out << " solution!";
@@ -40,7 +38,7 @@ output(ostream &out) const {
  * For debugging only.
  */
 void FindApproxLevelEntry::
-write_level(ostream &out, int indent_level) const {
+write_level(std::ostream &out, int indent_level) const {
   for (const FindApproxLevelEntry *entry = this;
        entry != nullptr;
        entry = entry->_next) {

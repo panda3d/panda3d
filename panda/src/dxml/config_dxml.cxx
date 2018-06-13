@@ -15,10 +15,6 @@
 #include "dconfig.h"
 #include <stdio.h>
 
-using std::istream;
-using std::ostream;
-using std::string;
-
 BEGIN_PUBLISH
 #include "tinyxml.h"
 END_PUBLISH
@@ -58,7 +54,7 @@ BEGIN_PUBLISH
 //               Returns the document, or NULL on error.
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *
-read_xml_stream(istream &in) {
+read_xml_stream(std::istream &in) {
   TiXmlDocument *doc = new TiXmlDocument;
   in >> *doc;
   if (in.fail() && !in.eof()) {
@@ -76,7 +72,7 @@ BEGIN_PUBLISH
 //  Description: Writes an XML document to the indicated stream.
 ////////////////////////////////////////////////////////////////////
 void
-write_xml_stream(ostream &out, TiXmlDocument *doc) {
+write_xml_stream(std::ostream &out, TiXmlDocument *doc) {
   out << *doc;
 }
 END_PUBLISH
@@ -101,7 +97,7 @@ BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 void
 print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
-  string os_name = filename.to_os_specific();
+  std::string os_name = filename.to_os_specific();
 #ifdef _WIN32
   FILE *file;
   if (fopen_s(&file, os_name.c_str(), "w") != 0) {

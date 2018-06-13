@@ -16,7 +16,6 @@
 #include "physxSceneDesc.h"
 
 using std::endl;
-using std::stringstream;
 
 PhysxManager *PhysxManager::_global_ptr;
 PhysxManager::PhysxOutputStream PhysxManager::_outputStream;
@@ -367,7 +366,7 @@ get_internal_version() {
 
   v = _sdk->getInternalVersion(apiRev, descRev, branchId);
 
-  stringstream version;
+  std::stringstream version;
   version << "version:" << (unsigned int)v
           << " apiRef:" << (unsigned int)apiRev
           << " descRev:" << (unsigned int)descRev

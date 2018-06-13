@@ -23,8 +23,6 @@
 
 #include <time.h>
 
-using std::ostream;
-using std::ostringstream;
 using std::string;
 
 TypeHandle DisplayRegion::_type_handle;
@@ -343,7 +341,7 @@ set_target_tex_page(int page) {
  *
  */
 void DisplayRegion::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
   out << "DisplayRegion(" << cdata->_regions[0]._dimensions
       << ")=pixels(" << cdata->_regions[0]._pixels << ")";
@@ -367,7 +365,7 @@ make_screenshot_filename(const string &prefix) {
   static const int buffer_size = 1024;
   char buffer[buffer_size];
 
-  ostringstream filename_strm;
+  std::ostringstream filename_strm;
 
   size_t i = 0;
   while (i < screenshot_filename.length()) {
@@ -672,7 +670,7 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
 void DisplayRegion::
 set_active_index(int index) {
 #ifdef DO_PSTATS
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "dr_" << index;
   string name = strm.str();
 

@@ -14,8 +14,6 @@
 #include "config_ode.h"
 #include "odeMass.h"
 
-using std::ostream;
-
 TypeHandle OdeMass::_type_handle;
 
 OdeMass::
@@ -53,7 +51,7 @@ operator = (const OdeMass &copy) {
 
 
 void OdeMass::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent);
   out << get_type() \
       << "(mag = " << get_magnitude() \

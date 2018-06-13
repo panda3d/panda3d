@@ -17,9 +17,6 @@
 #include "indirectLess.h"
 #include <algorithm>
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -179,7 +176,7 @@ clear() {
  * any, or NULL if no texture_stage has that name.
  */
 TextureStage *TextureStageCollection::
-find_texture_stage(const string &name) const {
+find_texture_stage(const std::string &name) const {
   int num_texture_stages = get_num_texture_stages();
   for (int i = 0; i < num_texture_stages; i++) {
     TextureStage *texture_stage = get_texture_stage(i);
@@ -243,7 +240,7 @@ sort() {
  * indicated output stream.
  */
 void TextureStageCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_texture_stages() == 1) {
     out << "1 TextureStage";
   } else {
@@ -256,7 +253,7 @@ output(ostream &out) const {
  * the indicated output stream.
  */
 void TextureStageCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_texture_stages(); i++) {
     indent(out, indent_level) << *get_texture_stage(i) << "\n";
   }

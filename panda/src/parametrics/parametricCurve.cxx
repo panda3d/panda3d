@@ -22,9 +22,6 @@
 #include "bamReader.h"
 #include "omniBoundingVolume.h"
 
-using std::ostream;
-using std::string;
-
 static const PN_stdfloat tolerance_divisor = 100000.0f;
 
 TypeHandle ParametricCurve::_type_handle;
@@ -324,8 +321,8 @@ write_egg(Filename filename, CoordinateSystem cs) {
  * stream.  Returns true if the file is successfully written.
  */
 bool ParametricCurve::
-write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
-  string curve_type;
+write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs) {
+  std::string curve_type;
   switch (get_curve_type()) {
   case PCT_XYZ:
     curve_type = "xyz";
@@ -342,7 +339,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
   if (!has_name()) {
     // If we don't have a name, come up with one.
-    string name = filename.get_basename_wo_extension();
+    std::string name = filename.get_basename_wo_extension();
 
     if (!curve_type.empty()) {
       name += "_";
@@ -605,7 +602,7 @@ invalidate_all() {
  * Returns true on success, false on failure.
  */
 bool ParametricCurve::
-format_egg(ostream &, const string &, const string &, int) const {
+format_egg(std::ostream &, const std::string &, const std::string &, int) const {
   return false;
 }
 

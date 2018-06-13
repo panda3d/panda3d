@@ -15,9 +15,6 @@
 #include "config_interval.h"
 #include "lvecBase3.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle CConstrainPosInterval::_type_handle;
 
 /**
@@ -29,7 +26,7 @@ TypeHandle CConstrainPosInterval::_type_handle;
  * node's local position will be copied unaltered.
  */
 CConstrainPosInterval::
-CConstrainPosInterval(const string &name, double duration,
+CConstrainPosInterval(const std::string &name, double duration,
                       const NodePath &node, const NodePath &target,
                       bool wrt, const LVecBase3 posOffset) :
   CConstraintInterval(name, duration),
@@ -76,7 +73,7 @@ priv_step(double t) {
  *
  */
 void CConstrainPosInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
   out << " dur " << get_duration();
 }

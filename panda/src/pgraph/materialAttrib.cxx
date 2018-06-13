@@ -18,8 +18,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle MaterialAttrib::_type_handle;
 int MaterialAttrib::_attrib_slot;
 
@@ -58,7 +56,7 @@ make_default() {
  *
  */
 void MaterialAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_material != nullptr) {
     out << *_material;

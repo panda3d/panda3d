@@ -17,8 +17,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::string;
-
 TypeHandle CharacterJointBundle::_type_handle;
 
 /**
@@ -26,7 +24,7 @@ TypeHandle CharacterJointBundle::_type_handle;
  * Character node will automatically create one for itself.
  */
 CharacterJointBundle::
-CharacterJointBundle(const string &name) : PartBundle(name) {
+CharacterJointBundle(const std::string &name) : PartBundle(name) {
 }
 
 /**

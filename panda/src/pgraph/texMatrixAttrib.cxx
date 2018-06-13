@@ -20,8 +20,6 @@
 #include "datagramIterator.h"
 #include "textureStagePool.h"
 
-using std::ostream;
-
 CPT(RenderAttrib) TexMatrixAttrib::_empty_attrib;
 TypeHandle TexMatrixAttrib::_type_handle;
 int TexMatrixAttrib::_attrib_slot;
@@ -181,7 +179,7 @@ get_transform(TextureStage *stage) const {
  *
  */
 void TexMatrixAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

@@ -28,8 +28,6 @@
 #include <windows.h>
 #include <mmsystem.h>
 
-using std::ostringstream;
-
 /**
  * The directshow implementation of microphones.
  */
@@ -151,7 +149,7 @@ find_all_microphones_ds() {
         stat = waveInOpen(nullptr, i, &format, 0, 0, WAVE_FORMAT_QUERY);
         if (stat == MMSYSERR_NOERROR) {
           PT(MicrophoneAudioDS) p = new MicrophoneAudioDS();
-          ostringstream name;
+          std::ostringstream name;
           name << "WaveIn: " << caps.szPname << " Chan:" << chan << " HZ:" << freq;
           p->set_name(name.str());
           p->_device_id = i;

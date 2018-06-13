@@ -13,8 +13,6 @@
 
 #include "linearUserDefinedForce.h"
 
-using std::ostream;
-
 TypeHandle LinearUserDefinedForce::_type_handle;
 
 /**
@@ -64,7 +62,7 @@ get_child_vector(const PhysicsObject *po) {
  * Write a string representation of this instance to <out>.
  */
 void LinearUserDefinedForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearUserDefinedForce";
   #endif //] NDEBUG
@@ -74,7 +72,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearUserDefinedForce::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearUserDefinedForce:\n";
   LinearForce::write(out, indent+2);

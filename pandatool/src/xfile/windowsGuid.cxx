@@ -16,7 +16,6 @@
 
 #include <stdio.h>  // for sscanf, sprintf
 
-using std::ostream;
 using std::string;
 
 /**
@@ -72,6 +71,6 @@ format_string() const {
  * Outputs a hex representation of the GUID.
  */
 void WindowsGuid::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << format_string();
 }

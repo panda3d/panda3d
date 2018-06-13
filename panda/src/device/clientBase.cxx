@@ -14,9 +14,6 @@
 #include "clientBase.h"
 #include "config_device.h"
 
-using std::endl;
-using std::string;
-
 TypeHandle ClientBase::_type_handle;
 
 /**
@@ -88,7 +85,7 @@ fork_asynchronous_thread(double poll_time) {
     if (device_cat.is_debug()) {
       device_cat.debug()
         << "fork_asynchronous_thread() - forking client thread"
-        << endl;
+        << std::endl;
     }
     return true;
   }
@@ -116,7 +113,7 @@ fork_asynchronous_thread(double poll_time) {
  * NULL is returned.
  */
 PT(ClientDevice) ClientBase::
-get_device(TypeHandle device_type, const string &device_name) {
+get_device(TypeHandle device_type, const std::string &device_name) {
   DevicesByName &dbn = _devices[device_type];
 
   DevicesByName::iterator dbni;
@@ -146,7 +143,7 @@ get_device(TypeHandle device_type, const string &device_name) {
  * unknown (e.g.  it was disconnected previously).
  */
 bool ClientBase::
-disconnect_device(TypeHandle device_type, const string &device_name,
+disconnect_device(TypeHandle device_type, const std::string &device_name,
                   ClientDevice *device) {
   DevicesByName &dbn = _devices[device_type];
 

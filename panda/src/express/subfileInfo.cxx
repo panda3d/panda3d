@@ -13,12 +13,10 @@
 
 #include "subfileInfo.h"
 
-using std::ostream;
-
 /**
  *
  */
 void SubfileInfo::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "SubfileInfo(" << get_filename() << ", " << _start << ", " << _size << ")";
 }

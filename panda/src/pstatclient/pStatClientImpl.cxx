@@ -32,8 +32,6 @@
 #include <windows.h>
 #endif
 
-using std::string;
-
 /**
  *
  */
@@ -87,7 +85,7 @@ PStatClientImpl::
  * Called only by PStatClient::client_connect().
  */
 bool PStatClientImpl::
-client_connect(string hostname, int port) {
+client_connect(std::string hostname, int port) {
   nassertr(!_is_connected, true);
 
   if (hostname.empty()) {
@@ -374,7 +372,7 @@ transmit_control_data() {
 /**
  * Returns the current machine's hostname.
  */
-string PStatClientImpl::
+std::string PStatClientImpl::
 get_hostname() {
   if (_hostname.empty()) {
     char temp_buff[1024];

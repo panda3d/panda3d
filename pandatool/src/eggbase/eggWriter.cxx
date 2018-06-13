@@ -17,8 +17,6 @@
 #include "compose_matrix.h"
 #include "globPattern.h"
 
-using std::string;
-
 /**
  * Egg-writing type programs may specify their output file using either the
  * last-filename convention, the -o convention, and/or implicitly writing the
@@ -49,7 +47,7 @@ EggWriter(bool allow_last_param, bool allow_stdout) :
     add_runline("[opts] >output.egg");
   }
 
-  string o_description;
+  std::string o_description;
 
   if (_allow_stdout) {
     if (_allow_last_param) {

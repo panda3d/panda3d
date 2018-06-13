@@ -14,8 +14,6 @@
 #include "eggData.h"
 #include "pnotify.h"
 
-using std::cout;
-
 
 int
 main(int argc, char *argv[]) {
@@ -30,7 +28,7 @@ main(int argc, char *argv[]) {
 
   if (data.read(egg_filename)) {
     data.load_externals(DSearchPath(Filename("")));
-    data.write_egg(cout);
+    data.write_egg(std::cout);
   } else {
     nout << "Errors.\n";
   }

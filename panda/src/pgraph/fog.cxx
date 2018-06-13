@@ -25,13 +25,10 @@
 
 #include <stddef.h>
 
-using std::ostream;
-using std::string;
-
 TypeHandle Fog::_type_handle;
 
-ostream &
-operator << (ostream &out, Fog::Mode mode) {
+std::ostream &
+operator << (std::ostream &out, Fog::Mode mode) {
   switch (mode) {
   case Fog::M_linear:
     return out << "linear";
@@ -50,7 +47,7 @@ operator << (ostream &out, Fog::Mode mode) {
  *
  */
 Fog::
-Fog(const string &name) :
+Fog(const std::string &name) :
   PandaNode(name)
 {
   _mode = M_linear;
@@ -115,7 +112,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void Fog::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "fog: " << _mode;
   switch (_mode) {
   case M_linear:

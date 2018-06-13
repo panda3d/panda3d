@@ -21,8 +21,6 @@
 #include "tinyWinGraphicsWindow.h"
 #include "tinyGraphicsBuffer.h"
 
-using std::string;
-
 TypeHandle TinyWinGraphicsPipe::_type_handle;
 
 /**
@@ -45,7 +43,7 @@ TinyWinGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string TinyWinGraphicsPipe::
+std::string TinyWinGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
@@ -64,7 +62,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) TinyWinGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

@@ -16,8 +16,6 @@
 #include "eggPolygon.h"
 #include "eggGroupNode.h"
 
-using std::ostream;
-
 /**
  *
  */
@@ -328,7 +326,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
  *
  */
 void EggMesherFanMaker::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _vertex << ":[";
   if (!_edges.empty()) {
     Edges::const_iterator ei;

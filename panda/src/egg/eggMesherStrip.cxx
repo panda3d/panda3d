@@ -20,8 +20,6 @@
 #include "dcast.h"
 #include "config_egg.h"
 
-using std::ostream;
-
 /**
  *
  */
@@ -851,7 +849,7 @@ count_neighbors() const {
  * Writes all the neighbor indexes to the ostream.
  */
 void EggMesherStrip::
-output_neighbors(ostream &out) const {
+output_neighbors(std::ostream &out) const {
   Edges::const_iterator ei;
   EggMesherEdge::Strips::const_iterator si;
 
@@ -1352,7 +1350,7 @@ pick_sheet_mate(const EggMesherStrip &a_strip,
  * Formats the vertex for output in some sensible way.
  */
 void EggMesherStrip::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_status) {
   case MS_alive:
     break;

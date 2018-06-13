@@ -13,8 +13,6 @@
 
 #include "p3dPythonObject.h"
 
-using std::ostream;
-using std::pair;
 using std::string;
 
 /**
@@ -182,7 +180,7 @@ set_property_insecure(const string &property, bool needs_response,
 bool P3DPythonObject::
 has_method(const string &method_name) {
   // First, check the cache.
-  pair<HasMethod::iterator, bool> cresult = _has_method.insert(HasMethod::value_type(method_name, false));
+  std::pair<HasMethod::iterator, bool> cresult = _has_method.insert(HasMethod::value_type(method_name, false));
   HasMethod::iterator hi = cresult.first;
   if (!cresult.second) {
     // Already cached.
@@ -285,7 +283,7 @@ call_insecure(const string &method_name, bool needs_response,
  * This is intended for developer assistance.
  */
 void P3DPythonObject::
-output(ostream &out) {
+output(std::ostream &out) {
   P3D_object *result = call("__repr__", true, nullptr, 0);
   out << "Python " << _object_id;
   if (result != nullptr) {

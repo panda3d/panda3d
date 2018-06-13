@@ -18,8 +18,6 @@
 #include "indent.h"
 #include "sliderTable.h"
 
-using std::ostream;
-
 TypeHandle VertexSlider::_type_handle;
 
 /**
@@ -42,7 +40,7 @@ VertexSlider::
  *
  */
 void VertexSlider::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << *get_name();
 }
 
@@ -50,7 +48,7 @@ output(ostream &out) const {
  *
  */
 void VertexSlider::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << " = " << get_slider() << "\n";
 }

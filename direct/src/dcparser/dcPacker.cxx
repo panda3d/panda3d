@@ -23,7 +23,6 @@
 #include "py_panda.h"
 #endif
 
-using std::cerr;
 using std::istream;
 using std::istringstream;
 using std::ostream;
@@ -793,7 +792,7 @@ pack_object(PyObject *object) {
           pack_object(element);
           Py_DECREF(element);
         } else {
-          cerr << "Unable to extract item " << i << " from sequence.\n";
+          std::cerr << "Unable to extract item " << i << " from sequence.\n";
         }
       }
       pop();
@@ -910,7 +909,7 @@ unpack_object() {
           // constructor, create the class object instead of just a tuple.
           object = unpack_class_object(dclass);
           if (object == nullptr) {
-            cerr << "Unable to construct object of class "
+            std::cerr << "Unable to construct object of class "
                  << dclass->get_name() << "\n";
           } else {
             break;

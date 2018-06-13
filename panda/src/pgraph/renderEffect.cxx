@@ -16,9 +16,6 @@
 #include "indent.h"
 #include "config_pgraph.h"
 
-using std::ostream;
-using std::pair;
-
 RenderEffect::Effects *RenderEffect::_effects = nullptr;
 TypeHandle RenderEffect::_type_handle;
 
@@ -154,7 +151,7 @@ adjust_transform(CPT(TransformState) &, CPT(TransformState) &,
  *
  */
 void RenderEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -162,7 +159,7 @@ output(ostream &out) const {
  *
  */
 void RenderEffect::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
@@ -184,7 +181,7 @@ get_num_effects() {
  * prepared.
  */
 void RenderEffect::
-list_effects(ostream &out) {
+list_effects(std::ostream &out) {
   out << _effects->size() << " effects:\n";
   Effects::const_iterator si;
   for (si = _effects->begin(); si != _effects->end(); ++si) {
@@ -250,7 +247,7 @@ return_new(RenderEffect *effect) {
   // of this function if no one else uses it.
   CPT(RenderEffect) pt_effect = effect;
 
-  pair<Effects::iterator, bool> result = _effects->insert(effect);
+  std::pair<Effects::iterator, bool> result = _effects->insert(effect);
   if (result.second) {
     // The effect was inserted; save the iterator and return the input effect.
     effect->_saved_entry = result.first;

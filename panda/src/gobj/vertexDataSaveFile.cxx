@@ -30,15 +30,12 @@
 
 using std::dec;
 using std::hex;
-using std::max;
-using std::ostringstream;
-using std::string;
 
 /**
  *
  */
 VertexDataSaveFile::
-VertexDataSaveFile(const Filename &directory, const string &prefix,
+VertexDataSaveFile(const Filename &directory, const std::string &prefix,
                    size_t max_size) :
   SimpleAllocator(max_size, _lock)
 {
@@ -56,12 +53,12 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
   int index = 0;
   while (true) {
     ++index;
-    ostringstream strm;
+    std::ostringstream strm;
     strm << prefix << "_" << index << ".dat";
 
-    string basename = strm.str();
+    std::string basename = strm.str();
     _filename = Filename(dir, basename);
-    string os_specific = _filename.to_os_specific();
+    std::string os_specific = _filename.to_os_specific();
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -207,7 +204,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
 
   PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::do_alloc(size);
   if (block != nullptr) {
-    _total_file_size = max(_total_file_size, block->get_start() + size);
+    _total_file_size = std::max(_total_file_size, block->get_start() + size);
     block->set_compressed(compressed);
 
 #ifdef _WIN32

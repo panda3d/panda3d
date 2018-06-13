@@ -26,21 +26,19 @@
 #include "odeLMotorJoint.h"
 #include "odeBody.h"
 
-using std::ostream;
-
 TypeHandle OdeJoint::_type_handle;
 
 OdeJoint::
 OdeJoint() :
   _id(nullptr) {
-  ostream &out = odejoint_cat.debug();
+  std::ostream &out = odejoint_cat.debug();
   out << get_type() << "(" << _id  << ")\n";
 }
 
 OdeJoint::
 OdeJoint(dJointID id) :
   _id(id) {
-  ostream &out = odejoint_cat.debug();
+  std::ostream &out = odejoint_cat.debug();
   out << get_type() << "(" << _id  << ")\n";
 }
 
@@ -97,7 +95,7 @@ get_body(int index) const {
 }
 
 void OdeJoint::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() \
                          << "(id = " << _id \
                          << ", body1 = ";

@@ -13,16 +13,14 @@
 
 #include "eggToSomething.h"
 
-using std::string;
-
 /**
  * The first parameter to the constructor should be the one-word name of the
  * file format that is to be read, for instance "OpenFlight" or "Alias".  It's
  * just used in printing error messages and such.
  */
 EggToSomething::
-EggToSomething(const string &format_name,
-               const string &preferred_extension,
+EggToSomething(const std::string &format_name,
+               const std::string &preferred_extension,
                bool allow_last_param, bool allow_stdout) :
   EggConverter(format_name, preferred_extension, allow_last_param,
                allow_stdout)
@@ -36,7 +34,7 @@ EggToSomething(const string &format_name,
     add_runline("[opts] input.egg >output" + _preferred_extension);
   }
 
-  string o_description;
+  std::string o_description;
 
   if (_allow_stdout) {
     if (_allow_last_param) {

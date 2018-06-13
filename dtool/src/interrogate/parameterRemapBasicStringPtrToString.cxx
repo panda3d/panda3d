@@ -14,7 +14,6 @@
 #include "parameterRemapBasicStringPtrToString.h"
 #include "interrogate.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -37,7 +36,7 @@ ParameterRemapBasicStringPtrToString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicStringPtrToString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "&std::string(" << variable_name << ")";
 }
 
@@ -70,7 +69,7 @@ ParameterRemapBasicWStringPtrToWString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicWStringPtrToWString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "&std::wstring(" << variable_name << ")";
 }
 

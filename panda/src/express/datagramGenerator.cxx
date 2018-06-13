@@ -16,8 +16,6 @@
 #include "datagramGenerator.h"
 #include "temporaryFile.h"
 
-using std::streampos;
-
 /**
  * Does nothing since this is class is just the definition of an interface
  */
@@ -88,7 +86,7 @@ get_vfile() {
  * pointing to the first byte following the datagram returned after a call to
  * get_datagram().
  */
-streampos DatagramGenerator::
+std::streampos DatagramGenerator::
 get_file_pos() {
   return 0;
 }

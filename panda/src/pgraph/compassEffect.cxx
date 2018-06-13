@@ -20,8 +20,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle CompassEffect::_type_handle;
 
 /**
@@ -52,7 +50,7 @@ safe_to_transform() const {
  *
  */
 void CompassEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_properties == 0) {
     out << " none";

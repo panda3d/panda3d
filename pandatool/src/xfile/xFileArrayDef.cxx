@@ -15,8 +15,6 @@
 #include "xFileDataDef.h"
 #include "xFileDataObject.h"
 
-using std::ostream;
-
 /**
  * Returns the size of the array dimension.  If this is a fixed array, the
  * size is trivial; if it is dynamic, the size is determined by looking up the
@@ -40,7 +38,7 @@ get_size(const XFileNode::PrevData &prev_data) const {
  *
  */
 void XFileArrayDef::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_fixed_size()) {
     out << "[" << _fixed_size << "]";
   } else {

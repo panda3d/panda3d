@@ -30,9 +30,6 @@
 #include "boundingBox.h"
 #include "config_mathutil.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle CollisionNode::_type_handle;
 
 
@@ -40,7 +37,7 @@ TypeHandle CollisionNode::_type_handle;
  *
  */
 CollisionNode::
-CollisionNode(const string &name) :
+CollisionNode(const std::string &name) :
   PandaNode(name),
   _from_collide_mask(get_default_collide_mask()),
   _collider_sort(0)
@@ -255,7 +252,7 @@ is_collision_node() const {
  * classes to include some information relevant to the class.
  */
 void CollisionNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " (" << _solids.size() << " solids)";
 }

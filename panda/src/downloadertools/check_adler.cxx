@@ -11,20 +11,16 @@
 
 #include "download_utils.h"
 
-using std::cerr;
-using std::cout;
-using std::endl;
-
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cerr << "Usage: check_adler <file>" << endl;
+    std::cerr << "Usage: check_adler <file>" << std::endl;
     return 1;
   }
 
   Filename source_file = argv[1];
 
-  cout << check_adler(source_file);
+  std::cout << check_adler(source_file);
 
   return 0;
 }

@@ -20,8 +20,6 @@
 #include "graphicsStateGuardian.h"
 #include "sceneSetup.h"
 
-using std::ostream;
-
 TypeHandle DisplayRegionDrawCallbackData::_type_handle;
 
 
@@ -39,7 +37,7 @@ DisplayRegionDrawCallbackData(CullResult *cull_result, SceneSetup *scene_setup) 
  *
  */
 void DisplayRegionDrawCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_cull_result << ", "
       << (void *)_scene_setup << ")";
 }

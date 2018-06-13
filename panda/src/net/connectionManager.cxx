@@ -33,14 +33,8 @@
 #include <ifaddrs.h>
 #endif
 
-using std::hex;
-using std::min;
-using std::ostream;
-using std::setfill;
-using std::setw;
 using std::stringstream;
 using std::string;
-using std::wstring;
 
 /**
  *
@@ -421,7 +415,7 @@ wait_for_readers(double timeout) {
 
     double wait_timeout = get_net_max_block();
     if (!block_forever) {
-      wait_timeout = min(wait_timeout, stop - now);
+      wait_timeout = std::min(wait_timeout, stop - now);
     }
 
     uint32_t wait_timeout_ms = (uint32_t)(wait_timeout * 1000.0);
@@ -498,7 +492,7 @@ scan_interfaces() {
         // p->AdapterName appears to be a GUID.  Not sure if this is actually
         // useful to anyone; we'll store the "friendly name" instead.
         TextEncoder encoder;
-        encoder.set_wtext(wstring(p->FriendlyName));
+        encoder.set_wtext(std::wstring(p->FriendlyName));
         string friendly_name = encoder.get_text();
 
         Interface iface;
@@ -725,12 +719,12 @@ remove_writer(ConnectionWriter *writer) {
  */
 string ConnectionManager::
 format_mac_address(const unsigned char *data, size_t data_size) {
-  stringstream strm;
+  std::stringstream strm;
   for (size_t di = 0; di < data_size; ++di) {
     if (di != 0) {
       strm << "-";
     }
-    strm << hex << setw(2) << setfill('0') << (unsigned int)data[di];
+    strm << std::hex << std::setw(2) << std::setfill('0') << (unsigned int)data[di];
   }
 
   return strm.str();
@@ -740,7 +734,7 @@ format_mac_address(const unsigned char *data, size_t data_size) {
  *
  */
 void ConnectionManager::Interface::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << " [";
   if (has_ip()) {
     out << " " << get_ip().get_ip_string();

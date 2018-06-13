@@ -47,8 +47,6 @@
 
 #define TOSTRING(x) (x == nullptr ? "" : x)
 
-using std::string;
-
 /**
  *
  */
@@ -78,7 +76,7 @@ bool ColladaLoader::
 read(const Filename &filename) {
   _filename = filename;
 
-  string data;
+  std::string data;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   if (!vfs->read_file(_filename, data, true)) {
@@ -301,7 +299,7 @@ load_tags(domExtra &extra, PandaNode *node) {
         daeElement &child = *children[c];
 
         if (cmp_nocase(child.getElementName(), "tag") == 0) {
-          const string &name = child.getAttribute("name");
+          const std::string &name = child.getAttribute("name");
           if (name.size() > 0) {
             node->set_tag(name, child.getCharData());
           } else {

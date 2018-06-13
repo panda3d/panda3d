@@ -14,10 +14,6 @@
 #include "documentSpec.h"
 #include "indent.h"
 
-using std::istream;
-using std::ostream;
-using std::string;
-
 
 /**
  *
@@ -55,7 +51,7 @@ compare_to(const DocumentSpec &other) const {
  * output() or write().  Returns true on success, false on failure.
  */
 bool DocumentSpec::
-input(istream &in) {
+input(std::istream &in) {
   // First, clear the spec.
   (*this) = DocumentSpec();
 
@@ -68,7 +64,7 @@ input(istream &in) {
   in >> ch;
   if (ch == '(') {
     // Scan the tag, up to but not including the closing paren.
-    string tag;
+    std::string tag;
     in >> ch;
     while (!in.fail() && !in.eof() && ch != ')') {
       tag += ch;
@@ -84,7 +80,7 @@ input(istream &in) {
 
   // Scan the date, up to but not including the closing bracket.
   if (ch != ']') {
-    string date;
+    std::string date;
     while (!in.fail() && !in.eof() && ch != ']') {
       date += ch;
       ch = in.get();
@@ -103,7 +99,7 @@ input(istream &in) {
  *
  */
 void DocumentSpec::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ " << get_url();
   if (has_tag()) {
     out << " (" << get_tag() << ")";
@@ -118,7 +114,7 @@ output(ostream &out) const {
  *
  */
 void DocumentSpec::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "[ " << get_url();
   if (has_tag()) {

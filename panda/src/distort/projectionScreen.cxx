@@ -24,15 +24,13 @@
 #include "config_distort.h"
 #include "cullTraverserData.h"
 
-using std::string;
-
 TypeHandle ProjectionScreen::_type_handle;
 
 /**
  *
  */
 ProjectionScreen::
-ProjectionScreen(const string &name) : PandaNode(name)
+ProjectionScreen(const std::string &name) : PandaNode(name)
 {
   set_cull_callback();
 
@@ -153,7 +151,7 @@ set_projector(const NodePath &projector) {
  * fraction, and make the screen smaller by the inverse fraction.
  */
 PT(GeomNode) ProjectionScreen::
-generate_screen(const NodePath &projector, const string &screen_name,
+generate_screen(const NodePath &projector, const std::string &screen_name,
                 int num_x_verts, int num_y_verts, PN_stdfloat distance,
                 PN_stdfloat fill_ratio) {
   nassertr(!projector.is_empty() &&
@@ -239,7 +237,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
  * generated child returned by generate_screen().
  */
 void ProjectionScreen::
-regenerate_screen(const NodePath &projector, const string &screen_name,
+regenerate_screen(const NodePath &projector, const std::string &screen_name,
                   int num_x_verts, int num_y_verts, PN_stdfloat distance,
                   PN_stdfloat fill_ratio) {
   // First, remove all existing children.

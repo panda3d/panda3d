@@ -18,15 +18,13 @@
 
 #include "omniBoundingVolume.h"
 
-using std::string;
-
 TypeHandle PGTop::_type_handle;
 
 /**
  *
  */
 PGTop::
-PGTop(const string &name) :
+PGTop(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();

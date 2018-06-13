@@ -19,7 +19,6 @@
 #include "cppTBDType.h"
 #include "cppStructType.h"
 
-using std::ostream;
 using std::string;
 
 
@@ -549,7 +548,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPIdentifier::
-output(ostream &out, CPPScope *scope) const {
+output(std::ostream &out, CPPScope *scope) const {
   if (scope == nullptr) {
     output_fully_scoped_name(out);
   } else {
@@ -562,7 +561,7 @@ output(ostream &out, CPPScope *scope) const {
  *
  */
 void CPPIdentifier::
-output_local_name(ostream &out, CPPScope *scope) const {
+output_local_name(std::ostream &out, CPPScope *scope) const {
   assert(!_names.empty());
 
   if (scope == nullptr || (_native_scope == nullptr && _names.size() == 1)) {
@@ -586,7 +585,7 @@ output_local_name(ostream &out, CPPScope *scope) const {
  *
  */
 void CPPIdentifier::
-output_fully_scoped_name(ostream &out) const {
+output_fully_scoped_name(std::ostream &out) const {
   if (_native_scope != nullptr) {
     _native_scope->output(out, nullptr);
     out << "::";

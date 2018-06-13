@@ -21,8 +21,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle CharacterJointEffect::_type_handle;
 
 /**
@@ -89,7 +87,7 @@ safe_to_combine() const {
  *
  */
 void CharacterJointEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   PT(Character) character = get_character();
   if (character != nullptr) {

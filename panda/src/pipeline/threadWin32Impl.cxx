@@ -20,9 +20,6 @@
 #include "pointerTo.h"
 #include "config_pipeline.h"
 
-using std::ostringstream;
-using std::string;
-
 DWORD ThreadWin32Impl::_pt_ptr_index = 0;
 bool ThreadWin32Impl::_got_pt_ptr_index = false;
 
@@ -128,9 +125,9 @@ join() {
 /**
  *
  */
-string ThreadWin32Impl::
+std::string ThreadWin32Impl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << GetCurrentProcessId() << "." << _thread_id;
 
   return strm.str();

@@ -13,7 +13,6 @@
 
 #include "physxGroupsMask.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -123,7 +122,7 @@ get_bit(unsigned int idx) const {
  * Writes the PhysxGroupsMask out as a list of ones and zeros.
  */
 void PhysxGroupsMask::
-output(ostream &out) const {
+output(std::ostream &out) const {
 
   string name0;
   string name1;

@@ -19,9 +19,6 @@
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -38,7 +35,7 @@ ParameterRemapEnumToInt(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapEnumToInt::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const std::string &variable_name) {
   out << "(" << _enum_type->get_local_name(&parser) << ")" << variable_name;
 }
 
@@ -46,8 +43,8 @@ pass_parameter(ostream &out, const string &variable_name) {
  * Returns an expression that evalutes to the appropriate value type for
  * returning from the function, given an expression of the original type.
  */
-string ParameterRemapEnumToInt::
-get_return_expr(const string &expression) {
+std::string ParameterRemapEnumToInt::
+get_return_expr(const std::string &expression) {
   return "(int)(" + expression + ")";
 }
 

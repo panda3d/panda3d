@@ -16,9 +16,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle ClientDevice::_type_handle;
 
 /**
@@ -26,7 +23,7 @@ TypeHandle ClientDevice::_type_handle;
  */
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type,
-             const string &device_name) :
+             const std::string &device_name) :
   _client(client),
   _device_type(device_type),
   _device_name(device_name)
@@ -90,7 +87,7 @@ poll() {
  *
  */
 void ClientDevice::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_device_name();
 }
 
@@ -98,6 +95,6 @@ output(ostream &out) const {
  *
  */
 void ClientDevice::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

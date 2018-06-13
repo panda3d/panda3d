@@ -16,8 +16,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::ostream;
-
 TypeHandle MatrixLens::_type_handle;
 
 
@@ -43,7 +41,7 @@ is_linear() const {
  *
  */
 void MatrixLens::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":\n";
   get_projection_mat().write(out, indent_level + 2);
 }

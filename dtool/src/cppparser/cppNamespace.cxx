@@ -16,9 +16,6 @@
 #include "cppScope.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -34,7 +31,7 @@ CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
 /**
  *
  */
-string CPPNamespace::
+std::string CPPNamespace::
 get_simple_name() const {
   if (_ident == nullptr) {
     return "";
@@ -45,7 +42,7 @@ get_simple_name() const {
 /**
  *
  */
-string CPPNamespace::
+std::string CPPNamespace::
 get_local_name(CPPScope *scope) const {
   if (_ident == nullptr) {
     return "";
@@ -56,7 +53,7 @@ get_local_name(CPPScope *scope) const {
 /**
  *
  */
-string CPPNamespace::
+std::string CPPNamespace::
 get_fully_scoped_name() const {
   if (_ident == nullptr) {
     return "";
@@ -76,7 +73,7 @@ get_scope() const {
  *
  */
 void CPPNamespace::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (_is_inline) {
     out << "inline ";
   }

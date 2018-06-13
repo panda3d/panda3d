@@ -15,8 +15,6 @@
 #include "lerp_helpers.h"
 #include "partBundle.h"
 
-using std::ostream;
-
 TypeHandle CLerpAnimEffectInterval::_type_handle;
 
 /**
@@ -45,7 +43,7 @@ priv_step(double t) {
  *
  */
 void CLerpAnimEffectInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ": ";
 
   if (_controls.empty()) {

@@ -18,8 +18,6 @@
 #include "virtualFileSystem.h"
 #include "ca_bundle_data_src.c"
 
-using std::string;
-
 OpenSSLWrapper *OpenSSLWrapper::_global_ptr = nullptr;
 
 /**
@@ -65,7 +63,7 @@ OpenSSLWrapper() {
 
   int num_certs = ssl_certificates.get_num_unique_values();
   for (int ci = 0; ci < num_certs; ci++) {
-    string cert_file = ssl_certificates.get_unique_value(ci);
+    std::string cert_file = ssl_certificates.get_unique_value(ci);
     Filename filename = Filename::expand_from(cert_file);
     load_certificates(filename);
   }
@@ -110,7 +108,7 @@ load_certificates(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   // First, read the complete file into memory.
-  string data;
+  std::string data;
   if (!vfs->read_file(filename, data, true)) {
     // Could not find or read file.
     express_cat.info()

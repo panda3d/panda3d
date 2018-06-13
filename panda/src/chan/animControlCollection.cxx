@@ -13,7 +13,6 @@
 
 #include "animControlCollection.h"
 
-using std::ostream;
 using std::string;
 
 
@@ -255,7 +254,7 @@ which_anim_playing() const {
  *
  */
 void AnimControlCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _controls.size() << " anims.";
 }
 
@@ -263,7 +262,7 @@ output(ostream &out) const {
  *
  */
 void AnimControlCollection::
-write(ostream &out) const {
+write(std::ostream &out) const {
   ControlsByName::const_iterator ci;
   for (ci = _controls_by_name.begin();
        ci != _controls_by_name.end();

@@ -24,9 +24,6 @@
 #include <windows.h>
 #endif
 
-using std::max;
-using std::ostream;
-
 bool ThreadSimpleManager::_pointers_initialized;
 ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 
@@ -380,7 +377,7 @@ system_sleep(double seconds) {
  * Writes a list of threads running and threads blocked.
  */
 void ThreadSimpleManager::
-write_status(ostream &out) const {
+write_status(std::ostream &out) const {
   out << "Currently running: " << *_current_thread->_parent_obj << "\n";
 
   out << "Ready:";
@@ -666,7 +663,7 @@ do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
 
   // Clamp the elapsed time at 0.  (If it's less than 0, the clock is running
   // backwards, ick.)
-  elapsed = max(elapsed, 0.0);
+  elapsed = std::max(elapsed, 0.0);
 
   unsigned int ticks = (unsigned int)(elapsed * _tick_scale + 0.5);
   thread->_run_ticks += ticks;

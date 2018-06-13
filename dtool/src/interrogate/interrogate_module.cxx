@@ -28,8 +28,6 @@
 #include <algorithm>
 
 using std::cerr;
-using std::move;
-using std::ostream;
 using std::string;
 
 Filename output_code_filename;
@@ -154,7 +152,7 @@ static bool print_dependent_types(const string &lib1, const string &lib2) {
   return false;
 }
 
-int write_python_table_native(ostream &out) {
+int write_python_table_native(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#include \"py_panda.h\"\n\n";
@@ -197,7 +195,7 @@ int write_python_table_native(ostream &out) {
               interrogate_type_has_library_name(basetype)) {
             string baselib = interrogate_type_library_name(basetype);
             if (baselib != library_name) {
-              deps.insert(move(baselib));
+              deps.insert(std::move(baselib));
             }
           }
         }
@@ -208,7 +206,7 @@ int write_python_table_native(ostream &out) {
               interrogate_type_has_library_name(wrapped)) {
             string wrappedlib = interrogate_type_library_name(wrapped);
             if (wrappedlib != library_name) {
-              deps.insert(move(wrappedlib));
+              deps.insert(std::move(wrappedlib));
             }
           }
         }
@@ -425,7 +423,7 @@ int write_python_table_native(ostream &out) {
   return count;
 }
 
-int write_python_table(ostream &out) {
+int write_python_table(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"

@@ -15,14 +15,12 @@
 
 #ifndef DEBUG_THREADS
 
-using std::ostream;
-
 /**
  * This method is declared virtual in ConditionVarDebug, but non-virtual in
  * ConditionVarDirect.
  */
 void ConditionVarDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConditionVar " << (void *)this << " on " << _mutex;
 }
 

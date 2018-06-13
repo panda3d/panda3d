@@ -17,8 +17,6 @@
 #include "dcast.h"
 #include "indent.h"
 
-using std::ostream;
-
 TypeHandle LwoSurfaceBlockImage::_type_handle;
 
 /**
@@ -40,7 +38,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceBlockImage::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { index = " << _index << " }\n";
 }

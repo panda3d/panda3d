@@ -13,7 +13,6 @@
 
 #include "pmap.h"
 
-using std::endl;
 using std::ostream;
 using std::string;
 
@@ -131,7 +130,7 @@ consolidateTo(ostream &out) const {
     << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 void ProfileTimer::
@@ -160,7 +159,7 @@ printTo(ostream &out) const {
     << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :

@@ -20,8 +20,6 @@
 
 #include <algorithm>
 
-using std::string;
-
 
 TypeHandle CullBinFrontToBack::_type_handle;
 
@@ -41,7 +39,7 @@ CullBinFrontToBack::
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFrontToBack::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
   return new CullBinFrontToBack(name, gsg, draw_region_pcollector);
 }

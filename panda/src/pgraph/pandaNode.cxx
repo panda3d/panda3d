@@ -28,7 +28,6 @@
 #include "lightReMutexHolder.h"
 #include "graphicsStateGuardianBase.h"
 
-using std::move;
 using std::ostream;
 using std::ostringstream;
 using std::string;
@@ -2123,7 +2122,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, move(data), reader)) {
+  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, std::move(data), reader)) {
     return DCAST(PandaNode, object);
   } else {
     return nullptr;

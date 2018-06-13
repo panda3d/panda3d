@@ -19,8 +19,6 @@
 #include "p3dInstanceManager.h"
 #include <string.h>  // strncpy
 
-using std::ostream;
-using std::ostringstream;
 using std::string;
 
 // The following functions are C-style wrappers around the below P3DObject
@@ -235,7 +233,7 @@ get_string(char *buffer, int buffer_length) {
  */
 int P3DObject::
 get_repr(char *buffer, int buffer_length) {
-  ostringstream strm;
+  std::ostringstream strm;
   output(strm);
   string result = strm.str();
   strncpy(buffer, result.c_str(), buffer_length);
@@ -296,7 +294,7 @@ eval(const string &expression) {
  * This is intended for developer assistance.
  */
 void P3DObject::
-output(ostream &out) {
+output(std::ostream &out) {
   string value;
   make_string(value);
   out << value;

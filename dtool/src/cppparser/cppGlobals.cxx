@@ -13,6 +13,4 @@
 
 #include "cppGlobals.h"
 
-using std::string;
-
-string cpp_longlong_keyword;
+std::string cpp_longlong_keyword;

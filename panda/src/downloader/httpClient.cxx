@@ -26,9 +26,6 @@
 
 #include "openSSLWrapper.h"
 
-using std::ostream;
-using std::ostringstream;
-using std::pair;
 using std::string;
 
 PT(HTTPClient) HTTPClient::_global_ptr;
@@ -83,7 +80,7 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 static void
 ssl_msg_callback(int write_p, int version, int content_type,
                  const void *, size_t len, SSL *, void *) {
-  ostringstream describe;
+  std::ostringstream describe;
   if (write_p) {
     describe << "sent ";
   } else {
@@ -706,7 +703,7 @@ set_cookie(const HTTPCookie &cookie) {
     clear_cookie(cookie);
 
   } else {
-    pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
+    std::pair<Cookies::iterator, bool> result = _cookies.insert(cookie);
     if (!result.second) {
       // We already had a cookie matching the supplied domainpathname, so
       // replace it.
@@ -783,7 +780,7 @@ copy_cookies_from(const HTTPClient &other) {
  * host).
  */
 void HTTPClient::
-write_cookies(ostream &out) const {
+write_cookies(std::ostream &out) const {
   Cookies::const_iterator ci;
   for (ci = _cookies.begin(); ci != _cookies.end(); ++ci) {
     out << *ci << "\n";
@@ -796,7 +793,7 @@ write_cookies(ostream &out) const {
  * also removes expired cookies.
  */
 void HTTPClient::
-send_cookies(ostream &out, const URLSpec &url) {
+send_cookies(std::ostream &out, const URLSpec &url) {
   HTTPDate now = HTTPDate::now();
   bool any_expired = false;
   bool first_cookie = true;

@@ -21,8 +21,6 @@
 
 #include "throw_event.h"
 
-using std::ostream;
-
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
 const int OdeSpace::MAX_CONTACTS = 16;
@@ -97,7 +95,7 @@ get_geom(int i) {
 
 
 void OdeSpace::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() << "(id = " << _id << ")";
 }
 

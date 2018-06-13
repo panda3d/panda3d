@@ -17,10 +17,6 @@
 
 #ifdef HAVE_FREETYPE
 
-using std::min;
-using std::ostringstream;
-
-
 TypeHandle DynamicTextPage::_type_handle;
 
 /**
@@ -43,7 +39,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   setup_2d_texture(_size[0], _size[1], T_unsigned_byte, font->get_tex_format());
 
   // Assign a name to the Texture.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << font->get_name() << "_" << page_number;
   set_name(strm.str());
 
@@ -218,7 +214,7 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       }
 
       next_x = overlap->_x + overlap->_x_size;
-      next_y = min(next_y, overlap->_y + overlap->_y_size);
+      next_y = std::min(next_y, overlap->_y + overlap->_y_size);
       nassertr(next_x > x, false);
       x = next_x;
     }

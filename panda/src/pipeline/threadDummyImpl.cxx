@@ -25,16 +25,13 @@
 #include <windows.h>
 #endif
 
-using std::ostringstream;
-using std::string;
-
 /**
  *
  */
-string ThreadDummyImpl::
+std::string ThreadDummyImpl::
 get_unique_id() const {
   // In a single-threaded application, this is just the unique process ID.
-  ostringstream strm;
+  std::ostringstream strm;
 #ifdef WIN32
   strm << GetCurrentProcessId();
 #else

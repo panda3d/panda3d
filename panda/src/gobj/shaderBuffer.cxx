@@ -14,8 +14,6 @@
 #include "shaderBuffer.h"
 #include "preparedGraphicsObjects.h"
 
-using std::ostream;
-
 TypeHandle ShaderBuffer::_type_handle;
 
 /**
@@ -30,7 +28,7 @@ ShaderBuffer::
  *
  */
 void ShaderBuffer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "buffer " << get_name() << ", " << _data_size_bytes << "B, " << _usage_hint;
 }
 

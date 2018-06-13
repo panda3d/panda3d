@@ -13,14 +13,12 @@
 
 #include "dxfLayer.h"
 
-using std::string;
-
 
 /**
  *
  */
 DXFLayer::
-DXFLayer(const string &name) : Namable(name) {
+DXFLayer(const std::string &name) : Namable(name) {
 }
 
 /**

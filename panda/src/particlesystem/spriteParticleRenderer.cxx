@@ -32,8 +32,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
-using std::string;
 
 PStatCollector SpriteParticleRenderer::_render_collector("App:Particles:Sprite:Render");
 
@@ -194,7 +192,7 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
  * match the new geometry.
  */
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels) {
+set_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels) {
   // Clear all texture information
   _anims.clear();
   add_from_node(node_path,model,node,size_from_texels,true);
@@ -246,7 +244,7 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
  * now on.  (Default is false)
  */
 void SpriteParticleRenderer::
-add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels, bool resize) {
+add_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels, bool resize) {
   int anim_count = _anims.size();
   if (anim_count == 0)
     resize = true;
@@ -749,7 +747,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void SpriteParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"SpriteParticleRenderer";
   #endif //] NDEBUG
@@ -759,7 +757,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void SpriteParticleRenderer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "SpriteParticleRenderer:\n";
   // indent(out, indent_level + 2) << "_sprite_primitive
   // "<<_sprite_primitive<<"\n";

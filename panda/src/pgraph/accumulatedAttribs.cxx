@@ -22,8 +22,6 @@
 #include "cullFaceAttrib.h"
 #include "config_pgraph.h"
 
-using std::ostream;
-
 
 /**
  *
@@ -87,7 +85,7 @@ operator = (const AccumulatedAttribs &copy) {
  *
  */
 void AccumulatedAttribs::
-write(ostream &out, int attrib_types, int indent_level) const {
+write(std::ostream &out, int attrib_types, int indent_level) const {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
     _transform->write(out, indent_level);
   }

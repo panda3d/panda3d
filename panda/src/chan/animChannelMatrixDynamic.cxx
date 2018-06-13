@@ -22,8 +22,6 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-using std::string;
-
 TypeHandle AnimChannelMatrixDynamic::_type_handle;
 
 /**
@@ -51,7 +49,7 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
  *
  */
 AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic(const string &name)
+AnimChannelMatrixDynamic(const std::string &name)
   : AnimChannelMatrix(name)
 {
   _value = TransformState::make_identity();

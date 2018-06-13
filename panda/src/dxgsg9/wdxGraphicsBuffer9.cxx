@@ -21,8 +21,6 @@
 
 using std::cout;
 using std::endl;
-using std::list;
-using std::string;
 
 TypeHandle wdxGraphicsBuffer9::_type_handle;
 
@@ -32,7 +30,7 @@ TypeHandle wdxGraphicsBuffer9::_type_handle;
  */
 wdxGraphicsBuffer9::
 wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const string &name,
+                   const std::string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
@@ -99,7 +97,7 @@ wdxGraphicsBuffer9::
   // unshare all buffers that are sharing this object's depth buffer
   {
     wdxGraphicsBuffer9 *graphics_buffer;
-    list <wdxGraphicsBuffer9 *>::iterator graphics_buffer_iterator;
+    std::list <wdxGraphicsBuffer9 *>::iterator graphics_buffer_iterator;
 
     graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     while (graphics_buffer_iterator != _shared_depth_buffer_list.end( )) {

@@ -31,8 +31,6 @@
 #include "geomVertexWriter.h"
 #include "look_at.h"
 
-using std::ostream;
-
 TypeHandle CollisionSegment::_type_handle;
 
 
@@ -77,7 +75,7 @@ get_collision_origin() const {
  *
  */
 void CollisionSegment::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "segment, a (" << _a << "), b (" << _b << ")";
 }
 

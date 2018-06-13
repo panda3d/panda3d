@@ -29,8 +29,6 @@
 #include "depthOffsetAttrib.h"
 #include "colorBlendAttrib.h"
 
-using std::swap;
-
 TypeHandle CullResult::_type_handle;
 
 /*
@@ -361,7 +359,7 @@ make_new_bin(int bin_index) {
     nassertr(bin_index >= 0 && bin_index < (int)_bins.size(), nullptr);
 
     // Prevent unnecessary refunref by swapping the PointerTos.
-    swap(_bins[bin_index], bin);
+    std::swap(_bins[bin_index], bin);
   }
 
   return bin_ptr;

@@ -20,9 +20,6 @@
 #include "cppPointerType.h"
 #include "cppReferenceType.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -38,7 +35,7 @@ ParameterRemapReferenceToPointer(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapReferenceToPointer::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const std::string &variable_name) {
   if (variable_name.size() > 1 && variable_name[0] == '&') {
     // Prevent generating something like *&param Also, if this is really some
     // local type, we can presumably just move it?  This is only relevant if
@@ -55,7 +52,7 @@ pass_parameter(ostream &out, const string &variable_name) {
  * Returns an expression that evalutes to the appropriate value type for
  * returning from the function, given an expression of the original type.
  */
-string ParameterRemapReferenceToPointer::
-get_return_expr(const string &expression) {
+std::string ParameterRemapReferenceToPointer::
+get_return_expr(const std::string &expression) {
   return "&(" + expression + ")";
 }

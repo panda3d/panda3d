@@ -19,9 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle DirectionalLight::_type_handle;
 
 /**
@@ -58,7 +55,7 @@ fillin(DatagramIterator &scan, BamReader *) {
  *
  */
 DirectionalLight::
-DirectionalLight(const string &name) :
+DirectionalLight(const std::string &name) :
   LightLensNode(name, new OrthographicLens()) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
@@ -101,7 +98,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void DirectionalLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)
     << "color " << get_color() << "\n";

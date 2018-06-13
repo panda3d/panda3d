@@ -18,8 +18,6 @@
 #include "tinyGraphicsStateGuardian.h"
 #include "pStatTimer.h"
 
-using std::string;
-
 TypeHandle TinyGraphicsBuffer::_type_handle;
 
 /**
@@ -27,7 +25,7 @@ TypeHandle TinyGraphicsBuffer::_type_handle;
  */
 TinyGraphicsBuffer::
 TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const string &name,
+                   const std::string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,

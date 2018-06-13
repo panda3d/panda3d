@@ -18,8 +18,6 @@
 
 #include "pnotify.h"
 
-using std::ostringstream;
-
 /**
  * This constructor creates a header based on an already-constructed
  * NetDatagram.
@@ -75,7 +73,7 @@ verify_datagram(const NetDatagram &datagram) const {
     // We write the hex dump into a ostringstream first, to guarantee an
     // atomic write to the output stream in case we're threaded.
 
-    ostringstream hex;
+    std::ostringstream hex;
     datagram.dump_hex(hex);
     hex << "\n";
     net_cat.debug(false) << hex.str();

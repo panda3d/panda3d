@@ -15,14 +15,12 @@
 
 #ifndef DEBUG_THREADS
 
-using std::ostream;
-
 /**
  * This method is declared virtual in LightMutexDebug, but non-virtual in
  * LightMutexDirect.
  */
 void LightMutexDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LightMutex " << (void *)this;
 }
 

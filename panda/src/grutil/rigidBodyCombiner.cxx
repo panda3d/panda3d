@@ -23,8 +23,6 @@
 #include "omniBoundingVolume.h"
 #include "cullTraverserData.h"
 
-using std::string;
-
 TypeHandle RigidBodyCombiner::_type_handle;
 
 
@@ -32,7 +30,7 @@ TypeHandle RigidBodyCombiner::_type_handle;
  *
  */
 RigidBodyCombiner::
-RigidBodyCombiner(const string &name) : PandaNode(name) {
+RigidBodyCombiner(const std::string &name) : PandaNode(name) {
   set_cull_callback();
 
   _internal_root = new PandaNode(name);

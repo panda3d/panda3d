@@ -14,8 +14,6 @@
 #include "config_awesomium.h"
 #include "WebBrowserTexture.h"
 
-using std::string;
-
 TypeHandle WebBrowserTexture::_type_handle;
 
 /**
@@ -35,7 +33,7 @@ Texture(copy)
 /**
  * This initializes a web browser texture with the given AwWebView class.
  */
-WebBrowserTexture::WebBrowserTexture(const string &name, AwWebView* aw_web_view):
+WebBrowserTexture::WebBrowserTexture(const std::string &name, AwWebView* aw_web_view):
 Texture(name),
 _update_active(true),
 _flip_texture_active(false)

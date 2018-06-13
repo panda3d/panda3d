@@ -62,7 +62,6 @@
 
 using std::ios;
 using std::istream;
-using std::streampos;
 using std::string;
 
 static const char *const stb_extensions[] = {
@@ -305,7 +304,7 @@ read_pfm(PfmFile &pfm) {
   } else {
     // We need to reinitialize the context.
     _file->seekg(0, ios::beg);
-    if (_file->tellg() != (streampos)0) {
+    if (_file->tellg() != (std::streampos)0) {
       pnmimage_cat.error()
         << "Could not reposition file pointer to the beginning.\n";
       return false;
@@ -487,7 +486,7 @@ read_data(xel *array, xelval *alpha) {
   } else {
     // We need to reinitialize the context.
     _file->seekg(0, ios::beg);
-    if (_file->tellg() != (streampos)0) {
+    if (_file->tellg() != (std::streampos)0) {
       pnmimage_cat.error()
         << "Could not reposition file pointer to the beginning.\n";
       return false;

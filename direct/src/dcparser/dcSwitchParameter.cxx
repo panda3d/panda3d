@@ -15,7 +15,6 @@
 #include "dcSwitch.h"
 #include "hashGenerator.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -156,7 +155,7 @@ apply_switch(const char *value_data, size_t length) const {
  * identifier.
  */
 void DCSwitchParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
@@ -171,7 +170,7 @@ output_instance(ostream &out, bool brief, const string &prename,
  * identifier.
  */
 void DCSwitchParameter::
-write_instance(ostream &out, bool brief, int indent_level,
+write_instance(std::ostream &out, bool brief, int indent_level,
                const string &prename, const string &name,
                const string &postname) const {
   if (get_typedef() != nullptr) {

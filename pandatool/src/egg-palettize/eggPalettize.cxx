@@ -26,9 +26,6 @@
 
 #include <stdio.h>
 
-using std::istringstream;
-using std::string;
-
 /**
  *
  */
@@ -699,7 +696,7 @@ run() {
   bool okflag = true;
 
   if (_got_txa_script) {
-    istringstream txa_script(_txa_script);
+    std::istringstream txa_script(_txa_script);
     pal->read_txa_file(txa_script, "command line");
 
   } else {
@@ -760,13 +757,13 @@ run() {
   // And process the egg files named for addition.
   bool all_eggs_valid = true;
 
-  string egg_comment = get_exec_command();
+  std::string egg_comment = get_exec_command();
   Eggs::const_iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *egg_data = (*ei);
     Filename source_filename = egg_data->get_egg_filename();
     Filename dest_filename = get_output_filename(source_filename);
-    string name = source_filename.get_basename();
+    std::string name = source_filename.get_basename();
 
     EggFile *egg_file = pal->get_egg_file(name);
     if (!egg_file->from_command_line(egg_data, source_filename, dest_filename,
@@ -837,7 +834,7 @@ run() {
     // state file into place.  We do this in case the user interrupts us (or
     // we core dump) before we're done; that way we won't leave the state file
     // incompletely written.
-    string dirname = state_filename.get_dirname();
+    std::string dirname = state_filename.get_dirname();
     if (dirname.empty()) {
       dirname = ".";
     }

@@ -13,8 +13,6 @@
 
 #include "texturePeeker.h"
 
-using std::endl;
-
 
 /**
  * Use Texture::peek() to construct a TexturePeeker.
@@ -180,7 +178,7 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   default:
     // Not supported.
     gobj_cat.error() << "Unsupported texture peeker format: "
-      << Texture::format_format(_format) << endl;
+      << Texture::format_format(_format) << std::endl;
     _image.clear();
     return;
   }

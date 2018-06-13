@@ -18,7 +18,6 @@
 #include "ctype.h"
 #include "httpChannel.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -142,7 +141,7 @@ matches_url(const URLSpec &url) const {
  *
  */
 void HTTPCookie::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name << "=" << _value
       << "; path=" << _path << "; domain=" << _domain;
 

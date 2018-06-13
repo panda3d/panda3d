@@ -19,9 +19,9 @@
 
 using std::cerr;
 using std::endl;
-using std::string;
 
 string password;
+std::string password;
 bool got_password = false;
 
 void

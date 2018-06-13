@@ -14,13 +14,11 @@
 #include "p3dTemporaryFile.h"
 #include "p3dInstanceManager.h"
 
-using std::string;
-
 /**
  * Constructs a new, unique temporary filename.
  */
 P3DTemporaryFile::
-P3DTemporaryFile(const string &extension) {
+P3DTemporaryFile(const std::string &extension) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _filename = inst_mgr->make_temp_filename(extension);
 }

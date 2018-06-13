@@ -13,13 +13,11 @@
 
 #include "psemaphore.h"
 
-using std::ostream;
-
 /**
  *
  */
 void Semaphore::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
   out << "Semaphore, count = " << _count;
 }

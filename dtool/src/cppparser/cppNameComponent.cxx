@@ -14,8 +14,6 @@
 #include "cppNameComponent.h"
 #include "cppTemplateParameterList.h"
 
-using std::ostream;
-using std::ostringstream;
 using std::string;
 
 /**
@@ -87,7 +85,7 @@ get_name() const {
  */
 string CPPNameComponent::
 get_name_with_templ(CPPScope *scope) const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _name;
   if (_templ != nullptr) {
     strm << "< ";
@@ -161,7 +159,7 @@ set_templ(CPPTemplateParameterList *templ) {
  *
  */
 void CPPNameComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name;
   if (_templ != nullptr) {
     out << "< " << *_templ << " >";

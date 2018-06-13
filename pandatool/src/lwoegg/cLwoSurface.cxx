@@ -26,8 +26,6 @@
 #include "mathNumbers.h"
 #include "dcast.h"
 
-using std::max;
-
 
 /**
  *
@@ -192,7 +190,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   }
 
   if ((_flags & F_smooth_angle) != 0) {
-    smooth_angle = max(smooth_angle, _smooth_angle);
+    smooth_angle = std::max(smooth_angle, _smooth_angle);
   }
 }
 

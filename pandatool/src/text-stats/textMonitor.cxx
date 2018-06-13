@@ -18,14 +18,11 @@
 #include "indent.h"
 #include <stdio.h>  // sprintf
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
 TextMonitor::
-TextMonitor(TextStats *server, ostream *outStream, bool show_raw_data ) : PStatMonitor(server) {
+TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data ) : PStatMonitor(server) {
     _outStream = outStream;    //[PECI]
     _show_raw_data = show_raw_data;
 }
@@ -42,7 +39,7 @@ get_server() {
  * Should be redefined to return a descriptive name for the type of
  * PStatsMonitor this is.
  */
-string TextMonitor::
+std::string TextMonitor::
 get_monitor_name() {
   return "Text Stats";
 }

@@ -14,8 +14,6 @@
 #include "pandaIOSystem.h"
 #include "pandaIOStream.h"
 
-using std::istream;
-
 /**
  * Initializes the object with the given VFS, or the global one if none was
  * specified.
@@ -74,7 +72,7 @@ Open(const char *file, const char *mode) {
   Filename fn = Filename::from_os_specific(file);
 
   if (mode[0] == 'r') {
-    istream *stream = _vfs->open_read_file(file, true);
+    std::istream *stream = _vfs->open_read_file(file, true);
     if (stream == nullptr) {
       return nullptr;
     }

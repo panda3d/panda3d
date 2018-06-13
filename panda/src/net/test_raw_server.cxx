@@ -23,8 +23,6 @@
 #include "thread.h"
 #include "pset.h"
 
-using std::string;
-
 int
 main(int argc, char *argv[]) {
   if (argc != 2) {
@@ -84,7 +82,7 @@ main(int argc, char *argv[]) {
     while (reader.data_available()) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
-        string data = datagram.get_message();
+        std::string data = datagram.get_message();
         nout.write(data.data(), data.length());
         nout << std::flush;
 

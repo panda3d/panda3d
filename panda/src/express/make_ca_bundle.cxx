@@ -16,11 +16,6 @@
 #include <stdio.h>
 
 using std::cerr;
-using std::dec;
-using std::hex;
-using std::istream;
-using std::setfill;
-using std::setw;
 using std::stringstream;
 using std::string;
 
@@ -54,7 +49,7 @@ main(int argc, char *argv[]) {
        << " entries.\n";
 
   // Now convert the certificates to DER form.
-  stringstream der_stream;
+  std::stringstream der_stream;
 
   int cert_count = 0;
   int num_entries = sk_X509_INFO_num(inf);
@@ -87,7 +82,7 @@ main(int argc, char *argv[]) {
   }
 
   der_stream.seekg(0);
-  istream &in = der_stream;
+  std::istream &in = der_stream;
 
   string table_type = "const unsigned char ";
   string length_type = "const int ";
@@ -108,7 +103,7 @@ main(int argc, char *argv[]) {
       << " * in DER form, for compiling into OpenSSLWrapper.\n"
       << " */\n\n"
       << static_keyword << table_type << table_name << "[] = {";
-  out << hex << setfill('0');
+  out << std::hex << std::setfill('0');
   int count = 0;
   int col = 0;
   unsigned int ch;
@@ -122,14 +117,14 @@ main(int argc, char *argv[]) {
     } else {
       out << ", ";
     }
-    out << "0x" << setw(2) << ch;
+    out << "0x" << std::setw(2) << ch;
     col++;
     count++;
     ch = in.get();
   }
   out << "\n};\n\n"
       << static_keyword << length_type << table_name << "_len = "
-      << dec << count << ";\n\n";
+      << std::dec << count << ";\n\n";
 
   cerr << "Wrote " << cert_count << " certificates to "
        << target_filename << "\n";

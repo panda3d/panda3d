@@ -17,9 +17,6 @@
 #include "eventQueue.h"
 #include "mutexHolder.h"
 
-using std::ostream;
-using std::string;
-
 CIntervalManager *CIntervalManager::_global_ptr;
 
 /**
@@ -111,7 +108,7 @@ add_c_interval(CInterval *interval, bool external) {
  * interval, or -1 if there is not.
  */
 int CIntervalManager::
-find_c_interval(const string &name) const {
+find_c_interval(const std::string &name) const {
   MutexHolder holder(_lock);
 
   NameIndex::const_iterator ni = _name_index.find(name);
@@ -354,7 +351,7 @@ get_next_removal() {
  *
  */
 void CIntervalManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
 
   out << "CIntervalManager, " << (int)_name_index.size() << " intervals.";
@@ -364,7 +361,7 @@ output(ostream &out) const {
  *
  */
 void CIntervalManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   MutexHolder holder(_lock);
 
   // We need to write this line so that it's clear what's going on when there

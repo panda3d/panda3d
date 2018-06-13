@@ -34,8 +34,6 @@
 #include "throw_event.h"
 #include "config_gobj.h"
 
-using std::min;
-using std::ostream;
 using std::string;
 
 TypeHandle GraphicsOutput::_type_handle;
@@ -899,7 +897,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
       return nullptr;
     }
     if (max_dimension > 0) {
-      size = min(max_dimension, size);
+      size = std::min(max_dimension, size);
     }
   }
 
@@ -1633,8 +1631,8 @@ make_copy() const {
 /**
  *
  */
-ostream &
-operator << (ostream &out, GraphicsOutput::FrameMode fm) {
+std::ostream &
+operator << (std::ostream &out, GraphicsOutput::FrameMode fm) {
   switch (fm) {
   case GraphicsOutput::FM_render:
     return out << "render";

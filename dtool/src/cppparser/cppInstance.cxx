@@ -26,7 +26,6 @@
 
 #include <algorithm>
 
-using std::ostream;
 using std::string;
 
 /**
@@ -509,7 +508,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPInstance::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   output(out, indent_level, scope, complete, -1);
 }
 
@@ -518,7 +517,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * function prototype.  See CPPFunctionType::output().
  */
 void CPPInstance::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete,
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete,
        int num_default_parameters) const {
   assert(_type != nullptr);
 

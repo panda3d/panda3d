@@ -13,8 +13,6 @@
 
 #include "p3dConcreteStruct.h"
 
-using std::ostringstream;
-using std::pair;
 using std::string;
 
 /**
@@ -57,7 +55,7 @@ get_bool() {
  */
 void P3DConcreteStruct::
 make_string(string &value) {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "{";
   if (!_elements.empty()) {
     Elements::iterator ei;
@@ -109,7 +107,7 @@ set_property(const string &property, P3D_object *value) {
   } else {
     // Replace or insert an element.
     P3D_OBJECT_INCREF(value);
-    pair<Elements::iterator, bool> result = _elements.insert(Elements::value_type(property, value));
+    std::pair<Elements::iterator, bool> result = _elements.insert(Elements::value_type(property, value));
     if (!result.second) {
       // Replacing an element.
       Elements::iterator ei = result.first;

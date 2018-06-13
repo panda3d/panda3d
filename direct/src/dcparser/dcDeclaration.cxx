@@ -13,8 +13,6 @@
 
 #include "dcDeclaration.h"
 
-using std::ostream;
-
 
 /**
  *
@@ -59,7 +57,7 @@ as_switch() const {
  * Write a string representation of this instance to <out>.
  */
 void DCDeclaration::
-output(ostream &out) const {
+output(std::ostream &out) const {
   output(out, true);
 }
 
@@ -67,6 +65,6 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void DCDeclaration::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write(out, false, indent_level);
 }

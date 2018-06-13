@@ -14,9 +14,6 @@
 #include "stTree.h"
 #include "speedTreeNode.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle STTree::_type_handle;
 
 /**
@@ -51,7 +48,7 @@ STTree(const Filename &fullpath) :
   }
   */
 
-  string os_fullpath = _fullpath.to_os_specific();
+  std::string os_fullpath = _fullpath.to_os_specific();
   if (!_tree.LoadTree(os_fullpath.c_str())) {
     speedtree_cat.warning()
       << "Couldn't read: " << _fullpath << "\n";
@@ -68,7 +65,7 @@ STTree(const Filename &fullpath) :
  *
  */
 void STTree::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (!is_valid()) {
     out << "(invalid STTree)";
   } else {

@@ -30,9 +30,6 @@
 #include "indent.h"
 
 using std::cout;
-using std::istream;
-using std::ostream;
-using std::pair;
 using std::string;
 
 Palettizer *pal = nullptr;
@@ -66,7 +63,7 @@ int Palettizer::_read_pi_version = 0;
 
 TypeHandle Palettizer::_type_handle;
 
-ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
+std::ostream &operator << (std::ostream &out, Palettizer::RemapUV remap) {
   switch (remap) {
   case Palettizer::RU_never:
     return out << "never";
@@ -353,7 +350,7 @@ report_statistics() const {
  * files.
  */
 void Palettizer::
-read_txa_file(istream &txa_file, const string &txa_filename) {
+read_txa_file(std::istream &txa_file, const string &txa_filename) {
   // Clear out the group dependencies, in preparation for reading them again
   // from the .txa file.
   Groups::iterator gi;
@@ -896,7 +893,7 @@ string_remap(const string &str) {
  * texture placements, and reports this to the indicated output stream.
  */
 void Palettizer::
-compute_statistics(ostream &out, int indent_level,
+compute_statistics(std::ostream &out, int indent_level,
                    const Palettizer::Placements &placements) const {
   TextureMemoryCounter counter;
 
@@ -1027,7 +1024,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     DCAST_INTO_R(texture, p_list[index], index);
 
     string name = downcase(texture->get_name());
-    pair<Textures::iterator, bool> result = _textures.insert(Textures::value_type(name, texture));
+    std::pair<Textures::iterator, bool> result = _textures.insert(Textures::value_type(name, texture));
     if (!result.second) {
       // Two textures mapped to the same slot--probably a case error (since we
       // just changed this rule).

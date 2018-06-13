@@ -14,9 +14,6 @@
 #include "netAddress.h"
 #include "config_net.h"
 
-using std::ostream;
-using std::string;
-
 
 /**
  * Constructs an unspecified address.
@@ -66,7 +63,7 @@ set_broadcast(int port) {
  * Returns true if the hostname is known, false otherwise.
  */
 bool NetAddress::
-set_host(const string &hostname, int port) {
+set_host(const std::string &hostname, int port) {
   return _addr.set_host(hostname, port);
 }
 
@@ -105,7 +102,7 @@ is_any() const {
 /**
  * Returns the IP address to which this address refers, formatted as a string.
  */
-string NetAddress::
+std::string NetAddress::
 get_ip_string() const {
   return _addr.get_ip();
 }
@@ -146,7 +143,7 @@ get_addr() const {
  *
  */
 void NetAddress::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _addr.get_ip_port();
 }
 

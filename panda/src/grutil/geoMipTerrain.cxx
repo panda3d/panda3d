@@ -31,7 +31,6 @@
 
 using std::max;
 using std::min;
-using std::ostringstream;
 
 static ConfigVariableBool geomipterrain_incorrect_normals
 ("geomipterrain-incorrect-normals", false,
@@ -260,7 +259,7 @@ generate_block(unsigned short mx,
   geom->add_primitive(prim);
   geom->set_bounds_type(BoundingVolume::BT_box);
 
-  ostringstream sname;
+  std::ostringstream sname;
   sname << "gmm" << mx << "x" << my;
   PT(GeomNode) node = new GeomNode(sname.str());
   node->add_geom(geom);

@@ -15,9 +15,6 @@
 
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 TypeHandle EggMaterial::_type_handle;
 
 
@@ -25,7 +22,7 @@ TypeHandle EggMaterial::_type_handle;
  *
  */
 EggMaterial::
-EggMaterial(const string &mref_name)
+EggMaterial(const std::string &mref_name)
   : EggNode(mref_name)
 {
   _flags = 0;
@@ -57,7 +54,7 @@ EggMaterial(const EggMaterial &copy)
  * format.
  */
 void EggMaterial::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Material>");
 
   if (has_base()) {

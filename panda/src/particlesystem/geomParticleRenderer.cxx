@@ -19,9 +19,6 @@
 #include "colorAttrib.h"
 #include "pStatTimer.h"
 
-using std::min;
-using std::ostream;
-
 PStatCollector GeomParticleRenderer::_render_collector("App:Particles:Geom:Render");
 
 /**
@@ -203,7 +200,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
           if (_alpha_mode == PR_ALPHA_OUT)
             alpha_scalar = 1.0f - alpha_scalar;
           else if (_alpha_mode == PR_ALPHA_IN_OUT)
-            alpha_scalar = 2.0f * min(alpha_scalar, 1.0f - alpha_scalar);
+            alpha_scalar = 2.0f * std::min(alpha_scalar, 1.0f - alpha_scalar);
           alpha_scalar *= get_user_alpha();
         }
 
@@ -255,7 +252,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"GeomParticleRenderer";
   #endif //] NDEBUG
@@ -265,7 +262,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-write_linear_forces(ostream &out, int indent) const {
+write_linear_forces(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_node_vector ("<<_node_vector.size()<<" forces)\n";
@@ -281,7 +278,7 @@ write_linear_forces(ostream &out, int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"GeomParticleRenderer:\n";
   out.width(indent+2); out<<""; out<<"_geom_node "<<_geom_node<<"\n";

@@ -22,9 +22,6 @@
 #include "eggData.h"
 #include "deg_2_rad.h"
 
-using std::cerr;
-using std::string;
-
 /**
  *
  */
@@ -60,7 +57,7 @@ make_copy() {
 /**
  * Returns the English name of the file type this converter supports.
  */
-string VRMLToEggConverter::
+std::string VRMLToEggConverter::
 get_name() const {
   return "VRML";
 }
@@ -68,7 +65,7 @@ get_name() const {
 /**
  * Returns the common extension of the file type this converter supports.
  */
-string VRMLToEggConverter::
+std::string VRMLToEggConverter::
 get_extension() const {
   return "wrl";
 }
@@ -148,7 +145,7 @@ get_all_defs(SFNodeRef &vrml, VRMLToEggConverter::Nodes &nodes) {
     nassertv(vrml._name != nullptr);
     ni = nodes.find(vrml._name);
     if (ni == nodes.end()) {
-      cerr << "Unknown node reference: " << vrml._name << "\n";
+      std::cerr << "Unknown node reference: " << vrml._name << "\n";
     } else {
       // Increment the use count of the node.
       (*ni).second->_use_count++;
@@ -217,7 +214,7 @@ vrml_grouping_node(const SFNodeRef &vrml, EggGroupNode *egg,
                     const LMatrix4d &net_transform)) {
   const VrmlNode *node = vrml._p;
   nassertv(node != nullptr);
-  string name;
+  std::string name;
   if (vrml._name != nullptr) {
     name = vrml._name;
   }
@@ -379,7 +376,7 @@ vrml_shape(const VrmlNode *node, EggGroup *group,
       IndexedFaceSet ifs(geometry, appearance);
       ifs.convert_to_egg(group, net_transform);
     } else {
-      cerr << "Ignoring " << geometry->_type->getName() << "\n";
+      std::cerr << "Ignoring " << geometry->_type->getName() << "\n";
     }
   }
 }

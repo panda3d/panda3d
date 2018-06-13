@@ -21,9 +21,6 @@
 #include "cppIdentifier.h"
 #include "indent.h"
 
-using std::ostream;
-using std::string;
-
 /**
  * Creates an untyped enum.
  */
@@ -92,7 +89,7 @@ get_underlying_type() {
  *
  */
 CPPInstance *CPPEnumType::
-add_element(const string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
+add_element(const std::string &name, CPPExpression *value, CPPPreprocessor *preprocessor, const cppyyltype &pos) {
   CPPIdentifier *ident = new CPPIdentifier(name);
   ident->_native_scope = _parent_scope;
 
@@ -265,7 +262,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPEnumType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     if (cppparser_output_class_keyword) {

@@ -13,9 +13,6 @@
 
 #include "aiPathFinder.h"
 
-using std::cout;
-using std::endl;
-
 PathFinder::PathFinder(NavMesh nav_mesh) {
   _grid = nav_mesh;
 }
@@ -77,7 +74,7 @@ void PathFinder::generate_path() {
       add_to_clist(nxt_node);
     }
   }
-  cout<<"DESTINATION NOT REACHABLE MATE!"<<endl;
+  std::cout<<"DESTINATION NOT REACHABLE MATE!"<<std::endl;
   _closed_list.clear();
 }
 

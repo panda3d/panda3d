@@ -17,8 +17,6 @@
 #include "filename.h"
 #include "error_utils.h"
 
-using std::min;
-
 
 /**
  *
@@ -194,7 +192,7 @@ step() {
       static const size_t buffer_size = 1024;
       char buffer[buffer_size];
 
-      size_t max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+      size_t max_bytes = std::min(buffer_size, _subfile_length - _subfile_pos);
       _read->read(buffer, max_bytes);
       size_t count = _read->gcount();
       while (count != 0) {
@@ -219,7 +217,7 @@ step() {
           return EU_ok;
         }
 
-        max_bytes = min(buffer_size, _subfile_length - _subfile_pos);
+        max_bytes = std::min(buffer_size, _subfile_length - _subfile_pos);
         _read->read(buffer, max_bytes);
         count = _read->gcount();
       }

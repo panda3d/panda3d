@@ -31,12 +31,6 @@
 #include "light.h"
 #include "lightMutexHolder.h"
 
-using std::dec;
-using std::hex;
-using std::move;
-using std::ostream;
-using std::swap;
-
 CullableObject::FormatMap CullableObject::_format_map;
 LightMutex CullableObject::_format_lock;
 
@@ -120,8 +114,8 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       if (pgraph_cat.is_spam()) {
         pgraph_cat.spam()
           << "munge_points_to_quads() for geometry with bits: "
-          << hex << geom_rendering << ", unsupported: "
-          << (unsupported_bits & Geom::GR_point_bits) << dec << "\n";
+          << std::hex << geom_rendering << ", unsupported: "
+          << (unsupported_bits & Geom::GR_point_bits) << std::dec << "\n";
       }
       if (!munge_points_to_quads(traverser, force)) {
         return false;
@@ -167,7 +161,7 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       _munged_data->animate_vertices(force, current_thread);
     if (animated_vertices != _munged_data) {
       cpu_animated = true;
-      swap(_munged_data, animated_vertices);
+      std::swap(_munged_data, animated_vertices);
     }
 
 #ifndef NDEBUG
@@ -193,7 +187,7 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
  *
  */
 void CullableObject::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_geom != nullptr) {
     out << *_geom;
   } else {
@@ -589,7 +583,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   _geom = new_geom.p();
-  _munged_data = move(new_data);
+  _munged_data = std::move(new_data);
 
   return true;
 }

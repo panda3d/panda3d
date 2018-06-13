@@ -25,7 +25,6 @@
 #include "pstrtod.h"
 
 using std::cerr;
-using std::ostream;
 
 #ifdef WIN32_VC
 // Under Windows, the rand() function seems to return a sequence per-thread,
@@ -53,7 +52,7 @@ static double random_f(double max)
 
 class ChopstickMutex : public Mutex {
 public:
-  void output(ostream &out) const {
+  void output(std::ostream &out) const {
     out << "chopstick " << _n;
   }
   int _n;
@@ -124,7 +123,7 @@ public:
     _id = id;
   }
 
-  virtual void output(ostream &out) const {
+  virtual void output(std::ostream &out) const {
     out << "philosopher " << _id;
   }
 };

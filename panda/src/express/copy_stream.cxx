@@ -13,16 +13,13 @@
 
 #include "copy_stream.h"
 
-using std::istream;
-using std::ostream;
-
 /**
  * Reads the source stream from its current position to the end of the stream,
  * and writes that data to the dest stream at its current position.  Returns
  * true on success, false on failure.
  */
 bool
-copy_stream(istream &source, ostream &dest) {
+copy_stream(std::istream &source, std::ostream &dest) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 

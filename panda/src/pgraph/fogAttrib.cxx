@@ -18,8 +18,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle FogAttrib::_type_handle;
 int FogAttrib::_attrib_slot;
 
@@ -56,7 +54,7 @@ make_off() {
  *
  */
 void FogAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "(off)";

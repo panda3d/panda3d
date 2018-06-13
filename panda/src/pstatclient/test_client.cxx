@@ -26,8 +26,6 @@
 #include <signal.h>
 #include <algorithm>
 
-using std::string;
-
 static bool user_interrupted = false;
 
 // Define a signal handler so we can clean up on control-C.
@@ -87,7 +85,7 @@ public:
 
 int
 main(int argc, char *argv[]) {
-  string hostname = "localhost";
+  std::string hostname = "localhost";
   int port = pstats_port;
 
   if (argc > 1) {

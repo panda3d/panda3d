@@ -16,9 +16,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::min;
-using std::ostream;
-
 TypeHandle SparseArray::_type_handle;
 
 /**
@@ -217,7 +214,7 @@ has_bits_in_common(const SparseArray &other) const {
  *
  */
 void SparseArray::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ ";
   if (_inverse) {
     out << "all except: ";
@@ -445,7 +442,7 @@ do_remove_range(int begin, int end) {
       si = _subranges.begin() + _subranges.size() - 1;
       if ((*si)._end >= begin) {
         // The new range shortens the last element of the array on the right.
-        end = min(end, (*si)._begin);
+        end = std::min(end, (*si)._begin);
         (*si)._end = end;
         // It might also shorten it on the left; fall through.
       } else {
@@ -468,7 +465,7 @@ do_remove_range(int begin, int end) {
       if ((*si2)._end >= begin) {
         // The new range shortens an element within the array on the right
         // (but does not intersect the next element).
-        end = min(end, (*si2)._begin);
+        end = std::min(end, (*si2)._begin);
         (*si2)._end = end;
         // It might also shorten it on the left; fall through.
         si = si2;
@@ -502,7 +499,7 @@ do_remove_range(int begin, int end) {
     si = si2;
   }
 
-  (*si)._end = min((*si)._end, begin);
+  (*si)._end = std::min((*si)._end, begin);
 }
 
 /**

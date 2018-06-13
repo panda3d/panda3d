@@ -22,7 +22,6 @@
 
 using std::cin;
 using std::cout;
-using std::string;
 
 int
 main(int argc, char *argv[]) {
@@ -31,7 +30,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  string hostname = argv[1];
+  std::string hostname = argv[1];
   int port = atoi(argv[2]);
 
   NetAddress host;

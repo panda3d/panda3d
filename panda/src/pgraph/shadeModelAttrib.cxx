@@ -19,8 +19,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle ShadeModelAttrib::_type_handle;
 int ShadeModelAttrib::_attrib_slot;
 
@@ -47,7 +45,7 @@ make_default() {
  *
  */
 void ShadeModelAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_flat:

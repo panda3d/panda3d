@@ -14,11 +14,6 @@
 #include "virtualFileMountMultifile.h"
 #include "virtualFileSystem.h"
 
-using std::istream;
-using std::ostream;
-using std::streampos;
-using std::streamsize;
-
 TypeHandle VirtualFileMountMultifile::_type_handle;
 
 
@@ -90,7 +85,7 @@ read_file(const Filename &file, bool do_uncompress,
  * istream on success (which you should eventually delete when you are done
  * reading). Returns NULL on failure.
  */
-istream *VirtualFileMountMultifile::
+std::istream *VirtualFileMountMultifile::
 open_read_file(const Filename &file) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {
@@ -109,8 +104,8 @@ open_read_file(const Filename &file) const {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileMountMultifile::
-get_file_size(const Filename &file, istream *) const {
+std::streamsize VirtualFileMountMultifile::
+get_file_size(const Filename &file, std::istream *) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {
     return 0;
@@ -122,7 +117,7 @@ get_file_size(const Filename &file, istream *) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileMountMultifile::
+std::streamsize VirtualFileMountMultifile::
 get_file_size(const Filename &file) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {
@@ -172,7 +167,7 @@ get_system_info(const Filename &file, SubfileInfo &info) {
     return false;
   }
 
-  streampos start = _multifile->get_subfile_internal_start(subfile_index);
+  std::streampos start = _multifile->get_subfile_internal_start(subfile_index);
   size_t length = _multifile->get_subfile_internal_length(subfile_index);
 
   info = SubfileInfo(multifile_name, start, length);
@@ -194,6 +189,6 @@ scan_directory(vector_string &contents, const Filename &dir) const {
  *
  */
 void VirtualFileMountMultifile::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _multifile->get_multifile_name();
 }

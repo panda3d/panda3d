@@ -17,7 +17,6 @@
 #include "pstrtod.h"
 #include "string_utils.h"
 
-using std::ostream;
 using std::string;
 
 /**
@@ -136,7 +135,7 @@ set_double_word(size_t n, double value) {
  *
  */
 void ConfigDeclaration::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_variable()->get_name() << " " << get_string_value();
 }
 
@@ -144,7 +143,7 @@ output(ostream &out) const {
  *
  */
 void ConfigDeclaration::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << get_variable()->get_name() << " " << get_string_value();
   // if (!get_variable()->is_used()) { out << "  (not used)"; }
   out << "\n";

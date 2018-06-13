@@ -20,7 +20,6 @@
 using std::cerr;
 using std::cout;
 using std::istream;
-using std::string;
 
 void
 stream_decompress(istream &source) {
@@ -47,7 +46,7 @@ stream_compress(istream &source) {
 void
 zlib_decompress(istream &source) {
   // First, read the entire contents into a buffer.
-  string data;
+  std::string data;
 
   int ch = source.get();
   while (!source.eof() && !source.fail()) {
@@ -87,7 +86,7 @@ zlib_decompress(istream &source) {
 void
 zlib_compress(istream &source) {
   // First, read the entire contents into a buffer.
-  string data;
+  std::string data;
 
   int ch = source.get();
   while (!source.eof() && !source.fail()) {

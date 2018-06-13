@@ -18,7 +18,6 @@
 #include "uniqueIdAllocator.h"
 
 using std::endl;
-using std::ostream;
 
 NotifyCategoryDecl(uniqueIdAllocator, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 NotifyCategoryDef(uniqueIdAllocator, "");
@@ -215,7 +214,7 @@ fraction_used() const {
  * ...intended for debugging only.
  */
 void UniqueIdAllocator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "UniqueIdAllocator(" << _min << ", " << _max << "), "
       << _free << " id's remaining of " << _size;
 }
@@ -224,7 +223,7 @@ output(ostream &out) const {
  * ...intended for debugging only.
  */
 void UniqueIdAllocator::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "_min: " << _min << "; _max: " << _max
       << ";\n_next_free: " << int32_t(_next_free)
       << "; _last_free: " << int32_t(_last_free)

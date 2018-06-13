@@ -13,9 +13,6 @@
 
 #include "textureCollection_ext.h"
 
-using std::ostringstream;
-using std::string;
-
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
@@ -47,9 +44,9 @@ __init__(PyObject *self, PyObject *sequence) {
     DTOOL_Call_ExtractThisPointerForType(item, &Dtool_Texture, (void **)&tex);
     if (tex == nullptr) {
       // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
+      std::ostringstream stream;
       stream << "Element " << i << " in sequence passed to TextureCollection constructor is not a Texture";
-      string str = stream.str();
+      std::string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       Py_DECREF(fast);
       return;

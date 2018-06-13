@@ -17,10 +17,7 @@
 #include "indent.h"
 
 using std::cerr;
-using std::max;
-using std::min;
 using std::ostream;
-using std::string;
 
 static const int HIGH_PRIORITY_SCALE = 4;
 static const int LOW_PRIORITY_RANGE = 25;
@@ -29,7 +26,7 @@ static const int LOW_PRIORITY_RANGE = 25;
  *
  */
 AdaptiveLru::
-AdaptiveLru(const string &name, size_t max_size) :
+AdaptiveLru(const std::string &name, size_t max_size) :
   Namable(name)
 {
   _total_size = 0;
@@ -162,7 +159,7 @@ update_page(AdaptiveLruPage *page) {
   }
 
   if (target_priority != page->_priority) {
-    page->_priority = min(max(target_priority, 0), LPP_TotalPriorities - 1);
+    page->_priority = std::min(std::max(target_priority, 0), LPP_TotalPriorities - 1);
     ((AdaptiveLruPageDynamicList *)page)->remove_from_list();
     ((AdaptiveLruPageDynamicList *)page)->insert_before(&_page_array[page->_priority]);
   }

@@ -14,15 +14,13 @@
 #include "virtualMouse.h"
 #include "dataNodeTransmit.h"
 
-using std::string;
-
 TypeHandle VirtualMouse::_type_handle;
 
 /**
  *
  */
 VirtualMouse::
-VirtualMouse(const string &name) :
+VirtualMouse(const std::string &name) :
   DataNode(name)
 {
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());

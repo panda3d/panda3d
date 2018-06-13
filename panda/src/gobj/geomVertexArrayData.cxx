@@ -27,8 +27,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
-using std::string;
 
 ConfigVariableInt max_independent_vertex_data
 ("max-independent-vertex-data", -1,
@@ -181,7 +179,7 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  *
  */
 void GeomVertexArrayData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_num_rows() << " rows: " << *get_array_format();
 }
 
@@ -189,7 +187,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexArrayData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   _array_format->write_with_data(out, indent_level, this);
 }
 
@@ -847,7 +845,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
  * Python.
  */
 void GeomVertexArrayDataHandle::
-set_data(const string &data) {
+set_data(const std::string &data) {
   nassertv(_writable);
   mark_used();
 
@@ -869,7 +867,7 @@ set_data(const string &data) {
  * This is primarily for the benefit of high-level languages like Python.
  */
 void GeomVertexArrayDataHandle::
-set_subdata(size_t start, size_t size, const string &data) {
+set_subdata(size_t start, size_t size, const std::string &data) {
   nassertv(_writable);
   mark_used();
 

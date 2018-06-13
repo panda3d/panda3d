@@ -20,8 +20,6 @@
 #include <android/bitmap.h>
 #include <jni.h>
 
-using std::ostream;
-
 // See android/graphics/Bitmap.java
 enum class BitmapConfig : jint {
   ALPHA_8 = 1,
@@ -36,7 +34,7 @@ enum class BitmapConfig : jint {
  *
  */
 PNMFileTypeAndroid::Writer::
-Writer(PNMFileType *type, ostream *file, bool owns_file,
+Writer(PNMFileType *type, std::ostream *file, bool owns_file,
        CompressFormat format) :
   PNMWriter(type, file, owns_file),
   _format(format)

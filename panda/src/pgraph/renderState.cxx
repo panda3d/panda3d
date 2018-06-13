@@ -36,11 +36,7 @@
 #include "thread.h"
 #include "renderAttribRegistry.h"
 
-using std::max;
-using std::min;
 using std::ostream;
-using std::pair;
-using std::string;
 
 LightReMutex *RenderState::_states_lock = nullptr;
 RenderState::States *RenderState::_states = nullptr;
@@ -596,7 +592,7 @@ adjust_all_priorities(int adjustment) const {
   while (slot >= 0) {
     Attribute &attrib = new_state->_attributes[slot];
     nassertr(attrib._attrib != nullptr, this);
-    attrib._override = max(attrib._override + adjustment, 0);
+    attrib._override = std::max(attrib._override + adjustment, 0);
 
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
@@ -762,7 +758,7 @@ get_num_unused_states() {
       const RenderState *result = state->_composition_cache.get_data(i)._result;
       if (result != nullptr && result != state) {
         // Here's a RenderState that's recorded in the cache.  Count it.
-        pair<StateCount::iterator, bool> ir =
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           // If the above insert operation fails, then it's already in the
@@ -775,7 +771,7 @@ get_num_unused_states() {
     for (i = 0; i < cache_size; ++i) {
       const RenderState *result = state->_invert_composition_cache.get_data(i)._result;
       if (result != nullptr && result != state) {
-        pair<StateCount::iterator, bool> ir =
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           (*(ir.first)).second++;
@@ -910,7 +906,7 @@ garbage_collect() {
 
   // How many elements to process this pass?
   size_t size = orig_size;
-  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return num_attribs;
   }
@@ -922,7 +918,7 @@ garbage_collect() {
     si = 0;
   }
 
-  num_this_pass = min(num_this_pass, size);
+  num_this_pass = std::min(num_this_pass, size);
   size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
@@ -1739,7 +1735,7 @@ determine_bin_index() {
     return;
   }
 
-  string bin_name;
+  std::string bin_name;
   _draw_order = 0;
 
   const CullBinAttrib *bin;

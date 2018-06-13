@@ -13,9 +13,6 @@
 
 #include "cppConstType.h"
 
-using std::ostream;
-using std::string;
-
 /**
  *
  */
@@ -174,7 +171,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPConstType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   _wrapped_around->output(out, indent_level, scope, complete);
   out << " const";
 }
@@ -185,9 +182,9 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPConstType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
   _wrapped_around->output_instance(out, indent_level, scope, complete,
                                    "const " + prename, name);
 }

@@ -13,8 +13,6 @@
 
 #include "geomVertexReader.h"
 
-using std::ostream;
-
 #ifndef NDEBUG
   // This is defined just for the benefit of having something non-NULL to
   // return from a nassertr() call.
@@ -61,7 +59,7 @@ set_column(int array, const GeomVertexColumn *column) {
  *
  */
 void GeomVertexReader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   const GeomVertexColumn *column = get_column();
   if (column == nullptr) {
     out << "GeomVertexReader()";

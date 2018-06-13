@@ -14,8 +14,6 @@
 #include "deletedBufferChain.h"
 #include "memoryHook.h"
 
-using std::max;
-
 /**
  * Use the global MemoryHook to get a new DeletedBufferChain of the
  * appropriate size.
@@ -26,7 +24,7 @@ DeletedBufferChain(size_t buffer_size) {
   _buffer_size = buffer_size;
 
   // We must allocate at least this much space for bookkeeping reasons.
-  _buffer_size = max(_buffer_size, sizeof(ObjectNode));
+  _buffer_size = std::max(_buffer_size, sizeof(ObjectNode));
 }
 
 /**

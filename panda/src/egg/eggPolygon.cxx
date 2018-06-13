@@ -19,8 +19,6 @@
 
 #include <algorithm>
 
-using std::ostream;
-
 TypeHandle EggPolygon::_type_handle;
 
 /**
@@ -161,7 +159,7 @@ triangulate_in_place(bool convex_also) {
  * Writes the polygon to the indicated output stream in Egg format.
  */
 void EggPolygon::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Polygon>");
   write_body(out, indent_level+2);
   indent(out, indent_level) << "}\n";

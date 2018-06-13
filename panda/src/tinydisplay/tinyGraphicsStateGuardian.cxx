@@ -40,10 +40,8 @@
 #include "store_pixel_table.h"
 #include "graphicsEngine.h"
 
-using std::endl;
 using std::max;
 using std::min;
-using std::pair;
 
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
@@ -1795,7 +1793,7 @@ do_issue_light() {
  */
 void TinyGraphicsStateGuardian::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -1847,7 +1845,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
  */
 void TinyGraphicsStateGuardian::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -1906,7 +1904,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
  */
 void TinyGraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -2015,7 +2013,7 @@ do_issue_render_mode() {
 
   default:
     tinydisplay_cat.error()
-      << "Unknown render mode " << (int)target_render_mode->get_mode() << endl;
+      << "Unknown render mode " << (int)target_render_mode->get_mode() << std::endl;
   }
 }
 
@@ -2048,7 +2046,7 @@ do_issue_rescale_normal() {
 
   default:
     tinydisplay_cat.error()
-      << "Unknown rescale_normal mode " << (int)mode << endl;
+      << "Unknown rescale_normal mode " << (int)mode << std::endl;
   }
 }
 
@@ -2094,7 +2092,7 @@ do_issue_cull_face() {
     break;
   default:
     tinydisplay_cat.error()
-      << "invalid cull face mode " << (int)mode << endl;
+      << "invalid cull face mode " << (int)mode << std::endl;
     break;
   }
 }

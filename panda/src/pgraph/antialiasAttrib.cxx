@@ -20,8 +20,6 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-using std::ostream;
-
 TypeHandle AntialiasAttrib::_type_handle;
 int AntialiasAttrib::_attrib_slot;
 
@@ -71,7 +69,7 @@ make_default() {
  *
  */
 void AntialiasAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   int type = get_mode_type();

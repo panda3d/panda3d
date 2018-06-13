@@ -32,9 +32,6 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 
-using std::endl;
-using std::istream;
-using std::ostream;
 using std::string;
 
 bool Loader::_file_types_loaded = false;
@@ -101,7 +98,7 @@ make_async_save_request(const Filename &filename, const LoaderOptions &options,
  * graph defined there.
  */
 PT(PandaNode) Loader::
-load_bam_stream(istream &in) {
+load_bam_stream(std::istream &in) {
   BamFile bam_file;
   if (!bam_file.open_read(in)) {
     return nullptr;
@@ -114,7 +111,7 @@ load_bam_stream(istream &in) {
  *
  */
 void Loader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 
   int num_tasks = _task_manager->make_task_chain(_task_chain)->get_num_tasks();
@@ -478,15 +475,15 @@ load_file_types() {
         string name = words[0];
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         loader_cat.info()
-          << "loading file type module: " << name << endl;
+          << "loading file type module: " << name << std::endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
         if (tmp == nullptr) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
+            << ": " << load_dso_error() << std::endl;
         } else if (loader_cat.is_debug()) {
           loader_cat.debug()
-            << "done loading file type module: " << name << endl;
+            << "done loading file type module: " << name << std::endl;
         }
 
       } else if (words.size() > 1) {

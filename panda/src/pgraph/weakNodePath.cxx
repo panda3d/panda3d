@@ -13,13 +13,11 @@
 
 #include "weakNodePath.h"
 
-using std::ostream;
-
 /**
  *
  */
 void WeakNodePath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (was_deleted()) {
     out << "deleted";
   } else {

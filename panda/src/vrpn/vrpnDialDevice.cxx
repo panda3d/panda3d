@@ -14,15 +14,13 @@
 #include "vrpnDialDevice.h"
 #include "vrpnClient.h"
 
-using std::string;
-
 TypeHandle VrpnDialDevice::_type_handle;
 
 /**
  *
  */
 VrpnDialDevice::
-VrpnDialDevice(VrpnClient *client, const string &device_name,
+VrpnDialDevice(VrpnClient *client, const std::string &device_name,
                  VrpnDial *vrpn_dial) :
   ClientDialDevice(client, device_name),
   _vrpn_dial(vrpn_dial)

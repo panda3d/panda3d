@@ -26,7 +26,6 @@
 #include <algorithm>
 
 using std::ostream;
-using std::string;
 
 TypeHandle PartGroup::_type_handle;
 
@@ -35,7 +34,7 @@ TypeHandle PartGroup::_type_handle;
  * to delete it subsequently is to delete the entire hierarchy.
  */
 PartGroup::
-PartGroup(PartGroup *parent, const string &name) :
+PartGroup(PartGroup *parent, const std::string &name) :
   Namable(name),
   _children(get_class_type())
 {
@@ -116,7 +115,7 @@ get_child(int n) const {
  * find_child().
  */
 PartGroup *PartGroup::
-get_child_named(const string &name) const {
+get_child_named(const std::string &name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     PartGroup *child = (*ci);
@@ -134,7 +133,7 @@ get_child_named(const string &name) const {
  * this PartGroup; see also get_child_named().
  */
 PartGroup *PartGroup::
-find_child(const string &name) const {
+find_child(const std::string &name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     PartGroup *child = (*ci);

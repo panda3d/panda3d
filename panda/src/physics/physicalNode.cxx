@@ -14,9 +14,6 @@
 #include "physicalNode.h"
 #include "physicsManager.h"
 
-using std::ostream;
-using std::string;
-
 // static stuff.
 TypeHandle PhysicalNode::_type_handle;
 
@@ -24,7 +21,7 @@ TypeHandle PhysicalNode::_type_handle;
  * default constructor
  */
 PhysicalNode::
-PhysicalNode(const string &name) :
+PhysicalNode(const std::string &name) :
   PandaNode(name)
 {
 }
@@ -136,7 +133,7 @@ remove_physical(size_t index) {
  * Write a string representation of this instance to <out>.
  */
 void PhysicalNode::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PhysicalNode:\n";
   // PandaNode::write(out, indent+2);

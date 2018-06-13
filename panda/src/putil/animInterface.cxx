@@ -20,7 +20,6 @@
 
 using std::max;
 using std::min;
-using std::ostream;
 
 TypeHandle AnimInterface::_type_handle;
 
@@ -65,7 +64,7 @@ get_num_frames() const {
  *
  */
 void AnimInterface::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
   cdata->output(out);
 }
@@ -379,7 +378,7 @@ is_playing() const {
  *
  */
 void AnimInterface::CData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   switch (_play_mode) {
   case PM_pose:
     out << "pose, frame " << get_full_fframe();

@@ -31,13 +31,6 @@
 #include "openssl/evp.h"
 
 using std::cerr;
-using std::dec;
-using std::hex;
-using std::istream;
-using std::ostream;
-using std::ostringstream;
-using std::setfill;
-using std::setw;
 using std::string;
 
 string progname = PROGNAME;
@@ -87,7 +80,7 @@ read_prc_line(const string &line, string &data) {
  * indicated string.
  */
 void
-read_file(istream &in, string &data) {
+read_file(std::istream &in, string &data) {
   // We avoid getline() here because of its notorious problem with last lines
   // that lack a trailing newline character.
   static const size_t buffer_size = 1024;
@@ -139,7 +132,7 @@ read_file(istream &in, string &data) {
  * Outputs the indicated data stream as a series of hex digits.
  */
 void
-output_hex(ostream &out, const unsigned char *data, size_t size) {
+output_hex(std::ostream &out, const unsigned char *data, size_t size) {
 }
 
 /**
@@ -165,7 +158,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
 
   // Append the comments before the signature (these get signed too).
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "##!\n";
   if (!no_comments) {
     time_t now = time(nullptr);
@@ -213,7 +206,7 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
   }
   cerr << "Rewriting " << filename << "\n";
 
-  out << data << hex << setfill('0');
+  out << data << std::hex << std::setfill('0');
   static const size_t row_width = 32;
   for (size_t p = 0; p < sig_size; p += row_width) {
     out << "##!sig ";
@@ -224,11 +217,11 @@ sign_prc(Filename filename, bool no_comments, EVP_PKEY *pkey) {
        end = p+row_width;
 
     for (size_t q = p; q < end; q++) {
-      out << setw(2) << (unsigned int)sig_data[q];
+      out << std::setw(2) << (unsigned int)sig_data[q];
     }
     out << "\n";
   }
-  out << dec;
+  out << std::dec;
 
   delete[] sig_data;
 }

@@ -18,8 +18,6 @@
 #include "indent.h"
 #include "deg_2_rad.h"
 
-using std::ostream;
-
 TypeHandle LwoSurfaceSmoothingAngle::_type_handle;
 
 /**
@@ -41,7 +39,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceSmoothingAngle::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { angle = " << rad_2_deg(_angle) << " degrees }\n";
 }

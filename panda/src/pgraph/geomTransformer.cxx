@@ -31,8 +31,6 @@
 #include "colorAttrib.h"
 #include "config_pgraph.h"
 
-using std::move;
-
 PStatCollector GeomTransformer::_apply_vertex_collector("*:Flatten:apply:vertex");
 PStatCollector GeomTransformer::_apply_texcoord_collector("*:Flatten:apply:texcoord");
 PStatCollector GeomTransformer::_apply_set_color_collector("*:Flatten:apply:set color");
@@ -153,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = move(new_geom);
+        entry._geom = std::move(new_geom);
         any_changed = true;
       }
     }

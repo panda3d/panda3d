@@ -17,10 +17,6 @@
 
 #include "pnotify.h"
 
-using std::cerr;
-using std::streamsize;
-using std::string;
-
 /**
  *
  */
@@ -46,7 +42,7 @@ WordWrapStreamBuf::
  */
 int WordWrapStreamBuf::
 sync() {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
 
   // Send all the data out now.
@@ -61,7 +57,7 @@ sync() {
  */
 int WordWrapStreamBuf::
 overflow(int ch) {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {
     return EOF;
@@ -85,10 +81,10 @@ void WordWrapStreamBuf::
 write_chars(const char *start, int length) {
   if (length > 0) {
     set_literal_mode((_owner->flags() & Notify::get_literal_flag()) != 0);
-    string new_data(start, length);
+    std::string new_data(start, length);
     size_t newline = new_data.find_first_of("\n\r");
     size_t p = 0;
-    while (newline != string::npos) {
+    while (newline != std::string::npos) {
       // The new data contains a newline; flush our data to that point.
       _data += new_data.substr(p, newline - p + 1);
       flush_data();
@@ -109,7 +105,7 @@ void WordWrapStreamBuf::
 flush_data() {
   if (!_data.empty()) {
     if (_literal_mode) {
-      cerr << _data;
+      std::cerr << _data;
     } else {
       _program->show_text(_data);
     }

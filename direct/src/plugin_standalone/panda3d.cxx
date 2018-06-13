@@ -31,8 +31,6 @@
 
 using std::cerr;
 using std::cout;
-using std::min;
-using std::ostringstream;
 using std::string;
 
 /**
@@ -416,7 +414,7 @@ download_contents_file(const Filename &contents_filename) {
 
   if (!success) {
     // Go download contents.xml from the actual host.
-    ostringstream strm;
+    std::ostringstream strm;
     strm << _host_url_prefix << "contents.xml";
     // Append a uniquifying query string to the URL to force the download to
     // go all the way through any caches.  We use the time in seconds; that's
@@ -504,7 +502,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
         xorig->Attribute("expiration", &expiration);
       }
 
-      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+      _contents_expiration = std::min(_contents_expiration, (time_t)expiration);
     }
 
     // Look for the <host> entry; it might point us at a different download
@@ -676,7 +674,7 @@ void Panda3D::
 choose_random_mirrors(vector_string &result, int num_mirrors) {
   pvector<size_t> selected;
 
-  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  size_t num_to_select = std::min(_mirrors.size(), (size_t)num_mirrors);
   while (num_to_select > 0) {
     size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
     while (find(selected.begin(), selected.end(), i) != selected.end()) {
@@ -746,7 +744,7 @@ get_core_api() {
 #endif
 
   // Format the coreapi_timestamp as a string, for passing as a parameter.
-  ostringstream stream;
+  std::ostringstream stream;
   stream << _coreapi_dll.get_timestamp();
   string coreapi_timestamp = stream.str();
 
@@ -771,7 +769,7 @@ download_core_api() {
 
   // Our last act of desperation: hit the original host, with a query
   // uniquifier, to break through any caches.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _download_url_prefix << _coreapi_dll.get_filename()
        << "?" << time(nullptr);
   url = strm.str();

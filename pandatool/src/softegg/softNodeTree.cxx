@@ -26,7 +26,6 @@
 #include <SAA.h>
 
 using std::endl;
-using std::string;
 
 /**
  *
@@ -291,7 +290,7 @@ get_node(int n) const {
  * Returns the node named 'name' in the hierarchy, in an arbitrary ordering.
  */
 SoftNodeDesc *SoftNodeTree::
-get_node(string name) const {
+get_node(std::string name) const {
   NodesByName::const_iterator ni = _nodes_by_name.find(name);
   if (ni != _nodes_by_name.end())
     return (*ni).second;
@@ -454,7 +453,7 @@ handle_null(SAA_Scene *scene, SoftNodeDesc *node_desc, const char *node_name) {
 SoftNodeDesc *SoftNodeTree::
 build_node(SAA_Scene *scene, SAA_Elem *model) {
   char *name, *fullname;
-  string node_name;
+  std::string node_name;
   int numChildren;
   int thisChild;
   SAA_Elem *children;
@@ -536,7 +535,7 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
  * The recursive implementation of build_node().
  */
 SoftNodeDesc *SoftNodeTree::
-r_build_node(SoftNodeDesc *parent_node, const string &name) {
+r_build_node(SoftNodeDesc *parent_node, const std::string &name) {
   SoftNodeDesc *node_desc;
 
   // If we have already encountered this pathname, return the corresponding
