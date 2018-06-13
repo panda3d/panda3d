@@ -134,7 +134,7 @@ vrml_cleanup_parser() {
  * %type <nodeList> vrmlscene declarations
  */
 
-%token <std::string> IDENTIFIER 
+%token <string> IDENTIFIER
 %token DEF USE PROTO EXTERNPROTO TO IS ROUTE SFN_NULL
 %token EVENTIN EVENTOUT FIELD EXPOSEDFIELD
 
