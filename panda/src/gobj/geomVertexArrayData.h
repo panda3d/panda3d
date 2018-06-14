@@ -316,10 +316,10 @@ PUBLISHED:
                                    PyObject *buffer,
                                    size_t from_start, size_t from_size));
 
-  INLINE std::string get_data() const;
-  void set_data(const std::string &data);
-  INLINE std::string get_subdata(size_t start, size_t size) const;
-  void set_subdata(size_t start, size_t size, const std::string &data);
+  INLINE vector_uchar get_data() const;
+  void set_data(const vector_uchar &data);
+  INLINE vector_uchar get_subdata(size_t start, size_t size) const;
+  void set_subdata(size_t start, size_t size, const vector_uchar &data);
 
   INLINE void mark_used() const;
 

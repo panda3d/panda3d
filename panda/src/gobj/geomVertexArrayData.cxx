@@ -842,7 +842,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
  * Python.
  */
 void GeomVertexArrayDataHandle::
-set_data(const string &data) {
+set_data(const vector_uchar &data) {
   nassertv(_writable);
   mark_used();
 
@@ -864,7 +864,7 @@ set_data(const string &data) {
  * This is primarily for the benefit of high-level languages like Python.
  */
 void GeomVertexArrayDataHandle::
-set_subdata(size_t start, size_t size, const string &data) {
+set_subdata(size_t start, size_t size, const vector_uchar &data) {
   nassertv(_writable);
   mark_used();
 
