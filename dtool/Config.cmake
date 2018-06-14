@@ -417,46 +417,6 @@ mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
 # Now let's check for the presence of various thirdparty libraries.
 #
 
-# Is Python installed, and should Python interfaces be generated?
-set(WANT_PYTHON_VERSION ""
-  CACHE STRING "Which Python version to seek out for building Panda3D against.")
-
-find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
-find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
-if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
-  set(PYTHON_FOUND ON)
-else()
-  set(PYTHON_FOUND OFF)
-endif()
-
-package_option(PYTHON DEFAULT ON
-  "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
-is also enabled, Python bindings will be generated.")
-
-# Also detect the optimal install paths:
-if(HAVE_PYTHON)
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE}
-      -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
-      OUTPUT_VARIABLE _LIB_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE}
-      -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
-      OUTPUT_VARIABLE _ARCH_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE STRING
-    "Path to the Python architecture-independent package directory.")
-
-  set(PYTHON_ARCH_INSTALL_DIR "${_ARCH_DIR}" CACHE STRING
-    "Path to the Python architecture-dependent package directory.")
-
-  # Always include Python, because we include it pretty much everywhere
-  # though we don't usually want to link it in as well.
-  include_directories(${PYTHON_INCLUDE_DIRS})
-endif()
-
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
