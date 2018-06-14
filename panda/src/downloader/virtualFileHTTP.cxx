@@ -18,6 +18,10 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFileHTTP::_type_handle;
 
 
@@ -205,7 +209,7 @@ was_read_successful() const {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileHTTP::
+std::streamsize VirtualFileHTTP::
 get_file_size(istream *stream) const {
   return _channel->get_file_size();
 }
@@ -214,7 +218,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileHTTP::
+std::streamsize VirtualFileHTTP::
 get_file_size() const {
   return _channel->get_file_size();
 }

@@ -18,6 +18,9 @@
 
 #include "clockObject.h"
 
+using std::cout;
+using std::endl;
+
 TypeHandle CollisionHandlerFloor::_type_handle;
 
 /**
@@ -204,7 +207,7 @@ handle_entries() {
           if (adjust < 0.0f && _max_velocity != 0.0f) {
             PN_stdfloat max_adjust =
               _max_velocity * ClockObject::get_global_clock()->get_dt();
-            adjust = max(adjust, -max_adjust);
+            adjust = std::max(adjust, -max_adjust);
           }
 
           CPT(TransformState) trans = def._target.get_transform();

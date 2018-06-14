@@ -18,8 +18,6 @@
 #include "p3d_lock.h"
 #include <iostream>
 
-using namespace std;
-
 /**
  *
  */

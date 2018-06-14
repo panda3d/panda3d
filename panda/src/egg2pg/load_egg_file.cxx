@@ -94,7 +94,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   loader._data->set_egg_timestamp(vfile->get_timestamp());
 
   bool okflag;
-  istream *istr = vfile->open_read_file(true);
+  std::istream *istr = vfile->open_read_file(true);
   if (istr == nullptr) {
     egg2pg_cat.error()
       << "Couldn't read " << egg_filename << "\n";

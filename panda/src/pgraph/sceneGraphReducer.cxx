@@ -51,7 +51,7 @@ set_gsg(GraphicsStateGuardianBase *gsg) {
   int max_vertices = max_collect_vertices;
 
   if (_gsg != nullptr) {
-    max_vertices = min(max_vertices, _gsg->get_max_vertices_per_array());
+    max_vertices = std::min(max_vertices, _gsg->get_max_vertices_per_array());
   }
 
   _transformer.set_max_collect_vertices(max_vertices);
@@ -181,7 +181,7 @@ unify(PandaNode *root, bool preserve_order) {
 
   int max_indices = max_collect_indices;
   if (_gsg != nullptr) {
-    max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
+    max_indices = std::min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
   r_unify(root, max_indices, preserve_order);
 }
@@ -376,7 +376,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
       << "SceneGraphReducer::r_flatten(" << *grandparent_node << ", "
-      << *parent_node << ", " << hex << combine_siblings_bits << dec
+      << *parent_node << ", " << std::hex << combine_siblings_bits << std::dec
       << ")\n";
   }
 
@@ -730,7 +730,7 @@ collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
  */
 void SceneGraphReducer::
 choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
-  string name;
+  std::string name;
   bool got_name = false;
 
   name = source1->get_name();

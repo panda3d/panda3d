@@ -76,13 +76,13 @@ get_bin_number(const EggNode *node) {
  * May be overridden in derived classes to define a name for each new bin,
  * based on its bin number, and a sample child.
  */
-string EggBinner::
+std::string EggBinner::
 get_bin_name(int bin_number, const EggNode *child) {
   if (bin_number == BN_polyset || bin_number == BN_patches) {
     return DCAST(EggPrimitive, child)->get_sort_name();
   }
 
-  return string();
+  return std::string();
 }
 
 /**

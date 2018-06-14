@@ -49,7 +49,7 @@ reset(double now) {
  *
  */
 void CacheStats::
-write(ostream &out, const char *name) const {
+write(std::ostream &out, const char *name) const {
 #ifndef NDEBUG
   out << name << " cache: " << _cache_hits << " hits, "
       << _cache_misses << " misses\n"

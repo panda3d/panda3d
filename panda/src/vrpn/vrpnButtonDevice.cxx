@@ -20,7 +20,7 @@ TypeHandle VrpnButtonDevice::_type_handle;
  *
  */
 VrpnButtonDevice::
-VrpnButtonDevice(VrpnClient *client, const string &device_name,
+VrpnButtonDevice(VrpnClient *client, const std::string &device_name,
                  VrpnButton *vrpn_button) :
   ClientButtonDevice(client, device_name),
   _vrpn_button(vrpn_button)

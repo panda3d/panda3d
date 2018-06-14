@@ -30,6 +30,10 @@
 #include "zStream.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::istringstream;
+using std::string;
+
 extern int vrmlyyparse();
 extern void vrmlyyResetLineNumber();
 extern int vrmlyydebug;
@@ -99,7 +103,7 @@ parse_vrml(Filename filename) {
 VrmlScene *
 parse_vrml(istream &in, const string &filename) {
   if (!get_standard_nodes()) {
-    cerr << "Internal error--unable to parse VRML.\n";
+    std::cerr << "Internal error--unable to parse VRML.\n";
     return nullptr;
   }
 
@@ -121,7 +125,7 @@ parse_vrml(istream &in, const string &filename) {
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cerr << "parse_vrml filename.wrl\n";
+    std::cerr << "parse_vrml filename.wrl\n";
     exit(1);
   }
 
@@ -130,7 +134,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  cout << *scene << "\n";
+  std::cout << *scene << "\n";
   return (0);
 }
 #endif

@@ -25,6 +25,11 @@
 #include "pystub.h"
 #include <stdlib.h>
 
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::string;
+
 CPPParser parser;
 
 void

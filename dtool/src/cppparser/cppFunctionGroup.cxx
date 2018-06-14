@@ -20,7 +20,7 @@
  *
  */
 CPPFunctionGroup::
-CPPFunctionGroup(const string &name) :
+CPPFunctionGroup(const std::string &name) :
   CPPDeclaration(CPPFile()),
   _name(name)
 {
@@ -61,7 +61,7 @@ get_return_type() const {
  *
  */
 void CPPFunctionGroup::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!_instances.empty()) {
     Instances::const_iterator ii = _instances.begin();
     (*ii)->output(out, indent_level, scope, complete);

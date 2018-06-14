@@ -48,7 +48,7 @@ get_material(const ColladaPrimitive *prim) const {
  * found.
  */
 CPT(RenderState) ColladaBindMaterial::
-get_material(const string &symbol) const {
+get_material(const std::string &symbol) const {
   if (_states.count(symbol) == 0) {
     return nullptr;
   }

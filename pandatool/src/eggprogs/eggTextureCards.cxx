@@ -22,6 +22,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 /**
  *
  */

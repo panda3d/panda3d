@@ -76,6 +76,9 @@
 #include <maya/MSelectionList.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 
 /**
  *
@@ -591,7 +594,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   while (frame <= frame_stop) {
     mayaegg_cat.info(false)
       << "frame " << frame.value() << "\n";
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "frame" << frame.value();
     EggGroup *frame_root = new EggGroup(name_strm.str());
     sequence_node->add_child(frame_root);

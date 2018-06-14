@@ -35,7 +35,7 @@ TypeHandle MovieTexture::_type_handle;
  * do_load_one.
  */
 MovieTexture::
-MovieTexture(const string &name) :
+MovieTexture(const std::string &name) :
   Texture(name)
 {
 }
@@ -177,8 +177,8 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
   cdata_tex->_orig_file_y_size = cdata->_video_height;
 
   do_set_pad_size(cdata_tex,
-                  max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
-                  max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
+                  std::max(cdata_tex->_x_size - cdata_tex->_orig_file_x_size, 0),
+                  std::max(cdata_tex->_y_size - cdata_tex->_orig_file_y_size, 0),
                   0);
 }
 
@@ -188,7 +188,7 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
  */
 bool MovieTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
-                    int &x_size, int &y_size, const string &name,
+                    int &x_size, int &y_size, const std::string &name,
                     bool for_padding) const {
   AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
   if (ats != ATS_none) {
@@ -285,7 +285,7 @@ do_load_one(Texture::CData *cdata_tex,
  */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PNMImage &pnmimage, const string &name, int z, int n,
+            const PNMImage &pnmimage, const std::string &name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
@@ -534,7 +534,7 @@ play() {
 void MovieTexture::
 set_time(double t) {
   CDWriter cdata(_cycler);
-  t = min(cdata->_video_length, max(0.0, t));
+  t = std::min(cdata->_video_length, std::max(0.0, t));
   if (cdata->_playing) {
     double now = ClockObject::get_global_clock()->get_frame_time();
     cdata->_clock = t - (now * cdata->_play_rate);

@@ -48,7 +48,7 @@ optimize() {
  * Writes the data to the indicated output stream in Egg format.
  */
 void EggSAnimData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (get_num_rows() <= 1) {
     // We get a lot of these little tiny tables.  For brevity, we'll write
     // these all on one line, because we can.  This just makes it easier for a

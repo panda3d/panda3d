@@ -207,7 +207,7 @@ transform_changed() {
       _soft->scale(new_scale);
     }
 
-    _sync = move(ts);
+    _sync = std::move(ts);
   }
 }
 

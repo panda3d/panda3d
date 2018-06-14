@@ -26,6 +26,8 @@
   #endif
 #endif
 
+using std::string;
+
 /**
  *
  */
@@ -580,7 +582,7 @@ paint_image(CGContextRef context, const OsxImageData &image) {
     // The bitmap is larger than the window; scale it down.
     double x_scale = (double)_win_width / (double)image._width;
     double y_scale = (double)_win_height / (double)image._height;
-    double scale = min(x_scale, y_scale);
+    double scale = std::min(x_scale, y_scale);
     int sc_width = (int)(image._width * scale);
     int sc_height = (int)(image._height * scale);
 

@@ -26,7 +26,7 @@ LoaderFileTypeStf() {
 /**
  *
  */
-string LoaderFileTypeStf::
+std::string LoaderFileTypeStf::
 get_name() const {
   return "SpeedTree compiled tree";
 }
@@ -34,7 +34,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeStf::
+std::string LoaderFileTypeStf::
 get_extension() const {
   return "stf";
 }

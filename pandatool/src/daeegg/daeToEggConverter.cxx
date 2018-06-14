@@ -48,6 +48,9 @@
   #include "FCDocument/FCDGeometryPolygonsInput.h"
 #endif
 
+using std::endl;
+using std::string;
+
 /**
  *
  */

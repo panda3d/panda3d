@@ -27,6 +27,8 @@
 #include <maya/MFn.h>
 #include "post_maya_include.h"
 
+using std::string;
+
 /**
  *
  */

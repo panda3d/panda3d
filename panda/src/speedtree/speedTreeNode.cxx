@@ -42,6 +42,10 @@
 #include "dxGraphicsStateGuardian9.h"
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 double SpeedTreeNode::_global_time_delta = 0.0;
 bool SpeedTreeNode::_authorized;
 bool SpeedTreeNode::_done_first_init;
@@ -155,7 +159,7 @@ add_tree(const STTree *tree) {
   if (ti == _trees.end()) {
     // This is the first time that this particular tree has been added.
     InstanceList *instance_list = new InstanceList(tree);
-    pair<Trees::iterator, bool> result = _trees.insert(instance_list);
+    std::pair<Trees::iterator, bool> result = _trees.insert(instance_list);
     ti = result.first;
     bool inserted = result.second;
     nassertr(inserted, *(*ti));
@@ -1245,10 +1249,10 @@ repopulate() {
     SpeedTree::CMap<const SpeedTree::CTree*, SpeedTree::st_int32>::const_iterator si;
     si = _population_stats.m_mMaxNumInstancesPerCellPerBase.find(tree->get_tree());
     if (si != _population_stats.m_mMaxNumInstancesPerCellPerBase.end()) {
-      max_instances = max(max_instances, (int)si->second);
+      max_instances = std::max(max_instances, (int)si->second);
     }
 
-    max_instances_by_cell = max(max_instances_by_cell, max_instances);
+    max_instances_by_cell = std::max(max_instances_by_cell, max_instances);
   }
 
   _visible_trees.Reserve(_forest_render.GetBaseTrees(),
@@ -1547,7 +1551,7 @@ setup_for_render(GraphicsStateGuardian *gsg) {
       SpeedTree::CMap<const SpeedTree::CTree*, SpeedTree::st_int32>::const_iterator si;
       si = _population_stats.m_mMaxNumInstancesPerCellPerBase.find(tree->get_tree());
       if (si != _population_stats.m_mMaxNumInstancesPerCellPerBase.end()) {
-        max_instances = max(max_instances, (int)si->second);
+        max_instances = std::max(max_instances, (int)si->second);
       }
 
       // Get the speedtree-textures-dir to pass for initialization.

@@ -31,7 +31,7 @@ get_type() const {
   // Normally, this function should never be called, because it is a pure
   // virtual function.  If it is called, you probably called get_type() on a
   // recently-destructed object.
-  cerr
+  std::cerr
     << "TypedObject::get_type() called!\n";
   return _type_handle;
 }

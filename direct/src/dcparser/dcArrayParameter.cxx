@@ -16,6 +16,8 @@
 #include "dcClassParameter.h"
 #include "hashGenerator.h"
 
+using std::string;
+
 /**
  *
  */
@@ -201,13 +203,13 @@ validate_num_nested_fields(int num_nested_fields) const {
  * identifier.
  */
 void DCArrayParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
-    ostringstream strm;
+    std::ostringstream strm;
 
     strm << "[";
     _array_size_range.output(strm);

@@ -16,6 +16,8 @@
 #include "physical.h"
 #include "physicsManager.h"
 
+using std::ostream;
+
 TypeHandle Physical::_type_handle;
 
 /**

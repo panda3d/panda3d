@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 LoaderFileTypeRegistry *LoaderFileTypeRegistry::_global_ptr;
 
 /**
@@ -152,16 +154,16 @@ get_type_from_extension(const string &extension) {
       _deferred_types.erase(di);
 
       loader_cat->info()
-        << "loading file type module: " << name << endl;
+        << "loading file type module: " << name << std::endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
       if (tmp == nullptr) {
         loader_cat->warning()
           << "Unable to load " << dlname.to_os_specific() << ": "
-          << load_dso_error() << endl;
+          << load_dso_error() << std::endl;
         return nullptr;
       } else if (loader_cat.is_debug()) {
         loader_cat.debug()
-          << "done loading file type module: " << name << endl;
+          << "done loading file type module: " << name << std::endl;
       }
 
       // Now try again to find the LoaderFileType.
@@ -183,7 +185,7 @@ get_type_from_extension(const string &extension) {
  * per line.
  */
 void LoaderFileTypeRegistry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (_types.empty()) {
     indent(out, indent_level) << "(No file types are known).\n";
   } else {
@@ -192,7 +194,7 @@ write(ostream &out, int indent_level) const {
       LoaderFileType *type = (*ti);
       string name = type->get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0)) << " ";
+      indent(out, std::max(30 - (int)name.length(), 0)) << " ";
 
       bool comma = false;
       if (!type->get_extension().empty()) {

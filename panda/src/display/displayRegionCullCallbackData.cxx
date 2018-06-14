@@ -33,7 +33,7 @@ DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup
  *
  */
 void DisplayRegionCullCallbackData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << "(" << (void *)_cull_handler << ", "
       << (void *)_scene_setup << ")";
 }

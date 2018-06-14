@@ -14,6 +14,8 @@
 #include "cppTypeProxy.h"
 #include "cppFile.h"
 
+using std::string;
+
 /**
  *
  */
@@ -144,7 +146,7 @@ is_incomplete() const {
  * have special exceptions.
  */
 void CPPTypeProxy::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
   if (_actual_type == nullptr) {
@@ -159,7 +161,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
  *
  */
 void CPPTypeProxy::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (_actual_type == nullptr) {
     out << "unknown";
     return;

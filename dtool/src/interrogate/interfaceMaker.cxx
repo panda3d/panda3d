@@ -39,6 +39,10 @@
 #include "cppStructType.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 InterrogateType dummy_type;
 
 /**

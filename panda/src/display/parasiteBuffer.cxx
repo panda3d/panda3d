@@ -21,7 +21,7 @@ TypeHandle ParasiteBuffer::_type_handle;
  * created instead via the GraphicsEngine::make_parasite() function.
  */
 ParasiteBuffer::
-ParasiteBuffer(GraphicsOutput *host, const string &name,
+ParasiteBuffer(GraphicsOutput *host, const std::string &name,
                int x_size, int y_size, int flags) :
   GraphicsOutput(host->get_engine(), host->get_pipe(),
                  name, host->get_fb_properties(),
@@ -95,7 +95,7 @@ set_size_and_recalc(int x, int y) {
       y = Texture::down_to_power_2(y);
     }
     if (_creation_flags & GraphicsPipe::BF_size_square) {
-      x = y = min(x, y);
+      x = y = std::min(x, y);
     }
   }
 
@@ -180,8 +180,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   } else {
     if (_host->get_x_size() < get_x_size() ||
         _host->get_y_size() < get_y_size()) {
-      set_size_and_recalc(min(get_x_size(), _host->get_x_size()),
-                          min(get_y_size(), _host->get_y_size()));
+      set_size_and_recalc(std::min(get_x_size(), _host->get_x_size()),
+                          std::min(get_y_size(), _host->get_y_size()));
     }
   }
 

@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   t.triangulate();
 
   for (int i = 0; i < t.get_num_triangles(); ++i) {
-    cerr << "tri: " << t.get_triangle_v0(i) << " "
+    std::cerr << "tri: " << t.get_triangle_v0(i) << " "
          << t.get_triangle_v1(i) << " "
          << t.get_triangle_v2(i) << "\n";
   }

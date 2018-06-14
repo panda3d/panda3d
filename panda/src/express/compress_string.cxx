@@ -18,6 +18,12 @@
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  * Compress the indicated source string at the given compression level (1
  * through 9).  Returns the compressed string.

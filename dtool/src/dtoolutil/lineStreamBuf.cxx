@@ -13,6 +13,8 @@
 
 #include "lineStreamBuf.h"
 
+using std::string;
+
 /**
  *
  */
@@ -65,7 +67,7 @@ get_line() {
  */
 int LineStreamBuf::
 sync() {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
   pbump(-(int)n);  // Reset pptr().
   return 0;  // EOF to indicate write full.
@@ -77,7 +79,7 @@ sync() {
  */
 int LineStreamBuf::
 overflow(int ch) {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {
     return EOF;

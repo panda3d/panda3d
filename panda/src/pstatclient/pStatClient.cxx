@@ -27,6 +27,8 @@
 #include "clockObject.h"
 #include "neverFreeMemory.h"
 
+using std::string;
+
 PStatCollector PStatClient::_heap_total_size_pcollector("System memory:Heap");
 PStatCollector PStatClient::_heap_overhead_size_pcollector("System memory:Heap:Overhead");
 PStatCollector PStatClient::_heap_single_size_pcollector("System memory:Heap:Single");
@@ -334,7 +336,7 @@ main_tick() {
               // Not used.
               break;
             }
-            ostringstream strm;
+            std::ostringstream strm;
             strm << "System memory:" << category << ":" << type;
             col = PStatCollector(strm.str());
           }

@@ -43,7 +43,7 @@ FunctionWriterPtrFromPython::
  * Outputs the prototype for the function.
  */
 void FunctionWriterPtrFromPython::
-write_prototype(ostream &out) {
+write_prototype(std::ostream &out) {
   CPPType *ppointer = new CPPPointerType(_pointer_type);
 
   out << "static int " << _name << "(PyObject *obj, ";
@@ -57,7 +57,7 @@ write_prototype(ostream &out) {
  * Outputs the code for the function.
  */
 void FunctionWriterPtrFromPython::
-write_code(ostream &out) {
+write_code(std::ostream &out) {
   CPPType *ppointer = new CPPPointerType(_pointer_type);
 
   out << "static int\n"

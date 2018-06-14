@@ -20,6 +20,8 @@
 #include "config_glxdisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle glxGraphicsPipe::_type_handle;
 
 /**

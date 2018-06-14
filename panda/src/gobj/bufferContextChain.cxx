@@ -54,7 +54,7 @@ take_from(BufferContextChain &other) {
  *
  */
 void BufferContextChain::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _count << " objects, consuming " << _total_size << " bytes:\n";
 

@@ -31,6 +31,10 @@
 
 #include <algorithm>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle PartBundle::_type_handle;
 
 

@@ -20,7 +20,7 @@ TypeHandle AuxSceneData::_type_handle;
  *
  */
 void AuxSceneData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " expires " << get_expiration_time();
 }
 
@@ -28,6 +28,6 @@ output(ostream &out) const {
  *
  */
 void AuxSceneData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

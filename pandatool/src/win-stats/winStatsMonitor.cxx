@@ -71,7 +71,7 @@ WinStatsMonitor::
  * Should be redefined to return a descriptive name for the type of
  * PStatsMonitor this is.
  */
-string WinStatsMonitor::
+std::string WinStatsMonitor::
 get_monitor_name() {
   return "WinStats";
 }
@@ -107,7 +107,7 @@ got_hello() {
 void WinStatsMonitor::
 got_bad_version(int client_major, int client_minor,
                 int server_major, int server_minor) {
-  ostringstream str;
+  std::ostringstream str;
   str << "Unable to honor connection attempt from "
       << get_client_progname() << " on " << get_client_hostname()
       << ": unsupported PStats version "
@@ -121,7 +121,7 @@ got_bad_version(int client_major, int client_minor,
         << ".0 through " << server_major << "." << server_minor << ").";
   }
 
-  string message = str.str();
+  std::string message = str.str();
   MessageBox(nullptr, message.c_str(), "Bad version",
              MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND);
 }

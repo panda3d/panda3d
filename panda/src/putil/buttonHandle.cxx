@@ -27,14 +27,14 @@ TypeHandle ButtonHandle::_type_handle;
  * ButtonRegistry::register_button().
  */
 ButtonHandle::
-ButtonHandle(const string &name) {
+ButtonHandle(const std::string &name) {
   _index = ButtonRegistry::ptr()->get_button(name)._index;
 }
 
 /**
  * Returns the name of the button.
  */
-string ButtonHandle::
+std::string ButtonHandle::
 get_name() const {
   if ((*this) == ButtonHandle::none()) {
     return "none";

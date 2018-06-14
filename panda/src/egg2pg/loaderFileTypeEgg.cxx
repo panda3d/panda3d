@@ -29,7 +29,7 @@ LoaderFileTypeEgg() {
 /**
  *
  */
-string LoaderFileTypeEgg::
+std::string LoaderFileTypeEgg::
 get_name() const {
   return "Egg";
 }
@@ -37,7 +37,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeEgg::
+std::string LoaderFileTypeEgg::
 get_extension() const {
   return "egg";
 }

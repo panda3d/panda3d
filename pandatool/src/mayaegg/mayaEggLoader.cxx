@@ -71,6 +71,12 @@
 
 #include "mayaEggLoader.h"
 
+using std::cerr;
+using std::endl;
+using std::ostringstream;
+using std::string;
+using std::vector;
+
 class MayaEggGroup;
 class MayaEggGeom;
 class MayaEggMesh;
@@ -617,7 +623,7 @@ void MayaEggJoint::CreateMayaBone(MayaEggGroup *eggParent)
 
 // MayaEggGeom : base abstract class of MayaEggMesh and MayaEggNurbsSurface
 
-typedef pair<double, EggGroup *> MayaEggWeight;
+typedef std::pair<double, EggGroup *> MayaEggWeight;
 
 struct MayaEggVertex
 {

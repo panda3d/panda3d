@@ -16,6 +16,8 @@
 
 #ifdef HAVE_VORBIS
 
+using std::istream;
+
 TypeHandle VorbisAudioCursor::_type_handle;
 
 /**
@@ -82,7 +84,7 @@ seek(double t) {
     return;
   }
 
-  t = max(t, 0.0);
+  t = std::max(t, 0.0);
 
   // Use ov_time_seek_lap if cross-lapping is enabled.
   if (vorbis_seek_lap) {
@@ -189,15 +191,15 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
 
   switch (whence) {
   case SEEK_SET:
-    stream->seekg(offset, ios::beg);
+    stream->seekg(offset, std::ios::beg);
     break;
 
   case SEEK_CUR:
-    stream->seekg(offset, ios::cur);
+    stream->seekg(offset, std::ios::cur);
     break;
 
   case SEEK_END:
-    stream->seekg(offset, ios::end);
+    stream->seekg(offset, std::ios::end);
     break;
 
   default:

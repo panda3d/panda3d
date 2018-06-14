@@ -30,6 +30,8 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
  * we were given; instead, we ask CPPParser to parse a new type of the same
@@ -2251,7 +2253,7 @@ get_function_signature(CPPInstance *function,
   CPPFunctionType *ftype = function->_type->as_function_type();
   assert(ftype != nullptr);
 
-  ostringstream out;
+  std::ostringstream out;
 
   // It's tempting to mark static methods with a different function signature
   // than non-static, because a static method doesn't have an implicit 'this'

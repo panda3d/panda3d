@@ -52,7 +52,7 @@ set_coordinate_system(BulletUpAxis up) {
     _vehicle->setCoordinateSystem(0, 2, 1);
     break;
   default:
-    bullet_cat.error() << "invalid up axis:" << up << endl;
+    bullet_cat.error() << "invalid up axis:" << up << std::endl;
     break;
   }
 }

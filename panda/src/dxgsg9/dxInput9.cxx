@@ -17,6 +17,8 @@
 #define AXIS_RESOLUTION 2000   // use this many levels of resolution by default (could be more if needed and device supported it)
 #define AXIS_RANGE_CENTERED    // if defined, axis range is centered on 0, instead of starting on 0
 
+using std::endl;
+
 BOOL CALLBACK EnumGameCtrlsCallback( const DIDEVICEINSTANCE* pdidInstance,
                                      VOID* pContext ) {
     DI_DeviceInfos *pDevInfos = (DI_DeviceInfos *)pContext;

@@ -20,7 +20,7 @@ TypeHandle AsyncTaskSequence::_type_handle;
  *
  */
 AsyncTaskSequence::
-AsyncTaskSequence(const string &name) :
+AsyncTaskSequence(const std::string &name) :
   AsyncTask(name),
   _repeat_count(0),
   _task_index(0)

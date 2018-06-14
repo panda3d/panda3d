@@ -468,7 +468,7 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
   }
 
   int x = height_to_pixel(bar._height);
-  const string &label = bar._label;
+  const std::string &label = bar._label;
   SIZE size;
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
@@ -502,8 +502,8 @@ create_window() {
 
   const PStatClientData *client_data =
     WinStatsGraph::_monitor->get_client_data();
-  string thread_name = client_data->get_thread_name(_thread_index);
-  string window_title = thread_name + " thread piano roll";
+  std::string thread_name = client_data->get_thread_name(_thread_index);
+  std::string window_title = thread_name + " thread piano roll";
 
 
   RECT win_rect = {

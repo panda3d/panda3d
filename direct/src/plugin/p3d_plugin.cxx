@@ -448,7 +448,7 @@ P3D_new_string_object(const char *str, int length) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = new P3DStringObject(string(str, length));
+  P3D_object *result = new P3DStringObject(std::string(str, length));
 
   RELEASE_LOCK(_api_lock);
   return result;

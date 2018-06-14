@@ -212,7 +212,7 @@ get_preferred(int n) const {
  * output stream, one per line.
  */
 void FactoryBase::
-write_types(ostream &out, int indent_level) const {
+write_types(std::ostream &out, int indent_level) const {
   Creators::const_iterator ci;
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     indent(out, indent_level) << (*ci).first << "\n";

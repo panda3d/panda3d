@@ -38,6 +38,10 @@
 #include <linux/input.h>
 #endif
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 struct _XcursorFile {
   void *closure;
   int (*read)(XcursorFile *, unsigned char *, int);
@@ -1912,7 +1916,7 @@ map_button(KeySym key) const {
   }
   if (x11display_cat.is_debug()) {
     x11display_cat.debug()
-      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+      << "Unrecognized keysym 0x" << std::hex << key << std::dec << "\n";
   }
   return ButtonHandle::none();
 }

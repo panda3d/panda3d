@@ -377,7 +377,7 @@ static PyObject *Dtool_MutableSequenceWrapper_insert(PyObject *self, PyObject *a
       return PyErr_Format(PyExc_TypeError, "%s.insert() does not support negative indices", wrap->_base._name);
     }
   }
-  return wrap->_insert_func(wrap->_base._self, (ssize_t)max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
+  return wrap->_insert_func(wrap->_base._self, (ssize_t)std::max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
 }
 
 /**

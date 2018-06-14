@@ -14,6 +14,13 @@
 #include "virtualFileMountSystem.h"
 #include "virtualFileSystem.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileMountSystem::_type_handle;
 
 
@@ -297,7 +304,7 @@ get_file_size(const Filename &file, istream *stream) const {
   streampos orig = stream->tellg();
 
   // Seek to the end and get the stream position there.
-  stream->seekg(0, ios::end);
+  stream->seekg(0, std::ios::end);
   if (stream->fail()) {
     // Seeking not supported.
     stream->clear();
@@ -306,7 +313,7 @@ get_file_size(const Filename &file, istream *stream) const {
   streampos size = stream->tellg();
 
   // Then return to the original point.
-  stream->seekg(orig, ios::beg);
+  stream->seekg(orig, std::ios::beg);
 
   // Make sure there are no error flags set as a result of the seek.
   stream->clear();

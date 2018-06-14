@@ -13,8 +13,8 @@
 
 #include "cppVisibility.h"
 
-ostream &
-operator << (ostream &out, CPPVisibility vis) {
+std::ostream &
+operator << (std::ostream &out, CPPVisibility vis) {
   switch (vis) {
   case V_published:
     return out << "__published";

@@ -75,6 +75,9 @@
 #include "eggTable.h"
 #include "dcast.h"
 
+using std::pair;
+using std::string;
+
 /**
  *
  */
@@ -191,7 +194,7 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
   int num_children = node->get_num_children();
   int num_switches = node->get_num_switches();
 
-  num_children = min(num_children, num_switches);
+  num_children = std::min(num_children, num_switches);
 
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
@@ -1148,7 +1151,7 @@ apply_state_properties(EggRenderMode *egg_render_mode, const RenderState *state)
  */
 bool EggSaver::
 apply_tags(EggGroup *egg_group, PandaNode *node) {
-  ostringstream strm;
+  std::ostringstream strm;
   char delimiter = '\n';
   string delimiter_str(1, delimiter);
   node->list_tags(strm, delimiter_str);

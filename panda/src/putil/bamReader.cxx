@@ -20,6 +20,8 @@
 #include "config_putil.h"
 #include "pipelineCyclerBase.h"
 
+using std::string;
+
 TypeHandle BamReaderAuxData::_type_handle;
 
 WritableFactory *BamReader::_factory = nullptr;
@@ -1111,7 +1113,7 @@ p_read_object() {
 
   default:
     bam_cat.error()
-      << "Encountered invalid BamObjectCode 0x" << hex << (int)boc << dec << ".\n";
+      << "Encountered invalid BamObjectCode 0x" << std::hex << (int)boc << std::dec << ".\n";
     return 0;
   }
 
@@ -1251,7 +1253,7 @@ p_read_object() {
       if (object == nullptr) {
         if (bam_cat.is_debug()) {
           bam_cat.debug()
-            << "Unable to create an object of type " << type << endl;
+            << "Unable to create an object of type " << type << std::endl;
         }
 
       } else if (object->get_type() != type) {
@@ -1263,7 +1265,7 @@ p_read_object() {
             bam_cat.warning()
               << "Attempted to create a " << type.get_name()    \
               << " but a " << object->get_type()                \
-              << " was created instead." << endl;
+              << " was created instead." << std::endl;
           }
 
         } else {
@@ -1272,7 +1274,7 @@ p_read_object() {
           bam_cat.warning()
             << "Attempted to create a " << type.get_name()      \
             << " but a " << object->get_type()                  \
-            << " was created instead." << endl;
+            << " was created instead." << std::endl;
         }
 
       } else {

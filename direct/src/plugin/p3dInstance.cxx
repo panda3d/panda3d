@@ -34,6 +34,14 @@
 #include <sys/mman.h>
 #include <ApplicationServices/ApplicationServices.h>
 
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::stringstream;
+using std::string;
+using std::vector;
+
 // Lifted from NSEvent.h (which is Objective-C).
 enum {
    NSAlphaShiftKeyMask = 1 << 16,
@@ -1472,7 +1480,7 @@ uninstall_host() {
   uninstall_packages();
 
   // Collect the set of hosts referenced by this instance.
-  set<P3DHost *> hosts;
+  std::set<P3DHost *> hosts;
   Packages::const_iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
     P3DPackage *package = (*pi);
@@ -1484,7 +1492,7 @@ uninstall_host() {
   nout << "Uninstalling " << hosts.size() << " hosts\n";
 
   // Uninstall all of them.
-  set<P3DHost *>::iterator hi;
+  std::set<P3DHost *>::iterator hi;
   for (hi = hosts.begin(); hi != hosts.end(); ++hi) {
     P3DHost *host = (*hi);
     host->uninstall();

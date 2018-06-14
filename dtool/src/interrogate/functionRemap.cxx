@@ -32,6 +32,10 @@
 #include "interrogateType.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */
@@ -439,7 +443,10 @@ get_call_str(const string &container, const vector_string &pexprs) const {
         call << ")." << _cppfunc->get_local_name();
 
       } else {
-        call << _cppfunc->get_local_name(&parser);
+        if (_cpptype != nullptr) {
+          call << _cpptype->get_local_name(&parser);
+        }
+        call << "::" << _cppfunc->get_local_name();
       }
     }
     call << "(";

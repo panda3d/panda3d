@@ -190,7 +190,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // make it grab one with 8 bits, though.  Dirty hack.  Needs more research.
   if (properties.get_alpha_bits() > 0) {
     attribs.push_back(NSOpenGLPFAAlphaSize);
-    attribs.push_back(max(8, properties.get_alpha_bits()));
+    attribs.push_back(std::max(8, properties.get_alpha_bits()));
   }
 
   if (properties.get_multisamples() > 0) {

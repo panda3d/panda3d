@@ -963,6 +963,10 @@ char *eggyytext;
 
 #include <math.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 extern "C" int eggyywrap(void);  // declared below.
 
 static int yyinput(void);        // declared by flex.
@@ -1072,7 +1076,7 @@ eggyyerror(const string &msg) {
 }
 
 void
-eggyyerror(ostringstream &strm) {
+eggyyerror(std::ostringstream &strm) {
   string s = strm.str();
   eggyyerror(s);
 }
@@ -1098,8 +1102,8 @@ eggyywarning(const string &msg) {
 }
 
 void
-eggyywarning(ostringstream &strm) {
-  string s = strm.str();
+eggyywarning(std::ostringstream &strm) {
+  std::string s = strm.str();
   eggyywarning(s);
 }
 
@@ -1117,7 +1121,7 @@ input_chars(char *buffer, int &result, int max_size) {
       // from the stream, copy it into the current_line array.  This
       // is because the \n.* rule below, which fills current_line
       // normally, doesn't catch the first line.
-      int length = min(max_error_width, result);
+      int length = std::min(max_error_width, result);
       strncpy(current_line, buffer, length);
       current_line[length] = '\0';
       line_number++;
@@ -1212,7 +1216,7 @@ eat_c_comment() {
   c = read_char(line, col);
   while (c != EOF && !(last_c == '*' && c == '/')) {
     if (last_c == '/' && c == '*') {
-      ostringstream errmsg;
+      std::ostringstream errmsg;
       errmsg << "This comment contains a nested /* symbol at line "
              << line << ", column " << col-1 << "--possibly unclosed?"
              << std::ends;

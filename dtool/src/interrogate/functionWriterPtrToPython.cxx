@@ -44,7 +44,7 @@ FunctionWriterPtrToPython::
  * Outputs the prototype for the function.
  */
 void FunctionWriterPtrToPython::
-write_prototype(ostream &out) {
+write_prototype(std::ostream &out) {
   out << "static PyObject *" << _name << "(";
   _pointer_type->output_instance(out, "addr", &parser);
   out << ", int caller_manages);\n";
@@ -54,8 +54,8 @@ write_prototype(ostream &out) {
  * Outputs the code for the function.
  */
 void FunctionWriterPtrToPython::
-write_code(ostream &out) {
-  string classobj_func = InterfaceMakerPythonObj::get_builder_name(_type);
+write_code(std::ostream &out) {
+  std::string classobj_func = InterfaceMakerPythonObj::get_builder_name(_type);
   out << "static PyObject *\n"
       << _name << "(";
   _pointer_type->output_instance(out, "addr", &parser);

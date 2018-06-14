@@ -330,7 +330,7 @@ post_apply_flat_attribute() {
     int num_lead_vertices = get_num_lead_vertices();
     for (int i = 0; i < (int)size(); i++) {
       EggVertex *vertex = get_vertex(i);
-      EggAttributes *component = get_component(max(i - num_lead_vertices, 0));
+      EggAttributes *component = get_component(std::max(i - num_lead_vertices, 0));
 
       // Use set_normal() instead of copy_normal(), to avoid getting the
       // morphs--we don't want them here, since we're just putting a bogus
@@ -376,7 +376,7 @@ prepare_add_vertex(EggVertex *vertex, int i, int n) {
 
   int num_lead_vertices = get_num_lead_vertices();
   if (n >= num_lead_vertices + 1) {
-    i = max(i - num_lead_vertices, 0);
+    i = std::max(i - num_lead_vertices, 0);
     nassertv(i <= (int)_components.size());
     _components.insert(_components.begin() + i, new EggAttributes(*this));
   }
@@ -400,7 +400,7 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
 
   int num_lead_vertices = get_num_lead_vertices();
   if (n >= num_lead_vertices + 1) {
-    i = max(i - num_lead_vertices, 0);
+    i = std::max(i - num_lead_vertices, 0);
     nassertv(i < (int)_components.size());
     delete _components[i];
     _components.erase(_components.begin() + i);
@@ -428,7 +428,7 @@ do_triangulate(EggGroupNode *container) const {
  * indicated output stream in Egg format.
  */
 void EggCompositePrimitive::
-write_body(ostream &out, int indent_level) const {
+write_body(std::ostream &out, int indent_level) const {
   EggPrimitive::write_body(out, indent_level);
 
   for (int i = 0; i < get_num_components(); i++) {

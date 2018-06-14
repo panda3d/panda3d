@@ -25,6 +25,9 @@
 #include "vertexDataBuffer.h"
 #include "texture.h"
 
+using std::max;
+using std::min;
+
 ConfigVariableInt max_independent_vertex_data
 ("max-independent-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
@@ -176,7 +179,7 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  *
  */
 void GeomVertexArrayData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_num_rows() << " rows: " << *get_array_format();
 }
 
@@ -184,7 +187,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexArrayData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   _array_format->write_with_data(out, indent_level, this);
 }
 

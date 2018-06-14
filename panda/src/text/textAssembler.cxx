@@ -40,6 +40,11 @@
 #include <hb.h>
 #endif
 
+using std::max;
+using std::min;
+using std::move;
+using std::wstring;
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -827,7 +832,7 @@ scan_wtext(TextAssembler::TextString &output_string,
 
       // Now we have to encode the wstring into a string, for lookup in the
       // TextPropertiesManager.
-      string graphic_name = _encoder->encode_wtext(graphic_wname);
+      std::string graphic_name = _encoder->encode_wtext(graphic_wname);
 
       TextPropertiesManager *manager =
         TextPropertiesManager::get_global_ptr();
@@ -1628,7 +1633,7 @@ assemble_row(TextAssembler::TextRow &row,
       if (first_glyph != nullptr) {
         advance = first_glyph->get_advance() * advance_scale;
         if (!first_glyph->is_whitespace()) {
-          swap(placement._glyph, first_glyph);
+          std::swap(placement._glyph, first_glyph);
           placed_glyphs.push_back(placement);
         }
       }
@@ -1638,7 +1643,7 @@ assemble_row(TextAssembler::TextRow &row,
       if (second_glyph != nullptr) {
         placement._xpos += advance * glyph_scale;
         advance += second_glyph->get_advance();
-        swap(placement._glyph, second_glyph);
+        std::swap(placement._glyph, second_glyph);
         placed_glyphs.push_back(placement);
       }
 
@@ -2414,7 +2419,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
         int vi = primitive->get_vertex(i);
 
         // Attempt to insert number "vi" into the map.
-        pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
+        std::pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
         int new_vertex;
         if (added.second) {
           // The insert succeeded.  That means this is the first time we have

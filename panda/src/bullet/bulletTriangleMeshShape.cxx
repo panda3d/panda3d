@@ -46,13 +46,13 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
 
   // Assert that mesh is not NULL
   if (!mesh) {
-    bullet_cat.warning() << "mesh is NULL! creating new mesh." << endl;
+    bullet_cat.warning() << "mesh is NULL! creating new mesh." << std::endl;
     mesh = new BulletTriangleMesh();
   }
 
   // Assert that mesh has at least one triangle
   if (mesh->do_get_num_triangles() == 0) {
-    bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
+    bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << std::endl;
     mesh->add_triangle(LPoint3::zero(), LPoint3::zero(), LPoint3::zero());
   }
 

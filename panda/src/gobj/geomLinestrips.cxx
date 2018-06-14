@@ -20,6 +20,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomLinestripsAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomLinestrips::_type_handle;
 
 /**

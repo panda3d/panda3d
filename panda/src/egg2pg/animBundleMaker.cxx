@@ -25,6 +25,8 @@
 #include "animChannelMatrixXfmTable.h"
 #include "animChannelScalarTable.h"
 
+using std::min;
+
 /**
  *
  */
@@ -212,7 +214,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
  * structure.
  */
 AnimChannelScalarTable *AnimBundleMaker::
-create_s_channel(EggSAnimData *egg_anim, const string &name,
+create_s_channel(EggSAnimData *egg_anim, const std::string &name,
                  AnimGroup *parent) {
   AnimChannelScalarTable *table
     = new AnimChannelScalarTable(parent, name);
@@ -236,7 +238,7 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
  * structure, if possible.
  */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
-create_xfm_channel(EggNode *egg_node, const string &name,
+create_xfm_channel(EggNode *egg_node, const std::string &name,
                    AnimGroup *parent) {
   if (egg_node->is_of_type(EggXfmAnimData::get_class_type())) {
     EggXfmAnimData *egg_anim = DCAST(EggXfmAnimData, egg_node);
@@ -260,7 +262,7 @@ create_xfm_channel(EggNode *egg_node, const string &name,
  * structure.
  */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
-create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
+create_xfm_channel(EggXfmSAnim *egg_anim, const std::string &name,
                    AnimGroup *parent) {
   // Ensure that the anim table is optimal and that it is standard order.
   egg_anim->optimize_to_standard_order();

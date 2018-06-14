@@ -75,7 +75,7 @@ make_default() {
  *
  */
 void ColorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_color_type()) {
   case T_vertex:

@@ -32,8 +32,8 @@ insert(float index, float value) {
     _min = _max = index;
   }
   else {
-    _min = min(_min, index);
-    _max = max(_max, index);
+    _min = std::min(_min, index);
+    _max = std::max(_max, index);
   }
   _map[index] = value;
 }
@@ -106,11 +106,11 @@ get_value_at_index(int index) const {
  *
  */
 void PhysxLinearInterpolationValues::
-output(ostream &out) const {
+output(std::ostream &out) const {
 
   MapType::const_iterator it = _map.begin();
 
   for (; it != _map.end(); ++it) {
-    cout << it->first << " -> " << it->second << "\n";
+    std::cout << it->first << " -> " << it->second << "\n";
   }
 }

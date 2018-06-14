@@ -150,7 +150,7 @@ get_inertial_tensor() const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsObject::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"PhysicsObject";
   #endif //] NDEBUG
@@ -160,7 +160,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void PhysicsObject::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"PhysicsObject "<<_name<<"\n";

@@ -23,7 +23,8 @@
 #include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 
-using namespace std;
+using std::cerr;
+using std::endl;
 
 void
 scan_nodes() {

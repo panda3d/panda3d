@@ -20,6 +20,9 @@
 #include "actorNode.h"
 #include "dcast.h"
 
+using std::cerr;
+using std::endl;
+
 TypeHandle PhysicsCollisionHandler::_type_handle;
 
 /**

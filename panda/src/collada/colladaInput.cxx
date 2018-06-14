@@ -37,7 +37,7 @@
  * Pretty obvious what this does.
  */
 ColladaInput::
-ColladaInput(const string &semantic) :
+ColladaInput(const std::string &semantic) :
   _column_name (nullptr),
   _semantic (semantic),
   _offset (0),
@@ -69,14 +69,14 @@ ColladaInput(const string &semantic) :
  * Pretty obvious what this does.
  */
 ColladaInput::
-ColladaInput(const string &semantic, unsigned int set) :
+ColladaInput(const std::string &semantic, unsigned int set) :
   _column_name (nullptr),
   _semantic (semantic),
   _offset (0),
   _have_set (true),
   _set (set) {
 
-  ostringstream setstr;
+  std::ostringstream setstr;
   setstr << _set;
 
   if (semantic == "POSITION") {

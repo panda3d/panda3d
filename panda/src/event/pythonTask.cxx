@@ -33,7 +33,7 @@ extern struct Dtool_PyTypedObject Dtool_PythonTask;
  *
  */
 PythonTask::
-PythonTask(PyObject *func_or_coro, const string &name) :
+PythonTask(PyObject *func_or_coro, const std::string &name) :
   AsyncTask(name),
   _function(nullptr),
   _args(nullptr),
@@ -724,7 +724,7 @@ do_python_task() {
     return DS_done;
   }
 
-  ostringstream strm;
+  std::ostringstream strm;
 #if PY_MAJOR_VERSION >= 3
   PyObject *str = PyObject_ASCII(result);
   if (str == nullptr) {
@@ -742,7 +742,7 @@ do_python_task() {
 #endif
   Py_DECREF(str);
   Py_DECREF(result);
-  string message = strm.str();
+  std::string message = strm.str();
   nassert_raise(message);
 
   return DS_interrupt;

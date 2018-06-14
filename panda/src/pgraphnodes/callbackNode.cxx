@@ -26,7 +26,7 @@ TypeHandle CallbackNode::_type_handle;
  *
  */
 CallbackNode::
-CallbackNode(const string &name) :
+CallbackNode(const std::string &name) :
   PandaNode(name)
 {
   PandaNode::set_cull_callback();
@@ -145,7 +145,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void CallbackNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

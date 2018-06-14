@@ -13,8 +13,8 @@
 
 #include "dcSubatomicType.h"
 
-ostream &
-operator << (ostream &out, DCSubatomicType type) {
+std::ostream &
+operator << (std::ostream &out, DCSubatomicType type) {
   switch (type) {
   case ST_int8:
     return out << "int8";

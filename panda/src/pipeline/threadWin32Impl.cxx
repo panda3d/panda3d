@@ -125,9 +125,9 @@ join() {
 /**
  *
  */
-string ThreadWin32Impl::
+std::string ThreadWin32Impl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << GetCurrentProcessId() << "." << _thread_id;
 
   return strm.str();

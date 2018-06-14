@@ -72,7 +72,7 @@ get_test_pcollector() {
  *
  */
 void CollisionInvSphere::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "invsphere, c (" << get_center() << "), r " << get_radius();
 }
 
@@ -198,7 +198,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     t1 = t2 = 0.0;
   }
 
-  t2 = max(t2, 0.0);
+  t2 = std::max(t2, 0.0);
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -254,11 +254,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   } else if (t2 <= 1.0) {
     // The bottom edge of the segment intersects the shell.
-    t = min(t2, 1.0);
+    t = std::min(t2, 1.0);
 
   } else if (t1 >= 0.0) {
     // The top edge of the segment intersects the shell.
-    t = max(t1, 0.0);
+    t = std::max(t1, 0.0);
 
   } else {
     // Neither edge of the segment intersects the shell.  It follows that both

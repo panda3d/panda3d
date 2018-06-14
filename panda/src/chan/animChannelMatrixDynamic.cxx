@@ -49,7 +49,7 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
  *
  */
 AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic(const string &name)
+AnimChannelMatrixDynamic(const std::string &name)
   : AnimChannelMatrix(name)
 {
   _value = TransformState::make_identity();

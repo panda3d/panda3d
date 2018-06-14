@@ -19,6 +19,9 @@
 #include "colorAttrib.h"
 #include "indent.h"
 
+using std::max;
+using std::min;
+
 /**
  * Adds a new NodePath to the collection.
  */
@@ -208,7 +211,7 @@ size() const {
  * hierarchically.
  */
 void NodePathCollection::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {
     NodePath path = get_path(i);
     indent(out, indent_level) << path << "\n";
@@ -223,7 +226,7 @@ ls(ostream &out, int indent_level) const {
  * listed first.
  */
 NodePathCollection NodePathCollection::
-find_all_matches(const string &path) const {
+find_all_matches(const std::string &path) const {
   NodePathCollection result;
 
   FindApproxPath approx_path;
@@ -557,7 +560,7 @@ set_attrib(const RenderAttrib *attrib, int priority) {
  * indicated output stream.
  */
 void NodePathCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_paths() == 1) {
     out << "1 NodePath";
   } else {
@@ -570,7 +573,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void NodePathCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_paths(); i++) {
     indent(out, indent_level) << get_path(i) << "\n";
   }

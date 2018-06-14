@@ -17,6 +17,9 @@
 
 #ifdef DEBUG_THREADS
 
+using std::ostream;
+using std::ostringstream;
+
 /**
  * You must pass in a Mutex to the condition variable constructor.  This mutex
  * may be shared by other condition variables, if desired.  It is the caller's

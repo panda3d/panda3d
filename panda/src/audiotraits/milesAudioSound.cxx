@@ -16,6 +16,8 @@
 
 #include "milesAudioManager.h"
 
+using std::string;
+
 TypeHandle MilesAudioSound::_type_handle;
 
 #undef miles_audio_debug

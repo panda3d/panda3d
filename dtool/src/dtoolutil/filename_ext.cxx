@@ -13,6 +13,9 @@
 
 #include "filename_ext.h"
 
+using std::string;
+using std::wstring;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER

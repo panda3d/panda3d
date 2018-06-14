@@ -22,7 +22,7 @@ static bool parse_hexdigit(int &result, char digit);
  * in the range 0..255.  On failure, r, g, b are undefined.
  */
 bool
-parse_color(int &r, int &g, int &b, const string &color) {
+parse_color(int &r, int &g, int &b, const std::string &color) {
   if (color.empty() || color[0] != '#') {
     return false;
   }

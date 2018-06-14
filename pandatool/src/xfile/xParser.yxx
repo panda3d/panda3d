@@ -39,7 +39,7 @@ static PT(XFileDataDef) current_data_def;
 ////////////////////////////////////////////////////////////////////
 
 void
-x_init_parser(istream &in, const string &filename, XFile &file) {
+x_init_parser(std::istream &in, const std::string &filename, XFile &file) {
   x_file = &file;
   current_node = &file;
   x_init_lexer(in, filename);
@@ -324,7 +324,7 @@ multiword_name:
 optional_multiword_name:
         empty
 {
-  $$ = string();
+  $$ = std::string();
 }
         | multiword_name
         ;

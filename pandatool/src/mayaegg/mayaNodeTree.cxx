@@ -32,6 +32,8 @@
 #include <maya/MGlobal.h>
 #include "post_maya_include.h"
 
+using std::string;
+
 /**
  *
  */
@@ -611,7 +613,7 @@ r_build_node(const string &path) {
     if (node_desc != _root) {
       MayaNodeDesc *parent_node_desc = r_build_node(parent_path);
       if (parent_node_desc == nullptr)
-        mayaegg_cat.info() << "empty parent: " << local_name << endl;
+        mayaegg_cat.info() << "empty parent: " << local_name << std::endl;
       node_desc = new MayaNodeDesc(this, parent_node_desc, local_name);
       _nodes.push_back(node_desc);
     }

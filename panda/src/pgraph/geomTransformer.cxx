@@ -151,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = move(new_geom);
+        entry._geom = std::move(new_geom);
         any_changed = true;
       }
     }

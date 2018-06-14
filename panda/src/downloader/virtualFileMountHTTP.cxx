@@ -17,6 +17,8 @@
 
 #ifdef HAVE_OPENSSL
 
+using std::string;
+
 TypeHandle VirtualFileMountHTTP::_type_handle;
 
 
@@ -174,7 +176,7 @@ make_virtual_file(const Filename &local_filename,
  * istream on success (which you should eventually delete when you are done
  * reading). Returns NULL on failure.
  */
-istream *VirtualFileMountHTTP::
+std::istream *VirtualFileMountHTTP::
 open_read_file(const Filename &) const {
   return nullptr;
 }
@@ -184,8 +186,8 @@ open_read_file(const Filename &) const {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileMountHTTP::
-get_file_size(const Filename &, istream *) const {
+std::streamsize VirtualFileMountHTTP::
+get_file_size(const Filename &, std::istream *) const {
   return 0;
 }
 
@@ -193,7 +195,7 @@ get_file_size(const Filename &, istream *) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileMountHTTP::
+std::streamsize VirtualFileMountHTTP::
 get_file_size(const Filename &) const {
   return 0;
 }
@@ -227,7 +229,7 @@ scan_directory(vector_string &, const Filename &) const {
  *
  */
 void VirtualFileMountHTTP::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _root;
 }
 

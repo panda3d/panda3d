@@ -19,7 +19,12 @@
 #include "collideMask.h"
 #include "lightMutexHolder.h"
 
-#define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
+#define clamp(x, x_min, x_max) std::max(std::min(x, x_max), x_min)
+
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::string;
 
 TypeHandle BulletWorld::_type_handle;
 

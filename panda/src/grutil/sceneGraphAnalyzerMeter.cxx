@@ -29,7 +29,7 @@ TypeHandle SceneGraphAnalyzerMeter::_type_handle;
  *
  */
 SceneGraphAnalyzerMeter::
-SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
+SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node) : TextNode(name) {
   set_cull_callback();
 
   Thread *current_thread = Thread::get_current_thread();

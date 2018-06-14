@@ -17,7 +17,6 @@
 #include "p3d_plugin.h"
 
 #include <string>
-using namespace std;
 
 extern P3D_initialize_func *P3D_initialize_ptr;
 extern P3D_finalize_func *P3D_finalize_ptr;

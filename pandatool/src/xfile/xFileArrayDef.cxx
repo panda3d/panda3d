@@ -38,7 +38,7 @@ get_size(const XFileNode::PrevData &prev_data) const {
  *
  */
 void XFileArrayDef::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_fixed_size()) {
     out << "[" << _fixed_size << "]";
   } else {

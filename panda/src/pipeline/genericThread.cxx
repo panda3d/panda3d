@@ -20,7 +20,7 @@ TypeHandle GenericThread::_type_handle;
  *
  */
 GenericThread::
-GenericThread(const string &name, const string &sync_name) :
+GenericThread(const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
   _function = nullptr;
@@ -31,7 +31,7 @@ GenericThread(const string &name, const string &sync_name) :
  *
  */
 GenericThread::
-GenericThread(const string &name, const string &sync_name, GenericThread::ThreadFunc *function, void *user_data) :
+GenericThread(const std::string &name, const std::string &sync_name, GenericThread::ThreadFunc *function, void *user_data) :
   Thread(name, sync_name),
   _function(function),
   _user_data(user_data)

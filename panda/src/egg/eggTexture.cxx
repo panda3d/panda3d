@@ -18,6 +18,9 @@
 #include "indent.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggTexture::_type_handle;
 
 

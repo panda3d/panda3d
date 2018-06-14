@@ -66,7 +66,7 @@ remove_on_occluder(const NodePath &occluder) const {
  *
  */
 void OccluderEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_on_occluders.empty()) {
     out << "identity";

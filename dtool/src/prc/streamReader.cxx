@@ -14,6 +14,8 @@
 #include "streamReader.h"
 #include "memoryHook.h"
 
+using std::string;
+
 
 /**
  * Extracts a variable-length string.

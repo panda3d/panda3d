@@ -51,6 +51,10 @@
 #include <sys/stat.h>
 #endif
 
+using std::cerr;
+using std::endl;
+using std::string;
+
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
 

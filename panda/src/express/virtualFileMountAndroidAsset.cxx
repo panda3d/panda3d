@@ -20,6 +20,10 @@
 #include <sys/stat.h>
 #endif
 
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+
 TypeHandle VirtualFileMountAndroidAsset::_type_handle;
 
 /**
@@ -140,7 +144,7 @@ read_file(const Filename &file, bool do_uncompress,
  * istream on success (which you should eventually delete when you are done
  * reading). Returns NULL on failure.
  */
-istream *VirtualFileMountAndroidAsset::
+std::istream *VirtualFileMountAndroidAsset::
 open_read_file(const Filename &file) const {
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
@@ -149,7 +153,7 @@ open_read_file(const Filename &file) const {
   }
 
   AssetStream *stream = new AssetStream(asset);
-  return (istream *) stream;
+  return (std::istream *) stream;
 }
 
 /**
@@ -158,7 +162,7 @@ open_read_file(const Filename &file) const {
  * implementations may require this stream to determine the size.
  */
 streamsize VirtualFileMountAndroidAsset::
-get_file_size(const Filename &file, istream *in) const {
+get_file_size(const Filename &file, std::istream *in) const {
   // If it's already open, get the AAsset pointer from the streambuf.
   const AssetStreamBuf *buf = (const AssetStreamBuf *) in->rdbuf();
   off_t length = AAsset_getLength(buf->_asset);

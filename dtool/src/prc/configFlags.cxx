@@ -18,8 +18,8 @@ TVOLATILE AtomicAdjust::Integer ConfigFlags::_global_modified;
 /**
  *
  */
-ostream &
-operator << (ostream &out, ConfigFlags::ValueType type) {
+std::ostream &
+operator << (std::ostream &out, ConfigFlags::ValueType type) {
   switch (type) {
   case ConfigFlags::VT_undefined:
     return out << "undefined";

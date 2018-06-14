@@ -25,6 +25,10 @@
 #undef interface  // I don't know where this symbol is defined, but it interferes with FreeType.
 #include FT_OUTLINE_H
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 // This constant determines how big a particular point size font appears to
 // be.  By convention, 10 points is 1 unit (e.g.  1 foot) high.
 const PN_stdfloat FreetypeFont::_points_per_unit = 10.0f;
@@ -461,7 +465,7 @@ render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
               }
 
             } else {
-              dist_sq = min((p - begin).length_squared(), (p - end).length_squared());
+              dist_sq = std::min((p - begin).length_squared(), (p - end).length_squared());
               if (begin[1] <= p[1]) {
                 if (end[1] > p[1]) {
                   if ((v[0] * (p[1] - begin[1]) > v[1] * (p[0] - begin[0]))) {
@@ -503,7 +507,7 @@ render_distance_field(PNMImage &image, int outline, int min_x, int min_y) {
             }
           }
 
-          min_dist_sq = min(min_dist_sq, dist_sq);
+          min_dist_sq = std::min(min_dist_sq, dist_sq);
         }
       }
       // Determine the sign based on whether we're inside the contour.
