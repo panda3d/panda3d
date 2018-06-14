@@ -6,6 +6,8 @@
 # generate build scripts appropriate to each environment.
 #
 
+include(CMakeDependentOption)
+
 # Define the plaform we are building on.
 # The values "UNIX", "WIN32", "MINGW", "MSYS", and "CYGWIN"
 # are automatically provided by CMAKE.  "APPLE" is also provided by
@@ -255,11 +257,11 @@ mark_as_advanced(HAVE_P3D_RTDIST PANDA_PACKAGE_VERSION PANDA_PACKAGE_HOST)
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
 
-option(INTERROGATE_PYTHON_INTERFACE
+cmake_dependent_option(INTERROGATE_PYTHON_INTERFACE
   "Do you want to generate a Python-callable interrogate interface?
 This is only necessary if you plan to make calls into Panda from a
 program written in Python.  This is done only if HAVE_PYTHON is also
-true." ON)
+true." ON "HAVE_PYTHON" OFF)
 
 set(INTERROGATE_C_INTERFACE
   "Do you want to generate a C-callable interrogate interface?  This

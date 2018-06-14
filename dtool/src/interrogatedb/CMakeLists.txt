@@ -46,7 +46,7 @@ install(FILES ${P3INTERROGATEDB_HEADERS} DESTINATION include/panda3d)
 # Note we don't use the regular Interrogate macros; this has some custom flags
 # that would make it not worthwhile.
 
-if(NOT HAVE_PYTHON OR NOT INTERROGATE_PYTHON_INTERFACE)
+if(NOT INTERROGATE_PYTHON_INTERFACE)
   return()
 endif()
 

@@ -237,7 +237,7 @@ endfunction(interrogate_sources)
 # Python module when it's initialized.
 #
 function(add_python_module module)
-  if(NOT HAVE_PYTHON OR NOT INTERROGATE_PYTHON_INTERFACE)
+  if(NOT INTERROGATE_PYTHON_INTERFACE)
     return()
   endif()
 

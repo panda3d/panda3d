@@ -256,7 +256,7 @@ else()
 endif()
 
 message("")
-if(HAVE_INTERROGATE AND HAVE_PYTHON)
+if(INTERROGATE_PYTHON_INTERFACE)
   message("Compilation will generate Python interfaces for Python ${PYTHON_VERSION_STRING}.")
 else()
   message("Configuring Panda WITHOUT Python interfaces.")
