@@ -199,7 +199,7 @@ CocoaGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) CocoaGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
