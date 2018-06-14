@@ -112,13 +112,25 @@ init_from(FfmpegVideo *source) {
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
   // why we didn't do this earlier.
-  const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
-  if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
-    _num_components = 4;
-    _pixel_format = (int)AV_PIX_FMT_BGRA;
-  } else {
-    _num_components = 3;
-    _pixel_format = (int)AV_PIX_FMT_BGR24;
+  switch (_video_ctx->pix_fmt) {
+  case AV_PIX_FMT_GRAY8:
+    _num_components = 1;
+    _pixel_format = (int)AV_PIX_FMT_GRAY8;
+    break;
+  case AV_PIX_FMT_YA8:
+    _num_components = 2;
+    _pixel_format = (int)AV_PIX_FMT_YA8;
+    break;
+  default:
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
+    if (desc && (desc->flags & AV_PIX_FMT_FLAG_ALPHA) != 0) {
+      _num_components = 4;
+      _pixel_format = (int)AV_PIX_FMT_BGRA;
+    } else {
+      _num_components = 3;
+      _pixel_format = (int)AV_PIX_FMT_BGR24;
+    }
+    break;
   }
 
 #ifdef HAVE_SWSCALE

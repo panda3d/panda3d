@@ -141,6 +141,7 @@ void MovieTexture::
 do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const LoaderOptions &options) {
   int x_max = 1;
   int y_max = 1;
+  bool rgb = false;
   bool alpha = false;
   double len = 0.0;
 
@@ -150,7 +151,8 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
       if (t->size_x() > x_max) x_max = t->size_x();
       if (t->size_y() > y_max) y_max = t->size_y();
       if (t->length() > len) len = t->length();
-      if (t->get_num_components() == 4) alpha=true;
+      if (t->get_num_components() >= 3) rgb=true;
+      if (t->get_num_components() == 4 || t->get_num_components() == 2) alpha=true;
     }
     t = cdata->_pages[i]._alpha;
     if (t) {
@@ -167,7 +169,8 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
 
   do_adjust_this_size(cdata_tex, x_max, y_max, get_name(), true);
 
-  do_reconsider_image_properties(cdata_tex, x_max, y_max, alpha?4:3,
+  int num_components = (rgb ? 3 : 1) + alpha;
+  do_reconsider_image_properties(cdata_tex, x_max, y_max, num_components,
                                  T_unsigned_byte, cdata->_pages.size(),
                                  options);
   cdata_tex->_orig_file_x_size = cdata->_video_width;
