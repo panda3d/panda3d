@@ -117,9 +117,9 @@ init_from(FfmpegVideo *source) {
     _num_components = 1;
     _pixel_format = (int)AV_PIX_FMT_GRAY8;
     break;
-  case AV_PIX_FMT_YA8:
+  case AV_PIX_FMT_Y400A: // aka AV_PIX_FMT_YA8
     _num_components = 2;
-    _pixel_format = (int)AV_PIX_FMT_YA8;
+    _pixel_format = (int)AV_PIX_FMT_Y400A;
     break;
   default:
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(_video_ctx->pix_fmt);
