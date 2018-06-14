@@ -29,6 +29,9 @@
 
 #include "collideMask.h"
 
+using std::max;
+using std::min;
+
 static ConfigVariableBool geomipterrain_incorrect_normals
 ("geomipterrain-incorrect-normals", false,
  PRC_DESC("If true, uses the incorrect normal vector calculation that "
@@ -256,7 +259,7 @@ generate_block(unsigned short mx,
   geom->add_primitive(prim);
   geom->set_bounds_type(BoundingVolume::BT_box);
 
-  ostringstream sname;
+  std::ostringstream sname;
   sname << "gmm" << mx << "x" << my;
   PT(GeomNode) node = new GeomNode(sname.str());
   node->add_geom(geom);

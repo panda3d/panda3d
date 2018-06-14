@@ -18,8 +18,6 @@
 #include "handleStream.h"
 #include <iostream>
 
-using namespace std;
-
 // A pair of functions to input and output the TinyXml constructs on the
 // indicated streams.  We could, of course, use the TinyXml output operators,
 // but this is a smidge more efficient and gives us more control.

@@ -150,7 +150,7 @@ safe_to_flatten_below() const {
  *
  */
 void BulletBodyNode::
-do_output(ostream &out) const {
+do_output(std::ostream &out) const {
 
   PandaNode::output(out);
 
@@ -166,7 +166,7 @@ do_output(ostream &out) const {
  *
  */
 void BulletBodyNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   do_output(out);
@@ -427,7 +427,7 @@ remove_shape(BulletShape *shape) {
   found = find(_shapes.begin(), _shapes.end(), ptshape);
 
   if (found == _shapes.end()) {
-    bullet_cat.warning() << "shape not attached" << endl;
+    bullet_cat.warning() << "shape not attached" << std::endl;
   }
   else {
     _shapes.erase(found);

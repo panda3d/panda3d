@@ -23,6 +23,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = nullptr;
 
 /**
@@ -121,7 +123,7 @@ print_pipe_types() const {
   load_default_module();
 
   LightMutexHolder holder(_lock);
-  nout << "Known pipe types:" << endl;
+  nout << "Known pipe types:" << std::endl;
   PipeTypes::const_iterator pi;
   for (pi = _pipe_types.begin(); pi != _pipe_types.end(); ++pi) {
     const PipeType &pipe_type = (*pi);
@@ -406,11 +408,11 @@ load_named_module(const string &name) {
   // We have not yet loaded this module.  Load it now.
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
-    << "loading display module: " << dlname.to_os_specific() << endl;
+    << "loading display module: " << dlname.to_os_specific() << std::endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
   if (handle == nullptr) {
     display_cat.warning()
-      << "Unable to load: " << load_dso_error() << endl;
+      << "Unable to load: " << load_dso_error() << std::endl;
     return TypeHandle::none();
   }
 

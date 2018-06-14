@@ -62,9 +62,9 @@ create_toplevel_window(HINSTANCE application) {
 
   DWORD window_style = WS_POPUP | WS_SYSMENU | WS_ICONIC;
 
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "PStats " << pstats_port;
-  string window_name = strm.str();
+  std::string window_name = strm.str();
 
   HWND toplevel_window =
     CreateWindow(toplevel_class_name, window_name.c_str(), window_style,
@@ -87,12 +87,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   // Create the server object.
   server = new WinStatsServer;
   if (!server->listen()) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream
       << "Unable to open port " << pstats_port
       << ".  Try specifying a different\n"
       << "port number using pstats-port in your Config file.";
-    string str = stream.str();
+    std::string str = stream.str();
     MessageBox(toplevel_window, str.c_str(), "PStats error",
                MB_OK | MB_ICONEXCLAMATION);
     exit(1);

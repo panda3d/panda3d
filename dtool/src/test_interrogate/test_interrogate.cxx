@@ -23,6 +23,11 @@
 
 #include <stdlib.h>
 
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::string;
+
 static ostream &
 indent(ostream &out, int indent_level) {
   for (int i = 0; i < indent_level; i++) {

@@ -21,6 +21,8 @@
 #include "filename.h"
 #include "string_utils.h"
 
+using std::string;
+
 TypeHandle XFileNode::_type_handle;
 
 /**
@@ -214,7 +216,7 @@ clear() {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileNode::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->write_text(out, indent_level);

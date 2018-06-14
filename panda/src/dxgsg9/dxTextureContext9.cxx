@@ -24,6 +24,10 @@
 #define DEBUG_SURFACES false
 #define DEBUG_TEXTURES true
 
+using std::endl;
+using std::max;
+using std::min;
+
 TypeHandle DXTextureContext9::_type_handle;
 
 static const DWORD g_LowByteMask = 0x000000FF;
@@ -686,7 +690,7 @@ create_texture(DXScreenData &scrn) {
     << "NumColorChannels: " << num_color_channels << "; NumAlphaBits: "
     << num_alpha_bits << "; targetbpp: " <<target_bpp
     << "; _supported_tex_formats_mask: 0x"
-    << hex << scrn._supported_tex_formats_mask << dec
+    << std::hex << scrn._supported_tex_formats_mask << std::dec
     << "; NeedLuminance: " << needs_luminance << endl;
   goto error_exit;
 

@@ -28,7 +28,7 @@ TypeHandle wglGraphicsWindow::_type_handle;
  */
 wglGraphicsWindow::
 wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -386,7 +386,7 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
 
   wgldisplay_cat.debug()
     << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
-    << "PFD flags: 0x" << hex << pfd->dwFlags << dec << " ("
+    << "PFD flags: 0x" << std::hex << pfd->dwFlags << std::dec << " ("
     << PRINT_FLAG(GENERIC_ACCELERATED)
     << PRINT_FLAG(GENERIC_FORMAT)
     << PRINT_FLAG(DOUBLEBUFFER)
@@ -403,15 +403,15 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
     << PRINT_FLAG(SUPPORT_DIRECTDRAW) << ")\n"
     << "PFD iPixelType: "
     << ((pfd->iPixelType==PFD_TYPE_RGBA) ? "PFD_TYPE_RGBA":"PFD_TYPE_COLORINDEX")
-    << endl
+    << std::endl
     << "PFD cColorBits: " << (DWORD)pfd->cColorBits
     << "  R: " << (DWORD)pfd->cRedBits
     <<" G: " << (DWORD)pfd->cGreenBits
-    <<" B: " << (DWORD)pfd->cBlueBits << endl
+    <<" B: " << (DWORD)pfd->cBlueBits << std::endl
     << "PFD cAlphaBits: " << (DWORD)pfd->cAlphaBits
     << "  DepthBits: " << (DWORD)pfd->cDepthBits
     <<" StencilBits: " << (DWORD)pfd->cStencilBits
     <<" AccumBits: " << (DWORD)pfd->cAccumBits
-    << endl;
+    << std::endl;
 }
 #endif

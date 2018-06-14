@@ -21,6 +21,8 @@
 #include "cppDeclaration.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  *
  */
@@ -64,7 +66,7 @@ ParameterRemapPTToPointer(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapPTToPointer::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 

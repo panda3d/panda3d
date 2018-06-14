@@ -41,7 +41,7 @@ decode_from_bam_stream(vector_uchar data, BamReader *reader) {
   TypedWritable *object;
   ReferenceCount *ref_ptr;
 
-  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, move(data), reader)) {
+  if (TypedWritable::decode_raw_from_bam_stream(object, ref_ptr, std::move(data), reader)) {
     return DCAST(TypedWritableReferenceCount, object);
   } else {
     return nullptr;

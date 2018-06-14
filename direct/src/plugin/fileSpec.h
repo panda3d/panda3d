@@ -16,7 +16,6 @@
 
 #include "get_tinyxml.h"
 #include <string>
-using namespace std;
 
 /**
  * This simple class is used both within the core API in this module, as well

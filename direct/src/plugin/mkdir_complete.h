@@ -16,7 +16,6 @@
 
 #include <string>
 #include <iostream>
-using namespace std;
 
 bool mkdir_complete(const std::string &dirname, std::ostream &logfile);
 bool mkfile_complete(const std::string &dirname, std::ostream &logfile);

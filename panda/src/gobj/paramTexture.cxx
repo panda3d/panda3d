@@ -21,7 +21,7 @@ TypeHandle ParamTextureImage::_type_handle;
  *
  */
 void ParamTextureSampler::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "texture ";
 
   if (_texture != nullptr) {
@@ -96,7 +96,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 void ParamTextureImage::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "texture ";
 
   if (_texture != nullptr) {

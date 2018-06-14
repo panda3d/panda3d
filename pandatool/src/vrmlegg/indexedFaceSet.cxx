@@ -22,6 +22,8 @@
 #include "eggVertexPool.h"
 #include "eggPolygon.h"
 
+using std::cerr;
+
 /**
  *
  */

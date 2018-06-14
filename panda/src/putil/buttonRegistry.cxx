@@ -41,7 +41,7 @@ ButtonRegistry *ButtonRegistry::_global_pointer = nullptr;
  * right.
  */
 bool ButtonRegistry::
-register_button(ButtonHandle &button_handle, const string &name,
+register_button(ButtonHandle &button_handle, const std::string &name,
                 ButtonHandle alias, char ascii_equivalent) {
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
@@ -109,7 +109,7 @@ register_button(ButtonHandle &button_handle, const string &name,
  * is no such ButtonHandle, registers a new one and returns it.
  */
 ButtonHandle ButtonRegistry::
-get_button(const string &name) {
+get_button(const std::string &name) {
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
 
@@ -127,7 +127,7 @@ get_button(const string &name) {
  * is no such ButtonHandle, returns ButtonHandle::none().
  */
 ButtonHandle ButtonRegistry::
-find_button(const string &name) {
+find_button(const std::string &name) {
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
 
@@ -155,7 +155,7 @@ find_ascii_button(char ascii_equivalent) const {
  *
  */
 void ButtonRegistry::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "ASCII equivalents:\n";
   for (int i = 1; i < 128; i++) {
     if (_handle_registry[i] != nullptr) {

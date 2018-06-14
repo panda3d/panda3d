@@ -22,7 +22,7 @@
  *
  */
 FltRecordReader::
-FltRecordReader(istream &in) :
+FltRecordReader(std::istream &in) :
   _in(in)
 {
   _opcode = FO_none;

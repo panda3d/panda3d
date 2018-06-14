@@ -13,6 +13,10 @@
 
 #include "interrogate_datafile.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 
 /**
  * Writes the indicated string to the output file.  Uses the given whitespace

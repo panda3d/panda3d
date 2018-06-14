@@ -51,7 +51,7 @@ TypeHandle GeomNode::_type_handle;
  *
  */
 GeomNode::
-GeomNode(const string &name) :
+GeomNode(const std::string &name) :
   PandaNode(name)
 {
   _preserved = preserve_geom_nodes;
@@ -559,7 +559,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     }
 
     CullableObject *object =
-      new CullableObject(move(geom), move(state), internal_transform);
+      new CullableObject(std::move(geom), std::move(state), internal_transform);
     trav->get_cull_handler()->record_object(object, trav);
   }
 }
@@ -782,7 +782,7 @@ unify(int max_indices, bool preserve_order) {
  * Writes a short description of all the Geoms in the node.
  */
 void GeomNode::
-write_geoms(ostream &out, int indent_level) const {
+write_geoms(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
@@ -798,7 +798,7 @@ write_geoms(ostream &out, int indent_level) const {
  * Writes a detailed description of all the Geoms in the node.
  */
 void GeomNode::
-write_verbose(ostream &out, int indent_level) const {
+write_verbose(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
   write(out, indent_level);
   GeomList::const_iterator gi;
@@ -816,7 +816,7 @@ write_verbose(ostream &out, int indent_level) const {
  *
  */
 void GeomNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // Accumulate the total set of RenderAttrib types that are applied to any of
   // our Geoms, so we can output them too.  The result will be the list of
   // attrib types that might be applied to some Geoms, but not necessarily to

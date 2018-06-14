@@ -20,6 +20,10 @@
 #include "virtualFileSystem.h"
 #include "zStream.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  * Opens up the image file and tries to read its header information to
  * determine its size, number of channels, etc.  If successful, updates the
@@ -84,7 +88,7 @@ make_reader(const Filename &filename, PNMFileType *type,
 
   if (filename == "-") {
     owns_file = false;
-    file = &cin;
+    file = &std::cin;
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()
@@ -251,7 +255,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 
   if (filename == "-") {
     owns_file = false;
-    file = &cout;
+    file = &std::cout;
 
     if (pnmimage_cat.is_debug()) {
       pnmimage_cat.debug()

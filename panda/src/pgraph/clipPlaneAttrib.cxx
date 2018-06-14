@@ -375,7 +375,7 @@ add_on_plane(const NodePath &plane) const {
   attrib->_on_planes.insert(plane);
   attrib->_off_planes.erase(plane);
 
-  pair<Planes::iterator, bool> insert_result =
+  std::pair<Planes::iterator, bool> insert_result =
     attrib->_on_planes.insert(Planes::value_type(plane));
   if (insert_result.second) {
     // Also ensure it is removed from the off_planes list.
@@ -552,7 +552,7 @@ compose_off(const RenderAttrib *other) const {
  *
  */
 void ClipPlaneAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_off_planes.empty()) {
     if (_on_planes.empty()) {

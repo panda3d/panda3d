@@ -15,6 +15,9 @@
 #include "patchfile.h"
 #include "filename.h"
 
+using std::cerr;
+using std::endl;
+
 int
 main(int argc, char **argv) {
   preprocess_argv(argc, argv);

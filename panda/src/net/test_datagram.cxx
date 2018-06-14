@@ -14,6 +14,9 @@
 #include "netDatagram.h"
 #include "datagramIterator.h"
 
+using std::cout;
+using std::endl;
+
 int
 main() {
   NetDatagram dg;

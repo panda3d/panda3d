@@ -24,6 +24,9 @@ int pixel_count_smooth_multitex2;
 int pixel_count_smooth_multitex3;
 #endif  // DO_PSTATS
 
+using std::max;
+using std::min;
+
 ZBuffer *
 ZB_open(int xsize, int ysize, int mode,
         int nb_colors,

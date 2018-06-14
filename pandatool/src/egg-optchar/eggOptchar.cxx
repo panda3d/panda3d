@@ -34,6 +34,10 @@
 
 #include <algorithm>
 
+using std::cout;
+using std::setw;
+using std::string;
+
 /**
  *
  */

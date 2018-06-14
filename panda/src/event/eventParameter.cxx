@@ -21,7 +21,7 @@ template class ParamValue<double>;
  *
  */
 void EventParameter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_ptr == nullptr) {
     out << "(empty)";
 

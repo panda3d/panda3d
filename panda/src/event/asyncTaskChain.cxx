@@ -23,6 +23,11 @@
 #include <algorithm>
 #include <stdio.h>  // For sprintf/snprintf
 
+using std::max;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle AsyncTaskChain::_type_handle;
 
 PStatCollector AsyncTaskChain::_task_pcollector("Task");

@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 PNMFileTypeRegistry *PNMFileTypeRegistry::_global_ptr;
 
 /**
@@ -243,7 +245,7 @@ get_type_by_handle(TypeHandle handle) const {
  * one per line.
  */
 void PNMFileTypeRegistry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (_types.empty()) {
     indent(out, indent_level) << "(No image types are known).\n";
   } else {
@@ -252,7 +254,7 @@ write(ostream &out, int indent_level) const {
       PNMFileType *type = (*ti);
       string name = type->get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0)) << "  ";
+      indent(out, std::max(30 - (int)name.length(), 0)) << "  ";
 
       int num_extensions = type->get_num_extensions();
       if (num_extensions == 1) {

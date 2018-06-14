@@ -35,6 +35,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 TypeHandle MouseWatcher::_type_handle;
 
 /**
@@ -487,7 +489,7 @@ note_activity() {
  *
  */
 void MouseWatcher::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(_lock);
   DataNode::output(out);
 
@@ -507,7 +509,7 @@ output(ostream &out) const {
  *
  */
 void MouseWatcher::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "MouseWatcher " << get_name() << ":\n";
   MouseWatcherBase::write(out, indent_level + 2);
@@ -625,7 +627,7 @@ set_current_regions(MouseWatcher::Regions &regions) {
 
   // Queue up all the new regions so we can send the within patterns all at
   // once, after all of the without patterns have been thrown.
-  vector<MouseWatcherRegion *> new_regions;
+  std::vector<MouseWatcherRegion *> new_regions;
 
   bool any_changes = false;
   while (new_ri != regions.end() && old_ri != _current_regions.end()) {
@@ -672,7 +674,7 @@ set_current_regions(MouseWatcher::Regions &regions) {
     _current_regions.swap(regions);
 
     // And don't forget to throw all of the new regions' "within" events.
-    vector<MouseWatcherRegion *>::const_iterator ri;
+    std::vector<MouseWatcherRegion *>::const_iterator ri;
     for (ri = new_regions.begin(); ri != new_regions.end(); ++ri) {
       MouseWatcherRegion *new_region = (*ri);
       within_region(new_region, param);
@@ -1059,7 +1061,7 @@ keystroke(int keycode) {
  * IME.
  */
 void MouseWatcher::
-candidate(const wstring &candidate_string, size_t highlight_start,
+candidate(const std::wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
   nassertv(_lock.debug_is_locked());
 

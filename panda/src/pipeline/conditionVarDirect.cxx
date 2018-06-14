@@ -20,7 +20,7 @@
  * ConditionVarDirect.
  */
 void ConditionVarDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConditionVar " << (void *)this << " on " << _mutex;
 }
 

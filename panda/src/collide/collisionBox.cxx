@@ -35,6 +35,9 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+
 PStatCollector CollisionBox::_volume_pcollector("Collision Volumes:CollisionBox");
 PStatCollector CollisionBox::_test_pcollector("Collision Tests:CollisionBox");
 TypeHandle CollisionBox::_type_handle;
@@ -181,7 +184,7 @@ get_test_pcollector() {
  *
  */
 void CollisionBox::
-output(ostream &out) const {
+output(std::ostream &out) const {
 }
 
 /**

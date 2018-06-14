@@ -38,7 +38,7 @@ PStatCollectorDef() {
  *
  */
 PStatCollectorDef::
-PStatCollectorDef(int index, const string &name) :
+PStatCollectorDef(int index, const std::string &name) :
   _index(index),
   _name(name)
 {

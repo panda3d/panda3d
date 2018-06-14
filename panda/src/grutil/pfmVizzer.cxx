@@ -23,6 +23,9 @@
 #include "pnmImage.h"
 #include "config_grutil.h"
 
+using std::max;
+using std::min;
+
 /**
  * The PfmVizzer constructor receives a reference to a PfmFile which it will
  * operate on.  It does not keep ownership of this reference; it is your
@@ -777,7 +780,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       num_vertices = x_size * y_size;
       max_indices = (x_size - 1) * (y_size - 1) * 6;
 
-      ostringstream mesh_name;
+      std::ostringstream mesh_name;
       mesh_name << "mesh_" << xci << "_" << yci;
       PT(GeomVertexData) vdata = new GeomVertexData
         (mesh_name.str(), format, Geom::UH_static);

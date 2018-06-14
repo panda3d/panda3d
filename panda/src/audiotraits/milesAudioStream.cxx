@@ -32,7 +32,7 @@ TypeHandle MilesAudioStream::_type_handle;
  *
  */
 MilesAudioStream::
-MilesAudioStream(MilesAudioManager *manager, const string &file_name,
+MilesAudioStream(MilesAudioManager *manager, const std::string &file_name,
                  const Filename &path) :
   MilesAudioSound(manager, file_name),
   _path(path)
@@ -173,8 +173,8 @@ set_volume(PN_stdfloat volume) {
 
     // Change to Miles volume, range 0 to 1.0:
     F32 milesVolume = volume;
-    milesVolume = min(milesVolume, 1.0f);
-    milesVolume = max(milesVolume, 0.0f);
+    milesVolume = std::min(milesVolume, 1.0f);
+    milesVolume = std::max(milesVolume, 0.0f);
 
     // Convert balance of -1.0..1.0 to 0-1.0:
     F32 milesBalance = (F32)((_balance + 1.0f) * 0.5f);
@@ -301,7 +301,7 @@ do_set_time(PN_stdfloat time) {
   // Ensure we don't inadvertently run off the end of the sound.
   S32 length_ms;
   AIL_stream_ms_position(_stream, &length_ms, nullptr);
-  time_ms = min(time_ms, length_ms);
+  time_ms = std::min(time_ms, length_ms);
 
   AIL_set_stream_ms_position(_stream, time_ms);
 }

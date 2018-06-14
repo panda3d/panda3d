@@ -23,7 +23,7 @@ TypeHandle AnalogNode::_type_handle;
  *
  */
 AnalogNode::
-AnalogNode(ClientBase *client, const string &device_name) :
+AnalogNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
@@ -63,7 +63,7 @@ AnalogNode::
  *
  */
 void AnalogNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_analog != nullptr) {

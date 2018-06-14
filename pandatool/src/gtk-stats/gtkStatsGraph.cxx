@@ -341,8 +341,8 @@ void GtkStatsGraph::
 setup_pixmap(int xsize, int ysize) {
   release_pixmap();
 
-  _pixmap_xsize = max(xsize, 0);
-  _pixmap_ysize = max(ysize, 0);
+  _pixmap_xsize = std::max(xsize, 0);
+  _pixmap_ysize = std::max(ysize, 0);
 
   _pixmap = gdk_pixmap_new(_graph_window->window, _pixmap_xsize, _pixmap_ysize, -1);
   // g_object_ref(_pixmap);   Should this be ref_sink?

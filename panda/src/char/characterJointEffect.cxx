@@ -87,7 +87,7 @@ safe_to_combine() const {
  *
  */
 void CharacterJointEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   PT(Character) character = get_character();
   if (character != nullptr) {

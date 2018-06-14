@@ -27,6 +27,12 @@
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
@@ -2799,7 +2805,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
 
   // Parse the errors so that we can substitute in actual file locations
   // instead of source indices.
-  istringstream log(info_log);
+  std::istringstream log(info_log);
   string line;
   while (std::getline(log, line)) {
     int fileno, lineno, colno;
@@ -3114,7 +3120,7 @@ glsl_compile_and_link() {
       sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
 
       pofstream s;
-      s.open(filename, ios::out | ios::binary | ios::trunc);
+      s.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
       s.write(binary, num_bytes);
       s.close();
 

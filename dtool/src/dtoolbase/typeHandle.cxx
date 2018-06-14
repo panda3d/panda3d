@@ -55,7 +55,7 @@ inc_memory_usage(MemoryClass memory_class, size_t size) {
     // cerr << *this << ".inc(" << memory_class << ", " << size << ") -> " <<
     // rnode->_memory_usage[memory_class] << "\n";
     if (rnode->_memory_usage[memory_class] < 0) {
-      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
+      std::cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
   }
@@ -102,7 +102,7 @@ allocate_array(size_t size) {
     assert(rnode != nullptr);
     AtomicAdjust::add(rnode->_memory_usage[MC_array], (AtomicAdjust::Integer)alloc_size);
     if (rnode->_memory_usage[MC_array] < 0) {
-      cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
+      std::cerr << "Memory usage overflow for type " << rnode->_name << ".\n";
       abort();
     }
   }
@@ -175,8 +175,8 @@ get_best_parent_from_Set(const std::set< int > &legal_vals) const {
   return -1;
 }
 
-ostream &
-operator << (ostream &out, TypeHandle::MemoryClass mem_class) {
+std::ostream &
+operator << (std::ostream &out, TypeHandle::MemoryClass mem_class) {
   switch (mem_class) {
   case TypeHandle::MC_singleton:
     return out << "singleton";

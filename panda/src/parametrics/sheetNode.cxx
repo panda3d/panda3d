@@ -66,7 +66,7 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 SheetNode::
-SheetNode(const string &name) :
+SheetNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -155,7 +155,7 @@ is_renderable() const {
  *
  */
 void SheetNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != nullptr) {
@@ -169,7 +169,7 @@ output(ostream &out) const {
  *
  */
 void SheetNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != nullptr) {

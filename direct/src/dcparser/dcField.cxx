@@ -26,6 +26,8 @@
 #include "pStatTimer.h"
 #endif
 
+using std::string;
+
 /**
  *
  */
@@ -232,7 +234,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
   }
 
   if (!Notify::ptr()->has_assert_failed()) {
-    ostringstream strm;
+    std::ostringstream strm;
     PyObject *exc_type = PyExc_Exception;
 
     if (as_parameter() != nullptr) {
@@ -303,7 +305,7 @@ unpack_args(DCPacker &packer) const {
   }
 
   if (!Notify::ptr()->has_assert_failed()) {
-    ostringstream strm;
+    std::ostringstream strm;
     PyObject *exc_type = PyExc_Exception;
 
     if (packer.had_pack_error()) {
@@ -315,7 +317,7 @@ unpack_args(DCPacker &packer) const {
       dg.dump_hex(strm);
       size_t error_byte = packer.get_num_unpacked_bytes() - start_byte;
       strm << "Error detected on byte " << error_byte
-           << " (" << hex << error_byte << dec << " hex)";
+           << " (" << std::hex << error_byte << std::dec << " hex)";
 
       exc_type = PyExc_RuntimeError;
     } else {
@@ -562,7 +564,7 @@ refresh_default_value() {
   packer.begin_pack(this);
   packer.pack_default_value();
   if (!packer.end_pack()) {
-    cerr << "Error while packing default value for " << get_name() << "\n";
+    std::cerr << "Error while packing default value for " << get_name() << "\n";
   } else {
     _default_value.assign(packer.get_data(), packer.get_length());
   }

@@ -24,7 +24,7 @@ TypeHandle MovieAudio::_type_handle;
  * construct a subclass of this class.
  */
 MovieAudio::
-MovieAudio(const string &name) :
+MovieAudio(const std::string &name) :
   Namable(name)
 {
 }

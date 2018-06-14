@@ -37,7 +37,7 @@ TypeHandle TinyXGraphicsWindow::_type_handle;
  */
 TinyXGraphicsWindow::
 TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -334,7 +334,7 @@ process_events() {
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
         // This is a message from the window manager indicating that the user
         // has requested to close the window.
-        string close_request_event = get_close_request_event();
+        std::string close_request_event = get_close_request_event();
         if (!close_request_event.empty()) {
           // In this case, the app has indicated a desire to intercept the
           // request and process it directly.

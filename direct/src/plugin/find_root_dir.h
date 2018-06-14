@@ -16,7 +16,6 @@
 
 #include <string>
 #include <iostream>
-using namespace std;
 
 std::string find_root_dir();
 

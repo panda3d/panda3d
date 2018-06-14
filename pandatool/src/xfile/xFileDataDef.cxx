@@ -53,7 +53,7 @@ add_array_def(const XFileArrayDef &array_def) {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataDef::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   indent(out, indent_level);
 
   if (!_array_def.empty()) {
@@ -405,7 +405,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
 
     for (int i = 0; i < array_size; i++) {
       if (index >= parse_data_list._list.size()) {
-        xyyerror(string("Expected ") + format_string(array_size)
+        xyyerror(std::string("Expected ") + format_string(array_size)
                  + " array elements, found " + format_string(i));
         return data_value;
       }

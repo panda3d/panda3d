@@ -59,7 +59,7 @@ fill_state(EggPrimitive *egg_prim) {
   bool has_depth_offset = false;
   int depth_offset = 0;
   bool has_bin = false;
-  string bin;
+  std::string bin;
 
   EggRenderMode *render_mode;
   render_mode = egg_prim->determine_alpha_mode();
@@ -151,7 +151,7 @@ fill_state(EggPrimitive *egg_prim) {
       // of textures that share this same set of UV's per each unique texture
       // matrix.  Whew!)
       CPT(InternalName) uv_name;
-      if (egg_tex->has_uv_name() && egg_tex->get_uv_name() != string("default")) {
+      if (egg_tex->has_uv_name() && egg_tex->get_uv_name() != std::string("default")) {
         uv_name = InternalName::get_texcoord_name(egg_tex->get_uv_name());
       } else {
         uv_name = InternalName::get_texcoord();

@@ -51,7 +51,7 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
  *
  */
 AnimChannelScalarDynamic::
-AnimChannelScalarDynamic(const string &name)
+AnimChannelScalarDynamic(const std::string &name)
   : AnimChannelScalar(name)
 {
   _last_value = _value = TransformState::make_identity();

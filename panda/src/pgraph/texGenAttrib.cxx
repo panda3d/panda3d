@@ -190,7 +190,7 @@ get_constant_value(TextureStage *stage) const {
  *
  */
 void TexGenAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

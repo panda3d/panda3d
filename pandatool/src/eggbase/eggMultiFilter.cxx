@@ -81,7 +81,7 @@ handle_args(ProgramBase::Args &args) {
       nout << "Error opening file: " << _input_filename << "\n";
       return false;
     }
-    string line;
+    std::string line;
     // File should be a space-delimited list of egg files
     while (std::getline(input, line, ' ')) {
       args.push_back(line);

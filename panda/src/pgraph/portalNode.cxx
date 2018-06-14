@@ -30,6 +30,8 @@
 
 #include "plane.h"
 
+using std::endl;
+
 TypeHandle PortalNode::_type_handle;
 
 
@@ -39,7 +41,7 @@ TypeHandle PortalNode::_type_handle;
  * Then you can set the vertices yourself, with addVertex.
  */
 PortalNode::
-PortalNode(const string &name) :
+PortalNode(const std::string &name) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -58,7 +60,7 @@ PortalNode(const string &name) :
  * portal and setup from Python
  */
 PortalNode::
-PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
+PortalNode(const std::string &name, LPoint3 pos, PN_stdfloat scale) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -323,7 +325,7 @@ is_renderable() const {
  * classes to include some information relevant to the class.
  */
 void PortalNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

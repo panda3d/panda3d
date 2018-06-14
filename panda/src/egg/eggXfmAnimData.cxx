@@ -164,7 +164,7 @@ is_anim_matrix() const {
  * Writes the data to the indicated output stream in Egg format.
  */
 void EggXfmAnimData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Xfm$Anim>");
 
   if (has_fps()) {

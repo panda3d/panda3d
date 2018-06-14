@@ -19,6 +19,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
+using std::max;
+using std::min;
+
 TypeHandle ScissorAttrib::_type_handle;
 int ScissorAttrib::_attrib_slot;
 CPT(RenderAttrib) ScissorAttrib::_off_attrib;
@@ -78,7 +81,7 @@ make_default() {
  *
  */
 void ScissorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":[" << _frame << "]";
 }
 

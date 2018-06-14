@@ -15,6 +15,11 @@
 #include "subStream.h"
 #include "dcast.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFileMountRamdisk::_type_handle;
 TypeHandle VirtualFileMountRamdisk::FileBase::_type_handle;
 TypeHandle VirtualFileMountRamdisk::File::_type_handle;
@@ -241,7 +246,7 @@ open_write_file(const Filename &file, bool truncate) {
     // second, since the timer only has a one second precision. The proper
     // solution to fix this would be to switch to a higher precision
     // timer everywhere.
-    f->_timestamp = max(f->_timestamp + 1, time(nullptr));
+    f->_timestamp = std::max(f->_timestamp + 1, time(nullptr));
   }
 
   return new OSubStream(&f->_wrapper, 0, 0);
@@ -283,7 +288,7 @@ open_read_write_file(const Filename &file, bool truncate) {
     f->_data.str(string());
 
     // See open_write_file
-    f->_timestamp = max(f->_timestamp + 1, time(nullptr));
+    f->_timestamp = std::max(f->_timestamp + 1, time(nullptr));
   }
 
   return new SubStream(&f->_wrapper, 0, 0);
@@ -312,7 +317,7 @@ open_read_append_file(const Filename &file) {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileMountRamdisk::
+std::streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file, istream *stream) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);
@@ -329,7 +334,7 @@ get_file_size(const Filename &file, istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileMountRamdisk::
+std::streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file) const {
   _lock.lock();
   PT(FileBase) f = _root.do_find_file(file);

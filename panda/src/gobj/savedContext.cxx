@@ -20,7 +20,7 @@ TypeHandle SavedContext::_type_handle;
  *
  */
 void SavedContext::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "SavedContext " << this;
 }
 
@@ -28,6 +28,6 @@ output(ostream &out) const {
  *
  */
 void SavedContext::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

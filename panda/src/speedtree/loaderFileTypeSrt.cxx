@@ -27,7 +27,7 @@ LoaderFileTypeSrt() {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_name() const {
   return "SpeedTree compiled tree";
 }
@@ -35,7 +35,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeSrt::
+std::string LoaderFileTypeSrt::
 get_extension() const {
   return "srt";
 }

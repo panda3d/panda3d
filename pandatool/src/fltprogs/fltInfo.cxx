@@ -65,7 +65,7 @@ run() {
 void FltInfo::
 list_hierarchy(FltRecord *record, int indent_level) {
   // Maybe in the future we can do something fancier here.
-  record->write(cout, indent_level);
+  record->write(std::cout, indent_level);
 }
 
 

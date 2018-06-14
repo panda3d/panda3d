@@ -13,6 +13,9 @@
 #include "dcindent.h"
 #include "pstrtod.h"
 
+using std::cerr;
+using std::string;
+
 
 static int yyinput(void);        // declared by flex.
 extern "C" int dcyywrap();
@@ -35,7 +38,7 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *input_p = nullptr;
+static std::istream *input_p = nullptr;
 
 // This is the name of the dc file we're parsing.  We keep it so we
 // can print it out for error messages.
@@ -51,7 +54,7 @@ static int initial_token;
 ////////////////////////////////////////////////////////////////////
 
 void
-dc_init_lexer(istream &in, const string &filename) {
+dc_init_lexer(std::istream &in, const string &filename) {
   input_p = &in;
   dc_filename = filename;
   line_number = 0;

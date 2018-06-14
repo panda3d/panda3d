@@ -28,6 +28,9 @@
 #include "py_panda.h"
 #endif
 
+using std::endl;
+using std::string;
+
 const string CConnectionRepository::_overflow_event_name = "CRDatagramOverflow";
 
 #ifndef CPPPARSER
@@ -406,7 +409,7 @@ send_datagram(const Datagram &dg) {
     bool result = _bdc.SendMessage(dg);
     if (!result && _bdc.IsConnected()) {
 #ifdef HAVE_PYTHON
-      ostringstream s;
+      std::ostringstream s;
 
 #if PY_VERSION_HEX >= 0x03030000
       PyObject *exc_type = PyExc_ConnectionError;
@@ -884,7 +887,7 @@ handle_update_field_owner() {
  * description on the indicated output stream.
  */
 void CConnectionRepository::
-describe_message(ostream &out, const string &prefix,
+describe_message(std::ostream &out, const string &prefix,
                  const Datagram &dg) const {
   DCPacker packer;
 

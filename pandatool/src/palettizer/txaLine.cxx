@@ -22,6 +22,8 @@
 #include "pnotify.h"
 #include "pnmFileType.h"
 
+using std::string;
+
 /**
  *
  */
@@ -410,8 +412,8 @@ match_texture(TextureImage *texture) const {
     case ST_scale:
       if (source != nullptr && source->get_size()) {
         request._got_size = true;
-        request._x_size = max(1, (int)(source->get_x_size() * _scale / 100.0));
-        request._y_size = max(1, (int)(source->get_y_size() * _scale / 100.0));
+        request._x_size = std::max(1, (int)(source->get_x_size() * _scale / 100.0));
+        request._y_size = std::max(1, (int)(source->get_y_size() * _scale / 100.0));
       }
       break;
 
@@ -523,7 +525,7 @@ match_texture(TextureImage *texture) const {
  *
  */
 void TxaLine::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Patterns::const_iterator pi;
   for (pi = _texture_patterns.begin(); pi != _texture_patterns.end(); ++pi) {
     out << (*pi) << " ";

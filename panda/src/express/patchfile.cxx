@@ -35,6 +35,14 @@
 istream *Patchfile::_tar_istream = nullptr;
 #endif  // HAVE_TAR
 
+using std::endl;
+using std::ios;
+using std::istream;
+using std::min;
+using std::ostream;
+using std::streampos;
+using std::string;
+
 // this actually slows things down... #define
 // USE_MD5_FOR_HASHTABLE_INDEX_VALUES
 

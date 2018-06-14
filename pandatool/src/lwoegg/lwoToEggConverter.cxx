@@ -69,7 +69,7 @@ make_copy() {
 /**
  * Returns the English name of the file type this converter supports.
  */
-string LwoToEggConverter::
+std::string LwoToEggConverter::
 get_name() const {
   return "Lightwave";
 }
@@ -77,7 +77,7 @@ get_name() const {
 /**
  * Returns the common extension of the file type this converter supports.
  */
-string LwoToEggConverter::
+std::string LwoToEggConverter::
 get_extension() const {
   return "lwo";
 }
@@ -182,7 +182,7 @@ get_clip(int number) const {
  * there is no such surface.
  */
 CLwoSurface *LwoToEggConverter::
-get_surface(const string &name) const {
+get_surface(const std::string &name) const {
   Surfaces::const_iterator si;
   si = _surfaces.find(name);
   if (si != _surfaces.end()) {

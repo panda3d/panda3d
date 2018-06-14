@@ -23,6 +23,13 @@
 #include <io.h>
 #endif
 
+using std::ios;
+using std::max;
+using std::min;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 // This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char P3DMultifileReader::_header[] = "pmf\0\n\r";
 const size_t P3DMultifileReader::_header_size = 6;
@@ -99,7 +106,7 @@ extract_all(const string &to_dir, P3DPackage *package,
 
     ofstream out;
 #ifdef _WIN32
-    wstring output_pathname_w;
+    std::wstring output_pathname_w;
     if (string_to_wstring(output_pathname_w, output_pathname)) {
       out.open(output_pathname_w.c_str(), ios::out | ios::binary);
     }
@@ -140,7 +147,7 @@ extract_all(const string &to_dir, P3DPackage *package,
  * stream.  Returns true on success, false on failure.
  */
 bool P3DMultifileReader::
-extract_one(ostream &out, const string &filename) {
+extract_one(std::ostream &out, const string &filename) {
   assert(_is_open);
   if (_in.fail()) {
     return false;
@@ -202,7 +209,7 @@ read_header(const string &pathname) {
   _signatures.clear();
 
 #ifdef _WIN32
-  wstring pathname_w;
+  std::wstring pathname_w;
   if (string_to_wstring(pathname_w, pathname)) {
     _in.open(pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -341,7 +348,7 @@ read_index() {
  * Returns true on success, false on failure.
  */
 bool P3DMultifileReader::
-extract_subfile(ostream &out, const Subfile &s) {
+extract_subfile(std::ostream &out, const Subfile &s) {
   _in.seekg(s._data_start + _read_offset);
 
   static const streamsize buffer_size = 4096;

@@ -17,6 +17,8 @@
 #include <algorithm>
 #include "pvector.h"
 
+using std::ostream;
+
 ConfigVariableInt PhysicsManager::_random_seed
 ("physics_manager_random_seed", 139);
 

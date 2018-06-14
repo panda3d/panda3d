@@ -16,8 +16,13 @@
 #include "string_utils.h"
 #include "config_putil.h"
 
+using std::istream;
+using std::ostream;
+
 ostream &
 operator << (ostream &out, PhysxEnums::PhysxUpAxis axis) {
+std::ostream &
+operator << (std::ostream &out, PhysxEnums::PhysxUpAxis axis) {
 
   switch (axis) {
   case PhysxEnums::X_up:
@@ -36,7 +41,7 @@ operator << (ostream &out, PhysxEnums::PhysxUpAxis axis) {
 istream &
 operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis) {
 
-  string word;
+  std::string word;
   in >> word;
 
   if (cmp_nocase(word, "x") == 0) {

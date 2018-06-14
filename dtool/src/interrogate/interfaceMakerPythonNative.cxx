@@ -39,6 +39,16 @@
 #include <set>
 #include <map>
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::oct;
+using std::ostream;
+using std::ostringstream;
+using std::set;
+using std::string;
+
 extern          InterrogateType dummy_type;
 extern std::string EXPORT_IMPORT_PREFIX;
 
@@ -702,7 +712,7 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
 void InterfaceMakerPythonNative::
 write_python_instance(ostream &out, int indent_level, const string &return_expr,
                       bool owns_memory, const InterrogateType &itype, bool is_const) {
-  out << boolalpha;
+  out << std::boolalpha;
 
   if (!isExportThisRun(itype._cpptype)) {
     _external_imports.insert(TypeManager::resolve_type(itype._cpptype));
@@ -1049,10 +1059,10 @@ write_class_details(ostream &out, Object *obj) {
       write_make_seq(out, obj, ClassName, cClassName, *msi);
     } else {
       if (!is_function_legal((*msi)->_length_getter)) {
-        cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
+        std::cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
       }
       if (!is_function_legal((*msi)->_element_getter)) {
-        cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
+        std::cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
       }
     }
   }
@@ -2447,7 +2457,7 @@ write_module_class(ostream &out, Object *obj) {
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
 
-        vector<FunctionRemap *> remaps;
+        std::vector<FunctionRemap *> remaps;
         remaps.insert(remaps.end(), def._remaps.begin(), def._remaps.end());
         string expected_params;
         write_function_for_name(out, obj, remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
@@ -3050,7 +3060,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "    // Dependent objects\n";
   if (bases.size() > 0) {
     string baseargs;
-    for (vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
+    for (std::vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
       string safe_name = make_safe_name((*bi)->get_local_name(&parser));
 
       if (isExportThisRun(*bi)) {
@@ -5571,7 +5581,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
             << ", *Dtool_Ptr_" << make_safe_name(class_name)
             << ");\n";
         } else {
-          extra_convert << boolalpha
+          extra_convert << std::boolalpha
             << " = (" << class_name << " *)"
             << "DTOOL_Call_GetPointerThisClass(" << param_name
             << ", Dtool_Ptr_" << make_safe_name(class_name)
@@ -7873,7 +7883,7 @@ output_quoted(ostream &out, int indent_level, const std::string &str,
 
     default:
       if (!isprint(*si)) {
-        out << "\\" << oct << setw(3) << setfill('0') << (unsigned int)(*si)
+        out << "\\" << oct << std::setw(3) << std::setfill('0') << (unsigned int)(*si)
             << dec;
       } else {
         out << *si;

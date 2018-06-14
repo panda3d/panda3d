@@ -22,6 +22,11 @@
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::string;
+
 TypeHandle XFile::_type_handle;
 PT(XFile) XFile::_standard_templates;
 

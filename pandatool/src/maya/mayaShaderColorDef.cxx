@@ -29,6 +29,9 @@
 #include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 /**
  *
  */
@@ -177,7 +180,7 @@ project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
  *
  */
 void MayaShaderColorDef::
-write(ostream &out) const {
+write(std::ostream &out) const {
   if (_has_texture) {
     out << "    texture filename is " << _texture_filename << "\n"
         << "    texture name is " << _texture_name << "\n"

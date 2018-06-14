@@ -226,7 +226,7 @@ clear() {
  *
  */
 void DynamicTextFont::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   static const int max_glyph_name = 1024;
   char glyph_name[max_glyph_name];
 
@@ -972,7 +972,7 @@ slot_glyph(int character, int x_size, int y_size, PN_stdfloat advance) {
 void DynamicTextFont::
 render_wireframe_contours(TextGlyph *glyph) {
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3(),
+    (std::string(), GeomVertexFormat::get_v3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
@@ -1003,7 +1003,7 @@ render_wireframe_contours(TextGlyph *glyph) {
 void DynamicTextFont::
 render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
   PT(GeomVertexData) vdata = new GeomVertexData
-    (string(), GeomVertexFormat::get_v3n3(),
+    (std::string(), GeomVertexFormat::get_v3n3(),
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter normal(vdata, InternalName::get_normal());

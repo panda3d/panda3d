@@ -52,6 +52,10 @@
 
 #include <string.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const char * const extensions_tga[] = {
   "tga"
 };

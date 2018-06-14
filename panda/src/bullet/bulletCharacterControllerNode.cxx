@@ -34,7 +34,7 @@ BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const
 
   // Get convex shape (for ghost object)
   if (!shape->is_convex()) {
-    bullet_cat.error() << "a convex shape is required!" << endl;
+    bullet_cat.error() << "a convex shape is required!" << std::endl;
     return;
   }
 

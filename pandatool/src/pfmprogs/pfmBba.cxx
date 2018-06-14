@@ -77,7 +77,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
 
     pofstream out;
     if (!bba_filename.open_write(out)) {
-      cerr << "Unable to open " << bba_filename << "\n";
+      std::cerr << "Unable to open " << bba_filename << "\n";
       return false;
     }
 

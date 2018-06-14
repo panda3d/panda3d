@@ -36,6 +36,10 @@
   #error Buildsystem error: BUILDING_PANDA_PNMIMAGETYPES not defined
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);

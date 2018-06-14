@@ -17,6 +17,8 @@
 #include "pnotify.h"
 #include <algorithm>
 
+using std::string;
+
 /**
  *
  */

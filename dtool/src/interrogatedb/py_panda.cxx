@@ -17,6 +17,8 @@
 
 #ifdef HAVE_PYTHON
 
+using std::string;
+
 PyMemberDef standard_type_members[] = {
   {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
   {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
@@ -425,7 +427,7 @@ void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
 // are uniquly defined by an integer.
 void
 RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
-  pair<NamedTypeMap::iterator, bool> result =
+  std::pair<NamedTypeMap::iterator, bool> result =
     named_type_map.insert(NamedTypeMap::value_type(name, &otype));
 
   if (!result.second) {
@@ -450,7 +452,7 @@ RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype) {
       << " has an illegal TypeHandle value; check that init_type() is called.\n";
 
   } else {
-    pair<RuntimeTypeMap::iterator, bool> result =
+    std::pair<RuntimeTypeMap::iterator, bool> result =
       runtime_type_map.insert(RuntimeTypeMap::value_type(type_index, &otype));
     if (!result.second) {
       // There was already an entry in the dictionary for type_index.
@@ -531,7 +533,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
       version[2] != '0' + PY_MINOR_VERSION) {
     // Raise a helpful error message.  We can safely do this because the
     // signature and behavior for PyErr_SetString has remained consistent.
-    ostringstream errs;
+    std::ostringstream errs;
     errs << "this module was compiled for Python "
          << PY_MAJOR_VERSION << "." << PY_MINOR_VERSION << ", which is "
          << "incompatible with Python " << version.substr(0, 3);

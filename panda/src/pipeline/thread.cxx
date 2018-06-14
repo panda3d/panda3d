@@ -36,7 +36,7 @@ TypeHandle Thread::_type_handle;
  * given the same sync_name, for the benefit of PStats.
  */
 Thread::
-Thread(const string &name, const string &sync_name) :
+Thread(const std::string &name, const std::string &sync_name) :
   Namable(name),
   _sync_name(sync_name),
   _impl(this)
@@ -87,7 +87,7 @@ Thread::
  * case the same pointer will be returned each time).
  */
 PT(Thread) Thread::
-bind_thread(const string &name, const string &sync_name) {
+bind_thread(const std::string &name, const std::string &sync_name) {
   Thread *current_thread = get_current_thread();
   if (current_thread != get_external_thread()) {
     // This thread already has an associated thread.
@@ -129,7 +129,7 @@ set_pipeline_stage(int pipeline_stage) {
  *
  */
 void Thread::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
@@ -139,7 +139,7 @@ output(ostream &out) const {
  * DEBUG_THREADS mode.
  */
 void Thread::
-output_blocker(ostream &out) const {
+output_blocker(std::ostream &out) const {
 #ifdef DEBUG_THREADS
   if (_blocked_on_mutex != nullptr) {
     _blocked_on_mutex->output_with_holder(out);
@@ -155,7 +155,7 @@ output_blocker(ostream &out) const {
  *
  */
 void Thread::
-write_status(ostream &out) {
+write_status(std::ostream &out) {
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   ThreadImpl::write_status(out);
 #endif

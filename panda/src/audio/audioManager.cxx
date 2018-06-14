@@ -25,6 +25,8 @@
 #include <windows.h>  // For GetSystemDirectory()
 #endif
 
+using std::string;
+
 
 TypeHandle AudioManager::_type_handle;
 
@@ -312,7 +314,7 @@ get_dls_pathname() {
  *
  */
 void AudioManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -320,7 +322,7 @@ output(ostream &out) const {
  *
  */
 void AudioManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << (*this) << "\n";
 }
 

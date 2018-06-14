@@ -20,6 +20,8 @@
 
 #include "ca_bundle_data_src.c"
 
+using std::cerr;
+
 static const wxString
 self_signed_cert_text =
   _T("This Panda3D application uses a self-signed certificate.  ")
@@ -132,7 +134,7 @@ END_EVENT_TABLE()
  *
  */
 AuthDialog::
-AuthDialog(const string &cert_filename, const string &cert_dir) :
+AuthDialog(const std::string &cert_filename, const std::string &cert_dir) :
   // I hate stay-on-top dialogs, but if we don't set this flag, it doesn't
   // come to the foreground on OSX, and might be lost behind the browser
   // window.
@@ -216,7 +218,7 @@ approve_cert() {
   size_t buf_length = _cert_dir.length() + 100;
   char *buf = new char[buf_length];
 #ifdef _WIN32
-  wstring buf_w;
+  std::wstring buf_w;
 #endif // _WIN32
 
   while (true) {
@@ -262,10 +264,10 @@ approve_cert() {
  * line into _cert and _stack.
  */
 void AuthDialog::
-read_cert_file(const string &cert_filename) {
+read_cert_file(const std::string &cert_filename) {
   FILE *fp = nullptr;
 #ifdef _WIN32
-  wstring cert_filename_w;
+  std::wstring cert_filename_w;
   if (string_to_wstring(cert_filename_w, cert_filename)) {
     fp = _wfopen(cert_filename_w.c_str(), L"r");
   }
@@ -612,5 +614,5 @@ layout() {
   // Make sure the resulting window is at least a certain size.
   int width, height;
   GetSize(&width, &height);
-  SetSize(max(width, 600), max(height, 400));
+  SetSize(std::max(width, 600), std::max(height, 400));
 }

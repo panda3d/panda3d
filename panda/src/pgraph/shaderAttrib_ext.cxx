@@ -24,7 +24,7 @@ set_shader_input(CPT_InternalName name, PyObject *value, int priority) const {
   ShaderAttrib *attrib = new ShaderAttrib(*_this);
 
   ShaderInput &input = attrib->_inputs[name];
-  invoke_extension(&input).__init__(move(name), value);
+  invoke_extension(&input).__init__(std::move(name), value);
 
   return ShaderAttrib::return_new(attrib);
 }
@@ -60,9 +60,9 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) const {
       return nullptr;
     }
 
-    CPT_InternalName name(string(buffer, length));
+    CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
-    invoke_extension(&input).__init__(move(name), value);
+    invoke_extension(&input).__init__(std::move(name), value);
   }
 
   return ShaderAttrib::return_new(attrib);

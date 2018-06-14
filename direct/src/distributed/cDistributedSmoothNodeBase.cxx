@@ -268,7 +268,7 @@ broadcast_pos_hpr_xy() {
  * indicated field name, up until the arguments.
  */
 void CDistributedSmoothNodeBase::
-begin_send_update(DCPacker &packer, const string &field_name) {
+begin_send_update(DCPacker &packer, const std::string &field_name) {
   DCField *field = _dclass->get_field_by_name(field_name);
   nassertv(field != nullptr);
 
@@ -325,14 +325,14 @@ finish_send_update(DCPacker &packer) {
   } else {
 #ifndef NDEBUG
     if (packer.had_range_error()) {
-      ostringstream error;
+      std::ostringstream error;
       error << "Node position out of range for DC file: "
             << _node_path << " pos = " << _store_xyz
             << " hpr = " << _store_hpr
             << " zoneId = " << _currL[0];
 
 #ifdef HAVE_PYTHON
-      string message = error.str();
+      std::string message = error.str();
       distributed_cat.warning()
         << message << "\n";
       PyErr_SetString(PyExc_ValueError, message.c_str());
@@ -364,5 +364,5 @@ set_curr_l(uint64_t l) {
 
 void CDistributedSmoothNodeBase::
 print_curr_l() {
-  cout << "printCurrL: sent l: " << _currL[1] << " last set l: " << _currL[0] << "\n";
+  std::cout << "printCurrL: sent l: " << _currL[1] << " last set l: " << _currL[0] << "\n";
 }

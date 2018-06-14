@@ -15,6 +15,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */

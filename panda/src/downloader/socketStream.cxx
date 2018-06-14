@@ -23,7 +23,7 @@
  *
  */
 SSReader::
-SSReader(istream *stream) : _istream(stream) {
+SSReader(std::istream *stream) : _istream(stream) {
   _data_expected = 0;
   _tcp_header_size = tcp_header_size;
 
@@ -84,13 +84,13 @@ do_receive_datagram(Datagram &dg) {
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-  size_t read_count = min(_data_expected - _data_so_far.size(), buffer_size);
+  size_t read_count = std::min(_data_expected - _data_so_far.size(), buffer_size);
   _istream->read(buffer, read_count);
   size_t count = _istream->gcount();
   while (count != 0) {
     _data_so_far.insert(_data_so_far.end(), buffer, buffer + count);
 
-    read_count = min(_data_expected - _data_so_far.size(),
+    read_count = std::min(_data_expected - _data_so_far.size(),
                      buffer_size);
     _istream->read(buffer, read_count);
     count = _istream->gcount();
@@ -126,7 +126,7 @@ do_receive_datagram(Datagram &dg) {
 void SSReader::
 start_delay(double min_delay, double max_delay) {
   _min_delay = min_delay;
-  _delay_variance = max(max_delay - min_delay, 0.0);
+  _delay_variance = std::max(max_delay - min_delay, 0.0);
   _delay_active = true;
 }
 #endif  // SIMULATE_NETWORK_DELAY
@@ -194,7 +194,7 @@ get_delayed(Datagram &datagram) {
  *
  */
 SSWriter::
-SSWriter(ostream *stream) : _ostream(stream) {
+SSWriter(std::ostream *stream) : _ostream(stream) {
   _collect_tcp = collect_tcp;
   _collect_tcp_interval = collect_tcp_interval;
   _queued_data_start = 0.0;

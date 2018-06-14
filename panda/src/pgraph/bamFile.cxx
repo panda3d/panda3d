@@ -24,6 +24,8 @@
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
+using std::string;
+
 /**
  *
  */
@@ -61,7 +63,7 @@ open_read(const Filename &bam_filename, bool report_errors) {
  * for information purposes only.  Returns true if successful, false on error.
  */
 bool BamFile::
-open_read(istream &in, const string &bam_filename, bool report_errors) {
+open_read(std::istream &in, const string &bam_filename, bool report_errors) {
   close();
 
   if (!_din.open(in)) {
@@ -205,7 +207,7 @@ open_write(const Filename &bam_filename, bool report_errors) {
  * for information purposes only.  Returns true if successful, false on error.
  */
 bool BamFile::
-open_write(ostream &out, const string &bam_filename, bool report_errors) {
+open_write(std::ostream &out, const string &bam_filename, bool report_errors) {
   close();
 
   if (!_dout.open(out)) {

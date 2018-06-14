@@ -14,6 +14,8 @@
 #include "simpleLru.h"
 #include "indent.h"
 
+using std::ostream;
+
 // We define this as a reference to an allocated object, instead of as a
 // concrete object, so that it won't get destructed when the program exits.
 // (If it did, there would be an ordering issue between it and the various
@@ -24,7 +26,7 @@ LightMutex &SimpleLru::_global_lock = *new LightMutex;
  *
  */
 SimpleLru::
-SimpleLru(const string &name, size_t max_size) :
+SimpleLru(const std::string &name, size_t max_size) :
   LinkedListNode(true),
   Namable(name)
 {

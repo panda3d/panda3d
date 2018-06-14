@@ -25,7 +25,7 @@ PhysxActor *PhysxContactPair::
 get_actor_a() const {
 
   if (_pair.isDeletedActor[0]) {
-    physx_cat.warning() << "actor A has been deleted" << endl;
+    physx_cat.warning() << "actor A has been deleted" << std::endl;
     return nullptr;
   }
 
@@ -40,7 +40,7 @@ PhysxActor *PhysxContactPair::
 get_actor_b() const {
 
   if (_pair.isDeletedActor[1]) {
-    physx_cat.warning() << "actor B has been deleted" << endl;
+    physx_cat.warning() << "actor B has been deleted" << std::endl;
     return nullptr;
   }
 

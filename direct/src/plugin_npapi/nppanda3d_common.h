@@ -30,8 +30,6 @@
 #include <string>
 #include <assert.h>
 
-using namespace std;
-
 // Appears in startup.cxx.
 extern std::ostream *nout_stream;
 #define nout (*nout_stream)

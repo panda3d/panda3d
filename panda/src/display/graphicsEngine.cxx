@@ -57,6 +57,8 @@
   #include <sys/time.h>
 #endif
 
+using std::string;
+
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
@@ -1511,7 +1513,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
             key._lens_index = dr_reader.get_lens_index();
           }
 
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(move(key), nullptr)).first;
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(std::move(key), nullptr)).first;
           if ((*aci).second == nullptr) {
             // We have not used this camera already in this thread.  Perform
             // the cull operation.
@@ -1537,7 +1539,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
           }
 
           // Save the results for next frame.
-          dr->set_cull_result(move(cull_result), MOVE(scene_setup), current_thread);
+          dr->set_cull_result(std::move(cull_result), MOVE(scene_setup), current_thread);
         }
       }
     }

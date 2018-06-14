@@ -142,7 +142,7 @@ get_lens_index(TextureStage *stage) const {
  *
  */
 void TexProjectorEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

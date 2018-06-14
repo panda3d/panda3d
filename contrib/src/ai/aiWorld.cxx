@@ -14,7 +14,7 @@
 #include "aiWorld.h"
 
 AIWorld::AIWorld(NodePath render) {
-  _render = move(render);
+  _render = std::move(render);
 }
 
 AIWorld::~AIWorld() {
@@ -26,7 +26,7 @@ void AIWorld::add_ai_char(AICharacter *ai_char) {
   ai_char->_world = this;
 }
 
-void AIWorld::remove_ai_char(string name) {
+void AIWorld::remove_ai_char(std::string name) {
   AICharPool::iterator it;
   for (it = _ai_char_pool.begin(); it != _ai_char_pool.end(); ++it) {
     AICharacter *ai_char = *it;
@@ -38,10 +38,10 @@ void AIWorld::remove_ai_char(string name) {
     }
   }
 
-  remove_ai_char_from_flock(move(name));
+  remove_ai_char_from_flock(std::move(name));
 }
 
-void AIWorld::remove_ai_char_from_flock(string name) {
+void AIWorld::remove_ai_char_from_flock(std::string name) {
   for (AICharacter *ai_char : _ai_char_pool) {
     for (Flock *flock : _flock_pool) {
       if (ai_char->_ai_char_flock_id == flock->get_id()) {
@@ -62,7 +62,7 @@ void AIWorld::remove_ai_char_from_flock(string name) {
  */
 void AIWorld::print_list() {
   for (AICharacter *ai_char : _ai_char_pool) {
-    cout << ai_char->_name << endl;
+    std::cout << ai_char->_name << std::endl;
   }
 }
 

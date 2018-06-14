@@ -16,6 +16,10 @@
 #include "pnmImage.h"
 #include "indent.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle STBasicTerrain::_type_handle;
 
 // VERTEX_ATTRIB_END is defined as a macro that must be evaluated within the
@@ -345,8 +349,8 @@ read_height_map() {
       v *= scalar;
       _height_data._data[pi] = v;
       ++pi;
-      _min_height = min(_min_height, v);
-      _max_height = max(_max_height, v);
+      _min_height = std::min(_min_height, v);
+      _max_height = std::max(_max_height, v);
     }
   }
 

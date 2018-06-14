@@ -58,6 +58,9 @@
 #include <string.h>
 #include <windows.h>
 
+using std::cerr;
+using std::string;
+
 /*
  * This used to work back when qedit.h still existed.  The hacks served to
  * prevent it from including the defunct dxtrans.h.  #pragma include_alias(

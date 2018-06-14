@@ -44,6 +44,8 @@
 #include <stack>
 #include <stdio.h>  // for sprintf()
 
+using std::cerr;
+
 //#define YYDEBUG 1
 
 // Currently-being-define proto.  Prototypes may be nested, so a stack
@@ -94,14 +96,14 @@ void storeField(const VrmlFieldValue &value);
 void exitField();
 void expect(int type);
 
-extern void vrmlyyerror(const string &);
+extern void vrmlyyerror(const std::string &);
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
 void
-vrml_init_parser(istream &in, const string &filename) {
+vrml_init_parser(std::istream &in, const std::string &filename) {
   //yydebug = 0;
   vrml_init_lexer(in, filename);
 }
@@ -132,7 +134,7 @@ vrml_cleanup_parser() {
  * %type <nodeList> vrmlscene declarations
  */
 
-%token <string> IDENTIFIER 
+%token <string> IDENTIFIER
 %token DEF USE PROTO EXTERNPROTO TO IS ROUTE SFN_NULL
 %token EVENTIN EVENTOUT FIELD EXPOSEDFIELD
 

@@ -20,6 +20,8 @@
 
 #include "py_panda.h"
 
+using std::string;
+
 extern "C" {
   // This has been compiled-in by the build system, if all is well.
   extern struct _frozen _PyImport_FrozenModules[];
@@ -118,7 +120,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
     f.set_text();
     if (f.open_write(_error_log)) {
       // Set up the indicated error log as the Notify output.
-      _error_log.setf(ios::unitbuf);
+      _error_log.setf(std::ios::unitbuf);
       Notify::ptr()->set_ostream_ptr(&_error_log, false);
     }
   }
@@ -155,7 +157,7 @@ P3DPythonRun::
 
   // Restore the notify stream in case it tries to write to anything else
   // after our shutdown.
-  Notify::ptr()->set_ostream_ptr(&cerr, false);
+  Notify::ptr()->set_ostream_ptr(&std::cerr, false);
 }
 
 /**
@@ -1439,7 +1441,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   const char *parent_cstr = xwparams->Attribute("parent_xwindow");
   if (parent_cstr != nullptr) {
     long window;
-    istringstream strm(parent_cstr);
+    std::istringstream strm(parent_cstr);
     strm >> window;
     parent_window_handle = NativeWindowHandle::make_x11((X11_Window)window);
   }

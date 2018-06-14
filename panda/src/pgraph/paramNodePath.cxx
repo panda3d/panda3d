@@ -21,7 +21,7 @@ TypeHandle ParamNodePath::_type_handle;
  *
  */
 void ParamNodePath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "node path " << _node_path;
 }
 

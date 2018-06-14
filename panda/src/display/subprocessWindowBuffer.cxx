@@ -19,6 +19,9 @@
 
 #include <iostream>
 
+using std::cerr;
+using std::string;
+
 const char SubprocessWindowBuffer::
 _magic_number[SubprocessWindowBuffer::magic_number_length] = "pNdaSWB";
 

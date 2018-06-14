@@ -22,6 +22,8 @@
 #include "config_event.h"
 #include <algorithm>
 
+using std::string;
+
 AsyncTaskManager *AsyncTaskManager::_global_ptr = nullptr;
 
 TypeHandle AsyncTaskManager::_type_handle;
@@ -508,7 +510,7 @@ get_next_wake_time() const {
         got_any = true;
         next_wake_time = time;
       } else {
-        next_wake_time = min(time, next_wake_time);
+        next_wake_time = std::min(time, next_wake_time);
       }
     }
   }
@@ -520,7 +522,7 @@ get_next_wake_time() const {
  *
  */
 void AsyncTaskManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
   do_output(out);
 }
@@ -529,7 +531,7 @@ output(ostream &out) const {
  *
  */
 void AsyncTaskManager::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   MutexHolder holder(_lock);
   indent(out, indent_level)
     << get_type() << " " << get_name() << "\n";
@@ -629,7 +631,7 @@ do_has_task(AsyncTask *task) const {
  *
  */
 void AsyncTaskManager::
-do_output(ostream &out) const {
+do_output(std::ostream &out) const {
   out << get_type() << " " << get_name()
       << "; " << _num_tasks << " tasks";
 }

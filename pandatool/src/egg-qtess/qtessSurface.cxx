@@ -23,6 +23,9 @@
 #include "pset.h"
 #include "pmap.h"
 
+using std::max;
+using std::string;
+
 /**
  *
  */
@@ -133,7 +136,7 @@ tesselate() {
  * should be tesselated uniformly.  Returns the number of tris.
  */
 int QtessSurface::
-write_qtess_parameter(ostream &out) {
+write_qtess_parameter(std::ostream &out) {
   apply_match();
 
   if (_tess_u == 0 || _tess_v == 0) {

@@ -50,7 +50,7 @@ Open(const Rocket::Core::String& path) {
     }
   }
 
-  istream *str = file->open_read_file(true);
+  std::istream *str = file->open_read_file(true);
   if (str == nullptr) {
     rocket_cat.error() << "Failed to open " << fn << " for reading\n";
     return (Rocket::Core::FileHandle) nullptr;
@@ -104,13 +104,13 @@ Seek(Rocket::Core::FileHandle file, long offset, int origin) {
 
   switch(origin) {
   case SEEK_SET:
-    handle->_stream->seekg(offset, ios::beg);
+    handle->_stream->seekg(offset, std::ios::beg);
     break;
   case SEEK_CUR:
-    handle->_stream->seekg(offset, ios::cur);
+    handle->_stream->seekg(offset, std::ios::cur);
     break;
   case SEEK_END:
-    handle->_stream->seekg(offset, ios::end);
+    handle->_stream->seekg(offset, std::ios::end);
   };
 
   return !handle->_stream->fail();
