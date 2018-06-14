@@ -75,6 +75,7 @@ private:
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
+  CPT(ColorAttrib) _color_attrib;
 
 /*
  * struct ParamContext { CPT(InternalName) _name; GLint _location; GLsizei

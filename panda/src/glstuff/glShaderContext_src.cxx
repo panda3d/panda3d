@@ -1910,12 +1910,14 @@ set_state_and_transform(const RenderState *target_rs,
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
+    target_rs->get_attrib_def(_color_attrib);
 
   } else if (state_rs != target_rs) {
     // The state has changed since last time.
     if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
+      target_rs->get_attrib_def(_color_attrib);
     }
     if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
@@ -2227,8 +2229,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   // Get the active ColorAttrib.  We'll need it to determine how to apply
   // vertex colors.
-  const ColorAttrib *color_attrib;
-  _state_rs->get_attrib_def(color_attrib);
+  const ColorAttrib *color_attrib = _color_attrib.p();
 
   const GeomVertexArrayDataHandle *array_reader;
 
