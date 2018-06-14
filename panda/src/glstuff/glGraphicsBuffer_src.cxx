@@ -389,7 +389,7 @@ rebuild_bitplanes() {
   _rb_size_z = 1;
   _rb_data_size_bytes = 0;
 
-  int num_fbos = 1;
+  size_t num_fbos = 1;
 
   // These variables indicate what should be bound to each bitplane.
   Texture *attach[RTP_COUNT];
@@ -458,7 +458,7 @@ rebuild_bitplanes() {
       }
 
       if (tex->get_z_size() > 1) {
-        num_fbos = max(num_fbos, tex->get_z_size());
+        num_fbos = max(num_fbos, (size_t)tex->get_z_size());
       }
 
       // Assign the texture to this slot.
@@ -523,13 +523,13 @@ rebuild_bitplanes() {
 
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
-    int start = _fbo.size();
+    size_t start = _fbo.size();
     GLuint zero = 0;
     _fbo.resize(num_fbos, zero);
     glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
   }
 
-  for (int layer = 0; layer < num_fbos; ++layer) {
+  for (int layer = 0; layer < (int)num_fbos; ++layer) {
     // Bind the FBO
     if (_fbo[layer] == 0) {
       report_my_gl_errors();

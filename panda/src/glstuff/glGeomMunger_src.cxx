@@ -104,7 +104,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   }
 
   // Convert packed formats that OpenGL may not understand.
-  for (int i = 0; i < orig->get_num_columns(); ++i) {
+  for (size_t i = 0; i < orig->get_num_columns(); ++i) {
     const GeomVertexColumn *column = orig->get_column(i);
     int array = orig->get_array_with(column->get_name());
 
@@ -182,7 +182,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   if ((_flags & F_parallel_arrays) != 0) {
     // Split out the interleaved array into n parallel arrays.
     new_format = new GeomVertexFormat;
-    for (int i = 0; i < format->get_num_columns(); ++i) {
+    for (size_t i = 0; i < format->get_num_columns(); ++i) {
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
@@ -290,7 +290,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   }
 
   // Convert packed formats that OpenGL may not understand.
-  for (int i = 0; i < orig->get_num_columns(); ++i) {
+  for (size_t i = 0; i < orig->get_num_columns(); ++i) {
     const GeomVertexColumn *column = orig->get_column(i);
     int array = orig->get_array_with(column->get_name());
 
@@ -317,7 +317,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   if ((_flags & F_parallel_arrays) != 0) {
     // Split out the interleaved array into n parallel arrays.
     new_format = new GeomVertexFormat;
-    for (int i = 0; i < format->get_num_columns(); ++i) {
+    for (size_t i = 0; i < format->get_num_columns(); ++i) {
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
@@ -396,11 +396,11 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
     // Now go through the remaining arrays and make sure they are tightly
     // packed (with the column alignment restrictions).  If not, repack them.
-    for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+    for (size_t i = 0; i < new_format->get_num_arrays(); ++i) {
       CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
       if (orig_a->count_unused_space() != 0) {
         PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
-        for (int j = 0; j < orig_a->get_num_columns(); ++j) {
+        for (size_t j = 0; j < orig_a->get_num_columns(); ++j) {
           const GeomVertexColumn *column = orig_a->get_column(j);
           new_a->add_column(column->get_name(), column->get_num_components(),
                             column->get_numeric_type(), column->get_contents(),

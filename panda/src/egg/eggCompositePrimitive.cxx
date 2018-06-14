@@ -431,7 +431,7 @@ void EggCompositePrimitive::
 write_body(std::ostream &out, int indent_level) const {
   EggPrimitive::write_body(out, indent_level);
 
-  for (int i = 0; i < get_num_components(); i++) {
+  for (size_t i = 0; i < get_num_components(); ++i) {
     const EggAttributes *attrib = get_component(i);
     if (attrib->compare_to(*this) != 0 &&
         (attrib->has_color() || attrib->has_normal())) {
