@@ -107,6 +107,14 @@ if(BUILD_MODELS)
     DESTINATION share/panda3d)
 endif()
 
+if(INTERROGATE_PYTHON_INTERFACE)
+  # If we built the Python interface, run the test suite.  Note, we do NOT test
+  # for pytest before adding this test.  If the user doesn't have pytest, we'd
+  # like for the tests to fail.
+
+  add_test(pytest "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests")
+endif()
+
 # This bit is to generate the 'pandac' compatibility shim. It's deprecated now,
 # but in older versions of Panda3D, one would use
 # from pandac.PandaModules import *
