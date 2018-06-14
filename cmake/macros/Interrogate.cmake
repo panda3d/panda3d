@@ -208,7 +208,7 @@ function(interrogate_sources target output database language_flags)
 
   add_custom_command(
     OUTPUT "${output}" "${database}"
-    COMMAND interrogate
+    COMMAND host_interrogate
       -oc "${output}"
       -od "${database}"
       -srcdir "${srcdir}"
@@ -223,7 +223,7 @@ function(interrogate_sources target output database language_flags)
       ${include_flags}
       ${scan_sources}
       ${extensions}
-    DEPENDS interrogate ${sources} ${extensions} ${nfiles}
+    DEPENDS host_interrogate ${sources} ${extensions} ${nfiles}
     COMMENT "Interrogating ${target}"
   )
 endfunction(interrogate_sources)
@@ -279,13 +279,13 @@ function(add_python_module module)
 
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
-    COMMAND interrogate_module
+    COMMAND host_interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
       -module ${module} -library ${module}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles}
-    DEPENDS interrogate_module ${infiles}
+    DEPENDS host_interrogate_module ${infiles}
     COMMENT "Generating module ${module}"
   )
 

@@ -257,6 +257,12 @@ mark_as_advanced(HAVE_P3D_RTDIST PANDA_PACKAGE_VERSION PANDA_PACKAGE_HOST)
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
 
+option(WANT_INTERROGATE
+  "Do you want to include Interrogate in the installation? This
+program reads C++ source files and generates bindings for another
+language.  If you won't be building interfaces for other languages,
+you don't need the program." ON)
+
 cmake_dependent_option(INTERROGATE_PYTHON_INTERFACE
   "Do you want to generate a Python-callable interrogate interface?
 This is only necessary if you plan to make calls into Panda from a
@@ -270,12 +276,6 @@ a C calling convention.  It should be useful for most other kinds
 of scripting language; the VR Studio used to use this to make calls
 into Panda from Squeak." OFF)
 
-option(HAVE_INTERROGATE
-  "Do you even want to build interrogate at all?  This is the program
-that reads our C++ source files and generates one of the above
-interfaces.  If you won't be building the interfaces, you don't
-need the program." ON)
-
 set(INTERROGATE_OPTIONS "-fnames;-string;-refcount;-assert" CACHE STRING
   "What additional options should be passed to interrogate when
 generating either of the above two interfaces?  Generally, you
@@ -285,21 +285,7 @@ option(INTERROGATE_VERBOSE
   "Set this if you would like interrogate to generate advanced
 debugging information." OFF)
 
-set(INTERROGATE "interrogate" CACHE STRING
-  "What's the name of the interrogate binary to run?  The default
-specified is the one that is built as part of DTOOL.  If you have a
-prebuilt binary standing by (for instance, if you are cross-compiling
-and cannot run the built version), specify its name instead.")
-
-set(INTERROGATE_MODULE "interrogate_module" CACHE STRING
-  "Same as INTERROGATE, except for the interrogate_module binary.")
-
 mark_as_advanced(INTERROGATE_OPTIONS)
-
-if(NOT CMAKE_CROSSCOMPILING)
-  mark_as_advanced(INTERROGATE INTERROGATE_MODULE)
-endif()
-
 
 #
 # The following options have to do with the memory allocation system
