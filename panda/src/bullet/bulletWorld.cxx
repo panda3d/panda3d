@@ -947,7 +947,9 @@ ray_test_all(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &
 }
 
 /**
- *
+ * Performs a sweep test against all other shapes that match the given group
+ * mask.  The provided shape must be a convex shape; it is an error to invoke
+ * this method using a non-convex shape.
  */
 BulletClosestHitSweepResult BulletWorld::
 sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const TransformState &to_ts, const CollideMask &mask, PN_stdfloat penetration) const {
