@@ -87,7 +87,7 @@ is_all_on() const {
  */
 bool BitArray::
 has_any_of(int low_bit, int size) const {
-  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+  if ((size_t)(low_bit + size) > get_num_bits()) {
     // This range touches the highest bits.
     if (_highest_bits) {
       return true;
@@ -97,7 +97,7 @@ has_any_of(int low_bit, int size) const {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words()) {
+  if (w >= (int)get_num_words()) {
     // This range is entirely among the highest bits.
     return (_highest_bits != 0);
   }
@@ -126,7 +126,7 @@ has_any_of(int low_bit, int size) const {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words()) {
+    if (w >= (int)get_num_words()) {
       // Now we're up to the highest bits.
       return (_highest_bits != 0);
     }
@@ -140,7 +140,7 @@ has_any_of(int low_bit, int size) const {
  */
 bool BitArray::
 has_all_of(int low_bit, int size) const {
-  if ((low_bit + size - 1) / num_bits_per_word >= get_num_words()) {
+  if ((size_t)(low_bit + size) > get_num_bits()) {
     // This range touches the highest bits.
     if (!_highest_bits) {
       return false;
@@ -150,7 +150,7 @@ has_all_of(int low_bit, int size) const {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words()) {
+  if (w >= (int)get_num_words()) {
     // This range is entirely among the highest bits.
     return (_highest_bits != 0);
   }
@@ -179,7 +179,7 @@ has_all_of(int low_bit, int size) const {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words()) {
+    if (w >= (int)get_num_words()) {
       // Now we're up to the highest bits.
       return (_highest_bits != 0);
     }
@@ -196,7 +196,7 @@ set_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words() && _highest_bits) {
+  if (w >= (int)get_num_words() && _highest_bits) {
     // All the highest bits are already on.
     return;
   }
@@ -229,7 +229,7 @@ set_range(int low_bit, int size) {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words() && _highest_bits) {
+    if (w >= (int)get_num_words() && _highest_bits) {
       // All the highest bits are already on.
       normalize();
       return;
@@ -246,7 +246,7 @@ clear_range(int low_bit, int size) {
   int w = low_bit / num_bits_per_word;
   int b = low_bit % num_bits_per_word;
 
-  if (w >= get_num_words() && !_highest_bits) {
+  if (w >= (int)get_num_words() && !_highest_bits) {
     // All the highest bits are already off.
     return;
   }
@@ -279,7 +279,7 @@ clear_range(int low_bit, int size) {
     size -= num_bits_per_word;
     ++w;
 
-    if (w >= get_num_words() && !_highest_bits) {
+    if (w >= (int)get_num_words() && !_highest_bits) {
       // All the highest bits are already off.
       normalize();
       return;

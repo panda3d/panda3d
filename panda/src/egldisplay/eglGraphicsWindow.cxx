@@ -84,7 +84,7 @@ move_pointer(int device, int x, int y) {
     return true;
   } else {
     // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
+    if (device < 1 || (size_t)device >= _input_devices.size()) {
       return false;
     }
     _input_devices[device].set_pointer_in_window(x, y);

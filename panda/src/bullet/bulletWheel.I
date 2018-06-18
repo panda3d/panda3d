@@ -34,7 +34,7 @@ INLINE BulletWheelRaycastInfo::
 INLINE BulletWheel BulletWheel::
 empty() {
 
-  btWheelInfoConstructionInfo ci;
+  btWheelInfoConstructionInfo ci {};
   btWheelInfo info(ci);
 
   return BulletWheel(info);

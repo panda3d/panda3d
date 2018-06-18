@@ -649,7 +649,7 @@ process_f_node(vector_string &words) {
   _f_given = true;
 
   bool all_vn = true;
-  int non_vn_index = -1;
+  //int non_vn_index = -1;
 
   pvector<VertexEntry> verts;
   verts.reserve(words.size() - 1);
@@ -658,7 +658,7 @@ process_f_node(vector_string &words) {
     verts.push_back(entry);
     if (entry._vni == 0) {
       all_vn = false;
-      non_vn_index = i;
+      //non_vn_index = i;
     }
   }
 
@@ -706,7 +706,7 @@ process_f_node(vector_string &words) {
   }
 
   if (_current_vertex_data->_prim->get_num_vertices() + 3 * num_tris > egg_max_indices ||
-      _current_vertex_data->_entries.size() + verts.size() > egg_max_vertices) {
+      _current_vertex_data->_entries.size() + verts.size() > (size_t)egg_max_vertices) {
     // We'll exceed our specified limit with these triangles; start a new
     // Geom.
     _current_vertex_data->close_geom(this);

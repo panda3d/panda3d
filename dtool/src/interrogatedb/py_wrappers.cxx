@@ -1209,19 +1209,6 @@ static PyObject *Dtool_MappingWrapper_Keys_repr(PyObject *self) {
   return result;
 }
 
-static PySequenceMethods Dtool_MappingWrapper_Keys_SequenceMethods = {
-  Dtool_SequenceWrapper_length,
-  nullptr, // sq_concat
-  nullptr, // sq_repeat
-  Dtool_MappingWrapper_Items_getitem,
-  nullptr, // sq_slice
-  nullptr, // sq_ass_item
-  nullptr, // sq_ass_slice
-  Dtool_MappingWrapper_contains,
-  nullptr, // sq_inplace_concat
-  nullptr, // sq_inplace_repeat
-};
-
 PyTypeObject Dtool_MappingWrapper_Keys_Type = {
   PyVarObject_HEAD_INIT(nullptr, 0)
   "sequence wrapper",

@@ -31,6 +31,8 @@ DtoolInstance_GetPointer(PyObject *self, T *&into) {
       if (_IS_FINAL(T)) {
         if (DtoolInstance_TYPE(self) == target_class) {
           into = (T *)DtoolInstance_VOID_PTR(self);
+        } else {
+          return false;
         }
       } else {
         into = (T *)DtoolInstance_UPCAST(self, *target_class);
@@ -52,6 +54,8 @@ DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_c
     if (_IS_FINAL(T)) {
       if (DtoolInstance_TYPE(self) == &target_class) {
         into = (T *)DtoolInstance_VOID_PTR(self);
+      } else {
+        return false;
       }
     } else {
       into = (T *)DtoolInstance_UPCAST(self, target_class);

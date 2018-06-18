@@ -1297,7 +1297,7 @@ set_size(int x, int y) {
  */
 void CLP(GraphicsBuffer)::
 select_target_tex_page(int page) {
-  nassertv(page >= 0 && page < _fbo.size());
+  nassertv(page >= 0 && (size_t)page < _fbo.size());
 
   CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
@@ -1574,10 +1574,10 @@ close_buffer() {
   report_my_gl_errors();
 
   // Delete the FBO itself.
-  for (int i = 0; i < _fbo.size(); ++i) {
-    glgsg->_glDeleteFramebuffers(1, &_fbo[i]);
+  if (!_fbo.empty()) {
+    glgsg->_glDeleteFramebuffers(_fbo.size(), _fbo.data());
+    _fbo.clear();
   }
-  _fbo.clear();
 
   report_my_gl_errors();
 

@@ -26,20 +26,6 @@ PStatCollector(PStatClient *client, int index) :
 }
 
 /**
- * Creates an invalid PStatCollector.  Any attempt to use this collector will
- * crash messily.
- *
- * You can reassign it to a different, valid one later.
- */
-INLINE PStatCollector::
-PStatCollector() :
-  _client(nullptr),
-  _index(0),
-  _level(0.0f)
-{
-}
-
-/**
  * Creates a new PStatCollector, ready to start accumulating data.  The name
  * of the collector uniquely identifies it among the other collectors; if two
  * collectors share the same name then they are really the same collector.

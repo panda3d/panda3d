@@ -344,7 +344,7 @@ void GeomVertexData::
 clear_rows() {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(cdata->_format->get_num_arrays() == (int)cdata->_arrays.size());
+  nassertv(cdata->_format->get_num_arrays() == cdata->_arrays.size());
 
   Arrays::iterator ai;
   for (ai = cdata->_arrays.begin();
@@ -2243,7 +2243,7 @@ get_num_bytes() const {
  */
 int GeomVertexDataPipelineReader::
 get_num_rows() const {
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), 0);
   nassertr(_got_array_readers, 0);
 
   if (_cdata->_format->get_num_arrays() == 0) {
@@ -2395,7 +2395,7 @@ make_array_readers() {
  */
 int GeomVertexDataPipelineWriter::
 get_num_rows() const {
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), 0);
   nassertr(_got_array_writers, 0);
 
   if (_cdata->_format->get_num_arrays() == 0) {
@@ -2414,7 +2414,7 @@ get_num_rows() const {
 bool GeomVertexDataPipelineWriter::
 set_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
@@ -2510,7 +2510,7 @@ set_num_rows(int n) {
 bool GeomVertexDataPipelineWriter::
 unclean_set_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
@@ -2537,7 +2537,7 @@ unclean_set_num_rows(int n) {
 bool GeomVertexDataPipelineWriter::
 reserve_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 

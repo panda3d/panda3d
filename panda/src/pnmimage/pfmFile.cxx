@@ -1726,35 +1726,32 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
 
   // Now determine the minmax.
   PN_float32 min_x, min_y, min_z, max_x, max_y, max_z;
-  bool got_point = false;
   if (points_only) {
-    LPoint3f points[4] = {
+    const LPoint3f points[4] = {
       p0 * rinv,
       p1 * rinv,
       p2 * rinv,
       p3 * rinv,
     };
-    for (int i = 0; i < 4; ++i) {
-      const LPoint3f &point = points[i];
-      if (!got_point) {
-        min_x = point[0];
-        min_y = point[1];
-        min_z = point[2];
-        max_x = point[0];
-        max_y = point[1];
-        max_z = point[2];
-        got_point = true;
-      } else {
-        min_x = min(min_x, point[0]);
-        min_y = min(min_y, point[1]);
-        min_z = min(min_z, point[2]);
-        max_x = max(max_x, point[0]);
-        max_y = max(max_y, point[1]);
-        max_z = max(max_z, point[2]);
-      }
-    }
+    const LPoint3f &point = points[0];
+    min_x = point[0];
+    min_y = point[1];
+    min_z = point[2];
+    max_x = point[0];
+    max_y = point[1];
+    max_z = point[2];
 
+    for (int i = 1; i < 4; ++i) {
+      const LPoint3f &point = points[i];
+      min_x = min(min_x, point[0]);
+      min_y = min(min_y, point[1]);
+      min_z = min(min_z, point[2]);
+      max_x = max(max_x, point[0]);
+      max_y = max(max_y, point[1]);
+      max_z = max(max_z, point[2]);
+    }
   } else {
+    bool got_point = false;
     for (int yi = 0; yi < _y_size; ++yi) {
       for (int xi = 0; xi < _x_size; ++xi) {
         if (!has_point(xi, yi)) {
@@ -1779,6 +1776,14 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
           max_z = max(max_z, point[2]);
         }
       }
+    }
+    if (!got_point) {
+      min_x = 0.0f;
+      min_y = 0.0f;
+      min_z = 0.0f;
+      max_x = 0.0f;
+      max_y = 0.0f;
+      max_z = 0.0f;
     }
   }
 

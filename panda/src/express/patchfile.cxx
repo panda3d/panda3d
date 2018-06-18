@@ -1111,7 +1111,7 @@ compute_mf_patches(ostream &write_stream,
                             index_orig, index_new)) {
       return false;
     }
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_index_end(), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)mf_new.get_index_end(), false);
   }
 
   // Now walk through each subfile in the new multifile.  If a particular
@@ -1120,7 +1120,7 @@ compute_mf_patches(ostream &write_stream,
   // removed, we simply don't add it (we'll never even notice this case).
   int new_num_subfiles = mf_new.get_num_subfiles();
   for (int ni = 0; ni < new_num_subfiles; ++ni) {
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_subfile_internal_start(ni), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)mf_new.get_subfile_internal_start(ni), false);
     string name = mf_new.get_subfile_name(ni);
     int oi = mf_orig.find_subfile(name);
 
@@ -1517,7 +1517,7 @@ patch_subfile(ostream &write_stream,
               const Filename &filename,
               IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
               IStreamWrapper &stream_new, streampos new_start, streampos new_end) {
-  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + new_start, false);
+  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)new_start, false);
 
   size_t new_size = new_end - new_start;
   size_t orig_size = orig_end - orig_start;

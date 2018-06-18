@@ -4374,9 +4374,9 @@ unbind_buffers() {
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
     _glBindVertexBuffers(0, _current_vertex_buffers.size(), nullptr, nullptr, nullptr);
   } else {
-    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+    for (size_t i = 0; i < _current_vertex_buffers.size(); ++i) {
       if (_current_vertex_buffers[i] != 0) {
-        _glBindVertexBuffer(i, 0, 0, 0);
+        _glBindVertexBuffer((GLuint)i, 0, 0, 0);
       }
     }
   }
@@ -13309,7 +13309,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
+
+#ifndef OPENGLES
   GLfloat border_color[4];
+#endif
 
 #ifdef OPENGLES
   if (true) {
@@ -13803,11 +13806,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
     tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
     tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-    tex->set_border_color(LColor(border_color[0], border_color[1],
-                                 border_color[2], border_color[3]));
-
     tex->set_minfilter(get_panda_filter_type(minfilter));
     //tex->set_magfilter(get_panda_filter_type(magfilter));
+
+#ifndef OPENGLES
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
+#endif
   }
 
   PTA_uchar image;

@@ -16,20 +16,6 @@
 #include "config_putil.h"
 
 /**
- *
- */
-FactoryBase::
-FactoryBase() {
-}
-
-/**
- *
- */
-FactoryBase::
-~FactoryBase() {
-}
-
-/**
  * Attempts to create a new instance of some class of the indicated type, or
  * some derivative if necessary.  If an instance of the exact type cannot be
  * created, the specified preferred will specify which derived class will be
@@ -145,7 +131,7 @@ register_factory(TypeHandle handle, BaseCreateFunc *func, void *user_data) {
 /**
  * Returns the number of different types the Factory knows how to create.
  */
-int FactoryBase::
+size_t FactoryBase::
 get_num_types() const {
   return _creators.size();
 }
@@ -156,8 +142,8 @@ get_num_types() const {
  * Normally you wouldn't need to traverse the list of the Factory's types.
  */
 TypeHandle FactoryBase::
-get_type(int n) const {
-  nassertr(n >= 0 && n < get_num_types(), TypeHandle::none());
+get_type(size_t n) const {
+  nassertr(n < get_num_types(), TypeHandle::none());
   Creators::const_iterator ci;
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     if (n == 0) {
@@ -193,7 +179,7 @@ add_preferred(TypeHandle handle) {
 /**
  * Returns the number of types added to the preferred-type list.
  */
-int FactoryBase::
+size_t FactoryBase::
 get_num_preferred() const {
   return _preferred.size();
 }
@@ -202,8 +188,8 @@ get_num_preferred() const {
  * Returns the nth type added to the preferred-type list.
  */
 TypeHandle FactoryBase::
-get_preferred(int n) const {
-  nassertr(n >= 0 && n < get_num_preferred(), TypeHandle::none());
+get_preferred(size_t n) const {
+  nassertr(n < get_num_preferred(), TypeHandle::none());
   return _preferred[n];
 }
 
@@ -217,21 +203,6 @@ write_types(std::ostream &out, int indent_level) const {
   for (ci = _creators.begin(); ci != _creators.end(); ++ci) {
     indent(out, indent_level) << (*ci).first << "\n";
   }
-}
-
-
-/**
- * Don't copy Factories.
- */
-FactoryBase::
-FactoryBase(const FactoryBase &) {
-}
-
-/**
- * Don't copy Factories.
- */
-void FactoryBase::
-operator = (const FactoryBase &) {
 }
 
 /**
@@ -262,9 +233,7 @@ make_instance_more_specific(TypeHandle handle, FactoryParams params) {
   // First, walk through the established preferred list.  Maybe one of these
   // qualifies.
 
-  Preferred::const_iterator pi;
-  for (pi = _preferred.begin(); pi != _preferred.end(); ++pi) {
-    TypeHandle ptype = (*pi);
+  for (TypeHandle ptype : _preferred) {
     if (ptype.is_derived_from(handle)) {
       TypedObject *object = make_instance_exact(ptype, params);
       if (object != nullptr) {

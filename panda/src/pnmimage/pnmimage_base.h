@@ -40,7 +40,7 @@ typedef unsigned char gray;
 
 struct pixel {
 PUBLISHED:
-  pixel() { }
+  pixel() = default;
   pixel(gray fill) : r(fill), g(fill), b(fill) { }
   pixel(gray r, gray g, gray b) : r(r), g(g), b(b) { }
 

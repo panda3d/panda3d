@@ -2251,10 +2251,10 @@ do_issue_texture() {
 
       // The following special cases are handled inline, rather than relying
       // on the above wrap function pointers.
-      if (wrap_u && SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
+      if (wrap_u == SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
         texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
-      } else if (wrap_u && SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
+      } else if (wrap_u == SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
         texture_def->tex_minfilter_func = apply_wrap_clamp_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_clamp_magfilter;
       }

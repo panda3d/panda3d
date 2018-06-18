@@ -145,7 +145,7 @@ make_adjacency() const {
 
     // Add the actual vertices in the strip.
     adj->add_vertex(v0);
-    int v1;
+    int v1 = v0;
     while (vi < end) {
       v1 = from.get_vertex(vi++);
       adj->add_vertex(v1);

@@ -221,7 +221,7 @@ process_geom(const Geom *geom) {
 
   CPT(GeomVertexData) vData = geom->get_vertex_data();
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     process_primitive(geom->get_primitive(i), vData);
   }
 }
@@ -308,7 +308,7 @@ analyze(const Geom *geom) {
     return;
   }
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     analyze(geom->get_primitive(i));
   }
 }

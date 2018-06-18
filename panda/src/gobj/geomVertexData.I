@@ -677,7 +677,7 @@ has_column(const InternalName *name) const {
 /**
  *
  */
-INLINE int GeomVertexDataPipelineBase::
+INLINE size_t GeomVertexDataPipelineBase::
 get_num_arrays() const {
   return _cdata->_arrays.size();
 }
@@ -686,8 +686,8 @@ get_num_arrays() const {
  *
  */
 INLINE CPT(GeomVertexArrayData) GeomVertexDataPipelineBase::
-get_array(int i) const {
-  nassertr(i >= 0 && i < (int)_cdata->_arrays.size(), nullptr);
+get_array(size_t i) const {
+  nassertr(i < _cdata->_arrays.size(), nullptr);
   return _cdata->_arrays[i].get_read_pointer();
 }
 

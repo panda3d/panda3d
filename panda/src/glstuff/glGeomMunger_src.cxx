@@ -400,7 +400,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
       if (orig_a->count_unused_space() != 0) {
         PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
-        for (size_t j = 0; j < orig_a->get_num_columns(); ++j) {
+        for (int j = 0; j < orig_a->get_num_columns(); ++j) {
           const GeomVertexColumn *column = orig_a->get_column(j);
           new_a->add_column(column->get_name(), column->get_num_components(),
                             column->get_numeric_type(), column->get_contents(),

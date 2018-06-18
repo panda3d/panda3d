@@ -94,7 +94,7 @@ cycle() {
   pvector< PT(CycleData) > saved_cdatas;
   {
     ReMutexHolder cycle_holder(_cycle_lock);
-    int prev_seq, next_seq;
+    unsigned int prev_seq, next_seq;
     PipelineCyclerLinks prev_dirty;
     {
       // We can't hold the lock protecting the linked lists during the cycling

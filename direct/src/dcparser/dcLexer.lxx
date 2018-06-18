@@ -169,7 +169,7 @@ input_chars(char *buffer, int &result, int max_size) {
 // Define this macro carefully, since different flex versions call it
 // with a different type for result.
 #define YY_INPUT(buffer, result, max_size) { \
-  int int_result; \
+  int int_result = 0; \
   input_chars((buffer), int_result, (max_size)); \
   (result) = int_result; \
 }

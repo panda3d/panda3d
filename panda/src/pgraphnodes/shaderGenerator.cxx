@@ -261,7 +261,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   rs->get_attrib_def(la);
   bool have_ambient = false;
 
-  for (int i = 0; i < la->get_num_on_lights(); ++i) {
+  for (size_t i = 0; i < la->get_num_on_lights(); ++i) {
     NodePath np = la->get_on_light(i);
     nassertv(!np.is_empty());
     PandaNode *node = np.node();

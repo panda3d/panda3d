@@ -99,7 +99,7 @@ private:
   struct StorageBlock {
     CPT(InternalName) _name;
     GLuint _binding_index;
-    GLint _min_size;
+    GLuint _min_size;
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;

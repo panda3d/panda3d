@@ -173,12 +173,12 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
 void ShadowAtlas::free_region(const LVecBase4i& region) {
   // Out of bounds check, can't hurt
   nassertv(region.get_x() >= 0 && region.get_y() >= 0);
-  nassertv(region.get_x() + region.get_z() <= _num_tiles && region.get_y() + region.get_w() <= _num_tiles);
+  nassertv(region.get_x() + region.get_z() <= (int)_num_tiles && region.get_y() + region.get_w() <= (int)_num_tiles);
 
   _num_used_tiles -= region.get_z() * region.get_w();
 
-  for (size_t x = 0; x < region.get_z(); ++x) {
-    for (size_t y = 0; y < region.get_w(); ++y) {
+  for (int x = 0; x < region.get_z(); ++x) {
+    for (int y = 0; y < region.get_w(); ++y) {
       // Could do an assert here, that the tile should have been used (=true) before
       set_tile(region.get_x() + x, region.get_y() + y, false);
     }

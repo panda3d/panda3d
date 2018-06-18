@@ -135,7 +135,7 @@ void InternalLightManager::setup_shadows(RPLight* light) {
   }
 
   // Init all sources
-  for (int i = 0; i < num_sources; ++i) {
+  for (size_t i = 0; i < num_sources; ++i) {
     ShadowSource* source = light->get_shadow_source(i);
 
     // Set the source as dirty, so it gets updated in the beginning

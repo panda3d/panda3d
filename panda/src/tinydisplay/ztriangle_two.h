@@ -1,3 +1,9 @@
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+
 static void
 FNAME(white_untextured) (ZBuffer *zb,
                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
@@ -229,7 +235,7 @@ FNAME(smooth_textured) (ZBuffer *zb,
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      if (c0 == 0xffffffff) {                           \
+      if (c0 == 0xffffffffu) {                          \
         /* Actually, it's a white triangle. */          \
         FNAME(white_textured)(zb, p0, p1, p2);          \
         return;                                         \
@@ -537,13 +543,13 @@ FNAME(smooth_perspective) (ZBuffer *zb,
 
 #define EARLY_OUT()                                     \
   {                                                     \
-    int c0, c1, c2;                                     \
+    unsigned int c0, c1, c2;                            \
     c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
     c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      if (c0 == 0xffffffff) {                           \
+      if (c0 == 0xffffffffu) {                          \
         /* Actually, it's a white triangle. */          \
         FNAME(white_perspective)(zb, p0, p1, p2);       \
         return;                                         \
@@ -1008,3 +1014,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
 #undef INTERP_MIPMAP
 #undef CALC_MIPMAP_LEVEL
 #undef ZB_LOOKUP_TEXTURE
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif

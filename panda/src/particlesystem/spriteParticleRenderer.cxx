@@ -294,7 +294,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       GeomVertexReader texcoord(geom->get_vertex_data(),
                                 InternalName::get_texcoord());
       if (texcoord.has_column()) {
-        for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
+        for (size_t pi = 0; pi < geom->get_num_primitives(); ++pi) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
@@ -338,7 +338,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       GeomVertexReader vertex(geom->get_vertex_data(),
                               InternalName::get_vertex());
       if (vertex.has_column()) {
-        for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
+        for (size_t pi = 0; pi < geom->get_num_primitives(); ++pi) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);

@@ -133,7 +133,7 @@ set_vertex_column(int array, const GeomVertexColumn *column,
 #ifndef NDEBUG
   _array = -1;
   _packer = nullptr;
-  nassertr(array >= 0 && array < _vertex_data->get_num_arrays(), false);
+  nassertr(array >= 0 && (size_t)array < _vertex_data->get_num_arrays(), false);
 #endif
 
   _array = array;

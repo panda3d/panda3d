@@ -214,8 +214,8 @@ has_any_of(int low_bit, int size) const {
   } else {
     int hi_portion = low_bit + size - half_bits;
     int lo_portion = size - hi_portion;
-    return (_hi.has_any_of(0, hi_portion) << lo_portion) ||
-      _lo.has_any_of(low_bit, lo_portion);
+    return _hi.has_any_of(0, hi_portion)
+        || _lo.has_any_of(low_bit, lo_portion);
   }
 }
 
@@ -232,8 +232,8 @@ has_all_of(int low_bit, int size) const {
   } else {
     int hi_portion = low_bit + size - half_bits;
     int lo_portion = size - hi_portion;
-    return (_hi.has_all_of(0, hi_portion) << lo_portion) &&
-      _lo.has_all_of(low_bit, lo_portion);
+    return _hi.has_all_of(0, hi_portion)
+        && _lo.has_all_of(low_bit, lo_portion);
   }
 }
 

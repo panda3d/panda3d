@@ -721,8 +721,8 @@ get_pixel( istream *ifp, pixel *dest, int Size, gray *alpha_p) {
         Red = getbyte( ifp );
         if ( Size == 32 )
             Alpha = getbyte( ifp );
-    else
-        Alpha = 0;
+        else
+            Alpha = 0;
         l = 0;
         break;
 

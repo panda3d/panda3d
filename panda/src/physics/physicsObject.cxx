@@ -112,7 +112,7 @@ add_impact(const LPoint3 &offset,
   a = a.cross(b);
   PN_stdfloat angle = a.length();
   if (angle) {
-    LRotation torque;
+    LRotation torque(0, 0, 0, 0);
     PN_stdfloat spin = force.length()*0.1; // todo: this should account for
                                         // impact distance and mass.
     a.normalize();

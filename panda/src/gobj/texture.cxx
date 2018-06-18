@@ -4224,7 +4224,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   }
 
   // See: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-  uint32_t gl_type, type_size, gl_format, internal_format, gl_base_format,
+  uint32_t gl_type, /*type_size,*/ gl_format, internal_format, gl_base_format,
     width, height, depth, num_array_elements, num_faces, num_mipmap_levels,
     kvdata_size;
 
@@ -4232,7 +4232,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   if (ktx.get_uint32() == 0x04030201) {
     big_endian = false;
     gl_type = ktx.get_uint32();
-    type_size = ktx.get_uint32();
+    /*type_size = */ktx.get_uint32();
     gl_format = ktx.get_uint32();
     internal_format = ktx.get_uint32();
     gl_base_format = ktx.get_uint32();
@@ -4246,7 +4246,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   } else {
     big_endian = true;
     gl_type = ktx.get_be_uint32();
-    type_size = ktx.get_be_uint32();
+    /*type_size = */ktx.get_be_uint32();
     gl_format = ktx.get_be_uint32();
     internal_format = ktx.get_be_uint32();
     gl_base_format = ktx.get_be_uint32();

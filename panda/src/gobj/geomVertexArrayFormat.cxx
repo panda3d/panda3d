@@ -557,9 +557,7 @@ get_format_string(bool pad) const {
   int fi = 0;
   int offset = 0;
 
-  for (int ci = 0; ci < get_num_columns(); ++ci) {
-    const GeomVertexColumn *column = get_column(ci);
-
+  for (const GeomVertexColumn *column : _columns) {
     if (offset < column->get_start()) {
       // Add padding bytes to fill the gap.
       int pad = column->get_start() - offset;

@@ -883,7 +883,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
   }
 
   // Read indices
-  for (int i=0; i<geom->get_num_primitives(); i++) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
 
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
     prim = prim->decompose();

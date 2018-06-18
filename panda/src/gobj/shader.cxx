@@ -2652,7 +2652,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     }
 
     char pragma[64];
-    int nread = 0;
+    size_t nread = 0;
     // What kind of directive is it?
     if (strcmp(directive, "pragma") == 0 &&
         sscanf(line.c_str(), " # pragma %63s", pragma) == 1) {
@@ -2661,13 +2661,13 @@ r_preprocess_source(ostream &out, const Filename &fn,
         Filename incfn, source_dir;
         {
           char incfile[2048];
-          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %n", incfile, &nread) == 1
+          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // A regular include, with double quotes.  Probably a local file.
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %n", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.
@@ -2696,7 +2696,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
       } else if (strcmp(pragma, "once") == 0) {
         // Do a stricter syntax check, just to be extra safe.
-        if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
+        if (sscanf(line.c_str(), " # pragma%*[ \t]once %zn", &nread) != 0 ||
             nread != line.size()) {
           shader_cat.error()
             << "Malformed #pragma once at line " << lineno
@@ -2788,7 +2788,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       Filename incfn;
       {
         char incfile[2048];
-        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %n", incfile, &nread) != 1
+        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %zn", incfile, &nread) != 1
             || nread != line.size()) {
           // Couldn't parse it.
           shader_cat.error()
@@ -2815,7 +2815,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
       // It's a #line directive.  See if it uses a string instead of number.
       char filestr[2048];
-      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %n", &lineno, filestr, &nread) == 2
+      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %zn", &lineno, filestr, &nread) == 2
           && nread == line.size()) {
         // Warn about extension use if requested.
         if (ext_google_line == 1) {

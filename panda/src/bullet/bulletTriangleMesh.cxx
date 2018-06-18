@@ -55,7 +55,7 @@ LPoint3 BulletTriangleMesh::
 get_vertex(size_t index) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(index < _vertices.size(), LPoint3::zero());
+  nassertr(index < (size_t)_vertices.size(), LPoint3::zero());
   const btVector3 &vertex = _vertices[index];
   return LPoint3(vertex[0], vertex[1], vertex[2]);
 }
@@ -68,7 +68,7 @@ get_triangle(size_t index) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   index *= 3;
-  nassertr(index + 2 < _indices.size(), LVecBase3i::zero());
+  nassertr(index + 2 < (size_t)_indices.size(), LVecBase3i::zero());
   return LVecBase3i(_indices[index], _indices[index + 1], _indices[index + 2]);
 }
 
@@ -228,7 +228,7 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
       }
     }
 
-    for (int k = 0; k < geom->get_num_primitives(); ++k) {
+    for (size_t k = 0; k < geom->get_num_primitives(); ++k) {
       CPT(GeomPrimitive) prim = geom->get_primitive(k);
       prim = prim->decompose();
 
@@ -271,7 +271,7 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState 
     }
 
     // Add triangles
-    for (int k = 0; k < geom->get_num_primitives(); ++k) {
+    for (size_t k = 0; k < geom->get_num_primitives(); ++k) {
       CPT(GeomPrimitive) prim = geom->get_primitive(k);
       prim = prim->decompose();
 
@@ -367,7 +367,7 @@ write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << ":" << endl;
 
   const IndexedMeshArray &array = _mesh.getIndexedMeshArray();
-  for (size_t i = 0; i < array.size(); ++i) {
+  for (int i = 0; i < array.size(); ++i) {
     indent(out, indent_level + 2) << "IndexedMesh " << i << ":" << endl;
     const btIndexedMesh &mesh = array[0];
     indent(out, indent_level + 4) << "num triangles:" << mesh.m_numTriangles << endl;
