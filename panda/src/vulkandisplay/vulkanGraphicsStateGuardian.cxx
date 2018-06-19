@@ -199,7 +199,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // for attributes when they are not bound to a vertex buffer, as well as any
   // flat color assigned via ColorAttrib.
   VkDeviceMemory memory;
-  uint32_t palette_size = (uint32_t)min(2, vulkan_color_palette_size.get_value()) * 16;
+  uint32_t palette_size = (uint32_t)std::min(2, vulkan_color_palette_size.get_value()) * 16;
   if (!create_buffer(palette_size, _color_vertex_buffer, memory,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -219,7 +219,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
 
-  _max_vertices_per_array = max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
+  _max_vertices_per_array = std::max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
   _max_vertices_per_primitive = INT_MAX;
 
   _max_texture_dimension = limits.maxImageDimension2D;
@@ -390,6 +390,8 @@ get_driver_version() {
  */
 TextureContext *VulkanGraphicsStateGuardian::
 prepare_texture(Texture *texture, int view) {
+  using std::swap;
+
   PStatTimer timer(_prepare_texture_pcollector);
 
   VulkanGraphicsPipe *vkpipe;
@@ -493,9 +495,9 @@ prepare_texture(Texture *texture, int view) {
          image_info.extent.height > img_props.maxExtent.height ||
          image_info.extent.depth > img_props.maxExtent.depth) {
     // Reduce the size by bumping the first mipmap level uploaded.
-    image_info.extent.width = max(1U, image_info.extent.width >> 1);
-    image_info.extent.height = max(1U, image_info.extent.height >> 1);
-    image_info.extent.depth = max(1U, image_info.extent.depth >> 1);
+    image_info.extent.width = std::max(1U, image_info.extent.width >> 1);
+    image_info.extent.height = std::max(1U, image_info.extent.height >> 1);
+    image_info.extent.depth = std::max(1U, image_info.extent.depth >> 1);
     ++mipmap_begin;
   }
 
@@ -734,7 +736,6 @@ bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
   Texture *texture = tc->get_texture();
   VkImage image = tc->_image;
-  uint32_t mip_levels = tc->_mipmap_end - tc->_mipmap_begin;
   VkResult err;
 
   //TODO: check if the image is currently in use on a different queue, and if
@@ -797,7 +798,7 @@ upload_texture(VulkanTextureContext *tc) {
       }
     }
   }
-  nassertr(buffer_size > 0, nullptr);
+  nassertr(buffer_size > 0, false);
 
   VkBuffer buffer;
   VkDeviceMemory staging_mem;
@@ -806,7 +807,7 @@ upload_texture(VulkanTextureContext *tc) {
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create staging buffer for texture "
-      << texture->get_name() << endl;
+      << texture->get_name() << std::endl;
     return false;
   }
 
@@ -870,7 +871,7 @@ upload_texture(VulkanTextureContext *tc) {
     } else {
       // We do have an image.  This means we can write it to the appropriate
       // location in the staging buffer, and schedule a copy to the image.
-      nassertr(buffer != VK_NULL_HANDLE, nullptr);
+      nassertr(buffer != VK_NULL_HANDLE, false);
 
       // Pad for optimal alignment.
       VkDeviceSize remain = region.bufferOffset % optimal_align;
@@ -904,9 +905,9 @@ upload_texture(VulkanTextureContext *tc) {
       blit.srcOffsets[1].z = region.imageExtent.depth;
     }
 
-    region.imageExtent.width = max(1U, region.imageExtent.width >> 1);
-    region.imageExtent.height = max(1U, region.imageExtent.height >> 1);
-    region.imageExtent.depth = max(1U, region.imageExtent.depth >> 1);
+    region.imageExtent.width = std::max(1U, region.imageExtent.width >> 1);
+    region.imageExtent.height = std::max(1U, region.imageExtent.height >> 1);
+    region.imageExtent.depth = std::max(1U, region.imageExtent.depth >> 1);
     ++region.imageSubresource.mipLevel;
   }
 
@@ -959,7 +960,7 @@ update_texture(TextureContext *tc, bool force) {
       arrayLayers = tex->get_z_size();
     }
 
-    VkFormat format = get_image_format(tex);
+    //VkFormat format = get_image_format(tex);
 
     if (//format != vtc->_format ||
         extent.width != vtc->_extent.width ||
@@ -967,7 +968,7 @@ update_texture(TextureContext *tc, bool force) {
         extent.depth != vtc->_extent.depth ||
         arrayLayers != vtc->_array_layers) {
       // We need to recreate the image entirely. TODO!
-      cerr << "have to recreate image\n";
+      std::cerr << "have to recreate image\n";
       return false;
     }
 
@@ -2043,7 +2044,6 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   //TODO: proper format checking and size calculation.
   tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, Texture::T_unsigned_byte, Texture::F_rgba8);
-  VkDeviceSize buffer_size = fbtc->_extent.width * fbtc->_extent.height * 4;
 
   VulkanTextureContext *tc;
   DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
@@ -2575,7 +2575,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   ds_info.flags = 0;
   ds_info.depthTestEnable = (depth_test->get_mode() != RenderAttrib::M_none);
   ds_info.depthWriteEnable = depth_write->get_mode();
-  ds_info.depthCompareOp = (VkCompareOp)max(0, depth_test->get_mode() - 1);
+  ds_info.depthCompareOp = (VkCompareOp)std::max(0, depth_test->get_mode() - 1);
   ds_info.depthBoundsTestEnable = VK_FALSE;
   ds_info.stencilTestEnable = VK_FALSE;
   ds_info.front.failOp = VK_STENCIL_OP_KEEP;
@@ -2661,7 +2661,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
     default:
       att_state[0].blendEnable = VK_FALSE;
       vulkandisplay_cat.error()
-        << "invalid transparency mode " << (int)transp->get_mode() << endl;
+        << "invalid transparency mode " << (int)transp->get_mode() << std::endl;
       break;
     }
   }

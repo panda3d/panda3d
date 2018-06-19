@@ -278,11 +278,8 @@ void VulkanGraphicsWindow::
 begin_flip() {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
-  VkDevice device = vkgsg->_device;
   VkQueue queue = vkgsg->_queue;
   VkResult err;
-
-  SwapBuffer &buffer = _swap_buffers[_image_index];
 
   VkResult results[1];
   VkPresentInfoKHR present;
@@ -297,10 +294,10 @@ begin_flip() {
 
   err = vkQueuePresentKHR(queue, &present);
   if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-    cerr << "out of date.\n";
+    std::cerr << "out of date.\n";
 
   } else if (err == VK_SUBOPTIMAL_KHR) {
-    cerr << "suboptimal.\n";
+    std::cerr << "suboptimal.\n";
 
   } else if (err != VK_SUCCESS) {
     vulkan_error(err, "Error presenting queue");
@@ -442,6 +439,7 @@ open_window() {
     _gsg = vkgsg;
   } else {
     //TODO: check that the GSG's queue can present to our surface.
+    _gsg = vkgsg;
   }
 
   _fb_properties.set_force_hardware(vkgsg->is_hardware());
@@ -762,12 +760,12 @@ create_swapchain() {
   }
 
   uint32_t num_images = (uint32_t)(1 + _fb_properties.get_back_buffers());
-  num_images = min(surf_caps.maxImageCount, num_images);
-  num_images = max(surf_caps.minImageCount, num_images);
+  num_images = std::min(surf_caps.maxImageCount, num_images);
+  num_images = std::max(surf_caps.minImageCount, num_images);
 
   _swapchain_size.set(
-    max(min((uint32_t)_size[0], surf_caps.maxImageExtent.width), surf_caps.minImageExtent.width),
-    max(min((uint32_t)_size[1], surf_caps.maxImageExtent.height), surf_caps.minImageExtent.height));
+    std::max(std::min((uint32_t)_size[0], surf_caps.maxImageExtent.width), surf_caps.minImageExtent.width),
+    std::max(std::min((uint32_t)_size[1], surf_caps.maxImageExtent.height), surf_caps.minImageExtent.height));
 
   // Get the supported presentation modes for this surface.
   uint32_t num_present_modes = 0;

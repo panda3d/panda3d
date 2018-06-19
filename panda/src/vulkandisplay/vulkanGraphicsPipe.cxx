@@ -265,7 +265,7 @@ VulkanGraphicsPipe() {
     vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, nullptr);
 
     VkExtensionProperties *extensions = (VkExtensionProperties *)
-      alloca(sizeof(VkExtensionProperties) * max(num_inst_extensions, num_dev_extensions));
+      alloca(sizeof(VkExtensionProperties) * std::max(num_inst_extensions, num_dev_extensions));
 
     vulkandisplay_cat.debug() << "Supported instance extensions:\n";
     vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, extensions);
