@@ -259,6 +259,26 @@ VulkanGraphicsPipe() {
 
     vulkandisplay_cat.debug() << "deviceName: " << _gpu_properties.deviceName << "\n";
 
+    // Show supported queue families
+    vulkandisplay_cat.debug() << "Supported queue families:\n";
+    for (const VkQueueFamilyProperties &props : _queue_families) {
+      vulkandisplay_cat.debug() << "  ";
+      if (props.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        vulkandisplay_cat.debug(false) << "GRAPHICS ";
+      }
+      if (props.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+        vulkandisplay_cat.debug(false) << "COMPUTE ";
+      }
+      if (props.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) {
+        vulkandisplay_cat.debug(false) << "SPARSE_BINDING ";
+      }
+      if (props.queueFlags & VK_QUEUE_PROTECTED_BIT) {
+        vulkandisplay_cat.debug(false) << "PROTECTED ";
+      }
+      vulkandisplay_cat.debug(false) << "(" << props.queueCount
+        << " queue" << ((props.queueCount != 1) ? "s" : "") << ")\n";
+    }
+
     // Enumerate supported extensions.
     uint32_t num_inst_extensions = 0, num_dev_extensions = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
