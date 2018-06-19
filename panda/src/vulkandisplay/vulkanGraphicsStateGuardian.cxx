@@ -63,14 +63,19 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a queue in the given queue family.  For now, we assume NVIDIA,
   // which has only one queue family, but we want to separate this out for
   // the sake of AMD cards.
-  const float queue_priorities[1] = {0.0f};
+  const float queue_priorities[2] = {0.0f, 0.0f};
   VkDeviceQueueCreateInfo queue_info;
   queue_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queue_info.pNext = nullptr;
   queue_info.flags = 0;
   queue_info.queueFamilyIndex = _graphics_queue_family_index;
-  queue_info.queueCount = 2;
+  queue_info.queueCount = 1;
   queue_info.pQueuePriorities = queue_priorities;
+
+  // Can we afford a second queue for transfer operations?
+  if (pipe->_queue_families[queue_info.queueFamilyIndex].queueCount > 1) {
+    queue_info.queueCount = 2;
+  }
 
   VkDeviceCreateInfo device_info;
   device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -92,7 +97,11 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   }
 
   vkGetDeviceQueue(_device, _graphics_queue_family_index, 0, &_queue);
-  vkGetDeviceQueue(_device, _graphics_queue_family_index, 1, &_dma_queue);
+  if (queue_info.queueCount > 1) {
+    vkGetDeviceQueue(_device, _graphics_queue_family_index, 1, &_dma_queue);
+  } else {
+    _dma_queue = _queue;
+  }
 
   // Create a fence to signal when the command buffers have finished.
   VkFenceCreateInfo fence_info;
