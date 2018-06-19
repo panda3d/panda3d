@@ -307,6 +307,16 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
  */
 VulkanGraphicsStateGuardian::
 ~VulkanGraphicsStateGuardian() {
+  // Remove all the pipeline states.
+  for (const auto &item : _pipeline_map) {
+    vkDestroyPipeline(_device, item.second, nullptr);
+  }
+
+  // And all the semaphores that were generated on this device.
+  for (VkSemaphore semaphore : _semaphores) {
+    vkDestroySemaphore(_device, semaphore, nullptr);
+  }
+
   // Remove the things we created in the constructor, in reverse order.
   vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
@@ -2269,6 +2279,22 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
   }
 
   return true;
+}
+
+/**
+ * Creates a new semaphore on this device.
+ */
+VkSemaphore VulkanGraphicsStateGuardian::
+create_semaphore() {
+  VkSemaphoreCreateInfo semaphore_info = {};
+  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+  VkSemaphore semaphore;
+  VkResult
+  err = vkCreateSemaphore(_device, &semaphore_info, nullptr, &semaphore);
+  nassertr_always(err == VK_SUCCESS, VK_NULL_HANDLE);
+  _semaphores.push_back(semaphore);
+  return semaphore;
 }
 
 /**

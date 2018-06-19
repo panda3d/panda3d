@@ -127,6 +127,8 @@ private:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
 
+  VkSemaphore create_semaphore();
+
   /**
    * Stores whatever is used to key a cached pipeline into the pipeline map.
    * This allows us to map Panda states to Vulkan pipelines effectively.
@@ -202,6 +204,9 @@ private:
   VulkanTextureContext *_fb_depth_tc;
   VkSemaphore _wait_semaphore;
   VkSemaphore _signal_semaphore;
+
+  // Remembers semaphores created on this device.
+  pvector<VkSemaphore> _semaphores;
 
   // Palette for flat colors.
   VkBuffer _color_vertex_buffer;

@@ -993,18 +993,13 @@ create_swapchain() {
   // Create a semaphore for signalling the availability of an image.
   // It will be signalled in end_flip() and waited upon before submitting the
   // command buffers that use that image for rendering to.
-  VkSemaphoreCreateInfo semaphore_info = {};
-  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info,
-                          nullptr, &_image_available);
-  nassertr(err == VK_SUCCESS, false);
+  _image_available = vkgsg->create_semaphore();
+  nassertr(_image_available != VK_NULL_HANDLE, false);
 
   // Now create another one that is signalled when we are finished rendering,
   // to indicate that it is safe to present the image.
-  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info,
-                          nullptr, &_render_complete);
-  nassertr(err == VK_SUCCESS, false);
+  _render_complete = vkgsg->create_semaphore();
+  nassertr(_render_complete != VK_NULL_HANDLE, false);
 
   // We need to acquire an image before we continue rendering.
   _image_index = 0;
