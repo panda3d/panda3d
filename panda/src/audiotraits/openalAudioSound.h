@@ -72,10 +72,10 @@ public:
 
   // This is the string that throw_event() will throw when the sound finishes
   // playing.  It is not triggered when the sound is stopped with stop().
-  void set_finished_event(const string& event);
-  const string& get_finished_event() const;
+  void set_finished_event(const std::string& event);
+  const std::string& get_finished_event() const;
 
-  const string &get_name() const;
+  const std::string &get_name() const;
 
   // return: playing time in seconds.
   PN_stdfloat length() const;
@@ -177,7 +177,7 @@ private:
 
   // This is the string that throw_event() will throw when the sound finishes
   // playing.  It is not triggered when the sound is stopped with stop().
-  string _finished_event;
+  std::string _finished_event;
 
   Filename _basename;
 

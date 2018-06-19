@@ -48,10 +48,10 @@ public:
   void adjust_transform(LMatrix4d &mat) const;
 
 
-  string _top_joint_name;
+  std::string _top_joint_name;
   bool _got_invert_transform;
   bool _invert_transform;
-  string _transform_channels;
+  std::string _transform_channels;
   Filename _channel_filename;
 };
 

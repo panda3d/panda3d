@@ -30,6 +30,8 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
  * we were given; instead, we ask CPPParser to parse a new type of the same
@@ -965,6 +967,7 @@ is_wstring(CPPType *type) {
 bool TypeManager::
 is_vector_unsigned_char(CPPType *type) {
   if (type->get_local_name(&parser) == "vector< unsigned char >" ||
+      type->get_local_name(&parser) == "std::vector< unsigned char >" ||
       type->get_local_name(&parser) == "pvector< unsigned char >") {
     return true;
   }
@@ -1804,7 +1807,9 @@ bool TypeManager::is_ostream(CPPType *type) {
     return is_ostream(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_struct:
-    return (type->get_local_name(&parser) == "ostream");
+    return (type->get_local_name(&parser) == "std::ostream" ||
+            type->get_local_name(&parser) == "ostream" ||
+            type->get_local_name(&parser) == "std::basic_ostream< char >");
 
   case CPPDeclaration::ST_typedef:
     return is_ostream(type->as_typedef_type()->_type);
@@ -2248,7 +2253,7 @@ get_function_signature(CPPInstance *function,
   CPPFunctionType *ftype = function->_type->as_function_type();
   assert(ftype != nullptr);
 
-  ostringstream out;
+  std::ostringstream out;
 
   // It's tempting to mark static methods with a different function signature
   // than non-static, because a static method doesn't have an implicit 'this'

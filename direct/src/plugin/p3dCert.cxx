@@ -46,6 +46,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+using std::cerr;
+using std::string;
+using std::wstring;
+
 static LanguageIndex li = LI_default;
 
 #if defined(_WIN32)

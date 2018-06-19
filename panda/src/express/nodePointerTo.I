@@ -52,7 +52,7 @@ NodePointerTo(NodePointerTo<T> &&from) noexcept :
 template<class T>
 INLINE NodePointerTo<T> &NodePointerTo<T>::
 operator = (NodePointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 #endif  // CPPPARSER
@@ -196,7 +196,7 @@ NodeConstPointerTo(NodeConstPointerTo<T> &&from) noexcept :
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
 operator = (NodePointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 #endif  // CPPPARSER
@@ -208,7 +208,7 @@ operator = (NodePointerTo<T> &&from) noexcept {
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
 operator = (NodeConstPointerTo<T> &&from) noexcept {
-  this->reassign(move(from));
+  this->reassign(std::move(from));
   return *this;
 }
 #endif  // CPPPARSER

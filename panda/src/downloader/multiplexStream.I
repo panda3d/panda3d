@@ -15,8 +15,8 @@
  *
  */
 INLINE MultiplexStream::
-MultiplexStream() : ostream(&_msb) {
-  setf(ios::unitbuf);
+MultiplexStream() : std::ostream(&_msb) {
+  setf(std::ios::unitbuf);
 }
 
 /**
@@ -24,7 +24,7 @@ MultiplexStream() : ostream(&_msb) {
  * will receive whatever data is sent to the pipe.
  */
 INLINE void MultiplexStream::
-add_ostream(ostream *out, bool delete_later) {
+add_ostream(std::ostream *out, bool delete_later) {
   _msb.add_output(MultiplexStreamBuf::BT_none,
                   MultiplexStreamBuf::OT_ostream,
                   out, nullptr, delete_later);
@@ -49,7 +49,7 @@ INLINE void MultiplexStream::
 add_standard_output() {
   _msb.add_output(MultiplexStreamBuf::BT_none,
                   MultiplexStreamBuf::OT_ostream,
-                  &cout, nullptr, false);
+                  &std::cout, nullptr, false);
 }
 
 /**
@@ -64,7 +64,7 @@ add_file(Filename file) {
     delete out;
     return false;
   }
-  out->setf(ios::unitbuf);
+  out->setf(std::ios::unitbuf);
 
   _msb.add_output(MultiplexStreamBuf::BT_line,
                   MultiplexStreamBuf::OT_ostream,

@@ -23,7 +23,7 @@ TypeHandle MouseInterfaceNode::_type_handle;
  *
  */
 MouseInterfaceNode::
-MouseInterfaceNode(const string &name) :
+MouseInterfaceNode(const std::string &name) :
   DataNode(name)
 {
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());

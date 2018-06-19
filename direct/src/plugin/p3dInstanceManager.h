@@ -47,17 +47,17 @@ private:
   ~P3DInstanceManager();
 
 public:
-  bool initialize(int api_version, const string &contents_filename,
-                  const string &host_url,
+  bool initialize(int api_version, const std::string &contents_filename,
+                  const std::string &host_url,
                   P3D_verify_contents verify_contents,
-                  const string &platform,
-                  const string &log_directory,
-                  const string &log_basename,
+                  const std::string &platform,
+                  const std::string &log_directory,
+                  const std::string &log_basename,
                   bool trusted_environment,
                   bool console_environment,
-                  const string &root_dir = "",
-                  const string &host_dir = "",
-                  const string &start_dir = "");
+                  const std::string &root_dir = "",
+                  const std::string &host_dir = "",
+                  const std::string &start_dir = "");
 
   inline bool is_initialized() const;
   inline void reconsider_runtime_environment();
@@ -65,35 +65,35 @@ public:
   inline void reset_verify_contents();
 
   inline int get_api_version() const;
-  inline const string &get_host_url() const;
-  inline const string &get_root_dir() const;
-  inline const string &get_start_dir() const;
-  inline const string &get_platform() const;
-  inline const string &get_temp_directory() const;
-  inline const string &get_log_directory() const;
-  inline const string &get_log_pathname() const;
+  inline const std::string &get_host_url() const;
+  inline const std::string &get_root_dir() const;
+  inline const std::string &get_start_dir() const;
+  inline const std::string &get_platform() const;
+  inline const std::string &get_temp_directory() const;
+  inline const std::string &get_log_directory() const;
+  inline const std::string &get_log_pathname() const;
   inline bool get_trusted_environment() const;
   inline bool get_console_environment() const;
 
   inline int get_num_supported_platforms() const;
-  inline const string &get_supported_platform(int n) const;
+  inline const std::string &get_supported_platform(int n) const;
 
   void set_plugin_version(int major, int minor, int sequence,
-                          bool official, const string &distributor,
-                          const string &coreapi_host_url,
+                          bool official, const std::string &distributor,
+                          const std::string &coreapi_host_url,
                           time_t coreapi_timestamp,
-                          const string &coreapi_set_ver);
+                          const std::string &coreapi_set_ver);
   inline int get_plugin_major_version() const;
   inline int get_plugin_minor_version() const;
   inline int get_plugin_sequence_version() const;
   inline bool get_plugin_official_version() const;
-  inline const string &get_plugin_distributor() const;
-  inline const string &get_coreapi_host_url() const;
+  inline const std::string &get_plugin_distributor() const;
+  inline const std::string &get_coreapi_host_url() const;
   inline time_t get_coreapi_timestamp() const;
-  inline const string &get_coreapi_set_ver() const;
+  inline const std::string &get_coreapi_set_ver() const;
 
-  void set_super_mirror(const string &super_mirror_url);
-  inline const string &get_super_mirror() const;
+  void set_super_mirror(const std::string &super_mirror_url);
+  inline const std::string &get_super_mirror() const;
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func,
@@ -101,8 +101,8 @@ public:
                   int argc, const char *argv[], void *user_data);
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
-                        const string &p3d_filename, const int &p3d_offset);
-  int make_p3d_stream(P3DInstance *inst, const string &p3d_url);
+                        const std::string &p3d_filename, const int &p3d_offset);
+  int make_p3d_stream(P3DInstance *inst, const std::string &p3d_url);
   bool start_instance(P3DInstance *inst);
   void finish_instance(P3DInstance *inst);
   P3DAuthSession *authorize_instance(P3DInstance *inst);
@@ -112,7 +112,7 @@ public:
   P3DInstance *check_request();
   void wait_request(double timeout);
 
-  P3DHost *get_host(const string &host_url);
+  P3DHost *get_host(const std::string &host_url);
   void forget_host(P3DHost *host);
 
   inline int get_num_instances() const;
@@ -126,13 +126,13 @@ public:
   inline P3D_object *new_none_object();
   inline P3D_object *new_bool_object(bool value);
 
-  string make_temp_filename(const string &extension);
-  void release_temp_filename(const string &filename);
+  std::string make_temp_filename(const std::string &extension);
+  void release_temp_filename(const std::string &filename);
 
   bool find_cert(X509 *cert);
   void read_certlist(P3DPackage *package);
-  string get_cert_dir(X509 *cert);
-  static string cert_to_der(X509 *cert);
+  std::string get_cert_dir(X509 *cert);
+  static std::string cert_to_der(X509 *cert);
 
   void uninstall_all();
 
@@ -140,19 +140,19 @@ public:
   static void delete_global_ptr();
 
   static inline char encode_hexdigit(int c);
-  static bool scan_directory(const string &dirname, vector<string> &contents);
-  static bool scan_directory_recursively(const string &dirname,
-                                         vector<string> &filename_contents,
-                                         vector<string> &dirname_contents,
-                                         const string &prefix = "");
-  static void delete_directory_recursively(const string &root_dir);
-  static bool remove_file_from_list(vector<string> &contents, const string &filename);
+  static bool scan_directory(const std::string &dirname, std::vector<std::string> &contents);
+  static bool scan_directory_recursively(const std::string &dirname,
+                                         std::vector<std::string> &filename_contents,
+                                         std::vector<std::string> &dirname_contents,
+                                         const std::string &prefix = "");
+  static void delete_directory_recursively(const std::string &root_dir);
+  static bool remove_file_from_list(std::vector<std::string> &contents, const std::string &filename);
 
-  static void append_safe_dir(string &root, const string &basename);
+  static void append_safe_dir(std::string &root, const std::string &basename);
 
 private:
   void create_runtime_environment();
-  static void append_safe_dir_component(string &root, const string &component);
+  static void append_safe_dir_component(std::string &root, const std::string &component);
 
 private:
   // The notify thread.  This thread runs only for the purpose of generating
@@ -168,30 +168,30 @@ private:
   bool _is_initialized;
   bool _created_runtime_environment;
   int _api_version;
-  string _host_url;
-  string _root_dir;
-  string _host_dir;
-  string _start_dir;
-  string _certs_dir;
+  std::string _host_url;
+  std::string _root_dir;
+  std::string _host_dir;
+  std::string _start_dir;
+  std::string _certs_dir;
   P3D_verify_contents _verify_contents;
-  string _platform;
-  string _log_directory;
-  string _log_basename;
-  string _log_pathname;
-  string _temp_directory;
+  std::string _platform;
+  std::string _log_directory;
+  std::string _log_basename;
+  std::string _log_pathname;
+  std::string _temp_directory;
   bool _trusted_environment;
   bool _console_environment;
   int _plugin_major_version;
   int _plugin_minor_version;
   int _plugin_sequence_version;
   bool _plugin_official_version;
-  string _plugin_distributor;
-  string _coreapi_host_url;
+  std::string _plugin_distributor;
+  std::string _coreapi_host_url;
   time_t _coreapi_timestamp;
-  string _coreapi_set_ver;
-  string _super_mirror_url;
+  std::string _coreapi_set_ver;
+  std::string _super_mirror_url;
 
-  typedef vector<string> SupportedPlatforms;
+  typedef std::vector<std::string> SupportedPlatforms;
   SupportedPlatforms _supported_platforms;
 
   P3D_object *_undefined_object;
@@ -199,20 +199,20 @@ private:
   P3D_object *_true_object;
   P3D_object *_false_object;
 
-  typedef set<string> ApprovedCerts;
+  typedef std::set<std::string> ApprovedCerts;
   ApprovedCerts _approved_certs;
 
-  typedef set<P3DInstance *> Instances;
+  typedef std::set<P3DInstance *> Instances;
   Instances _instances;
   P3DAuthSession *_auth_session;
 
-  typedef map<string, P3DSession *> Sessions;
+  typedef std::map<std::string, P3DSession *> Sessions;
   Sessions _sessions;
 
-  typedef map<string, P3DHost *> Hosts;
+  typedef std::map<std::string, P3DHost *> Hosts;
   Hosts _hosts;
 
-  typedef set<string> TempFilenames;
+  typedef std::set<std::string> TempFilenames;
   TempFilenames _temp_filenames;
   int _next_temp_filename_counter;
 
@@ -228,7 +228,7 @@ private:
   THREAD _notify_thread;
   // This queue of instances that need to send notifications is protected by
   // _notify_ready's mutex.
-  typedef vector<P3DInstance *> NotifyInstances;
+  typedef std::vector<P3DInstance *> NotifyInstances;
   NotifyInstances _notify_instances;
   P3DConditionVar _notify_ready;
 

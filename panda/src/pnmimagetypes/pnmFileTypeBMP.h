@@ -29,23 +29,23 @@ class EXPCL_PANDA_PNMIMAGETYPES PNMFileTypeBMP : public PNMFileType {
 public:
   PNMFileTypeBMP();
 
-  virtual string get_name() const;
+  virtual std::string get_name() const;
 
   virtual int get_num_extensions() const;
-  virtual string get_extension(int n) const;
-  virtual string get_suggested_extension() const;
+  virtual std::string get_extension(int n) const;
+  virtual std::string get_suggested_extension() const;
 
   virtual bool has_magic_number() const;
-  virtual bool matches_magic_number(const string &magic_number) const;
+  virtual bool matches_magic_number(const std::string &magic_number) const;
 
-  virtual PNMReader *make_reader(istream *file, bool owns_file = true,
-                                 const string &magic_number = string());
-  virtual PNMWriter *make_writer(ostream *file, bool owns_file = true);
+  virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
+                                 const std::string &magic_number = std::string());
+  virtual PNMWriter *make_writer(std::ostream *file, bool owns_file = true);
 
 public:
   class Reader : public PNMReader {
   public:
-    Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
+    Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string magic_number);
 
     virtual int read_data(xel *array, xelval *alpha);
 
@@ -65,7 +65,7 @@ public:
 
   class Writer : public PNMWriter {
   public:
-    Writer(PNMFileType *type, ostream *file, bool owns_file);
+    Writer(PNMFileType *type, std::ostream *file, bool owns_file);
 
     virtual int write_data(xel *array, xelval *alpha);
     virtual bool supports_grayscale() const;

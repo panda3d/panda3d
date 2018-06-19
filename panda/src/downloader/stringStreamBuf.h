@@ -22,7 +22,7 @@
  * to a memory buffer, whose contents can be appended to or extracted at any
  * time by application code.
  */
-class EXPCL_PANDAEXPRESS StringStreamBuf : public streambuf {
+class EXPCL_PANDA_DOWNLOADER StringStreamBuf : public std::streambuf {
 public:
   StringStreamBuf();
   virtual ~StringStreamBuf();
@@ -36,8 +36,8 @@ public:
   void write_chars(const char *start, size_t length);
 
 protected:
-  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
-  virtual streampos seekpos(streampos pos, ios_openmode which);
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
   virtual int overflow(int c);
   virtual int sync();

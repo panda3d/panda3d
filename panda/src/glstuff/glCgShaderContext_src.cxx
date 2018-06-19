@@ -508,7 +508,7 @@ issue_parameters(int altered) {
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "Setting uniforms for " << _shader->get_filename()
-      << " (altered 0x" << hex << altered << dec << ")\n";
+      << " (altered 0x" << std::hex << altered << std::dec << ")\n";
   }
 
   // We have no way to track modifications to PTAs, so we assume that they are
@@ -737,7 +737,7 @@ update_transform_table(const TransformTable *table) {
 
   int i = 0;
   if (table != nullptr) {
-    int num_transforms = min(_transform_table_size, (long)table->get_num_transforms());
+    int num_transforms = std::min(_transform_table_size, (long)table->get_num_transforms());
     for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
       LMatrix4 matrix;
@@ -765,7 +765,7 @@ update_slider_table(const SliderTable *table) {
   memset(sliders, 0, _slider_table_size * 4);
 
   if (table != nullptr) {
-    int num_sliders = min(_slider_table_size, (long)table->get_num_sliders());
+    int num_sliders = std::min(_slider_table_size, (long)table->get_num_sliders());
     for (int i = 0; i < num_sliders; ++i) {
       sliders[i] = table->get_slider(i)->get_slider();
     }
@@ -880,7 +880,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          max_p = max(max_p, (GLuint)p + 1);
+          max_p = std::max(max_p, (GLuint)p + 1);
 
           _glgsg->enable_vertex_attrib_array(p);
 

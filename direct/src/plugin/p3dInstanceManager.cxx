@@ -50,8 +50,12 @@
 
 #include <stdio.h>
 
+using std::string;
+using std::vector;
+using std::wstring;
+
 static ofstream logfile;
-ostream *nout_stream = &logfile;
+std::ostream *nout_stream = &logfile;
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
@@ -285,7 +289,7 @@ initialize(int api_version, const string &contents_filename,
   if (root_dir.empty()) {
     _root_dir = find_root_dir();
     if (_root_dir.empty()) {
-      cerr << "Could not find root directory.\n";
+      std::cerr << "Could not find root directory.\n";
       return false;
     }
   } else {
@@ -1306,19 +1310,19 @@ append_safe_dir(string &root, const string &basename) {
  */
 void P3DInstanceManager::
 create_runtime_environment() {
-  mkdir_complete(_log_directory, cerr);
+  mkdir_complete(_log_directory, std::cerr);
 
   logfile.close();
   logfile.clear();
 #ifdef _WIN32
   wstring log_pathname_w;
   string_to_wstring(log_pathname_w, _log_pathname);
-  logfile.open(log_pathname_w.c_str(), ios::out | ios::trunc);
+  logfile.open(log_pathname_w.c_str(), std::ios::out | std::ios::trunc);
 #else
-  logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+  logfile.open(_log_pathname.c_str(), std::ios::out | std::ios::trunc);
 #endif  // _WIN32
   if (logfile) {
-    logfile.setf(ios::unitbuf);
+    logfile.setf(std::ios::unitbuf);
     nout_stream = &logfile;
   }
 

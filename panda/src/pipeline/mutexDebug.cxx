@@ -17,6 +17,9 @@
 
 #ifdef DEBUG_THREADS
 
+using std::ostream;
+using std::ostringstream;
+
 int MutexDebug::_pstats_count = 0;
 MutexTrueImpl *MutexDebug::_global_lock;
 
@@ -24,7 +27,7 @@ MutexTrueImpl *MutexDebug::_global_lock;
  *
  */
 MutexDebug::
-MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
+MutexDebug(const std::string &name, bool allow_recursion, bool lightweight) :
   Namable(name),
   _allow_recursion(allow_recursion),
   _lightweight(lightweight),
@@ -53,7 +56,7 @@ MutexDebug::
   if (name_deleted_mutexes) {
     ostringstream strm;
     strm << *this;
-    string name = strm.str();
+    std::string name = strm.str();
     _deleted_name = strdup((char *)name.c_str());
   }
 

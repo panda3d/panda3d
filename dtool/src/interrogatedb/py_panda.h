@@ -130,7 +130,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      cerr << "Detected leak for " << #CLASS_NAME \
+      std::cerr << "Detected leak for " << #CLASS_NAME \
            << " which interrogate cannot delete.\n"; \
     }\
   }\
@@ -180,10 +180,10 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
-EXPCL_INTERROGATEDB void RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype);
+EXPCL_INTERROGATEDB void RegisterNamedClass(const std::string &name, Dtool_PyTypedObject &otype);
 EXPCL_INTERROGATEDB void RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype);
 
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const string &name);
+EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const std::string &name);
 EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupRuntimeTypedClass(TypeHandle handle);
 
 EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
@@ -193,9 +193,7 @@ EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
  */
 EXPCL_INTERROGATEDB void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer);
 
-EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, bool report_errors);
-
-EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThis(PyObject *self);
+EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const std::string &function_name, bool const_ok, bool report_errors);
 
 EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer);
 
@@ -204,6 +202,10 @@ EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, 
 
 template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into);
 template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &classdef);
+
+INLINE Py_hash_t DtoolInstance_HashPointer(PyObject *self);
+INLINE int DtoolInstance_ComparePointers(PyObject *v1, PyObject *v2);
+INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, int op);
 
 // Functions related to error reporting.
 EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
@@ -327,25 +329,8 @@ EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const
 // historical inharatence in the for of "is this instance of"..
 EXPCL_INTERROGATEDB PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args);
 
-// We do expose a dictionay for dtool classes .. this should be removed at
-// some point..
-EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
-
-
-EXPCL_INTERROGATEDB Py_hash_t DTOOL_PyObject_HashPointer(PyObject *obj);
-
-/* Compare v to w.  Return
-   -1 if v <  w or exception (PyErr_Occurred() true in latter case).
-    0 if v == w.
-    1 if v > w.
-   XXX The docs (C API manual) say the return value is undefined in case
-   XXX of error.
-*/
-
-EXPCL_INTERROGATEDB int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2);
-EXPCL_INTERROGATEDB int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
-
-EXPCL_INTERROGATEDB PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op);
+#define DTOOL_PyObject_HashPointer DtoolInstance_HashPointer
+#define DTOOL_PyObject_ComparePointers DtoolInstance_ComparePointers
 
 EXPCL_INTERROGATEDB PyObject *
 copy_from_make_copy(PyObject *self, PyObject *noargs);

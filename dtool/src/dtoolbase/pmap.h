@@ -40,19 +40,16 @@
 
 #else  // USE_STL_ALLOCATOR
 
-using std::map;
-using std::multimap;
-
 /**
  * This is our own Panda specialization on the default STL map.  Its main
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Value, class Compare = less<Key> >
-class pmap : public map<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
+template<class Key, class Value, class Compare = std::less<Key> >
+class pmap : public std::map<Key, Value, Compare, pallocator_single<std::pair<const Key, Value> > > {
 public:
-  typedef pallocator_single<pair<const Key, Value> > allocator;
-  typedef map<Key, Value, Compare, allocator> base_class;
+  typedef pallocator_single<std::pair<const Key, Value> > allocator;
+  typedef std::map<Key, Value, Compare, allocator> base_class;
 
   pmap(TypeHandle type_handle = pmap_type_handle) : base_class(Compare(), allocator(type_handle)) { }
   pmap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : base_class(comp, allocator(type_handle)) { }
@@ -115,12 +112,12 @@ public:
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Value, class Compare = less<Key> >
-class pmultimap : public multimap<Key, Value, Compare, pallocator_single<pair<const Key, Value> > > {
+template<class Key, class Value, class Compare = std::less<Key> >
+class pmultimap : public std::multimap<Key, Value, Compare, pallocator_single<std::pair<const Key, Value> > > {
 public:
-  typedef pallocator_single<pair<const Key, Value> > allocator;
-  pmultimap(TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(Compare(), allocator(type_handle)) { }
-  pmultimap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : multimap<Key, Value, Compare, allocator>(comp, allocator(type_handle)) { }
+  typedef pallocator_single<std::pair<const Key, Value> > allocator;
+  pmultimap(TypeHandle type_handle = pmap_type_handle) : std::multimap<Key, Value, Compare, allocator>(Compare(), allocator(type_handle)) { }
+  pmultimap(const Compare &comp, TypeHandle type_handle = pmap_type_handle) : std::multimap<Key, Value, Compare, allocator>(comp, allocator(type_handle)) { }
 };
 
 #ifdef HAVE_STL_HASH
@@ -129,11 +126,11 @@ public:
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_map : public stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
+template<class Key, class Value, class Compare = method_hash<Key, std::less<Key> > >
+class phash_map : public stdext::hash_map<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > > {
 public:
-  phash_map() : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
-  phash_map(const Compare &comp) : stdext::hash_map<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
+  phash_map() : stdext::hash_map<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > >() { }
+  phash_map(const Compare &comp) : stdext::hash_map<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > >(comp) { }
 };
 
 /**
@@ -141,11 +138,11 @@ public:
  * main purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Value, class Compare = method_hash<Key, less<Key> > >
-class phash_multimap : public stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > > {
+template<class Key, class Value, class Compare = method_hash<Key, std::less<Key> > >
+class phash_multimap : public stdext::hash_multimap<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > > {
 public:
-  phash_multimap() : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >() { }
-  phash_multimap(const Compare &comp) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<pair<const Key, Value> > >(comp) { }
+  phash_multimap() : stdext::hash_multimap<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > >() { }
+  phash_multimap(const Compare &comp) : stdext::hash_multimap<Key, Value, Compare, pallocator_array<std::pair<const Key, Value> > >(comp) { }
 };
 
 #else // HAVE_STL_HASH

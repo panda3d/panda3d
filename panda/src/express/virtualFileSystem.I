@@ -93,11 +93,11 @@ ls_all(const Filename &filename) const {
  * than vfs-implicit-pz, which will automatically decompress a file if the
  * extension .pz is *not* given.
  */
-INLINE string VirtualFileSystem::
+INLINE std::string VirtualFileSystem::
 read_file(const Filename &filename, bool auto_unwrap) const {
-  string result;
+  std::string result;
   bool okflag = read_file(filename, result, auto_unwrap);
-  nassertr(okflag, string());
+  nassertr(okflag, std::string());
   return result;
 }
 
@@ -109,7 +109,7 @@ read_file(const Filename &filename, bool auto_unwrap) const {
  * compressed while writing.
  */
 INLINE bool VirtualFileSystem::
-write_file(const Filename &filename, const string &data, bool auto_wrap) {
+write_file(const Filename &filename, const std::string &data, bool auto_wrap) {
   return write_file(filename, (const unsigned char *)data.data(), data.size(), auto_wrap);
 }
 
@@ -124,7 +124,7 @@ write_file(const Filename &filename, const string &data, bool auto_wrap) {
  * extension .pz is *not* given.
  */
 INLINE bool VirtualFileSystem::
-read_file(const Filename &filename, string &result, bool auto_unwrap) const {
+read_file(const Filename &filename, std::string &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
   return (file != nullptr && file->read_file(result, auto_unwrap));
 }
@@ -140,7 +140,7 @@ read_file(const Filename &filename, string &result, bool auto_unwrap) const {
  * extension .pz is *not* given.
  */
 INLINE bool VirtualFileSystem::
-read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(const Filename &filename, vector_uchar &result, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
   return (file != nullptr && file->read_file(result, auto_unwrap));
 }

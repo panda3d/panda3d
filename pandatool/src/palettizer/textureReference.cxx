@@ -35,6 +35,10 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle TextureReference::_type_handle;
 
 /**
@@ -455,7 +459,7 @@ apply_properties_to_source() {
  *
  */
 void TextureReference::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << *_source_texture;
 }
 
@@ -463,7 +467,7 @@ output(ostream &out) const {
  *
  */
 void TextureReference::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_texture()->get_name();
 

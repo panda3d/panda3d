@@ -57,20 +57,20 @@ PUBLISHED:
 
 public:
   PT(ClientDevice) get_device(TypeHandle device_type,
-                              const string &device_name);
+                              const std::string &device_name);
 
 protected:
   virtual PT(ClientDevice) make_device(TypeHandle device_type,
-                                       const string &device_name)=0;
+                                       const std::string &device_name)=0;
 
   virtual bool disconnect_device(TypeHandle device_type,
-                                 const string &device_name,
+                                 const std::string &device_name,
                                  ClientDevice *device);
 
   virtual void do_poll();
 
 private:
-  typedef pmap<string, ClientDevice *> DevicesByName;
+  typedef pmap<std::string, ClientDevice *> DevicesByName;
   typedef pmap<TypeHandle, DevicesByName> Devices;
   Devices _devices;
 

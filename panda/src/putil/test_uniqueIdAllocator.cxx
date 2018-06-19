@@ -4,7 +4,9 @@
 #include <iostream>
 #include <map>
 #include <cassert>
-using namespace std;
+
+using std::cout;
+using std::endl;
 
 #include "uniqueIdAllocator.h"
 

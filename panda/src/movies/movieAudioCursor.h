@@ -48,7 +48,7 @@ PUBLISHED:
   virtual int ready() const;
   virtual void seek(double offset);
   void read_samples(int n, Datagram *dg);
-  string read_samples(int n);
+  std::string read_samples(int n);
 
 public:
   virtual void read_samples(int n, int16_t *data);

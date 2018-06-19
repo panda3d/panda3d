@@ -86,7 +86,7 @@ get_texture_wrap_mode(SamplerState::WrapMode wm) {
   case SamplerState::WM_border_color:
     return D3DTADDRESS_BORDER;
   }
-  dxgsg9_cat.error() << "Invalid Texture::Mode value" << endl;
+  dxgsg9_cat.error() << "Invalid Texture::Mode value" << std::endl;
   return D3DTADDRESS_WRAP;
 }
 
@@ -103,7 +103,7 @@ get_fog_mode_type(Fog::Mode m) {
   case Fog::M_exponential_squared:
     return D3DFOG_EXP2;
   }
-  dxgsg9_cat.error() << "Invalid Fog::Mode value" << endl;
+  dxgsg9_cat.error() << "Invalid Fog::Mode value" << std::endl;
   return D3DFOG_EXP;
 }
 

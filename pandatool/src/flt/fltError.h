@@ -32,6 +32,6 @@ enum FltError {
   FE_internal
 };
 
-ostream &operator << (ostream &out, FltError error);
+std::ostream &operator << (std::ostream &out, FltError error);
 
 #endif

@@ -16,6 +16,10 @@
 #include "string_utils.h"
 #include "pnotify.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 /**
  * Returns the string representing the common abbreviation for the given unit.
  */

@@ -456,7 +456,7 @@ void MaxEggPlugin::EndEditParams( IObjParam *ip, ULONG flags,Animatable *prev)
         ip->DeleteRollupPage(hMaxEggParams);
         hMaxEggParams = nullptr;
     } else {
-        SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, nullptr );
+        SetWindowLongPtr( hMaxEggParams, GWLP_USERDATA, 0L );
     }
 }
 

@@ -99,7 +99,7 @@ PUBLISHED:
 
   virtual void lookup_cpu_data();
 
-  virtual string get_interface_name() const=0;
+  virtual std::string get_interface_name() const=0;
   MAKE_PROPERTY(interface_name, get_interface_name);
 
 public:
@@ -117,7 +117,7 @@ public:
 protected:
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

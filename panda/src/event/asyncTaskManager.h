@@ -47,7 +47,7 @@
  */
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  explicit AsyncTaskManager(const string &name);
+  explicit AsyncTaskManager(const std::string &name);
   BLOCKING virtual ~AsyncTaskManager();
 
   BLOCKING void cleanup();
@@ -59,15 +59,15 @@ PUBLISHED:
   int get_num_task_chains() const;
   AsyncTaskChain *get_task_chain(int n) const;
   MAKE_SEQ(get_task_chains, get_num_task_chains, get_task_chain);
-  AsyncTaskChain *make_task_chain(const string &name);
-  AsyncTaskChain *find_task_chain(const string &name);
-  BLOCKING bool remove_task_chain(const string &name);
+  AsyncTaskChain *make_task_chain(const std::string &name);
+  AsyncTaskChain *find_task_chain(const std::string &name);
+  BLOCKING bool remove_task_chain(const std::string &name);
 
   void add(AsyncTask *task);
   bool has_task(AsyncTask *task) const;
 
-  AsyncTask *find_task(const string &name) const;
-  AsyncTaskCollection find_tasks(const string &name) const;
+  AsyncTask *find_task(const std::string &name) const;
+  AsyncTaskCollection find_tasks(const std::string &name) const;
   AsyncTaskCollection find_tasks_matching(const GlobPattern &pattern) const;
 
   bool remove(AsyncTask *task);
@@ -90,21 +90,21 @@ PUBLISHED:
   double get_next_wake_time() const;
   MAKE_PROPERTY(next_wake_time, get_next_wake_time);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE static AsyncTaskManager *get_global_ptr();
 
 protected:
-  AsyncTaskChain *do_make_task_chain(const string &name);
-  AsyncTaskChain *do_find_task_chain(const string &name);
+  AsyncTaskChain *do_make_task_chain(const std::string &name);
+  AsyncTaskChain *do_find_task_chain(const std::string &name);
 
   INLINE void add_task_by_name(AsyncTask *task);
   void remove_task_by_name(AsyncTask *task);
 
   bool do_has_task(AsyncTask *task) const;
 
-  virtual void do_output(ostream &out) const;
+  virtual void do_output(std::ostream &out) const;
 
 private:
   static void make_global_ptr();
@@ -159,7 +159,7 @@ private:
   friend class PythonTask;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTaskManager &manager) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskManager &manager) {
   manager.output(out);
   return out;
 };

@@ -41,6 +41,9 @@
 
 #include <algorithm>
 
+using std::max;
+using std::min;
+
 PStatCollector CollisionPolygon::_volume_pcollector("Collision Volumes:CollisionPolygon");
 PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPolygon");
 TypeHandle CollisionPolygon::_type_handle;
@@ -296,7 +299,7 @@ get_test_pcollector() {
  *
  */
 void CollisionPolygon::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cpolygon, (" << get_plane()
       << "), " << _points.size() << " vertices";
 }
@@ -305,7 +308,7 @@ output(ostream &out) const {
  *
  */
 void CollisionPolygon::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {

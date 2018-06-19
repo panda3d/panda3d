@@ -34,6 +34,6 @@ XFileParseData() :
  * from which this object was originally parsed.
  */
 void XFileParseData::
-yyerror(const string &message) const {
+yyerror(const std::string &message) const {
   xyyerror(message, _line_number, _col_number, _current_line);
 }

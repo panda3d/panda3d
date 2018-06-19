@@ -38,6 +38,10 @@
 #include <linux/input.h>
 #endif
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 struct _XcursorFile {
   void *closure;
   int (*read)(XcursorFile *, unsigned char *, int);
@@ -170,7 +174,7 @@ move_pointer(int device, int x, int y) {
     return true;
   } else {
     // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
+    if (device < 1 || (size_t)device >= _input_devices.size()) {
       return false;
     }
     _input_devices[device].set_pointer_in_window(x, y);
@@ -1915,7 +1919,7 @@ map_button(KeySym key) const {
   }
   if (x11display_cat.is_debug()) {
     x11display_cat.debug()
-      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+      << "Unrecognized keysym 0x" << std::hex << key << std::dec << "\n";
   }
   return ButtonHandle::none();
 }

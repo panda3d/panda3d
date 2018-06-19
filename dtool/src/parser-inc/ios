@@ -41,6 +41,8 @@ namespace std {
     };
     enum openmode {
     };
+    enum iostate {
+    };
     // Don't define these lest interrogate get tempted to actually
     // substitute in the values, which are implementation-defined.
     static const openmode app;
@@ -48,6 +50,10 @@ namespace std {
     static const openmode in;
     static const openmode out;
     static const openmode trunc;
+    static constexpr iostate goodbit = 0;
+    static constexpr iostate badbit;
+    static constexpr iostate failbit;
+    static constexpr iostate eofbit;
   protected:
     // Force this to be a non-trivial type.
     ios_base() {};

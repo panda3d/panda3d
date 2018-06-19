@@ -36,7 +36,7 @@ private:
   ~BamCacheIndex();
 
 public:
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   void process_new_records();
@@ -50,7 +50,7 @@ private:
   typedef pmap<Filename, PT(BamCacheRecord) > Records;
 
   Records _records;
-  streamsize _cache_size;
+  std::streamsize _cache_size;
 
   // This structure is a temporary container.  It is only filled in while
   // reading from a bam file.

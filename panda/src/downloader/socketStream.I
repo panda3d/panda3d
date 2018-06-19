@@ -161,7 +161,7 @@ flush() {
  *
  */
 INLINE ISocketStream::
-ISocketStream(streambuf *buf) : istream(buf), SSReader(this) {
+ISocketStream(std::streambuf *buf) : std::istream(buf), SSReader(this) {
   _channel = nullptr;
 }
 
@@ -169,7 +169,7 @@ ISocketStream(streambuf *buf) : istream(buf), SSReader(this) {
  *
  */
 INLINE OSocketStream::
-OSocketStream(streambuf *buf) : ostream(buf), SSWriter(this) {
+OSocketStream(std::streambuf *buf) : std::ostream(buf), SSWriter(this) {
 }
 
 /**
@@ -185,7 +185,7 @@ flush() {
  *
  */
 INLINE SocketStream::
-SocketStream(streambuf *buf) : iostream(buf), SSReader(this), SSWriter(this) {
+SocketStream(std::streambuf *buf) : std::iostream(buf), SSReader(this), SSWriter(this) {
 }
 
 /**

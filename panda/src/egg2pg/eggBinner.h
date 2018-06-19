@@ -47,7 +47,7 @@ public:
   virtual int
   get_bin_number(const EggNode *node);
 
-  virtual string
+  virtual std::string
   get_bin_name(int bin_number, const EggNode *child);
 
   virtual bool

@@ -312,25 +312,25 @@ operator >= (const ordered_vector<Key, Compare, Vector> &other) const {
  * componet is true if the insert operation has taken place.
  */
 template<class Key, class Compare, class Vector>
-INLINE pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, bool> ordered_vector<Key, Compare, Vector>::
+INLINE std::pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, bool> ordered_vector<Key, Compare, Vector>::
 insert_unique(const typename ordered_vector<Key, Compare, Vector>::VALUE_TYPE &key) {
   TAU_PROFILE("ordered_vector::insert_unique(const value_type &)", " ", TAU_USER);
   ITERATOR position = find_insert_position(begin(), end(), key);
 #ifdef NDEBUG
-  pair<ITERATOR, bool> bogus_result(end(), false);
+  std::pair<ITERATOR, bool> bogus_result(end(), false);
   nassertr(position >= begin() && position <= end(), bogus_result);
 #endif
 
   // If there's already an equivalent key in the vector, it's at *(position -
   // 1).
   if (position != begin() && !_compare(*(position - 1), key)) {
-    pair<ITERATOR, bool> result(position - 1, false);
+    std::pair<ITERATOR, bool> result(position - 1, false);
     nassertr(!_compare(key, *(position - 1)), result);
     return result;
   }
 
   ITERATOR result = _vector.insert(position, key);
-  return pair<ITERATOR, bool>(result, true);
+  return std::pair<ITERATOR, bool>(result, true);
 }
 
 /**
@@ -387,7 +387,7 @@ template<class Key, class Compare, class Vector>
 INLINE typename ordered_vector<Key, Compare, Vector>::SIZE_TYPE ordered_vector<Key, Compare, Vector>::
 erase(const typename ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) {
   TAU_PROFILE("ordered_vector::erase(const key_type &)", " ", TAU_USER);
-  pair<ITERATOR, ITERATOR> result = equal_range(key);
+  std::pair<ITERATOR, ITERATOR> result = equal_range(key);
   SIZE_TYPE count = result.second - result.first;
   erase(result.first, result.second);
   return count;
@@ -534,19 +534,19 @@ upper_bound(const typename ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) 
  * Returns the pair (lower_bound(key), upper_bound(key)).
  */
 template<class Key, class Compare, class Vector>
-INLINE pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, typename ordered_vector<Key, Compare, Vector>::ITERATOR> ordered_vector<Key, Compare, Vector>::
+INLINE std::pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, typename ordered_vector<Key, Compare, Vector>::ITERATOR> ordered_vector<Key, Compare, Vector>::
 equal_range(const typename ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) {
   TAU_PROFILE("ordered_vector::equal_range(const key_type &)", " ", TAU_USER);
-  pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> result;
+  std::pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> result;
   result = r_equal_range(begin(), end(), key);
-  return pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, typename ordered_vector<Key, Compare, Vector>::ITERATOR>(nci(result.first), nci(result.second));
+  return std::pair<typename ordered_vector<Key, Compare, Vector>::ITERATOR, typename ordered_vector<Key, Compare, Vector>::ITERATOR>(nci(result.first), nci(result.second));
 }
 
 /**
  * Returns the pair (lower_bound(key), upper_bound(key)).
  */
 template<class Key, class Compare, class Vector>
-INLINE pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
+INLINE std::pair<typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR, typename ordered_vector<Key, Compare, Vector>::CONST_ITERATOR> ordered_vector<Key, Compare, Vector>::
 equal_range(const typename ordered_vector<Key, Compare, Vector>::KEY_TYPE &key) const {
   TAU_PROFILE("ordered_vector::equal_range(const key_type &)", " ", TAU_USER);
   return r_equal_range(begin(), end(), key);
@@ -625,7 +625,7 @@ template<class Key, class Compare, class Vector>
 INLINE void ordered_vector<Key, Compare, Vector>::
 push_back(value_type &&key) {
   TAU_PROFILE("ordered_vector::push_back()", " ", TAU_USER);
-  _vector.push_back(move(key));
+  _vector.push_back(std::move(key));
 }
 
 /**
@@ -718,7 +718,7 @@ insert(typename ov_set<Key, Compare, Vector>::ITERATOR position,
  * Maps to insert_unique().
  */
 template<class Key, class Compare, class Vector>
-INLINE pair<typename ov_set<Key, Compare, Vector>::ITERATOR, bool> ov_set<Key, Compare, Vector>::
+INLINE std::pair<typename ov_set<Key, Compare, Vector>::ITERATOR, bool> ov_set<Key, Compare, Vector>::
 insert(const typename ov_set<Key, Compare, Vector>::VALUE_TYPE &key) {
   return ordered_vector<Key, Compare, Vector>::insert_unique(key);
 }

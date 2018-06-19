@@ -11,8 +11,8 @@
  * @date 2005-03-07
  */
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexFormat &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexFormat &obj) {
   obj.output(out);
   return out;
 }

@@ -95,7 +95,7 @@ set_visible(bool visible) {
  * the splash window.
  */
 void P3DWinSplashWindow::
-set_image_filename(const string &image_filename, ImagePlacement image_placement) {
+set_image_filename(const std::string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
   WinImageData *image = nullptr;
   switch (image_placement) {
@@ -141,7 +141,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
  * Specifies the text that is displayed above the install progress bar.
  */
 void P3DWinSplashWindow::
-set_install_label(const string &install_label) {
+set_install_label(const std::string &install_label) {
   ACQUIRE_LOCK(_install_lock);
   if (_install_label != install_label) {
     _install_label = install_label;
@@ -493,7 +493,7 @@ update_image(WinImageData &image) {
   InvalidateRect(_hwnd, nullptr, TRUE);
 
   // Go read the image.
-  string data;
+  std::string data;
   if (!read_image_data(image, data, image._filename)) {
     return;
   }
@@ -715,7 +715,7 @@ paint_image(HDC dc, const WinImageData &image, bool use_alpha) {
     // The bitmap is larger than the window; scale it down.
     double x_scale = (double)_win_width / (double)image._width;
     double y_scale = (double)_win_height / (double)image._height;
-    double scale = min(x_scale, y_scale);
+    double scale = std::min(x_scale, y_scale);
     int sc_width = (int)(image._width * scale);
     int sc_height = (int)(image._height * scale);
 

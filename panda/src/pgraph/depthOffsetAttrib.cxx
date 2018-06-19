@@ -60,7 +60,7 @@ make_default() {
  *
  */
 void DepthOffsetAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":(" << get_offset() << ", " << get_min_value()
       << ", " << get_max_value() << ")";
 }

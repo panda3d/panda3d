@@ -16,6 +16,8 @@
 #include "dcPacker.h"
 #include "dcSwitchParameter.h"
 
+using std::string;
+
 /**
  * The catalog is created only by DCPackerInterface::get_catalog().
  */

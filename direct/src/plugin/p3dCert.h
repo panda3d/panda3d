@@ -25,7 +25,6 @@
 #include <string>
 #include <iostream>
 #include <stdio.h>
-using namespace std;
 
 class ViewCertDialog;
 
@@ -50,9 +49,9 @@ class ViewCertDialog;
 class AuthDialog : public Fl_Window {
 public:
 #ifdef _WIN32
-  AuthDialog(const wstring &cert_filename, const wstring &cert_dir);
+  AuthDialog(const std::wstring &cert_filename, const std::wstring &cert_dir);
 #else
-  AuthDialog(const string &cert_filename, const string &cert_dir);
+  AuthDialog(const std::string &cert_filename, const std::string &cert_dir);
 #endif
   virtual ~AuthDialog();
 
@@ -64,9 +63,9 @@ public:
 
 private:
 #ifdef _WIN32
-  void read_cert_file(const wstring &cert_filename);
+  void read_cert_file(const std::wstring &cert_filename);
 #else
-  void read_cert_file(const string &cert_filename);
+  void read_cert_file(const std::string &cert_filename);
 #endif
   void get_friendly_name();
   void verify_cert();
@@ -81,9 +80,9 @@ public:
 
 private:
 #ifdef _WIN32
-  wstring _cert_dir;
+  std::wstring _cert_dir;
 #else
-  string _cert_dir;
+  std::string _cert_dir;
 #endif
   X509 *_cert;
   STACK_OF(X509) *_stack;
@@ -92,7 +91,7 @@ private:
   char _text[1024];
   char _text_clean[2048];
 
-  string _friendly_name;
+  std::string _friendly_name;
   int _verify_result;
 };
 

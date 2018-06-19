@@ -20,6 +20,10 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 static const char * const extensions_PNM[] = {
   "pbm", "pgm", "ppm", "pnm"
 };

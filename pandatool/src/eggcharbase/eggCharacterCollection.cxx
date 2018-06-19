@@ -29,6 +29,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 /**
  *
@@ -626,7 +628,7 @@ rename_char(int i, const string &name) {
  *
  */
 void EggCharacterCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Characters::const_iterator ci;
 
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
@@ -646,7 +648,7 @@ write(ostream &out, int indent_level) const {
  * initially different.
  */
 void EggCharacterCollection::
-check_errors(ostream &out, bool force_initial_rest_frame) {
+check_errors(std::ostream &out, bool force_initial_rest_frame) {
   Characters::const_iterator ci;
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
     EggCharacterData *char_data = (*ci);

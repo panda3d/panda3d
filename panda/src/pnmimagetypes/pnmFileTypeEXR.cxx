@@ -30,6 +30,10 @@
 #define IMATH_NAMESPACE Imath
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle PNMFileTypeEXR::_type_handle;
 
 static const char * const extensions_exr[] = {

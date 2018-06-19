@@ -21,6 +21,8 @@
 #include "openssl/evp.h"
 #include "memoryHook.h"
 
+using std::string;
+
 /**
  * Generates a non-reversible hash of a particular length based on an
  * arbitrary password and a random salt.  This is much stronger than the

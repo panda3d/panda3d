@@ -20,13 +20,16 @@
 #include "transformState.h"
 #include "mouseButton.h"
 
+using std::max;
+using std::min;
+
 TypeHandle PGSliderBar::_type_handle;
 
 /**
  *
  */
 PGSliderBar::
-PGSliderBar(const string &name)
+PGSliderBar(const std::string &name)
   : PGItem(name)
 {
   set_cull_callback();
@@ -224,7 +227,7 @@ xform(const LMatrix4 &mat) {
 void PGSliderBar::
 adjust() {
   LightReMutexHolder holder(_lock);
-  string event = get_adjust_event();
+  std::string event = get_adjust_event();
   play_sound(event);
   throw_event(event);
 

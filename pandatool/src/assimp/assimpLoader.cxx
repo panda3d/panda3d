@@ -41,6 +41,10 @@
 
 #include "postprocess.h"
 
+using std::ostringstream;
+using std::stringstream;
+using std::string;
+
 struct BoneWeight {
   CPT(JointVertexTransform) joint_vertex_xform;
   float weight;

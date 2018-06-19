@@ -31,7 +31,7 @@ protected:
   INLINE MovingPartMatrix(const MovingPartMatrix &copy);
 
 public:
-  INLINE MovingPartMatrix(PartGroup *parent, const string &name,
+  INLINE MovingPartMatrix(PartGroup *parent, const std::string &name,
                           const LMatrix4 &default_value);
   virtual ~MovingPartMatrix();
 

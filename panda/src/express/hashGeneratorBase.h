@@ -27,7 +27,7 @@
  * Thus, a compile-time decision must be made for the kind of HashGenerator
  * that is appropriate for a particular class.
  */
-class EXPCL_PANDAEXPRESS HashGeneratorBase {
+class EXPCL_PANDA_EXPRESS HashGeneratorBase {
 public:
   INLINE HashGeneratorBase();
 

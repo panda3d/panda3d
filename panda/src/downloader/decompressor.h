@@ -26,7 +26,7 @@ class Ramfile;
  * This manages run-time decompression of a zlib-compressed stream, as a
  * background or foreground task.
  */
-class EXPCL_PANDAEXPRESS Decompressor {
+class EXPCL_PANDA_DOWNLOADER Decompressor {
 PUBLISHED:
   Decompressor();
   ~Decompressor();
@@ -48,9 +48,9 @@ private:
 
   Filename _source_filename;
 
-  istream *_source;
-  istream *_decompress;
-  ostream *_dest;
+  std::istream *_source;
+  std::istream *_decompress;
+  std::ostream *_dest;
 
   size_t _source_length;
 };

@@ -28,8 +28,8 @@ enum NotifySeverity {
 };
 END_PUBLISH
 
-EXPCL_DTOOL_PRC ostream &operator << (ostream &out, NotifySeverity severity);
-EXPCL_DTOOL_PRC istream &operator >> (istream &in, NotifySeverity &severity);
+EXPCL_DTOOL_PRC std::ostream &operator << (std::ostream &out, NotifySeverity severity);
+EXPCL_DTOOL_PRC std::istream &operator >> (std::istream &in, NotifySeverity &severity);
 
 
 #endif

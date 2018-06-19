@@ -36,9 +36,9 @@ CPPTypeParser::
  *
  */
 bool CPPTypeParser::
-parse_type(const string &type) {
+parse_type(const std::string &type) {
   if (!init_type(type)) {
-    cerr << "Unable to parse type\n";
+    std::cerr << "Unable to parse type\n";
     return false;
   }
 
@@ -51,9 +51,9 @@ parse_type(const string &type) {
  *
  */
 bool CPPTypeParser::
-parse_type(const string &type, const CPPPreprocessor &filepos) {
+parse_type(const std::string &type, const CPPPreprocessor &filepos) {
   if (!init_type(type)) {
-    cerr << "Unable to parse type\n";
+    std::cerr << "Unable to parse type\n";
     return false;
   }
 
@@ -68,7 +68,7 @@ parse_type(const string &type, const CPPPreprocessor &filepos) {
  *
  */
 void CPPTypeParser::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_type == nullptr) {
     out << "(null type)";
   } else {

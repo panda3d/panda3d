@@ -69,7 +69,7 @@ PUBLISHED:
   void set_start(int start);
   void set_column_alignment(int column_alignment);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   INLINE bool is_packed_argb() const;
@@ -433,7 +433,7 @@ private:
   friend class GeomVertexWriter;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexColumn &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexColumn &obj);
 
 #include "geomVertexColumn.I"
 

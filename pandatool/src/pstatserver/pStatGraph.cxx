@@ -20,6 +20,8 @@
 
 #include <stdio.h>  // for sprintf
 
+using std::string;
+
 /**
  *
  */

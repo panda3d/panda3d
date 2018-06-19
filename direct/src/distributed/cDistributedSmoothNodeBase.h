@@ -69,7 +69,7 @@ private:
   INLINE void d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   INLINE void d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, uint64_t l);
 
-  void begin_send_update(DCPacker &packer, const string &field_name);
+  void begin_send_update(DCPacker &packer, const std::string &field_name);
   void finish_send_update(DCPacker &packer);
 
   enum Flags {

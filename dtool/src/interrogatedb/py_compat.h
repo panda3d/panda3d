@@ -138,11 +138,29 @@ typedef long Py_hash_t;
 
 /* Python 3.6 */
 
-// Used to implement _PyObject_CallNoArg
-extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
-
 #ifndef _PyObject_CallNoArg
-#  define _PyObject_CallNoArg(func) PyObject_Call((func), (PyObject *)&Dtool_EmptyTuple, nullptr)
+INLINE PyObject *_PyObject_CallNoArg(PyObject *func) {
+  static PyTupleObject empty_tuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
+#ifdef Py_TRACE_REFS
+  _Py_AddToAllObjects((PyObject *)&empty_tuple, 0);
+#endif
+  return PyObject_Call(func, (PyObject *)&empty_tuple, nullptr);
+}
+#  define _PyObject_CallNoArg _PyObject_CallNoArg
+#endif
+
+#ifndef _PyObject_FastCall
+INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t nargs) {
+  PyObject *tuple = PyTuple_New(nargs);
+  for (Py_ssize_t i = 0; i < nargs; ++i) {
+    PyTuple_SET_ITEM(tuple, i, args[i]);
+    Py_INCREF(args[i]);
+  }
+  PyObject *result = PyObject_Call(func, tuple, nullptr);
+  Py_DECREF(tuple);
+  return result;
+}
+#  define _PyObject_FastCall _PyObject_FastCall
 #endif
 
 // Python versions before 3.6 didn't require longlong support to be enabled.
@@ -159,6 +177,21 @@ extern EXPCL_INTERROGATEDB PyTupleObject Dtool_EmptyTuple;
 
 #ifndef PyDict_GET_SIZE
 #  define PyDict_GET_SIZE(mp) (((PyDictObject *)mp)->ma_used)
+#endif
+
+#ifndef Py_RETURN_RICHCOMPARE
+#  define Py_RETURN_RICHCOMPARE(val1, val2, op)                         \
+  do {                                                                  \
+    switch (op) {                                                       \
+    NODEFAULT                                                           \
+    case Py_EQ: if ((val1) == (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_NE: if ((val1) != (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_LT: if ((val1) < (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+    case Py_GT: if ((val1) > (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+    case Py_LE: if ((val1) <= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    case Py_GE: if ((val1) >= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+    }                                                                   \
+  } while (0)
 #endif
 
 /* Other Python implementations */

@@ -41,8 +41,8 @@ PUBLISHED:
 
   INLINE SimpleAllocatorBlock *get_first_block() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 protected:
   SimpleAllocatorBlock *do_alloc(size_t size);
@@ -106,7 +106,7 @@ PUBLISHED:
 
   INLINE SimpleAllocatorBlock *get_next_block() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 protected:
   INLINE void do_free();
@@ -121,12 +121,12 @@ private:
   friend class SimpleAllocator;
 };
 
-INLINE ostream &operator << (ostream &out, const SimpleAllocator &obj) {
+INLINE std::ostream &operator << (std::ostream &out, const SimpleAllocator &obj) {
   obj.output(out);
   return out;
 }
 
-INLINE ostream &operator << (ostream &out, const SimpleAllocatorBlock &obj) {
+INLINE std::ostream &operator << (std::ostream &out, const SimpleAllocatorBlock &obj) {
   obj.output(out);
   return out;
 }

@@ -38,6 +38,8 @@
 
 #include <algorithm>
 
+using std::min;
+
 PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 
 PStatCollector CollisionTraverser::_cnode_volume_pcollector("Collision Volumes:CollisionNode");
@@ -67,7 +69,7 @@ public:
  *
  */
 CollisionTraverser::
-CollisionTraverser(const string &name) :
+CollisionTraverser(const std::string &name) :
   Namable(name),
   _this_pcollector(_collisions_pcollector, name)
 {
@@ -421,7 +423,7 @@ hide_collisions() {
  *
  */
 void CollisionTraverser::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CollisionTraverser, " << _colliders.size()
       << " colliders and " << _handlers.size() << " handlers.\n";
 }
@@ -430,7 +432,7 @@ output(ostream &out) const {
  *
  */
 void CollisionTraverser::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionTraverser, " << _colliders.size()
     << " colliders and " << _handlers.size() << " handlers:\n";
@@ -1389,7 +1391,7 @@ PStatCollector &CollisionTraverser::
 get_pass_collector(int pass) {
   nassertr(pass >= 0, _this_pcollector);
   while ((int)_pass_collectors.size() <= pass) {
-    ostringstream name;
+    std::ostringstream name;
     name << "pass" << (_pass_collectors.size() + 1);
     PStatCollector col(_this_pcollector, name.str());
     _pass_collectors.push_back(col);

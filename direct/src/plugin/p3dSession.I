@@ -15,7 +15,7 @@
  * Returns a string that uniquely identifies this session.  See
  * P3dInstance::get_session_key().
  */
-inline const string &P3DSession::
+inline const std::string &P3DSession::
 get_session_key() const {
   return _session_key;
 }
@@ -25,7 +25,7 @@ get_session_key() const {
  * started and if it has a log file.  Returns empty string if the session
  * never started or if it lacks a log file.
  */
-inline const string &P3DSession::
+inline const std::string &P3DSession::
 get_log_pathname() const {
   return _log_pathname;
 }

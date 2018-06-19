@@ -23,7 +23,7 @@
  * Keeps a reference-counted pointer to a file on disk.  As long as the
  * FileReference is held, someone presumably has a use for this file.
  */
-class EXPCL_PANDAEXPRESS FileReference : public TypedReferenceCount {
+class EXPCL_PANDA_EXPRESS FileReference : public TypedReferenceCount {
 PUBLISHED:
   INLINE FileReference(const Filename &filename);
   INLINE const Filename &get_filename() const;

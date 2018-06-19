@@ -21,6 +21,11 @@
 #include <stdio.h>
 #include <time.h>
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::string;
+
 
 bool create = false;           // -c
 bool append = false;           // -r
@@ -634,7 +639,7 @@ list_files(const vector_string &params) {
   // We happen to know that we can read the index without doing a seek.
   // So this is the only place where we accept a .pz/.gz compressed .mf.
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *istr = vfs->open_read_file(multifile_name, true);
+  std::istream *istr = vfs->open_read_file(multifile_name, true);
   if (istr == nullptr) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;

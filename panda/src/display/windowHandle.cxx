@@ -52,7 +52,7 @@ get_int_handle() const {
  *
  */
 void WindowHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_os_handle == nullptr) {
     out << "(null)";
   } else {
@@ -117,6 +117,6 @@ get_int_handle() const {
  *
  */
 void WindowHandle::OSHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "(no type)";
 }

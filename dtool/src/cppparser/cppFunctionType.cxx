@@ -16,6 +16,10 @@
 #include "cppSimpleType.h"
 #include "cppInstance.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */

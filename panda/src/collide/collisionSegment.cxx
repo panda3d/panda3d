@@ -75,7 +75,7 @@ get_collision_origin() const {
  *
  */
 void CollisionSegment::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "segment, a (" << _a << "), b (" << _b << ")";
 }
 

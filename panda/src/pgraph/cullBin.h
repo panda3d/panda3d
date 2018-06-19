@@ -20,6 +20,7 @@
 #include "pStatCollector.h"
 #include "pointerTo.h"
 #include "luse.h"
+#include "geomNode.h"
 
 class CullableObject;
 class GraphicsStateGuardianBase;
@@ -27,7 +28,6 @@ class SceneSetup;
 class TransformState;
 class RenderState;
 class PandaNode;
-class GeomNode;
 
 /**
  * A collection of Geoms and their associated state, for a particular scene.
@@ -41,12 +41,12 @@ class EXPCL_PANDA_PGRAPH CullBin : public TypedReferenceCount, public CullBinEnu
 protected:
   INLINE CullBin(const CullBin &copy);
 public:
-  INLINE CullBin(const string &name, BinType bin_type,
+  INLINE CullBin(const std::string &name, BinType bin_type,
                  GraphicsStateGuardianBase *gsg,
                  const PStatCollector &draw_region_pcollector);
   virtual ~CullBin();
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   INLINE BinType get_bin_type() const;
 
   virtual PT(CullBin) make_next() const;
@@ -69,12 +69,12 @@ private:
   void check_flash_color();
 
 protected:
-  string _name;
+  std::string _name;
   BinType _bin_type;
   GraphicsStateGuardianBase *_gsg;
 
   // Used in make_result_graph() and fill_result_graph().
-  class ResultGraphBuilder {
+  class EXPCL_PANDA_PGRAPH ResultGraphBuilder {
   public:
     ResultGraphBuilder(PandaNode *root_node);
     void add_object(CullableObject *object);

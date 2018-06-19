@@ -15,7 +15,7 @@
  * Returns the relative path to this file on disk, within the package root
  * directory.
  */
-inline const string &FileSpec::
+inline const std::string &FileSpec::
 get_filename() const {
   return _filename;
 }
@@ -25,15 +25,15 @@ get_filename() const {
  * directory.
  */
 inline void FileSpec::
-set_filename(const string &filename) {
+set_filename(const std::string &filename) {
   _filename = filename;
 }
 
 /**
  * Returns the full path to this file on disk.
  */
-inline string FileSpec::
-get_pathname(const string &package_dir) const {
+inline std::string FileSpec::
+get_pathname(const std::string &package_dir) const {
   return package_dir + "/" + _filename;
 }
 

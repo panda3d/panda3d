@@ -25,6 +25,9 @@
 #include "filename.h"
 #include "string_utils.h"
 
+using std::endl;
+using std::string;
+
 TypeHandle DaeMaterials::_type_handle;
 
 // luminance function, based on the ISOCIE color standards see ITU-R

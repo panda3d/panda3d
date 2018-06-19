@@ -21,7 +21,7 @@
  * LightReMutexDirect.
  */
 void LightReMutexDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LightReMutex " << (void *)this;
 }
 

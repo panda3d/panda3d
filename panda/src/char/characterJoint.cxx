@@ -50,7 +50,7 @@ CharacterJoint(const CharacterJoint &copy) :
  */
 CharacterJoint::
 CharacterJoint(Character *character,
-               PartBundle *root, PartGroup *parent, const string &name,
+               PartBundle *root, PartGroup *parent, const std::string &name,
                const LMatrix4 &default_value) :
   MovingPartMatrix(parent, name, default_value),
   _character(character)

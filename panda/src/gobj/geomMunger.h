@@ -109,7 +109,7 @@ private:
 private:
   class CacheEntry : public GeomCacheEntry {
   public:
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     PT(GeomMunger) _munger;
   };

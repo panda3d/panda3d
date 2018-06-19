@@ -21,7 +21,7 @@ INLINE PN_stdfloat Patchfile::
 get_progress() const {
   if (!_initiated) {
     express_cat.warning()
-      << "Patchfile::get_progress() - Patch has not been initiated" << endl;
+      << "Patchfile::get_progress() - Patch has not been initiated" << std::endl;
     return 0.0f;
   }
   nassertr(_total_bytes_to_process > 0, 0.0f);

@@ -26,7 +26,7 @@
  * However, this data will not be written out to the disk when the egg file is
  * written; it is an in-memory object only.
  */
-class EXPCL_PANDAEGG EggUserData : public TypedReferenceCount {
+class EXPCL_PANDA_EGG EggUserData : public TypedReferenceCount {
 PUBLISHED:
   INLINE EggUserData();
   INLINE EggUserData(const EggUserData &copy);

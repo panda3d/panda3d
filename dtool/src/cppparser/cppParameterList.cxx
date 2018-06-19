@@ -198,7 +198,7 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
  * shown.
  */
 void CPPParameterList::
-output(ostream &out, CPPScope *scope, bool parameter_names,
+output(std::ostream &out, CPPScope *scope, bool parameter_names,
        int num_default_parameters) const {
   if (!_parameters.empty()) {
     for (int i = 0; i < (int)_parameters.size(); ++i) {

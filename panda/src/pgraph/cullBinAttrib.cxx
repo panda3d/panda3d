@@ -28,7 +28,7 @@ int CullBinAttrib::_attrib_slot;
  * only to certain kinds of bins (in particular CullBinFixed type bins).
  */
 CPT(RenderAttrib) CullBinAttrib::
-make(const string &bin_name, int draw_order) {
+make(const std::string &bin_name, int draw_order) {
   CullBinAttrib *attrib = new CullBinAttrib;
   attrib->_bin_name = bin_name;
   attrib->_draw_order = draw_order;
@@ -48,7 +48,7 @@ make_default() {
  *
  */
 void CullBinAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_bin_name.empty()) {
     out << "(default)";

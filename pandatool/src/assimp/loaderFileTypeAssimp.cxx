@@ -15,6 +15,8 @@
 #include "config_assimp.h"
 #include "assimpLoader.h"
 
+using std::string;
+
 TypeHandle LoaderFileTypeAssimp::_type_handle;
 
 /**

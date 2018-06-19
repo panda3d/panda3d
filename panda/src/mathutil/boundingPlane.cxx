@@ -53,7 +53,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingPlane::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bplane, empty";
   } else if (is_infinite()) {

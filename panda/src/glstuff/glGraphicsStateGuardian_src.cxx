@@ -73,6 +73,13 @@
 
 #include <algorithm>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
@@ -3007,7 +3014,7 @@ reset() {
 
 #ifndef OPENGLES_1
   _enabled_vertex_attrib_arrays.clear();
-  memset(_vertex_attrib_divisors, 0, sizeof(GLint) * 32);
+  memset(_vertex_attrib_divisors, 0, sizeof(GLuint) * 32);
 #endif
 
   // Dither is on by default in GL; let's turn it off
@@ -4367,9 +4374,9 @@ unbind_buffers() {
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
     _glBindVertexBuffers(0, _current_vertex_buffers.size(), nullptr, nullptr, nullptr);
   } else {
-    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+    for (size_t i = 0; i < _current_vertex_buffers.size(); ++i) {
       if (_current_vertex_buffers[i] != 0) {
-        _glBindVertexBuffer(i, 0, 0, 0);
+        _glBindVertexBuffer((GLuint)i, 0, 0, 0);
       }
     }
   }
@@ -7836,7 +7843,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   // State:Light:Bind:Directional"); PStatGPUTimer timer(this,
   // _draw_set_state_light_bind_directional_pcollector);
 
-  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
+  std::pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
   DirectionalLightFrameData &fdata = (*lookup.first).second;
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
@@ -8100,7 +8107,7 @@ get_error_string(GLenum error_code) {
   }
 
   // Other error, somehow?  Just display the error code then.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "GL error " << (int)error_code;
 
   return strm.str();
@@ -8307,7 +8314,7 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    ostream &out = GLCAT.debug();
+    std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
     pset<string>::const_iterator ei;
@@ -13302,7 +13309,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
+
+#ifndef OPENGLES
   GLfloat border_color[4];
+#endif
 
 #ifdef OPENGLES
   if (true) {
@@ -13796,11 +13806,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
     tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
     tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-    tex->set_border_color(LColor(border_color[0], border_color[1],
-                                 border_color[2], border_color[3]));
-
     tex->set_minfilter(get_panda_filter_type(minfilter));
     //tex->set_magfilter(get_panda_filter_type(magfilter));
+
+#ifndef OPENGLES
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
+#endif
   }
 
   PTA_uchar image;

@@ -155,7 +155,7 @@ init_keyboard_buttons() {
   for (int i = 32; i < 127; i++) {
     if (isgraph(i)) {
       ButtonHandle key;
-      ButtonRegistry::ptr()->register_button(key, string(1, (char)i),
+      ButtonRegistry::ptr()->register_button(key, std::string(1, (char)i),
                                              ButtonHandle::none(), i);
     }
   }

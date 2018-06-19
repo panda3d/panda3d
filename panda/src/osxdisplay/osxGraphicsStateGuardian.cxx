@@ -35,7 +35,7 @@ TypeHandle osxGraphicsStateGuardian::_type_handle;
  */
 void *osxGraphicsStateGuardian::
 do_get_extension_func(const char *name) {
-  string fullname = "_" + string(name);
+  std::string fullname = "_" + std::string(name);
   NSSymbol symbol = nullptr;
 
   if (NSIsSymbolNameDefined(fullname.c_str())) {
@@ -113,8 +113,8 @@ draw_resize_box() {
 
     // Get the default texture to apply to the resize box; it's compiled into
     // the code.
-    string resize_box_string((const char *)resize_box, resize_box_len);
-    istringstream resize_box_strm(resize_box_string);
+    std::string resize_box_string((const char *)resize_box, resize_box_len);
+    std::istringstream resize_box_strm(resize_box_string);
     PNMImage resize_box_pnm;
     if (resize_box_pnm.read(resize_box_strm, "resize_box.rgb")) {
       PT(Texture) tex = new Texture;

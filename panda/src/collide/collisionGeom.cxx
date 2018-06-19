@@ -47,6 +47,6 @@ get_test_pcollector() {
  *
  */
 void CollisionGeom::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cgeom";
 }

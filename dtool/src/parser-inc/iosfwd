@@ -44,9 +44,12 @@ namespace std {
   typedef basic_stringstream<char> stringstream;
 
   typedef basic_filebuf<char> filebuf;
-  typedef basic_ifstream<char> ifstream;
-  typedef basic_ofstream<char> ofstream;
-  typedef basic_fstream<char> fstream;
+  //typedef basic_ifstream<char> ifstream;
+  //typedef basic_ofstream<char> ofstream;
+  //typedef basic_fstream<char> fstream;
+  class ifstream;
+  class ofstream;
+  class fstream;
 
   typedef basic_syncbuf<char> syncbuf;
   typedef basic_osyncstream<char> osyncstream;

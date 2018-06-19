@@ -45,8 +45,8 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVecBase2) &unit_y();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
@@ -143,8 +143,8 @@ PUBLISHED:
                                    FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase2) &other) const;
 
-  INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  INLINE_LINMATH void output(std::ostream &out) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
@@ -180,7 +180,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase2) &vec) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LVecBase2) &vec) {
   vec.output(out);
   return out;
 }

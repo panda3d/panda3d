@@ -345,7 +345,7 @@ lower_attrib_can_override() const {
  *
  */
 void TextureAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   check_sorted();
 
   out << get_type() << ":";
@@ -891,7 +891,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       override = scan.get_int32();
     }
 
-    _next_implicit_sort = max(_next_implicit_sort, implicit_sort + 1);
+    _next_implicit_sort = std::max(_next_implicit_sort, implicit_sort + 1);
     Stages::iterator si =
       _on_stages.insert_nonunique(StageNode(nullptr, _next_implicit_sort, override));
     ++_next_implicit_sort;

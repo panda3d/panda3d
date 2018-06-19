@@ -15,6 +15,10 @@
 #include "string_utils.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 DXFFile::Color DXFFile::_colors[DXF_num_colors] = {
   { 1, 1, 1 },        // Color 0 is not used.
   { 1, 0, 0 },        // Color 1 = Red

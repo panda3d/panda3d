@@ -66,7 +66,7 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
     }
   }
   if ((_properties & (P_texture)) != 0) {
-    int num_textures = min(pa->get_num_textures(), pb->get_num_textures());
+    int num_textures = std::min(pa->get_num_textures(), pb->get_num_textures());
     for (int i = 0; i < num_textures; i++) {
       EggTexture *a_texture = pa->get_texture(i);
       EggTexture *b_texture = pb->get_texture(i);

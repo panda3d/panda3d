@@ -18,8 +18,6 @@
 #include "wglGraphicsBuffer.h"
 #include "wglGraphicsStateGuardian.h"
 
-typedef enum {Software, MCD, ICD} OGLDriverType;
-
 TypeHandle wglGraphicsPipe::_type_handle;
 bool    wglGraphicsPipe::_current_valid;
 HDC     wglGraphicsPipe::_current_hdc;
@@ -68,7 +66,7 @@ wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string wglGraphicsPipe::
+std::string wglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
@@ -87,7 +85,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) wglGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -234,7 +232,7 @@ make_callback_gsg(GraphicsEngine *engine) {
 /**
  * Returns pfd_flags formatted as a string in a user-friendly way.
  */
-string wglGraphicsPipe::
+std::string wglGraphicsPipe::
 format_pfd_flags(DWORD pfd_flags) {
   struct FlagDef {
     DWORD flag;
@@ -257,7 +255,7 @@ format_pfd_flags(DWORD pfd_flags) {
   };
   static const int num_flag_defs = sizeof(flag_def) / sizeof(FlagDef);
 
-  ostringstream out;
+  std::ostringstream out;
 
   const char *sep = "";
   bool got_any = false;
@@ -271,7 +269,7 @@ format_pfd_flags(DWORD pfd_flags) {
   }
 
   if (pfd_flags != 0 || !got_any) {
-    out << sep << hex << "0x" << pfd_flags << dec;
+    out << sep << std::hex << "0x" << pfd_flags << std::dec;
   }
 
   return out.str();

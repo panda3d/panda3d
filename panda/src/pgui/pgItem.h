@@ -52,10 +52,10 @@ class ScissorAttrib;
  */
 class EXPCL_PANDA_PGUI PGItem : public PandaNode {
 PUBLISHED:
-  explicit PGItem(const string &name);
+  explicit PGItem(const std::string &name);
   virtual ~PGItem();
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
 
 protected:
   PGItem(const PGItem &copy);
@@ -137,38 +137,38 @@ PUBLISHED:
   PGFrameStyle get_frame_style(int state);
   void set_frame_style(int state, const PGFrameStyle &style);
 
-  INLINE const string &get_id() const;
-  INLINE void set_id(const string &id);
+  INLINE const std::string &get_id() const;
+  INLINE void set_id(const std::string &id);
 
-  INLINE static string get_enter_prefix();
-  INLINE static string get_exit_prefix();
-  INLINE static string get_within_prefix();
-  INLINE static string get_without_prefix();
-  INLINE static string get_focus_in_prefix();
-  INLINE static string get_focus_out_prefix();
-  INLINE static string get_press_prefix();
-  INLINE static string get_repeat_prefix();
-  INLINE static string get_release_prefix();
-  INLINE static string get_keystroke_prefix();
+  INLINE static std::string get_enter_prefix();
+  INLINE static std::string get_exit_prefix();
+  INLINE static std::string get_within_prefix();
+  INLINE static std::string get_without_prefix();
+  INLINE static std::string get_focus_in_prefix();
+  INLINE static std::string get_focus_out_prefix();
+  INLINE static std::string get_press_prefix();
+  INLINE static std::string get_repeat_prefix();
+  INLINE static std::string get_release_prefix();
+  INLINE static std::string get_keystroke_prefix();
 
-  INLINE string get_enter_event() const;
-  INLINE string get_exit_event() const;
-  INLINE string get_within_event() const;
-  INLINE string get_without_event() const;
-  INLINE string get_focus_in_event() const;
-  INLINE string get_focus_out_event() const;
-  INLINE string get_press_event(const ButtonHandle &button) const;
-  INLINE string get_repeat_event(const ButtonHandle &button) const;
-  INLINE string get_release_event(const ButtonHandle &button) const;
-  INLINE string get_keystroke_event() const;
+  INLINE std::string get_enter_event() const;
+  INLINE std::string get_exit_event() const;
+  INLINE std::string get_within_event() const;
+  INLINE std::string get_without_event() const;
+  INLINE std::string get_focus_in_event() const;
+  INLINE std::string get_focus_out_event() const;
+  INLINE std::string get_press_event(const ButtonHandle &button) const;
+  INLINE std::string get_repeat_event(const ButtonHandle &button) const;
+  INLINE std::string get_release_event(const ButtonHandle &button) const;
+  INLINE std::string get_keystroke_event() const;
 
   INLINE LMatrix4 get_frame_inv_xform() const;
 
 #ifdef HAVE_AUDIO
-  void set_sound(const string &event, AudioSound *sound);
-  void clear_sound(const string &event);
-  AudioSound *get_sound(const string &event) const;
-  bool has_sound(const string &event) const;
+  void set_sound(const std::string &event, AudioSound *sound);
+  void clear_sound(const std::string &event);
+  AudioSound *get_sound(const std::string &event) const;
+  bool has_sound(const std::string &event) const;
 #endif
 
   static TextNode *get_text_node();
@@ -177,7 +177,7 @@ PUBLISHED:
   INLINE static PGItem *get_focus_item();
 
 protected:
-  void play_sound(const string &event);
+  void play_sound(const std::string &event);
 
   void reduce_region(LVecBase4 &clip, PGItem *obscurer) const;
   void reduce_region(LVecBase4 &frame, PN_stdfloat px, PN_stdfloat py) const;
@@ -231,7 +231,7 @@ private:
   StateDefs _state_defs;
 
 #ifdef HAVE_AUDIO
-  typedef pmap<string, PT(AudioSound) > Sounds;
+  typedef pmap<std::string, PT(AudioSound) > Sounds;
   Sounds _sounds;
 #endif
 

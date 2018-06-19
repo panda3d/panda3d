@@ -142,7 +142,7 @@ child_integrate(Physical *physical,
  * Write a string representation of this instance to <out>.
  */
 void AngularEulerIntegrator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"AngularEulerIntegrator (id "<<this<<")";
   #endif //] NDEBUG
@@ -152,7 +152,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void AngularEulerIntegrator::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularEulerIntegrator:\n";
   AngularIntegrator::write(out, indent+2);

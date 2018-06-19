@@ -18,6 +18,9 @@
 #include <errno.h>
 #include <stdio.h>  // for perror
 
+using std::cerr;
+using std::string;
+
 #ifdef __APPLE__
 #include <sys/param.h>  // for realpath
 #endif  // __APPLE__
@@ -554,7 +557,7 @@ read_args() {
     wchar_t buffer[buffer_size];
     DWORD size = GetModuleFileNameW(dllhandle, buffer, buffer_size);
     if (size != 0) {
-      Filename tmp = Filename::from_os_specific_w(wstring(buffer, size));
+      Filename tmp = Filename::from_os_specific_w(std::wstring(buffer, size));
       tmp.make_true_case();
       _dtool_name = tmp;
     }
@@ -654,7 +657,7 @@ read_args() {
     wchar_t buffer[buffer_size];
     DWORD size = GetModuleFileNameW(nullptr, buffer, buffer_size);
     if (size != 0) {
-      Filename tmp = Filename::from_os_specific_w(wstring(buffer, size));
+      Filename tmp = Filename::from_os_specific_w(std::wstring(buffer, size));
       tmp.make_true_case();
       _binary_name = tmp;
     }
@@ -727,7 +730,7 @@ read_args() {
     encoder.set_encoding(Filename::get_filesystem_encoding());
 
     for (int i = 0; i < argc; ++i) {
-      wstring wtext(wargv[i]);
+      std::wstring wtext(wargv[i]);
       encoder.set_wtext(wtext);
 
       if (i == 0) {

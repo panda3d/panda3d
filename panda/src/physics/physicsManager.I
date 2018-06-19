@@ -44,10 +44,10 @@ add_linear_force(LinearForce *f) {
  */
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
-  cerr<<"attach_physicalnode (aka attachPhysicalnode) has been"
+  std::cerr<<"attach_physicalnode (aka attachPhysicalnode) has been"
     <<"replaced with attach_physical_node (aka attachPhysicalNode)."
     <<"  Please change the spelling of the function in your code."
-    <<endl;
+    <<std::endl;
   attach_physical_node(p);
 }
 

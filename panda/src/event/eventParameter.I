@@ -55,13 +55,13 @@ EventParameter(double value) : _ptr(new EventStoreDouble(value)) { }
  * Defines an EventParameter that stores a string value.
  */
 INLINE EventParameter::
-EventParameter(const string &value) : _ptr(new EventStoreString(value)) { }
+EventParameter(const std::string &value) : _ptr(new EventStoreString(value)) { }
 
 /**
  * Defines an EventParameter that stores a wstring value.
  */
 INLINE EventParameter::
-EventParameter(const wstring &value) : _ptr(new EventStoreWstring(value)) { }
+EventParameter(const std::wstring &value) : _ptr(new EventStoreWstring(value)) { }
 
 
 /**
@@ -158,7 +158,7 @@ is_string() const {
  * Retrieves the value stored in the EventParameter.  It is only valid to call
  * this if is_string() has already returned true.
  */
-INLINE string EventParameter::
+INLINE std::string EventParameter::
 get_string_value() const {
   nassertr(is_string(), "");
   return ((const EventStoreString *)_ptr.p())->get_value();
@@ -179,9 +179,9 @@ is_wstring() const {
  * Retrieves the value stored in the EventParameter.  It is only valid to call
  * this if is_wstring() has already returned true.
  */
-INLINE wstring EventParameter::
+INLINE std::wstring EventParameter::
 get_wstring_value() const {
-  nassertr(is_wstring(), wstring());
+  nassertr(is_wstring(), std::wstring());
   return ((const EventStoreWstring *)_ptr.p())->get_value();
 }
 
@@ -220,8 +220,8 @@ get_ptr() const {
   return _ptr;
 }
 
-INLINE ostream &
-operator << (ostream &out, const EventParameter &param) {
+INLINE std::ostream &
+operator << (std::ostream &out, const EventParameter &param) {
   param.output(out);
   return out;
 }

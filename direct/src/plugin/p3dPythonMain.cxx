@@ -18,7 +18,6 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>  // strrchr
-using namespace std;
 
 #if defined(_WIN32) && defined(NON_CONSOLE)
 // On Windows, we may need to build p3dpythonw.exe, a non-console version of
@@ -34,7 +33,7 @@ static char *
 parse_quoted_arg(char *&p) {
   char quote = *p;
   ++p;
-  string result;
+  std::string result;
 
   while (*p != '\0' && *p != quote) {
     // TODO: handle escape characters?  Not sure if we need to.
@@ -51,7 +50,7 @@ parse_quoted_arg(char *&p) {
 // beginning at p.  Advances p to the first whitespace following the argument.
 static char *
 parse_unquoted_arg(char *&p) {
-  string result;
+  std::string result;
   while (*p != '\0' && !isspace(*p)) {
     result += *p;
     ++p;
@@ -63,7 +62,7 @@ int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
-  vector<char *> argv;
+  std::vector<char *> argv;
 
   char *p = command_line;
   while (*p != '\0') {
@@ -113,13 +112,13 @@ main(int argc, char *argv[]) {
   }
 
   if (archive_file == nullptr || *archive_file == '\0') {
-    cerr << "No archive filename specified on command line.\n";
+    std::cerr << "No archive filename specified on command line.\n";
     return 1;
   }
 
   FHandle input_handle = invalid_fhandle;
   if (input_handle_str != nullptr && *input_handle_str) {
-    stringstream stream(input_handle_str);
+    std::stringstream stream(input_handle_str);
     stream >> input_handle;
     if (!stream) {
       input_handle = invalid_fhandle;
@@ -128,7 +127,7 @@ main(int argc, char *argv[]) {
 
   FHandle output_handle = invalid_fhandle;
   if (output_handle_str != nullptr && *output_handle_str) {
-    stringstream stream(output_handle_str);
+    std::stringstream stream(output_handle_str);
     stream >> output_handle;
     if (!stream) {
       output_handle = invalid_fhandle;
@@ -137,7 +136,7 @@ main(int argc, char *argv[]) {
 
   bool interactive_console = false;
   if (interactive_console_str != nullptr && *interactive_console_str) {
-    stringstream stream(interactive_console_str);
+    std::stringstream stream(interactive_console_str);
     int flag;
     stream >> flag;
     if (!stream.fail()) {
@@ -148,7 +147,7 @@ main(int argc, char *argv[]) {
   int status = run_p3dpython(program_name, archive_file, input_handle,
                              output_handle, nullptr, interactive_console);
   if (status != 0) {
-    cerr << "Failure on startup.\n";
+    std::cerr << "Failure on startup.\n";
   }
   return status;
 }

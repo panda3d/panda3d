@@ -90,8 +90,8 @@ node() const {
   return _node;
 }
 
-INLINE ostream &
-operator << (ostream &out, const WorkingNodePath &node_path) {
+INLINE std::ostream &
+operator << (std::ostream &out, const WorkingNodePath &node_path) {
   node_path.output(out);
   return out;
 }

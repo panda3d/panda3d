@@ -133,6 +133,6 @@ evict_callback() {
  *
  */
 void GeomCacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "[ unknown ]";
 }

@@ -28,6 +28,8 @@
 #include <direct.h>  // for chdir
 #endif
 
+using std::string;
+
 bool CVSSourceTree::_got_start_fullpath = false;
 Filename CVSSourceTree::_start_fullpath;
 
@@ -440,7 +442,7 @@ string CVSSourceTree::
 prompt(const string &message) {
   nout << std::flush;
   while (true) {
-    cerr << message << std::flush;
+    std::cerr << message << std::flush;
     std::string response;
     std::getline(std::cin, response);
 

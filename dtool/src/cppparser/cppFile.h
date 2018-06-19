@@ -59,7 +59,7 @@ public:
   mutable bool _pragma_once;
 };
 
-inline ostream &operator << (ostream &out, const CPPFile &file) {
+inline std::ostream &operator << (std::ostream &out, const CPPFile &file) {
   return out << file._filename;
 }
 

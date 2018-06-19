@@ -40,19 +40,16 @@
 
 #else  // USE_STL_ALLOCATOR
 
-using std::set;
-using std::multiset;
-
 /**
  * This is our own Panda specialization on the default STL set.  Its main
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Compare = less<Key> >
-class pset : public set<Key, Compare, pallocator_single<Key> > {
+template<class Key, class Compare = std::less<Key> >
+class pset : public std::set<Key, Compare, pallocator_single<Key> > {
 public:
   typedef pallocator_single<Key> allocator;
-  typedef set<Key, Compare, allocator> base_class;
+  typedef std::set<Key, Compare, allocator> base_class;
   pset(TypeHandle type_handle = pset_type_handle) : base_class(Compare(), allocator(type_handle)) { }
   pset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : base_class(comp, type_handle) { }
 
@@ -107,12 +104,12 @@ public:
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Compare = less<Key> >
-class pmultiset : public multiset<Key, Compare, pallocator_single<Key> > {
+template<class Key, class Compare = std::less<Key> >
+class pmultiset : public std::multiset<Key, Compare, pallocator_single<Key> > {
 public:
   typedef pallocator_single<Key> allocator;
-  pmultiset(TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
-  pmultiset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : multiset<Key, Compare, allocator>(comp, type_handle) { }
+  pmultiset(TypeHandle type_handle = pset_type_handle) : std::multiset<Key, Compare, allocator>(Compare(), allocator(type_handle)) { }
+  pmultiset(const Compare &comp, TypeHandle type_handle = pset_type_handle) : std::multiset<Key, Compare, allocator>(comp, type_handle) { }
 };
 
 #ifdef HAVE_STL_HASH
@@ -121,7 +118,7 @@ public:
  * purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Compare = method_hash<Key, less<Key> > >
+template<class Key, class Compare = method_hash<Key, std::less<Key> > >
 class phash_set : public stdext::hash_set<Key, Compare, pallocator_array<Key> > {
 public:
   phash_set() : stdext::hash_set<Key, Compare, pallocator_array<Key> >() { }
@@ -133,7 +130,7 @@ public:
  * main purpose is to call the hooks for MemoryUsage to properly track STL-
  * allocated memory.
  */
-template<class Key, class Compare = method_hash<Key, less<Key> > >
+template<class Key, class Compare = method_hash<Key, std::less<Key> > >
 class phash_multiset : public stdext::hash_multiset<Key, Compare, pallocator_array<Key> > {
 public:
   phash_multiset() : stdext::hash_multiset<Key, Compare, pallocator_array<Key> >() { }

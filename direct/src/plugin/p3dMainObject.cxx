@@ -18,6 +18,11 @@
 #include "p3dStringObject.h"
 #include "p3dInstanceManager.h"
 
+using std::ios;
+using std::max;
+using std::streamsize;
+using std::string;
+
 /**
  *
  */
@@ -231,7 +236,7 @@ call(const string &method_name, bool needs_response,
  * This is intended for developer assistance.
  */
 void P3DMainObject::
-output(ostream &out) {
+output(std::ostream &out) {
   out << "P3DMainObject";
 }
 
@@ -459,7 +464,7 @@ P3D_object *P3DMainObject::
 read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string log_directory = inst_mgr->get_log_directory();
-  ostringstream log_data;
+  std::ostringstream log_data;
 
   // Check the first parameter, if any--if given, it specifies the last n
   // bytes to retrieve.
@@ -512,7 +517,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   }
 
   // Read matching files
-  vector<string> all_logs;
+  std::vector<string> all_logs;
   int log_matches_found = 0;
   string log_matching_pathname;
   inst_mgr->scan_directory(log_directory, all_logs);
@@ -544,7 +549,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
 void P3DMainObject::
 read_log_file(const string &log_pathname,
               size_t tail_bytes, size_t head_bytes,
-              ostringstream &log_data) {
+              std::ostringstream &log_data) {
 
   // Get leaf name
   string log_leafname = log_pathname;

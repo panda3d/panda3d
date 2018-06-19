@@ -18,6 +18,12 @@
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  * Compress the indicated source string at the given compression level (1
  * through 9).  Returns the compressed string.
@@ -64,7 +70,7 @@ decompress_string(const string &source) {
  * results are written to the dest file, overwriting its contents.  The return
  * value is bool on success, or false on failure.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 compress_file(const Filename &source, const Filename &dest, int compression_level) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename source_filename = source;
@@ -101,7 +107,7 @@ compress_file(const Filename &source, const Filename &dest, int compression_leve
  * Note that a decompression error cannot easily be detected, and the output
  * may simply be a garbage or truncated string.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decompress_file(const Filename &source, const Filename &dest) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();

@@ -32,7 +32,7 @@ LoaderFileTypeBam() {
 /**
  *
  */
-string LoaderFileTypeBam::
+std::string LoaderFileTypeBam::
 get_name() const {
   return "Bam";
 }
@@ -40,7 +40,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeBam::
+std::string LoaderFileTypeBam::
 get_extension() const {
   return "bam";
 }

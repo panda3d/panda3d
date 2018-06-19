@@ -25,7 +25,7 @@
  * This is subclassed as PStatCollectorForward, which defines the actual
  * functionality.
  */
-class EXPCL_PANDAEXPRESS PStatCollectorForwardBase : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS PStatCollectorForwardBase : public ReferenceCount {
 PUBLISHED:
 #ifdef DO_PSTATS
   virtual ~PStatCollectorForwardBase();

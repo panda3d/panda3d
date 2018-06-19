@@ -25,36 +25,36 @@
 #include "configVariableInt.h"
 #include "dconfig.h"
 
-ConfigureDecl(config_egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
-NotifyCategoryDecl(egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
+ConfigureDecl(config_egg2pg, EXPCL_PANDA_EGG2PG, EXPTP_PANDA_EGG2PG);
+NotifyCategoryDecl(egg2pg, EXPCL_PANDA_EGG2PG, EXPTP_PANDA_EGG2PG);
 
-extern EXPCL_PANDAEGG ConfigVariableDouble egg_normal_scale;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_show_normals;
-extern EXPCL_PANDAEGG ConfigVariableEnum<CoordinateSystem> egg_coordinate_system;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_mipmaps;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_filters;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_clamp;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_decals;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_flatten;
-extern EXPCL_PANDAEGG ConfigVariableDouble egg_flatten_radius;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_unify;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_combine_geoms;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_rigid_geometry;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_flat_shading;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_flat_colors;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_load_old_curves;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_load_classic_nurbs_curves;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_accept_errors;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_suppress_hidden;
-extern EXPCL_PANDAEGG ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode;
-extern EXPCL_PANDAEGG ConfigVariableInt egg_max_vertices;
-extern EXPCL_PANDAEGG ConfigVariableInt egg_max_indices;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_emulate_bface;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_preload_simple_textures;
-extern EXPCL_PANDAEGG ConfigVariableDouble egg_vertex_membership_quantize;
-extern EXPCL_PANDAEGG ConfigVariableInt egg_vertex_max_num_joints;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_implicit_alpha_binary;
+extern EXPCL_PANDA_EGG2PG ConfigVariableDouble egg_normal_scale;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_show_normals;
+extern EXPCL_PANDA_EGG2PG ConfigVariableEnum<CoordinateSystem> egg_coordinate_system;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_ignore_mipmaps;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_ignore_filters;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_ignore_clamp;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_ignore_decals;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_flatten;
+extern EXPCL_PANDA_EGG2PG ConfigVariableDouble egg_flatten_radius;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_unify;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_combine_geoms;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_rigid_geometry;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_flat_shading;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_flat_colors;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_load_old_curves;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_load_classic_nurbs_curves;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_accept_errors;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_suppress_hidden;
+extern EXPCL_PANDA_EGG2PG ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode;
+extern EXPCL_PANDA_EGG2PG ConfigVariableInt egg_max_vertices;
+extern EXPCL_PANDA_EGG2PG ConfigVariableInt egg_max_indices;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_emulate_bface;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_preload_simple_textures;
+extern EXPCL_PANDA_EGG2PG ConfigVariableDouble egg_vertex_membership_quantize;
+extern EXPCL_PANDA_EGG2PG ConfigVariableInt egg_vertex_max_num_joints;
+extern EXPCL_PANDA_EGG2PG ConfigVariableBool egg_implicit_alpha_binary;
 
-extern EXPCL_PANDAEGG void init_libegg2pg();
+extern EXPCL_PANDA_EGG2PG void init_libegg2pg();
 
 #endif

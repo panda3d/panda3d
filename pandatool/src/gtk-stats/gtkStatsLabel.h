@@ -59,7 +59,7 @@ private:
   GtkStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
-  string _text;
+  std::string _text;
   GtkWidget *_widget;
   GdkColor _fg_color;
   GdkColor _bg_color;

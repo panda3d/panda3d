@@ -45,6 +45,8 @@
 
 #define MAXCOLORS 256
 
+using std::ostream;
+
 /*
  * Utilities
  */

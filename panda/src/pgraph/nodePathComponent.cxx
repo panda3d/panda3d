@@ -121,7 +121,7 @@ fix_length(int pipeline_stage, Thread *current_thread) {
  * the end of the linked list and then outputting from there.
  */
 void NodePathComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
 

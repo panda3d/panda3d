@@ -52,7 +52,7 @@ inline void ShadowManager::set_max_updates(size_t max_updates) {
   nassertv(max_updates >= 0);
   nassertv(_atlas == nullptr);  // ShadowManager was already initialized
   if (max_updates == 0) {
-    shadowmanager_cat.warning() << "max_updates set to 0, no shadows will be updated." << endl;
+    shadowmanager_cat.warning() << "max_updates set to 0, no shadows will be updated." << std::endl;
   }
   _max_updates = max_updates;
 }
@@ -170,7 +170,7 @@ inline bool ShadowManager::add_update(const ShadowSource* source) {
 
   if (_queued_updates.size() >= _max_updates) {
     if (shadowmanager_cat.is_debug()) {
-      shadowmanager_cat.debug() << "cannot update source, out of update slots" << endl;
+      shadowmanager_cat.debug() << "cannot update source, out of update slots" << std::endl;
     }
     return false;
   }

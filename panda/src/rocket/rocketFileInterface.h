@@ -41,7 +41,7 @@ public:
 protected:
   struct VirtualFileHandle {
     PT(VirtualFile) _file;
-    istream *_stream;
+    std::istream *_stream;
   };
 
   VirtualFileSystem* _vfs;

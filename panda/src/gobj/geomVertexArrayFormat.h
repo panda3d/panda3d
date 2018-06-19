@@ -113,12 +113,12 @@ PUBLISHED:
   bool is_data_subset_of(const GeomVertexArrayFormat &other) const;
   int count_unused_space() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void write_with_data(ostream &out, int indent_level,
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void write_with_data(std::ostream &out, int indent_level,
                        const GeomVertexArrayData *array_data) const;
 
-  string get_format_string(bool pad = true) const;
+  std::string get_format_string(bool pad = true) const;
 
 public:
   int compare_to(const GeomVertexArrayFormat &other) const;
@@ -192,7 +192,7 @@ private:
   friend class GeomVertexFormat;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexArrayFormat &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexArrayFormat &obj);
 
 #include "geomVertexArrayFormat.I"
 

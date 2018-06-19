@@ -34,9 +34,9 @@ int EggNode::
 rename_node(vector_string strip_prefix) {
   int num_renamed = 0;
   for (unsigned int ni = 0; ni < strip_prefix.size(); ++ni) {
-    string axe_name = strip_prefix[ni];
+    std::string axe_name = strip_prefix[ni];
     if (this->get_name().substr(0, axe_name.size()) == axe_name) {
-      string new_name = this->get_name().substr(axe_name.size());
+      std::string new_name = this->get_name().substr(axe_name.size());
       // cout << "renaming " << this->get_name() << "->" << new_name << endl;
       this->set_name(new_name);
       num_renamed += 1;
@@ -221,13 +221,13 @@ determine_decal() {
  * error or if the object does not support this functionality.
  */
 bool EggNode::
-parse_egg(const string &egg_syntax) {
+parse_egg(const std::string &egg_syntax) {
   EggGroupNode *group = get_parent();
   if (is_of_type(EggGroupNode::get_class_type())) {
     DCAST_INTO_R(group, this, false);
   }
 
-  istringstream in(egg_syntax);
+  std::istringstream in(egg_syntax);
 
   LightMutexHolder holder(egg_lock);
 

@@ -133,7 +133,7 @@ get_index() const {
  *
  */
 INLINE void ButtonHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
 }
 

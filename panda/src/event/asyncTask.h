@@ -31,7 +31,7 @@ class AsyncTaskChain;
  */
 class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
-  AsyncTask(const string &name = string());
+  AsyncTask(const std::string &name = std::string());
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
@@ -76,14 +76,14 @@ PUBLISHED:
   INLINE int get_start_frame() const;
   int get_elapsed_frames() const;
 
-  void set_name(const string &name);
+  void set_name(const std::string &name);
   INLINE void clear_name();
-  string get_name_prefix() const;
+  std::string get_name_prefix() const;
 
   INLINE AtomicAdjust::Integer get_task_id() const;
 
-  void set_task_chain(const string &chain_name);
-  INLINE const string &get_task_chain() const;
+  void set_task_chain(const std::string &chain_name);
+  INLINE const std::string &get_task_chain() const;
 
   void set_sort(int sort);
   INLINE int get_sort() const;
@@ -91,13 +91,13 @@ PUBLISHED:
   void set_priority(int priority);
   INLINE int get_priority() const;
 
-  INLINE void set_done_event(const string &done_event);
+  INLINE void set_done_event(const std::string &done_event);
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
   INLINE double get_average_dt() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
@@ -113,7 +113,7 @@ protected:
 
 protected:
   AtomicAdjust::Integer _task_id;
-  string _chain_name;
+  std::string _chain_name;
   double _delay;
   bool _has_delay;
   double _wake_time;
@@ -163,7 +163,7 @@ private:
   friend class AsyncTaskSequence;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTask &task) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTask &task) {
   task.output(out);
   return out;
 };

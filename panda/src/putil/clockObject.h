@@ -188,10 +188,10 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDA_PUTIL ostream &
-operator << (ostream &out, ClockObject::Mode mode);
-EXPCL_PANDA_PUTIL istream &
-operator >> (istream &in, ClockObject::Mode &mode);
+EXPCL_PANDA_PUTIL std::ostream &
+operator << (std::ostream &out, ClockObject::Mode mode);
+EXPCL_PANDA_PUTIL std::istream &
+operator >> (std::istream &in, ClockObject::Mode &mode);
 
 #include "clockObject.I"
 

@@ -14,6 +14,9 @@
 #include "p3dPatchfileReader.h"
 #include "wstring_encode.h"
 
+using std::ios;
+using std::string;
+
 /**
  *
  */
@@ -55,7 +58,7 @@ open_read() {
   string patch_pathname = _patchfile.get_pathname(_package_dir);
   _patch_in.clear();
 #ifdef _WIN32
-  wstring patch_pathname_w;
+  std::wstring patch_pathname_w;
   if (string_to_wstring(patch_pathname_w, patch_pathname)) {
     _patch_in.open(patch_pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -66,7 +69,7 @@ open_read() {
   string source_pathname = _source.get_pathname(_package_dir);
   _source_in.clear();
 #ifdef _WIN32
-  wstring source_pathname_w;
+  std::wstring source_pathname_w;
   if (string_to_wstring(source_pathname_w, source_pathname)) {
     _source_in.open(source_pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -77,7 +80,7 @@ open_read() {
   mkfile_complete(_output_pathname, nout);
   _target_out.clear();
 #ifdef _WIN32
-  wstring output_pathname_w;
+  std::wstring output_pathname_w;
   if (string_to_wstring(output_pathname_w, _output_pathname)) {
     _target_out.open(output_pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -247,13 +250,13 @@ close() {
  * have enough bytes.
  */
 bool P3DPatchfileReader::
-copy_bytes(istream &in, size_t copy_byte_count) {
+copy_bytes(std::istream &in, size_t copy_byte_count) {
   static const size_t buffer_size = 8192;
   char buffer[buffer_size];
 
-  streamsize read_size = min(copy_byte_count, buffer_size);
+  std::streamsize read_size = std::min(copy_byte_count, buffer_size);
   in.read(buffer, read_size);
-  streamsize count = in.gcount();
+  std::streamsize count = in.gcount();
   while (count != 0) {
     _target_out.write(buffer, count);
     _bytes_written += (size_t)count;
@@ -267,7 +270,7 @@ copy_bytes(istream &in, size_t copy_byte_count) {
     copy_byte_count -= (size_t)count;
     count = 0;
     if (copy_byte_count != 0) {
-      read_size = min(copy_byte_count, buffer_size);
+      read_size = std::min(copy_byte_count, buffer_size);
       in.read(buffer, read_size);
       count = in.gcount();
     }

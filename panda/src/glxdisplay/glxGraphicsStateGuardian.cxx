@@ -18,6 +18,8 @@
 
 #include <dlfcn.h>
 
+using std::string;
+
 
 TypeHandle glxGraphicsStateGuardian::_type_handle;
 

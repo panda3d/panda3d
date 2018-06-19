@@ -34,11 +34,11 @@ class CPPTemplateParameterList;
  */
 class CPPIdentifier {
 public:
-  CPPIdentifier(const string &name, const CPPFile &file = CPPFile());
+  CPPIdentifier(const std::string &name, const CPPFile &file = CPPFile());
   CPPIdentifier(const CPPNameComponent &name, const CPPFile &file = CPPFile());
-  CPPIdentifier(const string &name, const cppyyltype &loc);
+  CPPIdentifier(const std::string &name, const cppyyltype &loc);
   CPPIdentifier(const CPPNameComponent &name, const cppyyltype &loc);
-  void add_name(const string &name);
+  void add_name(const std::string &name);
   void add_name(const CPPNameComponent &name);
 
   bool operator == (const CPPIdentifier &other) const;
@@ -47,9 +47,9 @@ public:
 
   bool is_scoped() const;
 
-  string get_simple_name() const;
-  string get_local_name(CPPScope *scope = nullptr) const;
-  string get_fully_scoped_name() const;
+  std::string get_simple_name() const;
+  std::string get_local_name(CPPScope *scope = nullptr) const;
+  std::string get_fully_scoped_name() const;
 
   bool is_fully_specified() const;
   bool is_tbd() const;
@@ -85,17 +85,17 @@ public:
                                  CPPScope *current_scope,
                                  CPPScope *global_scope);
 
-  void output(ostream &out, CPPScope *scope) const;
-  void output_local_name(ostream &out, CPPScope *scope) const;
-  void output_fully_scoped_name(ostream &out) const;
+  void output(std::ostream &out, CPPScope *scope) const;
+  void output_local_name(std::ostream &out, CPPScope *scope) const;
+  void output_fully_scoped_name(std::ostream &out) const;
 
-  typedef vector<CPPNameComponent> Names;
+  typedef std::vector<CPPNameComponent> Names;
   Names _names;
   CPPScope *_native_scope;
   cppyyltype _loc;
 };
 
-inline ostream &operator << (ostream &out, const CPPIdentifier &identifier) {
+inline std::ostream &operator << (std::ostream &out, const CPPIdentifier &identifier) {
   identifier.output(out, nullptr);
   return out;
 }

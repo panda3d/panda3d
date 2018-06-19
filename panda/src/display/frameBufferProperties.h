@@ -155,7 +155,7 @@ PUBLISHED:
   void set_all_specified();
   bool subsumes(const FrameBufferProperties &other) const;
   void add_properties(const FrameBufferProperties &other);
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
   void set_one_bit_per_channel();
 
   INLINE bool is_stereo() const;
@@ -165,13 +165,13 @@ PUBLISHED:
   bool is_basic() const;
   int get_aux_mask() const;
   int get_buffer_mask() const;
-  bool verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const;
+  bool verify_hardware_software(const FrameBufferProperties &props, const std::string &renderer) const;
 
   bool setup_color_texture(Texture *tex) const;
   bool setup_depth_texture(Texture *tex) const;
 };
 
-INLINE ostream &operator << (ostream &out, const FrameBufferProperties &properties);
+INLINE std::ostream &operator << (std::ostream &out, const FrameBufferProperties &properties);
 
 #include "frameBufferProperties.I"
 

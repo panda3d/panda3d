@@ -30,13 +30,11 @@
 #include <string>
 #include <assert.h>
 
-using namespace std;
-
 // Appears in startup.cxx.
-extern ostream *nout_stream;
+extern std::ostream *nout_stream;
 #define nout (*nout_stream)
 
-extern string global_root_dir;
+extern std::string global_root_dir;
 extern bool has_plugin_thread_async_call;
 
 #ifdef _WIN32

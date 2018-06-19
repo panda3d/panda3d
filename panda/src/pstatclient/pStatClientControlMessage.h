@@ -45,8 +45,8 @@ public:
   Type _type;
 
   // Used for T_hello
-  string _client_hostname;
-  string _client_progname;
+  std::string _client_hostname;
+  std::string _client_progname;
   int _major_version;
   int _minor_version;
 
@@ -55,7 +55,7 @@ public:
 
   // Used for T_define_threads
   int _first_thread_index;
-  pvector<string> _names;
+  pvector<std::string> _names;
 };
 
 

@@ -48,7 +48,7 @@ TinyOsxGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string TinyOsxGraphicsPipe::
+std::string TinyOsxGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
@@ -181,7 +181,7 @@ release_data(void *info, const void *data, size_t size) {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) TinyOsxGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

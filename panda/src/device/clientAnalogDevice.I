@@ -25,7 +25,7 @@ AnalogState() :
  *
  */
 INLINE ClientAnalogDevice::
-ClientAnalogDevice(ClientBase *client, const string &device_name):
+ClientAnalogDevice(ClientBase *client, const std::string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
 }

@@ -34,7 +34,7 @@ TypeHandle eglGraphicsWindow::_type_handle;
  */
 eglGraphicsWindow::
 eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -84,7 +84,7 @@ move_pointer(int device, int x, int y) {
     return true;
   } else {
     // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
+    if (device < 1 || (size_t)device >= _input_devices.size()) {
       return false;
     }
     _input_devices[device].set_pointer_in_window(x, y);

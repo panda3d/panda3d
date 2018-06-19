@@ -25,6 +25,11 @@
 #include "pystub.h"
 #include <stdlib.h>
 
+using std::cerr;
+using std::cin;
+using std::cout;
+using std::string;
+
 CPPParser parser;
 
 void
@@ -74,7 +79,14 @@ show_type_or_expression(const string &str) {
       cout << "\n\n"
            << "is_template = " << type->is_template() << "\n"
            << "is_fully_specified = " << type->is_fully_specified() << "\n"
-           << "is_tbd = " << type->is_tbd() << "\n";
+           << "is_tbd = " << type->is_tbd() << "\n"
+           << "is_fundamental = " << type->is_fundamental() << "\n"
+           << "is_standard_layout = " << type->is_standard_layout() << "\n"
+           << "is_trivial = " << type->is_trivial() << "\n"
+           << "is_default_constructible = " << type->is_default_constructible() << "\n"
+           << "is_copy_constructible = " << type->is_copy_constructible() << "\n"
+           << "is_copy_assignable = " << type->is_copy_assignable() << "\n"
+           << "is_destructible = " << type->is_destructible() << "\n";
       if (type->has_typedef_name()) {
         cout << "get_typedef_name = " << type->get_typedef_name() << "\n";
       }

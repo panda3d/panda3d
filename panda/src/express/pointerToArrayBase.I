@@ -45,7 +45,7 @@ ReferenceCountedVector(const Element *begin, const Element *end, TypeHandle type
 template<class Element>
 INLINE ReferenceCountedVector<Element>::
 ReferenceCountedVector(pvector<Element> &&from) :
-  pvector<Element>(move(from))
+  pvector<Element>(std::move(from))
 {
 }
 
@@ -138,7 +138,7 @@ PointerToArrayBase(const PointerToArrayBase<Element> &copy) :
 template<class Element>
 INLINE PointerToArrayBase<Element>::
 PointerToArrayBase(PointerToArrayBase<Element> &&from) noexcept :
-  PointerToBase<ReferenceCountedVector<Element> >(move(from))
+  PointerToBase<ReferenceCountedVector<Element> >(std::move(from))
 {
 }
 

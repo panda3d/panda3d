@@ -27,7 +27,7 @@
  * from an egg file and sort them all together; it can also manage the
  * creation of unique textures and the assignment of unique TRef names.
  */
-class EXPCL_PANDAEGG EggTextureCollection {
+class EXPCL_PANDA_EGG EggTextureCollection {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggTextureCollection as an STL
@@ -98,7 +98,7 @@ PUBLISHED:
   EggTexture *create_unique_texture(const EggTexture &copy, int eq);
 
   // Find a texture with a particular TRef name.
-  EggTexture *find_tref(const string &tref_name) const;
+  EggTexture *find_tref(const std::string &tref_name) const;
 
   // Find a texture with a particular filename.
   EggTexture *find_filename(const Filename &filename) const;

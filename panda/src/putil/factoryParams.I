@@ -14,45 +14,6 @@
 #include "pnotify.h"
 
 /**
- *
- */
-INLINE FactoryParams::
-FactoryParams() : _user_data(nullptr) {
-}
-
-/**
- *
- */
-INLINE FactoryParams::
-FactoryParams(const FactoryParams &copy) :
-  _params(copy._params),
-  _user_data(copy._user_data) {}
-
-/**
- *
- */
-INLINE FactoryParams::
-~FactoryParams() {
-}
-
-/**
- *
- */
-INLINE FactoryParams::
-FactoryParams(FactoryParams &&from) noexcept :
-  _params(std::move(from._params)),
-  _user_data(from._user_data) {}
-
-/**
- *
- */
-INLINE void FactoryParams::
-operator = (FactoryParams &&from) noexcept {
-  _params = std::move(from._params);
-  _user_data = from._user_data;
-}
-
-/**
  * Returns the custom pointer that was associated with the factory function.
  */
 INLINE void *FactoryParams::

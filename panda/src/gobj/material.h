@@ -41,7 +41,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE explicit Material(const string &name = "");
+  INLINE explicit Material(const std::string &name = "");
   INLINE Material(const Material &copy);
   void operator = (const Material &copy);
   INLINE ~Material();
@@ -100,8 +100,8 @@ PUBLISHED:
 
   int compare_to(const Material &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent) const;
 
   INLINE bool is_attrib_locked() const;
   INLINE void set_attrib_lock();
@@ -186,7 +186,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Material &m) {
+INLINE std::ostream &operator << (std::ostream &out, const Material &m) {
   m.output(out);
   return out;
 }

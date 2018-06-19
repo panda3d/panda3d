@@ -18,6 +18,12 @@
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  * Encrypts the indicated source string using the given password, and the
  * algorithm specified by encryption-algorithm.  Returns the encrypted string.
@@ -75,7 +81,7 @@ decrypt_string(const string &source, const string &password) {
  * to the dest file, overwriting its contents.  The return value is bool on
  * success, or false on failure.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const string &password,
              const string &algorithm, int key_length, int iteration_count) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -115,7 +121,7 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
  * Note that a decryption error, including an incorrect password, cannot
  * easily be detected, and the output may simply be a garbage string.
  */
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const string &password) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();

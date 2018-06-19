@@ -75,6 +75,9 @@
 #include "eggTable.h"
 #include "dcast.h"
 
+using std::pair;
+using std::string;
+
 /**
  *
  */
@@ -191,7 +194,7 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
   int num_children = node->get_num_children();
   int num_switches = node->get_num_switches();
 
-  num_children = min(num_children, num_switches);
+  num_children = std::min(num_children, num_switches);
 
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
@@ -560,7 +563,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         // Get an arbitrary vector on the plane by taking the cross product
         // with any vector, as long as it is different.
         LVector3 vec1;
-        if (abs(normal[2]) > abs(normal[1])) {
+        if (std::fabs(normal[2]) > std::fabs(normal[1])) {
           vec1 = normal.cross(LVector3(0, 1, 0));
         } else {
           vec1 = normal.cross(LVector3(0, 0, 1));
@@ -626,7 +629,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         // Also get an arbitrary vector perpendicular to the tube.
         LVector3 axis = point_b - point_a;
         LVector3 sideways;
-        if (abs(axis[2]) > abs(axis[1])) {
+        if (std::fabs(axis[2]) > std::fabs(axis[1])) {
           sideways = axis.cross(LVector3(0, 1, 0));
         } else {
           sideways = axis.cross(LVector3(0, 0, 1));
@@ -1148,7 +1151,7 @@ apply_state_properties(EggRenderMode *egg_render_mode, const RenderState *state)
  */
 bool EggSaver::
 apply_tags(EggGroup *egg_group, PandaNode *node) {
-  ostringstream strm;
+  std::ostringstream strm;
   char delimiter = '\n';
   string delimiter_str(1, delimiter);
   node->list_tags(strm, delimiter_str);

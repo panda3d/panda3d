@@ -57,7 +57,7 @@ ns_store_pointer(TypeHandle type, void *ptr) {
     clear_pointer(type);
     return;
   }
-  pair<Pointers::iterator, bool> result =
+  std::pair<Pointers::iterator, bool> result =
     _pointers.insert(Pointers::value_type(type, ptr));
 
   if (!result.second) {

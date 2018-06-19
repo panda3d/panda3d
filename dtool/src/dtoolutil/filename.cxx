@@ -53,6 +53,11 @@
 #include <sys/file.h>
 #endif
 
+using std::cerr;
+using std::ios;
+using std::string;
+using std::wstring;
+
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
 TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
@@ -832,9 +837,9 @@ get_filename_index(int index) const {
   Filename file(*this);
 
   if (_hash_end != _hash_start) {
-    ostringstream strm;
+    std::ostringstream strm;
     strm << _filename.substr(0, _hash_start)
-         << setw((int)(_hash_end - _hash_start)) << setfill('0') << index
+         << std::setw((int)(_hash_end - _hash_start)) << std::setfill('0') << index
          << _filename.substr(_hash_end);
     file.set_fullpath(strm.str());
   }
@@ -1542,7 +1547,7 @@ get_access_timestamp() const {
 /**
  * Returns the size of the file in bytes, or 0 if there is an error.
  */
-streamsize Filename::
+std::streamsize Filename::
 get_file_size() const {
 #ifdef WIN32_VC
   wstring os_specific = get_filename_index(0).to_os_specific_w();

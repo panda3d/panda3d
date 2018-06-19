@@ -19,8 +19,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 class CPPIdentifier;
 class CPPParameterList;
 class CPPType;
@@ -85,7 +83,7 @@ public:
     CPPExpression *_expr;
     CPPType *_trailing_return_type;
   };
-  typedef vector<Modifier> Modifiers;
+  typedef std::vector<Modifier> Modifiers;
   Modifiers _modifiers;
 
   // If not -1, indicates a bitfield

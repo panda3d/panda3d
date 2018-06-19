@@ -173,7 +173,7 @@ PUBLISHED:
   void move_global_hpr(float h, float p, float r);
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   void update_transform(const LMatrix4f &m);
@@ -194,7 +194,7 @@ private:
   NxActor *_ptr;
   NodePath _np;
   PT(PhysxController) _controller;
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

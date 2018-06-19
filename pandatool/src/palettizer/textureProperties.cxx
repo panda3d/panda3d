@@ -20,6 +20,8 @@
 #include "bamWriter.h"
 #include "string_utils.h"
 
+using std::string;
+
 TypeHandle TextureProperties::_type_handle;
 
 /**
@@ -183,7 +185,7 @@ get_string() const {
   string result;
 
   if (_got_num_channels) {
-    ostringstream num;
+    std::ostringstream num;
     num << _effective_num_channels;
     result += num.str();
   }

@@ -83,7 +83,7 @@ from_collision_solids(NodePath &np, bool clear) {
 bool BulletHelper::
 is_tangible(CollisionNode *cnode) {
 
-  for (int j=0; j<cnode->get_num_solids(); j++) {
+  for (size_t j = 0; j < cnode->get_num_solids(); ++j) {
     CPT(CollisionSolid) solid = cnode->get_solid(j);
     if (solid->is_tangible()) {
         return true;

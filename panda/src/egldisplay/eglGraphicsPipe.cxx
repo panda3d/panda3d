@@ -25,7 +25,7 @@ TypeHandle eglGraphicsPipe::_type_handle;
  *
  */
 eglGraphicsPipe::
-eglGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
+eglGraphicsPipe(const std::string &display) : x11GraphicsPipe(display) {
   _egl_display = eglGetDisplay((NativeDisplayType) _display);
   if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     egldisplay_cat.error()
@@ -59,7 +59,7 @@ eglGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string eglGraphicsPipe::
+std::string eglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }
@@ -77,7 +77,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) eglGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

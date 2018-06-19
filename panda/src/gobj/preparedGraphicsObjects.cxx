@@ -162,7 +162,7 @@ set_graphics_memory_limit(size_t limit) {
  * vertex buffers are allocated in the LRU.
  */
 void PreparedGraphicsObjects::
-show_graphics_memory_lru(ostream &out) const {
+show_graphics_memory_lru(std::ostream &out) const {
   _graphics_memory_lru.write(out, 0);
 }
 
@@ -171,7 +171,7 @@ show_graphics_memory_lru(ostream &out) const {
  * vertex buffers are allocated in the LRU.
  */
 void PreparedGraphicsObjects::
-show_residency_trackers(ostream &out) const {
+show_residency_trackers(std::ostream &out) const {
   out << "Textures:\n";
   _texture_residency.write(out, 2);
 
@@ -204,7 +204,7 @@ PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
 enqueue_texture_future(Texture *tex) {
   ReMutexHolder holder(_lock);
 
-  pair<EnqueuedTextures::iterator, bool> result =
+  std::pair<EnqueuedTextures::iterator, bool> result =
     _enqueued_textures.insert(EnqueuedTextures::value_type(tex, nullptr));
   if (result.first->second == nullptr) {
     result.first->second = new EnqueuedObject(this, tex);
@@ -713,7 +713,7 @@ PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
 enqueue_shader_future(Shader *shader) {
   ReMutexHolder holder(_lock);
 
-  pair<EnqueuedShaders::iterator, bool> result =
+  std::pair<EnqueuedShaders::iterator, bool> result =
     _enqueued_shaders.insert(EnqueuedShaders::value_type(shader, nullptr));
   if (result.first->second == nullptr) {
     result.first->second = new EnqueuedObject(this, shader);
@@ -1677,10 +1677,10 @@ do_release_now(GraphicsStateGuardianBase *gsg) {
 /**
  * Returns a new, unique name for a newly-constructed object.
  */
-string PreparedGraphicsObjects::
+std::string PreparedGraphicsObjects::
 init_name() {
   ++_name_index;
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "context" << _name_index;
   return strm.str();
 }

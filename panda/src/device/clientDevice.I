@@ -44,7 +44,7 @@ get_device_type() const {
  * Returns the device name reported to the ClientBase.  This has some
  * implementation-defined meaning to identify particular devices.
  */
-INLINE const string &ClientDevice::
+INLINE const std::string &ClientDevice::
 get_device_name() const {
   return _device_name;
 }

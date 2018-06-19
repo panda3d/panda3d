@@ -830,7 +830,7 @@ clear_shadow() {
  * "fixed".
  */
 INLINE void TextNode::
-set_bin(const string &bin) {
+set_bin(const std::string &bin) {
   TextProperties::set_bin(bin);
   invalidate_no_measure();
 }
@@ -935,7 +935,7 @@ clear_glyph_shift() {
  * Changes the text that is displayed under the TextNode.
  */
 INLINE void TextNode::
-set_text(const string &text) {
+set_text(const std::string &text) {
   TextEncoder::set_text(text);
   invalidate_with_measure();
 }
@@ -947,7 +947,7 @@ set_text(const string &text) {
  * whichever encoding is specified by set_encoding().
  */
 INLINE void TextNode::
-set_text(const string &text, TextNode::Encoding encoding) {
+set_text(const std::string &text, TextNode::Encoding encoding) {
   TextEncoder::set_text(text, encoding);
   invalidate_with_measure();
 }
@@ -965,7 +965,7 @@ clear_text() {
  * Appends the indicates string to the end of the stored text.
  */
 INLINE void TextNode::
-append_text(const string &text) {
+append_text(const std::string &text) {
   TextEncoder::append_text(text);
   invalidate_with_measure();
 }
@@ -987,7 +987,7 @@ append_unicode_char(wchar_t character) {
  * In earlier versions, this did not contain any embedded special characters
  * like \1 or \3; now it does.
  */
-INLINE string TextNode::
+INLINE std::string TextNode::
 get_wordwrapped_text() const {
   return encode_wtext(get_wordwrapped_wtext());
 }
@@ -997,7 +997,7 @@ get_wordwrapped_text() const {
  * should not include the newline character.
  */
 INLINE PN_stdfloat TextNode::
-calc_width(const string &line) const {
+calc_width(const std::string &line) const {
   return calc_width(decode_text(line));
 }
 
@@ -1007,7 +1007,7 @@ calc_width(const string &line) const {
  * encoded version of the same string.
  */
 INLINE void TextNode::
-set_wtext(const wstring &wtext) {
+set_wtext(const std::wstring &wtext) {
   TextEncoder::set_wtext(wtext);
   invalidate_with_measure();
 }
@@ -1016,7 +1016,7 @@ set_wtext(const wstring &wtext) {
  * Appends the indicates string to the end of the stored wide-character text.
  */
 INLINE void TextNode::
-append_wtext(const wstring &wtext) {
+append_wtext(const std::wstring &wtext) {
   TextEncoder::append_wtext(wtext);
   invalidate_with_measure();
 }
@@ -1028,7 +1028,7 @@ append_wtext(const wstring &wtext) {
  * In earlier versions, this did not contain any embedded special characters
  * like \1 or \3; now it does.
  */
-INLINE wstring TextNode::
+INLINE std::wstring TextNode::
 get_wordwrapped_wtext() const {
   check_measure();
   return _wordwrapped_wtext;

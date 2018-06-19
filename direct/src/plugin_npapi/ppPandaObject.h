@@ -49,7 +49,7 @@ private:
   bool enumerate(NPIdentifier **value, uint32_t *count);
 
 private:
-  static string identifier_to_string(NPIdentifier ident);
+  static std::string identifier_to_string(NPIdentifier ident);
 
 
 private:

@@ -49,6 +49,14 @@
 
 #include <stddef.h>
 
+using std::endl;
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::string;
+using std::swap;
+
 ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
 ("texture-quality-level", Texture::QL_normal,
  PRC_DESC("This specifies a global quality level for all textures.  You "
@@ -3960,7 +3968,7 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
     default:
       gobj_cat.error()
         << filename << ": unsupported texture compression (FourCC: 0x"
-        << hex << header.pf.four_cc << dec << ").\n";
+        << std::hex << header.pf.four_cc << std::dec << ").\n";
       return false;
     }
 
@@ -4216,7 +4224,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   }
 
   // See: https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-  uint32_t gl_type, type_size, gl_format, internal_format, gl_base_format,
+  uint32_t gl_type, /*type_size,*/ gl_format, internal_format, gl_base_format,
     width, height, depth, num_array_elements, num_faces, num_mipmap_levels,
     kvdata_size;
 
@@ -4224,7 +4232,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   if (ktx.get_uint32() == 0x04030201) {
     big_endian = false;
     gl_type = ktx.get_uint32();
-    type_size = ktx.get_uint32();
+    /*type_size = */ktx.get_uint32();
     gl_format = ktx.get_uint32();
     internal_format = ktx.get_uint32();
     gl_base_format = ktx.get_uint32();
@@ -4238,7 +4246,7 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
   } else {
     big_endian = true;
     gl_type = ktx.get_be_uint32();
-    type_size = ktx.get_be_uint32();
+    /*type_size = */ktx.get_be_uint32();
     gl_format = ktx.get_be_uint32();
     internal_format = ktx.get_be_uint32();
     gl_base_format = ktx.get_be_uint32();
@@ -4432,8 +4440,8 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
     if (base_format != gl_base_format) {
       gobj_cat.error()
         << filename << " has internal format that is incompatible with base "
-           "format (0x" << hex << gl_base_format << ", expected 0x"
-        << base_format << dec << ")\n";
+           "format (0x" << std::hex << gl_base_format << ", expected 0x"
+        << base_format << std::dec << ")\n";
       return false;
     }
 
@@ -4895,14 +4903,14 @@ do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only)
           }
         }
 
-        do_set_ram_mipmap_image(cdata, (int)n, move(image),
+        do_set_ram_mipmap_image(cdata, (int)n, std::move(image),
           row_size * do_get_expected_mipmap_y_size(cdata, (int)n));
 
       } else {
         // Compressed image.  We'll trust that the file has the right size.
         image = PTA_uchar::empty_array(image_size);
         ktx.extract_bytes(image.p(), image_size);
-        do_set_ram_mipmap_image(cdata, (int)n, move(image), image_size / depth);
+        do_set_ram_mipmap_image(cdata, (int)n, std::move(image), image_size / depth);
       }
 
       ktx.skip_bytes(3 - ((image_size + 3) & 3));

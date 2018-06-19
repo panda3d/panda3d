@@ -71,7 +71,7 @@ update() {
  * Write a string representation of this instance to <out>.
  */
 void PointParticle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"PointParticle";
   #endif //] NDEBUG
@@ -81,7 +81,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void PointParticle::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"PointParticle:\n";
   BaseParticle::write(out, indent+2);

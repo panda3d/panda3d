@@ -17,7 +17,7 @@
  *
  */
 INLINE ButtonRegistry::RegistryNode::
-RegistryNode(ButtonHandle handle, ButtonHandle alias, const string &name) :
+RegistryNode(ButtonHandle handle, ButtonHandle alias, const std::string &name) :
   _handle(handle), _alias(alias), _name(name)
 {
 }
@@ -36,7 +36,7 @@ ptr() {
 /**
  * Returns the name of the indicated button.
  */
-INLINE string ButtonRegistry::
+INLINE std::string ButtonRegistry::
 get_name(ButtonHandle button) const {
   RegistryNode *rnode = look_up(button);
   nassertr(rnode != nullptr, "");

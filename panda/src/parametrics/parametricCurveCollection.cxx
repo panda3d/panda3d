@@ -44,7 +44,7 @@ add_curve(ParametricCurve *curve) {
 void ParametricCurveCollection::
 insert_curve(size_t index, ParametricCurve *curve) {
   prepare_add_curve(curve);
-  index = min(index, _curves.size());
+  index = std::min(index, _curves.size());
   _curves.insert(_curves.begin() + index, curve);
   redraw();
 }
@@ -307,7 +307,7 @@ make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
   // the same length as all the others.
   CurveFitter fitter;
 
-  int num_segments = max(1, (int)cfloor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
+  int num_segments = std::max(1, (int)cfloor(segments_per_unit * xyz_curve->get_max_t() + 0.5f));
 
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
@@ -657,7 +657,7 @@ stitch(const ParametricCurveCollection *a,
  * indicated output stream.
  */
 void ParametricCurveCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_curves() == 1) {
     out << "1 ParametricCurve";
   } else {
@@ -670,7 +670,7 @@ output(ostream &out) const {
  * to the indicated output stream.
  */
 void ParametricCurveCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   ParametricCurves::const_iterator ci;
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
     ParametricCurve *curve = (*ci);
@@ -700,7 +700,7 @@ write_egg(Filename filename, CoordinateSystem cs) {
  * specified output stream.  Returns true if the file is successfully written.
  */
 bool ParametricCurveCollection::
-write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
+write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
@@ -740,7 +740,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
     if (!curve->has_name()) {
       // If we don't have a name, come up with one.
-      string name = filename.get_basename_wo_extension();
+      std::string name = filename.get_basename_wo_extension();
 
       switch (curve->get_curve_type()) {
       case PCT_XYZ:

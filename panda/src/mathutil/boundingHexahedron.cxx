@@ -19,6 +19,9 @@
 #include <math.h>
 #include <algorithm>
 
+using std::max;
+using std::min;
+
 TypeHandle BoundingHexahedron::_type_handle;
 
 /**
@@ -151,7 +154,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingHexahedron::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bhexahedron, empty";
   } else if (is_infinite()) {
@@ -165,7 +168,7 @@ output(ostream &out) const {
  *
  */
 void BoundingHexahedron::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (is_empty()) {
     indent(out, indent_level) << "bhexahedron, empty\n";
   } else if (is_infinite()) {

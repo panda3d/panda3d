@@ -15,8 +15,7 @@
 #define PARSE_COLOR_H
 
 #include <string>
-using namespace std;
 
-bool parse_color(int &r, int &g, int &b, const string &color);
+bool parse_color(int &r, int &g, int &b, const std::string &color);
 
 #endif

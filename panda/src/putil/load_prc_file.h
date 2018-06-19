@@ -47,7 +47,7 @@ load_prc_file(const Filename &filename);
  * loaded prc files is listed.
  */
 EXPCL_PANDA_PUTIL ConfigPage *
-load_prc_file_data(const string &name, const string &data);
+load_prc_file_data(const std::string &name, const std::string &data);
 
 /**
  * Unloads (and deletes) a ConfigPage that represents a prc file that was

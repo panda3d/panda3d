@@ -18,6 +18,9 @@
 #include "collisionPlane.h"
 #include "clockObject.h"
 
+using std::cout;
+using std::endl;
+
 TypeHandle CollisionHandlerGravity::_type_handle;
 
 /**
@@ -254,10 +257,10 @@ handle_entries() {
             // ...the node is under the floor, so it has landed.  Keep the
             // adjust to bring us up to the ground and then add the
             // gravity_adjust to get us airborne:
-            adjust += max((PN_stdfloat)0.0, gravity_adjust);
+            adjust += std::max((PN_stdfloat)0.0, gravity_adjust);
           } else {
             // ...the node is above the floor, so it is airborne.
-            adjust = max(adjust, gravity_adjust);
+            adjust = std::max(adjust, gravity_adjust);
           }
           _current_velocity -= _gravity * dt;
           // Record the airborne height in case someone else needs it:

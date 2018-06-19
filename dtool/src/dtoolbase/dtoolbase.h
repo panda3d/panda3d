@@ -60,6 +60,12 @@
 #pragma warning (disable : 4577)
 #endif  /* WIN32_VC */
 
+/* Windows likes to define min() and max() macros, which will conflict with
+   std::min() and std::max() respectively, unless we do this: */
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 #ifndef __has_builtin
 #define __has_builtin(x) 0
 #endif
@@ -196,10 +202,6 @@ typedef struct _object PyObject;
 
 #ifdef PHAVE_LIMITS_H
 #include <limits.h>
-#endif
-
-#ifdef PHAVE_MINMAX_H
-#include <minmax.h>
 #endif
 
 #ifdef PHAVE_SYS_TIME_H

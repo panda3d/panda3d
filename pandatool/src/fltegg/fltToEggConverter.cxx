@@ -35,6 +35,8 @@
 #include "eggExternalReference.h"
 #include "string_utils.h"
 
+using std::string;
+
 
 /**
  *

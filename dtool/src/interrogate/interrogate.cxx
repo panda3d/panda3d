@@ -22,6 +22,9 @@
 #include "pystub.h"
 #include <time.h>
 
+using std::cerr;
+using std::string;
+
 CPPParser parser;
 
 Filename output_code_filename;

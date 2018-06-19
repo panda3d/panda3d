@@ -15,7 +15,7 @@
  *
  */
 INLINE Namable::
-Namable(const string &initial_name) :
+Namable(const std::string &initial_name) :
   _name(initial_name)
 {
 }
@@ -24,7 +24,7 @@ Namable(const string &initial_name) :
  *
  */
 INLINE void Namable::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
 }
 
@@ -48,7 +48,7 @@ has_name() const {
 /**
  *
  */
-INLINE const string &Namable::
+INLINE const std::string &Namable::
 get_name() const {
   return _name;
 }
@@ -58,12 +58,12 @@ get_name() const {
  * stream; most Namable derivatives will probably redefine this.
  */
 INLINE void Namable::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
 }
 
 
-INLINE ostream &operator << (ostream &out, const Namable &n) {
+INLINE std::ostream &operator << (std::ostream &out, const Namable &n) {
   n.output(out);
   return out;
 }

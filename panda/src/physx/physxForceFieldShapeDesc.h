@@ -41,7 +41,7 @@ public:
   virtual NxForceFieldShapeDesc *ptr() const = 0;
 
 private:
-  string _name;
+  std::string _name;
 
 protected:
   INLINE PhysxForceFieldShapeDesc();

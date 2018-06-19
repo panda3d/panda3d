@@ -149,7 +149,7 @@ fill_vertices(GeomVertexData *data,
  *
  */
 void STTerrain::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Namable::output(out);
 }
 
@@ -157,7 +157,7 @@ output(ostream &out) const {
  *
  */
 void STTerrain::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << "\n";
 }

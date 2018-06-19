@@ -15,9 +15,11 @@ try:
         import queue
     else:
         import Queue as queue
+except KeyboardInterrupt:
+    raise
 except:
     print("You are either using an incomplete or an old version of Python!")
-    print("Please install the development package of Python 2.x and try again.")
+    print("Please install the development package of Python and try again.")
     exit(1)
 
 from makepandacore import *
@@ -2316,7 +2318,6 @@ DTOOL_CONFIG=[
     ("PHAVE_SYS_MALLOC_H",             'UNDEF',                  'UNDEF'),
     ("PHAVE_ALLOCA_H",                 'UNDEF',                  '1'),
     ("PHAVE_LOCALE_H",                 'UNDEF',                  '1'),
-    ("PHAVE_MINMAX_H",                 '1',                      'UNDEF'),
     ("PHAVE_SSTREAM",                  '1',                      '1'),
     ("PHAVE_NEW",                      '1',                      '1'),
     ("PHAVE_SYS_TYPES_H",              '1',                      '1'),

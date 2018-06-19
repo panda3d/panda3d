@@ -66,12 +66,12 @@ PUBLISHED:
   };
 };
 
-EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEnums::BamEndian be);
-EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamEnums::BamEndian &be);
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamEndian be);
+EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, BamEnums::BamEndian &be);
 
-EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEnums::BamObjectCode boc);
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamObjectCode boc);
 
-EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamEnums::BamTextureMode btm);
-EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamEnums::BamTextureMode &btm);
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, BamEnums::BamTextureMode btm);
+EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, BamEnums::BamTextureMode &btm);
 
 #endif

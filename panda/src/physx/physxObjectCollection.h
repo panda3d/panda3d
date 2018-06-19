@@ -32,7 +32,7 @@ public:
   INLINE T *operator [] (unsigned int index) const;
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 private:
   pvector<PT(T)> _objects;

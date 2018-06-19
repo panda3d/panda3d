@@ -15,6 +15,10 @@
 
 #include "pnmbitio.h"
 #include <assert.h>
+
+using std::istream;
+using std::ostream;
+
 struct bitstream
 {
         istream *inf;

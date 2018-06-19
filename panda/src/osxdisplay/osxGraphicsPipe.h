@@ -24,12 +24,12 @@ class PNMImage;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on the various OSX's.
  */
-class EXPCL_PANDAGL osxGraphicsPipe : public GraphicsPipe {
+class EXPCL_PANDA_OSXDISPLAY osxGraphicsPipe : public GraphicsPipe {
 public:
   osxGraphicsPipe();
   virtual ~osxGraphicsPipe();
 
-  virtual string get_interface_name() const;
+  virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
@@ -39,7 +39,7 @@ private:
   static void release_data(void *info, const void *data, size_t size);
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

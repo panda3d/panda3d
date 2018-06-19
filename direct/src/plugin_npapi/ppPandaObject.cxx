@@ -13,6 +13,8 @@
 
 #include "ppPandaObject.h"
 
+using std::string;
+
 NPClass PPPandaObject::_object_class = {
   NP_CLASS_STRUCT_VERSION,
   &PPPandaObject::NPAllocate,
@@ -304,7 +306,7 @@ identifier_to_string(NPIdentifier ident) {
     // Firefox does, but Safari doesn't appear to use integer identifiers and
     // just sends everything as a string identifier.  So to make things
     // consistent internally, we also send everything as a string.
-    ostringstream strm;
+    std::ostringstream strm;
     strm << browser->intfromidentifier(ident);
     return strm.str();
   }

@@ -227,7 +227,7 @@ get_shading() const {
     if (!first_vertex->has_normal()) {
       first_vertex = this;
     }
-    for (int i = 1; i < get_num_vertices(); i++) {
+    for (size_t i = 1; i < get_num_vertices(); ++i) {
       const EggAttributes *vertex = get_vertex(i);
       if (!vertex->has_normal()) {
         vertex = this;
@@ -244,7 +244,7 @@ get_shading() const {
     if (!first_vertex->has_color()) {
       first_vertex = this;
     }
-    for (int i = 1; i < get_num_vertices(); i++) {
+    for (size_t i = 1; i < get_num_vertices(); ++i) {
       const EggAttributes *vertex = get_vertex(i);
       if (!vertex->has_color()) {
         vertex = this;
@@ -461,9 +461,7 @@ apply_first_attribute() {
 void EggPrimitive::
 post_apply_flat_attribute() {
   if (!empty()) {
-    for (int i = 0; i < (int)size(); i++) {
-      EggVertex *vertex = get_vertex(i);
-
+    for (EggVertex *vertex : _vertices) {
       // Use set_normal() instead of copy_normal(), to avoid getting the
       // morphs--we don't want them here, since we're just putting a bogus
       // value on the normal anyway.
@@ -823,7 +821,7 @@ prepare_remove_vertex(EggVertex *vertex, int i, int n) {
  * indicated output stream in Egg format.
  */
 void EggPrimitive::
-write_body(ostream &out, int indent_level) const {
+write_body(std::ostream &out, int indent_level) const {
   test_vref_integrity();
 
   EggAttributes::write(out, indent_level);
@@ -979,7 +977,7 @@ r_apply_texmats(EggTextureCollection &textures) {
       EggTexture *unique = textures.create_unique_texture(new_texture, ~0);
 
       new_textures.push_back(unique);
-      string uv_name = unique->get_uv_name();
+      std::string uv_name = unique->get_uv_name();
 
       // Now apply the matrix to the vertex UV's.  Create new vertices as
       // necessary.

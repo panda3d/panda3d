@@ -28,8 +28,8 @@ public:
   P3DFileDownload();
   P3DFileDownload(const P3DFileDownload &copy);
 
-  bool set_filename(const string &filename);
-  inline const string &get_filename() const;
+  bool set_filename(const std::string &filename);
+  inline const std::string &get_filename() const;
 
 protected:
   virtual bool open_file();
@@ -42,7 +42,7 @@ protected:
   ofstream _file;
 
 private:
-  string _filename;
+  std::string _filename;
 };
 
 #include "p3dFileDownload.I"

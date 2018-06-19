@@ -31,16 +31,16 @@
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS IDecompressStream : public istream {
+class EXPCL_PANDA_EXPRESS IDecompressStream : public std::istream {
 PUBLISHED:
   INLINE IDecompressStream();
-  INLINE explicit IDecompressStream(istream *source, bool owns_source);
+  INLINE explicit IDecompressStream(std::istream *source, bool owns_source);
 
 #if _MSC_VER >= 1800
   INLINE IDecompressStream(const IDecompressStream &copy) = delete;
 #endif
 
-  INLINE IDecompressStream &open(istream *source, bool owns_source);
+  INLINE IDecompressStream &open(std::istream *source, bool owns_source);
   INLINE IDecompressStream &close();
 
 private:
@@ -57,17 +57,17 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_PANDAEXPRESS OCompressStream : public ostream {
+class EXPCL_PANDA_EXPRESS OCompressStream : public std::ostream {
 PUBLISHED:
   INLINE OCompressStream();
-  INLINE explicit OCompressStream(ostream *dest, bool owns_dest,
+  INLINE explicit OCompressStream(std::ostream *dest, bool owns_dest,
                                   int compression_level = 6);
 
 #if _MSC_VER >= 1800
   INLINE OCompressStream(const OCompressStream &copy) = delete;
 #endif
 
-  INLINE OCompressStream &open(ostream *dest, bool owns_dest,
+  INLINE OCompressStream &open(std::ostream *dest, bool owns_dest,
                                int compression_level = 6);
   INLINE OCompressStream &close();
 

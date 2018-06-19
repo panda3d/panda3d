@@ -40,7 +40,7 @@ is_fully_specified() const {
  *
  */
 void CPPClassTemplateParameter::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (complete) {
     out << "class";
     if (_packed) {

@@ -25,6 +25,11 @@
 #include "executionEnvironment.h"
 #include "pset.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 VirtualFileSystem *VirtualFileSystem::_global_ptr = nullptr;
 
 

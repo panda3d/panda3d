@@ -35,7 +35,7 @@ class VertexDataSaveBlock;
  */
 class EXPCL_PANDA_GOBJ VertexDataSaveFile : public SimpleAllocator {
 public:
-  VertexDataSaveFile(const Filename &directory, const string &prefix,
+  VertexDataSaveFile(const Filename &directory, const std::string &prefix,
                      size_t max_size);
   ~VertexDataSaveFile();
 

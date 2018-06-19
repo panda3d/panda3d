@@ -34,7 +34,7 @@ TypeHandle MilesAudioSample::_type_handle;
  */
 MilesAudioSample::
 MilesAudioSample(MilesAudioManager *manager, MilesAudioManager::SoundData *sd,
-                 const string &file_name) :
+                 const std::string &file_name) :
   MilesAudioSound(manager, file_name),
   _sd(sd)
 {
@@ -176,8 +176,8 @@ set_volume(PN_stdfloat volume) {
 
     // Change to Miles volume, range 0 to 1.0:
     F32 milesVolume = volume;
-    milesVolume = min(milesVolume, 1.0f);
-    milesVolume = max(milesVolume, 0.0f);
+    milesVolume = std::min(milesVolume, 1.0f);
+    milesVolume = std::max(milesVolume, 0.0f);
 
     // Convert balance of -1.0..1.0 to 0-1.0:
     F32 milesBalance = (F32)((_balance + 1.0f) * 0.5f);
@@ -269,7 +269,7 @@ cleanup() {
  *
  */
 void MilesAudioSample::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name() << " " << status();
   if (!_sd.is_null()) {
     out << " " << (_sd->_raw_data.size() + 1023) / 1024 << "K";

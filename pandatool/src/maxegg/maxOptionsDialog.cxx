@@ -593,7 +593,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
     _stprintf(_short_name, _T("%.*s..."), sizeof(_short_name)-4, temp);
   else {
     _tcscpy(_short_name, temp);
-    _short_name[_tcslen(_short_name) - 4] = nullptr; //Cut off the .egg
+    _short_name[_tcslen(_short_name) - 4] = 0; //Cut off the .egg
   }
 
   _start_frame = newSF;

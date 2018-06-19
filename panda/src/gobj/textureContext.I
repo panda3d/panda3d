@@ -123,7 +123,7 @@ mark_loaded() {
   // _data_size_bytes = _data->get_texture_size_bytes();
   _properties_modified = _texture->get_properties_modified();
   _image_modified = _texture->get_image_modified();
-  update_modified(max(_properties_modified, _image_modified));
+  update_modified(std::max(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
   set_resident(true);
@@ -137,7 +137,7 @@ INLINE void TextureContext::
 mark_simple_loaded() {
   _properties_modified = _texture->get_properties_modified();
   _simple_image_modified = _texture->get_simple_image_modified();
-  update_modified(max(_properties_modified, _simple_image_modified));
+  update_modified(std::max(_properties_modified, _simple_image_modified));
 
   // The texture's not exactly resident now, but some part of it is.
   set_resident(true);

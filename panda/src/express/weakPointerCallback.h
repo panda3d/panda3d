@@ -21,7 +21,7 @@
  * get an immediate callback from a WeakPointerTo object when its referenced
  * pointer is deleted.
  */
-class EXPCL_PANDAEXPRESS WeakPointerCallback {
+class EXPCL_PANDA_EXPRESS WeakPointerCallback {
 public:
   virtual ~WeakPointerCallback();
   virtual void wp_callback(void *pointer)=0;

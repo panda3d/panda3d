@@ -88,7 +88,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
  *
  */
 void EggSliderData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Slider " << get_name()
     << " (models:";

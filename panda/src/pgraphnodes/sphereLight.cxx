@@ -50,7 +50,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 SphereLight::
-SphereLight(const string &name) :
+SphereLight(const std::string &name) :
   PointLight(name)
 {
 }
@@ -92,7 +92,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void SphereLight::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PointLight::write(out, indent_level);
   indent(out, indent_level) << *this << ":\n";
   indent(out, indent_level + 2)

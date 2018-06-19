@@ -31,12 +31,12 @@
   NotifyCategoryDecl(egldisplay, EXPCL_PANDAGLES2, EXPTP_PANDAGLES2);
 
   extern EXPCL_PANDAGLES2 void init_libegldisplay();
-  extern EXPCL_PANDAGLES2 const string get_egl_error_string(int error);
+  extern EXPCL_PANDAGLES2 const std::string get_egl_error_string(int error);
 #else
   NotifyCategoryDecl(egldisplay, EXPCL_PANDAGLES, EXPTP_PANDAGLES);
 
   extern EXPCL_PANDAGLES void init_libegldisplay();
-  extern EXPCL_PANDAGLES const string get_egl_error_string(int error);
+  extern EXPCL_PANDAGLES const std::string get_egl_error_string(int error);
 #endif
 
 #endif

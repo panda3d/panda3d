@@ -26,7 +26,7 @@ TypeHandle MovingPartBase::_type_handle;
  *
  */
 MovingPartBase::
-MovingPartBase(PartGroup *parent, const string &name) :
+MovingPartBase(PartGroup *parent, const std::string &name) :
   PartGroup(parent, name),
   _num_effective_channels(0),
   _effective_control(nullptr)
@@ -70,7 +70,7 @@ get_forced_channel() const {
  * Writes a brief description of the channel and all of its descendants.
  */
 void MovingPartBase::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_value_type() << " " << get_name();
   if (_children.empty()) {
     out << "\n";
@@ -86,7 +86,7 @@ write(ostream &out, int indent_level) const {
  * with their values.
  */
 void MovingPartBase::
-write_with_value(ostream &out, int indent_level) const {
+write_with_value(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_value_type() << " " << get_name() << "\n";
   indent(out, indent_level);
   output_value(out);

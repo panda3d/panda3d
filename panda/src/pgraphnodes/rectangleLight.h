@@ -25,14 +25,14 @@
  */
 class EXPCL_PANDA_PGRAPHNODES RectangleLight : public LightLensNode {
 PUBLISHED:
-  explicit RectangleLight(const string &name);
+  explicit RectangleLight(const std::string &name);
 
 protected:
   RectangleLight(const RectangleLight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
   INLINE const LColor &get_specular_color() const final;

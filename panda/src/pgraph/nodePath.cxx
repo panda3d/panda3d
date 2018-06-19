@@ -73,6 +73,12 @@
 #include "datagramBuffer.h"
 #include "weakNodePath.h"
 
+using std::max;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 7000,
 // need to increase stack size.
 int NodePath::_max_search_depth = 7000;

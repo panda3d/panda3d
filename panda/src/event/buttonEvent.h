@@ -87,7 +87,7 @@ public:
   INLINE ButtonEvent();
   INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE ButtonEvent(const wstring &candidate_string, size_t highlight_start,
+  INLINE ButtonEvent(const std::wstring &candidate_string, size_t highlight_start,
                      size_t highlight_end, size_t cursor_pos);
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
@@ -98,7 +98,7 @@ public:
 
   INLINE bool update_mods(ModifierButtons &mods) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   void write_datagram(Datagram &dg) const;
   void read_datagram(DatagramIterator &scan);
@@ -112,7 +112,7 @@ public:
   int _keycode;
 
   // _candidate_string will be filled in if type is T_candidate.
-  wstring _candidate_string;
+  std::wstring _candidate_string;
   size_t _highlight_start;
   size_t _highlight_end;
   size_t _cursor_pos;
@@ -127,7 +127,7 @@ public:
   double _time;
 };
 
-INLINE ostream &operator << (ostream &out, const ButtonEvent &be) {
+INLINE std::ostream &operator << (std::ostream &out, const ButtonEvent &be) {
   be.output(out);
   return out;
 }

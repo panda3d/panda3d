@@ -24,6 +24,10 @@
 
 #include "indent.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle BoundingVolume::_type_handle;
 
 

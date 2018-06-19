@@ -32,7 +32,7 @@ PUBLISHED:
   INLINE double get_y() const;
   INLINE bool get_in_window() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   MAKE_PROPERTY(x, get_x);
   MAKE_PROPERTY(y, get_y);
@@ -44,7 +44,7 @@ public:
   double _ypos;
 };
 
-INLINE ostream &operator << (ostream &out, const MouseData &md);
+INLINE std::ostream &operator << (std::ostream &out, const MouseData &md);
 
 #include "mouseData.I"
 

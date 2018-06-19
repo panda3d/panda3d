@@ -21,6 +21,10 @@
 #include "indirectLess.h"
 #include "lightMutexHolder.h"
 
+using std::max;
+using std::min;
+using std::move;
+
 GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = nullptr;
 TypeHandle GeomVertexArrayFormat::_type_handle;
 
@@ -460,7 +464,7 @@ count_unused_space() const {
  *
  */
 void GeomVertexArrayFormat::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Columns::const_iterator ci;
   int last_pos = 0;
   out << "[";
@@ -484,7 +488,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexArrayFormat::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Array format (stride = " << get_stride() << "):\n";
   consider_sort_columns();
@@ -503,7 +507,7 @@ write(ostream &out, int indent_level) const {
  *
  */
 void GeomVertexArrayFormat::
-write_with_data(ostream &out, int indent_level,
+write_with_data(std::ostream &out, int indent_level,
                 const GeomVertexArrayData *array_data) const {
   consider_sort_columns();
   int num_rows = array_data->get_num_rows();
@@ -536,7 +540,7 @@ write_with_data(ostream &out, int indent_level,
  * the columns in memory, as understood by Python's struct module.  If pad is
  * true, extra padding bytes are added to the end as 'x' characters as needed.
  */
-string GeomVertexArrayFormat::
+std::string GeomVertexArrayFormat::
 get_format_string(bool pad) const {
   consider_sort_columns();
 
@@ -553,9 +557,7 @@ get_format_string(bool pad) const {
   int fi = 0;
   int offset = 0;
 
-  for (int ci = 0; ci < get_num_columns(); ++ci) {
-    const GeomVertexColumn *column = get_column(ci);
-
+  for (const GeomVertexColumn *column : _columns) {
     if (offset < column->get_start()) {
       // Add padding bytes to fill the gap.
       int pad = column->get_start() - offset;
@@ -616,7 +618,7 @@ get_format_string(bool pad) const {
     memset((void*) (fmt + fi), 'x', pad);
   }
 
-  string fmt_string (fmt);
+  std::string fmt_string (fmt);
   free(fmt);
   return fmt_string;
 }

@@ -23,7 +23,7 @@
  * the file in question when it is deleted.  It is not responsible for
  * creating, opening, or closing the file, however.
  */
-class EXPCL_PANDAEXPRESS TemporaryFile : public FileReference {
+class EXPCL_PANDA_EXPRESS TemporaryFile : public FileReference {
 PUBLISHED:
   INLINE explicit TemporaryFile(const Filename &filename);
   virtual ~TemporaryFile();

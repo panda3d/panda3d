@@ -77,6 +77,10 @@
 #define SDK_VERSION(major,minor) tostring(major) << "." << tostring(minor)
 #define DIRECTX_SDK_VERSION  SDK_VERSION (_DXSDK_PRODUCT_MAJOR, _DXSDK_PRODUCT_MINOR) << "." << SDK_VERSION (_DXSDK_BUILD_MAJOR, _DXSDK_BUILD_MINOR)
 
+using std::endl;
+using std::max;
+using std::min;
+
 TypeHandle DXGraphicsStateGuardian9::_type_handle;
 
 D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
@@ -3312,7 +3316,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
   // PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
 
-  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, D3DLIGHT9()));
+  std::pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, D3DLIGHT9()));
   D3DLIGHT9 &fdata = (*lookup.first).second;
   if (lookup.second) {
     // Get the light in "world coordinates" (actually, view coordinates).
@@ -4548,7 +4552,7 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     // release graphics buffer surfaces
     {
       wdxGraphicsBuffer9 *graphics_buffer;
-      list <wdxGraphicsBuffer9 **>::iterator graphics_buffer_iterator;
+      std::list <wdxGraphicsBuffer9 **>::iterator graphics_buffer_iterator;
 
       for (graphics_buffer_iterator = _graphics_buffer_list.begin( ); graphics_buffer_iterator != _graphics_buffer_list.end( ); graphics_buffer_iterator++)
       {
@@ -5372,7 +5376,7 @@ atexit_function(void) {
  * Profile.
  */
 bool DXGraphicsStateGuardian9::
-get_supports_cg_profile(const string &name) const {
+get_supports_cg_profile(const std::string &name) const {
 #ifndef HAVE_CG
   return false;
 #else
@@ -5400,7 +5404,7 @@ set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
 #endif // HAVE_CG
 }
 
-typedef string KEY;
+typedef std::string KEY;
 
 typedef struct _KEY_ELEMENT
 {

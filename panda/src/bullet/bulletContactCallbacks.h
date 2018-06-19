@@ -61,7 +61,7 @@ contact_added_callback(btManifoldPoint &cp,
     PT(PandaNode) node1 = (PandaNode *)obj1->getUserPointer();
 #endif
 
-    bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << endl;
+    bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << std::endl;
 
     // Gather persistent data
     UserPersistentData *data = new UserPersistentData();
@@ -124,7 +124,7 @@ contact_processed_callback(btManifoldPoint &cp,
 static bool
 contact_destroyed_callback(void *userPersistentData) {
 
-  bullet_cat.debug() << "contact removed: " << userPersistentData << endl;
+  bullet_cat.debug() << "contact removed: " << userPersistentData << std::endl;
 
   UserPersistentData *data = (UserPersistentData *)userPersistentData;
 

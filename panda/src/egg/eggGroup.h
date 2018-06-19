@@ -31,10 +31,10 @@
  * The main glue of the egg hierarchy, this corresponds to the <Group>,
  * <Instance>, and <Joint> type nodes.
  */
-class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
+class EXPCL_PANDA_EGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
-  typedef pmap<string, string> TagData;
+  typedef pmap<std::string, std::string> TagData;
 
   // These bits are all stored somewhere in _flags.
   enum GroupType {
@@ -132,20 +132,20 @@ PUBLISHED:
     BO_one_minus_alpha_scale,
   };
 
-  explicit EggGroup(const string &name = "");
+  explicit EggGroup(const std::string &name = "");
   EggGroup(const EggGroup &copy);
   EggGroup &operator = (const EggGroup &copy);
   ~EggGroup();
 
-  virtual void write(ostream &out, int indent_level) const;
-  void write_billboard_flags(ostream &out, int indent_level) const;
-  void write_collide_flags(ostream &out, int indent_level) const;
-  void write_model_flags(ostream &out, int indent_level) const;
-  void write_switch_flags(ostream &out, int indent_level) const;
-  void write_object_types(ostream &out, int indent_level) const;
-  void write_decal_flags(ostream &out, int indent_level) const;
-  void write_tags(ostream &out, int indent_level) const;
-  void write_render_mode(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
+  void write_billboard_flags(std::ostream &out, int indent_level) const;
+  void write_collide_flags(std::ostream &out, int indent_level) const;
+  void write_model_flags(std::ostream &out, int indent_level) const;
+  void write_switch_flags(std::ostream &out, int indent_level) const;
+  void write_object_types(std::ostream &out, int indent_level) const;
+  void write_decal_flags(std::ostream &out, int indent_level) const;
+  void write_tags(std::ostream &out, int indent_level) const;
+  void write_render_mode(std::ostream &out, int indent_level) const;
 
   virtual bool is_joint() const;
 
@@ -177,10 +177,10 @@ PUBLISHED:
   INLINE void set_collide_flags(int flags);
   INLINE CollideFlags get_collide_flags() const;
 
-  INLINE void set_collision_name(const string &collision_name);
+  INLINE void set_collision_name(const std::string &collision_name);
   INLINE void clear_collision_name();
   INLINE bool has_collision_name() const;
-  INLINE const string &get_collision_name() const;
+  INLINE const std::string &get_collision_name() const;
 
   INLINE void set_dcs_type(DCSType type);
   INLINE DCSType get_dcs_type() const;
@@ -195,13 +195,13 @@ PUBLISHED:
   INLINE void set_switch_fps(double fps);
   INLINE double get_switch_fps() const;
 
-  INLINE void add_object_type(const string &object_type);
+  INLINE void add_object_type(const std::string &object_type);
   INLINE void clear_object_types();
   INLINE int get_num_object_types() const;
-  INLINE string get_object_type(int index) const;
+  INLINE std::string get_object_type(int index) const;
   MAKE_SEQ(get_object_types, get_num_object_types, get_object_type);
-  bool has_object_type(const string &object_type) const;
-  bool remove_object_type(const string &object_type);
+  bool has_object_type(const std::string &object_type) const;
+  bool remove_object_type(const std::string &object_type);
 
   INLINE void set_model_flag(bool flag);
   INLINE bool get_model_flag() const;
@@ -263,10 +263,10 @@ PUBLISHED:
   INLINE bool has_lod() const;
   INLINE const EggSwitchCondition &get_lod() const;
 
-  INLINE void set_tag(const string &key, const string &value);
-  INLINE string get_tag(const string &key) const;
-  INLINE bool has_tag(const string &key) const;
-  INLINE void clear_tag(const string &key);
+  INLINE void set_tag(const std::string &key, const std::string &value);
+  INLINE std::string get_tag(const std::string &key) const;
+  INLINE bool has_tag(const std::string &key) const;
+  INLINE void clear_tag(const std::string &key);
 
   INLINE const EggTransform &get_default_pose() const;
   INLINE EggTransform &modify_default_pose();
@@ -355,20 +355,20 @@ PUBLISHED:
   void remove_group_ref(int n);
   void clear_group_refs();
 
-  static GroupType string_group_type(const string &strval);
-  static DartType string_dart_type(const string &strval);
-  static DCSType string_dcs_type(const string &strval);
-  static BillboardType string_billboard_type(const string &strval);
-  static CollisionSolidType string_cs_type(const string &strval);
-  static CollideFlags string_collide_flags(const string &strval);
-  static BlendMode string_blend_mode(const string &strval);
-  static BlendOperand string_blend_operand(const string &strval);
+  static GroupType string_group_type(const std::string &strval);
+  static DartType string_dart_type(const std::string &strval);
+  static DCSType string_dcs_type(const std::string &strval);
+  static BillboardType string_billboard_type(const std::string &strval);
+  static CollisionSolidType string_cs_type(const std::string &strval);
+  static CollideFlags string_collide_flags(const std::string &strval);
+  static BlendMode string_blend_mode(const std::string &strval);
+  static BlendOperand string_blend_operand(const std::string &strval);
 
 public:
   virtual EggTransform *as_transform();
 
 protected:
-  void write_vertex_ref(ostream &out, int indent_level) const;
+  void write_vertex_ref(std::ostream &out, int indent_level) const;
   virtual bool egg_start_parse_body();
   virtual void adjust_under();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
@@ -417,7 +417,7 @@ private:
   LColor _blend_color;
   LPoint3d _billboard_center;
   vector_string _object_types;
-  string _collision_name;
+  std::string _collision_name;
   double _fps;
   PT(EggSwitchCondition) _lod;
   TagData _tag_data;
@@ -459,14 +459,14 @@ private:
   static TypeHandle _type_handle;
 };
 
-ostream &operator << (ostream &out, EggGroup::GroupType t);
-ostream &operator << (ostream &out, EggGroup::DartType t);
-ostream &operator << (ostream &out, EggGroup::DCSType t);
-ostream &operator << (ostream &out, EggGroup::BillboardType t);
-ostream &operator << (ostream &out, EggGroup::CollisionSolidType t);
-ostream &operator << (ostream &out, EggGroup::CollideFlags t);
-ostream &operator << (ostream &out, EggGroup::BlendMode t);
-ostream &operator << (ostream &out, EggGroup::BlendOperand t);
+std::ostream &operator << (std::ostream &out, EggGroup::GroupType t);
+std::ostream &operator << (std::ostream &out, EggGroup::DartType t);
+std::ostream &operator << (std::ostream &out, EggGroup::DCSType t);
+std::ostream &operator << (std::ostream &out, EggGroup::BillboardType t);
+std::ostream &operator << (std::ostream &out, EggGroup::CollisionSolidType t);
+std::ostream &operator << (std::ostream &out, EggGroup::CollideFlags t);
+std::ostream &operator << (std::ostream &out, EggGroup::BlendMode t);
+std::ostream &operator << (std::ostream &out, EggGroup::BlendOperand t);
 
 
 #include "eggGroup.I"

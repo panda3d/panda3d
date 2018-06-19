@@ -99,7 +99,7 @@ set_volume(PN_stdfloat volume) const {
  *
  */
 void AudioVolumeAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "off";

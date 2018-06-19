@@ -214,8 +214,8 @@ has_any_of(int low_bit, int size) const {
   } else {
     int hi_portion = low_bit + size - half_bits;
     int lo_portion = size - hi_portion;
-    return (_hi.has_any_of(0, hi_portion) << lo_portion) ||
-      _lo.has_any_of(low_bit, lo_portion);
+    return _hi.has_any_of(0, hi_portion)
+        || _lo.has_any_of(low_bit, lo_portion);
   }
 }
 
@@ -232,8 +232,8 @@ has_all_of(int low_bit, int size) const {
   } else {
     int hi_portion = low_bit + size - half_bits;
     int lo_portion = size - hi_portion;
-    return (_hi.has_all_of(0, hi_portion) << lo_portion) &&
-      _lo.has_all_of(low_bit, lo_portion);
+    return _hi.has_all_of(0, hi_portion)
+        && _lo.has_all_of(low_bit, lo_portion);
   }
 }
 
@@ -442,7 +442,7 @@ clear() {
  */
 template<class BMType>
 void DoubleBitMask<BMType>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   output_hex(out);
 }
 
@@ -452,7 +452,7 @@ output(ostream &out) const {
  */
 template<class BMType>
 void DoubleBitMask<BMType>::
-output_binary(ostream &out, int spaces_every) const {
+output_binary(std::ostream &out, int spaces_every) const {
   _hi.output_binary(out);
   out << ' ';
   _lo.output_binary(out);
@@ -464,7 +464,7 @@ output_binary(ostream &out, int spaces_every) const {
  */
 template<class BMType>
 void DoubleBitMask<BMType>::
-output_hex(ostream &out, int spaces_every) const {
+output_hex(std::ostream &out, int spaces_every) const {
   _hi.output_hex(out);
   out << ' ';
   _lo.output_hex(out);
@@ -476,7 +476,7 @@ output_hex(ostream &out, int spaces_every) const {
  */
 template<class BMType>
 void DoubleBitMask<BMType>::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
@@ -663,7 +663,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 template<class BMType>
 void DoubleBitMask<BMType>::
 init_type() {
-  ostringstream str;
+  std::ostringstream str;
   str << "DoubleBitMask" << num_bits;
   register_type(_type_handle, str.str());
 }

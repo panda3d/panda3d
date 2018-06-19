@@ -23,7 +23,7 @@ CullBinAttrib() {
  * Returns the name of the bin this attribute specifies.  If this is the empty
  * string, it refers to the default bin.
  */
-INLINE const string &CullBinAttrib::
+INLINE const std::string &CullBinAttrib::
 get_bin_name() const {
   return _bin_name;
 }

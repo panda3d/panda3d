@@ -88,7 +88,7 @@ PUBLISHED:
   void attach_body(const OdeBody &body, int index);
   void detach();
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   INLINE int compare_to(const OdeJoint &other) const;
   INLINE bool operator == (const OdeJoint &other) const;
   operator bool () const;

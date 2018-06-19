@@ -402,7 +402,7 @@ clear() {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (num_bits >= 40) {
     output_hex(out);
   } else {
@@ -415,7 +415,7 @@ output(ostream &out) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output_binary(ostream &out, int spaces_every) const {
+output_binary(std::ostream &out, int spaces_every) const {
   for (int i = num_bits - 1; i >= 0; i--) {
     if (spaces_every != 0 && ((i % spaces_every) == spaces_every - 1)) {
       out << ' ';
@@ -430,7 +430,7 @@ output_binary(ostream &out, int spaces_every) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output_hex(ostream &out, int spaces_every) const {
+output_hex(std::ostream &out, int spaces_every) const {
   int num_digits = (num_bits + 3) / 4;
 
   for (int i = num_digits - 1; i >= 0; i--) {
@@ -452,7 +452,7 @@ output_hex(ostream &out, int spaces_every) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
@@ -646,7 +646,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-init_type(const string &name) {
+init_type(const std::string &name) {
   register_type(_type_handle, name);
 }
 

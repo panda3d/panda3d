@@ -28,7 +28,7 @@ getTime() {
 INLINE void ProfileTimer::
 mark(const char* tag) {
   if (!_entries) {
-    cerr << "ProfileTimer::mark !_entries" << endl;
+    std::cerr << "ProfileTimer::mark !_entries" << std::endl;
     exit(1);
   }
   if (_entryCount < _maxEntries-1) {

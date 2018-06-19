@@ -24,6 +24,9 @@
 
 #include <math.h>
 
+using std::ostream;
+using std::string;
+
 TypeHandle HermiteCurve::_type_handle;
 
 static const LVecBase3 zerovec_3 = LVecBase3(0.0f, 0.0f, 0.0f);
@@ -246,7 +249,7 @@ HermiteCurve(const ParametricCurve &nc) {
   if (!nc.convert_to_hermite(this)) {
     parametrics_cat->warning()
       << "Cannot make a Hermite from the indicated curve."
-      << endl;
+      << std::endl;
   }
 }
 
@@ -291,7 +294,7 @@ insert_cv(PN_stdfloat t) {
     return n;
   }
 
-  t = min(max(t, (PN_stdfloat)0.0), get_max_t());
+  t = std::min(std::max(t, (PN_stdfloat)0.0), get_max_t());
 
   int n = find_cv(t);
   nassertr(n+1<get_num_cvs(), 0);
@@ -648,7 +651,7 @@ rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
                  int, PN_stdfloat, const LVecBase4 &,
                  int, PN_stdfloat, const LVecBase4 &,
                  int, PN_stdfloat, const LVecBase4 &) {
-  cerr << "rebuild_curveseg not implemented for this curve type.\n";
+  std::cerr << "rebuild_curveseg not implemented for this curve type.\n";
   return false;
 }
 

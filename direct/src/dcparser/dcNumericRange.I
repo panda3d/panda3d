@@ -125,7 +125,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 template <class NUM>
 void DCNumericRange<NUM>::
-output(ostream &out, Number divisor) const {
+output(std::ostream &out, Number divisor) const {
   if (!_ranges.empty()) {
     typename Ranges::const_iterator ri;
     ri = _ranges.begin();
@@ -145,7 +145,7 @@ output(ostream &out, Number divisor) const {
  */
 template <class NUM>
 void DCNumericRange<NUM>::
-output_char(ostream &out, Number divisor) const {
+output_char(std::ostream &out, Number divisor) const {
   if (divisor != 1) {
     output(out, divisor);
 
@@ -248,7 +248,7 @@ get_max(int n) const {
  */
 template <class NUM>
 INLINE void DCNumericRange<NUM>::
-output_minmax(ostream &out, Number divisor, const MinMax &range) const {
+output_minmax(std::ostream &out, Number divisor, const MinMax &range) const {
   if (divisor == 1) {
     if (range._min == range._max) {
       out << range._min;
@@ -271,12 +271,12 @@ output_minmax(ostream &out, Number divisor, const MinMax &range) const {
  */
 template <class NUM>
 INLINE void DCNumericRange<NUM>::
-output_minmax_char(ostream &out, const MinMax &range) const {
+output_minmax_char(std::ostream &out, const MinMax &range) const {
   if (range._min == range._max) {
-    DCPacker::enquote_string(out, '\'', string(1, range._min));
+    DCPacker::enquote_string(out, '\'', std::string(1, range._min));
   } else {
-    DCPacker::enquote_string(out, '\'', string(1, range._min));
+    DCPacker::enquote_string(out, '\'', std::string(1, range._min));
     out << "-";
-    DCPacker::enquote_string(out, '\'', string(1, range._max));
+    DCPacker::enquote_string(out, '\'', std::string(1, range._max));
   }
 }

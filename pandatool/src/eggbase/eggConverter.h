@@ -24,13 +24,13 @@
  */
 class EggConverter : public EggFilter {
 public:
-  EggConverter(const string &format_name,
-               const string &preferred_extension = string(),
+  EggConverter(const std::string &format_name,
+               const std::string &preferred_extension = std::string(),
                bool allow_last_param = true,
                bool allow_stdout = true);
 
 protected:
-  string _format_name;
+  std::string _format_name;
 };
 
 #endif

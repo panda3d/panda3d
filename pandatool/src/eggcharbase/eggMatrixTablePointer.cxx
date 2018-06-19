@@ -17,6 +17,8 @@
 #include "eggXfmAnimData.h"
 #include "eggXfmSAnim.h"
 
+using std::string;
+
 TypeHandle EggMatrixTablePointer::_type_handle;
 
 /**

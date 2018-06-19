@@ -61,12 +61,12 @@ public:
   ~PreparedGraphicsObjects();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   void set_graphics_memory_limit(size_t limit);
   INLINE size_t get_graphics_memory_limit() const;
-  void show_graphics_memory_lru(ostream &out) const;
-  void show_residency_trackers(ostream &out) const;
+  void show_graphics_memory_lru(std::ostream &out) const;
+  void show_residency_trackers(std::ostream &out) const;
 
   INLINE void release_all();
   INLINE void release_all_now(GraphicsStateGuardianBase *gsg);
@@ -218,7 +218,7 @@ public:
 private:
   void do_release_now(GraphicsStateGuardianBase *gsg);
 
-  static string init_name();
+  static std::string init_name();
 
 private:
   typedef phash_set<TextureContext *, pointer_hash> Textures;
@@ -264,7 +264,7 @@ private:
                                    size_t &buffer_cache_size);
 
   ReMutex _lock;
-  string _name;
+  std::string _name;
   Textures _prepared_textures, _released_textures;
   EnqueuedTextures _enqueued_textures;
   PreparedSamplers _prepared_samplers;

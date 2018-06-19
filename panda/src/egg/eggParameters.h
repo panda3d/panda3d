@@ -29,7 +29,7 @@
  * process it, and write the egg file out again before resetting the
  * parameters again.
  */
-class EXPCL_PANDAEGG EggParameters {
+class EXPCL_PANDA_EGG EggParameters {
 public:
   constexpr EggParameters() = default;
 
@@ -54,6 +54,6 @@ public:
   double _table_threshold = 0.0001;
 };
 
-extern EXPCL_PANDAEGG EggParameters *egg_parameters;
+extern EXPCL_PANDA_EGG EggParameters *egg_parameters;
 
 #endif

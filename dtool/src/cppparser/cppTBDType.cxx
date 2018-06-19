@@ -56,7 +56,7 @@ is_tbd() const {
  * include any scoping operators or template parameters, so it may not be a
  * compilable reference to the type.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_simple_name() const {
   return _ident->get_simple_name();
 }
@@ -65,7 +65,7 @@ get_simple_name() const {
  * Returns the compilable, correct name for this type within the indicated
  * scope.  If the scope is NULL, within the scope the type is declared in.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
@@ -74,7 +74,7 @@ get_local_name(CPPScope *scope) const {
  * Returns the compilable, correct name for the type, with completely explicit
  * scoping.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
@@ -128,7 +128,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTBDType::
-output(ostream &out, int, CPPScope *, bool) const {
+output(std::ostream &out, int, CPPScope *, bool) const {
   out /* << "typename " */ << *_ident;
 }
 

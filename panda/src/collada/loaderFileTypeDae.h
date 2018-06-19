@@ -25,9 +25,9 @@ class EXPCL_COLLADA LoaderFileTypeDae : public LoaderFileType {
 public:
   LoaderFileTypeDae();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
-  virtual string get_additional_extensions() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
+  virtual std::string get_additional_extensions() const;
   virtual bool supports_compressed() const;
 
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
