@@ -62,6 +62,7 @@ import direct.directutil.LargeBlobSenderConsts
 import direct.directutil.Mopath
 import direct.directutil.Verify
 import direct.directutil.WeightedChoice
+import direct.distributed.AIRepository
 import direct.distributed.AsyncRequest
 import direct.distributed.CRCache
 import direct.distributed.CRDataCache
