@@ -2,6 +2,8 @@ from direct.distributed.ClockDelta import *
 from panda3d.core import *
 from direct.distributed import DistributedObjectAI
 
+import base64
+
 class TimeManagerAI(DistributedObjectAI.DistributedObjectAI):
     notify = DirectNotifyGlobal.directNotify.newCategory("TimeManagerAI")
 
@@ -21,3 +23,19 @@ class TimeManagerAI(DistributedObjectAI.DistributedObjectAI):
         print("requestServerTime from %s" % (requesterId))
         self.sendUpdateToAvatarId(requesterId, "serverTime",
                                   [context, timestamp])
+
+    def setStackDump(self, dump):
+        self.notify.debug('Stack dump: %s' % fastRepr(dump))
+        maxLen = 900
+        dataLeft = base64.b64encode(dump)
+        index = 0
+        while dataLeft:
+            if len(dataLeft) >= maxLen:
+                data = dataLeft[:maxLen]
+                dataLeft = dataLeft[maxLen:]
+            else:
+                data = dataLeft
+                dataLeft = None
+            index += 1
+        print(data)
+        return
