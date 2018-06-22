@@ -276,10 +276,6 @@ do_sync_p2b(PN_stdfloat dt, int num_substeps) {
 void BulletWorld::
 do_sync_b2p() {
 
-  for (BulletVehicle *vehicle : _vehicles) {
-    vehicle->do_sync_b2p();
-  }
-
   for (BulletRigidBodyNode *body : _bodies) {
     body->do_sync_b2p();
   }
@@ -294,6 +290,10 @@ do_sync_b2p() {
 
   for (BulletBaseCharacterControllerNode *character : _characters) {
     character->do_sync_b2p();
+  }
+
+  for (BulletVehicle *vehicle : _vehicles) {
+    vehicle->do_sync_b2p();
   }
 }
 
