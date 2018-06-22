@@ -158,6 +158,16 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
+#define Define_Dtool_FreeInstanceRef_Private(CLASS_NAME,CNAME)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
+    if (((Dtool_PyInstDef *)self)->_memory_rules) {\
+      unref_delete((ReferenceCount *)(CNAME *)DtoolInstance_VOID_PTR(self));\
+    }\
+  }\
+  Py_TYPE(self)->tp_free(self);\
+}
+
 #define Define_Dtool_Simple_FreeInstance(CLASS_NAME, CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   ((Dtool_InstDef_##CLASS_NAME *)self)->_value.~##CLASS_NAME();\
@@ -292,7 +302,7 @@ Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 #define Define_Module_ClassRef_Private(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
+Define_Dtool_FreeInstanceRef_Private(CLASS_NAME,CNAME)\
 Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 #define Define_Module_ClassRef(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
