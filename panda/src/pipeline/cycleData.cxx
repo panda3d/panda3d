@@ -13,6 +13,9 @@
 
 #include "cycleData.h"
 
+#ifdef DO_PIPELINING
+TypeHandle CycleData::_type_handle;
+#endif
 
 /**
  *
