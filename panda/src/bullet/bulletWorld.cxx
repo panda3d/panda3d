@@ -271,10 +271,6 @@ do_sync_p2b(PN_stdfloat dt, int num_substeps) {
 void BulletWorld::
 do_sync_b2p() {
 
-  for (int i=0; i < _vehicles.size(); i++) {
-    _vehicles[i]->do_sync_b2p();
-  }
-
   for (int i=0; i < _bodies.size(); i++) {
     _bodies[i]->do_sync_b2p();
   }
@@ -289,6 +285,10 @@ do_sync_b2p() {
 
   for (int i=0; i < _characters.size(); i++) {
     _characters[i]->do_sync_b2p();
+  }
+
+  for (int i=0; i < _vehicles.size(); i++) {
+    _vehicles[i]->do_sync_b2p();
   }
 }
 
