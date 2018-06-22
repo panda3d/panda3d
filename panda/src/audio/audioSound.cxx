@@ -14,6 +14,8 @@
 
 #include "audioSound.h"
 
+using std::ostream;
+
 TypeHandle AudioSound::_type_handle;
 
 /**

@@ -40,8 +40,8 @@ public:
 
   void generate_hash(HashGenerator &hashgen) const;
 
-  void output(ostream &out, Number divisor = 1) const;
-  void output_char(ostream &out, Number divisor = 1) const;
+  void output(std::ostream &out, Number divisor = 1) const;
+  void output_char(std::ostream &out, Number divisor = 1) const;
 
 public:
   INLINE void clear();
@@ -60,8 +60,8 @@ private:
     Number _min;
     Number _max;
   };
-  INLINE void output_minmax(ostream &out, Number divisor, const MinMax &range) const;
-  INLINE void output_minmax_char(ostream &out, const MinMax &range) const;
+  INLINE void output_minmax(std::ostream &out, Number divisor, const MinMax &range) const;
+  INLINE void output_minmax_char(std::ostream &out, const MinMax &range) const;
 
   typedef pvector<MinMax> Ranges;
   Ranges _ranges;

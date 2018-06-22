@@ -32,27 +32,29 @@
 #include "cppNamespace.h"
 #include "cppUsing.h"
 
+using std::stringstream;
+using std::string;
+
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
-CPPScope *current_scope = NULL;
-CPPScope *global_scope = NULL;
-CPPPreprocessor *current_lexer = NULL;
+CPPScope *current_scope = nullptr;
+CPPScope *global_scope = nullptr;
+CPPPreprocessor *current_lexer = nullptr;
 
-static CPPStructType *current_struct = NULL;
-static CPPEnumType *current_enum = NULL;
+static CPPStructType *current_struct = nullptr;
+static CPPEnumType *current_enum = nullptr;
 static int current_storage_class = 0;
-static CPPType *current_type = NULL;
-static CPPExpression *current_expr = NULL;
-static CPPClosureType *current_closure = NULL;
+static CPPType *current_type = nullptr;
+static CPPExpression *current_expr = nullptr;
 static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
 
-static vector<CPPScope *> last_scopes;
-static vector<int> last_storage_classes;
-static vector<CPPStructType *> last_structs;
+static std::vector<CPPScope *> last_scopes;
+static std::vector<int> last_storage_classes;
+static std::vector<CPPStructType *> last_structs;
 
 int yyparse();
 
@@ -119,7 +121,7 @@ parse_const_expr(CPPPreprocessor *pp, CPPScope *new_current_scope,
 
   current_scope = new_current_scope;
   global_scope = new_global_scope;
-  current_expr = (CPPExpression *)NULL;
+  current_expr = nullptr;
   current_lexer = pp;
   yyparse();
 
@@ -143,7 +145,7 @@ parse_type(CPPPreprocessor *pp, CPPScope *new_current_scope,
 
   current_scope = new_current_scope;
   global_scope = new_global_scope;
-  current_type = (CPPType *)NULL;
+  current_type = nullptr;
   current_lexer = pp;
   yyparse();
 
@@ -160,7 +162,7 @@ parse_type(CPPPreprocessor *pp, CPPScope *new_current_scope,
 static void
 push_scope(CPPScope *new_scope) {
   last_scopes.push_back(current_scope);
-  if (new_scope != NULL) {
+  if (new_scope != nullptr) {
     current_scope = new_scope;
   }
 }
@@ -653,7 +655,7 @@ declaration:
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
-    length_getter = NULL;
+    length_getter = nullptr;
   }
 
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
@@ -689,7 +691,7 @@ declaration:
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
   if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
-    length_getter = NULL;
+    length_getter = nullptr;
   }
 
   CPPDeclaration *getter = $7->find_symbol(current_scope, global_scope, current_lexer);
@@ -891,18 +893,18 @@ declaration:
         | KW_MAKE_SEQ '(' name ',' IDENTIFIER ',' IDENTIFIER ')' ';'
 {
   CPPDeclaration *length_getter = $5->find_symbol(current_scope, global_scope, current_lexer);
-  if (length_getter == (CPPDeclaration *)NULL || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (length_getter == nullptr || length_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid length method: " + $5->get_fully_scoped_name(), @5);
-    length_getter = NULL;
+    length_getter = nullptr;
   }
 
   CPPDeclaration *element_getter = $7->find_symbol(current_scope, global_scope, current_lexer);
-  if (element_getter == (CPPDeclaration *)NULL || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
+  if (element_getter == nullptr || element_getter->get_subtype() != CPPDeclaration::ST_function_group) {
     yyerror("reference to non-existent or invalid element method: " + $7->get_fully_scoped_name(), @5);
-    element_getter = NULL;
+    element_getter = nullptr;
   }
 
-  if (length_getter != (CPPDeclaration *)NULL && element_getter != (CPPDeclaration *)NULL) {
+  if (length_getter != nullptr && element_getter != nullptr) {
     CPPMakeSeq *make_seq = new CPPMakeSeq($3,
                                           length_getter->as_function_group(),
                                           element_getter->as_function_group(),
@@ -1071,7 +1073,7 @@ type_like_declaration:
 }
         | storage_class constructor_prototype
 {
-  if ($2 != (CPPInstance *)NULL) {
+  if ($2 != nullptr) {
     // Push the scope so that the initializers can make use of things defined
     // in the class body.
     push_scope($2->get_scope(current_scope, global_scope));
@@ -1080,7 +1082,7 @@ type_like_declaration:
 }
         maybe_initialize_or_constructor_body
 {
-  if ($2 != (CPPInstance *)NULL) {
+  if ($2 != nullptr) {
     pop_scope();
     current_scope->add_declaration($2, global_scope, current_lexer, @2);
     $2->set_initializer($4);
@@ -1088,7 +1090,7 @@ type_like_declaration:
 }
         | storage_class function_prototype maybe_initialize_or_function_body
 {
-  if ($2 != (CPPInstance *)NULL) {
+  if ($2 != nullptr) {
     $2->_storage_class |= (current_storage_class | $1);
     current_scope->add_declaration($2, global_scope, current_lexer, @2);
     $2->set_initializer($3);
@@ -1145,9 +1147,9 @@ typedef_declaration:
 }
         | storage_class function_prototype maybe_initialize_or_function_body
 {
-  if ($2 != (CPPDeclaration *)NULL) {
+  if ($2 != nullptr) {
     CPPInstance *inst = $2->as_instance();
-    if (inst != (CPPInstance *)NULL) {
+    if (inst != nullptr) {
       inst->_storage_class |= (current_storage_class | $1);
       current_scope->add_declaration(inst, global_scope, current_lexer, @2);
       CPPTypedefType *typedef_type = new CPPTypedefType(inst->_type, inst->_ident, current_scope);
@@ -1270,10 +1272,10 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if (type == NULL) {
+  if (type == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert(type != NULL);
+  assert(type != nullptr);
 
   CPPInstanceIdentifier *ii = $4;
   ii->add_modifier(IIT_pointer);
@@ -1288,10 +1290,10 @@ function_prototype:
 {
   pop_scope();
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if (type == NULL) {
+  if (type == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert(type != NULL);
+  assert(type != nullptr);
 
   CPPInstanceIdentifier *ii = $5;
   ii->add_scoped_pointer_modifier($3);
@@ -1302,13 +1304,13 @@ function_prototype:
 /* Typecast operators */
         | KW_OPERATOR type not_paren_formal_parameter_identifier '('
 {
-  if ($1 != NULL) {
+  if ($1 != nullptr) {
     push_scope($1->get_scope(current_scope, global_scope));
   }
 }
         function_parameter_list ')' function_post
 {
-  if ($1 != NULL) {
+  if ($1 != nullptr) {
     pop_scope();
   }
 
@@ -1323,7 +1325,7 @@ function_prototype:
   // the method's return type to determine the full type description.
   string name = "operator typecast " + $2->get_simple_name();
   CPPIdentifier *ident = $1;
-  if (ident == NULL) {
+  if (ident == nullptr) {
     ident = new CPPIdentifier(name, @2);
   } else {
     ident->add_name(name);
@@ -1333,18 +1335,18 @@ function_prototype:
 }
         | KW_OPERATOR KW_CONST type not_paren_formal_parameter_identifier '('
 {
-  if ($1 != NULL) {
+  if ($1 != nullptr) {
     push_scope($1->get_scope(current_scope, global_scope));
   }
 }
         function_parameter_list ')' function_post
 {
-  if ($1 != NULL) {
+  if ($1 != nullptr) {
     pop_scope();
   }
 
   CPPIdentifier *ident = $1;
-  if (ident == NULL) {
+  if (ident == nullptr) {
     ident = new CPPIdentifier("operator typecast", @4);
   } else {
     ident->add_name("operator typecast");
@@ -1361,10 +1363,10 @@ function_prototype:
 {
   CPPDeclaration *decl =
     $1->find_symbol(current_scope, global_scope, current_lexer);
-  if (decl != (CPPDeclaration *)NULL) {
+  if (decl != nullptr) {
     $$ = decl->as_instance();
   } else {
-    $$ = (CPPInstance *)NULL;
+    $$ = nullptr;
   }
 }
         ;
@@ -1627,13 +1629,13 @@ template_nonempty_formal_parameters:
         template_formal_parameter
 {
   CPPTemplateScope *ts = current_scope->as_template_scope();
-  assert(ts != NULL);
+  assert(ts != nullptr);
   ts->add_template_parameter($1);
 }
         | template_nonempty_formal_parameters ',' template_formal_parameter
 {
   CPPTemplateScope *ts = current_scope->as_template_scope();
-  assert(ts != NULL);
+  assert(ts != nullptr);
   ts->add_template_parameter($3);
 }
         ;
@@ -1646,7 +1648,7 @@ typename_keyword:
 template_formal_parameter:
         typename_keyword
 {
-  $$ = CPPType::new_type(new CPPClassTemplateParameter((CPPIdentifier *)NULL));
+  $$ = CPPType::new_type(new CPPClassTemplateParameter(nullptr));
 }
         | typename_keyword name
 {
@@ -1658,7 +1660,7 @@ template_formal_parameter:
 }
         | typename_keyword ELLIPSIS
 {
-  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter((CPPIdentifier *)NULL);
+  CPPClassTemplateParameter *ctp = new CPPClassTemplateParameter(nullptr);
   ctp->_packed = true;
   $$ = CPPType::new_type(ctp);
 }
@@ -1707,18 +1709,18 @@ template_formal_parameter_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         | TYPEPACK_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         ;
 
@@ -1734,7 +1736,7 @@ instance_identifier:
   // ficticious name for the function; in other respects it's just
   // like a regular function.
   CPPIdentifier *ident = $1;
-  if (ident == NULL) {
+  if (ident == nullptr) {
     ident = new CPPIdentifier("operator "+$2, @2);
   } else {
     ident->_names.push_back("operator "+$2);
@@ -1749,7 +1751,7 @@ instance_identifier:
     yyerror("expected empty string", @2);
   }
   CPPIdentifier *ident = $1;
-  if (ident == NULL) {
+  if (ident == nullptr) {
     ident = new CPPIdentifier("operator \"\" "+$3->get_simple_name(), @3);
   } else {
     ident->_names.push_back("operator \"\" "+$3->get_simple_name());
@@ -1833,7 +1835,7 @@ instance_identifier_and_maybe_trailing_return_type:
   // This is handled a bit awkwardly right now.  Ideally it'd be wrapped
   // up in the instance_identifier rule, but then more needs to happen in
   // order to avoid shift/reduce conflicts.
-  if ($2 != NULL) {
+  if ($2 != nullptr) {
     $1->add_trailing_return_type($2);
   }
   $$ = $1;
@@ -1850,7 +1852,7 @@ instance_identifier_and_maybe_trailing_return_type:
 maybe_trailing_return_type:
         empty
 {
-  $$ = NULL;
+  $$ = nullptr;
 }
         | POINTSAT predefined_type empty_instance_identifier
 {
@@ -1867,7 +1869,7 @@ maybe_trailing_return_type:
 maybe_comma_identifier:
         empty
 {
-  $$ = NULL;
+  $$ = nullptr;
 }
         | ',' IDENTIFIER
 {
@@ -1957,7 +1959,7 @@ formal_parameters:
 template_parameter_maybe_initialize:
         empty
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '=' no_angle_bracket_const_expr
 {
@@ -1968,7 +1970,7 @@ template_parameter_maybe_initialize:
 maybe_initialize:
         empty
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '=' const_expr
 {
@@ -1979,15 +1981,15 @@ maybe_initialize:
 maybe_initialize_or_constructor_body:
         ';'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '{' code '}'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | ':' constructor_inits '{' code '}'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '=' KW_DEFAULT ';'
 {
@@ -2002,11 +2004,11 @@ maybe_initialize_or_constructor_body:
 maybe_initialize_or_function_body:
         ';'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '{' code '}'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | '=' const_expr ';'
 {
@@ -2022,7 +2024,7 @@ maybe_initialize_or_function_body:
 }
         | '=' '{' structure_init '}'
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         ;
 
@@ -2107,7 +2109,7 @@ formal_parameter:
 not_paren_formal_parameter_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | name_no_final
 {
@@ -2153,7 +2155,7 @@ not_paren_formal_parameter_identifier:
 formal_parameter_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | name_no_final
 {
@@ -2210,7 +2212,7 @@ formal_parameter_identifier:
 parameter_pack_identifier:
         ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2269,11 +2271,11 @@ parameter_pack_identifier:
 not_paren_empty_instance_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2321,11 +2323,11 @@ not_paren_empty_instance_identifier:
 empty_instance_identifier:
         empty
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
 }
         | ELLIPSIS
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->_packed = true;
 }
         | ELLIPSIS name
@@ -2370,7 +2372,7 @@ empty_instance_identifier:
 }
         | '(' function_parameter_list ')' function_post maybe_trailing_return_type
 {
-  $$ = new CPPInstanceIdentifier((CPPIdentifier *)NULL);
+  $$ = new CPPInstanceIdentifier(nullptr);
   $$->add_modifier(IIT_paren);
   $$->add_func_modifier($2, $4, $5);
 }
@@ -2405,10 +2407,10 @@ type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         | KW_TYPENAME name
 {
@@ -2429,14 +2431,14 @@ type:
         | struct_keyword struct_attributes name
 {
   CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $3->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2445,14 +2447,14 @@ type:
         | enum_keyword name_no_final ':' enum_element_type
 {
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2461,7 +2463,7 @@ type:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)NULL) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -2474,7 +2476,7 @@ type:
         | KW_UNDERLYING_TYPE '(' full_type ')'
 {
   CPPEnumType *enum_type = $3->as_enum_type();
-  if (enum_type == NULL) {
+  if (enum_type == nullptr) {
     yyerror("an enumeration type is required", @3);
     $$ = $3;
   } else {
@@ -2491,10 +2493,10 @@ type_pack:
         TYPEPACK_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         ;
 
@@ -2506,10 +2508,10 @@ type_decl:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         | KW_TYPENAME name
 {
@@ -2530,14 +2532,14 @@ type_decl:
         | struct_keyword struct_attributes name
 {
   CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $3->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2546,14 +2548,14 @@ type_decl:
         | enum_keyword name_no_final ':' enum_element_type
 {
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2564,14 +2566,14 @@ type_decl:
   yywarning(string("C++ does not permit forward declaration of untyped enum ") + $2->get_fully_scoped_name(), @1);
 
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2580,7 +2582,7 @@ type_decl:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)NULL) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -2593,7 +2595,7 @@ type_decl:
         | KW_UNDERLYING_TYPE '(' full_type ')'
 {
   CPPEnumType *enum_type = $3->as_enum_type();
-  if (enum_type == NULL) {
+  if (enum_type == nullptr) {
     yyerror("an enumeration type is required", @3);
     $$ = $3;
   } else {
@@ -2614,10 +2616,10 @@ predefined_type:
         | TYPENAME_IDENTIFIER
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if ($$ == NULL) {
+  if ($$ == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert($$ != NULL);
+  assert($$ != nullptr);
 }
         | KW_TYPENAME name
 {
@@ -2626,14 +2628,14 @@ predefined_type:
         | struct_keyword struct_attributes name
 {
   CPPType *type = $3->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $3, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $3->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2642,14 +2644,14 @@ predefined_type:
         | enum_keyword name
 {
   CPPType *type = $2->find_type(current_scope, global_scope, false, current_lexer);
-  if (type != NULL) {
+  if (type != nullptr) {
     $$ = type;
   } else {
     CPPExtensionType *et =
       CPPType::new_type(new CPPExtensionType($1, $2, current_scope, @1.file))
       ->as_extension_type();
     CPPScope *scope = $2->get_scope(current_scope, global_scope);
-    if (scope != NULL) {
+    if (scope != nullptr) {
       scope->define_extension_type(et);
     }
     $$ = et;
@@ -2658,7 +2660,7 @@ predefined_type:
         | KW_DECLTYPE '(' const_expr ')'
 {
   $$ = $3->determine_type();
-  if ($$ == (CPPType *)NULL) {
+  if ($$ == nullptr) {
     stringstream str;
     str << *$3;
     yyerror("could not determine type of " + str.str(), @3);
@@ -2667,7 +2669,7 @@ predefined_type:
         | KW_UNDERLYING_TYPE '(' full_type ')'
 {
   CPPEnumType *enum_type = $3->as_enum_type();
-  if (enum_type == NULL) {
+  if (enum_type == nullptr) {
     yyerror("an enumeration type is required", @3);
     $$ = $3;
   } else {
@@ -2728,7 +2730,7 @@ anonymous_struct:
 
   CPPScope *new_scope = new CPPScope(current_scope, CPPNameComponent("anon"),
                                      starting_vis);
-  CPPStructType *st = new CPPStructType($1, NULL, current_scope,
+  CPPStructType *st = new CPPStructType($1, nullptr, current_scope,
                                         new_scope, @1.file);
   new_scope->set_struct_type(st);
 
@@ -2751,7 +2753,7 @@ named_struct:
   ($1 == CPPExtensionType::T_class) ? V_private : V_public;
 
   CPPScope *scope = $3->get_scope(current_scope, global_scope, current_lexer);
-  if (scope == NULL) {
+  if (scope == nullptr) {
     scope = current_scope;
   }
   CPPScope *new_scope = new CPPScope(scope, $3->_names.back(),
@@ -2839,18 +2841,18 @@ enum:
         enum_decl '{' enum_body '}'
 {
   $$ = current_enum;
-  current_enum = NULL;
+  current_enum = nullptr;
 }
         ;
 
 enum_decl:
         enum_keyword ':' enum_element_type
 {
-  current_enum = new CPPEnumType($1, NULL, $3, current_scope, NULL, @1.file);
+  current_enum = new CPPEnumType($1, nullptr, $3, current_scope, nullptr, @1.file);
 }
         | enum_keyword
 {
-  current_enum = new CPPEnumType($1, NULL, current_scope, NULL, @1.file);
+  current_enum = new CPPEnumType($1, nullptr, current_scope, nullptr, @1.file);
 }
         | enum_keyword name_no_final ':' enum_element_type
 {
@@ -2879,12 +2881,12 @@ enum_body_trailing_comma:
         empty
         | enum_body_trailing_comma name ','
 {
-  assert(current_enum != NULL);
-  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
+  assert(current_enum != nullptr);
+  current_enum->add_element($2->get_simple_name(), nullptr, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr ','
 {
-  assert(current_enum != NULL);
+  assert(current_enum != nullptr);
   current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 };
 
@@ -2892,12 +2894,12 @@ enum_body:
         enum_body_trailing_comma
         | enum_body_trailing_comma name
 {
-  assert(current_enum != NULL);
-  current_enum->add_element($2->get_simple_name(), NULL, current_lexer, @2);
+  assert(current_enum != nullptr);
+  current_enum->add_element($2->get_simple_name(), nullptr, current_lexer, @2);
 }
         | enum_body_trailing_comma name '=' const_expr
 {
-  assert(current_enum != NULL);
+  assert(current_enum != nullptr);
   current_enum->add_element($2->get_simple_name(), $4, current_lexer, @2);
 }
         ;
@@ -2936,11 +2938,11 @@ namespace_declaration:
         KW_NAMESPACE name '{'
 {
   CPPScope *scope = $2->find_scope(current_scope, global_scope, current_lexer);
-  if (scope == NULL) {
+  if (scope == nullptr) {
     // This must be a new namespace declaration.
     CPPScope *parent_scope =
       $2->get_scope(current_scope, global_scope, current_lexer);
-    if (parent_scope == NULL) {
+    if (parent_scope == nullptr) {
       parent_scope = current_scope;
     }
     scope = new CPPScope(parent_scope, $2->_names.back(), V_public);
@@ -2958,11 +2960,11 @@ namespace_declaration:
         | KW_INLINE KW_NAMESPACE name '{'
 {
   CPPScope *scope = $3->find_scope(current_scope, global_scope, current_lexer);
-  if (scope == NULL) {
+  if (scope == nullptr) {
     // This must be a new namespace declaration.
     CPPScope *parent_scope =
       $3->get_scope(current_scope, global_scope, current_lexer);
-    if (parent_scope == NULL) {
+    if (parent_scope == nullptr) {
       parent_scope = current_scope;
     }
     scope = new CPPScope(parent_scope, $3->_names.back(), V_public);
@@ -3166,7 +3168,7 @@ element:
 optional_const_expr:
         empty
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | const_expr
 {
@@ -3177,7 +3179,7 @@ optional_const_expr:
 optional_const_expr_comma:
         empty
 {
-  $$ = (CPPExpression *)NULL;
+  $$ = nullptr;
 }
         | const_expr_comma
 {
@@ -3228,7 +3230,7 @@ no_angle_bracket_const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)NULL) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();
@@ -3393,20 +3395,20 @@ const_expr:
 {
   // A constructor call.
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if (type == NULL) {
+  if (type == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert(type != NULL);
+  assert(type != nullptr);
   $$ = new CPPExpression(CPPExpression::construct_op(type, $3));
 }
         | TYPENAME_IDENTIFIER '{' optional_const_expr_comma '}'
 {
   // Aggregate initialization.
   CPPType *type = $1->find_type(current_scope, global_scope, false, current_lexer);
-  if (type == NULL) {
+  if (type == nullptr) {
     yyerror(string("internal error resolving type ") + $1->get_fully_scoped_name(), @1);
   }
-  assert(type != NULL);
+  assert(type != nullptr);
   $$ = new CPPExpression(CPPExpression::aggregate_init_op(type, $3));
 }
         | KW_INT '(' optional_const_expr_comma ')'
@@ -3492,7 +3494,7 @@ const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)NULL) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();
@@ -3836,7 +3838,7 @@ formal_const_expr:
         | KW_SIZEOF '(' IDENTIFIER ')' %prec UNARY
 {
   CPPDeclaration *arg = $3->find_symbol(current_scope, global_scope, current_lexer);
-  if (arg == (CPPDeclaration *)NULL) {
+  if (arg == nullptr) {
     yyerror("undefined sizeof argument: " + $3->get_fully_scoped_name(), @3);
   } else if (arg->get_subtype() == CPPDeclaration::ST_instance) {
     CPPInstance *inst = arg->as_instance();
@@ -4124,7 +4126,7 @@ class_derivation_name:
         name
 {
   CPPType *type = $1->find_type(current_scope, global_scope, true);
-  if (type == NULL) {
+  if (type == nullptr) {
     type = CPPType::new_type(new CPPTBDType($1));
   }
   $$ = type;

@@ -19,11 +19,11 @@ clear_light_state() {
   _c->lighting_enabled = false;
 #ifndef NDEBUG
   GLLight *gl_light = _c->first_light;
-  while (gl_light != (GLLight *)NULL) {
+  while (gl_light != nullptr) {
     GLLight *next = gl_light->next;
-    gl_light->next = NULL;
+    gl_light->next = nullptr;
     gl_light = next;
   }
 #endif  // NDEBUG
-  _c->first_light = NULL;
+  _c->first_light = nullptr;
 }

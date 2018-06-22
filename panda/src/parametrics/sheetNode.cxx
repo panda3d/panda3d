@@ -48,7 +48,7 @@ void SheetNode::CData::
 write_datagram(BamWriter *writer, Datagram &dg) const {
   // For now, we write a NULL pointer.  Eventually we will write out the
   // NurbsSurfaceEvaluator pointer.
-  writer->write_pointer(dg, (TypedWritable *)NULL);
+  writer->write_pointer(dg, nullptr);
 }
 
 /**
@@ -66,7 +66,7 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 SheetNode::
-SheetNode(const string &name) :
+SheetNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -128,7 +128,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Create some geometry on-the-fly to render the sheet.
   if (get_num_u_subdiv() > 0 && get_num_v_subdiv() > 0) {
     NurbsSurfaceEvaluator *surface = get_surface();
-    if (surface != (NurbsSurfaceEvaluator *)NULL) {
+    if (surface != nullptr) {
       PT(NurbsSurfaceResult) result = surface->evaluate(data.get_node_path());
 
       if (result->get_num_u_segments() > 0 && result->get_num_v_segments() > 0) {
@@ -155,10 +155,10 @@ is_renderable() const {
  *
  */
 void SheetNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     out << " " << *surface;
   } else {
     out << " (no surface)";
@@ -169,10 +169,10 @@ output(ostream &out) const {
  *
  */
 void SheetNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     indent(out, indent_level + 2) << *surface << "\n";
   } else {
     indent(out, indent_level + 2) << "(no surface)\n";
@@ -224,7 +224,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   PT(BoundingVolume) bound = new BoundingSphere;
 
   NurbsSurfaceEvaluator *surface = get_surface();
-  if (surface != (NurbsSurfaceEvaluator *)NULL) {
+  if (surface != nullptr) {
     NurbsSurfaceEvaluator::Vert3Array verts;
     get_surface()->get_vertices(verts, rel_to);
 

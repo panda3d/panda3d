@@ -18,17 +18,7 @@ TypeHandle BitMask<WType, nbits>::_type_handle;
  *
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-BitMask() :
-  _word(0)
-{
-}
-
-/**
- *
- */
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits>::
 BitMask(WordType init_value) :
   _word(init_value)
 {
@@ -102,40 +92,11 @@ range(int low_bit, int size) {
 }
 
 /**
- * Returns true if there is a maximum number of bits that may be stored in
- * this structure, false otherwise.  If this returns true, the number may be
- * queried in get_max_num_bits().
- *
- * This method always returns true.  This method is defined so generic
- * programming algorithms can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR bool BitMask<WType, nbits>::
-has_max_num_bits() {
-  return true;
-}
-
-/**
- * If get_max_num_bits() returned true, this method may be called to return
- * the maximum number of bits that may be stored in this structure.  It is an
- * error to call this if get_max_num_bits() return false.
- *
- * It is never an error to call this method.  This returns the same thing as
- * get_num_bits().  This method is defined so generic programming algorithms
- * can use BitMask or BitArray interchangeably.
- */
-template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_max_num_bits() {
-  return num_bits;
-}
-
-/**
  * Returns the number of bits available to set in the bitmask.
  */
 template<class WType, int nbits>
-CONSTEXPR int BitMask<WType, nbits>::
-get_num_bits() {
+constexpr int BitMask<WType, nbits>::
+get_num_bits() const {
   return num_bits;
 }
 
@@ -199,7 +160,7 @@ is_zero() const {
 template<class WType, int nbits>
 INLINE bool BitMask<WType, nbits>::
 is_all_on() const {
-  return (~_word == 0);
+  return _word == (WordType)~0;
 }
 
 /**
@@ -207,7 +168,7 @@ is_all_on() const {
  * BitMask, shifted to the least-significant position.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 extract(int low_bit, int size) const {
   return (_word >> low_bit) &
     BitMask<WType, nbits>::lower_on(size)._word;
@@ -281,7 +242,7 @@ set_range_to(bool value, int low_bit, int size) {
  * Returns the entire BitMask as a single word.
  */
 template<class WType, int nbits>
-INLINE TYPENAME BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
+INLINE typename BitMask<WType, nbits>::WordType BitMask<WType, nbits>::
 get_word() const {
   return _word;
 }
@@ -441,7 +402,7 @@ clear() {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (num_bits >= 40) {
     output_hex(out);
   } else {
@@ -454,7 +415,7 @@ output(ostream &out) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output_binary(ostream &out, int spaces_every) const {
+output_binary(std::ostream &out, int spaces_every) const {
   for (int i = num_bits - 1; i >= 0; i--) {
     if (spaces_every != 0 && ((i % spaces_every) == spaces_every - 1)) {
       out << ' ';
@@ -469,7 +430,7 @@ output_binary(ostream &out, int spaces_every) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-output_hex(ostream &out, int spaces_every) const {
+output_hex(std::ostream &out, int spaces_every) const {
   int num_digits = (num_bits + 3) / 4;
 
   for (int i = num_digits - 1; i >= 0; i--) {
@@ -491,7 +452,7 @@ output_hex(ostream &out, int spaces_every) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
@@ -685,7 +646,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-init_type(const string &name) {
+init_type(const std::string &name) {
   register_type(_type_handle, name);
 }
 

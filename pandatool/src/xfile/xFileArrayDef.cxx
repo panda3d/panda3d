@@ -29,7 +29,7 @@ get_size(const XFileNode::PrevData &prev_data) const {
     XFileNode::PrevData::const_iterator pi;
     pi = prev_data.find(_dynamic_size);
     nassertr_always(pi != prev_data.end(), 0);
-    nassertr((*pi).second != (XFileDataObject *)NULL, 0);
+    nassertr((*pi).second != nullptr, 0);
     return (*pi).second->i();
   }
 }
@@ -38,7 +38,7 @@ get_size(const XFileNode::PrevData &prev_data) const {
  *
  */
 void XFileArrayDef::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_fixed_size()) {
     out << "[" << _fixed_size << "]";
   } else {

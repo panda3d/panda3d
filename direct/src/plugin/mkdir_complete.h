@@ -16,14 +16,13 @@
 
 #include <string>
 #include <iostream>
-using namespace std;
 
-bool mkdir_complete(const string &dirname, ostream &logfile);
-bool mkfile_complete(const string &dirname, ostream &logfile);
+bool mkdir_complete(const std::string &dirname, std::ostream &logfile);
+bool mkfile_complete(const std::string &dirname, std::ostream &logfile);
 
 #ifdef _WIN32
-bool mkdir_complete_w(const wstring &dirname, ostream &logfile);
-bool mkfile_complete_w(const wstring &dirname, ostream &logfile);
+bool mkdir_complete_w(const std::wstring &dirname, std::ostream &logfile);
+bool mkfile_complete_w(const std::wstring &dirname, std::ostream &logfile);
 #endif  // _WIN32
 
 #endif

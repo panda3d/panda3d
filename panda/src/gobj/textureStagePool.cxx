@@ -17,7 +17,11 @@
 #include "configVariableEnum.h"
 #include "string_utils.h"
 
-TextureStagePool *TextureStagePool::_global_ptr = (TextureStagePool *)NULL;
+using std::istream;
+using std::ostream;
+using std::string;
+
+TextureStagePool *TextureStagePool::_global_ptr = nullptr;
 
 
 /**
@@ -86,7 +90,7 @@ ns_get_stage(TextureStage *temp) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -258,7 +262,7 @@ ns_list_contents(ostream &out) const {
  */
 TextureStagePool *TextureStagePool::
 get_global_ptr() {
-  if (_global_ptr == (TextureStagePool *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new TextureStagePool;
   }
   return _global_ptr;

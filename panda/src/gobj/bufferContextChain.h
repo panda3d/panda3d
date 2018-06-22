@@ -40,7 +40,7 @@ public:
 
   void take_from(BufferContextChain &other);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
 private:
   INLINE void adjust_bytes(int delta);

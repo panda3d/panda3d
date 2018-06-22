@@ -54,10 +54,10 @@ PUBLISHED:
   INLINE static BitArray bit(int index);
   INLINE static BitArray range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits() { return false; }
+  constexpr static int get_max_num_bits() { return INT_MAX; }
 
-  CONSTEXPR static int get_num_bits_per_word();
+  constexpr static int get_num_bits_per_word() { return num_bits_per_word; }
   INLINE size_t get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
@@ -91,10 +91,10 @@ PUBLISHED:
   bool has_bits_in_common(const BitArray &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
-  void output_binary(ostream &out, int spaces_every = 4) const;
-  void output_hex(ostream &out, int spaces_every = 4) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void output_binary(std::ostream &out, int spaces_every = 4) const;
+  void output_hex(std::ostream &out, int spaces_every = 4) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool operator == (const BitArray &other) const;
   INLINE bool operator != (const BitArray &other) const;
@@ -156,8 +156,8 @@ private:
 
 #include "bitArray.I"
 
-INLINE ostream &
-operator << (ostream &out, const BitArray &array) {
+INLINE std::ostream &
+operator << (std::ostream &out, const BitArray &array) {
   array.output(out);
   return out;
 }

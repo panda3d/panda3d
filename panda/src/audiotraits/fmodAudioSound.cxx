@@ -26,6 +26,10 @@
 #include "subfileInfo.h"
 #include "reMutexHolder.h"
 #include "virtualFileSystem.h"
+#include "vector_uchar.h"
+
+using std::istream;
+using std::string;
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -82,7 +86,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     // File not found.  We will display the appropriate error message below.
     result = FMOD_ERR_FILE_NOTFOUND;
 
@@ -99,7 +103,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     if (ext == "mid") {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
-      if (sound_info.dlsname != NULL) {
+      if (sound_info.dlsname != nullptr) {
         audio_debug("Using DLS file " << sound_info.dlsname);
       }
     }
@@ -107,7 +111,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     const char *name_or_data = _file_name.c_str();
     string os_filename;
 
-    pvector<unsigned char> mem_buffer;
+    vector_uchar mem_buffer;
     SubfileInfo info;
     if (preload) {
       // Pre-read the file right now, and pass it in as a memory buffer.  This
@@ -880,7 +884,7 @@ sound_end_callback(FMOD_CHANNEL *  channel,
   // have to worry about thread-related issues here.
   if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
-    void *userdata = NULL;
+    void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
     fmod_audio_errcheck("channel->getUserData()", result);
     FmodAudioSound *fsound = (FmodAudioSound*)userdata;
@@ -897,7 +901,7 @@ open_callback(const char *name, int, unsigned int *file_size,
               void **handle, void **user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     return FMOD_ERR_FILE_NOTFOUND;
   }
   if (fmodAudio_cat.is_spam()) {

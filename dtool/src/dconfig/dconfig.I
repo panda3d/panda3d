@@ -12,31 +12,31 @@
  */
 
 bool DConfig::
-GetBool(const string &sym, bool def) {
+GetBool(const std::string &sym, bool def) {
   ConfigVariableBool var(sym, def, "DConfig", ConfigFlags::F_dconfig);
   return var.get_value();
 }
 
 int DConfig::
-GetInt(const string &sym, int def) {
+GetInt(const std::string &sym, int def) {
   ConfigVariableInt var(sym, def, "DConfig", ConfigFlags::F_dconfig);
   return var.get_value();
 }
 
 float DConfig::
-GetFloat(const string &sym, float def) {
-  ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+GetFloat(const std::string &sym, float def) {
+  ConfigVariableDouble var(sym, (double)def, "DConfig", ConfigFlags::F_dconfig);
   return (float)var.get_value();
 }
 
 double DConfig::
-GetDouble(const string &sym, double def) {
+GetDouble(const std::string &sym, double def) {
   ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
   return var.get_value();
 }
 
-string DConfig::
-GetString(const string &sym, const string &def) {
+std::string DConfig::
+GetString(const std::string &sym, const std::string &def) {
   ConfigVariableString var(sym, def, "DConfig", ConfigFlags::F_dconfig);
   return var.get_value();
 }

@@ -97,6 +97,9 @@
 #include "cppNamespace.h"
 #include "cppUsing.h"
 
+using std::stringstream;
+using std::string;
+
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
@@ -110,14 +113,13 @@ static CPPEnumType *current_enum = NULL;
 static int current_storage_class = 0;
 static CPPType *current_type = NULL;
 static CPPExpression *current_expr = NULL;
-static CPPClosureType *current_closure = NULL;
 static int publish_nest_level = 0;
 static CPPVisibility publish_previous;
 static YYLTYPE publish_loc;
 
-static vector<CPPScope *> last_scopes;
-static vector<int> last_storage_classes;
-static vector<CPPStructType *> last_structs;
+static std::vector<CPPScope *> last_scopes;
+static std::vector<int> last_storage_classes;
+static std::vector<CPPStructType *> last_structs;
 
 int yyparse();
 

@@ -26,7 +26,7 @@
 void CLwoPoints::
 add_vmap(const LwoVertexMap *lwo_vmap) {
   IffId map_type = lwo_vmap->_map_type;
-  const string &name = lwo_vmap->_name;
+  const std::string &name = lwo_vmap->_name;
 
   bool inserted;
   if (map_type == IffId("TXUV")) {
@@ -52,7 +52,7 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
  * given vertex, false otherwise.  If true, fills in uv with the value.
  */
 bool CLwoPoints::
-get_uv(const string &uv_name, int n, LPoint2 &uv) const {
+get_uv(const std::string &uv_name, int n, LPoint2 &uv) const {
   VMap::const_iterator ni = _txuv.find(uv_name);
   if (ni == _txuv.end()) {
     return false;
@@ -82,7 +82,7 @@ void CLwoPoints::
 make_egg() {
   // Generate a vpool name based on the layer index, for lack of anything
   // better.
-  string vpool_name = "layer" + format_string(_layer->get_number());
+  std::string vpool_name = "layer" + format_string(_layer->get_number());
   _egg_vpool = new EggVertexPool(vpool_name);
 }
 

@@ -23,16 +23,16 @@
 /**
  * This is a fairly low-level base class--any egg object that has a name.
  */
-class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
+class EXPCL_PANDA_EGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
-  INLINE explicit EggNamedObject(const string &name = "");
+  INLINE explicit EggNamedObject(const std::string &name = "");
   INLINE EggNamedObject(const EggNamedObject &copy);
   INLINE EggNamedObject &operator = (const EggNamedObject &copy);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
-  void write_header(ostream &out, int indent_level,
+  void write_header(std::ostream &out, int indent_level,
                     const char *egg_keyword) const;
 
 
@@ -55,7 +55,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const EggNamedObject &n);
+INLINE std::ostream &operator << (std::ostream &out, const EggNamedObject &n);
 
 #include "eggNamedObject.I"
 

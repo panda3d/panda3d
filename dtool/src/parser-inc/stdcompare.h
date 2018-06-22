@@ -24,7 +24,7 @@ class less {
 public:
 };
 
-template<class key, class comp = less<key> >
+template<class key, class comp = std::less<key> >
 class hash_compare {
 public:
 };

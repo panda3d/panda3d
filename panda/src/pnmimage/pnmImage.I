@@ -16,8 +16,8 @@
  */
 INLINE PNMImage::
 PNMImage() {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   clear();
 }
@@ -28,8 +28,8 @@ PNMImage() {
 INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
          PNMFileType *type, ColorSpace color_space) {
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   clear(x_size, y_size, num_channels, maxval, type, color_space);
 }
@@ -41,8 +41,8 @@ INLINE PNMImage::
 PNMImage(const PNMImage &copy) {
   // We don't need to invoke PNMImageHeader's copy constructor, because we'll
   // just call copy_from().
-  _array = NULL;
-  _alpha = NULL;
+  _array = nullptr;
+  _alpha = nullptr;
 
   copy_from(copy);
 }
@@ -68,7 +68,7 @@ INLINE PNMImage::
  */
 INLINE xelval PNMImage::
 clamp_val(int input_value) const {
-  return (xelval)min(max(0, input_value), (int)get_maxval());
+  return (xelval)std::min(std::max(0, input_value), (int)get_maxval());
 }
 
 /**
@@ -80,7 +80,7 @@ to_val(float input_value) const {
   switch (_xel_encoding) {
   case XE_generic:
   case XE_generic_alpha:
-    return (int)(min(1.0f, max(0.0f, input_value)) * get_maxval() + 0.5f);
+    return (int)(std::min(1.0f, std::max(0.0f, input_value)) * get_maxval() + 0.5f);
 
   case XE_generic_sRGB:
   case XE_generic_sRGB_alpha:
@@ -97,7 +97,7 @@ to_val(float input_value) const {
 
   case XE_scRGB:
   case XE_scRGB_alpha:
-    return min(max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
+    return std::min(std::max(0, (int)((8192 * input_value) + 4096.5f)), 65535);
 
   default:
     return 0;
@@ -251,7 +251,7 @@ get_color_space() const {
  */
 INLINE bool PNMImage::
 is_valid() const {
-  return (_array != NULL);
+  return (_array != nullptr);
 }
 
 /**
@@ -403,7 +403,7 @@ get_gray_val(int x, int y) const {
  */
 INLINE xelval PNMImage::
 get_alpha_val(int x, int y) const {
-  nassertr(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size, 0);
+  nassertr(_alpha != nullptr && x >= 0 && x < _x_size && y >= 0 && y < _y_size, 0);
   return alpha_row(y)[x];
 }
 
@@ -468,7 +468,7 @@ set_gray_val(int x, int y, xelval gray) {
  */
 INLINE void PNMImage::
 set_alpha_val(int x, int y, xelval a) {
-  nassertv(_alpha != NULL && x >= 0 && x < _x_size && y >= 0 && y < _y_size);
+  nassertv(_alpha != nullptr && x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   alpha_row(y)[x] = a;
 }
 
@@ -559,9 +559,9 @@ set_xel(int x, int y, const LRGBColorf &value) {
   case XE_scRGB_alpha:
     {
       LRGBColorf scaled = value * 8192.f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
     }
     break;
   }
@@ -721,19 +721,19 @@ set_xel_a(int x, int y, const LColorf &value) {
   case XE_scRGB:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
     }
     break;
 
   case XE_scRGB_alpha:
     {
       LColorf scaled = value * 8192.0f + 4096.5f;
-      col.r = min(max(0, (int)scaled[0]), 65535);
-      col.g = min(max(0, (int)scaled[1]), 65535);
-      col.b = min(max(0, (int)scaled[2]), 65535);
-      alpha_row(y)[x] = min(max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
+      col.r = std::min(std::max(0, (int)scaled[0]), 65535);
+      col.g = std::min(std::max(0, (int)scaled[1]), 65535);
+      col.b = std::min(std::max(0, (int)scaled[2]), 65535);
+      alpha_row(y)[x] = std::min(std::max(0, (int)(value[3] * 65535 + 0.5f)), 65535);
     }
     break;
   }
@@ -1120,7 +1120,7 @@ get_alpha_array() const {
 INLINE xel *PNMImage::
 take_array() {
   xel *array = _array;
-  _array = NULL;
+  _array = nullptr;
   return array;
 }
 
@@ -1133,7 +1133,7 @@ take_array() {
 INLINE xelval *PNMImage::
 take_alpha_array() {
   xelval *alpha = _alpha;
-  _alpha = NULL;
+  _alpha = nullptr;
   return alpha;
 }
 
@@ -1159,7 +1159,7 @@ allocate_alpha() {
  */
 INLINE xel *PNMImage::
 row(int y) const {
-  nassertr(y >= 0 && y < _y_size, NULL);
+  nassertr(y >= 0 && y < _y_size, nullptr);
   return _array + y * _x_size;
 }
 
@@ -1169,7 +1169,7 @@ row(int y) const {
  */
 INLINE xelval *PNMImage::
 alpha_row(int y) const {
-  nassertr(_alpha != NULL && y >= 0 && y < _y_size, NULL);
+  nassertr(_alpha != nullptr && y >= 0 && y < _y_size, nullptr);
   return _alpha + y * _x_size;
 }
 
@@ -1210,14 +1210,14 @@ setup_sub_image(const PNMImage &copy, int &xto, int &yto,
     yto = 0;
   }
 
-  x_size = min(x_size, copy.get_x_size() - xfrom);
-  y_size = min(y_size, copy.get_y_size() - yfrom);
+  x_size = std::min(x_size, copy.get_x_size() - xfrom);
+  y_size = std::min(y_size, copy.get_y_size() - yfrom);
 
   xmin = xto;
   ymin = yto;
 
-  xmax = min(xmin + x_size, get_x_size());
-  ymax = min(ymin + y_size, get_y_size());
+  xmax = std::min(xmin + x_size, get_x_size());
+  ymax = std::min(ymin + y_size, get_y_size());
 }
 
 /**

@@ -46,7 +46,7 @@ make_default() {
  *
  */
 void AlphaTestAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   output_comparefunc(out,_mode);
   out << "," << _reference_alpha;

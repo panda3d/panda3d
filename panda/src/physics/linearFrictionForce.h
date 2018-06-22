@@ -19,7 +19,7 @@
 /**
  * Friction-based drag force
  */
-class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
   explicit LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
@@ -28,8 +28,8 @@ PUBLISHED:
   INLINE void set_coef(PN_stdfloat coef);
   INLINE PN_stdfloat get_coef() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _coef;

@@ -23,14 +23,14 @@
  * EggGroup nodes.  It's not called automatically; you must invoke it yourself
  * if you want it.
  */
-class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
+class EXPCL_PANDA_EGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
   explicit EggGroupUniquifier(bool filter_names = true);
 
-  virtual string get_category(EggNode *node);
-  virtual string filter_name(EggNode *node);
-  virtual string generate_name(EggNode *node,
-                               const string &category, int index);
+  virtual std::string get_category(EggNode *node);
+  virtual std::string filter_name(EggNode *node);
+  virtual std::string generate_name(EggNode *node,
+                               const std::string &category, int index);
 
 private:
   bool _filter_names;

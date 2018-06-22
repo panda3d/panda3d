@@ -16,7 +16,7 @@
 
 #include "get_tinyxml.h"
 
-bool parse_bool_attrib(TiXmlElement *xelem, const string &attrib,
+bool parse_bool_attrib(TiXmlElement *xelem, const std::string &attrib,
                        bool default_value);
 
 #endif

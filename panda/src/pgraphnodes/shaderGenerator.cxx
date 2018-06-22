@@ -47,6 +47,8 @@
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
@@ -259,7 +261,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   rs->get_attrib_def(la);
   bool have_ambient = false;
 
-  for (int i = 0; i < la->get_num_on_lights(); ++i) {
+  for (size_t i = 0; i < la->get_num_on_lights(); ++i) {
     NodePath np = la->get_on_light(i);
     nassertv(!np.is_empty());
     PandaNode *node = np.node();
@@ -287,8 +289,6 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       key._lighting = true;
     }
   }
-
-  bool normal_mapping = key._lighting && shader_attrib->auto_normal_on();
 
   // See if there is a normal map, height map, gloss map, or glow map.  Also
   // check if anything has TexGen.
@@ -355,7 +355,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (parallax_mapping_samples == 0) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on() ||
-                 (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+                 (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         info._mode = TextureStage::M_height;
         info._flags = ShaderKey::TF_has_alpha;
       } else {
@@ -364,7 +364,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       break;
 
     case TextureStage::M_normal_gloss:
-      if (!shader_attrib->auto_gloss_on() || !key._lighting) {
+      if (!shader_attrib->auto_gloss_on() || key._lights.empty()) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on()) {
         info._mode = TextureStage::M_gloss;
@@ -406,6 +406,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         info._flags |= ShaderKey::TF_uses_last_saved_result;
       }
       break;
+
+    default:
+      break;
     }
 
     // In fact, perhaps this stage should be disabled altogether?
@@ -413,7 +416,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
-          (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+          (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
@@ -427,7 +430,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       }
       break;
     case TextureStage::M_gloss:
-      if (key._lighting && shader_attrib->auto_gloss_on()) {
+      if (!key._lights.empty() && shader_attrib->auto_gloss_on()) {
         info._flags = ShaderKey::TF_map_gloss;
       } else {
         skip = true;
@@ -439,6 +442,8 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       } else {
         skip = true;
       }
+      break;
+    default:
       break;
     }
     // We can't just drop a disabled slot from the list, since then the
@@ -663,23 +668,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // These variables will hold the results of register allocation.
 
-  const char *tangent_freg = 0;
-  const char *binormal_freg = 0;
+  const char *tangent_freg = nullptr;
+  const char *binormal_freg = nullptr;
   string tangent_input;
   string binormal_input;
   pmap<const InternalName *, const char *> texcoord_fregs;
   pvector<const char *> lightcoord_fregs;
-  const char *world_position_freg = 0;
-  const char *world_normal_freg = 0;
-  const char *eye_position_freg = 0;
-  const char *eye_normal_freg = 0;
-  const char *hpos_freg = 0;
+  const char *world_position_freg = nullptr;
+  const char *world_normal_freg = nullptr;
+  const char *eye_position_freg = nullptr;
+  const char *eye_normal_freg = nullptr;
+  const char *hpos_freg = nullptr;
 
   const char *position_vreg;
-  const char *transform_weight_vreg = 0;
+  const char *transform_weight_vreg = nullptr;
   const char *normal_vreg;
-  const char *color_vreg = 0;
-  const char *transform_index_vreg = 0;
+  const char *color_vreg = nullptr;
+  const char *transform_index_vreg = nullptr;
 
   if (_use_generic_attr) {
     position_vreg = "ATTR0";
@@ -700,7 +705,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // Generate the shader's text.
 
-  ostringstream text;
+  std::ostringstream text;
 
   text << "//Cg\n";
 
@@ -1619,7 +1624,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
  */
 string ShaderGenerator::
 combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
-  ostringstream text;
+  std::ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
     text << combine_source_as_string(info, 0, alpha, texindex);
@@ -1685,7 +1690,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     c_src = UNPACK_COMBINE_SRC(info._combine_alpha, num);
     c_op = UNPACK_COMBINE_OP(info._combine_alpha, num);
   }
-  ostringstream csource;
+  std::ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
       c_op == TextureStage::CO_one_minus_src_alpha) {
     csource << "saturate(1.0f - ";

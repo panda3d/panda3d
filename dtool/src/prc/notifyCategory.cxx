@@ -31,7 +31,7 @@ long NotifyCategory::_server_delta = 0;
  *
  */
 NotifyCategory::
-NotifyCategory(const string &fullname, const string &basename,
+NotifyCategory(const std::string &fullname, const std::string &basename,
                NotifyCategory *parent) :
   _fullname(fullname),
   _basename(basename),
@@ -41,12 +41,12 @@ NotifyCategory(const string &fullname, const string &basename,
             ConfigVariable::F_dynamic),
   _local_modified(initial_invalid_cache())
 {
-  if (_parent != (NotifyCategory *)NULL) {
+  if (_parent != nullptr) {
     _parent->_children.push_back(this);
   }
 
   // Only the unnamed top category is allowed not to have a parent.
-  nassertv(_parent != (NotifyCategory *)NULL || _fullname.empty());
+  nassertv(_parent != nullptr || _fullname.empty());
 }
 
 /**
@@ -55,7 +55,7 @@ NotifyCategory(const string &fullname, const string &basename,
  * the Notify::out() stream and returns that.  If the severity level is
  * disabled, this returns Notify::null().
  */
-ostream &NotifyCategory::
+std::ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
 
@@ -77,7 +77,7 @@ out(NotifySeverity severity, bool prefix) const {
     if (prefix) {
       if (get_notify_timestamp()) {
         // Format a timestamp to include as a prefix as well.
-        time_t now = time(NULL) + _server_delta;
+        time_t now = time(nullptr) + _server_delta;
         struct tm atm;
 #ifdef _WIN32
         localtime_s(&atm, &now);
@@ -151,9 +151,9 @@ set_server_delta(long delta) {
  * Returns the name of the config variable that controls this category.  This
  * is called at construction time.
  */
-string NotifyCategory::
+std::string NotifyCategory::
 get_config_name() const {
-  string config_name;
+  std::string config_name;
 
   if (_fullname.empty()) {
     config_name = "notify-level";
@@ -175,7 +175,7 @@ update_severity_cache() {
       nout << "Invalid severity name for " << _severity.get_name() << ": "
            << _severity.get_string_value() << "\n";
     }
-    if (_parent != (NotifyCategory *)NULL) {
+    if (_parent != nullptr) {
       _severity_cache = _parent->get_severity();
 
     } else {
@@ -195,8 +195,8 @@ update_severity_cache() {
  */
 bool NotifyCategory::
 get_notify_timestamp() {
-  static ConfigVariableBool *notify_timestamp = NULL;
-  if (notify_timestamp == (ConfigVariableBool *)NULL) {
+  static ConfigVariableBool *notify_timestamp = nullptr;
+  if (notify_timestamp == nullptr) {
     notify_timestamp = new ConfigVariableBool
       ("notify-timestamp", false,
        "Set true to output the date & time with each notify message.");
@@ -211,8 +211,8 @@ get_notify_timestamp() {
  */
 bool NotifyCategory::
 get_check_debug_notify_protect() {
-  static ConfigVariableBool *check_debug_notify_protect = NULL;
-  if (check_debug_notify_protect == (ConfigVariableBool *)NULL) {
+  static ConfigVariableBool *check_debug_notify_protect = nullptr;
+  if (check_debug_notify_protect == nullptr) {
     check_debug_notify_protect = new ConfigVariableBool
       ("check-debug-notify-protect", false,
        "Set true to issue a warning message if a debug or spam "

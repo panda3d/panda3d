@@ -20,7 +20,7 @@ TypeHandle Event::_type_handle;
  *
  */
 Event::
-Event(const string &event_name, EventReceiver *receiver) :
+Event(const std::string &event_name, EventReceiver *receiver) :
   _name(event_name)
 {
   _receiver = receiver;
@@ -86,7 +86,7 @@ get_parameter(int n) const {
  */
 bool Event::
 has_receiver() const {
-  return _receiver != (EventReceiver *)NULL;
+  return _receiver != nullptr;
 }
 
 /**
@@ -110,14 +110,14 @@ set_receiver(EventReceiver *receiver) {
  */
 void Event::
 clear_receiver() {
-  _receiver = (EventReceiver *)NULL;
+  _receiver = nullptr;
 }
 
 /**
  *
  */
 void Event::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
 
   out << "(";

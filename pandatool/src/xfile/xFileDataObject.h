@@ -29,17 +29,17 @@ class XFileDataDef;
  */
 class XFileDataObject : virtual public ReferenceCount {
 public:
-  INLINE XFileDataObject(const XFileDataDef *data_def = NULL);
+  INLINE XFileDataObject(const XFileDataDef *data_def = nullptr);
   virtual ~XFileDataObject();
 
   INLINE const XFileDataDef *get_data_def() const;
 
   virtual bool is_complex_object() const;
-  virtual string get_type_name() const;
+  virtual std::string get_type_name() const;
 
   INLINE void operator = (int int_value);
   INLINE void operator = (double double_value);
-  INLINE void operator = (const string &string_value);
+  INLINE void operator = (const std::string &string_value);
   INLINE void operator = (const LVecBase2d &vec);
   INLINE void operator = (const LVecBase3d &vec);
   INLINE void operator = (const LVecBase4d &vec);
@@ -47,7 +47,7 @@ public:
 
   INLINE void set(int int_value);
   INLINE void set(double double_value);
-  INLINE void set(const string &string_value);
+  INLINE void set(const std::string &string_value);
   INLINE void set(const LVecBase2d &vec);
   INLINE void set(const LVecBase3d &vec);
   INLINE void set(const LVecBase4d &vec);
@@ -55,7 +55,7 @@ public:
 
   INLINE int i() const;
   INLINE double d() const;
-  INLINE string s() const;
+  INLINE std::string s() const;
   INLINE LVecBase2d vec2() const;
   INLINE LVecBase3d vec3() const;
   INLINE LVecBase4d vec4() const;
@@ -63,17 +63,17 @@ public:
 
   INLINE int size() const;
   INLINE const XFileDataObject &operator [] (int n) const;
-  INLINE const XFileDataObject &operator [] (const string &name) const;
+  INLINE const XFileDataObject &operator [] (const std::string &name) const;
 
   INLINE XFileDataObject &operator [] (int n);
-  INLINE XFileDataObject &operator [] (const string &name);
+  INLINE XFileDataObject &operator [] (const std::string &name);
 
   // The following methods can be used to add elements of a specific type to a
   // complex object, e.g.  an array or a template object.
 
   XFileDataObject &add_int(int int_value);
   XFileDataObject &add_double(double double_value);
-  XFileDataObject &add_string(const string &string_value);
+  XFileDataObject &add_string(const std::string &string_value);
 
   // The following methods can be used to add elements of a specific type,
   // based on one of the standard templates.
@@ -87,24 +87,24 @@ public:
 public:
   virtual bool add_element(XFileDataObject *element);
 
-  virtual void output_data(ostream &out) const;
-  virtual void write_data(ostream &out, int indent_level,
+  virtual void output_data(std::ostream &out) const;
+  virtual void write_data(std::ostream &out, int indent_level,
                           const char *separator) const;
 
 protected:
   virtual void set_int_value(int int_value);
   virtual void set_double_value(double double_value);
-  virtual void set_string_value(const string &string_value);
+  virtual void set_string_value(const std::string &string_value);
   void store_double_array(int num_elements, const double *values);
 
   virtual int get_int_value() const;
   virtual double get_double_value() const;
-  virtual string get_string_value() const;
+  virtual std::string get_string_value() const;
   void get_double_array(int num_elements, double *values) const;
 
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);
-  virtual XFileDataObject *get_element(const string &name);
+  virtual XFileDataObject *get_element(const std::string &name);
 
   const XFileDataDef *_data_def;
 
@@ -126,7 +126,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const XFileDataObject &data_object);
+INLINE std::ostream &operator << (std::ostream &out, const XFileDataObject &data_object);
 
 #include "xFileDataObject.I"
 

@@ -41,7 +41,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
   if (dl._index == 0) {
     dl._index = glGenLists(1);
     list_current = false;
-    if (munger != (CLP(GeomMunger) *)NULL) {
+    if (munger != (CLP(GeomMunger) *)nullptr) {
       ((CLP(GeomMunger) *)munger)->_geom_contexts.insert(this);
     }
   }
@@ -70,7 +70,7 @@ release_display_lists() {
        ++dli) {
     CLP(GeomMunger) *munger = (*dli).first;
     const DisplayList &dl = (*dli).second;
-    if (munger != (CLP(GeomMunger) *)NULL) {
+    if (munger != (CLP(GeomMunger) *)nullptr) {
       munger->_geom_contexts.erase(this);
     }
 

@@ -26,7 +26,7 @@ class PandaIOSystem;
  */
 class PandaIOStream : public Assimp::IOStream {
 public:
-  PandaIOStream(istream &stream);
+  PandaIOStream(std::istream &stream);
   virtual ~PandaIOStream() {};
 
   size_t FileSize() const;
@@ -37,7 +37,7 @@ public:
   size_t Write(const void *buffer, size_t size, size_t count);
 
 private:
-  istream &_istream;
+  std::istream &_istream;
 
   friend class PandaIOSystem;
 };

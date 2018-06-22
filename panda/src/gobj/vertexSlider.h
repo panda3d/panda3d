@@ -47,8 +47,8 @@ PUBLISHED:
   MAKE_PROPERTY(slider, get_slider);
   MAKE_PROPERTY(modified, get_modified);
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
   void mark_modified(Thread *current_thread);
@@ -106,7 +106,7 @@ private:
   friend class SliderTable;
 };
 
-INLINE ostream &operator << (ostream &out, const VertexSlider &obj);
+INLINE std::ostream &operator << (std::ostream &out, const VertexSlider &obj);
 
 #include "vertexSlider.I"
 

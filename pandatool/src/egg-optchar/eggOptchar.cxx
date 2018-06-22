@@ -34,6 +34,10 @@
 
 #include <algorithm>
 
+using std::cout;
+using std::setw;
+using std::string;
+
 /**
  *
  */
@@ -74,19 +78,19 @@ EggOptchar() {
     ("keep", "joint[,joint...]", 0,
      "Keep the named joints (or sliders) in the character, even if they do "
      "not appear to be needed by the animation.",
-     &EggOptchar::dispatch_vector_string_comma, NULL, &_keep_components);
+     &EggOptchar::dispatch_vector_string_comma, nullptr, &_keep_components);
 
   add_option
     ("drop", "joint[,joint...]", 0,
      "Removes the named joints or sliders, even if they appear to be needed.",
-     &EggOptchar::dispatch_vector_string_comma, NULL, &_drop_components);
+     &EggOptchar::dispatch_vector_string_comma, nullptr, &_drop_components);
 
   add_option
     ("expose", "joint[,joint...]", 0,
      "Expose the named joints by flagging them with a DCS attribute, so "
      "each one can be found in the scene graph when the character is loaded, "
      "and objects can be parented to it.  This implies -keep.",
-     &EggOptchar::dispatch_vector_string_comma, NULL, &_expose_components);
+     &EggOptchar::dispatch_vector_string_comma, nullptr, &_expose_components);
 
   add_option
     ("suppress", "joint[,joint...]", 0,
@@ -95,7 +99,7 @@ EggOptchar() {
      "rigid geometry.  The default is to create an implicit node for any "
      "joint that contains rigid geometry, to take advantage of display "
      "list and/or vertex buffer caching.  This does not imply -keep.",
-     &EggOptchar::dispatch_vector_string_comma, NULL, &_suppress_components);
+     &EggOptchar::dispatch_vector_string_comma, nullptr, &_suppress_components);
 
   add_option
     ("flag", "node[,node...][=name]", 0,
@@ -107,7 +111,7 @@ EggOptchar() {
      "joints; the revealed node can be hidden or its attributes changed "
      "at runtime, but it will be animated by its vertices, not the node, so "
      "objects parented to this node will not inherit its animation.",
-     &EggOptchar::dispatch_flag_groups, NULL, &_flag_groups);
+     &EggOptchar::dispatch_flag_groups, nullptr, &_flag_groups);
 
   add_option
     ("defpose", "anim.egg,frame", 0,
@@ -117,7 +121,7 @@ EggOptchar() {
      "pose will be held by the model in "
      "the absence of any animation, and need not be the same "
      "pose in which the model was originally skinned.",
-     &EggOptchar::dispatch_string, NULL, &_defpose);
+     &EggOptchar::dispatch_string, nullptr, &_defpose);
 
   add_option
     ("preload", "", 0,
@@ -132,7 +136,7 @@ EggOptchar() {
      "a subset of the component letters hprxyzijkabc is included, the "
      "operation is restricted to just those components; otherwise the "
      "entire transform is cleared.",
-     &EggOptchar::dispatch_name_components, NULL, &_zero_channels);
+     &EggOptchar::dispatch_name_components, nullptr, &_zero_channels);
 
   add_option
     ("keepall", "", 0,
@@ -146,18 +150,18 @@ EggOptchar() {
      "\"-p joint,\" to reparent a joint to the root.  The joint transform "
      "is recomputed appropriately under its new parent so that the animation "
      "is not affected (the effect is similar to NodePath::wrt_reparent_to).",
-     &EggOptchar::dispatch_vector_string_pair, NULL, &_reparent_joints);
+     &EggOptchar::dispatch_vector_string_pair, nullptr, &_reparent_joints);
 
   add_option
     ("new", "joint,source", 0,
      "Creates a new joint under the named parent joint.  The new "
      "joint will inherit the same net transform as its parent.",
-     &EggOptchar::dispatch_vector_string_pair, NULL, &_new_joints);
+     &EggOptchar::dispatch_vector_string_pair, nullptr, &_new_joints);
 
   add_option
     ("rename", "joint,newjoint", 0,
      "Renames the indicated joint, if present, to the given name.",
-     &EggOptchar::dispatch_vector_string_pair, NULL, &_rename_joints);
+     &EggOptchar::dispatch_vector_string_pair, nullptr, &_rename_joints);
 
   if (FFTCompressor::is_compression_available()) {
     add_option
@@ -182,7 +186,7 @@ EggOptchar() {
      "benefit for eliminating small differences in joint memberships "
      "between neighboring vertices.  The default is 0.01; specifying "
      "0 means to preserve the original values.",
-     &EggOptchar::dispatch_double, NULL, &_vref_quantum);
+     &EggOptchar::dispatch_double, nullptr, &_vref_quantum);
 
   add_option
     ("qa", "quantum[,hprxyzijkabc]", 0,
@@ -193,12 +197,12 @@ EggOptchar() {
      "animation.  However, sometimes it is a useful tool for animation "
      "analysis and comparison.  This option may be repeated several times "
      "to quantize different channels by a different amount.",
-     &EggOptchar::dispatch_double_components, NULL, &_quantize_anims);
+     &EggOptchar::dispatch_double_components, nullptr, &_quantize_anims);
 
   add_option
     ("dart", "[default, sync, nosync, or structured]", 0,
      "change the dart value in the given eggs",
-     &EggOptchar::dispatch_string, NULL, &_dart_type);
+     &EggOptchar::dispatch_string, nullptr, &_dart_type);
 
 
   _optimal_hierarchy = false;
@@ -381,7 +385,7 @@ dispatch_name_components(const string &opt, const string &arg, void *var) {
     sp._b = matrix_component_letters;
   } else {
     for (string::const_iterator si = sp._b.begin(); si != sp._b.end(); ++si) {
-      if (strchr(matrix_component_letters, *si) == NULL) {
+      if (strchr(matrix_component_letters, *si) == nullptr) {
         nout << "Not a standard matrix component: \"" << *si << "\"\n"
              << "-" << opt << " requires a joint name followed by a set "
              << "of component names.  The standard component names are \""
@@ -436,7 +440,7 @@ dispatch_double_components(const string &opt, const string &arg, void *var) {
     sp._b = matrix_component_letters;
   } else {
     for (string::const_iterator si = sp._b.begin(); si != sp._b.end(); ++si) {
-      if (strchr(matrix_component_letters, *si) == NULL) {
+      if (strchr(matrix_component_letters, *si) == nullptr) {
         nout << "Not a standard matrix component: \"" << *si << "\"\n"
              << "-" << opt << " requires a joint name followed by a set "
              << "of component names.  The standard component names are \""
@@ -535,11 +539,11 @@ determine_removed_components() {
     nout << char_data->get_name() << " has " << num_components << " components.\n";
     for (int i = 0; i < num_components; i++) {
       EggComponentData *comp_data = char_data->get_component(i);
-      nassertv(comp_data != (EggComponentData *)NULL);
+      nassertv(comp_data != nullptr);
 
       EggOptcharUserData *user_data =
         DCAST(EggOptcharUserData, comp_data->get_user_data());
-      nassertv(user_data != (EggOptcharUserData *)NULL);
+      nassertv(user_data != nullptr);
 
       const string &name = comp_data->get_name();
       if (suppress_names.find(name) != suppress_names.end()) {
@@ -636,7 +640,7 @@ move_vertices() {
         joint_data->move_vertices_to(best_joint);
 
         // Now we can't remove the joint.
-        if (best_joint != (EggJointData *)NULL) {
+        if (best_joint != nullptr) {
           EggOptcharUserData *best_user_data =
             DCAST(EggOptcharUserData, best_joint->get_user_data());
           best_user_data->_flags &= ~(EggOptcharUserData::F_empty | EggOptcharUserData::F_remove);
@@ -673,7 +677,7 @@ process_joints() {
 
       if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
         // This joint will be removed, so reparent it to nothing.
-        joint_data->reparent_to((EggJointData *)NULL);
+        joint_data->reparent_to(nullptr);
 
         // Determine what kind of node it is we're removing, for the user's
         // information.
@@ -740,7 +744,7 @@ find_best_parent(EggJointData *joint_data) const {
 
   if ((user_data->_flags & EggOptcharUserData::F_remove) != 0) {
     // Keep going.
-    if (joint_data->get_parent() != (EggJointData *)NULL) {
+    if (joint_data->get_parent() != nullptr) {
       return find_best_parent(joint_data->get_parent());
     }
   }
@@ -755,8 +759,8 @@ find_best_parent(EggJointData *joint_data) const {
  */
 EggJointData *EggOptchar::
 find_best_vertex_joint(EggJointData *joint_data) const {
-  if (joint_data == (EggJointData *)NULL) {
-    return NULL;
+  if (joint_data == nullptr) {
+    return nullptr;
   }
 
   EggOptcharUserData *user_data =
@@ -794,11 +798,11 @@ apply_user_reparents() {
         node_b = char_data->find_joint(p._b);
       }
 
-      if (node_b == (EggJointData *)NULL) {
+      if (node_b == nullptr) {
         nout << "No joint named " << p._b << " in " << char_data->get_name()
              << ".\n";
 
-      } else if (node_a != (EggJointData *)NULL) {
+      } else if (node_a != nullptr) {
         nout << "Joint " << p._a << " already exists in "
              << char_data->get_name() << ".\n";
 
@@ -823,10 +827,10 @@ apply_user_reparents() {
         node_b = char_data->find_joint(p._b);
       }
 
-      if (node_b == (EggJointData *)NULL) {
+      if (node_b == nullptr) {
         nout << "No joint named " << p._b << " in " << char_data->get_name()
              << ".\n";
-      } else if (node_a == (EggJointData *)NULL) {
+      } else if (node_a == nullptr) {
         nout << "No joint named " << p._a << " in " << char_data->get_name()
              << ".\n";
       } else {
@@ -869,7 +873,7 @@ zero_channels() {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint_data = char_data->find_joint(p._a);
 
-      if (joint_data == (EggJointData *)NULL) {
+      if (joint_data == nullptr) {
         nout << "No joint named " << p._a << " in " << char_data->get_name()
              << ".\n";
       } else {
@@ -900,7 +904,7 @@ quantize_channels() {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint_data = char_data->get_root_joint();
 
-      if (joint_data != (EggJointData *)NULL) {
+      if (joint_data != nullptr) {
         joint_data->quantize_channels(p._b, p._a);
         did_anything = true;
       }
@@ -1314,7 +1318,7 @@ rename_joints() {
     for (ci = 0; ci < num_characters; ++ci) {
       EggCharacterData *char_data = _collection->get_character(ci);
       EggJointData *joint = char_data->find_joint(sp._a);
-      if (joint != (EggJointData *)NULL) {
+      if (joint != nullptr) {
         nout << "Renaming joint " << sp._a << " to " << sp._b << "\n";
         joint->set_name(sp._b);
 

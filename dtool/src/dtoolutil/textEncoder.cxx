@@ -16,6 +16,11 @@
 #include "unicodeLatinMap.h"
 #include "config_dtoolutil.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+using std::wstring;
+
 TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_iso8859;
 
 /**
@@ -69,7 +74,7 @@ get_wtext_as_ascii() const {
 
     const UnicodeLatinMap::Entry *map_entry =
       UnicodeLatinMap::look_up(character);
-    if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+    if (map_entry != nullptr && map_entry->_ascii_equiv != 0) {
       result += (wchar_t)map_entry->_ascii_equiv;
       if (map_entry->_ascii_additional != 0) {
         result += (wchar_t)map_entry->_ascii_additional;
@@ -117,7 +122,7 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
       // an unusual accent mark).
       const UnicodeLatinMap::Entry *map_entry =
         UnicodeLatinMap::look_up(ch);
-      if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+      if (map_entry != nullptr && map_entry->_ascii_equiv != 0) {
         // Yes, it has an ascii equivalent.
         if (map_entry->_ascii_additional != 0) {
           // In fact, it has two of them.
@@ -345,7 +350,7 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
     encoding = TextEncoder::E_unicode;
   } else {
     ostream *notify_ptr = StringDecoder::get_notify_ptr();
-    if (notify_ptr != (ostream *)NULL) {
+    if (notify_ptr != nullptr) {
       (*notify_ptr)
         << "Invalid TextEncoder::Encoding: " << word << "\n";
     }

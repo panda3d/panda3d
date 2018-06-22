@@ -26,7 +26,7 @@
 /**
  * The streambuf object that implements IChunkedStream.
  */
-class ChunkedStreamBuf : public streambuf {
+class ChunkedStreamBuf : public std::streambuf {
   // No need to export from DLL.
 public:
   ChunkedStreamBuf();
@@ -43,13 +43,13 @@ protected:
 
 private:
   size_t read_chars(char *start, size_t length);
-  bool http_getline(string &str);
+  bool http_getline(std::string &str);
 
   PT(BioStreamPtr) _source;
   size_t _chunk_remaining;
   bool _done;
   bool _wanted_nonblocking;
-  string _working_getline;
+  std::string _working_getline;
   ISocketStream::ReadState _read_state;
 
   PT(HTTPChannel) _doc;

@@ -15,6 +15,10 @@
 
 #include <ctype.h>
 
+using std::setfill;
+using std::setw;
+using std::string;
+
 static const int num_weekdays = 7;
 static const char * const weekdays[num_weekdays] = {
   "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
@@ -182,7 +186,7 @@ HTTPDate(const string &format) {
   if (t.tm_year < 100) {
     // Two-digit year.  Assume it's in the same century, unless that
     // assumption puts it more than 50 years in the future.
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *tp = gmtime(&now);
     t.tm_year += 100 * (tp->tm_year / 100);
     if (t.tm_year - tp->tm_year > 50) {
@@ -219,7 +223,7 @@ HTTPDate(const string &format) {
   if (_time != (time_t)-1) {
     // Unfortunately, mktime() assumes local time; convert this back to GMT.
 #if defined(IS_FREEBSD)
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     struct tm *tp = localtime(&now);
     _time -= tp->tm_gmtoff;
 #elif defined(_WIN32)
@@ -245,7 +249,7 @@ get_string() const {
 
   struct tm *tp = gmtime(&_time);
 
-  ostringstream result;
+  std::ostringstream result;
   result
     << weekdays[tp->tm_wday] << ", "
     << setw(2) << setfill('0') << tp->tm_mday << " "
@@ -263,7 +267,7 @@ get_string() const {
  *
  */
 bool HTTPDate::
-input(istream &in) {
+input(std::istream &in) {
   (*this) = HTTPDate();
 
   // Extract out the quoted date string.
@@ -294,7 +298,7 @@ input(istream &in) {
  *
  */
 void HTTPDate::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // We put quotes around the string on output, so we can reliably detect the
   // end of the date string on input, above.
   out << '"' << get_string() << '"';

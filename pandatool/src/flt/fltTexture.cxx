@@ -16,7 +16,7 @@
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
 #include "pathReplace.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 TypeHandle FltTexture::_type_handle;
 
@@ -123,7 +123,7 @@ set_texture_filename(const Filename &filename) {
  */
 Filename FltTexture::
 get_attr_filename() const {
-  string texture_filename = get_texture_filename();
+  std::string texture_filename = get_texture_filename();
   return Filename::binary_filename(texture_filename + ".attr");
 }
 
@@ -136,21 +136,21 @@ FltError FltTexture::
 read_attr_data() {
   Filename attr_filename = get_attr_filename();
 
-  ifstream attr;
+  std::ifstream attr;
   if (!attr_filename.open_read(attr)) {
     return FE_could_not_open;
   }
 
   // Determine the file's size so we can read it all into one big datagram.
-  attr.seekg(0, ios::end);
+  attr.seekg(0, std::ios::end);
   if (attr.fail()) {
     return FE_read_error;
   }
-  streampos length = attr.tellg();
+  std::streampos length = attr.tellg();
 
   char *buffer = new char[length];
 
-  attr.seekg(0, ios::beg);
+  attr.seekg(0, std::ios::beg);
   attr.read(buffer, length);
   if (attr.fail()) {
     return FE_read_error;
@@ -184,7 +184,7 @@ write_attr_data(Filename attr_filename) const {
   }
 
   attr_filename.set_binary();
-  ofstream attr;
+  std::ofstream attr;
   if (!attr_filename.open_write(attr)) {
     return FE_could_not_open;
   }

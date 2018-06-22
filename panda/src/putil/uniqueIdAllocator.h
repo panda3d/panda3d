@@ -46,8 +46,8 @@ PUBLISHED:
   void free(uint32_t index);
   PN_stdfloat fraction_used() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 public:
   static const uint32_t IndexEnd;

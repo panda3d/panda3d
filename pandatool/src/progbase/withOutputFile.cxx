@@ -27,7 +27,7 @@ WithOutputFile(bool allow_last_param, bool allow_stdout,
   _allow_stdout = allow_stdout;
   _binary_output = binary_output;
   _got_output_filename = false;
-  _output_ptr = (ostream *)NULL;
+  _output_ptr = nullptr;
   _owns_output_ptr = false;
 }
 
@@ -46,16 +46,16 @@ WithOutputFile::
  * Returns an output stream that corresponds to the user's intended egg file
  * output--either stdout, or the named output file.
  */
-ostream &WithOutputFile::
+std::ostream &WithOutputFile::
 get_output() {
-  if (_output_ptr == (ostream *)NULL) {
+  if (_output_ptr == nullptr) {
     if (!_got_output_filename) {
       // No filename given; use standard output.
       if (!_allow_stdout) {
         nout << "No output filename specified.\n";
         exit(1);
       }
-      _output_ptr = &cout;
+      _output_ptr = &std::cout;
       _owns_output_ptr = false;
 
     } else {
@@ -108,7 +108,7 @@ close_output() {
     delete _output_ptr;
     _owns_output_ptr = false;
   }
-  _output_ptr = NULL;
+  _output_ptr = nullptr;
   _output_stream.close();
 }
 

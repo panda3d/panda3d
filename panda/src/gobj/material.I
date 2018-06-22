@@ -15,7 +15,7 @@
  *
  */
 INLINE Material::
-Material(const string &name) : Namable(name) {
+Material(const std::string &name) : Namable(name) {
   _base_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _ambient.set(1.0f, 1.0f, 1.0f, 1.0f);
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);

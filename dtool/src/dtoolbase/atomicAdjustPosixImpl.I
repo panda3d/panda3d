@@ -35,13 +35,16 @@ dec(TVOLATILE AtomicAdjustPosixImpl::Integer &var) {
 
 /**
  * Atomically computes var += delta.  It is legal for delta to be negative.
+ * Returns the result of the addition.
  */
-INLINE void AtomicAdjustPosixImpl::
+INLINE AtomicAdjustPosixImpl::Integer AtomicAdjustPosixImpl::
 add(TVOLATILE AtomicAdjustPosixImpl::Integer &var,
     AtomicAdjustPosixImpl::Integer delta) {
   pthread_mutex_lock(&_mutex);
-  var += delta;
+  Integer new_value = var + delta;
+  var = new_value;
   pthread_mutex_unlock(&_mutex);
+  return new_value;
 }
 
 /**

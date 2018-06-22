@@ -15,6 +15,9 @@
 #include "patchfile.h"
 #include "filename.h"
 
+using std::cerr;
+using std::endl;
+
 void
 usage() {
   cerr << "Usage: build_patch [opts] <old_file> <new_file>" << endl;

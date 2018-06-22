@@ -18,6 +18,8 @@
 
 #include <opus/opusfile.h>
 
+using std::istream;
+
 /**
  * Callbacks passed to libopusfile to implement file I/O via the
  * VirtualFileSystem.
@@ -46,15 +48,15 @@ int cb_seek(void *stream, opus_int64 offset, int whence) {
 
   switch (whence) {
   case SEEK_SET:
-    in->seekg(offset, ios::beg);
+    in->seekg(offset, std::ios::beg);
     break;
 
   case SEEK_CUR:
-    in->seekg(offset, ios::cur);
+    in->seekg(offset, std::ios::cur);
     break;
 
   case SEEK_END:
-    in->seekg(offset, ios::end);
+    in->seekg(offset, std::ios::end);
     break;
 
   default:
@@ -165,7 +167,7 @@ seek(double t) {
     return;
   }
 
-  t = max(t, 0.0);
+  t = std::max(t, 0.0);
 
   // Use op_time_seek_lap if cross-lapping is enabled.
   int error = op_pcm_seek(_op, (ogg_int64_t)(t * 48000.0));

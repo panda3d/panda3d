@@ -28,6 +28,6 @@ run_p3dpython(const char *program_name, const char *archive_file,
                      log_pathname, interactive_console);
   int result = P3DPythonRun::_global_ptr->run_python();
   delete P3DPythonRun::_global_ptr;
-  P3DPythonRun::_global_ptr = NULL;
+  P3DPythonRun::_global_ptr = nullptr;
   return result;
 }

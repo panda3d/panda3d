@@ -37,7 +37,7 @@ protected:
 private:
     WebBrowserTexture(const WebBrowserTexture &copy);
 PUBLISHED:
-    WebBrowserTexture(const string &name, AwWebView* aw_web_view = NULL);
+    WebBrowserTexture(const std::string &name, AwWebView* aw_web_view = nullptr);
     virtual ~WebBrowserTexture();
 
 

@@ -50,7 +50,7 @@ TypeHandle CocoaGraphicsWindow::_type_handle;
  */
 CocoaGraphicsWindow::
 CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -362,6 +362,13 @@ open_window() {
     }
   }
 
+  if (cocoagsg->_context == nil) {
+    // Could not obtain a proper context.
+    _gsg.clear();
+    close_window();
+    return false;
+  }
+
   // Fill in the blanks.
   if (!_properties.has_origin()) {
     _properties.set_origin(-2, -2);
@@ -405,7 +412,7 @@ open_window() {
       cocoadisplay_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
 
-      void *ptr_handle;
+      void *ptr_handle = nullptr;
 
       // Depending on whether the window handle comes from a Carbon or a Cocoa
       // application, it could be either a HIViewRef or an NSView or NSWindow.
@@ -1286,7 +1293,7 @@ load_image(const Filename &filename) {
   if (vfile == NULL) {
     return nil;
   }
-  istream *str = vfile->open_read_file(true);
+  std::istream *str = vfile->open_read_file(true);
   if (str == NULL) {
     cocoadisplay_cat.error()
       << "Could not open file " << filename << " for reading\n";
@@ -1442,7 +1449,7 @@ handle_foreground_event(bool foreground) {
  */
 bool CocoaGraphicsWindow::
 handle_close_request() {
-  string close_request_event = get_close_request_event();
+  std::string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
     // In this case, the app has indicated a desire to intercept the request
     // and process it directly.

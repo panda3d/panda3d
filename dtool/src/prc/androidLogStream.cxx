@@ -56,7 +56,7 @@ AndroidLogStream::AndroidLogStreamBuf::
  */
 int AndroidLogStream::AndroidLogStreamBuf::
 sync() {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   // Write the characters that remain in the buffer.
   for (char *p = pbase(); p < pptr(); ++p) {
@@ -73,7 +73,7 @@ sync() {
  */
 int AndroidLogStream::AndroidLogStreamBuf::
 overflow(int ch) {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {
     return EOF;
@@ -107,7 +107,7 @@ write_char(char c) {
  */
 AndroidLogStream::
 AndroidLogStream(int priority) :
-  ostream(new AndroidLogStreamBuf(priority)) {
+  std::ostream(new AndroidLogStreamBuf(priority)) {
 }
 
 /**
@@ -122,11 +122,11 @@ AndroidLogStream::
  * Returns an AndroidLogStream suitable for writing log messages with the
  * indicated severity.
  */
-ostream &AndroidLogStream::
+std::ostream &AndroidLogStream::
 out(NotifySeverity severity) {
-  static AndroidLogStream* streams[NS_fatal + 1] = {NULL};
+  static AndroidLogStream* streams[NS_fatal + 1] = {nullptr};
 
-  if (streams[severity] == NULL) {
+  if (streams[severity] == nullptr) {
     int priority = ANDROID_LOG_UNKNOWN;
     if (severity != NS_unspecified) {
       priority = ((int)severity) + 1;

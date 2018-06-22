@@ -52,17 +52,17 @@ PUBLISHED:
 
   bool   encircles(int x, int y) const;
   double total_turns(double sec) const;
-  double match_pattern(const string &pattern, double rot, double seglen);
+  double match_pattern(const std::string &pattern, double rot, double seglen);
 
 public:
   INLINE PointerEventList(const PointerEventList &copy);
   INLINE void operator = (const PointerEventList &copy);
 
-  virtual void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
-  void parse_pattern(const string &ascpat, vector_double &pattern);
+  void parse_pattern(const std::string &ascpat, vector_double &pattern);
   typedef pdeque<PointerEvent> Events;
   Events _events;
 
@@ -84,7 +84,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const PointerEventList &pointerlist) {
+INLINE std::ostream &operator << (std::ostream &out, const PointerEventList &pointerlist) {
   pointerlist.output(out);
   return out;
 }

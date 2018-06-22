@@ -39,7 +39,7 @@ UserDataAudioCursor(UserDataAudio *src) :
 UserDataAudioCursor::
 ~UserDataAudioCursor() {
   UserDataAudio *source = (UserDataAudio*)(MovieAudio*)_source;
-  source->_cursor = NULL;
+  source->_cursor = nullptr;
 }
 
 /**

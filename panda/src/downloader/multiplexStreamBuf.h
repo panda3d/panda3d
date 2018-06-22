@@ -24,7 +24,7 @@
  * Used by MultiplexStream to implement an ostream that sends what is written
  * to it to any number of additional sources, like other ostreams.
  */
-class EXPCL_PANDAEXPRESS MultiplexStreamBuf : public streambuf {
+class EXPCL_PANDA_DOWNLOADER MultiplexStreamBuf : public std::streambuf {
 public:
   MultiplexStreamBuf();
   virtual ~MultiplexStreamBuf();
@@ -41,8 +41,8 @@ public:
   };
 
   void add_output(BufferType buffer_type, OutputType output_type,
-                  ostream *out = (ostream *)NULL,
-                  FILE *fout = (FILE *)NULL,
+                  std::ostream *out = nullptr,
+                  FILE *fout = nullptr,
                   bool owns_obj = false);
 
   void flush();
@@ -58,11 +58,11 @@ private:
   class Output {
   public:
     void close();
-    void write_string(const string &str);
+    void write_string(const std::string &str);
 
     BufferType _buffer_type;
     OutputType _output_type;
-    ostream *_out;
+    std::ostream *_out;
     FILE *_fout;
     bool _owns_obj;
   };
@@ -71,7 +71,7 @@ private:
   Outputs _outputs;
 
   MutexImpl _lock;
-  string _line_buffer;
+  std::string _line_buffer;
 };
 
 #include "multiplexStreamBuf.I"

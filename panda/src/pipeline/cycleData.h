@@ -49,9 +49,9 @@ class EXPCL_PANDA_PIPELINE CycleData
 #endif  // DO_PIPELINING
 {
 public:
-  INLINE CycleData() DEFAULT_CTOR;
-  INLINE CycleData(CycleData &&from) DEFAULT_CTOR;
-  INLINE CycleData(const CycleData &copy) DEFAULT_CTOR;
+  INLINE CycleData() = default;
+  INLINE CycleData(CycleData &&from) = default;
+  INLINE CycleData(const CycleData &copy) = default;
   virtual ~CycleData();
 
   virtual CycleData *make_copy() const=0;
@@ -64,11 +64,11 @@ public:
                       void *extra_data);
 
   virtual TypeHandle get_parent_type() const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 };
 
-INLINE ostream &
-operator << (ostream &out, const CycleData &cd) {
+INLINE std::ostream &
+operator << (std::ostream &out, const CycleData &cd) {
   cd.output(out);
   return out;
 }

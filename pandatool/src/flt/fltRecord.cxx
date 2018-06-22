@@ -69,7 +69,7 @@ get_num_children() const {
  */
 FltRecord *FltRecord::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -104,7 +104,7 @@ get_num_subfaces() const {
  */
 FltRecord *FltRecord::
 get_subface(int n) const {
-  nassertr(n >= 0 && n < (int)_subfaces.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_subfaces.size(), nullptr);
   return _subfaces[n];
 }
 
@@ -139,7 +139,7 @@ get_num_extensions() const {
  */
 FltRecord *FltRecord::
 get_extension(int n) const {
-  nassertr(n >= 0 && n < (int)_extensions.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_extensions.size(), nullptr);
   return _extensions[n];
 }
 
@@ -178,7 +178,7 @@ get_num_ancillary() const {
  */
 FltRecord *FltRecord::
 get_ancillary(int n) const {
-  nassertr(n >= 0 && n < (int)_ancillary.size(), (FltRecord *)NULL);
+  nassertr(n >= 0 && n < (int)_ancillary.size(), nullptr);
   return _ancillary[n];
 }
 
@@ -220,7 +220,7 @@ has_comment() const {
  * Retrieves the comment for this record, or empty string if the record has no
  * comment.
  */
-const string &FltRecord::
+const std::string &FltRecord::
 get_comment() const {
   return _comment;
 }
@@ -237,7 +237,7 @@ clear_comment() {
  * Changes the comment for this record.
  */
 void FltRecord::
-set_comment(const string &comment) {
+set_comment(const std::string &comment) {
   _comment = comment;
 }
 
@@ -251,7 +251,7 @@ set_comment(const string &comment) {
  * this is exactly the sort of thing we expect.
  */
 void FltRecord::
-check_remaining_size(const DatagramIterator &di, const string &name) const {
+check_remaining_size(const DatagramIterator &di, const std::string &name) const {
   if (di.get_remaining_size() == 0) {
     return;
   }
@@ -291,7 +291,7 @@ apply_converted_filenames() {
  * flt file, use FltHeader::write_flt().
  */
 void FltRecord::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -301,7 +301,7 @@ output(ostream &out) const {
  * flt file, use FltHeader::write_flt().
  */
 void FltRecord::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   write_children(out, indent_level);
 }
@@ -311,7 +311,7 @@ write(ostream &out, int indent_level) const {
  * line of the record description, writes out the list of children.
  */
 void FltRecord::
-write_children(ostream &out, int indent_level) const {
+write_children(std::ostream &out, int indent_level) const {
   if (!_ancillary.empty()) {
     out << " + " << _ancillary.size() << " ancillary";
   }
@@ -621,7 +621,8 @@ extract_record(FltRecordReader &) {
 bool FltRecord::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_comment) {
-    _comment = reader.get_iterator().get_remaining_bytes();
+    DatagramIterator &di = reader.get_iterator();
+    _comment = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 
@@ -735,7 +736,7 @@ build_record(FltRecordWriter &) const {
 FltError FltRecord::
 write_ancillary(FltRecordWriter &writer) const {
   if (!_comment.empty()) {
-    Datagram dc(_comment);
+    Datagram dc(_comment.data(), _comment.size());
     FltError result = writer.write_record(FO_comment, dc);
     if (result != FE_ok) {
       return result;

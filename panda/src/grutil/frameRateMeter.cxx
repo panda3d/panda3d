@@ -31,7 +31,7 @@ TypeHandle FrameRateMeter::_type_handle;
  *
  */
 FrameRateMeter::
-FrameRateMeter(const string &name) :
+FrameRateMeter(const std::string &name) :
   TextNode(name),
   _last_aspect_ratio(-1) {
 
@@ -58,7 +58,7 @@ FrameRateMeter(const string &name) :
   // calculation within TextAssembler.
   PN_stdfloat height = 1.0f;
   TextFont *font = get_font();
-  if (font != NULL){
+  if (font != nullptr){
     height = font->get_line_height() * 0.8;
   }
 
@@ -134,10 +134,10 @@ setup_window(GraphicsOutput *window) {
  */
 void FrameRateMeter::
 clear_window() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     _window->remove_display_region(_display_region);
-    _window = (GraphicsOutput *)NULL;
-    _display_region = (DisplayRegion *)NULL;
+    _window = nullptr;
+    _display_region = nullptr;
   }
   _root = NodePath();
 }
@@ -164,7 +164,7 @@ bool FrameRateMeter::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // This triggers when you try to parent a frame rate meter into the scene
   // graph yourself.  Instead, use setup_window().
-  nassertr(_display_region != NULL, false);
+  nassertr(_display_region != nullptr, false);
 
   Thread *current_thread = trav->get_current_thread();
 

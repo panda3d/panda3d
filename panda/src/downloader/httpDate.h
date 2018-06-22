@@ -24,18 +24,18 @@
  * conversely, it can accept a time_t value and encode it for output as a
  * string.
  */
-class EXPCL_PANDAEXPRESS HTTPDate {
+class EXPCL_PANDA_DOWNLOADER HTTPDate {
 PUBLISHED:
   INLINE HTTPDate();
   INLINE HTTPDate(time_t time);
-  HTTPDate(const string &format);
+  HTTPDate(const std::string &format);
   INLINE HTTPDate(const HTTPDate &copy);
   INLINE void operator = (const HTTPDate &copy);
   INLINE static HTTPDate now();
 
   INLINE bool is_valid() const;
 
-  string get_string() const;
+  std::string get_string() const;
   INLINE time_t get_time() const;
 
   INLINE bool operator == (const HTTPDate &other) const;
@@ -51,17 +51,17 @@ PUBLISHED:
   INLINE HTTPDate operator - (int seconds) const;
   INLINE int operator - (const HTTPDate &other) const;
 
-  bool input(istream &in);
-  void output(ostream &out) const;
+  bool input(std::istream &in);
+  void output(std::ostream &out) const;
 
 private:
-  static string get_token(const string &str, size_t &pos);
+  static std::string get_token(const std::string &str, size_t &pos);
 
   time_t _time;
 };
 
-INLINE istream &operator >> (istream &in, HTTPDate &date);
-INLINE ostream &operator << (ostream &out, const HTTPDate &date);
+INLINE std::istream &operator >> (std::istream &in, HTTPDate &date);
+INLINE std::ostream &operator << (std::ostream &out, const HTTPDate &date);
 
 #include "httpDate.I"
 

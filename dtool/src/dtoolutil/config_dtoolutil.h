@@ -19,4 +19,6 @@
 // Include this so interrogate can find it.
 #include <iostream>
 
+extern EXPCL_DTOOL_DTOOLUTIL void init_libdtoolutil();
+
 #endif

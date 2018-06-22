@@ -22,6 +22,8 @@
 
 #include <math.h>
 
+using std::endl;
+
 TypeHandle PolylightEffect::_type_handle;
 
 /**
@@ -334,7 +336,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
  *
  */
 void PolylightEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   LightGroup::const_iterator li;
@@ -461,8 +463,8 @@ has_light(const NodePath &light) const {
   return (li != _lightgroup.end());
 }
 
-ostream &
-operator << (ostream &out, PolylightEffect::ContribType ct) {
+std::ostream &
+operator << (std::ostream &out, PolylightEffect::ContribType ct) {
   switch (ct) {
   case PolylightEffect::CT_proximal:
     return out << "proximal";

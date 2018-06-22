@@ -24,12 +24,12 @@ class SceneSetup;
  * This specialization on CallbackData is passed when the callback is
  * initiated from the cull traversal, for a DisplayRegion.
  */
-class EXPCL_PANDA_PGRAPH DisplayRegionCullCallbackData : public CallbackData {
+class EXPCL_PANDA_DISPLAY DisplayRegionCullCallbackData : public CallbackData {
 public:
   DisplayRegionCullCallbackData(CullHandler *cull_handler, SceneSetup *scene_setup);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE CullHandler *get_cull_handler() const;
   INLINE SceneSetup *get_scene_setup() const;

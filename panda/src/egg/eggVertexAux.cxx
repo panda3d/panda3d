@@ -22,7 +22,7 @@ TypeHandle EggVertexAux::_type_handle;
  *
  */
 EggVertexAux::
-EggVertexAux(const string &name, const LVecBase4d &aux) :
+EggVertexAux(const std::string &name, const LVecBase4d &aux) :
   EggNamedObject(name),
   _aux(aux)
 {
@@ -62,7 +62,7 @@ EggVertexAux::
  */
 PT(EggVertexAux) EggVertexAux::
 make_average(const EggVertexAux *first, const EggVertexAux *second) {
-  nassertr(first->get_name() == second->get_name(), NULL);
+  nassertr(first->get_name() == second->get_name(), nullptr);
 
   LVecBase4d aux = (first->_aux + second->_aux) / 2;
   return new EggVertexAux(first->get_name(), aux);
@@ -72,8 +72,8 @@ make_average(const EggVertexAux *first, const EggVertexAux *second) {
  *
  */
 void EggVertexAux::
-write(ostream &out, int indent_level) const {
-  string inline_name = get_name();
+write(std::ostream &out, int indent_level) const {
+  std::string inline_name = get_name();
   if (!inline_name.empty()) {
     inline_name += ' ';
   }

@@ -1,18 +1,15 @@
-/*
-// Filename: vrmlLexer.lxx
-// Created by:  drose (01Oct04)
-//
-////////////////////////////////////////////////////////////////////
-//
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
-//
-////////////////////////////////////////////////////////////////////
-*/
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file vrmlLexer.lxx
+ * @author drose
+ * @date 2004-10-01
+ */
 
 /**************************************************
  * VRML 2.0 Parser
@@ -50,13 +47,13 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *input_p = NULL;
+static std::istream *input_p = nullptr;
 
 // This is the name of the vrml file we're parsing.  We keep it so we
 // can print it out for error messages.
-static string vrml_filename;
+static std::string vrml_filename;
 
-extern void vrmlyyerror(const string &);
+extern void vrmlyyerror(const std::string &);
 
     /* The YACC parser sets this to a token to direct the lexer */
     /* in cases where just syntax isn't enough: */
@@ -70,13 +67,13 @@ static int sfImageIntsParsed = 0;
 static int sfImageIntsExpected = 0;
 
 // This is used while scanning a quoted string.
-static string quoted_string;
+static std::string quoted_string;
 
 // And this keeps track of the currently-parsing array.
 static MFArray *mfarray;
 
 void
-vrml_init_lexer(istream &in, const string &filename) {
+vrml_init_lexer(std::istream &in, const std::string &filename) {
   input_p = &in;
   vrml_filename = filename;
   line_number = 0;
@@ -94,7 +91,9 @@ vrmlyywrap(void) {
 }
 
 void
-vrmlyyerror(const string &msg) {
+vrmlyyerror(const std::string &msg) {
+  using std::cerr;
+
   cerr << "\nError";
   if (!vrml_filename.empty()) {
     cerr << " in " << vrml_filename;
@@ -107,7 +106,9 @@ vrmlyyerror(const string &msg) {
 }
 
 void
-vrmlyywarning(const string &msg) {
+vrmlyywarning(const std::string &msg) {
+  using std::cerr;
+
   cerr << "\nWarning";
   if (!vrml_filename.empty()) {
     cerr << " in " << vrml_filename;
@@ -123,7 +124,7 @@ vrmlyywarning(const string &msg) {
 // stdio FILE pointer.  This is flex-specific.
 static void
 input_chars(char *buffer, int &result, int max_size) {
-  nassertv(input_p != NULL);
+  nassertv(input_p != nullptr);
   if (*input_p) {
     input_p->read(buffer, max_size);
     result = input_p->gcount();
@@ -143,7 +144,7 @@ input_chars(char *buffer, int &result, int max_size) {
 
       // Truncate it at the newline.
       char *end = strchr(current_line, '\n');
-      if (end != NULL) {
+      if (end != nullptr) {
         *end = '\0';
       }
     }
@@ -158,13 +159,13 @@ input_chars(char *buffer, int &result, int max_size) {
 // Define this macro carefully, since different flex versions call it
 // with a different type for result.
 #define YY_INPUT(buffer, result, max_size) { \
-  int int_result; \
+  int int_result = 0; \
   input_chars((buffer), int_result, (max_size)); \
   (result) = int_result; \
 }
 
 int extract_int() {
-  return strtol(yytext, NULL, 0);
+  return strtol(yytext, nullptr, 0);
 }
 
 double extract_float() {
@@ -275,7 +276,7 @@ idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
 <NODE>TO            { return TO; }
 <NODE>IS            { return IS; }
 <NODE>ROUTE         { return ROUTE; }
-<NODE>NULL          { return SFN_NULL; }
+<NODE>nullptr          { return SFN_NULL; }
 <NODE>eventIn       { return EVENTIN; }
 <NODE>eventOut      { return EVENTOUT; }
 <NODE>field         { return FIELD; }

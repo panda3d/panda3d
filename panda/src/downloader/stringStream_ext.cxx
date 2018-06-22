@@ -51,7 +51,7 @@ void Extension<StringStream>::
 set_data(PyObject *data) {
   _this->_buf.clear();
 
-  if (data == NULL) {
+  if (data == nullptr) {
     return;
   }
 

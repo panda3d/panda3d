@@ -22,7 +22,7 @@
  * Pure virtual base class for physical modeling.  Takes physically modelable
  * objects and applies forces to them.
  */
-class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
+class EXPCL_PANDA_PHYSICS AngularIntegrator : public BaseIntegrator {
 PUBLISHED:
   virtual ~AngularIntegrator();
 public:
@@ -31,8 +31,8 @@ public:
                  PN_stdfloat dt);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   AngularIntegrator();

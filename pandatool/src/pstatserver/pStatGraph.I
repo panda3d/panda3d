@@ -39,9 +39,9 @@ get_label_collector(int n) const {
 /**
  * Returns the text associated with the nth label.
  */
-INLINE string PStatGraph::
+INLINE std::string PStatGraph::
 get_label_name(int n) const {
-  nassertr(n >= 0 && n < (int)_labels.size(), string());
+  nassertr(n >= 0 && n < (int)_labels.size(), std::string());
   return _monitor->get_client_data()->get_collector_name(_labels[n]);
 }
 
@@ -117,7 +117,7 @@ get_guide_bar_units() const {
  * is set to GBU_named | GBU_show_units.
  */
 INLINE void PStatGraph::
-set_guide_bar_unit_name(const string &unit_name) {
+set_guide_bar_unit_name(const std::string &unit_name) {
   _unit_name = unit_name;
 }
 
@@ -125,7 +125,7 @@ set_guide_bar_unit_name(const string &unit_name) {
  * Returns the name of the units to be used for the guide bars if the units
  * type is set to GBU_named | GBU_show_units.
  */
-INLINE const string &PStatGraph::
+INLINE const std::string &PStatGraph::
 get_guide_bar_unit_name() const {
   return _unit_name;
 }

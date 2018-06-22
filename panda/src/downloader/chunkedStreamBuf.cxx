@@ -18,11 +18,6 @@
 // This module is not compiled if OpenSSL is not available.
 #ifdef HAVE_OPENSSL
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
-
 /**
  *
  */
@@ -71,7 +66,7 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
   _read_state = ISocketStream::RS_reading;
   _doc = doc;
 
-  if (_doc != (HTTPChannel *)NULL) {
+  if (_doc != nullptr) {
     _read_index = doc->_read_index;
     _doc->_transfer_file_size = 0;
     _doc->_got_transfer_file_size = true;
@@ -136,7 +131,7 @@ read_chars(char *start, size_t length) {
 
     if (_chunk_remaining != 0) {
       // Extract some of the bytes remaining in the chunk.
-      length = min(length, _chunk_remaining);
+      length = std::min(length, _chunk_remaining);
       (*_source)->read(start, length);
       size_t read_count = (*_source)->gcount();
       if (!_wanted_nonblocking) {
@@ -158,7 +153,7 @@ read_chars(char *start, size_t length) {
     }
 
     // Read the next chunk.
-    string line;
+    std::string line;
     bool got_line = http_getline(line);
     while (got_line && line.empty()) {
       // Skip blank lines.  There really should be exactly one blank line, but
@@ -181,7 +176,7 @@ read_chars(char *start, size_t length) {
 
       return 0;
     }
-    size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
+    size_t chunk_size = (size_t)strtol(line.c_str(), nullptr, 16);
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
         << "Got chunk of size " << chunk_size << " bytes.\n";
@@ -190,7 +185,7 @@ read_chars(char *start, size_t length) {
     if (chunk_size == 0) {
       // Last chunk; we're done.
       _done = true;
-      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+      if (_doc != nullptr && _read_index == _doc->_read_index) {
         _doc->_file_size = _doc->_transfer_file_size;
         _doc->_got_file_size = true;
       }
@@ -198,7 +193,7 @@ read_chars(char *start, size_t length) {
       return 0;
     }
 
-    if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+    if (_doc != nullptr && _read_index == _doc->_read_index) {
       _doc->_transfer_file_size += chunk_size;
     }
 
@@ -217,7 +212,7 @@ read_chars(char *start, size_t length) {
  * received or if the connection has been closed.
  */
 bool ChunkedStreamBuf::
-http_getline(string &str) {
+http_getline(std::string &str) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
   while (!(*_source)->eof() && !(*_source)->fail()) {
@@ -225,7 +220,7 @@ http_getline(string &str) {
     case '\n':
       // end-of-line character, we're done.
       str = _working_getline;
-      _working_getline = string();
+      _working_getline = std::string();
       {
         // Trim trailing whitespace.  We're not required to do this per the
         // HTTP spec, but let's be generous.

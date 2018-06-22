@@ -31,9 +31,9 @@ get_original_filename() const {
 /**
  * Returns the entire contents of the file as a string.
  */
-INLINE string VirtualFile::
+INLINE std::string VirtualFile::
 read_file(bool auto_unwrap) const {
-  string result;
+  std::string result;
   read_file(result, auto_unwrap);
   return result;
 }
@@ -42,7 +42,7 @@ read_file(bool auto_unwrap) const {
  * Writes the entire contents of the file as a string, if it is writable.
  */
 INLINE bool VirtualFile::
-write_file(const string &data, bool auto_wrap) {
+write_file(const std::string &data, bool auto_wrap) {
   return write_file((const unsigned char *)data.data(), data.size(), auto_wrap);
 }
 
@@ -57,8 +57,8 @@ set_original_filename(const Filename &filename) {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const VirtualFile &file) {
+INLINE std::ostream &
+operator << (std::ostream &out, const VirtualFile &file) {
   file.output(out);
   return out;
 }

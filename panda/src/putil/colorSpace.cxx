@@ -12,7 +12,7 @@
  */
 
 #include "colorSpace.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "configVariableEnum.h"
 #include "string_utils.h"
 
@@ -20,6 +20,11 @@
 #include "pnotify.h"
 
 #include <ctype.h>
+
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 ColorSpace
 parse_color_space_string(const string &str) {

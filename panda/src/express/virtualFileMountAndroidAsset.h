@@ -27,9 +27,9 @@
 /**
  * Maps a Multifile's contents into the VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
+class EXPCL_PANDA_EXPRESS VirtualFileMountAndroidAsset : public VirtualFileMount {
 PUBLISHED:
-  INLINE VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path);
+  INLINE VirtualFileMountAndroidAsset(AAssetManager *mgr, const std::string &apk_path);
   virtual ~VirtualFileMountAndroidAsset();
 
 public:
@@ -40,11 +40,11 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
-                         pvector<unsigned char> &result) const;
+                         vector_uchar &result) const;
 
-  virtual istream *open_read_file(const Filename &file) const;
-  virtual streamsize get_file_size(const Filename &file, istream *stream) const;
-  virtual streamsize get_file_size(const Filename &file) const;
+  virtual std::istream *open_read_file(const Filename &file) const;
+  virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;
+  virtual std::streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 
@@ -53,21 +53,21 @@ public:
 
 private:
   AAssetManager *_asset_mgr;
-  string _apk_path;
+  std::string _apk_path;
 
-  class AssetStream : public istream {
+  class AssetStream : public std::istream {
   public:
     INLINE AssetStream(AAsset *asset);
     virtual ~AssetStream();
   };
 
-  class AssetStreamBuf : public streambuf {
+  class AssetStreamBuf : public std::streambuf {
   public:
     AssetStreamBuf(AAsset *asset);
     virtual ~AssetStreamBuf();
 
-    virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
-    virtual streampos seekpos(streampos pos, ios_openmode which);
+    virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+    virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
   protected:
     virtual int underflow();

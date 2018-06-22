@@ -13,6 +13,9 @@
 
 #include "filename_ext.h"
 
+using std::string;
+using std::wstring;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
@@ -24,8 +27,8 @@ extern Dtool_PyTypedObject Dtool_Filename;
  */
 void Extension<Filename>::
 __init__(PyObject *path) {
-  nassertv(path != NULL);
-  nassertv(_this != NULL);
+  nassertv(path != nullptr);
+  nassertv(_this != nullptr);
 
   Py_ssize_t length;
 
@@ -64,12 +67,12 @@ __init__(PyObject *path) {
 #if PY_VERSION_HEX >= 0x03060000
   // It must be an os.PathLike object.  Check for an __fspath__ method.
   PyObject *fspath = PyObject_GetAttrString((PyObject *)Py_TYPE(path), "__fspath__");
-  if (fspath == NULL) {
+  if (fspath == nullptr) {
     PyErr_Format(PyExc_TypeError, "expected str, bytes or os.PathLike object, not %s", Py_TYPE(path)->tp_name);
     return;
   }
 
-  path_str = PyObject_CallFunctionObjArgs(fspath, path, NULL);
+  path_str = PyObject_CallFunctionObjArgs(fspath, path, nullptr);
   Py_DECREF(fspath);
 #else
   // There is no standard path protocol before Python 3.6, but let's try and
@@ -89,7 +92,7 @@ __init__(PyObject *path) {
   }
 #endif
 
-  if (path_str == NULL) {
+  if (path_str == nullptr) {
     return;
   }
 
@@ -133,8 +136,8 @@ __reduce__(PyObject *self) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
   PyTypeObject *this_class = Py_TYPE(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *result = Py_BuildValue("(O(s))", this_class, _this->c_str());

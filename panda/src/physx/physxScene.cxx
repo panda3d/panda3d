@@ -157,7 +157,7 @@ unlink() {
   _cm->purgeControllers();
   NxReleaseControllerManager(_cm);
 
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxManager::get_global_ptr()->_scenes.remove(this);
@@ -174,7 +174,7 @@ release() {
   unlink();
   NxPhysicsSDK *sdk = NxGetPhysicsSDK();
   sdk->releaseScene(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -226,7 +226,7 @@ void PhysxScene::
 fetch_results() {
 
   nassertv(_error_type == ET_ok);
-  nassertv(_ptr != NULL);
+  nassertv(_ptr != nullptr);
 
   _pcollector_fetch_results.start();
   _ptr->fetchResults(NX_RIGID_BODY_FINISHED, true);
@@ -354,14 +354,14 @@ get_num_actors() const {
 PhysxActor *PhysxScene::
 create_actor(PhysxActorDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(), nullptr);
 
   PhysxActor *actor = new PhysxActor();
-  nassertr(actor, NULL);
+  nassertr(actor, nullptr);
 
   NxActor *actorPtr = _ptr->createActor(desc._desc);
-  nassertr(actorPtr, NULL);
+  nassertr(actorPtr, nullptr);
 
   actor->link(actorPtr);
 
@@ -374,8 +374,8 @@ create_actor(PhysxActorDesc &desc) {
 PhysxActor *PhysxScene::
 get_actor(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbActors(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbActors(), nullptr);
 
   NxActor *actorPtr = _ptr->getActors()[idx];
   PhysxActor *actor = (PhysxActor *)(actorPtr->userData);
@@ -395,7 +395,7 @@ get_actor(unsigned int idx) const {
 PhysxDebugGeomNode *PhysxScene::
 get_debug_geom_node() {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return _debugNode;
 }
 
@@ -412,7 +412,7 @@ enable_contact_reporting(bool enabled) {
     _contact_report.enable();
   }
   else {
-    _ptr->setUserContactReport(NULL);
+    _ptr->setUserContactReport(nullptr);
     _contact_report.disable();
   }
 }
@@ -441,7 +441,7 @@ enable_trigger_reporting(bool enabled) {
     _trigger_report.enable();
   }
   else {
-    _ptr->setUserTriggerReport(NULL);
+    _ptr->setUserTriggerReport(nullptr);
     _trigger_report.disable();
   }
 }
@@ -510,14 +510,14 @@ get_num_materials() const {
 PhysxMaterial *PhysxScene::
 create_material(PhysxMaterialDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(), nullptr);
 
   PhysxMaterial *material = new PhysxMaterial();
-  nassertr(material, NULL);
+  nassertr(material, nullptr);
 
   NxMaterial *materialPtr = _ptr->createMaterial(desc._desc);
-  nassertr(materialPtr, NULL);
+  nassertr(materialPtr, nullptr);
 
   material->link(materialPtr);
 
@@ -531,15 +531,15 @@ create_material(PhysxMaterialDesc &desc) {
 PhysxMaterial *PhysxScene::
 create_material() {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   PhysxMaterial *material = new PhysxMaterial();
-  nassertr(material, NULL);
+  nassertr(material, nullptr);
 
   NxMaterialDesc desc;
   desc.setToDefault();
   NxMaterial *materialPtr = _ptr->createMaterial(desc);
-  nassertr(materialPtr, NULL);
+  nassertr(materialPtr, nullptr);
 
   material->link(materialPtr);
 
@@ -570,7 +570,7 @@ get_hightest_material_index() const {
 PhysxMaterial *PhysxScene::
 get_material_from_index(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   NxMaterial *materialPtr = _ptr->getMaterialFromIndex(idx);
 
@@ -584,8 +584,8 @@ get_material_from_index(unsigned int idx) const {
 PhysxMaterial *PhysxScene::
 get_material(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbMaterials(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbMaterials(), nullptr);
 
   NxU32 n = _ptr->getNbMaterials();
   NxMaterial **materials = new NxMaterial *[n];
@@ -593,7 +593,7 @@ get_material(unsigned int idx) const {
   NxU32 iterator = 0;
 
   materialCount = _ptr->getMaterialArray(materials, n, iterator);
-  nassertr((materialCount == n), NULL);
+  nassertr((materialCount == n), nullptr);
 
   NxMaterial *materialPtr = materials[idx];
   delete[] materials;
@@ -618,17 +618,17 @@ get_num_controllers() const {
 PhysxController *PhysxScene::
 create_controller(PhysxControllerDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(), nullptr);
 
   PhysxController *controller = PhysxController::factory(desc.ptr()->getType());
-  nassertr(controller, NULL);
+  nassertr(controller, nullptr);
 
   desc.ptr()->callback = &_controller_report;
   desc.ptr()->userData = controller;
 
   NxController *controllerPtr = _cm->createController(_ptr,*desc.ptr());
-  nassertr(controllerPtr, NULL);
+  nassertr(controllerPtr, nullptr);
 
   controller->link(controllerPtr);
   controller->get_actor()->set_name("");
@@ -642,8 +642,8 @@ create_controller(PhysxControllerDesc &desc) {
 PhysxController *PhysxScene::
 get_controller(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _cm->getNbControllers(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _cm->getNbControllers(), nullptr);
 
   NxController *controllerPtr = _cm->getController(idx);
   PhysxController *controller = (PhysxController *)(controllerPtr->getUserData());
@@ -668,14 +668,14 @@ get_num_joints() const {
 PhysxJoint *PhysxScene::
 create_joint(PhysxJointDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(), nullptr);
 
   PhysxJoint *joint = PhysxJoint::factory(desc.ptr()->getType());
-  nassertr(joint, NULL);
+  nassertr(joint, nullptr);
 
   NxJoint *jointPtr = _ptr->createJoint(*desc.ptr());
-  nassertr(jointPtr, NULL);
+  nassertr(jointPtr, nullptr);
 
   joint->link(jointPtr);
 
@@ -688,8 +688,8 @@ create_joint(PhysxJointDesc &desc) {
 PhysxJoint *PhysxScene::
 get_joint(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbJoints(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbJoints(), nullptr);
 
   NxJoint *jointPtr;
   NxU32 nJoints = _ptr->getNbJoints();
@@ -718,18 +718,18 @@ get_num_force_fields() const {
 PhysxForceField *PhysxScene::
 create_force_field(PhysxForceFieldDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   // Create the kernel
   desc.create_kernel(_ptr);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(desc.is_valid(), nullptr);
 
   // Create the force field
   PhysxForceField *field = new PhysxForceField();
-  nassertr(field, NULL);
+  nassertr(field, nullptr);
 
   NxForceField *fieldPtr = _ptr->createForceField(desc._desc);
-  nassertr(fieldPtr, NULL);
+  nassertr(fieldPtr, nullptr);
 
   field->link(fieldPtr);
 
@@ -743,8 +743,8 @@ create_force_field(PhysxForceFieldDesc &desc) {
 PhysxForceField *PhysxScene::
 get_force_field(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbForceFields(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbForceFields(), nullptr);
 
   NxForceField **fields = _ptr->getForceFields();
   NxForceField *fieldPtr = fields[idx];
@@ -768,13 +768,13 @@ get_num_force_field_shape_groups() const {
 PhysxForceFieldShapeGroup *PhysxScene::
 create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   PhysxForceFieldShapeGroup *group = new PhysxForceFieldShapeGroup();
-  nassertr(group, NULL);
+  nassertr(group, nullptr);
 
   NxForceFieldShapeGroup *groupPtr = _ptr->createForceFieldShapeGroup(desc._desc);
-  nassertr(groupPtr, NULL);
+  nassertr(groupPtr, nullptr);
 
   group->link(groupPtr);
 
@@ -787,17 +787,17 @@ create_force_field_shape_group(PhysxForceFieldShapeGroupDesc &desc) {
 PhysxForceFieldShapeGroup *PhysxScene::
 get_force_field_shape_group(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbForceFieldShapeGroups(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbForceFieldShapeGroups(), nullptr);
 
   _ptr->resetForceFieldShapeGroupsIterator();
-  NxForceFieldShapeGroup *groupPtr = NULL;
+  NxForceFieldShapeGroup *groupPtr = nullptr;
   idx++;
   while (idx-- > 0) {
     groupPtr = _ptr->getNextForceFieldShapeGroup();
   }
 
-  return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : NULL;
+  return groupPtr ? (PhysxForceFieldShapeGroup *)groupPtr->userData : nullptr;
 }
 
 /**
@@ -816,13 +816,13 @@ get_num_cloths() const {
 PhysxCloth *PhysxScene::
 create_cloth(PhysxClothDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   PhysxCloth *cloth = new PhysxCloth();
-  nassertr(cloth, NULL);
+  nassertr(cloth, nullptr);
 
   NxCloth *clothPtr = _ptr->createCloth(desc._desc);
-  nassertr(clothPtr, NULL);
+  nassertr(clothPtr, nullptr);
 
   cloth->link(clothPtr);
 
@@ -835,8 +835,8 @@ create_cloth(PhysxClothDesc &desc) {
 PhysxCloth *PhysxScene::
 get_cloth(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbCloths(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbCloths(), nullptr);
 
   NxCloth **cloths = _ptr->getCloths();
   NxCloth *clothPtr = cloths[idx];
@@ -860,13 +860,13 @@ get_num_soft_bodies() const {
 PhysxSoftBody *PhysxScene::
 create_soft_body(PhysxSoftBodyDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   PhysxSoftBody *softbody = new PhysxSoftBody();
-  nassertr(softbody, NULL);
+  nassertr(softbody, nullptr);
 
   NxSoftBody *softbodyPtr = _ptr->createSoftBody(desc._desc);
-  nassertr(softbodyPtr, NULL);
+  nassertr(softbodyPtr, nullptr);
 
   softbody->link(softbodyPtr);
 
@@ -880,8 +880,8 @@ create_soft_body(PhysxSoftBodyDesc &desc) {
 PhysxSoftBody *PhysxScene::
 get_soft_body(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _ptr->getNbSoftBodies(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _ptr->getNbSoftBodies(), nullptr);
 
   NxSoftBody **softbodies = _ptr->getSoftBodies();
   NxSoftBody *softbodyPtr = softbodies[idx];
@@ -905,11 +905,11 @@ get_num_vehicles() const {
 PhysxVehicle *PhysxScene::
 create_vehicle(PhysxVehicleDesc &desc) {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr(desc.is_valid(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr(desc.is_valid(), nullptr);
 
   PhysxVehicle *vehicle = new PhysxVehicle();
-  nassertr(vehicle, NULL);
+  nassertr(vehicle, nullptr);
 
   vehicle->create(this, desc);
 
@@ -922,8 +922,8 @@ create_vehicle(PhysxVehicleDesc &desc) {
 PhysxVehicle *PhysxScene::
 get_vehicle(unsigned int idx) const {
 
-  nassertr(_error_type == ET_ok, NULL);
-  nassertr_always(idx < _vehicles.size(), NULL);
+  nassertr(_error_type == ET_ok, nullptr);
+  nassertr_always(idx < _vehicles.size(), nullptr);
 
   return _vehicles[idx];
 }
@@ -934,7 +934,7 @@ get_vehicle(unsigned int idx) const {
 PhysxSceneStats2 PhysxScene::
 get_stats2() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return PhysxSceneStats2(_ptr->getStats2());
 }
 
@@ -949,7 +949,7 @@ raycast_any_shape(const PhysxRay &ray,
 
   nassertr(_error_type == ET_ok, false);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   return _ptr->raycastAnyShape(ray._ray, (NxShapesType)shapesType,
                                mask.get_mask(), ray._length, groupsPtr);
@@ -969,7 +969,7 @@ raycast_closest_shape(const PhysxRay &ray,
 
   nassertr(_error_type == ET_ok, hit);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   NxU32 hints = NX_RAYCAST_SHAPE | NX_RAYCAST_IMPACT | NX_RAYCAST_DISTANCE;
   if (smoothNormal == true) {
@@ -1000,7 +1000,7 @@ raycast_all_shapes(const PhysxRay &ray,
 
   nassertr(_error_type == ET_ok, report);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   NxU32 hints = NX_RAYCAST_SHAPE | NX_RAYCAST_IMPACT | NX_RAYCAST_DISTANCE;
   if (smoothNormal == true) {
@@ -1028,7 +1028,7 @@ raycast_any_bounds(const PhysxRay &ray,
 
   nassertr(_error_type == ET_ok, false);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   return _ptr->raycastAnyBounds(ray._ray, (NxShapesType)shapesType,
                                 mask.get_mask(), ray._length, groupsPtr);
@@ -1046,7 +1046,7 @@ raycast_closest_bounds(const PhysxRay &ray, PhysxShapesType shapesType, PhysxMas
 
   nassertr(_error_type == ET_ok, hit);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   NxU32 hints = NX_RAYCAST_SHAPE | NX_RAYCAST_IMPACT | NX_RAYCAST_DISTANCE;
   if (smoothNormal == true) {
@@ -1078,7 +1078,7 @@ raycast_all_bounds(const PhysxRay &ray,
 
   nassertr(_error_type == ET_ok, report);
 
-  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : NULL;
+  NxGroupsMask *groupsPtr = groups ? &(groups->_mask) : nullptr;
 
   NxU32 hints = NX_RAYCAST_SHAPE | NX_RAYCAST_IMPACT | NX_RAYCAST_DISTANCE;
   if (smoothNormal == true) {
@@ -1109,8 +1109,8 @@ overlap_sphere_shapes(const LPoint3f &center, float radius,
 
   NxSphere worldSphere(PhysxManager::point3_to_nxVec3(center), radius);
 
-  _ptr->overlapSphereShapes(worldSphere, (NxShapesType)shapesType, 0, NULL, &report,
-                            mask.get_mask(), NULL, accurateCollision);
+  _ptr->overlapSphereShapes(worldSphere, (NxShapesType)shapesType, 0, nullptr, &report,
+                            mask.get_mask(), nullptr, accurateCollision);
 
   return report;
 }
@@ -1132,8 +1132,8 @@ overlap_capsule_shapes(const LPoint3f &p0, const LPoint3f &p1, float radius,
                     PhysxManager::point3_to_nxVec3(p1));
   NxCapsule worldCapsule(segment, radius);
 
-  _ptr->overlapCapsuleShapes(worldCapsule, (NxShapesType)shapesType, 0, NULL, &report,
-                             mask.get_mask(), NULL, accurateCollision);
+  _ptr->overlapCapsuleShapes(worldCapsule, (NxShapesType)shapesType, 0, nullptr, &report,
+                             mask.get_mask(), nullptr, accurateCollision);
 
   return report;
 }
@@ -1541,9 +1541,9 @@ get_dominance_group_pair(unsigned int g1, unsigned int g2) {
 PhysxMaterial *PhysxScene::
 get_wheel_shape_material() {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
-  if (_wheelShapeMaterial == NULL) {
+  if (_wheelShapeMaterial == nullptr) {
     PhysxMaterialDesc materialDesc;
     materialDesc.set_flag(PhysxMaterialDesc::MF_disable_friction, true);
     _wheelShapeMaterial = create_material(materialDesc);

@@ -16,8 +16,8 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGL)
-  #error Buildsystem error: BUILDING_PANDAGL not defined
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_GLGSG)
+  #error Buildsystem error: BUILDING_PANDA_GLGSG not defined
 #endif
 
 ConfigureDef(config_glgsg);

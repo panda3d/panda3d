@@ -19,7 +19,7 @@
  */
 void ConfigVariableSearchPath::
 reload_search_path() {
-  nassertv(_core != (ConfigVariableCore *)NULL);
+  nassertv(_core != nullptr);
   mark_cache_valid(_local_modified);
   _cache.clear();
 
@@ -32,7 +32,7 @@ reload_search_path() {
     Filename page_filename(page->get_name());
     Filename page_dirname = page_filename.get_dirname();
     ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
-    string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
+    std::string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
     ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
     if (!expanded.empty()) {
       Filename dir = Filename::from_os_specific(expanded);

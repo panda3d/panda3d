@@ -58,7 +58,7 @@ get_child_vector(const PhysicsObject *) {
  * Write a string representation of this instance to <out>.
  */
 void LinearJitterForce::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LinearJitterForce";
   #endif //] NDEBUG
@@ -68,7 +68,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LinearJitterForce::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LinearJitterForce:\n";
   LinearRandomForce::write(out, indent+2);

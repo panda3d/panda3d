@@ -57,10 +57,8 @@ class CullTraverser;
 class EXPCL_PANDA_DISPLAY DisplayRegion : public TypedReferenceCount, public DrawableRegion {
 protected:
   DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
-
-private:
-  DisplayRegion(const DisplayRegion &copy);
-  void operator = (const DisplayRegion &copy);
+  DisplayRegion(const DisplayRegion &copy) = delete;
+  void operator = (const DisplayRegion &copy) = delete;
 
 public:
   virtual ~DisplayRegion();
@@ -152,13 +150,13 @@ PUBLISHED:
   INLINE LVecBase2i get_pixel_size(int i = 0) const;
   MAKE_PROPERTY(pixel_size, get_pixel_size);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   static Filename make_screenshot_filename(
-    const string &prefix = "screenshot");
-  Filename save_screenshot_default(const string &prefix = "screenshot");
+    const std::string &prefix = "screenshot");
+  Filename save_screenshot_default(const std::string &prefix = "screenshot");
   bool save_screenshot(
-    const Filename &filename, const string &image_comment = "");
+    const Filename &filename, const std::string &image_comment = "");
   bool get_screenshot(PNMImage &image);
   PT(Texture) get_screenshot();
 
@@ -310,9 +308,8 @@ private:
 class EXPCL_PANDA_DISPLAY DisplayRegionPipelineReader {
 public:
   INLINE DisplayRegionPipelineReader(DisplayRegion *object, Thread *current_thread);
-private:
-  INLINE DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy);
-  INLINE void operator = (const DisplayRegionPipelineReader &copy);
+  DisplayRegionPipelineReader(const DisplayRegionPipelineReader &copy) = delete;
+  void operator = (const DisplayRegionPipelineReader &copy) = delete;
 
 public:
   INLINE ~DisplayRegionPipelineReader();
@@ -374,7 +371,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);
+INLINE std::ostream &operator << (std::ostream &out, const DisplayRegion &dr);
 
 #include "displayRegion.I"
 

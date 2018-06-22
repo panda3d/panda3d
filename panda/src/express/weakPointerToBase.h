@@ -31,11 +31,15 @@ protected:
   INLINE WeakPointerToBase(To *ptr);
   INLINE WeakPointerToBase(const PointerToBase<T> &copy);
   INLINE WeakPointerToBase(const WeakPointerToBase<T> &copy);
+  INLINE WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept;
   INLINE ~WeakPointerToBase();
 
   void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(const WeakPointerToBase<To> &copy);
+  INLINE void reassign(WeakPointerToBase<To> &&from) noexcept;
+
+  INLINE void update_type(To *ptr);
 
   // No assignment or retrieval functions are declared in WeakPointerToBase,
   // because we will have to specialize on const vs.  non-const later.
@@ -56,6 +60,12 @@ public:
   INLINE bool operator <= (To *other) const;
   INLINE bool operator >= (To *other) const;
 
+  INLINE bool operator == (std::nullptr_t) const;
+  INLINE bool operator != (std::nullptr_t) const;
+  INLINE bool operator > (std::nullptr_t) const;
+  INLINE bool operator <= (std::nullptr_t) const;
+  INLINE bool operator >= (std::nullptr_t) const;
+
   INLINE bool operator == (const WeakPointerToBase<To> &other) const;
   INLINE bool operator != (const WeakPointerToBase<To> &other) const;
   INLINE bool operator > (const WeakPointerToBase<To> &other) const;
@@ -69,6 +79,7 @@ public:
   INLINE bool operator >= (const PointerToBase<To> &other) const;
 #endif  // WIN32_VC
   INLINE bool operator < (const To *other) const;
+  INLINE bool operator < (std::nullptr_t) const;
   INLINE bool operator < (const WeakPointerToBase<To> &other) const;
   INLINE bool operator < (const PointerToBase<To> &other) const;
 #endif  // CPPPARSER
@@ -77,11 +88,11 @@ PUBLISHED:
   INLINE void clear();
   INLINE void refresh() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const WeakPointerToBase<T> &pointer) {
+INLINE std::ostream &operator <<(std::ostream &out, const WeakPointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }

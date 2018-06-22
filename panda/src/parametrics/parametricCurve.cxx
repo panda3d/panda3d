@@ -321,8 +321,8 @@ write_egg(Filename filename, CoordinateSystem cs) {
  * stream.  Returns true if the file is successfully written.
  */
 bool ParametricCurve::
-write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
-  string curve_type;
+write_egg(std::ostream &out, const Filename &filename, CoordinateSystem cs) {
+  std::string curve_type;
   switch (get_curve_type()) {
   case PCT_XYZ:
     curve_type = "xyz";
@@ -339,7 +339,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
 
   if (!has_name()) {
     // If we don't have a name, come up with one.
-    string name = filename.get_basename_wo_extension();
+    std::string name = filename.get_basename_wo_extension();
 
     if (!curve_type.empty()) {
       name += "_";
@@ -418,7 +418,7 @@ get_bezier_seg(ParametricCurve::BezierSeg &) const {
  */
 NurbsCurveInterface *ParametricCurve::
 get_nurbs_interface() {
-  return (NurbsCurveInterface *)NULL;
+  return nullptr;
 }
 
 /**
@@ -497,7 +497,7 @@ convert_to_hermite(HermiteCurve *hc) const {
 bool ParametricCurve::
 convert_to_nurbs(ParametricCurve *nc) const {
   NurbsCurveInterface *nurbs = nc->get_nurbs_interface();
-  nassertr(nurbs != (NurbsCurveInterface *)NULL, false);
+  nassertr(nurbs != nullptr, false);
 
   BezierSegs bz_segs;
   if (!get_bezier_segs(bz_segs)) {
@@ -602,7 +602,7 @@ invalidate_all() {
  * Returns true on success, false on failure.
  */
 bool ParametricCurve::
-format_egg(ostream &, const string &, const string &, int) const {
+format_egg(std::ostream &, const std::string &, const std::string &, int) const {
   return false;
 }
 

@@ -67,7 +67,7 @@ get_in_window() const {
 }
 
 
-INLINE ostream &operator << (ostream &out, const MouseData &md) {
+INLINE std::ostream &operator << (std::ostream &out, const MouseData &md) {
   md.output(out);
   return out;
 }

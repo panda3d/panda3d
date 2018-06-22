@@ -35,11 +35,11 @@ PUBLISHED:
   INLINE void clear();
 
 public:
-  bool write_header(const string &header);
+  bool write_header(const std::string &header);
   virtual bool put_datagram(const Datagram &data) override;
   virtual void flush() override;
 
-  bool read_header(string &header, size_t num_bytes);
+  bool read_header(std::string &header, size_t num_bytes);
   virtual bool get_datagram(Datagram &data) override;
   virtual bool is_eof() override;
 

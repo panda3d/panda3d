@@ -24,12 +24,12 @@ get_num_variables() const {
  */
 INLINE ConfigVariableCore *ConfigVariableManager::
 get_variable(size_t n) const {
-  nassertr(n < _variables.size(), (ConfigVariableCore *)NULL);
+  nassertr(n < _variables.size(), nullptr);
   return _variables[n];
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableManager &variableMgr) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableManager &variableMgr) {
   variableMgr.output(out);
   return out;
 }

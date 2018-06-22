@@ -16,7 +16,7 @@
 #include "config_collada.h"
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCacheRecord.h"
 
 static PT(PandaNode)
@@ -26,10 +26,10 @@ load_from_loader(ColladaLoader &loader) {
   if (loader._error && !collada_accept_errors) {
     collada_cat.error()
       << "Errors in collada file.\n";
-    return NULL;
+    return nullptr;
   }
 
-  if (loader._root != NULL && collada_flatten) {
+  if (loader._root != nullptr && collada_flatten) {
     SceneGraphReducer gr;
 
     int combine_siblings_bits = 0;
@@ -72,7 +72,7 @@ load_collada_file(const Filename &filename, CoordinateSystem cs,
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(filename);
   }
 
@@ -85,7 +85,7 @@ load_collada_file(const Filename &filename, CoordinateSystem cs,
     << "Reading " << filename << "\n";
 
   if (!loader.read(filename)) {
-    return NULL;
+    return nullptr;
   }
 
   return load_from_loader(loader);

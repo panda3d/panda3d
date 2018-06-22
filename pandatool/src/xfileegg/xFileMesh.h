@@ -68,11 +68,11 @@ public:
   int get_num_materials() const;
   XFileMaterial *get_material(int n) const;
 
-  XFileDataNode *make_x_mesh(XFileNode *x_parent, const string &suffix);
-  XFileDataNode *make_x_normals(XFileNode *x_mesh, const string &suffix);
-  XFileDataNode *make_x_colors(XFileNode *x_mesh, const string &suffix);
-  XFileDataNode *make_x_uvs(XFileNode *x_mesh, const string &suffix);
-  XFileDataNode *make_x_material_list(XFileNode *x_mesh, const string &suffix);
+  XFileDataNode *make_x_mesh(XFileNode *x_parent, const std::string &suffix);
+  XFileDataNode *make_x_normals(XFileNode *x_mesh, const std::string &suffix);
+  XFileDataNode *make_x_colors(XFileNode *x_mesh, const std::string &suffix);
+  XFileDataNode *make_x_uvs(XFileNode *x_mesh, const std::string &suffix);
+  XFileDataNode *make_x_material_list(XFileNode *x_mesh, const std::string &suffix);
 
   bool fill_mesh(XFileDataNode *obj);
   bool fill_mesh_child(XFileDataNode *obj);
@@ -100,7 +100,7 @@ private:
   class SkinWeightsData {
   public:
     LMatrix4d _matrix_offset;
-    string _joint_name;
+    std::string _joint_name;
     WeightMap _weight_map;
   };
   typedef epvector<SkinWeightsData> SkinWeights;

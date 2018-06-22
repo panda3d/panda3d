@@ -30,6 +30,10 @@
 #include "sphereSurfaceEmitter.h"
 #include "pStatTimer.h"
 
+using std::cout;
+using std::endl;
+using std::ostream;
+
 TypeHandle ParticleSystem::_type_handle;
 
 PStatCollector ParticleSystem::_update_collector("App:Particles:Update");
@@ -594,7 +598,7 @@ sanity_check() {
     #endif
     result++;
   }
-  pool_size = min(_particle_pool_size, _physics_objects.size());
+  pool_size = std::min(_particle_pool_size, _physics_objects.size());
 
   // find out how many particles are REALLY alive and dead
   int real_live_particle_count = 0;

@@ -20,6 +20,10 @@
 #include <sys/stat.h>
 #endif
 
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+
 TypeHandle VirtualFileMountAndroidAsset::_type_handle;
 
 /**
@@ -80,7 +84,7 @@ is_regular_file(const Filename &file) const {
 
   //express_cat.error() << "is_regular_file " << file << " - " << asset << "\n";
 
-  if (asset == NULL) {
+  if (asset == nullptr) {
     return false;
   }
   AAsset_close(asset);
@@ -93,7 +97,7 @@ is_regular_file(const Filename &file) const {
  */
 bool VirtualFileMountAndroidAsset::
 read_file(const Filename &file, bool do_uncompress,
-          pvector<unsigned char> &result) const {
+          vector_uchar &result) const {
   if (do_uncompress) {
     // If the file is to be decompressed, we'd better just use the higher-
     // level implementation, which includes support for on-the-fly
@@ -107,7 +111,7 @@ read_file(const Filename &file, bool do_uncompress,
 
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_STREAMING);
-  if (asset == (AAsset *)NULL) {
+  if (asset == nullptr) {
     express_cat.info()
       << "Unable to read " << file << "\n";
     return false;
@@ -140,16 +144,16 @@ read_file(const Filename &file, bool do_uncompress,
  * istream on success (which you should eventually delete when you are done
  * reading). Returns NULL on failure.
  */
-istream *VirtualFileMountAndroidAsset::
+std::istream *VirtualFileMountAndroidAsset::
 open_read_file(const Filename &file) const {
   AAsset* asset;
   asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
-  if (asset == (AAsset *)NULL) {
-    return NULL;
+  if (asset == nullptr) {
+    return nullptr;
   }
 
   AssetStream *stream = new AssetStream(asset);
-  return (istream *) stream;
+  return (std::istream *) stream;
 }
 
 /**
@@ -158,7 +162,7 @@ open_read_file(const Filename &file) const {
  * implementations may require this stream to determine the size.
  */
 streamsize VirtualFileMountAndroidAsset::
-get_file_size(const Filename &file, istream *in) const {
+get_file_size(const Filename &file, std::istream *in) const {
   // If it's already open, get the AAsset pointer from the streambuf.
   const AssetStreamBuf *buf = (const AssetStreamBuf *) in->rdbuf();
   off_t length = AAsset_getLength(buf->_asset);
@@ -229,14 +233,14 @@ get_system_info(const Filename &file, SubfileInfo &info) {
 bool VirtualFileMountAndroidAsset::
 scan_directory(vector_string &contents, const Filename &dir) const {
   AAssetDir *asset_dir = AAssetManager_openDir(_asset_mgr, dir.c_str());
-  if (asset_dir == NULL) {
+  if (asset_dir == nullptr) {
     return false;
   }
 
   // Note: this returns the full path.
   const char *fullpath = AAssetDir_getNextFileName(asset_dir);
 
-  while (fullpath != NULL) {
+  while (fullpath != nullptr) {
     express_cat.error() << fullpath << "\n"; // DEBUG
     // Determine the basename and add it to the vector.
     Filename fname (fullpath);
@@ -290,10 +294,10 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
 
   int whence;
   switch (dir) {
-  case ios_base::beg:
+  case std::ios_base::beg:
     whence = SEEK_SET;
     break;
-  case ios_base::cur:
+  case std::ios_base::cur:
     if (off == 0) {
       // Just requesting the current position, no need to void the buffer.
       return AAsset_seek(_asset, 0, SEEK_CUR) - n;
@@ -305,7 +309,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     }
     whence = SEEK_CUR;
     break;
-  case ios_base::end:
+  case std::ios_base::end:
     whence = SEEK_END;
     break;
   default:

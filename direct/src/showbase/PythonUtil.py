@@ -10,7 +10,7 @@ __all__ = ['indent',
 'bound', 'clamp', 'lerp', 'average', 'addListsByValue',
 'boolEqual', 'lineupPos', 'formatElapsedSeconds', 'solveQuadratic',
 'findPythonModule', 'mostDerivedLast',
-'weightedChoice', 'randFloat', 'normalDistrib',
+'clampScalar', 'weightedChoice', 'randFloat', 'normalDistrib',
 'weightedRand', 'randUint31', 'randInt32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
 'SingletonError', 'printListEnum', 'safeRepr',
@@ -177,27 +177,6 @@ class Queue:
         return len(self.__list) == 0
     def __len__(self):
         return len(self.__list)
-
-if __debug__ and __name__ == '__main__':
-    q = Queue()
-    assert q.isEmpty()
-    q.clear()
-    assert q.isEmpty()
-    q.push(10)
-    assert not q.isEmpty()
-    q.push(20)
-    assert not q.isEmpty()
-    assert len(q) == 2
-    assert q.front() == 10
-    assert q.back() == 20
-    assert q.top() == 10
-    assert q.top() == 10
-    assert q.pop() == 10
-    assert len(q) == 1
-    assert not q.isEmpty()
-    assert q.pop() == 20
-    assert len(q) == 0
-    assert q.isEmpty()
 
 
 def indent(stream, numIndents, str):
@@ -1129,6 +1108,23 @@ def findPythonModule(module):
             return pathname
 
     return None
+
+def clampScalar(value, a, b):
+    # calling this ought to be faster than calling both min and max
+    if a < b:
+        if value < a:
+            return a
+        elif value > b:
+            return b
+        else:
+            return value
+    else:
+        if value < b:
+            return b
+        elif value > a:
+            return a
+        else:
+            return value
 
 def weightedChoice(choiceList, rng=random.random, sum=None):
     """given a list of (weight, item) pairs, chooses an item based on the
@@ -2313,36 +2309,6 @@ def flywheel(*args, **kArgs):
         pass
     return flywheel
 
-if __debug__ and __name__ == '__main__':
-    f = flywheel(['a','b','c','d'], countList=[11,20,3,4])
-    obj2count = {}
-    for obj in f:
-        obj2count.setdefault(obj, 0)
-        obj2count[obj] += 1
-    assert obj2count['a'] == 11
-    assert obj2count['b'] == 20
-    assert obj2count['c'] == 3
-    assert obj2count['d'] == 4
-
-    f = flywheel([1,2,3,4], countFunc=lambda x: x*2)
-    obj2count = {}
-    for obj in f:
-        obj2count.setdefault(obj, 0)
-        obj2count[obj] += 1
-    assert obj2count[1] == 2
-    assert obj2count[2] == 4
-    assert obj2count[3] == 6
-    assert obj2count[4] == 8
-
-    f = flywheel([1,2,3,4], countFunc=lambda x: x, scale = 3)
-    obj2count = {}
-    for obj in f:
-        obj2count.setdefault(obj, 0)
-        obj2count[obj] += 1
-    assert obj2count[1] == 1 * 3
-    assert obj2count[2] == 2 * 3
-    assert obj2count[3] == 3 * 3
-    assert obj2count[4] == 4 * 3
 
 if __debug__:
     def quickProfile(name="unnamed"):
@@ -2687,11 +2653,36 @@ def unescapeHtmlString(s):
         result += char
     return result
 
-if __debug__ and __name__ == '__main__':
-    assert unescapeHtmlString('asdf') == 'asdf'
-    assert unescapeHtmlString('as+df') == 'as df'
-    assert unescapeHtmlString('as%32df') == 'as2df'
-    assert unescapeHtmlString('asdf%32') == 'asdf2'
+class PriorityCallbacks:
+    """ manage a set of prioritized callbacks, and allow them to be invoked in order of priority """
+    def __init__(self):
+        self._callbacks = []
+
+    def clear(self):
+        del self._callbacks[:]
+
+    def add(self, callback, priority=None):
+        if priority is None:
+            priority = 0
+        callbacks = self._callbacks
+        lo = 0
+        hi = len(callbacks)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if priority < callbacks[mid][0]:
+                hi = mid
+            else:
+                lo = mid + 1
+        item = (priority, callback)
+        callbacks.insert(lo, item)
+        return item
+
+    def remove(self, item):
+        self._callbacks.remove(item)
+
+    def __call__(self):
+        for priority, callback in self._callbacks:
+            callback()
 
 builtins.Functor = Functor
 builtins.Stack = Stack

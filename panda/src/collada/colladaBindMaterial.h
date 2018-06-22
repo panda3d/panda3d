@@ -29,13 +29,13 @@ class domInstance_material;
 class ColladaBindMaterial {
 public:
   CPT(RenderState) get_material(const ColladaPrimitive *prim) const;
-  CPT(RenderState) get_material(const string &symbol) const;
+  CPT(RenderState) get_material(const std::string &symbol) const;
 
   void load_bind_material(domBind_material &bind_mat);
   void load_instance_material(domInstance_material &inst);
 
 private:
-  pmap<string, CPT(RenderState)> _states;
+  pmap<std::string, CPT(RenderState)> _states;
 };
 
 #endif

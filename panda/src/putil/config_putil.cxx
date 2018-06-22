@@ -6,12 +6,12 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_util.cxx
+ * @file config_putil.cxx
  * @author cary
  * @date 2000-01-04
  */
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "animInterface.h"
 #include "bamCacheIndex.h"
 #include "bamCacheRecord.h"
@@ -51,7 +51,7 @@
   #error Buildsystem error: BUILDING_PANDA_PUTIL not defined
 #endif
 
-ConfigureDef(config_util);
+ConfigureDef(config_putil);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
@@ -88,7 +88,7 @@ ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
-ConfigureFn(config_util) {
+ConfigureFn(config_putil) {
   init_libputil();
 }
 
@@ -103,8 +103,8 @@ ConfigureFn(config_util) {
 
 ConfigVariableSearchPath &
 get_model_path() {
-  static ConfigVariableSearchPath *model_path = NULL;
-  if (model_path == NULL) {
+  static ConfigVariableSearchPath *model_path = nullptr;
+  if (model_path == nullptr) {
     model_path = new ConfigVariableSearchPath
       ("model-path",
        PRC_DESC("The default directories to search for all models and general "
@@ -116,8 +116,8 @@ get_model_path() {
 
 ConfigVariableSearchPath &
 get_plugin_path() {
-  static ConfigVariableSearchPath *plugin_path = NULL;
-  if (plugin_path == NULL) {
+  static ConfigVariableSearchPath *plugin_path = nullptr;
+  if (plugin_path == nullptr) {
     plugin_path = new ConfigVariableSearchPath
       ("plugin-path", "<auto>",
        PRC_DESC("The directories to search for plugin shared libraries."));

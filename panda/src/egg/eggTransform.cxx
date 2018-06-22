@@ -186,7 +186,7 @@ add_uniform_scale(double scale) {
  * Writes the transform to the indicated stream in Egg format.
  */
 void EggTransform::
-write(ostream &out, int indent_level, const string &label) const {
+write(std::ostream &out, int indent_level, const std::string &label) const {
   indent(out, indent_level) << label << " {\n";
 
   int num_components = get_num_components();

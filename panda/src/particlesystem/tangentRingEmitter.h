@@ -20,7 +20,7 @@
  * Describes a planar ring region in which tangent particles are generated,
  * and particles fly off tangential to the ring.
  */
-class EXPCL_PANDAPHYSICS TangentRingEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM TangentRingEmitter : public BaseParticleEmitter {
 PUBLISHED:
   TangentRingEmitter();
   TangentRingEmitter(const TangentRingEmitter &copy);
@@ -34,8 +34,8 @@ PUBLISHED:
   INLINE PN_stdfloat get_radius() const;
   INLINE PN_stdfloat get_radius_spread() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _radius;

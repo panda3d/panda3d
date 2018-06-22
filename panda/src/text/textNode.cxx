@@ -49,6 +49,8 @@
 
 #include <stdio.h>
 
+using std::string;
+
 TypeHandle TextNode::_type_handle;
 
 PStatCollector TextNode::_text_generate_pcollector("*:Generate Text");
@@ -174,7 +176,7 @@ TextNode::
 PN_stdfloat TextNode::
 calc_width(wchar_t character) const {
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return 0.0f;
   }
 
@@ -196,7 +198,7 @@ calc_width(wchar_t character) const {
 bool TextNode::
 has_exact_character(wchar_t character) const {
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return false;
   }
 
@@ -215,7 +217,7 @@ has_exact_character(wchar_t character) const {
 bool TextNode::
 has_character(wchar_t character) const {
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return false;
   }
 
@@ -239,7 +241,7 @@ has_character(wchar_t character) const {
 bool TextNode::
 is_whitespace(wchar_t character) const {
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return false;
   }
 
@@ -252,10 +254,10 @@ is_whitespace(wchar_t character) const {
  * like \1 or \3.
  */
 PN_stdfloat TextNode::
-calc_width(const wstring &line) const {
+calc_width(const std::wstring &line) const {
   PN_stdfloat width = 0.0f;
 
-  wstring::const_iterator si;
+  std::wstring::const_iterator si;
   for (si = line.begin(); si != line.end(); ++si) {
     width += calc_width(*si);
   }
@@ -267,12 +269,12 @@ calc_width(const wstring &line) const {
  *
  */
 void TextNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 
   check_rebuild();
   int geom_count = 0;
-  if (_internal_geom != (PandaNode *)NULL) {
+  if (_internal_geom != nullptr) {
     geom_count = count_geoms(_internal_geom);
   }
 
@@ -283,7 +285,7 @@ output(ostream &out) const {
  *
  */
 void TextNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   TextProperties::write(out, indent_level + 2);
   indent(out, indent_level + 2)
@@ -333,7 +335,7 @@ generate() {
   }
 
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return root;
   }
 
@@ -346,7 +348,7 @@ generate() {
   CPT(TransformState) transform = TransformState::make_mat(mat);
   root->set_transform(transform);
 
-  wstring wtext = get_wtext();
+  std::wstring wtext = get_wtext();
 
   // Assemble the text.
   TextAssembler assembler(this);
@@ -514,7 +516,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
-    if (attribs._color != (const RenderAttrib *)NULL) {
+    if (attribs._color != nullptr) {
       const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
       if (ca->get_color_type() == ColorAttrib::T_flat) {
         const LColor &c = ca->get_color();
@@ -526,7 +528,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
   }
   if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
-    if (attribs._color_scale != (const RenderAttrib *)NULL) {
+    if (attribs._color_scale != nullptr) {
       const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
       const LVecBase4 &s = csa->get_scale();
       if (s != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
@@ -561,7 +563,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   // Now propagate the attributes down to our already-generated geometry, if
   // we have any.
   if ((_flags & F_needs_rebuild) == 0 &&
-      _internal_geom != (PandaNode *)NULL) {
+      _internal_geom != nullptr) {
     SceneGraphReducer gr;
     gr.apply_attribs(_internal_geom, attribs, attrib_types, transformer);
   }
@@ -587,7 +589,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
 
   check_rebuild();
 
-  if (_internal_geom != (PandaNode *)NULL) {
+  if (_internal_geom != nullptr) {
     _internal_geom->calc_tight_bounds(min_point, max_point,
                                       found_any, next_transform, current_thread);
   }
@@ -616,7 +618,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
 bool TextNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   check_rebuild();
-  if (_internal_geom != (PandaNode *)NULL) {
+  if (_internal_geom != nullptr) {
     // Render the text with this node.
     CullTraverserData next_data(data, _internal_geom);
     trav->traverse(next_data);
@@ -682,7 +684,7 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
   check_rebuild();
 
   PandaNode *child = _internal_geom;
-  if (child != (PandaNode *)NULL) {
+  if (child != nullptr) {
     CPT(RenderState) child_state = node_state->compose(child->get_state());
     child->r_prepare_scene(gsg, child_state, transformer, current_thread);
   }

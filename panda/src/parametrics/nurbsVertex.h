@@ -40,7 +40,7 @@ public:
   INLINE const LVecBase4 &get_vertex() const;
 
   INLINE void set_space(const NodePath &space);
-  INLINE void set_space(const string &space);
+  INLINE void set_space(const std::string &space);
   INLINE NodePath get_space(const NodePath &rel_to) const;
 
   void set_extended_vertex(int d, PN_stdfloat value);
@@ -49,7 +49,7 @@ public:
 private:
   LVecBase4 _vertex;
   NodePath _space;
-  string _space_path;
+  std::string _space_path;
   typedef pmap<int, PN_stdfloat> Extended;
   Extended _extended;
 };

@@ -36,7 +36,7 @@ MemoryHook *memory_hook;
  */
 void
 init_memory_hook() {
-  if (memory_hook == NULL) {
+  if (memory_hook == nullptr) {
     memory_hook = new MemoryHook;
   }
 }

@@ -60,10 +60,7 @@
 #include <unistd.h>
 #endif
 
-using namespace std;
-
 #define INLINE inline
-#define TYPENAME typename
 
 // These symbols are used within the Panda environment for exporting classes
 // and functions to the scripting language.  They're largely meaningless if
@@ -82,7 +79,7 @@ using namespace std;
 
 // Panda defines a special Filename class.  We'll use an ordinary string
 // instead.
-typedef string Filename;
+typedef std::string Filename;
 
 // Panda defines WORDS_BIGENDIAN on a bigendian machine; otherwise, the
 // machine is assumed to be littleendian.  Outside of Panda, you're
@@ -92,15 +89,15 @@ typedef string Filename;
 #include <vector>
 #include <map>
 #include <set>
-#define pvector vector
-#define pmap map
-#define pset set
+#define pvector std::vector
+#define pmap std::map
+#define pset std::set
 
 #include <stdint.h>
 
-typedef ifstream pifstream;
-typedef ofstream pofstream;
-typedef fstream pfstream;
+typedef std::ifstream pifstream;
+typedef std::ofstream pofstream;
+typedef std::fstream pfstream;
 
 #endif  // WITHIN_PANDA
 

@@ -34,6 +34,8 @@
 #include "eggAnimPreload.h"
 #include "animPreloadTable.h"
 
+using std::string;
+
 
 
 
@@ -48,7 +50,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader, bool structured)
   _character_node = new Character(_egg_root->get_name());
   _bundle = _character_node->get_bundle(0);
 
-  _morph_root = (PartGroup *)NULL;
+  _morph_root = nullptr;
   _skeleton_root = new PartGroup(_bundle, "<skeleton>");
   _structured = structured;
 }
@@ -83,7 +85,7 @@ egg_to_part(EggNode *egg_node) const {
     // return the root of the character.
     return _bundle;
   }
-  nassertr(index < (int)_parts.size(), NULL);
+  nassertr(index < (int)_parts.size(), nullptr);
   return _parts[index];
 }
 
@@ -140,7 +142,7 @@ part_to_node(PartGroup *part, const string &name) const {
 
   if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
-    if (joint->_geom_node != (PandaNode *)NULL) {
+    if (joint->_geom_node != nullptr) {
       node = joint->_geom_node;
     }
   }
@@ -169,7 +171,7 @@ part_to_node(PartGroup *part, const string &name) const {
  */
 int CharacterMaker::
 create_slider(const string &name) {
-  if (_morph_root == (PartGroup *)NULL) {
+  if (_morph_root == nullptr) {
     _morph_root = new PartGroup(_bundle, "morph");
   }
   CharacterSlider *slider = new CharacterSlider(_morph_root, name);
@@ -238,7 +240,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
     }
 
     PT(AnimPreloadTable) anim_preload = _bundle->modify_anim_preload();
-    if (anim_preload == (AnimPreloadTable *)NULL) {
+    if (anim_preload == nullptr) {
       anim_preload = new AnimPreloadTable;
       _bundle->set_anim_preload(anim_preload);
     }
@@ -313,7 +315,7 @@ parent_joint_nodes(PartGroup *part) {
   if (part->is_character_joint()) {
     CharacterJoint *joint = DCAST(CharacterJoint, part);
     PandaNode *joint_node = joint->_geom_node;
-    if (joint_node != NULL) {
+    if (joint_node != nullptr) {
       _character_node->add_child(joint_node);
       joint->add_net_transform(joint_node);
       joint_node->set_transform(TransformState::make_mat(joint->_net_transform));
@@ -341,7 +343,7 @@ make_geometry(EggNode *egg_node) {
       EggGroupNode *bin_home = determine_bin_home(egg_bin);
 
       bool is_dynamic;
-      if (bin_home == (EggGroupNode *)NULL) {
+      if (bin_home == nullptr) {
         // This is a dynamic polyset that lives under the character's root
         // node.
         bin_home = _egg_root;
@@ -387,7 +389,7 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
 
   // We need to keep track of the one joint we've encountered so far, to see
   // if all the vertices are referenced by the same joint.
-  EggGroupNode *home = NULL;
+  EggGroupNode *home = nullptr;
 
   EggPrimitive::const_iterator vi;
   for (vi = egg_primitive->begin();
@@ -397,7 +399,7 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
     if (vertex->gref_size() > 1) {
       // This vertex is referenced by multiple joints; the primitive is
       // dynamic.
-      return NULL;
+      return nullptr;
     }
 
     if (!vertex->_dxyzs.empty() ||
@@ -405,14 +407,14 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
         !vertex->_drgbas.empty()) {
       // This vertex has some morph slider definitions; therefore, the
       // primitive is dynamic.
-      return NULL;
+      return nullptr;
     }
     EggVertex::const_uv_iterator uvi;
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
       if (!(*uvi)->_duvs.empty()) {
         // Ditto: the vertex has some UV morphs; therefore the primitive is
         // dynamic.
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -423,15 +425,15 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
       // where it is.
       vertex_home = egg_primitive->get_parent();
     } else {
-      nassertr(vertex->gref_size() == 1, NULL);
+      nassertr(vertex->gref_size() == 1, nullptr);
       // This vertex is referenced exactly once.
       vertex_home = *vertex->gref_begin();
     }
 
-    if (home != NULL && home != vertex_home) {
+    if (home != nullptr && home != vertex_home) {
       // Oops, two vertices are referenced by different joints!  The primitive
       // is dynamic.
-      return NULL;
+      return nullptr;
     }
 
     home = vertex_home;
@@ -439,35 +441,35 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
 
   // This shouldn't be possible, unless there are no vertices--but we check
   // for that before calling this function.
-  nassertr(home != NULL, NULL);
+  nassertr(home != nullptr, nullptr);
 
   // So, all the vertices are assigned to the same group.  This means the
   // polygon belongs entirely to one joint.
 
   // If the group is not, in fact, a joint then we return the first joint
   // above the group.
-  EggGroup *egg_group = (EggGroup *)NULL;
+  EggGroup *egg_group = nullptr;
   if (home->is_of_type(EggGroup::get_class_type())) {
     egg_group = DCAST(EggGroup, home);
   }
-  while (egg_group != (EggGroup *)NULL &&
+  while (egg_group != nullptr &&
          egg_group->get_group_type() != EggGroup::GT_joint &&
          egg_group->get_dart_type() == EggGroup::DT_none) {
-    nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);
+    nassertr(egg_group->get_parent() != nullptr, nullptr);
     home = egg_group->get_parent();
-    egg_group = (EggGroup *)NULL;
+    egg_group = nullptr;
     if (home->is_of_type(EggGroup::get_class_type())) {
       egg_group = DCAST(EggGroup, home);
     }
   }
 
-  if (egg_group != (EggGroup *)NULL &&
+  if (egg_group != nullptr &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
       !egg_group->has_dcs_type()) {
     // If the home is a joint without a <DCS> flag--this is the normal case--
     // we'll move the polygon under the character node and animate it from
     // there explicitly.
-    return NULL;
+    return nullptr;
   }
 
   // Otherwise, if the joint *does* have a <DCS> flag, we'll create static
@@ -494,12 +496,12 @@ determine_bin_home(EggBin *egg_bin) {
   if (!egg_rigid_geometry) {
     // If we don't have egg-rigid-geometry enabled, then all geometry is
     // considered dynamic.
-    return NULL;
+    return nullptr;
   }
 
   // We need to keep track of the one joint we've encountered so far, to see
   // if all the vertices are referenced by the same joint.
-  EggGroupNode *home = NULL;
+  EggGroupNode *home = nullptr;
 
   EggGroupNode::const_iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
@@ -513,7 +515,7 @@ determine_bin_home(EggBin *egg_bin) {
       if (vertex->gref_size() > 1) {
         // This vertex is referenced by multiple joints; the primitive is
         // dynamic.
-        return NULL;
+        return nullptr;
       }
 
       if (!vertex->_dxyzs.empty() ||
@@ -521,14 +523,14 @@ determine_bin_home(EggBin *egg_bin) {
           !vertex->_drgbas.empty()) {
         // This vertex has some morph slider definitions; therefore, the
         // primitive is dynamic.
-        return NULL;
+        return nullptr;
       }
       EggVertex::const_uv_iterator uvi;
       for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
         if (!(*uvi)->_duvs.empty()) {
           // Ditto: the vertex has some UV morphs; therefore the primitive is
           // dynamic.
-          return NULL;
+          return nullptr;
         }
       }
 
@@ -539,15 +541,15 @@ determine_bin_home(EggBin *egg_bin) {
         // where it is.
         vertex_home = egg_primitive->get_parent();
       } else {
-        nassertr(vertex->gref_size() == 1, NULL);
+        nassertr(vertex->gref_size() == 1, nullptr);
         // This vertex is referenced exactly once.
         vertex_home = *vertex->gref_begin();
       }
 
-      if (home != NULL && home != vertex_home) {
+      if (home != nullptr && home != vertex_home) {
         // Oops, two vertices are referenced by different joints!  The
         // primitive is dynamic.
-        return NULL;
+        return nullptr;
       }
 
       home = vertex_home;
@@ -557,29 +559,29 @@ determine_bin_home(EggBin *egg_bin) {
   // This shouldn't be possible, unless there are no vertices--but we
   // eliminate invalid primitives before we begin, so all primitives should
   // have vertices, and all bins should have primitives.
-  nassertr(home != NULL, NULL);
+  nassertr(home != nullptr, nullptr);
 
   // So, all the vertices are assigned to the same group.  This means all the
   // primitives in the bin belong entirely to one joint.
 
   // If the group is not, in fact, a joint then we return the first joint
   // above the group.
-  EggGroup *egg_group = (EggGroup *)NULL;
+  EggGroup *egg_group = nullptr;
   if (home->is_of_type(EggGroup::get_class_type())) {
     egg_group = DCAST(EggGroup, home);
   }
-  while (egg_group != (EggGroup *)NULL &&
+  while (egg_group != nullptr &&
          egg_group->get_group_type() != EggGroup::GT_joint &&
          egg_group->get_dart_type() == EggGroup::DT_none) {
-    nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);
+    nassertr(egg_group->get_parent() != nullptr, nullptr);
     home = egg_group->get_parent();
-    egg_group = (EggGroup *)NULL;
+    egg_group = nullptr;
     if (home->is_of_type(EggGroup::get_class_type())) {
       egg_group = DCAST(EggGroup, home);
     }
   }
 
-  if (egg_group != (EggGroup *)NULL &&
+  if (egg_group != nullptr &&
       egg_group->get_group_type() == EggGroup::GT_joint &&
       !egg_group->has_dcs_type()) {
     // If we have rigid geometry that is assigned to a joint without a <DCS>
@@ -597,7 +599,7 @@ determine_bin_home(EggBin *egg_bin) {
  * and this may also break up the geometry into more individual pieces, which
  * is the biggest limiting factor on modern PC graphics cards.
  */
-      return NULL;
+      return nullptr;
     }
 
     CharacterJoint *joint;
@@ -618,7 +620,7 @@ determine_bin_home(EggBin *egg_bin) {
  */
 VertexTransform *CharacterMaker::
 get_identity_transform() {
-  if (_identity_transform == (VertexTransform *)NULL) {
+  if (_identity_transform == nullptr) {
     _identity_transform = new UserVertexTransform("root");
   }
   return _identity_transform;

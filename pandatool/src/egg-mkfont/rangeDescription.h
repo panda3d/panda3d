@@ -25,17 +25,17 @@ class RangeDescription {
 public:
   RangeDescription();
 
-  bool parse_parameter(const string &param);
+  bool parse_parameter(const std::string &param);
   INLINE void add_singleton(int code);
   INLINE void add_range(int from_code, int to_code);
   INLINE bool is_empty() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-  bool parse_word(const string &word);
-  bool parse_code(const string &word, int &code);
-  bool parse_bracket(const string &str);
+  bool parse_word(const std::string &word);
+  bool parse_code(const std::string &word, int &code);
+  bool parse_bracket(const std::string &str);
 
 private:
   class Range {
@@ -53,7 +53,7 @@ private:
   friend class RangeIterator;
 };
 
-INLINE ostream &operator << (ostream &out, const RangeDescription &range);
+INLINE std::ostream &operator << (std::ostream &out, const RangeDescription &range);
 
 #include "rangeDescription.I"
 

@@ -14,24 +14,10 @@
 /**
  *
  */
-INLINE MutexSimpleImpl::
-MutexSimpleImpl() {
-}
-
-/**
- *
- */
-INLINE MutexSimpleImpl::
-~MutexSimpleImpl() {
-}
-
-/**
- *
- */
 INLINE void MutexSimpleImpl::
-acquire() {
-  if (!try_acquire()) {
-    do_acquire();
+lock() {
+  if (!try_lock()) {
+    do_lock();
   }
 }
 
@@ -39,7 +25,7 @@ acquire() {
  *
  */
 INLINE bool MutexSimpleImpl::
-try_acquire() {
+try_lock() {
   if ((_flags & F_lock_count) != 0) {
     return false;
   }
@@ -52,12 +38,12 @@ try_acquire() {
  * waiters on the mutex.
  */
 INLINE void MutexSimpleImpl::
-release() {
+unlock() {
   nassertv((_flags & F_lock_count) != 0);
   _flags &= ~F_lock_count;
 
   if (_flags & F_has_waiters) {
-    do_release();
+    do_unlock();
   }
 }
 
@@ -65,11 +51,11 @@ release() {
  * Releases the mutex, without allowing a context switch to occur.
  */
 INLINE void MutexSimpleImpl::
-release_quietly() {
+unlock_quietly() {
   nassertv((_flags & F_lock_count) != 0);
   _flags &= ~F_lock_count;
 
   if (_flags & F_has_waiters) {
-    do_release_quietly();
+    do_unlock_quietly();
   }
 }

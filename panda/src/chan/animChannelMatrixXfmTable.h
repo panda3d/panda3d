@@ -34,7 +34,7 @@ protected:
   AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy);
 
 PUBLISHED:
-  explicit AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
+  explicit AnimChannelMatrixXfmTable(AnimGroup *parent, const std::string &name);
   virtual ~AnimChannelMatrixXfmTable();
 
 public:
@@ -60,7 +60,7 @@ PUBLISHED:
   INLINE void clear_table(char table_id);
 
 public:
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;

@@ -150,8 +150,8 @@ compare_to(const GeomVertexAnimationSpec &other) const {
   return 0;
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexAnimationSpec &animation) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexAnimationSpec &animation) {
   animation.output(out);
   return out;
 }

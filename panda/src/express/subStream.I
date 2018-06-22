@@ -15,14 +15,14 @@
  *
  */
 INLINE ISubStream::
-ISubStream() : istream(&_buf) {
+ISubStream() : std::istream(&_buf) {
 }
 
 /**
  *
  */
 INLINE ISubStream::
-ISubStream(IStreamWrapper *source, streampos start, streampos end) : istream(&_buf) {
+ISubStream(IStreamWrapper *source, std::streampos start, std::streampos end) : std::istream(&_buf) {
   open(source, start, end);
 }
 
@@ -36,9 +36,9 @@ ISubStream(IStreamWrapper *source, streampos start, streampos end) : istream(&_b
  * end of the source stream.
  */
 INLINE ISubStream &ISubStream::
-open(IStreamWrapper *source, streampos start, streampos end) {
+open(IStreamWrapper *source, std::streampos start, std::streampos end) {
   clear((ios_iostate)0);
-  _buf.open(source, NULL, start, end, false);
+  _buf.open(source, nullptr, start, end, false);
   return *this;
 }
 
@@ -56,14 +56,14 @@ close() {
  *
  */
 INLINE OSubStream::
-OSubStream() : ostream(&_buf) {
+OSubStream() : std::ostream(&_buf) {
 }
 
 /**
  *
  */
 INLINE OSubStream::
-OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append) : ostream(&_buf) {
+OSubStream(OStreamWrapper *dest, std::streampos start, std::streampos end, bool append) : std::ostream(&_buf) {
   open(dest, start, end, append);
 }
 
@@ -77,9 +77,9 @@ OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append) : 
  * end of the dest stream.
  */
 INLINE OSubStream &OSubStream::
-open(OStreamWrapper *dest, streampos start, streampos end, bool append) {
+open(OStreamWrapper *dest, std::streampos start, std::streampos end, bool append) {
   clear((ios_iostate)0);
-  _buf.open(NULL, dest, start, end, append);
+  _buf.open(nullptr, dest, start, end, append);
   return *this;
 }
 
@@ -97,14 +97,14 @@ close() {
  *
  */
 INLINE SubStream::
-SubStream() : iostream(&_buf) {
+SubStream() : std::iostream(&_buf) {
 }
 
 /**
  *
  */
 INLINE SubStream::
-SubStream(StreamWrapper *nested, streampos start, streampos end, bool append) : iostream(&_buf) {
+SubStream(StreamWrapper *nested, std::streampos start, std::streampos end, bool append) : std::iostream(&_buf) {
   open(nested, start, end, append);
 }
 
@@ -117,7 +117,7 @@ SubStream(StreamWrapper *nested, streampos start, streampos end, bool append) : 
  * of the nested stream.
  */
 INLINE SubStream &SubStream::
-open(StreamWrapper *nested, streampos start, streampos end, bool append) {
+open(StreamWrapper *nested, std::streampos start, std::streampos end, bool append) {
   clear((ios_iostate)0);
   _buf.open(nested, nested, start, end, append);
   return *this;

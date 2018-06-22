@@ -15,7 +15,7 @@
  *
  */
 INLINE EggComment::
-EggComment(const string &node_name, const string &comment)
+EggComment(const std::string &node_name, const std::string &comment)
   : EggNode(node_name), _comment(comment) {
 }
 
@@ -31,7 +31,7 @@ EggComment(const EggComment &copy) : EggNode(copy), _comment(copy._comment) {
  *
  */
 INLINE EggComment &EggComment::
-operator = (const string &comment) {
+operator = (const std::string &comment) {
   _comment = comment;
   return *this;
 }
@@ -51,7 +51,7 @@ operator = (const EggComment &copy) {
  *
  */
 INLINE EggComment::
-operator const string & () const {
+operator const std::string & () const {
   return _comment;
 }
 
@@ -60,7 +60,7 @@ operator const string & () const {
  *
  */
 INLINE void EggComment::
-set_comment(const string &comment) {
+set_comment(const std::string &comment) {
   _comment = comment;
 }
 
@@ -68,7 +68,7 @@ set_comment(const string &comment) {
 /**
  *
  */
-INLINE string EggComment::
+INLINE std::string EggComment::
 get_comment() const {
   return _comment;
 }

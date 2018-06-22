@@ -77,7 +77,7 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
 
     PTA_uchar data = PTA_uchar::empty_array(view.len, Texture::get_class_type());
     memcpy(data.p(), view.buf, view.len);
-    _this->set_ram_image(MOVE(data), compression, page_size);
+    _this->set_ram_image(std::move(data), compression, page_size);
 
     PyBuffer_Release(&view);
     return;
@@ -102,7 +102,7 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
 
     PTA_uchar data = PTA_uchar::empty_array(buffer_len, Texture::get_class_type());
     memcpy(data.p(), buffer, buffer_len);
-    _this->set_ram_image(MOVE(data), compression, page_size);
+    _this->set_ram_image(std::move(data), compression, page_size);
     return;
   }
 #endif
@@ -117,7 +117,7 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
  * support compressed image data or sub-pages; use set_ram_image() for that.
  */
 void Extension<Texture>::
-set_ram_image_as(PyObject *image, const string &provided_format) {
+set_ram_image_as(PyObject *image, const std::string &provided_format) {
   // Check if perhaps a PointerToArray object was passed in.
   if (DtoolInstance_Check(image)) {
     if (DtoolInstance_TYPE(image) == &Dtool_ConstPointerToArray_unsigned_char) {
@@ -155,7 +155,7 @@ set_ram_image_as(PyObject *image, const string &provided_format) {
 
     PTA_uchar data = PTA_uchar::empty_array(view.len, Texture::get_class_type());
     memcpy(data.p(), view.buf, view.len);
-    _this->set_ram_image_as(MOVE(data), provided_format);
+    _this->set_ram_image_as(std::move(data), provided_format);
 
     PyBuffer_Release(&view);
     return;

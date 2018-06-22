@@ -31,7 +31,7 @@ XFileDataObjectInteger(const XFileDataDef *data_def, int value) :
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectInteger::
-output_data(ostream &out) const {
+output_data(std::ostream &out) const {
   out << _value;
 }
 
@@ -39,7 +39,7 @@ output_data(ostream &out) const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectInteger::
-write_data(ostream &out, int indent_level, const char *separator) const {
+write_data(std::ostream &out, int indent_level, const char *separator) const {
   indent(out, indent_level)
     << _value << separator << "\n";
 }
@@ -71,7 +71,7 @@ get_double_value() const {
 /**
  * Returns the object's representation as a string, if it has one.
  */
-string XFileDataObjectInteger::
+std::string XFileDataObjectInteger::
 get_string_value() const {
   return format_string(_value);
 }

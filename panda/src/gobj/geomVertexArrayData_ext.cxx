@@ -19,7 +19,7 @@ struct InternalBufferData {
   CPT(GeomVertexArrayDataHandle) _handle;
   Py_ssize_t _num_rows;
   Py_ssize_t _stride;
-  string _format;
+  std::string _format;
 };
 
 /**
@@ -54,7 +54,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 
   view->internal = (void*) data;
 
-  if (self != NULL) {
+  if (self != nullptr) {
     Py_INCREF(self);
   }
   view->obj = self;
@@ -62,20 +62,20 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
   view->len = row_size * handle->get_num_rows();
   view->readonly = 0;
   view->itemsize = row_size;
-  view->format = NULL;
+  view->format = nullptr;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     view->format = (char*) data->_format.c_str();
   }
   view->ndim = 1;
-  view->shape = NULL;
+  view->shape = nullptr;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->shape = &data->_num_rows;
   }
-  view->strides = NULL;
+  view->strides = nullptr;
   if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
     view->strides = &data->_stride;
   }
-  view->suboffsets = NULL;
+  view->suboffsets = nullptr;
 
   return 0;
 #else
@@ -120,7 +120,7 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
   view->internal = (void*) data;
 
-  if (self != NULL) {
+  if (self != nullptr) {
     Py_INCREF(self);
   }
   view->obj = self;
@@ -128,20 +128,20 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
   view->len = row_size * handle->get_num_rows();
   view->readonly = 1;
   view->itemsize = row_size;
-  view->format = NULL;
+  view->format = nullptr;
   if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
     view->format = (char*) data->_format.c_str();
   }
   view->ndim = 1;
-  view->shape = NULL;
+  view->shape = nullptr;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->shape = &data->_num_rows;
   }
-  view->strides = NULL;
+  view->strides = nullptr;
   if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
     view->strides = &data->_stride;
   }
-  view->suboffsets = NULL;
+  view->suboffsets = nullptr;
 
   return 0;
 #else
@@ -158,11 +158,11 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
   // Note: PyBuffer_Release automatically decrements view->obj.
   InternalBufferData *data;
   data = (InternalBufferData *) view->internal;
-  if (data == NULL) {
+  if (data == nullptr) {
     return;
   }
   delete data;
-  view->internal = NULL;
+  view->internal = nullptr;
 #endif
 }
 
@@ -251,8 +251,8 @@ copy_subdata_from(size_t to_start, size_t to_size,
   }
 
   size_t from_buffer_orig_size = (size_t) view.len;
-  from_start = min(from_start, from_buffer_orig_size);
-  from_size = min(from_size, from_buffer_orig_size - from_start);
+  from_start = std::min(from_start, from_buffer_orig_size);
+  from_size = std::min(from_size, from_buffer_orig_size - from_start);
 
   _this->copy_subdata_from(to_start, to_size,
                            (const unsigned char *) view.buf,

@@ -22,7 +22,7 @@
  */
 class P3DStringObject : public P3DObject {
 public:
-  P3DStringObject(const string &value);
+  P3DStringObject(const std::string &value);
   P3DStringObject(const char *data, size_t size);
   P3DStringObject(const P3DStringObject &copy);
 
@@ -31,12 +31,12 @@ public:
 
   virtual P3D_object_type get_type();
   virtual bool get_bool();
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 
-  virtual void output(ostream &out);
+  virtual void output(std::ostream &out);
 
 private:
-  string _value;
+  std::string _value;
 };
 
 #endif

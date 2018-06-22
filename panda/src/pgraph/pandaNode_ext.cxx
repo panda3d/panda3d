@@ -48,7 +48,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
 
   // Borrowed reference.
   PyObject *dupe = PyDict_GetItem(memo, self);
-  if (dupe != NULL) {
+  if (dupe != nullptr) {
     // Already in the memo dictionary.
     Py_INCREF(dupe);
     return dupe;
@@ -64,7 +64,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
 
   if (PyDict_SetItem(memo, self, dupe) != 0) {
     Py_DECREF(dupe);
-    return NULL;
+    return nullptr;
   }
 
   return dupe;
@@ -94,14 +94,9 @@ get_tag_keys() const {
  */
 PyObject *Extension<PandaNode>::
 get_python_tags() {
-  if (_this->_python_tag_data == NULL) {
-    _this->_python_tag_data = new PythonTagDataImpl;
-
-  } else if (_this->_python_tag_data->get_ref_count() > 1) {
-    // Copy-on-write.
-    _this->_python_tag_data = new PythonTagDataImpl(*(PythonTagDataImpl *)_this->_python_tag_data.p());
-  }
-  return ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
+  PyObject *dict = do_get_python_tags();
+  Py_INCREF(dict);
+  return dict;
 }
 
 /**
@@ -116,7 +111,7 @@ get_python_tags() {
  */
 int Extension<PandaNode>::
 set_python_tag(PyObject *key, PyObject *value) {
-  return PyDict_SetItem(get_python_tags(), key, value);
+  return PyDict_SetItem(do_get_python_tags(), key, value);
 }
 
 /**
@@ -125,14 +120,14 @@ set_python_tag(PyObject *key, PyObject *value) {
  */
 PyObject *Extension<PandaNode>::
 get_python_tag(PyObject *key) const {
-  if (_this->_python_tag_data == NULL) {
+  if (_this->_python_tag_data == nullptr) {
     Py_INCREF(Py_None);
     return Py_None;
   }
 
   PyObject *dict = ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
   PyObject *value = PyDict_GetItem(dict, key);
-  if (value == NULL) {
+  if (value == nullptr) {
     value = Py_None;
   }
   // PyDict_GetItem returns a borrowed reference.
@@ -147,12 +142,12 @@ get_python_tag(PyObject *key) const {
  */
 bool Extension<PandaNode>::
 has_python_tag(PyObject *key) const {
-  if (_this->_python_tag_data == NULL) {
+  if (_this->_python_tag_data == nullptr) {
     return false;
   }
 
   PyObject *dict = ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
-  return (PyDict_GetItem(dict, key) != NULL);
+  return (PyDict_GetItem(dict, key) != nullptr);
 }
 
 /**
@@ -162,12 +157,12 @@ has_python_tag(PyObject *key) const {
  */
 void Extension<PandaNode>::
 clear_python_tag(PyObject *key) {
-  if (_this->_python_tag_data == NULL) {
+  if (_this->_python_tag_data == nullptr) {
     return;
   }
 
-  PyObject *dict = get_python_tags();
-  if (PyDict_GetItem(dict, key) != NULL) {
+  PyObject *dict = do_get_python_tags();
+  if (PyDict_GetItem(dict, key) != nullptr) {
     PyDict_DelItem(dict, key);
   }
 }
@@ -177,7 +172,7 @@ clear_python_tag(PyObject *key) {
  */
 PyObject *Extension<PandaNode>::
 get_python_tag_keys() const {
-  if (_this->_python_tag_data == NULL) {
+  if (_this->_python_tag_data == nullptr) {
     return PyTuple_New(0);
   }
 
@@ -195,10 +190,25 @@ __traverse__(visitproc visit, void *arg) {
   // quite expensive, so I'd rather not do it unless we had some optimization
   // that would allow us to quickly find out whether there are children with
   // Python tags.
-  if (_this->_python_tag_data != NULL) {
+  if (_this->_python_tag_data != nullptr) {
     Py_VISIT(((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict);
   }
   return 0;
+}
+
+/**
+ * Same as get_python_tags, without incrementing the reference count.
+ */
+PyObject *Extension<PandaNode>::
+do_get_python_tags() {
+  if (_this->_python_tag_data == nullptr) {
+    _this->_python_tag_data = new PythonTagDataImpl;
+
+  } else if (_this->_python_tag_data->get_ref_count() > 1) {
+    // Copy-on-write.
+    _this->_python_tag_data = new PythonTagDataImpl(*(PythonTagDataImpl *)_this->_python_tag_data.p());
+  }
+  return ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
 }
 
 /**

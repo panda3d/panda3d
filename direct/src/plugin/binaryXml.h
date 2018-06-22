@@ -18,14 +18,12 @@
 #include "handleStream.h"
 #include <iostream>
 
-using namespace std;
-
 // A pair of functions to input and output the TinyXml constructs on the
 // indicated streams.  We could, of course, use the TinyXml output operators,
 // but this is a smidge more efficient and gives us more control.
 
 void init_xml();
-void write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile);
-TiXmlDocument *read_xml(istream &in, ostream &logfile);
+void write_xml(std::ostream &out, TiXmlDocument *doc, std::ostream &logfile);
+TiXmlDocument *read_xml(std::istream &in, std::ostream &logfile);
 
 #endif

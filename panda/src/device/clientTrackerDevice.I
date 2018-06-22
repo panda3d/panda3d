@@ -15,7 +15,7 @@
  *
  */
 INLINE ClientTrackerDevice::
-ClientTrackerDevice(ClientBase *client, const string &device_name):
+ClientTrackerDevice(ClientBase *client, const std::string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
 }

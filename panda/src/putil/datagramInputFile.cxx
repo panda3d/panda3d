@@ -16,11 +16,14 @@
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "streamReader.h"
 #include "thread.h"
+
+using std::streampos;
+using std::streamsize;
 
 /**
  * Opens the indicated filename for reading.  Returns true on success, false
@@ -38,13 +41,13 @@ open(const FileReference *file) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   _vfile = vfs->get_file(_filename);
-  if (_vfile == (VirtualFile *)NULL) {
+  if (_vfile == nullptr) {
     // No such file.
     return false;
   }
   _timestamp = _vfile->get_timestamp();
   _in = _vfile->open_read_file(true);
-  _owns_in = (_in != (istream *)NULL);
+  _owns_in = (_in != nullptr);
   return _owns_in && !_in->fail();
 }
 
@@ -54,7 +57,7 @@ open(const FileReference *file) {
  * you are responsible for closing or deleting it when you are done.
  */
 bool DatagramInputFile::
-open(istream &in, const Filename &filename) {
+open(std::istream &in, const Filename &filename) {
   close();
 
   _in = &in;
@@ -80,7 +83,7 @@ close() {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_in);
   }
-  _in = (istream *)NULL;
+  _in = nullptr;
   _owns_in = false;
 
   _file.clear();
@@ -98,19 +101,19 @@ close() {
  * has been read.
  */
 bool DatagramInputFile::
-read_header(string &header, size_t num_bytes) {
+read_header(std::string &header, size_t num_bytes) {
   nassertr(!_read_first_datagram, false);
-  nassertr(_in != (istream *)NULL, false);
+  nassertr(_in != nullptr, false);
 
   char *buffer = (char *)alloca(num_bytes);
-  nassertr(buffer != (char *)NULL, false);
+  nassertr(buffer != nullptr, false);
 
   _in->read(buffer, num_bytes);
   if (_in->fail() || _in->eof()) {
     return false;
   }
 
-  header = string(buffer, num_bytes);
+  header = std::string(buffer, num_bytes);
   Thread::consider_yield();
   return true;
 }
@@ -121,7 +124,7 @@ read_header(string &header, size_t num_bytes) {
  */
 bool DatagramInputFile::
 get_datagram(Datagram &data) {
-  nassertr(_in != (istream *)NULL, false);
+  nassertr(_in != nullptr, false);
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.
@@ -138,35 +141,45 @@ get_datagram(Datagram &data) {
     return true;
   }
 
-  streamsize num_bytes = (streamsize)num_bytes_32;
+  size_t num_bytes = (size_t)num_bytes_32;
   if (num_bytes_32 == (uint32_t)-1) {
     // Another special case for a value larger than 32 bits.
-    num_bytes = reader.get_uint64();
-  }
+    uint64_t num_bytes_64 = reader.get_uint64();
 
-  // Make sure we have a reasonable datagram size for putting into memory.
-  nassertr(num_bytes == (size_t)num_bytes, false);
+    if (_in->fail() || _in->eof()) {
+      _error = true;
+      return false;
+    }
+
+    num_bytes = (size_t)num_bytes_64;
+
+    // Make sure we have a reasonable datagram size for putting into memory.
+    if (num_bytes_64 != (uint64_t)num_bytes) {
+      _error = true;
+      return false;
+    }
+  }
 
   // Now, read the datagram itself. We construct an empty datagram, use
   // pad_bytes to make it big enough, and read *directly* into the datagram's
   // internal buffer. Doing this saves us a copy operation.
   data = Datagram();
 
-  streamsize bytes_read = 0;
+  size_t bytes_read = 0;
   while (bytes_read < num_bytes) {
-    streamsize bytes_left = num_bytes - bytes_read;
+    size_t bytes_left = num_bytes - bytes_read;
 
     // Hold up a second - datagrams >4MB are pretty large by bam/network
     // standards. Let's take it 4MB at a time just in case the length is
     // corrupt, so we don't allocate potentially a few GBs of RAM only to
     // find a truncated file.
-    bytes_left = min(bytes_left, (streamsize)4*1024*1024);
+    bytes_left = std::min(bytes_left, (size_t)4*1024*1024);
 
     PTA_uchar buffer = data.modify_array();
     buffer.resize(buffer.size() + bytes_left);
     unsigned char *ptr = &buffer.p()[bytes_read];
 
-    _in->read((char *)ptr, bytes_left);
+    _in->read((char *)ptr, (streamsize)bytes_left);
     if (_in->fail() || _in->eof()) {
       _error = true;
       return false;
@@ -191,7 +204,7 @@ get_datagram(Datagram &data) {
  */
 bool DatagramInputFile::
 save_datagram(SubfileInfo &info) {
-  nassertr(_in != (istream *)NULL, false);
+  nassertr(_in != nullptr, false);
   _read_first_datagram = true;
 
   // First, get the size of the upcoming datagram.
@@ -209,9 +222,9 @@ save_datagram(SubfileInfo &info) {
 
   // If this stream is file-based, we can just point the SubfileInfo directly
   // into this file.
-  if (_file != (FileReference *)NULL) {
+  if (_file != nullptr) {
     info = SubfileInfo(_file, _in->tellg(), num_bytes);
-    _in->seekg(num_bytes, ios::cur);
+    _in->seekg(num_bytes, std::ios::cur);
     return true;
   }
 
@@ -235,7 +248,7 @@ save_datagram(SubfileInfo &info) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  _in->read(buffer, min((streamsize)buffer_size, num_remaining));
+  _in->read(buffer, std::min((streamsize)buffer_size, num_remaining));
   streamsize count = _in->gcount();
   while (count != 0) {
     out.write(buffer, count);
@@ -249,7 +262,7 @@ save_datagram(SubfileInfo &info) {
     if (num_remaining == 0) {
       break;
     }
-    _in->read(buffer, min((streamsize)buffer_size, num_remaining));
+    _in->read(buffer, std::min((streamsize)buffer_size, num_remaining));
     count = _in->gcount();
   }
 
@@ -269,7 +282,7 @@ save_datagram(SubfileInfo &info) {
  */
 bool DatagramInputFile::
 is_eof() {
-  return _in != (istream *)NULL ? _in->eof() : true;
+  return _in != nullptr ? _in->eof() : true;
 }
 
 /**
@@ -277,7 +290,7 @@ is_eof() {
  */
 bool DatagramInputFile::
 is_error() {
-  if (_in == (istream *)NULL) {
+  if (_in == nullptr) {
     return true;
   }
 
@@ -333,7 +346,7 @@ get_vfile() {
  */
 streampos DatagramInputFile::
 get_file_pos() {
-  if (_in == (istream *)NULL) {
+  if (_in == nullptr) {
     return 0;
   }
   return _in->tellg();

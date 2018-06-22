@@ -23,8 +23,8 @@ PyObject *Extension<Ramfile>::
 read(size_t length) {
   size_t data_length = _this->get_data_size();
   const char *data = _this->_data.data() + _this->_pos;
-  length = min(length, data_length - _this->_pos);
-  _this->_pos = min(_this->_pos + length, data_length);
+  length = std::min(length, data_length - _this->_pos);
+  _this->_pos = std::min(_this->_pos + length, data_length);
 
 #if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize((char *)data, length);
@@ -43,7 +43,7 @@ read(size_t length) {
  */
 PyObject *Extension<Ramfile>::
 readline() {
-  string line = _this->readline();
+  std::string line = _this->readline();
 #if PY_MAJOR_VERSION >= 3
   return PyBytes_FromStringAndSize(line.data(), line.size());
 #else
@@ -58,11 +58,11 @@ readline() {
 PyObject *Extension<Ramfile>::
 readlines() {
   PyObject *lst = PyList_New(0);
-  if (lst == NULL) {
-    return NULL;
+  if (lst == nullptr) {
+    return nullptr;
   }
 
-  string line = _this->readline();
+  std::string line = _this->readline();
   while (!line.empty()) {
 #if PY_MAJOR_VERSION >= 3
     PyObject *py_line = PyBytes_FromStringAndSize(line.data(), line.size());

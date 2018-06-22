@@ -20,6 +20,8 @@
 #include "dcast.h"
 #include "string_utils.h"
 
+using std::string;
+
 /**
  *
  */
@@ -63,24 +65,24 @@ add_normals_options() {
   add_option
     ("no", "", 48,
      "Strip all normals.",
-     &EggBase::dispatch_normals, NULL, &strip);
+     &EggBase::dispatch_normals, nullptr, &strip);
 
   add_option
     ("np", "", 48,
      "Strip existing normals and redefine polygon normals.",
-     &EggBase::dispatch_normals, NULL, &polygon);
+     &EggBase::dispatch_normals, nullptr, &polygon);
 
   add_option
     ("nv", "threshold", 48,
      "Strip existing normals and redefine vertex normals.  Consider an edge "
      "between adjacent polygons to be smooth if the angle between them "
      "is less than threshold degrees.",
-     &EggBase::dispatch_normals, NULL, &vertex);
+     &EggBase::dispatch_normals, nullptr, &vertex);
 
   add_option
     ("nn", "", 48,
      "Preserve normals exactly as they are.  This is the default.",
-     &EggBase::dispatch_normals, NULL, &preserve);
+     &EggBase::dispatch_normals, nullptr, &preserve);
 
   add_option
     ("tbn", "name", 48,
@@ -90,7 +92,7 @@ add_normals_options() {
      "above options.  The tangent and binormal are used to implement "
      "bump mapping and related texture-based lighting effects.  This option "
      "may be repeated as necessary to name multiple texture coordinate sets.",
-     &EggBase::dispatch_vector_string, NULL, &_tbn_names);
+     &EggBase::dispatch_vector_string, nullptr, &_tbn_names);
 
   add_option
     ("tbnall", "", 48,

@@ -23,7 +23,7 @@ BufferContext(BufferResidencyTracker *residency) :
   _residency(residency),
   _residency_state(0),
   _data_size_bytes(0),
-  _owning_chain(NULL)
+  _owning_chain(nullptr)
 {
   set_owning_chain(&residency->_chains[0]);
 }
@@ -33,7 +33,7 @@ BufferContext(BufferResidencyTracker *residency) :
  */
 BufferContext::
 ~BufferContext() {
-  set_owning_chain(NULL);
+  set_owning_chain(nullptr);
 }
 
 /**
@@ -42,7 +42,7 @@ BufferContext::
 void BufferContext::
 set_owning_chain(BufferContextChain *chain) {
   if (chain != _owning_chain) {
-    if (_owning_chain != (BufferContextChain *)NULL){
+    if (_owning_chain != nullptr){
       --(_owning_chain->_count);
       _owning_chain->adjust_bytes(-(int)_data_size_bytes);
       remove_from_list();
@@ -50,7 +50,7 @@ set_owning_chain(BufferContextChain *chain) {
 
     _owning_chain = chain;
 
-    if (_owning_chain != (BufferContextChain *)NULL) {
+    if (_owning_chain != nullptr) {
       ++(_owning_chain->_count);
       _owning_chain->adjust_bytes((int)_data_size_bytes);
       insert_before(_owning_chain);

@@ -37,7 +37,7 @@ Effect() {
 INLINE RenderEffects::Effect::
 Effect(TypeHandle type) :
   _type(type),
-  _effect(NULL)
+  _effect(nullptr)
 {
 }
 

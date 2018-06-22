@@ -52,7 +52,7 @@ PUBLISHED:
   void clear();
   void add_node(PandaNode *node);
 
-  void write(ostream &out, int indent_level = 0) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE int get_num_nodes() const;
   INLINE int get_num_instances() const;

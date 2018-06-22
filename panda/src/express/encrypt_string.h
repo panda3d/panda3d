@@ -22,26 +22,26 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS string
-encrypt_string(const string &source, const string &password,
-               const string &algorithm = string(), int key_length = -1,
+EXPCL_PANDA_EXPRESS std::string
+encrypt_string(const std::string &source, const std::string &password,
+               const std::string &algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
-EXPCL_PANDAEXPRESS string
-decrypt_string(const string &source, const string &password);
+EXPCL_PANDA_EXPRESS std::string
+decrypt_string(const std::string &source, const std::string &password);
 
-EXPCL_PANDAEXPRESS bool
-encrypt_file(const Filename &source, const Filename &dest, const string &password,
-             const string &algorithm = string(), int key_length = -1,
+EXPCL_PANDA_EXPRESS bool
+encrypt_file(const Filename &source, const Filename &dest, const std::string &password,
+             const std::string &algorithm = std::string(), int key_length = -1,
              int iteration_count = -1);
-EXPCL_PANDAEXPRESS bool
-decrypt_file(const Filename &source, const Filename &dest, const string &password);
+EXPCL_PANDA_EXPRESS bool
+decrypt_file(const Filename &source, const Filename &dest, const std::string &password);
 
-EXPCL_PANDAEXPRESS bool
-encrypt_stream(istream &source, ostream &dest, const string &password,
-               const string &algorithm = string(), int key_length = -1,
+EXPCL_PANDA_EXPRESS bool
+encrypt_stream(std::istream &source, std::ostream &dest, const std::string &password,
+               const std::string &algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
-EXPCL_PANDAEXPRESS bool
-decrypt_stream(istream &source, ostream &dest, const string &password);
+EXPCL_PANDA_EXPRESS bool
+decrypt_stream(std::istream &source, std::ostream &dest, const std::string &password);
 
 END_PUBLISH
 

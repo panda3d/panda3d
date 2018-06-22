@@ -27,7 +27,7 @@ TypeHandle glxGraphicsBuffer::_type_handle;
  */
 glxGraphicsBuffer::
 glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -64,7 +64,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL ||
+  if (_gsg == nullptr ||
       _pbuffer == None) {
     return false;
   }
@@ -105,7 +105,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void glxGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -124,8 +124,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void glxGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    glXMakeCurrent(_display, None, NULL);
+  if (_gsg != nullptr) {
+    glXMakeCurrent(_display, None, nullptr);
 
     if (_pbuffer != None) {
       glxGraphicsStateGuardian *glxgsg;
@@ -152,9 +152,9 @@ open_buffer() {
 
   // GSG CreationInitialization
   glxGraphicsStateGuardian *glxgsg;
-  if (_gsg == 0) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
-    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
+    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, nullptr);
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true, false);
     _gsg = glxgsg;
   } else {

@@ -21,6 +21,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 PNMFileTypeRegistry *PNMFileTypeRegistry::_global_ptr;
 
 /**
@@ -132,7 +134,7 @@ get_num_types() const {
  */
 PNMFileType *PNMFileTypeRegistry::
 get_type(int n) const {
-  nassertr(n >= 0 && n < (int)_types.size(), NULL);
+  nassertr(n >= 0 && n < (int)_types.size(), nullptr);
   return _types[n];
 }
 
@@ -190,7 +192,7 @@ get_type_from_extension(const string &filename) const {
 
     if (ei == _extensions.end() || (*ei).second.empty()) {
       // Nothing matches that string.
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -219,7 +221,7 @@ get_type_from_magic_number(const string &magic_number) const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -235,7 +237,7 @@ get_type_by_handle(TypeHandle handle) const {
     return (*hi).second;
   }
 
-  return (PNMFileType *)NULL;
+  return nullptr;
 }
 
 /**
@@ -243,7 +245,7 @@ get_type_by_handle(TypeHandle handle) const {
  * one per line.
  */
 void PNMFileTypeRegistry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (_types.empty()) {
     indent(out, indent_level) << "(No image types are known).\n";
   } else {
@@ -252,7 +254,7 @@ write(ostream &out, int indent_level) const {
       PNMFileType *type = (*ti);
       string name = type->get_name();
       indent(out, indent_level) << name;
-      indent(out, max(30 - (int)name.length(), 0)) << "  ";
+      indent(out, std::max(30 - (int)name.length(), 0)) << "  ";
 
       int num_extensions = type->get_num_extensions();
       if (num_extensions == 1) {
@@ -273,7 +275,7 @@ write(ostream &out, int indent_level) const {
  */
 PNMFileTypeRegistry *PNMFileTypeRegistry::
 get_global_ptr() {
-  if (_global_ptr == (PNMFileTypeRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PNMFileTypeRegistry;
   }
   return _global_ptr;

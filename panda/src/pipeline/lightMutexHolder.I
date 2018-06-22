@@ -33,7 +33,7 @@ LightMutexHolder(const LightMutex &mutex) {
 INLINE LightMutexHolder::
 LightMutexHolder(LightMutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (LightMutex *)NULL) {
+  if (mutex == nullptr) {
     mutex = new LightMutex;
   }
   _mutex = mutex;
@@ -49,20 +49,4 @@ INLINE LightMutexHolder::
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex->release();
 #endif
-}
-
-/**
- * Do not attempt to copy LightMutexHolders.
- */
-INLINE LightMutexHolder::
-LightMutexHolder(const LightMutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy LightMutexHolders.
- */
-INLINE void LightMutexHolder::
-operator = (const LightMutexHolder &copy) {
-  nassertv(false);
 }

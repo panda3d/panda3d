@@ -28,15 +28,15 @@
  */
 class EXPCL_DTOOL_PRC StreamWriter {
 public:
-  INLINE StreamWriter(ostream &out);
+  INLINE StreamWriter(std::ostream &out);
 PUBLISHED:
-  INLINE explicit StreamWriter(ostream *out, bool owns_stream);
+  INLINE explicit StreamWriter(std::ostream *out, bool owns_stream);
   INLINE StreamWriter(const StreamWriter &copy);
   INLINE void operator = (const StreamWriter &copy);
   INLINE ~StreamWriter();
 
-  INLINE ostream *get_ostream() const;
-  MAKE_PROPERTY(ostream, get_ostream);
+  INLINE std::ostream *get_ostream() const;
+  MAKE_PROPERTY(std::ostream, get_ostream);
 
   BLOCKING INLINE void add_bool(bool value);
   BLOCKING INLINE void add_int8(int8_t value);
@@ -62,24 +62,24 @@ PUBLISHED:
   BLOCKING INLINE void add_be_float32(float value);
   BLOCKING INLINE void add_be_float64(PN_float64 value);
 
-  BLOCKING INLINE void add_string(const string &str);
-  BLOCKING INLINE void add_string32(const string &str);
-  BLOCKING INLINE void add_z_string(string str);
-  BLOCKING INLINE void add_fixed_string(const string &str, size_t size);
+  BLOCKING INLINE void add_string(const std::string &str);
+  BLOCKING INLINE void add_string32(const std::string &str);
+  BLOCKING INLINE void add_z_string(std::string str);
+  BLOCKING INLINE void add_fixed_string(const std::string &str, size_t size);
 
   BLOCKING void pad_bytes(size_t size);
   EXTENSION(void append_data(PyObject *data));
 
   BLOCKING INLINE void flush();
 
-  BLOCKING INLINE void write(const string &str);
+  BLOCKING INLINE void write(const std::string &str);
 
 public:
   BLOCKING INLINE void append_data(const void *data, size_t size);
-  BLOCKING INLINE void append_data(const string &data);
+  BLOCKING INLINE void append_data(const std::string &data);
 
 private:
-  ostream *_out;
+  std::ostream *_out;
   bool _owns_stream;
 
 #ifdef HAVE_PYTHON

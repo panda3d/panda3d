@@ -30,10 +30,10 @@ protected:
   InterfaceMakerPython(InterrogateModuleDef *def);
 
 public:
-  virtual void write_includes(ostream &out);
+  virtual void write_includes(std::ostream &out);
 
 protected:
-  virtual void test_assert(ostream &out, int indent_level) const;
+  virtual void test_assert(std::ostream &out, int indent_level) const;
 };
 
 #endif

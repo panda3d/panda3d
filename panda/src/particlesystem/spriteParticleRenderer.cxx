@@ -30,6 +30,9 @@
 #include "config_particlesystem.h"
 #include "pStatTimer.h"
 
+using std::max;
+using std::min;
+
 PStatCollector SpriteParticleRenderer::_render_collector("App:Particles:Sprite:Render");
 
 /**
@@ -189,7 +192,7 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
  * match the new geometry.
  */
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels) {
+set_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels) {
   // Clear all texture information
   _anims.clear();
   add_from_node(node_path,model,node,size_from_texels,true);
@@ -241,7 +244,7 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
  * now on.  (Default is false)
  */
 void SpriteParticleRenderer::
-add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels, bool resize) {
+add_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels, bool resize) {
   int anim_count = _anims.size();
   if (anim_count == 0)
     resize = true;
@@ -272,7 +275,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
   // Load the found textures into the renderer.
   if (extract_textures_from_node(node_path,np_col,tex_col)) {
     pvector< LTexCoord > ll,ur;
-    GeomNode *gnode = NULL;
+    GeomNode *gnode = nullptr;
     const Geom *geom;
     const GeomPrimitive *primitive;
 
@@ -291,7 +294,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       GeomVertexReader texcoord(geom->get_vertex_data(),
                                 InternalName::get_texcoord());
       if (texcoord.has_column()) {
-        for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
+        for (size_t pi = 0; pi < geom->get_num_primitives(); ++pi) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
@@ -335,7 +338,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       GeomVertexReader vertex(geom->get_vertex_data(),
                               InternalName::get_vertex());
       if (vertex.has_column()) {
-        for (int pi = 0; pi < geom->get_num_primitives(); ++pi) {
+        for (size_t pi = 0; pi < geom->get_num_primitives(); ++pi) {
           primitive = geom->get_primitive(pi);
           for (int vi = 0; vi < primitive->get_num_vertices(); ++vi) {
             int vert = primitive->get_vertex(vi);
@@ -479,7 +482,7 @@ init_geoms() {
       _sprite_writer[i].push_back(SpriteWriter());
 
       state = state->add_attrib(RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _base_y_scale * _height, true));
-      if (anim->get_frame(j) != (Texture *)NULL) {
+      if (anim->get_frame(j) != nullptr) {
         state = state->add_attrib(TextureAttrib::make(anim->get_frame(j)));
         state = state->add_attrib(TexGenAttrib::make(TextureStage::get_default(), TexGenAttrib::M_point_sprite));
 
@@ -744,7 +747,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void SpriteParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"SpriteParticleRenderer";
   #endif //] NDEBUG
@@ -754,7 +757,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void SpriteParticleRenderer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "SpriteParticleRenderer:\n";
   // indent(out, indent_level + 2) << "_sprite_primitive
   // "<<_sprite_primitive<<"\n";

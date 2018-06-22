@@ -17,13 +17,13 @@
 class EXPCL_PANDA_LINMATH FLOATNAME(LVector2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
 
-  INLINE_LINMATH FLOATNAME(LVector2)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVector2)() = default;
   INLINE_LINMATH FLOATNAME(LVector2)(const FLOATNAME(LVecBase2)& copy);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector2)(FLOATTYPE x, FLOATTYPE y);
 
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LVector2) &zero();
   INLINE_LINMATH static const FLOATNAME(LVector2) &unit_x();
@@ -47,7 +47,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector2) &other) const;
 #endif
 
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
 public:
   static TypeHandle get_class_type() {

@@ -15,7 +15,7 @@
  *
  */
 INLINE HeightfieldTesselator::
-HeightfieldTesselator(const string &name) : Namable(name) {
+HeightfieldTesselator(const std::string &name) : Namable(name) {
   _poly_count = 10000;
   _visibility_radius = 32768;
   _focal_x = 0;

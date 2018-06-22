@@ -14,6 +14,9 @@
 #include "datagramIterator.h"
 #include "pnotify.h"
 
+using std::string;
+using std::wstring;
+
 TypeHandle DatagramIterator::_type_handle;
 
 /**
@@ -24,7 +27,7 @@ get_string() {
   // First, get the length of the string
   uint16_t s_len = get_uint16();
 
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != nullptr, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -43,7 +46,7 @@ get_string32() {
   // First, get the length of the string
   uint32_t s_len = get_uint32();
 
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != nullptr, "");
   nassertr(_current_index + s_len <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -59,7 +62,7 @@ get_string32() {
  */
 string DatagramIterator::
 get_z_string() {
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != nullptr, "");
 
   // First, determine the length of the string.
   const char *ptr = (const char *)_datagram->get_data();
@@ -82,7 +85,7 @@ get_z_string() {
  */
 string DatagramIterator::
 get_fixed_string(size_t size) {
-  nassertr(_datagram != (const Datagram *)NULL, "");
+  nassertr(_datagram != nullptr, "");
   nassertr(_current_index + size <= _datagram->get_length(), "");
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -102,7 +105,7 @@ get_wstring() {
   // First, get the length of the string
   uint32_t s_len = get_uint32();
 
-  nassertr(_datagram != (const Datagram *)NULL, wstring());
+  nassertr(_datagram != nullptr, wstring());
   nassertr(_current_index + s_len * 2 <= _datagram->get_length(), wstring());
 
   wstring result;
@@ -119,18 +122,18 @@ get_wstring() {
  * Extracts the indicated number of bytes in the datagram and returns them as
  * a string.
  */
-string DatagramIterator::
+vector_uchar DatagramIterator::
 extract_bytes(size_t size) {
-  nassertr((int)size >= 0, "");
-  nassertr(_datagram != (const Datagram *)NULL, "");
-  nassertr(_current_index + size <= _datagram->get_length(), "");
+  nassertr((int)size >= 0, vector_uchar());
+  nassertr(_datagram != nullptr, vector_uchar());
+  nassertr(_current_index + size <= _datagram->get_length(), vector_uchar());
 
-  const char *ptr = (const char *)_datagram->get_data();
-  size_t last_index = _current_index;
+  const unsigned char *ptr = (const unsigned char *)_datagram->get_data();
+  ptr += _current_index;
 
   _current_index += size;
 
-  return string(ptr + last_index, size);
+  return vector_uchar(ptr, ptr + size);
 }
 
 /**
@@ -142,7 +145,7 @@ extract_bytes(size_t size) {
 size_t DatagramIterator::
 extract_bytes(unsigned char *into, size_t size) {
   nassertr((int)size >= 0, 0);
-  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_datagram != nullptr, 0);
   nassertr(_current_index + size <= _datagram->get_length(), 0);
 
   const char *ptr = (const char *)_datagram->get_data();
@@ -156,7 +159,7 @@ extract_bytes(unsigned char *into, size_t size) {
  * Write a string representation of this instance to <out>.
  */
 void DatagramIterator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<""<<"DatagramIterator";
   #endif //] NDEBUG
@@ -166,7 +169,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void DatagramIterator::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"DatagramIterator:\n";
   out.width(indent+2); out<<""<<"_current_index "<<_current_index;

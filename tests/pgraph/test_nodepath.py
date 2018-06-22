@@ -1,3 +1,5 @@
+import pytest, sys
+
 def test_nodepath_empty():
     """Tests NodePath behavior for empty NodePaths."""
     from panda3d.core import NodePath
@@ -79,3 +81,45 @@ def test_nodepath_transform_composition():
     leg2 = node1.get_transform().compose(node3.get_transform())
     relative_transform = leg1.get_inverse().compose(leg2)
     assert np1.get_transform(np2) == relative_transform
+
+
+def test_weak_nodepath_comparison():
+    from panda3d.core import NodePath, WeakNodePath
+
+    path = NodePath("node")
+    weak = WeakNodePath(path)
+
+    assert path == weak
+    assert weak == path
+    assert weak <= path
+    assert path <= weak
+    assert weak >= path
+    assert path >= weak
+    assert not (path != weak)
+    assert not (weak != path)
+    assert not (weak > path)
+    assert not (path > weak)
+    assert not (weak < path)
+    assert not (path < weak)
+
+    assert hash(path) == hash(weak)
+    assert weak.get_node_path() == path
+    assert weak.node() == path.node()
+
+
+def test_nodepath_python_tags():
+    from panda3d.core import NodePath
+
+    path = NodePath("node")
+
+    with pytest.raises(KeyError):
+        path.python_tags["foo"]
+
+    path.python_tags["foo"] = "bar"
+
+    assert path.python_tags["foo"] == "bar"
+
+    # Make sure reference count stays the same
+    rc1 = sys.getrefcount(path.python_tags)
+    rc2 = sys.getrefcount(path.python_tags)
+    assert rc1 == rc2

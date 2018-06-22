@@ -27,7 +27,7 @@ class VirtualFile;
  * This class defines the abstract interace to any source of datagrams,
  * whether it be from a file or from the net.
  */
-class EXPCL_PANDAEXPRESS DatagramGenerator {
+class EXPCL_PANDA_EXPRESS DatagramGenerator {
 PUBLISHED:
   INLINE DatagramGenerator();
   virtual ~DatagramGenerator();
@@ -41,7 +41,7 @@ PUBLISHED:
   virtual time_t get_timestamp() const;
   virtual const FileReference *get_file();
   virtual VirtualFile *get_vfile();
-  virtual streampos get_file_pos();
+  virtual std::streampos get_file_pos();
 };
 
 #include "datagramGenerator.I"

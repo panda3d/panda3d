@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_DEVICE ClientButtonDevice : public ClientDevice {
 protected:
-  ClientButtonDevice(ClientBase *client, const string &device_name);
+  ClientButtonDevice(ClientBase *client, const std::string &device_name);
 
 public:
   INLINE int get_num_buttons() const;
@@ -45,11 +45,11 @@ public:
 
   INLINE ButtonEventList *get_button_events() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
-  void output_buttons(ostream &out) const;
-  void write_buttons(ostream &out, int indent_level) const;
+  void output_buttons(std::ostream &out) const;
+  void write_buttons(std::ostream &out, int indent_level) const;
 
 private:
   void ensure_button_index(int index);

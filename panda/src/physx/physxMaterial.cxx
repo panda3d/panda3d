@@ -39,7 +39,7 @@ void PhysxMaterial::
 unlink() {
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
@@ -56,7 +56,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseMaterial(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -65,7 +65,7 @@ release() {
 PhysxScene *PhysxMaterial::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)(_ptr->getScene().userData);
 }
 

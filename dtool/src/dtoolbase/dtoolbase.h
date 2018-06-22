@@ -60,6 +60,12 @@
 #pragma warning (disable : 4577)
 #endif  /* WIN32_VC */
 
+/* Windows likes to define min() and max() macros, which will conflict with
+   std::min() and std::max() respectively, unless we do this: */
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 #ifndef __has_builtin
 #define __has_builtin(x) 0
 #endif
@@ -73,10 +79,10 @@
 // 'assume at least one of the cases is always true')
 #ifdef _DEBUG
 #define NODEFAULT  default: assert(0); break;
-#elif defined(_MSC_VER)
-#define NODEFAULT  default: __assume(0);   // special VC keyword
 #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5) || __has_builtin(__builtin_unreachable)
 #define NODEFAULT  default: __builtin_unreachable();
+#elif defined(_MSC_VER)
+#define NODEFAULT  default: __assume(0);   // special VC keyword
 #else
 #define NODEFAULT
 #endif
@@ -123,7 +129,7 @@
 
 // This is a workaround for a glibc bug that is triggered by clang when
 // compiling with -ffast-math.
-#ifdef __clang__
+#if defined(__clang__) && defined(__GLIBC__)
 #include <sys/cdefs.h>
 #ifndef __extern_always_inline
 #define __extern_always_inline extern __always_inline
@@ -196,10 +202,6 @@ typedef struct _object PyObject;
 
 #ifdef PHAVE_LIMITS_H
 #include <limits.h>
-#endif
-
-#ifdef PHAVE_MINMAX_H
-#include <minmax.h>
 #endif
 
 #ifdef PHAVE_SYS_TIME_H

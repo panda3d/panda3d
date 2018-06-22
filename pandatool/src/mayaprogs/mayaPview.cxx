@@ -19,7 +19,7 @@
 #include "mayaToEggConverter.h"
 #include "eggData.h"
 #include "load_egg_file.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_chan.h"
 #include "config_gobj.h"
 #include "textNode.h"
@@ -119,16 +119,16 @@ doIt(const MArgList &args) {
   MProgressWindow::advanceProgress(1);
 
   // Now spawn a pview instance to view this temporary file.
-  string pview_args = "-clD";
+  std::string pview_args = "-clD";
   if (animate) {
     pview_args = "-clDa";
   }
 
   // On Windows, we use the spawn function to run pview asynchronously.
-  string quoted = string("\"") + bam_filename.get_fullpath() + string("\"");
+  std::string quoted = std::string("\"") + bam_filename.get_fullpath() + std::string("\"");
   nout << "pview " << pview_args << " " << quoted << "\n";
   int retval = _spawnlp(_P_DETACH, "pview",
-                        "pview", pview_args.c_str(), quoted.c_str(), NULL);
+                        "pview", pview_args.c_str(), quoted.c_str(), nullptr);
   if (retval == -1) {
     bam_filename.unlink();
     MProgressWindow::endProgress();
@@ -146,7 +146,7 @@ doIt(const MArgList &args) {
   // create a separate PandaFramework for each invocation, even though in
   // principle we could be sharing one framework for all of them.
   int argc = 0;
-  char **argv = NULL;
+  char **argv = nullptr;
   PandaFramework framework;
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
@@ -154,7 +154,7 @@ doIt(const MArgList &args) {
 
   PT(WindowFramework) window;
   window = framework.open_window();
-  if (window == (WindowFramework *)NULL) {
+  if (window == nullptr) {
     // Couldn't open a window.
     nout << "Couldn't open a window!\n";
     MProgressWindow::endProgress();
@@ -242,7 +242,7 @@ convert(const NodePath &parent, bool animate) {
   // Accept relative pathnames in the Maya file.
   Filename source_file =
     Filename::from_os_specific(MFileIO::currentFile().asChar());
-  string source_dir = source_file.get_dirname();
+  std::string source_dir = source_file.get_dirname();
   if (!source_dir.empty()) {
     path_replace->_path.append_directory(source_dir);
   }
@@ -281,7 +281,7 @@ convert(const NodePath &parent, bool animate) {
   egg_data->set_coordinate_system(CS_default);
   PT(PandaNode) result = load_egg_data(egg_data);
 
-  if (result == (PandaNode *)NULL) {
+  if (result == nullptr) {
     nout << "Unable to load converted egg data.\n";
     return false;
   }

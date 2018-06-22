@@ -52,7 +52,7 @@ class GeomMunger;
  * standard and/or user-defined columns in your custom GeomVertexFormat
  * constructions.
  */
-class EXPCL_PANDA_GOBJ GeomVertexFormat FINAL : public TypedWritableReferenceCount, public GeomEnums {
+class EXPCL_PANDA_GOBJ GeomVertexFormat final : public TypedWritableReferenceCount, public GeomEnums {
 PUBLISHED:
   GeomVertexFormat();
   GeomVertexFormat(const GeomVertexArrayFormat *array_format);
@@ -129,9 +129,9 @@ PUBLISHED:
   MAKE_MAP_PROPERTY(columns, has_column, get_column);
   MAKE_MAP_KEYS_SEQ(columns, get_num_columns, get_column_name);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void write_with_data(ostream &out, int indent_level,
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void write_with_data(std::ostream &out, int indent_level,
                        const GeomVertexData *data) const;
 
   INLINE static const GeomVertexFormat *get_empty();
@@ -289,7 +289,7 @@ private:
   friend class GeomMunger;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexFormat &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexFormat &obj);
 
 #include "geomVertexFormat.I"
 

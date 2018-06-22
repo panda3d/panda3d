@@ -27,6 +27,9 @@
 #include "bamWriter.h"
 #include "pnmImage.h"
 
+using std::max;
+using std::min;
+
 TypeHandle TexturePlacement::_type_handle;
 
 /**
@@ -34,10 +37,10 @@ TypeHandle TexturePlacement::_type_handle;
  */
 TexturePlacement::
 TexturePlacement() {
-  _texture = (TextureImage *)NULL;
-  _group = (PaletteGroup *)NULL;
-  _image = (PaletteImage *)NULL;
-  _dest = (DestTextureImage *)NULL;
+  _texture = nullptr;
+  _group = nullptr;
+  _image = nullptr;
+  _dest = nullptr;
   _has_uvs = false;
   _size_known = false;
   _is_filled = true;
@@ -60,8 +63,8 @@ TexturePlacement(TextureImage *texture, PaletteGroup *group) :
     _omit_reason = OR_unknown;
   }
 
-  _image = (PaletteImage *)NULL;
-  _dest = (DestTextureImage *)NULL;
+  _image = nullptr;
+  _dest = nullptr;
   _has_uvs = false;
   _size_known = false;
   _is_filled = false;
@@ -88,7 +91,7 @@ TexturePlacement::
 /**
  * Returns the name of the texture that this placement represents.
  */
-const string &TexturePlacement::
+const std::string &TexturePlacement::
 get_name() const {
   return _texture->get_name();
 }
@@ -443,7 +446,7 @@ get_uv_area() const {
  */
 bool TexturePlacement::
 is_placed() const {
-  return _image != (PaletteImage *)NULL;
+  return _image != nullptr;
 }
 
 /**
@@ -451,7 +454,7 @@ is_placed() const {
  */
 PaletteImage *TexturePlacement::
 get_image() const {
-  nassertr(is_placed(), (PaletteImage *)NULL);
+  nassertr(is_placed(), nullptr);
   return _image;
 }
 
@@ -460,7 +463,7 @@ get_image() const {
  */
 PalettePage *TexturePlacement::
 get_page() const {
-  nassertr(is_placed(), (PalettePage *)NULL);
+  nassertr(is_placed(), nullptr);
   return _image->get_page();
 }
 
@@ -540,9 +543,9 @@ place_at(PaletteImage *image, int x, int y) {
  */
 void TexturePlacement::
 force_replace() {
-  if (_image != (PaletteImage *)NULL) {
+  if (_image != nullptr) {
     _image->unplace(this);
-    _image = (PaletteImage *)NULL;
+    _image = nullptr;
   }
   if (_omit_reason == OR_none) {
     mark_eggs_stale();
@@ -640,7 +643,7 @@ compute_tex_matrix(LMatrix3d &transform) {
  * Writes the placement position information on a line by itself.
  */
 void TexturePlacement::
-write_placed(ostream &out, int indent_level) {
+write_placed(std::ostream &out, int indent_level) {
   indent(out, indent_level)
     << get_texture()->get_name();
 
@@ -1031,22 +1034,22 @@ int TexturePlacement::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_texture, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_group, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_image, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_dest, p_list[index], index);
   }
   index++;

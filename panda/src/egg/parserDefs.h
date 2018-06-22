@@ -29,7 +29,7 @@ class LightMutex;
 
 extern LightMutex egg_lock;
 
-void egg_init_parser(istream &in, const string &filename,
+void egg_init_parser(std::istream &in, const std::string &filename,
                      EggObject *tos, EggGroupNode *egg_top_node);
 
 void egg_cleanup_parser();
@@ -40,11 +40,11 @@ void egg_cleanup_parser();
 // that has member functions in a union), so we'll use a class instead.  That
 // means we need to declare it externally, here.
 
-class EXPCL_PANDAEGG EggTokenType {
+class EXPCL_PANDA_EGG EggTokenType {
 public:
   double _number;
   unsigned long _ulong;
-  string _string;
+  std::string _string;
   PT(EggObject) _egg;
   PTA_double _number_list;
 };

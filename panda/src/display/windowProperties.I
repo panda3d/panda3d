@@ -182,7 +182,7 @@ clear_size() {
  * Specifies the title that should be assigned to the window.
  */
 INLINE void WindowProperties::
-set_title(const string &title) {
+set_title(const std::string &title) {
   _title = title;
   _specified |= S_title;
 }
@@ -190,7 +190,7 @@ set_title(const string &title) {
 /**
  * Returns the window's title.
  */
-INLINE const string &WindowProperties::
+INLINE const std::string &WindowProperties::
 get_title() const {
   nassertr(has_title(), _title);
   return _title;
@@ -210,7 +210,7 @@ has_title() const {
 INLINE void WindowProperties::
 clear_title() {
   _specified &= ~S_title;
-  _title = string();
+  _title = std::string();
 }
 
 /**
@@ -726,12 +726,12 @@ has_parent_window() const {
 INLINE void WindowProperties::
 clear_parent_window() {
   _specified &= ~S_parent_window;
-  _parent_window = NULL;
+  _parent_window = nullptr;
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const WindowProperties &properties) {
+INLINE std::ostream &
+operator << (std::ostream &out, const WindowProperties &properties) {
   properties.output(out);
   return out;
 }

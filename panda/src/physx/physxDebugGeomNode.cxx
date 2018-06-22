@@ -31,7 +31,7 @@ update(NxScene *scenePtr) {
   const NxDebugRenderable *renderable = scenePtr->getDebugRenderable();
   if (!renderable) {
     remove_all_geoms();
-    physx_cat.warning() << "Could no get debug renderable." << endl;
+    physx_cat.warning() << "Could no get debug renderable." << std::endl;
     return;
   }
 

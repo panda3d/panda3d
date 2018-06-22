@@ -36,12 +36,12 @@ public:
   virtual bool is_reference() const;
   virtual bool is_complex_object() const;
 
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_text(std::ostream &out, int indent_level) const;
 
 protected:
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);
-  virtual XFileDataObject *get_element(const string &name);
+  virtual XFileDataObject *get_element(const std::string &name);
 
 private:
   PT(XFileDataNodeTemplate) _object;

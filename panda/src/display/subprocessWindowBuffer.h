@@ -17,7 +17,6 @@
 #include <stdio.h>  // perror
 #include <assert.h>
 #include <string>
-using namespace std;
 
 /**
  * This is a special class that is designed to faciliate SubprocessWindow.
@@ -42,16 +41,16 @@ private:
 
 public:
   static SubprocessWindowBuffer *new_buffer(int &fd, size_t &mmap_size,
-                                            string &filename,
+                                            std::string &filename,
                                             int x_size, int y_size);
   static void destroy_buffer(int fd, size_t mmap_size,
-                             const string &filename,
+                             const std::string &filename,
                              SubprocessWindowBuffer *buffer);
 
   static SubprocessWindowBuffer *open_buffer(int &fd, size_t &mmap_size,
-                                             const string &filename);
+                                             const std::string &filename);
   static void close_buffer(int fd, size_t mmap_size,
-                           const string &filename,
+                           const std::string &filename,
                            SubprocessWindowBuffer *buffer);
 
   bool verify_magic_number() const;

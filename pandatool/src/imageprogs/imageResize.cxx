@@ -29,14 +29,14 @@ ImageResize() : ImageFilter(true) {
      "Specify the width of the output image in pixels, or as a percentage "
      "of the original width (if a trailing percent sign is included).  "
      "If this is omitted, the ratio is taken from the ysize parameter.",
-     &ImageResize::dispatch_size_request, NULL, &_x_size);
+     &ImageResize::dispatch_size_request, nullptr, &_x_size);
 
   add_option
     ("y", "ysize", 0,
      "Specify the height of the output image in pixels, or as a percentage "
      "of the original height (if a trailing percent sign is included).  "
      "If this is omitted, the ratio is taken from the xsize parameter.",
-     &ImageResize::dispatch_size_request, NULL, &_y_size);
+     &ImageResize::dispatch_size_request, nullptr, &_y_size);
 
   add_option
     ("g", "radius", 0,
@@ -47,7 +47,7 @@ ImageResize() : ImageFilter(true) {
     ("1", "", 0,
      "This option is ignored.  It is provided only for backward compatibility "
      "with a previous version of image-resize.",
-     &ImageResize::dispatch_none, NULL, NULL);
+     &ImageResize::dispatch_none, nullptr, nullptr);
 
   _filter_radius = 1.0;
 }
@@ -87,11 +87,11 @@ run() {
  * Interprets the -x or -y parameters.
  */
 bool ImageResize::
-dispatch_size_request(const string &opt, const string &arg, void *var) {
+dispatch_size_request(const std::string &opt, const std::string &arg, void *var) {
   SizeRequest *ip = (SizeRequest *)var;
   if (!arg.empty() && arg[arg.length() - 1] == '%') {
     // A ratio.
-    string str = arg.substr(0, arg.length() - 1);
+    std::string str = arg.substr(0, arg.length() - 1);
     double ratio;
     if (!string_to_double(str, ratio)) {
       nout << "Invalid ratio for -" << opt << ": "

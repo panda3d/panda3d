@@ -15,7 +15,7 @@
  * Returns the name of the surface.  Each surface in a given Lightwave file
  * should have a unique name.
  */
-INLINE const string &CLwoSurface::
+INLINE const std::string &CLwoSurface::
 get_name() const {
   return _surface->_name;
 }
@@ -28,7 +28,7 @@ get_name() const {
  */
 INLINE bool CLwoSurface::
 has_named_uvs() const {
-  return (_block != (CLwoSurfaceBlock *)NULL &&
+  return (_block != nullptr &&
           _block->_projection_mode == LwoSurfaceBlockProjection::M_uv);
 }
 
@@ -36,7 +36,7 @@ has_named_uvs() const {
  * Returns the name of the set of UV's that are associated with this surface,
  * if has_named_uvs() is true.
  */
-INLINE const string &CLwoSurface::
+INLINE const std::string &CLwoSurface::
 get_uv_name() const {
   return _block->_uv_name;
 }

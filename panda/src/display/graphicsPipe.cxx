@@ -60,7 +60,7 @@ union cpuid_info {
  */
 static inline uint32_t get_cpuid_max(uint32_t leaf) {
 #if defined(__GNUC__) && !defined(__APPLE__)
-  return __get_cpuid_max(leaf, 0);
+  return __get_cpuid_max(leaf, nullptr);
 #elif defined(_MSC_VER)
   uint32_t p[4] = {0};
   __cpuid((int *)p, leaf);
@@ -134,8 +134,8 @@ GraphicsPipe() :
 
   if (max_cpuid >= 1) {
     get_cpuid(0, info);
-    swap(info.ecx, info.edx);
-    _display_information->_cpu_vendor_string = string(info.str + 4, 12);
+    std::swap(info.ecx, info.edx);
+    _display_information->_cpu_vendor_string = std::string(info.str + 4, 12);
 
     get_cpuid(1, info);
     _display_information->_cpu_version_information = info.eax;
@@ -158,17 +158,17 @@ GraphicsPipe() :
 #if defined(IS_OSX)
   // macOS exposes a lot of useful information through sysctl.
   size_t len = sizeof(uint64_t);
-  sysctlbyname("hw.memsize", &_display_information->_physical_memory, &len, NULL, 0);
+  sysctlbyname("hw.memsize", &_display_information->_physical_memory, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency", &_display_information->_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency", &_display_information->_cpu_frequency, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency", &_display_information->_current_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency", &_display_information->_current_cpu_frequency, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("hw.cpufrequency_max", &_display_information->_maximum_cpu_frequency, &len, NULL, 0);
+  sysctlbyname("hw.cpufrequency_max", &_display_information->_maximum_cpu_frequency, &len, nullptr, 0);
   len = sizeof(int);
-  sysctlbyname("hw.physicalcpu", &_display_information->_num_cpu_cores, &len, NULL, 0);
+  sysctlbyname("hw.physicalcpu", &_display_information->_num_cpu_cores, &len, nullptr, 0);
   len = sizeof(int);
-  sysctlbyname("hw.logicalcpu", &_display_information->_num_logical_cpus, &len, NULL, 0);
+  sysctlbyname("hw.logicalcpu", &_display_information->_num_logical_cpus, &len, nullptr, 0);
 
 #elif defined(IS_LINUX)
   _display_information->_get_memory_information_function = &update_memory_info;
@@ -176,9 +176,9 @@ GraphicsPipe() :
 
 #elif defined(IS_FREEBSD)
   size_t len = sizeof(uint64_t);
-  sysctlbyname("hw.physmem", &_display_information->_physical_memory, &len, NULL, 0);
+  sysctlbyname("hw.physmem", &_display_information->_physical_memory, &len, nullptr, 0);
   len = sizeof(uint64_t);
-  sysctlbyname("vm.swap_total", &_display_information->_page_file_size, &len, NULL, 0);
+  sysctlbyname("vm.swap_total", &_display_information->_page_file_size, &len, nullptr, 0);
 
 #elif defined(_WIN32)
   MEMORYSTATUSEX status;
@@ -228,7 +228,7 @@ GraphicsPipe::get_preferred_window_thread() const {
  */
 PT(GraphicsStateGuardian) GraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -239,7 +239,7 @@ PT(GraphicsDevice) GraphicsPipe::
 make_device(void *scrn) {
   display_cat.error()
     << "make_device() unimplemented by " << get_type() << "\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -251,7 +251,7 @@ make_device(void *scrn) {
  */
 void GraphicsPipe::
 close_gsg(GraphicsStateGuardian *gsg) {
-  if (gsg != (GraphicsStateGuardian *)NULL) {
+  if (gsg != nullptr) {
     gsg->close_gsg();
   }
 }
@@ -260,7 +260,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) GraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -271,7 +271,7 @@ make_output(const string &name,
             bool &precertify) {
   display_cat.error()
     << get_type() << " cannot create buffers or windows.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**

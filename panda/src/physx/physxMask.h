@@ -31,7 +31,7 @@ PUBLISHED:
   void clear_bit(unsigned int idx);
   bool get_bit(unsigned int idx) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   static PhysxMask all_on();
   static PhysxMask all_off();
@@ -43,7 +43,7 @@ private:
   NxU32 _mask;
 };
 
-INLINE ostream &operator << (ostream &out, const PhysxMask &mask) {
+INLINE std::ostream &operator << (std::ostream &out, const PhysxMask &mask) {
   mask.output(out);
   return out;
 }

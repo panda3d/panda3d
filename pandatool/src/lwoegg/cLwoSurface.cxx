@@ -39,8 +39,8 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
   _rgb.set(1.0, 1.0, 1.0);
   _checked_material = false;
   _checked_texture = false;
-  _map_uvs = NULL;
-  _block = (CLwoSurfaceBlock *)NULL;
+  _map_uvs = nullptr;
+  _block = nullptr;
 
   // Walk through the chunk list, looking for some basic properties.
   int num_chunks = _surface->get_num_chunks();
@@ -107,7 +107,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
           block->_channel_id == IffId("COLR") &&
           block->_enabled) {
         // Now save the block with the lowest ordinal.
-        if (_block == (CLwoSurfaceBlock *)NULL) {
+        if (_block == nullptr) {
           _block = block;
 
         } else if (block->_ordinal < _block->_ordinal) {
@@ -146,7 +146,7 @@ CLwoSurface(LwoToEggConverter *converter, const LwoSurface *surface) :
  */
 CLwoSurface::
 ~CLwoSurface() {
-  if (_block != (CLwoSurfaceBlock *)NULL) {
+  if (_block != nullptr) {
     delete _block;
   }
 }
@@ -164,7 +164,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   if (!_surface->_source.empty()) {
     // This surface is derived from another surface; apply that one first.
     CLwoSurface *parent = _converter->get_surface(_surface->_source);
-    if (parent != (CLwoSurface *)NULL && parent != this) {
+    if (parent != nullptr && parent != this) {
       parent->apply_properties(egg_prim, egg_vertices, smooth_angle);
     }
   }
@@ -190,7 +190,7 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
   }
 
   if ((_flags & F_smooth_angle) != 0) {
-    smooth_angle = max(smooth_angle, _smooth_angle);
+    smooth_angle = std::max(smooth_angle, _smooth_angle);
   }
 }
 
@@ -204,13 +204,13 @@ apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
 bool CLwoSurface::
 check_texture() {
   if (_checked_texture) {
-    return (_egg_texture != (EggTexture *)NULL);
+    return (_egg_texture != nullptr);
   }
   _checked_texture = true;
-  _egg_texture = (EggTexture *)NULL;
-  _map_uvs = NULL;
+  _egg_texture = nullptr;
+  _map_uvs = nullptr;
 
-  if (_block == (CLwoSurfaceBlock *)NULL) {
+  if (_block == nullptr) {
     // No texture.  Not even a shader block.
     return false;
   }
@@ -222,7 +222,7 @@ check_texture() {
   }
 
   CLwoClip *clip = _converter->get_clip(clip_index);
-  if (clip == (CLwoClip *)NULL) {
+  if (clip == nullptr) {
     nout << "No clip image with index " << clip_index << "\n";
     return false;
   }
@@ -281,10 +281,10 @@ check_texture() {
 bool CLwoSurface::
 check_material() {
   if (_checked_material) {
-    return (_egg_material != (EggMaterial *)NULL);
+    return (_egg_material != nullptr);
   }
   _checked_material = true;
-  _egg_material = (EggMaterial *)NULL;
+  _egg_material = nullptr;
 
   if (!_converter->_make_materials) {
     // If we aren't making materials, then don't make a material.
@@ -336,7 +336,7 @@ check_material() {
  */
 void CLwoSurface::
 generate_uvs(vector_PT_EggVertex &egg_vertices) {
-  if (_map_uvs == NULL) {
+  if (_map_uvs == nullptr) {
     return;
   }
 

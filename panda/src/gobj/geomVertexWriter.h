@@ -174,7 +174,7 @@ PUBLISHED:
   INLINE void add_data4i(int a, int b, int c, int d);
   INLINE void add_data4i(const LVecBase4i &data);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 protected:
   INLINE GeomVertexColumn::Packer *get_packer() const;
@@ -219,8 +219,8 @@ private:
 #endif
 };
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexWriter &writer) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexWriter &writer) {
   writer.output(out);
   return out;
 }

@@ -34,6 +34,9 @@ TOGGLEKEYS g_StartupToggleKeys = {sizeof(TOGGLEKEYS), 0};
 FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};
 #endif
 
+using std::max;
+using std::min;
+
 #if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_SHOWBASE)
   #error Buildsystem error: BUILDING_DIRECT_SHOWBASE not defined
 #endif
@@ -201,7 +204,7 @@ add_grid_zone(unsigned int x,
   // zoneBase is the first zone in the grid (e.g.  the upper left)
   // zoneResolution is the number of cells on each axsis.  returns the next
   // available zoneBase (i.e.  zoneBase+xZoneResolution*yZoneResolution)
-  cerr<<"adding grid zone with a zoneBase of "<<zoneBase<<" and a zoneResolution of "<<zoneResolution;
+  std::cerr<<"adding grid zone with a zoneBase of "<<zoneBase<<" and a zoneResolution of "<<zoneResolution;
   _grids.append(TempGridZoneManager::GridZone(x, y, width, height, zoneBase, xZoneResolution, yZoneResolution));
   return zoneBase+xZoneResolution*yZoneResolution;
 }
@@ -281,7 +284,7 @@ get_zone_list(int x, int y, int resolution) {
   if (x < 0.0 || x > 1.0 || y < 0.0 || y > 1.0) {
     return 0;
   }
-  cerr<<"resolution="<<resolution;
+  std::cerr<<"resolution="<<resolution;
   xCell=min(int(x*resolution), resolution-1)
   yCell=min(int(y*resolution), resolution-1)
   cell=yCell*resolution+xCell

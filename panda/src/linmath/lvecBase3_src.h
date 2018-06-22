@@ -30,7 +30,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase3)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVecBase3)() = default;
   INLINE_LINMATH FLOATNAME(LVecBase3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
   INLINE_LINMATH FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
@@ -47,12 +47,12 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVecBase3) &unit_z();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 3; }
+  constexpr static int size() { return 3; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -87,7 +87,7 @@ PUBLISHED:
   INLINE_LINMATH void add_z(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 3; }
+  constexpr static int get_num_components() { return 3; }
 
 public:
   INLINE_LINMATH iterator begin();
@@ -164,8 +164,8 @@ PUBLISHED:
                                    FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase3) &other) const;
 
-  INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  INLINE_LINMATH void output(std::ostream &out) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
@@ -199,7 +199,7 @@ private:
 };
 
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase3) &vec) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LVecBase3) &vec) {
   vec.output(out);
   return out;
 };

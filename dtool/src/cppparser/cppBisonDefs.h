@@ -27,8 +27,6 @@
 #include "cppExtensionType.h"
 #include "cppFile.h"
 
-using namespace std;
-
 class CPPParser;
 class CPPExpression;
 class CPPPreprocessor;
@@ -66,7 +64,7 @@ extern CPPPreprocessor *current_lexer;
 
 class cppyystype {
 public:
-  string str;
+  std::string str;
   union {
     unsigned long long integer;
     long double real;

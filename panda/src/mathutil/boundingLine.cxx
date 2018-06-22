@@ -60,7 +60,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingLine::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bline, empty";
   } else if (is_infinite()) {

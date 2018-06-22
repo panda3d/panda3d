@@ -22,9 +22,9 @@
  * Corresponding to an <S$Anim> entry, this stores a single column of numbers,
  * for instance for a morph target, or as one column in an EggXfmSAnim.
  */
-class EXPCL_PANDAEGG EggSAnimData : public EggAnimData {
+class EXPCL_PANDA_EGG EggSAnimData : public EggAnimData {
 PUBLISHED:
-  INLINE explicit EggSAnimData(const string &name = "");
+  INLINE explicit EggSAnimData(const std::string &name = "");
   INLINE EggSAnimData(const EggSAnimData &copy);
   INLINE EggSAnimData &operator = (const EggSAnimData &copy);
 
@@ -34,7 +34,7 @@ PUBLISHED:
 
   void optimize();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
 

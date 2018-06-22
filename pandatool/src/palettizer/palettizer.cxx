@@ -29,7 +29,10 @@
 #include "bamWriter.h"
 #include "indent.h"
 
-Palettizer *pal = (Palettizer *)NULL;
+using std::cout;
+using std::string;
+
+Palettizer *pal = nullptr;
 
 // This number is written out as the first number to the pi file, to indicate
 // the version of egg-palettize that wrote it out.  This allows us to easily
@@ -60,7 +63,7 @@ int Palettizer::_read_pi_version = 0;
 
 TypeHandle Palettizer::_type_handle;
 
-ostream &operator << (ostream &out, Palettizer::RemapUV remap) {
+std::ostream &operator << (std::ostream &out, Palettizer::RemapUV remap) {
   switch (remap) {
   case Palettizer::RU_never:
     return out << "never";
@@ -116,9 +119,9 @@ Palettizer() {
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
   _color_type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension("png");
-  _alpha_type = (PNMFileType *)NULL;
-  _shadow_color_type = (PNMFileType *)NULL;
-  _shadow_alpha_type = (PNMFileType *)NULL;
+  _alpha_type = nullptr;
+  _shadow_color_type = nullptr;
+  _shadow_alpha_type = nullptr;
   _pal_x_size = _pal_y_size = 512;
   _background.set(0.0, 0.0, 0.0, 0.0);
   _cutout_mode = EggRenderMode::AM_dual;
@@ -203,19 +206,19 @@ report_pi() const {
        << "  remap UV's for characters: " << _remap_char_uv << "\n";
   cout << "  alpha cutouts: " << _cutout_mode << " " << _cutout_ratio << "\n";
 
-  if (_color_type != (PNMFileType *)NULL) {
+  if (_color_type != nullptr) {
     cout << "  generate image files of type: "
          << _color_type->get_suggested_extension();
-    if (_alpha_type != (PNMFileType *)NULL) {
+    if (_alpha_type != nullptr) {
       cout << "," << _alpha_type->get_suggested_extension();
     }
     cout << "\n";
   }
 
-  if (_shadow_color_type != (PNMFileType *)NULL) {
+  if (_shadow_color_type != nullptr) {
     cout << "  generate shadow palette files of type: "
          << _shadow_color_type->get_suggested_extension();
-    if (_shadow_alpha_type != (PNMFileType *)NULL) {
+    if (_shadow_alpha_type != nullptr) {
       cout << "," << _shadow_alpha_type->get_suggested_extension();
     }
     cout << "\n";
@@ -347,7 +350,7 @@ report_statistics() const {
  * files.
  */
 void Palettizer::
-read_txa_file(istream &txa_file, const string &txa_filename) {
+read_txa_file(std::istream &txa_file, const string &txa_filename) {
   // Clear out the group dependencies, in preparation for reading them again
   // from the .txa file.
   Groups::iterator gi;
@@ -358,14 +361,14 @@ read_txa_file(istream &txa_file, const string &txa_filename) {
   }
 
   // Also reset _shadow_color_type.
-  _shadow_color_type = (PNMFileType *)NULL;
-  _shadow_alpha_type = (PNMFileType *)NULL;
+  _shadow_color_type = nullptr;
+  _shadow_alpha_type = nullptr;
 
   if (!_txa_file.read(txa_file, txa_filename)) {
     exit(1);
   }
 
-  if (_color_type == (PNMFileType *)NULL) {
+  if (_color_type == nullptr) {
     nout << "No valid output image file type available; cannot run.\n"
          << "Use :imagetype command in .txa file.\n";
     exit(1);
@@ -810,7 +813,7 @@ test_palette_group(const string &name) const {
     return (*gi).second;
   }
 
-  return (PaletteGroup *)NULL;
+  return nullptr;
 }
 
 /**
@@ -890,7 +893,7 @@ string_remap(const string &str) {
  * texture placements, and reports this to the indicated output stream.
  */
 void Palettizer::
-compute_statistics(ostream &out, int indent_level,
+compute_statistics(std::ostream &out, int indent_level,
                    const Palettizer::Placements &placements) const {
   TextureMemoryCounter counter;
 
@@ -981,22 +984,22 @@ int Palettizer::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int index = TypedWritable::complete_pointers(p_list, manager);
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_color_type, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_alpha_type, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_shadow_color_type, p_list[index], index);
   }
   index++;
 
-  if (p_list[index] != (TypedWritable *)NULL) {
+  if (p_list[index] != nullptr) {
     DCAST_INTO_R(_shadow_alpha_type, p_list[index], index);
   }
   index++;
@@ -1021,7 +1024,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     DCAST_INTO_R(texture, p_list[index], index);
 
     string name = downcase(texture->get_name());
-    pair<Textures::iterator, bool> result = _textures.insert(Textures::value_type(name, texture));
+    std::pair<Textures::iterator, bool> result = _textures.insert(Textures::value_type(name, texture));
     if (!result.second) {
       // Two textures mapped to the same slot--probably a case error (since we
       // just changed this rule).

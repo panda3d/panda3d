@@ -55,7 +55,7 @@ cancel() {
  *
  */
 void AsyncFuture::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   FutureState state = (FutureState)AtomicAdjust::get(_future_state);
   switch (state) {
@@ -159,7 +159,7 @@ notify_done(bool clean_exit) {
   if (clean_exit && !_done_event.empty()) {
     PT_Event event = new Event(_done_event);
     event->add_parameter(EventParameter(this));
-    throw_event(move(event));
+    throw_event(std::move(event));
   }
 }
 
@@ -273,9 +273,9 @@ wake_task(AsyncTask *task) {
     }
 
     {
-      manager->_lock.release();
+      manager->_lock.unlock();
       task->upon_birth(manager);
-      manager->_lock.acquire();
+      manager->_lock.lock();
       nassertv(task->_manager == nullptr &&
                task->_state == AsyncTask::S_inactive);
 
@@ -308,7 +308,7 @@ wake_task(AsyncTask *task) {
  */
 AsyncGatheringFuture::
 AsyncGatheringFuture(AsyncFuture::Futures futures) :
-  _futures(move(futures)),
+  _futures(std::move(futures)),
   _num_pending(0) {
 
   bool any_pending = false;

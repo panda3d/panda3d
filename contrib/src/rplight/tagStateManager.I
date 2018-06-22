@@ -35,7 +35,7 @@
  * @param source Camera which will be used to render shadows
  */
 inline void TagStateManager::
-register_camera(const string& name, Camera* source) {
+register_camera(const std::string& name, Camera* source) {
   ContainerList::iterator entry = _containers.find(name);
   nassertv(entry != _containers.end());
   register_camera(entry->second, source);
@@ -49,7 +49,7 @@ register_camera(const string& name, Camera* source) {
  * @param source Camera to unregister
  */
 inline void TagStateManager::
-unregister_camera(const string& name, Camera* source) {
+unregister_camera(const std::string& name, Camera* source) {
   ContainerList::iterator entry = _containers.find(name);
   nassertv(entry != _containers.end());
   unregister_camera(entry->second, source);
@@ -67,8 +67,8 @@ unregister_camera(const string& name, Camera* source) {
  * @param sort Determines the sort with which the shader will be applied.
  */
 inline void TagStateManager::
-apply_state(const string& state, NodePath np, Shader* shader,
-            const string &name, int sort) {
+apply_state(const std::string& state, NodePath np, Shader* shader,
+            const std::string &name, int sort) {
   ContainerList::iterator entry = _containers.find(state);
   nassertv(entry != _containers.end());
   apply_state(entry->second, np, shader, name, sort);
@@ -83,7 +83,7 @@ apply_state(const string& state, NodePath np, Shader* shader,
  * @return Bit mask of the render pass
  */
 inline BitMask32 TagStateManager::
-get_mask(const string &container_name) {
+get_mask(const std::string &container_name) {
   if (container_name == "gbuffer") {
     return BitMask32::bit(1);
   }

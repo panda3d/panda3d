@@ -15,7 +15,7 @@
  *
  */
 template<class Key, class Value, class Compare>
-CONSTEXPR SimpleHashMap<Key, Value, Compare>::
+constexpr SimpleHashMap<Key, Value, Compare>::
 SimpleHashMap(const Compare &comp) :
   _table(nullptr),
   _deleted_chain(nullptr),
@@ -55,12 +55,12 @@ SimpleHashMap(const SimpleHashMap &copy) :
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare>::
-SimpleHashMap(SimpleHashMap &&from) NOEXCEPT :
+SimpleHashMap(SimpleHashMap &&from) noexcept :
   _table(from._table),
   _deleted_chain(from._deleted_chain),
   _table_size(from._table_size),
   _num_entries(from._num_entries),
-  _comp(move(from._comp))
+  _comp(std::move(from._comp))
 {
   from._table = nullptr;
   from._deleted_chain = nullptr;
@@ -109,13 +109,13 @@ operator = (const SimpleHashMap<Key, Value, Compare> &copy) {
  */
 template<class Key, class Value, class Compare>
 INLINE SimpleHashMap<Key, Value, Compare> &SimpleHashMap<Key, Value, Compare>::
-operator = (SimpleHashMap<Key, Value, Compare> &&from) NOEXCEPT {
+operator = (SimpleHashMap<Key, Value, Compare> &&from) noexcept {
   if (this != &from) {
     _table = from._table;
     _deleted_chain = from._deleted_chain;
     _table_size = from._table_size;
     _num_entries = from._num_entries;
-    _comp = move(from._comp);
+    _comp = std::move(from._comp);
 
     from._table = nullptr;
     from._deleted_chain = nullptr;
@@ -275,7 +275,7 @@ remove(const Key &key) {
 
     // Swap it with the last one, so that we don't get any gaps in the table
     // of entries.
-    _table[index] = move(_table[last]);
+    _table[index] = std::move(_table[last]);
     index_array[(size_t)other_slot] = index;
   }
 
@@ -360,7 +360,7 @@ operator [] (const Key &key) {
  * Returns the total number of entries in the table.  Same as get_num_entries.
  */
 template<class Key, class Value, class Compare>
-CONSTEXPR size_t SimpleHashMap<Key, Value, Compare>::
+constexpr size_t SimpleHashMap<Key, Value, Compare>::
 size() const {
   return _num_entries;
 }
@@ -422,7 +422,7 @@ template<class Key, class Value, class Compare>
 INLINE void SimpleHashMap<Key, Value, Compare>::
 set_data(size_t n, Value &&data) {
   nassertv(n < _num_entries);
-  _table[n].set_data(move(data));
+  _table[n].set_data(std::move(data));
 }
 
 /**
@@ -460,7 +460,7 @@ is_empty() const {
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "SimpleHashMap (" << _num_entries << " entries): [";
   const int *index_array = get_index_array();
   size_t num_slots = _table_size * sparsity;
@@ -487,7 +487,7 @@ output(ostream &out) const {
  */
 template<class Key, class Value, class Compare>
 void SimpleHashMap<Key, Value, Compare>::
-write(ostream &out) const {
+write(std::ostream &out) const {
   output(out);
   out << "\n";
   for (size_t i = 0; i < _num_entries; ++i) {
@@ -731,7 +731,7 @@ resize_table(size_t new_size) {
   // have to reorder these, fortunately.  Hopefully, a smart compiler will
   // optimize this to a memcpy.
   for (size_t i = 0; i < _num_entries; ++i) {
-    new(&_table[i]) TableEntry(move(old_table[i]));
+    new(&_table[i]) TableEntry(std::move(old_table[i]));
     old_table[i].~TableEntry();
   }
 

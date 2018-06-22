@@ -84,7 +84,7 @@ DEFINE_KEYBD_BUTTON_HANDLE(rmeta)
 
 /**
  * This is intended to be called only once, by the static initialization
- * performed in config_util.cxx.
+ * performed in config_putil.cxx.
  */
 void KeyboardButton::
 init_keyboard_buttons() {
@@ -155,7 +155,7 @@ init_keyboard_buttons() {
   for (int i = 32; i < 127; i++) {
     if (isgraph(i)) {
       ButtonHandle key;
-      ButtonRegistry::ptr()->register_button(key, string(1, (char)i),
+      ButtonRegistry::ptr()->register_button(key, std::string(1, (char)i),
                                              ButtonHandle::none(), i);
     }
   }

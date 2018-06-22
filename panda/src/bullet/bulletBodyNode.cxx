@@ -150,7 +150,7 @@ safe_to_flatten_below() const {
  *
  */
 void BulletBodyNode::
-do_output(ostream &out) const {
+do_output(std::ostream &out) const {
 
   PandaNode::output(out);
 
@@ -166,7 +166,7 @@ do_output(ostream &out) const {
  *
  */
 void BulletBodyNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   do_output(out);
@@ -310,7 +310,7 @@ BulletShape *BulletBodyNode::
 get_shape(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), NULL);
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), nullptr);
   return _shapes[idx];
 }
 
@@ -334,7 +334,7 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
   nassertv(ts);
 
   btCollisionShape *shape = bullet_shape->ptr();
-  nassertv(shape != NULL);
+  nassertv(shape != nullptr);
 
   nassertv(!(shape->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE &&
             ((btConvexHullShape *)shape)->getNumVertices() == 0));
@@ -427,7 +427,7 @@ remove_shape(BulletShape *shape) {
   found = find(_shapes.begin(), _shapes.end(), ptshape);
 
   if (found == _shapes.end()) {
-    bullet_cat.warning() << "shape not attached" << endl;
+    bullet_cat.warning() << "shape not attached" << std::endl;
   }
   else {
     _shapes.erase(found);
@@ -782,9 +782,9 @@ void BulletBodyNode::
 add_shapes_from_collision_solids(CollisionNode *cnode) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  PT(BulletTriangleMesh) mesh = NULL;
+  PT(BulletTriangleMesh) mesh = nullptr;
 
-  for (int j=0; j<cnode->get_num_solids(); j++) {
+  for (size_t j = 0; j < cnode->get_num_solids(); ++j) {
     CPT(CollisionSolid) solid = cnode->get_solid(j);
     TypeHandle type = solid->get_type();
 
@@ -819,9 +819,9 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
          mesh = new BulletTriangleMesh();
       }
 
-      for (int i=2; i < polygon->get_num_points(); i++ ) {
+      for (size_t i = 2; i < polygon->get_num_points(); ++i) {
         LPoint3 p1 = polygon->get_point(0);
-        LPoint3 p2 = polygon->get_point(i-1);
+        LPoint3 p2 = polygon->get_point(i - 1);
         LPoint3 p3 = polygon->get_point(i);
 
         mesh->do_add_triangle(p1, p2, p3, true);
@@ -864,7 +864,7 @@ cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << 
 */
 
   btVector3 center;
-  btScalar radius;
+  btScalar radius = 0;
 
   if (_shape) {
     _shape->getBoundingSphere(center, radius);
@@ -914,7 +914,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 
   // Write NULL pointer to indicate the end of the list.
-  manager->write_pointer(dg, NULL);
+  manager->write_pointer(dg, nullptr);
 }
 
 /**
@@ -927,7 +927,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   PT(BulletShape) shape = DCAST(BulletShape, p_list[pi++]);
 
-  while (shape != (BulletShape *)NULL) {
+  while (shape != nullptr) {
     const TransformState *trans = DCAST(TransformState, p_list[pi++]);
     add_shape(shape, trans);
 

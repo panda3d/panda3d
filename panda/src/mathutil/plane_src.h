@@ -56,11 +56,11 @@ PUBLISHED:
   bool intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
                            const FLOATNAME(LParabola) &parabola) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 };
 
-INLINE_MATHUTIL ostream &
-operator << (ostream &out, const FLOATNAME(LPlane) &p);
+INLINE_MATHUTIL std::ostream &
+operator << (std::ostream &out, const FLOATNAME(LPlane) &p);
 
 #include "plane_src.I"

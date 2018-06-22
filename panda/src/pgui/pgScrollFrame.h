@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_PGUI PGScrollFrame : public PGVirtualFrame, public PGSliderBarNotify {
 PUBLISHED:
-  explicit PGScrollFrame(const string &name = "");
+  explicit PGScrollFrame(const std::string &name = "");
   virtual ~PGScrollFrame();
 
 protected:
@@ -93,8 +93,6 @@ private:
   bool _needs_remanage;
   bool _needs_recompute_clip;
   bool _needs_recompute_canvas;
-
-  LVecBase4 _orig_clip_frame;
 
   bool _has_virtual_frame;
   LVecBase4 _virtual_frame;

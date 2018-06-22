@@ -22,7 +22,7 @@
 // The magic number for a BAM file.  It includes a carriage return and newline
 // character to help detect files damaged due to faulty ASCIIBinary
 // conversion.
-static const string _bam_header = string("pbj\0\n\r", 6);
+static const std::string _bam_header = std::string("pbj\0\n\r", 6);
 
 static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 2 on 2000-07-06 due to major changes in Character.

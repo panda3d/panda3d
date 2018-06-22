@@ -92,8 +92,8 @@ PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -151,7 +151,7 @@ private:
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData(UsageHint usage_hint = UH_unspecified);
-    INLINE CData(CData &&from) NOEXCEPT;
+    INLINE CData(CData &&from) noexcept;
     INLINE CData(const CData &copy);
     INLINE void operator = (const CData &copy);
 
@@ -257,14 +257,16 @@ private:
                                    Thread *current_thread);
   INLINE GeomVertexArrayDataHandle(GeomVertexArrayData *object,
                                    Thread *current_thread);
-  INLINE GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &);
-  INLINE void operator = (const GeomVertexArrayDataHandle &);
 
 PUBLISHED:
   INLINE ~GeomVertexArrayDataHandle();
 
 public:
+  GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &) = delete;
+
   ALLOC_DELETED_CHAIN_DECL(GeomVertexArrayDataHandle);
+
+  GeomVertexArrayDataHandle &operator = (const GeomVertexArrayDataHandle &) = delete;
 
   INLINE Thread *get_current_thread() const;
 
@@ -314,10 +316,10 @@ PUBLISHED:
                                    PyObject *buffer,
                                    size_t from_start, size_t from_size));
 
-  INLINE string get_data() const;
-  void set_data(const string &data);
-  INLINE string get_subdata(size_t start, size_t size) const;
-  void set_subdata(size_t start, size_t size, const string &data);
+  INLINE vector_uchar get_data() const;
+  void set_data(const vector_uchar &data);
+  INLINE vector_uchar get_subdata(size_t start, size_t size) const;
+  void set_subdata(size_t start, size_t size, const vector_uchar &data);
 
   INLINE void mark_used() const;
 
@@ -348,7 +350,7 @@ private:
   friend class GeomVertexArrayData;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexArrayData &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexArrayData &obj);
 
 #include "geomVertexArrayData.I"
 

@@ -36,11 +36,9 @@ protected:
   INLINE NodePointerToBase(To *ptr);
   INLINE NodePointerToBase(const NodePointerToBase<T> &copy);
   INLINE ~NodePointerToBase();
+  INLINE NodePointerToBase(NodePointerToBase<T> &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE NodePointerToBase(NodePointerToBase<T> &&from) NOEXCEPT;
-  INLINE void reassign(NodePointerToBase<To> &&from) NOEXCEPT;
-#endif
+  INLINE void reassign(NodePointerToBase<To> &&from) noexcept;
 
   void reassign(To *ptr);
   INLINE void reassign(const NodePointerToBase<To> &copy);
@@ -51,11 +49,11 @@ protected:
 PUBLISHED:
   INLINE void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const NodePointerToBase<T> &pointer) {
+INLINE std::ostream &operator <<(std::ostream &out, const NodePointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }

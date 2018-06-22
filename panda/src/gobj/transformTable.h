@@ -55,7 +55,7 @@ PUBLISHED:
   void remove_transform(size_t n);
   size_t add_transform(const VertexTransform *transform);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   MAKE_PROPERTY(registered, is_registered);
   MAKE_PROPERTY(modified, get_modified);
@@ -121,7 +121,7 @@ private:
   friend class VertexTransform;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformTable &obj);
+INLINE std::ostream &operator << (std::ostream &out, const TransformTable &obj);
 
 #include "transformTable.I"
 

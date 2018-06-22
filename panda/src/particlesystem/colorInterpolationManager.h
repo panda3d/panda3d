@@ -24,7 +24,7 @@
  * virtual interpolate() function.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationFunction : public TypedReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationFunction : public TypedReferenceCount {
 PUBLISHED:
 // virtual string get_type();
 
@@ -57,7 +57,7 @@ private:
  * Defines a constant color over the lifetime of the segment.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
 PUBLISHED:
   INLINE LColor get_color_a() const;
 
@@ -96,7 +96,7 @@ private:
  * Defines a linear interpolation over the lifetime of the segment.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
 PUBLISHED:
   INLINE LColor get_color_b() const;
 
@@ -138,7 +138,7 @@ private:
  * repeats until the end of the segment.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
 PUBLISHED:
   INLINE PN_stdfloat get_width_a() const;
   INLINE PN_stdfloat get_width_b() const;
@@ -183,7 +183,7 @@ private:
  * result in a higher frequency cycle.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
 PUBLISHED:
   INLINE PN_stdfloat get_period() const;
 
@@ -224,7 +224,7 @@ private:
  * segment also has a function associated with it.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationSegment : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationSegment : public ReferenceCount {
 public:
   ColorInterpolationSegment(ColorInterpolationFunction* function, const PN_stdfloat &time_begin, const PN_stdfloat &time_end, const bool is_modulated, const int id);
 
@@ -266,7 +266,7 @@ protected:
  * Access to these segments is provided but not necessary general use.
  */
 
-class EXPCL_PANDAPHYSICS ColorInterpolationManager : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM ColorInterpolationManager : public ReferenceCount {
 PUBLISHED:
 ColorInterpolationManager();
   ColorInterpolationManager(const LColor &c);
@@ -280,7 +280,7 @@ ColorInterpolationManager();
 
   INLINE void set_default_color(const LColor &c);
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);
-  INLINE string get_segment_id_list();
+  INLINE std::string get_segment_id_list();
   void clear_segment(const int seg_id);
   void clear_to_initial();
 

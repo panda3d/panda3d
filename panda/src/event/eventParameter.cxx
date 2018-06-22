@@ -21,8 +21,8 @@ template class ParamValue<double>;
  *
  */
 void EventParameter::
-output(ostream &out) const {
-  if (_ptr == (TypedWritableReferenceCount *)NULL) {
+output(std::ostream &out) const {
+  if (_ptr == nullptr) {
     out << "(empty)";
 
   } else if (_ptr->is_of_type(ParamValueBase::get_class_type())) {

@@ -51,7 +51,7 @@ child_integrate(Physical *physical,
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be processed.
-    if (current_object == (PhysicsObject *) NULL) {
+    if (current_object == nullptr) {
       continue;
     }
 
@@ -142,7 +142,7 @@ child_integrate(Physical *physical,
  * Write a string representation of this instance to <out>.
  */
 void AngularEulerIntegrator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"AngularEulerIntegrator (id "<<this<<")";
   #endif //] NDEBUG
@@ -152,7 +152,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void AngularEulerIntegrator::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"AngularEulerIntegrator:\n";
   AngularIntegrator::write(out, indent+2);

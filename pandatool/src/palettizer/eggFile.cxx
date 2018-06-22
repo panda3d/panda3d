@@ -41,9 +41,9 @@ TypeHandle EggFile::_type_handle;
  */
 EggFile::
 EggFile() {
-  _data = (EggData *)NULL;
+  _data = nullptr;
   _first_txa_match = false;
-  _default_group = (PaletteGroup *)NULL;
+  _default_group = nullptr;
   _is_surprise = true;
   _is_stale = true;
   _had_data = false;
@@ -57,7 +57,7 @@ bool EggFile::
 from_command_line(EggData *data,
                   const Filename &source_filename,
                   const Filename &dest_filename,
-                  const string &egg_comment) {
+                  const std::string &egg_comment) {
   _data = data;
   _had_data = true;
   remove_backstage(_data);
@@ -100,7 +100,7 @@ get_source_filename() const {
  */
 void EggFile::
 scan_textures() {
-  nassertv(_data != (EggData *)NULL);
+  nassertv(_data != nullptr);
 
   // Extract the set of textures referenced by this egg file.
   EggTextureCollection tc;
@@ -338,7 +338,7 @@ build_cross_links() {
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureReference *reference = (*ti);
     TextureImage *texture = reference->get_texture();
-    nassertv(texture != (TextureImage *)NULL);
+    nassertv(texture != nullptr);
     texture->note_egg_file(this);
 
     // Actually, this may count the same egg file multiple times for a
@@ -384,7 +384,7 @@ choose_placements() {
     TextureReference *reference = (*ti);
     TextureImage *texture = reference->get_texture();
 
-    if (reference->get_placement() != (TexturePlacement *)NULL &&
+    if (reference->get_placement() != nullptr &&
         texture->get_groups().count(reference->get_placement()->get_group()) != 0) {
       // The egg file is already using a TexturePlacement that is suitable.
       // Don't bother changing it.
@@ -413,7 +413,7 @@ choose_placements() {
         // Now get the TexturePlacement object that corresponds to the
         // placement of this texture into this group.
         TexturePlacement *placement = texture->get_placement(group);
-        nassertv(placement != (TexturePlacement *)NULL);
+        nassertv(placement != nullptr);
 
         reference->set_placement(placement);
       }
@@ -427,7 +427,7 @@ choose_placements() {
  */
 bool EggFile::
 has_data() const {
-  return (_data != (EggData *)NULL);
+  return (_data != nullptr);
 }
 
 /**
@@ -445,7 +445,7 @@ had_data() const {
  */
 void EggFile::
 update_egg() {
-  nassertv(_data != (EggData *)NULL);
+  nassertv(_data != nullptr);
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -478,7 +478,7 @@ remove_egg() {
  */
 bool EggFile::
 read_egg(bool noabs) {
-  nassertr(_data == (EggData *)NULL, false);
+  nassertr(_data == nullptr, false);
   nassertr(!_source_filename.empty(), false);
 
   Filename user_source_filename =
@@ -551,8 +551,8 @@ read_egg(bool noabs) {
  */
 void EggFile::
 release_egg_data() {
-  if (_data != (EggData *)NULL) {
-    _data = NULL;
+  if (_data != nullptr) {
+    _data = nullptr;
   }
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -567,7 +567,7 @@ release_egg_data() {
  */
 bool EggFile::
 write_egg() {
-  nassertr(_data != (EggData *)NULL, false);
+  nassertr(_data != nullptr, false);
   nassertr(!_dest_filename.empty(), false);
 
   _dest_filename.make_dir();
@@ -588,10 +588,10 @@ write_egg() {
  * the indicated output stream.
  */
 void EggFile::
-write_description(ostream &out, int indent_level) const {
+write_description(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_name() << ": ";
   if (_explicitly_assigned_groups.empty()) {
-    if (_default_group != (PaletteGroup *)NULL) {
+    if (_default_group != nullptr) {
       out << _default_group->get_name();
     }
   } else {
@@ -609,7 +609,7 @@ write_description(ostream &out, int indent_level) const {
  * per line.
  */
 void EggFile::
-write_texture_refs(ostream &out, int indent_level) const {
+write_texture_refs(std::ostream &out, int indent_level) const {
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureReference *reference = (*ti);
@@ -654,7 +654,7 @@ remove_backstage(EggGroupNode *node) {
  */
 void EggFile::
 rescan_textures() {
-  nassertv(_data != (EggData *)NULL);
+  nassertv(_data != nullptr);
 
   // Extract the set of textures referenced by this egg file.
   EggTextureCollection tc;
@@ -663,7 +663,7 @@ rescan_textures() {
   // Make sure each tref name is unique within a given file.
   tc.uniquify_trefs();
 
-  typedef pmap<string, TextureReference *> ByTRefName;
+  typedef pmap<std::string, TextureReference *> ByTRefName;
   ByTRefName by_tref_name;
   for (Textures::const_iterator ti = _textures.begin();
        ti != _textures.end();
@@ -751,7 +751,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   pi += _explicitly_assigned_groups.complete_pointers(p_list + pi, manager);
 
-  if (p_list[pi] != (TypedWritable *)NULL) {
+  if (p_list[pi] != nullptr) {
     DCAST_INTO_R(_default_group, p_list[pi], pi);
   }
   pi++;

@@ -33,7 +33,7 @@ Texture(copy)
 /**
  * This initializes a web browser texture with the given AwWebView class.
  */
-WebBrowserTexture::WebBrowserTexture(const string &name, AwWebView* aw_web_view):
+WebBrowserTexture::WebBrowserTexture(const std::string &name, AwWebView* aw_web_view):
 Texture(name),
 _update_active(true),
 _flip_texture_active(false)
@@ -149,7 +149,7 @@ bool WebBrowserTexture::get_flip_texture_active() const {
 bool WebBrowserTexture::cull_callback(CullTraverser *trav, const CullTraverserData &data) const{
     // see if we are in a state where udpates can happen.  else just return
     if( !_update_active ) return true;
-    if( _aw_web_view == NULL ) return true;
+    if( _aw_web_view == nullptr ) return true;
 
     // do we even need to update?
     if( !_aw_web_view->is_dirty() ) return true;

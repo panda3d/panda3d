@@ -33,7 +33,7 @@ extern struct Dtool_PyTypedObject Dtool_PythonTask;
  *
  */
 PythonTask::
-PythonTask(PyObject *func_or_coro, const string &name) :
+PythonTask(PyObject *func_or_coro, const std::string &name) :
   AsyncTask(name),
   _function(nullptr),
   _args(nullptr),
@@ -94,6 +94,9 @@ PythonTask::
     PyErr_Restore(_exception, _exc_value, _exc_traceback);
     PyErr_Print();
     PyErr_Restore(nullptr, nullptr, nullptr);
+    _exception = nullptr;
+    _exc_value = nullptr;
+    _exc_traceback = nullptr;
   }
 #endif
 
@@ -131,7 +134,7 @@ set_function(PyObject *function) {
 void PythonTask::
 set_args(PyObject *args, bool append_task) {
   Py_XDECREF(_args);
-  _args = NULL;
+  _args = nullptr;
 
   if (args == Py_None) {
     // None means no arguments; create an empty tuple.
@@ -142,7 +145,7 @@ set_args(PyObject *args, bool append_task) {
     }
   }
 
-  if (_args == NULL) {
+  if (_args == nullptr) {
     nassert_raise("Invalid args passed to PythonTask");
     _args = PyTuple_New(0);
   }
@@ -210,15 +213,15 @@ set_owner(PyObject *owner) {
     PyObject *add = PyObject_GetAttrString(owner, "_addTask");
     PyObject *clear = PyObject_GetAttrString(owner, "_clearTask");
 
-    if (add == NULL || !PyCallable_Check(add) ||
-        clear == NULL || !PyCallable_Check(clear)) {
+    if (add == nullptr || !PyCallable_Check(add) ||
+        clear == nullptr || !PyCallable_Check(clear)) {
       Dtool_Raise_TypeError("owner object should have _addTask and _clearTask methods");
       return;
     }
   }
 #endif
 
-  if (_owner != NULL && _owner != Py_None && _state != S_inactive) {
+  if (_owner != nullptr && _owner != Py_None && _state != S_inactive) {
     unregister_from_owner();
   }
 
@@ -315,7 +318,7 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
  */
 int PythonTask::
 __delattr__(PyObject *self, PyObject *attr) {
-  if (PyObject_GenericSetAttr(self, attr, NULL) == 0) {
+  if (PyObject_GenericSetAttr(self, attr, nullptr) == 0) {
     return 0;
   }
 
@@ -357,7 +360,7 @@ __getattr__(PyObject *attr) const {
 
   PyObject *item = PyDict_GetItem(__dict__, attr);
 
-  if (item == NULL) {
+  if (item == nullptr) {
     // PyDict_GetItem does not raise an exception.
 #if PY_MAJOR_VERSION < 3
     PyErr_Format(PyExc_AttributeError,
@@ -368,7 +371,7 @@ __getattr__(PyObject *attr) const {
                  "'PythonTask' object has no attribute '%U'",
                  attr);
 #endif
-    return NULL;
+    return nullptr;
   }
 
   // PyDict_GetItem returns a borrowed reference.
@@ -680,7 +683,7 @@ do_python_task() {
     switch (retval) {
     case DS_again:
       Py_XDECREF(_generator);
-      _generator = NULL;
+      _generator = nullptr;
       // Fall through.
 
     case DS_done:
@@ -721,17 +724,17 @@ do_python_task() {
     return DS_done;
   }
 
-  ostringstream strm;
+  std::ostringstream strm;
 #if PY_MAJOR_VERSION >= 3
   PyObject *str = PyObject_ASCII(result);
-  if (str == NULL) {
+  if (str == nullptr) {
     str = PyUnicode_FromString("<repr error>");
   }
   strm
     << *this << " returned " << PyUnicode_AsUTF8(str);
 #else
   PyObject *str = PyObject_Repr(result);
-  if (str == NULL) {
+  if (str == nullptr) {
     str = PyString_FromString("<repr error>");
   }
   strm
@@ -739,7 +742,7 @@ do_python_task() {
 #endif
   Py_DECREF(str);
   Py_DECREF(result);
-  string message = strm.str();
+  std::string message = strm.str();
   nassert_raise(message);
 
   return DS_interrupt;
@@ -841,7 +844,7 @@ void PythonTask::
 call_owner_method(const char *method_name) {
   if (_owner != Py_None) {
     PyObject *func = PyObject_GetAttrString(_owner, (char *)method_name);
-    if (func == (PyObject *)NULL) {
+    if (func == nullptr) {
       task_cat.error()
         << "Owner object added to " << *this << " has no method "
         << method_name << "().\n";

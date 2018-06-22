@@ -395,7 +395,7 @@ compare_to(const Material &other) const {
  *
  */
 void Material::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Material " << get_name();
   if (has_base_color()) {
     out << " c(" << get_base_color() << ")";
@@ -432,7 +432,7 @@ output(ostream &out) const {
  *
  */
 void Material::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "Material " << get_name() << "\n";
   if (has_base_color()) {
     indent(out, indent_level + 2) << "base_color = " << get_ambient() << "\n";

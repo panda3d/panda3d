@@ -15,7 +15,7 @@
  *
  */
 INLINE Filename::
-Filename(const string &filename) {
+Filename(const std::string &filename) {
   _flags = 0;
   (*this) = filename;
 }
@@ -24,7 +24,7 @@ Filename(const string &filename) {
  *
  */
 INLINE Filename::
-Filename(const wstring &filename) {
+Filename(const std::wstring &filename) {
   _flags = 0;
   (*this) = filename;
 }
@@ -54,24 +54,20 @@ Filename(const Filename &copy) :
 {
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename::
-Filename(string &&filename) NOEXCEPT {
-  _flags = 0;
-  (*this) = move(filename);
+Filename(std::string &&filename) noexcept : _flags(0) {
+  (*this) = std::move(filename);
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename::
-Filename(Filename &&from) NOEXCEPT :
-  _filename(move(from._filename)),
+Filename(Filename &&from) noexcept :
+  _filename(std::move(from._filename)),
   _dirname_end(from._dirname_end),
   _basename_start(from._basename_start),
   _basename_end(from._basename_end),
@@ -81,7 +77,6 @@ Filename(Filename &&from) NOEXCEPT :
   _flags(from._flags)
 {
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Creates an empty Filename.
@@ -90,10 +85,10 @@ INLINE Filename::
 Filename() :
   _dirname_end(0),
   _basename_start(0),
-  _basename_end(string::npos),
-  _extension_start(string::npos),
-  _hash_start(string::npos),
-  _hash_end(string::npos),
+  _basename_end(std::string::npos),
+  _extension_start(std::string::npos),
+  _hash_start(std::string::npos),
+  _hash_end(std::string::npos),
   _flags(0) {
 }
 
@@ -111,7 +106,7 @@ text_filename(const Filename &filename) {
  *
  */
 INLINE Filename Filename::
-text_filename(const string &filename) {
+text_filename(const std::string &filename) {
   Filename result(filename);
   result.set_text();
   return result;
@@ -131,7 +126,7 @@ binary_filename(const Filename &filename) {
  *
  */
 INLINE Filename Filename::
-binary_filename(const string &filename) {
+binary_filename(const std::string &filename) {
   Filename result(filename);
   result.set_binary();
   return result;
@@ -141,7 +136,7 @@ binary_filename(const string &filename) {
  *
  */
 INLINE Filename Filename::
-dso_filename(const string &filename) {
+dso_filename(const std::string &filename) {
   Filename result(filename);
   result.set_type(T_dso);
   return result;
@@ -151,7 +146,7 @@ dso_filename(const string &filename) {
  *
  */
 INLINE Filename Filename::
-executable_filename(const string &filename) {
+executable_filename(const std::string &filename) {
   Filename result(filename);
   result.set_type(T_executable);
   return result;
@@ -162,7 +157,7 @@ executable_filename(const string &filename) {
  * set_pattern().
  */
 INLINE Filename Filename::
-pattern_filename(const string &filename) {
+pattern_filename(const std::string &filename) {
   Filename result(filename);
   result.set_pattern(true);
   return result;
@@ -172,7 +167,7 @@ pattern_filename(const string &filename) {
  *
  */
 INLINE Filename &Filename::
-operator = (const string &filename) {
+operator = (const std::string &filename) {
   _filename = filename;
 
   locate_basename();
@@ -185,7 +180,7 @@ operator = (const string &filename) {
  *
  */
 INLINE Filename &Filename::
-operator = (const wstring &filename) {
+operator = (const std::wstring &filename) {
   TextEncoder encoder;
   encoder.set_encoding(get_filesystem_encoding());
   encoder.set_wtext(filename);
@@ -197,8 +192,8 @@ operator = (const wstring &filename) {
  */
 INLINE Filename &Filename::
 operator = (const char *filename) {
-  assert(filename != NULL);
-  return (*this) = string(filename);
+  assert(filename != nullptr);
+  return (*this) = std::string(filename);
 }
 
 /**
@@ -217,28 +212,25 @@ operator = (const Filename &copy) {
   return *this;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename &Filename::
-operator = (string &&filename) NOEXCEPT {
-  _filename = move(filename);
+operator = (std::string &&filename) noexcept {
+  _filename = std::move(filename);
 
   locate_basename();
   locate_extension();
   locate_hash();
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE Filename &Filename::
-operator = (Filename &&from) NOEXCEPT {
-  _filename = move(from._filename);
+operator = (Filename &&from) noexcept {
+  _filename = std::move(from._filename);
   _dirname_end = from._dirname_end;
   _basename_start = from._basename_start;
   _basename_end = from._basename_end;
@@ -248,13 +240,12 @@ operator = (Filename &&from) NOEXCEPT {
   _flags = from._flags;
   return *this;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
  */
 INLINE Filename::
-operator const string & () const {
+operator const std::string & () const {
   return _filename;
 }
 
@@ -294,7 +285,7 @@ operator [] (size_t n) const {
 /**
  *
  */
-INLINE string Filename::
+INLINE std::string Filename::
 substr(size_t begin) const {
   return _filename.substr(begin);
 }
@@ -302,7 +293,7 @@ substr(size_t begin) const {
 /**
  *
  */
-INLINE string Filename::
+INLINE std::string Filename::
 substr(size_t begin, size_t end) const {
   return _filename.substr(begin, end);
 }
@@ -313,7 +304,7 @@ substr(size_t begin, size_t end) const {
  * two parameters.
  */
 INLINE void Filename::
-operator += (const string &other) {
+operator += (const std::string &other) {
   _filename += other;
   locate_basename();
   locate_extension();
@@ -324,7 +315,7 @@ operator += (const string &other) {
  * Returns a new Filename representing the concatenation of the two filenames.
  */
 INLINE Filename Filename::
-operator + (const string &other) const {
+operator + (const std::string &other) const {
   Filename a(*this);
   a += other;
   return a;
@@ -343,7 +334,7 @@ operator / (const Filename &other) const {
  * Returns the entire filename: directory, basename, extension.  This is the
  * same thing returned by the string typecast operator.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_fullpath() const {
   return _filename;
 }
@@ -351,7 +342,7 @@ get_fullpath() const {
 /**
  * Returns the entire filename as a wide-character string.
  */
-INLINE wstring Filename::
+INLINE std::wstring Filename::
 get_fullpath_w() const {
   TextEncoder encoder;
   encoder.set_encoding(get_filesystem_encoding());
@@ -363,7 +354,7 @@ get_fullpath_w() const {
  * Returns the directory part of the filename.  This is everything in the
  * filename up to, but not including the rightmost slash.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_dirname() const {
   return _filename.substr(0, _dirname_end);
 }
@@ -372,7 +363,7 @@ get_dirname() const {
  * Returns the basename part of the filename.  This is everything in the
  * filename after the rightmost slash, including any extensions.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_basename() const {
   return _filename.substr(_basename_start);
 }
@@ -382,7 +373,7 @@ get_basename() const {
  * Returns the full filename--directory and basename parts--except for the
  * extension.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_fullpath_wo_extension() const {
   return _filename.substr(0, _basename_end);
 }
@@ -391,9 +382,9 @@ get_fullpath_wo_extension() const {
 /**
  * Returns the basename part of the filename, without the file extension.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_basename_wo_extension() const {
-  if (_basename_end == string::npos) {
+  if (_basename_end == std::string::npos) {
     return _filename.substr(_basename_start);
   } else {
     return _filename.substr(_basename_start, _basename_end - _basename_start);
@@ -405,10 +396,10 @@ get_basename_wo_extension() const {
  * Returns the file extension.  This is everything after the rightmost dot, if
  * there is one, or the empty string if there is not.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_extension() const {
-  if (_extension_start == string::npos) {
-    return string();
+  if (_extension_start == std::string::npos) {
+    return std::string();
   } else {
     return _filename.substr(_extension_start);
   }
@@ -545,7 +536,7 @@ has_hash() const {
  * Returns the part of the filename beginning at the hash sequence (if any),
  * and continuing to the end of the filename.
  */
-INLINE string Filename::
+INLINE std::string Filename::
 get_hash_to_end() const {
   return _filename.substr(_hash_start);
 }
@@ -578,24 +569,24 @@ is_fully_qualified() const {
  *
  */
 INLINE bool Filename::
-operator == (const string &other) const {
-  return (*(string *)this) == other;
+operator == (const std::string &other) const {
+  return (*(std::string *)this) == other;
 }
 
 /**
  *
  */
 INLINE bool Filename::
-operator != (const string &other) const {
-  return (*(string *)this) != other;
+operator != (const std::string &other) const {
+  return (*(std::string *)this) != other;
 }
 
 /**
  *
  */
 INLINE bool Filename::
-operator < (const string &other) const {
-  return (*(string *)this) < other;
+operator < (const std::string &other) const {
+  return (*(std::string *)this) < other;
 }
 
 /**
@@ -625,7 +616,7 @@ __nonzero__() const {
  *
  */
 INLINE void Filename::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _filename;
 }
 

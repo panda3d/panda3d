@@ -131,8 +131,8 @@ protected:
 
 private:
   void query_glx_extensions();
-  void show_glx_client_string(const string &name, int id);
-  void show_glx_server_string(const string &name, int id);
+  void show_glx_client_string(const std::string &name, int id);
+  void show_glx_server_string(const std::string &name, int id);
   void choose_temp_visual(const FrameBufferProperties &properties);
   void init_temp_context();
   void destroy_temp_xwindow();

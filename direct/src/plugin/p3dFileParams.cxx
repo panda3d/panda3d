@@ -14,6 +14,8 @@
 #include "p3dFileParams.h"
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */
@@ -90,13 +92,13 @@ set_tokens(const P3D_token tokens[], size_t num_tokens) {
 void P3DFileParams::
 set_token(const char *keyword, const char *value) {
   Token token;
-  if (keyword != NULL) {
+  if (keyword != nullptr) {
     // Make the token lowercase, since HTML is case-insensitive but we're not.
     for (const char *p = keyword; *p; ++p) {
       token._keyword += tolower(*p);
     }
   }
-  if (value != NULL) {
+  if (value != nullptr) {
     token._value = value;
   }
   _tokens.push_back(token);
@@ -111,7 +113,7 @@ set_args(int argc, const char *argv[]) {
 
   for (int i = 0; i < argc; ++i) {
     const char *arg = argv[i];
-    if (arg == NULL) {
+    if (arg == nullptr) {
       arg = "";
     }
     _args.push_back(arg);

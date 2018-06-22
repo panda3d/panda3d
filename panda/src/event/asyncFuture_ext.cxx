@@ -306,7 +306,7 @@ gather(PyObject *args) {
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
   }
 
-  AsyncFuture *future = AsyncFuture::gather(move(futures));
+  AsyncFuture *future = AsyncFuture::gather(std::move(futures));
   if (future != nullptr) {
     future->ref();
     return DTool_CreatePyInstanceTyped((void *)future, Dtool_AsyncFuture, true, false, future->get_type_index());

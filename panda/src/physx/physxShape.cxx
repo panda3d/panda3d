@@ -79,7 +79,7 @@ factory(NxShapeType shapeType) {
   }
 
   physx_cat.error() << "Unknown shape type.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -88,7 +88,7 @@ factory(NxShapeType shapeType) {
 PhysxActor *PhysxShape::
 get_actor() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxActor *)(ptr()->getActor().userData);
 }
 
@@ -406,7 +406,7 @@ set_ccd_skeleton(PhysxCcdSkeleton *skel) {
 PhysxCcdSkeleton *PhysxShape::
 get_ccd_skeleton() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   return _skel;
 }

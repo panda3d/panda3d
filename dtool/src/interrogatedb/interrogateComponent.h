@@ -29,7 +29,7 @@ class IndexRemapper;
  */
 class EXPCL_INTERROGATEDB InterrogateComponent {
 public:
-  INLINE InterrogateComponent(InterrogateModuleDef *def = NULL);
+  INLINE InterrogateComponent(InterrogateModuleDef *def = nullptr);
   INLINE InterrogateComponent(const InterrogateComponent &copy);
   INLINE void operator = (const InterrogateComponent &copy);
 
@@ -40,22 +40,22 @@ public:
   INLINE const char *get_module_name() const;
 
   INLINE bool has_name() const;
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   INLINE int get_num_alt_names() const;
-  INLINE const string &get_alt_name(int n) const;
+  INLINE const std::string &get_alt_name(int n) const;
 
-  void output(ostream &out) const;
-  void input(istream &in);
+  void output(std::ostream &out) const;
+  void input(std::istream &in);
 
 protected:
-  static string _empty_string;
+  static std::string _empty_string;
 
 private:
   InterrogateModuleDef *_def;
-  string _name;
+  std::string _name;
 
-  typedef vector<string> Strings;
+  typedef std::vector<std::string> Strings;
   Strings _alt_names;
 
   friend class InterrogateBuilder;

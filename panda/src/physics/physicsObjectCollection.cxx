@@ -221,7 +221,7 @@ size() const {
  * indicated output stream.
  */
 void PhysicsObjectCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_physics_objects() == 1) {
     out << "1 PhysicsObject";
   } else {
@@ -234,7 +234,7 @@ output(ostream &out) const {
  * the indicated output stream.
  */
 void PhysicsObjectCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_physics_objects(); i++) {
     indent(out, indent_level) << get_physics_object(i) << "\n";
   }

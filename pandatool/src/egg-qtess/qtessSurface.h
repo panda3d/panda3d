@@ -33,7 +33,7 @@ class QtessSurface : public ReferenceCount {
 public:
   QtessSurface(EggNurbsSurface *egg_surface);
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   INLINE bool is_valid() const;
 
   INLINE void set_importance(double importance2);
@@ -48,7 +48,7 @@ public:
   double get_score(double ratio);
 
   int tesselate();
-  int write_qtess_parameter(ostream &out);
+  int write_qtess_parameter(std::ostream &out);
   void omit();
   void tesselate_uv(int u, int v, bool autoplace, double ratio);
   void tesselate_specific(const pvector<double> &u_list,
@@ -60,8 +60,8 @@ public:
 private:
   void record_vertex_extras();
   INLINE int get_joint_membership_index(EggGroup *joint);
-  INLINE int get_dxyz_index(const string &morph_name);
-  INLINE int get_drgba_index(const string &morph_name);
+  INLINE int get_dxyz_index(const std::string &morph_name);
+  INLINE int get_drgba_index(const std::string &morph_name);
 
   void apply_match();
   PT(EggGroup) do_uniform_tesselate(int &tris) const;
@@ -75,9 +75,9 @@ private:
   // Mapping arbitrary attributes to integer extended dimension values, so we
   // can hang arbitrary data in the extra dimensional space of the surface.
   int _next_d;
-  typedef map<EggGroup *, int> JointTable;
+  typedef std::map<EggGroup *, int> JointTable;
   JointTable _joint_table;
-  typedef map<string, int> MorphTable;
+  typedef std::map<std::string, int> MorphTable;
   MorphTable _dxyz_table;
   MorphTable _drgba_table;
 

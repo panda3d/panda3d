@@ -26,9 +26,9 @@ CPPTemplateParameterList() {
 /**
  *
  */
-string CPPTemplateParameterList::
+std::string CPPTemplateParameterList::
 get_string() const {
-  ostringstream strname;
+  std::ostringstream strname;
   strname << "< " << *this << " >";
   return strname.str();
 }
@@ -65,7 +65,7 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
     if (decl->as_instance()) {
       // A value template parameter.  Its default is an expression.
       CPPInstance *inst = decl->as_instance();
-      if (inst->_initializer != NULL) {
+      if (inst->_initializer != nullptr) {
         CPPDeclaration *decl =
           inst->_initializer->substitute_decl(subst, current_scope,
                                               global_scope);
@@ -77,7 +77,7 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
     } else if (decl->as_class_template_parameter()) {
       // A class template parameter.
       CPPClassTemplateParameter *cparam = decl->as_class_template_parameter();
-      if (cparam->_default_type != NULL) {
+      if (cparam->_default_type != nullptr) {
         CPPDeclaration *decl =
           cparam->_default_type->substitute_decl(subst, current_scope,
                                                  global_scope);
@@ -116,12 +116,12 @@ bool CPPTemplateParameterList::
 is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); ++i) {
     CPPType *type = _parameters[i]->as_type();
-    if (type != (CPPType *)NULL &&
-        (type->is_tbd() || type->as_class_template_parameter() != NULL)) {
+    if (type != nullptr &&
+        (type->is_tbd() || type->as_class_template_parameter() != nullptr)) {
       return true;
     }
     CPPExpression *expr = _parameters[i]->as_expression();
-    if (expr != NULL && expr->is_tbd()) {
+    if (expr != nullptr && expr->is_tbd()) {
       return true;
     }
   }
@@ -197,7 +197,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTemplateParameterList::
-output(ostream &out, CPPScope *scope) const {
+output(std::ostream &out, CPPScope *scope) const {
   if (!_parameters.empty()) {
     Parameters::const_iterator pi = _parameters.begin();
     (*pi)->output(out, 0, scope, false);
@@ -217,7 +217,7 @@ output(ostream &out, CPPScope *scope) const {
  * trailing newline.
  */
 void CPPTemplateParameterList::
-write_formal(ostream &out, CPPScope *scope) const {
+write_formal(std::ostream &out, CPPScope *scope) const {
   out << "template<";
   if (!_parameters.empty()) {
     Parameters::const_iterator pi = _parameters.begin();

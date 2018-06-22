@@ -71,8 +71,8 @@ PUBLISHED:
     INLINE int add_instance(const STTransform &transform);
     INLINE void remove_instance(int n);
 
-    void output(ostream &out) const;
-    void write(ostream &out, int indent_level = 0) const;
+    void output(std::ostream &out) const;
+    void write(std::ostream &out, int indent_level = 0) const;
 
   public:
     void write_datagram(BamWriter *manager, Datagram &dg);
@@ -85,7 +85,7 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  explicit SpeedTreeNode(const string &name);
+  explicit SpeedTreeNode(const std::string &name);
   virtual ~SpeedTreeNode();
 
   INLINE bool is_valid() const;
@@ -121,9 +121,9 @@ PUBLISHED:
 
   bool add_from_stf(const Filename &stf_filename,
                     const LoaderOptions &options = LoaderOptions());
-  bool add_from_stf(istream &in, const Filename &pathname,
+  bool add_from_stf(std::istream &in, const Filename &pathname,
                     const LoaderOptions &options = LoaderOptions(),
-                    Loader *loader = NULL);
+                    Loader *loader = nullptr);
 
   bool setup_terrain(const Filename &terrain_file);
   void set_terrain(STTerrain *terrain);
@@ -145,7 +145,7 @@ PUBLISHED:
   MAKE_PROPERTY(global_time_delta, get_global_time_delta,
                                    set_global_time_delta);
 
-  static bool authorize(const string &license = "");
+  static bool authorize(const std::string &license = "");
 
 public:
   SpeedTreeNode(const SpeedTreeNode &copy);
@@ -167,10 +167,10 @@ public:
                                        int pipeline_stage,
                                        Thread *current_thread) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
-  static void write_error(ostream &out);
+  static void write_error(std::ostream &out);
 
 protected:
   void set_transparent_texture_mode(SpeedTree::ETextureAlphaRenderMode eMode) const;
@@ -219,7 +219,7 @@ private:
   };
 
 private:
-  string _os_shaders_dir;
+  std::string _os_shaders_dir;
 
   // A list of instances per each unique tree.
   typedef ov_set<InstanceList *, IndirectLess<InstanceList> > Trees;
@@ -298,7 +298,7 @@ private:
   friend class SpeedTreeNode::DrawCallback;
 };
 
-INLINE ostream &operator << (ostream &out, const SpeedTreeNode::InstanceList &instances) {
+INLINE std::ostream &operator << (std::ostream &out, const SpeedTreeNode::InstanceList &instances) {
   instances.output(out);
   return out;
 }

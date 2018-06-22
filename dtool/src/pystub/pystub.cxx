@@ -192,6 +192,7 @@ extern "C" {
   EXPCL_PYSTUB int _PyArg_Parse_SizeT(...);
   EXPCL_PYSTUB int _PyErr_BadInternalCall(...);
   EXPCL_PYSTUB int _PyLong_AsByteArray(...);
+  EXPCL_PYSTUB int _PyLong_Sign(...);
   EXPCL_PYSTUB int _PyObject_CallFunction_SizeT(...);
   EXPCL_PYSTUB int _PyObject_CallMethod_SizeT(...);
   EXPCL_PYSTUB int _PyObject_DebugFree(...);
@@ -421,6 +422,7 @@ int _PyArg_ParseTupleAndKeywords_SizeT(...) { return 0; };
 int _PyArg_Parse_SizeT(...) { return 0; };
 int _PyErr_BadInternalCall(...) { return 0; };
 int _PyLong_AsByteArray(...) { return 0; };
+int _PyLong_Sign(...) { return 0; };
 int _PyObject_CallFunction_SizeT(...) { return 0; };
 int _PyObject_CallMethod_SizeT(...) { return 0; };
 int _PyObject_DebugFree(...) { return 0; };
@@ -449,31 +451,31 @@ void PyEval_InitThreads() {
 }
 
 
-void *PyExc_AssertionError = (void *)NULL;
-void *PyExc_AttributeError = (void *)NULL;
-void *PyExc_BufferError = (void *)NULL;
-void *PyExc_ConnectionError = (void *)NULL;
-void *PyExc_Exception = (void *)NULL;
-void *PyExc_FutureWarning = (void *)NULL;
-void *PyExc_ImportError = (void *)NULL;
-void *PyExc_IndexError = (void *)NULL;
-void *PyExc_KeyError = (void *)NULL;
-void *PyExc_OSError = (void *)NULL;
-void *PyExc_OverflowError = (void *)NULL;
-void *PyExc_RuntimeError = (void *)NULL;
-void *PyExc_StandardError = (void *)NULL;
-void *PyExc_StopIteration = (void *)NULL;
-void *PyExc_SystemExit = (void *)NULL;
-void *PyExc_TypeError = (void *)NULL;
-void *PyExc_ValueError = (void *)NULL;
-void *PyTuple_Type = (void *)NULL;
-void *PyType_Type = (void *)NULL;
-void *_PyThreadState_Current = (void *)NULL;
-void *_Py_FalseStruct = (void *)NULL;
-void *_Py_NoneStruct = (void *)NULL;
-void *_Py_NotImplementedStruct = (void *)NULL;
-void *_Py_TrueStruct = (void *)NULL;
-void *_Py_ZeroStruct = (void *)NULL;
+void *PyExc_AssertionError = nullptr;
+void *PyExc_AttributeError = nullptr;
+void *PyExc_BufferError = nullptr;
+void *PyExc_ConnectionError = nullptr;
+void *PyExc_Exception = nullptr;
+void *PyExc_FutureWarning = nullptr;
+void *PyExc_ImportError = nullptr;
+void *PyExc_IndexError = nullptr;
+void *PyExc_KeyError = nullptr;
+void *PyExc_OSError = nullptr;
+void *PyExc_OverflowError = nullptr;
+void *PyExc_RuntimeError = nullptr;
+void *PyExc_StandardError = nullptr;
+void *PyExc_StopIteration = nullptr;
+void *PyExc_SystemExit = nullptr;
+void *PyExc_TypeError = nullptr;
+void *PyExc_ValueError = nullptr;
+void *PyTuple_Type = nullptr;
+void *PyType_Type = nullptr;
+void *_PyThreadState_Current = nullptr;
+void *_Py_FalseStruct = nullptr;
+void *_Py_NoneStruct = nullptr;
+void *_Py_NotImplementedStruct = nullptr;
+void *_Py_TrueStruct = nullptr;
+void *_Py_ZeroStruct = nullptr;
 
 
 void

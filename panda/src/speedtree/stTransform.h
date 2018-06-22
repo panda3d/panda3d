@@ -50,7 +50,7 @@ PUBLISHED:
   INLINE void operator *= (const STTransform &other);
   INLINE STTransform operator * (const STTransform &other) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   void write_datagram(BamWriter *manager, Datagram &dg);
@@ -64,7 +64,7 @@ public:
   static STTransform _ident_mat;
 };
 
-INLINE ostream &operator << (ostream &out, const STTransform &transform) {
+INLINE std::ostream &operator << (std::ostream &out, const STTransform &transform) {
   transform.output(out);
   return out;
 }

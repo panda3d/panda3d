@@ -26,9 +26,9 @@ CPPExtensionType(CPPExtensionType::Type type,
                  const CPPFile &file) :
   CPPType(file),
   _type(type), _ident(ident),
-  _alignment(NULL)
+  _alignment(nullptr)
 {
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     _ident->_native_scope = current_scope;
   }
 }
@@ -36,9 +36,9 @@ CPPExtensionType(CPPExtensionType::Type type,
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_simple_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_simple_name();
@@ -47,9 +47,9 @@ get_simple_name() const {
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_local_name(CPPScope *scope) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_local_name(scope);
@@ -58,9 +58,9 @@ get_local_name(CPPScope *scope) const {
 /**
  *
  */
-string CPPExtensionType::
+std::string CPPExtensionType::
 get_fully_scoped_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_fully_scoped_name();
@@ -81,7 +81,7 @@ is_incomplete() const {
  */
 bool CPPExtensionType::
 is_tbd() const {
-  if (_ident != (CPPIdentifier *)NULL) {
+  if (_ident != nullptr) {
     return _ident->is_tbd();
   }
   return false;
@@ -110,7 +110,7 @@ bool CPPExtensionType::
 is_constructible(const CPPType *given_type) const {
   if (_type == T_enum || _type == T_enum_class || _type == T_enum_struct) {
     const CPPExtensionType *other = ((CPPType *)given_type)->remove_reference()->remove_const()->as_extension_type();
-    return other != NULL && is_equal(other);
+    return other != nullptr && is_equal(other);
   }
   return false;
 }
@@ -151,7 +151,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPExtensionType *rep = new CPPExtensionType(*this);
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
@@ -172,7 +172,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  */
 CPPType *CPPExtensionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     // We can't resolve anonymous types.  But that's OK, since they can't be
     // forward declared anyway.
     return this;
@@ -180,7 +180,7 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
 
   // Maybe it has been defined by now.
   CPPType *type = _ident->find_type(current_scope, global_scope);
-  if (type != NULL) {
+  if (type != nullptr) {
     return type;
   }
   return this;
@@ -195,7 +195,7 @@ resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
 bool CPPExtensionType::
 is_equivalent(const CPPType &other) const {
   const CPPExtensionType *ot = ((CPPType *)&other)->as_extension_type();
-  if (ot == (CPPExtensionType *)NULL) {
+  if (ot == nullptr) {
     return CPPType::is_equivalent(other);
   }
 
@@ -209,8 +209,8 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPExtensionType::
-output(ostream &out, int, CPPScope *scope, bool complete) const {
-  if (_ident != NULL) {
+output(std::ostream &out, int, CPPScope *scope, bool complete) const {
+  if (_ident != nullptr) {
     // If we have a name, use it.
     if (complete || cppparser_output_class_keyword) {
       out << _type << " ";
@@ -242,8 +242,8 @@ as_extension_type() {
   return this;
 }
 
-ostream &
-operator << (ostream &out, CPPExtensionType::Type type) {
+std::ostream &
+operator << (std::ostream &out, CPPExtensionType::Type type) {
   switch (type) {
   case CPPExtensionType::T_enum:
     return out << "enum";

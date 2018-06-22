@@ -17,7 +17,7 @@
 INLINE XFileArrayDef::
 XFileArrayDef(int fixed_size) :
   _fixed_size(fixed_size),
-  _dynamic_size(NULL)
+  _dynamic_size(nullptr)
 {
 }
 
@@ -37,7 +37,7 @@ XFileArrayDef(XFileDataDef *dynamic_size) :
  */
 INLINE bool XFileArrayDef::
 is_fixed_size() const {
-  return (_dynamic_size == (XFileDataDef *)NULL);
+  return (_dynamic_size == nullptr);
 }
 
 /**
@@ -55,6 +55,6 @@ get_fixed_size() const {
  */
 INLINE XFileDataDef *XFileArrayDef::
 get_dynamic_size() const {
-  nassertr(!is_fixed_size(), NULL);
+  nassertr(!is_fixed_size(), nullptr);
   return _dynamic_size;
 }

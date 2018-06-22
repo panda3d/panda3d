@@ -1,5 +1,6 @@
 import pytest
 from panda3d import core
+import sys
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -76,12 +77,41 @@ def datagram_large():
 
     return dg, readback_function
 
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="Requires Python 3")
+def test_datagram_bytes():
+    """Tests that we can put and get a bytes object on Datagram."""
+    dg = core.Datagram(b'abc\x00')
+    dg.append_data(b'\xff123')
+    assert bytes(dg) == b'abc\x00\xff123'
+
+    dgi = core.DatagramIterator(dg)
+    dgi.get_remaining_bytes() == b'abc\x00\xff123'
+
+
 def test_iterator(datagram_small):
     """This tests Datagram/DatagramIterator, and sort of serves as a self-check
     of the test fixtures too."""
     dg, verify = datagram_small
 
     dgi = core.DatagramIterator(dg)
+    verify(dgi)
+
+
+# This tests the copy constructor:
+def test_copy(datagram_small):
+    dg, verify = datagram_small
+
+    dg2 = core.Datagram(dg)
+    dgi = core.DatagramIterator(dg2)
+    verify(dgi)
+
+
+def test_assign(datagram_small):
+    dg, verify = datagram_small
+
+    dg2 = core.Datagram()
+    dg2.assign(dg)
+    dgi = core.DatagramIterator(dg2)
     verify(dgi)
 
 
@@ -135,15 +165,26 @@ def test_file_corrupt(datagram_small, tmpdir):
     dof.put_datagram(dg)
     dof.close()
 
-    # Corrupt the size header to 4GB
-    with p.open(mode='wb') as f:
+    # Corrupt the size header to 1GB
+    with p.open(mode='r+b') as f:
         f.seek(0)
-        f.write(b'\xFF\xFF\xFF\xFF')
+        f.write(b'\xFF\xFF\xFF\x4F')
 
     dg2 = core.Datagram()
     dif = core.DatagramInputFile()
     dif.open(filename)
     assert not dif.get_datagram(dg2)
     dif.close()
+
+    # Truncate the file
+    for size in [12, 8, 4, 3, 2, 1, 0]:
+        with p.open(mode='r+b') as f:
+            f.truncate(size)
+
+        dg2 = core.Datagram()
+        dif = core.DatagramInputFile()
+        dif.open(filename)
+        assert not dif.get_datagram(dg2)
+        dif.close()
 
     # Should we test that dg2 is unmodified?

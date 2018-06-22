@@ -40,7 +40,7 @@ public:
   unsigned int _alignment_wt;
 
   // This vector will hold all the ai characters which belong to this flock.
-  typedef std::vector<AICharacter*> AICharList;
+  typedef std::vector<PT(AICharacter)> AICharList;
   AICharList _ai_char_list;
 
 PUBLISHED:

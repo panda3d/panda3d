@@ -18,7 +18,7 @@
  */
 inline P3D_object *PPPandaObject::
 get_p3d_object() const {
-  if (_p3d_object != NULL) {
+  if (_p3d_object != nullptr) {
     P3D_OBJECT_INCREF(_p3d_object);
   }
   return _p3d_object;

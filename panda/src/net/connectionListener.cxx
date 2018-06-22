@@ -19,8 +19,8 @@
 #include "config_net.h"
 #include "socket_tcp_listen.h"
 
-static string
-listener_thread_name(const string &thread_name) {
+static std::string
+listener_thread_name(const std::string &thread_name) {
   if (!thread_name.empty()) {
     return thread_name;
   }
@@ -32,7 +32,7 @@ listener_thread_name(const string &thread_name) {
  */
 ConnectionListener::
 ConnectionListener(ConnectionManager *manager, int num_threads,
-                   const string &thread_name) :
+                   const std::string &thread_name) :
   ConnectionReader(manager, num_threads, listener_thread_name(thread_name))
 {
 }
@@ -82,7 +82,7 @@ process_incoming_data(SocketInfo *sinfo) {
     << "\n";
 
   PT(Connection) new_connection = new Connection(_manager, session);
-  if (_manager != (ConnectionManager *)NULL) {
+  if (_manager != nullptr) {
     _manager->new_connection(new_connection);
   }
   connection_opened(sinfo->_connection, net_addr, new_connection);

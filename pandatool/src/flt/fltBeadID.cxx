@@ -28,7 +28,7 @@ FltBeadID(FltHeader *header) : FltBead(header) {
  * Returns the id (name) of this particular bead.  Each MultiGen bead will
  * have a unique name.
  */
-const string &FltBeadID::
+const std::string &FltBeadID::
 get_id() const {
   return _id;
 }
@@ -38,7 +38,7 @@ get_id() const {
  * is unique to this bead.
  */
 void FltBeadID::
-set_id(const string &id) {
+set_id(const std::string &id) {
   _id = id;
 }
 
@@ -48,7 +48,7 @@ set_id(const string &id) {
  * flt file, use FltHeader::write_flt().
  */
 void FltBeadID::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
   if (!_id.empty()) {
     out << " " << _id;
@@ -78,9 +78,8 @@ extract_record(FltRecordReader &reader) {
 bool FltBeadID::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_long_id) {
-    string s = reader.get_iterator().get_remaining_bytes();
-    size_t zero_byte = s.find('\0');
-    _id = s.substr(0, zero_byte);
+    DatagramIterator &di = reader.get_iterator();
+    _id = di.get_fixed_string(di.get_remaining_size());
     return true;
   }
 
@@ -109,14 +108,11 @@ build_record(FltRecordWriter &writer) const {
 FltError FltBeadID::
 write_ancillary(FltRecordWriter &writer) const {
   if (_id.length() > 7) {
+    Datagram dc;
 
     // Although the manual mentions nothing of this, it is essential that the
     // length of the record be a multiple of 4 bytes.
-    string id = _id;
-    while ((id.length() % 4) != 0) {
-      id += '\0';
-    }
-    Datagram dc(id);
+    dc.add_fixed_string(_id, (_id.length() + 3) & ~3);
 
     FltError result = writer.write_record(FO_long_id, dc);
     if (result != FE_ok) {

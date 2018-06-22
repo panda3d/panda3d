@@ -41,8 +41,6 @@ typedef int Py_ssize_t;
 #define PY_SSIZE_T_MIN INT_MIN
 #endif
 
-using namespace std;
-
 /**
  * This class is used to run, and communicate with, embedded Python in a sub-
  * process.  It is compiled and launched as a separate executable from the
@@ -156,10 +154,10 @@ private:
   int _py_argc;
 #if PY_MAJOR_VERSION >= 3
   wchar_t *_py_argv[2];
-  wstring _program_name;
+  std::wstring _program_name;
 #else
   char *_py_argv[2];
-  string _program_name;
+  std::string _program_name;
 #endif
   bool _interactive_console;
 

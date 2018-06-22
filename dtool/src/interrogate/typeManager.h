@@ -39,7 +39,7 @@ class CPPManifest;
 class TypeManager {
 public:
 
-  static CPPType *resolve_type(CPPType *type, CPPScope *scope = (CPPScope *)NULL);
+  static CPPType *resolve_type(CPPType *type, CPPScope *scope = nullptr);
 
   static bool is_assignable(CPPType *type);
 
@@ -139,10 +139,10 @@ public:
   static CPPType *get_void_type();
   static CPPType *get_int_type();
 
-  static string get_function_signature(CPPInstance *function,
+  static std::string get_function_signature(CPPInstance *function,
                                        int num_default_parameters = 0);
 
-  static string get_function_name(CPPInstance *function);
+  static std::string get_function_name(CPPInstance *function);
 
   static bool has_protected_destructor(CPPType *type);
 

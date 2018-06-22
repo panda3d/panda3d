@@ -70,12 +70,12 @@ PUBLISHED:
     Files _files;
   };
 
-  explicit Loader(const string &name = "loader");
+  explicit Loader(const std::string &name = "loader");
 
   INLINE void set_task_manager(AsyncTaskManager *task_manager);
   INLINE AsyncTaskManager *get_task_manager() const;
-  INLINE void set_task_chain(const string &task_chain);
-  INLINE const string &get_task_chain() const;
+  INLINE void set_task_chain(const std::string &task_chain);
+  INLINE const std::string &get_task_chain() const;
 
   BLOCKING INLINE void stop_threads();
   INLINE bool remove(AsyncTask *task);
@@ -94,9 +94,9 @@ PUBLISHED:
                                         PandaNode *node);
   INLINE void save_async(AsyncTask *request);
 
-  BLOCKING PT(PandaNode) load_bam_stream(istream &in);
+  BLOCKING PT(PandaNode) load_bam_stream(std::istream &in);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE static Loader *get_global_ptr();
 
@@ -113,7 +113,7 @@ private:
   static void make_global_ptr();
 
   PT(AsyncTaskManager) _task_manager;
-  string _task_chain;
+  std::string _task_chain;
 
   static void load_file_types();
   static bool _file_types_loaded;

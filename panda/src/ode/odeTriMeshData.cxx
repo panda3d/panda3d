@@ -13,8 +13,10 @@
 
 #include "odeTriMeshData.h"
 
+using std::ostream;
+
 TypeHandle OdeTriMeshData::_type_handle;
-OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = NULL;
+OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
 
 void OdeTriMeshData::
 link_data(dGeomID id, PT(OdeTriMeshData) data) {
@@ -29,13 +31,13 @@ get_data(dGeomID id) {
   if (iter != data_map.end()) {
     return iter->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void OdeTriMeshData::
 unlink_data(dGeomID id) {
   odetrimeshdata_cat.debug() << get_class_type() << "::unlink_data(" << id << ")" << "\n";
-  nassertv(_tri_mesh_data_map != (TriMeshDataMap *)NULL);
+  nassertv(_tri_mesh_data_map != nullptr);
   TriMeshDataMap::iterator iter = _tri_mesh_data_map->find(id);
   if (iter != _tri_mesh_data_map->end()) {
     _tri_mesh_data_map->erase(iter);
@@ -43,7 +45,7 @@ unlink_data(dGeomID id) {
 }
 
 void OdeTriMeshData::
-print_data(const string &marker) {
+print_data(const std::string &marker) {
   odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
   const TriMeshDataMap &data_map = get_tri_mesh_data_map();
   TriMeshDataMap::const_iterator iter = data_map.begin();
@@ -58,7 +60,7 @@ remove_data(OdeTriMeshData *data) {
     odetrimeshdata_cat.debug()
       << get_class_type() << "::remove_data(" << data->get_id() << ")" << "\n";
   }
-  if (_tri_mesh_data_map == (TriMeshDataMap *)NULL) {
+  if (_tri_mesh_data_map == nullptr) {
     return;
   }
 
@@ -88,9 +90,9 @@ remove_data(OdeTriMeshData *data) {
 OdeTriMeshData::
 OdeTriMeshData(const NodePath& model, bool use_normals) :
   _id(dGeomTriMeshDataCreate()),
-  _vertices(0),
-  _faces(0),
-  _normals(0),
+  _vertices(nullptr),
+  _faces(nullptr),
+  _normals(nullptr),
   _num_vertices(0),
   _num_faces(0) {
   odetrimeshdata_cat.debug() << get_type() << "(" << _id << ")" << "\n";
@@ -131,16 +133,16 @@ OdeTriMeshData::
 ~OdeTriMeshData() {
   odetrimeshdata_cat.debug() << "~" << get_type() << "(" << _id << ")" << "\n";
   destroy();
-  if (_vertices != 0) {
+  if (_vertices != nullptr) {
     PANDA_FREE_ARRAY(_vertices);
-    _vertices = 0;
+    _vertices = nullptr;
     _num_vertices = 0;
   }
-  if (_faces != 0) {
+  if (_faces != nullptr) {
     PANDA_FREE_ARRAY(_faces);
-    _faces = 0;
+    _faces = nullptr;
   }
-  if (_normals != 0) {
+  if (_normals != nullptr) {
     // This is never allocated?  Until we use _normals, assert that we don't
     // accidentally free it here through some mistake.
     nassertv(false);
@@ -151,10 +153,10 @@ OdeTriMeshData::
 void OdeTriMeshData::
 destroy() {
   odetrimeshdata_cat.debug() << get_type() << "::destroy(" << _id << ")" << "\n";
-  if (_id != 0) {
+  if (_id != nullptr) {
     dGeomTriMeshDataDestroy(_id);
     remove_data(this);
-    _id = 0;
+    _id = nullptr;
   }
 }
 
@@ -219,7 +221,7 @@ process_geom(const Geom *geom) {
 
   CPT(GeomVertexData) vData = geom->get_vertex_data();
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     process_primitive(geom->get_primitive(i), vData);
   }
 }
@@ -229,7 +231,7 @@ process_primitive(const GeomPrimitive *primitive,
                    CPT(GeomVertexData) vData) {
   GeomVertexReader vReader(vData, "vertex");
   GeomVertexReader nReader(vData, "normal");
-  LVecBase3f vertex, normal;
+  LVecBase3f vertex;
   // CPT(GeomPrimitive) dPrimitive = primitive->decompose();
   CPT(GeomPrimitive) dPrimitive = primitive;
   ostream &out = odetrimeshdata_cat.debug();
@@ -306,7 +308,7 @@ analyze(const Geom *geom) {
     return;
   }
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     analyze(geom->get_primitive(i));
   }
 }

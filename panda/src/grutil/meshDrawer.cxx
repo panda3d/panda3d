@@ -71,7 +71,7 @@ void MeshDrawer::generator(int budget) {
   _prim->close_primitive();
   _geom = new Geom(_vdata);
   _geom->add_primitive(_prim);
-  if (_geomnode == NULL) {
+  if (_geomnode == nullptr) {
     _geomnode = new GeomNode("__MeshDrawer_GeomNode");
     _root.attach_new_node(_geomnode);
   } else {
@@ -104,12 +104,12 @@ void MeshDrawer::begin(NodePath camera, NodePath render) {
   _b4 = - _right + _up;
 
   // recreate our rewriters
-  if (_vertex != NULL) delete _vertex;
-  if (_normal != NULL) delete _normal;
-  if (_uv != NULL)     delete _uv;
-  if (_color != NULL)  delete _color;
+  if (_vertex != nullptr) delete _vertex;
+  if (_normal != nullptr) delete _normal;
+  if (_uv != nullptr)     delete _uv;
+  if (_color != nullptr)  delete _color;
 
-  if (_vdata == NULL) {
+  if (_vdata == nullptr) {
     generator(_budget);
   }
 
@@ -141,10 +141,10 @@ void MeshDrawer::end() {
   _last_clear_index = _clear_index;
 
   // delete the re writers
-  delete _vertex; _vertex = NULL;
-  delete _uv;     _uv     = NULL;
-  delete _normal; _normal = NULL;
-  delete _color;  _color  = NULL;
+  delete _vertex; _vertex = nullptr;
+  delete _uv;     _uv     = nullptr;
+  delete _normal; _normal = nullptr;
+  delete _color;  _color  = nullptr;
 
 }
 
@@ -374,7 +374,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
       CPT(GeomVertexData) v_data = geom->get_vertex_data();
       GeomVertexReader *prim_vertex_reader = new GeomVertexReader(v_data, "vertex");
       GeomVertexReader *prim_uv_reader = new GeomVertexReader(v_data, "texcoord");
-      for(int k=0; k <geom->get_num_primitives(); k++) {
+      for (size_t k = 0; k < geom->get_num_primitives(); ++k) {
         CPT(GeomPrimitive) prim1 = geom->get_primitive(k);
         CPT(GeomPrimitive) _prim  = prim1->decompose();
 

@@ -14,7 +14,7 @@
 #include "stringDecoder.h"
 #include "config_dtoolutil.h"
 
-ostream *StringDecoder::_notify_ptr = &cerr;
+std::ostream *StringDecoder::_notify_ptr = &std::cerr;
 
 /**
  *
@@ -41,7 +41,7 @@ get_next_character() {
  * notify.
  */
 void StringDecoder::
-set_notify_ptr(ostream *notify_ptr) {
+set_notify_ptr(std::ostream *notify_ptr) {
   _notify_ptr = notify_ptr;
 }
 
@@ -49,7 +49,7 @@ set_notify_ptr(ostream *notify_ptr) {
  * Returns the ostream that is used to write error messages to.  See
  * set_notify_ptr().
  */
-ostream *StringDecoder::
+std::ostream *StringDecoder::
 get_notify_ptr() {
   return _notify_ptr;
 }
@@ -95,7 +95,7 @@ get_next_character() {
       // First byte of two.
       unsigned int two = 0;
       if (test_eof()) {
-        if (_notify_ptr != NULL) {
+        if (_notify_ptr != nullptr) {
           (*_notify_ptr)
             << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         }
@@ -108,7 +108,7 @@ get_next_character() {
     } else if ((result & 0xf0) == 0xe0) {
       // First byte of three.
       if (test_eof()) {
-        if (_notify_ptr != NULL) {
+        if (_notify_ptr != nullptr) {
           (*_notify_ptr)
             << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         }
@@ -116,7 +116,7 @@ get_next_character() {
       }
       unsigned int two = (unsigned char)_input[_p++];
       if (test_eof()) {
-        if (_notify_ptr != NULL) {
+        if (_notify_ptr != nullptr) {
           (*_notify_ptr)
             << "utf-8 encoded string '" << _input << "' ends abruptly.\n";
         }
@@ -129,9 +129,9 @@ get_next_character() {
 
     // Otherwise--the high bit is set but it is not one of the introductory
     // utf-8 bytes--we have an error.
-    if (_notify_ptr != NULL) {
+    if (_notify_ptr != nullptr) {
       (*_notify_ptr)
-        << "Non utf-8 byte in string: 0x" << hex << result << dec
+        << "Non utf-8 byte in string: 0x" << std::hex << result << std::dec
         << ", string is '" << _input << "'\n";
     }
     return -1;
@@ -152,7 +152,7 @@ get_next_character() {
 
   unsigned int high = (unsigned char)_input[_p++];
   if (test_eof()) {
-    if (_notify_ptr != NULL) {
+    if (_notify_ptr != nullptr) {
       (*_notify_ptr)
         << "Unicode-encoded string has odd number of bytes.\n";
     }

@@ -17,7 +17,6 @@
 #include "p3d_plugin.h"
 
 #include <string>
-using namespace std;
 
 extern P3D_initialize_func *P3D_initialize_ptr;
 extern P3D_finalize_func *P3D_finalize_ptr;
@@ -59,24 +58,24 @@ extern P3D_request_finish_func *P3D_request_finish_ptr;
 extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream_ptr;
 extern P3D_instance_handle_event_func *P3D_instance_handle_event_ptr;
 
-string get_plugin_basename();
+std::string get_plugin_basename();
 bool
-load_plugin(const string &p3d_plugin_filename,
-            const string &contents_filename, const string &host_url,
-            P3D_verify_contents verify_contents, const string &platform,
-            const string &log_directory, const string &log_basename,
+load_plugin(const std::string &p3d_plugin_filename,
+            const std::string &contents_filename, const std::string &host_url,
+            P3D_verify_contents verify_contents, const std::string &platform,
+            const std::string &log_directory, const std::string &log_basename,
             bool trusted_environment, bool console_environment,
-            const string &root_dir, const string &host_dir,
-            const string &start_dir, ostream &logfile);
+            const std::string &root_dir, const std::string &host_dir,
+            const std::string &start_dir, std::ostream &logfile);
 bool
-init_plugin(const string &contents_filename, const string &host_url,
-            P3D_verify_contents verify_contents, const string &platform,
-            const string &log_directory, const string &log_basename,
+init_plugin(const std::string &contents_filename, const std::string &host_url,
+            P3D_verify_contents verify_contents, const std::string &platform,
+            const std::string &log_directory, const std::string &log_basename,
             bool trusted_environment, bool console_environment,
-            const string &root_dir, const string &host_dir,
-            const string &start_dir, ostream &logfile);
+            const std::string &root_dir, const std::string &host_dir,
+            const std::string &start_dir, std::ostream &logfile);
 
-void unload_plugin(ostream &logfile);
+void unload_plugin(std::ostream &logfile);
 bool is_plugin_loaded();
 
 #endif

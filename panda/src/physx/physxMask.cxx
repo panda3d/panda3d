@@ -70,9 +70,9 @@ get_bit(unsigned int idx) const {
  * Writes the PhysxMask out as a list of ones and zeros.
  */
 void PhysxMask::
-output(ostream &out) const {
+output(std::ostream &out) const {
 
-  string name;
+  std::string name;
 
   for (int i=0; i<32; i++) {
     name += (_mask & (1 << i)) ? '1' : '0';

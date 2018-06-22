@@ -1392,7 +1392,7 @@ look_up(wchar_t character) {
     if (ci != _by_character->end()) {
       return (*ci).second;
     }
-    return NULL;
+    return nullptr;
   }
 }
 

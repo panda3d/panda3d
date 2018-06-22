@@ -119,7 +119,7 @@ PUBLISHED:
   INLINE const LVecBase3i &get_data3i();
   INLINE const LVecBase4i &get_data4i();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 protected:
   INLINE GeomVertexColumn::Packer *get_packer() const;
@@ -162,8 +162,8 @@ private:
 #endif
 };
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexReader &reader) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexReader &reader) {
   reader.output(out);
   return out;
 }

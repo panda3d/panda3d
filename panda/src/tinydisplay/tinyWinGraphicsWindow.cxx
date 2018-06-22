@@ -31,7 +31,7 @@ TypeHandle TinyWinGraphicsWindow::_type_handle;
  */
 TinyWinGraphicsWindow::
 TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -39,7 +39,7 @@ TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       GraphicsOutput *host) :
   WinGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  _frame_buffer = NULL;
+  _frame_buffer = nullptr;
   _hdc = (HDC)0;
   update_pixel_factor();
 }
@@ -60,7 +60,7 @@ TinyWinGraphicsWindow::
 bool TinyWinGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -90,7 +90,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinyWinGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -166,10 +166,10 @@ supports_pixel_zoom() const {
  */
 void TinyWinGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     TinyGraphicsStateGuardian *tinygsg;
     DCAST_INTO_V(tinygsg, _gsg);
-    tinygsg->_current_frame_buffer = NULL;
+    tinygsg->_current_frame_buffer = nullptr;
     _gsg.clear();
   }
 
@@ -192,7 +192,7 @@ open_window() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, nullptr);
     _gsg = tinygsg;
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
@@ -201,7 +201,7 @@ open_window() {
   _hdc = GetDC(_hWnd);
 
   create_frame_buffer();
-  if (_frame_buffer == NULL) {
+  if (_frame_buffer == nullptr) {
     tinydisplay_cat.error()
       << "Could not create frame buffer.\n";
     return false;
@@ -225,8 +225,8 @@ open_window() {
 void TinyWinGraphicsWindow::
 handle_reshape() {
   WinGraphicsWindow::handle_reshape();
-  if (_frame_buffer != NULL) {
-    ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+  if (_frame_buffer != nullptr) {
+    ZB_resize(_frame_buffer, nullptr, _properties.get_x_size(), _properties.get_y_size());
     setup_bitmap_info();
   }
 }
@@ -238,7 +238,7 @@ handle_reshape() {
 bool TinyWinGraphicsWindow::
 do_fullscreen_resize(int x_size, int y_size) {
   bool result = WinGraphicsWindow::do_fullscreen_resize(x_size, y_size);
-  ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+  ZB_resize(_frame_buffer, nullptr, _properties.get_x_size(), _properties.get_y_size());
   setup_bitmap_info();
   return result;
 }
@@ -248,9 +248,9 @@ do_fullscreen_resize(int x_size, int y_size) {
  */
 void TinyWinGraphicsWindow::
 create_frame_buffer() {
-  if (_frame_buffer != NULL) {
+  if (_frame_buffer != nullptr) {
     ZB_close(_frame_buffer);
-    _frame_buffer = NULL;
+    _frame_buffer = nullptr;
   }
 
   _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), ZB_MODE_RGBA, 0, 0, 0, 0);

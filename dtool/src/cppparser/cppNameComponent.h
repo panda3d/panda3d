@@ -19,38 +19,36 @@
 
 #include <string>
 
-using namespace std;
-
 class CPPTemplateParameterList;
 class CPPScope;
 
 class CPPNameComponent {
 public:
-  CPPNameComponent(const string &name);
+  CPPNameComponent(const std::string &name);
   bool operator == (const CPPNameComponent &other) const;
   bool operator != (const CPPNameComponent &other) const;
   bool operator < (const CPPNameComponent &other) const;
 
-  string get_name() const;
-  string get_name_with_templ(CPPScope *scope = (CPPScope *)NULL) const;
+  std::string get_name() const;
+  std::string get_name_with_templ(CPPScope *scope = nullptr) const;
   CPPTemplateParameterList *get_templ() const;
   bool empty() const;
   bool has_templ() const;
 
   bool is_tbd() const;
 
-  void set_name(const string &name);
-  void append_name(const string &name);
+  void set_name(const std::string &name);
+  void append_name(const std::string &name);
   void set_templ(CPPTemplateParameterList *templ);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-  string _name;
+  std::string _name;
   CPPTemplateParameterList *_templ;
 };
 
-inline ostream &operator << (ostream &out, const CPPNameComponent &name) {
+inline std::ostream &operator << (std::ostream &out, const CPPNameComponent &name) {
   name.output(out);
   return out;
 }
