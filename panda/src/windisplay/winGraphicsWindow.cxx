@@ -121,6 +121,34 @@ WinGraphicsWindow::
 }
 
 /**
+ * Returns the MouseData associated with the nth input device's pointer.
+ */
+MouseData WinGraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = _input_devices[device].get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value.
+    POINT cpos;
+    if (device == 0 && GetCursorPos(&cpos) && ScreenToClient(_hWnd, &cpos)) {
+      double time = ClockObject::get_global_clock()->get_real_time();
+      RECT view_rect;
+      if (GetClientRect(_hWnd, &view_rect)) {
+        result._in_window = PtInRect(&view_rect, cpos);
+        result._xpos = cpos.x;
+        result._ypos = cpos.y;
+        ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer(result._in_window, result._xpos, result._ypos, time);
+      }
+    }
+  }
+  return result;
+}
+
+/**
  * Forces the pointer to the indicated position within the window, if
  * possible.
  *
