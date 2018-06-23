@@ -27,8 +27,8 @@ private:
   LinuxInputDeviceManager();
   ~LinuxInputDeviceManager();
 
-  InputDevice *consider_add_evdev_device(int index);
-  InputDevice *consider_add_js_device(int index);
+  InputDevice *consider_add_evdev_device(size_t index);
+  InputDevice *consider_add_js_device(size_t index);
 
   virtual void update();
 

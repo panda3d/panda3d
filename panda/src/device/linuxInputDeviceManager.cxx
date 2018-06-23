@@ -48,11 +48,11 @@ LinuxInputDeviceManager() {
   // Scan /dev/input for a list of input devices.
   DIR *dir = opendir("/dev/input");
   if (dir) {
-    vector_int indices;
+    std::vector<size_t> indices;
     dirent *entry = readdir(dir);
     while (entry != nullptr) {
-      int index = -1;
-      if (entry->d_type == DT_CHR && sscanf(entry->d_name, "event%d", &index) == 1) {
+      size_t index;
+      if (entry->d_type == DT_CHR && sscanf(entry->d_name, "event%zd", &index) == 1) {
         indices.push_back(index);
       }
       entry = readdir(dir);
@@ -64,9 +64,8 @@ LinuxInputDeviceManager() {
     std::sort(indices.begin(), indices.end());
     _evdev_devices.resize(indices.back() + 1, nullptr);
 
-    vector_int::const_iterator it;
-    for (it = indices.begin(); it != indices.end(); ++it) {
-      consider_add_evdev_device(*it);
+    for (size_t index : indices) {
+      consider_add_evdev_device(index);
     }
   } else {
     device_cat.error()
@@ -93,7 +92,7 @@ LinuxInputDeviceManager::
  * This is the preferred interface for input devices on Linux.
  */
 InputDevice *LinuxInputDeviceManager::
-consider_add_evdev_device(int ev_index) {
+consider_add_evdev_device(size_t ev_index) {
   if (ev_index < _evdev_devices.size()) {
     if (_evdev_devices[ev_index] != nullptr) {
       // We already have this device.  FIXME: probe it and add it to the
@@ -107,7 +106,7 @@ consider_add_evdev_device(int ev_index) {
 
   // Check if we can directly read the event device.
   char path[64];
-  sprintf(path, "/dev/input/event%d", ev_index);
+  sprintf(path, "/dev/input/event%zd", ev_index);
 
   if (access(path, R_OK) == 0) {
     PT(InputDevice) device = new EvdevInputDevice(this, ev_index);
@@ -133,7 +132,7 @@ consider_add_evdev_device(int ev_index) {
   // (notably, force feedback).
 
   // We do this by checking for a js# directory inside the sysfs directory.
-  sprintf(path, "/sys/class/input/event%d/device", ev_index);
+  sprintf(path, "/sys/class/input/event%zd/device", ev_index);
 
   DIR *dir = opendir(path);
   if (dir == nullptr) {
@@ -146,8 +145,8 @@ consider_add_evdev_device(int ev_index) {
 
   dirent *entry = readdir(dir);
   while (entry != nullptr) {
-    int js_index = -1;
-    if (sscanf(entry->d_name, "js%d", &js_index) == 1) {
+    size_t js_index;
+    if (sscanf(entry->d_name, "js%zd", &js_index) == 1) {
       // Yes, we fonud a corresponding js device.  Try adding it.
       closedir(dir);
 
@@ -177,9 +176,9 @@ consider_add_evdev_device(int ev_index) {
  * cannot be accessed.
  */
 InputDevice *LinuxInputDeviceManager::
-consider_add_js_device(int js_index) {
+consider_add_js_device(size_t js_index) {
   char path[64];
-  sprintf(path, "/dev/input/js%d", js_index);
+  sprintf(path, "/dev/input/js%zd", js_index);
 
   if (access(path, R_OK) == 0) {
     PT(LinuxJoystickDevice) device = new LinuxJoystickDevice(this, js_index);
@@ -254,8 +253,8 @@ update() {
     if (event->mask & IN_DELETE) {
       // The device was deleted.  If we have it, remove it.
 
-      int index = -1;
-      if (sscanf(event->name, "event%d", &index) == 1) {
+      size_t index;
+      if (sscanf(event->name, "event%zd", &index) == 1) {
         // Check if we have this evdev device.  If so, disconnect it.
         if (index < _evdev_devices.size()) {
           PT(InputDevice) device = _evdev_devices[index];
@@ -280,8 +279,8 @@ update() {
       // to check for the latter since it seems that the device may get the
       // IN_CREATE event before the driver gets the permissions set properly.
 
-      int index = -1;
-      if (sscanf(event->name, "event%d", &index) == 1) {
+      size_t index;
+      if (sscanf(event->name, "event%zd", &index) == 1) {
         InputDevice *device = consider_add_evdev_device(index);
         if (device != nullptr && device->is_connected()) {
           throw_event("connect-device", device);

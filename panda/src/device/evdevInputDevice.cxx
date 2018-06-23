@@ -96,7 +96,7 @@ TypeHandle EvdevInputDevice::_type_handle;
  * Creates a new device representing the evdev device with the given index.
  */
 EvdevInputDevice::
-EvdevInputDevice(LinuxInputDeviceManager *manager, int index) :
+EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _manager(manager),
   _index(index),
   _fd(-1),
@@ -113,7 +113,7 @@ EvdevInputDevice(LinuxInputDeviceManager *manager, int index) :
   _rtrigger_code(-1) {
 
   char path[64];
-  sprintf(path, "/dev/input/event%d", index);
+  sprintf(path, "/dev/input/event%zd", index);
 
   _fd = open(path, O_RDWR | O_NONBLOCK);
   if (_fd >= 0) {
@@ -338,8 +338,8 @@ init_device() {
 
     // Test for specific name tags
     string lowercase_name = _name;
-    for(int x=0; x<_name.length(); x++) {
-      lowercase_name[x]=tolower(lowercase_name[x]);
+    for(size_t x = 0; x < _name.length(); ++x) {
+      lowercase_name[x] = tolower(lowercase_name[x]);
     }
     if (lowercase_name.find("gamepad") != string::npos) {
       device_scores[DC_gamepad] += 10;
@@ -362,7 +362,7 @@ init_device() {
     }
 
     // Check which device type got the most points
-    size_t highest_score = 0;
+    int highest_score = 0;
     for (size_t i = 0; i < DC_COUNT; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
@@ -406,7 +406,7 @@ init_device() {
         }
 
         _buttons.push_back(button);
-        if (i >= _button_indices.size()) {
+        if ((size_t)i >= _button_indices.size()) {
           _button_indices.resize(i + 1, -1);
         }
         _button_indices[i] = button_index;
@@ -594,11 +594,11 @@ init_device() {
   char path[64];
   char buffer[256];
   const char *parent = "";
-  sprintf(path, "/sys/class/input/event%d/device/device/../product", _index);
+  sprintf(path, "/sys/class/input/event%zd/device/device/../product", _index);
   FILE *f = fopen(path, "r");
   if (!f) {
     parent = "../";
-    sprintf(path, "/sys/class/input/event%d/device/device/%s../product", _index, parent);
+    sprintf(path, "/sys/class/input/event%zd/device/device/%s../product", _index, parent);
     f = fopen(path, "r");
   }
   if (f) {
@@ -610,7 +610,7 @@ init_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/%s../manufacturer", _index, parent);
+  sprintf(path, "/sys/class/input/event%zd/device/device/%s../manufacturer", _index, parent);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != nullptr) {
@@ -619,7 +619,7 @@ init_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/%s../serial", _index, parent);
+  sprintf(path, "/sys/class/input/event%zd/device/device/%s../serial", _index, parent);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != nullptr) {
@@ -709,7 +709,7 @@ process_events() {
         button_changed(_dpad_up_button, events[i].value < 0);
         button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      nassertd(code >= 0 && code < _control_indices.size()) break;
+      nassertd(code >= 0 && (size_t)code < _control_indices.size()) break;
       index = _control_indices[code];
       if (index >= 0) {
         control_changed(index, events[i].value);
@@ -717,7 +717,7 @@ process_events() {
       break;
 
     case EV_KEY:
-      nassertd(code >= 0 && code < _button_indices.size()) break;
+      nassertd(code >= 0 && (size_t)code < _button_indices.size()) break;
       index = _button_indices[code];
       if (index >= 0) {
         button_changed(index, events[i].value != 0);

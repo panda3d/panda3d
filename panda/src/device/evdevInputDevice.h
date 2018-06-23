@@ -27,7 +27,7 @@ class LinuxInputDeviceManager;
  */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:
-  EvdevInputDevice(LinuxInputDeviceManager *manager, int index);
+  EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index);
   virtual ~EvdevInputDevice();
 
 private:
@@ -41,7 +41,7 @@ private:
   LinuxInputDeviceManager *_manager;
 
   int _fd;
-  int _index;
+  size_t _index;
 
   bool _can_write;
   int _ff_id;

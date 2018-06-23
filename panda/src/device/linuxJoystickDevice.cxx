@@ -28,7 +28,7 @@ TypeHandle LinuxJoystickDevice::_type_handle;
  * Creates a new device using the Linux joystick device with the given index.
  */
 LinuxJoystickDevice::
-LinuxJoystickDevice(LinuxInputDeviceManager *manager, int index) :
+LinuxJoystickDevice(LinuxInputDeviceManager *manager, size_t index) :
   _manager(manager),
   _fd(-1),
   _index(index),
@@ -97,7 +97,7 @@ open_device() {
   nassertr(_lock.debug_is_locked(), false);
 
   char path[64];
-  sprintf(path, "/dev/input/js%d", _index);
+  sprintf(path, "/dev/input/js%zd", _index);
 
   _fd = open(path, O_RDONLY | O_NONBLOCK);
 
@@ -287,7 +287,7 @@ open_device() {
   }
 
   // Get additional information from sysfs.
-  sprintf(path, "/sys/class/input/js%d/device/id/vendor", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/id/vendor", _index);
   FILE *f = fopen(path, "r");
   if (f) {
     if (fscanf(f, "%hx", &_vendor_id) < 1) {
@@ -295,7 +295,7 @@ open_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/id/product", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/id/product", _index);
   f = fopen(path, "r");
   if (f) {
     if (fscanf(f, "%hx", &_product_id) < 1) {
@@ -304,7 +304,7 @@ open_device() {
     fclose(f);
   }
   char buffer[256];
-  sprintf(path, "/sys/class/input/js%d/device/device/../product", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../product", _index);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != nullptr) {
@@ -315,7 +315,7 @@ open_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/device/../manufacturer", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../manufacturer", _index);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != nullptr) {
@@ -324,7 +324,7 @@ open_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/device/../serial", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../serial", _index);
   f = fopen(path, "r");
   if (f) {
     if (fgets(buffer, sizeof(buffer), f) != nullptr) {
@@ -343,8 +343,8 @@ open_device() {
   // are all 0, which indicates that the driver hasn't received any data for
   // this gamepad yet (which means it hasn't been plugged in for this session)
   if (strncmp(name, "Xbox 360 Wireless Receiver", 26) == 0) {
-    for (int i = 0; i < _controls.size(); ++i) {
-      if (_controls[i].state != 0.0) {
+    for (const auto &control : _controls) {
+      if (control.state != 0.0) {
         _is_connected = true;
         return true;
       }

@@ -26,7 +26,7 @@ class LinuxInputDeviceManager;
  */
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
 PUBLISHED:
-  LinuxJoystickDevice(LinuxInputDeviceManager *manager, int index);
+  LinuxJoystickDevice(LinuxInputDeviceManager *manager, size_t index);
   virtual ~LinuxJoystickDevice();
 
   bool check_events() const;
@@ -41,7 +41,7 @@ private:
   LinuxInputDeviceManager *_manager;
 
   int _fd;
-  int _index;
+  size_t _index;
 
   // These are used for D-pad / hat switch emulation.
   int _dpad_x_axis;
