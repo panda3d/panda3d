@@ -17,7 +17,7 @@
  */
 template<class ValueType>
 bool
-get_maya_attribute(MObject &node, const string &attribute_name,
+get_maya_attribute(MObject &node, const std::string &attribute_name,
                    ValueType &value) {
   bool status = false;
 
@@ -35,7 +35,7 @@ get_maya_attribute(MObject &node, const string &attribute_name,
  */
 template<class ValueType>
 bool
-set_maya_attribute(MObject &node, const string &attribute_name,
+set_maya_attribute(MObject &node, const std::string &attribute_name,
                    ValueType &value) {
   bool status = false;
 

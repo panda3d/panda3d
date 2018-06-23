@@ -22,7 +22,7 @@
  * to a memory buffer, whose contents can be appended to or extracted at any
  * time by application code.
  */
-class EXPCL_PANDAEXPRESS StringStreamBuf : public std::streambuf {
+class EXPCL_PANDA_DOWNLOADER StringStreamBuf : public std::streambuf {
 public:
   StringStreamBuf();
   virtual ~StringStreamBuf();

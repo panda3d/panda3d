@@ -74,7 +74,7 @@ make_copy() const {
  *
  */
 void BulletRigidBodyNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   BulletBodyNode::do_output(out);

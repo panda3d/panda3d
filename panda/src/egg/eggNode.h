@@ -32,7 +32,7 @@ class EggTextureCollection;
  * This includes groups, joints, polygons, vertex pools, etc., but does not
  * include things like vertices.
  */
-class EXPCL_PANDAEGG EggNode : public EggNamedObject {
+class EXPCL_PANDA_EGG EggNode : public EggNamedObject {
 PUBLISHED:
   INLINE explicit EggNode(const std::string &name = "");
   INLINE EggNode(const EggNode &copy);

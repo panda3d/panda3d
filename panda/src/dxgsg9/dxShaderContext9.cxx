@@ -207,7 +207,7 @@ issue_parameters(GSG *gsg, int altered) {
 
         // Calculate how many elements to transfer; no more than it expects,
         // but certainly no more than we have.
-        int input_size = min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), (int)ptr_data->_size);
+        int input_size = std::min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), (int)ptr_data->_size);
 
         CGparameter p = _cg_parameter_map[spec._id._seqno];
         switch (ptr_data->_type) {
@@ -313,7 +313,7 @@ issue_parameters(GSG *gsg, int altered) {
           }
 
           if (FAILED(hr)) {
-            string name = "unnamed";
+            std::string name = "unnamed";
 
             if (spec._arg[0]) {
               name = spec._arg[0]->get_basename();

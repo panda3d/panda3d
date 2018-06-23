@@ -44,7 +44,7 @@ class EggVertexPool;
  * can.  However, it is necessary that all vertices belong to the same vertex
  * pool.
  */
-class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
+class EXPCL_PANDA_EGG EggPrimitive : public EggNode, public EggAttributes,
                      public EggRenderMode
 {
 

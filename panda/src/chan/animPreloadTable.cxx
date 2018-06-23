@@ -60,7 +60,7 @@ get_num_anims() const {
  * Filename::get_basename_wo_extension().
  */
 int AnimPreloadTable::
-find_anim(const string &basename) const {
+find_anim(const std::string &basename) const {
   consider_sort();
   AnimRecord record;
   record._basename = basename;
@@ -96,7 +96,7 @@ remove_anim(int n) {
  * See find_anim().  This will invalidate existing index numbers.
  */
 void AnimPreloadTable::
-add_anim(const string &basename, PN_stdfloat base_frame_rate, int num_frames) {
+add_anim(const std::string &basename, PN_stdfloat base_frame_rate, int num_frames) {
   AnimRecord record;
   record._basename = basename;
   record._base_frame_rate = base_frame_rate;
@@ -124,7 +124,7 @@ add_anims_from(const AnimPreloadTable *other) {
  *
  */
 void AnimPreloadTable::
-output(ostream &out) const {
+output(std::ostream &out) const {
   consider_sort();
   out << "AnimPreloadTable, " << _anims.size() << " animation records.";
 }
@@ -133,7 +133,7 @@ output(ostream &out) const {
  *
  */
 void AnimPreloadTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   consider_sort();
   indent(out, indent_level)
     << "AnimPreloadTable, " << _anims.size() << " animation records:\n";

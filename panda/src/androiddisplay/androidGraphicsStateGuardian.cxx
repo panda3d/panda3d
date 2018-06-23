@@ -275,7 +275,7 @@ reset() {
 #endif
 
   // If "PixelFlinger" is present, assume software.
-  if (_gl_renderer.find("PixelFlinger") != string::npos) {
+  if (_gl_renderer.find("PixelFlinger") != std::string::npos) {
     _fbprops.set_force_software(1);
     _fbprops.set_force_hardware(0);
   } else {

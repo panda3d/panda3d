@@ -34,6 +34,10 @@
 #include <sys/time.h>
 #include <fcntl.h>
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 struct _XcursorFile {
   void *closure;
   int (*read)(XcursorFile *, unsigned char *, int);
@@ -131,6 +135,36 @@ x11GraphicsWindow::
   for (it = _cursor_filenames.begin(); it != _cursor_filenames.end(); it++) {
     XFreeCursor(_display, it->second);
   }
+}
+
+/**
+ * Returns the MouseData associated with the nth input device's pointer.  This
+ * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
+ * mice, use the InputDeviceManager interface.
+ */
+MouseData x11GraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = _input_devices[device]->get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value.
+    if (device == 0 && !_dga_mouse_enabled && result._in_window) {
+      XEvent event;
+      if (XQueryPointer(_display, _xwindow, &event.xbutton.root,
+          &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+          &event.xbutton.x, &event.xbutton.y, &event.xbutton.state)) {
+        double time = ClockObject::get_global_clock()->get_real_time();
+        result._xpos = event.xbutton.x;
+        result._ypos = event.xbutton.y;
+        ((GraphicsWindowInputDevice *)_input_devices[0].p())->set_pointer_in_window(result._xpos, result._ypos, time);
+      }
+    }
+  }
+  return result;
 }
 
 /**
@@ -1820,7 +1854,7 @@ map_button(KeySym key) const {
   }
   if (x11display_cat.is_debug()) {
     x11display_cat.debug()
-      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+      << "Unrecognized keysym 0x" << std::hex << key << std::dec << "\n";
   }
   return ButtonHandle::none();
 }

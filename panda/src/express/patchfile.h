@@ -36,7 +36,7 @@
 /**
  *
  */
-class EXPCL_PANDAEXPRESS Patchfile {
+class EXPCL_PANDA_EXPRESS Patchfile {
 PUBLISHED:
   Patchfile();
   explicit Patchfile(PT(Buffer) buffer);

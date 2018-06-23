@@ -34,7 +34,7 @@ class BamCacheRecord;
  * begin() and end() calls.  The children of the EggData class are the
  * toplevel nodes in the egg file.
  */
-class EXPCL_PANDAEGG EggData : public EggGroupNode {
+class EXPCL_PANDA_EGG EggData : public EggGroupNode {
 PUBLISHED:
   INLINE EggData();
   INLINE EggData(const EggData &copy);

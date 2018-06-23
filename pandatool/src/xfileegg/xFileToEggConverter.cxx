@@ -26,6 +26,8 @@
 #include "eggTextureCollection.h"
 #include "dcast.h"
 
+using std::string;
+
 /**
  *
  */

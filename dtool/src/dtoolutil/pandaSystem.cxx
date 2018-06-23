@@ -15,6 +15,8 @@
 #include "pandaVersion.h"
 #include "dtool_platform.h"
 
+using std::string;
+
 PandaSystem *PandaSystem::_global_ptr = nullptr;
 TypeHandle PandaSystem::_type_handle;
 
@@ -220,7 +222,7 @@ string PandaSystem::
 get_compiler() {
 #if defined(_MSC_VER)
   // MSVC defines this macro.  It's an integer; we need to format it.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "MSC v." << _MSC_VER;
 
   // We also get this suite of macros that tells us what the build platform
@@ -368,7 +370,7 @@ add_system(const string &system) {
 void PandaSystem::
 set_system_tag(const string &system, const string &tag,
                const string &value) {
-  pair<Systems::iterator, bool> result;
+  std::pair<Systems::iterator, bool> result;
   result = _systems.insert(Systems::value_type(system, SystemTags(get_class_type())));
   if (result.second) {
     _system_names_dirty = true;
@@ -399,7 +401,7 @@ heap_trim(size_t pad) {
  *
  */
 void PandaSystem::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Panda version " << get_version_string();
 }
 
@@ -407,7 +409,7 @@ output(ostream &out) const {
  *
  */
 void PandaSystem::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << *this << "\n"
       << "compiled on " << get_build_date() << " by "
       << get_distributor() << "\n"

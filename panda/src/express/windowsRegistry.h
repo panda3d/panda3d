@@ -25,7 +25,7 @@
  * encoding and stores them in Unicode (and conversely reconverts them on
  * retrieval).
  */
-class EXPCL_PANDAEXPRESS WindowsRegistry
+class EXPCL_PANDA_EXPRESS WindowsRegistry
 {
 PUBLISHED:
   enum RegLevel {

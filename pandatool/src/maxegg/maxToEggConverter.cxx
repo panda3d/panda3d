@@ -27,6 +27,8 @@
 #include "maxEgg.h"
 #include "config_putil.h"
 
+using std::string;
+
 /**
  *
  */
@@ -704,7 +706,7 @@ make_polyset(INode *max_node, Mesh *mesh,
             // standard material to the object
             for (int iChan=0; iChan<pmat._map_channels.size(); iChan++) {
                 int channel = pmat._map_channels[iChan];
-                ostringstream uvname;
+                std::ostringstream uvname;
                 uvname << "m" << channel;
                 UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
                 // changes allow the first channel to be swapped
@@ -1272,7 +1274,7 @@ void MaxToEggConverter::add_map_channel(PandaMaterial &pandaMat, int chan) {
  * Generates an arbitrary unused texture name.
  */
 std::string MaxToEggConverter::generate_tex_name() {
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm << "Tex" << ++_cur_tref;
     return name_strm.str();
 }
@@ -1281,7 +1283,7 @@ std::string MaxToEggConverter::generate_tex_name() {
  * Returns the UV-name of the nth map-channel.
  */
 std::string MaxToEggConverter::get_uv_name(int channel) {
-    ostringstream uvname;
+    std::ostringstream uvname;
     uvname << "m" << channel;
     return uvname.str();
 }

@@ -27,7 +27,7 @@
  * The source stream must be one that we can randomly seek within.  The
  * resulting ISubStream will also support arbitrary seeks.
  */
-class EXPCL_PANDAEXPRESS ISubStream : public std::istream {
+class EXPCL_PANDA_EXPRESS ISubStream : public std::istream {
 PUBLISHED:
   INLINE ISubStream();
   INLINE explicit ISubStream(IStreamWrapper *source, std::streampos start, std::streampos end);
@@ -52,7 +52,7 @@ private:
  * The dest stream must be one that we can randomly seek within.  The
  * resulting OSubStream will also support arbitrary seeks.
  */
-class EXPCL_PANDAEXPRESS OSubStream : public std::ostream {
+class EXPCL_PANDA_EXPRESS OSubStream : public std::ostream {
 PUBLISHED:
   INLINE OSubStream();
   INLINE explicit OSubStream(OStreamWrapper *dest, std::streampos start, std::streampos end, bool append = false);
@@ -71,7 +71,7 @@ private:
 /**
  * Combined ISubStream and OSubStream for bidirectional I/O.
  */
-class EXPCL_PANDAEXPRESS SubStream : public std::iostream {
+class EXPCL_PANDA_EXPRESS SubStream : public std::iostream {
 PUBLISHED:
   INLINE SubStream();
   INLINE explicit SubStream(StreamWrapper *nested, std::streampos start, std::streampos end, bool append = false);

@@ -11,6 +11,14 @@
  * @date 2001-05-14
  */
 
+#ifdef _WIN32
+// Needed for PtrToLong, below
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#endif
+
 /**
  * Adds another integer to the hash so far.  This function should be
  * overridden in base classes; this is the principle implementation of the

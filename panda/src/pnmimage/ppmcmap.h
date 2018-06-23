@@ -26,7 +26,7 @@ struct colorhist_list_item
 EXPCL_PANDA_PNMIMAGE colorhist_vector ppm_computecolorhist( pixel** pixels, int cols, int rows, int maxcolors, int* colorsP );
 /* Returns a colorhist *colorsP long (with space allocated for maxcolors. */
 
-void ppm_addtocolorhist ( colorhist_vector chv, int* colorsP, int maxcolors, pixel* colorP, int value, int position );
+EXPCL_PANDA_PNMIMAGE void ppm_addtocolorhist ( colorhist_vector chv, int* colorsP, int maxcolors, pixel* colorP, int value, int position );
 
 EXPCL_PANDA_PNMIMAGE void ppm_freecolorhist( colorhist_vector chv );
 
@@ -35,19 +35,19 @@ EXPCL_PANDA_PNMIMAGE void ppm_freecolorhist( colorhist_vector chv );
 
 typedef colorhist_list* colorhash_table;
 
-colorhash_table ppm_computecolorhash ( pixel** pixels, int cols, int rows, int maxcolors, int* colorsP );
+EXPCL_PANDA_PNMIMAGE colorhash_table ppm_computecolorhash ( pixel** pixels, int cols, int rows, int maxcolors, int* colorsP );
 
 EXPCL_PANDA_PNMIMAGE int
 ppm_lookupcolor( colorhash_table cht, pixel* colorP );
 
-colorhist_vector ppm_colorhashtocolorhist ( colorhash_table cht, int maxcolors );
+EXPCL_PANDA_PNMIMAGE colorhist_vector ppm_colorhashtocolorhist ( colorhash_table cht, int maxcolors );
 EXPCL_PANDA_PNMIMAGE colorhash_table ppm_colorhisttocolorhash( colorhist_vector chv, int colors );
 
-int ppm_addtocolorhash ( colorhash_table cht, pixel* colorP, int value );
+EXPCL_PANDA_PNMIMAGE int ppm_addtocolorhash ( colorhash_table cht, pixel* colorP, int value );
 /* Returns -1 on failure. */
 
-colorhash_table ppm_alloccolorhash ( void );
+EXPCL_PANDA_PNMIMAGE colorhash_table ppm_alloccolorhash ( void );
 
-void ppm_freecolorhash( colorhash_table cht );
+EXPCL_PANDA_PNMIMAGE void ppm_freecolorhash( colorhash_table cht );
 
 #endif

@@ -18,6 +18,8 @@
 
 TypeHandle GraphicsWindowInputDevice::_type_handle;
 
+using std::string;
+
 /**
  * Defines a new InputDevice for the window.  Most windows will have exactly
  * one InputDevice: a keyboard/mouse pair.  Some may also add joystick data,
@@ -130,7 +132,7 @@ keystroke(int keycode, double time) {
  * especially Chinese/Japanese/Korean.
  */
 void GraphicsWindowInputDevice::
-candidate(const wstring &candidate_string, size_t highlight_start,
+candidate(const std::wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
   LightMutexHolder holder(_lock);
   _button_events->add_event(ButtonEvent(candidate_string,

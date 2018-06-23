@@ -90,7 +90,7 @@ get_test_pcollector() {
  *
  */
 void CollisionParabola::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _parabola << ", t1 = " << _t1 << ", t2 = " << _t2;
 }
 
@@ -145,8 +145,8 @@ compute_internal_bounds() const {
   for (int i = 0; i < num_points; ++i) {
     double t = (double)(i + 1) / (double)(num_points + 1);
     LPoint3 p = psp.calc_point(get_t1() + t * (get_t2() - get_t1()));
-    min_z = min(min_z, p[2]);
-    max_z = max(max_z, p[2]);
+    min_z = std::min(min_z, p[2]);
+    max_z = std::max(max_z, p[2]);
   }
 
   // That gives us a simple bounding volume in parabola space.

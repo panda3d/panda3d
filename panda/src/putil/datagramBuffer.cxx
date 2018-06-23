@@ -20,7 +20,7 @@
  * written.
  */
 bool DatagramBuffer::
-write_header(const string &header) {
+write_header(const std::string &header) {
   nassertr(!_wrote_first_datagram, false);
 
   _data.insert(_data.end(), header.begin(), header.end());
@@ -78,13 +78,13 @@ flush() {
  * has been read.
  */
 bool DatagramBuffer::
-read_header(string &header, size_t num_bytes) {
+read_header(std::string &header, size_t num_bytes) {
   nassertr(!_read_first_datagram, false);
   if (_read_offset + num_bytes > _data.size()) {
     return false;
   }
 
-  header = string((char *)&_data[_read_offset], num_bytes);
+  header = std::string((char *)&_data[_read_offset], num_bytes);
   _read_offset += num_bytes;
   return true;
 }

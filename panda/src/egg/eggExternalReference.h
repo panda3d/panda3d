@@ -22,7 +22,7 @@
  * Defines a reference to another egg file which should be inserted at this
  * point.
  */
-class EXPCL_PANDAEGG EggExternalReference : public EggFilenameNode {
+class EXPCL_PANDA_EGG EggExternalReference : public EggFilenameNode {
 PUBLISHED:
   explicit EggExternalReference(const std::string &node_name, const std::string &filename);
   EggExternalReference(const EggExternalReference &copy);

@@ -23,6 +23,8 @@
 
 #include <math.h>
 
+using std::string;
+
 TypeHandle EggXfmSAnim::_type_handle;
 
 const string EggXfmSAnim::_standard_order = "srpht";
@@ -138,7 +140,7 @@ is_anim_matrix() const {
  * Writes the data to the indicated output stream in Egg format.
  */
 void EggXfmSAnim::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   test_under_integrity();
 
   write_header(out, indent_level, "<Xfm$Anim_S$>");
@@ -271,7 +273,7 @@ get_num_rows() const {
           min_rows = sanim->get_num_rows();
 
         } else {
-          min_rows = min(min_rows, sanim->get_num_rows());
+          min_rows = std::min(min_rows, sanim->get_num_rows());
         }
       }
     }

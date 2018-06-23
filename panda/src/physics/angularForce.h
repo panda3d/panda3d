@@ -19,7 +19,7 @@
 /**
  * pure virtual parent of all quat-based forces.
  */
-class EXPCL_PANDAPHYSICS AngularForce : public BaseForce {
+class EXPCL_PANDA_PHYSICS AngularForce : public BaseForce {
 PUBLISHED:
   virtual ~AngularForce();
 

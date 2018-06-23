@@ -24,6 +24,8 @@
 // recursion.
 #include <assert.h>
 
+using std::string;
+
 /**
  * Closes or deletes the relevant pointers, if _owns_obj is true.
  */
@@ -107,7 +109,7 @@ MultiplexStreamBuf::
 void MultiplexStreamBuf::
 add_output(MultiplexStreamBuf::BufferType buffer_type,
            MultiplexStreamBuf::OutputType output_type,
-           ostream *out, FILE *fout, bool owns_obj) {
+           std::ostream *out, FILE *fout, bool owns_obj) {
 
   Output o;
   o._buffer_type = buffer_type;
@@ -141,7 +143,7 @@ int MultiplexStreamBuf::
 overflow(int ch) {
   _lock.lock();
 
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   if (n != 0) {
     write_chars(pbase(), n, false);
@@ -166,7 +168,7 @@ int MultiplexStreamBuf::
 sync() {
   _lock.lock();
 
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   // We pass in false for the flush value, even though our transmitting
   // ostream said to sync.  This allows us to get better line buffering, since

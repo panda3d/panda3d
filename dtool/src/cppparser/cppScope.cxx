@@ -33,6 +33,11 @@
 #include "cppBisonDefs.h"
 #include "indent.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::pair;
+using std::string;
+
 /**
  *
  */

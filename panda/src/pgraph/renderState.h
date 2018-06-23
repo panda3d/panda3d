@@ -162,7 +162,11 @@ public:
   template<class AttribType>
   INLINE bool get_attrib(const AttribType *&attrib) const;
   template<class AttribType>
+  INLINE bool get_attrib(CPT(AttribType) &attrib) const;
+  template<class AttribType>
   INLINE void get_attrib_def(const AttribType *&attrib) const;
+  template<class AttribType>
+  INLINE void get_attrib_def(CPT(AttribType) &attrib) const;
 #endif  // CPPPARSER
 
 private:

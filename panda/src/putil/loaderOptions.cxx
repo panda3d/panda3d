@@ -15,6 +15,8 @@
 #include "config_putil.h"
 #include "indent.h"
 
+using std::string;
+
 /**
  *
  */
@@ -54,7 +56,7 @@ LoaderOptions(int flags) :
  *
  */
 void LoaderOptions::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "LoaderOptions(";
 
   string sep = "";
@@ -100,7 +102,7 @@ output(ostream &out) const {
  * Used to implement output().
  */
 void LoaderOptions::
-write_flag(ostream &out, string &sep,
+write_flag(std::ostream &out, string &sep,
            const string &flag_name, int flag) const {
   if ((_flags & flag) == flag) {
     out << sep << flag_name;
@@ -112,7 +114,7 @@ write_flag(ostream &out, string &sep,
  * Used to implement output().
  */
 void LoaderOptions::
-write_texture_flag(ostream &out, string &sep,
+write_texture_flag(std::ostream &out, string &sep,
                    const string &flag_name, int flag) const {
   if ((_texture_flags & flag) == flag) {
     out << sep << flag_name;

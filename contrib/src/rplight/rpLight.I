@@ -33,7 +33,7 @@
  *
  * @return Amount of shadow sources
  */
-inline int RPLight::get_num_shadow_sources() const {
+inline size_t RPLight::get_num_shadow_sources() const {
   return _shadow_sources.size();
 }
 

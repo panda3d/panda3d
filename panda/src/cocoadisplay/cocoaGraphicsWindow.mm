@@ -50,7 +50,7 @@ TypeHandle CocoaGraphicsWindow::_type_handle;
  */
 CocoaGraphicsWindow::
 CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -1294,7 +1294,7 @@ load_image(const Filename &filename) {
   if (vfile == NULL) {
     return nil;
   }
-  istream *str = vfile->open_read_file(true);
+  std::istream *str = vfile->open_read_file(true);
   if (str == NULL) {
     cocoadisplay_cat.error()
       << "Could not open file " << filename << " for reading\n";
@@ -1450,7 +1450,7 @@ handle_foreground_event(bool foreground) {
  */
 bool CocoaGraphicsWindow::
 handle_close_request() {
-  string close_request_event = get_close_request_event();
+  std::string close_request_event = get_close_request_event();
   if (!close_request_event.empty()) {
     // In this case, the app has indicated a desire to intercept the request
     // and process it directly.

@@ -151,7 +151,7 @@ private:
 /**
  * Renders a particle system with high-speed nasty trick sprites.
  */
-class EXPCL_PANDAPHYSICS SpriteParticleRenderer : public BaseParticleRenderer {
+class EXPCL_PANDA_PARTICLESYSTEM SpriteParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   explicit SpriteParticleRenderer(Texture *tex = nullptr);
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);

@@ -23,7 +23,7 @@
  * of node that will never be read in from an egg file, but can only exist in
  * the egg scene graph if it is created via the use of an EggBinMaker.
  */
-class EXPCL_PANDAEGG EggBin : public EggGroup {
+class EXPCL_PANDA_EGG EggBin : public EggGroup {
 PUBLISHED:
   explicit EggBin(const std::string &name = "");
   EggBin(const EggGroup &copy);

@@ -20,6 +20,8 @@
 #include "cppExtensionType.h"
 #include <algorithm>
 
+using std::string;
+
 CPPType::Types CPPType::_types;
 CPPType::PreferredNames CPPType::_preferred_names;
 CPPType::AltNames CPPType::_alt_names;
@@ -306,7 +308,7 @@ get_simple_name() const {
  */
 string CPPType::
 get_local_name(CPPScope *scope) const {
-  ostringstream ostrm;
+  std::ostringstream ostrm;
   output(ostrm, 0, scope, false);
   return ostrm.str();
 }
@@ -419,7 +421,7 @@ is_convertible_to(const CPPType *other) const {
  * have special exceptions.
  */
 void CPPType::
-output_instance(ostream &out, const string &name, CPPScope *scope) const {
+output_instance(std::ostream &out, const string &name, CPPScope *scope) const {
   output_instance(out, 0, scope, false, "", name);
 }
 
@@ -429,7 +431,7 @@ output_instance(ostream &out, const string &name, CPPScope *scope) const {
  * have special exceptions.
  */
 void CPPType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
   output(out, indent_level, scope, complete);
@@ -454,7 +456,7 @@ as_type() {
  */
 CPPType *CPPType::
 new_type(CPPType *type) {
-  pair<Types::iterator, bool> result = _types.insert(type);
+  std::pair<Types::iterator, bool> result = _types.insert(type);
   if (result.second) {
     // The insertion has taken place; thus, this is the first time this type
     // has been declared.

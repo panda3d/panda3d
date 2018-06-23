@@ -28,7 +28,7 @@
  * EggPolygon level with multiple appearances of the EggObject base class.
  * And making EggObject a virtual base class is just no fun.
  */
-class EXPCL_PANDAEGG EggRenderMode {
+class EXPCL_PANDA_EGG EggRenderMode {
 PUBLISHED:
   EggRenderMode();
   INLINE EggRenderMode(const EggRenderMode &copy);
@@ -122,12 +122,12 @@ private:
   static TypeHandle _type_handle;
 };
 
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggRenderMode::AlphaMode mode);
-EXPCL_PANDAEGG std::istream &operator >> (std::istream &in, EggRenderMode::AlphaMode &mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::AlphaMode mode);
+EXPCL_PANDA_EGG std::istream &operator >> (std::istream &in, EggRenderMode::AlphaMode &mode);
 
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthWriteMode mode);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthTestMode mode);
-EXPCL_PANDAEGG std::ostream &operator << (std::ostream &out, EggRenderMode::VisibilityMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthWriteMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::DepthTestMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggRenderMode::VisibilityMode mode);
 
 #include "eggRenderMode.I"
 

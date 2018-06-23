@@ -40,9 +40,6 @@
 
 #else  // USE_STL_ALLOCATOR
 
-using std::set;
-using std::multiset;
-
 /**
  * This is our own Panda specialization on the default STL set.  Its main
  * purpose is to call the hooks for MemoryUsage to properly track STL-

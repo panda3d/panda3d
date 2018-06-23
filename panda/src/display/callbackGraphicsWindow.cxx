@@ -24,7 +24,7 @@ TypeHandle CallbackGraphicsWindow::RenderCallbackData::_type_handle;
  */
 CallbackGraphicsWindow::
 CallbackGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                       const string &name,
+                       const std::string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
                        int flags,
@@ -52,7 +52,7 @@ CallbackGraphicsWindow::
  * Returns the index of the new device.
  */
 int CallbackGraphicsWindow::
-create_input_device(const string &name) {
+create_input_device(const std::string &name) {
   return add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, name));
 }
 

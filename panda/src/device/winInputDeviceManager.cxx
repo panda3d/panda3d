@@ -335,7 +335,7 @@ on_input_device_removal(HANDLE handle) {
     LightMutexHolder holder(_lock);
     auto it = _raw_devices.find(handle);
     if (it != _raw_devices.end()) {
-      device = move(it->second);
+      device = std::move(it->second);
       _raw_devices.erase(it);
       device->on_removal();
 

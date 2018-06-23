@@ -25,8 +25,6 @@
 #include <set>
 #include <string>
 
-using namespace std;
-
 class CPPType;
 class CPPDeclaration;
 class CPPExtensionType;

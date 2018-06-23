@@ -23,7 +23,7 @@ class wglGraphicsStateGuardian;
  * This graphics pipe represents the interface for creating OpenGL graphics
  * windows on the various Windows OSes.
  */
-class EXPCL_PANDAGL wglGraphicsPipe : public WinGraphicsPipe {
+class EXPCL_PANDA_WGLDISPLAY wglGraphicsPipe : public WinGraphicsPipe {
 public:
   wglGraphicsPipe();
   virtual ~wglGraphicsPipe();

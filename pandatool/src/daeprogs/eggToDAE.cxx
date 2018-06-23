@@ -28,6 +28,8 @@
 #define FROM_MAT4(v) (FMMatrix44(v.get_data()))
 #define FROM_FSTRING(fs) (fs.c_str())
 
+using std::cerr;
+
 /**
  *
  */

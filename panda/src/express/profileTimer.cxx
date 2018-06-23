@@ -13,10 +13,13 @@
 
 #include "pmap.h"
 
+using std::ostream;
+using std::string;
+
 // See ProfileTimer.h for documentation.
 
 
-EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
+EXPCL_PANDA_EXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
 
 ProfileTimer* ProfileTimer::_head;
 
@@ -127,7 +130,7 @@ consolidateTo(ostream &out) const {
     << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 void ProfileTimer::
@@ -156,7 +159,7 @@ printTo(ostream &out) const {
     << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :

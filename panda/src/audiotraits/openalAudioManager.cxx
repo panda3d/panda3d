@@ -33,6 +33,9 @@
 #define ALC_ALL_DEVICES_SPECIFIER 0x1013
 #endif
 
+using std::endl;
+using std::string;
+
 TypeHandle OpenALAudioManager::_type_handle;
 
 ReMutex OpenALAudioManager::_lock;

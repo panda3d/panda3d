@@ -18,6 +18,8 @@
 #include "string_utils.h"
 #include "configVariableColor.h"
 
+using std::string;
+
 CullBinManager *CullBinManager::_global_ptr = nullptr;
 
 /**
@@ -165,7 +167,7 @@ find_bin(const string &name) const {
  *
  */
 void CullBinManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   if (!_bins_are_sorted) {
     ((CullBinManager *)this)->do_sort_bins();
   }
@@ -316,8 +318,8 @@ parse_bin_type(const string &bin_type) {
 /**
  *
  */
-ostream &
-operator << (ostream &out, CullBinManager::BinType bin_type) {
+std::ostream &
+operator << (std::ostream &out, CullBinManager::BinType bin_type) {
   switch (bin_type) {
   case CullBinManager::BT_invalid:
     return out << "invalid";

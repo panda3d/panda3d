@@ -34,6 +34,8 @@
 #include "eggAnimPreload.h"
 #include "animPreloadTable.h"
 
+using std::string;
+
 
 
 

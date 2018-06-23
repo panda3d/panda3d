@@ -132,7 +132,7 @@ open_device() {
       if (handle == ButtonHandle::none()) {
         if (device_cat.is_debug()) {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
-            << " button " << (int)i << ": 0x" << hex << btnmap[i] << "\n";
+            << " button " << (int)i << ": 0x" << std::hex << btnmap[i] << "\n";
         }
       } else if (handle == GamepadButton::action_a()) {
         _device_class = DC_gamepad;
@@ -254,7 +254,7 @@ open_device() {
       default:
         if (device_cat.is_debug()) {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
-            << " axis " << (int)i << ": 0x" << hex << (int)axmap[i] << "\n";
+            << " axis " << (int)i << ": 0x" << std::hex << (int)axmap[i] << "\n";
         }
         axis = C_none;
         break;

@@ -27,7 +27,7 @@
  * limits to the size of the files that may be written with this system; and
  * "files" written here are not automatically persistent between sessions.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountRamdisk : public VirtualFileMount {
+class EXPCL_PANDA_EXPRESS VirtualFileMountRamdisk : public VirtualFileMount {
 PUBLISHED:
   VirtualFileMountRamdisk();
 

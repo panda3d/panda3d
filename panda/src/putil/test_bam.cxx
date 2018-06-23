@@ -17,6 +17,8 @@
 
 #include "test_bam.h"
 
+using std::endl;
+
 
 TypeHandle Person::_type_handle;
 TypeHandle Parent::_type_handle;

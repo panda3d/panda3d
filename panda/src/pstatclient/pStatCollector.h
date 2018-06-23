@@ -47,7 +47,7 @@ private:
   INLINE PStatCollector(PStatClient *client, int index);
 
 public:
-  INLINE PStatCollector();
+  PStatCollector() = default;
 
 PUBLISHED:
   INLINE explicit PStatCollector(const std::string &name,
@@ -99,9 +99,9 @@ PUBLISHED:
   INLINE int get_index() const;
 
 private:
-  PStatClient *_client;
-  int _index;
-  double _level;
+  PStatClient *_client = nullptr;
+  int _index = 0;
+  double _level = 0.0;
 
 friend class PStatClient;
 

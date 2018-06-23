@@ -45,8 +45,8 @@ public:
 PUBLISHED:
   virtual LPoint3 get_collision_origin() const;
 
-  INLINE int get_num_points() const;
-  INLINE LPoint3 get_point(int n) const;
+  INLINE size_t get_num_points() const;
+  INLINE LPoint3 get_point(size_t n) const;
   MAKE_SEQ(get_points, get_num_points, get_point);
 
 

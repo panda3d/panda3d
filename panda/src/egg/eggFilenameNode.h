@@ -24,7 +24,7 @@
  * file relative to the directory the egg file was loaded in.  It is a base
  * class for EggTexture and EggExternalReference.
  */
-class EXPCL_PANDAEGG EggFilenameNode : public EggNode {
+class EXPCL_PANDA_EGG EggFilenameNode : public EggNode {
 PUBLISHED:
   INLINE EggFilenameNode();
   INLINE explicit EggFilenameNode(const std::string &node_name, const Filename &filename);

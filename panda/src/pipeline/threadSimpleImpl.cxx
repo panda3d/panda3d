@@ -178,9 +178,9 @@ preempt() {
 /**
  *
  */
-string ThreadSimpleImpl::
+std::string ThreadSimpleImpl::
 get_unique_id() const {
-  ostringstream strm;
+  std::ostringstream strm;
 #ifdef WIN32
   strm << GetCurrentProcessId();
 #else

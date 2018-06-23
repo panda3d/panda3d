@@ -73,7 +73,7 @@ Character(const Character &copy, bool copy_bundles) :
  *
  */
 Character::
-Character(const string &name) :
+Character(const std::string &name) :
   PartBundleNode(name, new CharacterJointBundle(name)),
   _joints_pcollector(PStatCollector(_animation_pcollector, name), "Joints"),
   _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices")
@@ -355,7 +355,7 @@ clear_lod_animation() {
  * to a slider.
  */
 CharacterJoint *Character::
-find_joint(const string &name) const {
+find_joint(const std::string &name) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     PartGroup *part = get_bundle(i)->find_child(name);
@@ -373,7 +373,7 @@ find_joint(const string &name) const {
  * to a joint.
  */
 CharacterSlider *Character::
-find_slider(const string &name) const {
+find_slider(const std::string &name) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     PartGroup *part = get_bundle(i)->find_child(name);
@@ -391,7 +391,7 @@ find_slider(const string &name) const {
  * structure, to the indicated output stream.
  */
 void Character::
-write_parts(ostream &out) const {
+write_parts(std::ostream &out) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     get_bundle(i)->write(out, 0);
@@ -404,7 +404,7 @@ write_parts(ostream &out) const {
  * stream.
  */
 void Character::
-write_part_values(ostream &out) const {
+write_part_values(std::ostream &out) const {
   int num_bundles = get_num_bundles();
   for (int i = 0; i < num_bundles; ++i) {
     get_bundle(i)->write_with_value(out, 0);
@@ -671,7 +671,7 @@ r_merge_bundles(Character::JointMap &joint_map,
   int new_num_children = new_group->get_num_children();
 
   PartGroup::Children new_children(PartGroup::get_class_type());
-  new_children.reserve(max(old_num_children, new_num_children));
+  new_children.reserve(std::max(old_num_children, new_num_children));
 
   while (i < old_num_children && j < new_num_children) {
     PartGroup *pc = old_group->get_child(i);

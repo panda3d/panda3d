@@ -39,7 +39,7 @@ class URLSpec;
  * on these things internally, but the interface doesn't appear to be public;
  * so we might as well wrap the whole thing at the high level.
  */
-class EXPCL_PANDAEXPRESS BioPtr : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER BioPtr : public ReferenceCount {
 public:
   INLINE BioPtr(BIO *bio);
   BioPtr(const URLSpec &url);

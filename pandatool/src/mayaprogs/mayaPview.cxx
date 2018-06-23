@@ -119,13 +119,13 @@ doIt(const MArgList &args) {
   MProgressWindow::advanceProgress(1);
 
   // Now spawn a pview instance to view this temporary file.
-  string pview_args = "-clD";
+  std::string pview_args = "-clD";
   if (animate) {
     pview_args = "-clDa";
   }
 
   // On Windows, we use the spawn function to run pview asynchronously.
-  string quoted = string("\"") + bam_filename.get_fullpath() + string("\"");
+  std::string quoted = std::string("\"") + bam_filename.get_fullpath() + std::string("\"");
   nout << "pview " << pview_args << " " << quoted << "\n";
   int retval = _spawnlp(_P_DETACH, "pview",
                         "pview", pview_args.c_str(), quoted.c_str(), nullptr);
@@ -242,7 +242,7 @@ convert(const NodePath &parent, bool animate) {
   // Accept relative pathnames in the Maya file.
   Filename source_file =
     Filename::from_os_specific(MFileIO::currentFile().asChar());
-  string source_dir = source_file.get_dirname();
+  std::string source_dir = source_file.get_dirname();
   if (!source_dir.empty()) {
     path_replace->_path.append_directory(source_dir);
   }

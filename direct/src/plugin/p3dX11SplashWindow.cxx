@@ -24,6 +24,9 @@
 #include <signal.h>
 #include <stdint.h>
 
+using std::string;
+using std::vector;
+
 /**
  *
  */
@@ -1284,7 +1287,7 @@ scale_image(vector<unsigned char> &image0, int &image0_width, int &image0_height
 
   } else {
     // Yuck, the bad case - we need to scale it down.
-    double scale = min((double)_win_width  / (double)image._width,
+    double scale = std::min((double)_win_width  / (double)image._width,
                        (double)_win_height / (double)image._height);
     image0_width = (int)(image._width * scale);
     image0_height = (int)(image._height * scale);
@@ -1335,8 +1338,8 @@ compose_two_images(vector<unsigned char> &image0, int &image0_width, int &image0
                    const vector<unsigned char> &image1, int image1_width, int image1_height,
                    const vector<unsigned char> &image2, int image2_width, int image2_height) {
   // First, the resulting image size is the larger of the two.
-  image0_width = max(image1_width, image2_width);
-  image0_height = max(image1_height, image2_height);
+  image0_width = std::max(image1_width, image2_width);
+  image0_height = std::max(image1_height, image2_height);
 
   int new_row_stride = image0_width * 4;
   int new_data_length = image0_height * new_row_stride;

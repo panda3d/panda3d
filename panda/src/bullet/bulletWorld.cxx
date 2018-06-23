@@ -19,7 +19,12 @@
 #include "collideMask.h"
 #include "lightMutexHolder.h"
 
-#define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
+#define clamp(x, x_min, x_max) std::max(std::min(x, x_max), x_min)
+
+using std::endl;
+using std::istream;
+using std::ostream;
+using std::string;
 
 TypeHandle BulletWorld::_type_handle;
 
@@ -37,7 +42,7 @@ BulletWorld::
 BulletWorld() {
 
   // Init groups filter matrix
-  for (int i=0; i<32; i++) {
+  for (size_t i = 0; i < 32; ++i) {
     _filter_cb2._collide[i].clear();
     _filter_cb2._collide[i].set_bit(i);
   }
@@ -248,20 +253,20 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 void BulletWorld::
 do_sync_p2b(PN_stdfloat dt, int num_substeps) {
 
-  for (int i=0; i < _bodies.size(); i++) {
-    _bodies[i]->do_sync_p2b();
+  for (BulletRigidBodyNode *body : _bodies) {
+    body->do_sync_p2b();
   }
 
-  for (int i=0; i < _softbodies.size(); i++) {
-    _softbodies[i]->do_sync_p2b();
+  for (BulletSoftBodyNode *softbody : _softbodies) {
+    softbody->do_sync_p2b();
   }
 
-  for (int i=0; i < _ghosts.size(); i++) {
-    _ghosts[i]->do_sync_p2b();
+  for (BulletGhostNode *ghost : _ghosts) {
+    ghost->do_sync_p2b();
   }
 
-  for (int i=0; i < _characters.size(); i++) {
-    _characters[i]->do_sync_p2b(dt, num_substeps);
+  for (BulletBaseCharacterControllerNode *character : _characters) {
+    character->do_sync_p2b(dt, num_substeps);
   }
 }
 
@@ -271,24 +276,24 @@ do_sync_p2b(PN_stdfloat dt, int num_substeps) {
 void BulletWorld::
 do_sync_b2p() {
 
-  for (int i=0; i < _vehicles.size(); i++) {
-    _vehicles[i]->do_sync_b2p();
+  for (BulletRigidBodyNode *body : _bodies) {
+    body->do_sync_b2p();
   }
 
-  for (int i=0; i < _bodies.size(); i++) {
-    _bodies[i]->do_sync_b2p();
+  for (BulletSoftBodyNode *softbody : _softbodies) {
+    softbody->do_sync_b2p();
   }
 
-  for (int i=0; i < _softbodies.size(); i++) {
-    _softbodies[i]->do_sync_b2p();
+  for (BulletGhostNode *ghost : _ghosts) {
+    ghost->do_sync_b2p();
   }
 
-  for (int i=0; i < _ghosts.size(); i++) {
-    _ghosts[i]->do_sync_b2p();
+  for (BulletBaseCharacterControllerNode *character : _characters) {
+    character->do_sync_b2p();
   }
 
-  for (int i=0; i < _characters.size(); i++) {
-    _characters[i]->do_sync_b2p();
+  for (BulletVehicle *vehicle : _vehicles) {
+    vehicle->do_sync_b2p();
   }
 }
 
@@ -942,7 +947,9 @@ ray_test_all(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &
 }
 
 /**
- *
+ * Performs a sweep test against all other shapes that match the given group
+ * mask.  The provided shape must be a convex shape; it is an error to invoke
+ * this method using a non-convex shape.
  */
 BulletClosestHitSweepResult BulletWorld::
 sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const TransformState &to_ts, const CollideMask &mask, PN_stdfloat penetration) const {
@@ -1268,7 +1275,7 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
 
 // cout << mask0 << "   " << mask1 << endl;
 
-  for (int i=0; i<32; i++) {
+  for (size_t i = 0; i < 32; ++i) {
     if (mask0.get_bit(i)) {
       if ((_collide[i] & mask1) != 0)
 // cout << "collide: i=" << i << " _collide[i]" << _collide[i] << endl;

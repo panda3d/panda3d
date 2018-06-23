@@ -19,6 +19,8 @@
 
 #include <math.h>
 
+using std::string;
+
 /**
  *
  */
@@ -151,7 +153,7 @@ get_element_divisor(int n) const {
  *
  */
 void DCAtomicField::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   out << _name << "(";
 
   if (!_elements.empty()) {
@@ -174,7 +176,7 @@ output(ostream &out, bool brief) const {
  * stream.
  */
 void DCAtomicField::
-write(ostream &out, bool brief, int indent_level) const {
+write(std::ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   output(out, brief);
   out << ";";
@@ -270,7 +272,7 @@ do_check_match_atomic_field(const DCAtomicField *other) const {
  *
  */
 void DCAtomicField::
-output_element(ostream &out, bool brief, DCParameter *element) const {
+output_element(std::ostream &out, bool brief, DCParameter *element) const {
   element->output(out, brief);
 
   if (!brief && element->has_default_value()) {

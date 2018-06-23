@@ -42,6 +42,7 @@ public:
   virtual bool is_trivial() const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
   virtual bool is_equivalent(const CPPType &other) const;
 
   virtual void output(std::ostream &out, int indent_level, CPPScope *scope,

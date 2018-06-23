@@ -22,7 +22,7 @@ TypeHandle MouseWatcherRegion::_type_handle;
  *
  */
 void MouseWatcherRegion::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << " lrbt = " << _frame;
 }
 
@@ -30,7 +30,7 @@ output(ostream &out) const {
  *
  */
 void MouseWatcherRegion::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_name() << " lrbt = " << _frame
     << ", sort = " << _sort << "\n";

@@ -23,7 +23,7 @@
  * disk.  Generally, the filename is understood as a physical file on disk,
  * and not to be looked up via the vfs.
  */
-class EXPCL_PANDAEXPRESS SubfileInfo {
+class EXPCL_PANDA_EXPRESS SubfileInfo {
 PUBLISHED:
   INLINE SubfileInfo();
   INLINE explicit SubfileInfo(const FileReference *file, std::streampos start, std::streamsize size);

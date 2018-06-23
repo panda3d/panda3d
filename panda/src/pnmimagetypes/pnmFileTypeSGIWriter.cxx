@@ -49,6 +49,8 @@
 #define MAXVAL_BYTE     255
 #define MAXVAL_WORD     65535
 
+using std::ostream;
+
 inline void
 put_byte(ostream *out_file, unsigned char b) {
   out_file->put(b);

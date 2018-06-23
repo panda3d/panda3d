@@ -23,7 +23,7 @@
 /**
  * Maps a Multifile's contents into the VirtualFileSystem.
  */
-class EXPCL_PANDAEXPRESS VirtualFileMountMultifile : public VirtualFileMount {
+class EXPCL_PANDA_EXPRESS VirtualFileMountMultifile : public VirtualFileMount {
 PUBLISHED:
   INLINE VirtualFileMountMultifile(Multifile *multifile);
   virtual ~VirtualFileMountMultifile();
@@ -36,7 +36,7 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
 
   virtual bool read_file(const Filename &file, bool do_uncompress,
-                         pvector<unsigned char> &result) const;
+                         vector_uchar &result) const;
 
   virtual std::istream *open_read_file(const Filename &file) const;
   virtual std::streamsize get_file_size(const Filename &file, std::istream *stream) const;

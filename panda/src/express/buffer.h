@@ -21,7 +21,7 @@
 /**
  *
  */
-class EXPCL_PANDAEXPRESS Buffer : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS Buffer : public ReferenceCount {
 public:
   Buffer(int size);
   ~Buffer();

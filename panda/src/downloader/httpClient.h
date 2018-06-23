@@ -53,7 +53,7 @@ class HTTPChannel;
  * There is a default, global HTTPClient available in
  * HTTPClient::get_global_ptr().
  */
-class EXPCL_PANDAEXPRESS HTTPClient : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER HTTPClient : public ReferenceCount {
 PUBLISHED:
   HTTPClient();
   HTTPClient(const HTTPClient &copy);

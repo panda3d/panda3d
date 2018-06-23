@@ -43,7 +43,7 @@
  * the library is properly initialized in the application, and to provide some
  * hooks into global OpenSSL context data.
  */
-class EXPCL_PANDAEXPRESS OpenSSLWrapper {
+class EXPCL_PANDA_EXPRESS OpenSSLWrapper {
 private:
   OpenSSLWrapper();
   ~OpenSSLWrapper();

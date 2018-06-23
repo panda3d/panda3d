@@ -35,6 +35,10 @@
 #include "audioSound.h"
 #endif
 
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle PGItem::_type_handle;
 PT(TextNode) PGItem::_text_node;
 PGItem *PGItem::_focus_item = nullptr;

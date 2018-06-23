@@ -18,6 +18,8 @@
 #include "string_utils.h"
 #include "partGroup.h"
 
+using std::string;
+
 typedef pset<AnimBundle *> AnimBundles;
 typedef pmap<string, AnimBundles> Anims;
 

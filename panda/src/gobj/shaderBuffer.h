@@ -20,6 +20,7 @@
 #include "geomEnums.h"
 #include "graphicsStateGuardianBase.h"
 #include "factoryParams.h"
+#include "vector_uchar.h"
 
 class BufferContext;
 class PreparedGraphicsObjects;
@@ -35,7 +36,7 @@ PUBLISHED:
   ~ShaderBuffer();
 
   INLINE explicit ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint);
-  INLINE explicit ShaderBuffer(const std::string &name, pvector<unsigned char> initial_data, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage_hint);
 
 public:
   INLINE uint64_t get_data_size_bytes() const;
@@ -59,7 +60,7 @@ PUBLISHED:
 private:
   uint64_t _data_size_bytes;
   UsageHint _usage_hint;
-  pvector<unsigned char> _initial_data;
+  vector_uchar _initial_data;
 
   typedef pmap<PreparedGraphicsObjects *, BufferContext *> Contexts;
   Contexts *_contexts;

@@ -20,13 +20,13 @@ TypeHandle ShowInterval::_type_handle;
  *
  */
 ShowInterval::
-ShowInterval(const NodePath &node, const string &name) :
+ShowInterval(const NodePath &node, const std::string &name) :
   CInterval(name, 0.0, true),
   _node(node)
 {
   nassertv(!node.is_empty());
   if (_name.empty()) {
-    ostringstream name_strm;
+    std::ostringstream name_strm;
     name_strm
       << "ShowInterval-" << node.node()->get_name() << "-" << ++_unique_index;
     _name = name_strm.str();

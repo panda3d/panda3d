@@ -139,7 +139,7 @@ class EggBinMaker;
  * This is just an STL function object, used to sort nodes within EggBinMaker.
  * It's part of the private interface; ignore it.
  */
-class EXPCL_PANDAEGG EggBinMakerCompareNodes {
+class EXPCL_PANDA_EGG EggBinMakerCompareNodes {
 public:
   EggBinMakerCompareNodes() {
     // We need to have a default constructor to compile, but it should never
@@ -158,7 +158,7 @@ public:
  * abstract class; to use it you must subclass off of it.  See the somewhat
  * lengthy comment above.
  */
-class EXPCL_PANDAEGG EggBinMaker : public EggObject {
+class EXPCL_PANDA_EGG EggBinMaker : public EggObject {
 PUBLISHED:
   EggBinMaker();
   ~EggBinMaker();

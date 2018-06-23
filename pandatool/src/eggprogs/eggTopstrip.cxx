@@ -185,14 +185,14 @@ run() {
  */
 void EggTopstrip::
 check_transform_channels() {
-  static string expected = "ijkphrxyz";
+  static std::string expected = "ijkphrxyz";
   static const int num_channels = 9;
   bool has_each[num_channels];
   memset(has_each, 0, num_channels * sizeof(bool));
 
   for (size_t p = 0; p < _transform_channels.size(); p++) {
     int i = expected.find(_transform_channels[p]);
-    if (i == (int)string::npos) {
+    if (i == (int)std::string::npos) {
       nout << "Invalid letter for -s: " << _transform_channels[p] << "\n";
       exit(1);
     }
@@ -235,7 +235,7 @@ strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
       int num_into_frames = char_data->get_num_frames(i);
       int num_from_frames = from_char->get_num_frames(model);
 
-      int num_frames = max(num_into_frames, num_from_frames);
+      int num_frames = std::max(num_into_frames, num_from_frames);
 
       EggBackPointer *back = joint_data->get_model(i);
       nassertv(back != nullptr);

@@ -51,6 +51,6 @@ post_load(Texture *tex) {
  *
  */
 void TexturePoolFilter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }

@@ -23,6 +23,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 static const int current_pstat_major_version = 3;
 static const int current_pstat_minor_version = 0;
 // Initialized at 2.0 on 51801, when version numbers were first added.

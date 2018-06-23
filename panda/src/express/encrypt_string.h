@@ -22,25 +22,25 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS std::string
+EXPCL_PANDA_EXPRESS std::string
 encrypt_string(const std::string &source, const std::string &password,
                const std::string &algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
-EXPCL_PANDAEXPRESS std::string
+EXPCL_PANDA_EXPRESS std::string
 decrypt_string(const std::string &source, const std::string &password);
 
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 encrypt_file(const Filename &source, const Filename &dest, const std::string &password,
              const std::string &algorithm = std::string(), int key_length = -1,
              int iteration_count = -1);
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decrypt_file(const Filename &source, const Filename &dest, const std::string &password);
 
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 encrypt_stream(std::istream &source, std::ostream &dest, const std::string &password,
                const std::string &algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decrypt_stream(std::istream &source, std::ostream &dest, const std::string &password);
 
 END_PUBLISH

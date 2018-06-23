@@ -30,7 +30,7 @@ extern "C" {
 
 TypeHandle WebcamVideoCursorV4L::_type_handle;
 
-#define clamp(x) min(max(x, 0.0), 255.0)
+#define clamp(x) std::min(std::max(x, 0.0), 255.0)
 
 INLINE static void yuv_to_bgr(unsigned char *dest, const unsigned char *src) {
   double y1 = (255 / 219.0) * (src[0] - 16);

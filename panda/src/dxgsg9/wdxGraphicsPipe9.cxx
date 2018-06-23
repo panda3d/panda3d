@@ -17,6 +17,8 @@
 #include "wdxGraphicsBuffer9.h"
 #include "config_dxgsg9.h"
 
+using std::endl;
+
 TypeHandle wdxGraphicsPipe9::_type_handle;
 
 static bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {
@@ -60,7 +62,7 @@ wdxGraphicsPipe9::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string wdxGraphicsPipe9::
+std::string wdxGraphicsPipe9::
 get_interface_name() const {
   return "DirectX9";
 }
@@ -78,7 +80,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) wdxGraphicsPipe9::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

@@ -21,6 +21,9 @@
 #include "stackedPerlinNoise2.h"
 #include <algorithm>
 
+using std::max;
+using std::min;
+
 /**
  *
  */
@@ -295,10 +298,10 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
  * Returns true if successful, false on error.
  */
 bool PNMImage::
-read(istream &data, const string &filename, PNMFileType *type,
+read(std::istream &data, const std::string &filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
-    (&data, false, filename, string(), type, report_unknown_type);
+    (&data, false, filename, std::string(), type, report_unknown_type);
   if (reader == nullptr) {
     clear();
     return false;
@@ -402,7 +405,7 @@ write(const Filename &filename, PNMFileType *type) const {
  * write.
  */
 bool PNMImage::
-write(ostream &data, const string &filename, PNMFileType *type) const {
+write(std::ostream &data, const std::string &filename, PNMFileType *type) const {
   if (!is_valid()) {
     return false;
   }

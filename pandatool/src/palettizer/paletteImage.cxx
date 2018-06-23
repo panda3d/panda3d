@@ -476,7 +476,7 @@ resize_swapped_image(int x_size, int y_size) {
  * indicated output stream, one per line.
  */
 void PaletteImage::
-write_placements(ostream &out, int indent_level) const {
+write_placements(std::ostream &out, int indent_level) const {
   Placements::const_iterator pi;
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
@@ -712,9 +712,9 @@ bool PaletteImage::
 setup_filename() {
   // Build up the basename for the palette image, based on the supplied image
   // pattern.
-  _basename = string();
+  _basename = std::string();
 
-  string::iterator si = pal->_generated_image_pattern.begin();
+  std::string::iterator si = pal->_generated_image_pattern.begin();
   while (si != pal->_generated_image_pattern.end()) {
     if ((*si) == '%') {
       // Some keycode.
@@ -800,7 +800,7 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       }
 
       next_x = overlap->get_placed_x() + overlap->get_placed_x_size();
-      next_y = min(next_y, overlap->get_placed_y() + overlap->get_placed_y_size());
+      next_y = std::min(next_y, overlap->get_placed_y() + overlap->get_placed_y_size());
       nassertr(next_x > x, false);
       x = next_x;
     }

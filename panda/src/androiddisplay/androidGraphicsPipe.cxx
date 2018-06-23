@@ -68,7 +68,7 @@ AndroidGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string AndroidGraphicsPipe::
+std::string AndroidGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }
@@ -99,7 +99,7 @@ AndroidGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) AndroidGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

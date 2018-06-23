@@ -22,12 +22,13 @@
 #include "datagramIterator.h"
 #include "streamWriter.h"
 #include "streamReader.h"
+#include "vector_uchar.h"
 
 /**
  * Stores a 128-bit value that represents the hashed contents (typically MD5)
  * of a file or buffer.
  */
-class EXPCL_PANDAEXPRESS HashVal {
+class EXPCL_PANDA_EXPRESS HashVal {
 PUBLISHED:
   INLINE HashVal();
   INLINE HashVal(const HashVal &copy);
@@ -68,7 +69,7 @@ PUBLISHED:
   bool hash_stream(std::istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
   INLINE void hash_string(const std::string &data);
-  INLINE void hash_bytes(const pvector<unsigned char> &data);
+  INLINE void hash_bytes(const vector_uchar &data);
   void hash_buffer(const char *buffer, int length);
 #endif  // HAVE_OPENSSL
 

@@ -32,6 +32,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */
@@ -424,7 +426,7 @@ run() {
           _bg[0], _bg[1], _bg[2], _bg[3],
           _palette_size[0], _palette_size[1],
           100.0 / _palettize_scale_factor);
-  istringstream txa_script(buffer);
+  std::istringstream txa_script(buffer);
   pal->read_txa_file(txa_script, "default script");
 
   pal->all_params_set();

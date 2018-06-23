@@ -22,7 +22,7 @@
 /**
  * Pure virtual, parent to noiseForce and jitterForce
  */
-class EXPCL_PANDAPHYSICS LinearRandomForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearRandomForce : public LinearForce {
 PUBLISHED:
   virtual ~LinearRandomForce();
 

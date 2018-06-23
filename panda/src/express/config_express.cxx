@@ -36,8 +36,8 @@
 #include "dconfig.h"
 #include "streamWrapper.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAEXPRESS)
-  #error Buildsystem error: BUILDING_PANDAEXPRESS not defined
+#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_EXPRESS)
+  #error Buildsystem error: BUILDING_PANDA_EXPRESS not defined
 #endif
 
 ConfigureDef(config_express);

@@ -29,7 +29,7 @@
  * A cookie sent from an HTTP server to be stored on the client and returned
  * when the path and/or domain matches.
  */
-class EXPCL_PANDAEXPRESS HTTPCookie {
+class EXPCL_PANDA_DOWNLOADER HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie();
   INLINE explicit HTTPCookie(const std::string &format, const URLSpec &url);

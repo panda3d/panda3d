@@ -16,6 +16,10 @@
 #include "string_utils.h"
 #include "pnotify.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle EggRenderMode::_type_handle;
 
 /**

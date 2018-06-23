@@ -89,7 +89,7 @@ get_test_pcollector() {
  *
  */
 void CollisionPlane::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cplane, (" << _plane << ")";
 }
 
@@ -397,7 +397,7 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
       if (t2 >= parabola->get_t1() && t2 <= parabola->get_t2()) {
         // Both intersection points are within our segment of the parabola.
         // Choose the first of the two.
-        t = min(t1, t2);
+        t = std::min(t1, t2);
       } else {
         // Only t1 is within our segment.
         t = t1;

@@ -23,7 +23,7 @@
  * EggGroup nodes.  It's not called automatically; you must invoke it yourself
  * if you want it.
  */
-class EXPCL_PANDAEGG EggGroupUniquifier : public EggNameUniquifier {
+class EXPCL_PANDA_EGG EggGroupUniquifier : public EggNameUniquifier {
 PUBLISHED:
   explicit EggGroupUniquifier(bool filter_names = true);
 

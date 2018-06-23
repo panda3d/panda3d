@@ -28,7 +28,7 @@ AwWebView::
 
 
 void AwWebView::
-loadURL2(const string& url, const string& frameName , const string& username , const string& password )
+loadURL2(const std::string& url, const std::string& frameName , const std::string& username , const std::string& password )
 {
   _myWebView->loadURL2(url, frameName, username, password);
 

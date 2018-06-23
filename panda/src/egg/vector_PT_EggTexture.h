@@ -28,8 +28,8 @@
  * file, rather than defining the vector again.
  */
 
-#define EXPCL EXPCL_PANDAEGG
-#define EXPTP EXPTP_PANDAEGG
+#define EXPCL EXPCL_PANDA_EGG
+#define EXPTP EXPTP_PANDA_EGG
 #define TYPE PT_EggTexture
 #define NAME vector_PT_EggTexture
 

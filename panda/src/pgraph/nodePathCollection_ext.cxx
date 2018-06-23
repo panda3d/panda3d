@@ -48,9 +48,9 @@ __init__(PyObject *self, PyObject *sequence) {
     NodePath *path;
     if (!DtoolInstance_GetPointer(item, path, Dtool_NodePath)) {
       // Unable to add item--probably it wasn't of the appropriate type.
-      ostringstream stream;
+      std::ostringstream stream;
       stream << "Element " << i << " in sequence passed to NodePathCollection constructor is not a NodePath";
-      string str = stream.str();
+      std::string str = stream.str();
       PyErr_SetString(PyExc_TypeError, str.c_str());
       Py_DECREF(fast);
       return;

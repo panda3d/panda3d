@@ -23,7 +23,7 @@
  * which include several component triangles, each of which might have its own
  * color and/or normal.
  */
-class EXPCL_PANDAEGG EggCompositePrimitive : public EggPrimitive {
+class EXPCL_PANDA_EGG EggCompositePrimitive : public EggPrimitive {
 PUBLISHED:
   INLINE explicit EggCompositePrimitive(const std::string &name = "");
   INLINE EggCompositePrimitive(const EggCompositePrimitive &copy);

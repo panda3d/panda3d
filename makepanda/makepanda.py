@@ -15,9 +15,11 @@ try:
         import queue
     else:
         import Queue as queue
+except KeyboardInterrupt:
+    raise
 except:
     print("You are either using an incomplete or an old version of Python!")
-    print("Please install the development package of Python 2.x and try again.")
+    print("Please install the development package of Python and try again.")
     exit(1)
 
 from makepandacore import *

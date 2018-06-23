@@ -20,6 +20,13 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::istream;
+using std::istringstream;
+using std::move;
+using std::ostream;
+using std::string;
+
 // Defines
 
 // Written at the top of the file so we know this is a downloadDb

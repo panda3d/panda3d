@@ -22,7 +22,7 @@
 /**
  * A list of VirtualFiles, as returned by VirtualFile::scan_directory().
  */
-class EXPCL_PANDAEXPRESS VirtualFileList : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS VirtualFileList : public ReferenceCount {
 public:
   INLINE VirtualFileList();
 

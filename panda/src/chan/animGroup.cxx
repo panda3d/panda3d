@@ -24,6 +24,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 TypeHandle AnimGroup::_type_handle;
 
 
@@ -179,7 +181,7 @@ get_value_type() const {
  * Writes a one-line description of the group.
  */
 void AnimGroup::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
@@ -187,7 +189,7 @@ output(ostream &out) const {
  * Writes a brief description of the group and all of its descendants.
  */
 void AnimGroup::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   if (!_children.empty()) {
     out << " {\n";
@@ -201,7 +203,7 @@ write(ostream &out, int indent_level) const {
  * Writes a brief description of all of the group's descendants.
  */
 void AnimGroup::
-write_descendants(ostream &out, int indent_level) const {
+write_descendants(std::ostream &out, int indent_level) const {
   Children::const_iterator ci;
 
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -277,7 +279,7 @@ complete_pointers(TypedWritable **p_list, BamReader *) {
   for (int i = 1; i < _num_children+1; i++) {
     if (p_list[i] == TypedWritable::Null) {
       chan_cat->warning() << get_type().get_name()
-                          << " Ignoring null child" << endl;
+                          << " Ignoring null child" << std::endl;
     } else {
       _children.push_back(DCAST(AnimGroup, p_list[i]));
     }

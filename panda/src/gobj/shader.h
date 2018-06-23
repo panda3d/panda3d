@@ -33,6 +33,7 @@
 #include "pta_LVecBase2.h"
 #include "epvector.h"
 #include "asyncFuture.h"
+#include "bamCacheRecord.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -41,8 +42,6 @@ typedef struct _CGcontext   *CGcontext;
 typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
-
-class BamCacheRecord;
 
 /**
 
@@ -437,7 +436,7 @@ public:
     ShaderPtrType     _type;
   };
 
-  class ShaderCaps {
+  class EXPCL_PANDA_GOBJ ShaderCaps {
   public:
     void clear();
     INLINE bool operator == (const ShaderCaps &other) const;

@@ -20,7 +20,7 @@
  * Describes a particle that requires representation by a point (pixel,
  * sparkle, billboard)
  */
-class EXPCL_PANDAPHYSICS PointParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM PointParticle : public BaseParticle {
 public:
   PointParticle(PN_stdfloat lifespan = 0.0f, bool alive = false);
   PointParticle(const PointParticle &copy);

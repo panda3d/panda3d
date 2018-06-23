@@ -28,6 +28,19 @@
 
 #include "openSSLWrapper.h"
 
+using std::ios;
+using std::iostream;
+using std::istream;
+using std::max;
+using std::min;
+using std::ostream;
+using std::ostringstream;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
+using std::stringstream;
+using std::string;
+
 // This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char Multifile::_header[] = "pmf\0\n\r";
 const size_t Multifile::_header_size = 6;
@@ -1863,7 +1876,7 @@ read_subfile(int index, string &result) {
   // We use a temporary pvector, because dynamic accumulation of a pvector
   // seems to be many times faster than that of a string, at least on the
   // Windows implementation of STL.
-  pvector<unsigned char> pv;
+  vector_uchar pv;
   if (!read_subfile(index, pv)) {
     return false;
   }
@@ -1879,7 +1892,7 @@ read_subfile(int index, string &result) {
  * Fills a pvector with the entire contents of the indicated subfile.
  */
 bool Multifile::
-read_subfile(int index, pvector<unsigned char> &result) {
+read_subfile(int index, vector_uchar &result) {
   nassertr(is_read_valid(), false);
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   result.clear();
@@ -1997,7 +2010,7 @@ add_new_subfile(Subfile *subfile, int compression_level) {
     _needs_repack = true;
   }
 
-  pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
+  std::pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
   if (!insert_result.second) {
     // Hmm, unable to insert.  There must already be a subfile by that name.
     // Remove the old one.
@@ -2388,7 +2401,7 @@ check_signatures() {
     size_t num_certs = reader.get_uint32();
 
     // Read the remaining buffer of certificate data.
-    pvector<unsigned char> buffer;
+    vector_uchar buffer;
     bool success = VirtualFile::simple_read_file(stream, buffer);
     nassertv(success);
     close_read_subfile(stream);

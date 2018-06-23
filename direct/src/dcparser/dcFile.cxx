@@ -28,6 +28,9 @@
 #include "configVariableList.h"
 #endif
 
+using std::cerr;
+using std::string;
+
 
 /**
  *
@@ -122,7 +125,7 @@ read(Filename filename) {
 #ifdef WITHIN_PANDA
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
+  std::istream *in = vfs->open_read_file(filename, true);
   if (in == nullptr) {
     cerr << "Cannot open " << filename << " for reading.\n";
     return false;
@@ -163,7 +166,7 @@ read(Filename filename) {
  * (in which case the file might have been partially read).
  */
 bool DCFile::
-read(istream &in, const string &filename) {
+read(std::istream &in, const string &filename) {
   cerr << "DCFile::read of " << filename << "\n";
   dc_init_parser(in, filename, *this);
   dcyyparse();
@@ -203,7 +206,7 @@ write(Filename filename, bool brief) const {
  * Returns true if the description is successfully written, false otherwise.
  */
 bool DCFile::
-write(ostream &out, bool brief) const {
+write(std::ostream &out, bool brief) const {
   if (!_imports.empty()) {
     Imports::const_iterator ii;
     for (ii = _imports.begin(); ii != _imports.end(); ++ii) {

@@ -15,6 +15,10 @@
 
 #include <ctype.h>
 
+using std::setfill;
+using std::setw;
+using std::string;
+
 static const int num_weekdays = 7;
 static const char * const weekdays[num_weekdays] = {
   "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
@@ -245,7 +249,7 @@ get_string() const {
 
   struct tm *tp = gmtime(&_time);
 
-  ostringstream result;
+  std::ostringstream result;
   result
     << weekdays[tp->tm_wday] << ", "
     << setw(2) << setfill('0') << tp->tm_mday << " "
@@ -263,7 +267,7 @@ get_string() const {
  *
  */
 bool HTTPDate::
-input(istream &in) {
+input(std::istream &in) {
   (*this) = HTTPDate();
 
   // Extract out the quoted date string.
@@ -294,7 +298,7 @@ input(istream &in) {
  *
  */
 void HTTPDate::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // We put quotes around the string on output, so we can reliably detect the
   // end of the date string on input, above.
   out << '"' << get_string() << '"';

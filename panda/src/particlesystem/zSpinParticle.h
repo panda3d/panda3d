@@ -22,7 +22,7 @@
  * your sprites to spin without having them be full-blown oriented (i.e.
  * angry quat math), use this.
  */
-class EXPCL_PANDAPHYSICS ZSpinParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM ZSpinParticle : public BaseParticle {
 public:
   ZSpinParticle();
   ZSpinParticle(const ZSpinParticle &copy);

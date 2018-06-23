@@ -161,7 +161,7 @@ protected:
   typedef pvector<Switch> SwitchVector;
 
 private:
-  class EXPCL_PANDA_PGRAPH CData : public CycleData {
+  class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

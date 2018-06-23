@@ -18,6 +18,11 @@
 #include "pvector.h"
 #include <iterator>
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFile::_type_handle;
 
 /**
@@ -284,7 +289,7 @@ close_read_write_file(iostream *stream) {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFile::
+std::streamsize VirtualFile::
 get_file_size(istream *stream) const {
   return get_file_size();
 }
@@ -293,7 +298,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFile::
+std::streamsize VirtualFile::
 get_file_size() const {
   return 0;
 }
@@ -351,7 +356,7 @@ bool VirtualFile::
 read_file(string &result, bool auto_unwrap) const {
   result = string();
 
-  pvector<unsigned char> pv;
+  vector_uchar pv;
   if (!read_file(pv, auto_unwrap)) {
     return false;
   }
@@ -368,7 +373,7 @@ read_file(string &result, bool auto_unwrap) const {
  * regular file.  Returns true on success, false otherwise.
  */
 bool VirtualFile::
-read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(vector_uchar &result, bool auto_unwrap) const {
   return false;
 }
 
@@ -387,7 +392,7 @@ write_file(const unsigned char *data, size_t data_size, bool auto_wrap) {
  * entry, the data read from the file will be appended onto it.
  */
 bool VirtualFile::
-simple_read_file(istream *in, pvector<unsigned char> &result) {
+simple_read_file(istream *in, vector_uchar &result) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
@@ -408,18 +413,18 @@ simple_read_file(istream *in, pvector<unsigned char> &result) {
  * max_bytes bytes from the file.
  */
 bool VirtualFile::
-simple_read_file(istream *in, pvector<unsigned char> &result, size_t max_bytes) {
+simple_read_file(istream *in, vector_uchar &result, size_t max_bytes) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  in->read(buffer, min(buffer_size, max_bytes));
+  in->read(buffer, std::min(buffer_size, max_bytes));
   size_t count = in->gcount();
   while (count != 0) {
     thread_consider_yield();
     nassertr(count <= max_bytes, false);
     result.insert(result.end(), buffer, buffer + count);
     max_bytes -= count;
-    in->read(buffer, min(buffer_size, max_bytes));
+    in->read(buffer, std::min(buffer_size, max_bytes));
     count = in->gcount();
   }
 

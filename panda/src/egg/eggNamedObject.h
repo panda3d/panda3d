@@ -23,7 +23,7 @@
 /**
  * This is a fairly low-level base class--any egg object that has a name.
  */
-class EXPCL_PANDAEGG EggNamedObject : public EggObject, public Namable {
+class EXPCL_PANDA_EGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
   INLINE explicit EggNamedObject(const std::string &name = "");
   INLINE EggNamedObject(const EggNamedObject &copy);

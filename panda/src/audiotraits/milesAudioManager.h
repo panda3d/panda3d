@@ -28,6 +28,7 @@
 #include "pmutex.h"
 #include "lightReMutex.h"
 #include "conditionVar.h"
+#include "vector_uchar.h"
 
 class MilesAudioSound;
 
@@ -126,7 +127,7 @@ private:
 
     Filename _basename;
     S32 _file_type;
-    pvector<unsigned char> _raw_data;
+    vector_uchar _raw_data;
     bool _has_length;
     PN_stdfloat _length;  // in seconds.
   };

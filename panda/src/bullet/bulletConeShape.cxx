@@ -35,7 +35,7 @@ BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     _shape = new btConeShapeZ((btScalar)radius, (btScalar)height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << up << std::endl;
     break;
   }
 
@@ -65,7 +65,7 @@ BulletConeShape(const BulletConeShape &copy) {
     _shape = new btConeShapeZ((btScalar)_radius, (btScalar)_height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 
@@ -150,7 +150,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btConeShapeZ((btScalar)_radius, (btScalar)_height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 

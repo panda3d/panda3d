@@ -14,6 +14,8 @@
 #include "p3dFileParams.h"
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */

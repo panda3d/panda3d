@@ -35,7 +35,7 @@
  * A Datagram is itself headerless; it is simply a collection of data
  * elements.
  */
-class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
+class EXPCL_PANDA_EXPRESS Datagram : public TypedObject {
 PUBLISHED:
   INLINE Datagram();
   INLINE Datagram(const void *data, size_t size);

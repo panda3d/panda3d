@@ -374,7 +374,7 @@ void MeshDrawer::geometry(NodePath draw_node) {
       CPT(GeomVertexData) v_data = geom->get_vertex_data();
       GeomVertexReader *prim_vertex_reader = new GeomVertexReader(v_data, "vertex");
       GeomVertexReader *prim_uv_reader = new GeomVertexReader(v_data, "texcoord");
-      for(int k=0; k <geom->get_num_primitives(); k++) {
+      for (size_t k = 0; k < geom->get_num_primitives(); ++k) {
         CPT(GeomPrimitive) prim1 = geom->get_primitive(k);
         CPT(GeomPrimitive) _prim  = prim1->decompose();
 

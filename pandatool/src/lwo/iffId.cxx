@@ -19,7 +19,7 @@
  *
  */
 void IffId::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // If all of the characters are printable, just output them.
   if (isprint(_id._c[0]) && isprint(_id._c[1]) &&
       isprint(_id._c[2]) && isprint(_id._c[3])) {
@@ -32,10 +32,10 @@ output(ostream &out) const {
 
   } else {
     // Otherwise, write out the hex.
-    out << "0x" << hex << setfill('0');
+    out << "0x" << std::hex << std::setfill('0');
     for (int i = 0; i < 4; i++) {
-      out << setw(2) << (int)(unsigned char)_id._c[i];
+      out << std::setw(2) << (int)(unsigned char)_id._c[i];
     }
-    out << dec << setfill(' ');
+    out << std::dec << std::setfill(' ');
   }
 }

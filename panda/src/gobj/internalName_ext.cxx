@@ -13,6 +13,8 @@
 
 #include "internalName_ext.h"
 
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 /**

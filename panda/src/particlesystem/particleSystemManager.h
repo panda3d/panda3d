@@ -24,7 +24,7 @@
  * one doesn't have to be updated and rendered every frame See Also :
  * particleSystemManager.cxx
  */
-class EXPCL_PANDAPHYSICS ParticleSystemManager {
+class EXPCL_PANDA_PARTICLESYSTEM ParticleSystemManager {
 PUBLISHED:
   explicit ParticleSystemManager(int every_nth_frame = 1);
   virtual ~ParticleSystemManager();

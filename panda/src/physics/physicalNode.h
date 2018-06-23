@@ -25,7 +25,7 @@
 /**
  * Graph node that encapsulated a series of physical objects
  */
-class EXPCL_PANDAPHYSICS PhysicalNode : public PandaNode {
+class EXPCL_PANDA_PHYSICS PhysicalNode : public PandaNode {
 PUBLISHED:
   explicit PhysicalNode(const std::string &name);
   INLINE void clear();

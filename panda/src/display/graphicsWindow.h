@@ -83,7 +83,7 @@ PUBLISHED:
   // Mouse and keyboard routines
   int get_num_input_devices() const;
   InputDevice *get_input_device(int i) const;
-  string get_input_device_name(int device) const;
+  std::string get_input_device_name(int device) const;
   MAKE_SEQ(get_input_devices, get_num_input_devices, get_input_device);
   MAKE_SEQ(get_input_device_names, get_num_input_devices, get_input_device_name);
   bool has_pointer(int device) const;
@@ -95,7 +95,7 @@ PUBLISHED:
   /*void enable_pointer_mode(int device, double speed);
   void disable_pointer_mode(int device);*/
 
-  MouseData get_pointer(int device) const;
+  virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 

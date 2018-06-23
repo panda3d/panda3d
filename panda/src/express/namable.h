@@ -23,7 +23,7 @@
  * A base class for all things which can have a name.  The name is either
  * empty or nonempty, but it is never NULL.
  */
-class EXPCL_PANDAEXPRESS Namable : public MemoryBase {
+class EXPCL_PANDA_EXPRESS Namable : public MemoryBase {
 PUBLISHED:
   INLINE explicit Namable(const std::string &initial_name = "");
 

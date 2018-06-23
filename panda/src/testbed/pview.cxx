@@ -29,6 +29,9 @@
 #include "asyncTask.h"
 #include "boundingSphere.h"
 
+using std::cerr;
+using std::endl;
+
 PandaFramework framework;
 
 ConfigVariableBool pview_test_hack
@@ -237,7 +240,7 @@ report_version() {
 //
 class AdjustCameraClipPlanesTask : public AsyncTask {
 public:
-  AdjustCameraClipPlanesTask(const string &name, Camera *camera) :
+  AdjustCameraClipPlanesTask(const std::string &name, Camera *camera) :
     AsyncTask(name), _camera(camera), _lens(camera->get_lens(0)), _sphere(nullptr)
   {
     NodePath np = framework.get_models();
@@ -317,12 +320,12 @@ public:
 
     // Ensure the far plane is far enough back to see the entire object.
     PN_stdfloat ideal_far_plane = distance + radius * 1.5;
-    _lens->set_far(max(_lens->get_default_far(), ideal_far_plane));
+    _lens->set_far(std::max(_lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward, but if inside
     // the sphere, keep above 0.
-    PN_stdfloat ideal_near_plane = max(min_distance * 10, distance - radius);
-    _lens->set_near(min(_lens->get_default_near(), ideal_near_plane));
+    PN_stdfloat ideal_near_plane = std::max(min_distance * 10, distance - radius);
+    _lens->set_near(std::min(_lens->get_default_near(), ideal_near_plane));
 
     return DS_cont;
   }

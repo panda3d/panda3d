@@ -17,9 +17,9 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl( osxdisplay , EXPCL_PANDAGL, EXPTP_PANDAGL);
+NotifyCategoryDecl( osxdisplay , EXPCL_PANDA_OSXDISPLAY, EXPTP_PANDA_OSXDISPLAY);
 
-extern EXPCL_PANDAGL void init_libosxdisplay();
+extern EXPCL_PANDA_OSXDISPLAY void init_libosxdisplay();
 
 extern ConfigVariableBool show_resize_box;
 extern ConfigVariableBool osx_support_gl_buffer;

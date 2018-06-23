@@ -144,7 +144,7 @@ run() {
  * Interprets the -chan parameter.
  */
 bool ImageTrans::
-dispatch_channels(const string &opt, const string &arg, void *var) {
+dispatch_channels(const std::string &opt, const std::string &arg, void *var) {
   Channels *ip = (Channels *)var;
   if (cmp_nocase(arg, "l") == 0) {
     (*ip) = C_l;

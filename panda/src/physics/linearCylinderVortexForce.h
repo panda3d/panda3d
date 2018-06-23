@@ -23,7 +23,7 @@
  * warned- this will suck anything that it can reach directly into orbit and
  * will NOT let go.
  */
-class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearCylinderVortexForce : public LinearForce {
 PUBLISHED:
   explicit LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
                                      PN_stdfloat length = 0.0f,

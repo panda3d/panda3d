@@ -15,6 +15,9 @@
 // #include "expand.h"
 #include <string>
 
+using std::cout;
+using std::endl;
+
 void TestSearch()
 {
    std::string line, path;

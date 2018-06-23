@@ -19,6 +19,8 @@
 #include "config_display.h"
 #include "nativeWindowHandle.h"
 
+using std::string;
+
 TypeHandle SubprocessWindow::_type_handle;
 
 /**

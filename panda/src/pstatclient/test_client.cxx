@@ -85,7 +85,7 @@ public:
 
 int
 main(int argc, char *argv[]) {
-  string hostname = "localhost";
+  std::string hostname = "localhost";
   int port = pstats_port;
 
   if (argc > 1) {

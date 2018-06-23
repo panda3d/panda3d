@@ -18,7 +18,7 @@
  *
  */
 DXFLayer::
-DXFLayer(const string &name) : Namable(name) {
+DXFLayer(const std::string &name) : Namable(name) {
 }
 
 /**

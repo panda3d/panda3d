@@ -21,7 +21,7 @@
  * identify a particular version of a document or resource, particularly
  * useful for verifying caches.
  */
-class EXPCL_PANDAEXPRESS HTTPEntityTag {
+class EXPCL_PANDA_DOWNLOADER HTTPEntityTag {
 PUBLISHED:
   INLINE HTTPEntityTag();
   HTTPEntityTag(const std::string &text);

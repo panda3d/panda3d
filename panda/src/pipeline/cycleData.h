@@ -65,6 +65,22 @@ public:
 
   virtual TypeHandle get_parent_type() const;
   virtual void output(std::ostream &out) const;
+
+#ifdef DO_PIPELINING
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+
+  static void init_type() {
+    NodeReferenceCount::init_type();
+    register_type(_type_handle, "CycleData",
+                  NodeReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+#endif
 };
 
 INLINE std::ostream &

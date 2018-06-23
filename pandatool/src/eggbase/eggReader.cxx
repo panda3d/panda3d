@@ -178,7 +178,7 @@ handle_args(ProgramBase::Args &args) {
         exit(1);
       }
     } else {
-      if (!file_data.read(cin)) {
+      if (!file_data.read(std::cin)) {
         exit(1);
       }
     }

@@ -48,7 +48,6 @@ typedef long (__stdcall *CallNtPowerInformationType) (POWER_INFORMATION_LEVEL in
 
 static int initialize = false;
 static HMODULE psapi_dll = 0;
-static HMODULE power_dll = 0;
 static GetProcessMemoryInfoType GetProcessMemoryInfoFunction = 0;
 static CallNtPowerInformationType CallNtPowerInformationFunction = 0;
 

@@ -23,7 +23,7 @@
  * exactly one file on one mount point.  Most directories, and all regular
  * files, are of this kind.
  */
-class EXPCL_PANDAEXPRESS VirtualFileSimple : public VirtualFile {
+class EXPCL_PANDA_EXPRESS VirtualFileSimple : public VirtualFile {
 public:
   INLINE VirtualFileSimple(VirtualFileMount *mount,
                            const Filename &local_filename,
@@ -63,7 +63,7 @@ public:
   virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
   virtual bool atomic_read_contents(std::string &contents) const;
 
-  virtual bool read_file(pvector<unsigned char> &result, bool auto_unwrap) const;
+  virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
   virtual bool write_file(const unsigned char *data, size_t data_size, bool auto_wrap);
 
 protected:

@@ -18,6 +18,9 @@
 #include "dcindent.h"
 #include "dcPacker.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * The key_parameter must be recently allocated via new; it will be deleted
  * via delete when the switch destructs.

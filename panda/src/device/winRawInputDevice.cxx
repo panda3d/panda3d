@@ -238,6 +238,10 @@ WinRawInputDevice::
  */
 bool WinRawInputDevice::
 on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
+  using std::hex;
+  using std::dec;
+  using std::swap;
+
   LightMutexHolder holder(_lock);
 
   _name = move(name);
@@ -661,7 +665,7 @@ on_input(PRAWINPUT input) {
     } else if (device_cat.is_spam()) {
       device_cat.spam()
         << "Failed to get data from raw device " << _path
-        << " (error 0x" << hex << (status & 0xffffffffu) << dec << ")\n";
+        << " (error 0x" << std::hex << (status & 0xffffffffu) << std::dec << ")\n";
     }
 
     ptr += input->data.hid.dwSizeHid;

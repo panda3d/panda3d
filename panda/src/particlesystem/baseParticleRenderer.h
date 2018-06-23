@@ -29,7 +29,7 @@
 /**
  * Pure virtual particle renderer base class
  */
-class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticleRenderer : public ReferenceCount {
 PUBLISHED:
   enum ParticleRendererAlphaMode {
     PR_ALPHA_NONE,

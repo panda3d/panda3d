@@ -131,7 +131,7 @@ read_chars(char *start, size_t length) {
 
     if (_chunk_remaining != 0) {
       // Extract some of the bytes remaining in the chunk.
-      length = min(length, _chunk_remaining);
+      length = std::min(length, _chunk_remaining);
       (*_source)->read(start, length);
       size_t read_count = (*_source)->gcount();
       if (!_wanted_nonblocking) {
@@ -153,7 +153,7 @@ read_chars(char *start, size_t length) {
     }
 
     // Read the next chunk.
-    string line;
+    std::string line;
     bool got_line = http_getline(line);
     while (got_line && line.empty()) {
       // Skip blank lines.  There really should be exactly one blank line, but
@@ -212,7 +212,7 @@ read_chars(char *start, size_t length) {
  * received or if the connection has been closed.
  */
 bool ChunkedStreamBuf::
-http_getline(string &str) {
+http_getline(std::string &str) {
   nassertr(!_source.is_null(), false);
   int ch = (*_source)->get();
   while (!(*_source)->eof() && !(*_source)->fail()) {
@@ -220,7 +220,7 @@ http_getline(string &str) {
     case '\n':
       // end-of-line character, we're done.
       str = _working_getline;
-      _working_getline = string();
+      _working_getline = std::string();
       {
         // Trim trailing whitespace.  We're not required to do this per the
         // HTTP spec, but let's be generous.

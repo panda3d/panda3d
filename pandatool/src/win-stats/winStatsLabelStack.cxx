@@ -61,7 +61,7 @@ setup(HWND parent_window) {
   for (li = _labels.begin(); li != _labels.end(); ++li) {
     WinStatsLabel *label = (*li);
     label->setup(_window);
-    _ideal_width = max(_ideal_width, label->get_ideal_width());
+    _ideal_width = std::max(_ideal_width, label->get_ideal_width());
   }
 }
 
@@ -192,7 +192,7 @@ add_label(WinStatsMonitor *monitor, WinStatsGraph *graph,
     label->setup(_window);
     label->set_pos(0, yp, _width);
   }
-  _ideal_width = max(_ideal_width, label->get_ideal_width());
+  _ideal_width = std::max(_ideal_width, label->get_ideal_width());
 
   int label_index = (int)_labels.size();
   _labels.push_back(label);

@@ -1,3 +1,9 @@
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+
 static void
 FNAME(white_untextured) (ZBuffer *zb,
                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
@@ -32,7 +38,7 @@ FNAME(flat_untextured) (ZBuffer *zb,
                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   UNUSED int color;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 
@@ -160,7 +166,7 @@ FNAME(flat_textured) (ZBuffer *zb,
                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -229,7 +235,7 @@ FNAME(smooth_textured) (ZBuffer *zb,
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      if (c0 == 0xffffffff) {                           \
+      if (c0 == 0xffffffffu) {                          \
         /* Actually, it's a white triangle. */          \
         FNAME(white_textured)(zb, p0, p1, p2);          \
         return;                                         \
@@ -399,7 +405,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
 {
   ZTextureDef *texture_def;
   PN_stdfloat fdzdx,fndzdx,ndszdx,ndtzdx;
-  int or0, og0, ob0, oa0;
+  UNUSED int or0, og0, ob0, oa0;
 
 #define INTERP_Z
 #define INTERP_STZ
@@ -456,7 +462,7 @@ FNAME(flat_perspective) (ZBuffer *zb,
     PIXEL *pp;                                                  \
     int s,t,z,zz;                                               \
     int n,dsdx,dtdx;                                            \
-    int or1,og1,ob1,oa1;                                        \
+    UNUSED int or1,og1,ob1,oa1;                                 \
     PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
     fz=(PN_stdfloat)z1;                                         \
@@ -537,13 +543,13 @@ FNAME(smooth_perspective) (ZBuffer *zb,
 
 #define EARLY_OUT()                                     \
   {                                                     \
-    int c0, c1, c2;                                     \
+    unsigned int c0, c1, c2;                            \
     c0 = RGBA_TO_PIXEL(p0->r, p0->g, p0->b, p0->a);     \
     c1 = RGBA_TO_PIXEL(p1->r, p1->g, p1->b, p1->a);     \
     c2 = RGBA_TO_PIXEL(p2->r, p2->g, p2->b, p2->a);     \
     if (c0 == c1 && c0 == c2) {                         \
       /* It's really a flat-shaded triangle. */         \
-      if (c0 == 0xffffffff) {                           \
+      if (c0 == 0xffffffffu) {                          \
         /* Actually, it's a white triangle. */          \
         FNAME(white_perspective)(zb, p0, p1, p2);       \
         return;                                         \
@@ -596,7 +602,7 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     PIXEL *pp;                                                  \
     int s,t,z,zz;                                               \
     int n,dsdx,dtdx;                                            \
-    int or1,og1,ob1,oa1;                                        \
+    UNUSED int or1,og1,ob1,oa1;                                 \
     PN_stdfloat sz,tz,fz,zinv;                                  \
     n=(x2>>16)-x1;                                              \
     fz=(PN_stdfloat)z1;                                         \
@@ -727,7 +733,7 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
     PIXEL *pp;                                                          \
     int s,t,sa,ta,z,zz;                                                 \
     int n,dsdx,dtdx,dsadx,dtadx;                                        \
-    int or1,og1,ob1,oa1;                                                \
+    UNUSED int or1,og1,ob1,oa1;                                         \
     PN_stdfloat sz,tz,sza,tza,fz,zinv;                                  \
     n=(x2>>16)-x1;                                                      \
     fz=(PN_stdfloat)z1;                                                 \
@@ -888,7 +894,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     PIXEL *pp;                                                          \
     int s,t,sa,ta,sb,tb,z,zz;                                           \
     int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                            \
-    int or1,og1,ob1,oa1;                                                \
+    UNUSED int or1,og1,ob1,oa1;                                         \
     PN_stdfloat sz,tz,sza,tza,szb,tzb,fz,zinv;                          \
     n=(x2>>16)-x1;                                                      \
     fz=(PN_stdfloat)z1;                                                 \
@@ -1008,3 +1014,7 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
 #undef INTERP_MIPMAP
 #undef CALC_MIPMAP_LEVEL
 #undef ZB_LOOKUP_TEXTURE
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif

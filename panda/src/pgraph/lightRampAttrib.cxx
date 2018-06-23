@@ -176,7 +176,7 @@ make_hdr2() {
  *
  */
 void LightRampAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (_mode) {
   case LRT_default:

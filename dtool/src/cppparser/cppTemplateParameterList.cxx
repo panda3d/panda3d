@@ -26,9 +26,9 @@ CPPTemplateParameterList() {
 /**
  *
  */
-string CPPTemplateParameterList::
+std::string CPPTemplateParameterList::
 get_string() const {
-  ostringstream strname;
+  std::ostringstream strname;
   strname << "< " << *this << " >";
   return strname.str();
 }
@@ -197,7 +197,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTemplateParameterList::
-output(ostream &out, CPPScope *scope) const {
+output(std::ostream &out, CPPScope *scope) const {
   if (!_parameters.empty()) {
     Parameters::const_iterator pi = _parameters.begin();
     (*pi)->output(out, 0, scope, false);
@@ -217,7 +217,7 @@ output(ostream &out, CPPScope *scope) const {
  * trailing newline.
  */
 void CPPTemplateParameterList::
-write_formal(ostream &out, CPPScope *scope) const {
+write_formal(std::ostream &out, CPPScope *scope) const {
   out << "template<";
   if (!_parameters.empty()) {
     Parameters::const_iterator pi = _parameters.begin();

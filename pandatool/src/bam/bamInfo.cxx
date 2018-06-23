@@ -234,7 +234,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
   strftime(time_buffer, 1024, "%c",
            localtime(&header->_start_time));
 
-  pset<string> recorders;
+  pset<std::string> recorders;
   double last_timestamp = 0.0;
 
   for (size_t i = 1; i < objects.size(); i++) {
@@ -256,7 +256,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
        << " secs, " << objects.size() - 1 << " frames, "
        << time_buffer << ".\n"
        << "Recorders:";
-  for (pset<string>::iterator ni = recorders.begin();
+  for (pset<std::string>::iterator ni = recorders.begin();
        ni != recorders.end();
        ++ni) {
     nout << " " << (*ni);

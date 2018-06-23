@@ -23,7 +23,7 @@ TypeHandle ButtonNode::_type_handle;
  *
  */
 ButtonNode::
-ButtonNode(ClientBase *client, const string &device_name) :
+ButtonNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
@@ -74,7 +74,7 @@ ButtonNode::
  *
  */
 void ButtonNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   DataNode::output(out);
 
   if (_device != nullptr) {
@@ -88,7 +88,7 @@ output(ostream &out) const {
  *
  */
 void ButtonNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_device != nullptr) {

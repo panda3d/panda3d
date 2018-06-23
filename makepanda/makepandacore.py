@@ -321,8 +321,12 @@ def GetHostArch():
     target = GetTarget()
     if target == 'windows':
         return 'x64' if host_64 else 'x86'
-    else: #TODO
-        return platform.machine()
+
+    machine = platform.machine()
+    if machine.startswith('armv7'):
+        return 'armv7a'
+    else:
+        return machine
 
 def SetTarget(target, arch=None):
     """Sets the target platform; the one we're compiling for.  Also

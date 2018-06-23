@@ -33,6 +33,9 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 
+using std::max;
+using std::min;
+
 PStatCollector CollisionSphere::_volume_pcollector(
   "Collision Volumes:CollisionSphere");
 PStatCollector CollisionSphere::_test_pcollector(
@@ -102,7 +105,7 @@ get_test_pcollector() {
  *
  */
 void CollisionSphere::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "sphere, c (" << get_center() << "), r " << get_radius();
 }
 

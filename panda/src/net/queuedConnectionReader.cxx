@@ -123,7 +123,7 @@ void QueuedConnectionReader::
 start_delay(double min_delay, double max_delay) {
   LightMutexHolder holder(_dd_mutex);
   _min_delay = min_delay;
-  _delay_variance = max(max_delay - min_delay, 0.0);
+  _delay_variance = std::max(max_delay - min_delay, 0.0);
   _delay_active = true;
 }
 

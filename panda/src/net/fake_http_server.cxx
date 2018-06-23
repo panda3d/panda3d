@@ -24,6 +24,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 QueuedConnectionManager cm;
 QueuedConnectionReader reader(&cm, 10);
 ConnectionWriter writer(&cm, 10);
@@ -65,7 +67,7 @@ receive_data(const Datagram &data) {
 
 void ClientState::
 receive_line(string line) {
-  cerr << "received: " << line << "\n";
+  std::cerr << "received: " << line << "\n";
   // trim trailing whitespace.
   size_t size = line.size();
   while (size > 0 && isspace(line[size - 1])) {

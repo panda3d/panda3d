@@ -31,7 +31,7 @@ class Physical;
  * pure virtual integrator class that holds cached matrix information that
  * really should be common to any possible child implementation.
  */
-class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
+class EXPCL_PANDA_PHYSICS BaseIntegrator : public ReferenceCount {
 public:
   typedef epvector<LMatrix4> MatrixVector;
   typedef pvector<PT(LinearForce)> LinearForceVector;

@@ -174,7 +174,7 @@ get_test_pcollector() {
  *
  */
 void CollisionSolid::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -182,7 +182,7 @@ output(ostream &out) const {
  *
  */
 void CollisionSolid::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 

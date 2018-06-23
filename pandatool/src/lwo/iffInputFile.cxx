@@ -51,7 +51,7 @@ open_read(Filename filename) {
   filename.set_binary();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
+  std::istream *in = vfs->open_read_file(filename, true);
   if (in == nullptr) {
     return false;
   }
@@ -68,7 +68,7 @@ open_read(Filename filename) {
  * IffInputFile destructs.
  */
 void IffInputFile::
-set_input(istream *input, bool owns_istream) {
+set_input(std::istream *input, bool owns_istream) {
   if (_owns_istream) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_input);
@@ -174,9 +174,9 @@ get_be_float32() {
 /**
  * Extracts a null-terminated string.
  */
-string IffInputFile::
+std::string IffInputFile::
 get_string() {
-  string result;
+  std::string result;
   char byte;
   while (read_byte(byte)) {
     if (byte == 0) {

@@ -13,6 +13,8 @@
 
 #include "httpEntityTag.h"
 
+using std::string;
+
 
 /**
  * This constructor accepts a string as formatted from an HTTP server (e.g.
@@ -52,7 +54,7 @@ HTTPEntityTag(const string &text) {
  */
 string HTTPEntityTag::
 get_string() const {
-  ostringstream result;
+  std::ostringstream result;
   if (_weak) {
     result << "W/";
   }

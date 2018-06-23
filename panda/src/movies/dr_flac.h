@@ -328,7 +328,9 @@ static drflac* drflac_open_memory(const void* data, size_t dataSize);
 #endif
 
 #ifdef __linux__
+#ifndef _BSD_SOURCE
 #define _BSD_SOURCE
+#endif
 #include <endian.h>
 #endif
 

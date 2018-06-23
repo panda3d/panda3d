@@ -43,7 +43,7 @@ class DSearchPath;
  * to manipulate the list.  The list may also be operated on (read-only) via
  * iterators and begin()/end().
  */
-class EXPCL_PANDAEGG EggGroupNode : public EggNode {
+class EXPCL_PANDA_EGG EggGroupNode : public EggNode {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggGroupNode as an STL

@@ -20,6 +20,8 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
+using std::cerr;
+
 TypeHandle PiecewiseCurve::_type_handle;
 
 /**

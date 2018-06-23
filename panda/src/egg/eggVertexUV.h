@@ -26,7 +26,7 @@
  * multitexturing, there may be multiple sets of UV's on a particular vertex,
  * each with its own name.
  */
-class EXPCL_PANDAEGG EggVertexUV : public EggNamedObject {
+class EXPCL_PANDA_EGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
   explicit EggVertexUV(const std::string &name, const LTexCoordd &uv);
   explicit EggVertexUV(const std::string &name, const LTexCoord3d &uvw);

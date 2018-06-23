@@ -21,6 +21,8 @@
 #include "throw_event.h"
 #include "string_utils.h"
 
+using std::string;
+
 TypeHandle GraphicsWindow::_type_handle;
 
 /**

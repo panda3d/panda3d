@@ -16,6 +16,8 @@
 #include "lens.h"
 #include "throw_event.h"
 
+using std::string;
+
 TypeHandle Camera::_type_handle;
 
 /**
@@ -195,7 +197,7 @@ get_aux_scene_data(const NodePath &node_path) const {
  * Outputs all of the NodePaths and AuxSceneDatas in use.
  */
 void Camera::
-list_aux_scene_data(ostream &out) const {
+list_aux_scene_data(std::ostream &out) const {
   out << _aux_data.size() << " data objects held:\n";
   AuxData::const_iterator ai;
   for (ai = _aux_data.begin(); ai != _aux_data.end(); ++ai) {

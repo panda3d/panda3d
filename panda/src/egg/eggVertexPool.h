@@ -38,7 +38,7 @@
  * list.  The list may also be operated on (read-only) via iterators and
  * begin()/end().
  */
-class EXPCL_PANDAEGG EggVertexPool : public EggNode {
+class EXPCL_PANDA_EGG EggVertexPool : public EggNode {
 
   // This is a bit of private interface stuff that must be here as a forward
   // reference.  This allows us to define the EggVertexPool as an STL

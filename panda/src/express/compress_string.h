@@ -22,20 +22,20 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS std::string
+EXPCL_PANDA_EXPRESS std::string
 compress_string(const std::string &source, int compression_level);
 
-EXPCL_PANDAEXPRESS std::string
+EXPCL_PANDA_EXPRESS std::string
 decompress_string(const std::string &source);
 
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 compress_file(const Filename &source, const Filename &dest, int compression_level);
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decompress_file(const Filename &source, const Filename &dest);
 
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 compress_stream(std::istream &source, std::ostream &dest, int compression_level);
-EXPCL_PANDAEXPRESS bool
+EXPCL_PANDA_EXPRESS bool
 decompress_stream(std::istream &source, std::ostream &dest);
 
 END_PUBLISH

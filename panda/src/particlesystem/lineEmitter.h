@@ -19,7 +19,7 @@
 /**
  * Describes a linear region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM LineEmitter : public BaseParticleEmitter {
 PUBLISHED:
   LineEmitter();
   LineEmitter(const LineEmitter &copy);

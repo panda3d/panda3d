@@ -21,7 +21,7 @@
 /**
  * Repeating noise force vector.
  */
-class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
+class EXPCL_PANDA_PHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
   explicit LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);

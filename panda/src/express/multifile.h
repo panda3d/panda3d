@@ -34,7 +34,7 @@ typedef struct evp_pkey_st EVP_PKEY;
 /**
  * A file that contains a set of files.
  */
-class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();
   Multifile(const Multifile &copy) = delete;
@@ -159,7 +159,7 @@ public:
 #endif  // HAVE_OPENSSL
 
   bool read_subfile(int index, std::string &result);
-  bool read_subfile(int index, pvector<unsigned char> &result);
+  bool read_subfile(int index, vector_uchar &result);
 
 private:
   enum SubfileFlags {

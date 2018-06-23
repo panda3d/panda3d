@@ -19,6 +19,9 @@
 #include "bmp.h"
 #include "pnmbitio.h"
 
+using std::istream;
+using std::string;
+
 // Much code in this file is borrowed from Netpbm, specifically bmptoppm.c.
 /*
  * bmptoppm.c - Converts from a Microsoft Windows or OS/2 .BMP file to a

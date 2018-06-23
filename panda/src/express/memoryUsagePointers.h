@@ -35,7 +35,7 @@
  * This class is just a user interface to talk about pointers stored in a
  * MemoryUsage object.  It doesn't even exist when compiled with NDEBUG.
  */
-class EXPCL_PANDAEXPRESS MemoryUsagePointers {
+class EXPCL_PANDA_EXPRESS MemoryUsagePointers {
 PUBLISHED:
   MemoryUsagePointers();
   ~MemoryUsagePointers();

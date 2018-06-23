@@ -23,7 +23,7 @@ TypeHandle ClientDevice::_type_handle;
  */
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type,
-             const string &device_name, int device_flags) :
+             const std::string &device_name, int device_flags) :
   InputDevice(device_name, DC_unknown, device_flags),
   _client(client),
   _device_type(device_type)
@@ -84,7 +84,7 @@ do_poll() {
  *
  */
 void ClientDevice::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
@@ -92,6 +92,6 @@ output(ostream &out) const {
  *
  */
 void ClientDevice::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

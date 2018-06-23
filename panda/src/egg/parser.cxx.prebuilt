@@ -129,6 +129,10 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 // We need a stack of EggObject pointers.  Each time we encounter a
 // nested EggObject of some kind, we'll allocate a new one of these
 // and push it onto the stack.  At any given time, the top of the

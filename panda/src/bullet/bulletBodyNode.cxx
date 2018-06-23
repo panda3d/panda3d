@@ -150,7 +150,7 @@ safe_to_flatten_below() const {
  *
  */
 void BulletBodyNode::
-do_output(ostream &out) const {
+do_output(std::ostream &out) const {
 
   PandaNode::output(out);
 
@@ -166,7 +166,7 @@ do_output(ostream &out) const {
  *
  */
 void BulletBodyNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   do_output(out);
@@ -427,7 +427,7 @@ remove_shape(BulletShape *shape) {
   found = find(_shapes.begin(), _shapes.end(), ptshape);
 
   if (found == _shapes.end()) {
-    bullet_cat.warning() << "shape not attached" << endl;
+    bullet_cat.warning() << "shape not attached" << std::endl;
   }
   else {
     _shapes.erase(found);
@@ -784,7 +784,7 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
 
   PT(BulletTriangleMesh) mesh = nullptr;
 
-  for (int j=0; j<cnode->get_num_solids(); j++) {
+  for (size_t j = 0; j < cnode->get_num_solids(); ++j) {
     CPT(CollisionSolid) solid = cnode->get_solid(j);
     TypeHandle type = solid->get_type();
 
@@ -819,9 +819,9 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
          mesh = new BulletTriangleMesh();
       }
 
-      for (int i=2; i < polygon->get_num_points(); i++ ) {
+      for (size_t i = 2; i < polygon->get_num_points(); ++i) {
         LPoint3 p1 = polygon->get_point(0);
-        LPoint3 p2 = polygon->get_point(i-1);
+        LPoint3 p2 = polygon->get_point(i - 1);
         LPoint3 p3 = polygon->get_point(i);
 
         mesh->do_add_triangle(p1, p2, p3, true);

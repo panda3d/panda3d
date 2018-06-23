@@ -140,7 +140,7 @@ read_chars(char *start, size_t length) {
     // content_length restriction.
 
     if (_bytes_remaining != 0) {
-      length = min(length, _bytes_remaining);
+      length = std::min(length, _bytes_remaining);
       (*_source)->read(start, length);
       read_count = (*_source)->gcount();
       if (!_wanted_nonblocking) {

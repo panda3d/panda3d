@@ -41,8 +41,6 @@ typedef int Py_ssize_t;
 #define PY_SSIZE_T_MIN INT_MIN
 #endif
 
-using namespace std;
-
 /**
  * This class is used to run, and communicate with, embedded Python in a sub-
  * process.  It is compiled and launched as a separate executable from the

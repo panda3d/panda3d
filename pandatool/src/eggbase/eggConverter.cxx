@@ -21,8 +21,8 @@
  * with a leading dot.
  */
 EggConverter::
-EggConverter(const string &format_name,
-             const string &preferred_extension,
+EggConverter(const std::string &format_name,
+             const std::string &preferred_extension,
              bool allow_last_param,
              bool allow_stdout) :
   EggFilter(allow_last_param, allow_stdout),

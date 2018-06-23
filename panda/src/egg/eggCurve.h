@@ -21,7 +21,7 @@
 /**
  * A parametric curve of some kind.  See EggNurbsCurve.
  */
-class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
+class EXPCL_PANDA_EGG EggCurve : public EggPrimitive {
 PUBLISHED:
   INLINE explicit EggCurve(const std::string &name = "");
   INLINE EggCurve(const EggCurve &copy);

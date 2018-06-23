@@ -20,7 +20,7 @@
  * a simple directed torque force, the angular equivalent of simple vector
  * force.
  */
-class EXPCL_PANDAPHYSICS AngularVectorForce : public AngularForce {
+class EXPCL_PANDA_PHYSICS AngularVectorForce : public AngularForce {
 PUBLISHED:
   explicit AngularVectorForce(const LRotation& quat);
   explicit AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);

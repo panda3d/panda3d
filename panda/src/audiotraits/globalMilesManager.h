@@ -67,7 +67,7 @@ public:
   // For software MIDI:
   HDLSDEVICE _dls_device;
   HDLSFILEID _dls_file;
-  pvector<unsigned char> _dls_data;
+  vector_uchar _dls_data;
 
 private:
   void open_api();

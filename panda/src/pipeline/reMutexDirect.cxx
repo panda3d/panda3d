@@ -21,7 +21,7 @@
  * ReMutexDirect.
  */
 void ReMutexDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ReMutex " << (void *)this;
 }
 
@@ -146,7 +146,7 @@ do_unlock() {
 
 #ifdef _DEBUG
   if (_locking_thread != Thread::get_current_thread()) {
-    ostringstream ostr;
+    std::ostringstream ostr;
     ostr << *_locking_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());

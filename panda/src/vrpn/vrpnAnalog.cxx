@@ -24,7 +24,7 @@
  *
  */
 VrpnAnalog::
-VrpnAnalog(const string &analog_name, vrpn_Connection *connection) :
+VrpnAnalog(const std::string &analog_name, vrpn_Connection *connection) :
   _analog_name(analog_name)
 {
   _analog = new vrpn_Analog_Remote(_analog_name.c_str(), connection);
@@ -74,7 +74,7 @@ unmark(VrpnAnalogDevice *device) {
  *
  */
 void VrpnAnalog::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _analog_name;
 }
 
@@ -82,7 +82,7 @@ output(ostream &out) const {
  *
  */
 void VrpnAnalog::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_analog_name() << " ("
     << _devices.size() << " devices)\n";

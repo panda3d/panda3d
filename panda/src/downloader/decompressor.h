@@ -26,7 +26,7 @@ class Ramfile;
  * This manages run-time decompression of a zlib-compressed stream, as a
  * background or foreground task.
  */
-class EXPCL_PANDAEXPRESS Decompressor {
+class EXPCL_PANDA_DOWNLOADER Decompressor {
 PUBLISHED:
   Decompressor();
   ~Decompressor();

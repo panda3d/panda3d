@@ -24,7 +24,7 @@
  * coordinate systems.  An example of this would be simulating gravity in a
  * rotating space station.  or something.
  */
-class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
+class EXPCL_PANDA_PHYSICS ForceNode : public PandaNode {
 PUBLISHED:
   explicit ForceNode(const std::string &name);
   INLINE void clear();

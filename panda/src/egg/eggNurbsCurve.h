@@ -23,7 +23,7 @@
 /**
  * A parametric NURBS curve.
  */
-class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
+class EXPCL_PANDA_EGG EggNurbsCurve : public EggCurve {
 PUBLISHED:
   INLINE explicit EggNurbsCurve(const std::string &name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);

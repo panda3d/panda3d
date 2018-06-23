@@ -27,7 +27,7 @@ TypeHandle ComputeNode::_type_handle;
  * assign a shader using a ShaderAttrib.
  */
 ComputeNode::
-ComputeNode(const string &name) :
+ComputeNode(const std::string &name) :
   PandaNode(name),
   _dispatcher(new ComputeNode::Dispatcher)
 {
@@ -105,7 +105,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void ComputeNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

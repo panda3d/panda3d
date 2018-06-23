@@ -22,7 +22,7 @@
  * This is a set of zero or more PhysicsObjects.  It's handy for returning
  * from functions that need to return multiple PhysicsObjects.
  */
-class EXPCL_PANDAPHYSICS PhysicsObjectCollection {
+class EXPCL_PANDA_PHYSICS PhysicsObjectCollection {
 PUBLISHED:
   PhysicsObjectCollection();
   PhysicsObjectCollection(const PhysicsObjectCollection &copy);

@@ -94,14 +94,14 @@ void storeField(const VrmlFieldValue &value);
 void exitField();
 void expect(int type);
 
-extern void vrmlyyerror(const string &);
+extern void vrmlyyerror(const std::string &);
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
 void
-vrml_init_parser(istream &in, const string &filename) {
+vrml_init_parser(std::istream &in, const std::string &filename) {
   //yydebug = 0;
   vrml_init_lexer(in, filename);
 }
@@ -132,7 +132,7 @@ vrml_cleanup_parser() {
  * %type <nodeList> vrmlscene declarations
  */
 
-%token <string> IDENTIFIER 
+%token <string> IDENTIFIER
 %token DEF USE PROTO EXTERNPROTO TO IS ROUTE SFN_NULL
 %token EVENTIN EVENTOUT FIELD EXPOSEDFIELD
 
@@ -370,7 +370,7 @@ endProto()
 
     // Add this proto definition:
     if (currentProtoStack.empty()) {
-        cerr << "Error: Empty PROTO stack!\n";
+        std::cerr << "Error: Empty PROTO stack!\n";
     }
     else {
         VrmlNodeType *t = currentProtoStack.top();
@@ -413,14 +413,14 @@ add(void (VrmlNodeType::*func)(const char *, int, const VrmlFieldValue *),
     int type = fieldType(typeString);
 
     if (type == 0) {
-        cerr << "Error: invalid field type: " << type << "\n";
+        std::cerr << "Error: invalid field type: " << type << "\n";
     }
 
     // Need to add support for Script nodes:
     // if (inScript) ... ???
 
     if (currentProtoStack.empty()) {
-        cerr << "Error: declaration outside of prototype\n";
+        std::cerr << "Error: declaration outside of prototype\n";
         return 0;
     }
     VrmlNodeType *t = currentProtoStack.top();
@@ -452,7 +452,7 @@ fieldType(const char *type)
     if (strcmp(type, "MFVec2f") == 0) return MFVEC2F;
     if (strcmp(type, "MFVec3f") == 0) return MFVEC3F;
 
-    cerr << "Illegal field type: " << type << "\n";
+    std::cerr << "Illegal field type: " << type << "\n";
 
     return 0;
 }
@@ -487,7 +487,7 @@ exitNode()
     nassertr(node != nullptr, nullptr);
     currentNode.pop();
 
-    //    cerr << "Just defined node:\n" << *node << "\n\n";
+    //    std::cerr << "Just defined node:\n" << *node << "\n\n";
 
     delete fr;
     return node;
@@ -527,7 +527,7 @@ enterField(const char *fieldName)
             expect(typeRec->type);
         }
         else {
-            cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
+            std::cerr << "Error: Nodes of type " << fr->nodeType->getName() <<
                 " do not have fields/eventIn/eventOut named " <<
                 fieldName << "\n";
             // expect(ANY_FIELD);

@@ -16,6 +16,9 @@
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
 
+using std::map;
+using std::string;
+
 InterrogateDatabase *InterrogateDatabase::_global_ptr = nullptr;
 int InterrogateDatabase::_file_major_version = 0;
 int InterrogateDatabase::_file_minor_version = 0;
@@ -734,7 +737,7 @@ remap_indices(int first_index, IndexRemapper &remap) {
  * Writes the database to the indicated stream for later reading.
  */
 void InterrogateDatabase::
-write(ostream &out, InterrogateModuleDef *def) const {
+write(std::ostream &out, InterrogateModuleDef *def) const {
   // Write out the file header.
   out << def->file_identifier << "\n"
       << _current_major_version << " " << _current_minor_version << "\n";
@@ -793,7 +796,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
  * Returns true if the file is read successfully, false if there is an error.
  */
 bool InterrogateDatabase::
-read(istream &in, InterrogateModuleDef *def) {
+read(std::istream &in, InterrogateModuleDef *def) {
   InterrogateDatabase temp;
   if (!temp.read_new(in, def)) {
     return false;
@@ -899,7 +902,7 @@ load_latest() {
  * already has some data in it.
  */
 bool InterrogateDatabase::
-read_new(istream &in, InterrogateModuleDef *def) {
+read_new(std::istream &in, InterrogateModuleDef *def) {
   // We've already read the header.  Read the module definition.
   idf_input_string(in, def->library_name);
   idf_input_string(in, def->library_hash_name);

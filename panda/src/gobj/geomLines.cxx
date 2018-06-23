@@ -20,6 +20,8 @@
 #include "geomVertexWriter.h"
 #include "geomLinesAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomLines::_type_handle;
 
 /**
@@ -125,7 +127,7 @@ make_adjacency() const {
     nassertr(to.is_at_end(), nullptr);
   }
 
-  adj->set_vertices(move(new_vertices));
+  adj->set_vertices(std::move(new_vertices));
   return adj.p();
 }
 

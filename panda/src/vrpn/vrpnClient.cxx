@@ -26,6 +26,8 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::string;
+
 TypeHandle VrpnClient::_type_handle;
 
 /**
@@ -63,7 +65,7 @@ VrpnClient::
  * polling each frame.
  */
 void VrpnClient::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "VrpnClient, server " << _server_name << "\n";
 

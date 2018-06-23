@@ -43,7 +43,7 @@ OpusAudio::
 PT(MovieAudioCursor) OpusAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *stream = vfs->open_read_file(_filename, true);
+  std::istream *stream = vfs->open_read_file(_filename, true);
 
   if (stream == nullptr) {
     return nullptr;

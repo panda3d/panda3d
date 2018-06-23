@@ -93,7 +93,7 @@ run() {
  * Dispatch function for the -attr parameter.
  */
 bool EggToFlt::
-dispatch_attr(const string &opt, const string &arg, void *var) {
+dispatch_attr(const std::string &opt, const std::string &arg, void *var) {
   FltHeader::AttrUpdate *ip = (FltHeader::AttrUpdate *)var;
 
   if (cmp_nocase(arg, "none") == 0) {
@@ -231,7 +231,7 @@ convert_primitive(EggPrimitive *egg_primitive, FltBead *flt_node,
 void EggToFlt::
 convert_group(EggGroup *egg_group, FltBead *flt_node,
               FltGeometry::BillboardType billboard) {
-  ostringstream egg_syntax;
+  std::ostringstream egg_syntax;
 
   FltGroup *flt_group = new FltGroup(_flt_header);
   flt_node->add_child(flt_group);
@@ -450,9 +450,9 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
  * comment, so that flt2egg will reapply it to the egg groups.
  */
 void EggToFlt::
-apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record) {
+apply_egg_syntax(const std::string &egg_syntax, FltRecord *flt_record) {
   if (!egg_syntax.empty()) {
-    ostringstream out;
+    std::ostringstream out;
     out << "<egg> {\n"
         << egg_syntax
         << "}";

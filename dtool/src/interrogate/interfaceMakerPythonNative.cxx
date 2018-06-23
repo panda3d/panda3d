@@ -39,7 +39,17 @@
 #include <set>
 #include <map>
 
-extern          InterrogateType dummy_type;
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::oct;
+using std::ostream;
+using std::ostringstream;
+using std::set;
+using std::string;
+
+extern InterrogateType dummy_type;
 extern std::string EXPORT_IMPORT_PREFIX;
 
 #define CLASS_PREFIX "Dtool_"
@@ -100,11 +110,6 @@ RenameSet methodRenameDictionary[] = {
   { "__deepcopy__"  , "__deepcopy__",           0 },
   { "print"         , "Cprint",                 0 },
   { "CInterval.set_t", "_priv__cSetT",          0 },
-  { nullptr, nullptr, -1 }
-};
-
-RenameSet classRenameDictionary[] = {
-  // No longer used, now empty.
   { nullptr, nullptr, -1 }
 };
 
@@ -193,12 +198,6 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
     }
   }
 
-  for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-    if (cppName == classRenameDictionary[x]._from) {
-      className = classRenameDictionary[x]._to;
-    }
-  }
-
   if (className.empty()) {
     std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
     printf("%s", text.c_str());
@@ -250,15 +249,6 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
   for (int x = 0; methodRenameDictionary[x]._from != nullptr; x++) {
     if (origName == methodRenameDictionary[x]._from) {
       methodName = methodRenameDictionary[x]._to;
-    }
-  }
-
-  if (className.size() > 0) {
-    string lookup_name = className + '.' + cppName;
-    for (int x = 0; classRenameDictionary[x]._from != nullptr; x++) {
-      if (lookup_name == methodRenameDictionary[x]._from) {
-        methodName = methodRenameDictionary[x]._to;
-      }
     }
   }
 
@@ -722,7 +712,7 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
 void InterfaceMakerPythonNative::
 write_python_instance(ostream &out, int indent_level, const string &return_expr,
                       bool owns_memory, const InterrogateType &itype, bool is_const) {
-  out << boolalpha;
+  out << std::boolalpha;
 
   if (!isExportThisRun(itype._cpptype)) {
     _external_imports.insert(TypeManager::resolve_type(itype._cpptype));
@@ -1069,10 +1059,10 @@ write_class_details(ostream &out, Object *obj) {
       write_make_seq(out, obj, ClassName, cClassName, *msi);
     } else {
       if (!is_function_legal((*msi)->_length_getter)) {
-        cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
+        std::cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
       }
       if (!is_function_legal((*msi)->_element_getter)) {
-        cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
+        std::cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
       }
     }
   }
@@ -1459,7 +1449,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   if (force_base_functions) {
     out << "  // Support Function For Dtool_types ... for now in each module ??\n";
     out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference, METH_VARARGS, \"Used to borrow 'this' pointer (to, from)\\nAssumes no ownership.\"},\n";
-    out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
+    //out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary, METH_VARARGS, \"Used to add items into a tp_dict\"},\n";
   }
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";
@@ -2467,7 +2457,7 @@ write_module_class(ostream &out, Object *obj) {
         // Nothing special about the wrapper function: just write it normally.
         string fname = "static PyObject *" + def._wrapper_name + "(PyObject *self, PyObject *args, PyObject *kwds)\n";
 
-        vector<FunctionRemap *> remaps;
+        std::vector<FunctionRemap *> remaps;
         remaps.insert(remaps.end(), def._remaps.begin(), def._remaps.end());
         string expected_params;
         write_function_for_name(out, obj, remaps, fname, expected_params, true, AT_keyword_args, RF_pyobject | RF_err_null);
@@ -2493,7 +2483,7 @@ write_module_class(ostream &out, Object *obj) {
       out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
       out << "    return nullptr;\n";
       out << "  }\n\n";
-      out << "  ostringstream os;\n";
+      out << "  std::ostringstream os;\n";
       if (need_repr == 3) {
         out << "  invoke_extension(local_this).python_repr(os, \""
             << classNameFromCppName(ClassName, false) << "\");\n";
@@ -2523,7 +2513,7 @@ write_module_class(ostream &out, Object *obj) {
       out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
       out << "    return nullptr;\n";
       out << "  }\n\n";
-      out << "  ostringstream os;\n";
+      out << "  std::ostringstream os;\n";
       if (need_str == 2) {
         out << "  local_this->write(os, 0);\n";
       } else {
@@ -2536,7 +2526,7 @@ write_module_class(ostream &out, Object *obj) {
     }
   }
 
-  if (NeedsARichCompareFunction(obj->_itype)) {
+  if (NeedsARichCompareFunction(obj->_itype) || slots.count("tp_compare")) {
     out << "//////////////////\n";
     out << "//  A rich comparison function\n";
     out << "//     " << ClassName << "\n";
@@ -2547,7 +2537,6 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
-    out << "  switch (op) {\n";
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
       std::set<FunctionRemap*> remaps;
       Function *func = (*fi);
@@ -2564,21 +2553,28 @@ write_module_class(ostream &out, Object *obj) {
         }
       }
       const string &fname = func->_ifunc.get_name();
+      const char *op_type;
       if (fname == "operator <") {
-        out << "  case Py_LT:\n";
+        op_type = "Py_LT";
       } else if (fname == "operator <=") {
-        out << "  case Py_LE:\n";
+        op_type = "Py_LE";
       } else if (fname == "operator ==") {
-        out << "  case Py_EQ:\n";
+        op_type = "Py_EQ";
       } else if (fname == "operator !=") {
-        out << "  case Py_NE:\n";
+        op_type = "Py_NE";
       } else if (fname == "operator >") {
-        out << "  case Py_GT:\n";
+        op_type = "Py_GT";
       } else if (fname == "operator >=") {
-        out << "  case Py_GE:\n";
+        op_type = "Py_GE";
       } else {
         continue;
       }
+      if (!has_local_richcompare) {
+        out << "  switch (op) {\n";
+        has_local_richcompare = true;
+      }
+      out << "  case " << op_type << ":\n";
+
       out << "    {\n";
 
       string expected_params;
@@ -2587,14 +2583,15 @@ write_module_class(ostream &out, Object *obj) {
 
       out << "      break;\n";
       out << "    }\n";
-      has_local_richcompare = true;
     }
 
-    out << "  }\n\n";
-
-    out << "  if (_PyErr_OCCURRED()) {\n";
-    out << "    PyErr_Clear();\n";
-    out << "  }\n\n";
+    if (has_local_richcompare) {
+      // End of switch block
+      out << "  }\n\n";
+      out << "  if (_PyErr_OCCURRED()) {\n";
+      out << "    PyErr_Clear();\n";
+      out << "  }\n\n";
+    }
 
     if (slots.count("tp_compare")) {
       // A lot of Panda code depends on comparisons being done via the
@@ -2624,6 +2621,7 @@ write_module_class(ostream &out, Object *obj) {
       out << "  case Py_GE:\n";
       out << "    return PyBool_FromLong(cmpval >= 0);\n";
       out << "  }\n";
+      has_local_richcompare = true;
     }
 
     out << "  Py_INCREF(Py_NotImplemented);\n";
@@ -2850,7 +2848,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "#else\n";
   if (has_hash_compare) {
     write_function_slot(out, 4, slots, "tp_compare",
-                        "&DTOOL_PyObject_ComparePointers");
+                        "&DtoolInstance_ComparePointers");
   } else {
     out << "    nullptr, // tp_compare\n";
   }
@@ -2880,7 +2878,7 @@ write_module_class(ostream &out, Object *obj) {
 
   // hashfunc tp_hash;
   if (has_hash_compare) {
-    write_function_slot(out, 4, slots, "tp_hash", "&DTOOL_PyObject_HashPointer");
+    write_function_slot(out, 4, slots, "tp_hash", "&DtoolInstance_HashPointer");
   } else {
     out << "    nullptr, // tp_hash\n";
   }
@@ -2951,7 +2949,7 @@ write_module_class(ostream &out, Object *obj) {
   } else if (has_hash_compare) {
     // All hashable types need to be comparable.
     out << "#if PY_MAJOR_VERSION >= 3\n";
-    out << "    &DTOOL_PyObject_RichCompare,\n";
+    out << "    &DtoolInstance_RichComparePointers,\n";
     out << "#else\n";
     out << "    nullptr, // tp_richcompare\n";
     out << "#endif\n";
@@ -3062,7 +3060,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "    // Dependent objects\n";
   if (bases.size() > 0) {
     string baseargs;
-    for (vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
+    for (std::vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
       string safe_name = make_safe_name((*bi)->get_local_name(&parser));
 
       if (isExportThisRun(*bi)) {
@@ -5038,7 +5036,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
                            "value %ld out of range for unsigned byte",
                            param_name);
       } else {
-        extra_convert << "if (" << param_name << " < CHAR_MIN || " << param_name << " > CHAR_MAX) {\n";
+        extra_convert << "if (" << param_name << " < SCHAR_MIN || " << param_name << " > SCHAR_MAX) {\n";
         error_raise_return(extra_convert, 2, return_flags, "OverflowError",
                            "value %ld out of range for signed byte",
                            param_name);
@@ -5583,7 +5581,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
             << ", *Dtool_Ptr_" << make_safe_name(class_name)
             << ");\n";
         } else {
-          extra_convert << boolalpha
+          extra_convert << std::boolalpha
             << " = (" << class_name << " *)"
             << "DTOOL_Call_GetPointerThisClass(" << param_name
             << ", Dtool_Ptr_" << make_safe_name(class_name)
@@ -7885,7 +7883,7 @@ output_quoted(ostream &out, int indent_level, const std::string &str,
 
     default:
       if (!isprint(*si)) {
-        out << "\\" << oct << setw(3) << setfill('0') << (unsigned int)(*si)
+        out << "\\" << oct << std::setw(3) << std::setfill('0') << (unsigned int)(*si)
             << dec;
       } else {
         out << *si;

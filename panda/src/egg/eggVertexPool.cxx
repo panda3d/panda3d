@@ -20,6 +20,8 @@
 
 #include <iterator>
 
+using std::string;
+
 TypeHandle EggVertexPool::_type_handle;
 
 /**
@@ -176,7 +178,7 @@ get_num_dimensions() const {
   IndexVertices::const_iterator ivi;
   for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
     EggVertex *vertex = (*ivi).second;
-    num_dimensions = max(num_dimensions, vertex->get_num_dimensions());
+    num_dimensions = std::max(num_dimensions, vertex->get_num_dimensions());
   }
 
   return num_dimensions;
@@ -438,7 +440,7 @@ add_vertex(EggVertex *vertex, int index) {
         !vertex->is_forward_reference()) {
       (*orig_vertex) = (*vertex);
       orig_vertex->_forward_reference = false;
-      _highest_index = max(_highest_index, index);
+      _highest_index = std::max(_highest_index, index);
       return orig_vertex;
     }
 
@@ -450,7 +452,7 @@ add_vertex(EggVertex *vertex, int index) {
   _index_vertices[index] = vertex;
 
   if (!vertex->is_forward_reference()) {
-    _highest_index = max(_highest_index, index);
+    _highest_index = std::max(_highest_index, index);
   }
 
   vertex->_pool = this;
@@ -761,7 +763,7 @@ sort_by_external_index() {
  * Writes the vertex pool to the indicated output stream in Egg format.
  */
 void EggVertexPool::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<VertexPool>");
 
   iterator i;

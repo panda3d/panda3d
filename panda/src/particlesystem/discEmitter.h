@@ -19,7 +19,7 @@
 /**
  * Describes a planar disc region from which particles are generated
  */
-class EXPCL_PANDAPHYSICS DiscEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM DiscEmitter : public BaseParticleEmitter {
 PUBLISHED:
   DiscEmitter();
   DiscEmitter(const DiscEmitter &copy);

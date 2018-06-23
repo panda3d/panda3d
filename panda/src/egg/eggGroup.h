@@ -31,7 +31,7 @@
  * The main glue of the egg hierarchy, this corresponds to the <Group>,
  * <Instance>, and <Joint> type nodes.
  */
-class EXPCL_PANDAEGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
+class EXPCL_PANDA_EGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
   typedef pmap<std::string, std::string> TagData;

@@ -36,7 +36,7 @@ ParameterRemapConcreteToPointer(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapConcreteToPointer::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const std::string &variable_name) {
   if (variable_name.size() > 1 && variable_name[0] == '&') {
     // Prevent generating something like *&param Also, if this is really some
     // local type, we can presumably just move it?
@@ -50,8 +50,8 @@ pass_parameter(ostream &out, const string &variable_name) {
  * Returns an expression that evalutes to the appropriate value type for
  * returning from the function, given an expression of the original type.
  */
-string ParameterRemapConcreteToPointer::
-get_return_expr(const string &expression) {
+std::string ParameterRemapConcreteToPointer::
+get_return_expr(const std::string &expression) {
   return
     "new " + _orig_type->get_local_name(&parser) +
     "(" + expression + ")";

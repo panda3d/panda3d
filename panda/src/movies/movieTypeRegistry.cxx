@@ -17,6 +17,9 @@
 #include "config_putil.h"
 #include "load_dso.h"
 
+using std::endl;
+using std::string;
+
 MovieTypeRegistry *MovieTypeRegistry::_global_ptr = nullptr;
 
 /**

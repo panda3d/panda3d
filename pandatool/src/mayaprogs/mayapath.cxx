@@ -43,11 +43,17 @@
 #include <stdlib.h>
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #else
 #include <sys/stat.h>
 #endif
+
+using std::cerr;
+using std::endl;
+using std::string;
 
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)

@@ -27,6 +27,8 @@
 #include "triangulator3.h"
 #include "config_egg2pg.h"
 
+using std::string;
+
 /**
  *
  */
@@ -147,7 +149,7 @@ convert_to_node(const LoaderOptions &options, const Filename &filename) {
 bool ObjToEggConverter::
 process(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *strm = vfs->open_read_file(filename, true);
+  std::istream *strm = vfs->open_read_file(filename, true);
   if (strm == nullptr) {
     objegg_cat.error()
       << "Couldn't read " << filename << "\n";
@@ -552,7 +554,7 @@ generate_egg_points() {
 bool ObjToEggConverter::
 process_node(const Filename &filename) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *strm = vfs->open_read_file(filename, true);
+  std::istream *strm = vfs->open_read_file(filename, true);
   if (strm == nullptr) {
     objegg_cat.error()
       << "Couldn't read " << filename << "\n";
@@ -647,7 +649,7 @@ process_f_node(vector_string &words) {
   _f_given = true;
 
   bool all_vn = true;
-  int non_vn_index = -1;
+  //int non_vn_index = -1;
 
   pvector<VertexEntry> verts;
   verts.reserve(words.size() - 1);
@@ -656,7 +658,7 @@ process_f_node(vector_string &words) {
     verts.push_back(entry);
     if (entry._vni == 0) {
       all_vn = false;
-      non_vn_index = i;
+      //non_vn_index = i;
     }
   }
 
@@ -704,7 +706,7 @@ process_f_node(vector_string &words) {
   }
 
   if (_current_vertex_data->_prim->get_num_vertices() + 3 * num_tris > egg_max_indices ||
-      _current_vertex_data->_entries.size() + verts.size() > egg_max_vertices) {
+      _current_vertex_data->_entries.size() + verts.size() > (size_t)egg_max_vertices) {
     // We'll exceed our specified limit with these triangles; start a new
     // Geom.
     _current_vertex_data->close_geom(this);
@@ -799,7 +801,7 @@ generate_points() {
  */
 int ObjToEggConverter::
 add_synth_normal(const LVecBase3d &normal) {
-  pair<UniqueVec3Table::iterator, bool> result = _unique_synth_vn_table.insert(UniqueVec3Table::value_type(normal, _unique_synth_vn_table.size()));
+  std::pair<UniqueVec3Table::iterator, bool> result = _unique_synth_vn_table.insert(UniqueVec3Table::value_type(normal, _unique_synth_vn_table.size()));
   UniqueVec3Table::iterator ni = result.first;
   int index = (*ni).second;
 
@@ -895,7 +897,7 @@ VertexData(PandaNode *parent, const string &name) :
  */
 int ObjToEggConverter::VertexData::
 add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry) {
-  pair<UniqueVertexEntries::iterator, bool> result;
+  std::pair<UniqueVertexEntries::iterator, bool> result;
   UniqueVertexEntries::iterator ni;
   int index;
 

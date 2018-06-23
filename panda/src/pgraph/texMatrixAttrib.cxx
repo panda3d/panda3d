@@ -179,7 +179,7 @@ get_transform(TextureStage *stage) const {
  *
  */
 void TexMatrixAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;

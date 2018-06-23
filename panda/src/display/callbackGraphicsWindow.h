@@ -178,7 +178,7 @@ PUBLISHED:
   INLINE void clear_render_callback();
   INLINE CallbackObject *get_render_callback() const;
 
-  int create_input_device(const string &name);
+  int create_input_device(const std::string &name);
 
 public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);

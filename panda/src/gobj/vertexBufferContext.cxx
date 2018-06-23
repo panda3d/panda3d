@@ -20,7 +20,7 @@ TypeHandle VertexBufferContext::_type_handle;
  *
  */
 void VertexBufferContext::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << *get_data() << ", " << get_data_size_bytes();
 }
 
@@ -28,6 +28,6 @@ output(ostream &out) const {
  *
  */
 void VertexBufferContext::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   SavedContext::write(out, indent_level);
 }

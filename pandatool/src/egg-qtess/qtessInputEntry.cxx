@@ -21,6 +21,8 @@
 #include <ctype.h>
 #include <algorithm>
 
+using std::string;
+
 /**
  *
  */
@@ -354,7 +356,7 @@ count_tris(double tri_factor, int attempts) {
  * user control.
  */
 void QtessInputEntry::
-output_extra(ostream &out, const pvector<double> &iso, char axis) {
+output_extra(std::ostream &out, const pvector<double> &iso, char axis) {
   pvector<double>::const_iterator di;
   int expect = 0;
   for (di = iso.begin(); di != iso.end(); ++di) {
@@ -376,7 +378,7 @@ output_extra(ostream &out, const pvector<double> &iso, char axis) {
  *
  */
 void QtessInputEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   NodeNames::const_iterator nni;
   for (nni = _node_names.begin();
        nni != _node_names.end();
@@ -458,6 +460,6 @@ output(ostream &out) const {
  *
  */
 void QtessInputEntry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }

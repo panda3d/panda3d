@@ -14,6 +14,10 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
+using std::cerr;
+using std::endl;
+using std::string;
+
 PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   _dir(dir)
 {
@@ -56,7 +60,7 @@ void PipeStreamBuf::command(const string cmd) {
 int PipeStreamBuf::overflow(int c) {
   assert(is_open());
   assert(_dir == Output);
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
   if (n != 0) {
     write_chars(pbase(), n, false);
     pbump(-n);  // reset pptr()
@@ -72,11 +76,11 @@ int PipeStreamBuf::overflow(int c) {
 int PipeStreamBuf::sync(void) {
   assert(is_open());
   if (_dir == Output) {
-    streamsize n = pptr() - pbase();
+    std::streamsize n = pptr() - pbase();
     write_chars(pbase(), n, false);
     pbump(-n);
   } else {
-    streamsize n = egptr() - gptr();
+    std::streamsize n = egptr() - gptr();
     if (n != 0) {
       gbump(n);  // flush all our stored input away
 #ifndef NDEBUG

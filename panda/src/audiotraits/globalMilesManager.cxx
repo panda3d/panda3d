@@ -26,6 +26,9 @@
 #include <mmsystem.h>
 #endif
 
+using std::istream;
+using std::string;
+
 GlobalMilesManager *GlobalMilesManager::_global_ptr;
 
 /**
@@ -414,15 +417,15 @@ seek_callback(UINTa file_handle, S32 offset, U32 type) {
   strm->clear();
   switch (type) {
   case AIL_FILE_SEEK_BEGIN:
-    strm->seekg(offset, ios::beg);
+    strm->seekg(offset, std::ios::beg);
     break;
 
   case AIL_FILE_SEEK_CURRENT:
-    strm->seekg(offset, ios::cur);
+    strm->seekg(offset, std::ios::cur);
     break;
 
   case AIL_FILE_SEEK_END:
-    strm->seekg(offset, ios::end);
+    strm->seekg(offset, std::ios::end);
     break;
   }
 

@@ -19,7 +19,7 @@
 /**
  * Describes a planar ring region in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS ArcEmitter : public RingEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM ArcEmitter : public RingEmitter {
 PUBLISHED:
   ArcEmitter();
   ArcEmitter(const ArcEmitter &copy);

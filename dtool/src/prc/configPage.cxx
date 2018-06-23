@@ -25,6 +25,10 @@
 #include "openssl/evp.h"
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 ConfigPage *ConfigPage::_default_page = nullptr;
 ConfigPage *ConfigPage::_local_page = nullptr;
 
@@ -340,7 +344,7 @@ output(ostream &out) const {
  */
 void ConfigPage::
 output_brief_signature(ostream &out) const {
-  size_t num_bytes = min(_signature.size(), (size_t)8);
+  size_t num_bytes = std::min(_signature.size(), (size_t)8);
   for (size_t p = 0; p < num_bytes; ++p) {
     unsigned int byte = _signature[p];
 

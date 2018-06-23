@@ -195,7 +195,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
                   if (_alpha_mode == PR_ALPHA_OUT)
                           alpha = 1.0f - alpha;
                   else if (_alpha_mode == PR_ALPHA_IN_OUT)
-                    alpha = 2.0f * min(alpha, 1.0f - alpha);
+                    alpha = 2.0f * std::min(alpha, 1.0f - alpha);
           }
 
       head_color[3] = alpha;
@@ -232,7 +232,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void LineParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"LineParticleRenderer";
   #endif //] NDEBUG
@@ -242,7 +242,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void LineParticleRenderer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "LineParticleRenderer:\n";
   indent(out, indent_level + 2) << "_head_color "<<_head_color<<"\n";
   indent(out, indent_level + 2) << "_tail_color "<<_tail_color<<"\n";

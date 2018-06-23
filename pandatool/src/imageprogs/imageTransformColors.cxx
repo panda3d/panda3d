@@ -16,6 +16,10 @@
 #include "pnmImage.h"
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::string;
+
 /**
  *
  */

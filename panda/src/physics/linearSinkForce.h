@@ -19,7 +19,7 @@
 /**
  * Attractor force.  Think black hole.
  */
-class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
+class EXPCL_PANDA_PHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
   explicit LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r,
                            PN_stdfloat a = 1.0f, bool m = true);

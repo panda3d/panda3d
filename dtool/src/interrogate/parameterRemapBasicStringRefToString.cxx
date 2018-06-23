@@ -14,6 +14,8 @@
 #include "parameterRemapBasicStringRefToString.h"
 #include "interrogate.h"
 
+using std::string;
+
 /**
  *
  */
@@ -34,7 +36,7 @@ ParameterRemapBasicStringRefToString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicStringRefToString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "std::string(" << variable_name << ")";
 }
 
@@ -67,7 +69,7 @@ ParameterRemapBasicWStringRefToWString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicWStringRefToWString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "std::wstring(" << variable_name << ")";
 }
 

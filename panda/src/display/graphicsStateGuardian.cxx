@@ -63,6 +63,8 @@
 #include <algorithm>
 #include <limits.h>
 
+using std::string;
+
 PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Buffer switch:Vertex");
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_shader_buffer_switch_pcollector("Buffer switch:Shader");
@@ -761,7 +763,7 @@ get_geom_munger(const RenderState *state, Thread *current_thread) {
     // multiple times during a frame.  Also, this might well be the only GSG
     // in the world anyway.
     int mi = state->_last_mi;
-    if (mi >= 0 && mi < mungers.get_num_entries() && mungers.get_key(mi) == _id) {
+    if (mi >= 0 && (size_t)mi < mungers.get_num_entries() && mungers.get_key(mi) == _id) {
       PT(GeomMunger) munger = mungers.get_data(mi);
       if (munger->is_registered()) {
         return munger;
@@ -2194,7 +2196,7 @@ flush_timer_queries() {
     if (_last_num_queried > 0) {
       // We know how many queries were available last frame, and this usually
       // stays fairly constant, so use this as a starting point.
-      int i = min(_last_num_queried, count) - 1;
+      int i = std::min(_last_num_queried, count) - 1;
 
       if (_pending_timer_queries[i]->is_answer_ready()) {
         first = count;
@@ -2763,7 +2765,7 @@ do_issue_light() {
     // LightAttrib guarantees that the on lights are sorted, and that
     // non-ambient lights come before ambient lights.
     any_on_lights = target_light->has_any_on_light();
-    size_t filtered_lights = min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
+    size_t filtered_lights = std::min((size_t)_max_lights, target_light->get_num_non_ambient_lights());
     for (size_t li = 0; li < filtered_lights; ++li) {
       NodePath light = target_light->get_on_light(li);
       nassertv(!light.is_empty());
@@ -3241,7 +3243,7 @@ async_reload_texture(TextureContext *tc) {
         ((TextureReloadRequest *)task)->get_texture() == tc->get_texture()) {
       // This texture is already queued to be reloaded.  Don't queue it again,
       // just make sure the priority is updated, and return.
-      task->set_priority(max(task->get_priority(), priority));
+      task->set_priority(std::max(task->get_priority(), priority));
       return (AsyncFuture *)task;
     }
   }
@@ -3498,8 +3500,8 @@ get_driver_shader_version_minor() {
   return -1;
 }
 
-ostream &
-operator << (ostream &out, GraphicsStateGuardian::ShaderModel sm) {
+std::ostream &
+operator << (std::ostream &out, GraphicsStateGuardian::ShaderModel sm) {
   static const char *sm_strings[] = {"none", "1.1", "2.0", "2.x", "3.0", "4.0", "5.0", "5.1"};
   nassertr(sm >= 0 && sm <= GraphicsStateGuardian::SM_51, out);
   out << sm_strings[sm];

@@ -27,6 +27,12 @@
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
@@ -346,7 +352,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       StorageBlock block;
       block._name = InternalName::make(block_name_cstr);
       block._binding_index = values[0];
-      block._min_size = values[1];
+      block._min_size = (GLuint)values[1];
       _storage_blocks.push_back(block);
     }
   }
@@ -675,6 +681,9 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       break;
     }
 
+    (void)numeric_type;
+    (void)contents;
+    (void)num_components;
     // GeomVertexColumn column(InternalName::make(name_buffer),
     // num_components, numeric_type, contents, offsets[ui], 4, param_size,
     // astrides[ui]); block_format.add_column(column);
@@ -1904,12 +1913,14 @@ set_state_and_transform(const RenderState *target_rs,
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
+    target_rs->get_attrib_def(_color_attrib);
 
   } else if (state_rs != target_rs) {
     // The state has changed since last time.
     if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
+      target_rs->get_attrib_def(_color_attrib);
     }
     if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
@@ -1978,7 +1989,7 @@ issue_parameters(int altered) {
   if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
 
     // If we have an osg_FrameNumber input, set it now.
-    if ((altered | Shader::SSD_frame) != 0 && _frame_number_loc >= 0) {
+    if ((altered & Shader::SSD_frame) != 0 && _frame_number_loc >= 0) {
       _glgsg->_glUniform1i(_frame_number_loc, _frame_number);
     }
 
@@ -2161,7 +2172,7 @@ update_transform_table(const TransformTable *table) {
 #endif
     }
   }
-  for (; i < _transform_table_size; ++i) {
+  for (; i < (size_t)_transform_table_size; ++i) {
     matrices[i] = LMatrix4f::ident_mat();
   }
 
@@ -2221,8 +2232,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   // Get the active ColorAttrib.  We'll need it to determine how to apply
   // vertex colors.
-  const ColorAttrib *color_attrib;
-  _state_rs->get_attrib_def(color_attrib);
+  const ColorAttrib *color_attrib = _color_attrib.p();
 
   const GeomVertexArrayDataHandle *array_reader;
 
@@ -2230,7 +2240,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     // Use experimental new separated formatbinding state.
     const GeomVertexDataPipelineReader *data_reader = _glgsg->_data_reader;
 
-    for (int ai = 0; ai < data_reader->get_num_arrays(); ++ai) {
+    for (size_t ai = 0; ai < data_reader->get_num_arrays(); ++ai) {
       array_reader = data_reader->get_array_reader(ai);
 
       // Make sure the vertex buffer is up-to-date.
@@ -2287,7 +2297,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
 
-    GLuint max_p = 0;
+    GLint max_p = 0;
 
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
@@ -2305,7 +2315,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
 
-      GLuint p = bind._id._seqno;
+      GLint p = bind._id._seqno;
       max_p = max(max_p, p + 1);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
@@ -2394,7 +2404,7 @@ disable_shader_texture_bindings() {
 
   DO_PSTATS_STUFF(_glgsg->_texture_state_pcollector.add_level(1));
 
-  for (int i = 0; i < _shader->_tex_spec.size(); ++i) {
+  for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
 #ifndef OPENGLES
     // Check if bindless was used, if so, there's nothing to unbind.
     if (_glgsg->_supports_bindless_texture) {
@@ -2799,7 +2809,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
 
   // Parse the errors so that we can substitute in actual file locations
   // instead of source indices.
-  istringstream log(info_log);
+  std::istringstream log(info_log);
   string line;
   while (std::getline(log, line)) {
     int fileno, lineno, colno;
@@ -3114,7 +3124,7 @@ glsl_compile_and_link() {
       sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
 
       pofstream s;
-      s.open(filename, ios::out | ios::binary | ios::trunc);
+      s.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
       s.write(binary, num_bytes);
       s.close();
 

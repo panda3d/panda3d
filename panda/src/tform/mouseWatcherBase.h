@@ -21,6 +21,7 @@
 #include "pvector.h"
 #include "nodePath.h"
 #include "lightMutex.h"
+#include "ordered_vector.h"
 
 /**
  * This represents a collection of MouseWatcherRegions that may be managed as
@@ -34,18 +35,18 @@ public:
   virtual ~MouseWatcherBase();
 
 PUBLISHED:
-  void add_region(MouseWatcherRegion *region);
+  void add_region(PT(MouseWatcherRegion) region);
   bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
   MouseWatcherRegion *find_region(const std::string &name) const;
   void clear_regions();
 
-  void sort_regions();
-  bool is_sorted() const;
+  INLINE void sort_regions();
+  INLINE bool is_sorted() const;
   MAKE_PROPERTY(sorted, is_sorted);
 
-  int get_num_regions() const;
-  MouseWatcherRegion *get_region(int n) const;
+  size_t get_num_regions() const;
+  MouseWatcherRegion *get_region(size_t n) const;
   MAKE_SEQ(get_regions, get_num_regions, get_region);
   MAKE_SEQ_PROPERTY(regions, get_num_regions, get_region);
 
@@ -73,7 +74,7 @@ protected:
 #endif  // NDEBUG
 
 protected:
-  typedef pvector< PT(MouseWatcherRegion) > Regions;
+  typedef ov_set< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
   bool _sorted;
 
@@ -108,5 +109,7 @@ private:
   friend class MouseWatcher;
   friend class BlobWatcher;
 };
+
+#include "mouseWatcherBase.I"
 
 #endif

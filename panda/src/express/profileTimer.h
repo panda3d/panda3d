@@ -37,7 +37,7 @@
       seconds of each other, I don't think you'll get very good
       results.
 */
-class EXPCL_PANDAEXPRESS ProfileTimer {
+class EXPCL_PANDA_EXPRESS ProfileTimer {
   enum { MaxEntriesDefault=4096 };
 PUBLISHED:
   explicit ProfileTimer(const char* name=0, int maxEntries=MaxEntriesDefault);
@@ -67,7 +67,7 @@ public:
         ...
       }
   */
-  class EXPCL_PANDAEXPRESS AutoTimer {
+  class EXPCL_PANDA_EXPRESS AutoTimer {
   public:
     AutoTimer(ProfileTimer& profile, const char* tag);
     ~AutoTimer();

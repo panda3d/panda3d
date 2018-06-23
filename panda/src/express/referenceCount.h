@@ -35,7 +35,7 @@
  * ReferenceCount works in conjunction with PointerTo to automatically delete
  * objects when the last pointer to them goes away.
  */
-class EXPCL_PANDAEXPRESS ReferenceCount : public MemoryBase {
+class EXPCL_PANDA_EXPRESS ReferenceCount : public MemoryBase {
 protected:
   INLINE ReferenceCount();
   INLINE ReferenceCount(const ReferenceCount &);

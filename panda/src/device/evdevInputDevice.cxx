@@ -369,7 +369,7 @@ init_device() {
         _device_class = (DeviceClass)i;
       }
     }
-    //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
+    //std::cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
   }
 
   if (has_keys) {
@@ -387,7 +387,7 @@ init_device() {
         if (button.handle == ButtonHandle::none()) {
           if (device_cat.is_debug()) {
             device_cat.debug() << "Unmapped /dev/input/event" << _index
-              << " button " << button_index << ": 0x" << hex << i << dec << "\n";
+              << " button " << button_index << ": 0x" << std::hex << i << std::dec << "\n";
           }
         }
 
@@ -542,7 +542,7 @@ init_device() {
           if (axis == C_yaw || axis == C_rudder || axis == C_left_y || axis == C_right_y ||
               (axis == C_throttle && (quirks & QB_reversed_throttle) != 0) ||
               (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z || axis == C_roll))) {
-            swap(absinfo.maximum, absinfo.minimum);
+            std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
             index = add_control(axis, absinfo.maximum, absinfo.minimum, true);

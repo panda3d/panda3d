@@ -19,6 +19,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+
 enum DatagramElement {
   DE_int32,
   DE_float64,

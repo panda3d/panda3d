@@ -322,7 +322,7 @@ set_accum_bits(int n) {
  */
 INLINE void FrameBufferProperties::
 set_aux_rgba(int n) {
-  nassertv(n < 4);
+  nassertv(n <= 4);
   _property[FBP_aux_rgba] = n;
   _specified |= (1 << FBP_aux_rgba);
 }
@@ -332,7 +332,7 @@ set_aux_rgba(int n) {
  */
 INLINE void FrameBufferProperties::
 set_aux_hrgba(int n) {
-  nassertv(n < 4);
+  nassertv(n <= 4);
   _property[FBP_aux_hrgba] = n;
   _specified |= (1 << FBP_aux_hrgba);
 }
@@ -342,7 +342,7 @@ set_aux_hrgba(int n) {
  */
 INLINE void FrameBufferProperties::
 set_aux_float(int n) {
-  nassertv(n < 4);
+  nassertv(n <= 4);
   _property[FBP_aux_float] = n;
   _specified |= (1 << FBP_aux_float);
 }

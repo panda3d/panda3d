@@ -47,6 +47,8 @@
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
@@ -259,7 +261,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   rs->get_attrib_def(la);
   bool have_ambient = false;
 
-  for (int i = 0; i < la->get_num_on_lights(); ++i) {
+  for (size_t i = 0; i < la->get_num_on_lights(); ++i) {
     NodePath np = la->get_on_light(i);
     nassertv(!np.is_empty());
     PandaNode *node = np.node();
@@ -404,6 +406,9 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         info._flags |= ShaderKey::TF_uses_last_saved_result;
       }
       break;
+
+    default:
+      break;
     }
 
     // In fact, perhaps this stage should be disabled altogether?
@@ -437,6 +442,8 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       } else {
         skip = true;
       }
+      break;
+    default:
       break;
     }
     // We can't just drop a disabled slot from the list, since then the
@@ -698,7 +705,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // Generate the shader's text.
 
-  ostringstream text;
+  std::ostringstream text;
 
   text << "//Cg\n";
 
@@ -1617,7 +1624,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
  */
 string ShaderGenerator::
 combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
-  ostringstream text;
+  std::ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
     text << combine_source_as_string(info, 0, alpha, texindex);
@@ -1683,7 +1690,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     c_src = UNPACK_COMBINE_SRC(info._combine_alpha, num);
     c_op = UNPACK_COMBINE_OP(info._combine_alpha, num);
   }
-  ostringstream csource;
+  std::ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
       c_op == TextureStage::CO_one_minus_src_alpha) {
     csource << "saturate(1.0f - ";

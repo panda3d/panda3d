@@ -26,9 +26,9 @@ main(int argc, char *argv[]) {
   for (int i = 1; i < argc; ++i) {
     char *endptr = nullptr;
     double result = pstrtod(argv[i], &endptr);
-    cerr << "pstrtod - " << argv[i] << " : " << result << " : " << endptr << "\n";
+    std::cerr << "pstrtod - " << argv[i] << " : " << result << " : " << endptr << "\n";
     result = strtod(argv[i], &endptr);
-    cerr << "strtod - " << argv[i] << " : " << result << " : " << endptr << "\n";
+    std::cerr << "strtod - " << argv[i] << " : " << result << " : " << endptr << "\n";
   }
 
   return 0;

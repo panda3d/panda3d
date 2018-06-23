@@ -93,7 +93,21 @@ is_default_constructible() const {
  */
 bool CPPArrayType::
 is_copy_constructible() const {
-  return false;
+  // This is technically not exactly true, but array data members do not
+  // prevent C++ implicit copy constructor generation rules, so we need to
+  // return true here.
+  // If this is a problem, we will need to create a separate method for the
+  // purpose of checking copyability as a data member.
+  return true;
+}
+
+/**
+ * Returns true if the type is copy-assignable.
+ */
+bool CPPArrayType::
+is_copy_assignable() const {
+  // Same story as is_copy_constructible.
+  return true;
 }
 
 /**
@@ -148,7 +162,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPArrayType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   /*
   _element_type->output(out, indent_level, scope, complete);
   out << "[";
@@ -166,16 +180,16 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPArrayType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
-  ostringstream brackets;
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
+  std::ostringstream brackets;
   brackets << "[";
   if (_bounds != nullptr) {
     brackets << *_bounds;
   }
   brackets << "]";
-  string bracketsstr = brackets.str();
+  std::string bracketsstr = brackets.str();
 
   _element_type->output_instance(out, indent_level, scope, complete,
                                  prename, name + bracketsstr);
