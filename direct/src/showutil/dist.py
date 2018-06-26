@@ -8,6 +8,7 @@ import sys
 import subprocess
 import zipfile
 import shutil
+import stat
 import struct
 import imp
 import string
@@ -62,12 +63,25 @@ macosx_binary_magics = (
     b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA',
     b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA')
 
-# Some dependencies need data directories to be extracted.  Key is a module
-# (or package) name that triggers it to be included, the value is a dict
-# mapping source directories (use / slashes) to target directories.
+# Some dependencies need data directories to be extracted. This dictionary maps
+# modules with data to extract. The values are lists of tuples of the form
+# (source_pattern, destination_pattern, flags). The flags is a set of strings.
+
 PACKAGE_DATA_DIRS = {
-    'matplotlib': {'matplotlib/mpl-data': 'mpl-data'},
-    'jsonschema': {'jsonschema/schemas': 'schemas'},
+    'matplotlib':  [('matplotlib/mpl-data/*', 'mpl-data', {})],
+    'jsonschema':  [('jsonschema/schemas/*', 'schemas', {})],
+    'cefpython3': [
+        ('cefpython3/*.pak', '', {}),
+        ('cefpython3/*.dat', '', {}),
+        ('cefpython3/*.bin', '', {}),
+        ('cefpython3/*.dll', '', {}),
+        ('cefpython3/libcef.so', '', {}),
+        ('cefpython3/LICENSE.txt', '', {}),
+        ('cefpython3/License', '', {}),
+        ('cefpython3/subprocess', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
+        ('cefpython3/locals/*', 'locals', {}),
+        ('cefpython3/Chromium Embedded Framework.framework/Resources', 'Chromium Embedded Framework.framework/Resources', {}),
+    ],
 }
 
 # site.py for Python 2.
@@ -633,9 +647,9 @@ class build_apps(setuptools.Command):
                         shutil.copytree(sub_dir, target_dir)
 
         # Extract any other data files from dependency packages.
-        for module, paths in PACKAGE_DATA_DIRS.items():
+        for module, datadesc in PACKAGE_DATA_DIRS.items():
             if module not in freezer_modules:
-                pass
+                continue
 
             self.announce('Copying data files for module: {}'.format(module), distutils.log.INFO)
 
@@ -643,18 +657,27 @@ class build_apps(setuptools.Command):
             for whl in wheelpaths:
                 whlfile = self._get_zip_file(whl)
                 filenames = whlfile.namelist()
-                for source_dir, target_dir in paths.items():
+                for source_pattern, target_dir, flags in datadesc:
+                    srcglob = p3d.GlobPattern(source_pattern)
+                    source_dir = os.path.dirname(source_pattern)
                     # Relocate the target dir to the build directory.
                     target_dir = target_dir.replace('/', os.sep)
                     target_dir = os.path.join(builddir, target_dir)
 
                     for wf in filenames:
                         if wf.lower().startswith(source_dir.lower() + '/'):
+                            if not srcglob.matches(wf.lower()):
+                                continue
                             wf = wf.replace('/', os.sep)
                             relpath = wf[len(source_dir) + 1:]
                             source_path = os.path.join(whl, wf)
                             target_path = os.path.join(target_dir, relpath)
                             self.copy(source_path, target_path)
+
+                            if 'PKG_DATA_MAKE_EXECUTABLE' in flags:
+                                mode = os.stat(target_path).st_mode
+                                mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+                                os.chmod(target_path, mode)
 
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
