@@ -67,6 +67,7 @@ macosx_binary_magics = (
 # mapping source directories (use / slashes) to target directories.
 PACKAGE_DATA_DIRS = {
     'matplotlib': {'matplotlib/mpl-data': 'mpl-data'},
+    'jsonschema': {'jsonschema/schemas': 'schemas'},
 }
 
 # site.py for Python 2.
