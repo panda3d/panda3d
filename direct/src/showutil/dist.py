@@ -128,7 +128,12 @@ def find_spec(fullname, path=None, target=None):
         spec.origin = sys.executable
     return spec
 
+def get_data(path):
+    with open(path, 'rb') as fp:
+        return fp.read()
+
 FrozenImporter.find_spec = find_spec
+FrozenImporter.get_data = get_data
 
 # Set the TCL_LIBRARY directory to the location of the Tcl/Tk/Tix files.
 import os
