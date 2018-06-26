@@ -74,6 +74,8 @@ PACKAGE_DATA_DIRS = {
 SITE_PY2 = u"""
 import sys
 
+sys.frozen = True
+
 # Override __import__ to set __file__ for frozen modules.
 prev_import = __import__
 def __import__(*args, **kwargs):
@@ -109,6 +111,8 @@ del os
 SITE_PY3 = u"""
 import sys
 from _frozen_importlib import _imp, FrozenImporter
+
+sys.frozen = True
 
 if sys.platform == 'win32':
     # Make sure the preferred encoding is something we actually support.
