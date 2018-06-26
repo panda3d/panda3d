@@ -312,6 +312,13 @@ class build_apps(setuptools.Command):
         if int(pip_version[0]) < 9:
             raise RuntimeError("pip 9.0 or greater is required, but found {}".format(pip.__version__))
 
+        # Remove any .zip files. These are built from a VCS and block for an
+        # interactive prompt on subsequent downloads.
+        if os.path.exists(whldir):
+            for whl in os.listdir(whldir):
+                if whl.endswith('.zip'):
+                    os.remove(os.path.join(whldir, whl))
+
         pip_args = [
             'download',
             '-d', whldir,
