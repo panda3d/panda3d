@@ -78,7 +78,7 @@ PACKAGE_DATA_DIRS = {
         ('cefpython3/libcef.so', '', {}),
         ('cefpython3/LICENSE.txt', '', {}),
         ('cefpython3/License', '', {}),
-        ('cefpython3/subprocess', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
+        ('cefpython3/subprocess*', '', {'PKG_DATA_MAKE_EXECUTABLE'}),
         ('cefpython3/locals/*', 'locals', {}),
         ('cefpython3/Chromium Embedded Framework.framework/Resources', 'Chromium Embedded Framework.framework/Resources', {}),
     ],
