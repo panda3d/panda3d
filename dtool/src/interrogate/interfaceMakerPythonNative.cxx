@@ -7298,6 +7298,10 @@ is_cpp_type_legal(CPPType *in_ctype) {
 
   // bool answer = false;
   CPPType *type = TypeManager::resolve_type(in_ctype);
+  if (TypeManager::is_rvalue_reference(type)) {
+    return false;
+  }
+
   type = TypeManager::unwrap(type);
 
   if (TypeManager::is_void(type)) {

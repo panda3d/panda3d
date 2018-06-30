@@ -44,6 +44,7 @@ public:
   static bool is_assignable(CPPType *type);
 
   static bool is_reference(CPPType *type);
+  static bool is_rvalue_reference(CPPType *type);
   static bool is_ref_to_anything(CPPType *type);
   static bool is_const_ref_to_anything(CPPType *type);
   static bool is_const_pointer_to_anything(CPPType *type);
