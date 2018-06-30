@@ -1382,9 +1382,7 @@ open_raw_mice() {
 void x11GraphicsWindow::
 poll_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
-  for (int di = 0; di < _mouse_device_info.size(); ++di) {
-    MouseDeviceInfo &inf = _mouse_device_info[di];
-
+  for (MouseDeviceInfo &inf : _mouse_device_info) {
     // Read all bytes into buffer.
     if (inf._fd >= 0) {
       while (1) {

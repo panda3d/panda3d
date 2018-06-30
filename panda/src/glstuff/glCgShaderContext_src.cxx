@@ -525,7 +525,7 @@ issue_parameters(int altered) {
       }
 
       // Check if the size of the shader input and ptr_data match
-      int input_size = spec._dim[0] * spec._dim[1] * spec._dim[2];
+      size_t input_size = spec._dim[0] * spec._dim[1] * spec._dim[2];
 
       // dimension is negative only if the parameter had the (deprecated)k_
       // prefix.
