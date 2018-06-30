@@ -52,6 +52,7 @@ public:
   static bool is_pointer(CPPType *type);
   static bool is_const(CPPType *type);
   static bool is_struct(CPPType *type);
+  static bool is_scoped_enum(CPPType *type);
   static bool is_enum(CPPType *type);
   static bool is_const_enum(CPPType *type);
   static bool is_const_ref_to_enum(CPPType *type);

@@ -309,7 +309,7 @@ PyObject *_Dtool_Return(PyObject *value) {
 /**
  * Creates a Python 3.4-style enum type.  Steals reference to 'names'.
  */
-PyObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
+PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
   static PyObject *enum_class = nullptr;
   static PyObject *enum_meta = nullptr;
   static PyObject *enum_create = nullptr;
@@ -330,7 +330,8 @@ PyObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *m
     PyObject_SetAttrString(result, "__module__", modstr);
     Py_DECREF(modstr);
   }
-  return result;
+  nassertr(PyType_Check(result), nullptr);
+  return (PyTypeObject *)result;
 }
 
 /**

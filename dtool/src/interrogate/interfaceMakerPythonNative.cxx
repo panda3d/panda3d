@@ -815,6 +815,11 @@ write_prototypes(ostream &out_code, ostream *out_h) {
           // _external_imports.insert(object->_itype._cpptype);
         }
       }
+    } else if (object->_itype.is_scoped_enum() && isExportThisRun(object->_itype._cpptype)) {
+      // Forward declare where we will put the scoped enum type.
+      string class_name = object->_itype._cpptype->get_local_name(&parser);
+      string safe_name = make_safe_name(class_name);
+      out_code << "static PyTypeObject *Dtool_Ptr_" << safe_name << " = nullptr;\n";
     }
   }
 
@@ -1301,7 +1306,10 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       int enum_count = object->_itype.number_of_enum_values();
 
       if (object->_itype.is_scoped_enum()) {
-        // Convert as Python 3.4 enum.
+        // Convert as Python 3.4-style enum.
+        string class_name = object->_itype._cpptype->get_local_name(&parser);
+        string safe_name = make_safe_name(class_name);
+
         CPPType *underlying_type = TypeManager::unwrap_const(object->_itype._cpptype->as_enum_type()->get_underlying_type());
         string cast_to = underlying_type->get_local_name(&parser);
         out << "#if PY_VERSION_HEX >= 0x03040000\n\n";
@@ -1318,9 +1326,11 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
               << object->_itype.get_enum_value_name(xx) << "));\n"
                  "    PyTuple_SET_ITEM(members, " << xx << ", member);\n";
         }
+        out << "    Dtool_Ptr_" << safe_name << " = Dtool_EnumType_Create(\""
+            << object->_itype.get_name() << "\", members, \""
+            << _def->module_name << "\");\n";
         out << "    PyModule_AddObject(module, \"" << object->_itype.get_name()
-            << "\", Dtool_EnumType_Create(\"" << object->_itype.get_name()
-            << "\", members, \"" << _def->module_name << "\"));\n";
+            << "\", (PyObject *)Dtool_Ptr_" << safe_name << ");\n";
         out << "  }\n";
         out << "#endif\n";
       } else {
@@ -3112,7 +3122,10 @@ write_module_class(ostream &out, Object *obj) {
       // support recently.
 
     } else if (nested_obj->_itype.is_scoped_enum()) {
-      // Convert enum class as Python 3.4 enum.
+      // Convert enum class as Python 3.4-style enum.
+      string class_name = nested_obj->_itype._cpptype->get_local_name(&parser);
+      string safe_name = make_safe_name(class_name);
+
       int enum_count = nested_obj->_itype.number_of_enum_values();
       CPPType *underlying_type = TypeManager::unwrap_const(nested_obj->_itype._cpptype->as_enum_type()->get_underlying_type());
       string cast_to = underlying_type->get_local_name(&parser);
@@ -3130,9 +3143,11 @@ write_module_class(ostream &out, Object *obj) {
             << nested_obj->_itype.get_enum_value_name(xx) << "));\n"
                "      PyTuple_SET_ITEM(members, " << xx << ", member);\n";
       }
+        out << "      Dtool_Ptr_" << safe_name << " = Dtool_EnumType_Create(\""
+            << nested_obj->_itype.get_name() << "\", members, \""
+            << _def->module_name << "\");\n";
       out << "      PyDict_SetItemString(dict, \"" << nested_obj->_itype.get_name()
-          << "\", Dtool_EnumType_Create(\"" << nested_obj->_itype.get_name()
-          << "\", members, \"" << _def->module_name << "\"));\n";
+          << "\", (PyObject *)Dtool_Ptr_" << safe_name << ");\n";
       out << "    }\n";
       out << "#endif\n";
 
@@ -4821,6 +4836,46 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       clear_error = true;
       only_pyobjects = false;
 
+    } else if (TypeManager::is_scoped_enum(type)) {
+      if (args_type == AT_single_arg) {
+        param_name = "arg";
+      } else {
+        indent(out, indent_level) << "PyObject *" << param_name;
+        if (default_value != nullptr) {
+          out << " = nullptr";
+        }
+        out << ";\n";
+        format_specifiers += "O";
+        parameter_list += ", &" + param_name;
+      }
+
+      CPPEnumType *enum_type = (CPPEnumType *)TypeManager::unwrap(type);
+      CPPType *underlying_type = enum_type->get_underlying_type();
+      underlying_type = TypeManager::unwrap_const(underlying_type);
+
+      //indent(out, indent_level);
+      //underlying_type->output_instance(out, param_name + "_val", &parser);
+      //out << default_expr << ";\n";
+      extra_convert << "long " << param_name << "_val";
+
+      if (default_value != nullptr) {
+        extra_convert << " = (long)";
+        default_value->output(extra_convert, 0, &parser, false);
+        extra_convert <<
+          ";\nif (" << param_name << " != nullptr) {\n"
+          "  " << param_name << "_val = Dtool_EnumValue_AsLong(" + param_name + ");\n"
+          "}";
+      } else {
+        extra_convert
+          << ";\n"
+          << param_name << "_val = Dtool_EnumValue_AsLong(" + param_name + ");\n";
+      }
+
+      pexpr_string = "(" + enum_type->get_local_name(&parser) + ")" + param_name + "_val";
+      expected_params += classNameFromCppName(enum_type->get_simple_name(), false);
+      extra_param_check << " && " << param_name << "_val != -1";
+      clear_error = true;
+
     } else if (TypeManager::is_bool(type)) {
       if (args_type == AT_single_arg) {
         param_name = "arg";
@@ -6220,7 +6275,24 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
   CPPType *orig_type = return_type->get_orig_type();
   CPPType *type = return_type->get_new_type();
 
-  if (return_type->new_type_is_atomic_string() ||
+  if (TypeManager::is_scoped_enum(type)) {
+    InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+    TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)), false);
+    const InterrogateType &itype = idb->get_type(type_index);
+    string safe_name = make_safe_name(itype.get_scoped_name());
+
+    indent(out, indent_level)
+      << "return PyObject_CallFunction((PyObject *)Dtool_Ptr_" << safe_name;
+
+    CPPType *underlying_type = ((CPPEnumType *)itype._cpptype)->get_underlying_type();
+    if (TypeManager::is_unsigned_integer(underlying_type)) {
+      out << ", \"k\", (unsigned long)";
+    } else {
+      out << ", \"l\", (long)";
+    }
+    out << "(" << return_expr << "));\n";
+
+  } else if (return_type->new_type_is_atomic_string() ||
       TypeManager::is_simple(type) ||
       TypeManager::is_char_pointer(type) ||
       TypeManager::is_wchar_pointer(type) ||

@@ -98,6 +98,20 @@ INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, i
 }
 
 /**
+ * Converts the enum value to a C long.
+ */
+INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
+  PyObject *val = PyObject_GetAttrString(value, "value");
+  if (val != nullptr) {
+    long as_long = PyLongOrInt_AS_LONG(val);
+    Py_DECREF(val);
+    return as_long;
+  } else {
+    return -1;
+  }
+}
+
+/**
  * These functions wrap a pointer for a class that defines get_type_handle().
  */
 template<class T> INLINE PyObject *
