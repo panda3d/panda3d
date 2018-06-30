@@ -673,12 +673,7 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
     return;
   }
 
-  CPPStructType::Derivation::const_iterator bi;
-  for (bi = inclass->_derivation.begin();
-      bi != inclass->_derivation.end();
-      ++bi) {
-
-    const CPPStructType::Base &base = (*bi);
+  for (const CPPStructType::Base &base : inclass->_derivation) {
 // if (base._vis <= V_public) can_downcast = false;
     CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
     if (base_type != nullptr) {
@@ -801,11 +796,10 @@ write_prototypes(ostream &out_code, ostream *out_h) {
   }
 
   /*
-  for (fi = _functions.begin(); fi != _functions.end(); ++fi)
-  {
-      Function *func = (*fi);
-      if (!func->_itype.is_global() && is_function_legal(func))
-        write_prototype_for (out_code, func);
+  for (Function *func : _functions) {
+    if (!func->_itype.is_global() && is_function_legal(func)) {
+      write_prototype_for(out_code, func);
+    }
   }
   */
 
@@ -828,8 +822,7 @@ write_prototypes(ostream &out_code, ostream *out_h) {
   out_code << " * Extern declarations for imported classes\n";
   out_code << " */\n";
 
-  for (std::set<CPPType *>::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ii++) {
-    CPPType *type = (*ii);
+  for (CPPType *type : _external_imports) {
     string class_name = type->get_local_name(&parser);
     string safe_name = make_safe_name(class_name);
 
@@ -926,15 +919,13 @@ write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   out_code << " */\n";
 
   /*
-  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
-    Function *func = (*fi);
+  for (Function *func : obj->_methods) {
     write_prototype_for(out_code, func);
   }
   */
 
   /*
-  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-    Function *func = (*fi);
+  for (Function *func : obj->_constructors) {
     std::string fname = "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
     write_prototype_for_name(out_code, obj, func, fname);
   }
@@ -993,9 +984,6 @@ write_functions(ostream &out) {
  */
 void InterfaceMakerPythonNative::
 write_class_details(ostream &out, Object *obj) {
-  Functions::iterator fi;
-  Function::Remaps::const_iterator ri;
-
   // std::string cClassName = obj->_itype.get_scoped_name();
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName = obj->_itype.get_true_name();
@@ -1005,8 +993,7 @@ write_class_details(ostream &out, Object *obj) {
   out << " */\n";
 
   // First write out all the wrapper functions for the methods.
-  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
-    Function *func = (*fi);
+  for (Function *func : obj->_methods) {
     if (func) {
       // Write the definition of the generic wrapper function for this
       // function.
@@ -1015,18 +1002,13 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Now write out generated getters and setters for the properties.
-  Properties::const_iterator pit;
-  for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
-    Property *property = (*pit);
-
+  for (Property *property : obj->_properties) {
     write_getset(out, obj, property);
   }
 
   // Write the constructors.
   std::string fname = "static int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-    Function *func = (*fi);
-
+  for (Function *func : obj->_constructors) {
     string expected_params;
     write_function_for_name(out, obj, func->_remaps, fname, expected_params, true, AT_keyword_args, RF_int);
   }
@@ -1052,17 +1034,16 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   // Write make seqs: generated methods that return a sequence of items.
-  MakeSeqs::iterator msi;
-  for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    if (is_function_legal((*msi)->_length_getter) &&
-        is_function_legal((*msi)->_element_getter)) {
-      write_make_seq(out, obj, ClassName, cClassName, *msi);
+  for (MakeSeq *make_seq : obj->_make_seqs) {
+    if (is_function_legal(make_seq->_length_getter) &&
+        is_function_legal(make_seq->_element_getter)) {
+      write_make_seq(out, obj, ClassName, cClassName, make_seq);
     } else {
-      if (!is_function_legal((*msi)->_length_getter)) {
-        std::cerr << "illegal length function for MAKE_SEQ: " << (*msi)->_length_getter->_name << "\n";
+      if (!is_function_legal(make_seq->_length_getter)) {
+        std::cerr << "illegal length function for MAKE_SEQ: " << make_seq->_length_getter->_name << "\n";
       }
-      if (!is_function_legal((*msi)->_element_getter)) {
-        std::cerr << "illegal element function for MAKE_SEQ: " << (*msi)->_element_getter->_name << "\n";
+      if (!is_function_legal(make_seq->_element_getter)) {
+        std::cerr << "illegal element function for MAKE_SEQ: " << make_seq->_element_getter->_name << "\n";
       }
     }
   }
@@ -1297,11 +1278,11 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "#ifndef LINK_ALL_STATIC\n";
   out << "  // Resolve externally imported types.\n";
 
-  for (std::set<CPPType *>::iterator ii = _external_imports.begin(); ii != _external_imports.end(); ++ii) {
-    string class_name = (*ii)->get_local_name(&parser);
+  for (CPPType *type : _external_imports) {
+    string class_name = type->get_local_name(&parser);
     string safe_name = make_safe_name(class_name);
 
-    if (has_get_class_type_function(*ii)) {
+    if (has_get_class_type_function(type)) {
       out << "  Dtool_Ptr_" << safe_name << " = LookupRuntimeTypedClass(" << class_name << "::get_class_type());\n";
     } else {
       out << "  Dtool_Ptr_" << safe_name << " = LookupNamedClass(\"" << class_name << "\");\n";
@@ -1555,7 +1536,6 @@ write_module_class(ostream &out, Object *obj) {
     is_runtime_typed = true;
   }
 
-  Functions::iterator fi;
   out << "/**\n";
   out << " * Python method tables for " << ClassName << " (" << export_class_name << ")\n" ;
   out << " */\n";
@@ -1566,8 +1546,7 @@ write_module_class(ostream &out, Object *obj) {
   bool got_copy = false;
   bool got_deepcopy = false;
 
-  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
-    Function *func = (*fi);
+  for (Function *func : obj->_methods) {
     if (func->_name == "__copy__") {
       got_copy = true;
     } else if (func->_name == "__deepcopy__") {
@@ -1604,9 +1583,7 @@ write_module_class(ostream &out, Object *obj) {
 
     bool has_nonslotted = false;
 
-    Function::Remaps::const_iterator ri;
-    for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-      FunctionRemap *remap = (*ri);
+    for (FunctionRemap *remap : func->_remaps) {
       if (!is_remap_legal(remap)) {
         continue;
       }
@@ -1698,9 +1675,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "  {\"__deepcopy__\", &map_deepcopy_to_copy, METH_VARARGS, nullptr},\n";
   }
 
-  MakeSeqs::iterator msi;
-  for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
-    MakeSeq *make_seq = (*msi);
+  for (MakeSeq *make_seq : obj->_make_seqs) {
     if (!is_function_legal(make_seq->_length_getter) ||
         !is_function_legal(make_seq->_element_getter)) {
       continue;
@@ -1876,10 +1851,7 @@ write_module_class(ostream &out, Object *obj) {
 
           // This function handles both delattr and setattr.  Fish out the
           // remaps for both types.
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
-
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_cppfunc->get_simple_name() == "__delattr__" && remap->_parameters.size() == 2) {
               delattr_remaps.insert(remap);
 
@@ -2029,10 +2001,7 @@ write_module_class(ostream &out, Object *obj) {
 
           // This function handles both delitem and setitem.  Fish out the
           // remaps for either one.
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
-
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_flags & FunctionRemap::F_setitem_int) {
               setitem_remaps.insert(remap);
 
@@ -2098,10 +2067,7 @@ write_module_class(ostream &out, Object *obj) {
 
           // This function handles both delitem and setitem.  Fish out the
           // remaps for either one.
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
-
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_flags & FunctionRemap::F_setitem) {
               setitem_remaps.insert(remap);
 
@@ -2185,9 +2151,7 @@ write_module_class(ostream &out, Object *obj) {
 
           // Iterate through the remaps to find the one that matches our
           // parameters.
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_const_method) {
               if ((remap->_flags & FunctionRemap::F_explicit_self) == 0) {
                 params_const.push_back("self");
@@ -2254,9 +2218,7 @@ write_module_class(ostream &out, Object *obj) {
 
           // Iterate through the remaps to find the one that matches our
           // parameters.
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_const_method) {
               if ((remap->_flags & FunctionRemap::F_explicit_self) == 0) {
                 params_const.push_back("self");
@@ -2340,10 +2302,7 @@ write_module_class(ostream &out, Object *obj) {
           set<FunctionRemap*> one_param_remaps;
           set<FunctionRemap*> two_param_remaps;
 
-          set<FunctionRemap*>::const_iterator ri;
-          for (ri = def._remaps.begin(); ri != def._remaps.end(); ++ri) {
-            FunctionRemap *remap = (*ri);
-
+          for (FunctionRemap *remap : def._remaps) {
             if (remap->_parameters.size() == 2) {
               one_param_remaps.insert(remap);
 
@@ -2537,17 +2496,14 @@ write_module_class(ostream &out, Object *obj) {
     out << "    return nullptr;\n";
     out << "  }\n\n";
 
-    for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
+    for (Function *func : obj->_methods) {
       std::set<FunctionRemap*> remaps;
-      Function *func = (*fi);
       if (!func) {
         continue;
       }
       // We only accept comparison operators that take one parameter (besides
       // 'this').
-      Function::Remaps::const_iterator ri;
-      for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-        FunctionRemap *remap = (*ri);
+      for (FunctionRemap *remap : func->_remaps) {
         if (is_remap_legal(remap) && remap->_has_this && (remap->_args_type == AT_single_arg)) {
           remaps.insert(remap);
         }
@@ -2634,9 +2590,7 @@ write_module_class(ostream &out, Object *obj) {
   if (obj->_properties.size() > 0) {
     // Write out the array of properties, telling Python which getter and
     // setter to call when they are assigned or queried in Python code.
-    Properties::const_iterator pit;
-    for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
-      Property *property = (*pit);
+    for (Property *property : obj->_properties) {
       const InterrogateElement &ielem = property->_ielement;
       if (!property->_has_this || property->_getter_remaps.empty()) {
         continue;
@@ -3060,10 +3014,10 @@ write_module_class(ostream &out, Object *obj) {
   out << "    // Dependent objects\n";
   if (bases.size() > 0) {
     string baseargs;
-    for (std::vector<CPPType*>::iterator bi = bases.begin(); bi != bases.end(); ++bi) {
-      string safe_name = make_safe_name((*bi)->get_local_name(&parser));
+    for (CPPType *base : bases) {
+      string safe_name = make_safe_name(base->get_local_name(&parser));
 
-      if (isExportThisRun(*bi)) {
+      if (isExportThisRun(base)) {
         baseargs += ", (PyTypeObject *)&Dtool_" + safe_name;
         out << "    Dtool_PyModuleClassInit_" << safe_name << "(nullptr);\n";
 
@@ -3207,9 +3161,7 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   // Also add the static properties, which can't be added via getset.
-  Properties::const_iterator pit;
-  for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
-    Property *property = (*pit);
+  for (Property *property : obj->_properties) {
     const InterrogateElement &ielem = property->_ielement;
     if (property->_has_this || property->_getter_remaps.empty()) {
       continue;
@@ -3354,9 +3306,7 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   // should even write it.
   bool has_remaps = false;
 
-  Function::Remaps::const_iterator ri;
-  for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-    FunctionRemap *remap = (*ri);
+  for (FunctionRemap *remap : func->_remaps) {
     if (!is_remap_legal(remap)) {
       continue;
     }
@@ -3805,18 +3755,12 @@ void InterfaceMakerPythonNative::
 write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
   std::map<int, std::set<FunctionRemap *> > map_sets;
   std::map<int, std::set<FunctionRemap *> >::iterator mii;
-  std::set<FunctionRemap *>::iterator sii;
 
   int max_required_args = 0;
 
-  Functions::iterator fi;
-  Function::Remaps::const_iterator ri;
-
   // Go through the methods and find appropriate static make() functions.
-  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
-    Function *func = (*fi);
-    for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-      FunctionRemap *remap = (*ri);
+  for (Function *func : obj->_methods) {
+    for (FunctionRemap *remap : func->_remaps) {
       if (is_remap_legal(remap) && remap->_flags & FunctionRemap::F_coerce_constructor) {
         nassertd(!remap->_has_this) continue;
 
@@ -3850,10 +3794,8 @@ write_coerce_constructor(ostream &out, Object *obj, bool is_const) {
 
   // Now go through the constructors that are suitable for coercion.  This
   // excludes copy constructors and ones marked "explicit".
-  for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
-    Function *func = (*fi);
-    for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-      FunctionRemap *remap = (*ri);
+  for (Function *func : obj->_constructors) {
+    for (FunctionRemap *remap : func->_remaps) {
       if (is_remap_legal(remap) && remap->_flags & FunctionRemap::F_coerce_constructor) {
         nassertd(!remap->_has_this) continue;
 
@@ -6504,11 +6446,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     std::set<FunctionRemap*> remaps;
 
     // Extract only the getters that take one integral argument.
-    Function::Remaps::iterator it;
-    for (it = property->_getter_remaps.begin();
-          it != property->_getter_remaps.end();
-          ++it) {
-      FunctionRemap *remap = *it;
+    for (FunctionRemap *remap : property->_getter_remaps) {
       int min_num_args = remap->get_min_num_args();
       int max_num_args = remap->get_max_num_args();
       if (min_num_args <= 1 && max_num_args >= 1 &&
@@ -6573,11 +6511,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       std::set<FunctionRemap*> remaps;
 
       // Extract only the setters that take two arguments.
-      Function::Remaps::iterator it;
-      for (it = property->_setter_remaps.begin();
-           it != property->_setter_remaps.end();
-           ++it) {
-        FunctionRemap *remap = *it;
+      for (FunctionRemap *remap : property->_setter_remaps) {
         int min_num_args = remap->get_min_num_args();
         int max_num_args = remap->get_max_num_args();
         if (min_num_args <= 2 && max_num_args >= 2 &&
@@ -6675,11 +6609,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
     std::set<FunctionRemap*> remaps;
     // Extract only the getters that take one argument.  Fish out the ones
     // already taken by the sequence getter.
-    Function::Remaps::iterator it;
-    for (it = property->_getter_remaps.begin();
-          it != property->_getter_remaps.end();
-          ++it) {
-      FunctionRemap *remap = *it;
+    for (FunctionRemap *remap : property->_getter_remaps) {
       int min_num_args = remap->get_min_num_args();
       int max_num_args = remap->get_max_num_args();
       if (min_num_args <= 1 && max_num_args >= 1 &&
@@ -6808,11 +6738,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       std::set<FunctionRemap*> remaps;
 
       // Extract only the getters that take one integral argument.
-      Function::Remaps::iterator it;
-      for (it = property->_getkey_function->_remaps.begin();
-            it != property->_getkey_function->_remaps.end();
-            ++it) {
-        FunctionRemap *remap = *it;
+      for (FunctionRemap *remap : property->_getkey_function->_remaps) {
         int min_num_args = remap->get_min_num_args();
         int max_num_args = remap->get_max_num_args();
         if (min_num_args <= 1 && max_num_args >= 1 &&
@@ -6969,11 +6895,7 @@ write_getset(ostream &out, Object *obj, Property *property) {
       std::set<FunctionRemap*> remaps;
 
       // Extract only the setters that take one argument.
-      Function::Remaps::iterator it;
-      for (it = property->_setter_remaps.begin();
-            it != property->_setter_remaps.end();
-            ++it) {
-        FunctionRemap *remap = *it;
+      for (FunctionRemap *remap : property->_setter_remaps) {
         int min_num_args = remap->get_min_num_args();
         int max_num_args = remap->get_max_num_args();
         if (min_num_args <= 1 && max_num_args >= 1) {
@@ -7362,9 +7284,7 @@ isExportThisRun(Function *func) {
     return false;
   }
 
-  Function::Remaps::const_iterator ri;
-  for (ri = func->_remaps.begin(); ri != func->_remaps.end();) {
-    FunctionRemap *remap = (*ri);
+  for (FunctionRemap *remap : func->_remaps) {
     return isExportThisRun(remap->_cpptype);
   }
 
@@ -7439,10 +7359,7 @@ has_coerce_constructor(CPPStructType *type) {
   CPPScope::Functions::iterator fgi;
   for (fgi = scope->_functions.begin(); fgi != scope->_functions.end(); ++fgi) {
     CPPFunctionGroup *fgroup = fgi->second;
-
-    CPPFunctionGroup::Instances::iterator ii;
-    for (ii = fgroup->_instances.begin(); ii != fgroup->_instances.end(); ++ii) {
-      CPPInstance *inst = (*ii);
+    for (CPPInstance *inst : fgroup->_instances) {
       CPPFunctionType *ftype = inst->_type->as_function_type();
       if (ftype == nullptr) {
         continue;
@@ -7527,9 +7444,7 @@ is_remap_coercion_possible(FunctionRemap *remap) {
  */
 bool InterfaceMakerPythonNative::
 is_function_legal(Function *func) {
-  Function::Remaps::const_iterator ri;
-  for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
-    FunctionRemap *remap = (*ri);
+  for (FunctionRemap *remap : func->_remaps) {
     if (is_remap_legal(remap)) {
 // printf("  Function Is Marked Legal %s\n",func->_name.c_str());
 
@@ -7575,13 +7490,7 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
     return true;
   }
 
-  CPPStructType::Derivation::const_iterator bi;
-  for (bi = inclass->_derivation.begin();
-      bi != inclass->_derivation.end();
-      ++bi) {
-
-    const CPPStructType::Base &base = (*bi);
-
+  for (const CPPStructType::Base &base : inclass->_derivation) {
     CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
     if (base_type != nullptr) {
       if (DoesInheritFromIsClass(base_type, name)) {
@@ -7632,9 +7541,7 @@ has_init_type_function(CPPType *type) {
   }
   const CPPFunctionGroup *group = it->second;
 
-  CPPFunctionGroup::Instances::const_iterator ii;
-  for (ii = group->_instances.begin(); ii != group->_instances.end(); ++ii) {
-    const CPPInstance *cppinst = *ii;
+  for (const CPPInstance *cppinst : group->_instances) {
     const CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
     if (cppfunc != nullptr &&
