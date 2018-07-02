@@ -1312,15 +1312,19 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
         CPPType *underlying_type = TypeManager::unwrap_const(object->_itype._cpptype->as_enum_type()->get_underlying_type());
         string cast_to = underlying_type->get_local_name(&parser);
-        out << "#if PY_VERSION_HEX >= 0x03040000\n\n";
         out << "  // enum class " << object->_itype.get_scoped_name() << "\n";
         out << "  {\n";
         out << "    PyObject *members = PyTuple_New(" << enum_count << ");\n";
         out << "    PyObject *member;\n";
         for (int xx = 0; xx < enum_count; xx++) {
           out << "    member = PyTuple_New(2);\n"
-                 "    PyTuple_SET_ITEM(member, 0, PyUnicode_FromString(\""
+                 "#if PY_MAJOR_VERSION >= 3\n"
+                 "      PyTuple_SET_ITEM(member, 0, PyUnicode_FromString(\""
               << object->_itype.get_enum_value_name(xx) << "\"));\n"
+                 "#else\n"
+                 "      PyTuple_SET_ITEM(member, 0, PyString_FromString(\""
+              << object->_itype.get_enum_value_name(xx) << "\"));\n"
+                 "#endif\n"
                  "    PyTuple_SET_ITEM(member, 1, Dtool_WrapValue(("
               << cast_to << ")" << object->_itype.get_scoped_name() << "::"
               << object->_itype.get_enum_value_name(xx) << "));\n"
@@ -1332,7 +1336,6 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
         out << "    PyModule_AddObject(module, \"" << object->_itype.get_name()
             << "\", (PyObject *)Dtool_Ptr_" << safe_name << ");\n";
         out << "  }\n";
-        out << "#endif\n";
       } else {
         out << "  // enum " << object->_itype.get_scoped_name() << "\n";
         for (int xx = 0; xx < enum_count; xx++) {
@@ -3129,27 +3132,30 @@ write_module_class(ostream &out, Object *obj) {
       int enum_count = nested_obj->_itype.number_of_enum_values();
       CPPType *underlying_type = TypeManager::unwrap_const(nested_obj->_itype._cpptype->as_enum_type()->get_underlying_type());
       string cast_to = underlying_type->get_local_name(&parser);
-      out << "#if PY_VERSION_HEX >= 0x03040000\n\n";
       out << "    // enum class " << nested_obj->_itype.get_scoped_name() << ";\n";
       out << "    {\n";
       out << "      PyObject *members = PyTuple_New(" << enum_count << ");\n";
       out << "      PyObject *member;\n";
       for (int xx = 0; xx < enum_count; xx++) {
         out << "      member = PyTuple_New(2);\n"
+               "#if PY_MAJOR_VERSION >= 3\n"
                "      PyTuple_SET_ITEM(member, 0, PyUnicode_FromString(\""
             << nested_obj->_itype.get_enum_value_name(xx) << "\"));\n"
+               "#else\n"
+               "      PyTuple_SET_ITEM(member, 0, PyString_FromString(\""
+            << nested_obj->_itype.get_enum_value_name(xx) << "\"));\n"
+               "#endif\n"
                "      PyTuple_SET_ITEM(member, 1, Dtool_WrapValue(("
             << cast_to << ")" << nested_obj->_itype.get_scoped_name() << "::"
             << nested_obj->_itype.get_enum_value_name(xx) << "));\n"
                "      PyTuple_SET_ITEM(members, " << xx << ", member);\n";
       }
-        out << "      Dtool_Ptr_" << safe_name << " = Dtool_EnumType_Create(\""
-            << nested_obj->_itype.get_name() << "\", members, \""
-            << _def->module_name << "\");\n";
+      out << "      Dtool_Ptr_" << safe_name << " = Dtool_EnumType_Create(\""
+          << nested_obj->_itype.get_name() << "\", members, \""
+          << _def->module_name << "\");\n";
       out << "      PyDict_SetItemString(dict, \"" << nested_obj->_itype.get_name()
           << "\", (PyObject *)Dtool_Ptr_" << safe_name << ");\n";
       out << "    }\n";
-      out << "#endif\n";
 
     } else if (nested_obj->_itype.is_enum()) {
       out << "    // enum " << nested_obj->_itype.get_scoped_name() << ";\n";

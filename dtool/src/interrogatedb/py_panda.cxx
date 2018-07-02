@@ -306,11 +306,39 @@ PyObject *_Dtool_Return(PyObject *value) {
   return value;
 }
 
+#if PY_VERSION_HEX < 0x03040000
+static PyObject *Dtool_EnumType_Str(PyObject *self) {
+  PyObject *name = PyObject_GetAttrString(self, "name");
+#if PY_MAJOR_VERSION >= 3
+  PyObject *repr = PyUnicode_FromFormat("%s.%s", Py_TYPE(self)->tp_name, PyString_AS_STRING(name));
+#else
+  PyObject *repr = PyString_FromFormat("%s.%s", Py_TYPE(self)->tp_name, PyString_AS_STRING(name));
+#endif
+  Py_DECREF(name);
+  return repr;
+}
+
+static PyObject *Dtool_EnumType_Repr(PyObject *self) {
+  PyObject *name = PyObject_GetAttrString(self, "name");
+  PyObject *value = PyObject_GetAttrString(self, "value");
+#if PY_MAJOR_VERSION >= 3
+  PyObject *repr = PyUnicode_FromFormat("<%s.%s: %ld>", Py_TYPE(self)->tp_name, PyString_AS_STRING(name), PyLongOrInt_AS_LONG(value));
+#else
+  PyObject *repr = PyString_FromFormat("<%s.%s: %ld>", Py_TYPE(self)->tp_name, PyString_AS_STRING(name), PyLongOrInt_AS_LONG(value));
+#endif
+  Py_DECREF(name);
+  Py_DECREF(value);
+  return repr;
+}
+#endif
+
 /**
- * Creates a Python 3.4-style enum type.  Steals reference to 'names'.
+ * Creates a Python 3.4-style enum type.  Steals reference to 'names', which
+ * should be a tuple of (name, value) pairs.
  */
 PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const char *module) {
   static PyObject *enum_class = nullptr;
+#if PY_VERSION_HEX >= 0x03040000
   static PyObject *enum_meta = nullptr;
   static PyObject *enum_create = nullptr;
   if (enum_meta == nullptr) {
@@ -325,6 +353,62 @@ PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names, const cha
 
   PyObject *result = PyObject_CallFunction(enum_create, (char *)"OsN", enum_class, name, names);
   nassertr(result != nullptr, nullptr);
+#else
+  static PyObject *name_str;
+  static PyObject *name_sunder_str;
+  static PyObject *value_str;
+  static PyObject *value_sunder_str;
+  // Emulate something vaguely like the enum module.
+  if (enum_class == nullptr) {
+#if PY_MAJOR_VERSION >= 3
+    name_str = PyUnicode_InternFromString("name");
+    value_str = PyUnicode_InternFromString("value");
+    name_sunder_str = PyUnicode_InternFromString("_name_");
+    value_sunder_str = PyUnicode_InternFromString("_value_");
+#else
+    name_str = PyString_InternFromString("name");
+    value_str = PyString_InternFromString("value");
+    name_sunder_str = PyString_InternFromString("_name_");
+    value_sunder_str = PyString_InternFromString("_value_");
+#endif
+    PyObject *name_value_tuple = PyTuple_New(4);
+    PyTuple_SET_ITEM(name_value_tuple, 0, name_str);
+    PyTuple_SET_ITEM(name_value_tuple, 1, value_str);
+    PyTuple_SET_ITEM(name_value_tuple, 2, name_sunder_str);
+    PyTuple_SET_ITEM(name_value_tuple, 3, value_sunder_str);
+    Py_INCREF(name_str);
+    Py_INCREF(value_str);
+
+    PyObject *slots_dict = PyDict_New();
+    PyDict_SetItemString(slots_dict, "__slots__", name_value_tuple);
+    Py_DECREF(name_value_tuple);
+
+    enum_class = PyObject_CallFunction((PyObject *)&PyType_Type, (char *)"s()N", "Enum", slots_dict);
+    nassertr(enum_class != nullptr, nullptr);
+  }
+  PyObject *result = PyObject_CallFunction((PyObject *)&PyType_Type, (char *)"s(O)N", name, enum_class, PyDict_New());
+  nassertr(result != nullptr, nullptr);
+
+  ((PyTypeObject *)result)->tp_str = Dtool_EnumType_Str;
+  ((PyTypeObject *)result)->tp_repr = Dtool_EnumType_Repr;
+
+  // Copy the names as instances of the above to the class dict.
+  Py_ssize_t size = PyTuple_GET_SIZE(names);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    PyObject *item = PyTuple_GET_ITEM(names, i);
+    PyObject *name = PyTuple_GET_ITEM(item, 0);
+    PyObject *value = PyTuple_GET_ITEM(item, 1);
+    PyObject *member = _PyObject_CallNoArg(result);
+    PyObject_SetAttr(member, name_str, name);
+    PyObject_SetAttr(member, name_sunder_str, name);
+    PyObject_SetAttr(member, value_str, value);
+    PyObject_SetAttr(member, value_sunder_str, value);
+    PyObject_SetAttr(result, name, member);
+    Py_DECREF(member);
+  }
+  Py_DECREF(names);
+#endif
+
   if (module != nullptr) {
     PyObject *modstr = PyUnicode_FromString(module);
     PyObject_SetAttrString(result, "__module__", modstr);
