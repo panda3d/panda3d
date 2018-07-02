@@ -183,7 +183,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // for attributes when they are not bound to a vertex buffer, as well as any
   // flat color assigned via ColorAttrib.
   VkDeviceMemory memory;
-  uint32_t palette_size = (uint32_t)std::min(2, vulkan_color_palette_size.get_value()) * 16;
+  uint32_t palette_size = (uint32_t)std::max(2, vulkan_color_palette_size.get_value()) * 16;
   if (!create_buffer(palette_size, _color_vertex_buffer, memory,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
