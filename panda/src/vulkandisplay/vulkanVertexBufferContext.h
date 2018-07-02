@@ -31,7 +31,7 @@ public:
 
 public:
   VkBuffer _buffer;
-  VkDeviceMemory _memory;
+  VulkanMemoryBlock _block;
 
 public:
   static TypeHandle get_class_type() {

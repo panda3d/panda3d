@@ -48,8 +48,8 @@ public:
   bool _pack_bgr8;
 
   VkImage _image;
-  VkDeviceMemory _memory;
   VkImageView _image_view;
+  VulkanMemoryBlock _block;
 
   VkImageLayout _layout;
   VkAccessFlags _access_mask;

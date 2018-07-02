@@ -15,6 +15,7 @@
 #define VULKANGRAPHICSSTATEGUARDIAN_H
 
 #include "config_vulkandisplay.h"
+#include "vulkanMemoryPage.h"
 
 class VulkanIndexBufferContext;
 class VulkanShaderContext;
@@ -37,6 +38,9 @@ public:
   virtual std::string get_driver_vendor();
   virtual std::string get_driver_renderer();
   virtual std::string get_driver_version();
+
+  bool allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
+                       VkFlags required_flags, bool linear);
 
   virtual TextureContext *prepare_texture(Texture *tex, int view);
   bool upload_texture(VulkanTextureContext *vtc);
@@ -125,7 +129,7 @@ private:
                          VkPrimitiveTopology topology);
 
 public:
-  bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
+  bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
 
   VkSemaphore create_semaphore();
@@ -190,6 +194,7 @@ private:
 
   // Palette for flat colors.
   VkBuffer _color_vertex_buffer;
+  VulkanMemoryBlock _color_vertex_memory;
   int _next_palette_index;
   typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
   ColorPaletteIndices _color_palette;
@@ -197,10 +202,19 @@ private:
   typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
   DescriptorSetMap _descriptor_set_map;
 
+  // Keep track of all the individual allocations.
+  Mutex _allocator_lock;
+  pvector<VulkanMemoryPage> _memory_pages;
+  VkDeviceSize _total_allocated;
+
+  // Keep track of blocks that should be deleted at the next fence.
+  pvector<VulkanMemoryBlock> _pending_free;
+  pvector<VkBuffer> _pending_delete_buffers;
+
   // Queued buffer-to-RAM transfer.
   struct QueuedDownload {
     VkBuffer _buffer;
-    VkDeviceMemory _memory;
+    VulkanMemoryBlock _block;
     PT(Texture) _texture;
     int _view;
   };

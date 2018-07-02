@@ -18,6 +18,5 @@ INLINE VulkanVertexBufferContext::
 VulkanVertexBufferContext(PreparedGraphicsObjects *pgo,
                           GeomVertexArrayData *data) :
   VertexBufferContext(pgo, data),
-  _buffer(VK_NULL_HANDLE),
-  _memory(VK_NULL_HANDLE) {
+  _buffer(VK_NULL_HANDLE) {
 }

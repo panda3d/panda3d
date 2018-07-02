@@ -19,7 +19,6 @@ INLINE VulkanTextureContext::
 VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture, int view) :
   TextureContext(pgo, texture, view),
   _image(VK_NULL_HANDLE),
-  _memory(VK_NULL_HANDLE),
   _image_view(VK_NULL_HANDLE),
   _pack_bgr8(false),
   _layout(VK_IMAGE_LAYOUT_UNDEFINED),
@@ -37,7 +36,6 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat forma
   TextureContext(pgo, nullptr, 0),
   _format(format),
   _image(image),
-  _memory(VK_NULL_HANDLE),
   _image_view(VK_NULL_HANDLE),
   _pack_bgr8(false),
   _layout(VK_IMAGE_LAYOUT_UNDEFINED),

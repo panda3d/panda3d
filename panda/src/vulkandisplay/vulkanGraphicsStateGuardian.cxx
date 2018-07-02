@@ -49,7 +49,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _wait_semaphore(VK_NULL_HANDLE),
   _signal_semaphore(VK_NULL_HANDLE),
   _pipeline_cache(VK_NULL_HANDLE),
-  _default_sc(nullptr)
+  _default_sc(nullptr),
+  _total_allocated(0)
 {
   const char *const layers[] = {
     "VK_LAYER_LUNARG_standard_validation",
@@ -182,9 +183,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   // Create a dummy vertex buffer.  This will be used to store default values
   // for attributes when they are not bound to a vertex buffer, as well as any
   // flat color assigned via ColorAttrib.
-  VkDeviceMemory memory;
   uint32_t palette_size = (uint32_t)std::max(2, vulkan_color_palette_size.get_value()) * 16;
-  if (!create_buffer(palette_size, _color_vertex_buffer, memory,
+  if (!create_buffer(palette_size, _color_vertex_buffer, _color_vertex_memory,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
@@ -314,6 +314,10 @@ VulkanGraphicsStateGuardian::
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
   vkDestroyFence(_device, _fence, nullptr);
+
+  // Also free all the memory pages before destroying the device.
+  _memory_pages.clear();
+
   vkDestroyDevice(_device, nullptr);
 }
 
@@ -375,6 +379,109 @@ get_driver_renderer() {
 std::string VulkanGraphicsStateGuardian::
 get_driver_version() {
   return std::string();
+}
+
+/**
+ * Allocates a block of graphics memory, using the given requirements.
+ */
+bool VulkanGraphicsStateGuardian::
+allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
+                VkFlags required_flags, bool linear) {
+  //MutexHolder holder(_allocator_lock);
+
+  for (VulkanMemoryPage &page : _memory_pages) {
+    if (page.meets_requirements(reqs, required_flags, linear)) {
+      SimpleAllocatorBlock *result = page.alloc(reqs.size, reqs.alignment);
+      if (result != nullptr) {
+        block = std::move(*result);
+        delete result;
+        return true;
+      }
+    }
+  }
+
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), false);
+
+  // We don't have a matching allocator.  Create a new one.
+  uint32_t type_index;
+  if (!vkpipe->find_memory_type(type_index, reqs.memoryTypeBits, required_flags)) {
+    return false;
+  }
+  VkFlags flags = vkpipe->_memory_properties.memoryTypes[type_index].propertyFlags;
+
+  VkMemoryAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
+  alloc_info.memoryTypeIndex = type_index;
+  alloc_info.allocationSize = std::max((VkDeviceSize)vulkan_memory_page_size, reqs.size);
+
+  VkDeviceMemory memory;
+  VkResult err;
+  do {
+    err = vkAllocateMemory(_device, &alloc_info, nullptr, &memory);
+    if (!err) {
+      break;
+    }
+
+    // No?  Try a smaller allocation.
+    alloc_info.allocationSize >>= 1;
+  } while (alloc_info.allocationSize >= reqs.size);
+
+  if (err) {
+    vulkan_error(err, "Failed to allocate new memory page");
+    return false;
+  }
+
+  _total_allocated += alloc_info.allocationSize;
+
+  if (vulkandisplay_cat.is_debug()) {
+    size_t size_kb = alloc_info.allocationSize >> 10u;
+    if (size_kb > 4096) {
+      vulkandisplay_cat.debug()
+        << "Allocated new " << (size_kb >> 10u) << " MiB page";
+    } else {
+      vulkandisplay_cat.debug()
+        << "Allocated new " << size_kb << " KiB page";
+    }
+
+    vulkandisplay_cat.debug(false)
+      << ", type " << std::dec << type_index;
+    if (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
+      vulkandisplay_cat.debug(false) << ", device-local";
+    }
+    if (flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+      vulkandisplay_cat.debug(false) << ", host-visible";
+    }
+    if (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
+      vulkandisplay_cat.debug(false) << ", host-coherent";
+    }
+    if (flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) {
+      vulkandisplay_cat.debug(false) << ", host-cached";
+    }
+    if (flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) {
+      vulkandisplay_cat.debug(false) << ", lazily-allocated";
+    }
+    if (flags & VK_MEMORY_PROPERTY_PROTECTED_BIT) {
+      vulkandisplay_cat.debug(false) << ", protected";
+    }
+    vulkandisplay_cat.debug(false) << "\n";
+  }
+
+  VulkanMemoryPage page(_device, memory, alloc_info.allocationSize, type_index, flags, _allocator_lock);
+
+  // We use a separate page for images with optimal tiling since they need to
+  // have a certain distance to regular tiling allocations, according to the
+  // bufferImageGranularity limit.  It's easier to just have a separate page.
+  page._linear_tiling = linear;
+
+  SimpleAllocatorBlock *result = page.alloc(reqs.size, reqs.alignment);
+  nassertr_always(result != nullptr, false);
+  block = std::move(*result);
+  delete result;
+
+  _memory_pages.push_back(std::move(page));
+  return true;
 }
 
 /**
@@ -558,38 +665,49 @@ prepare_texture(Texture *texture, int view) {
     return nullptr;
   }
 
+  // Create a texture context to manage the image's lifetime.
+  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
+  nassertr_always(tc != nullptr, nullptr);
+  tc->_format = image_info.format;
+  tc->_extent = image_info.extent;
+  tc->_mipmap_begin = mipmap_begin;
+  tc->_mipmap_end = mipmap_end;
+  tc->_mip_levels = image_info.mipLevels;
+  tc->_array_layers = image_info.arrayLayers;
+  tc->_generate_mipmaps = generate_mipmaps;
+  tc->_pack_bgr8 = pack_bgr8;
+
+  Texture::Format format = texture->get_format();
+  if (format == Texture::F_depth_stencil ||
+      format == Texture::F_depth_component ||
+      format == Texture::F_depth_component16 ||
+      format == Texture::F_depth_component24 ||
+      format == Texture::F_depth_component32) {
+    tc->_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+  } else {
+    tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+  }
+
+  tc->_image = image;
+
   // Get the memory requirements, and find an appropriate heap to alloc in.
   // The texture will be stored in device-local memory, since we can't write
   // to OPTIMAL-tiled images anyway.
   VkMemoryRequirements mem_reqs;
   vkGetImageMemoryRequirements(_device, image, &mem_reqs);
 
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = nullptr;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-    vulkan_error(err, "Failed to find memory heap to allocate texture memory");
+  if (!allocate_memory(tc->_block, mem_reqs, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false)) {
+    vulkandisplay_cat.error() << "Failed to allocate texture memory.\n";
     vkDestroyImage(_device, image, nullptr);
+    delete tc;
     return nullptr;
   }
 
-  VkDeviceMemory device_mem;
-  err = vkAllocateMemory(_device, &alloc_info, nullptr, &device_mem);
-  if (err) {
-    vulkan_error(err, "Failed to allocate device memory for texture image");
-    vkDestroyImage(_device, image, nullptr);
-    return nullptr;
-  }
 
   // Bind memory to image.
-  err = vkBindImageMemory(_device, image, device_mem, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind device memory to texture image");
+  if (!tc->_block.bind_image(image)) {
     vkDestroyImage(_device, image, nullptr);
-    vkFreeMemory(_device, device_mem, nullptr);
+    delete tc;
     return nullptr;
   }
 
@@ -630,7 +748,6 @@ prepare_texture(Texture *texture, int view) {
   view_info.format = image_info.format;
 
   // We use the swizzle mask to emulate deprecated formats.
-  Texture::Format format = texture->get_format();
   switch (format) {
   case Texture::F_green:
     view_info.components.r = VK_COMPONENT_SWIZZLE_ZERO;
@@ -679,49 +796,29 @@ prepare_texture(Texture *texture, int view) {
     break;
   }
 
-  if (format == Texture::F_depth_stencil ||
-      format == Texture::F_depth_component ||
-      format == Texture::F_depth_component16 ||
-      format == Texture::F_depth_component24 ||
-      format == Texture::F_depth_component32) {
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-  } else {
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-  }
+  view_info.subresourceRange.aspectMask = tc->_aspect_mask;
   view_info.subresourceRange.baseMipLevel = 0;
   view_info.subresourceRange.levelCount = image_info.mipLevels;
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = num_layers;
 
-  VkImageView image_view;
-  err = vkCreateImageView(_device, &view_info, nullptr, &image_view);
+  err = vkCreateImageView(_device, &view_info, nullptr, &tc->_image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for texture");
     vkDestroyImage(_device, image, nullptr);
-    vkFreeMemory(_device, device_mem, nullptr);
+    delete tc;
     return nullptr;
   }
 
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
-      << "Created image " << image << " and view " << image_view << " for texture " << *texture << "\n";
+      << "Created image " << image << " and view " << tc->_image_view
+      << " for texture " << *texture << "\n";
   }
 
-  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), texture, view);
-  tc->_format = image_info.format;
-  tc->_extent = image_info.extent;
-  tc->_mipmap_begin = mipmap_begin;
-  tc->_mipmap_end = mipmap_end;
-  tc->_mip_levels = image_info.mipLevels;
-  tc->_array_layers = image_info.arrayLayers;
-  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
-  tc->_generate_mipmaps = generate_mipmaps;
-  tc->_pack_bgr8 = pack_bgr8;
-
-  tc->_image = image;
-  tc->_memory = device_mem;
-  tc->_image_view = image_view;
-  tc->update_data_size_bytes(alloc_info.allocationSize);
+  // Update the BufferResidencyTracker to keep track of the allocated memory.
+  tc->set_resident(true);
+  tc->update_data_size_bytes(mem_reqs.size);
 
   // We can't upload it at this point because the texture lock is currently
   // held, so accessing the RAM image will cause a deadlock.
@@ -735,7 +832,6 @@ bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
   Texture *texture = tc->get_texture();
   VkImage image = tc->_image;
-  VkResult err;
 
   //TODO: check if the image is currently in use on a different queue, and if
   // so, use a semaphore to control order or create a new image and discard
@@ -800,8 +896,8 @@ upload_texture(VulkanTextureContext *tc) {
   nassertr(buffer_size > 0, false);
 
   VkBuffer buffer;
-  VkDeviceMemory staging_mem;
-  if (!create_buffer(buffer_size, buffer, staging_mem,
+  VulkanMemoryBlock block;
+  if (!create_buffer(buffer_size, buffer, block,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
@@ -811,10 +907,8 @@ upload_texture(VulkanTextureContext *tc) {
   }
 
   // Now fill in the data into the staging buffer.
-  void *data;
-  err = vkMapMemory(_device, staging_mem, 0, buffer_size, 0, &data);
-  if (err || !data) {
-    vulkan_error(err, "Failed to map texture staging memory");
+  auto data = block.map();
+  if (!data) {
     return false;
   }
 
@@ -877,6 +971,7 @@ upload_texture(VulkanTextureContext *tc) {
       if (remain > 0) {
         region.bufferOffset += optimal_align - remain;
       }
+      nassertr(region.bufferOffset + src_size <= block.get_size(), false);
 
       uint8_t *dest = (uint8_t *)data + region.bufferOffset;
 
@@ -884,6 +979,8 @@ upload_texture(VulkanTextureContext *tc) {
         // Pack RGB data into RGBA, since most cards don't support RGB8.
         const uint8_t *src_end = src + src_size;
         uint32_t *dest32 = (uint32_t *)dest;
+        nassertr(((uintptr_t)dest32 & 0x3) == 0, false);
+
         for (; src < src_end; src += 3) {
           *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
         }
@@ -910,9 +1007,13 @@ upload_texture(VulkanTextureContext *tc) {
     ++region.imageSubresource.mipLevel;
   }
 
-  vkUnmapMemory(_device, staging_mem);
+  data.unmap();
 
   tc->mark_loaded();
+
+  // Make sure that the staging memory is not deleted until the next fence.
+  _pending_free.push_back(std::move(block));
+  _pending_delete_buffers.push_back(buffer);
 
   // Tell the GraphicsEngine that we uploaded the texture.  This may cause
   // it to unload the data from RAM at the end of this frame.
@@ -1003,10 +1104,6 @@ release_texture(TextureContext *tc) {
   if (vtc->_image != VK_NULL_HANDLE) {
     vkDestroyImage(_device, vtc->_image, nullptr);
     vtc->_image = VK_NULL_HANDLE;
-  }
-  if (vtc->_memory != VK_NULL_HANDLE) {
-    vkFreeMemory(_device, vtc->_memory, nullptr);
-    vtc->_memory = VK_NULL_HANDLE;
   }
 
   delete vtc;
@@ -1231,8 +1328,8 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
 
   //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
-  VkDeviceMemory memory;
-  if (!create_buffer(data_size, buffer, memory,
+  VulkanMemoryBlock block;
+  if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
@@ -1242,7 +1339,7 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
 
   VulkanVertexBufferContext *vbc = new VulkanVertexBufferContext(_prepared_objects, array_data);
   vbc->_buffer = buffer;
-  vbc->_memory = memory;
+  vbc->_block = std::move(block);
   vbc->update_data_size_bytes(data_size);
 
   update_vertex_buffer(vbc, handle, false);
@@ -1267,19 +1364,15 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
         return false;
       }
 
-      void *data;
-      VkResult
-      err = vkMapMemory(_device, vbc->_memory, 0, num_bytes, 0, &data);
-      if (err || !data) {
-        vulkan_error(err, "Failed to map vertex buffer memory");
+      if (auto data = vbc->_block.map()) {
+        memcpy(data, client_pointer, num_bytes);
+
+        _data_transferred_pcollector.add_level(num_bytes);
+      } else {
+        vulkandisplay_cat.error()
+          << "Failed to map vertex buffer memory.\n";
         return false;
       }
-
-      memcpy(data, client_pointer, num_bytes);
-
-      vkUnmapMemory(_device, vbc->_memory);
-
-      _data_transferred_pcollector.add_level(num_bytes);
     }
 
     vbc->mark_loaded(reader);
@@ -1303,11 +1396,6 @@ release_vertex_buffer(VertexBufferContext *context) {
   if (vbc->_buffer) {
     vkDestroyBuffer(_device, vbc->_buffer, nullptr);
     vbc->_buffer = nullptr;
-  }
-
-  if (vbc->_memory) {
-    vkFreeMemory(_device, vbc->_memory, nullptr);
-    vbc->_memory = nullptr;
   }
 
   delete vbc;
@@ -1340,8 +1428,8 @@ prepare_index_buffer(GeomPrimitive *primitive) {
 
   //TODO: don't use host-visible memory, but copy from a staging buffer.
   VkBuffer buffer;
-  VkDeviceMemory memory;
-  if (!create_buffer(data_size, buffer, memory,
+  VulkanMemoryBlock block;
+  if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
@@ -1351,7 +1439,7 @@ prepare_index_buffer(GeomPrimitive *primitive) {
 
   VulkanIndexBufferContext *ibc = new VulkanIndexBufferContext(_prepared_objects, primitive);
   ibc->_buffer = buffer;
-  ibc->_memory = memory;
+  ibc->_block = std::move(block);
   ibc->update_data_size_bytes(data_size);
 
   if (index_type == GeomEnums::NT_uint32) {
@@ -1396,11 +1484,10 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
         return false;
       }
 
-      void *data;
-      VkResult
-      err = vkMapMemory(_device, ibc->_memory, 0, num_bytes, 0, &data);
-      if (err || !data) {
-        vulkan_error(err, "Failed to map index buffer memory");
+      auto data = ibc->_block.map();
+      if (!data) {
+        vulkandisplay_cat.error()
+          << "Failed to map index buffer memory.\n";
         return false;
       }
 
@@ -1413,8 +1500,6 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       } else {
         memcpy(data, client_pointer, num_bytes);
       }
-
-      vkUnmapMemory(_device, ibc->_memory);
 
       _data_transferred_pcollector.add_level(num_bytes);
     }
@@ -1440,11 +1525,6 @@ release_index_buffer(IndexBufferContext *context) {
   if (ibc->_buffer) {
     vkDestroyBuffer(_device, ibc->_buffer, nullptr);
     ibc->_buffer = nullptr;
-  }
-
-  if (ibc->_memory) {
-    vkFreeMemory(_device, ibc->_memory, nullptr);
-    ibc->_memory = nullptr;
   }
 
   delete ibc;
@@ -1511,6 +1591,7 @@ set_state_and_transform(const RenderState *state,
     texture = tex_attrib->get_on_texture(TextureStage::get_default());
     VulkanTextureContext *tc;
     DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
+    tc->set_active(true);
     update_texture(tc, true);
 
     // Transition the texture so that it can be read by the shader.  This has
@@ -1669,6 +1750,13 @@ begin_frame(Thread *current_thread) {
       return false;
     }
   }
+
+  // Now we can return any memory that was pending deletion.
+  for (VkBuffer buffer : _pending_delete_buffers) {
+    vkDestroyBuffer(_device, buffer, nullptr);
+  }
+  _pending_delete_buffers.clear();
+  _pending_free.clear();
 
   // Reset the fence to unsignaled status.
   err = vkResetFences(_device, 1, &_fence);
@@ -1866,27 +1954,21 @@ end_frame(Thread *current_thread) {
       vulkan_error(err, "Failed to wait for command buffer execution");
     }
 
-    DownloadQueue::const_iterator it;
-    for (it = _download_queue.begin(); it != _download_queue.end(); ++it) {
-      const QueuedDownload &down = *it;
+    for (QueuedDownload &down : _download_queue) {
       PTA_uchar target = down._texture->modify_ram_image();
       size_t view_size = down._texture->get_ram_view_size();
 
-      void *data;
-      err = vkMapMemory(_device, down._memory, 0, view_size, 0, &data);
-      if (err) {
-        vulkan_error(err, "Failed to map memory for RAM transfer");
+      if (auto data = down._block.map()) {
+        memcpy(target.p() + view_size * down._view, data, view_size);
+      } else {
+        vulkandisplay_cat.error()
+          << "Failed to map memory for RAM transfer.\n";
         vkDestroyBuffer(_device, down._buffer, nullptr);
-        vkFreeMemory(_device, down._memory, nullptr);
         continue;
       }
 
-      memcpy(target.p() + view_size * down._view, data, view_size);
-
-      // We won't need these any more.
-      vkUnmapMemory(_device, down._memory);
+      // We won't need this buffer any more.
       vkDestroyBuffer(_device, down._buffer, nullptr);
-      vkFreeMemory(_device, down._memory, nullptr);
     }
     _download_queue.clear();
   }
@@ -1908,11 +1990,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   // Prepare and bind the vertex buffers.
-  int num_arrays = data_reader->get_num_arrays();
+  size_t num_arrays = data_reader->get_num_arrays();
   VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * (num_arrays + 1));
   VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * (num_arrays + 1));
 
-  int i;
+  size_t i;
   for (i = 0; i < num_arrays; ++i) {
     CPT(GeomVertexArrayDataHandle) handle = data_reader->get_array_reader(i);
     VulkanVertexBufferContext *vbc;
@@ -2152,7 +2234,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
 
   // Create a temporary buffer for transferring into.
   QueuedDownload down;
-  if (!create_buffer(buffer_size, down._buffer, down._memory,
+  if (!create_buffer(buffer_size, down._buffer, down._block,
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
     vulkandisplay_cat.error()
@@ -2193,7 +2275,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
 
   down._texture = tex;
   down._view = view;
-  _download_queue.push_back(down);
+  _download_queue.push_back(std::move(down));
   return true;
 }
 
@@ -2233,7 +2315,7 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
  * @return true on success.
  */
 bool VulkanGraphicsStateGuardian::
-create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
+create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
               int usage_flags, VkMemoryPropertyFlagBits flags) {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), false);
@@ -2258,31 +2340,15 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
   VkMemoryRequirements mem_reqs;
   vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
 
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = nullptr;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  // Find a host visible memory heap, since we're about to map it.
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits,
-                                flags)) {
-    vulkan_error(err, "Failed to find memory heap to allocate buffer");
+  if (!allocate_memory(block, mem_reqs, flags, true)) {
+    vulkandisplay_cat.error()
+      << "Failed to allocate " << mem_reqs.size << " bytes for buffer\n";
     vkDestroyBuffer(_device, buffer, nullptr);
     return false;
   }
 
-  err = vkAllocateMemory(_device, &alloc_info, nullptr, &memory);
-  if (err) {
-    vulkan_error(err, "Failed to allocate memory for buffer");
+  if (!block.bind_buffer(buffer)) {
     vkDestroyBuffer(_device, buffer, nullptr);
-    return false;
-  }
-
-  err = vkBindBufferMemory(_device, buffer, memory, 0);
-  if (err) {
-    vulkan_error(err, "Failed to bind memory to buffer");
-    vkDestroyBuffer(_device, buffer, nullptr);
-    vkFreeMemory(_device, memory, nullptr);
     return false;
   }
 

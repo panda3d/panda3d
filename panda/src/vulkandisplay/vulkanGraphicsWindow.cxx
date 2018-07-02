@@ -133,6 +133,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
+  buffer._tc->set_active(true);
+
   /*if (mode == FM_render) {
     clear_cube_map_selection();
   }*/
@@ -188,6 +190,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   if (_depth_stencil_tc != nullptr) {
+    _depth_stencil_tc->set_active(true);
+
     // Transition the depth-stencil image to a consistent state.
     if (!get_clear_depth_active() || !get_clear_stencil_active()) {
       _depth_stencil_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
@@ -439,7 +443,7 @@ open_window() {
     _gsg = vkgsg;
   } else {
     //TODO: check that the GSG's queue can present to our surface.
-    _gsg = vkgsg;
+    DCAST_INTO_R(vkgsg, _gsg.p(), false);
   }
 
   _fb_properties.set_force_hardware(vkgsg->is_hardware());
@@ -716,11 +720,6 @@ destroy_swapchain() {
       _depth_stencil_tc->_image = VK_NULL_HANDLE;
     }
 
-    if (_depth_stencil_tc->_memory != VK_NULL_HANDLE) {
-      vkFreeMemory(device, _depth_stencil_tc->_memory, nullptr);
-      _depth_stencil_tc->_memory = VK_NULL_HANDLE;
-    }
-
     delete _depth_stencil_tc;
     _depth_stencil_tc = nullptr;
   }
@@ -902,26 +901,14 @@ create_swapchain() {
     VkMemoryRequirements mem_reqs;
     vkGetImageMemoryRequirements(device, depth_stencil_image, &mem_reqs);
 
-    VkMemoryAllocateInfo alloc_info;
-    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    alloc_info.pNext = nullptr;
-    alloc_info.allocationSize = mem_reqs.size;
-
-    if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
-      vulkan_error(err, "Failed to find memory heap to allocate depth buffer");
-      return false;
-    }
-
-    VkDeviceMemory depth_stencil_memory;
-    err = vkAllocateMemory(device, &alloc_info, nullptr, &depth_stencil_memory);
-    if (err) {
-      vulkan_error(err, "Failed to allocate memory for depth image");
+    VulkanMemoryBlock block;
+    if (!vkgsg->allocate_memory(block, mem_reqs, 0, false)) {
+      vulkandisplay_cat.error() << "Failed to allocate texture memory for depth image.\n";
       return false;
     }
 
     // Bind memory to image.
-    err = vkBindImageMemory(device, depth_stencil_image, depth_stencil_memory, 0);
-    if (err) {
+    if (!block.bind_image(depth_stencil_image)) {
       vulkan_error(err, "Failed to bind memory to depth image");
       return false;
     }
@@ -959,8 +946,8 @@ create_swapchain() {
     _depth_stencil_tc->_mip_levels = depth_img_info.mipLevels;
     _depth_stencil_tc->_array_layers = depth_img_info.arrayLayers;
     _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
-    _depth_stencil_tc->_memory = depth_stencil_memory;
     _depth_stencil_tc->_image_view = depth_stencil_view;
+    _depth_stencil_tc->_block = std::move(block);
   }
 
   // Now finally create a framebuffer for each link in the swap chain.

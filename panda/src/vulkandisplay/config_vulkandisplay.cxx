@@ -37,6 +37,17 @@ ConfigVariableInt vulkan_color_palette_size
           "Vulkan renderer should be prepared to encounter.  These values "
           "are stored in a palette that is 16 bytes per entry."));
 
+ConfigVariableInt64 vulkan_memory_page_size
+("vulkan-memory-page-size", 32 * 1024 * 1024,
+ PRC_DESC("This value indicates how many bytes of device memory should be "
+          "allocated per allocation.  Resources that are larger than this "
+          "will receive a dedicated allocation.  It is recommended to make "
+          "this sufficiently large since the maximum number of allocated pages "
+          "is limited by the driver.  However, this sets a lower bound on the "
+          "amount of graphics memory consumed by the application, noting that "
+          "several pages will be allocated at application start due to the "
+          "need for pages with varying memory types."));
+
 #define VK_ERROR_INVALID_SHADER_NV -1000012000
 
 /**

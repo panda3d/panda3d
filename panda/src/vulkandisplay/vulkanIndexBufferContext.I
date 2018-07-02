@@ -18,6 +18,5 @@ INLINE VulkanIndexBufferContext::
 VulkanIndexBufferContext(PreparedGraphicsObjects *pgo,
                           GeomPrimitive *data) :
   IndexBufferContext(pgo, data),
-  _buffer(VK_NULL_HANDLE),
-  _memory(VK_NULL_HANDLE) {
+  _buffer(VK_NULL_HANDLE) {
 }
