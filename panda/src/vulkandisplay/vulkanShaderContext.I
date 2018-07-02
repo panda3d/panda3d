@@ -21,3 +21,27 @@ VulkanShaderContext(Shader *shader) : ShaderContext(shader) {
   _modules[0] = VK_NULL_HANDLE;
   _modules[1] = VK_NULL_HANDLE;
 }
+
+/**
+ * Returns true if these two PipelineKey objects are identical.
+ */
+INLINE bool VulkanShaderContext::PipelineKey::
+operator ==(const PipelineKey &other) const {
+  return _state == other._state
+      && _format == other._format
+      && _topology == other._topology;
+}
+
+/**
+ * Defines relative sorting order of PipelineKey objects.
+ */
+INLINE bool VulkanShaderContext::PipelineKey::
+operator < (const PipelineKey &other) const {
+  if (_state != other._state) {
+    return _state < other._state;
+  }
+  if (_format != other._format) {
+    return _format < other._format;
+  }
+  return _topology < other._topology;
+}

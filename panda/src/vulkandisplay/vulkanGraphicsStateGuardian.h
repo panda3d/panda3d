@@ -124,35 +124,13 @@ private:
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                          VkPrimitiveTopology topology);
 
+public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VkDeviceMemory &memory,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
 
   VkSemaphore create_semaphore();
 
-  /**
-   * Stores whatever is used to key a cached pipeline into the pipeline map.
-   * This allows us to map Panda states to Vulkan pipelines effectively.
-   */
-  struct PipelineKey {
-    INLINE PipelineKey() = default;
-    INLINE PipelineKey(const PipelineKey &copy);
-    INLINE PipelineKey(PipelineKey &&from) noexcept;
-
-    INLINE void operator = (const PipelineKey &copy);
-    INLINE void operator = (PipelineKey &&from) noexcept;
-
-    INLINE bool operator ==(const PipelineKey &other) const;
-    INLINE bool operator < (const PipelineKey &other) const;
-
-    CPT(RenderState) _state;
-    CPT(GeomVertexFormat) _format;
-    VkPrimitiveTopology _topology;
-  };
-
-  VkPipeline get_pipeline(const RenderState *state,
-                          const GeomVertexFormat *format,
-                          VkPrimitiveTopology topology);
-  VkPipeline make_pipeline(const RenderState *state,
+  VkPipeline make_pipeline(VulkanShaderContext *sc, const RenderState *state,
                            const GeomVertexFormat *format,
                            VkPrimitiveTopology topology);
 
@@ -180,8 +158,10 @@ private:
 
   VkFormat get_image_format(const Texture *texture) const;
 
-private:
+public:
   VkDevice _device;
+
+private:
   VkQueue _queue;
   VkQueue _dma_queue;
   uint32_t _graphics_queue_family_index;
@@ -191,10 +171,10 @@ private:
   VkCommandBuffer _transfer_cmd;
   pvector<VkRect2D> _viewports;
   VkPipelineCache _pipeline_cache;
-  VkPipelineLayout _pipeline_layout;
   VkDescriptorSetLayout _descriptor_set_layout;
   VkDescriptorPool _descriptor_pool;
   VulkanShaderContext *_default_sc;
+  VulkanShaderContext *_current_shader;
   CPT(GeomVertexFormat) _format;
   PT(Texture) _white_texture;
 
@@ -213,9 +193,6 @@ private:
   int _next_palette_index;
   typedef pmap<LColorf, uint32_t> ColorPaletteIndices;
   ColorPaletteIndices _color_palette;
-
-  typedef pmap<PipelineKey, VkPipeline> PipelineMap;
-  PipelineMap _pipeline_map;
 
   typedef pmap<DescriptorSetKey, VkDescriptorSet> DescriptorSetMap;
   DescriptorSetMap _descriptor_set_map;

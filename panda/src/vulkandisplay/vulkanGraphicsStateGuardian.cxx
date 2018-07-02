@@ -49,7 +49,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _wait_semaphore(VK_NULL_HANDLE),
   _signal_semaphore(VK_NULL_HANDLE),
   _pipeline_cache(VK_NULL_HANDLE),
-  _pipeline_layout(VK_NULL_HANDLE),
   _default_sc(nullptr)
 {
   const char *const layers[] = {
@@ -162,30 +161,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     vulkan_error(err, "Failed to create descriptor set layout");
   }
 
-  // Create a pipeline layout.  We'll do that here for now.
-  VkPushConstantRange ranges[2];
-  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-  ranges[0].offset = 0;
-  ranges[0].size = 64;
-  ranges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  ranges[1].offset = 64;
-  ranges[1].size = 16;
-
-  VkPipelineLayoutCreateInfo layout_info;
-  layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  layout_info.pNext = nullptr;
-  layout_info.flags = 0;
-  layout_info.setLayoutCount = 1;
-  layout_info.pSetLayouts = &_descriptor_set_layout;
-  layout_info.pushConstantRangeCount = 2;
-  layout_info.pPushConstantRanges = ranges;
-
-  err = vkCreatePipelineLayout(_device, &layout_info, nullptr, &_pipeline_layout);
-  if (err) {
-    vulkan_error(err, "Failed to create pipeline layout");
-    return;
-  }
-
   VkDescriptorPoolSize pool_size;
   pool_size.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   pool_size.descriptorCount = 64;
@@ -222,6 +197,17 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _color_palette[LColorf(0, 0, 0, 1)] = 0;
   _color_palette[LColorf(1, 1, 1, 1)] = 1;
   _next_palette_index = 2;
+
+  // Load the default shader.  Temporary hack.
+  static PT(Shader) default_shader;
+  if (default_shader.is_null()) {
+    default_shader = Shader::load(Shader::SL_SPIR_V, "vert.spv", "frag.spv");
+    nassertv(default_shader);
+
+    ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
+    nassertv(sc);
+    _default_sc = DCAST(VulkanShaderContext, sc);
+  }
 
   // Fill in the features supported by this physical device.
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
@@ -316,11 +302,6 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
  */
 VulkanGraphicsStateGuardian::
 ~VulkanGraphicsStateGuardian() {
-  // Remove all the pipeline states.
-  for (const auto &item : _pipeline_map) {
-    vkDestroyPipeline(_device, item.second, nullptr);
-  }
-
   // And all the semaphores that were generated on this device.
   for (VkSemaphore semaphore : _semaphores) {
     vkDestroySemaphore(_device, semaphore, nullptr);
@@ -329,7 +310,6 @@ VulkanGraphicsStateGuardian::
   // Remove the things we created in the constructor, in reverse order.
   vkDestroyBuffer(_device, _color_vertex_buffer, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
-  vkDestroyPipelineLayout(_device, _pipeline_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, _descriptor_set_layout, nullptr);
   vkDestroyPipelineCache(_device, _pipeline_cache, nullptr);
   vkDestroyCommandPool(_device, _cmd_pool, nullptr);
@@ -1196,6 +1176,11 @@ prepare_shader(Shader *shader) {
     }
   }
 
+  if (!sc->make_pipeline_layout(_device)) {
+    delete sc;
+    return nullptr;
+  }
+
   return sc;
 }
 
@@ -1217,6 +1202,17 @@ release_shader(ShaderContext *context) {
     vkDestroyShaderModule(_device, sc->_modules[1], nullptr);
     sc->_modules[1] = VK_NULL_HANDLE;
   }
+
+  // Destroy the pipeline states that use these modules.
+  //TODO: is this safe?
+  for (const auto &item : sc->_pipeline_map) {
+    vkDestroyPipeline(_device, item.second, nullptr);
+  }
+  sc->_pipeline_map.clear();
+
+  vkDestroyPipelineLayout(_device, sc->_pipeline_layout, nullptr);
+  vkDestroyDescriptorSetLayout(_device, sc->_descriptor_set_layout, nullptr);
+
   delete sc;
 }
 
@@ -1494,15 +1490,18 @@ set_state_and_transform(const RenderState *state,
   // the vertex format.
   _state_rs = state;
 
+  VulkanShaderContext *sc = _default_sc;
+  _current_shader = sc;
+
   // Put the modelview projection matrix in the push constants.
   CPT(TransformState) combined = _projection_mat->compose(trans);
   LMatrix4f matrix = LCAST(float, combined->get_mat());
-  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
+  vkCmdPushConstants(_cmd, sc->_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, 64, matrix.get_data());
 
   const ColorScaleAttrib *color_scale_attrib;
   state->get_attrib_def(color_scale_attrib);
   LColorf color = LCAST(float, color_scale_attrib->get_scale());
-  vkCmdPushConstants(_cmd, _pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 16, color.get_data());
+  vkCmdPushConstants(_cmd, sc->_pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 64, 16, color.get_data());
 
   const TextureAttrib *tex_attrib;
   state->get_attrib_def(tex_attrib);
@@ -1525,7 +1524,7 @@ set_state_and_transform(const RenderState *state,
 
   VkDescriptorSet ds = get_descriptor_set(state);
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          _pipeline_layout, 0, 1, &ds, 0, nullptr);
+                          sc->_pipeline_layout, 0, 1, &ds, 0, nullptr);
 }
 
 /**
@@ -2205,7 +2204,7 @@ bool VulkanGraphicsStateGuardian::
 do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force,
                   VkPrimitiveTopology topology) {
 
-  VkPipeline pipeline = get_pipeline(_state_rs, _format, topology);
+  VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology);
   nassertr(pipeline != VK_NULL_HANDLE, false);
   vkCmdBindPipeline(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -2307,47 +2306,14 @@ create_semaphore() {
 }
 
 /**
- * Returns a VkPipeline for the given RenderState+GeomVertexFormat combination.
- */
-VkPipeline VulkanGraphicsStateGuardian::
-get_pipeline(const RenderState *state, const GeomVertexFormat *format,
-             VkPrimitiveTopology topology) {
-  PipelineKey key;
-  key._state = state;
-  key._format = format;
-  key._topology = topology;
-
-  PipelineMap::const_iterator it;
-  it = _pipeline_map.find(key);
-  if (it == _pipeline_map.end()) {
-    VkPipeline pipeline = make_pipeline(state, format, topology);
-    _pipeline_map[std::move(key)] = pipeline;
-    return pipeline;
-  } else {
-    return it->second;
-  }
-}
-
-/**
  * Creates a VkPipeline for the given RenderState+GeomVertexFormat combination.
  */
 VkPipeline VulkanGraphicsStateGuardian::
-make_pipeline(const RenderState *state, const GeomVertexFormat *format,
-              VkPrimitiveTopology topology) {
+make_pipeline(VulkanShaderContext *sc, const RenderState *state,
+              const GeomVertexFormat *format, VkPrimitiveTopology topology) {
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
       << "Making pipeline for state " << *state << " and format " << *format << "\n";
-  }
-
-  // Load the default shader.  Temporary hack.
-  static PT(Shader) default_shader;
-  if (default_shader.is_null()) {
-    default_shader = Shader::load(Shader::SL_SPIR_V, "vert.spv", "frag.spv");
-    nassertr(default_shader, VK_NULL_HANDLE);
-
-    ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
-    nassertr(sc, VK_NULL_HANDLE);
-    _default_sc = DCAST(VulkanShaderContext, sc);
   }
 
   VkPipelineShaderStageCreateInfo stages[2];
@@ -2355,7 +2321,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   stages[0].pNext = nullptr;
   stages[0].flags = 0;
   stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-  stages[0].module = _default_sc->_modules[0];
+  stages[0].module = sc->_modules[0];
   stages[0].pName = "main";
   stages[0].pSpecializationInfo = nullptr;
 
@@ -2363,7 +2329,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   stages[1].pNext = nullptr;
   stages[1].flags = 0;
   stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-  stages[1].module = _default_sc->_modules[1];
+  stages[1].module = sc->_modules[1];
   stages[1].pName = "main";
   stages[1].pSpecializationInfo = nullptr;
 
@@ -2749,7 +2715,7 @@ make_pipeline(const RenderState *state, const GeomVertexFormat *format,
   pipeline_info.pDepthStencilState = &ds_info;
   pipeline_info.pColorBlendState = &blend_info;
   pipeline_info.pDynamicState = &dynamic_info;
-  pipeline_info.layout = _pipeline_layout;
+  pipeline_info.layout = sc->_pipeline_layout;
   pipeline_info.renderPass = _render_pass;
   pipeline_info.subpass = 0;
   pipeline_info.basePipelineHandle = VK_NULL_HANDLE;

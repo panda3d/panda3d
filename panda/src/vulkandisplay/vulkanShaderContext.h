@@ -26,8 +26,37 @@ public:
 
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
-public:
+  bool make_pipeline_layout(VkDevice device);
+  VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
+                          const RenderState *state,
+                          const GeomVertexFormat *format,
+                          VkPrimitiveTopology topology);
+
+private:
   VkShaderModule _modules[2];
+  VkDescriptorSetLayout _descriptor_set_layout;
+  VkPipelineLayout _pipeline_layout;
+
+  /**
+   * Stores whatever is used to key a cached pipeline into the pipeline map.
+   * This allows us to map Panda states to Vulkan pipelines effectively.
+   */
+  struct PipelineKey {
+    INLINE bool operator ==(const PipelineKey &other) const;
+    INLINE bool operator < (const PipelineKey &other) const;
+
+    CPT(RenderState) _state;
+    CPT(GeomVertexFormat) _format;
+    VkPrimitiveTopology _topology;
+  };
+
+  // A map of all pipelines that use this shader.  This is in ShaderContext
+  // because when a shader is released we have no more use of the pipelines
+  // which use that shader.
+  typedef pmap<PipelineKey, VkPipeline> PipelineMap;
+  PipelineMap _pipeline_map;
+
+  friend class VulkanGraphicsStateGuardian;
 
 public:
   static TypeHandle get_class_type() {
