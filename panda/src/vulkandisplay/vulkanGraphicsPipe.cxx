@@ -261,8 +261,9 @@ VulkanGraphicsPipe() {
 
     // Show supported queue families
     vulkandisplay_cat.debug() << "Supported queue families:\n";
+    uint32_t i = 0;
     for (const VkQueueFamilyProperties &props : _queue_families) {
-      vulkandisplay_cat.debug() << "  ";
+      vulkandisplay_cat.debug() << "  " << (i++) << ": ";
       if (props.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
         vulkandisplay_cat.debug(false) << "GRAPHICS ";
       }
@@ -277,6 +278,22 @@ VulkanGraphicsPipe() {
       }
       vulkandisplay_cat.debug(false) << "(" << props.queueCount
         << " queue" << ((props.queueCount != 1) ? "s" : "") << ")\n";
+    }
+
+    // Show memory heaps.
+    vulkandisplay_cat.debug() << "Available memory heaps:\n";
+    for (uint32_t i = 0; i < _memory_properties.memoryHeapCount; ++i) {
+      VkMemoryHeap &heap = _memory_properties.memoryHeaps[i];
+      size_t size_mb = heap.size >> 20u;
+      vulkandisplay_cat.debug() << "  " << i << ": " << (size_mb) << " MiB";
+
+      if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+        vulkandisplay_cat.debug(false) << ", device-local";
+      }
+      if (heap.flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT) {
+        vulkandisplay_cat.debug(false) << ", multi-instance";
+      }
+      vulkandisplay_cat.debug(false) << "\n";
     }
 
     // Enumerate supported extensions.
@@ -539,6 +556,8 @@ VulkanGraphicsPipe() {
       << _gpu_properties.limits.maxMemoryAllocationCount << "\n";
     vulkandisplay_cat.debug() << "maxSamplerAllocationCount = "
       << _gpu_properties.limits.maxSamplerAllocationCount << "\n";
+    vulkandisplay_cat.debug() << "bufferImageGranularity = "
+      << _gpu_properties.limits.bufferImageGranularity << "\n";
     vulkandisplay_cat.debug() << "maxColorAttachments = "
       << _gpu_properties.limits.maxColorAttachments << "\n";
     vulkandisplay_cat.debug() << "maxDrawIndexedIndexValue = "
