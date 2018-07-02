@@ -12,6 +12,7 @@
  */
 
 #include "config_pipeline.h"
+#include "cycleData.h"
 #include "mainThread.h"
 #include "externalThread.h"
 #include "genericThread.h"
@@ -70,6 +71,7 @@ init_libpipeline() {
   }
   initialized = true;
 
+  CycleData::init_type();
   MainThread::init_type();
   ExternalThread::init_type();
   GenericThread::init_type();

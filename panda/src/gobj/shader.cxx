@@ -2504,6 +2504,9 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
     into.resize(into.size() - 1);
   }
 
+  // Except add back a newline at the end, which is needed by Intel drivers.
+  into += "\n";
+
   return true;
 }
 

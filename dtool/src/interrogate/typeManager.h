@@ -44,6 +44,7 @@ public:
   static bool is_assignable(CPPType *type);
 
   static bool is_reference(CPPType *type);
+  static bool is_rvalue_reference(CPPType *type);
   static bool is_ref_to_anything(CPPType *type);
   static bool is_const_ref_to_anything(CPPType *type);
   static bool is_const_pointer_to_anything(CPPType *type);
@@ -52,6 +53,7 @@ public:
   static bool is_pointer(CPPType *type);
   static bool is_const(CPPType *type);
   static bool is_struct(CPPType *type);
+  static bool is_scoped_enum(CPPType *type);
   static bool is_enum(CPPType *type);
   static bool is_const_enum(CPPType *type);
   static bool is_const_ref_to_enum(CPPType *type);

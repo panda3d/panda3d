@@ -34,11 +34,47 @@ LinkedListNode(bool) {
 }
 
 /**
+ * This move constructor replaces the other link with this one.
+ */
+INLINE LinkedListNode::
+LinkedListNode(LinkedListNode &&from) noexcept {
+  if (from._prev != nullptr) {
+    nassertv(from._prev->_next == &from);
+    from._prev->_next = this;
+  }
+  _prev = from._prev;
+  if (from._next != nullptr) {
+    nassertv(from._next->_prev == &from);
+    from._next->_prev = this;
+  }
+  _next = from._next;
+  from._next = nullptr;
+  from._prev = nullptr;
+}
+
+/**
  *
  */
 INLINE LinkedListNode::
 ~LinkedListNode() {
   nassertv((_next == nullptr && _prev == nullptr) || (_next == this && _prev == this));
+}
+
+/**
+ * Replaces the given other node with this node.
+ */
+INLINE LinkedListNode &LinkedListNode::
+operator = (LinkedListNode &&from) {
+  nassertr((_next == nullptr && _prev == nullptr) || (_next == this && _prev == this), *this);
+  nassertr(from._prev != nullptr && from._next != nullptr, *this);
+  nassertr(from._prev->_next == &from && from._next->_prev == &from, *this);
+  from._prev->_next = this;
+  from._next->_prev = this;
+  _prev = from._prev;
+  _next = from._next;
+  from._next = nullptr;
+  from._prev = nullptr;
+  return *this;
 }
 
 /**

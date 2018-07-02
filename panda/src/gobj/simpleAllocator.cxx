@@ -14,6 +14,37 @@
 #include "simpleAllocator.h"
 
 /**
+ * Move constructor.
+ */
+SimpleAllocator::
+SimpleAllocator(SimpleAllocator &&from) noexcept :
+  LinkedListNode(std::move(from)),
+  _total_size(from._total_size),
+  _max_size(from._max_size),
+  _contiguous(from._contiguous),
+  _lock(from._lock)
+{
+  MutexHolder holder(_lock);
+  from._total_size = 0;
+  from._max_size = 0;
+  from._contiguous = 0;
+
+  // We still need to leave the list in a valid state.
+  from._prev = &from;
+  from._next = &from;
+
+  // Change all the blocks to point to the new allocator.
+  LinkedListNode *next = _next;
+  while (next != this) {
+    SimpleAllocatorBlock *block = (SimpleAllocatorBlock *)next;
+    nassertv(block->_allocator == &from);
+    block->_allocator = this;
+
+    next = block->_next;
+  }
+}
+
+/**
  *
  */
 SimpleAllocator::
@@ -66,7 +97,7 @@ write(std::ostream &out) const {
  * Assumes the lock is already held.
  */
 SimpleAllocatorBlock *SimpleAllocator::
-do_alloc(size_t size) {
+do_alloc(size_t size, size_t alignment) {
   if (size > _contiguous) {
     // Don't even bother.
     return nullptr;
@@ -86,9 +117,9 @@ do_alloc(size_t size) {
     // Scan until we have reached the last allocated block.
     while (block->_next != this) {
       SimpleAllocatorBlock *next = (SimpleAllocatorBlock *)block->_next;
-      size_t free_size = next->_start - end;
-      if (size <= free_size) {
-        SimpleAllocatorBlock *new_block = make_block(end, size);
+      size_t start = end + ((alignment - end) % alignment);
+      if (start + size <= next->_start) {
+        SimpleAllocatorBlock *new_block = make_block(start, size);
         nassertr(new_block->get_allocator() == this, nullptr);
 
         new_block->insert_before(next);
@@ -103,6 +134,7 @@ do_alloc(size_t size) {
         }
         return new_block;
       }
+      size_t free_size = next->_start - end;
       if (free_size > best) {
         best = free_size;
       }
@@ -113,9 +145,9 @@ do_alloc(size_t size) {
   }
 
   // No free blocks; check for room at the end.
-  size_t free_size = _max_size - end;
-  if (size <= free_size) {
-    SimpleAllocatorBlock *new_block = make_block(end, size);
+  size_t start = end + ((alignment - end) % alignment);
+  if (start + size <= _max_size) {
+    SimpleAllocatorBlock *new_block = make_block(start, size);
     nassertr(new_block->get_allocator() == this, nullptr);
 
     new_block->insert_before(this);
@@ -131,6 +163,7 @@ do_alloc(size_t size) {
     return new_block;
   }
 
+  size_t free_size = _max_size - end;
   if (free_size > best) {
     best = free_size;
   }

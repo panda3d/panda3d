@@ -11610,17 +11610,18 @@ do_issue_tex_gen() {
   // effectively define an identity matrix that maps the spatial coordinates
   // one-for-one to UV's.  If you want a mapping other than identity, use a
   // TexMatrixAttrib (or a TexProjectorEffect).
+#ifndef OPENGLES
   static const PN_stdfloat s_data[4] = { 1, 0, 0, 0 };
   static const PN_stdfloat t_data[4] = { 0, 1, 0, 0 };
   static const PN_stdfloat r_data[4] = { 0, 0, 1, 0 };
   static const PN_stdfloat q_data[4] = { 0, 0, 0, 1 };
+#endif
 
   _tex_gen_modifies_mat = false;
 
   bool got_point_sprites = false;
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     set_active_texture_stage(i);
     if (_supports_point_sprite) {
 #ifdef OPENGLES
@@ -11636,6 +11637,7 @@ do_issue_tex_gen() {
     glDisable(GL_TEXTURE_GEN_R);
     glDisable(GL_TEXTURE_GEN_Q);
 
+    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:

@@ -93,7 +93,7 @@ PUBLISHED:
   void enable_pointer_mode(int device, double speed);
   void disable_pointer_mode(int device);
 
-  MouseData get_pointer(int device) const;
+  virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 
