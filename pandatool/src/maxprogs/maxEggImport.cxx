@@ -22,6 +22,9 @@
 // Include this before everything
 #include "pandatoolbase.h"
 
+using std::min;
+using std::max;
+
 // MAX includes
 #include "maxEggLoader.h"
 #include "Max.h"
