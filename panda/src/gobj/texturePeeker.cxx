@@ -108,6 +108,8 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_depth_component32:
   case Texture::F_red:
   case Texture::F_r16:
+  case Texture::F_r32:
+  case Texture::F_r32i:
     _get_texel = get_texel_r;
     break;
 
