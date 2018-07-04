@@ -13309,6 +13309,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
       << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
 
+#ifndef OPENGLES
+  if (target == GL_TEXTURE_BUFFER) {
+    _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
+  }
+#endif
+
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
 
