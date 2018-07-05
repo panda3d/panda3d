@@ -1250,6 +1250,43 @@ texture_uploaded(Texture *tex) {
 }
 
 /**
+ * Called by DisplayRegion::do_get_screenshot
+ */
+PT(Texture) GraphicsEngine::
+do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg) {
+  // A multi-threaded environment.  We have to wait until the draw thread
+  // has finished its current task.
+
+  ReMutexHolder holder(_lock);
+
+  const std::string &draw_name = gsg->get_threading_model().get_draw_name();
+  WindowRenderer *wr = get_window_renderer(draw_name, 0);
+  RenderThread *thread = (RenderThread *)wr;
+  MutexHolder cv_holder(thread->_cv_mutex);
+
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  // Now that the draw thread is idle, signal it to do the extraction task.
+  thread->_region = region;
+  thread->_thread_state = TS_do_screenshot;
+  thread->_cv_start.notify();
+  thread->_cv_mutex.release();
+  thread->_cv_mutex.acquire();
+
+  //XXX is this necessary, or is acquiring the mutex enough?
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  PT(Texture) tex = std::move(thread->_texture);
+  thread->_region = nullptr;
+  thread->_texture = nullptr;
+  return tex;
+}
+
+/**
  * Fires off a cull traversal using the indicated camera.
  */
 void GraphicsEngine::
@@ -2631,6 +2668,11 @@ thread_main() {
     case TS_do_extract:
       nassertd(_gsg != nullptr && _texture != nullptr) break;
       _result = _gsg->extract_texture_data(_texture);
+      break;
+
+    case TS_do_screenshot:
+      nassertd(_region != nullptr) break;
+      _texture = _region->get_screenshot();
       break;
 
     case TS_terminate:
