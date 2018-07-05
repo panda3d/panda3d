@@ -22,6 +22,7 @@ TypeHandle wglGraphicsPipe::_type_handle;
 bool    wglGraphicsPipe::_current_valid;
 HDC     wglGraphicsPipe::_current_hdc;
 HGLRC   wglGraphicsPipe::_current_hglrc;
+Thread *wglGraphicsPipe::_current_thread;
 
 /**
  *
@@ -41,16 +42,19 @@ wglGraphicsPipe::
 /**
  * a thin wrapper around wglMakeCurrent to avoid unnecessary OS-call overhead.
  */
-void wglGraphicsPipe::
+bool wglGraphicsPipe::
 wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
+  Thread *thread = Thread::get_current_thread();
   if ((_current_valid) &&
       (_current_hdc == hdc) &&
-      (_current_hglrc == hglrc)) {
-    return;
+      (_current_hglrc == hglrc) &&
+      (_current_thread == thread)) {
+    return true;
   }
   _current_valid = true;
   _current_hdc = hdc;
   _current_hglrc = hglrc;
+  _current_thread = thread;
   BOOL res;
   if (collector) {
     PStatTimer timer(*collector);
@@ -58,6 +62,7 @@ wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector) {
   } else {
     res = wglMakeCurrent(hdc, hglrc);
   }
+  return (res != 0);
 }
 
 /**
