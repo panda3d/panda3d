@@ -20,6 +20,7 @@
 #include "collisionPlane.h"
 #include "collisionSphere.h"
 #include "collisionPolygon.h"
+#include "collisionTube.h"
 
 TypeHandle BulletBodyNode::_type_handle;
 
@@ -802,6 +803,14 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       CPT(TransformState) ts = TransformState::make_pos(box->get_center());
 
       do_add_shape(BulletBoxShape::make_from_solid(box), ts);
+    }
+
+    // CollisionTube
+    else if (CollisionTube::get_class_type() == type) {
+      CPT(CollisionTube) tube = DCAST(CollisionTube, solid);
+      CPT(TransformState) ts = TransformState::make_pos((tube->get_point_b() + tube->get_point_a()) / 2.0);
+
+      do_add_shape(BulletCapsuleShape::make_from_solid(tube), ts);
     }
 
     // CollisionPlane
