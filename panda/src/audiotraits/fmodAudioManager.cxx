@@ -419,15 +419,19 @@ get_sound(const std::string &file_name, bool positional, int) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
-  // Build a new AudioSound from the audio data.
-  PT(AudioSound) audioSound;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional);
+  // Locate the file on disk.
+  path.set_binary();
+  PT(VirtualFile) file = vfs->get_file(path);
+  if (file != nullptr) {
+    // Build a new AudioSound from the audio data.
+    PT(FmodAudioSound) sound = new FmodAudioSound(this, file, positional);
 
-  _all_sounds.insert(fmodAudioSound);
-
-  audioSound = fmodAudioSound;
-
-  return audioSound;
+    _all_sounds.insert(sound);
+    return sound;
+  } else {
+    audio_error("createSound(" << path << "): File not found.");
+    return get_null_sound();
+  }
 }
 
 /**

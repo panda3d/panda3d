@@ -39,9 +39,10 @@ TypeHandle FmodAudioSound::_type_handle;
  */
 
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
+FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
-  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
+  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
+              << file->get_original_filename());
 
   _active = manager->get_active();
   _paused = false;
@@ -77,20 +78,14 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   _manager = fmanager;
 
   _channel = 0;
-  _file_name = file_name;
+  _file_name = file->get_original_filename();
   _file_name.set_binary();
 
   // Get the Speaker Mode [Important for later on.]
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == nullptr) {
-    // File not found.  We will display the appropriate error message below.
-    result = FMOD_ERR_FILE_NOTFOUND;
-
-  } else {
+  {
     bool preload = (fmod_audio_preload_threshold < 0) || (file->get_file_size() < fmod_audio_preload_threshold);
     int flags = FMOD_SOFTWARE;
     flags |= positional ? FMOD_3D : FMOD_2D;
@@ -149,7 +144,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
       // Otherwise, if the Panda threading system is compiled in, we can
       // assign callbacks to read the file through the VFS.
-      name_or_data = (const char *)file.p();
+      name_or_data = (const char *)file;
       sound_info.length = (unsigned int)info.get_size();
       sound_info.useropen = open_callback;
       sound_info.userclose = close_callback;
