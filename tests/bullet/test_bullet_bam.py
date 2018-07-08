@@ -117,7 +117,7 @@ def test_plane_shape():
     assert type(shape) is type(shape2)
     assert shape.margin == shape2.margin
     assert shape.name == shape2.name
-    assert shape.plane_normal == shape2.plane_normal
+    assert shape.plane_normal.almost_equal(shape2.plane_normal, 0.1)
     assert shape.plane_constant == shape2.plane_constant
 
 
