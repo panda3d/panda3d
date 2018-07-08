@@ -48,7 +48,6 @@ public:
   // These comparison functions are common to all things PointerTo, so they're
   // defined up here.
 #ifndef CPPPARSER
-#ifndef WIN32_VC
   INLINE bool operator == (const To *other) const;
   INLINE bool operator != (const To *other) const;
   INLINE bool operator > (const To *other) const;
@@ -77,7 +76,7 @@ public:
   INLINE bool operator > (const PointerToBase<To> &other) const;
   INLINE bool operator <= (const PointerToBase<To> &other) const;
   INLINE bool operator >= (const PointerToBase<To> &other) const;
-#endif  // WIN32_VC
+
   INLINE bool operator < (const To *other) const;
   INLINE bool operator < (std::nullptr_t) const;
   INLINE bool operator < (const WeakPointerToBase<To> &other) const;
