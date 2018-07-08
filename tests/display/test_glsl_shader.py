@@ -168,7 +168,7 @@ def test_glsl_int(gsg):
     inputs = dict(
         zero=0,
         intmax=0x7fffffff,
-        intmin=-0x80000000,
+        intmin=-0x7fffffff,
     )
     preamble = """
     uniform int zero;
@@ -178,7 +178,7 @@ def test_glsl_int(gsg):
     code = """
     assert(zero == 0);
     assert(intmax == 0x7fffffff);
-    assert(intmin == -0x80000000);
+    assert(intmin == -0x7fffffff);
     """
     run_glsl_test(gsg, code, preamble, inputs)
 
