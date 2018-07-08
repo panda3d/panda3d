@@ -58,7 +58,7 @@ make_virtual_file(const Filename &local_filename,
     make_directory(local);
   }
 
-  return file.p();
+  return file;
 }
 
 /**

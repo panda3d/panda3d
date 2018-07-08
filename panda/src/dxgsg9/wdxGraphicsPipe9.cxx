@@ -846,7 +846,7 @@ make_device(void *scrn) {
   _device = device;
   wdxdisplay9_cat.info() << "walla: device" << device << "\n";
 
-  return device.p();
+  return device;
 }
 
 pmap<D3DFORMAT_FLAG, D3DFORMAT> g_D3DFORMATmap;

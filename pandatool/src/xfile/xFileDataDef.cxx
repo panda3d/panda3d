@@ -376,7 +376,7 @@ unpack_template_value(const XFileParseDataList &parse_data_list,
     return nullptr;
   }
 
-  return data_value.p();
+  return data_value;
 }
 
 /**

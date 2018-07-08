@@ -146,9 +146,9 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
   }
 
   if (bounds_only) {
-    return _bounds_viz_geom.p();
+    return _bounds_viz_geom;
   } else {
-    return _viz_geom.p();
+    return _viz_geom;
   }
 }
 

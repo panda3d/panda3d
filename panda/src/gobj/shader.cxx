@@ -3417,8 +3417,7 @@ parse_eof() {
  */
 PT(AsyncFuture) Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_shader_future(this);
-  return obj.p();
+  return prepared_objects->enqueue_shader_future(this);
 }
 
 /**

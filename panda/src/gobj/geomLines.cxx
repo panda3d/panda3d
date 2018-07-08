@@ -128,7 +128,7 @@ make_adjacency() const {
   }
 
   adj->set_vertices(std::move(new_vertices));
-  return adj.p();
+  return adj;
 }
 
 /**

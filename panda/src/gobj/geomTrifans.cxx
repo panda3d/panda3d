@@ -110,7 +110,7 @@ decompose_impl() const {
   int li = 0;
   while (li < (int)ends.size()) {
     int end = ends[li];
-    nassertr(vi + 2 <= end, triangles.p());
+    nassertr(vi + 2 <= end, triangles);
     int v0 = get_vertex(vi);
     ++vi;
     int v1 = get_vertex(vi);
@@ -129,7 +129,7 @@ decompose_impl() const {
 
   nassertr(vi == num_vertices, nullptr);
 
-  return triangles.p();
+  return triangles;
 }
 
 /**

@@ -322,7 +322,7 @@ generate() {
     }
   }
 
-  return geom_node.p();
+  return geom_node;
 }
 
 /**

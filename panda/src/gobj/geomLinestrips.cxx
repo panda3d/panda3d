@@ -164,7 +164,7 @@ make_adjacency() const {
   }
   nassertr(vi == num_vertices, nullptr);
 
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -220,7 +220,7 @@ decompose_impl() const {
     // Skip unused vertices between tristrips.
     vi += num_unused;
     int end = ends[li];
-    nassertr(vi + 1 <= end, lines.p());
+    nassertr(vi + 1 <= end, lines);
     int v0 = get_vertex(vi);
     ++vi;
     while (vi < end) {
@@ -235,7 +235,7 @@ decompose_impl() const {
   }
   nassertr(vi == get_num_vertices(), nullptr);
 
-  return lines.p();
+  return lines;
 }
 
 /**

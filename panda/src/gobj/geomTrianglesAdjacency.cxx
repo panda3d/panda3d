@@ -133,7 +133,7 @@ doubleside_impl() const {
     reversed = (GeomTrianglesAdjacency *)DCAST(GeomTrianglesAdjacency, reversed->rotate());
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**
@@ -166,7 +166,7 @@ reverse_impl() const {
     break;
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**

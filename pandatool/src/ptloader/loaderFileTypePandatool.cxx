@@ -196,7 +196,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   }
   delete loader;
 
-  return result.p();
+  return result;
 }
 
 /**
