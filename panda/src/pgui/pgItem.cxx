@@ -35,8 +35,6 @@
 #include "audioSound.h"
 #endif
 
-using std::max;
-using std::min;
 using std::string;
 
 TypeHandle PGItem::_type_handle;
@@ -59,16 +57,15 @@ is_right(const LVector2 &v1, const LVector2 &v2) {
 PGItem::
 PGItem(const string &name) :
   PandaNode(name),
-  _lock(name)
+  _lock(name),
+  _notify(nullptr),
+  _has_frame(false),
+  _frame(0, 0, 0, 0),
+  _region(new PGMouseWatcherRegion(this)),
+  _state(0),
+  _flags(0)
 {
   set_cull_callback();
-
-  _notify = nullptr;
-  _has_frame = false;
-  _frame.set(0, 0, 0, 0);
-  _region = new PGMouseWatcherRegion(this);
-  _state = 0;
-  _flags = 0;
 }
 
 /**
@@ -96,17 +93,16 @@ PGItem::
 PGItem::
 PGItem(const PGItem &copy) :
   PandaNode(copy),
+  _notify(nullptr),
   _has_frame(copy._has_frame),
   _frame(copy._frame),
   _state(copy._state),
-  _flags(copy._flags)
+  _flags(copy._flags),
+  _region(new PGMouseWatcherRegion(this))
 #ifdef HAVE_AUDIO
   , _sounds(copy._sounds)
 #endif
 {
-  _notify = nullptr;
-  _region = new PGMouseWatcherRegion(this);
-
   // We give our region the same name as the region for the PGItem we're
   // copying--so that this PGItem will generate the same event names when the
   // user interacts with it.
@@ -190,9 +186,29 @@ draw_mask_changed() {
  */
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  LightReMutexHolder holder(_lock);
-  bool this_node_hidden = data.is_this_node_hidden(trav->get_camera_mask());
-  if (!this_node_hidden && has_frame() && get_active()) {
+  // We try not to hold the lock for longer than necessary.
+  PT(PandaNode) state_def_root;
+  bool has_frame;
+  PGMouseWatcherRegion *region;
+  {
+    LightReMutexHolder holder(_lock);
+    has_frame = _has_frame && ((_flags & F_active) != 0);
+    region = _region;
+
+    int state = _state;
+    if (state >= 0 && (size_t)state < _state_defs.size()) {
+      StateDef &state_def = _state_defs[state];
+      if (!state_def._root.is_empty()) {
+        if (state_def._frame_stale) {
+          update_frame(state);
+        }
+
+        state_def_root = state_def._root.node();
+      }
+    }
+  }
+
+  if (has_frame && !data.is_this_node_hidden(trav->get_camera_mask())) {
     // The item has a frame, so we want to generate a region for it and update
     // the MouseWatcher.
 
@@ -202,8 +218,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PGCullTraverser *pg_trav;
       DCAST_INTO_R(pg_trav, trav, true);
 
-      CPT(TransformState) net_transform = data.get_net_transform(trav);
-      const LMatrix4 &transform = net_transform->get_mat();
+      const LMatrix4 &transform = data.get_net_transform(trav)->get_mat();
 
       // Consider the cull bin this object is in.  Since the binning affects
       // the render order, we want bins that render later to get higher sort
@@ -240,19 +255,20 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // the existing interface which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      if (activate_region(transform, sort,
-                          DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot())),
-                          DCAST(ScissorAttrib, data._state->get_attrib(ScissorAttrib::get_class_slot())))) {
-        pg_trav->_top->add_region(get_region());
+      const ClipPlaneAttrib *clip = nullptr;
+      const ScissorAttrib *scissor = nullptr;
+      data._state->get_attrib(clip);
+      data._state->get_attrib(scissor);
+      if (activate_region(transform, sort, clip, scissor)) {
+        pg_trav->_top->add_region(region);
       }
     }
   }
 
-  if (has_state_def(get_state())) {
+  if (state_def_root != nullptr) {
     // This item has a current state definition that we should use to render
     // the item.
-    NodePath &root = get_state_def(get_state());
-    CullTraverserData next_data(data, root.node());
+    CullTraverserData next_data(data, state_def_root);
     trav->traverse(next_data);
   }
 
@@ -306,7 +322,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // get_state_def() on each one, to ensure that the frames are updated
   // correctly before we measure their bounding volumes.
   for (int i = 0; i < (int)_state_defs.size(); i++) {
-    NodePath &root = ((PGItem *)this)->get_state_def(i);
+    NodePath &root = ((PGItem *)this)->do_get_state_def(i);
     if (!root.is_empty()) {
       PandaNode *node = root.node();
       child_volumes.push_back(node->get_bounds(current_thread));
@@ -388,6 +404,9 @@ bool PGItem::
 activate_region(const LMatrix4 &transform, int sort,
                 const ClipPlaneAttrib *cpa,
                 const ScissorAttrib *sa) {
+  using std::min;
+  using std::max;
+
   LightReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This way the
   // region works (mostly) even if has been rotated.
@@ -936,30 +955,6 @@ clear_state_def(int state) {
 }
 
 /**
- * Returns the Node that is the root of the subgraph that will be drawn when
- * the PGItem is in the indicated state.  The first time this is called for a
- * particular state index, it may create the Node.
- */
-NodePath &PGItem::
-get_state_def(int state) {
-  LightReMutexHolder holder(_lock);
-  nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
-  slot_state_def(state);
-
-  if (_state_defs[state]._root.is_empty()) {
-    // Create a new node.
-    _state_defs[state]._root = NodePath("state_" + format_string(state));
-    _state_defs[state]._frame_stale = true;
-  }
-
-  if (_state_defs[state]._frame_stale) {
-    update_frame(state);
-  }
-
-  return _state_defs[state]._root;
-}
-
-/**
  * Parents an instance of the bottom node of the indicated NodePath to the
  * indicated state index.
  */
@@ -973,7 +968,7 @@ instance_to_state_def(int state, const NodePath &path) {
 
   mark_internal_bounds_stale();
 
-  return path.instance_to(get_state_def(state));
+  return path.instance_to(do_get_state_def(state));
 }
 
 /**
@@ -998,7 +993,7 @@ set_frame_style(int state, const PGFrameStyle &style) {
   LightReMutexHolder holder(_lock);
   // Get the state def node, mainly to ensure that this state is slotted and
   // listed as having been defined.
-  NodePath &root = get_state_def(state);
+  NodePath &root = do_get_state_def(state);
   nassertv(!root.is_empty());
 
   _state_defs[state]._frame_style = style;
@@ -1097,6 +1092,9 @@ play_sound(const string &event) {
  */
 void PGItem::
 reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
+  using std::min;
+  using std::max;
+
   if (obscurer != nullptr && !obscurer->is_overall_hidden()) {
     LVecBase4 oframe = get_relative_frame(obscurer);
 
@@ -1124,6 +1122,9 @@ reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
  */
 LVecBase4 PGItem::
 get_relative_frame(PGItem *item) const {
+  using std::min;
+  using std::max;
+
   NodePath this_np = NodePath::any_path((PGItem *)this);
   NodePath item_np = this_np.find_path_to(item);
   if (item_np.is_empty()) {
@@ -1175,6 +1176,30 @@ frame_changed() {
 }
 
 /**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ *
+ * Assumes the lock is already held.
+ */
+NodePath &PGItem::
+do_get_state_def(int state) {
+  slot_state_def(state);
+
+  if (_state_defs[state]._root.is_empty()) {
+    // Create a new node.
+    _state_defs[state]._root = NodePath("state_" + format_string(state));
+    _state_defs[state]._frame_stale = true;
+  }
+
+  if (_state_defs[state]._frame_stale) {
+    update_frame(state);
+  }
+
+  return _state_defs[state]._root;
+}
+
+/**
  * Ensures there is a slot in the array for the given state definition.
  */
 void PGItem::
@@ -1200,7 +1225,7 @@ update_frame(int state) {
 
   // Now create new frame geometry.
   if (has_frame()) {
-    NodePath &root = get_state_def(state);
+    NodePath &root = do_get_state_def(state);
     _state_defs[state]._frame =
       _state_defs[state]._frame_style.generate_into(root, _frame);
   }

@@ -77,11 +77,12 @@ protected:
                                GeomTransformer &transformer,
                                Thread *current_thread);
 
-public:
   virtual void xform(const LMatrix4 &mat);
   bool activate_region(const LMatrix4 &transform, int sort,
                        const ClipPlaneAttrib *cpa,
                        const ScissorAttrib *sa);
+
+public:
   INLINE PGMouseWatcherRegion *get_region() const;
 
   virtual void enter_region(const MouseWatcherParameter &param);
@@ -130,7 +131,7 @@ PUBLISHED:
   int get_num_state_defs() const;
   void clear_state_def(int state);
   bool has_state_def(int state) const;
-  NodePath &get_state_def(int state);
+  INLINE NodePath &get_state_def(int state);
   MAKE_SEQ(get_state_defs, get_num_state_defs, get_state_def);
   NodePath instance_to_state_def(int state, const NodePath &path);
 
@@ -187,6 +188,7 @@ protected:
   virtual void frame_changed();
 
 private:
+  NodePath &do_get_state_def(int state);
   void slot_state_def(int state);
   void update_frame(int state);
   void mark_frames_stale();
@@ -215,7 +217,7 @@ private:
   };
   int _flags;
 
-  PT(PGMouseWatcherRegion) _region;
+  PT(PGMouseWatcherRegion) const _region;
 
   LMatrix4 _frame_inv_xform;
 
