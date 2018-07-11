@@ -613,6 +613,8 @@ reset() {
         get_extension_func("glDebugMessageControlARB");
       _supports_debug = true;
 #endif
+    } else {
+      _supports_debug = false;
     }
 
     if (_supports_debug) {
@@ -12778,7 +12780,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -12958,7 +12962,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);

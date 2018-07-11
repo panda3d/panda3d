@@ -2612,8 +2612,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
   }
 
   size_t num_textures = _shader->_tex_spec.size();
-  GLuint *textures;
-  GLuint *samplers;
+  GLuint *textures = nullptr;
+  GLuint *samplers = nullptr;
 #ifdef OPENGLES
   static const bool multi_bind = false;
 #else
