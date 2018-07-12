@@ -2997,6 +2997,50 @@ reset() {
   }
 #endif
 
+  // Set depth range from zero to one if requested.
+#ifndef OPENGLES
+  _use_depth_zero_to_one = false;
+  _use_remapped_depth_range = false;
+
+  if (gl_depth_zero_to_one) {
+    if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
+      PFNGLCLIPCONTROLPROC pglClipControl =
+        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+
+      if (pglClipControl != nullptr) {
+        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        _use_depth_zero_to_one = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glClipControl\n";
+        }
+      }
+    }/* else if (has_extension("GL_NV_depth_buffer_float")) {
+      // Alternatively, all GeForce 8+ and even some AMD drivers support this
+      // extension, which (unlike the core glDepthRange, which clamps its
+      // input parameters) can compensate for the built-in depth remapping.
+      _glDepthRangedNV = (PFNGLDEPTHRANGEDNVPROC)get_extension_func("glDepthRangedNV");
+
+      if (_glDepthRangedNV != nullptr) {
+        _glDepthRangedNV(-1.0, 1.0);
+        _use_depth_zero_to_one = true;
+        _use_remapped_depth_range = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glDepthRangedNV\n";
+        }
+      }
+    }*/
+
+    if (!_use_depth_zero_to_one) {
+      GLCAT.warning()
+        << "Zero-to-one depth was requested, but driver does not support it.\n";
+    }
+  }
+#endif
+
   // Set up all the enableddisabled flags to GL's known initial values:
   // everything off.
   _multisample_mode = 0;
@@ -3645,6 +3689,19 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4::convert_mat(_internal_coordinate_system,
                           lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
+
+#ifndef OPENGLES
+  if (_use_depth_zero_to_one) {
+    // If we requested that the OpenGL NDC Z goes from zero to one like in
+    // Direct3D, we need to scale the projection matrix, which assumes -1..1.
+    static const LMatrix4 rescale_mat
+      (1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 0.5, 0,
+       0, 0, 0.5, 1);
+    result *= rescale_mat;
+  }
+#endif
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the projection
@@ -7452,7 +7509,13 @@ do_issue_depth_offset() {
   glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
   // Mainline OpenGL uses a double-precision call.
-  glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+  }
 #endif  // OPENGLES
 
   report_my_gl_errors();

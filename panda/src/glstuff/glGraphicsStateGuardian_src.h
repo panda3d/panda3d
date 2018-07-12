@@ -743,6 +743,12 @@ protected:
 #endif
 
 public:
+#ifndef OPENGLES
+  bool _use_depth_zero_to_one;
+  bool _use_remapped_depth_range;
+  PFNGLDEPTHRANGEDNVPROC _glDepthRangedNV;
+#endif
+
   bool _supports_point_parameters;
   PFNGLPOINTPARAMETERFVPROC _glPointParameterfv;
   bool _supports_point_sprite;

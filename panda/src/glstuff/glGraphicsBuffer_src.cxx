@@ -864,14 +864,22 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       case RTP_depth_stencil:
         if (_fb_properties.get_depth_bits() > 24 ||
             _fb_properties.get_float_depth()) {
-          gl_format = GL_DEPTH32F_STENCIL8;
+          if (!glgsg->_use_remapped_depth_range) {
+            gl_format = GL_DEPTH32F_STENCIL8;
+          } else {
+            gl_format = GL_DEPTH32F_STENCIL8_NV;
+          }
         } else {
           gl_format = GL_DEPTH24_STENCIL8;
         }
         break;
       case RTP_depth:
         if (_fb_properties.get_float_depth()) {
-          gl_format = GL_DEPTH_COMPONENT32F;
+          if (!glgsg->_use_remapped_depth_range) {
+            gl_format = GL_DEPTH_COMPONENT32F;
+          } else {
+            gl_format = GL_DEPTH_COMPONENT32F_NV;
+          }
         } else if (_fb_properties.get_depth_bits() > 24) {
           gl_format = GL_DEPTH_COMPONENT32;
         } else if (_fb_properties.get_depth_bits() > 16) {
