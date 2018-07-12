@@ -989,6 +989,23 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+
+#ifndef OPENGLES
+      // Are we getting only 24 bits of depth when we requested 32?  It may be
+      // because GL_DEPTH_COMPONENT32 is not a required format, while 32F is.
+      if (gl_format == GL_DEPTH_COMPONENT32 && depth_size < 32) {
+        if (!glgsg->_use_remapped_depth_range) {
+          gl_format = GL_DEPTH_COMPONENT32F;
+        } else {
+          gl_format = GL_DEPTH_COMPONENT32F_NV;
+        }
+        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+
+        _fb_properties.set_float_depth(true);
+      }
+#endif
+
       _fb_properties.set_depth_bits(depth_size);
       _rb_data_size_bytes += _rb_size_x * _rb_size_y * (depth_size / 8);
 
