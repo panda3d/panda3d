@@ -13,7 +13,9 @@
 
 #include "geomCacheManager.h"
 #include "geomCacheEntry.h"
+#include "geomMunger.h"
 #include "lightMutexHolder.h"
+#include "lightReMutexHolder.h"
 #include "clockObject.h"
 
 GeomCacheManager *GeomCacheManager::_global_ptr = nullptr;
@@ -53,6 +55,9 @@ GeomCacheManager::
  */
 void GeomCacheManager::
 flush() {
+  // Prevent deadlock
+  LightReMutexHolder registry_holder(GeomMunger::get_registry()->_registry_lock);
+
   LightMutexHolder holder(_lock);
   evict_old_entries(0, false);
 }
