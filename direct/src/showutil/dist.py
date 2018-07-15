@@ -1093,6 +1093,23 @@ class bdist_apps(setuptools.Command):
                     if os.path.isfile(path):
                         zf.write(path, path.replace(build_dir, base_dir, 1))
 
+    def create_tarball(self, basename, build_dir, tar_compression):
+        import tarfile
+
+        base_dir = self._get_archive_basedir()
+        build_cmd = self.get_finalized_command('build_apps')
+        binary_names = list(build_cmd.console_apps.keys()) + list(build_cmd.gui_apps.keys())
+
+        def tarfilter(tarinfo):
+            if tarinfo.isdir() or os.path.basename(tarinfo.name) in binary_names:
+                tarinfo.mode = 0o755
+            else:
+                tarinfo.mode = 0o644
+            return tarinfo
+
+        with tarfile.open('{}.tar.{}'.format(basename, tar_compression), 'w|{}'.format(tar_compression)) as tf:
+            tf.add(build_dir, base_dir, filter=tarfilter)
+
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
         if not build_cmd.platforms:
@@ -1115,14 +1132,10 @@ class bdist_apps(setuptools.Command):
                 if installer == 'zip':
                     self.create_zip(basename, build_dir)
                 elif installer in ('gztar', 'bztar', 'xztar'):
-                    base_dir = self.distribution.get_name()
-                    temp_dir = os.path.join(build_base, base_dir)
-                    if (os.path.exists(temp_dir)):
-                        shutil.rmtree(temp_dir)
-                    shutil.copytree(build_dir, temp_dir)
+                    compress = installer.replace('tar', '')
+                    if compress == 'bz':
+                        compress = 'bz2'
 
-                    shutil.make_archive(basename, installer, root_dir=build_base, base_dir=base_dir)
-
-                    shutil.rmtree(temp_dir)
+                    self.create_tarball(basename, build_dir, compress)
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
