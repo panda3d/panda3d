@@ -1073,6 +1073,26 @@ class bdist_apps(setuptools.Command):
             for key, value in _parse_dict(self.installers).items()
         }
 
+    def _get_archive_basedir(self):
+        return self.distribution.get_name()
+
+    def create_zip(self, basename, build_dir):
+        import zipfile
+
+        base_dir = self._get_archive_basedir()
+
+        with zipfile.ZipFile(basename+'.zip', 'w', compression=zipfile.ZIP_DEFLATED) as zf:
+            zf.write(build_dir, base_dir)
+
+            for dirpath, dirnames, filenames in os.walk(build_dir):
+                for name in sorted(dirnames):
+                    path = os.path.normpath(os.path.join(dirpath, name))
+                    zf.write(path, path.replace(build_dir, base_dir, 1))
+                for name in filenames:
+                    path = os.path.normpath(os.path.join(dirpath, name))
+                    if os.path.isfile(path):
+                        zf.write(path, path.replace(build_dir, base_dir, 1))
+
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
         if not build_cmd.platforms:
@@ -1092,7 +1112,9 @@ class bdist_apps(setuptools.Command):
             for installer in installers:
                 self.announce('\nBuilding {} for platform: {}'.format(installer, platform), distutils.log.INFO)
 
-                if installer in ('zip', 'gztar', 'bztar', 'xztar'):
+                if installer == 'zip':
+                    self.create_zip(basename, build_dir)
+                elif installer in ('gztar', 'bztar', 'xztar'):
                     base_dir = self.distribution.get_name()
                     temp_dir = os.path.join(build_base, base_dir)
                     if (os.path.exists(temp_dir)):
