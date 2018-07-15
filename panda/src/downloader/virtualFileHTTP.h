@@ -29,7 +29,7 @@ class VirtualFileMountHTTP;
  * VirtualFileSystem, allowing models etc.  to be loaded directly from a web
  * page.
  */
-class EXPCL_PANDAEXPRESS VirtualFileHTTP : public VirtualFile {
+class EXPCL_PANDA_DOWNLOADER VirtualFileHTTP : public VirtualFile {
 public:
   VirtualFileHTTP(VirtualFileMountHTTP *mount,
                   const Filename &local_filename,
@@ -45,15 +45,15 @@ public:
   virtual bool is_regular_file() const;
   INLINE bool is_implicit_pz_file() const;
 
-  virtual istream *open_read_file(bool auto_unwrap) const;
+  virtual std::istream *open_read_file(bool auto_unwrap) const;
   virtual bool was_read_successful() const;
-  virtual streamsize get_file_size(istream *stream) const;
-  virtual streamsize get_file_size() const;
+  virtual std::streamsize get_file_size(std::istream *stream) const;
+  virtual std::streamsize get_file_size() const;
   virtual time_t get_timestamp() const;
 
 private:
-  bool fetch_file(ostream *buffer_stream) const;
-  istream *return_file(istream *buffer_stream, bool auto_unwrap) const;
+  bool fetch_file(std::ostream *buffer_stream) const;
+  std::istream *return_file(std::istream *buffer_stream, bool auto_unwrap) const;
 
   VirtualFileMountHTTP *_mount;
   Filename _local_filename;

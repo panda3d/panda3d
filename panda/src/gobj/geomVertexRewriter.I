@@ -45,7 +45,7 @@ GeomVertexRewriter(GeomVertexData *vertex_data, CPT_InternalName name,
   GeomVertexWriter(vertex_data, current_thread),
   GeomVertexReader(vertex_data, current_thread)
 {
-  set_column(MOVE(name));
+  set_column(std::move(name));
 }
 
 /**
@@ -104,7 +104,7 @@ INLINE GeomVertexRewriter::
 INLINE GeomVertexData *GeomVertexRewriter::
 get_vertex_data() const {
   nassertr(GeomVertexWriter::get_vertex_data() ==
-           GeomVertexReader::get_vertex_data(), NULL);
+           GeomVertexReader::get_vertex_data(), nullptr);
   return GeomVertexWriter::get_vertex_data();
 }
 
@@ -115,7 +115,7 @@ get_vertex_data() const {
 INLINE GeomVertexArrayData *GeomVertexRewriter::
 get_array_data() const {
   nassertr(GeomVertexWriter::get_array_data() ==
-           GeomVertexReader::get_array_data(), NULL);
+           GeomVertexReader::get_array_data(), nullptr);
   return GeomVertexWriter::get_array_data();
 }
 
@@ -148,7 +148,7 @@ get_stride() const {
 INLINE Thread *GeomVertexRewriter::
 get_current_thread() const {
   nassertr(GeomVertexWriter::get_current_thread() ==
-           GeomVertexReader::get_current_thread(), NULL);
+           GeomVertexReader::get_current_thread(), nullptr);
   return GeomVertexWriter::get_current_thread();
 }
 
@@ -184,7 +184,7 @@ set_column(CPT_InternalName name) {
   // It's important to invoke the writer first, then the reader.  See
   // set_row().
   GeomVertexWriter::set_column(name);
-  return GeomVertexReader::set_column(MOVE(name));
+  return GeomVertexReader::set_column(std::move(name));
 }
 
 /**
@@ -242,7 +242,7 @@ get_array() const {
 INLINE const GeomVertexColumn *GeomVertexRewriter::
 get_column() const {
   nassertr(GeomVertexWriter::get_column() ==
-           GeomVertexReader::get_column(), NULL);
+           GeomVertexReader::get_column(), nullptr);
   return GeomVertexWriter::get_column();
 }
 

@@ -73,7 +73,7 @@ has_scoped_name() const {
 /**
  *
  */
-INLINE const string &InterrogateFunction::
+INLINE const std::string &InterrogateFunction::
 get_scoped_name() const {
   return _scoped_name;
 }
@@ -89,7 +89,7 @@ has_comment() const {
 /**
  *
  */
-INLINE const string &InterrogateFunction::
+INLINE const std::string &InterrogateFunction::
 get_comment() const {
   return _comment;
 }
@@ -105,7 +105,7 @@ has_prototype() const {
 /**
  *
  */
-INLINE const string &InterrogateFunction::
+INLINE const std::string &InterrogateFunction::
 get_prototype() const {
   return _prototype;
 }
@@ -149,14 +149,14 @@ get_python_wrapper(int n) const {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateFunction &function) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateFunction &function) {
   function.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateFunction &function) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateFunction &function) {
   function.input(in);
   return in;
 }

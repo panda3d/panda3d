@@ -26,21 +26,21 @@
  */
 class SoftFilename {
 public:
-  SoftFilename(const string &dirname, const string &filename);
+  SoftFilename(const std::string &dirname, const std::string &filename);
   SoftFilename(const SoftFilename &copy);
   void operator = (const SoftFilename &copy);
 
-  const string &get_dirname() const;
-  const string &get_filename() const;
+  const std::string &get_dirname() const;
+  const std::string &get_filename() const;
   bool has_version() const;
 
-  string get_1_0_filename() const;
+  std::string get_1_0_filename() const;
 
-  const string &get_base() const;
+  const std::string &get_base() const;
   int get_major() const;
   int get_minor() const;
-  const string &get_extension() const;
-  string get_non_extension() const;
+  const std::string &get_extension() const;
+  std::string get_non_extension() const;
 
   bool is_1_0() const;
   void make_1_0();
@@ -58,13 +58,13 @@ public:
   int get_use_count() const;
 
 private:
-  string _dirname;
-  string _filename;
+  std::string _dirname;
+  std::string _filename;
   bool _has_version;
-  string _base;
+  std::string _base;
   int _major;
   int _minor;
-  string _ext;
+  std::string _ext;
   bool _in_cvs;
   bool _wants_cvs;
   int _use_count;

@@ -30,7 +30,7 @@ FunctionWriter::
 /**
  *
  */
-const string &FunctionWriter::
+const std::string &FunctionWriter::
 get_name() const {
   return _name;
 }
@@ -42,7 +42,7 @@ int FunctionWriter::
 compare_to(const FunctionWriter &other) const {
   // Lexicographical string comparison.
 
-  string::const_iterator n1, n2;
+  std::string::const_iterator n1, n2;
   n1 = _name.begin();
   n2 = other._name.begin();
   while (n1 != _name.end() && n2 != other._name.end()) {
@@ -65,12 +65,12 @@ compare_to(const FunctionWriter &other) const {
  * Outputs the prototype for the function.
  */
 void FunctionWriter::
-write_prototype(ostream &) {
+write_prototype(std::ostream &) {
 }
 
 /**
  * Outputs the code for the function.
  */
 void FunctionWriter::
-write_code(ostream &) {
+write_code(std::ostream &) {
 }

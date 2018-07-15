@@ -27,7 +27,7 @@ PUBLISHED:
 
   bool operator == (const DisplayMode &other) const;
   bool operator != (const DisplayMode &other) const;
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 /**
@@ -94,8 +94,8 @@ PUBLISHED:
   int get_driver_date_day();
   int get_driver_date_year();
 
-  const string &get_cpu_vendor_string() const;
-  const string &get_cpu_brand_string() const;
+  const std::string &get_cpu_vendor_string() const;
+  const std::string &get_cpu_brand_string() const;
   unsigned int get_cpu_version_information();
   unsigned int get_cpu_brand_index();
 
@@ -155,8 +155,8 @@ public:
   int _driver_date_year;
 
 
-  string _cpu_vendor_string;
-  string _cpu_brand_string;
+  std::string _cpu_vendor_string;
+  std::string _cpu_brand_string;
   unsigned int _cpu_version_information;
   unsigned int _cpu_brand_index;
 

@@ -41,9 +41,9 @@ extract_bytes(size_t size) {
  */
 PyObject *Extension<StreamReader>::
 readline() {
-  istream *in = _this->get_istream();
+  std::istream *in = _this->get_istream();
 
-  string line;
+  std::string line;
   int ch = in->get();
   while (!in->eof() && !in->fail()) {
     line += ch;
@@ -68,8 +68,8 @@ readline() {
 PyObject *Extension<StreamReader>::
 readlines() {
   PyObject *lst = PyList_New(0);
-  if (lst == NULL) {
-    return NULL;
+  if (lst == nullptr) {
+    return nullptr;
   }
 
   PyObject *py_line = readline();

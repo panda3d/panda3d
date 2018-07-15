@@ -19,7 +19,7 @@
 
 NotifyCategoryDef(android, "");
 
-struct android_app *panda_android_app = NULL;
+struct android_app *panda_android_app = nullptr;
 
 jclass    jni_PandaActivity;
 jmethodID jni_PandaActivity_readBitmapSize;
@@ -139,7 +139,7 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
  * Shows a toast notification at the bottom of the activity.  The duration
  * should be 0 for short and 1 for long.
  */
-void android_show_toast(ANativeActivity *activity, const string &message, int duration) {
+void android_show_toast(ANativeActivity *activity, const std::string &message, int duration) {
   Thread *thread = Thread::get_current_thread();
   JNIEnv *env = thread->get_jni_env();
   nassertv(env != nullptr);

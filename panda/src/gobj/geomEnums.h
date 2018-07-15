@@ -220,9 +220,9 @@ PUBLISHED:
   };
 };
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::UsageHint usage_hint);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, GeomEnums::UsageHint &usage_hint);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::NumericType numeric_type);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, GeomEnums::Contents contents);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::UsageHint usage_hint);
+EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, GeomEnums::UsageHint &usage_hint);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::NumericType numeric_type);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, GeomEnums::Contents contents);
 
 #endif

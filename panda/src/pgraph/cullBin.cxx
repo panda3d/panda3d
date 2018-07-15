@@ -41,7 +41,7 @@ CullBin::
  */
 PT(CullBin) CullBin::
 make_next() const {
-  return (CullBin *)NULL;
+  return nullptr;
 }
 
 /**

@@ -39,8 +39,8 @@ Java_org_panda3d_android_NativeIStream_nativeGet(JNIEnv *env, jclass clazz, jlon
 EXPORT_JNI jint
 Java_org_panda3d_android_NativeIStream_nativeRead(JNIEnv *env, jclass clazz, jlong ptr, jbyteArray byte_array, jint offset, jint length) {
   std::istream *stream = (std::istream *) ptr;
-  jbyte *buffer = (jbyte *) env->GetPrimitiveArrayCritical(byte_array, NULL);
-  if (buffer == NULL) {
+  jbyte *buffer = (jbyte *) env->GetPrimitiveArrayCritical(byte_array, nullptr);
+  if (buffer == nullptr) {
     return -1;
   }
 

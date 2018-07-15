@@ -23,6 +23,8 @@
 
 #include "vector_src.cxx"
 
+using std::string;
+
 /**
  * Defines a new InputDevice for the window.  Most windows will have exactly
  * one InputDevice: a keyboard/mouse pair.  Some may also add joystick data,
@@ -141,7 +143,7 @@ get_button_event() {
 bool GraphicsWindowInputDevice::
 has_pointer_event() const {
   LightMutexHolder holder(_lock);
-  return (_pointer_events != 0);
+  return (_pointer_events != nullptr);
 }
 
 /**
@@ -151,7 +153,7 @@ PT(PointerEventList) GraphicsWindowInputDevice::
 get_pointer_events() {
   LightMutexHolder holder(_lock);
   PT(PointerEventList) result = _pointer_events;
-  _pointer_events = 0;
+  _pointer_events = nullptr;
   return result;
 }
 
@@ -224,7 +226,7 @@ set_pointer(bool inwin, double x, double y, double time) {
 
   if (_enable_pointer_events) {
     int seq = _event_sequence++;
-    if (_pointer_events == 0) {
+    if (_pointer_events == nullptr) {
       _pointer_events = new PointerEventList();
     }
     _pointer_events->add_event(_mouse_data._in_window,
@@ -281,7 +283,7 @@ keystroke(int keycode, double time) {
  * especially Chinese/Japanese/Korean.
  */
 void GraphicsWindowInputDevice::
-candidate(const wstring &candidate_string, size_t highlight_start,
+candidate(const std::wstring &candidate_string, size_t highlight_start,
           size_t highlight_end, size_t cursor_pos) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(candidate_string,

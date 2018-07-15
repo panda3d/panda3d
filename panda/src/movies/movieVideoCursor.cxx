@@ -60,7 +60,21 @@ setup_texture(Texture *tex) const {
   int fullx = size_x();
   int fully = size_y();
   tex->adjust_this_size(fullx, fully, tex->get_name(), true);
-  Texture::Format fmt = (get_num_components() == 4) ? Texture::F_rgba : Texture::F_rgb;
+  Texture::Format fmt;
+  switch (get_num_components()) {
+  case 1:
+    fmt = Texture::F_luminance;
+    break;
+  case 2:
+    fmt = Texture::F_luminance_alpha;
+    break;
+  default:
+    fmt = Texture::F_rgb;
+    break;
+  case 4:
+    fmt = Texture::F_rgba;
+    break;
+  }
   tex->setup_texture(Texture::TT_2d_texture, fullx, fully, 1, Texture::T_unsigned_byte, fmt);
   tex->set_pad_size(fullx - size_x(), fully - size_y());
 }
@@ -97,7 +111,7 @@ set_time(double timestamp, int loop_count) {
  */
 PT(MovieVideoCursor::Buffer) MovieVideoCursor::
 fetch_buffer() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -105,7 +119,7 @@ fetch_buffer() {
  */
 void MovieVideoCursor::
 apply_to_texture(const Buffer *buffer, Texture *t, int page) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
@@ -113,7 +127,9 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
 
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
-  nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
+  nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4) ||
+           (t->get_num_components() == 1 && get_num_components() == 1) ||
+           (t->get_num_components() == 2 && get_num_components() == 2));
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_num_pages());
 
@@ -132,17 +148,19 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
 
   } else {
     unsigned char *p = buffer->_block;
-    if (t->get_num_components() == get_num_components()) {
-      int src_stride = size_x() * get_num_components();
-      int dst_stride = t->get_x_size() * t->get_num_components();
+    int src_width = get_num_components();
+    int dst_width = t->get_num_components();
+    if (src_width == dst_width) {
+      int src_stride = src_width * size_x();
+      int dst_stride = dst_width * t->get_x_size();
       for (int y=0; y<size_y(); y++) {
         memcpy(data, p, src_stride);
         data += dst_stride;
         p += src_stride;
       }
     } else {
-      int src_width = get_num_components();
-      int dst_width = t->get_num_components();
+      nassertv(src_width >= 3);
+      nassertv(dst_width >= 3);
       for (int y = 0; y < size_y(); ++y) {
         for (int x = 0; x < size_x(); ++x) {
           data[0] = p[0];
@@ -162,15 +180,26 @@ apply_to_texture(const Buffer *buffer, Texture *t, int page) {
  */
 void MovieVideoCursor::
 apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
   PStatTimer timer(_copy_pcollector);
 
+  // Is this a grayscale texture?
+  if (get_num_components() < 3) {
+    if (get_num_components() == 1 || alpha_src < 2 || alpha_src == 3) {
+      // There's only one "RGB" channel to take from.
+      alpha_src = 1;
+    } else {
+      // Alpha is actually in the second channel for grayscale-alpha.
+      alpha_src = 2;
+    }
+  }
+
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
-  nassertv(t->get_num_components() == 4);
+  nassertv(t->get_num_components() == 4 || t->get_num_components() == 2);
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
   nassertv((alpha_src >= 0) && (alpha_src <= get_num_components()));
@@ -186,14 +215,16 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
 
   PStatTimer timer2(_copy_pcollector_copy);
   int src_width = get_num_components();
+  int dst_width = t->get_num_components();
   int src_stride = size_x() * src_width;
-  int dst_stride = t->get_x_size() * 4;
+  int dst_stride = t->get_x_size() * dst_width;
   unsigned char *p = buffer->_block;
   if (alpha_src == 0) {
+    nassertv(src_width >= 3);
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
         unsigned char *pp = &p[x * src_width];
-        data[x*4+3] = (pp[0] + pp[1] + pp[2]) / 3;
+        data[(x + 1) * dst_width - 1] = (pp[0] + pp[1] + pp[2]) / 3;
       }
       data += dst_stride;
       p += src_stride;
@@ -202,7 +233,7 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
     alpha_src -= 1;
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
-        data[x*4+3] = p[x * src_width + alpha_src];
+        data[(x + 1) * dst_width - 1] = p[x * src_width + alpha_src];
       }
       data += dst_stride;
       p += src_stride;
@@ -216,7 +247,7 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
  */
 void MovieVideoCursor::
 apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     return;
   }
 
@@ -224,7 +255,7 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
 
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
-  nassertv(t->get_num_components() == 4);
+  nassertv(t->get_num_components() == 4 || t->get_num_components() == 2);
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
 
@@ -238,18 +269,35 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
   PStatTimer timer2(_copy_pcollector_copy);
-  int src_stride = size_x() * get_num_components();
   int src_width = get_num_components();
-  int dst_stride = t->get_x_size() * 4;
+  int dst_width = t->get_num_components();
+  int src_stride = size_x() * src_width;
+  int dst_stride = t->get_x_size() * dst_width;
   unsigned char *p = buffer->_block;
-  for (int y=0; y<size_y(); y++) {
-    for (int x=0; x<size_x(); x++) {
-      data[x * 4 + 0] = p[x * src_width + 0];
-      data[x * 4 + 1] = p[x * src_width + 1];
-      data[x * 4 + 2] = p[x * src_width + 2];
+  if (src_width >= 3) {
+    // It has RGB values.
+    nassertv(dst_width >= 3);
+    for (int y = 0; y < size_y(); ++y) {
+      for (int x = 0; x < size_x(); ++x) {
+        data[x * dst_width + 0] = p[x * src_width + 0];
+        data[x * dst_width + 1] = p[x * src_width + 1];
+        data[x * dst_width + 2] = p[x * src_width + 2];
+      }
+      data += dst_stride;
+      p += src_stride;
     }
-    data += dst_stride;
-    p += src_stride;
+  } else if (dst_width == 4) {
+    // It has only grayscale.
+    for (int y = 0; y < size_y(); ++y) {
+      for (int x = 0; x < size_x(); ++x) {
+        unsigned char gray = p[x * src_width];
+        data[x * dst_width + 0] = gray;
+        data[x * dst_width + 1] = gray;
+        data[x * dst_width + 2] = gray;
+      }
+      data += dst_stride;
+      p += src_stride;
+    }
   }
 }
 
@@ -259,7 +307,7 @@ apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
  */
 MovieVideoCursor::Buffer *MovieVideoCursor::
 get_standard_buffer() {
-  if (_standard_buffer == NULL) {
+  if (_standard_buffer == nullptr) {
     _standard_buffer = make_new_buffer();
   }
   return _standard_buffer;

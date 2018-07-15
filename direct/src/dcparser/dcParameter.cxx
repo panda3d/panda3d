@@ -17,12 +17,15 @@
 #include "dcindent.h"
 #include "dcTypedef.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */
 DCParameter::
 DCParameter() {
-  _typedef = NULL;
+  _typedef = nullptr;
   _has_fixed_byte_size = false;
   _has_fixed_structure = false;
   _num_nested_fields = -1;
@@ -66,7 +69,7 @@ as_parameter() const {
  */
 DCSimpleParameter *DCParameter::
 as_simple_parameter() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -74,7 +77,7 @@ as_simple_parameter() {
  */
 const DCSimpleParameter *DCParameter::
 as_simple_parameter() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -82,7 +85,7 @@ as_simple_parameter() const {
  */
 DCClassParameter *DCParameter::
 as_class_parameter() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -90,7 +93,7 @@ as_class_parameter() {
  */
 const DCClassParameter *DCParameter::
 as_class_parameter() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -98,7 +101,7 @@ as_class_parameter() const {
  */
 DCSwitchParameter *DCParameter::
 as_switch_parameter() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -106,7 +109,7 @@ as_switch_parameter() {
  */
 const DCSwitchParameter *DCParameter::
 as_switch_parameter() const {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -114,7 +117,7 @@ as_switch_parameter() const {
  */
 DCArrayParameter *DCParameter::
 as_array_parameter() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -122,7 +125,7 @@ as_array_parameter() {
  */
 const DCArrayParameter *DCParameter::
 as_array_parameter() const {
-  return NULL;
+  return nullptr;
 }
 
 /**

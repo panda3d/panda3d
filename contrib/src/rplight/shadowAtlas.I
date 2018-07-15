@@ -118,7 +118,7 @@ inline int ShadowAtlas::get_required_tiles(size_t resolution) const {
 
   if (resolution % _tile_size != 0) {
     shadowatlas_cat.error() << "Resolution " << resolution << " is not a multiple "
-                << "of the shadow atlas tile size (" << _tile_size << ")!" << endl;
+                << "of the shadow atlas tile size (" << _tile_size << ")!" << std::endl;
     return 1;
   }
   return resolution / _tile_size;

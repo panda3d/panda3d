@@ -12,28 +12,12 @@
  */
 
 /**
- * Do not attempt to copy threads.
- */
-INLINE Thread::
-Thread(const Thread &copy) : _impl(this) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy threads.
- */
-INLINE void Thread::
-operator = (const Thread &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the sync name of the thread.  This name collects threads into "sync
  * groups", which are expected to run synchronously.  This is mainly used for
  * the benefit of PStats; threads with the same sync name can be ticked all at
  * once via the thread_tick() call.
  */
-INLINE const string &Thread::
+INLINE const std::string &Thread::
 get_sync_name() const {
   return _sync_name;
 }
@@ -62,7 +46,7 @@ get_python_index() const {
  * Returns a string that is guaranteed to be unique to this thread, across all
  * processes on the machine, during at least the lifetime of this process.
  */
-INLINE string Thread::
+INLINE std::string Thread::
 get_unique_id() const {
   return _impl.get_unique_id();
 }
@@ -91,7 +75,7 @@ get_pipeline_stage() const {
  */
 INLINE void Thread::
 set_min_pipeline_stage(int min_pipeline_stage) {
-  set_pipeline_stage(max(_pipeline_stage, min_pipeline_stage));
+  set_pipeline_stage(std::max(_pipeline_stage, min_pipeline_stage));
 }
 
 /**
@@ -100,7 +84,7 @@ set_min_pipeline_stage(int min_pipeline_stage) {
  */
 INLINE Thread *Thread::
 get_main_thread() {
-  if (_main_thread == (Thread *)NULL) {
+  if (_main_thread == nullptr) {
     init_main_thread();
   }
   return _main_thread;
@@ -114,7 +98,7 @@ get_main_thread() {
  */
 INLINE Thread *Thread::
 get_external_thread() {
-  if (_external_thread == (Thread *)NULL) {
+  if (_external_thread == nullptr) {
     init_external_thread();
   }
   return _external_thread;
@@ -137,7 +121,7 @@ get_current_thread() {
   return get_main_thread();
 #else  // HAVE_THREADS
   Thread *thread = ThreadImpl::get_current_thread();
-  if (thread == (Thread *)NULL) {
+  if (thread == nullptr) {
     return Thread::get_external_thread();
   }
   return thread;
@@ -339,8 +323,8 @@ get_pstats_callback() const {
   return _pstats_callback;
 }
 
-INLINE ostream &
-operator << (ostream &out, const Thread &thread) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Thread &thread) {
   thread.output(out);
   return out;
 }

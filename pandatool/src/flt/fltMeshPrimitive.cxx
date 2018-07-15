@@ -91,7 +91,7 @@ build_record(FltRecordWriter &writer) const {
   int max_index = 0;
   Vertices::const_iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
-    max_index = max(max_index, (*vi));
+    max_index = std::max(max_index, (*vi));
   }
 
   int vertex_width;

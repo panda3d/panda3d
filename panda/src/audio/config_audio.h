@@ -52,8 +52,8 @@ enum FmodSpeakerMode {
   FSM_unspecified
 };
 
-EXPCL_PANDA_AUDIO ostream &operator << (ostream &out, FmodSpeakerMode sm);
-EXPCL_PANDA_AUDIO istream &operator >> (istream &in, FmodSpeakerMode &sm);
+EXPCL_PANDA_AUDIO std::ostream &operator << (std::ostream &out, FmodSpeakerMode sm);
+EXPCL_PANDA_AUDIO std::istream &operator >> (std::istream &in, FmodSpeakerMode &sm);
 
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
@@ -84,7 +84,7 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_channels;
   // Non-release build:
   #define audio_debug(msg) \
   if (audio_cat.is_debug()) { \
-    audio_cat->debug() << msg << endl; \
+    audio_cat->debug() << msg << std::endl; \
   } else {}
 #else //][
   // Release build:
@@ -92,12 +92,12 @@ extern EXPCL_PANDA_AUDIO ConfigVariableInt audio_output_channels;
 #endif //]
 
 #define audio_info(msg) \
-  audio_cat->info() << msg << endl
+  audio_cat->info() << msg << std::endl
 
 #define audio_warning(msg) \
-  audio_cat->warning() << msg << endl
+  audio_cat->warning() << msg << std::endl
 
 #define audio_error(msg) \
-  audio_cat->error() << msg << endl
+  audio_cat->error() << msg << std::endl
 
 #endif /* __CONFIG_AUDIO_H__ */

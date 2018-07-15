@@ -16,7 +16,7 @@
  */
 INLINE SceneSetup::
 SceneSetup() {
-  _display_region = NULL;
+  _display_region = nullptr;
   _viewport_width = 0;
   _viewport_height = 0;
   _inverted = false;
@@ -175,7 +175,7 @@ get_cull_center() const {
 INLINE PT(BoundingVolume) SceneSetup::
 get_cull_bounds() const {
   PT(BoundingVolume) bounds = _camera_node->get_cull_bounds();
-  if (bounds != (BoundingVolume *)NULL) {
+  if (bounds != nullptr) {
     return bounds;
   }
 

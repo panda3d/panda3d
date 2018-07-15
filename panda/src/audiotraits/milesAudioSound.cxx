@@ -16,6 +16,8 @@
 
 #include "milesAudioManager.h"
 
+using std::string;
+
 TypeHandle MilesAudioSound::_type_handle;
 
 #undef miles_audio_debug
@@ -130,7 +132,7 @@ set_time(PN_stdfloat time) {
  */
 void MilesAudioSound::
 set_active(bool active) {
-  if (_manager == (MilesAudioManager *)NULL) {
+  if (_manager == nullptr) {
     return;
   }
 

@@ -55,7 +55,7 @@ TinySDLGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string TinySDLGraphicsPipe::
+std::string TinySDLGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
@@ -73,7 +73,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) TinySDLGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -83,12 +83,12 @@ make_output(const string &name,
             int retry,
             bool &precertify) {
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   TinyGraphicsStateGuardian *tinygsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(tinygsg, gsg, NULL);
+    DCAST_INTO_R(tinygsg, gsg, nullptr);
   }
 
   // First thing to try: a TinySDLGraphicsWindow
@@ -101,14 +101,14 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinySDLGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 #endif  // HAVE_SDL

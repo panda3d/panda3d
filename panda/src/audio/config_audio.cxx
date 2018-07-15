@@ -25,6 +25,10 @@
   #error Buildsystem error: BUILDING_PANDA_AUDIO not defined
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
 

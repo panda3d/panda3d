@@ -313,6 +313,13 @@ ConfigVariableEnum<CoordinateSystem> gl_coordinate_system
             "creating a shader-only application, it may be easier and "
             "more efficient to set this to default."));
 
+ConfigVariableBool gl_depth_zero_to_one
+  ("gl-depth-zero-to-one", false,
+   PRC_DESC("Normally, OpenGL uses an NDC coordinate space wherein the Z "
+            "ranges from -1 to 1.  This setting can be used to instead use a "
+            "range from 0 to 1, matching other graphics APIs.  This setting "
+            "requires OpenGL 4.5, or NVIDIA GeForce 8+ hardware."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {

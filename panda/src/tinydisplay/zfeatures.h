@@ -39,4 +39,10 @@
 /* Number of simultaneous texture stages supported (multitexture). */
 #define MAX_TEXTURE_STAGES 3
 
+#ifdef __GNUC__
+#define UNUSED __attribute__((unused))
+#else
+#define UNUSED
+#endif
+
 #endif /* _tgl_features_h_ */

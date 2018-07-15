@@ -22,6 +22,8 @@
 #include "eggVertexPool.h"
 #include "eggPolygon.h"
 
+using std::cerr;
+
 /**
  *
  */
@@ -65,7 +67,7 @@ void IndexedFaceSet::
 get_coord_values() {
   const VrmlNode *coord = _geometry->get_value("coord")._sfnode._p;
 
-  if (coord != NULL) {
+  if (coord != nullptr) {
     const MFArray *point = coord->get_value("point")._mf;
     MFArray::const_iterator ci;
     for (ci = point->begin(); ci != point->end(); ++ci) {
@@ -153,7 +155,7 @@ get_vrml_uvs(const VrmlNode *texCoord_node,
 bool IndexedFaceSet::
 get_colors() {
   const VrmlNode *color = _geometry->get_value("color")._sfnode._p;
-  if (color != NULL) {
+  if (color != nullptr) {
     // Vertex or face colors.
     pvector<UnalignedLVecBase4> color_list;
     get_vrml_colors(color, _appearance._transparency, color_list);
@@ -223,7 +225,7 @@ get_colors() {
 bool IndexedFaceSet::
 get_normals() {
   const VrmlNode *normal = _geometry->get_value("normal")._sfnode._p;
-  if (normal != NULL) {
+  if (normal != nullptr) {
     // Vertex or face normals.
     pvector<LNormald> normal_list;
     get_vrml_normals(normal, normal_list);
@@ -375,7 +377,7 @@ assign_per_vertex_normals() {
 bool IndexedFaceSet::
 get_uvs() {
   const VrmlNode *texCoord = _geometry->get_value("texCoord")._sfnode._p;
-  if (texCoord != NULL) {
+  if (texCoord != nullptr) {
     // Vertex or face texCoords.
     pvector<LTexCoordd> uv_list;
     get_vrml_uvs(texCoord, uv_list);
@@ -496,7 +498,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       poly->set_color(_appearance._color);
     }
 
-    if (_appearance._tex != (EggTexture *)NULL) {
+    if (_appearance._tex != nullptr) {
       poly->set_texture(_appearance._tex);
     }
 
@@ -535,7 +537,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
 void IndexedFaceSet::
 compute_normals(EggGroup *group) {
   const VrmlNode *normal = _geometry->get_value("normal")._sfnode._p;
-  if (normal == NULL) {
+  if (normal == nullptr) {
     // Compute normals.
     double creaseAngle = _geometry->get_value("creaseAngle")._sffloat;
     if (creaseAngle == 0.0) {

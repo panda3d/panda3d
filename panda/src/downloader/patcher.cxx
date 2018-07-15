@@ -44,7 +44,7 @@ init(PT(Buffer) buffer) {
   nassertv(!buffer.is_null());
   _buffer = buffer;
 
-  _patchfile = NULL;
+  _patchfile = nullptr;
   _patchfile = new Patchfile(_buffer);
 }
 

@@ -56,13 +56,13 @@ private:
 
 private:
   P3DInstance *_inst;
-  string _start_dir;
+  std::string _start_dir;
 
   // This information is passed to create_process().
   P3DTemporaryFile *_cert_filename;
-  string _cert_dir;
-  string _p3dcert_exe;
-  string _env;
+  std::string _cert_dir;
+  std::string _p3dcert_exe;
+  std::string _env;
 
 #ifdef _WIN32
   HANDLE _p3dcert_handle;

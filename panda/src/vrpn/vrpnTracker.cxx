@@ -24,7 +24,7 @@
  *
  */
 VrpnTracker::
-VrpnTracker(const string &tracker_name, vrpn_Connection *connection) :
+VrpnTracker(const std::string &tracker_name, vrpn_Connection *connection) :
   _tracker_name(tracker_name)
 {
   _tracker = new vrpn_Tracker_Remote(_tracker_name.c_str(), connection);
@@ -76,7 +76,7 @@ unmark(VrpnTrackerDevice *device) {
  *
  */
 void VrpnTracker::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _tracker_name;
 }
 
@@ -84,7 +84,7 @@ output(ostream &out) const {
  *
  */
 void VrpnTracker::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_tracker_name() << " ("
     << _devices.size() << " devices)\n";

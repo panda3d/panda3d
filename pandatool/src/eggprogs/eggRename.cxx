@@ -26,7 +26,7 @@ EggRename() {
   add_option
     ("strip_prefix", "name", 0,
      "strips out the prefix that is put on all nodes, by maya ext. ref",
-     &EggRename::dispatch_vector_string, NULL, &_strip_prefix);
+     &EggRename::dispatch_vector_string, nullptr, &_strip_prefix);
 }
 
 /**

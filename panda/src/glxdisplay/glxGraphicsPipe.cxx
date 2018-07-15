@@ -20,6 +20,8 @@
 #include "config_glxdisplay.h"
 #include "frameBufferProperties.h"
 
+using std::string;
+
 TypeHandle glxGraphicsPipe::_type_handle;
 
 /**
@@ -78,14 +80,14 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   // This may not be a GLX GSG; it might be a callback GSG.
-  PosixGraphicsStateGuardian *posixgsg = NULL;
-  glxGraphicsStateGuardian *glxgsg = NULL;
-  if (gsg != NULL) {
-    DCAST_INTO_R(posixgsg, gsg, NULL);
+  PosixGraphicsStateGuardian *posixgsg = nullptr;
+  glxGraphicsStateGuardian *glxgsg = nullptr;
+  if (gsg != nullptr) {
+    DCAST_INTO_R(posixgsg, gsg, nullptr);
     glxgsg = DCAST(glxGraphicsStateGuardian, posixgsg);
   }
 
@@ -103,9 +105,9 @@ make_output(const string &name,
   // First thing to try: a glxGraphicsWindow
 
   if (retry == 0) {
-    if (gsg != NULL && glxgsg == NULL) {
+    if (gsg != nullptr && glxgsg == nullptr) {
       // We can't use a non-GLX GSG.
-      return NULL;
+      return nullptr;
     }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
@@ -115,7 +117,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new glxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
@@ -124,9 +126,9 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
-    if (!gl_support_fbo || host == NULL ||
+    if (!gl_support_fbo || host == nullptr ||
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -134,13 +136,13 @@ make_output(const string &name,
       if (fb_prop.get_indexed_color() ||
           fb_prop.get_back_buffers() > 0 ||
           fb_prop.get_accum_bits() > 0) {
-        return NULL;
+        return nullptr;
       }
     }
-    if (posixgsg != NULL && posixgsg->is_valid() && !posixgsg->needs_reset()) {
+    if (posixgsg != nullptr && posixgsg->is_valid() && !posixgsg->needs_reset()) {
       if (!posixgsg->_supports_framebuffer_object ||
-          posixgsg->_glDrawBuffers == NULL) {
-        return NULL;
+          posixgsg->_glDrawBuffers == nullptr) {
+        return nullptr;
       } else {
         // Early success - if we are sure that this buffer WILL meet specs, we
         // can precertify it.
@@ -152,10 +154,10 @@ make_output(const string &name,
   }
 
   // Third thing to try: a glxGraphicsBuffer
-  if (glxgsg == NULL || glxgsg->_supports_fbconfig) {
+  if (glxgsg == nullptr || glxgsg->_supports_fbconfig) {
     if (retry == 2) {
       if (!glx_support_pbuffer) {
-        return NULL;
+        return nullptr;
       }
 
       if (((flags&BF_require_parasite)!=0)||
@@ -163,7 +165,7 @@ make_output(const string &name,
           ((flags&BF_resizeable)!=0)||
           ((flags&BF_size_track_host)!=0)||
           ((flags&BF_can_bind_layered)!=0)) {
-        return NULL;
+        return nullptr;
       }
 
       if (!support_rtt) {
@@ -171,7 +173,7 @@ make_output(const string &name,
             ((flags&BF_can_bind_every)!=0)) {
           // If we require Render-to-Texture, but can't be sure we support it,
           // bail.
-          return NULL;
+          return nullptr;
         }
       }
 
@@ -183,7 +185,7 @@ make_output(const string &name,
   // Third thing to try: a glxGraphicsPixmap.
   if (retry == 3) {
     if (!glx_support_pixmap) {
-      return NULL;
+      return nullptr;
     }
 
     if (((flags&BF_require_parasite)!=0)||
@@ -191,12 +193,12 @@ make_output(const string &name,
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_layered)!=0)) {
-      return NULL;
+      return nullptr;
     }
 
     if (((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
 
     return new glxGraphicsPixmap(engine, this, name, fb_prop, win_prop,
@@ -204,7 +206,7 @@ make_output(const string &name,
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 /**

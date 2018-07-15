@@ -18,6 +18,10 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle PNMFileTypePfm::_type_handle;
 
 /**

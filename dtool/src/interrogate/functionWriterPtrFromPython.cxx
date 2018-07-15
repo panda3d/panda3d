@@ -43,7 +43,7 @@ FunctionWriterPtrFromPython::
  * Outputs the prototype for the function.
  */
 void FunctionWriterPtrFromPython::
-write_prototype(ostream &out) {
+write_prototype(std::ostream &out) {
   CPPType *ppointer = new CPPPointerType(_pointer_type);
 
   out << "static int " << _name << "(PyObject *obj, ";
@@ -57,20 +57,20 @@ write_prototype(ostream &out) {
  * Outputs the code for the function.
  */
 void FunctionWriterPtrFromPython::
-write_code(ostream &out) {
+write_code(std::ostream &out) {
   CPPType *ppointer = new CPPPointerType(_pointer_type);
 
   out << "static int\n"
       << _name << "(PyObject *obj, ";
   ppointer->output_instance(out, "addr", &parser);
   out << ") {\n"
-      << "  if (obj != (PyObject *)NULL && PyInstance_Check(obj)) {\n"
+      << "  if (obj != nullptr && PyInstance_Check(obj)) {\n"
     // << "    PyClassObject *in_class = ((PyInstanceObject
     // *)obj)->in_class;\n"
       << "    PyObject *in_dict = ((PyInstanceObject *)obj)->in_dict;\n"
-      << "    if (in_dict != (PyObject *)NULL && PyDict_Check(in_dict)) {\n"
+      << "    if (in_dict != nullptr && PyDict_Check(in_dict)) {\n"
       << "      PyObject *thisobj = PyDict_GetItemString(in_dict, \"this\");\n"
-      << "      if (thisobj != (PyObject *)NULL && PyLong_Check(thisobj)) {\n"
+      << "      if (thisobj != nullptr && PyLong_Check(thisobj)) {\n"
       << "        (*addr) = ("
       << _pointer_type->get_local_name(&parser) << ")PyLong_AsVoidPtr(thisobj);\n"
       << "        return 1;\n"

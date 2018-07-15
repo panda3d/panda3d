@@ -33,7 +33,7 @@ class GraphicsStateGuardianBase;
  */
 class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
-  explicit GeomNode(const string &name);
+  explicit GeomNode(const std::string &name);
 
 protected:
   GeomNode(const GeomNode &copy);
@@ -85,14 +85,14 @@ PUBLISHED:
   void decompose();
   void unify(int max_indices, bool preserve_order);
 
-  void write_geoms(ostream &out, int indent_level) const;
-  void write_verbose(ostream &out, int indent_level) const;
+  void write_geoms(std::ostream &out, int indent_level) const;
+  void write_verbose(std::ostream &out, int indent_level) const;
 
   INLINE static CollideMask get_default_collide_mask();
   MAKE_PROPERTY(default_collide_mask, get_default_collide_mask);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual bool is_geom_node() const;
 
@@ -164,12 +164,10 @@ public:
     INLINE Geoms();
     INLINE Geoms(const CData *cdata);
     INLINE Geoms(const Geoms &copy);
-    INLINE void operator = (const Geoms &copy);
+    INLINE Geoms(Geoms &&from) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-    INLINE Geoms(Geoms &&from) NOEXCEPT;
-    INLINE void operator = (Geoms &&from) NOEXCEPT;
-#endif
+    INLINE void operator = (const Geoms &copy);
+    INLINE void operator = (Geoms &&from) noexcept;
 
     INLINE int get_num_geoms() const;
     INLINE CPT(Geom) get_geom(int n) const;

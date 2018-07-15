@@ -21,6 +21,8 @@
 #endif
 #include <windows.h>
 
+using std::string;
+
 /**
  * Sets the registry key to the indicated value as a string.  The supplied
  * string value is automatically converted from whatever encoding is set by
@@ -32,9 +34,7 @@ set_string_value(const string &key, const string &name, const string &value,
         WindowsRegistry::RegLevel rl)
 {
   TextEncoder encoder;
-  wstring wvalue = encoder.decode_text(value);
-
-  bool okflag = true;
+  std::wstring wvalue = encoder.decode_text(value);
 
   // Now convert the string to Windows' idea of the correct wide-char
   // encoding, so we can store it in the registry.  This might well be the
@@ -46,8 +46,8 @@ set_string_value(const string &key, const string &name, const string &value,
   int mb_result_len =
     WideCharToMultiByte(CP_ACP, 0,
                         wvalue.data(), wvalue.length(),
-                        NULL, 0,
-                        NULL, NULL);
+                        nullptr, 0,
+                        nullptr, nullptr);
   if (mb_result_len == 0) {
     express_cat.error()
       << "Unable to convert '" << value
@@ -59,7 +59,7 @@ set_string_value(const string &key, const string &name, const string &value,
   WideCharToMultiByte(CP_ACP, 0,
                       wvalue.data(), wvalue.length(),
                       mb_result, mb_result_len,
-                      NULL, NULL);
+                      nullptr, nullptr);
 
   if (express_cat.is_debug()) {
     express_cat.debug()
@@ -141,7 +141,7 @@ get_string_value(const string &key, const string &name,
   int wide_result_len =
     MultiByteToWideChar(CP_ACP, 0,
                         data.data(), data.length(),
-                        NULL, 0);
+                        nullptr, 0);
   if (wide_result_len == 0) {
     express_cat.error()
       << "Unable to convert '" << data
@@ -154,7 +154,7 @@ get_string_value(const string &key, const string &name,
                       data.data(), data.length(),
                       wide_result, wide_result_len);
 
-  wstring wdata(wide_result, wide_result_len);
+  std::wstring wdata(wide_result, wide_result_len);
 
   TextEncoder encoder;
   string result = encoder.encode_wtext(wdata);
@@ -347,7 +347,7 @@ format_message(int error_code) {
   PVOID buffer;
   DWORD length =
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                  NULL, error_code, 0, (LPTSTR)&buffer, 0, NULL);
+                  nullptr, error_code, 0, (LPTSTR)&buffer, 0, nullptr);
   if (length == 0) {
     return "Unknown error message";
   }

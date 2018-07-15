@@ -47,7 +47,7 @@ public:
   WinStatsMonitor(WinStatsServer *server);
   virtual ~WinStatsMonitor();
 
-  virtual string get_monitor_name();
+  virtual std::string get_monitor_name();
 
   virtual void initialized();
   virtual void got_hello();
@@ -102,7 +102,7 @@ private:
   HMENU _menu_bar;
   HMENU _options_menu;
   HMENU _speed_menu;
-  string _window_title;
+  std::string _window_title;
   int _time_units;
   double _scroll_speed;
   bool _pause;

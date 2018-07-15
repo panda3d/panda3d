@@ -30,7 +30,7 @@ extern "C" {
 
 TypeHandle WebcamVideoCursorV4L::_type_handle;
 
-#define clamp(x) min(max(x, 0.0), 255.0)
+#define clamp(x) std::min(std::max(x, 0.0), 255.0)
 
 INLINE static void yuv_to_bgr(unsigned char *dest, const unsigned char *src) {
   double y1 = (255 / 219.0) * (src[0] - 16);
@@ -207,8 +207,8 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _ready = false;
   memset(&_format, 0, sizeof(struct v4l2_format));
 
-  _buffers = NULL;
-  _buflens = NULL;
+  _buffers = nullptr;
+  _buflens = nullptr;
 
   int mode = O_RDWR;
   if (!v4l_blocking) {
@@ -326,7 +326,7 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
     }
 
     _buflens[i] = buf.length;
-    _buffers[i] = mmap (NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, buf.m.offset);
+    _buffers[i] = mmap (nullptr, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, _fd, buf.m.offset);
 
     if (_buffers[i] == MAP_FAILED) {
       vision_cat.error() << "Failed to map buffer!\n";
@@ -393,7 +393,7 @@ WebcamVideoCursorV4L::
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorV4L::
 fetch_buffer() {
   if (!_ready) {
-    return NULL;
+    return nullptr;
   }
 
   PT(Buffer) buffer = get_standard_buffer();
@@ -405,12 +405,12 @@ fetch_buffer() {
   if (-1 == ioctl(_fd, VIDIOC_DQBUF, &vbuf) && errno != EIO) {
     if (errno == EAGAIN) {
       // Simply nothing is available yet.
-      return NULL;
+      return nullptr;
     }
     vision_cat.error() << "Failed to dequeue buffer!\n";
-    return NULL;
+    return nullptr;
   }
-  nassertr(vbuf.index < _bufcount, NULL);
+  nassertr(vbuf.index < _bufcount, nullptr);
   size_t bufsize = _buflens[vbuf.index];
   size_t old_bpl = _format.fmt.pix.bytesperline;
   size_t new_bpl = _size_x * _num_components;
@@ -435,7 +435,7 @@ fetch_buffer() {
       _cinfo.src->next_input_byte = buf;
 
       if (jpeg_read_header(&_cinfo, TRUE) == JPEG_HEADER_OK) {
-        if (_cinfo.dc_huff_tbl_ptrs[0] == NULL) {
+        if (_cinfo.dc_huff_tbl_ptrs[0] == nullptr) {
           // Many MJPEG streams do not include huffman tables.  Remedy this.
           _cinfo.dc_huff_tbl_ptrs[0] = &dc_luminance_tbl;
           _cinfo.dc_huff_tbl_ptrs[1] = &dc_chrominance_tbl;
@@ -482,7 +482,7 @@ fetch_buffer() {
       block[i + 2] = ex;
     }
 #else
-    nassertr(false /* Not compiled with JPEG support*/, NULL);
+    nassertr(false /* Not compiled with JPEG support*/, nullptr);
 #endif
     break;
   }
@@ -500,7 +500,7 @@ fetch_buffer() {
   case V4L2_PIX_FMT_BGR32:
   case V4L2_PIX_FMT_GREY:
     // Simplest case: copying every row verbatim.
-    nassertr(old_bpl == new_bpl, NULL);
+    nassertr(old_bpl == new_bpl, nullptr);
 
     for (size_t row = 0; row < _size_y; ++row) {
       memcpy(block + (_size_y - row - 1) * new_bpl, buf + row * old_bpl, new_bpl);
@@ -509,7 +509,7 @@ fetch_buffer() {
 
   case V4L2_PIX_FMT_RGB24:
     // Swap components.
-    nassertr(old_bpl == new_bpl, NULL);
+    nassertr(old_bpl == new_bpl, nullptr);
 
     for (size_t row = 0; row < _size_y; ++row) {
       for (size_t i = 0; i < old_bpl; i += 3) {
@@ -520,7 +520,7 @@ fetch_buffer() {
 
   case V4L2_PIX_FMT_RGB32:
     // Swap components.
-    nassertr(old_bpl == new_bpl, NULL);
+    nassertr(old_bpl == new_bpl, nullptr);
 
     for (size_t row = 0; row < _size_y; ++row) {
       for (size_t i = 0; i < old_bpl; i += 4) {

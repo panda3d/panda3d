@@ -16,7 +16,7 @@
  * parameters cannot be modified, but this may change in the future.
  */
 INLINE ShaderBuffer::
-ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint) :
+ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint) :
   Namable(name),
   _data_size_bytes(size),
   _usage_hint(usage_hint),
@@ -28,7 +28,7 @@ ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint) :
  * parameters cannot be modified, but this may change in the future.
  */
 INLINE ShaderBuffer::
-ShaderBuffer(const string &name, pvector<unsigned char> initial_data, UsageHint usage_hint) :
+ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage_hint) :
   Namable(name),
   _data_size_bytes(initial_data.size()),
   _usage_hint(usage_hint),
@@ -58,7 +58,7 @@ get_usage_hint() const {
 INLINE const unsigned char *ShaderBuffer::
 get_initial_data() const {
   if (_initial_data.empty()) {
-    return NULL;
+    return nullptr;
   } else {
     return &_initial_data[0];
   }

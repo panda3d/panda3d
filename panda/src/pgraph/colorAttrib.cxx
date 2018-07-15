@@ -30,7 +30,7 @@ CPT(RenderAttrib) ColorAttrib::_vertex;
  */
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
-  if (_vertex != 0) {
+  if (_vertex != nullptr) {
     return _vertex;
   }
   ColorAttrib *attrib = new ColorAttrib(T_vertex, LColor::zero());
@@ -54,7 +54,7 @@ make_flat(const LColor &color) {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
-  if (_off != 0) {
+  if (_off != nullptr) {
     return _off;
   }
   ColorAttrib *attrib = new ColorAttrib(T_off, LColor(1.0f, 1.0f, 1.0f, 1.0f));
@@ -75,7 +75,7 @@ make_default() {
  *
  */
 void ColorAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_color_type()) {
   case T_vertex:

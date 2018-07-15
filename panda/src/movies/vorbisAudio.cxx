@@ -43,14 +43,14 @@ VorbisAudio::
 PT(MovieAudioCursor) VorbisAudio::
 open() {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *stream = vfs->open_read_file(_filename, true);
+  std::istream *stream = vfs->open_read_file(_filename, true);
 
-  if (stream == NULL) {
-    return NULL;
+  if (stream == nullptr) {
+    return nullptr;
   } else {
     PT(VorbisAudioCursor) cursor = new VorbisAudioCursor(this, stream);
-    if (cursor == NULL || !cursor->_is_valid) {
-      return NULL;
+    if (cursor == nullptr || !cursor->_is_valid) {
+      return nullptr;
     } else {
       return DCAST(MovieAudioCursor, cursor);
     }

@@ -20,18 +20,18 @@ TypeHandle GenericThread::_type_handle;
  *
  */
 GenericThread::
-GenericThread(const string &name, const string &sync_name) :
+GenericThread(const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
-  _function = NULL;
-  _user_data = NULL;
+  _function = nullptr;
+  _user_data = nullptr;
 }
 
 /**
  *
  */
 GenericThread::
-GenericThread(const string &name, const string &sync_name, GenericThread::ThreadFunc *function, void *user_data) :
+GenericThread(const std::string &name, const std::string &sync_name, GenericThread::ThreadFunc *function, void *user_data) :
   Thread(name, sync_name),
   _function(function),
   _user_data(user_data)
@@ -43,6 +43,6 @@ GenericThread(const string &name, const string &sync_name, GenericThread::Thread
  */
 void GenericThread::
 thread_main() {
-  nassertv(_function != NULL);
+  nassertv(_function != nullptr);
   (*_function)(_user_data);
 }

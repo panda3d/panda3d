@@ -20,6 +20,8 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 
+using std::cerr;
+
 TypeHandle PiecewiseCurve::_type_handle;
 
 /**
@@ -68,7 +70,7 @@ bool PiecewiseCurve::
 get_point(PN_stdfloat t, LVecBase3 &point) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
-  if (curve == NULL){
+  if (curve == nullptr){
     return false;
   }
   // We use | instead of || so we won't short-circuit this calculation.
@@ -438,7 +440,7 @@ find_curve(const ParametricCurve *&curve, PN_stdfloat &t) const {
 
     if (ti >= (int)_segs.size()) {
       if (_segs.empty()) {
-        curve = NULL;
+        curve = nullptr;
         t = 0.0f;
         return false;
       } else {
@@ -523,7 +525,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (i = 0; i < num_segs; i++) {
     Curveseg seg;
     manager->read_pointer(scan);
-    seg._curve = (ParametricCurve *)NULL;
+    seg._curve = nullptr;
     seg._tend = scan.get_float64();
     _segs.push_back(seg);
   }

@@ -46,7 +46,7 @@ WebcamVideoOpenCV::
 WebcamVideoOpenCV(int camera_index) :
   _camera_index(camera_index)
 {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "OpenCV webcam " << _camera_index;
   set_name(strm.str());
 }

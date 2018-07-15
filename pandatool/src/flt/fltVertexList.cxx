@@ -38,7 +38,7 @@ get_num_vertices() const {
  */
 FltVertex *FltVertexList::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), 0);
+  nassertr(n >= 0 && n < (int)_vertices.size(), nullptr);
   return _vertices[n];
 }
 
@@ -65,7 +65,7 @@ add_vertex(FltVertex *vertex) {
  * flt file, use FltHeader::write_flt().
  */
 void FltVertexList::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _vertices.size() << " vertices";
 }
 

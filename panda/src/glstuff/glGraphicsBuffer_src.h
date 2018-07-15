@@ -50,7 +50,7 @@
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
   CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -135,7 +135,7 @@ protected:
   UpdateSeq _last_textures_seq;
 
   CLP(GraphicsBuffer) *_shared_depth_buffer;
-  list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
+  std::list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;
 
   PStatCollector _bind_texture_pcollector;
   PStatCollector _generate_mipmap_pcollector;

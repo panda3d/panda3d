@@ -122,11 +122,11 @@ public:
 
 #define ALLOC_DELETED_CHAIN(Type)                            \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DECL(Type)                       \
   inline static bool validate_ptr(const void *ptr) {         \
-    return (ptr != NULL);                                    \
+    return (ptr != nullptr);                                    \
   }
 #define ALLOC_DELETED_CHAIN_DEF(Type)
 

@@ -44,7 +44,7 @@ FunctionWriterPtrToPython::
  * Outputs the prototype for the function.
  */
 void FunctionWriterPtrToPython::
-write_prototype(ostream &out) {
+write_prototype(std::ostream &out) {
   out << "static PyObject *" << _name << "(";
   _pointer_type->output_instance(out, "addr", &parser);
   out << ", int caller_manages);\n";
@@ -54,16 +54,16 @@ write_prototype(ostream &out) {
  * Outputs the code for the function.
  */
 void FunctionWriterPtrToPython::
-write_code(ostream &out) {
-  string classobj_func = InterfaceMakerPythonObj::get_builder_name(_type);
+write_code(std::ostream &out) {
+  std::string classobj_func = InterfaceMakerPythonObj::get_builder_name(_type);
   out << "static PyObject *\n"
       << _name << "(";
   _pointer_type->output_instance(out, "addr", &parser);
   out << ", int caller_manages) {\n"
       << "  PyObject *" << classobj_func << "();\n"
       << "  PyObject *classobj = " << classobj_func << "();\n"
-      << "  PyInstanceObject *instance = (PyInstanceObject *)PyInstance_New(classobj, (PyObject *)NULL, (PyObject *)NULL);\n"
-      << "  if (instance != (PyInstanceObject *)NULL) {\n"
+      << "  PyInstanceObject *instance = (PyInstanceObject *)PyInstance_New(classobj, nullptr, nullptr);\n"
+      << "  if (instance != nullptr) {\n"
       << "    PyObject *thisptr = PyLong_FromVoidPtr((void*)addr);\n"
       << "    PyDict_SetItemString(instance->in_dict, \"this\", thisptr);\n"
       << "  }\n"

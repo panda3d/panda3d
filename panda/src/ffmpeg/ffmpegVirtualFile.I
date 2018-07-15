@@ -16,7 +16,7 @@
  */
 INLINE bool FfmpegVirtualFile::
 is_open() const {
-  return (_format_context != NULL);
+  return (_format_context != nullptr);
 }
 
 /**

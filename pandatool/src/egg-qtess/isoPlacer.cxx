@@ -82,7 +82,7 @@ get_scores(int subdiv, int across, double ratio,
           // non-equal points.
           double d = v1.dot(v2);
 
-          _cscore[i] += acos(max(min(d, 1.0), -1.0));
+          _cscore[i] += acos(std::max(std::min(d, 1.0), -1.0));
         }
       }
     }

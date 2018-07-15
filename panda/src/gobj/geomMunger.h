@@ -109,7 +109,7 @@ private:
 private:
   class CacheEntry : public GeomCacheEntry {
   public:
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     PT(GeomMunger) _munger;
   };
@@ -148,6 +148,8 @@ private:
   static Registry *_registry;
 
   static PStatCollector _munge_pcollector;
+
+  friend class GeomCacheManager;
 
 public:
   static TypeHandle get_class_type() {

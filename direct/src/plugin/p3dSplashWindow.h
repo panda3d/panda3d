@@ -60,7 +60,7 @@ public:
     FW_black = 900
   };
 
-  virtual void set_image_filename(const string &image_filename,
+  virtual void set_image_filename(const std::string &image_filename,
                                   ImagePlacement image_placement);
   void set_fgcolor(int r, int g, int b);
   void set_bgcolor(int r, int g, int b);
@@ -70,11 +70,11 @@ public:
   void set_bar_bottom(int bottom);
   void set_bar_width(int width, bool percent=false);
   void set_bar_height(int height, bool percent=false);
-  void set_font_family(const string &family);
+  void set_font_family(const std::string &family);
   void set_font_size(int size);
   void set_font_style(FontStyle style);
   void set_font_weight(int weight);
-  virtual void set_install_label(const string &install_label);
+  virtual void set_install_label(const std::string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
 
@@ -93,8 +93,8 @@ protected:
     int _width, _height, _num_channels;
   };
 
-  bool read_image_data(ImageData &image, string &data,
-                       const string &image_filename);
+  bool read_image_data(ImageData &image, std::string &data,
+                       const std::string &image_filename);
   void get_bar_placement(int &bar_x, int &bar_y,
                          int &bar_width, int &bar_height);
   void set_button_range(const ImageData &image);
@@ -131,7 +131,7 @@ private:
   double _bar_width_ratio, _bar_height_ratio;
 
 protected:
-  string _font_family;
+  std::string _font_family;
   int _font_size;
   FontStyle _font_style;
   int _font_weight;

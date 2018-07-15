@@ -15,7 +15,7 @@
  *
  */
 VirtualFileMountAndroidAsset::
-VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path) :
+VirtualFileMountAndroidAsset(AAssetManager *mgr, const std::string &apk_path) :
   _asset_mgr(mgr), _apk_path(apk_path)
 {
 }
@@ -25,5 +25,5 @@ VirtualFileMountAndroidAsset(AAssetManager *mgr, const string &apk_path) :
  */
 INLINE VirtualFileMountAndroidAsset::AssetStream::
 AssetStream(AAsset *asset) :
-  istream(new VirtualFileMountAndroidAsset::AssetStreamBuf(asset)) {
+  std::istream(new VirtualFileMountAndroidAsset::AssetStreamBuf(asset)) {
 }

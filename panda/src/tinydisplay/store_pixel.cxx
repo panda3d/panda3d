@@ -17,7 +17,7 @@
 
 /* Pick up all of the generated code references to store_pixel.h. */
 
-#define STORE_PIX_CLAMP(x) (min((x), (unsigned int)0xffff))
+#define STORE_PIX_CLAMP(x) (std::min((x), (unsigned int)0xffff))
 
 #include "store_pixel_table.h"
 #include "store_pixel_code.h"

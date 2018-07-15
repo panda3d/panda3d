@@ -29,10 +29,10 @@ class TextStats;
  */
 class TextMonitor : public PStatMonitor {
 public:
-  TextMonitor(TextStats *server, ostream *outStream, bool show_raw_data);
+  TextMonitor(TextStats *server, std::ostream *outStream, bool show_raw_data);
   TextStats *get_server();
 
-  virtual string get_monitor_name();
+  virtual std::string get_monitor_name();
 
   virtual void got_hello();
   virtual void got_bad_version(int client_major, int client_minor,
@@ -45,7 +45,7 @@ public:
   void show_level(const PStatViewLevel *level, int indent_level);
 
 private:
-  ostream *_outStream; //[PECI]
+  std::ostream *_outStream; //[PECI]
   bool _show_raw_data;
 };
 

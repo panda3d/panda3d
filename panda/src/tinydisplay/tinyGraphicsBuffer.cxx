@@ -25,7 +25,7 @@ TypeHandle TinyGraphicsBuffer::_type_handle;
  */
 TinyGraphicsBuffer::
 TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const string &name,
+                   const std::string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
@@ -33,7 +33,7 @@ TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                    GraphicsOutput *host) :
   GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  _frame_buffer = NULL;
+  _frame_buffer = nullptr;
 }
 
 /**
@@ -52,7 +52,7 @@ TinyGraphicsBuffer::
 bool TinyGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -74,7 +74,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinyGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -94,10 +94,10 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void TinyGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     TinyGraphicsStateGuardian *tinygsg;
     DCAST_INTO_V(tinygsg, _gsg);
-    tinygsg->_current_frame_buffer = NULL;
+    tinygsg->_current_frame_buffer = nullptr;
     _gsg.clear();
   }
 
@@ -114,14 +114,14 @@ open_buffer() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, nullptr);
     _gsg = tinygsg;
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
   }
 
   create_frame_buffer();
-  if (_frame_buffer == NULL) {
+  if (_frame_buffer == nullptr) {
     tinydisplay_cat.error()
       << "Could not create frame buffer.\n";
     return false;
@@ -144,9 +144,9 @@ open_buffer() {
  */
 void TinyGraphicsBuffer::
 create_frame_buffer() {
-  if (_frame_buffer != NULL) {
+  if (_frame_buffer != nullptr) {
     ZB_close(_frame_buffer);
-    _frame_buffer = NULL;
+    _frame_buffer = nullptr;
   }
 
   _frame_buffer = ZB_open(get_fb_x_size(), get_fb_y_size(), ZB_MODE_RGBA, 0, 0, 0, 0);

@@ -35,12 +35,12 @@
  */
 class EXPCL_PANDA_PGRAPH PlaneNode : public PandaNode {
 PUBLISHED:
-  explicit PlaneNode(const string &name, const LPlane &plane = LPlane());
+  explicit PlaneNode(const std::string &name, const LPlane &plane = LPlane());
 
 protected:
   PlaneNode(const PlaneNode &copy);
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4 &mat);

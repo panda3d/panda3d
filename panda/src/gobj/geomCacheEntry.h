@@ -38,7 +38,7 @@ public:
   PT(GeomCacheEntry) erase();
 
   virtual void evict_callback();
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   int _last_frame_used;
@@ -65,7 +65,7 @@ private:
   friend class GeomCacheManager;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomCacheEntry &entry);
+INLINE std::ostream &operator << (std::ostream &out, const GeomCacheEntry &entry);
 
 #include "geomCacheEntry.I"
 

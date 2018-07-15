@@ -83,7 +83,7 @@ accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
  *
  */
 void JointVertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _joint->get_name();
 }
 

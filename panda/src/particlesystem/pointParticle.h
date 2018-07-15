@@ -20,7 +20,7 @@
  * Describes a particle that requires representation by a point (pixel,
  * sparkle, billboard)
  */
-class EXPCL_PANDAPHYSICS PointParticle : public BaseParticle {
+class EXPCL_PANDA_PARTICLESYSTEM PointParticle : public BaseParticle {
 public:
   PointParticle(PN_stdfloat lifespan = 0.0f, bool alive = false);
   PointParticle(const PointParticle &copy);
@@ -32,8 +32,8 @@ public:
 
   virtual PhysicsObject *make_copy() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 };
 
 #endif // POINTPARTICLE_H

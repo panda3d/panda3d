@@ -27,14 +27,14 @@
 class P3DMultifileReader {
 public:
   P3DMultifileReader();
-  bool open_read(const string &pathname, const int &offset = 0);
+  bool open_read(const std::string &pathname, const int &offset = 0);
   inline bool is_open() const;
   void close();
 
-  bool extract_all(const string &to_dir, P3DPackage *package,
+  bool extract_all(const std::string &to_dir, P3DPackage *package,
                    P3DPackage::InstallStepThreaded *step);
 
-  bool extract_one(ostream &out, const string &filename);
+  bool extract_one(std::ostream &out, const std::string &filename);
 
   class CertRecord {
   public:
@@ -43,16 +43,16 @@ public:
     inline ~CertRecord();
     X509 *_cert;
   };
-  typedef vector<CertRecord> CertChain;
+  typedef std::vector<CertRecord> CertChain;
   int get_num_signatures() const;
   const CertChain &get_signature(int n) const;
 
 private:
   class Subfile;
 
-  bool read_header(const string &pathname);
+  bool read_header(const std::string &pathname);
   bool read_index();
-  bool extract_subfile(ostream &out, const Subfile &s);
+  bool extract_subfile(std::ostream &out, const Subfile &s);
 
   void check_signatures();
 
@@ -73,7 +73,7 @@ private:
   public:
     inline size_t get_last_byte_pos() const;
 
-    string _filename;
+    std::string _filename;
     size_t _index_start;
     size_t _index_length;
     size_t _data_start;
@@ -85,12 +85,12 @@ private:
   bool _is_open;
   int _read_offset;
 
-  typedef vector<Subfile> Subfiles;
+  typedef std::vector<Subfile> Subfiles;
   Subfiles _subfiles;
   Subfiles _cert_special;
   size_t _last_data_byte;
 
-  typedef vector<CertChain> Certificates;
+  typedef std::vector<CertChain> Certificates;
   Certificates _signatures;
 
   static const char _header[];

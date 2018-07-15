@@ -74,38 +74,38 @@ public:
   void p3dobj_to_variant(NPVariant *result, P3D_object *object);
   P3D_object *variant_to_p3dobj(const NPVariant *variant);
 
-  static void output_np_variant(ostream &out, const NPVariant &result);
+  static void output_np_variant(std::ostream &out, const NPVariant &result);
 
 private:
   void find_host(TiXmlElement *xcontents);
   void read_xhost(TiXmlElement *xhost);
-  void add_mirror(string mirror_url);
-  void choose_random_mirrors(vector<string> &result, int num_mirrors);
+  void add_mirror(std::string mirror_url);
+  void choose_random_mirrors(std::vector<std::string> &result, int num_mirrors);
 
   static void request_ready(P3D_instance *instance);
 
-  void start_download(const string &url, PPDownloadRequest *req);
-  void downloaded_file(PPDownloadRequest *req, const string &filename);
-  static string get_filename_from_url(const string &url);
-  void feed_file(PPDownloadRequest *req, const string &filename);
+  void start_download(const std::string &url, PPDownloadRequest *req);
+  void downloaded_file(PPDownloadRequest *req, const std::string &filename);
+  static std::string get_filename_from_url(const std::string &url);
+  void feed_file(PPDownloadRequest *req, const std::string &filename);
 
   void open_p3d_temp_file();
   void send_p3d_temp_file_data();
 
-  void downloaded_contents_file(const string &filename);
-  bool read_contents_file(const string &contents_filename, bool fresh_download);
+  void downloaded_contents_file(const std::string &filename);
+  bool read_contents_file(const std::string &contents_filename, bool fresh_download);
   void get_core_api();
-  void downloaded_plugin(const string &filename);
+  void downloaded_plugin(const std::string &filename);
   void do_load_plugin();
 
   void create_instance();
   void send_window();
   void cleanup_window();
-  bool copy_file(const string &from_filename, const string &to_filename);
+  bool copy_file(const std::string &from_filename, const std::string &to_filename);
 
-  string lookup_token(const string &keyword) const;
-  bool has_token(const string &keyword) const;
-  static int compare_seq(const string &seq_a, const string &seq_b);
+  std::string lookup_token(const std::string &keyword) const;
+  bool has_token(const std::string &keyword) const;
+  static int compare_seq(const std::string &seq_a, const std::string &seq_b);
   static int compare_seq_int(const char *&num_a, const char *&num_b);
 
   void set_failed();
@@ -123,15 +123,15 @@ private:
 
   class EventAuxData {
   public:
-    wstring _characters;
-    wstring _characters_im;
-    wstring _text;
+    std::wstring _characters;
+    std::wstring _characters_im;
+    std::wstring _text;
   };
 #ifdef MACOSX_HAS_EVENT_MODELS
   static void copy_cocoa_event(P3DCocoaEvent *p3d_event,
                                NPCocoaEvent *np_event,
                                EventAuxData &aux_data);
-  static const wchar_t *make_ansi_string(wstring &result, NPNSString *ns_string);
+  static const wchar_t *make_ansi_string(std::wstring &result, NPNSString *ns_string);
   void handle_cocoa_event(const P3DCocoaEvent *p3d_event);
   void osx_get_twirl_images();
   void osx_release_twirl_images();
@@ -157,24 +157,24 @@ private:
   unsigned int _npp_mode;
   P3D_window_handle_type _window_handle_type;
   P3D_event_type _event_type;
-  typedef vector<P3D_token> Tokens;
+  typedef std::vector<P3D_token> Tokens;
   Tokens _tokens;
 
   // Set from fgcolor & bgcolor.
   int _fgcolor_r, _fgcolor_b, _fgcolor_g;
   int _bgcolor_r, _bgcolor_b, _bgcolor_g;
 
-  string _root_dir;
-  string _standard_url_prefix;
-  string _download_url_prefix;
-  typedef vector<string> Mirrors;
+  std::string _root_dir;
+  std::string _standard_url_prefix;
+  std::string _download_url_prefix;
+  typedef std::vector<std::string> Mirrors;
   Mirrors _mirrors;
 
   // A list of URL's that we will attempt to download the core API from.
-  typedef vector<string> CoreUrls;
+  typedef std::vector<std::string> CoreUrls;
   CoreUrls _core_urls;
 
-  string _coreapi_set_ver;
+  std::string _coreapi_set_ver;
   FileSpec _coreapi_dll;
   time_t _contents_expiration;
   bool _failed;
@@ -199,11 +199,11 @@ private:
     size_t _current_size;
     size_t _total_size;
     ofstream _stream;
-    string _filename;
+    std::string _filename;
   };
 
   bool _got_instance_url;
-  string _instance_url;
+  std::string _instance_url;
   int _p3d_instance_id;
   StreamTempFile _p3d_temp_file;
   StreamTempFile _contents_temp_file;
@@ -212,14 +212,14 @@ private:
   // We need to keep a list of the NPStream objects that the instance owns,
   // because Safari (at least) won't automatically delete all of the
   // outstanding streams when the instance is destroyed.
-  typedef vector<NPStream *> Streams;
+  typedef std::vector<NPStream *> Streams;
   Streams _streams;
 
   // This class is used for feeding local files (accessed via a "file:" url)
   // into the core API.
   class StreamingFileData {
   public:
-    StreamingFileData(PPDownloadRequest *req, const string &filename,
+    StreamingFileData(PPDownloadRequest *req, const std::string &filename,
                       P3D_instance *p3d_inst);
     ~StreamingFileData();
 
@@ -235,7 +235,7 @@ private:
 
     P3D_instance *_p3d_inst;
     int _user_id;
-    string _filename;
+    std::string _filename;
     ifstream _file;
     size_t _file_size;
     size_t _total_count;
@@ -243,7 +243,7 @@ private:
     THREAD _thread;
   };
 
-  typedef vector<StreamingFileData *> FileDatas;
+  typedef std::vector<StreamingFileData *> FileDatas;
   static FileDatas _file_datas;
 
   bool _use_xembed;

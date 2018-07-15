@@ -91,8 +91,8 @@ compare_to(const WindowsGuid &other) const {
   return memcmp(this, &other, sizeof(WindowsGuid));
 }
 
-INLINE ostream &
-operator << (ostream &out, const WindowsGuid &guid) {
+INLINE std::ostream &
+operator << (std::ostream &out, const WindowsGuid &guid) {
   guid.output(out);
   return out;
 }

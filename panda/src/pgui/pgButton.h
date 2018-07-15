@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
-  explicit PGButton(const string &name);
+  explicit PGButton(const std::string &name);
   virtual ~PGButton();
 
 protected:
@@ -55,7 +55,7 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(const string &label, PN_stdfloat bevel = 0.1f);
+  void setup(const std::string &label, PN_stdfloat bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
   INLINE void setup(const NodePath &ready, const NodePath &depressed,
@@ -71,8 +71,8 @@ PUBLISHED:
 
   INLINE bool is_button_down();
 
-  INLINE static string get_click_prefix();
-  INLINE string get_click_event(const ButtonHandle &button) const;
+  INLINE static std::string get_click_prefix();
+  INLINE std::string get_click_event(const ButtonHandle &button) const;
   MAKE_PROPERTY(click_prefix, get_click_prefix);
 
 private:

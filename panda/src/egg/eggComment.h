@@ -21,28 +21,28 @@
 /**
  * A comment that appears in an egg file within a <Comment> entry.
  */
-class EXPCL_PANDAEGG EggComment : public EggNode {
+class EXPCL_PANDA_EGG EggComment : public EggNode {
 PUBLISHED:
-  INLINE explicit EggComment(const string &node_name, const string &comment);
+  INLINE explicit EggComment(const std::string &node_name, const std::string &comment);
   INLINE EggComment(const EggComment &copy);
 
   // You can use the string operators to directly set and manipulate the
   // comment.
 
-  INLINE EggComment &operator = (const string &comment);
+  INLINE EggComment &operator = (const std::string &comment);
   INLINE EggComment &operator = (const EggComment &copy);
 
-  INLINE operator const string & () const;
+  INLINE operator const std::string & () const;
 
   // Or, you can set and get it explicitly.
 
-  INLINE void set_comment(const string &comment);
-  INLINE string get_comment() const;
+  INLINE void set_comment(const std::string &comment);
+  INLINE std::string get_comment() const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  string _comment;
+  std::string _comment;
 
 
 public:

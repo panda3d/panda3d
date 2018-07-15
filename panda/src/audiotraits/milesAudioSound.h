@@ -26,7 +26,7 @@
  */
 class EXPCL_MILES_AUDIO MilesAudioSound : public AudioSound {
 protected:
-  MilesAudioSound(MilesAudioManager *manager, const string &file_name);
+  MilesAudioSound(MilesAudioManager *manager, const std::string &file_name);
 
 public:
   virtual void set_loop(bool loop=true);
@@ -44,16 +44,16 @@ public:
   virtual void set_active(bool active=true);
   virtual bool get_active() const;
 
-  virtual void set_finished_event(const string &event);
-  virtual const string &get_finished_event() const;
+  virtual void set_finished_event(const std::string &event);
+  virtual const std::string &get_finished_event() const;
 
-  virtual const string &get_name() const;
+  virtual const std::string &get_name() const;
 
   virtual void cleanup();
 
 protected:
   PT(MilesAudioManager) _manager;
-  string _file_name;
+  std::string _file_name;
 
   PN_stdfloat _volume; // 0..1.0
   PN_stdfloat _balance; // -1..1
@@ -72,7 +72,7 @@ protected:
   // This is the string that throw_event() will throw when the sound finishes
   // playing.  It is not triggered when the sound is stopped with stop().
   // Note: no longer implemented.
-  string _finished_event;
+  std::string _finished_event;
 
   // This is set whenever we call set_time().  Calling play() will respect
   // this if it is set, and then reset it.

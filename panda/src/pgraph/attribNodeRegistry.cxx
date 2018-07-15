@@ -41,7 +41,7 @@ add_node(const NodePath &attrib_node) {
   nassertv(!attrib_node.is_empty());
   LightMutexHolder holder(_lock);
 
-  pair<Entries::iterator, bool> result = _entries.insert(Entry(attrib_node));
+  std::pair<Entries::iterator, bool> result = _entries.insert(Entry(attrib_node));
   if (!result.second) {
     // Replace an existing node.
     (*result.first)._node = attrib_node;
@@ -119,10 +119,10 @@ get_node_type(int n) const {
  * be the node name as it was at the time the node was recorded; if the node
  * has changed names since then, this will still return the original name.
  */
-string AttribNodeRegistry::
+std::string AttribNodeRegistry::
 get_node_name(int n) const {
   LightMutexHolder holder(_lock);
-  nassertr(n >= 0 && n < (int)_entries.size(), string());
+  nassertr(n >= 0 && n < (int)_entries.size(), std::string());
   return _entries[n]._name;
 }
 
@@ -148,7 +148,7 @@ find_node(const NodePath &attrib_node) const {
  * the registry, or -1 if there is no such node in the registry.
  */
 int AttribNodeRegistry::
-find_node(TypeHandle type, const string &name) const {
+find_node(TypeHandle type, const std::string &name) const {
   LightMutexHolder holder(_lock);
   Entries::const_iterator ei = _entries.find(Entry(type, name));
   if (ei != _entries.end()) {
@@ -180,7 +180,7 @@ clear() {
  *
  */
 void AttribNodeRegistry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   typedef pmap<TypeHandle, int> Counts;
@@ -211,7 +211,7 @@ output(ostream &out) const {
  *
  */
 void AttribNodeRegistry::
-write(ostream &out) const {
+write(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   Entries::const_iterator ei;
@@ -229,10 +229,10 @@ void AttribNodeRegistry::
 make_global_ptr() {
   AttribNodeRegistry *ptr = new AttribNodeRegistry;
   void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, (void *)NULL, (void *)ptr);
-  if (result != NULL) {
+    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
+  if (result != nullptr) {
     // Someone else got there first.
     delete ptr;
   }
-  assert(_global_ptr != (AttribNodeRegistry *)NULL);
+  assert(_global_ptr != nullptr);
 }

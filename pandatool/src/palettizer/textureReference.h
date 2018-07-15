@@ -50,7 +50,7 @@ public:
   EggFile *get_egg_file() const;
   SourceTextureImage *get_source() const;
   TextureImage *get_texture() const;
-  const string &get_tref_name() const;
+  const std::string &get_tref_name() const;
 
   bool operator < (const TextureReference &other) const;
 
@@ -71,8 +71,8 @@ public:
   void update_egg();
   void apply_properties_to_source();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 
 private:
@@ -93,7 +93,7 @@ private:
   EggTexture *_egg_tex;
   EggData *_egg_data;
 
-  string _tref_name;
+  std::string _tref_name;
   LMatrix3d _tex_mat, _inv_tex_mat;
   SourceTextureImage *_source_texture;
   TexturePlacement *_placement;
@@ -134,8 +134,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &
-operator << (ostream &out, const TextureReference &ref) {
+INLINE std::ostream &
+operator << (std::ostream &out, const TextureReference &ref) {
   ref.output(out);
   return out;
 }

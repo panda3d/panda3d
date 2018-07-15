@@ -36,7 +36,7 @@ public:
 
   void mesh(EggGroupNode *group, bool flat_shaded);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   bool _consider_fans;
   bool _retesselate_coplanar;

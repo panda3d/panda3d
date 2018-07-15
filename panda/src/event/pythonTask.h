@@ -26,9 +26,9 @@
  * This class exists to allow association of a Python function or coroutine
  * with the AsyncTaskManager.
  */
-class PythonTask FINAL : public AsyncTask {
+class PythonTask final : public AsyncTask {
 PUBLISHED:
-  PythonTask(PyObject *function = Py_None, const string &name = string());
+  PythonTask(PyObject *function = Py_None, const std::string &name = std::string());
   virtual ~PythonTask();
   ALLOC_DELETED_CHAIN(PythonTask);
 

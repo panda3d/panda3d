@@ -29,7 +29,7 @@ public:
   FltExternalReference(FltHeader *header);
 
   virtual void apply_converted_filenames();
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   enum Flags {
     F_color_palette_override      = 0x80000000,
@@ -40,9 +40,9 @@ public:
     F_light_palette_override      = 0x04000000
   };
 
-  string _orig_filename;
+  std::string _orig_filename;
   Filename _converted_filename;
-  string _bead_id;
+  std::string _bead_id;
   int _flags;
 
   Filename get_ref_filename() const;

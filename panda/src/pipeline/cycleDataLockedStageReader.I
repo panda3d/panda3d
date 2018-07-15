@@ -29,7 +29,7 @@ CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler,
   _stage(stage)
 {
   _pointer = _cycler->read_stage(_stage, _current_thread);
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
 }
 
 /**
@@ -43,7 +43,7 @@ CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy
   _pointer(copy._pointer),
   _stage(copy._stage)
 {
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_read(_pointer);
 }
 
@@ -53,30 +53,29 @@ CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy
 template<class CycleDataType>
 INLINE void CycleDataLockedStageReader<CycleDataType>::
 operator = (const CycleDataLockedStageReader<CycleDataType> &copy) {
-  nassertv(_pointer == (CycleDataType *)NULL);
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == copy._current_thread);
 
   _cycler = copy._cycler;
   _pointer = copy._pointer;
   _stage = copy._stage;
 
-  nassertv(_pointer != (const CycleDataType *)NULL);
+  nassertv(_pointer != nullptr);
   _cycler->increment_read(_pointer);
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 template<class CycleDataType>
 INLINE CycleDataLockedStageReader<CycleDataType>::
-CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT :
+CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
   _pointer(from._pointer),
   _stage(from._stage)
 {
-  from._pointer = NULL;
+  from._pointer = nullptr;
 }
 
 /**
@@ -84,17 +83,16 @@ CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) NOE
  */
 template<class CycleDataType>
 INLINE void CycleDataLockedStageReader<CycleDataType>::
-operator = (CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT {
-  nassertv(_pointer == (CycleDataType *)NULL);
+operator = (CycleDataLockedStageReader<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
   nassertv(_current_thread == from._current_thread);
 
   _cycler = from._cycler;
   _pointer = from._pointer;
   _stage = from._stage;
 
-  from._pointer = NULL;
+  from._pointer = nullptr;
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  *
@@ -102,7 +100,7 @@ operator = (CycleDataLockedStageReader<CycleDataType> &&from) NOEXCEPT {
 template<class CycleDataType>
 INLINE CycleDataLockedStageReader<CycleDataType>::
 ~CycleDataLockedStageReader() {
-  if (_pointer != NULL) {
+  if (_pointer != nullptr) {
     _cycler->release_read_stage(_stage, _pointer);
   }
 }
@@ -113,7 +111,7 @@ INLINE CycleDataLockedStageReader<CycleDataType>::
 template<class CycleDataType>
 INLINE const CycleDataType *CycleDataLockedStageReader<CycleDataType>::
 operator -> () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -124,7 +122,7 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataLockedStageReader<CycleDataType>::
 operator const CycleDataType * () const {
-  nassertr(_pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  nassertr(_pointer != nullptr, _cycler->cheat());
   return _pointer;
 }
 
@@ -138,8 +136,8 @@ template<class CycleDataType>
 INLINE const CycleDataType *CycleDataLockedStageReader<CycleDataType>::
 take_pointer() {
   const CycleDataType *pointer = _pointer;
-  _pointer = (CycleDataType *)NULL;
-  nassertr(pointer != (const CycleDataType *)NULL, _cycler->cheat());
+  _pointer = nullptr;
+  nassertr(pointer != nullptr, _cycler->cheat());
   return pointer;
 }
 

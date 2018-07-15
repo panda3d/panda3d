@@ -56,11 +56,11 @@ FfmpegVideo::
 PT(MovieVideoCursor) FfmpegVideo::
 open() {
   PT(FfmpegVideoCursor) result = new FfmpegVideoCursor(this);
-  if (result->_format_ctx == 0) {
+  if (result->_format_ctx == nullptr) {
     ffmpeg_cat.error() << "Could not open " << _filename << "\n";
-    return NULL;
+    return nullptr;
   } else {
-    return result.p();
+    return result;
   }
 }
 

@@ -50,7 +50,7 @@ make_copy() {
 /**
  * Returns the English name of the file type this converter supports.
  */
-string DXFToEggConverter::
+std::string DXFToEggConverter::
 get_name() const {
   return "DXF";
 }
@@ -58,7 +58,7 @@ get_name() const {
 /**
  * Returns the common extension of the file type this converter supports.
  */
-string DXFToEggConverter::
+std::string DXFToEggConverter::
 get_extension() const {
   return "dxf";
 }
@@ -92,7 +92,7 @@ convert_file(const Filename &filename) {
  *
  */
 DXFLayer *DXFToEggConverter::
-new_layer(const string &name) {
+new_layer(const std::string &name) {
   return new DXFToEggLayer(name, get_egg_data());
 }
 
@@ -112,11 +112,11 @@ done_entity() {
 
     if (_flags & PF_closed) {
       // it's closed; create a polygon.
-      nassertv(_layer!=NULL);
+      nassertv(_layer!=nullptr);
       ((DXFToEggLayer *)_layer)->add_polygon(this);
     } else {
       // It's open; create a series of line segments.
-      nassertv(_layer!=NULL);
+      nassertv(_layer!=nullptr);
       ((DXFToEggLayer *)_layer)->add_line(this);
     }
 
@@ -130,7 +130,7 @@ done_entity() {
     _verts.push_back(DXFVertex(_q));
     _verts.push_back(DXFVertex(_p));
 
-    nassertv(_layer!=NULL);
+    nassertv(_layer!=nullptr);
     ((DXFToEggLayer *)_layer)->add_polygon(this);
   }
 }

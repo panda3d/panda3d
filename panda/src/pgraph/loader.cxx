@@ -32,6 +32,8 @@
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
 
+using std::string;
+
 bool Loader::_file_types_loaded = false;
 PT(Loader) Loader::_global_ptr;
 TypeHandle Loader::_type_handle;
@@ -46,7 +48,7 @@ Loader(const string &name) :
   _task_manager = AsyncTaskManager::get_global_ptr();
   _task_chain = name;
 
-  if (_task_manager->find_task_chain(_task_chain) == NULL) {
+  if (_task_manager->find_task_chain(_task_chain) == nullptr) {
     PT(AsyncTaskChain) chain = _task_manager->make_task_chain(_task_chain);
 
     ConfigVariableInt loader_num_threads
@@ -96,10 +98,10 @@ make_async_save_request(const Filename &filename, const LoaderOptions &options,
  * graph defined there.
  */
 PT(PandaNode) Loader::
-load_bam_stream(istream &in) {
+load_bam_stream(std::istream &in) {
   BamFile bam_file;
   if (!bam_file.open_read(in)) {
-    return NULL;
+    return nullptr;
   }
 
   return bam_file.read_node();
@@ -109,7 +111,7 @@ load_bam_stream(istream &in) {
  *
  */
 void Loader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 
   int num_tasks = _task_manager->make_task_chain(_task_chain)->get_num_tasks();
@@ -204,7 +206,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       Filename pathname(model_path.get_directory(i), this_filename);
       PT(PandaNode) result = try_load_file(pathname, this_options,
                                            requested_type);
-      if (result != (PandaNode *)NULL) {
+      if (result != nullptr) {
         return result;
       }
     }
@@ -244,7 +246,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     // Look for the file only where it is.
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     PT(PandaNode) result = try_load_file(this_filename, this_options, requested_type);
-    if (result != (PandaNode *)NULL) {
+    if (result != nullptr) {
       return result;
     }
     if (report_errors) {
@@ -265,7 +267,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -283,7 +285,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the file.
     PT(PandaNode) node = ModelPool::get_model(pathname, true);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
         if (loader_cat.is_debug()) {
           loader_cat.debug()
@@ -303,7 +305,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
       (options.get_flags() & LoaderOptions::LF_no_disk_cache) == 0) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
-    if (record != (BamCacheRecord *)NULL) {
+    if (record != nullptr) {
       if (record->has_data()) {
         if (report_errors) {
           loader_cat.info()
@@ -444,7 +446,7 @@ save_file(const Filename &filename, const LoaderOptions &options,
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
 
-  if (requested_type == (LoaderFileType *)NULL) {
+  if (requested_type == nullptr) {
     if (report_errors) {
       loader_cat.error()
         << "Extension of file " << this_filename
@@ -514,15 +516,15 @@ load_file_types() {
         string name = words[0];
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         loader_cat.info()
-          << "loading file type module: " << name << endl;
+          << "loading file type module: " << name << std::endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-        if (tmp == (void *)NULL) {
+        if (tmp == nullptr) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
+            << ": " << load_dso_error() << std::endl;
         } else if (loader_cat.is_debug()) {
           loader_cat.debug()
-            << "done loading file type module: " << name << endl;
+            << "done loading file type module: " << name << std::endl;
         }
 
       } else if (words.size() > 1) {
@@ -553,7 +555,7 @@ load_file_types() {
  */
 void Loader::
 make_global_ptr() {
-  nassertv(_global_ptr == (Loader *)NULL);
+  nassertv(_global_ptr == nullptr);
 
   _global_ptr = new Loader("loader");
 }

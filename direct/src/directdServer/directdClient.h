@@ -21,8 +21,8 @@ public:
   DirectDClient();
   ~DirectDClient();
 
-  void run_client(const string& host, int port);
+  void run_client(const std::string& host, int port);
 
 protected:
-  void cli_command(const string& cmd);
+  void cli_command(const std::string& cmd);
 };

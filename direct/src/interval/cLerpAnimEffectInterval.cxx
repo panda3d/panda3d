@@ -43,7 +43,7 @@ priv_step(double t) {
  *
  */
 void CLerpAnimEffectInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ": ";
 
   if (_controls.empty()) {

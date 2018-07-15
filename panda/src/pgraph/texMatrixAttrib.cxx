@@ -38,7 +38,7 @@ CPT(RenderAttrib) TexMatrixAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new TexMatrixAttrib);
   }
 
@@ -148,7 +148,7 @@ get_num_stages() const {
  */
 TextureStage *TexMatrixAttrib::
 get_stage(int n) const {
-  nassertr(n >= 0 && n < (int)_stages.size(), NULL);
+  nassertr(n >= 0 && n < (int)_stages.size(), nullptr);
   return _stages[n]._stage;
 }
 
@@ -179,7 +179,7 @@ get_transform(TextureStage *stage) const {
  *
  */
 void TexMatrixAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   Stages::const_iterator mi;
@@ -504,7 +504,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       override = scan.get_int32();
     }
 
-    StageNode sn(NULL);
+    StageNode sn(nullptr);
     sn._override = override;
     _stages.push_back(sn);
   }

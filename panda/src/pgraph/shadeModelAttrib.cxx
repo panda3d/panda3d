@@ -45,7 +45,7 @@ make_default() {
  *
  */
 void ShadeModelAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
   case M_flat:

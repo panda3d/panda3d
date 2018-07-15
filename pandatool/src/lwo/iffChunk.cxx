@@ -22,7 +22,7 @@ TypeHandle IffChunk::_type_handle;
  *
  */
 void IffChunk::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _id << " (" << get_type() << ")";
 }
 
@@ -30,7 +30,7 @@ output(ostream &out) const {
  *
  */
 void IffChunk::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << _id << " { ... }\n";
 }
 

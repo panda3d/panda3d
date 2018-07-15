@@ -14,13 +14,13 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cerr << "Usage: check_crc <file>" << endl;
+    std::cerr << "Usage: check_crc <file>" << std::endl;
     return 1;
   }
 
   Filename source_file = argv[1];
 
-  cout << check_crc(source_file);
+  std::cout << check_crc(source_file);
 
   return 0;
 }

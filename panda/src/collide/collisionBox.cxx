@@ -35,6 +35,9 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+
 PStatCollector CollisionBox::_volume_pcollector("Collision Volumes:CollisionBox");
 PStatCollector CollisionBox::_test_pcollector("Collision Tests:CollisionBox");
 TypeHandle CollisionBox::_type_handle;
@@ -181,7 +184,7 @@ get_test_pcollector() {
  *
  */
 void CollisionBox::
-output(ostream &out) const {
+output(std::ostream &out) const {
 }
 
 /**
@@ -199,7 +202,7 @@ PT(CollisionEntry) CollisionBox::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   const CollisionSphere *sphere;
-  DCAST_INTO_R(sphere, entry.get_from(), NULL);
+  DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
@@ -310,7 +313,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     PN_stdfloat edge_dist = 0.0f;
 
     const ClipPlaneAttrib *cpa = entry.get_into_clip_planes();
-    if (cpa != (ClipPlaneAttrib *)NULL) {
+    if (cpa != nullptr) {
       // We have a clip plane; apply it.
       Points new_points;
       if (apply_clip_plane(new_points, cpa, entry.get_into_node_path().get_net_transform(),ip)) {
@@ -361,7 +364,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     intersect = true;
   }
   if( !intersect )
-    return NULL;
+    return nullptr;
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -402,7 +405,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
-  DCAST_INTO_R(ray, entry.get_from(), NULL);
+  DCAST_INTO_R(ray, entry.get_from(), nullptr);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = ray->get_origin() * wrt_mat;
@@ -453,7 +456,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   if(!intersect) {
     // No intersection with ANY of the box's planes has been detected
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -483,7 +486,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *seg;
-  DCAST_INTO_R(seg, entry.get_from(), NULL);
+  DCAST_INTO_R(seg, entry.get_from(), nullptr);
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   LPoint3 from_origin = seg->get_point_a() * wrt_mat;
@@ -535,7 +538,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   if(!intersect) {
     // No intersection with ANY of the box's planes has been detected
-    return NULL;
+    return nullptr;
   }
 
   if (collide_cat.is_debug()) {
@@ -564,7 +567,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 PT(CollisionEntry) CollisionBox::
 test_intersection_from_box(const CollisionEntry &entry) const {
   const CollisionBox *box;
-  DCAST_INTO_R(box, entry.get_from(), NULL);
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
@@ -603,7 +606,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[0] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[0]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   min_pen = pen;
 
@@ -613,7 +616,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[1] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[1]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -626,7 +629,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
        cabs(box_z[2] * from_extents[2]);
   pen = r1 + r2 - cabs(diff[2]);
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -640,7 +643,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[0];
   pen = r1 + r2 - cabs(diff.dot(box_x));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -652,7 +655,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[1];
   pen = r1 + r2 - cabs(diff.dot(box_y));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -664,7 +667,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r2 = from_extents[2];
   pen = r1 + r2 - cabs(diff.dot(box_z));
   if (pen < 0) {
-    return NULL;
+    return nullptr;
   }
   if (pen < min_pen) {
     min_pen = pen;
@@ -674,55 +677,55 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   r1 = into_extents[1] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[1]);
   r2 = from_extents[1] * cabs(box_z[0]) + from_extents[2] * cabs(box_y[0]);
   if (cabs(diff[2] * box_x[1] - diff[1] * box_x[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[1] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[1]);
   r2 = from_extents[0] * cabs(box_z[0]) + from_extents[2] * cabs(box_x[0]);
   if (cabs(diff[2] * box_y[1] - diff[1] * box_y[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[1] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[1]);
   r2 = from_extents[0] * cabs(box_y[0]) + from_extents[1] * cabs(box_x[0]);
   if (cabs(diff[2] * box_z[1] - diff[1] * box_z[2]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_x[2]) + into_extents[2] * cabs(box_x[0]);
   r2 = from_extents[1] * cabs(box_z[1]) + from_extents[2] * cabs(box_y[1]);
   if (cabs(diff[0] * box_x[2] - diff[2] * box_x[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_y[2]) + into_extents[2] * cabs(box_y[0]);
   r2 = from_extents[0] * cabs(box_z[1]) + from_extents[2] * cabs(box_x[1]);
   if (cabs(diff[0] * box_y[2] - diff[2] * box_y[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_z[2]) + into_extents[2] * cabs(box_z[0]);
   r2 = from_extents[0] * cabs(box_y[1]) + from_extents[1] * cabs(box_x[1]);
   if (cabs(diff[0] * box_z[2] - diff[2] * box_z[0]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_x[1]) + into_extents[1] * cabs(box_x[0]);
   r2 = from_extents[1] * cabs(box_z[2]) + from_extents[2] * cabs(box_y[2]);
   if (cabs(diff[1] * box_x[0] - diff[0] * box_x[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_y[1]) + into_extents[1] * cabs(box_y[0]);
   r2 = from_extents[0] * cabs(box_z[2]) + from_extents[2] * cabs(box_x[2]);
   if (cabs(diff[1] * box_y[0] - diff[0] * box_y[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   r1 = into_extents[0] * cabs(box_z[1]) + into_extents[1] * cabs(box_z[0]);
   r2 = from_extents[0] * cabs(box_y[2]) + from_extents[1] * cabs(box_x[2]);
   if (cabs(diff[1] * box_z[0] - diff[0] * box_z[1]) > r1 + r2) {
-      return NULL;
+      return nullptr;
   }
 
   if (collide_cat.is_debug()) {

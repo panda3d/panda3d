@@ -10,3 +10,30 @@
  * @author drose
  * @date 2004-09-27
  */
+
+/**
+ * Increases the number of weak references.
+ */
+INLINE void WeakReferenceList::
+ref() const {
+  AtomicAdjust::inc(_count);
+}
+
+/**
+ * Decreases the number of weak references.  Returns true if, after this,
+ * there are still any weak or strong references remaining, or false if this
+ * structure should be deleted right away.
+ */
+INLINE bool WeakReferenceList::
+unref() const {
+  return AtomicAdjust::dec(_count);
+}
+
+/**
+ * Returns true if the object represented has been deleted, ie. there are only
+ * weak references left pointing to the object.
+ */
+INLINE bool WeakReferenceList::
+was_deleted() const {
+  return AtomicAdjust::get(_count) < _alive_offset;
+}

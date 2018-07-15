@@ -32,6 +32,9 @@
 #include <maya/MStatus.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 /**
  * Reads the Maya "shading engine" to determine the relevant shader
  * properties.
@@ -92,7 +95,7 @@ MayaShader::
  *
  */
 void MayaShader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Shader " << get_name();
 }
 
@@ -100,7 +103,7 @@ output(ostream &out) const {
  *
  */
 void MayaShader::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "Shader " << get_name() << "\n";
 }
 
@@ -113,7 +116,7 @@ get_color_def(size_t idx) const {
   if (_color.size() > 0)
     return _color[idx];
   else
-    return (MayaShaderColorDef *)NULL;
+    return nullptr;
 }
 /**
  * Returns the overall color of the shader as a single-precision rgba value,

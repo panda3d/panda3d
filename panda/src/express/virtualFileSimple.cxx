@@ -16,6 +16,11 @@
 #include "virtualFileList.h"
 #include "dcast.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFileSimple::_type_handle;
 
 
@@ -308,7 +313,7 @@ close_read_write_file(iostream *stream) {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFileSimple::
+std::streamsize VirtualFileSimple::
 get_file_size(istream *stream) const {
   return _mount->get_file_size(_local_filename, stream);
 }
@@ -317,7 +322,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFileSimple::
+std::streamsize VirtualFileSimple::
 get_file_size() const {
   return _mount->get_file_size(_local_filename);
 }
@@ -372,7 +377,7 @@ atomic_read_contents(string &contents) const {
  * regular file.  Returns true on success, false otherwise.
  */
 bool VirtualFileSimple::
-read_file(pvector<unsigned char> &result, bool auto_unwrap) const {
+read_file(vector_uchar &result, bool auto_unwrap) const {
 
   // Will we be automatically unwrapping a .pz file?
   bool do_uncompress = (_implicit_pz_file ||

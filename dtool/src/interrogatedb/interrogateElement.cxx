@@ -20,7 +20,7 @@
  * Formats the InterrogateElement data for output to a data file.
  */
 void InterrogateElement::
-output(ostream &out) const {
+output(std::ostream &out) const {
   InterrogateComponent::output(out);
   out << _flags << " "
       << _type << " "
@@ -40,7 +40,7 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateElement::
-input(istream &in) {
+input(std::istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _type >> _getter >> _setter;
   if (InterrogateDatabase::get_file_minor_version() >= 1) {

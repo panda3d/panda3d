@@ -39,7 +39,7 @@ CullBinFixed::
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFixed::
-make_bin(const string &name, GraphicsStateGuardianBase *gsg,
+make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
   return new CullBinFixed(name, gsg, draw_region_pcollector);
 }
@@ -61,7 +61,7 @@ add_object(CullableObject *object, Thread *current_thread) {
 void CullBinFixed::
 finish_cull(SceneSetup *, Thread *current_thread) {
   PStatTimer timer(_cull_this_pcollector, current_thread);
-  stable_sort(_objects.begin(), _objects.end());
+  std::stable_sort(_objects.begin(), _objects.end());
 }
 
 /**

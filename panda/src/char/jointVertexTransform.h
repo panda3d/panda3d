@@ -44,7 +44,7 @@ PUBLISHED:
   virtual void mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const;
   virtual void accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   PT(CharacterJoint) _joint;

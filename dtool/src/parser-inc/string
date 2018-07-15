@@ -21,10 +21,35 @@
 #define STRING_H
 
 #include <stdtypedefs.h>
+#include <cwchar>
+#include <stdint.h>
 
 namespace std {
-  template<class charT>
-  class char_traits;
+  template<class charT> struct char_traits;
+
+  template<> struct char_traits<char> {
+    using char_type = char;
+    using int_type = int;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<char16_t> {
+    using char_type = char16_t;
+    using int_type = uint_least16_t;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<char32_t> {
+    using char_type = char32_t;
+    using int_type = uint_least32_t;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<wchar_t> {
+    using char_type = wchar_t;
+    using int_type = wint_t;
+    using state_type = mbstate_t;
+  };
 
   template<class ctype>
   class basic_string {

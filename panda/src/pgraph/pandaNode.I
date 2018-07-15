@@ -32,7 +32,7 @@ INLINE PandaNode *PandaNode::
 get_parent(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   CPT(Up) up = cdata->get_up();
-  nassertr(n >= 0 && n < (int)up->size(), NULL);
+  nassertr(n >= 0 && n < (int)up->size(), nullptr);
   return (*up)[n].get_parent();
 }
 
@@ -66,7 +66,7 @@ INLINE PandaNode *PandaNode::
 get_child(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   CPT(Down) down = cdata->get_down();
-  nassertr(n >= 0 && n < (int)down->size(), NULL);
+  nassertr(n >= 0 && n < (int)down->size(), nullptr);
   return (*down)[n].get_child();
 }
 
@@ -154,7 +154,7 @@ INLINE PandaNode *PandaNode::
 get_stashed(int n, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   CPT(Down) stashed = cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed->size(), NULL);
+  nassertr(n >= 0 && n < (int)stashed->size(), nullptr);
   return (*stashed)[n].get_child();
 }
 
@@ -247,7 +247,7 @@ get_effect(TypeHandle type) const {
   if (index >= 0) {
     return cdata->_effects->get_effect(index);
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -345,14 +345,14 @@ has_dirty_prev_transform() const {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.
  */
-INLINE string PandaNode::
-get_tag(const string &key, Thread *current_thread) const {
+INLINE std::string PandaNode::
+get_tag(const std::string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   int index = cdata->_tag_data.find(key);
   if (index >= 0) {
     return cdata->_tag_data.get_data((size_t)index);
   } else {
-    return string();
+    return std::string();
   }
 }
 
@@ -362,7 +362,7 @@ get_tag(const string &key, Thread *current_thread) const {
  * set.
  */
 INLINE bool PandaNode::
-has_tag(const string &key, Thread *current_thread) const {
+has_tag(const std::string &key, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   return cdata->_tag_data.find(key) >= 0;
 }
@@ -379,7 +379,7 @@ get_num_tags() const {
 /**
  * Returns the key of the nth tag applied to this node.
  */
-INLINE string PandaNode::
+INLINE std::string PandaNode::
 get_tag_key(size_t i) const {
   CDReader cdata(_cycler);
   return cdata->_tag_data.get_key(i);
@@ -410,7 +410,7 @@ has_tags() const {
  * Lists all the nodes at and below the current path hierarchically.
  */
 INLINE void PandaNode::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
   r_list_descendants(out, indent_level);
 }
 
@@ -496,7 +496,7 @@ get_into_collide_mask() const {
  */
 INLINE void PandaNode::
 clear_bounds() {
-  set_bounds((BoundingVolume *)NULL);
+  set_bounds(nullptr);
 }
 
 /**
@@ -806,7 +806,7 @@ get_parent() const {
  */
 INLINE PandaNode::BoundsData::
 BoundsData() :
-  _internal_bounds(NULL),
+  _internal_bounds(nullptr),
   _internal_vertices(0)
 {
   ++_internal_bounds_mark;
@@ -929,13 +929,12 @@ operator = (const PandaNode::Children &copy) {
   _down = copy._down;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Children::
-Children(PandaNode::Children &&from) NOEXCEPT :
-  _down(move(from._down))
+Children(PandaNode::Children &&from) noexcept :
+  _down(std::move(from._down))
 {
 }
 
@@ -943,17 +942,16 @@ Children(PandaNode::Children &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Children::
-operator = (PandaNode::Children &&from) NOEXCEPT {
-  _down = move(from._down);
+operator = (PandaNode::Children &&from) noexcept {
+  _down = std::move(from._down);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of children of the node.
  */
 INLINE size_t PandaNode::Children::
 get_num_children() const {
-  nassertr(_down != (Down *)NULL, 0);
+  nassertr(_down != nullptr, 0);
   return _down->size();
 }
 
@@ -962,8 +960,8 @@ get_num_children() const {
  */
 INLINE PandaNode *PandaNode::Children::
 get_child(size_t n) const {
-  nassertr(_down != (Down *)NULL, NULL);
-  nassertr(n < (size_t)_down->size(), NULL);
+  nassertr(_down != nullptr, nullptr);
+  nassertr(n < (size_t)_down->size(), nullptr);
   return (*_down)[n].get_child();
 }
 
@@ -973,7 +971,7 @@ get_child(size_t n) const {
  */
 INLINE int PandaNode::Children::
 get_child_sort(size_t n) const {
-  nassertr(_down != (Down *)NULL, -1);
+  nassertr(_down != nullptr, -1);
   nassertr(n < _down->size(), -1);
   return (*_down)[n].get_sort();
 }
@@ -1011,13 +1009,12 @@ operator = (const PandaNode::Stashed &copy) {
   _stashed = copy._stashed;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Stashed::
-Stashed(PandaNode::Stashed &&from) NOEXCEPT :
-  _stashed(move(from._stashed))
+Stashed(PandaNode::Stashed &&from) noexcept :
+  _stashed(std::move(from._stashed))
 {
 }
 
@@ -1025,17 +1022,16 @@ Stashed(PandaNode::Stashed &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Stashed::
-operator = (PandaNode::Stashed &&from) NOEXCEPT {
-  _stashed = move(from._stashed);
+operator = (PandaNode::Stashed &&from) noexcept {
+  _stashed = std::move(from._stashed);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of stashed children of the node.
  */
 INLINE size_t PandaNode::Stashed::
 get_num_stashed() const {
-  nassertr(_stashed != (Down *)NULL, 0);
+  nassertr(_stashed != nullptr, 0);
   return _stashed->size();
 }
 
@@ -1044,8 +1040,8 @@ get_num_stashed() const {
  */
 INLINE PandaNode *PandaNode::Stashed::
 get_stashed(size_t n) const {
-  nassertr(_stashed != (Down *)NULL, NULL);
-  nassertr(n < _stashed->size(), NULL);
+  nassertr(_stashed != nullptr, nullptr);
+  nassertr(n < _stashed->size(), nullptr);
   return (*_stashed)[n].get_child();
 }
 
@@ -1055,7 +1051,7 @@ get_stashed(size_t n) const {
  */
 INLINE int PandaNode::Stashed::
 get_stashed_sort(size_t n) const {
-  nassertr(_stashed != (Down *)NULL, -1);
+  nassertr(_stashed != nullptr, -1);
   nassertr(n < _stashed->size(), -1);
   return (*_stashed)[n].get_sort();
 }
@@ -1093,13 +1089,12 @@ operator = (const PandaNode::Parents &copy) {
   _up = copy._up;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE PandaNode::Parents::
-Parents(PandaNode::Parents &&from) NOEXCEPT :
-  _up(move(from._up))
+Parents(PandaNode::Parents &&from) noexcept :
+  _up(std::move(from._up))
 {
 }
 
@@ -1107,17 +1102,16 @@ Parents(PandaNode::Parents &&from) NOEXCEPT :
  *
  */
 INLINE void PandaNode::Parents::
-operator = (PandaNode::Parents &&from) NOEXCEPT {
-  _up = move(from._up);
+operator = (PandaNode::Parents &&from) noexcept {
+  _up = std::move(from._up);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of parents of the node.
  */
 INLINE size_t PandaNode::Parents::
 get_num_parents() const {
-  nassertr(_up != (Up *)NULL, 0);
+  nassertr(_up != nullptr, 0);
   return _up->size();
 }
 
@@ -1126,8 +1120,8 @@ get_num_parents() const {
  */
 INLINE PandaNode *PandaNode::Parents::
 get_parent(size_t n) const {
-  nassertr(_up != (Up *)NULL, NULL);
-  nassertr(n < _up->size(), NULL);
+  nassertr(_up != nullptr, nullptr);
+  nassertr(n < _up->size(), nullptr);
   return (*_up)[n].get_parent();
 }
 
@@ -1219,8 +1213,8 @@ INLINE PandaNodePipelineReader::
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
-  _node = NULL;
-  _cdata = NULL;
+  _node = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -1260,7 +1254,7 @@ release() {
  */
 INLINE void PandaNodePipelineReader::
 compose_draw_mask(DrawMask &running_draw_mask) const {
-  nassertv(_cdata != (PandaNode::CData *)NULL);
+  nassertv(_cdata != nullptr);
   running_draw_mask = (running_draw_mask & ~_cdata->_draw_control_mask) |
     (_cdata->_draw_show_mask & _cdata->_draw_control_mask);
 }
@@ -1273,7 +1267,7 @@ compose_draw_mask(DrawMask &running_draw_mask) const {
  */
 INLINE bool PandaNodePipelineReader::
 compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
-  nassertr(_cdata != (PandaNode::CData *)NULL, false);
+  nassertr(_cdata != nullptr, false);
   nassertr(_cdata->_last_update == _cdata->_next_update, false);
 
   // As a special case, if net_draw_show_mask is all 0, it means either that
@@ -1322,7 +1316,7 @@ get_num_parents() const {
 INLINE PandaNode *PandaNodePipelineReader::
 get_parent(int n) const {
   CPT(PandaNode::Up) up = _cdata->get_up();
-  nassertr(n >= 0 && n < (int)up->size(), NULL);
+  nassertr(n >= 0 && n < (int)up->size(), nullptr);
   return (*up)[n].get_parent();
 }
 
@@ -1353,7 +1347,7 @@ get_num_children() const {
 INLINE PandaNode *PandaNodePipelineReader::
 get_child(int n) const {
   CPT(PandaNode::Down) down = _cdata->get_down();
-  nassertr(n >= 0 && n < (int)down->size(), NULL);
+  nassertr(n >= 0 && n < (int)down->size(), nullptr);
   return (*down)[n].get_child();
 }
 
@@ -1395,7 +1389,7 @@ get_num_stashed() const {
 INLINE PandaNode *PandaNodePipelineReader::
 get_stashed(int n) const {
   CPT(PandaNode::Down) stashed = _cdata->get_stashed();
-  nassertr(n >= 0 && n < (int)stashed->size(), NULL);
+  nassertr(n >= 0 && n < (int)stashed->size(), nullptr);
   return (*stashed)[n].get_child();
 }
 
@@ -1462,13 +1456,13 @@ get_prev_transform() const {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.
  */
-INLINE string PandaNodePipelineReader::
-get_tag(const string &key) const {
+INLINE std::string PandaNodePipelineReader::
+get_tag(const std::string &key) const {
   int index = _cdata->_tag_data.find(key);
   if (index >= 0) {
     return _cdata->_tag_data.get_data((size_t)index);
   } else {
-    return string();
+    return std::string();
   }
 }
 
@@ -1478,7 +1472,7 @@ get_tag(const string &key) const {
  * set.
  */
 INLINE bool PandaNodePipelineReader::
-has_tag(const string &key) const {
+has_tag(const std::string &key) const {
   return _cdata->_tag_data.find(key) >= 0;
 }
 

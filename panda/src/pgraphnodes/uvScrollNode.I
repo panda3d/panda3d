@@ -15,7 +15,7 @@
  *
  */
 INLINE UvScrollNode::
-UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed) :
+UvScrollNode(const std::string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed) :
   PandaNode(name),
   _u_speed(u_speed),
   _v_speed(v_speed),
@@ -30,7 +30,7 @@ UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_st
  *
  */
 INLINE UvScrollNode::
-UvScrollNode(const string &name) :
+UvScrollNode(const std::string &name) :
   PandaNode(name),
   _u_speed(0),
   _v_speed(0),

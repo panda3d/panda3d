@@ -14,6 +14,9 @@
 #include "expand.h"
 #include <string>
 
+using std::cout;
+using std::endl;
+
 void TestExpandFunction()
 {
    std::string line;

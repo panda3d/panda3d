@@ -16,11 +16,11 @@
  */
 inline P3DOsxSplashWindow::OsxImageData::
 OsxImageData() {
-  _raw_data = NULL;
-  _image = NULL;
-  _color_space = NULL;
-  _provider = NULL;
-  _data = NULL;
+  _raw_data = nullptr;
+  _image = nullptr;
+  _color_space = nullptr;
+  _provider = nullptr;
+  _data = nullptr;
 }
 
 /**

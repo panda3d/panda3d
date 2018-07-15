@@ -37,6 +37,9 @@
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
 
+using std::endl;
+using std::wstring;
+
 DECLARE_HANDLE(HTOUCHINPUT);
 #endif
 
@@ -44,9 +47,9 @@ TypeHandle WinGraphicsWindow::_type_handle;
 TypeHandle WinGraphicsWindow::WinWindowHandle::_type_handle;
 
 WinGraphicsWindow::WindowHandles WinGraphicsWindow::_window_handles;
-WinGraphicsWindow *WinGraphicsWindow::_creating_window = NULL;
+WinGraphicsWindow *WinGraphicsWindow::_creating_window = nullptr;
 
-WinGraphicsWindow *WinGraphicsWindow::_cursor_window = NULL;
+WinGraphicsWindow *WinGraphicsWindow::_cursor_window = nullptr;
 bool WinGraphicsWindow::_cursor_hidden = false;
 
 RECT WinGraphicsWindow::_mouse_unconfined_cliprect;
@@ -69,9 +72,9 @@ static const char * const errorbox_title = "Panda3D Error";
 
 // These static variables contain pointers to the touch input functions, which
 // are dynamically extracted from USER32.DLL
-typedef WINUSERAPI BOOL (WINAPI *PFN_REGISTERTOUCHWINDOW)(IN HWND hWnd, IN ULONG ulFlags);
-typedef WINUSERAPI BOOL (WINAPI *PFN_GETTOUCHINPUTINFO)(IN HTOUCHINPUT hTouchInput, IN UINT cInputs, OUT PTOUCHINPUT pInputs, IN int cbSize);
-typedef WINUSERAPI BOOL (WINAPI *PFN_CLOSETOUCHINPUTHANDLE)(IN HTOUCHINPUT hTouchInput);
+typedef BOOL (WINAPI *PFN_REGISTERTOUCHWINDOW)(IN HWND hWnd, IN ULONG ulFlags);
+typedef BOOL (WINAPI *PFN_GETTOUCHINPUTINFO)(IN HTOUCHINPUT hTouchInput, IN UINT cInputs, OUT PTOUCHINPUT pInputs, IN int cbSize);
+typedef BOOL (WINAPI *PFN_CLOSETOUCHINPUTHANDLE)(IN HTOUCHINPUT hTouchInput);
 
 static PFN_REGISTERTOUCHWINDOW pRegisterTouchWindow = 0;
 static PFN_GETTOUCHINPUTINFO pGetTouchInputInfo = 0;
@@ -82,7 +85,7 @@ static PFN_CLOSETOUCHINPUTHANDLE pCloseTouchInputHandle = 0;
  */
 WinGraphicsWindow::
 WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -103,7 +106,7 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _rcontrol_down = false;
   _lalt_down = false;
   _ralt_down = false;
-  _hparent = NULL;
+  _hparent = nullptr;
   _num_touches = 0;
 }
 
@@ -112,9 +115,33 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 WinGraphicsWindow::
 ~WinGraphicsWindow() {
-  if (_window_handle != (WindowHandle *)NULL) {
+  if (_window_handle != nullptr) {
     DCAST(WinWindowHandle, _window_handle)->clear_window();
   }
+}
+
+/**
+ * Returns the MouseData associated with the nth input device's pointer.
+ */
+MouseData WinGraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = _input_devices[device].get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value.
+    POINT cpos;
+    if (device == 0 && result._in_window && GetCursorPos(&cpos) && ScreenToClient(_hWnd, &cpos)) {
+      double time = ClockObject::get_global_clock()->get_real_time();
+      result._xpos = cpos.x;
+      result._ypos = cpos.y;
+      ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer(result._in_window, result._xpos, result._ypos, time);
+    }
+  }
+  return result;
 }
 
 /**
@@ -229,7 +256,7 @@ process_events() {
 
   // Handle all the messages on the queue in a row.  Some of these might be
   // for another window, but they will get dispatched appropriately.
-  while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
     process_1_event();
   }
 }
@@ -257,7 +284,7 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_title()) {
-    string title = properties.get_title();
+    std::string title = properties.get_title();
     _properties.set_title(title);
     TextEncoder encoder;
     wstring title_w = encoder.decode_text(title);
@@ -292,7 +319,7 @@ set_properties_now(WindowProperties &properties) {
 
     _cursor = get_cursor(filename);
     if (_cursor == 0) {
-      _cursor = LoadCursor(NULL, IDC_ARROW);
+      _cursor = LoadCursor(nullptr, IDC_ARROW);
     }
 
     if (_cursor_window == this) {
@@ -361,7 +388,7 @@ set_properties_now(WindowProperties &properties) {
       case WindowProperties::M_relative:    // not implemented, treat as absolute
 
         if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
-          ClipCursor(NULL);
+          ClipCursor(nullptr);
           windisplay_cat.info() << "Unconfining cursor from window\n";
         }
         _properties.set_mouse_mode(WindowProperties::M_absolute);
@@ -409,7 +436,7 @@ trigger_flip() {
     // Now that we've drawn or whatever, invalidate the rectangle so we won't
     // redraw again until we get the WM_PAINT message.
 
-    InvalidateRect(_hWnd, NULL, FALSE);
+    InvalidateRect(_hWnd, nullptr, FALSE);
     _got_expose_event = false;
 
     if (windisplay_cat.is_spam()) {
@@ -449,7 +476,7 @@ open_window() {
     _cursor = get_cursor(_properties.get_cursor_filename());
   }
   if (_cursor == 0) {
-    _cursor = LoadCursor(NULL, IDC_ARROW);
+    _cursor = LoadCursor(nullptr, IDC_ARROW);
   }
   bool want_foreground = (!_properties.has_foreground() || _properties.get_foreground());
   bool want_minimized = (_properties.has_minimized() && _properties.get_minimized()) && !want_foreground;
@@ -461,7 +488,7 @@ open_window() {
   // it gives us a handle.  Warning: this is not thread safe!
   _creating_window = this;
   bool opened = open_graphic_window(is_fullscreen());
-  _creating_window = (WinGraphicsWindow *)NULL;
+  _creating_window = nullptr;
 
   if (!opened) {
     return false;
@@ -530,7 +557,7 @@ open_window() {
   _window_handle = new WinWindowHandle(this, *_window_handle);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -551,7 +578,7 @@ open_window() {
   }
 
   // Register for Win7 touch events.
-  if (pRegisterTouchWindow != NULL) {
+  if (pRegisterTouchWindow != nullptr) {
     pRegisterTouchWindow(_hWnd, 0);
   }
 
@@ -579,7 +606,7 @@ initialize_input_devices() {
   add_input_device(device);
 
   // Get the number of devices.
-  if (GetRawInputDeviceList(NULL, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0) {
+  if (GetRawInputDeviceList(nullptr, &nInputDevices, sizeof(RAWINPUTDEVICELIST)) != 0) {
     return;
   }
 
@@ -704,7 +731,7 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
       flags |= SWP_NOMOVE;
     }
 
-    SetWindowPos(_hWnd, NULL, x_origin, y_origin,
+    SetWindowPos(_hWnd, nullptr, x_origin, y_origin,
                  view_rect.right - view_rect.left,
                  view_rect.bottom - view_rect.top,
                  flags);
@@ -801,7 +828,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   }
 
   // this causes WM_SIZE msg to be produced
-  SetWindowPos(_hWnd, NULL, 0,0, x_size, y_size,
+  SetWindowPos(_hWnd, nullptr, 0,0, x_size, y_size,
                SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
   int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
 
@@ -1009,17 +1036,17 @@ open_graphic_window(bool fullscreen) {
   }
 
   const WindowClass &wclass = register_window_class(_properties);
-  HINSTANCE hinstance = GetModuleHandle(NULL);
+  HINSTANCE hinstance = GetModuleHandle(nullptr);
 
-  _hparent = NULL;
+  _hparent = nullptr;
 
   if (!fullscreen){
     WindowHandle *window_handle = _properties.get_parent_window();
-    if (window_handle != NULL) {
+    if (window_handle != nullptr) {
       windisplay_cat.info()
         << "Got parent_window " << *window_handle << "\n";
       WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
-      if (os_handle != NULL) {
+      if (os_handle != nullptr) {
         windisplay_cat.info()
           << "os_handle type " << os_handle->get_type() << "\n";
 
@@ -1034,7 +1061,7 @@ open_graphic_window(bool fullscreen) {
     }
     _parent_window_handle = window_handle;
   } else {
-    _parent_window_handle = NULL;
+    _parent_window_handle = nullptr;
   }
 
   if (!_hparent) { // This can be a regular window or a fullscreen window
@@ -1042,7 +1069,7 @@ open_graphic_window(bool fullscreen) {
                           metrics.x, metrics.y,
                           metrics.width,
                           metrics.height,
-                          NULL, NULL, hinstance, 0);
+                          nullptr, nullptr, hinstance, 0);
   } else { // This is a regular window with a parent
     int x_origin = 0;
     int y_origin = 0;
@@ -1056,7 +1083,7 @@ open_graphic_window(bool fullscreen) {
                           WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
                           x_origin, y_origin,
                           _properties.get_x_size(), _properties.get_y_size(),
-                          _hparent, NULL, hinstance, 0);
+                          _hparent, nullptr, hinstance, 0);
 
     if (_hWnd) {
       // join our keyboard state with the parents
@@ -1151,7 +1178,7 @@ do_fullscreen_enable() {
  */
 bool WinGraphicsWindow::
 do_fullscreen_disable() {
-  int chg_result = ChangeDisplaySettings(NULL, 0x0);
+  int chg_result = ChangeDisplaySettings(nullptr, 0x0);
   if (chg_result != DISP_CHANGE_SUCCESSFUL) {
     windisplay_cat.warning()
       << "ChangeDisplaySettings failed to restore Windowed mode\n";
@@ -1247,13 +1274,13 @@ track_mouse_leaving(HWND hwnd) {
  */
 void WinGraphicsWindow::
 set_focus() {
-  if (SetFocus(_hWnd) == NULL && GetLastError() != 0) {
+  if (SetFocus(_hWnd) == nullptr && GetLastError() != 0) {
     // If the SetFocus() request failed, maybe we're running in the plugin
     // environment on Vista, with UAC enabled.  In this case, we're not
     // allowed to assign focus to the Panda window for some stupid reason.  So
     // instead, we have to ask the parent window (in the browser process) to
     // proxy our keyboard events for us.
-    if (_parent_window_handle != NULL && _window_handle != NULL) {
+    if (_parent_window_handle != nullptr && _window_handle != nullptr) {
       _parent_window_handle->request_keyboard_focus(_window_handle);
     } else {
       // Otherwise, something is wrong.
@@ -1292,7 +1319,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       << msg << ", " << wparam << ", " << lparam << ")\n";
   }
   WindowProperties properties;
-  int button = -1;
 
   switch (msg) {
   case WM_MOUSEMOVE:
@@ -1360,7 +1386,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // This is a message from the system indicating that the user has
     // requested to close the window (e.g.  alt-f4).
     {
-      string close_request_event = get_close_request_event();
+      std::string close_request_event = get_close_request_event();
       if (!close_request_event.empty()) {
         // In this case, the app has indicated a desire to intercept the
         // request and process it directly.
@@ -1457,7 +1483,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       windisplay_cat.debug()
         << "WM_WINDOWPOSCHANGED: " << hwnd << ", " << wparam << "\n";
     }
-    if (_hWnd != NULL) {
+    if (_hWnd != nullptr) {
       handle_reshape();
     }
     adjust_z_order();
@@ -1467,7 +1493,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // In response to WM_PAINT, we check to see if there are any update
     // regions at all; if there are, we declare the window exposed.  This is
     // used to implement !_unexposed_draw.
-    if (GetUpdateRect(_hWnd, NULL, false)) {
+    if (GetUpdateRect(_hWnd, nullptr, false)) {
       if (windisplay_cat.is_spam()) {
         windisplay_cat.spam()
           << "Got update regions: " << this << "\n";
@@ -1716,17 +1742,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
 
       if (lparam & GCS_COMPSTR) {
-        result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, NULL, 0);
+        result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, nullptr, 0);
         cursor_pos = result_size & 0xffff;
 
-        result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, NULL, 0);
+        result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, nullptr, 0);
         delta_start = result_size & 0xffff;
         result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
         size_t num_chars = result_size / sizeof(wchar_t);
 
         _input_devices[0].candidate(wstring(ime_buffer, num_chars),
-                                    min(cursor_pos, delta_start),
-                                    max(cursor_pos, delta_start),
+                                    std::min(cursor_pos, delta_start),
+                                    std::max(cursor_pos, delta_start),
                                     cursor_pos);
       }
       ImmReleaseContext(hwnd, hIMC);
@@ -1864,14 +1890,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         HGLOBAL hglb;
         char *lptstr;
 
-        if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(NULL)) {
+        if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(nullptr)) {
           // Maybe we should support CF_UNICODETEXT if it is available too?
           hglb = GetClipboardData(CF_TEXT);
-          if (hglb!=NULL) {
+          if (hglb!=nullptr) {
             lptstr = (char *) GlobalLock(hglb);
-            if (lptstr != NULL)  {
+            if (lptstr != nullptr)  {
               char *pChar;
-              for (pChar=lptstr; *pChar!=NULL; pChar++) {
+              for (pChar=lptstr; *pChar; pChar++) {
                 _input_devices[0].keystroke((uchar)*pChar);
               }
               GlobalUnlock(hglb);
@@ -2106,7 +2132,7 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 
   // The window wasn't in the map; we must be creating it right now.
-  if (_creating_window != (WinGraphicsWindow *)NULL) {
+  if (_creating_window != nullptr) {
     return _creating_window->window_proc(hwnd, msg, wparam, lparam);
   }
 
@@ -2122,7 +2148,7 @@ void WinGraphicsWindow::
 process_1_event() {
   MSG msg;
 
-  if (!GetMessage(&msg, NULL, 0, 0)) {
+  if (!GetMessage(&msg, nullptr, 0, 0)) {
     // WM_QUIT received.  We need a cleaner way to deal with this.
     // DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn
@@ -2156,16 +2182,16 @@ resend_lost_keypresses() {
 void WinGraphicsWindow::
 update_cursor_window(WinGraphicsWindow *to_window) {
   bool hide_cursor = false;
-  if (to_window == (WinGraphicsWindow *)NULL) {
+  if (to_window == nullptr) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {
-      SystemParametersInfo(SPI_SETMOUSETRAILS, NULL,
-                           (PVOID)_saved_mouse_trails, NULL);
-      SystemParametersInfo(SPI_SETCURSORSHADOW, NULL,
-                           (PVOID)_saved_cursor_shadow, NULL);
-      SystemParametersInfo(SPI_SETMOUSEVANISH, NULL,
-                           (PVOID)_saved_mouse_vanish, NULL);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, 0,
+                           (PVOID)_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_SETCURSORSHADOW, 0,
+                           (PVOID)_saved_cursor_shadow, 0);
+      SystemParametersInfo(SPI_SETMOUSEVANISH, 0,
+                           (PVOID)_saved_mouse_vanish, 0);
       _got_saved_params = false;
     }
 
@@ -2179,17 +2205,17 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // These parameters are only defined for Win2000XP, but they should just
     // cause a silent error on earlier OS's, which is OK.
     if (!_got_saved_params) {
-      SystemParametersInfo(SPI_GETMOUSETRAILS, NULL,
-                           &_saved_mouse_trails, NULL);
-      SystemParametersInfo(SPI_GETCURSORSHADOW, NULL,
-                           &_saved_cursor_shadow, NULL);
-      SystemParametersInfo(SPI_GETMOUSEVANISH, NULL,
-                           &_saved_mouse_vanish, NULL);
+      SystemParametersInfo(SPI_GETMOUSETRAILS, 0,
+                           &_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_GETCURSORSHADOW, 0,
+                           &_saved_cursor_shadow, 0);
+      SystemParametersInfo(SPI_GETMOUSEVANISH, 0,
+                           &_saved_mouse_vanish, 0);
       _got_saved_params = true;
 
-      SystemParametersInfo(SPI_SETMOUSETRAILS, NULL, (PVOID)0, NULL);
-      SystemParametersInfo(SPI_SETCURSORSHADOW, NULL, (PVOID)false, NULL);
-      SystemParametersInfo(SPI_SETMOUSEVANISH, NULL, (PVOID)false, NULL);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, 0, (PVOID)0, 0);
+      SystemParametersInfo(SPI_SETCURSORSHADOW, 0, (PVOID)false, 0);
+      SystemParametersInfo(SPI_SETMOUSEVANISH, 0, (PVOID)false, 0);
     }
 
     SetCursor(to_window->_cursor);
@@ -2238,7 +2264,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
   DEVMODE cur_dm;
   ZeroMemory(&cur_dm, sizeof(cur_dm));
   cur_dm.dmSize = sizeof(cur_dm);
-  EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &cur_dm);
+  EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &cur_dm);
 
   int modenum = 0;
   int saved_modenum = -1;
@@ -2247,7 +2273,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     ZeroMemory(&dm, sizeof(dm));
     dm.dmSize = sizeof(dm);
 
-    if (!EnumDisplaySettings(NULL, modenum, &dm)) {
+    if (!EnumDisplaySettings(nullptr, modenum, &dm)) {
       break;
     }
 
@@ -2270,7 +2296,7 @@ find_acceptable_display_mode(DWORD dwWidth, DWORD dwHeight, DWORD bpp,
     ZeroMemory(&dm, sizeof(dm));
     dm.dmSize = sizeof(dm);
 
-    if (EnumDisplaySettings(NULL, saved_modenum, &dm)) {
+    if (EnumDisplaySettings(nullptr, saved_modenum, &dm)) {
       return true;
     }
   }
@@ -2291,10 +2317,10 @@ show_error_message(DWORD message_id) {
   }
 
   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                NULL, message_id,
+                nullptr, message_id,
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
                 (LPTSTR)&message_buffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
-                1024, NULL);
+                1024, nullptr);
   MessageBox(GetDesktopWindow(), message_buffer, _T(errorbox_title), MB_OK);
   windisplay_cat.fatal() << "System error msg: " << message_buffer << endl;
   LocalFree(message_buffer);
@@ -2637,12 +2663,12 @@ handle_raw_input(HRAWINPUT hraw) {
   if (hraw == 0) {
     return;
   }
-  if (GetRawInputData(hraw, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
+  if (GetRawInputData(hraw, RID_INPUT, nullptr, &dwSize, sizeof(RAWINPUTHEADER)) == -1) {
     return;
   }
 
   lpb = (LPBYTE)alloca(sizeof(LPBYTE) * dwSize);
-  if (lpb == NULL) {
+  if (lpb == nullptr) {
     return;
   }
 
@@ -2756,7 +2782,7 @@ get_icon(const Filename &filename) {
 
   Filename os = resolved.to_os_specific();
 
-  HANDLE h = LoadImage(NULL, os.c_str(),
+  HANDLE h = LoadImage(nullptr, os.c_str(),
                        IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
   if (h == 0) {
     windisplay_cat.warning()
@@ -2804,7 +2830,7 @@ get_cursor(const Filename &filename) {
 
   Filename os = resolved.to_os_specific();
 
-  HANDLE h = LoadImage(NULL, os.c_str(),
+  HANDLE h = LoadImage(nullptr, os.c_str(),
                        IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
   if (h == 0) {
     windisplay_cat.warning()
@@ -2826,11 +2852,11 @@ static HCURSOR get_cursor(const Filename &filename);
 const WinGraphicsWindow::WindowClass &WinGraphicsWindow::
 register_window_class(const WindowProperties &props) {
   WindowClass wcreg(props);
-  wostringstream wclass_name;
+  std::wostringstream wclass_name;
   wclass_name << L"WinGraphicsWindow" << _window_class_index;
   wcreg._name = wclass_name.str();
 
-  pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
+  std::pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
   const WindowClass &wclass = (*found.first);
 
   if (!found.second) {
@@ -2843,7 +2869,7 @@ register_window_class(const WindowProperties &props) {
 
   WNDCLASSW wc;
 
-  HINSTANCE instance = GetModuleHandle(NULL);
+  HINSTANCE instance = GetModuleHandle(nullptr);
 
   // Clear before filling in window structure!
   ZeroMemory(&wc, sizeof(wc));
@@ -2854,7 +2880,7 @@ register_window_class(const WindowProperties &props) {
   wc.hIcon = wclass._icon;
 
   wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-  wc.lpszMenuName = NULL;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = wclass._name.c_str();
 
   if (!RegisterClassW(&wc)) {
@@ -2883,7 +2909,7 @@ WinWindowHandle(WinGraphicsWindow *window, const WindowHandle &copy) :
  */
 void WinGraphicsWindow::WinWindowHandle::
 clear_window() {
-  _window = NULL;
+  _window = nullptr;
 }
 
 /**
@@ -2892,7 +2918,7 @@ clear_window() {
  */
 void WinGraphicsWindow::WinWindowHandle::
 receive_windows_message(unsigned int msg, int wparam, int lparam) {
-  if (_window != NULL) {
+  if (_window != nullptr) {
     _window->receive_windows_message(msg, wparam, lparam);
   }
 }
@@ -2906,10 +2932,10 @@ void PrintErrorMessage(DWORD msgID) {
     msgID=GetLastError();
 
   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                NULL,msgID,
+                nullptr,msgID,
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
                 (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
-                1024, NULL);
+                1024, nullptr);
   MessageBox(GetDesktopWindow(),pMessageBuffer,_T(errorbox_title),MB_OK);
   windisplay_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
   LocalFree( pMessageBuffer );
@@ -2969,7 +2995,7 @@ void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
  *
  */
 void WinGraphicsWindow::add_window_proc( const GraphicsWindowProc* wnd_proc ){
-  nassertv(wnd_proc != NULL);
+  nassertv(wnd_proc != nullptr);
   _window_proc_classes.insert( (GraphicsWindowProc*)wnd_proc );
 }
 
@@ -2978,7 +3004,7 @@ void WinGraphicsWindow::add_window_proc( const GraphicsWindowProc* wnd_proc ){
  *
  */
 void WinGraphicsWindow::remove_window_proc( const GraphicsWindowProc* wnd_proc ){
-  nassertv(wnd_proc != NULL);
+  nassertv(wnd_proc != nullptr);
   _window_proc_classes.erase( (GraphicsWindowProc*)wnd_proc );
 }
 

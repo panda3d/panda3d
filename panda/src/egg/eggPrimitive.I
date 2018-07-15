@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPrimitive::
-EggPrimitive(const string &name): EggNode(name) {
+EggPrimitive(const std::string &name): EggNode(name) {
   _bface = false;
   _connected_shading = S_unknown;
 }
@@ -67,13 +67,13 @@ INLINE EggPrimitive::
  * Presently, this is defined as the primitive name itself, unless it begins
  * with a digit.
  */
-INLINE string EggPrimitive::
+INLINE std::string EggPrimitive::
 get_sort_name() const {
-  const string &name = get_name();
+  const std::string &name = get_name();
   if (!name.empty() && !isdigit(name[0])) {
     return name;
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -136,7 +136,7 @@ has_texture() const {
 INLINE bool EggPrimitive::
 has_texture(EggTexture *texture) const {
   PT_EggTexture t = texture;
-  return (::find(_textures.begin(), _textures.end(), t) != _textures.end());
+  return (std::find(_textures.begin(), _textures.end(), t) != _textures.end());
 }
 
 /**
@@ -148,7 +148,7 @@ has_texture(EggTexture *texture) const {
  */
 INLINE EggTexture *EggPrimitive::
 get_texture() const {
-  return has_texture() ? get_texture(0) : (EggTexture *)NULL;
+  return has_texture() ? get_texture(0) : nullptr;
 }
 
 /**
@@ -184,7 +184,7 @@ get_num_textures() const {
  */
 INLINE EggTexture *EggPrimitive::
 get_texture(int n) const {
-  nassertr(n >= 0 && n < (int)_textures.size(), NULL);
+  nassertr(n >= 0 && n < (int)_textures.size(), nullptr);
   return _textures[n];
 }
 
@@ -202,7 +202,7 @@ set_material(EggMaterial *material) {
  */
 INLINE void EggPrimitive::
 clear_material() {
-  _material = (EggMaterial *)NULL;
+  _material = nullptr;
 }
 
 /**
@@ -221,7 +221,7 @@ get_material() const {
  */
 INLINE bool EggPrimitive::
 has_material() const {
-  return _material != (EggMaterial *)NULL;
+  return _material != nullptr;
 }
 
 
@@ -299,7 +299,7 @@ size() const {
  */
 INLINE EggVertex *EggPrimitive::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)size(), NULL);
+  nassertr(index >= 0 && index < (int)size(), nullptr);
   return *(begin() + index);
 }
 
@@ -388,7 +388,7 @@ insert_vertex(size_t index, EggVertex *vertex) {
  */
 INLINE EggVertex *EggPrimitive::
 get_vertex(size_t index) const {
-  nassertr(index < size(), NULL);
+  nassertr(index < size(), nullptr);
   return *(begin() + index);
 }
 
@@ -398,5 +398,5 @@ get_vertex(size_t index) const {
  */
 INLINE EggVertexPool *EggPrimitive::
 get_pool() const {
-  return empty() ? (EggVertexPool *)NULL : _vertices.front()->get_pool();
+  return empty() ? nullptr : _vertices.front()->get_pool();
 }

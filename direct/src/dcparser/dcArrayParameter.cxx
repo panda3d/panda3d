@@ -16,6 +16,8 @@
 #include "dcClassParameter.h"
 #include "hashGenerator.h"
 
+using std::string;
+
 /**
  *
  */
@@ -58,7 +60,7 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
   _pack_type = PT_array;
 
   DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
-  if (simple_type != (DCSimpleParameter *)NULL) {
+  if (simple_type != nullptr) {
     if (simple_type->get_type() == ST_char) {
       // We make a special case for char[] arrays: these we format as a
       // string.  (It will still accept an array of ints packed into it.)  We
@@ -148,7 +150,7 @@ get_array_size() const {
  */
 DCParameter *DCArrayParameter::
 append_array_specification(const DCUnsignedIntRange &size) {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     // If this was a typedef, wrap it directly.
     return new DCArrayParameter(this, size);
   }
@@ -201,13 +203,13 @@ validate_num_nested_fields(int num_nested_fields) const {
  * identifier.
  */
 void DCArrayParameter::
-output_instance(ostream &out, bool brief, const string &prename,
+output_instance(std::ostream &out, bool brief, const string &prename,
                 const string &name, const string &postname) const {
-  if (get_typedef() != (DCTypedef *)NULL) {
+  if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
-    ostringstream strm;
+    std::ostringstream strm;
 
     strm << "[";
     _array_size_range.output(strm);
@@ -236,7 +238,7 @@ pack_string(DCPackData &pack_data, const string &value,
             bool &pack_error, bool &range_error) const {
   // We can only pack a string if the array element type is char or int8.
   DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
-  if (simple_type == (DCSimpleParameter *)NULL) {
+  if (simple_type == nullptr) {
     pack_error = true;
     return;
   }
@@ -306,7 +308,7 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
               bool &pack_error, bool &range_error) const {
   // We can only unpack a string if the array element type is char or int8.
   DCSimpleParameter *simple_type = _element_type->as_simple_parameter();
-  if (simple_type == (DCSimpleParameter *)NULL) {
+  if (simple_type == nullptr) {
     pack_error = true;
     return;
   }

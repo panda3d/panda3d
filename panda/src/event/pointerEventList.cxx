@@ -48,7 +48,7 @@ INLINE double normalize_angle(double angle) {
  *
  */
 void PointerEventList::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_events.empty()) {
     out << "(no pointers)";
   } else {
@@ -68,7 +68,7 @@ output(ostream &out) const {
  *
  */
 void PointerEventList::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << _events.size() << " events:\n";
   Events::const_iterator ei;
   for (ei = _events.begin(); ei != _events.end(); ++ei) {
@@ -172,7 +172,7 @@ total_turns(double sec) const {
  * to be in order to be considered significant.
  */
 double PointerEventList::
-match_pattern(const string &ascpat, double rot, double seglen) {
+match_pattern(const std::string &ascpat, double rot, double seglen) {
   // Convert the pattern from ascii to a more usable form.
   vector_double pattern;
   parse_pattern(ascpat, pattern);
@@ -189,7 +189,7 @@ match_pattern(const string &ascpat, double rot, double seglen) {
  * Parses a pattern as used by match_pattern.
  */
 void PointerEventList::
-parse_pattern(const string &ascpat, vector_double &pattern) {
+parse_pattern(const std::string &ascpat, vector_double &pattern) {
   int chars = 0;
   double dir = 180.0;
   for (size_t i=0; i<ascpat.size(); i++) {
@@ -222,9 +222,9 @@ parse_pattern(const string &ascpat, vector_double &pattern) {
     pattern.push_back(dir);
   }
 
-  cerr << "Pattern: ";
+  std::cerr << "Pattern: ";
   for (int i=0; i<(int)pattern.size(); i++) {
-    cerr << pattern[i] << " ";
+    std::cerr << pattern[i] << " ";
   }
-  cerr << "\n";
+  std::cerr << "\n";
 }

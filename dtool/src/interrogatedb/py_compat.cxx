@@ -16,8 +16,6 @@
 
 #ifdef HAVE_PYTHON
 
-PyTupleObject Dtool_EmptyTuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
-
 #if PY_MAJOR_VERSION < 3
 /**
  * Given a long or int, returns a size_t, or raises an OverflowError if it is

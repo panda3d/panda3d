@@ -16,6 +16,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::ostream;
+
 PT(TextureStage) TextureStage::_default_stage;
 UpdateSeq TextureStage::_sort_seq;
 
@@ -25,7 +27,7 @@ TypeHandle TextureStage::_type_handle;
  * Initialize the texture stage at construction
  */
 TextureStage::
-TextureStage(const string &name) : _used_by_auto_shader(false) {
+TextureStage(const std::string &name) : _used_by_auto_shader(false) {
   _name = name;
   _sort = 0;
   _priority = 0;

@@ -105,7 +105,7 @@ resize_pool(int new_size) {
 
   int i;
   for (i = 0; i < new_size; i++) {
-    _node_vector.push_back(NULL);
+    _node_vector.push_back(nullptr);
   }
 
   _pool_size = new_size;
@@ -122,7 +122,7 @@ kill_nodes() {
   PandaNode *render_node = get_render_node();
   for (; vec_iter != _node_vector.end(); vec_iter++) {
     PandaNode *node = *vec_iter;
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       render_node->remove_child(node);
     }
   }
@@ -136,7 +136,7 @@ kill_nodes() {
 
 void GeomParticleRenderer::
 birth_particle(int index) {
-  if (_node_vector[index] == (PandaNode *)NULL) {
+  if (_node_vector[index] == nullptr) {
     PandaNode *node = new PandaNode("");
     get_render_node()->add_child(node);
     node->add_child(_geom_node);
@@ -150,9 +150,9 @@ birth_particle(int index) {
 
 void GeomParticleRenderer::
 kill_particle(int index) {
-  if (_node_vector[index] != (PandaNode *)NULL) {
+  if (_node_vector[index] != nullptr) {
     get_render_node()->remove_child(_node_vector[index]);
-    _node_vector[index] = (PandaNode *)NULL;
+    _node_vector[index] = nullptr;
   }
 }
 
@@ -179,11 +179,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     if (cur_particle->get_alive()) {
       // living particle
-      if (cur_node == (PandaNode *)NULL) {
+      if (cur_node == nullptr) {
         birth_particle(i);
         cur_node = *cur_node_iter;
       }
-      nassertv(cur_node != (PandaNode *)NULL);
+      nassertv(cur_node != nullptr);
 
       cur_node->set_state(_render_state);
 
@@ -200,7 +200,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
           if (_alpha_mode == PR_ALPHA_OUT)
             alpha_scalar = 1.0f - alpha_scalar;
           else if (_alpha_mode == PR_ALPHA_IN_OUT)
-            alpha_scalar = 2.0f * min(alpha_scalar, 1.0f - alpha_scalar);
+            alpha_scalar = 2.0f * std::min(alpha_scalar, 1.0f - alpha_scalar);
           alpha_scalar *= get_user_alpha();
         }
 
@@ -252,7 +252,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"GeomParticleRenderer";
   #endif //] NDEBUG
@@ -262,7 +262,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-write_linear_forces(ostream &out, int indent) const {
+write_linear_forces(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_node_vector ("<<_node_vector.size()<<" forces)\n";
@@ -278,7 +278,7 @@ write_linear_forces(ostream &out, int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void GeomParticleRenderer::
-write(ostream &out, int indent) const {
+write(std::ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"GeomParticleRenderer:\n";
   out.width(indent+2); out<<""; out<<"_geom_node "<<_geom_node<<"\n";

@@ -97,6 +97,24 @@ def test_iterator(datagram_small):
     verify(dgi)
 
 
+# This tests the copy constructor:
+def test_copy(datagram_small):
+    dg, verify = datagram_small
+
+    dg2 = core.Datagram(dg)
+    dgi = core.DatagramIterator(dg2)
+    verify(dgi)
+
+
+def test_assign(datagram_small):
+    dg, verify = datagram_small
+
+    dg2 = core.Datagram()
+    dg2.assign(dg)
+    dgi = core.DatagramIterator(dg2)
+    verify(dgi)
+
+
 # These test DatagramInputFile/DatagramOutputFile:
 
 def do_file_test(dg, verify, filename):
@@ -147,15 +165,26 @@ def test_file_corrupt(datagram_small, tmpdir):
     dof.put_datagram(dg)
     dof.close()
 
-    # Corrupt the size header to 4GB
-    with p.open(mode='wb') as f:
+    # Corrupt the size header to 1GB
+    with p.open(mode='r+b') as f:
         f.seek(0)
-        f.write(b'\xFF\xFF\xFF\xFF')
+        f.write(b'\xFF\xFF\xFF\x4F')
 
     dg2 = core.Datagram()
     dif = core.DatagramInputFile()
     dif.open(filename)
     assert not dif.get_datagram(dg2)
     dif.close()
+
+    # Truncate the file
+    for size in [12, 8, 4, 3, 2, 1, 0]:
+        with p.open(mode='r+b') as f:
+            f.truncate(size)
+
+        dg2 = core.Datagram()
+        dif = core.DatagramInputFile()
+        dif.open(filename)
+        assert not dif.get_datagram(dg2)
+        dif.close()
 
     # Should we test that dg2 is unmodified?

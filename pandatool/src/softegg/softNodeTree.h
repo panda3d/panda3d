@@ -40,7 +40,7 @@ public:
 
   int get_num_nodes() const;
   SoftNodeDesc *get_node(int n) const;
-  SoftNodeDesc *get_node(string name) const;
+  SoftNodeDesc *get_node(std::string name) const;
 
   char *GetRootName(const char *);
   char *GetModelNoteInfo(SAA_Scene *, SAA_Elem *);
@@ -66,9 +66,9 @@ private:
   EggGroupNode *_egg_root;
   EggGroupNode *_skeleton_node;
 
-  SoftNodeDesc *r_build_node(SoftNodeDesc *parent_node, const string &path);
+  SoftNodeDesc *r_build_node(SoftNodeDesc *parent_node, const std::string &path);
 
-  typedef pmap<string, SoftNodeDesc *> NodesByName;
+  typedef pmap<std::string, SoftNodeDesc *> NodesByName;
   NodesByName _nodes_by_name;
 
   typedef pvector<SoftNodeDesc *> Nodes;

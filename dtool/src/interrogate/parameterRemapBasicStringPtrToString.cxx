@@ -14,6 +14,8 @@
 #include "parameterRemapBasicStringPtrToString.h"
 #include "interrogate.h"
 
+using std::string;
+
 /**
  *
  */
@@ -21,8 +23,8 @@ ParameterRemapBasicStringPtrToString::
 ParameterRemapBasicStringPtrToString(CPPType *orig_type) :
   ParameterRemapToString(orig_type)
 {
-  static CPPType *const_char_star_type = (CPPType *)NULL;
-  if (const_char_star_type == (CPPType *)NULL) {
+  static CPPType *const_char_star_type = nullptr;
+  if (const_char_star_type == nullptr) {
     const_char_star_type = parser.parse_type("const char *");
   }
 
@@ -34,7 +36,7 @@ ParameterRemapBasicStringPtrToString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicStringPtrToString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "&std::string(" << variable_name << ")";
 }
 
@@ -54,8 +56,8 @@ ParameterRemapBasicWStringPtrToWString::
 ParameterRemapBasicWStringPtrToWString(CPPType *orig_type) :
   ParameterRemapToWString(orig_type)
 {
-  static CPPType *const_wchar_star_type = (CPPType *)NULL;
-  if (const_wchar_star_type == (CPPType *)NULL) {
+  static CPPType *const_wchar_star_type = nullptr;
+  if (const_wchar_star_type == nullptr) {
     const_wchar_star_type = parser.parse_type("const wchar_t *");
   }
 
@@ -67,7 +69,7 @@ ParameterRemapBasicWStringPtrToWString(CPPType *orig_type) :
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemapBasicWStringPtrToWString::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << "&std::wstring(" << variable_name << ")";
 }
 

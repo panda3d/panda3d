@@ -36,7 +36,7 @@ public:
   };
 
   int _light_index;
-  string _light_name;
+  std::string _light_name;
   LColor _ambient;
   LColor _diffuse;
   LColor _specular;

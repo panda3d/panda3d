@@ -23,22 +23,22 @@
  */
 class EXPCL_DTOOL_DTOOLUTIL StringDecoder {
 public:
-  INLINE StringDecoder(const string &input);
+  INLINE StringDecoder(const std::string &input);
   virtual ~StringDecoder();
 
   virtual int get_next_character();
   INLINE bool is_eof();
 
-  static void set_notify_ptr(ostream *ptr);
-  static ostream *get_notify_ptr();
+  static void set_notify_ptr(std::ostream *ptr);
+  static std::ostream *get_notify_ptr();
 
 protected:
   INLINE bool test_eof();
 
-  string _input;
+  std::string _input;
   size_t _p;
   bool _eof;
-  static ostream *_notify_ptr;
+  static std::ostream *_notify_ptr;
 };
 
 /**
@@ -46,7 +46,7 @@ protected:
  */
 class StringUtf8Decoder : public StringDecoder {
 public:
-  INLINE StringUtf8Decoder(const string &input);
+  INLINE StringUtf8Decoder(const std::string &input);
 
   virtual int get_next_character();
 };
@@ -57,7 +57,7 @@ public:
  */
 class StringUnicodeDecoder : public StringDecoder {
 public:
-  INLINE StringUnicodeDecoder(const string &input);
+  INLINE StringUnicodeDecoder(const std::string &input);
 
   virtual int get_next_character();
 };

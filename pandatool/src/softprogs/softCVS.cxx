@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 /**
  *
  */
@@ -57,7 +59,7 @@ SoftCVS() {
     ("cvs", "cvs_binary", 80,
      "Specify how to run the cvs program for adding newly-created files.  "
      "The default is simply \"cvs\".",
-     &SoftCVS::dispatch_string, NULL, &_cvs_binary);
+     &SoftCVS::dispatch_string, nullptr, &_cvs_binary);
 }
 
 
@@ -282,7 +284,7 @@ get_scenes() {
     Filename file(sf.get_dirname(), sf.get_filename());
 
     file.set_text();
-    ifstream in;
+    std::ifstream in;
     if (!file.open_read(in)) {
       nout << "Unable to read " << file << "\n";
     } else {
@@ -436,7 +438,7 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
     return false;
   }
 
-  ifstream in;
+  std::ifstream in;
   cvs_entries.set_text();
   if (!cvs_entries.open_read(in)) {
     nout << "Unable to read CVS directory.\n";
@@ -444,7 +446,7 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
   }
 
   string line;
-  getline(in, line);
+  std::getline(in, line);
   while (!in.fail() && !in.eof()) {
     if (!line.empty() && line[0] == '/') {
       size_t slash = line.find('/', 1);
@@ -461,7 +463,7 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
       }
     }
 
-    getline(in, line);
+    std::getline(in, line);
   }
 
   return true;
@@ -472,7 +474,7 @@ scan_cvs(const string &dirname, pset<string> &cvs_elements) {
  * reference found, increments the appropriate element file's reference count.
  */
 bool SoftCVS::
-scan_scene_file(istream &in, Multifile &multifile) {
+scan_scene_file(std::istream &in, Multifile &multifile) {
   bool okflag = true;
 
   int c = in.get();
@@ -493,7 +495,7 @@ scan_scene_file(istream &in, Multifile &multifile) {
       SoftFilename v("", word);
 
       // Increment the use count on all matching elements of the multiset.
-      pair<ElementFiles::iterator, ElementFiles::iterator> range;
+      std::pair<ElementFiles::iterator, ElementFiles::iterator> range;
       range = _element_files.equal_range(v);
 
       ElementFiles::iterator ei;

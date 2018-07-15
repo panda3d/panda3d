@@ -23,16 +23,19 @@
 #include <errno.h>
 #endif  // _WIN32
 
-#if defined(__ANDROID__) && !defined(HAVE_LOCKF)
+#if defined(__ANDROID__) && !defined(PHAVE_LOCKF)
 // Needed for flock.
 #include <sys/file.h>
 #endif
+
+using std::dec;
+using std::hex;
 
 /**
  *
  */
 VertexDataSaveFile::
-VertexDataSaveFile(const Filename &directory, const string &prefix,
+VertexDataSaveFile(const Filename &directory, const std::string &prefix,
                    size_t max_size) :
   SimpleAllocator(max_size, _lock)
 {
@@ -50,12 +53,12 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
   int index = 0;
   while (true) {
     ++index;
-    ostringstream strm;
+    std::ostringstream strm;
     strm << prefix << "_" << index << ".dat";
 
-    string basename = strm.str();
+    std::string basename = strm.str();
     _filename = Filename(dir, basename);
-    string os_specific = _filename.to_os_specific();
+    std::string os_specific = _filename.to_os_specific();
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -70,7 +73,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     flags |= FILE_FLAG_OVERLAPPED | FILE_FLAG_NO_BUFFERING;
 #endif
     _handle = CreateFile(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
-                         0, NULL, CREATE_ALWAYS, flags, NULL);
+                         0, nullptr, CREATE_ALWAYS, flags, nullptr);
     if (_handle != INVALID_HANDLE_VALUE) {
       // The file was successfully opened and locked.
       break;
@@ -130,7 +133,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 
     // Now try to lock the file, so we can be sure that no other process is
     // simultaneously writing to the same save file.
-#ifdef HAVE_LOCKF
+#ifdef PHAVE_LOCKF
     int result = lockf(_fd, F_TLOCK, 0);
 #else
     int result = flock(_fd, LOCK_EX | LOCK_NB);
@@ -167,7 +170,7 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
 VertexDataSaveFile::
 ~VertexDataSaveFile() {
 #ifdef _WIN32
-  if (_handle != NULL) {
+  if (_handle != nullptr) {
     CloseHandle(_handle);
   }
 #else
@@ -196,12 +199,12 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
   MutexHolder holder(_lock);
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   PT(VertexDataSaveBlock) block = (VertexDataSaveBlock *)SimpleAllocator::do_alloc(size);
-  if (block != (VertexDataSaveBlock *)NULL) {
-    _total_file_size = max(_total_file_size, block->get_start() + size);
+  if (block != nullptr) {
+    _total_file_size = std::max(_total_file_size, block->get_start() + size);
     block->set_compressed(compressed);
 
 #ifdef _WIN32
@@ -224,11 +227,11 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
           << "Error writing " << size
           << " bytes to save file, windows error code 0x" << hex
           << error << dec << ".  Disk full?\n";
-        return NULL;
+        return nullptr;
       }
       success = GetOverlappedResult(_handle, &overlapped, &bytes_written, false);
     }
-    nassertr(bytes_written == size, NULL);
+    nassertr(bytes_written == size, nullptr);
     double finish_time = ClockObject::get_global_clock()->get_real_time();
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -239,7 +242,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
     if (lseek(_fd, block->get_start(), SEEK_SET) == -1) {
       gobj_cat.error()
         << "Error seeking to position " << block->get_start() << " in save file.\n";
-      return NULL;
+      return nullptr;
     }
 
     while (size > 0) {
@@ -250,7 +253,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
         } else {
           gobj_cat.error()
             << "Error writing " << size << " bytes to save file.  Disk full?\n";
-          return NULL;
+          return nullptr;
         }
         continue;
       }
@@ -306,11 +309,11 @@ read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
         << "Error reading " << size
         << " bytes from save file, windows error code 0x" << hex
         << error << dec << ".\n";
-      return NULL;
+      return false;
     }
     success = GetOverlappedResult(_handle, &overlapped, &bytes_read, false);
   }
-  nassertr(bytes_read == size, NULL);
+  nassertr(bytes_read == size, nullptr);
   double finish_time = ClockObject::get_global_clock()->get_real_time();
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()

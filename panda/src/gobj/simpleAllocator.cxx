@@ -14,6 +14,37 @@
 #include "simpleAllocator.h"
 
 /**
+ * Move constructor.
+ */
+SimpleAllocator::
+SimpleAllocator(SimpleAllocator &&from) noexcept :
+  LinkedListNode(std::move(from)),
+  _total_size(from._total_size),
+  _max_size(from._max_size),
+  _contiguous(from._contiguous),
+  _lock(from._lock)
+{
+  MutexHolder holder(_lock);
+  from._total_size = 0;
+  from._max_size = 0;
+  from._contiguous = 0;
+
+  // We still need to leave the list in a valid state.
+  from._prev = &from;
+  from._next = &from;
+
+  // Change all the blocks to point to the new allocator.
+  LinkedListNode *next = _next;
+  while (next != this) {
+    SimpleAllocatorBlock *block = (SimpleAllocatorBlock *)next;
+    nassertv(block->_allocator == &from);
+    block->_allocator = this;
+
+    next = block->_next;
+  }
+}
+
+/**
  *
  */
 SimpleAllocator::
@@ -22,7 +53,7 @@ SimpleAllocator::
   if (_next != (LinkedListNode *)this) {
     MutexHolder holder(_lock);
     while (_next != (LinkedListNode *)this) {
-      nassertv(_next != (LinkedListNode *)NULL);
+      nassertv(_next != nullptr);
       ((SimpleAllocatorBlock *)_next)->do_free();
     }
   }
@@ -32,7 +63,7 @@ SimpleAllocator::
  *
  */
 void SimpleAllocator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size
       << " allocated";
@@ -42,7 +73,7 @@ output(ostream &out) const {
  *
  */
 void SimpleAllocator::
-write(ostream &out) const {
+write(std::ostream &out) const {
   MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size
       << " allocated";
@@ -66,16 +97,16 @@ write(ostream &out) const {
  * Assumes the lock is already held.
  */
 SimpleAllocatorBlock *SimpleAllocator::
-do_alloc(size_t size) {
+do_alloc(size_t size, size_t alignment) {
   if (size > _contiguous) {
     // Don't even bother.
-    return NULL;
+    return nullptr;
   }
 
   // First fit algorithm: walk through all the empty blocks until we find one
   // that has enough room.
 
-  SimpleAllocatorBlock *block = NULL;
+  SimpleAllocatorBlock *block = nullptr;
   size_t end = 0;
   size_t best = 0;
   if (_next != this) {
@@ -86,10 +117,10 @@ do_alloc(size_t size) {
     // Scan until we have reached the last allocated block.
     while (block->_next != this) {
       SimpleAllocatorBlock *next = (SimpleAllocatorBlock *)block->_next;
-      size_t free_size = next->_start - end;
-      if (size <= free_size) {
-        SimpleAllocatorBlock *new_block = make_block(end, size);
-        nassertr(new_block->get_allocator() == this, NULL);
+      size_t start = end + ((alignment - end) % alignment);
+      if (start + size <= next->_start) {
+        SimpleAllocatorBlock *new_block = make_block(start, size);
+        nassertr(new_block->get_allocator() == this, nullptr);
 
         new_block->insert_before(next);
         _total_size += size;
@@ -103,6 +134,7 @@ do_alloc(size_t size) {
         }
         return new_block;
       }
+      size_t free_size = next->_start - end;
       if (free_size > best) {
         best = free_size;
       }
@@ -113,10 +145,10 @@ do_alloc(size_t size) {
   }
 
   // No free blocks; check for room at the end.
-  size_t free_size = _max_size - end;
-  if (size <= free_size) {
-    SimpleAllocatorBlock *new_block = make_block(end, size);
-    nassertr(new_block->get_allocator() == this, NULL);
+  size_t start = end + ((alignment - end) % alignment);
+  if (start + size <= _max_size) {
+    SimpleAllocatorBlock *new_block = make_block(start, size);
+    nassertr(new_block->get_allocator() == this, nullptr);
 
     new_block->insert_before(this);
     _total_size += size;
@@ -131,6 +163,7 @@ do_alloc(size_t size) {
     return new_block;
   }
 
+  size_t free_size = _max_size - end;
   if (free_size > best) {
     best = free_size;
   }
@@ -143,7 +176,7 @@ do_alloc(size_t size) {
   }
 
   // No room for this block.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -168,8 +201,8 @@ changed_contiguous() {
  *
  */
 void SimpleAllocatorBlock::
-output(ostream &out) const {
-  if (_allocator == (SimpleAllocator *)NULL) {
+output(std::ostream &out) const {
+  if (_allocator == nullptr) {
     out << "free block\n";
   } else {
     MutexHolder holder(_allocator->_lock);

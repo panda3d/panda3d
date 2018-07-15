@@ -15,13 +15,15 @@
 
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle ClientButtonDevice::_type_handle;
 
 /**
  *
  */
 ClientButtonDevice::
-ClientButtonDevice(ClientBase *client, const string &device_name):
+ClientButtonDevice(ClientBase *client, const std::string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
   _button_events = new ButtonEventList();

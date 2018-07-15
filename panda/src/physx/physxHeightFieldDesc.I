@@ -17,7 +17,7 @@
 INLINE PhysxHeightFieldDesc::
 PhysxHeightFieldDesc() {
 
-  _samples = NULL;
+  _samples = nullptr;
   _desc.setToDefault();
 }
 
@@ -76,7 +76,7 @@ unset_size() {
   if (_samples) {
     _desc.nbRows = (NxU32) 0;
     _desc.nbColumns = (NxU32) 0;
-    _desc.samples = NULL;
+    _desc.samples = nullptr;
     delete[] _samples;
   }
 }

@@ -70,10 +70,11 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
-class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
- public:
+class VirtualFile;
 
-  FmodAudioSound(AudioManager *manager, Filename fn, bool positional );
+class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
+public:
+  FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
   ~FmodAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
@@ -106,7 +107,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   void set_play_rate(PN_stdfloat play_rate=1.0f);
   PN_stdfloat get_play_rate() const;
 
-  const string &get_name() const;
+  const std::string &get_name() const;
 
   // return: playing time in seconds.
   PN_stdfloat length() const;
@@ -132,8 +133,8 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   bool get_active() const;
 
   void finished();
-  void set_finished_event(const string& event);
-  const string& get_finished_event() const;
+  void set_finished_event(const std::string& event);
+  const std::string& get_finished_event() const;
 
  private:
   PT(FmodAudioManager) _manager;
@@ -175,7 +176,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   bool _paused;
   PN_stdfloat _start_time;
 
-  string _finished_event;
+  std::string _finished_event;
 
   // This reference-counting pointer is set to this while the sound is
   // playing, and cleared when we get an indication that the sound has

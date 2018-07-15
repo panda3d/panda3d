@@ -53,7 +53,7 @@ public:
   NxActorDesc _desc;
 
 private:
-  string _name;
+  std::string _name;
 };
 
 #include "physxActorDesc.I"

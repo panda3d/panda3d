@@ -30,6 +30,10 @@
 #define IMATH_NAMESPACE Imath
 #endif
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle PNMFileTypeEXR::_type_handle;
 
 static const char * const extensions_exr[] = {
@@ -216,8 +220,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   // grayscale/alpha images correctly, but also incorrectly detects
   // luminance/chroma images as grayscale only.  However, these kind
   // of images are a pain to handle anyway, so maybe that's OK.
-  const char *possible_channel_names[] = { "R", "G", "B", "Y", "A", NULL };
-  for (const char **pni = possible_channel_names; *pni != NULL; ++pni) {
+  const char *possible_channel_names[] = { "R", "G", "B", "Y", "A", nullptr };
+  for (const char **pni = possible_channel_names; *pni != nullptr; ++pni) {
     std::string name = *pni;
     IMF::ChannelList::ConstIterator ci = channels.find(name.c_str());
     if (ci != channels.end()) {
@@ -376,7 +380,7 @@ write_pfm(const PfmFile &pfm) {
   const char *channel_names_2[] = { "G", "A" };
   const char *channel_names_3[] = { "R", "G", "B" };
   const char *channel_names_4[] = { "R", "G", "B", "A" };
-  const char **channel_names = NULL;
+  const char **channel_names = nullptr;
 
   switch (pfm.get_num_channels()) {
   case 1:

@@ -23,9 +23,9 @@
 /**
  * A parametric NURBS curve.
  */
-class EXPCL_PANDAEGG EggNurbsCurve : public EggCurve {
+class EXPCL_PANDA_EGG EggNurbsCurve : public EggCurve {
 PUBLISHED:
-  INLINE explicit EggNurbsCurve(const string &name = "");
+  INLINE explicit EggNurbsCurve(const std::string &name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);
 
@@ -50,7 +50,7 @@ PUBLISHED:
   INLINE double get_knot(int k) const;
   MAKE_SEQ(get_knots, get_num_knots, get_knot);
 
-  virtual void write(ostream &out, int indent_level) const override;
+  virtual void write(std::ostream &out, int indent_level) const override;
 
   MAKE_PROPERTY(order, get_order, set_order);
   MAKE_PROPERTY(degree, get_degree);

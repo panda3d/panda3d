@@ -31,7 +31,7 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(CycleDataType &&initial_data, Pipeline *pipeline) :
-  PipelineCyclerBase(new CycleDataType(move(initial_data)), pipeline)
+  PipelineCyclerBase(new CycleDataType(std::move(initial_data)), pipeline)
 {
 }
 
@@ -198,7 +198,7 @@ PipelineCycler(Pipeline *pipeline) :
 template<class CycleDataType>
 INLINE PipelineCycler<CycleDataType>::
 PipelineCycler(CycleDataType &&initial_data, Pipeline *pipeline) :
-  _typed_data(move(initial_data)),
+  _typed_data(std::move(initial_data)),
   PipelineCyclerBase(&_typed_data, pipeline)
 {
 }

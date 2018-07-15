@@ -22,6 +22,9 @@
 #include "eggBin.h"
 #include "string_utils.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */
@@ -158,7 +161,7 @@ write_vertex_pool(EggVertexPool *vpool) {
         << "] = {\n";
     for (i = 0; i < highest_index; i++) {
       EggVertex *vert = vpool->get_vertex(i);
-      if (vert == (EggVertex *)NULL) {
+      if (vert == nullptr) {
         out << "  vertex(),  /* " << i << " */\n";
       } else {
         LPoint4d p = vert->get_pos4();
@@ -196,7 +199,7 @@ write_vertex_pool(EggVertexPool *vpool) {
         << "] = {\n";
     for (i = 0; i < highest_index; i++) {
       EggVertex *vert = vpool->get_vertex(i);
-      if (vert == (EggVertex *)NULL || !vert->has_uv()) {
+      if (vert == nullptr || !vert->has_uv()) {
         out << "  uv(),  /* " << i << " */\n";
       } else {
         LTexCoordd uv = vert->get_uv();
@@ -213,7 +216,7 @@ write_vertex_pool(EggVertexPool *vpool) {
         << "] = {\n";
     for (i = 0; i < highest_index; i++) {
       EggVertex *vert = vpool->get_vertex(i);
-      if (vert == (EggVertex *)NULL || !vert->has_normal()) {
+      if (vert == nullptr || !vert->has_normal()) {
         out << "  normal(),  /* " << i << " */\n";
       } else {
         LNormald n = vert->get_normal();
@@ -230,7 +233,7 @@ write_vertex_pool(EggVertexPool *vpool) {
         << "] = {\n";
     for (i = 0; i < highest_index; i++) {
       EggVertex *vert = vpool->get_vertex(i);
-      if (vert == (EggVertex *)NULL || !vert->has_color()) {
+      if (vert == nullptr || !vert->has_color()) {
         out << "  color(),  /* " << i << " */\n";
       } else {
         LColor c = vert->get_color();

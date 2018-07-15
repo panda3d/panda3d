@@ -167,7 +167,7 @@ create_color(const BaseParticle *p) {
       if (_alpha_mode == PR_ALPHA_OUT) {
         parameterized_age = 1.0f - parameterized_age;
       } else if (_alpha_mode == PR_ALPHA_IN_OUT) {
-        parameterized_age = 2.0f * min(parameterized_age,
+        parameterized_age = 2.0f * std::min(parameterized_age,
                                       1.0f - parameterized_age);
       }
     }
@@ -257,7 +257,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void PointParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"PointParticleRenderer";
   #endif //] NDEBUG
@@ -267,7 +267,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void PointParticleRenderer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "PointParticleRenderer:\n";
   indent(out, indent_level + 2) << "_start_color "<<_start_color<<"\n";
   indent(out, indent_level + 2) << "_end_color "<<_end_color<<"\n";

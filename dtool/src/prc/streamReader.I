@@ -15,7 +15,7 @@
  *
  */
 INLINE StreamReader::
-StreamReader(istream &in) :
+StreamReader(std::istream &in) :
   _in(&in),
   _owns_stream(false)
 {
@@ -26,7 +26,7 @@ StreamReader(istream &in) :
  * StreamReader destructs.
  */
 INLINE StreamReader::
-StreamReader(istream *in, bool owns_stream) :
+StreamReader(std::istream *in, bool owns_stream) :
   _in(in),
   _owns_stream(owns_stream)
 {
@@ -67,7 +67,7 @@ INLINE StreamReader::
 /**
  * Returns the stream in use.
  */
-INLINE istream *StreamReader::
+INLINE std::istream *StreamReader::
 get_istream() const {
   return _in;
 }

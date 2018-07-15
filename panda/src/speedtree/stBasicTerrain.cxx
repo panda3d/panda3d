@@ -16,6 +16,10 @@
 #include "pnmImage.h"
 #include "indent.h"
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle STBasicTerrain::_type_handle;
 
 // VERTEX_ATTRIB_END is defined as a macro that must be evaluated within the
@@ -113,7 +117,7 @@ setup_terrain(const Filename &terrain_filename) {
   }
 
   istream *in = vfs->open_read_file(fullpath, true);
-  if (in == NULL) {
+  if (in == nullptr) {
     speedtree_cat.warning()
       << "Couldn't open " << terrain_filename << "\n";
     return false;
@@ -191,7 +195,7 @@ setup_terrain(istream &in, const Filename &pathname) {
   }
 
   // Consume any whitespace at the end of the file.
-  in >> ws;
+  in >> std::ws;
 
   if (!in.eof()) {
     // If we didn't read all the way to end-of-file, there was an error.
@@ -345,8 +349,8 @@ read_height_map() {
       v *= scalar;
       _height_data._data[pi] = v;
       ++pi;
-      _min_height = min(_min_height, v);
-      _max_height = max(_max_height, v);
+      _min_height = std::min(_min_height, v);
+      _max_height = std::max(_max_height, v);
     }
   }
 

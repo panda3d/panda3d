@@ -48,10 +48,9 @@ def test_future_wait():
         fut.set_result(None)
 
     thread = threading.Thread(target=thread_main)
-    thread.start()
 
-    # Make sure it didn't sneakily already run the thread
     assert not fut.done()
+    thread.start()
 
     assert fut.result() is None
 
@@ -69,10 +68,9 @@ def test_future_wait_cancel():
         fut.cancel()
 
     thread = threading.Thread(target=thread_main)
-    thread.start()
 
-    # Make sure it didn't sneakily already run the thread
     assert not fut.done()
+    thread.start()
 
     with pytest.raises(CancelledError):
         fut.result()

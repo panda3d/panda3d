@@ -17,7 +17,7 @@
  *
  */
 P3DStringObject::
-P3DStringObject(const string &value) : _value(value) {
+P3DStringObject(const std::string &value) : _value(value) {
 }
 
 /**
@@ -65,7 +65,7 @@ get_bool() {
  * to a string.
  */
 void P3DStringObject::
-make_string(string &value) {
+make_string(std::string &value) {
   value = _value;
 }
 
@@ -74,9 +74,9 @@ make_string(string &value) {
  * This is intended for developer assistance.
  */
 void P3DStringObject::
-output(ostream &out) {
+output(std::ostream &out) {
   out << '"';
-  for (string::const_iterator si = _value.begin(); si != _value.end(); ++si) {
+  for (std::string::const_iterator si = _value.begin(); si != _value.end(); ++si) {
     if (isprint(*si)) {
       switch (*si) {
       case '"':

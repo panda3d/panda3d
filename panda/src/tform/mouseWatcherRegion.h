@@ -30,9 +30,9 @@ class MouseWatcherParameter;
  */
 class EXPCL_PANDA_TFORM MouseWatcherRegion : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE explicit MouseWatcherRegion(const string &name, PN_stdfloat left, PN_stdfloat right,
+  INLINE explicit MouseWatcherRegion(const std::string &name, PN_stdfloat left, PN_stdfloat right,
                                      PN_stdfloat bottom, PN_stdfloat top);
-  INLINE explicit MouseWatcherRegion(const string &name, const LVecBase4 &frame);
+  INLINE explicit MouseWatcherRegion(const std::string &name, const LVecBase4 &frame);
 
   INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
   INLINE void set_frame(const LVecBase4 &frame);
@@ -58,8 +58,8 @@ PUBLISHED:
   INLINE void set_suppress_flags(int suppress_flags);
   INLINE int get_suppress_flags() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   INLINE bool operator < (const MouseWatcherRegion &other) const;
@@ -108,7 +108,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const MouseWatcherRegion &region) {
+INLINE std::ostream &operator << (std::ostream &out, const MouseWatcherRegion &region) {
   region.output(out);
   return out;
 }

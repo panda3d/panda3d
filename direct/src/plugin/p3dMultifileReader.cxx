@@ -23,6 +23,13 @@
 #include <io.h>
 #endif
 
+using std::ios;
+using std::max;
+using std::min;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 // This sequence of bytes begins each Multifile to identify it as a Multifile.
 const char P3DMultifileReader::_header[] = "pmf\0\n\r";
 const size_t P3DMultifileReader::_header_size = 6;
@@ -88,7 +95,7 @@ extract_all(const string &to_dir, P3DPackage *package,
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
     FileSpec file;
-    if (package != NULL && !package->is_extractable(file, s._filename)) {
+    if (package != nullptr && !package->is_extractable(file, s._filename)) {
       continue;
     }
 
@@ -99,7 +106,7 @@ extract_all(const string &to_dir, P3DPackage *package,
 
     ofstream out;
 #ifdef _WIN32
-    wstring output_pathname_w;
+    std::wstring output_pathname_w;
     if (string_to_wstring(output_pathname_w, output_pathname)) {
       out.open(output_pathname_w.c_str(), ios::out | ios::binary);
     }
@@ -127,7 +134,7 @@ extract_all(const string &to_dir, P3DPackage *package,
     // or something.
     chmod(output_pathname.c_str(), 0555);
 
-    if (step != NULL && package != NULL) {
+    if (step != nullptr && package != nullptr) {
       step->thread_add_bytes_done(s._data_length);
     }
   }
@@ -140,7 +147,7 @@ extract_all(const string &to_dir, P3DPackage *package,
  * stream.  Returns true on success, false on failure.
  */
 bool P3DMultifileReader::
-extract_one(ostream &out, const string &filename) {
+extract_one(std::ostream &out, const string &filename) {
   assert(_is_open);
   if (_in.fail()) {
     return false;
@@ -202,7 +209,7 @@ read_header(const string &pathname) {
   _signatures.clear();
 
 #ifdef _WIN32
-  wstring pathname_w;
+  std::wstring pathname_w;
   if (string_to_wstring(pathname_w, pathname)) {
     _in.open(pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -341,7 +348,7 @@ read_index() {
  * Returns true on success, false on failure.
  */
 bool P3DMultifileReader::
-extract_subfile(ostream &out, const Subfile &s) {
+extract_subfile(std::ostream &out, const Subfile &s) {
   _in.seekg(s._data_start + _read_offset);
 
   static const streamsize buffer_size = 4096;
@@ -409,7 +416,7 @@ check_signatures() {
     // Now convert each of the certificates to an X509 object, and store it in
     // our CertChain.
     CertChain chain;
-    EVP_PKEY *pkey = NULL;
+    EVP_PKEY *pkey = nullptr;
     if (buffer_size > 0) {
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
       // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
@@ -420,13 +427,13 @@ check_signatures() {
 #endif
       bp = (unsigned char *)&buffer[0];
       bp_end = bp + buffer_size;
-      X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-      while (num_certs > 0 && x509 != NULL) {
+      X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+      while (num_certs > 0 && x509 != nullptr) {
         chain.push_back(CertRecord(x509));
         --num_certs;
-        x509 = d2i_X509(NULL, &bp, bp_end - bp);
+        x509 = d2i_X509(nullptr, &bp, bp_end - bp);
       }
-      if (num_certs != 0 || x509 != NULL) {
+      if (num_certs != 0 || x509 != nullptr) {
         nout << "Extra data in signature record.\n";
       }
     }
@@ -437,7 +444,7 @@ check_signatures() {
       pkey = X509_get_pubkey(chain[0]._cert);
     }
 
-    if (pkey != NULL) {
+    if (pkey != nullptr) {
       EVP_MD_CTX *md_ctx;
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
       md_ctx = EVP_MD_CTX_create();

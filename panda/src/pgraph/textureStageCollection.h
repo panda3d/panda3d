@@ -36,7 +36,7 @@ PUBLISHED:
   bool has_texture_stage(TextureStage *texture_stage) const;
   void clear();
 
-  TextureStage *find_texture_stage(const string &name) const;
+  TextureStage *find_texture_stage(const std::string &name) const;
 
   int get_num_texture_stages() const;
   TextureStage *get_texture_stage(int index) const;
@@ -48,8 +48,8 @@ PUBLISHED:
 
   void sort();
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(PT(TextureStage)) TextureStages;
@@ -62,7 +62,7 @@ private:
 
 };
 
-INLINE ostream &operator << (ostream &out, const TextureStageCollection &col) {
+INLINE std::ostream &operator << (std::ostream &out, const TextureStageCollection &col) {
   col.output(out);
   return out;
 }

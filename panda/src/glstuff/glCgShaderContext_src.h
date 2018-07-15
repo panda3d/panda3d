@@ -25,7 +25,7 @@ class CLP(GraphicsStateGuardian);
 /**
  * xyz
  */
-class EXPCL_GL CLP(CgShaderContext) FINAL : public ShaderContext {
+class EXPCL_GL CLP(CgShaderContext) final : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 

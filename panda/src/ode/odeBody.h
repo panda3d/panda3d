@@ -143,7 +143,7 @@ PUBLISHED:
   INLINE void set_gravity_mode(int mode);
   INLINE int get_gravity_mode() const;
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeBody &other) const;
 

@@ -91,7 +91,7 @@ handle_entries() {
         Entries::const_iterator ei;
         for (ei = entries.begin(); ei != entries.end(); ++ei) {
           CollisionEntry *entry = (*ei);
-          nassertr(entry != (CollisionEntry *)NULL, false);
+          nassertr(entry != nullptr, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
 
           LPoint3 surface_point;
@@ -171,8 +171,8 @@ handle_entries() {
                   // concave).
                   const CollisionSolid *s1 = sd._entry->get_into();
                   const CollisionSolid *s2 = sd2._entry->get_into();
-                  if (s1 != (CollisionSolid *)NULL &&
-                      s2 != (CollisionSolid *)NULL &&
+                  if (s1 != nullptr &&
+                      s2 != nullptr &&
                       s1->is_exact_type(CollisionPolygon::get_class_type()) &&
                       s2->is_exact_type(CollisionPolygon::get_class_type()) &&
                       sd._entry->get_into_node_path() ==

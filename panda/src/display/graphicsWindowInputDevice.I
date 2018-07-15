@@ -23,7 +23,7 @@ GraphicsWindowInputDevice() {
 /**
  *
  */
-INLINE string GraphicsWindowInputDevice::
+INLINE std::string GraphicsWindowInputDevice::
 get_name() const {
   LightMutexHolder holder(_lock);
   return _name;

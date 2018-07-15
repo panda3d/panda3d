@@ -261,15 +261,15 @@ public:
   virtual ~CLP(GraphicsStateGuardian)();
 
   // #--- Zhao Nov2011
-  virtual string get_driver_vendor();
-  virtual string get_driver_renderer();
-  virtual string get_driver_version();
+  virtual std::string get_driver_vendor();
+  virtual std::string get_driver_renderer();
+  virtual std::string get_driver_version();
   virtual int get_driver_version_major();
   virtual int get_driver_version_minor();
   virtual int get_driver_shader_version_major();
   virtual int get_driver_shader_version_minor();
 
-  static void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
+  static void APIENTRY debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
 
   virtual void reset();
 
@@ -411,9 +411,9 @@ public:
   INLINE bool clear_errors(int line, const char *source_file);
   INLINE void clear_my_errors(int line, const char *source_file);
 
-  INLINE const string &get_gl_vendor() const;
-  INLINE const string &get_gl_renderer() const;
-  INLINE const string &get_gl_version() const;
+  INLINE const std::string &get_gl_vendor() const;
+  INLINE const std::string &get_gl_renderer() const;
+  INLINE const std::string &get_gl_version() const;
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
   INLINE bool has_fixed_function_pipeline() const;
@@ -422,7 +422,7 @@ public:
                                        const TransformState *transform);
 
   void bind_fbo(GLuint fbo);
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
   void finish();
 
 protected:
@@ -466,14 +466,14 @@ protected:
 
   static bool report_errors_loop(int line, const char *source_file,
                                  GLenum error_code, int &error_count);
-  static string get_error_string(GLenum error_code);
-  string show_gl_string(const string &name, GLenum id);
+  static std::string get_error_string(GLenum error_code);
+  std::string show_gl_string(const std::string &name, GLenum id);
   virtual void query_gl_version();
   void query_glsl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  INLINE virtual bool has_extension(const string &extension) const;
+  INLINE virtual bool has_extension(const std::string &extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -661,7 +661,7 @@ protected:
 
 #ifndef OPENGLES_1
   BitMask32 _enabled_vertex_attrib_arrays;
-  GLint _vertex_attrib_divisors[32];
+  GLuint _vertex_attrib_divisors[32];
 
   PT(Shader) _current_shader;
   ShaderContext *_current_shader_context;
@@ -728,14 +728,14 @@ protected:
   bool _supports_depth32;
 #endif
 
-  string _gl_vendor;
-  string _gl_renderer;
-  string _gl_version;
+  std::string _gl_vendor;
+  std::string _gl_renderer;
+  std::string _gl_version;
   int _gl_version_major, _gl_version_minor;
   // #--- Zhao Nov2011
   int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
 
-  pset<string> _extensions;
+  pset<std::string> _extensions;
 
 #ifndef OPENGLES
   // True for non-compatibility GL 3.2+ contexts.
@@ -743,6 +743,12 @@ protected:
 #endif
 
 public:
+#ifndef OPENGLES
+  bool _use_depth_zero_to_one;
+  bool _use_remapped_depth_range;
+  PFNGLDEPTHRANGEDNVPROC _glDepthRangedNV;
+#endif
+
   bool _supports_point_parameters;
   PFNGLPOINTPARAMETERFVPROC _glPointParameterfv;
   bool _supports_point_sprite;

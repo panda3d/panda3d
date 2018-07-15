@@ -32,9 +32,9 @@ public:
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_visible(bool visible);
-  virtual void set_image_filename(const string &image_filename,
+  virtual void set_image_filename(const std::string &image_filename,
                                   ImagePlacement image_placement);
-  virtual void set_install_label(const string &install_label);
+  virtual void set_install_label(const std::string &install_label);
   virtual void set_install_progress(double install_progress,
                                     bool is_progress_known, size_t received_data);
 
@@ -50,7 +50,7 @@ private:
   bool handle_event_osx_cocoa(const P3D_event_data &event);
   class OsxImageData;
 
-  void load_image(OsxImageData &image, const string &image_filename);
+  void load_image(OsxImageData &image, const std::string &image_filename);
   bool paint_image(CGContextRef context, const OsxImageData &image);
   void paint_progress_bar(CGContextRef context);
 
@@ -82,7 +82,7 @@ private:
 
   CFDictionaryRef _font_attribs;
 
-  string _install_label;
+  std::string _install_label;
   double _install_progress;
   bool _progress_known;
   size_t _received_data;

@@ -30,10 +30,15 @@ class Thread;
 class EXPCL_PANDA_PIPELINE LightReMutexDirect {
 protected:
   INLINE LightReMutexDirect();
-  INLINE ~LightReMutexDirect();
-private:
-  INLINE LightReMutexDirect(const LightReMutexDirect &copy);
-  INLINE void operator = (const LightReMutexDirect &copy);
+  LightReMutexDirect(const LightReMutexDirect &copy) = delete;
+  ~LightReMutexDirect() = default;
+
+  void operator = (const LightReMutexDirect &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
@@ -43,26 +48,26 @@ PUBLISHED:
 
   INLINE bool debug_is_locked() const;
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-#if defined(HAVE_REMUTEXIMPL) && !defined(DO_PSTATS)
-  ReMutexImpl _impl;
+#ifdef HAVE_REMUTEXTRUEIMPL
+  mutable ReMutexImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, use the one we hand-rolled in
   // ReMutexDirect.
-  ReMutexDirect _impl;
+  mutable ReMutexDirect _impl;
 #endif  // HAVE_REMUTEXIMPL
 };
 
-INLINE ostream &
-operator << (ostream &out, const LightReMutexDirect &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const LightReMutexDirect &m) {
   m.output(out);
   return out;
 }

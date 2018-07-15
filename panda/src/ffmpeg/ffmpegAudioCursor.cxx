@@ -46,14 +46,14 @@ FfmpegAudioCursor::
 FfmpegAudioCursor(FfmpegAudio *src) :
   MovieAudioCursor(src),
   _filename(src->_filename),
-  _packet(0),
-  _packet_data(0),
-  _format_ctx(0),
-  _audio_ctx(0),
-  _resample_ctx(0),
-  _buffer(0),
-  _buffer_alloc(0),
-  _frame(0)
+  _packet(nullptr),
+  _packet_data(nullptr),
+  _format_ctx(nullptr),
+  _audio_ctx(nullptr),
+  _resample_ctx(nullptr),
+  _buffer(nullptr),
+  _buffer_alloc(nullptr),
+  _frame(nullptr)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -61,9 +61,9 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
 
   _format_ctx = _ffvfile.get_format_context();
-  nassertv(_format_ctx != NULL);
+  nassertv(_format_ctx != nullptr);
 
-  if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
+  if (avformat_find_stream_info(_format_ctx, nullptr) < 0) {
     cleanup();
     return;
   }
@@ -102,7 +102,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _audio_channels = codecpar->channels;
 
   AVCodec *pAudioCodec = avcodec_find_decoder(codecpar->codec_id);
-  if (pAudioCodec == 0) {
+  if (pAudioCodec == nullptr) {
     cleanup();
     return;
   }
@@ -120,9 +120,9 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   avcodec_copy_context(_audio_ctx, codecpar);
 #endif
 
-  AVDictionary *opts = NULL;
+  AVDictionary *opts = nullptr;
   av_dict_set(&opts, "request_sample_fmt", "s16", 0);
-  if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
+  if (avcodec_open2(_audio_ctx, pAudioCodec, nullptr) < 0) {
     cleanup();
     return;
   }
@@ -148,7 +148,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     if (swr_init(_resample_ctx) != 0) {
       ffmpeg_cat.error()
         << "Failed to set up resample context.\n";
-      _resample_ctx = NULL;
+      _resample_ctx = nullptr;
     }
 #else
     ffmpeg_cat.error()
@@ -176,7 +176,7 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _buffer_alloc = new int16_t[_buffer_size + 64];
 
   // Allocate enough space for 1024 samples per channel.
-  if ((_packet == 0)||(_buffer_alloc == 0)) {
+  if ((_packet == nullptr)||(_buffer_alloc == nullptr)) {
     cleanup();
     return;
   }
@@ -216,7 +216,7 @@ cleanup() {
 #else
     avcodec_free_frame(&_frame);
 #endif
-    _frame = NULL;
+    _frame = nullptr;
   }
 
   if (_packet) {
@@ -227,14 +227,14 @@ cleanup() {
       av_free_packet(_packet);
     }
     delete _packet;
-    _packet = NULL;
+    _packet = nullptr;
 #endif
   }
 
   if (_buffer_alloc) {
     delete[] _buffer_alloc;
-    _buffer_alloc = 0;
-    _buffer = NULL;
+    _buffer_alloc = nullptr;
+    _buffer = nullptr;
   }
 
   if ((_audio_ctx)&&(_audio_ctx->codec)) {
@@ -245,17 +245,17 @@ cleanup() {
     delete _audio_ctx;
 #endif
   }
-  _audio_ctx = NULL;
+  _audio_ctx = nullptr;
 
   if (_format_ctx) {
     _ffvfile.close();
-    _format_ctx = NULL;
+    _format_ctx = nullptr;
   }
 
 #ifdef HAVE_SWRESAMPLE
   if (_resample_ctx) {
     swr_free(&_resample_ctx);
-    _resample_ctx = NULL;
+    _resample_ctx = nullptr;
   }
 #endif
 
@@ -287,9 +287,9 @@ fetch_packet() {
     av_free_packet(_packet);
 #endif
   }
-  _packet->data = 0;
+  _packet->data = nullptr;
   _packet_size = 0;
-  _packet_data = 0;
+  _packet_data = nullptr;
 }
 
 /**
@@ -307,7 +307,7 @@ reload_buffer() {
 
   // First, let's fill the codec's input buffer with as many packets as it'll
   // take:
-  int ret;
+  int ret = 0;
   while (_packet->data != nullptr) {
     ret = avcodec_send_packet(_audio_ctx, _packet);
 
@@ -320,7 +320,7 @@ reload_buffer() {
     fetch_packet();
     if (_packet->data == nullptr) {
       // fetch_packet() says we're out of packets.  Let the codec know.
-      ret = avcodec_send_packet(_audio_ctx, NULL);
+      ret = avcodec_send_packet(_audio_ctx, nullptr);
     }
   }
 
@@ -444,7 +444,7 @@ seek(double t) {
   double ts = _packet->dts * _audio_timebase;
   if (t > ts) {
     int skip = (int)((t-ts) * _audio_rate);
-    read_samples(skip, 0);
+    read_samples(skip, nullptr);
   }
   _last_seek = t;
   _samples_read = 0;
@@ -469,7 +469,7 @@ read_samples(int n, int16_t *data) {
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;
     if (ncopy) {
-      if (data != 0) {
+      if (data != nullptr) {
         memcpy(data, _buffer + _buffer_head, ncopy * 2);
         data += ncopy;
       }

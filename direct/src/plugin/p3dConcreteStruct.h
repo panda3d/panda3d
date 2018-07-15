@@ -32,19 +32,19 @@ public:
   virtual P3D_object_type get_type();
   virtual bool get_bool();
 
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 
-  virtual P3D_object *get_property(const string &property);
-  virtual bool set_property(const string &property, P3D_object *value);
+  virtual P3D_object *get_property(const std::string &property);
+  virtual bool set_property(const std::string &property, P3D_object *value);
 
-  virtual bool has_method(const string &method_name);
-  virtual P3D_object *call(const string &method_name, bool needs_response,
+  virtual bool has_method(const std::string &method_name);
+  virtual P3D_object *call(const std::string &method_name, bool needs_response,
                            P3D_object *params[], int num_params);
 
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
 
 private:
-  typedef map<string, P3D_object *> Elements;
+  typedef std::map<std::string, P3D_object *> Elements;
   Elements _elements;
 };
 

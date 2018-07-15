@@ -49,9 +49,7 @@ PUBLISHED:
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);
-  INLINE LoaderOptions(int flags, int texture_flags);
-  INLINE LoaderOptions(const LoaderOptions &copy);
-  INLINE void operator = (const LoaderOptions &copy);
+  constexpr LoaderOptions(int flags, int texture_flags);
 
   INLINE void set_flags(int flags);
   INLINE int get_flags() const;
@@ -70,20 +68,20 @@ PUBLISHED:
   MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
                                     set_auto_texture_scale);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-  void write_flag(ostream &out, string &sep,
-                  const string &flag_name, int flag) const;
-  void write_texture_flag(ostream &out, string &sep,
-                          const string &flag_name, int flag) const;
+  void write_flag(std::ostream &out, std::string &sep,
+                  const std::string &flag_name, int flag) const;
+  void write_texture_flag(std::ostream &out, std::string &sep,
+                          const std::string &flag_name, int flag) const;
   int _flags;
   int _texture_flags;
   int _texture_num_views;
   AutoTextureScale _auto_texture_scale;
 };
 
-INLINE ostream &operator << (ostream &out, const LoaderOptions &opts) {
+INLINE std::ostream &operator << (std::ostream &out, const LoaderOptions &opts) {
   opts.output(out);
   return out;
 }

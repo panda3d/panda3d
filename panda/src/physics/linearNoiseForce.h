@@ -21,14 +21,14 @@
 /**
  * Repeating noise force vector.
  */
-class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
+class EXPCL_PANDA_PHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
   explicit LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 public:
   static ConfigVariableInt _random_seed;

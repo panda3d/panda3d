@@ -41,7 +41,7 @@ INLINE ThreadSafePointerTo<T>::
  *
  */
 template<class T>
-INLINE TYPENAME ThreadSafePointerTo<T>::To &ThreadSafePointerTo<T>::
+INLINE typename ThreadSafePointerTo<T>::To &ThreadSafePointerTo<T>::
 operator *() const {
   return *((To *)AtomicAdjust::get_ptr(this->_void_ptr));
 }
@@ -50,7 +50,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE TYPENAME ThreadSafePointerTo<T>::To *ThreadSafePointerTo<T>::
+INLINE typename ThreadSafePointerTo<T>::To *ThreadSafePointerTo<T>::
 operator -> () const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }
@@ -72,7 +72,7 @@ operator T * () const {
  * work around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE TYPENAME ThreadSafePointerTo<T>::To *ThreadSafePointerTo<T>::
+INLINE typename ThreadSafePointerTo<T>::To *ThreadSafePointerTo<T>::
 p() const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }
@@ -102,8 +102,8 @@ operator = (const ThreadSafePointerTo<T> &copy) {
  */
 template<class T>
 INLINE ThreadSafeConstPointerTo<T>::
-ThreadSafeConstPointerTo(const TYPENAME ThreadSafeConstPointerTo<T>::To *ptr) :
-  ThreadSafePointerToBase<T>((TYPENAME ThreadSafeConstPointerTo<T>::To *)ptr)
+ThreadSafeConstPointerTo(const typename ThreadSafeConstPointerTo<T>::To *ptr) :
+  ThreadSafePointerToBase<T>((typename ThreadSafeConstPointerTo<T>::To *)ptr)
 {
 }
 
@@ -139,7 +139,7 @@ ThreadSafeConstPointerTo(const ThreadSafeConstPointerTo<T> &copy) :
  *
  */
 template<class T>
-INLINE const TYPENAME ThreadSafeConstPointerTo<T>::To &ThreadSafeConstPointerTo<T>::
+INLINE const typename ThreadSafeConstPointerTo<T>::To &ThreadSafeConstPointerTo<T>::
 operator *() const {
   return *((To *)AtomicAdjust::get_ptr(this->_void_ptr));
 }
@@ -148,7 +148,7 @@ operator *() const {
  *
  */
 template<class T>
-INLINE const TYPENAME ThreadSafeConstPointerTo<T>::To *ThreadSafeConstPointerTo<T>::
+INLINE const typename ThreadSafeConstPointerTo<T>::To *ThreadSafeConstPointerTo<T>::
 operator -> () const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }
@@ -171,7 +171,7 @@ operator const T * () const {
  * to work around compiler problems, particularly for implicit upcasts.
  */
 template<class T>
-INLINE const TYPENAME ThreadSafeConstPointerTo<T>::To *ThreadSafeConstPointerTo<T>::
+INLINE const typename ThreadSafeConstPointerTo<T>::To *ThreadSafeConstPointerTo<T>::
 p() const {
   return (To *)AtomicAdjust::get_ptr(this->_void_ptr);
 }

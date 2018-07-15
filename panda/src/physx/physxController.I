@@ -39,7 +39,7 @@ PhysxController() : PhysxObject() {
     _up_quat = NxQuat(0.0f, NxVec3(1.0f, 0.0f, 0.0f));
     break;
   default:
-    physx_cat.error() << "only y-up and z-up are permitted" << endl;
+    physx_cat.error() << "only y-up and z-up are permitted" << std::endl;
   }
 
   _up_quat_inv = _up_quat;
@@ -59,7 +59,7 @@ ls() const {
  *
  */
 INLINE void PhysxController::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
 
   indent(out, indent_level) << get_type().get_name()
                             << " (at 0x" << this << ")";

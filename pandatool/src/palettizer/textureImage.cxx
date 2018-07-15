@@ -31,6 +31,8 @@
 
 #include <iterator>
 
+using std::string;
+
 TypeHandle TextureImage::_type_handle;
 
 /**
@@ -38,7 +40,7 @@ TypeHandle TextureImage::_type_handle;
  */
 TextureImage::
 TextureImage() {
-  _preferred_source = (SourceTextureImage *)NULL;
+  _preferred_source = nullptr;
   _read_source_image = false;
   _allow_release_source_image = true;
   _is_surprise = true;
@@ -90,7 +92,7 @@ assign_groups() {
   if (_explicitly_assigned_groups.empty()) {
     // If we have no explicit group assignments, we must consider all the egg
     // files.
-    copy(_egg_files.begin(), _egg_files.end(), back_inserter(needed_eggs));
+    std::copy(_egg_files.begin(), _egg_files.end(), std::back_inserter(needed_eggs));
 
   } else {
     // Otherwise, we only need to consider the egg files that don't have any
@@ -203,7 +205,7 @@ get_placement(PaletteGroup *group) const {
   Placement::const_iterator pi;
   pi = _placement.find(group);
   if (pi == _placement.end()) {
-    return (TexturePlacement *)NULL;
+    return nullptr;
   }
 
   return (*pi).second;
@@ -267,7 +269,7 @@ pre_txa_file() {
   // Get our properties from the actual image for this texture.  It's possible
   // the .txa file will update them further.
   SourceTextureImage *source = get_preferred_source();
-  if (source != (SourceTextureImage *)NULL) {
+  if (source != nullptr) {
     _properties = source->get_properties();
   }
 
@@ -289,7 +291,7 @@ post_txa_file() {
 
   // First, get the actual size of the texture.
   SourceTextureImage *source = get_preferred_source();
-  if (source != (SourceTextureImage *)NULL) {
+  if (source != nullptr) {
     if (source->get_size()) {
       _size_known = true;
       _x_size = source->get_x_size();
@@ -358,7 +360,7 @@ post_txa_file() {
 
   _properties._anisotropic_degree = _request._anisotropic_degree;
 
-  if (_properties._color_type == (PNMFileType *)NULL) {
+  if (_properties._color_type == nullptr) {
     _properties._color_type = _request._properties._color_type;
     _properties._alpha_type = _request._properties._alpha_type;
   }
@@ -530,7 +532,7 @@ get_source(const Filename &filename, const Filename &alpha_filename,
 
   // Clear out the preferred source image to force us to rederive this next
   // time someone asks.
-  _preferred_source = (SourceTextureImage *)NULL;
+  _preferred_source = nullptr;
   _read_source_image = false;
 
   return source;
@@ -543,7 +545,7 @@ get_source(const Filename &filename, const Filename &alpha_filename,
  */
 SourceTextureImage *TextureImage::
 get_preferred_source() {
-  if (_preferred_source != (SourceTextureImage *)NULL) {
+  if (_preferred_source != nullptr) {
     return _preferred_source;
   }
 
@@ -569,7 +571,7 @@ get_preferred_source() {
     }
   }
 
-  SourceTextureImage *best = (SourceTextureImage *)NULL;
+  SourceTextureImage *best = nullptr;
   int best_size = 0;
 
   for (si = _sources.begin(); si != _sources.end(); ++si) {
@@ -580,7 +582,7 @@ get_preferred_source() {
 
       if (source->exists() && source->get_size()) {
         int source_size = source->get_x_size() * source->get_y_size();
-        if (best == (SourceTextureImage *)NULL) {
+        if (best == nullptr) {
           best = source;
           best_size = source_size;
 
@@ -599,14 +601,14 @@ get_preferred_source() {
     }
   }
 
-  if (best == (SourceTextureImage *)NULL && !_sources.empty()) {
+  if (best == nullptr && !_sources.empty()) {
     // If we didn't pick any that pass, it must be that all of them are
     // unreadable.  In this case, it really doesn't matter which one we pick,
     // but we should at least pick one that has an egg reference, if any of
     // them do.
     if (any_referenced) {
       for (si = _sources.begin();
-           si != _sources.end() && best == (SourceTextureImage *)NULL;
+           si != _sources.end() && best == nullptr;
            ++si) {
         SourceTextureImage *source = (*si).second;
         if (source->get_egg_count() > 0) {
@@ -661,7 +663,7 @@ copy_unplaced(bool redo_all) {
       Filename filename = dest->get_filename();
       FilenameUnifier::make_canonical(filename);
 
-      pair<Dests::iterator, bool> insert_result = generate.insert
+      std::pair<Dests::iterator, bool> insert_result = generate.insert
         (Dests::value_type(filename, dest));
       if (!insert_result.second) {
         // At least two DestTextureImages map to the same filename, no sweat.
@@ -672,7 +674,7 @@ copy_unplaced(bool redo_all) {
       placement->set_dest(dest);
 
     } else {
-      placement->set_dest((DestTextureImage *)NULL);
+      placement->set_dest(nullptr);
     }
   }
 
@@ -707,7 +709,7 @@ const PNMImage &TextureImage::
 read_source_image() {
   if (!_read_source_image) {
     SourceTextureImage *source = get_preferred_source();
-    if (source != (SourceTextureImage *)NULL) {
+    if (source != nullptr) {
       source->read(_source_image);
     }
     _read_source_image = true;
@@ -752,7 +754,7 @@ void TextureImage::
 read_header() {
   if (!_read_source_image) {
     SourceTextureImage *source = get_preferred_source();
-    if (source != (SourceTextureImage *)NULL) {
+    if (source != nullptr) {
       source->read_header();
     }
   }
@@ -766,7 +768,7 @@ bool TextureImage::
 is_newer_than(const Filename &reference_filename) {
   if (!_read_source_image) {
     SourceTextureImage *source = get_preferred_source();
-    if (source != (SourceTextureImage *)NULL) {
+    if (source != nullptr) {
       const Filename &source_filename = source->get_filename();
       return source_filename.compare_timestamps(reference_filename) >= 0;
     }
@@ -780,7 +782,7 @@ is_newer_than(const Filename &reference_filename) {
  * to the indicated output stream, one per line.
  */
 void TextureImage::
-write_source_pathnames(ostream &out, int indent_level) const {
+write_source_pathnames(std::ostream &out, int indent_level) const {
   Sources::const_iterator si;
   for (si = _sources.begin(); si != _sources.end(); ++si) {
     SourceTextureImage *source = (*si).second;
@@ -853,7 +855,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
  * Writes the information about the texture's size and placement.
  */
 void TextureImage::
-write_scale_info(ostream &out, int indent_level) {
+write_scale_info(std::ostream &out, int indent_level) {
   SourceTextureImage *source = get_preferred_source();
   indent(out, indent_level) << get_name();
 
@@ -874,7 +876,7 @@ write_scale_info(ostream &out, int indent_level) {
 
   out << " orig ";
 
-  if (source == (SourceTextureImage *)NULL ||
+  if (source == nullptr ||
       !source->is_size_known()) {
     out << "unknown";
   } else {
@@ -886,7 +888,7 @@ write_scale_info(ostream &out, int indent_level) {
     out << " new " << get_x_size() << " " << get_y_size()
         << " " << get_num_channels();
 
-    if (source != (SourceTextureImage *)NULL &&
+    if (source != nullptr &&
         source->is_size_known()) {
       double scale =
         100.0 * (((double)get_x_size() / (double)source->get_x_size()) +
@@ -902,7 +904,7 @@ write_scale_info(ostream &out, int indent_level) {
     TexturePlacement *placement = (*pi).second;
     if (placement->get_omit_reason() == OR_none) {
       PaletteImage *image = placement->get_image();
-      nassertv(image != (PaletteImage *)NULL);
+      nassertv(image != nullptr);
       indent(out, indent_level + 2)
         << "placed on "
         << FilenameUnifier::make_user_filename(image->get_filename())
@@ -914,7 +916,7 @@ write_scale_info(ostream &out, int indent_level) {
 
     } else {
       DestTextureImage *image = placement->get_dest();
-      nassertv(image != (DestTextureImage *)NULL);
+      nassertv(image != nullptr);
       indent(out, indent_level + 2)
         << "copied to "
         << FilenameUnifier::make_user_filename(image->get_filename());
@@ -923,7 +925,7 @@ write_scale_info(ostream &out, int indent_level) {
            image->get_y_size() != get_y_size())) {
         out << " at size " << image->get_x_size() << " "
             << image->get_y_size();
-        if (source != (SourceTextureImage *)NULL &&
+        if (source != nullptr &&
             source->is_size_known()) {
           double scale =
             100.0 * (((double)image->get_x_size() / (double)source->get_x_size()) +

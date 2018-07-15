@@ -73,11 +73,11 @@ write_file(const Filename &filename, PyObject *data, bool auto_wrap) {
 
 #if PY_MAJOR_VERSION >= 3
   if (PyBytes_AsStringAndSize(data, &buffer, &length) == -1) {
-    return NULL;
+    return nullptr;
   }
 #else
   if (PyString_AsStringAndSize(data, &buffer, &length) == -1) {
-    return NULL;
+    return nullptr;
   }
 #endif
 

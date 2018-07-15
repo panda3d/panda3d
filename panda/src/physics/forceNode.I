@@ -24,7 +24,7 @@ clear() {
  */
 INLINE BaseForce *ForceNode::
 get_force(size_t index) const {
-  nassertr(index < _forces.size(), (BaseForce *) NULL);
+  nassertr(index < _forces.size(), nullptr);
   return _forces[index];
 }
 

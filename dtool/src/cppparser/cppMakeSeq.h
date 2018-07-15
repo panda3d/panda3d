@@ -32,11 +32,11 @@ public:
              CPPFunctionGroup *element_getter,
              CPPScope *current_scope, const CPPFile &file);
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
-  virtual string get_fully_scoped_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
 
   virtual SubType get_subtype() const;

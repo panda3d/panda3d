@@ -41,7 +41,7 @@ TypeHandle CollisionVisualizer::_type_handle;
  *
  */
 CollisionVisualizer::
-CollisionVisualizer(const string &name) : PandaNode(name), _lock("CollisionVisualizer") {
+CollisionVisualizer(const std::string &name) : PandaNode(name), _lock("CollisionVisualizer") {
   set_cull_callback();
 
   // We always want to render the CollisionVisualizer node itself (even if it
@@ -144,7 +144,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       const SolidInfo &solid_info = (*si).second;
       bool was_detected = (solid_info._detected_count > 0);
       PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
-      if (node != (PandaNode *)NULL) {
+      if (node != nullptr) {
         CullTraverserData next_data(xform_data, node);
 
         // We don't want to inherit the render state from above for these
@@ -263,7 +263,7 @@ is_renderable() const {
  * classes to include some information relevant to the class.
  */
 void CollisionVisualizer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " ";
   CollisionRecorder::output(out);
@@ -296,9 +296,9 @@ collision_tested(const CollisionEntry &entry, bool detected) {
   nassertv(!solid.is_null());
 
   LightMutexHolder holder(_lock);
-  VizInfo &viz_info = _data[move(net_transform)];
+  VizInfo &viz_info = _data[std::move(net_transform)];
   if (detected) {
-    viz_info._solids[move(solid)]._detected_count++;
+    viz_info._solids[std::move(solid)]._detected_count++;
 
     if (entry.has_surface_point()) {
       CollisionPoint p;
@@ -308,7 +308,7 @@ collision_tested(const CollisionEntry &entry, bool detected) {
     }
 
   } else {
-    viz_info._solids[move(solid)]._missed_count++;
+    viz_info._solids[std::move(solid)]._missed_count++;
   }
 }
 
@@ -321,8 +321,8 @@ CPT(RenderState) CollisionVisualizer::
 get_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make());
   }

@@ -18,28 +18,6 @@
 #include "texture.h"
 
 /**
- *
- */
-FrameBufferProperties::
-FrameBufferProperties() {
-  clear();
-}
-
-/**
- *
- */
-void FrameBufferProperties::
-operator = (const FrameBufferProperties &copy) {
-  _flags_specified = copy._flags_specified;
-  _flags = copy._flags;
-  _specified = copy._specified;
-
-  for (int i = 0; i < FBP_COUNT; ++i) {
-    _property[i]  = copy._property[i];
-  }
-}
-
-/**
  * Returns true if this set of properties makes strictly greater or equal
  * demands of the framebuffer than the other set of framebuffer properties.
  */
@@ -235,7 +213,7 @@ add_properties(const FrameBufferProperties &other) {
  * Generates a string representation.
  */
 void FrameBufferProperties::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if ((_flags & FBF_float_depth) != 0) {
     out << "float_depth ";
   }
@@ -564,7 +542,7 @@ get_quality(const FrameBufferProperties &reqs) const {
   for (int prop = FBP_aux_rgba; prop <= FBP_aux_float; ++prop) {
     int extra = _property[prop] > reqs._property[prop];
     if (extra > 0) {
-      extra = min(extra, 3);
+      extra = std::min(extra, 3);
       quality -= extra*50;
     }
   }
@@ -623,7 +601,7 @@ get_quality(const FrameBufferProperties &reqs) const {
  * false.
  */
 bool FrameBufferProperties::
-verify_hardware_software(const FrameBufferProperties &props, const string &renderer) const {
+verify_hardware_software(const FrameBufferProperties &props, const std::string &renderer) const {
 
   if (get_force_hardware() < props.get_force_hardware()) {
     display_cat.error()

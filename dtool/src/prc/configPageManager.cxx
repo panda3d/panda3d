@@ -13,6 +13,7 @@
 
 #include "configPageManager.h"
 #include "configDeclaration.h"
+#include "configVariableBool.h"
 #include "configVariableString.h"
 #include "configPage.h"
 #include "prcKeyRegistry.h"
@@ -41,7 +42,9 @@
 #include <dlfcn.h>
 #endif
 
-ConfigPageManager *ConfigPageManager::_global_ptr = NULL;
+using std::string;
+
+ConfigPageManager *ConfigPageManager::_global_ptr = nullptr;
 
 /**
  * The constructor is private (actually, just protected, but only to avoid a
@@ -308,7 +311,7 @@ reload_implicit_pages() {
 
   // Use a set to ensure that we only visit each directory once, even if it
   // appears multiple times (under different aliases!) in the path.
-  set<Filename> unique_dirnames;
+  std::set<Filename> unique_dirnames;
 
   // We walk through the list of directories in forward order, so that the
   // most important directories are visited first.
@@ -374,7 +377,7 @@ reload_implicit_pages() {
     _implicit_pages.push_back(page);
     _pages_sorted = false;
 
-    istringstream in(blobinfo->prc_data);
+    std::istringstream in(blobinfo->prc_data);
     page->read_prc(in);
   }
 
@@ -533,7 +536,7 @@ delete_explicit_page(ConfigPage *page) {
  *
  */
 void ConfigPageManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConfigPageManager, "
       << _explicit_pages.size() + _implicit_pages.size()
       << " pages.";
@@ -543,7 +546,7 @@ output(ostream &out) const {
  *
  */
 void ConfigPageManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   check_sort_pages();
   out << _explicit_pages.size() << " explicit pages:\n";
 
@@ -587,7 +590,7 @@ write(ostream &out) const {
  */
 ConfigPageManager *ConfigPageManager::
 get_global_ptr() {
-  if (_global_ptr == (ConfigPageManager *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ConfigPageManager;
   }
   return _global_ptr;
@@ -644,7 +647,7 @@ scan_auto_prc_dir(Filename &prc_dir) const {
     }
 
     // Didn't find it; too bad.
-    cerr << "Warning: unable to auto-locate config files in directory named by \""
+    std::cerr << "Warning: unable to auto-locate config files in directory named by \""
          << prc_dir << "\".\n";
     return false;
   }

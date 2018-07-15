@@ -30,7 +30,7 @@ add_python_event_handler(PyObject* handler, PyObject* name){
  */
 void Extension<GraphicsWindow>::
 remove_python_event_handler(PyObject* name){
-  list<PythonGraphicsWindowProc*> toRemove;
+  std::list<PythonGraphicsWindowProc*> toRemove;
   GraphicsWindow::PythonWinProcClasses::iterator iter;
   for (iter = _this->_python_window_proc_classes.begin(); iter != _this->_python_window_proc_classes.end(); ++iter) {
     PythonGraphicsWindowProc* pgwp = (PythonGraphicsWindowProc*)*iter;
@@ -43,7 +43,7 @@ remove_python_event_handler(PyObject* name){
     }
 #endif
   }
-  list<PythonGraphicsWindowProc*>::iterator iter2;
+  std::list<PythonGraphicsWindowProc*>::iterator iter2;
   for (iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2) {
     PythonGraphicsWindowProc* pgwp = *iter2;
     _this->remove_window_proc(pgwp);

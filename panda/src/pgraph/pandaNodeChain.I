@@ -26,6 +26,6 @@ PandaNodeChain(const char *lock_name) :
  */
 INLINE PandaNodeChain::
 ~PandaNodeChain() {
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 }

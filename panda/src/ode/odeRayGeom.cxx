@@ -23,7 +23,7 @@ OdeRayGeom(dGeomID id) :
 
 OdeRayGeom::
 OdeRayGeom(dReal length) :
-  OdeGeom(dCreateRay(0, length)) {
+  OdeGeom(dCreateRay(nullptr, length)) {
 }
 
 OdeRayGeom::

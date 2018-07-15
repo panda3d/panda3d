@@ -33,7 +33,7 @@
  * This class exists for name scoping only.  Don't use the constructor
  * directly; use one of the make_* methods.
  */
-class EXPCL_PANDA_DISPLAY NativeWindowHandle : public WindowHandle {
+class EXPCL_PANDA_DISPLAY NativeWindowHandle final : public WindowHandle {
 private:
   INLINE NativeWindowHandle();
   INLINE NativeWindowHandle(const NativeWindowHandle &copy);
@@ -56,7 +56,7 @@ public:
   public:
     INLINE IntHandle(size_t handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE size_t get_handle() const;
 
@@ -84,7 +84,7 @@ public:
   class EXPCL_PANDA_DISPLAY SubprocessHandle : public OSHandle {
   public:
     INLINE SubprocessHandle(const Filename &filename);
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE const Filename &get_filename() const;
 
@@ -114,7 +114,7 @@ public:
   public:
     INLINE X11Handle(X11_Window handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE X11_Window get_handle() const;
 
@@ -146,7 +146,7 @@ public:
   public:
     INLINE WinHandle(HWND handle);
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     INLINE HWND get_handle() const;
 

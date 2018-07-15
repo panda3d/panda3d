@@ -59,7 +59,7 @@ public:
 protected:
   GraphicsOutput *open_window(const WindowProperties &props, int flags,
                               GraphicsEngine *engine, GraphicsPipe *pipe,
-                              GraphicsStateGuardian *gsg = NULL,
+                              GraphicsStateGuardian *gsg = nullptr,
                               const FrameBufferProperties &fbprops =
                                     FrameBufferProperties::get_default());
   void close_window();
@@ -147,7 +147,7 @@ private:
   void destroy_anim_controls();
   void update_anim_controls();
 
-  void setup_shuttle_button(const string &label, int index,
+  void setup_shuttle_button(const std::string &label, int index,
                             EventHandler::EventCallbackFunction *func);
   void back_button();
   void pause_button();

@@ -84,7 +84,7 @@ get_hash() const {
  * owns this TypeHandle.  It is only used in case the TypeHandle is
  * inadvertantly undefined.
  */
-INLINE string TypeHandle::
+INLINE std::string TypeHandle::
 get_name(TypedObject *object) const {
   if ((*this) == TypeHandle::none()) {
     return "none";
@@ -187,16 +187,8 @@ get_index() const {
  *
  */
 INLINE void TypeHandle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name();
-}
-
-/**
- * Returns a special zero-valued TypeHandle that is used to indicate no type.
- */
-CONSTEXPR TypeHandle TypeHandle::
-none() {
-  return TypeHandle(0);
 }
 
 /**
@@ -208,20 +200,9 @@ operator bool () const {
 }
 
 /**
- * Creates a TypeHandle from a type index without error checking, for use by
- * internal functions.
- *
- * See TypeRegistry::find_type_by_id().
- */
-CONSTEXPR TypeHandle TypeHandle::
-from_index(int index) {
-  return TypeHandle(index);
-}
-
-/**
  * Private constructor for initializing a TypeHandle from an index, used by
  * none() and by from_index().
  */
-CONSTEXPR TypeHandle::
+constexpr TypeHandle::
 TypeHandle(int index) : _index(index) {
 }

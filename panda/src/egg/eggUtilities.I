@@ -57,7 +57,7 @@ split_vertex(EggVertex *vert, const FunctionObject &sequence) {
   typedef pvector<EggPrimitive *> Prims;
   Prims prims;
   prims.reserve(vert->pref_size());
-  copy(vert->pref_begin(), vert->pref_end(), back_inserter(prims));
+  std::copy(vert->pref_begin(), vert->pref_end(), std::back_inserter(prims));
 
   // Now walk through the list of primitives that reference this vertex.
   Prims::const_iterator pri;
@@ -69,7 +69,7 @@ split_vertex(EggVertex *vert, const FunctionObject &sequence) {
 
     if (seq != 0) {
       // Here's a new sequence number!  Have we already defined it?
-      EggVertex *new_vert = NULL;
+      EggVertex *new_vert = nullptr;
 
       Sequences::const_iterator si = _sequences.find(seq);
 

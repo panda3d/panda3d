@@ -81,7 +81,7 @@ get_book() const {
  */
 INLINE SimpleLru *VertexDataPage::
 get_global_lru(RamClass rclass) {
-  nassertr(rclass >= 0 && rclass < RC_end_of_list, NULL);
+  nassertr(rclass >= 0 && rclass < RC_end_of_list, nullptr);
   return _global_lru[rclass];
 }
 
@@ -100,7 +100,7 @@ get_pending_lru() {
  */
 INLINE VertexDataSaveFile *VertexDataPage::
 get_save_file() {
-  if (_save_file == (VertexDataSaveFile *)NULL) {
+  if (_save_file == nullptr) {
     make_save_file();
   }
   return _save_file;
@@ -126,7 +126,7 @@ save_to_disk() {
 INLINE int VertexDataPage::
 get_num_threads() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)NULL) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_threads();
@@ -139,7 +139,7 @@ get_num_threads() {
 INLINE int VertexDataPage::
 get_num_pending_reads() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)NULL) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_pending_reads();
@@ -152,7 +152,7 @@ get_num_pending_reads() {
 INLINE int VertexDataPage::
 get_num_pending_writes() {
   MutexHolder holder(_tlock);
-  if (_thread_mgr == (PageThreadManager *)NULL) {
+  if (_thread_mgr == nullptr) {
     return 0;
   }
   return _thread_mgr->get_num_pending_writes();
@@ -175,7 +175,7 @@ get_page_data(bool force) {
     } else {
       request_ram_class(RC_resident);
       if (_ram_class != RC_resident) {
-        return NULL;
+        return nullptr;
       }
     }
   }

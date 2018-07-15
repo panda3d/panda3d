@@ -50,16 +50,14 @@ public:
   INLINE const Value &get_data(size_t n) const;
   INLINE Value &modify_data(size_t n);
   INLINE void set_data(size_t n, const Value &data);
-#ifdef USE_MOVE_SEMANTICS
   INLINE void set_data(size_t n, Value &&data);
-#endif
   void remove_element(size_t n);
 
   INLINE size_t get_num_entries() const;
   INLINE bool is_empty() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
   bool validate() const;
 
 private:
@@ -82,11 +80,10 @@ private:
     INLINE TableEntry(const TableEntry &copy) :
       _key(copy._key),
       _data(copy._data) {}
-#ifdef USE_MOVE_SEMANTICS
-    INLINE TableEntry(TableEntry &&from) NOEXCEPT :
-      _key(move(from._key)),
-      _data(move(from._data)) {}
-#endif
+    INLINE TableEntry(TableEntry &&from) noexcept :
+      _key(std::move(from._key)),
+      _data(std::move(from._data)) {}
+
     WCPT(Key) _key;
     Value _data;
   };
@@ -99,7 +96,7 @@ private:
 };
 
 template<class Key, class Value>
-inline ostream &operator << (ostream &out, const WeakKeyHashMap<Key, Value> &shm) {
+inline std::ostream &operator << (std::ostream &out, const WeakKeyHashMap<Key, Value> &shm) {
   shm.output(out);
   return out;
 }

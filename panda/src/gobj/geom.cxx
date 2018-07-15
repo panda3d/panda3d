@@ -25,6 +25,9 @@
 #include "lightMutexHolder.h"
 #include "config_mathutil.h"
 
+using std::max;
+using std::min;
+
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
 
@@ -301,7 +304,7 @@ set_primitive(size_t i, const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)NULL);
+  nassertv_always(compat != nullptr);
 
   cdata->_primitives[i] = (GeomPrimitive *)compat.p();
   PrimitiveType new_primitive_type = compat->get_primitive_type();
@@ -625,7 +628,7 @@ unify_in_place(int max_indices, bool preserve_order) {
     } else {
       // We have already encountered another primitive of this type.  Combine
       // them.
-      combine_primitives((*npi).second, move(primitive), current_thread);
+      combine_primitives((*npi).second, std::move(primitive), current_thread);
     }
   }
 
@@ -1030,7 +1033,7 @@ check_valid(const GeomVertexData *vertex_data) const {
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+  if (cdata->_user_bounds != nullptr) {
     return cdata->_user_bounds;
   }
 
@@ -1060,7 +1063,7 @@ get_nested_vertices(Thread *current_thread) const {
  *
  */
 void Geom::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1087,7 +1090,7 @@ output(ostream &out) const {
  *
  */
 void Geom::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1133,7 +1136,7 @@ clear_cache_stage(Thread *current_thread) {
        ++ci) {
     CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler, current_thread);
-    cdata->set_result(NULL, NULL);
+    cdata->set_result(nullptr, nullptr);
   }
 }
 
@@ -1231,7 +1234,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
-  if (gc != (GeomContext *)NULL) {
+  if (gc != nullptr) {
     _contexts[prepared_objects] = gc;
   }
   return gc;
@@ -1552,9 +1555,9 @@ combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
   }
 
   PT(GeomVertexArrayDataHandle) a_handle =
-    new GeomVertexArrayDataHandle(move(a_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(a_vertices), current_thread);
   CPT(GeomVertexArrayDataHandle) b_handle =
-    new GeomVertexArrayDataHandle(move(b_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(b_vertices), current_thread);
 
   size_t orig_a_vertices = a_handle->get_num_rows();
 
@@ -1597,7 +1600,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *Geom::
 make_from_bam(const FactoryParams &params) {
-  Geom *object = new Geom(NULL);
+  Geom *object = new Geom(nullptr);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -1644,7 +1647,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 Geom::CDataCache::
 ~CDataCache() {
-  set_result(NULL, NULL);
+  set_result(nullptr, nullptr);
 }
 
 /**
@@ -1672,7 +1675,7 @@ evict_callback() {
  *
  */
 void Geom::CacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "geom " << (void *)_source << ", "
       << (const void *)_key._modifier;
 }
@@ -1740,7 +1743,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _primitives.reserve(num_primitives);
   for (int i = 0; i < num_primitives; ++i) {
     manager->read_pointer(scan);
-    _primitives.push_back(NULL);
+    _primitives.push_back(nullptr);
   }
 
   _primitive_type = (PrimitiveType)scan.get_uint8();

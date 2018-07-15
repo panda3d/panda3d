@@ -72,8 +72,8 @@ doIt(const MArgList &args) {
 #ifdef WIN32_VC
   // On Windows, we use the spawn function to run pview asynchronously.
   MString quoted = MString("\"") + filename + MString("\"");
-  int retval = _spawnlp(_P_DETACH, "pview",
-                        "pview", pview_args.asChar(), quoted.asChar(), NULL);
+  intptr_t retval = _spawnlp(_P_DETACH, "pview",
+                             "pview", pview_args.asChar(), quoted.asChar(), nullptr);
   if (retval == -1) {
     return MS::kFailure;
   }

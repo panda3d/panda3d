@@ -29,6 +29,10 @@
 #include <signal.h>
 #endif
 
+using std::cerr;
+using std::cout;
+using std::string;
+
 /**
  *
  */
@@ -144,12 +148,12 @@ run_command_line(int argc, char *argv[]) {
         // will be delivered to the subordinate Python process and return to a
         // command shell, and won't just kill the panda3d process.
 #ifdef _WIN32
-        SetConsoleCtrlHandler(NULL, true);
+        SetConsoleCtrlHandler(nullptr, true);
 #else
         struct sigaction ignore;
         memset(&ignore, 0, sizeof(ignore));
         ignore.sa_handler = SIG_IGN;
-        sigaction(SIGINT, &ignore, NULL);
+        sigaction(SIGINT, &ignore, nullptr);
 #endif  // _WIN32
       }
       break;
@@ -348,7 +352,7 @@ get_plugin() {
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
   if (_verify_contents != P3D_VC_force) {
     if (read_contents_file(contents_filename, false)) {
-      if (_verify_contents == P3D_VC_none || time(NULL) < _contents_expiration) {
+      if (_verify_contents == P3D_VC_none || time(nullptr) < _contents_expiration) {
         // Got the file, and it's good.
         success = true;
       }
@@ -410,12 +414,12 @@ download_contents_file(const Filename &contents_filename) {
 
   if (!success) {
     // Go download contents.xml from the actual host.
-    ostringstream strm;
+    std::ostringstream strm;
     strm << _host_url_prefix << "contents.xml";
     // Append a uniquifying query string to the URL to force the download to
     // go all the way through any caches.  We use the time in seconds; that's
     // unique enough.
-    strm << "?" << time(NULL);
+    strm << "?" << time(nullptr);
     string url = strm.str();
 
     // We might as well explicitly request the cache to be disabled too, since
@@ -468,19 +472,19 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
   bool found_core_package = false;
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
-  if (xcontents != NULL) {
+  if (xcontents != nullptr) {
     int max_age = P3D_CONTENTS_DEFAULT_MAX_AGE;
     xcontents->Attribute("max_age", &max_age);
 
     // Get the latest possible expiration time, based on the max_age
     // indication.  Any expiration time later than this is in error.
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     _contents_expiration = now + (time_t)max_age;
 
     if (fresh_download) {
       // Update the XML with the new download information.
       TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-      while (xorig != NULL) {
+      while (xorig != nullptr) {
         xcontents->RemoveChild(xorig);
         xorig = xcontents->FirstChildElement("orig");
       }
@@ -494,11 +498,11 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
       // Read the expiration time from the XML.
       int expiration = 0;
       TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-      if (xorig != NULL) {
+      if (xorig != nullptr) {
         xorig->Attribute("expiration", &expiration);
       }
 
-      _contents_expiration = min(_contents_expiration, (time_t)expiration);
+      _contents_expiration = std::min(_contents_expiration, (time_t)expiration);
     }
 
     // Look for the <host> entry; it might point us at a different download
@@ -508,14 +512,14 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
     // Now look for the core API package.
     _coreapi_set_ver = "";
     TiXmlElement *xpackage = xcontents->FirstChildElement("package");
-    while (xpackage != NULL) {
+    while (xpackage != nullptr) {
       const char *name = xpackage->Attribute("name");
-      if (name != NULL && strcmp(name, "coreapi") == 0) {
+      if (name != nullptr && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
-        if (platform != NULL && _coreapi_platform == string(platform)) {
+        if (platform != nullptr && _coreapi_platform == string(platform)) {
           _coreapi_dll.load_xml(xpackage);
           const char *set_ver = xpackage->Attribute("set_ver");
-          if (set_ver != NULL) {
+          if (set_ver != nullptr) {
             _coreapi_set_ver = set_ver;
           }
           found_core_package = true;
@@ -583,9 +587,9 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
 void Panda3D::
 find_host(TiXmlElement *xcontents) {
   TiXmlElement *xhost = xcontents->FirstChildElement("host");
-  if (xhost != NULL) {
+  if (xhost != nullptr) {
     const char *url = xhost->Attribute("url");
-    if (url != NULL && _host_url == string(url)) {
+    if (url != nullptr && _host_url == string(url)) {
       // We're the primary host.  This is the normal case.
       read_xhost(xhost);
       return;
@@ -593,9 +597,9 @@ find_host(TiXmlElement *xcontents) {
     } else {
       // We're not the primary host; perhaps we're an alternate host.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
-      while (xalthost != NULL) {
+      while (xalthost != nullptr) {
         const char *url = xalthost->Attribute("url");
-        if (url != NULL && _host_url == string(url)) {
+        if (url != nullptr && _host_url == string(url)) {
           // Yep, we're this alternate host.
           read_xhost(xhost);
           return;
@@ -619,11 +623,11 @@ read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we download
   // everything other than the contents.xml file.
   const char *download_url = xhost->Attribute("download_url");
-  if (download_url == NULL) {
+  if (download_url == nullptr) {
     download_url = xhost->Attribute("url");
   }
 
-  if (download_url != NULL) {
+  if (download_url != nullptr) {
     _download_url_prefix = download_url;
   } else {
     _download_url_prefix = _host_url_prefix;
@@ -635,9 +639,9 @@ read_xhost(TiXmlElement *xhost) {
   }
 
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
-  while (xmirror != NULL) {
+  while (xmirror != nullptr) {
     const char *url = xmirror->Attribute("url");
-    if (url != NULL) {
+    if (url != nullptr) {
       add_mirror(url);
     }
     xmirror = xmirror->NextSiblingElement("mirror");
@@ -670,7 +674,7 @@ void Panda3D::
 choose_random_mirrors(vector_string &result, int num_mirrors) {
   pvector<size_t> selected;
 
-  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  size_t num_to_select = std::min(_mirrors.size(), (size_t)num_mirrors);
   while (num_to_select > 0) {
     size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
     while (find(selected.begin(), selected.end(), i) != selected.end()) {
@@ -740,7 +744,7 @@ get_core_api() {
 #endif
 
   // Format the coreapi_timestamp as a string, for passing as a parameter.
-  ostringstream stream;
+  std::ostringstream stream;
   stream << _coreapi_dll.get_timestamp();
   string coreapi_timestamp = stream.str();
 
@@ -765,9 +769,9 @@ download_core_api() {
 
   // Our last act of desperation: hit the original host, with a query
   // uniquifier, to break through any caches.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << _download_url_prefix << _coreapi_dll.get_filename()
-       << "?" << time(NULL);
+       << "?" << time(nullptr);
   url = strm.str();
   core_urls.push_back(url);
 

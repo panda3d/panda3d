@@ -38,7 +38,7 @@ public:
   DatagramTCPHeader(const void *data, int header_size);
 
   int get_datagram_size(int header_size) const;
-  INLINE string get_header() const;
+  INLINE std::string get_header() const;
 
   bool verify_datagram(const NetDatagram &datagram, int header_size) const;
 

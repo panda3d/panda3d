@@ -45,7 +45,7 @@ apply_converted_filenames() {
  * flt file, use FltHeader::write_flt().
  */
 void FltExternalReference::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "External " << get_ref_filename();
   if (!_bead_id.empty()) {
     out << " (" << _bead_id << ")";
@@ -83,7 +83,7 @@ extract_record(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_external_ref, false);
   DatagramIterator &iterator = reader.get_iterator();
 
-  string name = iterator.get_fixed_string(200);
+  std::string name = iterator.get_fixed_string(200);
   iterator.skip_bytes(1 + 1);
   iterator.skip_bytes(2);   // Undocumented additional padding.
   _flags = iterator.get_be_uint32();
@@ -95,7 +95,7 @@ extract_record(FltRecordReader &reader) {
   if (!name.empty() && name[name.length() - 1] == '>') {
     // Extract out the bead name.
     size_t open = name.rfind('<');
-    if (open != string::npos) {
+    if (open != std::string::npos) {
       _orig_filename = name.substr(0, open);
       _bead_id = name.substr(open + 1, name.length() - open - 2);
     }
@@ -120,7 +120,7 @@ build_record(FltRecordWriter &writer) const {
   writer.set_opcode(FO_external_ref);
   Datagram &datagram = writer.update_datagram();
 
-  string name = _orig_filename;
+  std::string name = _orig_filename;
   if (!_bead_id.empty()) {
     name += "<" + _bead_id + ">";
   }

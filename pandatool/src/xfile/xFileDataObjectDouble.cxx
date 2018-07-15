@@ -31,7 +31,7 @@ XFileDataObjectDouble(const XFileDataDef *data_def, double value) :
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectDouble::
-output_data(ostream &out) const {
+output_data(std::ostream &out) const {
   out << get_string_value();
 }
 
@@ -39,7 +39,7 @@ output_data(ostream &out) const {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectDouble::
-write_data(ostream &out, int indent_level, const char *separator) const {
+write_data(std::ostream &out, int indent_level, const char *separator) const {
   indent(out, indent_level)
     << get_string_value() << separator << "\n";
 }
@@ -79,7 +79,7 @@ get_double_value() const {
 /**
  * Returns the object's representation as a string, if it has one.
  */
-string XFileDataObjectDouble::
+std::string XFileDataObjectDouble::
 get_string_value() const {
   // It's important to format with a decimal point, even if the value is
   // integral, since the DirectX .x reader differentiates betweens doubles and

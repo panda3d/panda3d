@@ -41,7 +41,7 @@ link(NxJoint *jointPtr) {
 void PhysxRevoluteJoint::
 unlink() {
 
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
@@ -242,7 +242,7 @@ set_limits(const PhysxJointLimitDesc &low, const PhysxJointLimitDesc &high) {
 PhysxMotorDesc PhysxRevoluteJoint::
 get_motor() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, PhysxMotorDesc(0));
 
   PhysxMotorDesc value;
   _ptr->getMotor(value._desc);
@@ -255,7 +255,7 @@ get_motor() const {
 PhysxSpringDesc PhysxRevoluteJoint::
 get_spring() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, PhysxSpringDesc(0));
 
   PhysxSpringDesc value;
   _ptr->getSpring(value._desc);

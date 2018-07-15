@@ -49,7 +49,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseConvexMesh(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 
   PhysxMeshPool::release_convex_mesh(this);
 }

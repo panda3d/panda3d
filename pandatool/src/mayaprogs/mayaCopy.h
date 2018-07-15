@@ -41,7 +41,7 @@ protected:
                          CVSSourceDirectory *dir, void *extra_data,
                          bool new_file);
 
-  virtual string filter_filename(const string &source);
+  virtual std::string filter_filename(const std::string &source);
 
 private:
   enum FileType {

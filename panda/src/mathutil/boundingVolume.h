@@ -92,8 +92,8 @@ PUBLISHED:
 
   INLINE_MATHUTIL int contains(const BoundingVolume *vol) const;
 
-  virtual void output(ostream &out) const=0;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const=0;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   // This enum is used to control the automatic generation of bounding
   // volumes.
@@ -115,7 +115,7 @@ public:
   virtual const BoundingLine *as_bounding_line() const;
   virtual const BoundingPlane *as_bounding_plane() const;
 
-  static BoundsType string_bounds_type(const string &str);
+  static BoundsType string_bounds_type(const std::string &str);
 
 protected:
   enum Flags {
@@ -203,11 +203,11 @@ private:
   friend class IntersectionBoundingVolume;
 };
 
-INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound);
+INLINE_MATHUTIL std::ostream &operator << (std::ostream &out, const BoundingVolume &bound);
 
 #include "boundingVolume.I"
 
-EXPCL_PANDA_MATHUTIL ostream &operator << (ostream &out, BoundingVolume::BoundsType type);
-EXPCL_PANDA_MATHUTIL istream &operator >> (istream &in, BoundingVolume::BoundsType &type);
+EXPCL_PANDA_MATHUTIL std::ostream &operator << (std::ostream &out, BoundingVolume::BoundsType type);
+EXPCL_PANDA_MATHUTIL std::istream &operator >> (std::istream &in, BoundingVolume::BoundsType &type);
 
 #endif

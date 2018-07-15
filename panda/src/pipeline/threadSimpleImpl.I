@@ -130,7 +130,7 @@ get_wake_time() const {
  * Writes a list of threads running and threads blocked.
  */
 void ThreadSimpleImpl::
-write_status(ostream &out) {
+write_status(std::ostream &out) {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   manager->write_status(out);
 }

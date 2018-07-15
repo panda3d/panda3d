@@ -14,6 +14,9 @@
 #include "pnmTextGlyph.h"
 #include "indent.h"
 
+using std::max;
+using std::min;
+
 /**
  *
  */

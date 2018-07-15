@@ -16,7 +16,7 @@
  */
 INLINE void PhysicsManager::
 attach_physical(Physical *p) {
-  nassertv(p && p->_physics_manager == NULL);
+  nassertv(p && p->_physics_manager == nullptr);
   p->_physics_manager = this;
   PhysicalsVector::iterator found;
   found = find(_physicals.begin(), _physicals.end(), p);
@@ -44,10 +44,10 @@ add_linear_force(LinearForce *f) {
  */
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
-  cerr<<"attach_physicalnode (aka attachPhysicalnode) has been"
+  std::cerr<<"attach_physicalnode (aka attachPhysicalnode) has been"
     <<"replaced with attach_physical_node (aka attachPhysicalNode)."
     <<"  Please change the spelling of the function in your code."
-    <<endl;
+    <<std::endl;
   attach_physical_node(p);
 }
 
@@ -57,7 +57,7 @@ attach_physicalnode(PhysicalNode *p) {
 INLINE void PhysicsManager::
 attach_physical_node(PhysicalNode *p) {
   nassertv(p);
-  for (int i = 0; i < p->get_num_physicals(); ++i) {
+  for (size_t i = 0; i < p->get_num_physicals(); ++i) {
     attach_physical(p->get_physical(i));
   }
 }

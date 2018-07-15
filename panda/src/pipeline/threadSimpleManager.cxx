@@ -71,9 +71,9 @@ ThreadSimpleManager() :
 {
   _tick_scale = 1000000.0;
   _total_ticks = 0;
-  _current_thread = NULL;
+  _current_thread = nullptr;
   _clock = TrueClock::get_global_ptr();
-  _waiting_for_exit = NULL;
+  _waiting_for_exit = nullptr;
 
   // Install these global pointers so very low-level code (code defined before
   // the pipeline directory) can yield when necessary.
@@ -235,12 +235,12 @@ next_context() {
 
 #ifdef HAVE_PYTHON
   // Save the current Python thread state.
-  _current_thread->_python_state = PyThreadState_Swap(NULL);
+  _current_thread->_python_state = PyThreadState_Swap(nullptr);
 #endif  // HAVE_PYTHON
 
 #ifdef DO_PSTATS
   Thread::PStatsCallback *pstats_callback = _current_thread->_parent_obj->get_pstats_callback();
-  if (pstats_callback != NULL) {
+  if (pstats_callback != nullptr) {
     pstats_callback->deactivate_hook(_current_thread->_parent_obj);
   }
 #endif  // DO_PSTATS
@@ -250,7 +250,7 @@ next_context() {
   // current thread.
 
 #ifdef DO_PSTATS
-  if (pstats_callback != NULL) {
+  if (pstats_callback != nullptr) {
     pstats_callback->activate_hook(_current_thread->_parent_obj);
   }
 #endif  // DO_PSTATS
@@ -281,7 +281,7 @@ prepare_for_exit() {
       << "prepare_for_exit\n";
   }
 
-  nassertv(_waiting_for_exit == NULL);
+  nassertv(_waiting_for_exit == nullptr);
   _waiting_for_exit = _current_thread;
 
   // At this point, any non-joinable threads on any of the queues are
@@ -321,7 +321,7 @@ prepare_for_exit() {
  */
 void ThreadSimpleManager::
 set_current_thread(ThreadSimpleImpl *current_thread) {
-  nassertv(_current_thread == (ThreadSimpleImpl *)NULL);
+  nassertv(_current_thread == nullptr);
   _current_thread = current_thread;
 }
 
@@ -369,7 +369,7 @@ system_sleep(double seconds) {
   struct timeval tv;
   tv.tv_sec = time_t(seconds);
   tv.tv_usec = long((seconds - (double)tv.tv_sec) * 1000000.0 + 0.5);
-  select(0, NULL, NULL, NULL, &tv);
+  select(0, nullptr, nullptr, nullptr, &tv);
 #endif  // WIN32
 }
 
@@ -377,7 +377,7 @@ system_sleep(double seconds) {
  * Writes a list of threads running and threads blocked.
  */
 void ThreadSimpleManager::
-write_status(ostream &out) const {
+write_status(std::ostream &out) const {
   out << "Currently running: " << *_current_thread->_parent_obj << "\n";
 
   out << "Ready:";
@@ -498,7 +498,7 @@ choose_next_context(struct ThreadContext *from_context) {
   double now = get_current_time();
 
   do_timeslice_accounting(_current_thread, now);
-  _current_thread = NULL;
+  _current_thread = nullptr;
 
   if (!_sleeping.empty() || !_volunteers.empty()) {
     if (_ready.empty() && _next_ready.empty()) {
@@ -578,12 +578,12 @@ choose_next_context(struct ThreadContext *from_context) {
 
       } else {
         // No threads are ready!
-        if (_waiting_for_exit != NULL) {
+        if (_waiting_for_exit != nullptr) {
           // This is a shutdown situation.  In this case, we quietly abandoned
           // the remaining blocked threads, if any, and switch back to the
           // main thread to finish shutting down.
           _ready.push_back(_waiting_for_exit);
-          _waiting_for_exit = NULL;
+          _waiting_for_exit = nullptr;
           break;
         }
 
@@ -663,7 +663,7 @@ do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
 
   // Clamp the elapsed time at 0.  (If it's less than 0, the clock is running
   // backwards, ick.)
-  elapsed = max(elapsed, 0.0);
+  elapsed = std::max(elapsed, 0.0);
 
   unsigned int ticks = (unsigned int)(elapsed * _tick_scale + 0.5);
   thread->_run_ticks += ticks;

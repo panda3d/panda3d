@@ -60,6 +60,6 @@ enum DCSubatomicType {
 };
 END_PUBLISH
 
-ostream &operator << (ostream &out, DCSubatomicType type);
+std::ostream &operator << (std::ostream &out, DCSubatomicType type);
 
 #endif

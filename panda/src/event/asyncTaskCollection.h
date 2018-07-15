@@ -24,7 +24,7 @@
  *
  * TODO: None of this is thread-safe yet.
  */
-class EXPCL_PANDA_PGRAPH AsyncTaskCollection {
+class EXPCL_PANDA_EVENT AsyncTaskCollection {
 PUBLISHED:
   AsyncTaskCollection();
   AsyncTaskCollection(const AsyncTaskCollection &copy);
@@ -39,7 +39,7 @@ PUBLISHED:
   bool has_task(AsyncTask *task) const;
   void clear();
 
-  AsyncTask *find_task(const string &name) const;
+  AsyncTask *find_task(const std::string &name) const;
 
   size_t get_num_tasks() const;
   AsyncTask *get_task(size_t index) const;
@@ -50,15 +50,15 @@ PUBLISHED:
   INLINE void operator += (const AsyncTaskCollection &other);
   INLINE AsyncTaskCollection operator + (const AsyncTaskCollection &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(PT(AsyncTask)) AsyncTasks;
   AsyncTasks _tasks;
 };
 
-INLINE ostream &operator << (ostream &out, const AsyncTaskCollection &col) {
+INLINE std::ostream &operator << (std::ostream &out, const AsyncTaskCollection &col) {
   col.output(out);
   return out;
 }

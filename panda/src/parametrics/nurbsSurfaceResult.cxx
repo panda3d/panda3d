@@ -62,10 +62,10 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
       // Create four geometry matrices from our (up to) sixteen involved
       // vertices.
       LMatrix4 geom_x, geom_y, geom_z, geom_w;
-      memset(&geom_x, 0, sizeof(geom_x));
-      memset(&geom_y, 0, sizeof(geom_y));
-      memset(&geom_z, 0, sizeof(geom_z));
-      memset(&geom_w, 0, sizeof(geom_w));
+      geom_x.fill(0);
+      geom_y.fill(0);
+      geom_z.fill(0);
+      geom_w.fill(0);
 
       for (int uni = 0; uni < 4; uni++) {
         for (int vni = 0; vni < 4; vni++) {
@@ -178,7 +178,7 @@ eval_segment_extended_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d)
   int vn = _v_basis.get_vertex_index(vi);
 
   LMatrix4 geom;
-  memset(&geom, 0, sizeof(geom));
+  geom.fill(0);
 
   for (int uni = 0; uni < 4; uni++) {
     for (int vni = 0; vni < 4; vni++) {
@@ -223,7 +223,7 @@ eval_segment_extended_points(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d
 
   for (int n = 0; n < num_values; n++) {
     LMatrix4 geom;
-    memset(&geom, 0, sizeof(geom));
+    geom.fill(0);
 
     for (int uni = 0; uni < 4; uni++) {
       for (int vni = 0; vni < 4; vni++) {

@@ -50,11 +50,11 @@ has_python_tags() const {
  *
  */
 INLINE void PhysxObject::
-set_python_tag(const string &key, PyObject *value) {
+set_python_tag(const std::string &key, PyObject *value) {
 
   Py_XINCREF(value);
 
-  pair<PythonTagData::iterator, bool> result;
+  std::pair<PythonTagData::iterator, bool> result;
   result = _python_tag_data.insert(PythonTagData::value_type(key, value));
 
   if (!result.second) {
@@ -72,7 +72,7 @@ set_python_tag(const string &key, PyObject *value) {
  *
  */
 INLINE PyObject *PhysxObject::
-get_python_tag(const string &key) const {
+get_python_tag(const std::string &key) const {
 
   PythonTagData::const_iterator ti;
   ti = _python_tag_data.find(key);
@@ -91,7 +91,7 @@ get_python_tag(const string &key) const {
  *
  */
 INLINE bool PhysxObject::
-has_python_tag(const string &key) const {
+has_python_tag(const std::string &key) const {
 
   PythonTagData::const_iterator ti;
   ti = _python_tag_data.find(key);
@@ -102,7 +102,7 @@ has_python_tag(const string &key) const {
  *
  */
 INLINE void PhysxObject::
-clear_python_tag(const string &key) {
+clear_python_tag(const std::string &key) {
 
   PythonTagData::iterator ti;
   ti = _python_tag_data.find(key);

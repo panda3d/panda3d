@@ -20,6 +20,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomTristripsAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomTristrips::_type_handle;
 
 /**
@@ -87,6 +89,8 @@ get_geom_rendering() const {
  */
 CPT(GeomPrimitive) GeomTristrips::
 make_adjacency() const {
+  using std::make_pair;
+
   Thread *current_thread = Thread::get_current_thread();
   PT(GeomTristripsAdjacency) adj = new GeomTristripsAdjacency(get_usage_hint());
   CPTA_int ends = get_ends();
@@ -96,7 +100,7 @@ make_adjacency() const {
   const int num_unused = 2;
 
   // First, build a map of each triangle's halfedges to its opposing vertices.
-  map<pair<int, int>, int> edge_map;
+  map<std::pair<int, int>, int> edge_map;
 
   int vi = -num_unused;
   int li = 0;
@@ -215,7 +219,7 @@ make_adjacency() const {
   }
   nassertr(vi == num_vertices, nullptr);
 
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -278,7 +282,7 @@ decompose_impl() const {
       // Skip unused vertices between tristrips.
       vi += num_unused;
       int end = ends[li];
-      nassertr(vi + 2 <= end, NULL);
+      nassertr(vi + 2 <= end, nullptr);
       int v0 = get_vertex(vi);
       ++vi;
       int v1 = get_vertex(vi);
@@ -309,7 +313,7 @@ decompose_impl() const {
       }
       ++li;
     }
-    nassertr(vi == num_vertices, NULL);
+    nassertr(vi == num_vertices, nullptr);
 
   } else {
     // Preserve the last vertex of each component triangle as the last vertex
@@ -320,7 +324,7 @@ decompose_impl() const {
       // Skip unused vertices between tristrips.
       vi += num_unused;
       int end = ends[li];
-      nassertr(vi + 2 <= end, NULL);
+      nassertr(vi + 2 <= end, nullptr);
       int v0 = get_vertex(vi);
       ++vi;
       int v1 = get_vertex(vi);
@@ -351,10 +355,10 @@ decompose_impl() const {
       }
       ++li;
     }
-    nassertr(vi == num_vertices, NULL);
+    nassertr(vi == num_vertices, nullptr);
   }
 
-  return triangles.p();
+  return triangles;
 }
 
 /**
@@ -414,7 +418,7 @@ rotate_impl() const {
 
       // If this assertion is triggered, there was a triangle strip with an
       // odd number of vertices, which is not allowed.
-      nassertr((num_vertices & 1) == 0, NULL);
+      nassertr((num_vertices & 1) == 0, nullptr);
       for (int vi = end - 1; vi >= begin; --vi) {
         from.set_row_unsafe(vi);
         last_added = from.get_data1i();
@@ -424,7 +428,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -447,7 +451,7 @@ rotate_impl() const {
 
       // If this assertion is triggered, there was a triangle strip with an
       // odd number of vertices, which is not allowed.
-      nassertr((num_vertices & 1) == 0, NULL);
+      nassertr((num_vertices & 1) == 0, nullptr);
       for (int vi = end - 1; vi >= begin; --vi) {
         last_added = vi + first_vertex;
         to.set_data1i(last_added);
@@ -456,7 +460,7 @@ rotate_impl() const {
       begin = end;
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
   return new_vertices;
 }

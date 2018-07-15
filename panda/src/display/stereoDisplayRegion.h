@@ -58,7 +58,7 @@ PUBLISHED:
   virtual void set_cull_traverser(CullTraverser *trav);
   virtual void set_target_tex_page(int page);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
   virtual PT(PandaNode) make_cull_result_graph();
 
   INLINE DisplayRegion *get_left_eye();

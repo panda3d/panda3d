@@ -222,8 +222,8 @@ get_visible_scale() const {
 /**
  *
  */
-INLINE ostream &
-operator << (ostream &out, const PGFrameStyle &pfs) {
+INLINE std::ostream &
+operator << (std::ostream &out, const PGFrameStyle &pfs) {
   pfs.output(out);
   return out;
 }

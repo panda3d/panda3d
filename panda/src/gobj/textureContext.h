@@ -56,8 +56,8 @@ public:
   INLINE void mark_unloaded();
   INLINE void mark_needs_reload();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
   // This cannot be a PT(Texture), because the texture and the GSG both own
@@ -88,7 +88,7 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-inline ostream &operator << (ostream &out, const TextureContext &context) {
+inline std::ostream &operator << (std::ostream &out, const TextureContext &context) {
   context.output(out);
   return out;
 }

@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_GRUTIL CardMaker : public Namable {
 PUBLISHED:
-  INLINE explicit CardMaker(const string &name);
+  INLINE explicit CardMaker(const std::string &name);
   INLINE ~CardMaker();
 
   void reset();

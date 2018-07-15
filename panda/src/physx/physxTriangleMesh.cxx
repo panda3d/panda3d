@@ -49,7 +49,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseTriangleMesh(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 
   PhysxMeshPool::release_triangle_mesh(this);
 }

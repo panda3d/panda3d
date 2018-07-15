@@ -21,7 +21,7 @@ get_short_time() {
   bool is_paranoid_clock = get_paranoid_clock();
 
   if (is_paranoid_clock) {
-    _lock.acquire();
+    _lock.lock();
   }
 
   double time = get_short_raw_time();
@@ -30,7 +30,7 @@ get_short_time() {
     // Check for rollforwards, rollbacks, and compensate for Speed Gear type
     // programs by verifying against the time of day clock.
     time = correct_time(time);
-    _lock.release();
+    _lock.unlock();
   }
 
   return time;
@@ -66,7 +66,7 @@ get_error_count() const {
  */
 INLINE TrueClock *TrueClock::
 get_global_ptr() {
-  if (_global_ptr == (TrueClock *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new TrueClock;
   }
   return _global_ptr;

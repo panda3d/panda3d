@@ -34,7 +34,7 @@ get_texture() const {
  */
 INLINE void FltGeometry::
 set_texture(FltTexture *texture) {
-  if (texture == (FltTexture *)NULL) {
+  if (texture == nullptr) {
     _texture_index = -1;
   } else {
     _header->add_texture(texture);
@@ -65,7 +65,7 @@ get_material() const {
  */
 INLINE void FltGeometry::
 set_material(FltMaterial *material) {
-  if (material == (FltMaterial *)NULL) {
+  if (material == nullptr) {
     _material_index = -1;
   } else {
     _header->add_material(material);

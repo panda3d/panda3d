@@ -89,7 +89,7 @@ PUBLISHED:
   MAKE_SEQ(get_ccd_skeletons, get_num_ccd_skeletons, get_ccd_skeleton);
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   INLINE NxPhysicsSDK *get_sdk() const;

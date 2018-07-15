@@ -30,6 +30,8 @@
 
 #include "plane.h"
 
+using std::endl;
+
 TypeHandle PortalNode::_type_handle;
 
 
@@ -39,7 +41,7 @@ TypeHandle PortalNode::_type_handle;
  * Then you can set the vertices yourself, with addVertex.
  */
 PortalNode::
-PortalNode(const string &name) :
+PortalNode(const std::string &name) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -58,7 +60,7 @@ PortalNode(const string &name) :
  * portal and setup from Python
  */
 PortalNode::
-PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
+PortalNode(const std::string &name, LPoint3 pos, PN_stdfloat scale) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -180,7 +182,7 @@ combine_with(PandaNode *other) {
     }
 
     // Two PortalNodes with different names can't combine.
-    return (PandaNode *)NULL;
+    return nullptr;
   }
 
   return PandaNode::combine_with(other);
@@ -273,7 +275,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
           // undo parent clip state and compose our new clip state ito the new
           // state
-          if (old_clip_state != NULL) {
+          if (old_clip_state != nullptr) {
               next_state = old_clip_state->invert_compose(next_state);
               portal_cat.spam() << "next state after removing parent state " << *next_state << endl;
           }
@@ -323,7 +325,7 @@ is_renderable() const {
  * classes to include some information relevant to the class.
  */
 void PortalNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 
@@ -376,8 +378,8 @@ CPT(RenderState) PortalNode::
 get_last_pos_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));

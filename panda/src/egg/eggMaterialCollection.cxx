@@ -221,7 +221,7 @@ collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement
        ++oti) {
     EggMaterial *tex = (*oti);
 
-    pair<Collapser::const_iterator, bool> result = collapser.insert(tex);
+    std::pair<Collapser::const_iterator, bool> result = collapser.insert(tex);
     if (!result.second) {
       // This material is non-unique; another one was already there.
       EggMaterial *first = *(result.first);
@@ -383,7 +383,7 @@ create_unique_material(const EggMaterial &copy, int eq) {
  * matches.
  */
 EggMaterial *EggMaterialCollection::
-find_mref(const string &mref_name) const {
+find_mref(const std::string &mref_name) const {
   // This requires a complete linear traversal, not terribly efficient.
   OrderedMaterials::const_iterator oti;
   for (oti = _ordered_materials.begin();
@@ -395,5 +395,5 @@ find_mref(const string &mref_name) const {
     }
   }
 
-  return (EggMaterial *)NULL;
+  return nullptr;
 }

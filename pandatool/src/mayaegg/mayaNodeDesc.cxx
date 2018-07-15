@@ -26,6 +26,8 @@
 #include <maya/MFnMesh.h>
 #include "post_maya_include.h"
 
+using std::string;
+
 TypeHandle MayaNodeDesc::_type_handle;
 
 // This is a list of the names of Maya connections that count as a transform.
@@ -50,17 +52,17 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
   _tree(tree),
   _parent(parent)
 {
-  _dag_path = (MDagPath *)NULL;
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _dag_path = nullptr;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
   _joint_type = JT_none;
   _is_lod = false;
   _tagged = false;
   _joint_tagged = false;
 
   // Add ourselves to our parent.
-  if (_parent != (MayaNodeDesc *)NULL) {
+  if (_parent != nullptr) {
     _parent->_children.push_back(this);
   }
 }
@@ -70,7 +72,7 @@ MayaNodeDesc(MayaNodeTree *tree, MayaNodeDesc *parent, const string &name) :
  */
 MayaNodeDesc::
 ~MayaNodeDesc() {
-  if (_dag_path != (MDagPath *)NULL) {
+  if (_dag_path != nullptr) {
     delete _dag_path;
   }
 }
@@ -82,7 +84,7 @@ void MayaNodeDesc::
 from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
   MStatus status;
 
-  if (_dag_path == (MDagPath *)NULL) {
+  if (_dag_path == nullptr) {
     _dag_path = new MDagPath(dag_path);
 
     string name;
@@ -97,7 +99,7 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
       // This node is a joint, or the user specifically asked to treat it like
       // a joint.
       _joint_type = JT_joint;
-      if (_parent != (MayaNodeDesc *)NULL) {
+      if (_parent != nullptr) {
         _parent->mark_joint_parent();
       }
 
@@ -120,7 +122,7 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
 
       if (transform_connected) {
         _joint_type = JT_joint;
-        if (_parent != (MayaNodeDesc *)NULL) {
+        if (_parent != nullptr) {
           _parent->mark_joint_parent();
         }
       }
@@ -146,7 +148,7 @@ from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
  */
 bool MayaNodeDesc::
 has_dag_path() const {
-  return (_dag_path != (MDagPath *)NULL);
+  return (_dag_path != nullptr);
 }
 
 /**
@@ -155,7 +157,7 @@ has_dag_path() const {
  */
 const MDagPath &MayaNodeDesc::
 get_dag_path() const {
-  nassertr(_dag_path != (MDagPath *)NULL, *_dag_path);
+  nassertr(_dag_path != nullptr, *_dag_path);
   return *_dag_path;
 }
 
@@ -174,7 +176,7 @@ get_num_blend_descs() const {
  */
 MayaBlendDesc *MayaNodeDesc::
 get_blend_desc(int n) const {
-  nassertr(n >= 0 && n < (int)_blend_descs.size(), NULL);
+  nassertr(n >= 0 && n < (int)_blend_descs.size(), nullptr);
   return _blend_descs[n];
 }
 
@@ -286,11 +288,11 @@ untag_recursively() {
 bool MayaNodeDesc::
 has_object_type(string object_type) const {
   bool ret = false;
-  if ((_egg_group != (EggGroup*) NULL)
+  if ((_egg_group != nullptr)
       && _egg_group->has_object_type(object_type)) {
     return true;
   }
-  if (_parent != (MayaNodeDesc *)NULL) {
+  if (_parent != nullptr) {
     ret |= _parent->has_object_type(object_type);
   }
   return ret;
@@ -301,9 +303,9 @@ has_object_type(string object_type) const {
  */
 void MayaNodeDesc::
 clear_egg() {
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -320,7 +322,7 @@ void MayaNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
     _joint_type = JT_joint_parent;
-    if (_parent != (MayaNodeDesc *)NULL) {
+    if (_parent != nullptr) {
       _parent->mark_joint_parent();
     }
   }
@@ -339,7 +341,7 @@ check_pseudo_joints(bool joint_above) {
     space.append(" ");
   }
   if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << endl;
+    mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << std::endl;
   }
   if (_joint_type == JT_joint_parent && joint_above) {
     // This is one such node: it is the parent of a joint (JT_joint_parent is
@@ -387,11 +389,11 @@ check_pseudo_joints(bool joint_above) {
           child->_joint_type = JT_pseudo_joint;
         } else if (child->_joint_type == JT_none) {
           if (mayaegg_cat.is_spam()) {
-            mayaegg_cat.spam() << "cpj: " << space << "jt_none for " << child->get_name() << endl;
+            mayaegg_cat.spam() << "cpj: " << space << "jt_none for " << child->get_name() << std::endl;
           }
           if (type_name.find("transform") == string::npos) {
             if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "cpj: " << space << "all_joints false for " << get_name() << endl;
+              mayaegg_cat.spam() << "cpj: " << space << "all_joints false for " << get_name() << std::endl;
             }
             all_joints = false;
           }
@@ -506,7 +508,7 @@ check_lods() {
   }
 
   // Now consider whether this node is an lodGroup.
-  if (_dag_path != (MDagPath *)NULL &&
+  if (_dag_path != nullptr &&
       _dag_path->hasFn(MFn::kLodGroup)) {
     // This node is a parent lodGroup; its children, therefore, are LOD's.
     MStatus status;

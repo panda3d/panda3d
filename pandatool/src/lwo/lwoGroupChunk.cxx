@@ -31,7 +31,7 @@ get_num_chunks() const {
  */
 IffChunk *LwoGroupChunk::
 get_chunk(int n) const {
-  nassertr(n >= 0 && n < (int)_chunks.size(), (IffChunk *)NULL);
+  nassertr(n >= 0 && n < (int)_chunks.size(), nullptr);
   return _chunks[n];
 }
 
@@ -44,7 +44,7 @@ bool LwoGroupChunk::
 read_chunks_iff(IffInputFile *in, size_t stop_at) {
   while (in->get_bytes_read() < stop_at && !in->is_eof()) {
     PT(IffChunk) chunk = in->get_chunk();
-    if (chunk == (IffChunk *)NULL) {
+    if (chunk == nullptr) {
       return false;
     }
     _chunks.push_back(chunk);
@@ -60,7 +60,7 @@ bool LwoGroupChunk::
 read_subchunks_iff(IffInputFile *in, size_t stop_at) {
   while (in->get_bytes_read() < stop_at && !in->is_eof()) {
     PT(IffChunk) chunk = in->get_subchunk(this);
-    if (chunk == (IffChunk *)NULL) {
+    if (chunk == nullptr) {
       return false;
     }
     _chunks.push_back(chunk);
@@ -74,7 +74,7 @@ read_subchunks_iff(IffInputFile *in, size_t stop_at) {
  * debugging), one per line.
  */
 void LwoGroupChunk::
-write_chunks(ostream &out, int indent_level) const {
+write_chunks(std::ostream &out, int indent_level) const {
   Chunks::const_iterator ci;
   for (ci = _chunks.begin(); ci != _chunks.end(); ++ci) {
     (*ci)->write(out, indent_level);
