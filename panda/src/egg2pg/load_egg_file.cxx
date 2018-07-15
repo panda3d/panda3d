@@ -16,7 +16,7 @@
 #include "config_egg2pg.h"
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCacheRecord.h"
 
 static PT(PandaNode)

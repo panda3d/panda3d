@@ -18,7 +18,7 @@
 #include "nullAudioManager.h"
 #include "windowsRegistry.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "load_dso.h"
 
 #ifdef WIN32

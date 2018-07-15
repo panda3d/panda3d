@@ -366,7 +366,7 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\pandac\input
         File /r "${BUILT}\pandac\input\*"
         SetOutPath $INSTDIR\Pmw
-        File /r /x CVS "${BUILT}\Pmw\*"
+        File /nonfatal /r /x CVS "${BUILT}\Pmw\*"
         SetOutPath $INSTDIR\panda3d.dist-info
         File /nonfatal /r "${BUILT}\panda3d.dist-info\*"
 

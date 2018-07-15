@@ -1228,7 +1228,7 @@
 				<File RelativePath="..\panda\src\putil\pta_double.h"></File>
 				<File RelativePath="..\panda\src\putil\copyOnWritePointer.cxx"></File>
 				<File RelativePath="..\panda\src\putil\bitMask.cxx"></File>
-				<File RelativePath="..\panda\src\putil\config_util.h"></File>
+				<File RelativePath="..\panda\src\putil\config_putil.h"></File>
 				<File RelativePath="..\panda\src\putil\clockObject.h"></File>
 				<File RelativePath="..\panda\src\putil\lineStream.h"></File>
 				<File RelativePath="..\panda\src\putil\datagramInputFile.cxx"></File>
@@ -1307,7 +1307,7 @@
 				<File RelativePath="..\panda\src\putil\bamCacheRecord.I"></File>
 				<File RelativePath="..\panda\src\putil\animInterface.cxx"></File>
 				<File RelativePath="..\panda\src\putil\lineStreamBuf.h"></File>
-				<File RelativePath="..\panda\src\putil\config_util.cxx"></File>
+				<File RelativePath="..\panda\src\putil\config_putil.cxx"></File>
 				<File RelativePath="..\panda\src\putil\cachedTypedWritableReferenceCount.cxx"></File>
 				<File RelativePath="..\panda\src\putil\pythonCallbackObject.cxx"></File>
 				<File RelativePath="..\panda\src\putil\test_linestream.cxx"></File>
@@ -2322,8 +2322,8 @@
 				<File RelativePath="..\panda\src\pstatclient\pStatCollectorForward.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClientControlMessage.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatServerControlMessage.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.cxx"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.h"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatFrameData.I"></File>
 				<File RelativePath="..\panda\src\pstatclient\test_client.cxx"></File>

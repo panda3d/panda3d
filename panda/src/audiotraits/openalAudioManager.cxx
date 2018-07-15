@@ -14,7 +14,7 @@
 
 // Panda headers.
 #include "config_audio.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "config_openalAudio.h"
 #include "openalAudioManager.h"

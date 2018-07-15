@@ -12,7 +12,7 @@
  */
 
 #include "copyOnWritePointer.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_pipeline.h"
 
 #ifdef COW_THREADED

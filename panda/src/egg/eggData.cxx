@@ -18,7 +18,7 @@
 #include "eggComment.h"
 #include "eggPoolUniquifier.h"
 #include "config_egg.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "string_utils.h"
 #include "dSearchPath.h"

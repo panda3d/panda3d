@@ -21,7 +21,7 @@
 #include "pStatServerControlMessage.h"
 #include "pStatCollector.h"
 #include "pStatThread.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "pStatProperties.h"
 #include "cmath.h"
 

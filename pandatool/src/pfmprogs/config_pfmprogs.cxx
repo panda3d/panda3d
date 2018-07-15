@@ -6,16 +6,16 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_pfm.cxx
+ * @file config_pfmprogs.cxx
  * @author drose
  * @date 2010-12-23
  */
 
-#include "config_pfm.h"
+#include "config_pfmprogs.h"
 
 #include "dconfig.h"
 
-Configure(config_pfm);
+Configure(config_pfmprogs);
 NotifyCategoryDef(pfm, "");
 
 ConfigVariableDouble pfm_bba_dist
@@ -23,7 +23,7 @@ ConfigVariableDouble pfm_bba_dist
  PRC_DESC("Specifies the point_dist and sample_radius, in UV space, for "
           "compute bba files with pfm_trans."));
 
-ConfigureFn(config_pfm) {
+ConfigureFn(config_pfmprogs) {
   init_libpfm();
 }
 

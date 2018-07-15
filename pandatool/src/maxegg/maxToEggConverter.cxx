@@ -25,7 +25,7 @@
  */
 
 #include "maxEgg.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 /**
  *

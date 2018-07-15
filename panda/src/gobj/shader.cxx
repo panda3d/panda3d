@@ -19,7 +19,7 @@
 #include "shader.h"
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCache.h"
 #include "string_utils.h"
 

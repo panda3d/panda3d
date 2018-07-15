@@ -19,7 +19,7 @@
 #include "config_display.h"
 #include "typeRegistry.h"
 #include "pset.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 #include <algorithm>
 

@@ -6,12 +6,12 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_pstats.cxx
+ * @file config_pstatclient.cxx
  * @author drose
  * @date 2000-07-09
  */
 
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include "dconfig.h"
 
@@ -19,10 +19,10 @@
   #error Buildsystem error: BUILDING_PANDA_PSTATCLIENT not defined
 #endif
 
-ConfigureDef(config_pstats);
+ConfigureDef(config_pstatclient);
 NotifyCategoryDef(pstats, "");
 
-ConfigureFn(config_pstats) {
+ConfigureFn(config_pstatclient) {
   init_libpstatclient();
 }
 

@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file config_pfm.h
+ * @file config_pfmprogs.h
  * @author drose
  * @date 2010-12-23
  */

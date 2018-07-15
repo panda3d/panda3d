@@ -21,7 +21,7 @@
 #include "milesAudioStream.h"
 #include "globalMilesManager.h"
 #include "config_audio.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "nullAudioSound.h"
