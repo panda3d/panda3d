@@ -346,6 +346,7 @@ public:
     SPT_float,
     SPT_double,
     SPT_int,
+    SPT_uint,
     SPT_unknown
   };
 

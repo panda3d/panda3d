@@ -1699,6 +1699,14 @@ reset() {
        get_extension_func("glUniform3iv");
     _glUniform4iv = (PFNGLUNIFORM4IVPROC)
        get_extension_func("glUniform4iv");
+    _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+       get_extension_func("glUniform1uiv");
+    _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+       get_extension_func("glUniform2uiv");
+    _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+       get_extension_func("glUniform3uiv");
+    _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+       get_extension_func("glUniform4uiv");
     _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
        get_extension_func("glUniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
@@ -1777,6 +1785,10 @@ reset() {
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniform1iv = glUniform1iv;
+  _glUniform2iv = glUniform2iv;
+  _glUniform3iv = glUniform3iv;
+  _glUniform4iv = glUniform4iv;
   _glUniformMatrix3fv = glUniformMatrix3fv;
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;

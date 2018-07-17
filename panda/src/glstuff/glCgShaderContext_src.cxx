@@ -648,6 +648,7 @@ issue_parameters(int altered) {
         continue;
 
       case Shader::SPT_int:
+      case Shader::SPT_uint:
         switch (spec._info._class) {
         case Shader::SAC_scalar:
           cgSetParameter1iv(p, (int*)ptr_data->_ptr);

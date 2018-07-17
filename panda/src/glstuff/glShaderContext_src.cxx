@@ -1501,21 +1501,29 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
-      case GL_INT_VEC4: {
+      case GL_INT_VEC4:
+      case GL_UNSIGNED_INT:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC4: {
         Shader::ShaderPtrSpec bind;
         bind._id = arg_id;
         switch (param_type) {
           case GL_BOOL:
           case GL_INT:
+          case GL_UNSIGNED_INT:
           case GL_FLOAT:      bind._dim[1] = 1; break;
           case GL_BOOL_VEC2:
           case GL_INT_VEC2:
+          case GL_UNSIGNED_INT_VEC2:
           case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
           case GL_BOOL_VEC3:
           case GL_INT_VEC3:
+          case GL_UNSIGNED_INT_VEC3:
           case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
           case GL_BOOL_VEC4:
           case GL_INT_VEC4:
+          case GL_UNSIGNED_INT_VEC4:
           case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
           case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
           case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
@@ -1525,6 +1533,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         case GL_BOOL_VEC2:
         case GL_BOOL_VEC3:
         case GL_BOOL_VEC4:
+        case GL_UNSIGNED_INT:
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_UNSIGNED_INT_VEC4:
+          bind._type = Shader::SPT_uint;
+          break;
         case GL_INT:
         case GL_INT_VEC2:
         case GL_INT_VEC3:
@@ -1604,6 +1618,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     case GL_INT_VEC2:
     case GL_INT_VEC3:
     case GL_INT_VEC4:
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_VEC2:
+    case GL_UNSIGNED_INT_VEC3:
+    case GL_UNSIGNED_INT_VEC4:
     case GL_FLOAT:
     case GL_FLOAT_VEC2:
     case GL_FLOAT_VEC3:
@@ -1633,6 +1651,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_BOOL_VEC2:
       case GL_BOOL_VEC3:
       case GL_BOOL_VEC4:
+      case GL_UNSIGNED_INT:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC4:
+        bind._type = Shader::SPT_uint;
+        break;
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
@@ -2003,6 +2027,8 @@ issue_parameters(int altered) {
         return;
       }
 
+      nassertd(spec._dim[1] > 0) continue;
+
       GLint p = spec._id._seqno;
       int array_size = min(spec._dim[0], (int)ptr_data->_size / spec._dim[1]);
       switch (spec._type) {
@@ -2016,6 +2042,14 @@ issue_parameters(int altered) {
             data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
             for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((int*)ptr_data->_ptr)[i]);
+            }
+            break;
+
+          case Shader::SPT_uint:
+            // Convert unsigned int data to float data.
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
+              data[i] = (float)(((unsigned int*)ptr_data->_ptr)[i]);
             }
             break;
 
@@ -2048,7 +2082,8 @@ issue_parameters(int altered) {
         break;
 
       case Shader::SPT_int:
-        if (ptr_data->_type != Shader::SPT_int) {
+        if (ptr_data->_type != Shader::SPT_int &&
+            ptr_data->_type != Shader::SPT_uint) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2063,6 +2098,28 @@ issue_parameters(int altered) {
           case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data->_ptr); continue;
           case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data->_ptr); continue;
           case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          }
+          nassertd(false) continue;
+        }
+        break;
+
+      case Shader::SPT_uint:
+        if (ptr_data->_type != Shader::SPT_uint &&
+            ptr_data->_type != Shader::SPT_int) {
+          GLCAT.error()
+            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+          // Deactivate it to make sure the user doesn't get flooded with this
+          // error.
+          spec._dep[0] = 0;
+          spec._dep[1] = 0;
+
+        } else {
+          switch (spec._dim[1]) {
+          case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
           }
           nassertd(false) continue;
         }
