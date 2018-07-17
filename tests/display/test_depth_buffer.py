@@ -113,6 +113,11 @@ def test_depth_far_inf(depth_region):
     assert 0.99 > render_depth_pixel(depth_region, 10.0, near=1, far=inf, clear=1.0)
 
 
+def test_depth_near_inf(depth_region):
+    inf = float("inf")
+    assert 0.01 < render_depth_pixel(depth_region, 10.0, near=inf, far=1, clear=0.0)
+
+
 def test_depth_clipping(depth_region):
     # Get the actual depth resulting from the clear value.
     clr = render_depth_pixel(depth_region, None, near=1, far=10, clear=0.5)
