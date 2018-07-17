@@ -6404,7 +6404,8 @@ prepare_shader_buffer(ShaderBuffer *data) {
       _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
     }
 
-    uint64_t num_bytes = data->get_data_size_bytes();
+    // Some drivers require the buffer to be padded to 16 byte boundary.
+    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {
