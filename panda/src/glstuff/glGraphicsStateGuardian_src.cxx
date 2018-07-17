@@ -13442,7 +13442,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint internal_format = GL_RGBA;
 #ifndef OPENGLES
-  glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  if (target != GL_TEXTURE_BUFFER) {
+    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  } else {
+    // Some drivers give the wrong result for the above call.  No problem; we
+    // already know the internal format of a buffer texture since glTexBuffer
+    // required passing the exact sized format.
+    internal_format = gtc->_internal_format;
+  }
 #endif  // OPENGLES
 
   // Make sure we were able to query those parameters properly.
