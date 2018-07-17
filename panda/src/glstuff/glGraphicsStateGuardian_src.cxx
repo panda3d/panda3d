@@ -6401,7 +6401,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
     if (_use_object_labels) {
       string name = data->get_name();
-      _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
+      _glObjectLabel(GL_BUFFER, gbc->_index, name.size(), name.data());
     }
 
     // Some drivers require the buffer to be padded to 16 byte boundary.
