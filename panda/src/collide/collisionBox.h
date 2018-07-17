@@ -76,6 +76,8 @@ protected:
   virtual PT(CollisionEntry)
     test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+    test_intersection_from_line(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
     test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
     test_intersection_from_segment(const CollisionEntry &entry) const;
@@ -83,6 +85,11 @@ protected:
     test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
+
+protected:
+  bool intersects_line(double &t1, double &t2,
+                       const LPoint3 &from, const LVector3 &delta,
+                       PN_stdfloat inflate_size=0) const;
 
 private:
   LPoint3 _center;
