@@ -94,6 +94,10 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _get_component = Texture::get_half_float;
     break;
 
+  case Texture::T_unsigned_int_24_8:
+    _get_component = Texture::get_unsigned_int_24;
+    break;
+
   default:
     // Not supported.
     _image.clear();
