@@ -841,12 +841,6 @@ upload_texture(VulkanTextureContext *tc) {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), false);
 
-  // Issue a command to transition the image into a layout optimal for
-  // transferring into.
-  tc->transition(_transfer_cmd, _graphics_queue_family_index,
-    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
-
   // Do we even have an image to upload?
   if (texture->get_ram_image().is_null()) {
     if (texture->has_clear_color()) {
@@ -913,21 +907,44 @@ upload_texture(VulkanTextureContext *tc) {
     return false;
   }
 
+  // Issue a command to transition the image into a layout optimal for
+  // transferring into.
+  tc->transition(_transfer_cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+
   // Schedule a copy from our staging buffer to the image.
-  VkBufferImageCopy region;
-  memset(&region, 0, sizeof(VkBufferImageCopy));
+  VkBufferImageCopy region = {};
   region.imageSubresource.aspectMask = tc->_aspect_mask;
   region.imageSubresource.mipLevel = 0;
   region.imageSubresource.layerCount = tc->_array_layers;
   region.imageExtent = tc->_extent;
 
-  VkImageBlit blit;
-  memset(&blit, 0, sizeof(VkImageBlit));
+  VkImageBlit blit = {};
   blit.srcSubresource = region.imageSubresource;
   blit.srcOffsets[1].x = region.imageExtent.width;
   blit.srcOffsets[1].y = region.imageExtent.height;
   blit.srcOffsets[1].z = region.imageExtent.depth;
   blit.dstSubresource = blit.srcSubresource;
+
+  VkImageMemoryBarrier barrier = {};
+  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+  barrier.pNext = nullptr;
+  barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+  barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+  barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+  barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.image = image;
+  barrier.subresourceRange.aspectMask = tc->_aspect_mask;
+  barrier.subresourceRange.baseMipLevel = 0;
+  barrier.subresourceRange.levelCount = 1;
+  barrier.subresourceRange.baseArrayLayer = 0;
+  barrier.subresourceRange.layerCount = tc->_array_layers;
+
+  SparseArray levels_in_dst_optimal_layout;
+  levels_in_dst_optimal_layout.set_range(0, tc->_mip_levels);
 
   for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
     // Get a pointer to the RAM image data.
@@ -946,12 +963,20 @@ upload_texture(VulkanTextureContext *tc) {
     if (src == nullptr) {
       // There's no image for this level.  Are we supposed to generate it?
       if (n > 0 && tc->_generate_mipmaps) {
+        // Transition the previous mipmap level to optimal read layout.
+        barrier.subresourceRange.baseMipLevel = blit.srcSubresource.mipLevel;
+        vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                             0, nullptr, 0, nullptr, 1, &barrier);
+        levels_in_dst_optimal_layout.clear_bit(barrier.subresourceRange.baseMipLevel);
+
         blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
         blit.dstOffsets[1].x = region.imageExtent.width;
         blit.dstOffsets[1].y = region.imageExtent.height;
         blit.dstOffsets[1].z = region.imageExtent.depth;
-        vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_GENERAL, image,
-                       VK_IMAGE_LAYOUT_GENERAL, 1, &blit, VK_FILTER_LINEAR);
+        vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
+                       VK_FILTER_LINEAR);
 
         blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
         blit.srcOffsets[1] = blit.dstOffsets[1];
@@ -1009,6 +1034,20 @@ upload_texture(VulkanTextureContext *tc) {
   }
 
   data.unmap();
+
+  // Now, ensure that all the mipmap levels are in the same layout.
+  if (!levels_in_dst_optimal_layout.has_all_of(0, tc->_mip_levels)) {
+    for (size_t ri = 0; ri < levels_in_dst_optimal_layout.get_num_subranges(); ++ri) {
+      barrier.subresourceRange.baseMipLevel = levels_in_dst_optimal_layout.get_subrange_begin(ri);
+      barrier.subresourceRange.levelCount = levels_in_dst_optimal_layout.get_subrange_end(ri)
+                                          - levels_in_dst_optimal_layout.get_subrange_begin(ri);
+
+      vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                           nullptr, 1, &barrier);
+    }
+    tc->_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+  }
 
   tc->mark_loaded();
 
