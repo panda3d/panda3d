@@ -203,7 +203,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   if (default_shader.is_null()) {
     default_shader = Shader::load(Shader::SL_SPIR_V, "vert.spv", "frag.spv");
     nassertv(default_shader);
-
+  }
+  if (_default_sc == nullptr) {
     ShaderContext *sc = default_shader->prepare_now(get_prepared_objects(), this);
     nassertv(sc);
     _default_sc = DCAST(VulkanShaderContext, sc);
@@ -1572,6 +1573,7 @@ set_state_and_transform(const RenderState *state,
 
   VulkanShaderContext *sc = _default_sc;
   _current_shader = sc;
+  nassertv(sc != nullptr);
 
   // Put the modelview projection matrix in the push constants.
   CPT(TransformState) combined = _projection_mat->compose(trans);
@@ -1986,6 +1988,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
                       bool force) {
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
+    return false;
+  }
+
+  // We need to have a valid shader to be able to render anything.
+  if (_current_shader == nullptr) {
     return false;
   }
 
