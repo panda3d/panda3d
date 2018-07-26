@@ -885,17 +885,21 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
           _glgsg->enable_vertex_attrib_array(p);
 
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(p, num_values, type,
-                                            stride, client_pointer);
-          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
             // GL_BGRA is a special accepted value available since OpenGL 3.2.
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else {
+          } else if (bind._numeric_type == Shader::SPT_float ||
+                     numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(p, num_values, type,
+                                            stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribIPointer(p, num_values, type,
+                                            stride, client_pointer);
           }
 
           if (divisor > 0) {
@@ -952,10 +956,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // So, we work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
           _glgsg->enable_vertex_attrib_array(0);
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
-          } else {
+          if (bind._numeric_type == Shader::SPT_float) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(0, 4, GL_DOUBLE, 0, 0);
+          } else {
+            _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
           }
 
         } else if (p >= 0) {

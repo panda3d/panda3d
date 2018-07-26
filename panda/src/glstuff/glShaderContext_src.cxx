@@ -426,18 +426,34 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
   bind._elements = 1;
 
   // Check if this is an integer input- if so, we have to bind it differently.
-  bind._integer = (param_type == GL_BOOL ||
-                   param_type == GL_BOOL_VEC2 ||
-                   param_type == GL_BOOL_VEC3 ||
-                   param_type == GL_BOOL_VEC4 ||
-                   param_type == GL_INT ||
-                   param_type == GL_INT_VEC2 ||
-                   param_type == GL_INT_VEC3 ||
-                   param_type == GL_INT_VEC4 ||
-                   param_type == GL_UNSIGNED_INT_VEC2 ||
-                   param_type == GL_UNSIGNED_INT_VEC3 ||
-                   param_type == GL_UNSIGNED_INT_VEC4 ||
-                   param_type == GL_UNSIGNED_INT);
+  switch (param_type) {
+  case GL_INT:
+  case GL_INT_VEC2:
+  case GL_INT_VEC3:
+  case GL_INT_VEC4:
+    bind._numeric_type = Shader::SPT_int;
+    break;
+  case GL_BOOL:
+  case GL_BOOL_VEC2:
+  case GL_BOOL_VEC3:
+  case GL_BOOL_VEC4:
+  case GL_UNSIGNED_INT:
+  case GL_UNSIGNED_INT_VEC2:
+  case GL_UNSIGNED_INT_VEC3:
+  case GL_UNSIGNED_INT_VEC4:
+    bind._numeric_type = Shader::SPT_uint;
+    break;
+#ifndef OPENGLES
+  case GL_DOUBLE:
+  case GL_DOUBLE_VEC2:
+  case GL_DOUBLE_VEC3:
+  case GL_DOUBLE_VEC4:
+    bind._numeric_type = Shader::SPT_double;
+    break;
+#endif
+  default:
+    bind._numeric_type = Shader::SPT_float;
+  }
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
   if (strncmp(name_buffer, "p3d_", 4) == 0) {
@@ -2264,7 +2280,7 @@ disable_shader_vertex_arrays() {
     return;
   }
 
-  for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
+  for (size_t i = 0; i < _shader->_var_spec.size(); ++i) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     GLint p = bind._id._seqno;
 
@@ -2389,21 +2405,25 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
         client_pointer += start;
 
+        GLenum type = _glgsg->get_numeric_type(numeric_type);
         for (int i = 0; i < num_elements; ++i) {
           _glgsg->enable_vertex_attrib_array(p);
 
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                            stride, client_pointer);
-          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
             // GL_BGRA is a special accepted value available since OpenGL 3.2.
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else {
-            _glgsg->_glVertexAttribPointer(p, num_values,
-                                           _glgsg->get_numeric_type(numeric_type),
+          } else if (bind._numeric_type == Shader::SPT_float ||
+                     numeric_type == GeomEnums::NT_float32) {
+            _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(p, num_values, type,
+                                            stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribIPointer(p, num_values, type,
+                                            stride, client_pointer);
           }
 
           if (divisor > 0) {
