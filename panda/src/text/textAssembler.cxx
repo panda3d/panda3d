@@ -1137,52 +1137,30 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     GeomTextGlyph::Glyphs glyphs;
     glyphs.reserve(quads.size());
 
-    static CPT(GeomVertexFormat) format;
-    if (format.is_null()) {
-      // The optimized code below assumes 32-bit floats, so let's make sure we
-      // got the right format by creating it ourselves.
-      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat(
-        InternalName::get_vertex(), 3, GeomEnums::NT_float32, GeomEnums::C_point,
-        InternalName::get_texcoord(), 2, GeomEnums::NT_float32, GeomEnums::C_texcoord));
-    }
-
+    const GeomVertexFormat *format = GeomVertexFormat::get_v3t2();
     PT(GeomVertexData) vdata = new GeomVertexData("text", format, Geom::UH_static);
 
-    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
-    if (quads.size() > 10922) {
-      tris->set_index_type(GeomEnums::NT_uint32);
-    } else {
-      tris->set_index_type(GeomEnums::NT_uint16);
-    }
-
-    int i = 0;
+    Thread *current_thread = Thread::get_current_thread();
 
     // This is quite a critical loop and GeomVertexWriter quickly becomes the
     // bottleneck.  So, I've written this out the hard way instead.  Two
-    // versions of the loop: one for 32-bit indices, one for 16-bit.
+    // versions of the loop: one for 32-bit floats, the other for 64-bit.
     {
       PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array_handle(0);
       vtx_handle->unclean_set_num_rows(quads.size() * 4);
 
-      Thread *current_thread = Thread::get_current_thread();
       unsigned char *write_ptr = vtx_handle->get_write_pointer();
-      size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
-      PN_float32 *vtx_ptr = (PN_float32 *)
-        (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
-      PN_float32 *tex_ptr = (PN_float32 *)
-        (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
+      if (format->get_vertex_column()->get_numeric_type() == GeomEnums::NT_float32) {
+        // 32-bit vertex case.
+        size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
-      if (tris->get_index_type() == GeomEnums::NT_uint32) {
-        // 32-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
-        idx_handle->unclean_set_num_rows(quads.size() * 6);
-        uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
+        PN_float32 *vtx_ptr = (PN_float32 *)
+          (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
+        PN_float32 *tex_ptr = (PN_float32 *)
+          (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
 
-        QuadDefs::const_iterator qi;
-        for (qi = quads.begin(); qi != quads.end(); ++qi) {
-          const QuadDef &quad = (*qi);
-
+        for (const QuadDef &quad : quads) {
           vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
           vtx_ptr[1] = 0;
           vtx_ptr[2] = quad._dimensions[3];
@@ -1218,27 +1196,19 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[0] = quad._uvs[2];
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
-
-          *(idx_ptr++) = i + 0;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 3;
-          i += 4;
 
           glyphs.push_back(move(quad._glyph));
         }
       } else {
-        // 16-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
-        idx_handle->unclean_set_num_rows(quads.size() * 6);
-        uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
+        // 64-bit vertex case.
+        size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float64);
 
-        QuadDefs::const_iterator qi;
-        for (qi = quads.begin(); qi != quads.end(); ++qi) {
-          const QuadDef &quad = (*qi);
+        PN_float64 *vtx_ptr = (PN_float64 *)
+          (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
+        PN_float64 *tex_ptr = (PN_float64 *)
+          (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
 
+        for (const QuadDef &quad : quads) {
           vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
           vtx_ptr[1] = 0;
           vtx_ptr[2] = quad._dimensions[3];
@@ -1274,22 +1244,52 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[0] = quad._uvs[2];
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
-
-          *(idx_ptr++) = i + 0;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 3;
-          i += 4;
 
           glyphs.push_back(move(quad._glyph));
         }
       }
     }
 
+    // Now write the indices.  Two cases: 32-bit indices and 16-bit indices.
+    int vtx_count = quads.size() * 4;
+    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+    if (vtx_count > 65535) {
+      tris->set_index_type(GeomEnums::NT_uint32);
+    } else {
+      tris->set_index_type(GeomEnums::NT_uint16);
+    }
+    {
+      PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
+      idx_handle->unclean_set_num_rows(quads.size() * 6);
+      if (tris->get_index_type() == GeomEnums::NT_uint16) {
+        // 16-bit index case.
+        uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
+
+        for (int i = 0; i < vtx_count; i += 4) {
+          *(idx_ptr++) = i + 0;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 3;
+        }
+      } else {
+        // 32-bit index case.
+        uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
+
+        for (int i = 0; i < vtx_count; i += 4) {
+          *(idx_ptr++) = i + 0;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 3;
+        }
+      }
+    }
+
     // We can compute this value much faster than GeomPrimitive can.
-    tris->set_minmax(0, i - 1, nullptr, nullptr);
+    tris->set_minmax(0, vtx_count - 1, nullptr, nullptr);
 
     PT(GeomTextGlyph) geom = new GeomTextGlyph(vdata);
     geom->_glyphs.swap(glyphs);
