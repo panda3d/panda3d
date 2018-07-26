@@ -45,6 +45,9 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=430):
     if not gsg.supports_compute_shaders or not gsg.supports_glsl:
         pytest.skip("compute shaders not supported")
 
+    if not gsg.supports_buffer_texture:
+        pytest.skip("buffer textures not supported")
+
     __tracebackhide__ = True
 
     preamble = preamble.strip()
