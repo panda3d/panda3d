@@ -674,7 +674,7 @@ protected:
   PT(Shader) _texture_binding_shader;
   ShaderContext *_texture_binding_shader_context;
 
-  static PT(Shader) _default_shader;
+  PT(Shader) _default_shader;
 
 #ifndef OPENGLES
   bool _shader_point_size;

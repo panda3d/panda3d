@@ -92,10 +92,6 @@ PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Upda
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 
-#ifndef OPENGLES_1
-PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = nullptr;
-#endif
-
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
 // the GL, just so it will always be safe to call the extension functions.
@@ -187,6 +183,48 @@ static const string default_vshader =
   "  texcoord = p3d_MultiTexCoord0;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
+
+#ifndef OPENGLES
+// This version of the shader is used if vertices-float64 is enabled.
+static const string default_vshader_fp64 =
+#ifdef __APPLE__
+  "#version 150\n"
+#else
+  "#version 130\n"
+#endif
+  "#extension GL_ARB_vertex_attrib_64bit : require\n"
+  "#extension GL_ARB_gpu_shader_fp64 : require\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+
+// Same as above, but for OpenGL 4.1.
+static const string default_vshader_fp64_gl41 =
+  "#version 410\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+#endif
 
 static const string default_fshader =
 #ifndef OPENGLES
@@ -1839,7 +1877,17 @@ reset() {
   // shader just outputs a red color, indicating that something went wrong.
 #ifndef OPENGLES_1
   if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
-    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+#ifndef OPENGLES
+    bool use_float64 = vertices_float64;
+    if (use_float64 && is_at_least_gl_version(4, 1)) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64_gl41, default_fshader);
+    } else if (use_float64 && has_extension("GL_ARB_vertex_attrib_64bit")) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64, default_fshader);
+    } else
+#endif
+    {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+    }
   }
 #endif
 
