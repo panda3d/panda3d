@@ -39,6 +39,9 @@ PUBLISHED:
   FLOATNAME(LPoint3) get_point() const;
 
   INLINE_MATHUTIL FLOATTYPE dist_to_plane(const FLOATNAME(LPoint3) &point) const;
+
+  INLINE_MATHUTIL bool normalize();
+  INLINE_MATHUTIL FLOATNAME(LPlane) normalized() const;
   INLINE_MATHUTIL FLOATNAME(LPoint3) project(const FLOATNAME(LPoint3) &point) const;
   INLINE_MATHUTIL void flip();
 
