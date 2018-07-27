@@ -231,13 +231,19 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _supports_cube_map_array = (features.imageCubeArray != VK_FALSE);
   _supports_tex_non_pow2 = true;
   _supports_texture_srgb = true;
-  _supports_compressed_texture = (features.textureCompressionBC != VK_FALSE);
+  _supports_compressed_texture = (features.textureCompressionBC != VK_FALSE ||
+                                  features.textureCompressionETC2 != VK_FALSE);
 
   if (features.textureCompressionBC) {
     _compressed_texture_formats.set_bit(Texture::CM_dxt1);
     _compressed_texture_formats.set_bit(Texture::CM_dxt3);
     _compressed_texture_formats.set_bit(Texture::CM_dxt5);
     _compressed_texture_formats.set_bit(Texture::CM_rgtc);
+  }
+  if (features.textureCompressionETC2) {
+    _compressed_texture_formats.set_bit(Texture::CM_etc1);
+    _compressed_texture_formats.set_bit(Texture::CM_etc2);
+    _compressed_texture_formats.set_bit(Texture::CM_eac);
   }
 
   // Assume no limits on number of lights or clip planes.
@@ -2979,9 +2985,16 @@ get_image_format(const Texture *texture) const {
   }
 
   if (!_supports_compressed_texture) {
-    //TODO: support non-BC compression.
     compression = Texture::CM_off;
   }
+  if (compression != Texture::CM_on && compression != Texture::CM_off &&
+      !_compressed_texture_formats.get_bit(compression)) {
+    compression = Texture::CM_off;
+  }
+
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), VK_FORMAT_UNDEFINED);
+  const VkPhysicalDeviceFeatures &features = vkpipe->_gpu_features;
 
   bool is_signed = !Texture::is_unsigned(component_type);
   bool is_srgb = Texture::is_srgb(format);
@@ -2989,24 +3002,40 @@ get_image_format(const Texture *texture) const {
   switch (compression) {
   case Texture::CM_on:
     // Select an appropriate compression mode automatically.
-    if (!is_srgb && texture->get_num_components() == 1) {
-      return (VkFormat)(VK_FORMAT_BC4_UNORM_BLOCK + is_signed);
+    if (features.textureCompressionBC) {
+      if (!is_srgb && texture->get_num_components() == 1) {
+        return (VkFormat)(VK_FORMAT_BC4_UNORM_BLOCK + is_signed);
 
-    } else if (!is_srgb && texture->get_num_components() == 2) {
-      return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
+      } else if (!is_srgb && texture->get_num_components() == 2) {
+        return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
 
-    } else if (Texture::has_binary_alpha(format)) {
-      return (VkFormat)(VK_FORMAT_BC1_RGBA_UNORM_BLOCK + is_srgb);
+      } else if (Texture::has_binary_alpha(format)) {
+        return (VkFormat)(VK_FORMAT_BC1_RGBA_UNORM_BLOCK + is_srgb);
 
-    } else if (format == Texture::F_rgba4 || format == Texture::F_rgb10_a2) {
-      return (VkFormat)(VK_FORMAT_BC2_UNORM_BLOCK + is_srgb);
+      } else if (format == Texture::F_rgba4 || format == Texture::F_rgb10_a2) {
+        return (VkFormat)(VK_FORMAT_BC2_UNORM_BLOCK + is_srgb);
 
-    } else if (Texture::has_alpha(format)) {
-      return (VkFormat)(VK_FORMAT_BC3_UNORM_BLOCK + is_srgb);
+      } else if (Texture::has_alpha(format)) {
+        return (VkFormat)(VK_FORMAT_BC3_UNORM_BLOCK + is_srgb);
 
-    } else {
-      return (VkFormat)(VK_FORMAT_BC1_RGB_UNORM_BLOCK + is_srgb);
+      } else {
+        return (VkFormat)(VK_FORMAT_BC1_RGB_UNORM_BLOCK + is_srgb);
+      }
     }
+    if (!features.textureCompressionETC2) {
+      break;
+    }
+    // Fall through
+  case Texture::CM_etc1:
+  case Texture::CM_etc2:
+    if (!Texture::has_alpha(format)) {
+      return (VkFormat)(VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK + is_srgb);
+    } else if (Texture::has_binary_alpha(format)) {
+      return (VkFormat)(VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK + is_srgb);
+    } else {
+      return (VkFormat)(VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK + is_srgb);
+    }
+    break;
 
   case Texture::CM_dxt1:
     if (Texture::has_alpha(format)) {
@@ -3026,6 +3055,14 @@ get_image_format(const Texture *texture) const {
     } else {
       return (VkFormat)(VK_FORMAT_BC5_UNORM_BLOCK + is_signed);
     }
+
+  case Texture::CM_eac:
+    if (texture->get_num_components() == 1) {
+      return (VkFormat)(VK_FORMAT_EAC_R11_UNORM_BLOCK + is_signed);
+    } else {
+      return (VkFormat)(VK_FORMAT_EAC_R11G11_UNORM_BLOCK + is_signed);
+    }
+    break;
 
   default:
     // Compression mode not supported.
