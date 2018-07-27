@@ -1738,6 +1738,44 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   vkCmdSetScissor(_cmd, 0, count, &_viewports[0]);
 }
 
+
+/**
+ * Given a lens, calculates the appropriate projection matrix for use with
+ * this gsg.  Note that the projection matrix depends a lot upon the
+ * coordinate system of the rendering API.
+ *
+ * The return value is a TransformState if the lens is acceptable, NULL if it
+ * is not.
+ */
+CPT(TransformState) VulkanGraphicsStateGuardian::
+calc_projection_mat(const Lens *lens) {
+  if (lens == nullptr) {
+    return nullptr;
+  }
+
+  if (!lens->is_linear()) {
+    return nullptr;
+  }
+
+  // Vulkan also uses a Z range of 0 to 1, whereas the Panda convention is
+  // for the projection matrix to produce a Z range of -1 to 1.  We have to
+  // rescale to compensate.
+  static const LMatrix4 rescale_mat
+    (1, 0, 0, 0,
+     0, 1, 0, 0,
+     0, 0, 0.5, 0,
+     0, 0, 0.5, 1);
+
+  LMatrix4 result = lens->get_projection_mat(_current_stereo_channel) * rescale_mat;
+
+  if (!_scene_setup->get_inverted()) {
+    // Vulkan uses an upside down coordinate system.
+    result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
+  }
+
+  return TransformState::make_mat(result);
+}
+
 /**
  * Makes the current lens (whichever lens was most recently specified with
  * set_scene()) active, so that it will transform future rendered geometry.
@@ -1748,14 +1786,6 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  */
 bool VulkanGraphicsStateGuardian::
 prepare_lens() {
-  if (_scene_setup->get_inverted()) {
-    // Vulkan uses an upside down coordinate system.
-    _projection_mat = TransformState::make_mat(_current_lens->get_projection_mat());
-  } else {
-    _projection_mat = TransformState::make_mat(
-      _current_lens->get_projection_mat() * LMatrix4::scale_mat(1.0f, -1.0f, 1.0f));
-  }
-
   return true;
 }
 

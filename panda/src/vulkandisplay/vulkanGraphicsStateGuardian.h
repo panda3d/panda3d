@@ -79,6 +79,7 @@ public:
 
   virtual void clear(DrawableRegion *clearable);
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
+  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
