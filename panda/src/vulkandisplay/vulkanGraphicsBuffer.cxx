@@ -27,7 +27,9 @@ VulkanGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                      int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host) :
-  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host) {
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  _render_pass(VK_NULL_HANDLE),
+  _framebuffer(VK_NULL_HANDLE) {
 }
 
 /**
@@ -38,13 +40,24 @@ VulkanGraphicsBuffer::
 }
 
 /**
+ * Returns true if this particular GraphicsOutput can render directly into a
+ * texture, or false if it must always copy-to-texture at the end of each
+ * frame to achieve this effect.
+ */
+bool VulkanGraphicsBuffer::
+get_supports_render_texture() const {
+  //TODO: add render-to-texture support.
+  return false;
+}
+
+/**
  * Clears the entire framebuffer before rendering, according to the settings
  * of get_color_clear_active() and get_depth_clear_active() (inherited from
  * DrawableRegion).
  *
  * This function is called only within the draw thread.
  */
-void GraphicsOutput::
+void VulkanGraphicsBuffer::
 clear(Thread *current_thread) {
   // We do the clear in begin_frame(), and the validation layers don't like it
   // if an extra clear is being done at the beginning of a frame.  That's why
@@ -71,6 +84,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
   //vkgsg->reset_if_new();
+
+  vkgsg->_fb_color_tc = nullptr;
+  vkgsg->_fb_depth_tc = nullptr;
 
   if (_current_clear_mask != _clear_mask) {
     // The clear flags have changed.  Recreate the render pass.  Note that the
@@ -106,12 +122,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // transition the swapchain images into the valid state for rendering into.
   VkCommandBuffer cmd = vkgsg->_cmd;
 
-  VkClearValue clears[2];
-  LColor clear_color = get_clear_color();
-  clears[0].color.float32[0] = clear_color[0];
-  clears[0].color.float32[1] = clear_color[1];
-  clears[0].color.float32[2] = clear_color[2];
-  clears[0].color.float32[3] = clear_color[3];
+  VkClearValue *clears = (VkClearValue *)
+    alloca(sizeof(VkClearValue) * _attachments.size());
 
   VkRenderPassBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -122,28 +134,44 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_info.renderArea.offset.y = 0;
   begin_info.renderArea.extent.width = _size[0];
   begin_info.renderArea.extent.height = _size[1];
-  begin_info.clearValueCount = 1;
+  begin_info.clearValueCount = _attachments.size();
   begin_info.pClearValues = clears;
 
-  VkImageMemoryBarrier *barriers = (VkImageMemoryBarrier *)
-    alloca(sizeof(VkImageMemoryBarrier) * _attachments.size());
-
   for (size_t i = 0; i < _attachments.size(); ++i) {
-    const Attachment &attach = _attachments[i];
-    barriers[i].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barriers[i].pNext = nullptr;
-    barriers[i].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    barriers[i].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[i].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    barriers[i].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[i].srcQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
-    barriers[i].dstQueueFamilyIndex = vkgsg->_graphics_queue_family_index;
-    barriers[i].image = attach._image;
-    barriers[i].subresourceRange.aspectMask = attach._aspect;
-    barriers[i].subresourceRange.baseMipLevel = 0;
-    barriers[i].subresourceRange.levelCount = 1;
-    barriers[i].subresourceRange.baseArrayLayer = 0;
-    barriers[i].subresourceRange.layerCount = 1;
+    Attachment &attach = _attachments[i];
+    attach._tc->set_active(true);
+
+    VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAccessFlags access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
+        attach._plane == RTP_depth_stencil) {
+      vkgsg->_fb_depth_tc = attach._tc;
+      layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+                 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    } else if (attach._plane == RTP_color) {
+      vkgsg->_fb_color_tc = attach._tc;
+    }
+
+    if (get_clear_active(attach._plane)) {
+      LColor clear_value = get_clear_value(attach._plane);
+      clears[i].color.float32[0] = clear_value[0];
+      clears[i].color.float32[1] = clear_value[1];
+      clears[i].color.float32[2] = clear_value[2];
+      clears[i].color.float32[3] = clear_value[3];
+
+      // This transition will be made when the first subpass is started.
+      attach._tc->_layout = layout;
+      attach._tc->_access_mask = access_mask;
+      attach._tc->_stage_mask = stage_mask;
+    } else {
+      attach._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
+                             layout, stage_mask, access_mask);
+    }
   }
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -170,9 +198,14 @@ end_frame(FrameMode mode, Thread *current_thread) {
     vkCmdEndRenderPass(cmd);
     vkgsg->_render_pass = VK_NULL_HANDLE;
 
-    if (mode == FM_render) {
-      copy_to_textures();
+    // The driver implicitly transitioned this to the final layout.
+    for (Attachment &attach : _attachments) {
+      attach._tc->_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+      attach._tc->_access_mask = VK_ACCESS_MEMORY_READ_BIT;
     }
+
+    // Now we can do copy-to-texture, now that the render pass has ended.
+    copy_to_textures();
 
     // Note: this will close the command buffer.
     _gsg->end_frame(current_thread);
@@ -214,6 +247,24 @@ open_buffer() {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, _pipe, false);
 
+  // Make sure we have a GSG, which manages a VkDevice.
+  VulkanGraphicsStateGuardian *vkgsg;
+  uint32_t queue_family_index = 0;
+  if (_gsg == nullptr) {
+    // Find a queue suitable for graphics.
+    if (!vkpipe->find_queue_family(queue_family_index, VK_QUEUE_GRAPHICS_BIT)) {
+      vulkandisplay_cat.error()
+        << "Failed to find graphics queue for buffer.\n";
+      return false;
+    }
+
+    // There is no old gsg.  Create a new one.
+    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index);
+    _gsg = vkgsg;
+  } else {
+    DCAST_INTO_R(vkgsg, _gsg.p(), false);
+  }
+
   // Choose a suitable color format.  Sorted in order of preferability,
   // preferring lower bpps over higher bpps, and preferring formats that pack
   // bits in fewer channels (because if the user only requests red bits, they
@@ -239,13 +290,16 @@ open_buffer() {
     {0}
   };
 
+  _color_format = VK_FORMAT_UNDEFINED;
+
   if (_fb_properties.get_srgb_color()) {
     // This the only sRGB format.  Deal with it.
     _color_format = VK_FORMAT_R8G8B8A8_SRGB;
     _fb_properties.set_rgba_bits(8, 8, 8, 8);
     _fb_properties.set_float_color(false);
 
-  } else {
+  } else if (_fb_properties.get_rgb_color() ||
+             _fb_properties.get_color_bits() > 0) {
     for (int i = 0; formats[i].r; ++i) {
       if (formats[i].r >= _fb_properties.get_red_bits() &&
           formats[i].g >= _fb_properties.get_green_bits() &&
@@ -268,7 +322,7 @@ open_buffer() {
   bool request_depth32 = _fb_properties.get_depth_bits() > 24 ||
                          _fb_properties.get_float_depth();
 
-  if (_fb_properties.get_depth_bits() > 0 || _fb_properties.get_stencil_bits() > 0) {
+  if (_fb_properties.get_depth_bits() > 0 && _fb_properties.get_stencil_bits() > 0) {
     // Vulkan requires support for at least of one of these two formats.
     vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT_S8_UINT, &fmt_props);
     bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
@@ -284,8 +338,7 @@ open_buffer() {
     }
     _fb_properties.set_stencil_bits(8);
 
-    _depth_stencil_aspect_mask |= VK_IMAGE_ASPECT_DEPTH_BIT |
-                                  VK_IMAGE_ASPECT_STENCIL_BIT;
+    _depth_stencil_plane = RTP_depth_stencil;
 
   } else if (_fb_properties.get_depth_bits() > 0) {
     // Vulkan requires support for at least of one of these two formats.
@@ -302,11 +355,11 @@ open_buffer() {
       _fb_properties.set_depth_bits(24);
     }
 
-    _depth_stencil_aspect_mask |= VK_IMAGE_ASPECT_DEPTH_BIT;
+    _depth_stencil_plane = RTP_depth;
 
   } else {
     _depth_stencil_format = VK_FORMAT_UNDEFINED;
-    _depth_stencil_aspect_mask |= 0;
+    _depth_stencil_plane = RTP_depth_stencil;
   }
 
   return setup_render_pass() && create_framebuffer();
@@ -329,57 +382,95 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsBuffer " << this << "\n";
   }
 
+  // Check if we are planning on doing anything with the depth/color output.
+  BitMask32 transfer_planes = 0;
+  {
+    CDReader cdata(_cycler);
+    for (const auto &rt : cdata->_textures) {
+      RenderTextureMode mode = rt._rtm_mode;
+      if (mode == RTM_copy_texture || mode == RTM_copy_ram) {
+        transfer_planes.set_bit(rt._plane);
+      }
+    }
+  }
+  transfer_planes = ~0;
+
   // Now we want to create a render pass, and for that we need to describe the
   // framebuffer attachments as well as any subpasses we'd like to use.
   VkAttachmentDescription attachments[2];
-  attachments[0].flags = 0;
-  attachments[0].format = _color_format;
-  attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-  attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-  attachments[1].flags = 0;
-  attachments[1].format = _depth_stencil_format;
-  attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-  attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-  if (get_clear_color_active()) {
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  } else {
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-  }
-
-  if (get_clear_depth_active()) {
-    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  }
-
-  if (get_clear_stencil_active()) {
-    attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  }
+  uint32_t ai = 0;
 
   VkAttachmentReference color_reference;
-  color_reference.attachment = 0;
   color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   VkAttachmentReference depth_reference;
-  depth_reference.attachment = 1;
   depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  if (_color_format != VK_FORMAT_UNDEFINED) {
+    VkAttachmentDescription &attach = attachments[ai];
+    attach.flags = 0;
+    attach.format = _color_format;
+    attach.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attach.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    if (get_clear_color_active()) {
+      attach.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      attach.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    } else {
+      attach.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    }
+
+    if (transfer_planes.get_bit(RTP_color)) {
+      attach.finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+      attach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    }
+
+    color_reference.attachment = ai++;
+  }
+
+  if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
+    VkAttachmentDescription &attach = attachments[ai];
+    attach.flags = 0;
+    attach.format = _depth_stencil_format;
+    attach.samples = VK_SAMPLE_COUNT_1_BIT;
+    attach.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attach.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attach.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    if (get_clear_depth_active()) {
+      attach.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+    if (get_clear_stencil_active()) {
+      attach.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+    if (get_clear_depth_active() && get_clear_stencil_active()) {
+      attach.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+
+    if (transfer_planes.get_bit(RTP_depth) || transfer_planes.get_bit(RTP_stencil) ||
+        transfer_planes.get_bit(RTP_depth_stencil)) {
+      attach.finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+      attach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+      attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+    }
+
+    depth_reference.attachment = ai++;
+  }
 
   VkSubpassDescription subpass;
   subpass.flags = 0;
   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpass.inputAttachmentCount = 0;
   subpass.pInputAttachments = nullptr;
-  subpass.colorAttachmentCount = 1;
+  subpass.colorAttachmentCount = _color_format ? 1 : 0;
   subpass.pColorAttachments = &color_reference;
   subpass.pResolveAttachments = nullptr;
   subpass.pDepthStencilAttachment = _depth_stencil_format ? &depth_reference : nullptr;
@@ -390,7 +481,7 @@ setup_render_pass() {
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   pass_info.pNext = nullptr;
   pass_info.flags = 0;
-  pass_info.attachmentCount = _depth_stencil_format ? 2 : 1;
+  pass_info.attachmentCount = ai;
   pass_info.pAttachments = attachments;
   pass_info.subpassCount = 1;
   pass_info.pSubpasses = &subpass;
@@ -407,13 +498,8 @@ setup_render_pass() {
 
   // Destroy the previous render pass object.
   if (_render_pass != VK_NULL_HANDLE) {
-    // Actually, we can't destroy it, since we may now have pipeline states
-    // that reference it.  Destroying it now would also require destroying the
-    // framebuffer and clearing all of the prepared states from the GSG.
-    // Maybe we need to start reference counting render passes?
-    vulkandisplay_cat.warning() << "Leaking VkRenderPass.\n";
-    //vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
-    //_render_pass = VK_NULL_HANDLE;
+    vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+    _render_pass = VK_NULL_HANDLE;
   }
 
   _render_pass = pass;
@@ -442,12 +528,19 @@ destroy_framebuffer() {
   }*/
 
   // Destroy the resources held for each attachment.
-  Attachments::iterator it;
-  for (it = _attachments.begin(); it != _attachments.end(); ++it) {
-    Attachment &attach = *it;
+  for (Attachment &attach : _attachments) {
+    if (attach._tc->_image_view != VK_NULL_HANDLE) {
+      vkDestroyImageView(device, attach._tc->_image_view, nullptr);
+      attach._tc->_image_view = VK_NULL_HANDLE;
+    }
 
-    vkDestroyImageView(device, attach._image_view, nullptr);
-    vkFreeMemory(device, attach._memory, nullptr);
+    if (attach._tc->_image != VK_NULL_HANDLE) {
+      vkDestroyImage(device, attach._tc->_image, nullptr);
+      attach._tc->_image = VK_NULL_HANDLE;
+    }
+
+    attach._tc->update_data_size_bytes(0);
+    delete attach._tc;
   }
   _attachments.clear();
 
@@ -455,6 +548,8 @@ destroy_framebuffer() {
     vkDestroyFramebuffer(device, _framebuffer, nullptr);
     _framebuffer = VK_NULL_HANDLE;
   }
+
+  _is_valid = false;
 }
 
 /**
@@ -469,16 +564,16 @@ create_framebuffer() {
   VkDevice device = vkgsg->_device;
   VkResult err;
 
-  if (!create_attachment(_color_format, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_ASPECT_COLOR_BIT) ||
-      !create_attachment(_depth_stencil_format, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT)) {
+  if (!create_attachment(RTP_color, _color_format) ||
+      !create_attachment(_depth_stencil_plane, _depth_stencil_format)) {
     return false;
   }
 
-  int num_attachments = (int)_attachments.size();
+  uint32_t num_attachments = _attachments.size();
   VkImageView *attach_views = (VkImageView *)alloca(sizeof(VkImageView) * num_attachments);
 
-  for (int i = 0; i < num_attachments; ++i) {
-    attach_views[i] = _attachments[i]._image_view;
+  for (uint32_t i = 0; i < num_attachments; ++i) {
+    attach_views[i] = _attachments[i]._tc->_image_view;
   }
 
   VkFramebufferCreateInfo fb_info;
@@ -499,6 +594,7 @@ create_framebuffer() {
   }
 
   _framebuffer_size = _size;
+  _is_valid = true;
   return true;
 }
 
@@ -507,18 +603,17 @@ create_framebuffer() {
  * @return Returns true on success.
  */
 bool VulkanGraphicsBuffer::
-create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspect) {
+create_attachment(RenderTexturePlane plane, VkFormat format) {
+  if (format == VK_FORMAT_UNDEFINED) {
+    return true;
+  }
+
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, _pipe, false);
 
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
   VkDevice device = vkgsg->_device;
-
-  Attachment attach;
-  attach._format = format;
-  attach._usage = usage;
-  attach._aspect = aspect;
 
   VkImageCreateInfo img_info;
   img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -533,14 +628,20 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
   img_info.arrayLayers = 1;
   img_info.samples = VK_SAMPLE_COUNT_1_BIT;
   img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-  img_info.usage = usage;
+  img_info.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
   img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
   img_info.queueFamilyIndexCount = 0;
   img_info.pQueueFamilyIndices = nullptr;
   img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-  VkResult
-  err = vkCreateImage(device, &img_info, nullptr, &attach._image);
+  if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
+    img_info.usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+  } else {
+    img_info.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  }
+
+  VkImage image;
+  VkResult err = vkCreateImage(device, &img_info, nullptr, &image);
   if (err) {
     vulkan_error(err, "Failed to create image");
     return false;
@@ -548,28 +649,16 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
 
   // Get the memory requirements, and find an appropriate heap to alloc in.
   VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(device, attach._image, &mem_reqs);
+  vkGetImageMemoryRequirements(device, image, &mem_reqs);
 
-  VkMemoryAllocateInfo alloc_info;
-  alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  alloc_info.pNext = nullptr;
-  alloc_info.allocationSize = mem_reqs.size;
-
-  if (!vkpipe->find_memory_type(alloc_info.memoryTypeIndex, mem_reqs.memoryTypeBits, 0)) {
-    vulkan_error(err, "Failed to find memory heap to allocate depth buffer");
-    return false;
-  }
-
-  VkDeviceMemory memory;
-  err = vkAllocateMemory(device, &alloc_info, nullptr, &memory);
-  if (err) {
-    vulkan_error(err, "Failed to allocate memory for depth image");
+  VulkanMemoryBlock block;
+  if (!vkgsg->allocate_memory(block, mem_reqs, 0, false)) {
+    vulkandisplay_cat.error() << "Failed to allocate texture memory for depth image.\n";
     return false;
   }
 
   // Bind memory to image.
-  err = vkBindImageMemory(device, attach._image, memory, 0);
-  if (err) {
+  if (!block.bind_image(image)) {
     vulkan_error(err, "Failed to bind memory to depth image");
     return false;
   }
@@ -578,25 +667,53 @@ create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags a
   view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
   view_info.pNext = nullptr;
   view_info.flags = 0;
-  view_info.image = attach._image;
+  view_info.image = image;
   view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
   view_info.format = format;
   view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
   view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
   view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
   view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.subresourceRange.aspectMask = aspect;
   view_info.subresourceRange.baseMipLevel = 0;
   view_info.subresourceRange.levelCount = 1;
   view_info.subresourceRange.baseArrayLayer = 0;
   view_info.subresourceRange.layerCount = 1;
 
-  err = vkCreateImageView(device, &view_info, nullptr, &attach._image_view);
+  switch (plane) {
+  default:
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    break;
+
+  case RTP_depth:
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    break;
+
+  case RTP_stencil:
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+    break;
+
+  case RTP_depth_stencil:
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+    //                                      | VK_IMAGE_ASPECT_STENCIL_BIT;
+    break;
+  }
+
+  VkImageView image_view;
+  err = vkCreateImageView(device, &view_info, nullptr, &image_view);
   if (err) {
     vulkan_error(err, "Failed to create image view for attachment");
     return false;
   }
 
-  _attachments.push_back(attach);
+  PreparedGraphicsObjects *pgo = vkgsg->get_prepared_objects();
+  VulkanTextureContext *tc = new VulkanTextureContext(pgo, image, format);
+  tc->_extent = img_info.extent;
+  tc->_mip_levels = img_info.mipLevels;
+  tc->_array_layers = img_info.arrayLayers;
+  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
+  tc->_image_view = image_view;
+  tc->_block = std::move(block);
+
+  _attachments.push_back({tc, plane});
   return true;
 }

@@ -162,6 +162,8 @@ public:
   VkDescriptorSet make_descriptor_set(const RenderState *state);
 
   VkFormat get_image_format(const Texture *texture) const;
+  static bool lookup_image_format(VkFormat vk_format, Texture::Format &format,
+                                  Texture::ComponentType &type);
 
 public:
   VkDevice _device;

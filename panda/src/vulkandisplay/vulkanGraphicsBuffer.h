@@ -31,20 +31,22 @@ public:
                        GraphicsOutput *host);
   virtual ~VulkanGraphicsBuffer();
 
-  //virtual void clear(Thread *current_thread);
-  virtual bool begin_frame(FrameMode mode, Thread *current_thread);
-  virtual void end_frame(FrameMode mode, Thread *current_thread);
+  virtual bool get_supports_render_texture() const;
+
+  virtual void clear(Thread *current_thread) override;
+  virtual bool begin_frame(FrameMode mode, Thread *current_thread) override;
+  virtual void end_frame(FrameMode mode, Thread *current_thread) override;
 
 protected:
-  virtual void close_buffer();
-  virtual bool open_buffer();
+  virtual void close_buffer() override;
+  virtual bool open_buffer() override;
 
   bool setup_render_pass();
 
   void destroy_framebuffer();
   bool create_framebuffer();
 
-  bool create_attachment(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspect);
+  bool create_attachment(RenderTexturePlane plane, VkFormat format);
 
 private:
   VkRenderPass _render_pass;
@@ -54,15 +56,11 @@ private:
 
   VkFormat _color_format;
   VkFormat _depth_stencil_format;
-  VkImageAspectFlags _depth_stencil_aspect_mask;
+  RenderTexturePlane _depth_stencil_plane;
 
   struct Attachment {
-    VkImage _image;
-    VkImageView _image_view;
-    VkDeviceMemory _memory;
-    VkFormat _format;
-    VkImageUsageFlags _usage;
-    VkImageAspectFlags _aspect;
+    VulkanTextureContext *_tc;
+    RenderTexturePlane _plane;
   };
   typedef pvector<Attachment> Attachments;
   Attachments _attachments;
@@ -77,10 +75,10 @@ public:
     register_type(_type_handle, "VulkanGraphicsBuffer",
                   GraphicsBuffer::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;

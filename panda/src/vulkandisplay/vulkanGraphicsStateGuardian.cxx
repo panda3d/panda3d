@@ -2224,38 +2224,30 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   nassertr(_fb_color_tc != nullptr, false);
   VulkanTextureContext *fbtc = _fb_color_tc;
 
-  //TODO: proper format checking and size calculation.
-  tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, Texture::T_unsigned_byte, Texture::F_rgba8);
+  int xo, yo, w, h;
+  dr->get_region_pixels(xo, yo, w, h);
+  tex->set_size_padded(w, h, tex->get_z_size());
+
+  if (tex->get_match_framebuffer_format()) {
+    Texture::ComponentType type = Texture::T_unsigned_byte;
+    Texture::Format format = Texture::F_rgba8;
+
+    if (lookup_image_format(fbtc->_format, format, type) &&
+        (tex->get_component_type() != type || tex->get_format() != format)) {
+      tex->set_component_type(type);
+      tex->set_format(format);
+    }
+  }
 
   VulkanTextureContext *tc;
   DCAST_INTO_R(tc, tex->prepare_now(view, get_prepared_objects(), this), false);
 
-  nassertr(fbtc->_extent.width == tc->_extent.width &&
-           fbtc->_extent.height == tc->_extent.height &&
-           fbtc->_extent.depth == tc->_extent.depth, false);
+  nassertr(fbtc->_extent.width <= tc->_extent.width &&
+           fbtc->_extent.height <= tc->_extent.height &&
+           fbtc->_extent.depth <= tc->_extent.depth, false);
   nassertr(fbtc->_mip_levels == tc->_mip_levels, false);
   nassertr(fbtc->_array_layers == tc->_array_layers, false);
   nassertr(fbtc->_aspect_mask == tc->_aspect_mask, false);
-
-  VkImageCopy region;
-  region.srcSubresource.aspectMask = fbtc->_aspect_mask;
-  region.srcSubresource.mipLevel = 0;
-  if (z != -1) {
-    nassertr(z >= 0 && (uint32_t)z < fbtc->_array_layers, false);
-    region.srcSubresource.baseArrayLayer = z;
-    region.srcSubresource.layerCount = 1;
-  } else {
-    region.srcSubresource.baseArrayLayer = 0;
-    region.srcSubresource.layerCount = fbtc->_array_layers;
-  }
-  region.srcOffset.x = 0;
-  region.srcOffset.y = 0;
-  region.srcOffset.z = 0;
-  region.dstSubresource = region.srcSubresource;
-  region.dstOffset.x = 0;
-  region.dstOffset.y = 0;
-  region.dstOffset.z = 0;
-  region.extent = fbtc->_extent;
 
   // Issue a command to transition the image into a layout optimal for
   // transferring from.
@@ -2267,7 +2259,58 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
     VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 
-  vkCmdCopyImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region);
+  if (fbtc->_format == tc->_format) {
+    // The formats are the same.  This is just an image copy.
+    VkImageCopy region;
+    region.srcSubresource.aspectMask = fbtc->_aspect_mask;
+    region.srcSubresource.mipLevel = 0;
+    if (z != -1) {
+      nassertr(z >= 0 && (uint32_t)z < fbtc->_array_layers, false);
+      region.srcSubresource.baseArrayLayer = z;
+      region.srcSubresource.layerCount = 1;
+    } else {
+      region.srcSubresource.baseArrayLayer = 0;
+      region.srcSubresource.layerCount = fbtc->_array_layers;
+    }
+    region.srcOffset.x = 0;
+    region.srcOffset.y = 0;
+    region.srcOffset.z = 0;
+    region.dstSubresource = region.srcSubresource;
+    region.dstOffset.x = 0;
+    region.dstOffset.y = 0;
+    region.dstOffset.z = 0;
+    region.extent = fbtc->_extent;
+
+    vkCmdCopyImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region);
+  } else {
+    // The formats are not the same, so we need a blit operation.
+    VkImageBlit region;
+    region.srcSubresource.aspectMask = fbtc->_aspect_mask;
+    region.srcSubresource.mipLevel = 0;
+    if (z != -1) {
+      nassertr(z >= 0 && (uint32_t)z < fbtc->_array_layers, false);
+      region.srcSubresource.baseArrayLayer = z;
+      region.srcSubresource.layerCount = 1;
+    } else {
+      region.srcSubresource.baseArrayLayer = 0;
+      region.srcSubresource.layerCount = fbtc->_array_layers;
+    }
+    region.srcOffsets[0].x = 0;
+    region.srcOffsets[0].y = 0;
+    region.srcOffsets[0].z = 0;
+    region.srcOffsets[1].x = fbtc->_extent.width;
+    region.srcOffsets[1].y = fbtc->_extent.height;
+    region.srcOffsets[1].z = fbtc->_extent.depth;
+    region.dstSubresource = region.srcSubresource;
+    region.dstOffsets[0].x = 0;
+    region.dstOffsets[0].y = 0;
+    region.dstOffsets[0].z = 0;
+    region.dstOffsets[1].x = fbtc->_extent.width;
+    region.dstOffsets[1].y = fbtc->_extent.height;
+    region.dstOffsets[1].z = fbtc->_extent.depth;
+
+    vkCmdBlitImage(_cmd, fbtc->_image, fbtc->_layout, tc->_image, tc->_layout, 1, &region, VK_FILTER_NEAREST);
+  }
   return true;
 }
 
@@ -2297,11 +2340,24 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   nassertr(_render_pass == VK_NULL_HANDLE, false);
   nassertr(!_closing_gsg, false);
 
-  nassertr(_fb_color_tc != nullptr, false);
-  VulkanTextureContext *fbtc = _fb_color_tc;
+  // Are we reading the color attachment or the depth attachment?
+  VulkanTextureContext *fbtc;
+  if (rb._buffer_type & RenderBuffer::T_color) {
+    fbtc = _fb_color_tc;
+  } else {
+    fbtc = _fb_depth_tc;
+  }
+
+  nassertr(fbtc != nullptr, false);
 
   //TODO: proper format checking and size calculation.
-  tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, Texture::T_unsigned_byte, Texture::F_rgba8);
+  Texture::ComponentType type = Texture::T_unsigned_byte;
+  Texture::Format format = Texture::F_rgba8;
+  if (!lookup_image_format(fbtc->_format, format, type)) {
+    return false;
+  }
+
+  tex->setup_2d_texture(fbtc->_extent.width, fbtc->_extent.height, type, format);
 
   return do_extract_image(fbtc, tex, view);
 }
@@ -2331,7 +2387,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z) {
   region.bufferOffset = 0;
   region.bufferRowLength = 0;
   region.bufferImageHeight = 0;
-  region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  region.imageSubresource.aspectMask = tc->_aspect_mask;
   region.imageSubresource.mipLevel = 0;
   if (z != -1) {
     nassertr(z >= 0 && (uint32_t)z < tc->_array_layers, false);
@@ -3162,4 +3218,72 @@ get_image_format(const Texture *texture) const {
   }
 
   return VK_FORMAT_UNDEFINED;
+}
+
+/**
+ * Does the inverse of get_image_format.  If the VkFormat has a corresponding
+ * Texture representation, sets those and returns true, otherwise it returns
+ * false and leaves the arguments untouched.
+ */
+bool VulkanGraphicsStateGuardian::
+lookup_image_format(VkFormat vk_format, Texture::Format &format,
+                    Texture::ComponentType &type) {
+  switch (vk_format) {
+  case VK_FORMAT_R8_UNORM:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_red;
+    break;
+  case VK_FORMAT_R8G8_UNORM:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rg;
+    break;
+  case VK_FORMAT_R16_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_r16;
+    break;
+  case VK_FORMAT_R8G8B8A8_UNORM:
+  case VK_FORMAT_B8G8R8A8_UNORM:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgba8;
+    break;
+  case VK_FORMAT_R16G16_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_rg16;
+    break;
+  case VK_FORMAT_R16G16B16A16_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_rgba16;
+    break;
+  case VK_FORMAT_R32_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_r32;
+    break;
+  case VK_FORMAT_R32G32_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_rg32;
+    break;
+  case VK_FORMAT_R32G32B32A32_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_rgba32;
+    break;
+  case VK_FORMAT_D32_SFLOAT_S8_UINT:
+    type = Texture::T_unsigned_int;
+    format = Texture::F_depth_stencil;
+    break;
+  case VK_FORMAT_D24_UNORM_S8_UINT:
+    type = Texture::T_unsigned_int_24_8;
+    format = Texture::F_depth_stencil;
+    break;
+  case VK_FORMAT_D32_SFLOAT:
+    type = Texture::T_float;
+    format = Texture::F_depth_component32;
+    break;
+  case VK_FORMAT_X8_D24_UNORM_PACK32:
+    type = Texture::T_unsigned_int_24_8;
+    format = Texture::F_depth_component24;
+    break;
+  default:
+    return false;
+  }
+  return true;
 }

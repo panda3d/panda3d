@@ -434,7 +434,8 @@ open_window() {
     // Find a queue suitable both for graphics and for presenting to our
     // surface.  TODO: fall back to separate graphics/present queues?
     if (!vkpipe->find_queue_family_for_surface(queue_family_index, _surface, VK_QUEUE_GRAPHICS_BIT)) {
-      vulkan_error(err, "Failed to find graphics queue that can present to surface");
+      vulkandisplay_cat.error()
+        << "Failed to find graphics queue that can present to window surface.\n";
       return false;
     }
 
@@ -502,7 +503,7 @@ open_window() {
   bool request_depth32 = _fb_properties.get_depth_bits() > 24 ||
                          _fb_properties.get_float_depth();
 
-  if (_fb_properties.get_depth_bits() > 0 || _fb_properties.get_stencil_bits() > 0) {
+  if (_fb_properties.get_depth_bits() > 0 && _fb_properties.get_stencil_bits() > 0) {
     // Vulkan requires support for at least of one of these two formats.
     vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT_S8_UINT, &fmt_props);
     bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
