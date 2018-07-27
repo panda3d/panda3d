@@ -149,6 +149,8 @@ private:
 
   static PStatCollector _munge_pcollector;
 
+  friend class GeomCacheManager;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

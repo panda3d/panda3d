@@ -395,6 +395,70 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
  *
  */
 PT(CollisionEntry) CollisionTube::
+test_intersection_from_tube(const CollisionEntry &entry) const {
+  const CollisionTube *tube;
+  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+
+  LPoint3 into_a = _a;
+  LVector3 into_direction = _b - into_a;
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = tube->get_point_a() * wrt_mat;
+  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
+
+  LVector3 from_radius_v =
+    LVector3(tube->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
+
+  // Determine the points on each segment with the smallest distance between.
+  double into_t, from_t;
+  calc_closest_segment_points(into_t, from_t,
+                              into_a, into_direction,
+                              from_a, from_direction);
+  LPoint3 into_closest = into_a + into_direction * into_t;
+  LPoint3 from_closest = from_a + from_direction * from_t;
+
+  // If the distance is greater than the sum of tube radii, the test fails.
+  LVector3 closest_vec = from_closest - into_closest;
+  PN_stdfloat distance = closest_vec.length();
+  if (distance > _radius + from_radius) {
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  if (distance != 0) {
+    // This is the most common case, where the line segments don't touch
+    // exactly.  We point the normal along the vector of the closest distance.
+    LVector3 surface_normal = closest_vec * (1.0 / distance);
+
+    new_entry->set_surface_point(into_closest + surface_normal * _radius);
+    new_entry->set_interior_point(from_closest - surface_normal * from_radius);
+
+    if (has_effective_normal() && tube->get_respect_effective_normal()) {
+      new_entry->set_surface_normal(get_effective_normal());
+    } else if (distance != 0) {
+      new_entry->set_surface_normal(surface_normal);
+    }
+  } else {
+    // The rare case of the line segments touching exactly.
+    set_intersection_point(new_entry, into_closest, 0);
+  }
+
+  return new_entry;
+}
+
+/**
+ *
+ */
+PT(CollisionEntry) CollisionTube::
 test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
   DCAST_INTO_R(parabola, entry.get_from(), nullptr);
@@ -579,6 +643,80 @@ calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
 }
 
 /**
+ * Given line segments s1 and s2 defined by two points each, computes the
+ * point on each segment with the closest distance between them.
+ */
+void CollisionTube::
+calc_closest_segment_points(double &t1, double &t2,
+                            const LPoint3 &from1, const LVector3 &delta1,
+                            const LPoint3 &from2, const LVector3 &delta2) {
+  // Copyright 2001 softSurfer, 2012 Dan Sunday
+  // This code may be freely used, distributed and modified for any purpose
+  // providing that this copyright notice is included with it.
+  // SoftSurfer makes no warranty for this code, and cannot be held
+  // liable for any real or imagined damage resulting from its use.
+  // Users of this code must verify correctness for their application.
+  LVector3 w = from1 - from2;
+  PN_stdfloat a = delta1.dot(delta1); // always >= 0
+  PN_stdfloat b = delta1.dot(delta2);
+  PN_stdfloat c = delta2.dot(delta2); // always >= 0
+  PN_stdfloat d = delta1.dot(w);
+  PN_stdfloat e = delta2.dot(w);
+  PN_stdfloat D = a * c - b * b; // always >= 0
+  PN_stdfloat sN, sD = D;
+  PN_stdfloat tN, tD = D;
+
+  // compute the line parameters of the two closest points
+  if (IS_NEARLY_ZERO(D)) { // the lines are almost parallel
+    sN = 0.0; // force using point P0 on segment S1
+    sD = 1.0; // to prevent possible division by 0.0 later
+    tN = e;
+    tD = c;
+  } else {
+    // get the closest points on the infinite lines
+    sN = (b*e - c*d);
+    tN = (a*e - b*d);
+    if (sN < 0.0) { // sc < 0 => the s=0 edge is visible
+      sN = 0.0;
+      tN = e;
+      tD = c;
+    } else if (sN > sD) { // sc > 1  => the s=1 edge is visible
+      sN = sD;
+      tN = e + b;
+      tD = c;
+    }
+  }
+
+  if (tN < 0.0) { // tc < 0 => the t=0 edge is visible
+    tN = 0.0;
+    // recompute sc for this edge
+    if (-d < 0.0) {
+      sN = 0.0;
+    } else if (-d > a) {
+      sN = sD;
+    } else {
+      sN = -d;
+      sD = a;
+    }
+  } else if (tN > tD) { // tc > 1  => the t=1 edge is visible
+    tN = tD;
+    // recompute sc for this edge
+    if ((-d + b) < 0.0) {
+      sN = 0;
+    } else if ((-d + b) > a) {
+      sN = sD;
+    } else {
+      sN = (-d +  b);
+      sD = a;
+    }
+  }
+
+  // finally do the division to get sc and tc
+  t1 = (IS_NEARLY_ZERO(sN) ? 0.0 : sN / sD);
+  t2 = (IS_NEARLY_ZERO(tN) ? 0.0 : tN / tD);
+}
+
+/**
  * Determine the point(s) of intersection of a parametric line with the tube.
  * The line is infinite in both directions, and passes through "from" and
  * from+delta.  If the line does not intersect the tube, the function returns
@@ -692,7 +830,7 @@ intersects_line(double &t1, double &t2,
     // The starting point is off the bottom of the tube.  Test the line
     // against the first endcap.
     double t1a, t2a;
-    if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, inflate_radius)) {
+    if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, radius)) {
       // If there's no intersection with the endcap, there can't be an
       // intersection with the cylinder.
       return false;
@@ -703,7 +841,7 @@ intersects_line(double &t1, double &t2,
     // The starting point is off the top of the tube.  Test the line against
     // the second endcap.
     double t1b, t2b;
-    if (!sphere_intersects_line(t1b, t2b, _length, from, delta, inflate_radius)) {
+    if (!sphere_intersects_line(t1b, t2b, _length, from, delta, radius)) {
       // If there's no intersection with the endcap, there can't be an
       // intersection with the cylinder.
       return false;
@@ -715,7 +853,7 @@ intersects_line(double &t1, double &t2,
     // The ending point is off the bottom of the tube.  Test the line against
     // the first endcap.
     double t1a, t2a;
-    if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, inflate_radius)) {
+    if (!sphere_intersects_line(t1a, t2a, 0.0f, from, delta, radius)) {
       // If there's no intersection with the endcap, there can't be an
       // intersection with the cylinder.
       return false;
@@ -726,7 +864,7 @@ intersects_line(double &t1, double &t2,
     // The ending point is off the top of the tube.  Test the line against the
     // second endcap.
     double t1b, t2b;
-    if (!sphere_intersects_line(t1b, t2b, _length, from, delta, inflate_radius)) {
+    if (!sphere_intersects_line(t1b, t2b, _length, from, delta, radius)) {
       // If there's no intersection with the endcap, there can't be an
       // intersection with the cylinder.
       return false;
@@ -740,16 +878,14 @@ intersects_line(double &t1, double &t2,
 /**
  * After confirming that the line intersects an infinite cylinder, test
  * whether it intersects one or the other endcaps.  The y parameter specifies
- * the center of the sphere (and hence the particular endcap.
+ * the center of the sphere (and hence the particular endcap).
  */
 bool CollisionTube::
 sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
                        const LPoint3 &from, const LVector3 &delta,
-                       PN_stdfloat inflate_radius) const {
+                       PN_stdfloat radius) {
   // See CollisionSphere::intersects_line() for a derivation of the formula
   // here.
-  PN_stdfloat radius = _radius + inflate_radius;
-
   double A = dot(delta, delta);
 
   nassertr(A != 0.0, false);

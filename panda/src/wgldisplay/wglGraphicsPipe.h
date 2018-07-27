@@ -46,11 +46,12 @@ protected:
 private:
 
   static std::string format_pfd_flags(DWORD pfd_flags);
-  static void wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector);
+  static bool wgl_make_current(HDC hdc, HGLRC hglrc, PStatCollector *collector);
 
   static bool  _current_valid;
   static HDC   _current_hdc;
   static HGLRC _current_hglrc;
+  static Thread *_current_thread;
 
 public:
   static TypeHandle get_class_type() {

@@ -77,7 +77,7 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
 #ifdef _WIN32
   _use_generic_attr = !gsg->get_supports_hlsl();
 #else
-  _use_generic_attr = false;
+  _use_generic_attr = true;
 #endif
 
   // Do we want to use the ARB_shadow extension?  This also allows us to use

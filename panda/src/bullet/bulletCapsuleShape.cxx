@@ -82,6 +82,22 @@ ptr() const {
   return _shape;
 }
 
+
+/**
+ * Constructs a new BulletCapsuleShape using the information from a
+ * CollisionTube from the builtin collision system.
+ */
+BulletCapsuleShape *BulletCapsuleShape::
+make_from_solid(const CollisionTube *solid) {
+  
+  PN_stdfloat radius = solid->get_radius();
+  // CollisionTube height includes the hemispheres, Bullet only wants the cylinder height.
+  PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length() - (radius * 2);
+
+  // CollisionTubes are always Z-Up.
+  return new BulletCapsuleShape(radius, height, Z_up);
+}
+
 /**
  * Tells the BamReader how to create objects of type BulletShape.
  */

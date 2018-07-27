@@ -1334,7 +1334,7 @@ load_image_as_model(const Filename &filename) {
 
   card_node->add_geom(geom);
 
-  return card_node.p();
+  return card_node;
 }
 
 /**

@@ -483,6 +483,14 @@ get_screenshot() {
   GraphicsStateGuardian *gsg = window->get_gsg();
   nassertr(gsg != nullptr, nullptr);
 
+  // Are we on the draw thread?
+  if (gsg->get_threading_model().get_draw_stage() != current_thread->get_pipeline_stage()) {
+    // Ask the engine to do on the draw thread.
+    GraphicsEngine *engine = window->get_engine();
+    return engine->do_get_screenshot(this, gsg);
+  }
+
+  // We are on the draw thread.
   if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
     return nullptr;
   }

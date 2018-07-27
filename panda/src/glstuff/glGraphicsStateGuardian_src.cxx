@@ -92,10 +92,6 @@ PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Upda
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
 
-#ifndef OPENGLES_1
-PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = nullptr;
-#endif
-
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
 // the GL, just so it will always be safe to call the extension functions.
@@ -187,6 +183,48 @@ static const string default_vshader =
   "  texcoord = p3d_MultiTexCoord0;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
+
+#ifndef OPENGLES
+// This version of the shader is used if vertices-float64 is enabled.
+static const string default_vshader_fp64 =
+#ifdef __APPLE__
+  "#version 150\n"
+#else
+  "#version 130\n"
+#endif
+  "#extension GL_ARB_vertex_attrib_64bit : require\n"
+  "#extension GL_ARB_gpu_shader_fp64 : require\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+
+// Same as above, but for OpenGL 4.1.
+static const string default_vshader_fp64_gl41 =
+  "#version 410\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+#endif
 
 static const string default_fshader =
 #ifndef OPENGLES
@@ -613,6 +651,8 @@ reset() {
         get_extension_func("glDebugMessageControlARB");
       _supports_debug = true;
 #endif
+    } else {
+      _supports_debug = false;
     }
 
     if (_supports_debug) {
@@ -1697,6 +1737,14 @@ reset() {
        get_extension_func("glUniform3iv");
     _glUniform4iv = (PFNGLUNIFORM4IVPROC)
        get_extension_func("glUniform4iv");
+    _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+       get_extension_func("glUniform1uiv");
+    _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+       get_extension_func("glUniform2uiv");
+    _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+       get_extension_func("glUniform3uiv");
+    _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+       get_extension_func("glUniform4uiv");
     _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
        get_extension_func("glUniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
@@ -1775,6 +1823,10 @@ reset() {
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniform1iv = glUniform1iv;
+  _glUniform2iv = glUniform2iv;
+  _glUniform3iv = glUniform3iv;
+  _glUniform4iv = glUniform4iv;
   _glUniformMatrix3fv = glUniformMatrix3fv;
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
@@ -1825,7 +1877,17 @@ reset() {
   // shader just outputs a red color, indicating that something went wrong.
 #ifndef OPENGLES_1
   if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
-    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+#ifndef OPENGLES
+    bool use_float64 = vertices_float64;
+    if (use_float64 && is_at_least_gl_version(4, 1)) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64_gl41, default_fshader);
+    } else if (use_float64 && has_extension("GL_ARB_vertex_attrib_64bit")) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64, default_fshader);
+    } else
+#endif
+    {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+    }
   }
 #endif
 
@@ -2995,6 +3057,50 @@ reset() {
   }
 #endif
 
+  // Set depth range from zero to one if requested.
+#ifndef OPENGLES
+  _use_depth_zero_to_one = false;
+  _use_remapped_depth_range = false;
+
+  if (gl_depth_zero_to_one) {
+    if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
+      PFNGLCLIPCONTROLPROC pglClipControl =
+        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+
+      if (pglClipControl != nullptr) {
+        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        _use_depth_zero_to_one = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glClipControl\n";
+        }
+      }
+    }/* else if (has_extension("GL_NV_depth_buffer_float")) {
+      // Alternatively, all GeForce 8+ and even some AMD drivers support this
+      // extension, which (unlike the core glDepthRange, which clamps its
+      // input parameters) can compensate for the built-in depth remapping.
+      _glDepthRangedNV = (PFNGLDEPTHRANGEDNVPROC)get_extension_func("glDepthRangedNV");
+
+      if (_glDepthRangedNV != nullptr) {
+        _glDepthRangedNV(-1.0, 1.0);
+        _use_depth_zero_to_one = true;
+        _use_remapped_depth_range = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glDepthRangedNV\n";
+        }
+      }
+    }*/
+
+    if (!_use_depth_zero_to_one) {
+      GLCAT.warning()
+        << "Zero-to-one depth was requested, but driver does not support it.\n";
+    }
+  }
+#endif
+
   // Set up all the enableddisabled flags to GL's known initial values:
   // everything off.
   _multisample_mode = 0;
@@ -3643,6 +3749,19 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4::convert_mat(_internal_coordinate_system,
                           lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
+
+#ifndef OPENGLES
+  if (_use_depth_zero_to_one) {
+    // If we requested that the OpenGL NDC Z goes from zero to one like in
+    // Direct3D, we need to scale the projection matrix, which assumes -1..1.
+    static const LMatrix4 rescale_mat
+      (1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 0.5, 0,
+       0, 0, 0.5, 1);
+    result *= rescale_mat;
+  }
+#endif
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the projection
@@ -6330,10 +6449,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
     if (_use_object_labels) {
       string name = data->get_name();
-      _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
+      _glObjectLabel(GL_BUFFER, gbc->_index, name.size(), name.data());
     }
 
-    uint64_t num_bytes = data->get_data_size_bytes();
+    // Some drivers require the buffer to be padded to 16 byte boundary.
+    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {
@@ -7450,7 +7570,13 @@ do_issue_depth_offset() {
   glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
   // Mainline OpenGL uses a double-precision call.
-  glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+  }
 #endif  // OPENGLES
 
   report_my_gl_errors();
@@ -12778,7 +12904,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -12958,7 +13086,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -13309,6 +13439,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
       << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
 
+#ifndef OPENGLES
+  if (target == GL_TEXTURE_BUFFER) {
+    _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
+  }
+#endif
+
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
 
@@ -13367,7 +13503,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint internal_format = GL_RGBA;
 #ifndef OPENGLES
-  glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  if (target != GL_TEXTURE_BUFFER) {
+    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  } else {
+    // Some drivers give the wrong result for the above call.  No problem; we
+    // already know the internal format of a buffer texture since glTexBuffer
+    // required passing the exact sized format.
+    internal_format = gtc->_internal_format;
+  }
 #endif  // OPENGLES
 
   // Make sure we were able to query those parameters properly.

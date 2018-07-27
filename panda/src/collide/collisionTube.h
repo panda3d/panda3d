@@ -82,6 +82,8 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
+  test_intersection_from_tube(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
@@ -93,12 +95,15 @@ private:
   LVertex calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
                               PN_stdfloat length);
 
+  static void calc_closest_segment_points(double &t1, double &t2,
+                                          const LPoint3 &from1, const LVector3 &delta1,
+                                          const LPoint3 &from2, const LVector3 &delta2);
   bool intersects_line(double &t1, double &t2,
                        const LPoint3 &from, const LVector3 &delta,
                        PN_stdfloat inflate_radius) const;
-  bool sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
-                              const LPoint3 &from, const LVector3 &delta,
-                              PN_stdfloat inflate_radius) const;
+  static bool sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
+                                     const LPoint3 &from, const LVector3 &delta,
+                                     PN_stdfloat radius);
   bool intersects_parabola(double &t, const LParabola &parabola,
                            double t1, double t2,
                            const LPoint3 &p1, const LPoint3 &p2) const;

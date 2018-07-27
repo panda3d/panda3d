@@ -79,7 +79,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   HGLRC context = wglgsg->get_context(_hdc);
   nassertr(context, false);
 
-  wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
+  if (!wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector)) {
+    wgldisplay_cat.error()
+      << "Failed to make WGL context current.\n";
+    return false;
+  }
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {

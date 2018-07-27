@@ -202,7 +202,6 @@ update_type(To *ptr) {
 }
 
 #ifndef CPPPARSER
-#ifndef WIN32_VC
 /**
  *
  */
@@ -426,7 +425,6 @@ INLINE bool WeakPointerToBase<T>::
 operator >= (const PointerToBase<To> &other) const {
   return (To *)_void_ptr >= (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
-#endif  // WIN32_VC
 
 /**
  *

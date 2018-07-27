@@ -133,7 +133,7 @@ generate() {
 
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**

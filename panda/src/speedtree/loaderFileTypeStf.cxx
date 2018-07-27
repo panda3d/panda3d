@@ -62,5 +62,5 @@ load_file(const Filename &path, const LoaderOptions &options,
   PT(SpeedTreeNode) st = new SpeedTreeNode(path.get_basename());
   st->add_from_stf(path, options);
 
-  return st.p();
+  return st;
 }

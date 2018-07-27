@@ -55,7 +55,7 @@ GeomPrimitive() {
  */
 PT(CopyOnWriteObject) GeomPrimitive::
 make_cow_copy() {
-  return make_copy().p();
+  return make_copy();
 }
 
 /**

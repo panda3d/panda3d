@@ -154,10 +154,11 @@ apply_transform(const TransformState *transform) {
 
   AppliedTransforms::iterator ati = _applied_transforms.find(transform);
   if (ati != _applied_transforms.end()) {
-    if ((*ati).first.is_valid_pointer() &&
-        (*ati).second.is_valid_pointer()) {
-      // Here's our cached result.
-      return (*ati).second.lock();
+    if ((*ati).first.is_valid_pointer()) {
+      if (auto new_bundle = (*ati).second.lock()) {
+        // Here's our cached result.
+        return new_bundle;
+      }
     }
   }
 

@@ -319,7 +319,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
     return;
   }
 
-  wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, nullptr);
+  if (!wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, nullptr)) {
+    wgldisplay_cat.error()
+      << "Failed to make WGL context current.\n";
+    wglDeleteContext(twindow_ctx);
+    return;
+  }
 
   _extensions.clear();
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));

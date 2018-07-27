@@ -630,7 +630,7 @@ make_geometry() {
   PT(Geom) geom = new Geom(cdata->_geom_data);
   geom->add_primitive(line);
 
-  return geom.p();
+  return geom;
 }
 
 /**

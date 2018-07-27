@@ -98,7 +98,7 @@ make_copy_impl() const {
   Texture::CDWriter cdata_copy_tex(copy->Texture::_cycler, true);
   copy->do_assign(cdata_copy_tex, this, cdata_tex);
 
-  return copy.p();
+  return copy;
 }
 
 /**

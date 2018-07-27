@@ -333,6 +333,14 @@ public:
     int        _seqno;
   };
 
+  enum ShaderPtrType {
+    SPT_float,
+    SPT_double,
+    SPT_int,
+    SPT_uint,
+    SPT_unknown
+  };
+
   struct ShaderArgInfo {
     ShaderArgId       _id;
     ShaderArgClass    _class;
@@ -340,15 +348,8 @@ public:
     ShaderArgType     _type;
     ShaderArgDir      _direction;
     bool              _varying;
-    bool              _integer;
+    ShaderPtrType     _numeric_type;
     NotifyCategory   *_cat;
-  };
-
-  enum ShaderPtrType {
-    SPT_float,
-    SPT_double,
-    SPT_int,
-    SPT_unknown
   };
 
   // Container structure for data of parameters ShaderPtrSpec.
@@ -426,7 +427,7 @@ public:
     PT(InternalName)  _name;
     int               _append_uv;
     int               _elements;
-    bool              _integer;
+    ShaderPtrType     _numeric_type;
   };
 
   struct ShaderPtrSpec {

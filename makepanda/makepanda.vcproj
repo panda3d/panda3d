@@ -1379,7 +1379,6 @@
 				<File RelativePath="..\panda\src\display\windowHandle.h"></File>
 				<File RelativePath="..\panda\src\display\displayRegionCullCallbackData.cxx"></File>
 				<File RelativePath="..\panda\src\display\graphicsOutput.cxx"></File>
-				<File RelativePath="..\panda\src\display\test_display.cxx"></File>
 				<File RelativePath="..\panda\src\display\graphicsBuffer.I"></File>
 				<File RelativePath="..\panda\src\display\stencilRenderStates.cxx"></File>
 				<File RelativePath="..\panda\src\display\stereoDisplayRegion.I"></File>

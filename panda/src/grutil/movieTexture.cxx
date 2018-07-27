@@ -409,7 +409,7 @@ make_copy_impl() const {
   CDWriter cdata_copy(copy->_cycler, true);
   copy->do_assign(cdata_copy, cdata_copy_tex, this, cdata, cdata_tex);
 
-  return copy.p();
+  return copy;
 }
 
 /**

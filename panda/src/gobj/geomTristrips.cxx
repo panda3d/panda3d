@@ -219,7 +219,7 @@ make_adjacency() const {
   }
   nassertr(vi == num_vertices, nullptr);
 
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -358,7 +358,7 @@ decompose_impl() const {
     nassertr(vi == num_vertices, nullptr);
   }
 
-  return triangles.p();
+  return triangles;
 }
 
 /**

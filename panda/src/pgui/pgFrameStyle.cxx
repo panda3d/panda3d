@@ -257,7 +257,7 @@ generate_flat_geom(const LVecBase4 &frame) {
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -431,7 +431,7 @@ generate_bevel_geom(const LVecBase4 &frame, bool in) {
   }
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -663,7 +663,7 @@ generate_groove_geom(const LVecBase4 &frame, bool in) {
   }
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**
@@ -803,5 +803,5 @@ generate_texture_border_geom(const LVecBase4 &frame) {
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }

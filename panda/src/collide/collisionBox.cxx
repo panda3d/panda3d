@@ -398,6 +398,49 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   return new_entry;
 }
 
+/**
+ *
+ */
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_line(const CollisionEntry &entry) const {
+  const CollisionLine *line;
+  DCAST_INTO_R(line, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
+
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction)) {
+    // No intersection.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
+
+  if (has_effective_normal() && line->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
 
 /**
  * Double dispatch point for ray as a FROM object
@@ -411,51 +454,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   LPoint3 from_origin = ray->get_origin() * wrt_mat;
   LVector3 from_direction = ray->get_direction() * wrt_mat;
 
-  int i, j;
-  PN_stdfloat t;
-  PN_stdfloat near_t = 0.0;
-  bool intersect;
-  LPlane plane;
-  LPlane near_plane;
-
-  // Returns the details about the first plane of the box that the ray
-  // intersects.
-  for (i = 0, intersect = false, t = 0, j = 0; i < 6 && j < 2; i++) {
-    plane = get_plane(i);
-
-    if (!plane.intersects_line(t, from_origin, from_direction)) {
-      // No intersection.  The ray is parallel to the plane.
-      continue;
-    }
-
-    if (t < 0.0f) {
-      // The intersection point is before the start of the ray, and so the ray
-      // is entirely in front of the plane.
-      continue;
-    }
-    LPoint3 plane_point = from_origin + t * from_direction;
-    LPoint2 p = to_2d(plane_point, i);
-
-    if (!point_is_inside(p, _points[i])){
-      continue;
-    }
-    intersect = true;
-    if (j) {
-      if(t < near_t) {
-        near_plane = plane;
-        near_t = t;
-      }
-    }
-    else {
-      near_plane = plane;
-      near_t = t;
-    }
-    ++j;
-  }
-
-
-  if(!intersect) {
-    // No intersection with ANY of the box's planes has been detected
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction) || (t1 < 0.0 && t2 < 0.0)) {
+    // No intersection.
     return nullptr;
   }
 
@@ -464,21 +465,31 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3 into_intersection_point = from_origin + near_t * from_direction;
+  if (t1 < 0.0) {
+    // The origin is inside the box, so we take the exit as our surface point.
+    new_entry->set_interior_point(from_origin);
+    t1 = t2;
+  }
 
-  LVector3 normal =
-    (has_effective_normal() && ray->get_respect_effective_normal())
-    ? get_effective_normal() : near_plane.get_normal();
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
 
-  new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_intersection_point);
+  if (has_effective_normal() && ray->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }
-
 
 /**
  * Double dispatch point for segment as a FROM object
@@ -493,51 +504,10 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   LPoint3 from_extent = seg->get_point_b() * wrt_mat;
   LVector3 from_direction = from_extent - from_origin;
 
-  int i, j;
-  PN_stdfloat t;
-  PN_stdfloat near_t = 0.0;
-  bool intersect;
-  LPlane plane;
-  LPlane near_plane;
-
-  // Returns the details about the first plane of the box that the segment
-  // intersects.
-  for(i = 0, intersect = false, t = 0, j = 0; i < 6 && j < 2; i++) {
-    plane = get_plane(i);
-
-    if (!plane.intersects_line(t, from_origin, from_direction)) {
-      // No intersection.  The segment is parallel to the plane.
-      continue;
-    }
-
-    if (t < 0.0f || t > 1.0f) {
-      // The intersection point is before the start of the segment, or after
-      // the end of the segment, so the segment is either entirely in front of
-      // or behind the plane.
-      continue;
-    }
-    LPoint3 plane_point = from_origin + t * from_direction;
-    LPoint2 p = to_2d(plane_point, i);
-
-    if (!point_is_inside(p, _points[i])){
-      continue;
-    }
-    intersect = true;
-    if(j) {
-      if(t < near_t) {
-        near_plane = plane;
-        near_t = t;
-      }
-    }
-    else {
-      near_plane = plane;
-      near_t = t;
-    }
-    ++j;
-  }
-
-  if(!intersect) {
-    // No intersection with ANY of the box's planes has been detected
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_origin, from_direction) ||
+      (t1 < 0.0 && t2 < 0.0) || (t1 > 1.0 && t2 > 1.0)) {
+    // No intersection.
     return nullptr;
   }
 
@@ -546,17 +516,31 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
       << "intersection detected from " << entry.get_from_node_path()
       << " into " << entry.get_into_node_path() << "\n";
   }
-
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3 into_intersection_point = from_origin + near_t * from_direction;
+  // In case the segment is entirely inside the cube, we consider the point
+  // closest to the surface as our entry point.
+  if (t1 < (1.0 - t2)) {
+    std::swap(t1, t2);
+  }
 
-  LVector3 normal =
-    (has_effective_normal() && seg->get_respect_effective_normal())
-    ? get_effective_normal() : near_plane.get_normal();
+  // Our interior point is the closest point to t2 that is inside the segment.
+  new_entry->set_interior_point(from_origin + std::min(std::max(t2, 0.0), 1.0) * from_direction);
 
-  new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_intersection_point);
+  LPoint3 point = from_origin + t1 * from_direction;
+  new_entry->set_surface_point(point);
+
+  if (has_effective_normal() && seg->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    LVector3 normal(
+      IS_NEARLY_EQUAL(point[0], _max[0]) - IS_NEARLY_EQUAL(point[0], _min[0]),
+      IS_NEARLY_EQUAL(point[1], _max[1]) - IS_NEARLY_EQUAL(point[1], _min[1]),
+      IS_NEARLY_EQUAL(point[2], _max[2]) - IS_NEARLY_EQUAL(point[2], _min[2])
+    );
+    normal.normalize();
+    new_entry->set_surface_normal(normal);
+  }
 
   return new_entry;
 }
@@ -821,6 +805,51 @@ fill_viz_geom() {
 
   _viz_geom->add_geom(geom, get_solid_viz_state());
   _bounds_viz_geom->add_geom(geom, get_solid_bounds_viz_state());
+}
+
+/**
+ * Determine the point(s) of intersection of a parametric line with the box.
+ * The line is infinite in both directions, and passes through "from" and
+ * from+delta.  If the line does not intersect the box, the function returns
+ * false, and t1 and t2 are undefined.  If it does intersect the box, it
+ * returns true, and t1 and t2 are set to the points along the equation
+ * from+t*delta that correspond to the two points of intersection.
+ */
+bool CollisionBox::
+intersects_line(double &t1, double &t2,
+                const LPoint3 &from, const LVector3 &delta,
+                PN_stdfloat inflate_size) const {
+
+  LPoint3 bmin = _min - LVector3(inflate_size);
+  LPoint3 bmax = _max + LVector3(inflate_size);
+
+  double tmin = -DBL_MAX;
+  double tmax = DBL_MAX;
+
+  for (int i = 0; i < 3; ++i) {
+    PN_stdfloat d = delta[i];
+    if (!IS_NEARLY_ZERO(d)) {
+      double tmin2 = (bmin[i] - from[i]) / d;
+      double tmax2 = (bmax[i] - from[i]) / d;
+      if (tmin2 > tmax2) {
+        std::swap(tmin2, tmax2);
+      }
+      tmin = std::max(tmin, tmin2);
+      tmax = std::min(tmax, tmax2);
+
+      if (tmin > tmax) {
+        return false;
+      }
+
+    } else if (from[i] < bmin[i] || from[i] > bmax[i]) {
+      // The line is entirely parallel in this dimension.
+      return false;
+    }
+  }
+
+  t1 = tmin;
+  t2 = tmax;
+  return true;
 }
 
 /**

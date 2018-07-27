@@ -19,6 +19,10 @@
 #include <fcntl.h>
 #include <crtdbg.h>
 #include "errno.h"
+
+using std::min;
+using std::max;
+
 #include "Max.h"
 #include "eggGroup.h"
 #include "eggTable.h"

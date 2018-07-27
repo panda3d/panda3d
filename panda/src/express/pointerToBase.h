@@ -35,16 +35,24 @@ protected:
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
   INLINE PointerToBase(PointerToBase<T> &&from) noexcept;
+  template<class Y>
+  INLINE PointerToBase(PointerToBase<Y> &&r) noexcept;
+
   INLINE ~PointerToBase();
 
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(PointerToBase<To> &&from) noexcept;
+  template<class Y>
+  INLINE void reassign(PointerToBase<Y> &&from) noexcept;
 
   INLINE void update_type(To *ptr);
 
   // No assignment or retrieval functions are declared in PointerToBase,
   // because we will have to specialize on const vs.  non-const later.
+
+  // This is needed to be able to access the privates of other instantiations.
+  template<typename Y> friend class PointerToBase;
 
 PUBLISHED:
   ALWAYS_INLINE void clear();

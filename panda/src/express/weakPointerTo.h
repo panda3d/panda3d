@@ -38,7 +38,7 @@ public:
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
-  INLINE operator T *() const;
+  INLINE explicit operator T *() const;
 
 PUBLISHED:
   INLINE PointerTo<T> lock() const;
@@ -75,7 +75,7 @@ PUBLISHED:
 public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
-  INLINE operator const T *() const;
+  INLINE explicit operator const T *() const;
 
 PUBLISHED:
   INLINE ConstPointerTo<T> lock() const;

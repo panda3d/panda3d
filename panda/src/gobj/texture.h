@@ -858,6 +858,7 @@ private:
   INLINE static double get_unsigned_byte(const unsigned char *&p);
   INLINE static double get_unsigned_short(const unsigned char *&p);
   INLINE static double get_unsigned_int(const unsigned char *&p);
+  INLINE static double get_unsigned_int_24(const unsigned char *&p);
   INLINE static double get_float(const unsigned char *&p);
   INLINE static double get_half_float(const unsigned char *&p);
 

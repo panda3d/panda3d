@@ -573,7 +573,23 @@ class MetaInterval(CMetaInterval):
             out = ostream
         CMetaInterval.timeline(self, out)
 
-
+    add_sequence = addSequence
+    add_parallel = addParallel
+    add_parallel_end_together = addParallelEndTogether
+    add_track = addTrack
+    add_interval = addInterval
+    set_manager = setManager
+    get_manager = getManager
+    set_t = setT
+    resume_until = resumeUntil
+    clear_to_initial = clearToInitial
+    clear_intervals = clearIntervals
+    set_play_rate = setPlayRate
+    priv_do_event = privDoEvent
+    priv_post_event = privPostEvent
+    set_interval_start_time = setIntervalStartTime
+    get_interval_start_time = getIntervalStartTime
+    get_duration = getDuration
 
 
 class Sequence(MetaInterval):
