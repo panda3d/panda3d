@@ -64,20 +64,27 @@ WeakPointerToBase(const WeakPointerToBase<T> &copy) {
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept {
-  // Protect against self-move-assignment.
-  if (from._void_ptr != this->_void_ptr) {
-    WeakReferenceList *old_ref = (To *)this->_weak_ref;
+  this->_void_ptr = from._void_ptr;
+  this->_weak_ref = from._weak_ref;
+  from._void_ptr = nullptr;
+  from._weak_ref = nullptr;
+}
 
-    this->_void_ptr = from._void_ptr;
-    this->_weak_ref = from._weak_ref;
-    from._void_ptr = nullptr;
-    from._weak_ref = nullptr;
+/**
+ *
+ */
+template<class T>
+template<class Y>
+INLINE WeakPointerToBase<T>::
+WeakPointerToBase(WeakPointerToBase<Y> &&r) noexcept {
+  // If this next line gives an error, you are trying to convert a WeakPointerTo
+  // from an incompatible type of another WeakPointerTo.
+  To *ptr = (Y *)r._void_ptr;
 
-    // Now delete the old pointer.
-    if (old_ref != nullptr && !old_ref->unref()) {
-      delete old_ref;
-    }
-  }
+  this->_void_ptr = ptr;
+  this->_weak_ref = r._weak_ref;
+  r._void_ptr = nullptr;
+  r._weak_ref = nullptr;
 }
 
 /**
@@ -169,6 +176,33 @@ reassign(WeakPointerToBase<To> &&from) noexcept {
     WeakReferenceList *old_ref = (WeakReferenceList *)this->_weak_ref;
 
     this->_void_ptr = from._void_ptr;
+    this->_weak_ref = from._weak_ref;
+    from._void_ptr = nullptr;
+    from._weak_ref = nullptr;
+
+    // Now delete the old pointer.
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
+    }
+  }
+}
+
+/**
+ * Like above, but casts from a compatible pointer type.
+ */
+template<class T>
+template<class Y>
+INLINE void WeakPointerToBase<T>::
+reassign(WeakPointerToBase<Y> &&from) noexcept {
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    WeakReferenceList *old_ref = (WeakReferenceList *)this->_weak_ref;
+
+    // If there is a compile error on this line, it means you tried to assign
+    // an incompatible type.
+    To *new_ptr = (Y *)from._void_ptr;
+
+    this->_void_ptr = new_ptr;
     this->_weak_ref = from._weak_ref;
     from._void_ptr = nullptr;
     from._weak_ref = nullptr;

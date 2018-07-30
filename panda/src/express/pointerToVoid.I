@@ -14,13 +14,6 @@
 /**
  *
  */
-constexpr PointerToVoid::
-PointerToVoid() noexcept : _void_ptr(nullptr) {
-}
-
-/**
- *
- */
 //INLINE PointerToVoid::
 //~PointerToVoid() {
 //  nassertv(_void_ptr == nullptr);

@@ -12,13 +12,6 @@
  */
 
 /**
- *
- */
-INLINE WeakPointerToVoid::
-WeakPointerToVoid() : _weak_ref(nullptr) {
-}
-
-/**
  * Sets a callback that will be made when the pointer is deleted.  Does
  * nothing if this is a null pointer.
  *

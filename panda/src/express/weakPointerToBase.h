@@ -28,16 +28,22 @@ public:
   typedef T To;
 
 protected:
-  INLINE WeakPointerToBase(To *ptr);
+  constexpr WeakPointerToBase() noexcept = default;
+  INLINE explicit WeakPointerToBase(To *ptr);
   INLINE WeakPointerToBase(const PointerToBase<T> &copy);
   INLINE WeakPointerToBase(const WeakPointerToBase<T> &copy);
   INLINE WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept;
+  template<class Y>
+  INLINE WeakPointerToBase(WeakPointerToBase<Y> &&r) noexcept;
+
   INLINE ~WeakPointerToBase();
 
   void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(const WeakPointerToBase<To> &copy);
   INLINE void reassign(WeakPointerToBase<To> &&from) noexcept;
+  template<class Y>
+  INLINE void reassign(WeakPointerToBase<Y> &&from) noexcept;
 
   INLINE void update_type(To *ptr);
 
