@@ -426,11 +426,17 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_texture.owner_before(om->_texture)) {
+    return -1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (om->_texture.owner_before(_texture)) {
+    return 1;
+  }
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
   if (_flags != om->_flags) {
     return _flags < om->_flags ? -1 : 1;
@@ -447,11 +453,17 @@ compare_to_impl(const GeomMunger *other) const {
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_texture.owner_before(om->_texture)) {
+    return -1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (om->_texture.owner_before(_texture)) {
+    return 1;
+  }
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
   if (_flags != om->_flags) {
     return _flags < om->_flags ? -1 : 1;

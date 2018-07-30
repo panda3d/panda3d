@@ -12,7 +12,8 @@
  */
 
 /**
- *
+ * Constructs a weak pointer from a plain pointer (or nullptr).  It is the
+ * caller's responsibility to ensure that it points to a valid object.
  */
 template<class T>
 INLINE WeakPointerToBase<T>::
@@ -27,7 +28,7 @@ WeakPointerToBase(To *ptr) {
 }
 
 /**
- *
+ * Constructs a weak pointer from a reference-counting pointer.
  */
 template<class T>
 INLINE WeakPointerToBase<T>::
@@ -42,24 +43,25 @@ WeakPointerToBase(const PointerToBase<T> &copy) {
 }
 
 /**
- *
+ * Copies a weak pointer.  This is always safe, even for expired pointers.
  */
 template<class T>
 INLINE WeakPointerToBase<T>::
 WeakPointerToBase(const WeakPointerToBase<T> &copy) {
   _void_ptr = copy._void_ptr;
 
-  // Don't bother increasing the weak reference count if the object was
-  // already deleted.
+  // While it is tempting to stop maintaining the control block pointer after
+  // the object has been deleted, we still need it in order to define a
+  // consistent ordering in owner_before.
   WeakReferenceList *weak_ref = copy._weak_ref;
-  if (weak_ref != nullptr && !weak_ref->was_deleted()) {
+  if (weak_ref != nullptr/* && !weak_ref->was_deleted()*/) {
     _weak_ref = copy._weak_ref;
     _weak_ref->ref();
   }
 }
 
 /**
- *
+ * Moves a weak pointer.  This is always safe, even for expired pointers.
  */
 template<class T>
 INLINE WeakPointerToBase<T>::
@@ -71,7 +73,7 @@ WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept {
 }
 
 /**
- *
+ * Moves a weak pointer from a cast-convertible weak pointer type.
  */
 template<class T>
 template<class Y>
@@ -148,10 +150,11 @@ reassign(const WeakPointerToBase<To> &copy) {
     WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
     _void_ptr = new_ptr;
 
-    // Don't bother increasing the weak reference count if the object was
-    // already deleted.
+    // While it is tempting to stop maintaining the control block pointer
+    // after the object has been deleted, we still need it in order to define
+    // a consistent ordering in owner_before.
     WeakReferenceList *weak_ref = copy._weak_ref;
-    if (weak_ref != nullptr && !weak_ref->was_deleted()) {
+    if (weak_ref != nullptr/* && !weak_ref->was_deleted()*/) {
       weak_ref->ref();
       _weak_ref = weak_ref;
     } else {
@@ -371,7 +374,11 @@ operator >= (std::nullptr_t) const {
 }
 
 /**
- *
+ * Returns true if both pointers have the same raw pointer value.  For this to
+ * be meaningful, neither pointer may have expired, since if one has expired
+ * while the other was allocated at the expired pointer's memory address, this
+ * comparison will be true even though they didn't refer to the same object.
+ * @see owner_before
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -380,7 +387,7 @@ operator == (const WeakPointerToBase<To> &other) const {
 }
 
 /**
- *
+ * @see operator ==
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -389,7 +396,8 @@ operator != (const WeakPointerToBase<To> &other) const {
 }
 
 /**
- *
+ * Defines an ordering between WeakPointerTo based on their raw pointer value.
+ * @deprecated Do not use this.  Use owner_before or std::owner_less instead.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -398,7 +406,8 @@ operator > (const WeakPointerToBase<To> &other) const {
 }
 
 /**
- *
+ * Defines an ordering between WeakPointerTo based on their raw pointer value.
+ * @deprecated Do not use this.  Use owner_before or std::owner_less instead.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -407,7 +416,8 @@ operator <= (const WeakPointerToBase<To> &other) const {
 }
 
 /**
- *
+ * Defines an ordering between WeakPointerTo based on their raw pointer value.
+ * @deprecated Do not use this.  Use owner_before or std::owner_less instead.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -416,7 +426,7 @@ operator >= (const WeakPointerToBase<To> &other) const {
 }
 
 /**
- *
+ * Returns true if both pointers point to the same object.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -425,7 +435,7 @@ operator == (const PointerToBase<To> &other) const {
 }
 
 /**
- *
+ * Returns false if both pointers point to the same object.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -479,7 +489,8 @@ operator < (std::nullptr_t) const {
 }
 
 /**
- *
+ * Defines an ordering between WeakPointerTo based on their raw pointer value.
+ * @deprecated Do not use this.  Use owner_before or std::owner_less instead.
  */
 template<class T>
 INLINE bool WeakPointerToBase<T>::
@@ -497,6 +508,35 @@ operator < (const PointerToBase<To> &other) const {
 }
 
 #endif  // CPPPARSER
+
+/**
+ * Defines an ordering that is guaranteed to remain consistent even after the
+ * weak pointers have expired.  This may result in two pointers with the same
+ * get_orig() value comparing unequal if one of them is a new object that was
+ * allocated at the same memory address as the older, expired pointer.
+ */
+template<class T>
+template<class Y>
+INLINE bool WeakPointerToBase<T>::
+owner_before(const WeakPointerToBase<Y> &other) const noexcept {
+  return _weak_ref < other._weak_ref;
+}
+
+/**
+ * Defines an ordering that is guaranteed to remain consistent even after this
+ * weak pointer has expired.  This may result in two pointers with the same
+ * get_orig() value comparing unequal if one of them is a new object that was
+ * allocated at the same memory address as the older, expired pointer.
+ */
+template<class T>
+template<class Y>
+INLINE bool WeakPointerToBase<T>::
+owner_before(const PointerToBase<Y> &other) const noexcept {
+  // Unfortunately, this may needlessly cause a control block to be allocated,
+  // but I do not see a more efficient solution.
+  return (other._void_ptr != nullptr) &&
+    (_void_ptr == nullptr || _weak_ref < ((const Y *)other._void_ptr)->get_weak_list());
+}
 
 /**
  * A convenient way to set the PointerTo object to NULL. (Assignment to a NULL
@@ -539,9 +579,17 @@ template<class T>
 INLINE void WeakPointerToBase<T>::
 output(std::ostream &out) const {
   out << _void_ptr;
-  if (was_deleted()) {
-    out << ":deleted";
-  } else if (_void_ptr != nullptr) {
-    out << ":" << ((To *)_void_ptr)->get_ref_count();
+
+  WeakReferenceList *weak_ref = this->_weak_ref;
+  if (weak_ref != nullptr) {
+    weak_ref->_lock.lock();
+    if (!weak_ref->was_deleted()) {
+      out << ":" << ((To *)_void_ptr)->get_ref_count();
+    } else {
+      out << ":deleted";
+    }
+    weak_ref->_lock.unlock();
+  } else {
+    out << ":invalid";
   }
 }

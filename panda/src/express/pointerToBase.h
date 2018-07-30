@@ -53,6 +53,7 @@ protected:
 
   // This is needed to be able to access the privates of other instantiations.
   template<typename Y> friend class PointerToBase;
+  template<typename Y> friend class WeakPointerToBase;
 
 PUBLISHED:
   ALWAYS_INLINE void clear();

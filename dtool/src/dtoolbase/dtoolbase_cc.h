@@ -111,6 +111,8 @@ namespace std {
   template<class T> typename remove_reference<T>::type &&move(T &&t) {
     return static_cast<typename remove_reference<T>::type&&>(t);
   }
+
+  template<class T> struct owner_less;
 };
 #endif
 

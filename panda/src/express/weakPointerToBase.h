@@ -89,6 +89,11 @@ public:
   INLINE bool operator < (const PointerToBase<To> &other) const;
 #endif  // CPPPARSER
 
+  template<class Y>
+  INLINE bool owner_before(const WeakPointerToBase<Y> &other) const noexcept;
+  template<class Y>
+  INLINE bool owner_before(const PointerToBase<Y> &other) const noexcept;
+
 PUBLISHED:
   INLINE void clear();
   INLINE void refresh() const;

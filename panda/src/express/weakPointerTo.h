@@ -152,6 +152,25 @@ PUBLISHED:
   INLINE void clear() { WeakPointerToBase<T>::clear(); }
 };
 
+// Provide specializations of std::owner_less, for using a WPT as a map key.
+namespace std {
+  template<class T>
+  struct owner_less<WeakPointerTo<T> > {
+    bool operator () (const WeakPointerTo<T> &lhs,
+                      const WeakPointerTo<T> &rhs) const noexcept {
+      return lhs.owner_before(rhs);
+    }
+  };
+
+  template<class T>
+  struct owner_less<WeakConstPointerTo<T> > {
+    bool operator () (const WeakConstPointerTo<T> &lhs,
+                      const WeakConstPointerTo<T> &rhs) const noexcept {
+      return lhs.owner_before(rhs);
+    }
+  };
+}
+
 #define WPT(type) WeakPointerTo< type >
 #define WCPT(type) WeakConstPointerTo< type >
 
