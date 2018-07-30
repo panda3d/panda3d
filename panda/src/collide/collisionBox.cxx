@@ -546,6 +546,151 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 /**
+ * Double dispatch point for tube as a FROM object
+ */
+PT(CollisionEntry) CollisionBox::
+test_intersection_from_tube(const CollisionEntry &entry) const {
+  const CollisionTube *tube;
+  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = tube->get_point_a() * wrt_mat;
+  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
+  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, tube->get_radius())).length_squared();
+  PN_stdfloat radius = csqrt(radius_sq);
+
+  LPoint3 box_min = get_min();
+  LPoint3 box_max = get_max();
+  LVector3 dimensions = box_max - box_min;
+
+  // The method below is inspired by Christer Ericson's book Real-Time
+  // Collision Detection.  Instead of testing a capsule against a box, we test
+  // a segment against an box that is oversized by the capsule radius.
+
+  // First, we test if the line segment intersects a box with its faces
+  // expanded outwards by the capsule radius.  If not, there is no collision.
+  double t1, t2;
+  if (!intersects_line(t1, t2, from_a, from_direction, radius)) {
+    return nullptr;
+  }
+
+  if (t2 < 0.0 || t1 > 1.0) {
+    return nullptr;
+  }
+
+  t1 = std::min(1.0, std::max(0.0, (t1 + t2) * 0.5));
+  LPoint3 point = from_a + from_direction * t1;
+
+  // We now have a point of intersection between the line segment and the
+  // oversized box.  Check on how many axes it lies outside the box.  If it is
+  // less than two, we know that it does not lie in one of the rounded regions
+  // of the oversized rounded box, and it is a guaranteed hit.  Otherwise, we
+  // will need to test against the edge regions.
+  if ((point[0] < box_min[0] || point[0] > box_max[0]) +
+      (point[1] < box_min[1] || point[1] > box_max[1]) +
+      (point[2] < box_min[2] || point[2] > box_max[2]) > 1) {
+    // Test the capsule against each edge of the box.
+    static const struct {
+      LPoint3 point;
+      int axis;
+    } edges[] = {
+      {{0, 0, 0}, 0},
+      {{0, 1, 0}, 0},
+      {{0, 0, 1}, 0},
+      {{0, 1, 1}, 0},
+      {{0, 0, 0}, 1},
+      {{0, 0, 1}, 1},
+      {{1, 0, 0}, 1},
+      {{1, 0, 1}, 1},
+      {{0, 0, 0}, 2},
+      {{0, 1, 0}, 2},
+      {{1, 0, 0}, 2},
+      {{1, 1, 0}, 2},
+    };
+
+    PN_stdfloat best_dist_sq = FLT_MAX;
+
+    for (int i = 0; i < 12; ++i) {
+      LPoint3 vertex = edges[i].point;
+      vertex.componentwise_mult(dimensions);
+      vertex += box_min;
+      LVector3 delta(0);
+      delta[edges[i].axis] = dimensions[edges[i].axis];
+      double u1, u2;
+      CollisionTube::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
+      PN_stdfloat dist_sq = ((from_a + from_direction * u1) - (vertex + delta * u2)).length_squared();
+      if (dist_sq < best_dist_sq) {
+        best_dist_sq = dist_sq;
+      }
+    }
+
+    if (best_dist_sq > radius_sq) {
+      // It is not actually touching any edge.
+      return nullptr;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  // Which is the longest axis?
+  LVector3 diff = point - _center;
+  diff[0] /= dimensions[0];
+  diff[1] /= dimensions[1];
+  diff[2] /= dimensions[2];
+  int axis = 0;
+  if (cabs(diff[0]) > cabs(diff[1])) {
+    if (cabs(diff[0]) > cabs(diff[2])) {
+      axis = 0;
+    } else {
+      axis = 2;
+    }
+  } else {
+    if (cabs(diff[1]) > cabs(diff[2])) {
+      axis = 1;
+    } else {
+      axis = 2;
+    }
+  }
+  LVector3 normal(0);
+  normal[axis] = std::copysign(1, diff[axis]);
+
+  LPoint3 clamped = point.fmax(box_min).fmin(box_max);
+  LPoint3 surface_point = clamped;
+  surface_point[axis] = (diff[axis] >= 0.0f) ? box_max[axis] : box_min[axis];
+
+  // Is the point inside the box?
+  LVector3 interior_vec;
+  if (clamped != point) {
+    // No, it is outside.  The interior point is in the direction of the
+    // surface point.
+    interior_vec = point - surface_point;
+    if (!interior_vec.normalize()) {
+      interior_vec = normal;
+    }
+  } else {
+    // It is inside.  I think any point will work for this.
+    interior_vec = normal;
+  }
+  new_entry->set_interior_point(point - interior_vec * radius);
+  new_entry->set_surface_point(surface_point);
+
+  if (has_effective_normal() && tube->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+/**
  * Double dispatch point for box as a FROM object
  */
 PT(CollisionEntry) CollisionBox::
