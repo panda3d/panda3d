@@ -125,23 +125,9 @@ operator T * () const {
 template<class T>
 INLINE PointerTo<T> WeakPointerTo<T>::
 lock() const {
-  WeakReferenceList *weak_ref = this->_weak_ref;
-  if (weak_ref != nullptr) {
-    PointerTo<T> ptr;
-    weak_ref->_lock.lock();
-    if (!weak_ref->was_deleted()) {
-      // We also need to check that the reference count is not zero (which can
-      // happen if the object is currently being destructed), since that could
-      // cause double deletion.
-      To *plain_ptr = (To *)WeakPointerToBase<T>::_void_ptr;
-      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
-        ptr.cheat() = plain_ptr;
-      }
-    }
-    weak_ref->_lock.unlock();
-    return ptr;
-  }
-  return nullptr;
+  PointerTo<T> ptr;
+  this->lock_into(ptr);
+  return ptr;
 }
 
 /**
@@ -415,23 +401,9 @@ operator const T * () const {
 template<class T>
 INLINE ConstPointerTo<T> WeakConstPointerTo<T>::
 lock() const {
-  WeakReferenceList *weak_ref = this->_weak_ref;
-  if (weak_ref != nullptr) {
-    ConstPointerTo<T> ptr;
-    weak_ref->_lock.lock();
-    if (!weak_ref->was_deleted()) {
-      // We also need to check that the reference count is not zero (which can
-      // happen if the object is currently being destructed), since that could
-      // cause double deletion.
-      const To *plain_ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
-      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
-        ptr.cheat() = plain_ptr;
-      }
-    }
-    weak_ref->_lock.unlock();
-    return ptr;
-  }
-  return nullptr;
+  ConstPointerTo<T> ptr;
+  this->lock_into(ptr);
+  return ptr;
 }
 
 /**

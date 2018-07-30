@@ -40,7 +40,11 @@ remove_callback(WeakPointerCallback *callback) const {
 
 /**
  * Returns true if the object we are pointing to has been deleted, false
- * otherwise.
+ * otherwise.  If this returns true, it means that the pointer can not yet be
+ * reused, but it does not guarantee that it can be safely accessed.  See the
+ * lock() method for a safe way to access the underlying pointer.
+ *
+ * This will always return true for a null pointer, unlike is_valid_pointer().
  */
 INLINE bool WeakPointerToVoid::
 was_deleted() const {
@@ -49,7 +53,7 @@ was_deleted() const {
 
 /**
  * Returns true if the pointer is not null and the object has not been
- * deleted.
+ * deleted.  See was_deleted() for caveats.
  */
 INLINE bool WeakPointerToVoid::
 is_valid_pointer() const {

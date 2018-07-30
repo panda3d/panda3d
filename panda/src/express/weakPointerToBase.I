@@ -238,6 +238,34 @@ update_type(To *ptr) {
 #endif  // DO_MEMORY_USAGE
 }
 
+/**
+ * A thread-safe way to access the underlying pointer; will only write to the
+ * given pointer if the underlying pointer has not yet been deleted and is not
+ * null.  Note that it may leave the pointer unassigned even if was_deleted()
+ * still returns true, which can occur if the object has reached reference
+ * count 0 and is about to be destroyed.
+ */
+template<class T>
+INLINE void WeakPointerToBase<T>::
+lock_into(PointerToBase<To> &locked) const {
+  WeakReferenceList *weak_ref = this->_weak_ref;
+  if (weak_ref != nullptr) {
+    weak_ref->_lock.lock();
+    if (!weak_ref->was_deleted()) {
+      // We also need to check that the reference count is not zero (which can
+      // happen if the object is currently being destructed), since that could
+      // cause double deletion.
+      To *plain_ptr = (To *)WeakPointerToBase<T>::_void_ptr;
+      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
+        // It is valid and we successfully grabbed a reference.  Assign it,
+        // noting we have already incremented the reference count.
+        locked._void_ptr = plain_ptr;
+      }
+    }
+    weak_ref->_lock.unlock();
+  }
+}
+
 #ifndef CPPPARSER
 /**
  *

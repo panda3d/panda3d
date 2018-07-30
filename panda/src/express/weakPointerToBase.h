@@ -47,6 +47,8 @@ protected:
 
   INLINE void update_type(To *ptr);
 
+  INLINE void lock_into(PointerToBase<To> &locked) const;
+
   // No assignment or retrieval functions are declared in WeakPointerToBase,
   // because we will have to specialize on const vs.  non-const later.
 
