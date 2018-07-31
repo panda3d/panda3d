@@ -73,6 +73,26 @@ WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept {
 }
 
 /**
+ * Copies a weak pointer from a cast-convertible weak pointer type.
+ */
+template<class T>
+template<class Y>
+INLINE WeakPointerToBase<T>::
+WeakPointerToBase(const WeakPointerToBase<Y> &r) {
+  // If this next line gives an error, you are trying to convert a WeakPointerTo
+  // from an incompatible type of another WeakPointerTo.
+  To *ptr = (Y *)r._void_ptr;
+
+  this->_void_ptr = ptr;
+
+  WeakReferenceList *weak_ref = r._weak_ref;
+  if (weak_ref != nullptr) {
+    _weak_ref = weak_ref;
+    weak_ref->ref();
+  }
+}
+
+/**
  * Moves a weak pointer from a cast-convertible weak pointer type.
  */
 template<class T>
@@ -184,6 +204,34 @@ reassign(WeakPointerToBase<To> &&from) noexcept {
     from._weak_ref = nullptr;
 
     // Now delete the old pointer.
+    if (old_ref != nullptr && !old_ref->unref()) {
+      delete old_ref;
+    }
+  }
+}
+
+/**
+ * Like above, but casts from a compatible pointer type.
+ */
+template<class T>
+template<class Y>
+INLINE void WeakPointerToBase<T>::
+reassign(const WeakPointerToBase<Y> &copy) {
+  // If there is a compile error on this line, it means you tried to assign
+  // an incompatible type.
+  To *new_ptr = (Y *)copy._void_ptr;
+
+  if (new_ptr != (To *)_void_ptr) {
+    WeakReferenceList *old_ref = (WeakReferenceList *)_weak_ref;
+    WeakReferenceList *new_ref = copy._weak_ref;
+    _void_ptr = new_ptr;
+    _weak_ref = new_ref;
+
+    if (new_ref != nullptr) {
+      new_ref->ref();
+    }
+
+    // Now remove the old reference.
     if (old_ref != nullptr && !old_ref->unref()) {
       delete old_ref;
     }

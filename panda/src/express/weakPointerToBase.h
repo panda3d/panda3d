@@ -34,6 +34,8 @@ protected:
   INLINE WeakPointerToBase(const WeakPointerToBase<T> &copy);
   INLINE WeakPointerToBase(WeakPointerToBase<T> &&from) noexcept;
   template<class Y>
+  INLINE WeakPointerToBase(const WeakPointerToBase<Y> &r);
+  template<class Y>
   INLINE WeakPointerToBase(WeakPointerToBase<Y> &&r) noexcept;
 
   INLINE ~WeakPointerToBase();
@@ -42,6 +44,8 @@ protected:
   INLINE void reassign(const PointerToBase<To> &copy);
   INLINE void reassign(const WeakPointerToBase<To> &copy);
   INLINE void reassign(WeakPointerToBase<To> &&from) noexcept;
+  template<class Y>
+  INLINE void reassign(const WeakPointerToBase<Y> &copy);
   template<class Y>
   INLINE void reassign(WeakPointerToBase<Y> &&from) noexcept;
 
@@ -95,6 +99,9 @@ public:
   INLINE bool owner_before(const WeakPointerToBase<Y> &other) const noexcept;
   template<class Y>
   INLINE bool owner_before(const PointerToBase<Y> &other) const noexcept;
+
+  // This is needed to be able to access the privates of other instantiations.
+  template<typename Y> friend class WeakPointerToBase;
 
 PUBLISHED:
   INLINE void clear();
