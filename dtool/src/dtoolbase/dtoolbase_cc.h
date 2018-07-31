@@ -97,10 +97,12 @@ typedef std::ios::seekdir ios_seekdir;
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
 #include <tr1/tuple>
+#include <tr1/cmath>
 
 namespace std {
   using std::tr1::tuple;
   using std::tr1::tie;
+  using std::tr1::copysign;
 
   typedef decltype(nullptr) nullptr_t;
 
