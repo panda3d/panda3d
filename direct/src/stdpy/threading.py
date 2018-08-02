@@ -312,7 +312,7 @@ class Event:
     object. """
 
     def __init__(self):
-        self.__lock = core.Lock("Python Event")
+        self.__lock = core.Mutex("Python Event")
         self.__cvar = core.ConditionVarFull(self.__lock)
         self.__flag = False
 
@@ -325,7 +325,7 @@ class Event:
         self.__lock.acquire()
         try:
             self.__flag = True
-            self.__cvar.signalAll()
+            self.__cvar.notifyAll()
 
         finally:
             self.__lock.release()
