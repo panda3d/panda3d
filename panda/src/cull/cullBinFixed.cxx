@@ -71,9 +71,6 @@ void CullBinFixed::
 draw(bool force, Thread *current_thread) {
   PStatTimer timer(_draw_this_pcollector, current_thread);
 
-  GeomPipelineReader geom_reader(current_thread);
-  GeomVertexDataPipelineReader data_reader(current_thread);
-
   Objects::const_iterator oi;
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     CullableObject *object = (*oi)._object;
