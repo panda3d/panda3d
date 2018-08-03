@@ -223,11 +223,19 @@ get_modified() const {
 INLINE bool GeomPrimitive::
 check_valid(const GeomVertexData *vertex_data) const {
   Thread *current_thread = Thread::get_current_thread();
-  GeomPrimitivePipelineReader reader(this, current_thread);
-  reader.check_minmax();
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
-  return reader.check_valid(&data_reader);
+  return check_valid(&data_reader);
+}
+
+/**
+ *
+ */
+INLINE bool GeomPrimitive::
+check_valid(const GeomVertexDataPipelineReader *data_reader) const {
+  GeomPrimitivePipelineReader reader(this, data_reader->get_current_thread());
+  reader.check_minmax();
+  return reader.check_valid(data_reader);
 }
 
 /**

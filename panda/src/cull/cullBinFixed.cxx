@@ -82,9 +82,10 @@ draw(bool force, Thread *current_thread) {
       nassertd(object->_geom != nullptr) continue;
 
       _gsg->set_state_and_transform(object->_state, object->_internal_transform);
-      data_reader.set_object(object->_munged_data);
+
+      GeomPipelineReader geom_reader(object->_geom, current_thread);
+      GeomVertexDataPipelineReader data_reader(object->_munged_data, current_thread);
       data_reader.check_array_readers();
-      geom_reader.set_object(object->_geom);
       geom_reader.draw(_gsg, &data_reader, force);
     } else {
       // It has a callback associated.
