@@ -735,6 +735,19 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
+  bool need_color = false;
+  if (key._color_type == ColorAttrib::T_vertex) {
+    if (key._lighting) {
+      if ((key._material_flags & Material::F_ambient) == 0 ||
+          (key._material_flags & Material::F_diffuse) == 0 ||
+          key._calc_primary_alpha) {
+        need_color = true;
+      }
+    } else {
+      need_color = true;
+    }
+  }
+
   text << "void vshader(\n";
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
@@ -798,7 +811,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
     text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t in float4 vtx_color : " << color_vreg << ",\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
@@ -919,7 +932,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     string tcname = it->first->join("_");
     text << "\t l_" << tcname << " = vtx_" << tcname << ";\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t l_color = vtx_color;\n";
   }
   if (key._texture_flags & ShaderKey::TF_map_normal) {
@@ -1019,10 +1032,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "\t out float4 o_color : COLOR0,\n";
 
-  if (key._color_type == ColorAttrib::T_vertex) {
-    text << "\t in float4 l_color : COLOR0,\n";
-  } else if (key._color_type == ColorAttrib::T_flat) {
-    text << "\t uniform float4 attr_color,\n";
+  if (need_color) {
+    if (key._color_type == ColorAttrib::T_vertex) {
+      text << "\t in float4 l_color : COLOR0,\n";
+    } else if (key._color_type == ColorAttrib::T_flat) {
+      text << "\t uniform float4 attr_color,\n";
+    }
   }
 
   for (int i = 0; i < key._num_clip_planes; ++i) {
