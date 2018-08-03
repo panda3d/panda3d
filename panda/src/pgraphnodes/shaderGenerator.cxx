@@ -252,8 +252,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   // Store the material flags (not the material values itself).
   const MaterialAttrib *material;
   rs->get_attrib_def(material);
-  if (material->get_material() != nullptr) {
-    key._material_flags = material->get_material()->get_flags();
+  Material *mat = material->get_material();
+  if (mat != nullptr) {
+    // The next time the Material flags change, the Material should cause the
+    // states to be rehashed.
+    mat->mark_used_by_auto_shader();
+    key._material_flags = mat->get_flags();
   }
 
   // Break out the lights by type.
