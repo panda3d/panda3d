@@ -447,6 +447,13 @@ open_window() {
     DCAST_INTO_R(vkgsg, _gsg.p(), false);
   }
 
+  if (!vkgsg->is_valid()) {
+    _gsg.clear();
+    vulkandisplay_cat.error()
+      << "VulkanGraphicsStateGuardian is not valid.\n";
+    return false;
+  }
+
   _fb_properties.set_force_hardware(vkgsg->is_hardware());
   _fb_properties.set_force_software(!vkgsg->is_hardware());
 

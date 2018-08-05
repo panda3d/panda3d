@@ -309,6 +309,11 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
  */
 VulkanGraphicsStateGuardian::
 ~VulkanGraphicsStateGuardian() {
+  if (_device == VK_NULL_HANDLE) {
+    nassertv(_memory_pages.empty());
+    return;
+  }
+
   // And all the semaphores that were generated on this device.
   for (VkSemaphore semaphore : _semaphores) {
     vkDestroySemaphore(_device, semaphore, nullptr);
