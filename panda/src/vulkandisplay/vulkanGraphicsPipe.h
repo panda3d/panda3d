@@ -39,7 +39,9 @@ public:
 
   void set_object_name(VkDevice device, VkObjectType type, void *object, const char *name);
 
-  bool find_memory_type(uint32_t &type_index, uint32_t type_bits,
+  bool has_instance_extension(const char *ext_name, uint32_t min_version = 0);
+  bool has_device_extension(const char *ext_name, uint32_t min_version = 0);
+  bool find_memory_type(uint32_t &type_index, const VkMemoryRequirements &reqs,
                         VkFlags required_flags) const;
   bool find_queue_family(uint32_t &queue_family_index,
                          VkFlags required_flags) const;
@@ -71,8 +73,14 @@ public:
   VkPhysicalDeviceProperties _gpu_properties;
   VkPhysicalDeviceMemoryProperties _memory_properties;
   pvector<VkQueueFamilyProperties> _queue_families;
+  VkDeviceSize _max_allocation_size;
 
+private:
   PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;
+
+  bool _has_surface_ext;
+  pmap<std::string, uint32_t> _instance_extensions;
+  pmap<std::string, uint32_t> _device_extensions;
 
 public:
   static TypeHandle get_class_type() {

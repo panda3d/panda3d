@@ -56,9 +56,10 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     "VK_LAYER_LUNARG_standard_validation",
   };
 
-  const char *extensions[] = {
-    "VK_KHR_swapchain",
-  };
+  std::vector<const char*> extensions;
+  if (pipe->has_device_extension("VK_KHR_swapchain")) {
+    extensions.push_back("VK_KHR_swapchain");
+  }
 
   // Create a queue in the given queue family.  For now, we assume NVIDIA,
   // which has only one queue family, but we want to separate this out for
@@ -85,8 +86,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   device_info.pQueueCreateInfos = &queue_info;
   device_info.enabledLayerCount = 1;
   device_info.ppEnabledLayerNames = layers;
-  device_info.enabledExtensionCount = 1;
-  device_info.ppEnabledExtensionNames = extensions;
+  device_info.enabledExtensionCount = extensions.size();
+  device_info.ppEnabledExtensionNames = &extensions[0];
   device_info.pEnabledFeatures = nullptr;
 
   VkResult
@@ -417,7 +418,7 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
 
   // We don't have a matching allocator.  Create a new one.
   uint32_t type_index;
-  if (!vkpipe->find_memory_type(type_index, reqs.memoryTypeBits, required_flags)) {
+  if (!vkpipe->find_memory_type(type_index, reqs, required_flags)) {
     return false;
   }
   VkFlags flags = vkpipe->_memory_properties.memoryTypes[type_index].propertyFlags;
@@ -426,7 +427,7 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
   alloc_info.memoryTypeIndex = type_index;
-  alloc_info.allocationSize = std::max((VkDeviceSize)vulkan_memory_page_size, reqs.size);
+  alloc_info.allocationSize = std::max(std::min(vkpipe->_max_allocation_size, (VkDeviceSize)vulkan_memory_page_size), reqs.size);
 
   VkDeviceMemory memory;
   VkResult err;

@@ -49,24 +49,61 @@ TypeHandle VulkanGraphicsPipe::_type_handle;
  * Creates a Vulkan instance and picks a GPU to use.
  */
 VulkanGraphicsPipe::
-VulkanGraphicsPipe() {
+VulkanGraphicsPipe() : _max_allocation_size(0) {
   _is_valid = false;
+  _has_surface_ext = false;
+  _vkSetDebugUtilsObjectName = nullptr;
+
+  // Get the API version number for instance-level functionality.
+  uint32_t inst_version = VK_API_VERSION_1_0;
+  PFN_vkEnumerateInstanceVersion pvkEnumerateInstanceVersion =
+    (PFN_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
+  if (pvkEnumerateInstanceVersion != nullptr) {
+    vkEnumerateInstanceVersion(&inst_version);
+  }
+
+  // Query supported instance extensions.
+  uint32_t num_inst_extensions;
+  vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
+
+  VkExtensionProperties *inst_extensions = (VkExtensionProperties *)
+    alloca(sizeof(VkExtensionProperties) * num_inst_extensions);
+
+  vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, inst_extensions);
+  for (uint32_t i = 0; i < num_inst_extensions; ++i) {
+    _instance_extensions[std::string(inst_extensions[i].extensionName)] = inst_extensions[i].specVersion;
+  }
 
   const char *const layers[] = {
     "VK_LAYER_LUNARG_standard_validation",
   };
 
-  const char *extensions[] = {
-    "VK_EXT_debug_utils",
-    "VK_KHR_surface",
+  std::vector<const char *> extensions;
+
+  bool has_debug = false;
+  if (has_instance_extension("VK_EXT_debug_utils")) {
+    extensions.push_back("VK_EXT_debug_utils");
+    has_debug = true;
+  }
+
 #ifdef _WIN32
-    "VK_KHR_win32_surface"
+  if (has_instance_extension("VK_KHR_win32_surface")) {
+    extensions.push_back("VK_KHR_surface");
+    extensions.push_back("VK_KHR_win32_surface");
+    _has_surface_ext = true;
+  }
 #elif defined(HAVE_X11)
-    "VK_KHR_xlib_surface"
-#else
-    ""
+  if (has_instance_extension("VK_KHR_xlib_surface")) {
+    extensions.push_back("VK_KHR_surface");
+    extensions.push_back("VK_KHR_xlib_surface");
+    _has_surface_ext = true;
+  }
 #endif
-  };
+
+  if (inst_version < VK_MAKE_VERSION(1, 1, 0) &&
+      has_instance_extension("VK_KHR_get_physical_device_properties2")) {
+    extensions.push_back("VK_KHR_get_physical_device_properties2");
+  }
 
   VkApplicationInfo app_info;
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -75,7 +112,11 @@ VulkanGraphicsPipe() {
   app_info.applicationVersion = 0;
   app_info.pEngineName = "Panda3D";
   app_info.engineVersion = PANDA_NUMERIC_VERSION;
-  app_info.apiVersion = VK_MAKE_VERSION(1, 0, 0); // Minimum requirement
+  app_info.apiVersion = VK_API_VERSION_1_0;
+
+  if (inst_version >= VK_MAKE_VERSION(1, 1, 0)) {
+    app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+  }
 
   VkInstanceCreateInfo inst_info;
   inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -84,8 +125,8 @@ VulkanGraphicsPipe() {
   inst_info.pApplicationInfo = &app_info;
   inst_info.enabledLayerCount = 1;
   inst_info.ppEnabledLayerNames = layers;
-  inst_info.enabledExtensionCount = 3;
-  inst_info.ppEnabledExtensionNames = extensions;
+  inst_info.enabledExtensionCount = extensions.size();
+  inst_info.ppEnabledExtensionNames = &extensions[0];
 
   VkResult err = vkCreateInstance(&inst_info, nullptr, &_instance);
   if (err == VK_ERROR_INCOMPATIBLE_DRIVER) {
@@ -104,42 +145,44 @@ VulkanGraphicsPipe() {
   }
 
   // Set up the debugging extensions.
-  _vkSetDebugUtilsObjectName = (PFN_vkSetDebugUtilsObjectNameEXT)
-    vkGetInstanceProcAddr(_instance, "vkSetDebugUtilsObjectNameEXT");
+  if (has_debug) {
+    _vkSetDebugUtilsObjectName = (PFN_vkSetDebugUtilsObjectNameEXT)
+      vkGetInstanceProcAddr(_instance, "vkSetDebugUtilsObjectNameEXT");
 
-  PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessenger =
-    (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
+    PFN_vkCreateDebugUtilsMessengerEXT pvkCreateDebugUtilsMessenger =
+      (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
 
-  if (pvkCreateDebugUtilsMessenger) {
-    VkDebugUtilsMessengerCreateInfoEXT info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-                     | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                     | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    info.pfnUserCallback = &debug_callback;
+    if (pvkCreateDebugUtilsMessenger) {
+      VkDebugUtilsMessengerCreateInfoEXT info = {};
+      info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+      info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                       | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                       | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+      info.pfnUserCallback = &debug_callback;
 
-    // Tell the extension which severities to report, based on the enabled
-    // notify categories.
-    if (vulkandisplay_cat.is_spam()) {
-      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-    }
-    if (vulkandisplay_cat.is_warning()) {
-      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-    }
-    if (vulkandisplay_cat.is_error()) {
-      info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    }
+      // Tell the extension which severities to report, based on the enabled
+      // notify categories.
+      if (vulkandisplay_cat.is_spam()) {
+        info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+        info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+      }
+      if (vulkandisplay_cat.is_warning()) {
+        info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+      }
+      if (vulkandisplay_cat.is_error()) {
+        info.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+      }
 
-    VkDebugUtilsMessengerEXT messenger;
-    err = pvkCreateDebugUtilsMessenger(_instance, &info, nullptr, &messenger);
-    if (err) {
-      vulkan_error(err, "Failed to create debug report callback");
+      VkDebugUtilsMessengerEXT messenger;
+      err = pvkCreateDebugUtilsMessenger(_instance, &info, nullptr, &messenger);
+      if (err) {
+        vulkan_error(err, "Failed to create debug report callback");
+      }
+    } else {
+      vulkandisplay_cat.warning()
+        << "Cannot find vkCreateDebugUtilsMessengerEXT function.  Debug "
+           "reporting will not be enabled.\n";
     }
-  } else {
-    vulkandisplay_cat.warning()
-      << "Cannot find vkCreateDebugReportCallbackEXT function.  Debug "
-         "reporting will not be enabled.\n";
   }
 
   // Enumerate the available GPUs.
@@ -205,6 +248,53 @@ VulkanGraphicsPipe() {
   _queue_families.resize(num_families);
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &num_families, &_queue_families[0]);
 
+  // Query supported device extensions.
+  uint32_t num_dev_extensions;
+  vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, nullptr);
+
+  VkExtensionProperties *dev_extensions = (VkExtensionProperties *)
+    alloca(sizeof(VkExtensionProperties) * num_dev_extensions);
+
+  vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, dev_extensions);
+  for (uint32_t i = 0; i < num_dev_extensions; ++i) {
+    _device_extensions[std::string(dev_extensions[i].extensionName)] = dev_extensions[i].specVersion;
+  }
+
+  // Default the maximum allocation size to the largest of the heaps.
+  for (uint32_t i = 0; i < _memory_properties.memoryHeapCount; ++i) {
+    VkMemoryHeap &heap = _memory_properties.memoryHeaps[i];
+    _max_allocation_size = std::max(_max_allocation_size, heap.size);
+  }
+
+  // Query more specific memory limits if available.
+  if (has_device_extension("VK_KHR_maintenance3")) {
+    VkPhysicalDeviceMaintenance3Properties maint3_props = {};
+    maint3_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
+    maint3_props.maxMemoryAllocationSize = _max_allocation_size;
+
+    VkPhysicalDeviceProperties2 props2 = {};
+    props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+    props2.pNext = &maint3_props;
+
+    if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+      PFN_vkGetPhysicalDeviceProperties2 pVkGetPhysicalDeviceProperties2 =
+        (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceProperties2");
+
+      if (pVkGetPhysicalDeviceProperties2 != nullptr) {
+        pVkGetPhysicalDeviceProperties2(_gpu, &props2);
+        _max_allocation_size = maint3_props.maxMemoryAllocationSize;
+      }
+    } else if (has_instance_extension("VK_KHR_get_physical_device_properties2")) {
+      PFN_vkGetPhysicalDeviceProperties2KHR pVkGetPhysicalDeviceProperties2KHR =
+        (PFN_vkGetPhysicalDeviceProperties2KHR)vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceProperties2KHR");
+
+      if (pVkGetPhysicalDeviceProperties2KHR != nullptr) {
+        pVkGetPhysicalDeviceProperties2KHR(_gpu, &props2);
+        _max_allocation_size = maint3_props.maxMemoryAllocationSize;
+      }
+    }
+  }
+
   // Fill in DisplayInformation.
   _display_information->_vendor_id = _gpu_properties.vendorID;
   _display_information->_device_id = _gpu_properties.deviceID;
@@ -259,6 +349,8 @@ VulkanGraphicsPipe() {
       << device_types[_gpu_properties.deviceType] << "\n";
 
     vulkandisplay_cat.debug() << "deviceName: " << _gpu_properties.deviceName << "\n";
+    size_t size_mb = _max_allocation_size >> 20u;
+    vulkandisplay_cat.debug() << "maxMemoryAllocationSize: " << (size_mb) << " MiB\n";
 
     // Show supported queue families
     vulkandisplay_cat.debug() << "Supported queue families:\n";
@@ -298,23 +390,14 @@ VulkanGraphicsPipe() {
     }
 
     // Enumerate supported extensions.
-    uint32_t num_inst_extensions = 0, num_dev_extensions = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
-    vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, nullptr);
-
-    VkExtensionProperties *extensions = (VkExtensionProperties *)
-      alloca(sizeof(VkExtensionProperties) * std::max(num_inst_extensions, num_dev_extensions));
-
     vulkandisplay_cat.debug() << "Supported instance extensions:\n";
-    vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, extensions);
     for (uint32_t i = 0; i < num_inst_extensions; ++i) {
-      vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
+      vulkandisplay_cat.debug() << "  " << inst_extensions[i].extensionName << "\n";
     }
 
     vulkandisplay_cat.debug() << "Supported device extensions:\n";
-    vkEnumerateDeviceExtensionProperties(_gpu, nullptr, &num_dev_extensions, extensions);
     for (uint32_t i = 0; i < num_dev_extensions; ++i) {
-      vulkandisplay_cat.debug() << "  " << extensions[i].extensionName << "\n";
+      vulkandisplay_cat.debug() << "  " << dev_extensions[i].extensionName << "\n";
     }
 
     // Get a list of supported texture formats.
@@ -592,17 +675,54 @@ set_object_name(VkDevice device, VkObjectType type, void *object, const char *na
 }
 
 /**
+ * Returns true if the given instance extension is supported.
+ */
+bool VulkanGraphicsPipe::
+has_instance_extension(const char *ext_name, uint32_t min_version) {
+  auto it = _instance_extensions.find(std::string(ext_name));
+  if (it != _instance_extensions.end()) {
+    return (it->second >= min_version);
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Returns true if the given device extension is supported.
+ */
+bool VulkanGraphicsPipe::
+has_device_extension(const char *ext_name, uint32_t min_version) {
+  auto it = _device_extensions.find(std::string(ext_name));
+  if (it != _device_extensions.end()) {
+    return (it->second >= min_version);
+  } else {
+    return false;
+  }
+}
+
+/**
  * Finds the index of the memory type that fits the given requirements.
  * @return true if a matching memory type was found
  */
 bool VulkanGraphicsPipe::
-find_memory_type(uint32_t &type_index, uint32_t type_bits, VkFlags required_flags) const {
+find_memory_type(uint32_t &type_index, const VkMemoryRequirements &reqs, VkFlags required_flags) const {
+  // Does this fit within the maximum allocation size?
+  if (reqs.size > _max_allocation_size) {
+    return false;
+  }
+
+  uint32_t type_bits = reqs.memoryTypeBits;
   for (int i = 0; type_bits > 0; ++i) {
     if ((type_bits & 1) == 1) {
       // Type is available.  Does it match the required properties?
-      if ((_memory_properties.memoryTypes[i].propertyFlags & required_flags) == required_flags) {
+      const VkMemoryType &type = _memory_properties.memoryTypes[i];
+      if ((type.propertyFlags & required_flags) == required_flags) {
         type_index = i;
-        return true;
+
+        // Is the heap large enough to fit the allocation?
+        if (reqs.size <= _memory_properties.memoryHeaps[type.heapIndex].size) {
+          return true;
+        }
       }
     }
     type_bits >>= 1;
@@ -716,7 +836,8 @@ make_output(const std::string &name,
   // First thing to try: a VulkanGraphicsWindow
 
   if (retry == 0) {
-    if ((flags & BF_require_parasite) != 0 ||
+    if (!_has_surface_ext ||
+        (flags & BF_require_parasite) != 0 ||
         (flags & BF_refuse_window) != 0 ||
         (flags & BF_resizeable) != 0 ||
         (flags & BF_size_track_host) != 0 ||
