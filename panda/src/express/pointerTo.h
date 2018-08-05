@@ -215,6 +215,26 @@ void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) noexcept {
 }
 
 
+// Define owner_less specializations, for completeness' sake.
+namespace std {
+  template<class T>
+  struct owner_less<PointerTo<T> > {
+    bool operator () (const PointerTo<T> &lhs,
+                      const PointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
+
+  template<class T>
+  struct owner_less<ConstPointerTo<T> > {
+    bool operator () (const ConstPointerTo<T> &lhs,
+                      const ConstPointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
+}
+
+
 // Finally, we'll define a couple of handy abbreviations to save on all that
 // wasted typing time.
 

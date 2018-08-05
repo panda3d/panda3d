@@ -172,7 +172,7 @@ private:
   typedef pvector<PartBundleNode *> Nodes;
   Nodes _nodes;
 
-  typedef pmap<WCPT(TransformState), WPT(PartBundle) > AppliedTransforms;
+  typedef pmap<WCPT(TransformState), WPT(PartBundle), std::owner_less<WCPT(TransformState)> > AppliedTransforms;
   AppliedTransforms _applied_transforms;
 
   double _update_delay;

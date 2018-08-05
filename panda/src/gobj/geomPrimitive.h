@@ -146,6 +146,7 @@ PUBLISHED:
   bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool check_valid(const GeomVertexData *vertex_data) const;
+  INLINE bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out, int indent_level) const;

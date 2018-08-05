@@ -43,6 +43,49 @@ WeakPointerTo(const WeakPointerTo<T> &copy) :
  *
  */
 template<class T>
+INLINE WeakPointerTo<T>::
+WeakPointerTo(WeakPointerTo<T> &&from) noexcept :
+  WeakPointerToBase<T>(std::move(from))
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T>::
+WeakPointerTo(const WeakPointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T>::
+WeakPointerTo(const PointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T>::
+WeakPointerTo(WeakPointerTo<Y> &&r) noexcept :
+  WeakPointerToBase<T>(std::move(r))
+{
+}
+
+/**
+ *
+ */
+template<class T>
 INLINE typename WeakPointerTo<T>::To &WeakPointerTo<T>::
 operator *() const {
   assert(!this->was_deleted());
@@ -82,23 +125,9 @@ operator T * () const {
 template<class T>
 INLINE PointerTo<T> WeakPointerTo<T>::
 lock() const {
-  WeakReferenceList *weak_ref = this->_weak_ref;
-  if (weak_ref != nullptr) {
-    PointerTo<T> ptr;
-    weak_ref->_lock.lock();
-    if (!weak_ref->was_deleted()) {
-      // We also need to check that the reference count is not zero (which can
-      // happen if the object is currently being destructed), since that could
-      // cause double deletion.
-      To *plain_ptr = (To *)WeakPointerToBase<T>::_void_ptr;
-      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
-        ptr.cheat() = plain_ptr;
-      }
-    }
-    weak_ref->_lock.unlock();
-    return ptr;
-  }
-  return nullptr;
+  PointerTo<T> ptr;
+  this->lock_into(ptr);
+  return ptr;
 }
 
 /**
@@ -156,6 +185,49 @@ operator = (const WeakPointerTo<T> &copy) {
  *
  */
 template<class T>
+INLINE WeakPointerTo<T> &WeakPointerTo<T>::
+operator = (WeakPointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T> &WeakPointerTo<T>::
+operator = (const WeakPointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T> &WeakPointerTo<T>::
+operator = (const PointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakPointerTo<T> &WeakPointerTo<T>::
+operator = (WeakPointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
 INLINE WeakConstPointerTo<T>::
 WeakConstPointerTo(const To *ptr) :
   WeakPointerToBase<T>((typename WeakConstPointerTo<T>::To *)ptr)
@@ -206,6 +278,92 @@ WeakConstPointerTo(const WeakConstPointerTo<T> &copy) :
  *
  */
 template<class T>
+INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(WeakPointerTo<T> &&from) noexcept :
+  WeakPointerToBase<T>(std::move(from))
+{
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(WeakConstPointerTo<T> &&from) noexcept :
+  WeakPointerToBase<T>(std::move(from))
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(const WeakPointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(const WeakConstPointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(const PointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(const ConstPointerTo<Y> &r) noexcept :
+  WeakPointerToBase<T>(r)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(WeakPointerTo<Y> &&r) noexcept :
+  WeakPointerToBase<T>(std::move(r))
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T>::
+WeakConstPointerTo(WeakConstPointerTo<Y> &&r) noexcept :
+  WeakPointerToBase<T>(std::move(r))
+{
+}
+
+/**
+ *
+ */
+template<class T>
 INLINE const typename WeakConstPointerTo<T>::To &WeakConstPointerTo<T>::
 operator *() const {
   assert(!this->was_deleted());
@@ -243,23 +401,9 @@ operator const T * () const {
 template<class T>
 INLINE ConstPointerTo<T> WeakConstPointerTo<T>::
 lock() const {
-  WeakReferenceList *weak_ref = this->_weak_ref;
-  if (weak_ref != nullptr) {
-    ConstPointerTo<T> ptr;
-    weak_ref->_lock.lock();
-    if (!weak_ref->was_deleted()) {
-      // We also need to check that the reference count is not zero (which can
-      // happen if the object is currently being destructed), since that could
-      // cause double deletion.
-      const To *plain_ptr = (const To *)WeakPointerToBase<T>::_void_ptr;
-      if (plain_ptr != nullptr && plain_ptr->ref_if_nonzero()) {
-        ptr.cheat() = plain_ptr;
-      }
-    }
-    weak_ref->_lock.unlock();
-    return ptr;
-  }
-  return nullptr;
+  ConstPointerTo<T> ptr;
+  this->lock_into(ptr);
+  return ptr;
 }
 
 /**
@@ -330,5 +474,91 @@ template<class T>
 INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
 operator = (const WeakConstPointerTo<T> &copy) {
   ((WeakConstPointerTo<T> *)this)->reassign(*(const PointerToBase<T> *)&copy);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (WeakPointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (WeakConstPointerTo<T> &&from) noexcept {
+  this->reassign(std::move(from));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (const WeakPointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (const WeakConstPointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (const PointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (const ConstPointerTo<Y> &r) noexcept {
+  this->reassign(r);
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (WeakPointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE WeakConstPointerTo<T> &WeakConstPointerTo<T>::
+operator = (WeakConstPointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
   return *this;
 }

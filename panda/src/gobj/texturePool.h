@@ -149,8 +149,17 @@ private:
   static TexturePool *_global_ptr;
 
   Mutex _lock;
-  typedef pmap<Filename, PT(Texture)> Textures;
-  Textures _textures;  // indexed by fullpath
+  struct LookupKey {
+    Filename _fullpath;
+    Filename _alpha_fullpath;
+    int _primary_file_num_channels = 0;
+    int _alpha_file_channel = 0;
+    Texture::TextureType _texture_type = Texture::TT_2d_texture;
+
+    INLINE bool operator < (const LookupKey &other) const;
+  };
+  typedef pmap<LookupKey, PT(Texture)> Textures;
+  Textures _textures;
   typedef pmap<Filename, Filename> RelpathLookup;
   RelpathLookup _relpath_lookup;
 
