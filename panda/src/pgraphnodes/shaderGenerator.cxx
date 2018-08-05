@@ -738,7 +738,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   bool need_color = false;
   if (key._color_type != ColorAttrib::T_off) {
     if (key._lighting) {
-      if ((key._material_flags & Material::F_ambient) == 0 ||
+      if (((key._material_flags & Material::F_ambient) == 0 && key._have_separate_ambient) ||
           (key._material_flags & Material::F_diffuse) == 0 ||
           key._calc_primary_alpha) {
         need_color = true;
