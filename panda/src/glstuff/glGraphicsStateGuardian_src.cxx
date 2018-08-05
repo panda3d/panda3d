@@ -7633,7 +7633,6 @@ do_issue_material() {
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.  The
     // diffuse component comes from the object's color.
-    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_DIFFUSE, _material_force_color);
@@ -7643,11 +7642,11 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
 
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.  The
     // ambient component comes from the object's color.
-    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_AMBIENT, _material_force_color);
@@ -7657,6 +7656,7 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
 
   } else {
     // The material specifies neither a diffuse nor an ambient component.
