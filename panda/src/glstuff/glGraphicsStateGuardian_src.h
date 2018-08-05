@@ -909,6 +909,7 @@ public:
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
 
 #ifndef OPENGLES
+  bool _supports_dsa;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
 #endif
 

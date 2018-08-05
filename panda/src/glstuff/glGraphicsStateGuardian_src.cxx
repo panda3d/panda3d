@@ -2286,8 +2286,10 @@ reset() {
   if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
+
+    _supports_dsa = true;
   } else {
-    _glGenerateTextureMipmap = nullptr;
+    _supports_dsa = false;
   }
 #endif
 
@@ -2830,7 +2832,9 @@ reset() {
   // Check availability of anisotropic texture filtering.
   _supports_anisotropy = false;
   _max_anisotropy = 1.0;
-  if (has_extension("GL_EXT_texture_filter_anisotropic")) {
+  if (is_at_least_gl_version(4, 6) ||
+      has_extension("GL_EXT_texture_filter_anisotropic") ||
+      has_extension("GL_ARB_texture_filter_anisotropic")) {
     GLfloat max_anisotropy;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
     _max_anisotropy = (PN_stdfloat)max_anisotropy;
@@ -3237,7 +3241,7 @@ reset() {
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()
-        << "Supported shader binary formats:\n";
+        << "Supported program binary formats:\n";
       GLCAT.debug() << " ";
 
       pset<GLenum>::const_iterator it;
@@ -3249,7 +3253,7 @@ reset() {
       }
       GLCAT.debug(false) << "\n";
     } else {
-      GLCAT.debug() << "No shader binary formats supported.\n";
+      GLCAT.debug() << "No program binary formats supported.\n";
     }
   }
 #endif
@@ -13193,7 +13197,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
-  if (_glGenerateTextureMipmap != nullptr) {
+  if (_supports_dsa) {
     // OpenGL 4.5 offers an easy way to do this without binding.
     _glGenerateTextureMipmap(gtc->_index);
     return;
