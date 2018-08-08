@@ -89,7 +89,7 @@ class Transitions:
             self.fade.setBin('unsorted', 0)
             self.fade.setColor(0,0,0,0)
 
-    def getFadeInIval(self, t=0.5, finishIval=None):
+    def getFadeInIval(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Returns an interval without starting it.  This is particularly useful in
         cutscenes, so when the cutsceneIval is escaped out of we can finish the fade immediately
@@ -103,6 +103,7 @@ class Transitions:
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
                                                 # self.alphaOn,
+                                                blendType=blendType
                                                 ),
                                   Func(self.fade.detachNode),
                                   name = self.fadeTaskName,
@@ -111,7 +112,7 @@ class Transitions:
             transitionIval.append(finishIval)
         return transitionIval
 
-    def getFadeOutIval(self, t=0.5, finishIval=None):
+    def getFadeOutIval(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Create a sequence that lerps the color out, then
         parents the fade to hidden
@@ -125,6 +126,7 @@ class Transitions:
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
                                                 # self.alphaOff,
+                                                blendType=blendType
                                                 ),
                                   name = self.fadeTaskName,
                                   )
@@ -132,7 +134,7 @@ class Transitions:
             transitionIval.append(finishIval)
         return transitionIval
 
-    def fadeIn(self, t=0.5, finishIval=None):
+    def fadeIn(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Play a fade in transition over t seconds.
         Places a polygon on the aspect2d plane then lerps the color
@@ -159,13 +161,13 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.transitionIval = self.getFadeInIval(t, finishIval)
+            self.transitionIval = self.getFadeInIval(t, finishIval, blendType)
             self.transitionIval.append(Func(self.__finishTransition))
             self.__transitionFuture = AsyncFuture()
             self.transitionIval.start()
             return self.__transitionFuture
 
-    def fadeOut(self, t=0.5, finishIval=None):
+    def fadeOut(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Play a fade out transition over t seconds.
         Places a polygon on the aspect2d plane then lerps the color
@@ -189,7 +191,7 @@ class Transitions:
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
-            self.transitionIval = self.getFadeOutIval(t, finishIval)
+            self.transitionIval = self.getFadeOutIval(t, finishIval, blendType)
             self.transitionIval.append(Func(self.__finishTransition))
             self.__transitionFuture = AsyncFuture()
             self.transitionIval.start()
@@ -264,7 +266,7 @@ class Transitions:
             self.iris = loader.loadModel(self.IrisModelName)
             self.iris.setPos(0, 0, 0)
 
-    def irisIn(self, t=0.5, finishIval=None):
+    def irisIn(self, t=0.5, finishIval=None, blendType = 'noBlend'):
         """
         Play an iris in transition over t seconds.
         Places a polygon on the aspect2d plane then lerps the scale
@@ -284,7 +286,8 @@ class Transitions:
             scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = scale,
-                                                   startScale = 0.01),
+                                                   startScale = 0.01,
+                                                   blendType=blendType),
                                  Func(self.iris.detachNode),
                                  Func(self.__finishTransition),
                                  name = self.irisTaskName,
@@ -295,7 +298,7 @@ class Transitions:
             self.transitionIval.start()
             return self.__transitionFuture
 
-    def irisOut(self, t=0.5, finishIval=None):
+    def irisOut(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Play an iris out transition over t seconds.
         Places a polygon on the aspect2d plane then lerps the scale
@@ -318,7 +321,8 @@ class Transitions:
             scale = 0.18 * max(base.a2dRight, base.a2dTop)
             self.transitionIval = Sequence(LerpScaleInterval(self.iris, t,
                                                    scale = 0.01,
-                                                   startScale = scale),
+                                                   startScale = scale,
+                                                   blendType=blendType),
                                  Func(self.iris.detachNode),
                                  # Use the fade to cover up the hole that the iris would leave
                                  Func(self.fadeOut, 0),
@@ -441,7 +445,7 @@ class Transitions:
             self.__letterboxFuture.setResult(None)
             self.__letterboxFuture = None
 
-    def letterboxOn(self, t=0.25, finishIval=None):
+    def letterboxOn(self, t=0.25, finishIval=None, blendType='noBlend'):
         """
         Move black bars in over t seconds.
         """
@@ -461,11 +465,13 @@ class Transitions:
                                 t,
                                 pos = Vec3(0, 0, -1),
                                 #startPos = Vec3(0, 0, -1.2),
+                                blendType=blendType
                                 ),
                 LerpPosInterval(self.letterboxTop,
                                 t,
                                 pos = Vec3(0, 0, 0.8),
                                 # startPos = Vec3(0, 0, 1),
+                                blendType=blendType
                                 ),
                 ),
                                           Func(self.__finishLetterbox),
@@ -476,7 +482,7 @@ class Transitions:
             self.letterboxIval.start()
             return self.__letterboxFuture
 
-    def letterboxOff(self, t=0.25, finishIval=None):
+    def letterboxOff(self, t=0.25, finishIval=None, blendType='noBlend'):
         """
         Move black bars away over t seconds.
         """
@@ -495,11 +501,13 @@ class Transitions:
                                 t,
                                 pos = Vec3(0, 0, -1.2),
                                 # startPos = Vec3(0, 0, -1),
+                                blendType=blendType
                                 ),
                 LerpPosInterval(self.letterboxTop,
                                 t,
                                 pos = Vec3(0, 0, 1),
                                 # startPos = Vec3(0, 0, 0.8),
+                                blendType=blendType
                                 ),
                 ),
                                           Func(self.letterbox.stash),
