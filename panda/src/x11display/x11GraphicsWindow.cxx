@@ -2193,7 +2193,13 @@ get_cursor(const Filename &filename) {
       << "Could not read from cursor file " << filename << "\n";
     return None;
   }
-  str->seekg(0, istream::beg);
+
+  // Put back the read bytes. Do not use seekg, because this will
+  // corrupt the stream if it points to encrypted/compressed file
+  str->putback(magic[3]);
+  str->putback(magic[2]);
+  str->putback(magic[1]);
+  str->putback(magic[0]);
 
   X11_Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {
