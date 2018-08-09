@@ -388,7 +388,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
-                self.ancestry = dnp.getAncestors()
+                self.ancestry = list(dnp.getAncestors())
                 self.ancestry.reverse()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
@@ -479,7 +479,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
 
     def isNotCycle(self, nodePath, parent):
-        if nodePath.id() == parent.id():
+        if nodePath.get_key() == parent.get_key():
             print 'DIRECT.reparent: Invalid parent'
             return 0
         elif parent.hasParent():
@@ -520,7 +520,10 @@ class SeSession(DirectObject):  ### Customized DirectSession
             nodePath = self.selected.last
         if nodePath:
             # Now toggle node path's visibility state
-            nodePath.toggleVis()
+            if nodePath.is_hidden():
+                nodePath.show()
+            else:
+                nodePath.hide()
 
     def removeNodePath(self, nodePath = 'None Given'):
         if nodePath == 'None Given':

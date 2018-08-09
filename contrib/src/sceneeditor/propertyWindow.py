@@ -11,7 +11,7 @@ from direct.tkwidgets import Floater
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Slider
 from direct.tkwidgets import VectorWidgets
-from pandac.PandaModules import *
+from panda3d.core import *
 from Tkinter import *
 import Pmw
 

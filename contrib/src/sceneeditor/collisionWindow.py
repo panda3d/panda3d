@@ -11,7 +11,7 @@ from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
 from Tkinter import *
 import string, math, types
-from pandac.PandaModules import *
+from panda3d.core import *
 
 
 class collisionWindow(AppShell):
