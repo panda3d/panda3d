@@ -251,7 +251,10 @@ class myLevelEditor(AppShell):
         for event in self.actionEvents:
             self.accept(event[0], event[1], extraArgs = event[2:])
 
-        camera.toggleVis()
+        if camera.is_hidden():
+            camera.show()
+        else:
+            camera.hide()
         self.selectNode(base.camera) ## Initially, we select camera as the first node...
 
     def appInit(self):
