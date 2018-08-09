@@ -388,7 +388,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
-                self.ancestry = dnp.getAncestors()
+                self.ancestry = list(dnp.getAncestors())
                 self.ancestry.reverse()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout

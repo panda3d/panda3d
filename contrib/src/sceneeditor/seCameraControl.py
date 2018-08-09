@@ -392,8 +392,7 @@ class DirectCameraControl(DirectObject):
             sf = 0.1
         self.coaMarker.setScale(sf)
         # Lerp color to fade out
-        self.coaMarker.lerpColor(VBase4(1,0,0,1), VBase4(1,0,0,0), 3.0,
-                                 task = 'fadeAway')
+        self.coaMarker.colorInterval(3.0, VBase4(1, 0, 0, 0), name='fadeAway').start()
 
     def homeCam(self):
         # Record undo point
