@@ -3,8 +3,10 @@ import sys
 try: import _tkinter
 except: sys.exit("Please install python module 'Tkinter'")
 
-import direct
-from direct.directbase.DirectStart import*
+from direct.showbase.ShowBase import ShowBase
+
+ShowBase()
+
 from direct.showbase.TkGlobal import spawnTkLoop
 from Tkinter import *
 from tkFileDialog import *
@@ -1708,4 +1710,4 @@ class myLevelEditor(AppShell):
 
 editor = myLevelEditor(parent = base.tkRoot)
 
-run()
+base.run()
