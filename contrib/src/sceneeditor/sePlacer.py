@@ -6,7 +6,7 @@ from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
 from Tkinter import Button, Menubutton, Menu, StringVar
-from pandac.PandaModules import *
+from panda3d.core import *
 import Tkinter, Pmw
 """
 TODO:

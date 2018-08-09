@@ -12,7 +12,7 @@
 #
 #################################################################
 
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 import math

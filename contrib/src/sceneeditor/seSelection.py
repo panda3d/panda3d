@@ -11,7 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from pandac.PandaModules import GeomNode
+from panda3d.core import GeomNode
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
