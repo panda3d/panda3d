@@ -93,7 +93,7 @@ class Particles(ParticleSystem):
         elif (type == "OrientedParticleFactory"):
             self.factory = OrientedParticleFactory.OrientedParticleFactory()
         else:
-            print "unknown factory type: %s" % type
+            print("unknown factory type: %s" % type)
             return None
         self.factory.setLifespanBase(0.5)
         ParticleSystem.ParticleSystem.setFactory(self, self.factory)
@@ -132,7 +132,7 @@ class Particles(ParticleSystem):
                 # See sourceFileName and sourceNodeName in SpriteParticleRenderer-extensions.py
                 self.renderer.setTextureFromNode()
         else:
-            print "unknown renderer type: %s" % type
+            print("unknown renderer type: %s" % type)
             return None
         ParticleSystem.ParticleSystem.setRenderer(self, self.renderer)
 
@@ -163,7 +163,7 @@ class Particles(ParticleSystem):
         elif (type == "TangentRingEmitter"):
             self.emitter = TangentRingEmitter.TangentRingEmitter()
         else:
-            print "unknown emitter type: %s" % type
+            print("unknown emitter type: %s" % type)
             return None
         ParticleSystem.ParticleSystem.setEmitter(self, self.emitter)
 

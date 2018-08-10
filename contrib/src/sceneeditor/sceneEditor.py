@@ -8,8 +8,14 @@ from direct.showbase.ShowBase import ShowBase
 ShowBase()
 
 from direct.showbase.TkGlobal import spawnTkLoop
-from Tkinter import *
-from tkFileDialog import *
+
+if sys.version_info >= (3, 0):
+    from tkinter import *
+    from tkinter.filedialog import *
+else:
+    from Tkinter import *
+    from tkFileDialog import *
+
 from direct.directtools.DirectGlobals import *
 from direct.tkwidgets.AppShell import*
 
@@ -391,31 +397,31 @@ class myLevelEditor(AppShell):
             self.showAbout()
             return
         elif buttonIndex==12:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==13:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==14:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==15:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==16:
-            print "Your scene will be eliminated within five seconds, Save your world!!!, Number %d."%buttonIndex
+            print("Your scene will be eliminated within five seconds, Save your world!!!, Number %d."%buttonIndex)
             return
         elif buttonIndex==17:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==18:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==19:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
         elif buttonIndex==20:
-            print "You haven't defined the function for this Button, Number %d."%buttonIndex
+            print("You haven't defined the function for this Button, Number %d."%buttonIndex)
             return
 
         return
@@ -671,17 +677,17 @@ class myLevelEditor(AppShell):
         #################################################################
         type, info = AllScene.getInfoOfThisNode(nodePath)
         name = nodePath.getName()
-        if not self.propertyWindow.has_key(name):
+        if name not in self.propertyWindow:
             self.propertyWindow[name] = propertyWindow(nodePath, type,info )
         pass
 
     def closePropertyWindow(self, name):
-        if self.propertyWindow.has_key(name):
+        if name in self.propertyWindow:
             del self.propertyWindow[name]
         return
 
     def openMetadataPanel(self,nodePath=None):
-        print nodePath
+        print(nodePath)
         self.MetadataPanel=MetadataPanel(nodePath)
         pass
 
@@ -690,7 +696,7 @@ class myLevelEditor(AppShell):
         # duplicate(self, nodePath = None)
         # This function will be called when user try to open the duplication window
         #################################################################
-        print '----Duplication!!'
+        print('----Duplication!!')
         if nodePath != None:
             self.duplicateWindow = duplicateWindow(nodePath = nodePath)
         pass
@@ -796,8 +802,8 @@ class myLevelEditor(AppShell):
         #################################################################
         name = nodePath.getName()
         if AllScene.isActor(name):
-            if self.animPanel.has_key(name):
-                print '---- You already have an animation panel for this Actor!'
+            if name in self.animPanel:
+                print('---- You already have an animation panel for this Actor!')
                 return
             else:
                 Actor = AllScene.getActor(name)
@@ -847,9 +853,9 @@ class myLevelEditor(AppShell):
             # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
             # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
             # If there is ever a garbage colleciton bug..this might be a point to look at
-            if sys.modules.has_key(currentModName):
+            if currentModName in sys.modules:
                 del sys.modules[currentModName]
-                print sys.getrefcount(AllScene.theScene)
+                print(sys.getrefcount(AllScene.theScene))
                 del AllScene.theScene
         else:
             AllScene.resetAll()
@@ -877,9 +883,9 @@ class myLevelEditor(AppShell):
             # Let us actually remove the scene from sys modules... this is done because every scene is loaded as a module
             # And if we reload a scene python wont reload since its already in sys.modules... and hence we delete it
             # If there is ever a garbage colleciton bug..this might be a point to look at
-            if sys.modules.has_key(currentModName):
+            if currentModName in sys.modules:
                 del sys.modules[currentModName]
-                print sys.getrefcount(AllScene.theScene)
+                print(sys.getrefcount(AllScene.theScene))
                 del AllScene.theScene
         else:
             AllScene.resetAll()
@@ -891,7 +897,7 @@ class myLevelEditor(AppShell):
 
         thefile=Filename(self.CurrentFileName)
         thedir=thefile.getFullpathWoExtension()
-        print "SCENE EDITOR::" + thedir
+        print("SCENE EDITOR::" + thedir)
         self.CurrentDirName=thedir
         if self.CurrentFileName != None:
             self.parent.title('Scene Editor - '+ Filename.fromOsSpecific(self.CurrentFileName).getBasenameWoExtension())
@@ -939,7 +945,7 @@ class myLevelEditor(AppShell):
             theScene.writeBamFile(fileName)
         else:
             render.writeBamFile(fileName+".bad")
-        print " Scenegraph saved as :" +str(fileName)
+        print(" Scenegraph saved as :" +str(fileName))
 
     def loadFromBam(self):
         fileName = tkFileDialog.askopenfilename(filetypes = [("BAM",".bam")],title = "Load Scenegraph from Bam file")
@@ -964,7 +970,7 @@ class myLevelEditor(AppShell):
         ###############################################################################
         # !!!!! See if a module exists by this name... if it does you cannot use this filename !!!!!
         ###############################################################################
-        if(sys.modules.has_key(fCheck.getBasenameWoExtension())):
+        if(fCheck.getBasenameWoExtension() in sys.modules):
             tkMessageBox.showwarning(
             "Save file",
             "Cannot save with this name because there is a system module with the same name. Please resave as something else."
@@ -998,7 +1004,7 @@ class myLevelEditor(AppShell):
         if modelFilename:
             self.makeDirty()
             if not AllScene.loadModel(modelFilename, Filename.fromOsSpecific(modelFilename)):
-                print '----Error! No Such Model File!'
+                print('----Error! No Such Model File!')
         pass
 
     def loadActor(self):
@@ -1021,12 +1027,12 @@ class myLevelEditor(AppShell):
         if ActorFilename:
             self.makeDirty()
             if not AllScene.loadActor(ActorFilename, Filename.fromOsSpecific(ActorFilename)):
-                print '----Error! No Such Model File!'
+                print('----Error! No Such Model File!')
         pass
 
     def importScene(self):
         self.makeDirty()
-        print '----God bless you Please Import!'
+        print('----God bless you Please Import!')
         pass
 
 
@@ -1500,7 +1506,7 @@ class myLevelEditor(AppShell):
         return
 
     def animPanelClose(self, name):
-        if self.animPanel.has_key(name):
+        if name in self.animPanel:
             del self.animPanel[name]
         return
 
@@ -1513,8 +1519,8 @@ class myLevelEditor(AppShell):
         ################################################################
         name = nodePath.getName()
         if AllScene.isActor(name):
-            if self.animBlendPanel.has_key(name):
-                print '---- You already have an Blend Animation Panel for this Actor!'
+            if name in self.animBlendPanel:
+                print('---- You already have an Blend Animation Panel for this Actor!')
                 return
             else:
                 Actor = AllScene.getActor(name)
@@ -1559,7 +1565,7 @@ class myLevelEditor(AppShell):
         # This function will be called when Blend panel has been closed.
         # Here we will reset the reference dictionary so it can be open again.
         ################################################################
-        if self.animBlendPanel.has_key(name):
+        if name in self.animBlendPanel:
             del self.animBlendPanel[name]
         return
 
@@ -1618,7 +1624,7 @@ class myLevelEditor(AppShell):
 
     def openAlignPanel(self, nodePath=None):
         name = nodePath.getName()
-        if not self.alignPanelDict.has_key(name):
+        if name not in self.alignPanelDict:
             list = AllScene.getAllObjNameAsList()
             if name in list:
                 list.remove(name)
@@ -1628,7 +1634,7 @@ class myLevelEditor(AppShell):
         return
 
     def closeAlignPanel(self, name=None):
-        if self.alignPanelDict.has_key(name):
+        if name in self.alignPanelDict:
             del self.alignPanelDict[name]
 
     def alignObject(self, nodePath, name, list):

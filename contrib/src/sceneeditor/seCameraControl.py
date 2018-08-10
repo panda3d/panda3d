@@ -55,14 +55,14 @@ class DirectCameraControl(DirectObject):
             ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],
             ['shift-u', self.uprightCam],
-            [`1`, self.spawnMoveToView, 1],
-            [`2`, self.spawnMoveToView, 2],
-            [`3`, self.spawnMoveToView, 3],
-            [`4`, self.spawnMoveToView, 4],
-            [`5`, self.spawnMoveToView, 5],
-            [`6`, self.spawnMoveToView, 6],
-            [`7`, self.spawnMoveToView, 7],
-            [`8`, self.spawnMoveToView, 8],
+            ['1', self.spawnMoveToView, 1],
+            ['2', self.spawnMoveToView, 2],
+            ['3', self.spawnMoveToView, 3],
+            ['4', self.spawnMoveToView, 4],
+            ['5', self.spawnMoveToView, 5],
+            ['6', self.spawnMoveToView, 6],
+            ['7', self.spawnMoveToView, 7],
+            ['8', self.spawnMoveToView, 8],
             ['9', self.swingCamAboutWidget, -90.0, t],
             ['0', self.swingCamAboutWidget,  90.0, t],
             ['`', self.removeManipulateCameraTask],
@@ -351,7 +351,7 @@ class DirectCameraControl(DirectObject):
             # MRM: Would be nice to be able to control this
             # At least display it
             dist = pow(10.0, self.nullHitPointCount)
-            SEditor.message('COA Distance: ' + `dist`)
+            SEditor.message('COA Distance: ' + repr(dist))
             coa.set(0,dist,0)
         # Compute COA Dist
         coaDist = Vec3(coa - ZERO_POINT).length()

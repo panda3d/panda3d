@@ -209,9 +209,9 @@ class ParticleEffect(NodePath):
         """loadConfig(filename)"""
         #try:
         #    if vfs:
-        print vfs.readFile(filename)
-        exec vfs.readFile(filename)
-        print "Particle Effect Reading using VFS"
+        print(vfs.readFile(filename))
+        exec(vfs.readFile(filename))
+        print("Particle Effect Reading using VFS")
         #    else:
         #       execfile(filename.toOsSpecific())
         #       print "Shouldnt be wrong"
