@@ -16,7 +16,6 @@
 #include "mayaCopy.h"
 #include "config_maya.h"
 #include "cvsSourceDirectory.h"
-#include "mayaShader.h"
 #include "dcast.h"
 
 #include "pre_maya_include.h"
@@ -31,6 +30,8 @@
 #include <maya/MDagPath.h>
 #include <maya/MIntArray.h>
 #include "post_maya_include.h"
+
+#include "mayaShader.h"
 
 using std::endl;
 using std::string;

@@ -367,15 +367,17 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
       if (li > -1) {
         // found a blend mode
         if (maya_cat.is_spam()) {
+          MString name = inputsPlug.name();
           maya_cat.spam() << "*** Start doIt... ***" << endl;
-          maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
+          maya_cat.spam() << "inputsPlug Name: " << name.asChar() << endl;
         }
         status = blendModePlug.selectAncestorLogicalIndex(li,inputsPlug);
         blendModePlug.getValue(blendValue);
 
         if (maya_cat.is_spam()) {
+          MString name = blendModePlug.name();
           maya_cat.spam()
-            << blendModePlug.name() << ": has value " << blendValue << endl;
+            << name.asChar() << ": has value " << blendValue << endl;
         }
 
         MFnEnumAttribute blendModeEnum(blendModePlug);
@@ -397,9 +399,13 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
           bt = BT_add;
           break;
         }
-        maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
-        if (maya_cat.is_spam()) {
-          maya_cat.spam() << "*** END doIt... ***" << endl;
+
+        if (maya_cat.is_info()) {
+          MString name = layered_fn.name();
+          maya_cat.info() << name.asChar() << ": blendMode used " << blendName.asChar() << endl;
+          if (maya_cat.is_spam()) {
+            maya_cat.spam() << "*** END doIt... ***" << endl;
+          }
         }
 
         // advance to the next plug, because that is where the shader info are
