@@ -682,16 +682,16 @@ class MopathRecorder(AppShell, DirectObject):
         marker if subnode selected
         """
         taskMgr.remove(self.name + '-curveEditTask')
-        print nodePath.id()
-        if nodePath.id() in self.playbackMarkerIds:
+        print nodePath.get_key()
+        if nodePath.get_key() in self.playbackMarkerIds:
             SEditor.select(self.playbackMarker)
-        elif nodePath.id() in self.tangentMarkerIds:
+        elif nodePath.get_key() in self.tangentMarkerIds:
             SEditor.select(self.tangentMarker)
-        elif nodePath.id() == self.playbackMarker.id():
+        elif nodePath.get_key() == self.playbackMarker.get_key():
             self.tangentGroup.show()
             taskMgr.add(self.curveEditTask,
                                      self.name + '-curveEditTask')
-        elif nodePath.id() == self.tangentMarker.id():
+        elif nodePath.get_key() == self.tangentMarker.get_key():
             self.tangentGroup.show()
             taskMgr.add(self.curveEditTask,
                                      self.name + '-curveEditTask')
@@ -699,7 +699,7 @@ class MopathRecorder(AppShell, DirectObject):
             self.tangentGroup.hide()
 
     def getChildIds(self, nodePath):
-        ids = [nodePath.id()]
+        ids = [nodePath.get_key()]
         kids = nodePath.getChildren()
         for kid in kids:
             ids += self.getChildIds(kid)
@@ -710,14 +710,14 @@ class MopathRecorder(AppShell, DirectObject):
         Hook called upon deselection of a node path used to select playback
         marker if subnode selected
         """
-        if ((nodePath.id() == self.playbackMarker.id()) or
-            (nodePath.id() == self.tangentMarker.id())):
+        if ((nodePath.get_key() == self.playbackMarker.get_key()) or
+            (nodePath.get_key() == self.tangentMarker.get_key())):
             self.tangentGroup.hide()
 
     def curveEditTask(self,state):
         if self.curveCollection != None:
             # Update curve position
-            if self.manipulandumId == self.playbackMarker.id():
+            if self.manipulandumId == self.playbackMarker.get_key():
                 # Show playback marker
                 self.playbackMarker.getChild(0).show()
                 pos = Point3(0)
@@ -731,7 +731,7 @@ class MopathRecorder(AppShell, DirectObject):
                 # Note: this calls recompute on the curves
                 self.nurbsCurveDrawer.draw()
             # Update tangent
-            if self.manipulandumId == self.tangentMarker.id():
+            if self.manipulandumId == self.tangentMarker.get_key():
                 # If manipulating marker, update tangent
                 # Hide playback marker
                 self.playbackMarker.getChild(0).hide()
@@ -766,10 +766,10 @@ class MopathRecorder(AppShell, DirectObject):
     def manipulateObjectStartHook(self):
         self.manipulandumId = None
         if SEditor.selected.last:
-            if SEditor.selected.last.id() == self.playbackMarker.id():
-                self.manipulandumId = self.playbackMarker.id()
-            elif SEditor.selected.last.id() == self.tangentMarker.id():
-                self.manipulandumId = self.tangentMarker.id()
+            if SEditor.selected.last.get_key() == self.playbackMarker.get_key():
+                self.manipulandumId = self.playbackMarker.get_key()
+            elif SEditor.selected.last.get_key() == self.tangentMarker.get_key():
+                self.manipulandumId = self.tangentMarker.get_key()
 
     def manipulateObjectCleanupHook(self):
         # Clear flag
@@ -1282,7 +1282,7 @@ class MopathRecorder(AppShell, DirectObject):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name # + '-' + `nodePath.id()`
+            dictName = name # + '-' + `nodePath.get_key()`
         if not dict.has_key(dictName):
             # Update combo box to include new item
             names.append(dictName)

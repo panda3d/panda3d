@@ -5,7 +5,7 @@
 from direct.showbase.DirectObject import *
 from string import lower
 from direct.directtools import DirectUtil
-from pandac.PandaModules import *
+from panda3d.core import *
 import string
 
 

@@ -15,7 +15,7 @@
 import os, sys, string, Pmw, Tkinter
 from direct.showbase.DirectObject import DirectObject
 from Tkinter import IntVar, Menu, PhotoImage, Label, Frame, Entry
-from pandac.PandaModules import *
+from panda3d.core import *
 
 # Initialize icon directory
 ICONDIR = getModelPath().findFile(Filename('icons')).toOsSpecific()

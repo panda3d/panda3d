@@ -141,7 +141,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._node.deselecttree()
 
     def selectNodePath(self,nodePath, callBack=True):
-        item = self._node.find(nodePath.id())
+        item = self._node.find(nodePath.get_key())
         if item!= None:
             item.select(callBack)
         else:
@@ -164,7 +164,7 @@ class SceneGraphExplorerItem(TreeItem):
         return name
 
     def GetKey(self):
-        return self.nodePath.id()
+        return self.nodePath.get_key()
 
     def IsEditable(self):
         # All nodes' names can be edited nowadays.

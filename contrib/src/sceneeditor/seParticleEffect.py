@@ -1,4 +1,4 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 import seParticles
 import seForceGroup
 from direct.directnotify import DirectNotifyGlobal

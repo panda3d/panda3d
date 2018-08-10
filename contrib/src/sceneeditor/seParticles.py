@@ -1,28 +1,8 @@
-from pandac.PandaModules import *
+from panda3d.core import *
+from panda3d.physics import *
 from direct.particles.ParticleManagerGlobal import *
 from direct.showbase.PhysicsManagerGlobal import *
-#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
-from pandac.PandaModules import ParticleSystem
-from pandac.PandaModules import BaseParticleFactory
-from pandac.PandaModules import PointParticleFactory
-from pandac.PandaModules import ZSpinParticleFactory
 #import OrientedParticleFactory
-from pandac.PandaModules import BaseParticleRenderer
-from pandac.PandaModules import PointParticleRenderer
-from pandac.PandaModules import LineParticleRenderer
-from pandac.PandaModules import GeomParticleRenderer
-from pandac.PandaModules import SparkleParticleRenderer
-from pandac.PandaModules import SpriteParticleRenderer
-from pandac.PandaModules import BaseParticleEmitter
-from pandac.PandaModules import BoxEmitter
-from pandac.PandaModules import DiscEmitter
-from pandac.PandaModules import LineEmitter
-from pandac.PandaModules import PointEmitter
-from pandac.PandaModules import RectangleEmitter
-from pandac.PandaModules import RingEmitter
-from pandac.PandaModules import SphereSurfaceEmitter
-from pandac.PandaModules import SphereVolumeEmitter
-from pandac.PandaModules import TangentRingEmitter
 import string
 import os
 from direct.directnotify import DirectNotifyGlobal
