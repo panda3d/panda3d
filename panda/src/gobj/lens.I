@@ -667,9 +667,11 @@ do_get_film_offset(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_near(CData *cdata, PN_stdfloat near_distance) {
-  cdata->_near_distance = near_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (near_distance != cdata->_near_distance) {
+    cdata->_near_distance = near_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
 /**
@@ -685,9 +687,11 @@ do_get_near(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_far(CData *cdata, PN_stdfloat far_distance) {
-  cdata->_far_distance = far_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (far_distance != cdata->_far_distance) {
+    cdata->_far_distance = far_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
 /**
@@ -703,10 +707,12 @@ do_get_far(const CData *cdata) const {
  */
 INLINE void Lens::
 do_set_near_far(CData *cdata, PN_stdfloat near_distance, PN_stdfloat far_distance) {
-  cdata->_near_distance = near_distance;
-  cdata->_far_distance = far_distance;
-  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
-  do_throw_change_event(cdata);
+  if (near_distance != cdata->_near_distance || far_distance != cdata->_far_distance) {
+    cdata->_near_distance = near_distance;
+    cdata->_far_distance = far_distance;
+    do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+    do_throw_change_event(cdata);
+  }
 }
 
 INLINE std::ostream &
