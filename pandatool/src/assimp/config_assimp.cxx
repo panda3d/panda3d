@@ -25,6 +25,50 @@ ConfigureFn(config_assimp) {
   init_libassimp();
 }
 
+ConfigVariableBool assimp_calc_tangent_space
+("assimp-calc-tangent-space", false,
+ PRC_DESC("Calculates tangents and binormals for meshes imported via Assimp."));
+
+ConfigVariableBool assimp_join_identical_vertices
+("assimp-join-identical-vertices", true,
+ PRC_DESC("Merges duplicate vertices.  Set this to false if you want each "
+          "vertex to only be in use on one triangle."));
+
+ConfigVariableBool assimp_improve_cache_locality
+("assimp-improve-cache-locality", true,
+ PRC_DESC("Improves rendering performance of the loaded meshes by reordering "
+          "triangles for better vertex cache locality.  Set this to false if "
+          "you need geometry to be loaded in the exact order that it was "
+          "specified in the file, or to improve load performance."));
+
+ConfigVariableBool assimp_remove_redundant_materials
+("assimp-remove-redundant-materials", true,
+ PRC_DESC("Removes redundant/unreferenced materials from assets."));
+
+ConfigVariableBool assimp_fix_infacing_normals
+("assimp-fix-infacing-normals", false,
+ PRC_DESC("Determines which normal vectors are facing inward and inverts them "
+          "so that they are facing outward."));
+
+ConfigVariableBool assimp_optimize_meshes
+("assimp-optimize-meshes", true,
+ PRC_DESC("Removes the number of draw calls by unifying geometry with the same "
+          "materials.  Especially effective in conjunction with "
+          "assimp-optimize-graph and assimp-remove-redundant-materials."));
+
+ConfigVariableBool assimp_optimize_graph
+("assimp-optimize-graph", false,
+ PRC_DESC("Optimizes the scene geometry by flattening the scene hierarchy.  "
+          "This is very efficient (combined with assimp-optimize-meshes), but "
+          "it may result the hierarchy to become lost, so it is disabled by "
+          "default."));
+
+ConfigVariableBool assimp_flip_winding_order
+("assimp-flip-winding-order", false,
+ PRC_DESC("Set this true to flip the winding order of all models loaded via "
+          "the Assimp loader.  Note that you may need to clear the model-cache "
+          "after changing this."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
