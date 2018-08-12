@@ -68,6 +68,12 @@ PUBLISHED:
   INLINE void set_egg_timestamp(time_t egg_timestamp);
   INLINE time_t get_egg_timestamp() const;
 
+  MAKE_PROPERTY(auto_resolve_externals, get_auto_resolve_externals,
+                                        set_auto_resolve_externals);
+  MAKE_PROPERTY(coordinate_system, get_coordinate_system, set_coordinate_system);
+  MAKE_PROPERTY(egg_filename, get_egg_filename, set_egg_filename);
+  MAKE_PROPERTY(egg_timestamp, get_egg_timestamp, set_egg_timestamp);
+
   INLINE void recompute_vertex_normals(double threshold);
   INLINE void recompute_polygon_normals();
   INLINE void strip_normals();
