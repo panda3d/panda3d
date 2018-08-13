@@ -45,7 +45,7 @@ class duplicateWindow(AppShell):
         self.parent.resizable(False,False) ## Disable the ability to resize for this Window.
 
     def appInit(self):
-        print '----SideWindow is Initialized!!'
+        print('----SideWindow is Initialized!!')
 
     def createInterface(self):
         # The interior of the toplevel panel
@@ -122,7 +122,7 @@ class duplicateWindow(AppShell):
         # This message will be caught by sceneEditor.
         #################################################################
         if not self.allEntryValid():
-            print '---- Duplication Window: Invalid value!!'
+            print('---- Duplication Window: Invalid value!!')
             return
         x = self.move_x.getvalue()
         y = self.move_y.getvalue()

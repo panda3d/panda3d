@@ -619,11 +619,28 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
             p._type       = arg_type;
             p._direction  = arg_dir;
             p._varying    = (vbl == CG_VARYING);
-            p._integer    = (base_type == CG_UINT || base_type == CG_INT ||
-                             base_type == CG_ULONG || base_type == CG_LONG ||
-                             base_type == CG_USHORT || base_type == CG_SHORT ||
-                             base_type == CG_UCHAR || base_type == CG_CHAR);
             p._cat        = shader_cat.get_safe_ptr();
+
+            //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
+            // profiles and GLSL profiles it just maps to float.
+            switch (base_type) {
+            case CG_UINT:
+            case CG_ULONG:
+            case CG_USHORT:
+            case CG_UCHAR:
+            case CG_BOOL:
+              p._numeric_type = SPT_uint;
+              break;
+            case CG_INT:
+            case CG_LONG:
+            case CG_SHORT:
+            case CG_CHAR:
+              p._numeric_type = SPT_int;
+              break;
+            default:
+              p._numeric_type = SPT_float;
+              break;
+            }
 
             success &= compile_parameter(p, arg_dim);
             break;
@@ -681,7 +698,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     ShaderVarSpec bind;
     bind._id = p._id;
     bind._append_uv = -1;
-    bind._integer = p._integer;
+    bind._numeric_type = p._numeric_type;
 
     if (pieces.size() == 2) {
       if (pieces[1] == "position") {

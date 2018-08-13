@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_EXPRESS WeakPointerToVoid : public PointerToVoid {
 protected:
-  INLINE WeakPointerToVoid();
+  constexpr WeakPointerToVoid() noexcept = default;
 
 public:
   INLINE void add_callback(WeakPointerCallback *callback) const;
@@ -36,7 +36,7 @@ PUBLISHED:
   INLINE bool is_valid_pointer() const;
 
 protected:
-  mutable WeakReferenceList *_weak_ref;
+  mutable WeakReferenceList *_weak_ref = nullptr;
 };
 
 #include "weakPointerToVoid.I"

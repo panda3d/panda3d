@@ -193,7 +193,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   if (scan.get_bool() && _data_size_bytes > 0) {
     nassertv_always(_data_size_bytes <= scan.get_remaining_size());
-    _initial_data.resize(_data_size_bytes);
+    _initial_data.resize((_data_size_bytes + 15u) & ~15u);
     scan.extract_bytes(&_initial_data[0], _data_size_bytes);
   } else {
     _initial_data.clear();

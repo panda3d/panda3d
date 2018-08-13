@@ -163,8 +163,8 @@ get_pointer(int device) const {
     if (device == 0 && !_dga_mouse_enabled && result._in_window &&
         x11GraphicsPipe::_x_mutex.try_lock()) {
       XEvent event;
-      LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
-      if (XQueryPointer(_display, _xwindow, &event.xbutton.root,
+      if (_xwindow != None &&
+          XQueryPointer(_display, _xwindow, &event.xbutton.root,
           &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
           &event.xbutton.x, &event.xbutton.y, &event.xbutton.state)) {
         double time = ClockObject::get_global_clock()->get_real_time();
@@ -2193,7 +2193,13 @@ get_cursor(const Filename &filename) {
       << "Could not read from cursor file " << filename << "\n";
     return None;
   }
-  str->seekg(0, istream::beg);
+
+  // Put back the read bytes. Do not use seekg, because this will
+  // corrupt the stream if it points to encrypted/compressed file
+  str->putback(magic[3]);
+  str->putback(magic[2]);
+  str->putback(magic[1]);
+  str->putback(magic[0]);
 
   X11_Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {

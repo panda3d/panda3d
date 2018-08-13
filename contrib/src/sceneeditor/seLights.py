@@ -3,9 +3,8 @@
 # Written by Yi-Hong Lin, yihhongl@andrew.cmu.edu, 2004
 #################################################################
 from direct.showbase.DirectObject import *
-from string import lower
 from direct.directtools import DirectUtil
-from pandac.PandaModules import *
+from panda3d.core import *
 import string
 
 
@@ -341,7 +340,7 @@ class seLightManager(NodePath):
         if type == 'ambient':
             self.ambientCount += 1
             if(name=='DEFAULT_NAME'):
-                light = AmbientLight('ambient_' + `self.ambientCount`)
+                light = AmbientLight('ambient_' + repr(self.ambientCount))
             else:
                 light = AmbientLight(name)
 
@@ -350,7 +349,7 @@ class seLightManager(NodePath):
         elif type == 'directional':
             self.directionalCount += 1
             if(name=='DEFAULT_NAME'):
-                light = DirectionalLight('directional_' + `self.directionalCount`)
+                light = DirectionalLight('directional_' + repr(self.directionalCount))
             else:
                 light = DirectionalLight(name)
 
@@ -360,7 +359,7 @@ class seLightManager(NodePath):
         elif type == 'point':
             self.pointCount += 1
             if(name=='DEFAULT_NAME'):
-                light = PointLight('point_' + `self.pointCount`)
+                light = PointLight('point_' + repr(self.pointCount))
             else:
                 light = PointLight(name)
 
@@ -371,7 +370,7 @@ class seLightManager(NodePath):
         elif type == 'spot':
             self.spotCount += 1
             if(name=='DEFAULT_NAME'):
-                light = Spotlight('spot_' + `self.spotCount`)
+                light = Spotlight('spot_' + repr(self.spotCount))
             else:
                 light = Spotlight(name)
 
@@ -382,7 +381,7 @@ class seLightManager(NodePath):
             light.setAttenuation(Vec3(constant, linear, quadratic))
             light.setExponent(exponent)
         else:
-            print 'Invalid light type'
+            print('Invalid light type')
             return None
 
         # Create the seLight objects and put the light object we just created into it.
@@ -411,7 +410,7 @@ class seLightManager(NodePath):
         # Attention!!
         # only Spotlight obj nneds to be specified a lens node first. i.e. setLens() first!
         #################################################################
-        type = lower(light.getType().getName())
+        type = light.getType().getName().lower()
 
         specularColor = VBase4(1)
         position = Point3(0,0,0)
@@ -451,7 +450,7 @@ class seLightManager(NodePath):
             quadratic = Attenuation.getZ()
             exponent = light.getExponent()
         else:
-            print 'Invalid light type'
+            print('Invalid light type')
             return None
 
         lightNode = seLight(light,self,type,
@@ -508,7 +507,7 @@ class seLightManager(NodePath):
         # isLight(self.name)
         # Use a string as a index to check if there existing a light named "name"
         #################################################################
-        return self.lightDict.has_key(name)
+        return name in self.lightDict
 
     def rename(self,oName,nName):
         #################################################################
@@ -523,7 +522,7 @@ class seLightManager(NodePath):
             del self.lightDict[oName]
             return self.lightDict.keys(),lightNode
         else:
-            print '----Light Mnager: No such Light!'
+            print('----Light Mnager: No such Light!')
 
     def getLightNodeList(self):
         #################################################################

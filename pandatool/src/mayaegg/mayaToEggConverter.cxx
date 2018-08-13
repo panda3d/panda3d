@@ -838,12 +838,14 @@ process_model_node(MayaNodeDesc *node_desc) {
       // Extract some interesting Camera data
       if (mayaegg_cat.is_spam()) {
         MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+        MVector upDirection = camera.upDirection(MSpace::kWorld);
+        MVector viewDirection = camera.viewDirection(MSpace::kWorld);
         mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " "
                            << eyePoint.y << " " << eyePoint.z << endl;
-        mayaegg_cat.spam() << "  upDirection: "
-                           << camera.upDirection(MSpace::kWorld) << endl;
-        mayaegg_cat.spam() << "  viewDirection: "
-                           << camera.viewDirection(MSpace::kWorld) << endl;
+        mayaegg_cat.spam() << "  upDirection: " << upDirection.x << " "
+                           << upDirection.y << " " << upDirection.z << endl;
+        mayaegg_cat.spam() << "  viewDirection: " << viewDirection.x << " "
+                           << viewDirection.y << " " << viewDirection.z << endl;
         mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
         mayaegg_cat.spam() << "  horizontalFilmAperture: "
                            << camera.horizontalFilmAperture() << endl;
@@ -922,9 +924,12 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.error() << "light extraction failed" << endl;
       return false;
     }
-    mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
 
-    mayaegg_cat.info() << "\"" << dag_path.partialPathName() << "\" : \n";
+    if (mayaegg_cat.is_info()) {
+      MString name = dag_path.partialPathName();
+      mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
+      mayaegg_cat.info() << "\"" << name.asChar() << "\" : \n";
+    }
 
     // Get the translationrotationscale data
     MObject transformNode = dag_path.transform(&status);

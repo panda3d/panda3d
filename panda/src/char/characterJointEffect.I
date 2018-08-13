@@ -35,5 +35,9 @@ get_character() const {
  */
 INLINE bool CharacterJointEffect::
 matches_character(Character *character) const {
-  return _character == character;
+  // This works because while the Character is destructing, the ref count will
+  // be 0 but was_deleted() will still return false.  We cannot construct a
+  // PointerTo to the character (via lock() or otherwise) when the reference
+  // count is 0 since that will cause double deletion.
+  return _character.get_orig() == character && !_character.was_deleted();
 }

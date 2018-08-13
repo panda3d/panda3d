@@ -28,7 +28,6 @@
 #include <maya/MVector.h>
 #include "post_maya_include.h"
 
-class MObject;
 
 bool
 get_maya_plug(MObject &node, const std::string &attribute_name, MPlug &plug);

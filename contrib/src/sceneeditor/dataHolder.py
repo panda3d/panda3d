@@ -2,12 +2,14 @@
 # TK and PMW INTERFACE MODULES#
 ###############################
 from direct.showbase.TkGlobal import*
-from tkFileDialog import *
 import Pmw
-import tkFileDialog
-import tkMessageBox
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import askopenfilename
+else:
+    from tkFileDialog import askopenfilename
 
 
 #############################
@@ -154,7 +156,7 @@ class dataHolder:
         self.ActorNum=0
         self.theScene=None
         messenger.send('SGE_Update Explorer',[render])
-        print 'Scene should be cleaned up!'
+        print('Scene should be cleaned up!')
 
     def removeObj(self, nodePath):
         #################################################################
@@ -169,7 +171,7 @@ class dataHolder:
         childrenList = nodePath.getChildren()
 
 
-        if self.ModelDic.has_key(name):
+        if name in self.ModelDic:
             del self.ModelDic[name]
             del self.ModelRefDic[name]
             if len(childrenList) != 0:
@@ -178,7 +180,7 @@ class dataHolder:
             nodePath.removeNode()
             self.ModelNum -= 1
             pass
-        elif self.ActorDic.has_key(name):
+        elif name in self.ActorDic:
             del self.ActorDic[name]
             del self.ActorRefDic[name]
             if len(childrenList) != 0:
@@ -187,14 +189,14 @@ class dataHolder:
             nodePath.removeNode()
             self.ActorNum -= 1
             pass
-        elif self.collisionDict.has_key(name):
+        elif name in self.collisionDict:
             del self.collisionDict[name]
             if len(childrenList) != 0:
                 for node in childrenList:
                     self.removeObj(node)
             nodePath.removeNode()
             pass
-        elif self.dummyDict.has_key(name):
+        elif name in self.dummyDict:
             del self.dummyDict[name]
             if len(childrenList) != 0:
                 for node in childrenList:
@@ -207,12 +209,12 @@ class dataHolder:
                     self.removeObj(node)
             list = self.lightManager.delete(name)
             return list
-        elif self.particleNodes.has_key(name):
+        elif name in self.particleNodes:
             self.particleNodes[name].removeNode()
             del self.particleNodes[name]
             del self.particleDict[name]
         else:
-            print 'You cannot remove this NodePath'
+            print('You cannot remove this NodePath')
             return
 
         messenger.send('SGE_Update Explorer',[render])
@@ -237,15 +239,15 @@ class dataHolder:
         cHpr = hpr
         cScale = scale
         parent = nodePath.getParent()
-        if self.ActorDic.has_key(name):
+        if name in self.ActorDic:
             holder = self.ActorDic
             holderRef = self.ActorRefDic
             isModel = False
-        elif self.ModelDic.has_key(name):
+        elif name in self.ModelDic:
             holder = self.ModelDic
             holderRef = self.ModelRefDic
         else:
-            print '---- DataHolder: Target Obj is not a legal object could be duplicate!'
+            print('---- DataHolder: Target Obj is not a legal object could be duplicate!')
             return
 
         FilePath = holderRef[name]
@@ -356,7 +358,7 @@ class dataHolder:
         # This funciton will return True if there is an Actor in the scene named "name"
         # and will return False if not.
         ###########################################################################
-        return self.ActorDic.has_key(name)
+        return name in self.ActorDic
 
     def getActor(self, name):
         ###########################################################################
@@ -366,7 +368,7 @@ class dataHolder:
         if self.isActor(name):
             return self.ActorDic[name]
         else:
-            print '----No Actor named: ', name
+            print('----No Actor named: ', name)
             return None
 
     def getModel(self, name):
@@ -377,7 +379,7 @@ class dataHolder:
         if self.isModel(name):
             return self.ModelDic[name]
         else:
-            print '----No Model named: ', name
+            print('----No Model named: ', name)
             return None
 
     def isModel(self, name):
@@ -386,7 +388,7 @@ class dataHolder:
         # This funciton will return True if there is a Model in the scene named "name"
         # and will return False if not.
         ###########################################################################
-        return self.ModelDic.has_key(name)
+        return name in self.ModelDic
 
     def loadAnimation(self,name, Dic):
         ###########################################################################
@@ -406,7 +408,7 @@ class dataHolder:
             messenger.send('DataH_loadFinish'+name)
             return
         else:
-            print '------ Error when loading animation for Actor: ', name
+            print('------ Error when loading animation for Actor: ', name)
 
     def removeAnimation(self, name, anim):
         ###########################################################################
@@ -527,7 +529,7 @@ class dataHolder:
             self.ActorDic[nName]= self.ActorDic[oName]
             self.ActorRefDic[nName]= self.ActorRefDic[oName]
             self.ActorDic[nName].setName(nName)
-            if self.blendAnimDict.has_key(oName):
+            if oName in self.blendAnimDict:
                 self.blendAnimDict[nName] = self.blendAnimDict[oName]
                 del self.blendAnimDict[oName]
             del self.ActorDic[oName]
@@ -540,16 +542,16 @@ class dataHolder:
             del self.ModelRefDic[oName]
         elif self.lightManager.isLight(oName):
             list, lightNode = self.lightManager.rename(oName, nName)
-        elif self.dummyDict.has_key(oName):
+        elif oName in self.dummyDict:
             self.dummyDict[nName]= self.dummyDict[oName]
             self.dummyDict[nName].setName(nName)
             del self.dummyDict[oName]
-        elif self.collisionDict.has_key(oName):
+        elif oName in self.collisionDict:
             self.collisionDict[nName]= self.collisionDict[oName]
             self.collisionDict[nName].setName(nName)
             del self.collisionDict[oName]
 
-        elif self.particleNodes.has_key(oName):
+        elif oName in self.particleNodes:
             self.particleNodes[nName]= self.particleNodes[oName]
             self.particleDict[nName]= self.particleDict[oName]
             self.particleDict[nName].setName(nName)
@@ -557,9 +559,9 @@ class dataHolder:
             del self.particleNodes[oName]
             del self.particleDict[oName]
         else:
-            print '----Error: This Object is not allowed to this function!'
+            print('----Error: This Object is not allowed to this function!')
 
-        if self.curveDict.has_key(oName):
+        if oName in self.curveDict:
             self.curveDict[nName] = self.curveDict[oName]
             del self.curveDict[oName]
 
@@ -578,11 +580,11 @@ class dataHolder:
             return True
         elif self.lightManager.isLight(name):
             return True
-        elif self.dummyDict.has_key(name):
+        elif name in self.dummyDict:
             return True
-        elif self.collisionDict.has_key(name):
+        elif name in self.collisionDict:
             return True
-        elif self.particleNodes.has_key(name):
+        elif name in self.particleNodes:
             return True
         elif (name == 'render')or(name == 'SEditor')or(name == 'Lights')or(name == 'camera'):
             return True
@@ -596,7 +598,7 @@ class dataHolder:
         # using the node name as a reference to assosiate a list which contains all curves related to that node.
         ###########################################################################
         name = node.getName()
-        if self.curveDict.has_key(name):
+        if name in self.curveDict:
             self.curveDict[name].append(curveCollection)
             return
         else:
@@ -612,7 +614,7 @@ class dataHolder:
         # If the input node has not been bindedwith any curve, it will return None.
         ###########################################################################
         name = nodePath.getName()
-        if self.curveDict.has_key(name):
+        if name in self.curveDict:
             return self.curveDict[name]
         else:
             return None
@@ -626,7 +628,7 @@ class dataHolder:
         # This message will be caught by Property Window for this node.
         ###########################################################################
         name =nodePath.getName()
-        if self.curveDict.has_key(name):
+        if name in self.curveDict:
             index = None
             for curve in self.curveDict[name]:
                 if curve.getCurve(0).getName() == curveName:
@@ -677,12 +679,12 @@ class dataHolder:
         elif self.isLight(name):
             type = 'Light'
             info['lightNode'] = self.lightManager.getLightNode(name)
-        elif self.dummyDict.has_key(name):
+        elif name in self.dummyDict:
             type = 'dummy'
-        elif self.collisionDict.has_key(name):
+        elif name in self.collisionDict:
             type = 'collisionNode'
             info['collisionNode'] = self.collisionDict[name]
-        if self.curveDict.has_key(name):
+        if name in self.curveDict:
             info['curveList'] = self.getCurveList(nodePath)
 
         return type, info
@@ -794,7 +796,7 @@ class dataHolder:
         # The formate of thsi dictionary is
         # {"name of Blend Animation" : ["Animation A, Animation B, Effect(Float, 0~1)"]}
         ###########################################################################
-        if self.blendAnimDict.has_key(name):
+        if name in self.blendAnimDict:
             return self.blendAnimDict[name]
         else:
             return {}
@@ -808,8 +810,8 @@ class dataHolder:
         # Also, if this blend is the first blend animation that the target actor has,
         # this function will add a "Blending" tag on this actor which is "True".
         ###########################################################################
-        if self.blendAnimDict.has_key(actorName):
-            if self.blendAnimDict[actorName].has_key(blendName):
+        if actorName in self.blendAnimDict:
+            if blendName in self.blendAnimDict[actorName]:
                 ### replace the original setting
                 self.blendAnimDict[actorName][blendName][0] = animNameA
                 self.blendAnimDict[actorName][blendName][1] = animNameB
@@ -832,7 +834,7 @@ class dataHolder:
         # it will also rewrite the data to the newest one.
         ###########################################################################
         self.removeBlendAnim(actorName,oName)
-        print self.blendAnimDict
+        print(self.blendAnimDict)
         return self.saveBlendAnim(actorName, nName, animNameA, animNameB, effect)
 
     def removeBlendAnim(self, actorName, blendName):
@@ -844,8 +846,8 @@ class dataHolder:
         # Also, it will check that there is any blended animation remained for this actor,
         # If none, this function will clear the "Blending" tag of this object.
         ###########################################################################
-        if self.blendAnimDict.has_key(actorName):
-            if self.blendAnimDict[actorName].has_key(blendName):
+        if actorName in self.blendAnimDict:
+            if blendName in self.blendAnimDict[actorName]:
                 ### replace the original setting
                 del self.blendAnimDict[actorName][blendName]
             if len(self.blendAnimDict[actorName])==0:
@@ -876,15 +878,15 @@ class dataHolder:
         ###########################################################################
         if name == 'camera':
             return camera
-        elif self.ModelDic.has_key(name):
+        elif name in self.ModelDic:
             return self.ModelDic[name]
-        elif self.ActorDic.has_key(name):
+        elif name in self.ActorDic:
             return self.ActorDic[name]
-        elif self.collisionDict.has_key(name):
+        elif name in self.collisionDict:
             return self.collisionDict[name]
-        elif self.dummyDict.has_key(name):
+        elif name in self.dummyDict:
             return self.dummyDict[name]
-        elif self.particleNodes.has_key(name):
+        elif name in self.particleNodes:
             return self.particleNodes[name]
         elif self.lightManager.isLight(name):
             return self.lightManager.getLightNode(name)
@@ -935,13 +937,13 @@ class dataHolder:
         ###########################################################################
 
         ### Ask for a filename
-        OpenFilename = tkFileDialog.askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
+        OpenFilename = askopenfilename(filetypes = [("PY","py")],title = "Load Scene")
         if(not OpenFilename):
             return None
         f=Filename.fromOsSpecific(OpenFilename)
         fileName=f.getBasenameWoExtension()
         dirName=f.getFullpathWoExtension()
-        print "DATAHOLDER::" + dirName
+        print("DATAHOLDER::" + dirName)
         ############################################################################
         # Append the path to this file to our sys path where python looks for modules
         # We do this so that we can use "import"  on our saved scene code and execute it
@@ -976,7 +978,7 @@ class dataHolder:
             self.ActorDic[actor]=self.Scene.ActorDic[actor]
             #self.ActorRefDic[actor]=self.Scene.ActorRefDic[actor] # Old way of doing absolute paths
             self.ActorRefDic[actor]=Filename(dirName + "/" + self.Scene.ActorRefDic[actor]) # Relative Paths
-            if(self.Scene.blendAnimDict.has_key(str(actor))):
+            if(str(actor) in self.Scene.blendAnimDict):
                 self.blendAnimDict[actor]=self.Scene.blendAnimDict[actor]
             self.ActorNum=self.ActorNum+1
 
@@ -1006,7 +1008,7 @@ class dataHolder:
                 atten=alight.getAttenuation()
                 self.lightManager.create('spot',alight.getColor(),alight.getSpecularColor(),thenode.getPos(),thenode.getHpr(),atten.getX(),atten.getY(),atten.getZ(),alight.getExponent(),name=alight.getName(),tag=thenode.getTag("Metadata"))
             else:
-                print 'Invalid light type'
+                print('Invalid light type')
 
         ############################################################################
         # Populate Dummy related Dictionaries

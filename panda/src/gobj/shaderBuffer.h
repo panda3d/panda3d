@@ -63,7 +63,7 @@ private:
   vector_uchar _initial_data;
 
   typedef pmap<PreparedGraphicsObjects *, BufferContext *> Contexts;
-  Contexts *_contexts;
+  Contexts *_contexts = nullptr;
 
 public:
   static void register_with_read_factory();

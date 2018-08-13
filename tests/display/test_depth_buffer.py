@@ -110,7 +110,12 @@ def test_depth_write(depth_region):
 
 def test_depth_far_inf(depth_region):
     inf = float("inf")
-    assert 0.99 > render_depth_pixel(depth_region, 100.0, near=1, far=inf, clear=1.0)
+    assert 0.99 > render_depth_pixel(depth_region, 10.0, near=1, far=inf, clear=1.0)
+
+
+def test_depth_near_inf(depth_region):
+    inf = float("inf")
+    assert 0.01 < render_depth_pixel(depth_region, 10.0, near=inf, far=1, clear=0.0)
 
 
 def test_depth_clipping(depth_region):

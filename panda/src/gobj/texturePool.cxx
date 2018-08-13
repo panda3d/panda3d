@@ -177,14 +177,21 @@ bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
   MutexHolder holder(_lock);
 
-  Filename filename;
-  resolve_filename(filename, orig_filename, false, LoaderOptions());
+  LookupKey key;
+  resolve_filename(key._fullpath, orig_filename, false, LoaderOptions());
 
   Textures::const_iterator ti;
-  ti = _textures.find(filename);
+  ti = _textures.find(key);
   if (ti != _textures.end()) {
     // This texture was previously loaded.
     return true;
+  }
+
+  // It might still have been loaded with non-standard settings.
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    if (ti->first._fullpath == key._fullpath) {
+      return true;
+    }
   }
 
   return false;
@@ -196,13 +203,14 @@ ns_has_texture(const Filename &orig_filename) {
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                 bool read_mipmaps, const LoaderOptions &options) {
-  Filename filename;
-
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename, read_mipmaps, options);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
+
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
@@ -222,54 +230,54 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
-  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+  try_load_cache(tex, cache, key._fullpath, record, compressed_cache_record,
                  options);
 
   if (tex == nullptr) {
     // The texture was neither in the pool, nor found in the on-disk cache; it
     // needs to be loaded from its source image(s).
     gobj_cat.info()
-      << "Loading texture " << filename << "\n";
+      << "Loading texture " << key._fullpath << "\n";
 
-    string ext = downcase(filename.get_extension());
+    string ext = downcase(key._fullpath.get_extension());
     if (ext == "txo" || ext == "bam") {
       // Assume this is a txo file, which might conceivably contain a movie
       // file or some other subclass of Texture.  In that case, use
       // make_from_txo() to load it instead of read().
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-      filename.set_binary();
-      PT(VirtualFile) file = vfs->get_file(filename);
+      key._fullpath.set_binary();
+      PT(VirtualFile) file = vfs->get_file(key._fullpath);
       if (file == nullptr) {
         // No such file.
         gobj_cat.error()
-          << "Could not find " << filename << "\n";
+          << "Could not find " << key._fullpath << "\n";
         return nullptr;
       }
 
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
-          << "Reading texture object " << filename << "\n";
+          << "Reading texture object " << key._fullpath << "\n";
       }
 
       istream *in = file->open_read_file(true);
-      tex = Texture::make_from_txo(*in, filename);
+      tex = Texture::make_from_txo(*in, key._fullpath);
       vfs->close_read_file(in);
 
       if (tex == nullptr) {
         return nullptr;
       }
-      tex->set_fullpath(filename);
+      tex->set_fullpath(key._fullpath);
       tex->clear_alpha_fullpath();
       tex->set_keep_ram_image(false);
 
     } else {
       // Read it the conventional way.
       tex = ns_make_texture(ext);
-      if (!tex->read(filename, Filename(), primary_file_num_channels, 0,
+      if (!tex->read(key._fullpath, Filename(), primary_file_num_channels, 0,
                      0, 0, false, read_mipmaps, record, options)) {
         // This texture was not found or could not be read.
-        report_texture_unreadable(filename);
+        report_texture_unreadable(key._fullpath);
         return nullptr;
       }
     }
@@ -304,8 +312,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   // Set the original filename, before we searched along the path.
   nassertr(tex != nullptr, nullptr);
   tex->set_filename(orig_filename);
-  tex->set_fullpath(filename);
-  tex->_texture_pool_key = filename;
+  tex->set_fullpath(key._fullpath);
+  tex->_texture_pool_key = key._fullpath;
 
   {
     MutexHolder holder(_lock);
@@ -313,7 +321,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     // Now look again--someone may have just loaded this texture in another
     // thread.
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
@@ -321,7 +329,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       return tex;
     }
 
-    _textures[filename] = tex;
+    _textures[std::move(key)] = tex;
   }
 
   if (store_record && tex->is_cacheable()) {
@@ -357,16 +365,16 @@ ns_load_texture(const Filename &orig_filename,
                            read_mipmaps, options);
   }
 
-  Filename filename;
-  Filename alpha_filename;
-
+  LookupKey key;
+  key._primary_file_num_channels = primary_file_num_channels;
+  key._alpha_file_channel = alpha_file_channel;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename, read_mipmaps, options);
-    resolve_filename(alpha_filename, orig_alpha_filename, read_mipmaps, options);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
+    resolve_filename(key._alpha_fullpath, orig_alpha_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
@@ -380,26 +388,26 @@ ns_load_texture(const Filename &orig_filename,
   bool store_record = false;
 
   // Can one of our texture filters supply the texture?
-  tex = pre_load(orig_filename, alpha_filename, primary_file_num_channels,
+  tex = pre_load(orig_filename, orig_alpha_filename, primary_file_num_channels,
                  alpha_file_channel, read_mipmaps, options);
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
-  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+  try_load_cache(tex, cache, key._fullpath, record, compressed_cache_record,
                  options);
 
   if (tex == nullptr) {
     // The texture was neither in the pool, nor found in the on-disk cache; it
     // needs to be loaded from its source image(s).
     gobj_cat.info()
-      << "Loading texture " << filename << " and alpha component "
-      << alpha_filename << std::endl;
-    tex = ns_make_texture(filename.get_extension());
-    if (!tex->read(filename, alpha_filename, primary_file_num_channels,
+      << "Loading texture " << key._fullpath << " and alpha component "
+      << key._alpha_fullpath << std::endl;
+    tex = ns_make_texture(key._fullpath.get_extension());
+    if (!tex->read(key._fullpath, key._alpha_fullpath, primary_file_num_channels,
                    alpha_file_channel, 0, 0, false, read_mipmaps, nullptr,
                    options)) {
       // This texture was not found or could not be read.
-      report_texture_unreadable(filename);
+      report_texture_unreadable(key._fullpath);
       return nullptr;
     }
 
@@ -433,17 +441,17 @@ ns_load_texture(const Filename &orig_filename,
   // Set the original filenames, before we searched along the path.
   nassertr(tex != nullptr, nullptr);
   tex->set_filename(orig_filename);
-  tex->set_fullpath(filename);
+  tex->set_fullpath(key._fullpath);
   tex->set_alpha_filename(orig_alpha_filename);
-  tex->set_alpha_fullpath(alpha_filename);
-  tex->_texture_pool_key = filename;
+  tex->set_alpha_fullpath(key._alpha_fullpath);
+  tex->_texture_pool_key = key._fullpath;
 
   {
     MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
       Texture *tex = (*ti).second;
@@ -451,7 +459,7 @@ ns_load_texture(const Filename &orig_filename,
       return tex;
     }
 
-    _textures[filename] = tex;
+    _textures[std::move(key)] = tex;
   }
 
   if (store_record && tex->is_cacheable()) {
@@ -482,18 +490,19 @@ ns_load_3d_texture(const Filename &filename_pattern,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  Filename filename;
+  LookupKey key;
+  key._texture_type = Texture::TT_3d_texture;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename, read_mipmaps, options);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
-      if ((*ti).second->get_texture_type() == Texture::TT_3d_texture) {
-        // This texture was previously loaded, as a 3d texture
-        return (*ti).second;
-      }
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
   }
 
@@ -503,7 +512,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
-  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+  try_load_cache(tex, cache, key._fullpath, record, compressed_cache_record,
                  options);
 
   if (tex == nullptr ||
@@ -511,12 +520,12 @@ ns_load_3d_texture(const Filename &filename_pattern,
     // The texture was neither in the pool, nor found in the on-disk cache; it
     // needs to be loaded from its source image(s).
     gobj_cat.info()
-      << "Loading 3-d texture " << filename << "\n";
-    tex = ns_make_texture(filename.get_extension());
+      << "Loading 3-d texture " << key._fullpath << "\n";
+    tex = ns_make_texture(key._fullpath.get_extension());
     tex->setup_3d_texture();
-    if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
+    if (!tex->read(key._fullpath, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
-      report_texture_unreadable(filename);
+      report_texture_unreadable(key._fullpath);
       return nullptr;
     }
     store_record = (record != nullptr);
@@ -545,23 +554,23 @@ ns_load_3d_texture(const Filename &filename_pattern,
   // Set the original filename, before we searched along the path.
   nassertr(tex != nullptr, nullptr);
   tex->set_filename(filename_pattern);
-  tex->set_fullpath(filename);
-  tex->_texture_pool_key = filename;
+  tex->set_fullpath(key._fullpath);
+  tex->_texture_pool_key = key._fullpath;
 
   {
     MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
-      if ((*ti).second->get_texture_type() == Texture::TT_3d_texture) {
-        // This texture was previously loaded, as a 3d texture
-        return (*ti).second;
-      }
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
 
-    _textures[filename] = tex;
+    _textures[std::move(key)] = tex;
   }
 
   if (store_record && tex->is_cacheable()) {
@@ -583,21 +592,19 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  Filename filename;
-  Filename unique_filename; //differentiate 3d-textures from 2d-texture arrays
+  LookupKey key;
+  key._texture_type = Texture::TT_2d_texture_array;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename, read_mipmaps, options);
-    // Differentiate from preloaded 3d textures
-    unique_filename = filename + ".2DARRAY";
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
-    ti = _textures.find(unique_filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
-      if ((*ti).second->get_texture_type() == Texture::TT_2d_texture_array) {
-        // This texture was previously loaded, as a 2d texture array
-        return (*ti).second;
-      }
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
   }
 
@@ -607,7 +614,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
-  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+  try_load_cache(tex, cache, key._fullpath, record, compressed_cache_record,
                  options);
 
   if (tex == nullptr ||
@@ -615,12 +622,12 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
     // The texture was neither in the pool, nor found in the on-disk cache; it
     // needs to be loaded from its source image(s).
     gobj_cat.info()
-      << "Loading 2-d texture array " << filename << "\n";
-    tex = ns_make_texture(filename.get_extension());
+      << "Loading 2-d texture array " << key._fullpath << "\n";
+    tex = ns_make_texture(key._fullpath.get_extension());
     tex->setup_2d_texture_array();
-    if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
+    if (!tex->read(key._fullpath, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
-      report_texture_unreadable(filename);
+      report_texture_unreadable(key._fullpath);
       return nullptr;
     }
     store_record = (record != nullptr);
@@ -649,23 +656,23 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   // Set the original filename, before we searched along the path.
   nassertr(tex != nullptr, nullptr);
   tex->set_filename(filename_pattern);
-  tex->set_fullpath(filename);
-  tex->_texture_pool_key = unique_filename;
+  tex->set_fullpath(key._fullpath);
+  tex->_texture_pool_key = key._fullpath;
 
   {
     MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
-    ti = _textures.find(unique_filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
-      if ((*ti).second->get_texture_type() == Texture::TT_2d_texture_array) {
-        // This texture was previously loaded, as a 2d texture array
-        return (*ti).second;
-      }
+      // This texture was previously loaded.
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
 
-    _textures[unique_filename] = tex;
+    _textures[std::move(key)] = tex;
   }
 
   if (store_record && tex->is_cacheable()) {
@@ -687,16 +694,19 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   Filename orig_filename(filename_pattern);
   orig_filename.set_pattern(true);
 
-  Filename filename;
+  LookupKey key;
+  key._texture_type = Texture::TT_cube_map;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename, read_mipmaps, options);
+    resolve_filename(key._fullpath, orig_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
-      return (*ti).second;
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
   }
 
@@ -706,7 +716,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 
   BamCache *cache = BamCache::get_global_ptr();
   bool compressed_cache_record = false;
-  try_load_cache(tex, cache, filename, record, compressed_cache_record,
+  try_load_cache(tex, cache, key._fullpath, record, compressed_cache_record,
                  options);
 
   if (tex == nullptr ||
@@ -714,12 +724,12 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     // The texture was neither in the pool, nor found in the on-disk cache; it
     // needs to be loaded from its source image(s).
     gobj_cat.info()
-      << "Loading cube map texture " << filename << "\n";
-    tex = ns_make_texture(filename.get_extension());
+      << "Loading cube map texture " << key._fullpath << "\n";
+    tex = ns_make_texture(key._fullpath.get_extension());
     tex->setup_cube_map();
-    if (!tex->read(filename, 0, 0, true, read_mipmaps, options)) {
+    if (!tex->read(key._fullpath, 0, 0, true, read_mipmaps, options)) {
       // This texture was not found or could not be read.
-      report_texture_unreadable(filename);
+      report_texture_unreadable(key._fullpath);
       return nullptr;
     }
     store_record = (record != nullptr);
@@ -748,21 +758,23 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   // Set the original filename, before we searched along the path.
   nassertr(tex != nullptr, nullptr);
   tex->set_filename(filename_pattern);
-  tex->set_fullpath(filename);
-  tex->_texture_pool_key = filename;
+  tex->set_fullpath(key._fullpath);
+  tex->_texture_pool_key = key._fullpath;
 
   {
     MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
-    ti = _textures.find(filename);
+    ti = _textures.find(key);
     if (ti != _textures.end()) {
       // This texture was previously loaded.
-      return (*ti).second;
+      Texture *tex = (*ti).second;
+      nassertr(!tex->get_fullpath().empty(), tex);
+      return tex;
     }
 
-    _textures[filename] = tex;
+    _textures[std::move(key)] = tex;
   }
 
   if (store_record && tex->is_cacheable()) {
@@ -819,15 +831,22 @@ ns_add_texture(Texture *tex) {
   if (!tex->_texture_pool_key.empty()) {
     ns_release_texture(tex);
   }
-  string filename = tex->get_fullpath();
-  if (filename.empty()) {
+
+  Texture::CDReader tex_cdata(tex->_cycler);
+  if (tex_cdata->_fullpath.empty()) {
     gobj_cat.error() << "Attempt to call add_texture() on an unnamed texture.\n";
+    return;
   }
 
+  LookupKey key;
+  key._fullpath = tex_cdata->_fullpath;
+  key._alpha_fullpath = tex_cdata->_alpha_fullpath;
+  key._alpha_file_channel = tex_cdata->_alpha_file_channel;
+  key._texture_type = tex_cdata->_texture_type;
+
   // We blow away whatever texture was there previously, if any.
-  tex->_texture_pool_key = filename;
-  _textures[filename] = tex;
-  nassertv(!tex->get_fullpath().empty());
+  tex->_texture_pool_key = key._fullpath;
+  _textures[key] = tex;
 }
 
 /**
@@ -837,13 +856,13 @@ void TexturePool::
 ns_release_texture(Texture *tex) {
   MutexHolder holder(_lock);
 
-  if (!tex->_texture_pool_key.empty()) {
-    Textures::iterator ti;
-    ti = _textures.find(tex->_texture_pool_key);
-    if (ti != _textures.end() && (*ti).second == tex) {
+  Textures::iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    if (tex == (*ti).second) {
       _textures.erase(ti);
+      tex->_texture_pool_key = string();
+      break;
     }
-    tex->_texture_pool_key = string();
   }
 
   // Blow away the cache of resolved relative filenames.
@@ -886,7 +905,7 @@ ns_garbage_collect() {
     if (tex->get_ref_count() == 1) {
       if (gobj_cat.is_debug()) {
         gobj_cat.debug()
-          << "Releasing " << (*ti).first << "\n";
+          << "Releasing " << (*ti).first._fullpath << "\n";
       }
       ++num_released;
       tex->_texture_pool_key = string();
@@ -927,14 +946,14 @@ ns_list_contents(ostream &out) const {
   total_ram_size = 0;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     Texture *tex = (*ti).second;
-    out << (*ti).first << "\n";
+    out << (*ti).first._fullpath << "\n";
     out << "  (count = " << tex->get_ref_count()
         << ", ram  = " << tex->get_ram_image_size()
         << ", size = " << tex->get_ram_page_size()
         << ", w = " << tex->get_x_size()
         << ", h = " << tex->get_y_size()
         << ")\n";
-    nassertv(tex->_texture_pool_key == (*ti).first);
+    nassertv(tex->_texture_pool_key == (*ti).first._fullpath);
     total_ram_size += tex->get_ram_image_size();
     total_size += tex->get_ram_page_size();
   }

@@ -71,9 +71,14 @@ do_compute_projection_mat(Lens::CData *lens_cdata) {
   PN_stdfloat fNear = do_get_near(lens_cdata);
   PN_stdfloat a, b;
 
+  // Take the limits if either near or far is infinite.
   if (cinf(fFar)) {
     a = 1;
     b = -2 * fNear;
+  } else if (cinf(fNear)) {
+    // This is valid if the near/far planes are inverted.
+    a = -1;
+    b = 2 * fFar;
   } else {
     PN_stdfloat far_minus_near = fFar-fNear;
     a = (fFar + fNear);

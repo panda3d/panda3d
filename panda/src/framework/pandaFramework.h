@@ -40,6 +40,7 @@ public:
   PandaFramework();
   virtual ~PandaFramework();
 
+  void open_framework();
   void open_framework(int &argc, char **&argv);
   void close_framework();
 

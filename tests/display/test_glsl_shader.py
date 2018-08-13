@@ -45,6 +45,9 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=430):
     if not gsg.supports_compute_shaders or not gsg.supports_glsl:
         pytest.skip("compute shaders not supported")
 
+    if not gsg.supports_buffer_texture:
+        pytest.skip("buffer textures not supported")
+
     __tracebackhide__ = True
 
     preamble = preamble.strip()
@@ -183,7 +186,6 @@ def test_glsl_int(gsg):
     run_glsl_test(gsg, code, preamble, inputs)
 
 
-@pytest.mark.xfail
 def test_glsl_uint(gsg):
     #TODO: fix passing uints greater than intmax
     inputs = dict(
@@ -191,8 +193,8 @@ def test_glsl_uint(gsg):
         intmax=0x7fffffff,
     )
     preamble = """
-    uniform unsigned int zero;
-    uniform unsigned int intmax;
+    uniform uint zero;
+    uniform uint intmax;
     """
     code = """
     assert(zero == 0);

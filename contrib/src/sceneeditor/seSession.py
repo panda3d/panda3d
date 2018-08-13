@@ -388,7 +388,7 @@ class SeSession(DirectObject):  ### Customized DirectSession
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
-                self.ancestry = dnp.getAncestors()
+                self.ancestry = list(dnp.getAncestors())
                 self.ancestry.reverse()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
@@ -479,8 +479,8 @@ class SeSession(DirectObject):  ### Customized DirectSession
 
 
     def isNotCycle(self, nodePath, parent):
-        if nodePath.id() == parent.id():
-            print 'DIRECT.reparent: Invalid parent'
+        if nodePath.get_key() == parent.get_key():
+            print('DIRECT.reparent: Invalid parent')
             return 0
         elif parent.hasParent():
             return self.isNotCycle(nodePath, parent.getParent())
@@ -520,7 +520,10 @@ class SeSession(DirectObject):  ### Customized DirectSession
             nodePath = self.selected.last
         if nodePath:
             # Now toggle node path's visibility state
-            nodePath.toggleVis()
+            if nodePath.is_hidden():
+                nodePath.show()
+            else:
+                nodePath.hide()
 
     def removeNodePath(self, nodePath = 'None Given'):
         if nodePath == 'None Given':
@@ -732,8 +735,8 @@ class SeSession(DirectObject):  ### Customized DirectSession
         hprB = base.camera.getHpr()
         posE = Point3((radius*-1.41)+center.getX(), (radius*-1.41)+center.getY(), (radius*1.41)+center.getZ())
         hprE = Point3(-45, -38, 0)
-        print posB, hprB
-        print posE, hprE
+        print(posB, hprB)
+        print(posE, hprE)
         posInterval1 = base.camera.posInterval(time, posE, bakeInStart = 1)
         posInterval2 = base.camera.posInterval(time, posB, bakeInStart = 1)
 
