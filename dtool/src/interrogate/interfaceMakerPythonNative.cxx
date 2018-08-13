@@ -789,8 +789,6 @@ InterfaceMakerPythonNative::
  */
 void InterfaceMakerPythonNative::
 write_prototypes(ostream &out_code, ostream *out_h) {
-  Functions::iterator fi;
-
   if (out_h != nullptr) {
     *out_h << "#include \"py_panda.h\"\n\n";
   }
@@ -917,7 +915,6 @@ write_prototypes_class_external(ostream &out, Object *obj) {
 void InterfaceMakerPythonNative::
 write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
-  Functions::iterator fi;
 
   out_code << "/**\n";
   out_code << " * Forward declarations for top-level class " << ClassName << "\n";
@@ -3301,7 +3298,7 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
  */
 void InterfaceMakerPythonNative::
 write_prototype_for_name(ostream &out, InterfaceMaker::Function *func, const std::string &function_namename) {
-  Function::Remaps::const_iterator ri;
+// Function::Remaps::const_iterator ri;
 
 // for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
 // FunctionRemap *remap = (*ri);
