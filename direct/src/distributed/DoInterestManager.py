@@ -192,6 +192,9 @@ class DoInterestManager(DirectObject.DirectObject):
             messenger.send(self._getAddInterestEvent(), [event])
         assert self.printInterestsIfDebug()
         return InterestHandle(handle)
+    
+    def addTaggedInterest(self, parentId, zoneIdList, mainTag, description, otherTags=[], event=None):
+        return self.addInterest(parentId, zoneIdList, description, event)
 
     def addAutoInterest(self, parentId, zoneIdList, description):
         """
