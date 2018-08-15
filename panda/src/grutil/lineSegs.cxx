@@ -29,7 +29,7 @@
  * which will render the described path.
  */
 LineSegs::
-LineSegs(const string &name) : Namable(name) {
+LineSegs(const std::string &name) : Namable(name) {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _thick = 1.0f;
 }

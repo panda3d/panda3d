@@ -27,6 +27,10 @@
 #include <sys/stat.h>
 #endif
 
+using std::cerr;
+using std::string;
+using std::wstring;
+
 #ifdef _WIN32
 // From KnownFolders.h (part of Vista SDK):
 #define DEFINE_KNOWN_FOLDER(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \

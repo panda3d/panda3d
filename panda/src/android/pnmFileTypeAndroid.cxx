@@ -27,7 +27,7 @@ PNMFileTypeAndroid(CompressFormat format) : _format(format) {
 /**
  * Returns a few words describing the file type.
  */
-string PNMFileTypeAndroid::
+std::string PNMFileTypeAndroid::
 get_name() const {
   return "Android Bitmap";
 }
@@ -54,7 +54,7 @@ get_num_extensions() const {
  * Returns the nth possible filename extension associated with this particular
  * file type, without a leading dot.
  */
-string PNMFileTypeAndroid::
+std::string PNMFileTypeAndroid::
 get_extension(int n) const {
   static const char *const jpeg_extensions[] = {"jpg", "jpeg", "jpe"};
   switch (_format) {
@@ -84,7 +84,7 @@ has_magic_number() const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeAndroid::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
+make_reader(std::istream *file, bool owns_file, const std::string &magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -94,7 +94,7 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  * NULL.
  */
 PNMWriter *PNMFileTypeAndroid::
-make_writer(ostream *file, bool owns_file) {
+make_writer(std::ostream *file, bool owns_file) {
   return new Writer(this, file, owns_file, _format);
 }
 

@@ -24,6 +24,8 @@
 #include <dlfcn.h>
 #endif
 
+using std::string;
+
 #ifdef _WIN32
 static const string dll_ext = ".dll";
 #elif defined(__APPLE__)
@@ -132,7 +134,7 @@ load_plugin(const string &p3d_plugin_filename,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
             const string &root_dir, const string &host_dir,
-            const string &start_dir, ostream &logfile) {
+            const string &start_dir, std::ostream &logfile) {
   if (plugin_loaded) {
     return true;
   }
@@ -161,7 +163,7 @@ load_plugin(const string &p3d_plugin_filename,
     }
 
     SetErrorMode(0);
-    wstring filename_w;
+    std::wstring filename_w;
     if (string_to_wstring(filename_w, filename)) {
       module = LoadLibraryW(filename_w.c_str());
     }
@@ -273,7 +275,7 @@ init_plugin(const string &contents_filename, const string &host_url,
             const string &log_directory, const string &log_basename,
             bool trusted_environment, bool console_environment,
             const string &root_dir, const string &host_dir,
-            const string &start_dir, ostream &logfile) {
+            const string &start_dir, std::ostream &logfile) {
 
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize_ptr == nullptr ||
@@ -392,7 +394,7 @@ init_plugin(const string &contents_filename, const string &host_url,
  * the pointers.
  */
 void
-unload_plugin(ostream &logfile) {
+unload_plugin(std::ostream &logfile) {
   if (!plugin_loaded) {
     return;
   }

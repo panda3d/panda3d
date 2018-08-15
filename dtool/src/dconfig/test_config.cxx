@@ -13,6 +13,9 @@
 
 #include "dconfig.h"
 
+using std::cout;
+using std::endl;
+
 #define SNARF
 Configure(test);
 

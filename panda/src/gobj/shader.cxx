@@ -27,6 +27,12 @@
 #include <Cg/cg.h>
 #endif
 
+using std::istream;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;
@@ -613,11 +619,28 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
             p._type       = arg_type;
             p._direction  = arg_dir;
             p._varying    = (vbl == CG_VARYING);
-            p._integer    = (base_type == CG_UINT || base_type == CG_INT ||
-                             base_type == CG_ULONG || base_type == CG_LONG ||
-                             base_type == CG_USHORT || base_type == CG_SHORT ||
-                             base_type == CG_UCHAR || base_type == CG_CHAR);
             p._cat        = shader_cat.get_safe_ptr();
+
+            //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
+            // profiles and GLSL profiles it just maps to float.
+            switch (base_type) {
+            case CG_UINT:
+            case CG_ULONG:
+            case CG_USHORT:
+            case CG_UCHAR:
+            case CG_BOOL:
+              p._numeric_type = SPT_uint;
+              break;
+            case CG_INT:
+            case CG_LONG:
+            case CG_SHORT:
+            case CG_CHAR:
+              p._numeric_type = SPT_int;
+              break;
+            default:
+              p._numeric_type = SPT_float;
+              break;
+            }
 
             success &= compile_parameter(p, arg_dim);
             break;
@@ -675,7 +698,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     ShaderVarSpec bind;
     bind._id = p._id;
     bind._append_uv = -1;
-    bind._integer = p._integer;
+    bind._numeric_type = p._numeric_type;
 
     if (pieces.size() == 2) {
       if (pieces[1] == "position") {
@@ -2455,7 +2478,7 @@ bool Shader::
 do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   if (_language == SL_GLSL && glsl_preprocess) {
     // Preprocess the GLSL file as we read it.
-    set<Filename> open_files;
+    std::set<Filename> open_files;
     ostringstream sstr;
     if (!r_preprocess_source(sstr, fn, Filename(), open_files, record)) {
       return false;
@@ -2482,7 +2505,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
     if (record != nullptr) {
       record->add_dependent_file(vf);
     }
-    _last_modified = max(_last_modified, vf->get_timestamp());
+    _last_modified = std::max(_last_modified, vf->get_timestamp());
     _source_files.push_back(vf->get_filename());
   }
 
@@ -2490,6 +2513,9 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   while (!into.empty() && isspace(into[into.size() - 1])) {
     into.resize(into.size() - 1);
   }
+
+  // Except add back a newline at the end, which is needed by Intel drivers.
+  into += "\n";
 
   return true;
 }
@@ -2504,7 +2530,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 bool Shader::
 r_preprocess_source(ostream &out, const Filename &fn,
                     const Filename &source_dir,
-                    set<Filename> &once_files,
+                    std::set<Filename> &once_files,
                     BamCacheRecord *record, int depth) {
 
   if (depth > glsl_include_recursion_limit) {
@@ -2543,7 +2569,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
   if (record != nullptr) {
     record->add_dependent_file(vf);
   }
-  _last_modified = max(_last_modified, vf->get_timestamp());
+  _last_modified = std::max(_last_modified, vf->get_timestamp());
   _source_files.push_back(full_fn);
 
   // We give each file an unique index.  This is so that we can identify a
@@ -2646,7 +2672,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     }
 
     char pragma[64];
-    int nread = 0;
+    size_t nread = 0;
     // What kind of directive is it?
     if (strcmp(directive, "pragma") == 0 &&
         sscanf(line.c_str(), " # pragma %63s", pragma) == 1) {
@@ -2655,13 +2681,13 @@ r_preprocess_source(ostream &out, const Filename &fn,
         Filename incfn, source_dir;
         {
           char incfile[2048];
-          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %n", incfile, &nread) == 1
+          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // A regular include, with double quotes.  Probably a local file.
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %n", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.
@@ -2690,7 +2716,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
       } else if (strcmp(pragma, "once") == 0) {
         // Do a stricter syntax check, just to be extra safe.
-        if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
+        if (sscanf(line.c_str(), " # pragma%*[ \t]once %zn", &nread) != 0 ||
             nread != line.size()) {
           shader_cat.error()
             << "Malformed #pragma once at line " << lineno
@@ -2782,7 +2808,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       Filename incfn;
       {
         char incfile[2048];
-        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %n", incfile, &nread) != 1
+        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %zn", incfile, &nread) != 1
             || nread != line.size()) {
           // Couldn't parse it.
           shader_cat.error()
@@ -2809,7 +2835,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
     } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
       // It's a #line directive.  See if it uses a string instead of number.
       char filestr[2048];
-      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %n", &lineno, filestr, &nread) == 2
+      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %zn", &lineno, filestr, &nread) == 2
           && nread == line.size()) {
         // Warn about extension use if requested.
         if (ext_google_line == 1) {
@@ -3168,7 +3194,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
-  swap(shader->_record, record);
+  std::swap(shader->_record, record);
   shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
   shader->_fullpath = shader->_source_files[0];
   return shader;
@@ -3233,7 +3259,7 @@ make(string body, ShaderLanguage lang) {
     shader_cat.warning() << "Dumping shader: " << fn << "\n";
 
     pofstream s;
-    s.open(fn.c_str(), ios::out | ios::trunc);
+    s.open(fn.c_str(), std::ios::out | std::ios::trunc);
     s << shader->get_text();
     s.close();
   }
@@ -3408,8 +3434,7 @@ parse_eof() {
  */
 PT(AsyncFuture) Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_shader_future(this);
-  return obj.p();
+  return prepared_objects->enqueue_shader_future(this);
 }
 
 /**

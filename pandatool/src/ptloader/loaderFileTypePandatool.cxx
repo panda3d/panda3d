@@ -47,7 +47,7 @@ LoaderFileTypePandatool::
 /**
  *
  */
-string LoaderFileTypePandatool::
+std::string LoaderFileTypePandatool::
 get_name() const {
   if (_loader != nullptr) {
     return _loader->get_name();
@@ -58,7 +58,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypePandatool::
+std::string LoaderFileTypePandatool::
 get_extension() const {
   if (_loader != nullptr) {
     return _loader->get_extension();
@@ -70,7 +70,7 @@ get_extension() const {
  * Returns a space-separated list of extension, in addition to the one
  * returned by get_extension(), that are recognized by this converter.
  */
-string LoaderFileTypePandatool::
+std::string LoaderFileTypePandatool::
 get_additional_extensions() const {
   if (_loader != nullptr) {
     return _loader->get_additional_extensions();
@@ -196,7 +196,7 @@ load_file(const Filename &path, const LoaderOptions &options,
   }
   delete loader;
 
-  return result.p();
+  return result;
 }
 
 /**

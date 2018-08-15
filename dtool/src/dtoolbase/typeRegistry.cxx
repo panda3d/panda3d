@@ -20,6 +20,11 @@
 
 #include <algorithm>
 
+using std::cerr;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 MutexImpl *TypeRegistry::_lock = nullptr;
 TypeRegistry *TypeRegistry::_global_pointer = nullptr;
 

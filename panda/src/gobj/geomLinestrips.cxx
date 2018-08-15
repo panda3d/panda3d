@@ -20,6 +20,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomLinestripsAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomLinestrips::_type_handle;
 
 /**
@@ -143,7 +145,7 @@ make_adjacency() const {
 
     // Add the actual vertices in the strip.
     adj->add_vertex(v0);
-    int v1;
+    int v1 = v0;
     while (vi < end) {
       v1 = from.get_vertex(vi++);
       adj->add_vertex(v1);
@@ -162,7 +164,7 @@ make_adjacency() const {
   }
   nassertr(vi == num_vertices, nullptr);
 
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -218,7 +220,7 @@ decompose_impl() const {
     // Skip unused vertices between tristrips.
     vi += num_unused;
     int end = ends[li];
-    nassertr(vi + 1 <= end, lines.p());
+    nassertr(vi + 1 <= end, lines);
     int v0 = get_vertex(vi);
     ++vi;
     while (vi < end) {
@@ -233,7 +235,7 @@ decompose_impl() const {
   }
   nassertr(vi == get_num_vertices(), nullptr);
 
-  return lines.p();
+  return lines;
 }
 
 /**

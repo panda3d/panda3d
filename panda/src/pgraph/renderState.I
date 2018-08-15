@@ -483,7 +483,7 @@ flush_level() {
 
 #ifndef CPPPARSER
 /**
- * Handy templated version of get_attrib that costs to the right type.
+ * Handy templated version of get_attrib that casts to the right type.
  * Returns true if the attribute was present, false otherwise.
  */
 template<class AttribType>
@@ -492,13 +492,24 @@ get_attrib(const AttribType *&attrib) const {
   attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
   return (attrib != nullptr);
 }
+template<class AttribType>
+INLINE bool RenderState::
+get_attrib(CPT(AttribType) &attrib) const {
+  attrib = (const AttribType *)get_attrib((int)AttribType::get_class_slot());
+  return (attrib != nullptr);
+}
 
 /**
- * Handy templated version of get_attrib_def that costs to the right type.
+ * Handy templated version of get_attrib_def that casts to the right type.
  */
 template<class AttribType>
 INLINE void RenderState::
 get_attrib_def(const AttribType *&attrib) const {
+  attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
+}
+template<class AttribType>
+INLINE void RenderState::
+get_attrib_def(CPT(AttribType) &attrib) const {
   attrib = (const AttribType *)get_attrib_def((int)AttribType::get_class_slot());
 }
 #endif  // CPPPARSER

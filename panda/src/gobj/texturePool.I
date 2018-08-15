@@ -275,3 +275,23 @@ PT(Texture) TexturePool::
 make_texture(const std::string &extension) {
   return get_global_ptr()->ns_make_texture(extension);
 }
+
+/**
+ * Defines relative ordering between LookupKey instances.
+ */
+INLINE bool TexturePool::LookupKey::
+operator < (const LookupKey &other) const {
+  if (_fullpath != other._fullpath) {
+    return _fullpath < other._fullpath;
+  }
+  if (_alpha_fullpath != other._alpha_fullpath) {
+    return _alpha_fullpath < other._alpha_fullpath;
+  }
+  if (_primary_file_num_channels != other._primary_file_num_channels) {
+    return _primary_file_num_channels < other._primary_file_num_channels;
+  }
+  if (_alpha_file_channel != other._alpha_file_channel) {
+    return _alpha_file_channel < other._alpha_file_channel;
+  }
+  return _texture_type < other._texture_type;
+}

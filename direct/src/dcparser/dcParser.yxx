@@ -29,6 +29,10 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 DCFile *dc_file = nullptr;
 static DCClass *current_class = nullptr;
 static DCSwitch *current_switch = nullptr;

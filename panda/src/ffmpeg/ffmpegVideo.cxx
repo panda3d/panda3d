@@ -60,7 +60,7 @@ open() {
     ffmpeg_cat.error() << "Could not open " << _filename << "\n";
     return nullptr;
   } else {
-    return result.p();
+    return result;
   }
 }
 

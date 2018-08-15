@@ -13,6 +13,10 @@
 
 #include "aiBehaviors.h"
 
+using std::cout;
+using std::endl;
+using std::string;
+
 static const float _PI = 3.14;
 
 AIBehaviors::AIBehaviors() {

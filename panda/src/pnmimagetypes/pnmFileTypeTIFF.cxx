@@ -28,6 +28,11 @@
 #define int32 tiff_int32
 #define uint32 tiff_uint32
 
+using std::ios;
+using std::istream;
+using std::ostream;
+using std::string;
+
 extern "C" {
 #include <tiff.h>
 #include <tiffio.h>
@@ -1046,13 +1051,13 @@ write_data(xel *array, xelval *alpha) {
       bytesperrow = _x_size * samplesperpixel;
     } else if ( grayscale ) {
       samplesperpixel = 1;
-      bitspersample = min(8, pm_maxvaltobits(_maxval));
+      bitspersample = std::min(8, pm_maxvaltobits(_maxval));
       photometric = PHOTOMETRIC_MINISBLACK;
       i = 8 / bitspersample;
       bytesperrow = ( _x_size + i - 1 ) / i;
     } else {
       samplesperpixel = 1;
-      bitspersample = min(8, pm_maxvaltobits(_maxval));
+      bitspersample = std::min(8, pm_maxvaltobits(_maxval));
       photometric = PHOTOMETRIC_PALETTE;
       bytesperrow = _x_size;
     }

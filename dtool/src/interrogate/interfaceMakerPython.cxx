@@ -28,7 +28,7 @@ InterfaceMakerPython(InterrogateModuleDef *def) :
  * particular interface to the indicated output stream.
  */
 void InterfaceMakerPython::
-write_includes(ostream &out) {
+write_includes(std::ostream &out) {
   InterfaceMaker::write_includes(out);
   out << "#undef _POSIX_C_SOURCE\n"
       << "#undef _XOPEN_SOURCE\n"
@@ -45,7 +45,7 @@ write_includes(ostream &out) {
  * was executing, and report this failure back to Python.
  */
 void InterfaceMakerPython::
-test_assert(ostream &out, int indent_level) const {
+test_assert(std::ostream &out, int indent_level) const {
   if (watch_asserts) {
     out << "#ifndef NDEBUG\n";
     indent(out, indent_level)

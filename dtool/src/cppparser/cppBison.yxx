@@ -32,6 +32,9 @@
 #include "cppNamespace.h"
 #include "cppUsing.h"
 
+using std::stringstream;
+using std::string;
+
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
@@ -1182,14 +1185,27 @@ constructor_prototype:
 /* Functions with implicit return types, and constructors */
         IDENTIFIER '('
 {
-  push_scope($1->get_scope(current_scope, global_scope));
+  // Create a scope for this function.
+  CPPScope *scope = new CPPScope($1->get_scope(current_scope, global_scope),
+                                 $1->_names.back(), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
 }
         function_parameter_list ')' function_post
 {
+  CPPScope *scope = $1->get_scope(current_scope, global_scope);
   CPPType *type;
-  if ($1->get_simple_name() == current_scope->get_simple_name() ||
-      $1->get_simple_name() == string("~") + current_scope->get_simple_name()) {
-    // This is a constructor, and has no return.
+  std::string simple_name = $1->get_simple_name();
+  if (!simple_name.empty() && simple_name[0] == '~') {
+    // A destructor has no return type.
+    type = new CPPSimpleType(CPPSimpleType::T_void);
+  } else if (scope != nullptr && simple_name == scope->get_simple_name()) {
+    // Neither does a constructor.
     type = new CPPSimpleType(CPPSimpleType::T_void);
   } else {
     // This isn't a constructor, so it has an implicit return type of
@@ -1206,7 +1222,16 @@ constructor_prototype:
 }
         | TYPENAME_IDENTIFIER '('
 {
-  push_scope($1->get_scope(current_scope, global_scope));
+  // Create a scope for this function.
+  CPPScope *scope = new CPPScope($1->get_scope(current_scope, global_scope),
+                                 $1->_names.back(), V_private);
+
+  // It still needs to be able to pick up any template arguments, if this is
+  // a definition for a method template.  Add a fake "using" declaration to
+  // accomplish this.
+  scope->_using.insert(current_scope);
+
+  push_scope(scope);
 }
         function_parameter_list ')' function_post
 {

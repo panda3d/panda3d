@@ -26,6 +26,9 @@
 #include <math.h>
 #include <algorithm>
 
+using std::ostream;
+using std::string;
+
 TypeHandle EggVertex::_type_handle;
 
 

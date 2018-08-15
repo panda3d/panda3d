@@ -18,6 +18,8 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
+using std::ostream;
+
 LightReMutex *RenderAttrib::_attribs_lock = nullptr;
 RenderAttrib::Attribs *RenderAttrib::_attribs = nullptr;
 TypeHandle RenderAttrib::_type_handle;
@@ -198,7 +200,7 @@ garbage_collect() {
 
   // How many elements to process this pass?
   size_t size = orig_size;
-  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
@@ -208,7 +210,7 @@ garbage_collect() {
     si = 0;
   }
 
-  num_this_pass = min(num_this_pass, size);
+  num_this_pass = std::min(num_this_pass, size);
   size_t stop_at_element = (_garbage_index + num_this_pass) % size;
 
   do {
@@ -266,7 +268,7 @@ validate_attribs() {
     for (size_t si = 0; si < size; ++si) {
       const RenderAttrib *attrib = _attribs->get_key(si);
       //cerr << si << ": " << attrib << "\n";
-      attrib->write(cerr, 2);
+      attrib->write(std::cerr, 2);
     }
 
     return false;

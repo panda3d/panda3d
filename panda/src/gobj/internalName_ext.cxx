@@ -13,6 +13,8 @@
 
 #include "internalName_ext.h"
 
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 /**
@@ -74,7 +76,7 @@ make(PyStringObject *str) {
     iname->ref();
 
     InternalName::_py_intern_table.insert(std::make_pair((PyObject *)str, iname.p()));
-    return iname.p();
+    return iname;
   }
 
 }

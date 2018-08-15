@@ -19,8 +19,6 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
 class CPPIdentifier;
 class CPPParameterList;
 class CPPType;

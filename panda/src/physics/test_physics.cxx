@@ -16,6 +16,9 @@
 #include "physicsManager.h"
 #include "forces.h"
 
+using std::cout;
+using std::endl;
+
 class Baseball : public Physical {
 public:
   int ttl_balls;

@@ -16,6 +16,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+using std::min;
+
 /**
  *
  */
@@ -97,7 +100,7 @@ set_column_alignment(int column_alignment) {
  *
  */
 void GeomVertexColumn::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << *get_name() << "(" << get_num_components();
   switch (get_numeric_type()) {
   case NT_uint8:

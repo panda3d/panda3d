@@ -307,7 +307,7 @@ reload_buffer() {
 
   // First, let's fill the codec's input buffer with as many packets as it'll
   // take:
-  int ret;
+  int ret = 0;
   while (_packet->data != nullptr) {
     ret = avcodec_send_packet(_audio_ctx, _packet);
 

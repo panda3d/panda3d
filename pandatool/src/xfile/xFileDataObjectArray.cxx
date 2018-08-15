@@ -41,7 +41,7 @@ add_element(XFileDataObject *element) {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataObjectArray::
-write_data(ostream &out, int indent_level, const char *separator) const {
+write_data(std::ostream &out, int indent_level, const char *separator) const {
   if (!_nested_elements.empty()) {
     bool indented = false;
     for (size_t i = 0; i < _nested_elements.size() - 1; i++) {

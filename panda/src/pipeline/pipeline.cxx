@@ -22,7 +22,7 @@ Pipeline *Pipeline::_render_pipeline = nullptr;
  *
  */
 Pipeline::
-Pipeline(const string &name, int num_stages) :
+Pipeline(const std::string &name, int num_stages) :
   Namable(name),
 #ifdef THREADED_PIPELINE
   _num_stages(num_stages),
@@ -94,7 +94,7 @@ cycle() {
   pvector< PT(CycleData) > saved_cdatas;
   {
     ReMutexHolder cycle_holder(_cycle_lock);
-    int prev_seq, next_seq;
+    unsigned int prev_seq, next_seq;
     PipelineCyclerLinks prev_dirty;
     {
       // We can't hold the lock protecting the linked lists during the cycling

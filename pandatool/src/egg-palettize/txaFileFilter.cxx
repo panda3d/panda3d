@@ -52,7 +52,7 @@ post_load(Texture *tex) {
   }
 
   TextureImage tex_image;
-  string name = tex->get_filename().get_basename_wo_extension();
+  std::string name = tex->get_filename().get_basename_wo_extension();
   tex_image.set_name(name);
 
   SourceTextureImage *source = tex_image.get_source
@@ -131,7 +131,7 @@ read_txa_file() {
       << "Filename " << filename << " not found.\n";
   } else {
     filename.set_text();
-    istream *ifile = vfs->open_read_file(filename, true);
+    std::istream *ifile = vfs->open_read_file(filename, true);
     if (ifile == nullptr) {
       txafile_cat.warning()
         << "Filename " << filename << " cannot be read.\n";

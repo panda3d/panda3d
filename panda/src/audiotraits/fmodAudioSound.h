@@ -70,10 +70,11 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
-class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
- public:
+class VirtualFile;
 
-  FmodAudioSound(AudioManager *manager, Filename fn, bool positional );
+class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
+public:
+  FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
   ~FmodAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and

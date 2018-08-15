@@ -145,7 +145,7 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
   }
 
   ARParam wparam;
-  string fn = paramfile.to_os_specific();
+  std::string fn = paramfile.to_os_specific();
   if( arParamLoad(fn.c_str(), 1, &wparam) < 0 ) {
     vision_cat.error() << "Cannot load ARToolKit camera config\n";
     return 0;
@@ -206,7 +206,7 @@ get_pattern(const Filename &filename) {
     return (*ptf).second;
   }
 
-  string fn = filename.to_os_specific();
+  std::string fn = filename.to_os_specific();
   int id = arLoadPatt(fn.c_str());
   if (id < 0) {
     vision_cat.error() << "Could not load AR ToolKit Pattern: " << fn << "\n";

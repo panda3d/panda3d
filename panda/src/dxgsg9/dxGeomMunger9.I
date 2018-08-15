@@ -17,14 +17,21 @@
 INLINE DXGeomMunger9::
 DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
-  _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
-  _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
+  _texture(nullptr),
+  _tex_gen(nullptr)
 {
+  const TextureAttrib *texture = nullptr;
+  const TexGenAttrib *tex_gen = nullptr;
+  state->get_attrib(texture);
+  state->get_attrib(tex_gen);
+  _texture = texture;
+  _tex_gen = tex_gen;
+
   _filtered_texture = nullptr;
   _reffed_filtered_texture = false;
-  if (_texture != nullptr) {
-    _filtered_texture = _texture->filter_to_max(gsg->get_max_texture_stages());
-    if (_filtered_texture != _texture) {
+  if (texture != nullptr) {
+    _filtered_texture = texture->filter_to_max(gsg->get_max_texture_stages());
+    if (_filtered_texture != texture) {
       _filtered_texture->ref();
       _reffed_filtered_texture = true;
     }

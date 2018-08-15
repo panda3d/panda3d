@@ -72,4 +72,4 @@ notifications:
     on_success: change
     on_failure: always
     use_notice: true
-    skip_join: true
+    skip_join: false

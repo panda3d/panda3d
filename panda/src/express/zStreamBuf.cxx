@@ -18,6 +18,10 @@
 #include "pnotify.h"
 #include "config_express.h"
 
+using std::ios;
+using std::streamoff;
+using std::streampos;
+
 #if !defined(USE_MEMORY_NOWRAPPERS) && !defined(CPPPARSER)
 // Define functions that hook zlib into panda's memory allocation system.
 static void *
@@ -69,7 +73,7 @@ ZStreamBuf::
  *
  */
 void ZStreamBuf::
-open_read(istream *source, bool owns_source) {
+open_read(std::istream *source, bool owns_source) {
   _source = source;
   _owns_source = owns_source;
 
@@ -120,7 +124,7 @@ close_read() {
  *
  */
 void ZStreamBuf::
-open_write(ostream *dest, bool owns_dest, int compression_level) {
+open_write(std::ostream *dest, bool owns_dest, int compression_level) {
   _dest = dest;
   _owns_dest = owns_dest;
 
@@ -392,7 +396,7 @@ write_chars(const char *start, size_t length, int flush) {
  */
 void ZStreamBuf::
 show_zlib_error(const char *function, int error_code, z_stream &z) {
-  stringstream error_line;
+  std::stringstream error_line;
 
   error_line
     << "zlib error in " << function << ": ";

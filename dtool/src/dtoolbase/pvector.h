@@ -33,8 +33,6 @@ class pvector : public std::vector<Type> {
 
 #else
 
-using std::vector;
-
 /**
  * This is our own Panda specialization on the default STL vector.  Its main
  * purpose is to call the hooks for MemoryUsage to properly track STL-

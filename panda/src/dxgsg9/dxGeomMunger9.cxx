@@ -140,7 +140,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear
@@ -243,7 +243,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear
@@ -300,8 +300,11 @@ compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::compare_to_impl(other);
@@ -321,8 +324,11 @@ geom_compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::geom_compare_to_impl(other);

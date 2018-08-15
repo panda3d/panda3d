@@ -14,6 +14,8 @@
 #include "globPattern.h"
 #include <ctype.h>
 
+using std::string;
+
 /**
  * Returns true if the pattern includes any special globbing characters, or
  * false if it is just a literal string.

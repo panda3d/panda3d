@@ -37,6 +37,8 @@
 #endif
 #endif
 
+using std::string;
+
 LoaderOptions PandaFramework::_loader_options;
 
 /**
@@ -80,7 +82,7 @@ PandaFramework::
  * control parameters.
  */
 void PandaFramework::
-open_framework(int &argc, char **&argv) {
+open_framework() {
   if (_is_open) {
     return;
   }
@@ -158,6 +160,14 @@ open_framework(int &argc, char **&argv) {
   }
 
   _event_handler.add_hook("window-event", event_window_event, this);
+}
+
+/**
+ * @deprecated See the version of open_framework() without arguments.
+ */
+void PandaFramework::
+open_framework(int &argc, char **&argv) {
+  open_framework();
 }
 
 /**
@@ -535,7 +545,7 @@ get_models() {
  * Reports the currently measured average frame rate to the indicated ostream.
  */
 void PandaFramework::
-report_frame_rate(ostream &out) const {
+report_frame_rate(std::ostream &out) const {
   double now = ClockObject::get_global_clock()->get_frame_time();
   double delta = now - _start_time;
 
@@ -1175,10 +1185,10 @@ event_arrow_right(const Event *, void *data) {
 void PandaFramework::
 event_S(const Event *, void *) {
 #ifdef DO_PSTATS
-  nout << "Connecting to stats host" << endl;
+  nout << "Connecting to stats host" << std::endl;
   PStatClient::connect();
 #else
-  nout << "Stats host not supported." << endl;
+  nout << "Stats host not supported." << std::endl;
 #endif
 }
 
@@ -1219,7 +1229,7 @@ event_f9(const Event *event, void *data) {
     self->_screenshot_text.set_scale(0.06);
     self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
     self->_screenshot_text.reparent_to(wf->get_aspect_2d());
-    cout << "Screenshot saved: " + output_text + "\n";
+    std::cout << "Screenshot saved: " + output_text + "\n";
 
     // Set a do-later to remove the text in 3 seconds.
     self->_task_mgr.remove(self->_task_mgr.find_tasks("clear_text"));
@@ -1273,7 +1283,7 @@ event_question(const Event *event, void *data) {
 
     } else {
       // Build up a string to display.
-      ostringstream help;
+      std::ostringstream help;
       KeyDefinitions::const_iterator ki;
       for (ki = self->_key_definitions.begin();
            ki != self->_key_definitions.end();
@@ -1294,7 +1304,7 @@ event_question(const Event *event, void *data) {
       LVecBase4 frame = text_node->get_frame_actual();
 
       PN_stdfloat height = frame[3] - frame[2];
-      PN_stdfloat scale = min(0.06, 1.8 / height);
+      PN_stdfloat scale = std::min(0.06, 1.8 / height);
       self->_help_text.set_scale(scale);
 
       PN_stdfloat pos_scale = scale / -2.0;

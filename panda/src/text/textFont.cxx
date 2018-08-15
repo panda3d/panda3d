@@ -21,6 +21,10 @@
 #include "geom.h"
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle TextFont::_type_handle;
 
 /**

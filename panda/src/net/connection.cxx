@@ -303,7 +303,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
     LightReMutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
-    string data;
+    std::string data;
     data += header.get_header();
     data += datagram.get_message();
 
@@ -374,7 +374,7 @@ send_raw_datagram(const NetDatagram &datagram) {
     Socket_UDP *udp;
     DCAST_INTO_R(udp, _socket, false);
 
-    string data = datagram.get_message();
+    std::string data = datagram.get_message();
 
     LightReMutexHolder holder(_write_mutex);
     Socket_Address addr = datagram.get_address().get_addr();
@@ -430,7 +430,7 @@ do_flush() {
   Socket_TCP *tcp;
   DCAST_INTO_R(tcp, _socket, false);
 
-  string sending_data;
+  std::string sending_data;
   _queued_data.swap(sending_data);
 
   _queued_count = 0;
@@ -438,7 +438,7 @@ do_flush() {
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   int max_send = net_max_write_per_epoch;
-  int data_sent = tcp->SendData(sending_data.data(), min((size_t)max_send, sending_data.size()));
+  int data_sent = tcp->SendData(sending_data.data(), std::min((size_t)max_send, sending_data.size()));
   bool okflag = (data_sent == (int)sending_data.size());
   if (!okflag) {
     int total_sent = 0;
@@ -453,7 +453,7 @@ do_flush() {
       } else {
         Thread::consider_yield();
       }
-      data_sent = tcp->SendData(sending_data.data() + total_sent, min((size_t)max_send, sending_data.size() - total_sent));
+      data_sent = tcp->SendData(sending_data.data() + total_sent, std::min((size_t)max_send, sending_data.size() - total_sent));
       if (data_sent > 0) {
         total_sent += data_sent;
       }

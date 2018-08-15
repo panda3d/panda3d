@@ -26,6 +26,8 @@
 #include <maya/MFnMesh.h>
 #include "post_maya_include.h"
 
+using std::string;
+
 TypeHandle MayaNodeDesc::_type_handle;
 
 // This is a list of the names of Maya connections that count as a transform.
@@ -339,7 +341,7 @@ check_pseudo_joints(bool joint_above) {
     space.append(" ");
   }
   if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << endl;
+    mayaegg_cat.spam() << "cpj:" << space << get_name() << " joint_type: " << _joint_type << std::endl;
   }
   if (_joint_type == JT_joint_parent && joint_above) {
     // This is one such node: it is the parent of a joint (JT_joint_parent is
@@ -387,11 +389,11 @@ check_pseudo_joints(bool joint_above) {
           child->_joint_type = JT_pseudo_joint;
         } else if (child->_joint_type == JT_none) {
           if (mayaegg_cat.is_spam()) {
-            mayaegg_cat.spam() << "cpj: " << space << "jt_none for " << child->get_name() << endl;
+            mayaegg_cat.spam() << "cpj: " << space << "jt_none for " << child->get_name() << std::endl;
           }
           if (type_name.find("transform") == string::npos) {
             if (mayaegg_cat.is_spam()) {
-              mayaegg_cat.spam() << "cpj: " << space << "all_joints false for " << get_name() << endl;
+              mayaegg_cat.spam() << "cpj: " << space << "all_joints false for " << get_name() << std::endl;
             }
             all_joints = false;
           }

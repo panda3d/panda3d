@@ -104,7 +104,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   }
 
   // Convert packed formats that OpenGL may not understand.
-  for (int i = 0; i < orig->get_num_columns(); ++i) {
+  for (size_t i = 0; i < orig->get_num_columns(); ++i) {
     const GeomVertexColumn *column = orig->get_column(i);
     int array = orig->get_array_with(column->get_name());
 
@@ -182,7 +182,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   if ((_flags & F_parallel_arrays) != 0) {
     // Split out the interleaved array into n parallel arrays.
     new_format = new GeomVertexFormat;
-    for (int i = 0; i < format->get_num_columns(); ++i) {
+    for (size_t i = 0; i < format->get_num_columns(); ++i) {
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
@@ -290,7 +290,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   }
 
   // Convert packed formats that OpenGL may not understand.
-  for (int i = 0; i < orig->get_num_columns(); ++i) {
+  for (size_t i = 0; i < orig->get_num_columns(); ++i) {
     const GeomVertexColumn *column = orig->get_column(i);
     int array = orig->get_array_with(column->get_name());
 
@@ -317,7 +317,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   if ((_flags & F_parallel_arrays) != 0) {
     // Split out the interleaved array into n parallel arrays.
     new_format = new GeomVertexFormat;
-    for (int i = 0; i < format->get_num_columns(); ++i) {
+    for (size_t i = 0; i < format->get_num_columns(); ++i) {
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
@@ -396,7 +396,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
     // Now go through the remaining arrays and make sure they are tightly
     // packed (with the column alignment restrictions).  If not, repack them.
-    for (int i = 0; i < new_format->get_num_arrays(); ++i) {
+    for (size_t i = 0; i < new_format->get_num_arrays(); ++i) {
       CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
       if (orig_a->count_unused_space() != 0) {
         PT(GeomVertexArrayFormat) new_a = new GeomVertexArrayFormat;
@@ -426,11 +426,17 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 int CLP(GeomMunger)::
 compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_texture.owner_before(om->_texture)) {
+    return -1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (om->_texture.owner_before(_texture)) {
+    return 1;
+  }
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
   if (_flags != om->_flags) {
     return _flags < om->_flags ? -1 : 1;
@@ -447,11 +453,17 @@ compare_to_impl(const GeomMunger *other) const {
 int CLP(GeomMunger)::
 geom_compare_to_impl(const GeomMunger *other) const {
   const CLP(GeomMunger) *om = (CLP(GeomMunger) *)other;
-  if (_texture != om->_texture) {
-    return _texture < om->_texture ? -1 : 1;
+  if (_texture.owner_before(om->_texture)) {
+    return -1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (om->_texture.owner_before(_texture)) {
+    return 1;
+  }
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
   if (_flags != om->_flags) {
     return _flags < om->_flags ? -1 : 1;

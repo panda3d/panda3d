@@ -173,7 +173,7 @@ clear() {
  * NULL if no material has that name.
  */
 Material *MaterialCollection::
-find_material(const string &name) const {
+find_material(const std::string &name) const {
   int num_materials = get_num_materials();
   for (int i = 0; i < num_materials; i++) {
     Material *material = get_material(i);
@@ -227,7 +227,7 @@ size() const {
  * indicated output stream.
  */
 void MaterialCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_materials() == 1) {
     out << "1 Material";
   } else {
@@ -240,7 +240,7 @@ output(ostream &out) const {
  * indicated output stream.
  */
 void MaterialCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_materials(); i++) {
     indent(out, indent_level) << *get_material(i) << "\n";
   }

@@ -51,7 +51,7 @@ copy_bundle() const {
  * Writes a one-line description of the bundle.
  */
 void AnimBundle::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name() << ", " << get_num_frames()
       << " frames at " << get_base_frame_rate() << " fps";
 }

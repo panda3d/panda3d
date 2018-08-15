@@ -107,7 +107,7 @@ get_space() const {
 
 
 void OdeGeom::
-write(ostream &out, unsigned int indent) const {
+write(std::ostream &out, unsigned int indent) const {
   out.width(indent);
   out << get_type() << "(id = " << _id << ")";
 }

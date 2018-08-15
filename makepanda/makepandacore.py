@@ -102,7 +102,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
                    ("MAYA20165","2016.5"),
-                   ("MAYA2017","2017")
+                   ("MAYA2017","2017"),
+                   ("MAYA2018","2018"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -321,8 +322,12 @@ def GetHostArch():
     target = GetTarget()
     if target == 'windows':
         return 'x64' if host_64 else 'x86'
-    else: #TODO
-        return platform.machine()
+
+    machine = platform.machine()
+    if machine.startswith('armv7'):
+        return 'armv7a'
+    else:
+        return machine
 
 def SetTarget(target, arch=None):
     """Sets the target platform; the one we're compiling for.  Also

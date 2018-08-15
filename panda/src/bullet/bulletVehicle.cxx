@@ -52,7 +52,7 @@ set_coordinate_system(BulletUpAxis up) {
     _vehicle->setCoordinateSystem(0, 2, 1);
     break;
   default:
-    bullet_cat.error() << "invalid up axis:" << up << endl;
+    bullet_cat.error() << "invalid up axis:" << up << std::endl;
     break;
   }
 }
@@ -232,6 +232,9 @@ void BulletVehicle::
 do_sync_b2p() {
 
   for (int i=0; i < _vehicle->getNumWheels(); i++) {
+    // synchronize the wheels with the (interpolated) chassis worldtransform
+    _vehicle->updateWheelTransform(i, true);
+
     btWheelInfo info = _vehicle->getWheelInfo(i);
 
     PandaNode *node = (PandaNode *)info.m_clientInfo;

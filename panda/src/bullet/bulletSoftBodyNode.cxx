@@ -207,7 +207,7 @@ transform_changed() {
       _soft->scale(new_scale);
     }
 
-    _sync = move(ts);
+    _sync = std::move(ts);
   }
 }
 
@@ -276,8 +276,15 @@ do_sync_b2p() {
 
   // Update the synchronized transform with the current approximate center of
   // the soft body
-  LVecBase3 pos = this->do_get_aabb().get_approx_center();
-  CPT(TransformState) ts = TransformState::make_pos(pos);
+  btVector3 pMin, pMax;
+  _soft->getAabb(pMin, pMax);
+  LPoint3 pos = (btVector3_to_LPoint3(pMin) + btVector3_to_LPoint3(pMax)) * 0.5;
+  CPT(TransformState) ts;
+  if (!pos.is_nan()) {
+    ts = TransformState::make_pos(pos);
+  } else {
+    ts = TransformState::make_identity();
+  }
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   LVecBase3 scale = np.get_net_transform()->get_scale();
@@ -883,7 +890,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
   }
 
   // Read indices
-  for (int i=0; i<geom->get_num_primitives(); i++) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
 
     CPT(GeomPrimitive) prim = geom->get_primitive(i);
     prim = prim->decompose();

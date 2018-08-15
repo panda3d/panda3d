@@ -66,9 +66,9 @@ main(int argc, char *argv[]) {
   g_signal_connect(G_OBJECT(main_window), "destroy",
        G_CALLBACK(destroy), nullptr);
 
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "Listening on port " << pstats_port;
-  string str = stream.str();
+  std::string str = stream.str();
   GtkWidget *label = gtk_label_new(str.c_str());
   gtk_container_add(GTK_CONTAINER(main_window), label);
   gtk_widget_show(label);
@@ -76,12 +76,12 @@ main(int argc, char *argv[]) {
   // Create the server object.
   server = new GtkStatsServer;
   if (!server->listen()) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream
       << "Unable to open port " << pstats_port
       << ".  Try specifying a different\n"
       << "port number using pstats-port in your Config file.";
-    string str = stream.str();
+    std::string str = stream.str();
 
     GtkWidget *dialog =
       gtk_message_dialog_new(GTK_WINDOW(main_window),

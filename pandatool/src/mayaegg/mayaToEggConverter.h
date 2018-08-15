@@ -42,15 +42,6 @@ class EggPrimitive;
 class EggXfmSAnim;
 class MayaShaderColorDef;
 
-class MObject;
-class MDagPath;
-class MFnDagNode;
-class MFnNurbsSurface;
-class MFnNurbsCurve;
-class MFnMesh;
-class MPointArray;
-class MFloatArray;
-
 /**
  * This class supervises the construction of an EggData structure from a
  * single Maya file, or from the data already in the global Maya model space.

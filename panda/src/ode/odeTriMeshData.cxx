@@ -13,6 +13,8 @@
 
 #include "odeTriMeshData.h"
 
+using std::ostream;
+
 TypeHandle OdeTriMeshData::_type_handle;
 OdeTriMeshData::TriMeshDataMap *OdeTriMeshData::_tri_mesh_data_map = nullptr;
 
@@ -43,7 +45,7 @@ unlink_data(dGeomID id) {
 }
 
 void OdeTriMeshData::
-print_data(const string &marker) {
+print_data(const std::string &marker) {
   odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
   const TriMeshDataMap &data_map = get_tri_mesh_data_map();
   TriMeshDataMap::const_iterator iter = data_map.begin();
@@ -219,7 +221,7 @@ process_geom(const Geom *geom) {
 
   CPT(GeomVertexData) vData = geom->get_vertex_data();
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     process_primitive(geom->get_primitive(i), vData);
   }
 }
@@ -306,7 +308,7 @@ analyze(const Geom *geom) {
     return;
   }
 
-  for (int i = 0; i < geom->get_num_primitives(); ++i) {
+  for (size_t i = 0; i < geom->get_num_primitives(); ++i) {
     analyze(geom->get_primitive(i));
   }
 }

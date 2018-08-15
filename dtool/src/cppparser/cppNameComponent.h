@@ -19,8 +19,6 @@
 
 #include <string>
 
-using namespace std;
-
 class CPPTemplateParameterList;
 class CPPScope;
 

@@ -60,7 +60,7 @@ P3DDownload::
  * Supplies the source URL for the download.
  */
 void P3DDownload::
-set_url(const string &url) {
+set_url(const std::string &url) {
   _url = url;
 }
 
@@ -119,7 +119,7 @@ feed_url_stream(P3D_result_code result_code,
     _total_data += this_data_size;
   }
 
-  total_expected_data = max(total_expected_data, _total_data);
+  total_expected_data = std::max(total_expected_data, _total_data);
   if (total_expected_data > _total_expected_data) {
     // If the expected data grows during the download, we don't really know
     // how much we're getting.

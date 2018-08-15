@@ -42,6 +42,8 @@ public:
 PUBLISHED:
   INLINE_MATHUTIL const LPlane &get_plane() const;
 
+  MAKE_PROPERTY(plane, get_plane);
+
 public:
   virtual const BoundingPlane *as_bounding_plane() const;
 
@@ -82,6 +84,7 @@ private:
 
   friend class BoundingSphere;
   friend class BoundingBox;
+  friend class BoundingHexahedron;
 };
 
 #include "boundingPlane.I"

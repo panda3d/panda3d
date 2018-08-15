@@ -79,6 +79,7 @@ protected:
   virtual int contains_lineseg(const LPoint3 &a, const LPoint3 &b) const;
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
+  virtual int contains_plane(const BoundingPlane *plane) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
 
 private:

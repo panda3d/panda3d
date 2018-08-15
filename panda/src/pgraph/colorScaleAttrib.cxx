@@ -129,7 +129,7 @@ lower_attrib_can_override() const {
  *
  */
 void ColorScaleAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "off";

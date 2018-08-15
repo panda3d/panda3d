@@ -18,6 +18,11 @@
 #include "pvector.h"
 #include <iterator>
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFile::_type_handle;
 
 /**
@@ -284,7 +289,7 @@ close_read_write_file(iostream *stream) {
  * file.  Pass in the stream that was returned by open_read_file(); some
  * implementations may require this stream to determine the size.
  */
-streamsize VirtualFile::
+std::streamsize VirtualFile::
 get_file_size(istream *stream) const {
   return get_file_size();
 }
@@ -293,7 +298,7 @@ get_file_size(istream *stream) const {
  * Returns the current size on disk (or wherever it is) of the file before it
  * has been opened.
  */
-streamsize VirtualFile::
+std::streamsize VirtualFile::
 get_file_size() const {
   return 0;
 }
@@ -412,14 +417,14 @@ simple_read_file(istream *in, vector_uchar &result, size_t max_bytes) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
-  in->read(buffer, min(buffer_size, max_bytes));
+  in->read(buffer, std::min(buffer_size, max_bytes));
   size_t count = in->gcount();
   while (count != 0) {
     thread_consider_yield();
     nassertr(count <= max_bytes, false);
     result.insert(result.end(), buffer, buffer + count);
     max_bytes -= count;
-    in->read(buffer, min(buffer_size, max_bytes));
+    in->read(buffer, std::min(buffer_size, max_bytes));
     count = in->gcount();
   }
 

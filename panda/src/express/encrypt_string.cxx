@@ -18,6 +18,12 @@
 #include "virtualFileSystem.h"
 #include "config_express.h"
 
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  * Encrypts the indicated source string using the given password, and the
  * algorithm specified by encryption-algorithm.  Returns the encrypted string.

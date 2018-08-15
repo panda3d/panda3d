@@ -17,7 +17,10 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
-string password;
+using std::cerr;
+using std::endl;
+
+std::string password;
 bool got_password = false;
 
 void

@@ -77,7 +77,20 @@ PUBLISHED:
 
 public:
   INLINE PointerTo(PointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE explicit PointerTo(Y *ptr) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo(const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo(PointerTo<Y> &&r) noexcept;
+
   INLINE PointerTo<T> &operator = (PointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE PointerTo<T> &operator = (const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo<T> &operator = (PointerTo<Y> &&r) noexcept;
 
   constexpr To &operator *() const noexcept;
   constexpr To *operator -> () const noexcept;
@@ -141,8 +154,29 @@ PUBLISHED:
 public:
   INLINE ConstPointerTo(PointerTo<T> &&from) noexcept;
   INLINE ConstPointerTo(ConstPointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE explicit ConstPointerTo(const Y *ptr) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(const ConstPointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(PointerTo<Y> &&r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(ConstPointerTo<Y> &&r) noexcept;
+
   INLINE ConstPointerTo<T> &operator = (PointerTo<T> &&from) noexcept;
   INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (const ConstPointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (PointerTo<Y> &&r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (ConstPointerTo<Y> &&r) noexcept;
 
   constexpr const To &operator *() const noexcept;
   constexpr const To *operator -> () const noexcept;
@@ -178,6 +212,26 @@ void swap(PointerTo<T> &one, PointerTo<T> &two) noexcept {
 template <class T>
 void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) noexcept {
   one.swap(two);
+}
+
+
+// Define owner_less specializations, for completeness' sake.
+namespace std {
+  template<class T>
+  struct owner_less<PointerTo<T> > {
+    bool operator () (const PointerTo<T> &lhs,
+                      const PointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
+
+  template<class T>
+  struct owner_less<ConstPointerTo<T> > {
+    bool operator () (const ConstPointerTo<T> &lhs,
+                      const ConstPointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
 }
 
 

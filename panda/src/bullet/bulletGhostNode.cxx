@@ -97,8 +97,7 @@ do_transform_changed() {
     if (ts->has_scale()) {
       LVecBase3 scale = ts->get_scale();
       if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-        for (int i=0; i < _shapes.size(); i++) {
-          PT(BulletShape) shape = _shapes[i];
+        for (BulletShape *shape : _shapes) {
           shape->do_set_local_scale(scale);
         }
       }

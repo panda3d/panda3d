@@ -32,6 +32,9 @@
 #include "string_utils.h"
 #include "dcast.h"
 
+using std::endl;
+using std::string;
+
 SoftToEggConverter stec;
 
 const int    TEX_PER_MAT = 1;

@@ -24,7 +24,7 @@ TypeHandle PythonThread::_type_handle;
  */
 PythonThread::
 PythonThread(PyObject *function, PyObject *args,
-             const string &name, const string &sync_name) :
+             const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
   _function = function;

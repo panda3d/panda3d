@@ -34,8 +34,6 @@
 #include <string>
 #include <assert.h>
 
-using namespace std;
-
 // Appears in p3dInstanceManager.cxx.
 extern std::ostream *nout_stream;
 #define nout (*nout_stream)

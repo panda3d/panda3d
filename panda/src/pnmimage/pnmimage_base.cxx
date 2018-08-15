@@ -19,6 +19,9 @@
 #include <stdarg.h>
 #include <stdio.h>   // for sprintf()
 
+using std::istream;
+using std::ostream;
+
 
 /**
  * Outputs the given printf-style message to the user and returns.

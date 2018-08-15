@@ -29,6 +29,12 @@
 #include <io.h>    // chmod()
 #endif
 
+using std::ios;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+using std::vector;
+
 // Weight factors for computing download progress.  This attempts to reflect
 // the relative time-per-byte of each of these operations.
 const double P3DPackage::_download_factor = 1.0;
@@ -1147,7 +1153,7 @@ void P3DPackage::
 report_progress(P3DPackage::InstallStep *step) {
   if (_computed_plan_size) {
     double size = _total_plan_completed + _current_step_effort * step->get_progress();
-    _download_progress = min(size / _total_plan_size, 1.0);
+    _download_progress = std::min(size / _total_plan_size, 1.0);
 
     Instances::iterator ii;
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
@@ -1780,7 +1786,7 @@ thread_step() {
 
   ifstream source;
 #ifdef _WIN32
-  wstring source_pathname_w;
+  std::wstring source_pathname_w;
   if (string_to_wstring(source_pathname_w, source_pathname)) {
     source.open(source_pathname_w.c_str(), ios::in | ios::binary);
   }
@@ -1798,7 +1804,7 @@ thread_step() {
 
   ofstream target;
 #ifdef _WIN32
-  wstring target_pathname_w;
+  std::wstring target_pathname_w;
   if (string_to_wstring(target_pathname_w, target_pathname)) {
     target.open(target_pathname_w.c_str(), ios::out | ios::binary);
   }
@@ -1829,7 +1835,7 @@ thread_step() {
   int flush = 0;
 
   source.read(decompress_buffer, decompress_buffer_size);
-  streamsize read_count = source.gcount();
+  std::streamsize read_count = source.gcount();
   eof = (read_count == 0 || source.eof() || source.fail());
 
   z.next_in = (Bytef *)decompress_buffer;
@@ -1844,7 +1850,7 @@ thread_step() {
   while (true) {
     if (z.avail_in == 0 && !eof) {
       source.read(decompress_buffer, decompress_buffer_size);
-      streamsize read_count = source.gcount();
+      std::streamsize read_count = source.gcount();
       eof = (read_count == 0 || source.eof() || source.fail());
 
       z.next_in = (Bytef *)decompress_buffer;

@@ -137,8 +137,8 @@ get_sample_tangent(int n) const {
  */
 void CurveFitter::
 remove_samples(int begin, int end) {
-  begin = max(0, min((int)_data.size(), begin));
-  end = max(0, min((int)_data.size(), end));
+  begin = std::max(0, std::min((int)_data.size(), begin));
+  end = std::max(0, std::min((int)_data.size(), end));
 
   nassertv(begin <= end);
 
@@ -411,7 +411,7 @@ make_nurbs() const {
  *
  */
 void CurveFitter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CurveFitter, " << _data.size() << " samples.\n";
 }
 
@@ -419,7 +419,7 @@ output(ostream &out) const {
  *
  */
 void CurveFitter::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "CurveFitter, " << _data.size() << " samples:\n";
   Data::const_iterator di;
   for (di = _data.begin(); di != _data.end(); ++di) {

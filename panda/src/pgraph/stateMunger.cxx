@@ -40,7 +40,7 @@ munge_state(const RenderState *state) {
   }
 
   CPT(RenderState) result = munge_state_impl(state);
-  munged_states.store(id, result.p());
+  munged_states.store(id, result);
 
   return result;
 }

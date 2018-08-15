@@ -56,7 +56,7 @@ ParentNodes() {
  * group per polygon.
  */
 EggGroupNode *FltToEggLevelState::
-get_synthetic_group(const string &name,
+get_synthetic_group(const std::string &name,
                     const FltBead *transform_bead,
                     FltGeometry::BillboardType type) {
   LMatrix4d transform = transform_bead->get_transform();

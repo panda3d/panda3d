@@ -19,7 +19,7 @@
  *
  */
 void PointerEvent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << (_in_window ? "In@" : "Out@")
       << _xpos << "," << _ypos << " ";
 }

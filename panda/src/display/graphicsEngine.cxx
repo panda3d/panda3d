@@ -57,6 +57,8 @@
   #include <sys/time.h>
 #endif
 
+using std::string;
+
 PT(GraphicsEngine) GraphicsEngine::_global_ptr;
 
 PStatCollector GraphicsEngine::_wait_pcollector("Wait:Thread sync");
@@ -1248,6 +1250,43 @@ texture_uploaded(Texture *tex) {
 }
 
 /**
+ * Called by DisplayRegion::do_get_screenshot
+ */
+PT(Texture) GraphicsEngine::
+do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg) {
+  // A multi-threaded environment.  We have to wait until the draw thread
+  // has finished its current task.
+
+  ReMutexHolder holder(_lock);
+
+  const std::string &draw_name = gsg->get_threading_model().get_draw_name();
+  WindowRenderer *wr = get_window_renderer(draw_name, 0);
+  RenderThread *thread = (RenderThread *)wr;
+  MutexHolder cv_holder(thread->_cv_mutex);
+
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  // Now that the draw thread is idle, signal it to do the extraction task.
+  thread->_region = region;
+  thread->_thread_state = TS_do_screenshot;
+  thread->_cv_start.notify();
+  thread->_cv_mutex.release();
+  thread->_cv_mutex.acquire();
+
+  //XXX is this necessary, or is acquiring the mutex enough?
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  PT(Texture) tex = std::move(thread->_texture);
+  thread->_region = nullptr;
+  thread->_texture = nullptr;
+  return tex;
+}
+
+/**
  * Fires off a cull traversal using the indicated camera.
  */
 void GraphicsEngine::
@@ -1511,7 +1550,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
             key._lens_index = dr_reader.get_lens_index();
           }
 
-          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(move(key), nullptr)).first;
+          AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(std::move(key), nullptr)).first;
           if ((*aci).second == nullptr) {
             // We have not used this camera already in this thread.  Perform
             // the cull operation.
@@ -1537,7 +1576,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
           }
 
           // Save the results for next frame.
-          dr->set_cull_result(move(cull_result), MOVE(scene_setup), current_thread);
+          dr->set_cull_result(std::move(cull_result), MOVE(scene_setup), current_thread);
         }
       }
     }
@@ -2629,6 +2668,11 @@ thread_main() {
     case TS_do_extract:
       nassertd(_gsg != nullptr && _texture != nullptr) break;
       _result = _gsg->extract_texture_data(_texture);
+      break;
+
+    case TS_do_screenshot:
+      nassertd(_region != nullptr) break;
+      _texture = _region->get_screenshot();
       break;
 
     case TS_terminate:

@@ -27,6 +27,11 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::string;
+using std::wstring;
+
 TypeHandle PGEntry::_type_handle;
 
 /**

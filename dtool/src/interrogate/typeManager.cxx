@@ -30,6 +30,8 @@
 #include "cppTypedefType.h"
 #include "pnotify.h"
 
+using std::string;
+
 /**
  * A horrible hack around a CPPParser bug.  We don't trust the CPPType pointer
  * we were given; instead, we ask CPPParser to parse a new type of the same
@@ -116,6 +118,26 @@ is_reference(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     return is_reference(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated type is some kind of an rvalue reference.
+ */
+bool TypeManager::
+is_rvalue_reference(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_rvalue_reference(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return type->as_reference_type()->_value_category == CPPReferenceType::VC_rvalue;
+
+  case CPPDeclaration::ST_typedef:
+    return is_rvalue_reference(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -302,6 +324,26 @@ is_struct(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     return is_struct(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated type is an enum class, const or otherwise.
+ */
+bool TypeManager::
+is_scoped_enum(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_enum:
+    return ((CPPEnumType *)type)->is_scoped();
+
+  case CPPDeclaration::ST_const:
+    return is_scoped_enum(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_scoped_enum(type->as_typedef_type()->_type);
 
   default:
     return false;
@@ -2251,7 +2293,7 @@ get_function_signature(CPPInstance *function,
   CPPFunctionType *ftype = function->_type->as_function_type();
   assert(ftype != nullptr);
 
-  ostringstream out;
+  std::ostringstream out;
 
   // It's tempting to mark static methods with a different function signature
   // than non-static, because a static method doesn't have an implicit 'this'

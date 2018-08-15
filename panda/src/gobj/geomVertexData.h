@@ -419,8 +419,8 @@ public:
   INLINE bool has_column(const InternalName *name) const;
 
   INLINE UsageHint get_usage_hint() const;
-  INLINE int get_num_arrays() const;
-  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
+  INLINE size_t get_num_arrays() const;
+  INLINE CPT(GeomVertexArrayData) get_array(size_t i) const;
   INLINE const TransformTable *get_transform_table() const;
   INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
   INLINE const SliderTable *get_slider_table() const;

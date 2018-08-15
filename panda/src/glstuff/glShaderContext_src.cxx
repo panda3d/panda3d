@@ -27,6 +27,12 @@
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
 
+using std::dec;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
@@ -346,7 +352,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       StorageBlock block;
       block._name = InternalName::make(block_name_cstr);
       block._binding_index = values[0];
-      block._min_size = values[1];
+      block._min_size = (GLuint)values[1];
       _storage_blocks.push_back(block);
     }
   }
@@ -420,18 +426,34 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
   bind._elements = 1;
 
   // Check if this is an integer input- if so, we have to bind it differently.
-  bind._integer = (param_type == GL_BOOL ||
-                   param_type == GL_BOOL_VEC2 ||
-                   param_type == GL_BOOL_VEC3 ||
-                   param_type == GL_BOOL_VEC4 ||
-                   param_type == GL_INT ||
-                   param_type == GL_INT_VEC2 ||
-                   param_type == GL_INT_VEC3 ||
-                   param_type == GL_INT_VEC4 ||
-                   param_type == GL_UNSIGNED_INT_VEC2 ||
-                   param_type == GL_UNSIGNED_INT_VEC3 ||
-                   param_type == GL_UNSIGNED_INT_VEC4 ||
-                   param_type == GL_UNSIGNED_INT);
+  switch (param_type) {
+  case GL_INT:
+  case GL_INT_VEC2:
+  case GL_INT_VEC3:
+  case GL_INT_VEC4:
+    bind._numeric_type = Shader::SPT_int;
+    break;
+  case GL_BOOL:
+  case GL_BOOL_VEC2:
+  case GL_BOOL_VEC3:
+  case GL_BOOL_VEC4:
+  case GL_UNSIGNED_INT:
+  case GL_UNSIGNED_INT_VEC2:
+  case GL_UNSIGNED_INT_VEC3:
+  case GL_UNSIGNED_INT_VEC4:
+    bind._numeric_type = Shader::SPT_uint;
+    break;
+#ifndef OPENGLES
+  case GL_DOUBLE:
+  case GL_DOUBLE_VEC2:
+  case GL_DOUBLE_VEC3:
+  case GL_DOUBLE_VEC4:
+    bind._numeric_type = Shader::SPT_double;
+    break;
+#endif
+  default:
+    bind._numeric_type = Shader::SPT_float;
+  }
 
   // Check if it has a p3d_ prefix - if so, assign special meaning.
   if (strncmp(name_buffer, "p3d_", 4) == 0) {
@@ -675,6 +697,9 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
       break;
     }
 
+    (void)numeric_type;
+    (void)contents;
+    (void)num_components;
     // GeomVertexColumn column(InternalName::make(name_buffer),
     // num_components, numeric_type, contents, offsets[ui], 4, param_size,
     // astrides[ui]); block_format.add_column(column);
@@ -1492,21 +1517,29 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
-      case GL_INT_VEC4: {
+      case GL_INT_VEC4:
+      case GL_UNSIGNED_INT:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC4: {
         Shader::ShaderPtrSpec bind;
         bind._id = arg_id;
         switch (param_type) {
           case GL_BOOL:
           case GL_INT:
+          case GL_UNSIGNED_INT:
           case GL_FLOAT:      bind._dim[1] = 1; break;
           case GL_BOOL_VEC2:
           case GL_INT_VEC2:
+          case GL_UNSIGNED_INT_VEC2:
           case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
           case GL_BOOL_VEC3:
           case GL_INT_VEC3:
+          case GL_UNSIGNED_INT_VEC3:
           case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
           case GL_BOOL_VEC4:
           case GL_INT_VEC4:
+          case GL_UNSIGNED_INT_VEC4:
           case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
           case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
           case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
@@ -1516,6 +1549,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         case GL_BOOL_VEC2:
         case GL_BOOL_VEC3:
         case GL_BOOL_VEC4:
+        case GL_UNSIGNED_INT:
+        case GL_UNSIGNED_INT_VEC2:
+        case GL_UNSIGNED_INT_VEC3:
+        case GL_UNSIGNED_INT_VEC4:
+          bind._type = Shader::SPT_uint;
+          break;
         case GL_INT:
         case GL_INT_VEC2:
         case GL_INT_VEC3:
@@ -1595,6 +1634,10 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
     case GL_INT_VEC2:
     case GL_INT_VEC3:
     case GL_INT_VEC4:
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_VEC2:
+    case GL_UNSIGNED_INT_VEC3:
+    case GL_UNSIGNED_INT_VEC4:
     case GL_FLOAT:
     case GL_FLOAT_VEC2:
     case GL_FLOAT_VEC3:
@@ -1624,6 +1667,12 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       case GL_BOOL_VEC2:
       case GL_BOOL_VEC3:
       case GL_BOOL_VEC4:
+      case GL_UNSIGNED_INT:
+      case GL_UNSIGNED_INT_VEC2:
+      case GL_UNSIGNED_INT_VEC3:
+      case GL_UNSIGNED_INT_VEC4:
+        bind._type = Shader::SPT_uint;
+        break;
       case GL_INT:
       case GL_INT_VEC2:
       case GL_INT_VEC3:
@@ -1904,12 +1953,14 @@ set_state_and_transform(const RenderState *target_rs,
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
+    target_rs->get_attrib_def(_color_attrib);
 
   } else if (state_rs != target_rs) {
     // The state has changed since last time.
     if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
+      target_rs->get_attrib_def(_color_attrib);
     }
     if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
@@ -1978,7 +2029,7 @@ issue_parameters(int altered) {
   if (altered & (Shader::SSD_shaderinputs | Shader::SSD_frame)) {
 
     // If we have an osg_FrameNumber input, set it now.
-    if ((altered | Shader::SSD_frame) != 0 && _frame_number_loc >= 0) {
+    if ((altered & Shader::SSD_frame) != 0 && _frame_number_loc >= 0) {
       _glgsg->_glUniform1i(_frame_number_loc, _frame_number);
     }
 
@@ -1991,6 +2042,8 @@ issue_parameters(int altered) {
         release_resources();
         return;
       }
+
+      nassertd(spec._dim[1] > 0) continue;
 
       GLint p = spec._id._seqno;
       int array_size = min(spec._dim[0], (int)ptr_data->_size / spec._dim[1]);
@@ -2005,6 +2058,14 @@ issue_parameters(int altered) {
             data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
             for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
               data[i] = (float)(((int*)ptr_data->_ptr)[i]);
+            }
+            break;
+
+          case Shader::SPT_uint:
+            // Convert unsigned int data to float data.
+            data = (float*) alloca(sizeof(float) * array_size * spec._dim[1]);
+            for (int i = 0; i < (array_size * spec._dim[1]); ++i) {
+              data[i] = (float)(((unsigned int*)ptr_data->_ptr)[i]);
             }
             break;
 
@@ -2037,7 +2098,8 @@ issue_parameters(int altered) {
         break;
 
       case Shader::SPT_int:
-        if (ptr_data->_type != Shader::SPT_int) {
+        if (ptr_data->_type != Shader::SPT_int &&
+            ptr_data->_type != Shader::SPT_uint) {
           GLCAT.error()
             << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
 
@@ -2052,6 +2114,28 @@ issue_parameters(int altered) {
           case 2: _glgsg->_glUniform2iv(p, array_size, (int*)ptr_data->_ptr); continue;
           case 3: _glgsg->_glUniform3iv(p, array_size, (int*)ptr_data->_ptr); continue;
           case 4: _glgsg->_glUniform4iv(p, array_size, (int*)ptr_data->_ptr); continue;
+          }
+          nassertd(false) continue;
+        }
+        break;
+
+      case Shader::SPT_uint:
+        if (ptr_data->_type != Shader::SPT_uint &&
+            ptr_data->_type != Shader::SPT_int) {
+          GLCAT.error()
+            << "Cannot pass floating-point data to integer shader input '" << spec._id._name << "'\n";
+
+          // Deactivate it to make sure the user doesn't get flooded with this
+          // error.
+          spec._dep[0] = 0;
+          spec._dep[1] = 0;
+
+        } else {
+          switch (spec._dim[1]) {
+          case 1: _glgsg->_glUniform1uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4uiv(p, array_size, (GLuint *)ptr_data->_ptr); continue;
           }
           nassertd(false) continue;
         }
@@ -2161,7 +2245,7 @@ update_transform_table(const TransformTable *table) {
 #endif
     }
   }
-  for (; i < _transform_table_size; ++i) {
+  for (; i < (size_t)_transform_table_size; ++i) {
     matrices[i] = LMatrix4f::ident_mat();
   }
 
@@ -2196,7 +2280,7 @@ disable_shader_vertex_arrays() {
     return;
   }
 
-  for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
+  for (size_t i = 0; i < _shader->_var_spec.size(); ++i) {
     const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
     GLint p = bind._id._seqno;
 
@@ -2221,8 +2305,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   // Get the active ColorAttrib.  We'll need it to determine how to apply
   // vertex colors.
-  const ColorAttrib *color_attrib;
-  _state_rs->get_attrib_def(color_attrib);
+  const ColorAttrib *color_attrib = _color_attrib.p();
 
   const GeomVertexArrayDataHandle *array_reader;
 
@@ -2230,7 +2313,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     // Use experimental new separated formatbinding state.
     const GeomVertexDataPipelineReader *data_reader = _glgsg->_data_reader;
 
-    for (int ai = 0; ai < data_reader->get_num_arrays(); ++ai) {
+    for (size_t ai = 0; ai < data_reader->get_num_arrays(); ++ai) {
       array_reader = data_reader->get_array_reader(ai);
 
       // Make sure the vertex buffer is up-to-date.
@@ -2287,7 +2370,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int start, stride, num_values;
     size_t nvarying = _shader->_var_spec.size();
 
-    GLuint max_p = 0;
+    GLint max_p = 0;
 
     for (size_t i = 0; i < nvarying; ++i) {
       const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
@@ -2305,7 +2388,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
 
-      GLuint p = bind._id._seqno;
+      GLint p = bind._id._seqno;
       max_p = max(max_p, p + 1);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
@@ -2322,21 +2405,25 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
         client_pointer += start;
 
+        GLenum type = _glgsg->get_numeric_type(numeric_type);
         for (int i = 0; i < num_elements; ++i) {
           _glgsg->enable_vertex_attrib_array(p);
 
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                            stride, client_pointer);
-          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
             // GL_BGRA is a special accepted value available since OpenGL 3.2.
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else {
-            _glgsg->_glVertexAttribPointer(p, num_values,
-                                           _glgsg->get_numeric_type(numeric_type),
+          } else if (bind._numeric_type == Shader::SPT_float ||
+                     numeric_type == GeomEnums::NT_float32) {
+            _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(p, num_values, type,
+                                            stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribIPointer(p, num_values, type,
+                                            stride, client_pointer);
           }
 
           if (divisor > 0) {
@@ -2394,7 +2481,7 @@ disable_shader_texture_bindings() {
 
   DO_PSTATS_STUFF(_glgsg->_texture_state_pcollector.add_level(1));
 
-  for (int i = 0; i < _shader->_tex_spec.size(); ++i) {
+  for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
 #ifndef OPENGLES
     // Check if bindless was used, if so, there's nothing to unbind.
     if (_glgsg->_supports_bindless_texture) {
@@ -2602,8 +2689,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
   }
 
   size_t num_textures = _shader->_tex_spec.size();
-  GLuint *textures;
-  GLuint *samplers;
+  GLuint *textures = nullptr;
+  GLuint *samplers = nullptr;
 #ifdef OPENGLES
   static const bool multi_bind = false;
 #else
@@ -2799,7 +2886,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
 
   // Parse the errors so that we can substitute in actual file locations
   // instead of source indices.
-  istringstream log(info_log);
+  std::istringstream log(info_log);
   string line;
   while (std::getline(log, line)) {
     int fileno, lineno, colno;
@@ -3114,7 +3201,7 @@ glsl_compile_and_link() {
       sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
 
       pofstream s;
-      s.open(filename, ios::out | ios::binary | ios::trunc);
+      s.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
       s.write(binary, num_bytes);
       s.close();
 

@@ -13,6 +13,9 @@
 
 #include "depthWriteAttrib.h"
 
+using std::max;
+using std::min;
+
 TypeHandle CLP(GraphicsBuffer)::_type_handle;
 
 /**
@@ -20,7 +23,7 @@ TypeHandle CLP(GraphicsBuffer)::_type_handle;
  */
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -67,7 +70,7 @@ CLP(GraphicsBuffer)::
   // unshare all buffers that are sharing this object's depth buffer
   {
     CLP(GraphicsBuffer) *graphics_buffer;
-    list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+    std::list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 
     graphics_buffer_iterator = _shared_depth_buffer_list.begin();
     while (graphics_buffer_iterator != _shared_depth_buffer_list.end()) {
@@ -386,7 +389,7 @@ rebuild_bitplanes() {
   _rb_size_z = 1;
   _rb_data_size_bytes = 0;
 
-  int num_fbos = 1;
+  size_t num_fbos = 1;
 
   // These variables indicate what should be bound to each bitplane.
   Texture *attach[RTP_COUNT];
@@ -455,7 +458,7 @@ rebuild_bitplanes() {
       }
 
       if (tex->get_z_size() > 1) {
-        num_fbos = max(num_fbos, tex->get_z_size());
+        num_fbos = max(num_fbos, (size_t)tex->get_z_size());
       }
 
       // Assign the texture to this slot.
@@ -495,7 +498,7 @@ rebuild_bitplanes() {
   } else if (attach[RTP_depth_stencil] != nullptr && attach[RTP_depth] == nullptr) {
     // The depth stencil slot was assigned a texture, but we don't support it.
     // Downgrade to a regular depth texture.
-    swap(attach[RTP_depth], attach[RTP_depth_stencil]);
+    std::swap(attach[RTP_depth], attach[RTP_depth_stencil]);
   }
 
   // Knowing this, we can already be a tiny bit more accurate about the
@@ -520,13 +523,13 @@ rebuild_bitplanes() {
 
   if (num_fbos > _fbo.size()) {
     // Generate more FBO handles.
-    int start = _fbo.size();
+    size_t start = _fbo.size();
     GLuint zero = 0;
     _fbo.resize(num_fbos, zero);
     glgsg->_glGenFramebuffers(num_fbos - start, &_fbo[start]);
   }
 
-  for (int layer = 0; layer < num_fbos; ++layer) {
+  for (int layer = 0; layer < (int)num_fbos; ++layer) {
     // Bind the FBO
     if (_fbo[layer] == 0) {
       report_my_gl_errors();
@@ -537,9 +540,9 @@ rebuild_bitplanes() {
     if (glgsg->_use_object_labels) {
       // Assign a label for OpenGL to use when displaying debug messages.
       if (num_fbos > 1) {
-        ostringstream strm;
+        std::ostringstream strm;
         strm << _name << '[' << layer << ']';
-        string name = strm.str();
+        std::string name = strm.str();
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], name.size(), name.data());
       } else {
         glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
@@ -861,14 +864,22 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       case RTP_depth_stencil:
         if (_fb_properties.get_depth_bits() > 24 ||
             _fb_properties.get_float_depth()) {
-          gl_format = GL_DEPTH32F_STENCIL8;
+          if (!glgsg->_use_remapped_depth_range) {
+            gl_format = GL_DEPTH32F_STENCIL8;
+          } else {
+            gl_format = GL_DEPTH32F_STENCIL8_NV;
+          }
         } else {
           gl_format = GL_DEPTH24_STENCIL8;
         }
         break;
       case RTP_depth:
         if (_fb_properties.get_float_depth()) {
-          gl_format = GL_DEPTH_COMPONENT32F;
+          if (!glgsg->_use_remapped_depth_range) {
+            gl_format = GL_DEPTH_COMPONENT32F;
+          } else {
+            gl_format = GL_DEPTH_COMPONENT32F_NV;
+          }
         } else if (_fb_properties.get_depth_bits() > 24) {
           gl_format = GL_DEPTH_COMPONENT32;
         } else if (_fb_properties.get_depth_bits() > 16) {
@@ -978,6 +989,23 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+
+#ifndef OPENGLES
+      // Are we getting only 24 bits of depth when we requested 32?  It may be
+      // because GL_DEPTH_COMPONENT32 is not a required format, while 32F is.
+      if (gl_format == GL_DEPTH_COMPONENT32 && depth_size < 32) {
+        if (!glgsg->_use_remapped_depth_range) {
+          gl_format = GL_DEPTH_COMPONENT32F;
+        } else {
+          gl_format = GL_DEPTH_COMPONENT32F_NV;
+        }
+        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+
+        _fb_properties.set_float_depth(true);
+      }
+#endif
+
       _fb_properties.set_depth_bits(depth_size);
       _rb_data_size_bytes += _rb_size_x * _rb_size_y * (depth_size / 8);
 
@@ -1294,7 +1322,7 @@ set_size(int x, int y) {
  */
 void CLP(GraphicsBuffer)::
 select_target_tex_page(int page) {
-  nassertv(page >= 0 && page < _fbo.size());
+  nassertv(page >= 0 && (size_t)page < _fbo.size());
 
   CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
@@ -1571,10 +1599,10 @@ close_buffer() {
   report_my_gl_errors();
 
   // Delete the FBO itself.
-  for (int i = 0; i < _fbo.size(); ++i) {
-    glgsg->_glDeleteFramebuffers(1, &_fbo[i]);
+  if (!_fbo.empty()) {
+    glgsg->_glDeleteFramebuffers(_fbo.size(), _fbo.data());
+    _fbo.clear();
   }
-  _fbo.clear();
 
   report_my_gl_errors();
 
@@ -1775,7 +1803,7 @@ resolve_multisamples() {
     if (_shared_depth_buffer) {
       CLP(GraphicsBuffer) *graphics_buffer = nullptr;
       //CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
-      list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+      std::list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
 
       int max_sort_order = 0;
       for (graphics_buffer_iterator = _shared_depth_buffer_list.begin();

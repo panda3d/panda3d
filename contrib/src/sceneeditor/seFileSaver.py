@@ -3,7 +3,7 @@
 # This code saves the scene out as python code... the scene is stored in the various dictionaries in "dataHolder.py" ...the class "AllScene"
 #
 ####################################################################################################################################################
-from pandac.PandaModules import *
+from panda3d.core import *
 
 from direct.showbase.ShowBaseGlobal import *
 import os
@@ -42,7 +42,7 @@ class FileSaver:
         i1="    " # indentation
         i2=i1+i1  # double indentation
         out_file = open(filename,"w")
-        print "dirname:" + dirname
+        print("dirname:" + dirname)
         if( not os.path.isdir(dirname)):
             os.mkdir(dirname)
         savepathname=Filename(filename)
@@ -176,7 +176,7 @@ class FileSaver:
                     newtexpathF=Filename(newtexpath)
                     newtexpathSpecific=newtexpathF.toOsSpecific()
 
-                    print "TEXTURE SAVER:: copying" + oldtexpath + " to " + newtexpathSpecific
+                    print("TEXTURE SAVER:: copying" + oldtexpath + " to " + newtexpathSpecific)
                     if(oldtexpath != newtexpathSpecific):
                         shutil.copyfile(oldtexpath,newtexpathSpecific)
 
@@ -187,7 +187,7 @@ class FileSaver:
 
                 # Copy the file over to the relative directory
                 oldModelpath=AllScene.ModelRefDic[model].toOsSpecific()
-                print "FILESAVER:: copying from " + AllScene.ModelRefDic[model].toOsSpecific() + "to" + newpathSpecific
+                print("FILESAVER:: copying from " + AllScene.ModelRefDic[model].toOsSpecific() + "to" + newpathSpecific)
                 if(oldModelpath!=newpathSpecific):
                     shutil.copyfile(oldModelpath,newpathSpecific)
 
@@ -197,7 +197,7 @@ class FileSaver:
                 etc=EggTextureCollection()
                 etc.extractTextures(e)
                 for index in range(len(fnamelist)):
-                    print fnamelist[index]
+                    print(fnamelist[index])
                     tex=etc.findFilename(Filename(fnamelist[index]))
                     fn=Filename(tex.getFilename())
                     fn.setDirname("")
@@ -305,14 +305,14 @@ class FileSaver:
                     newtexpath=dirname + "/" + texfilename.getBasename()
                     newtexpathF=Filename(newtexpath)
                     newtexpathSpecific=newtexpathF.toOsSpecific()
-                    print "TEXTURE SAVER:: copying" + oldtexpath + " to " + newtexpathSpecific
+                    print("TEXTURE SAVER:: copying" + oldtexpath + " to " + newtexpathSpecific)
                     if(oldtexpath != newtexpathSpecific):
                         shutil.copyfile(oldtexpath,newtexpathSpecific)
 
 
                 # Copy the file over to the relative directory
                 oldActorpath=AllScene.ActorRefDic[actor].toOsSpecific()
-                print "FILESAVER:: copying from " + AllScene.ActorRefDic[actor].toOsSpecific() + "to" + newpathSpecific
+                print("FILESAVER:: copying from " + AllScene.ActorRefDic[actor].toOsSpecific() + "to" + newpathSpecific)
                 if(oldActorpath!=newpathSpecific):
                     shutil.copyfile(oldActorpath,newpathSpecific)
 
@@ -322,7 +322,7 @@ class FileSaver:
                 etc=EggTextureCollection()
                 etc.extractTextures(e)
                 for index in range(len(actorfnamelist)):
-                    print actorfnamelist[index]
+                    print(actorfnamelist[index])
                     tex=etc.findFilename(Filename(actorfnamelist[index]))
                     fn=Filename(tex.getFilename())
                     fn.setDirname("")
@@ -362,12 +362,12 @@ class FileSaver:
                         #out_file.write(i2+ "self."+ actorS + ".loadAnims(" + str(ActorAnimations) +")\n") # Old way with absolute paths
                         #Manakel 2/12/2004: solve the not empty but not defined animation case
                         if not animation is None:
-                            print "ACTOR ANIMATIONS:" + ActorAnimations[animation]
+                            print("ACTOR ANIMATIONS:" + ActorAnimations[animation])
                             oldAnimPath=Filename(ActorAnimations[animation])
                             oldAnim=oldAnimPath.toOsSpecific()
                             dirOS=Filename(dirname)
                             newAnim=dirOS.toOsSpecific() + "\\" + oldAnimPath.getBasename()
-                            print "ACTOR ANIM SAVER:: Comparing" + oldAnim +"and" + newAnim
+                            print("ACTOR ANIM SAVER:: Comparing" + oldAnim +"and" + newAnim)
                             if(oldAnim!=newAnim):
                                 shutil.copyfile(oldAnim,newAnim)
                             newAnimF=Filename.fromOsSpecific(newAnim)
@@ -379,16 +379,16 @@ class FileSaver:
                 out_file.write(i2+ i1+"self."+ actorS + ".loadAnims(" + str(ActorAnimations) +")\n") # Now with new relative paths
                 out_file.write(i2+"else:\n")
                 theloadAnimString=str(ActorAnimationsInvoke)# We hack the "self.executionpath" part into the dictionary as a variable using string replace
-                print "LOAD ANIM STRING BEFORE" + theloadAnimString
+                print("LOAD ANIM STRING BEFORE" + theloadAnimString)
                 theloadAnimString=theloadAnimString.replace('\'self.executionpath +','self.executionpath + \'')
-                print "LOAD ANIM STRING AFTER" + theloadAnimString
+                print("LOAD ANIM STRING AFTER" + theloadAnimString)
                 out_file.write(i2+ i1+"self."+ actorS + ".loadAnims(" + theloadAnimString +")\n") # Now with new relative paths based on editor invocation
 
                 out_file.write(i2+ "self.ActorDic[\'" + actorS + "\']=self." + AllScene.ActorDic[actor].getName()+"\n")
                 #out_file.write(i2+ "self.ActorRefDic[\'" + actorS + "\']=Filename(\'"+AllScene.ActorRefDic[actor].getFullpath() +"\')\n") # Old way with absolute paths
                 out_file.write(i2+ "self.ActorRefDic[\'" + actorS + "\']=\'"+ AllScene.ActorRefDic[actor].getBasename() +"\'\n")# Relative paths
                 out_file.write(i2+ "self.ActorDic[\'"+ actorS + "\'].setName(\'"+ actorS +"\')\n")
-                if(AllScene.blendAnimDict.has_key(actor)): # Check if a dictionary of blended animations exists
+                if(actor in AllScene.blendAnimDict): # Check if a dictionary of blended animations exists
                     out_file.write(i2+ "self.blendAnimDict[\"" + actorS +"\"]=" + str(AllScene.blendAnimDict[actor]) + "\n")
 
 
@@ -458,7 +458,7 @@ class FileSaver:
 
                 pass
             else:
-                 print "Invalid Collision Node: " + nodetype
+                 print("Invalid Collision Node: " + nodetype)
             out_file.write("\n")
 
 
@@ -653,7 +653,7 @@ class FileSaver:
             if(parent=="render" or parent=="camera"):
                 out_file.write(i2+ "self."+ modelS + ".reparentTo(" + parent + ")\n")
             else:
-                if(AllScene.particleDict.has_key(parent)):
+                if(parent in AllScene.particleDict):
                     out_file.write(i2+ "self."+ modelS + ".reparentTo(self." + parent + ".getEffect())\n")
                 else:
                     out_file.write(i2+ "self."+ modelS + ".reparentTo(self." + parent + ")\n")
@@ -666,7 +666,7 @@ class FileSaver:
             if(parent=="render" or parent=="camera"):
                 out_file.write(i2+ "self."+ dummyS + ".reparentTo(" + parent + ")\n")
             else:
-                if(AllScene.particleDict.has_key(parent)):
+                if(parent in AllScene.particleDict):
                     out_file.write(i2+ "self."+ dummyS + ".reparentTo(self." + parent + ".getEffect())\n")
                 else:
                     out_file.write(i2+ "self."+ dummyS + ".reparentTo(self." + parent + ")\n")
@@ -680,7 +680,7 @@ class FileSaver:
             if(parent=="render" or parent=="camera"):
                 out_file.write(i2+ "self."+ actorS + ".reparentTo(" + parent + ")\n")
             else:
-                if(AllScene.particleDict.has_key(parent)):
+                if(parent in AllScene.particleDict):
                     out_file.write(i2+ "self."+ actorS + ".reparentTo(self." + parent + ".getEffect())\n")
                 else:
                     out_file.write(i2+ "self."+ actorS + ".reparentTo(self." + parent + ")\n")
@@ -698,7 +698,7 @@ class FileSaver:
                 out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]="+ parentname + ".attachNewNode(self." + collnodeS + "_Node)\n")
             else:
                 #Manakel 2/12/2005: parent replaced by parent Name but why Parent name in partice and parent for other objects?
-                if(AllScene.particleDict.has_key(parentname)):
+                if(parentname in AllScene.particleDict):
                     out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]=self."+ parentname + "getEffect().attachNewNode(self." + collnodeS + "_Node)\n")
                 else:
                     out_file.write(i2+"self.collisionDict[\"" + collnodeS + "\"]=self."+ parentname + ".attachNewNode(self." + collnodeS + "_Node)\n")

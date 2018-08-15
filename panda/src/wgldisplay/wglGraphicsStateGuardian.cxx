@@ -319,7 +319,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
     return;
   }
 
-  wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, nullptr);
+  if (!wglGraphicsPipe::wgl_make_current(twindow_dc, twindow_ctx, nullptr)) {
+    wgldisplay_cat.error()
+      << "Failed to make WGL context current.\n";
+    wglDeleteContext(twindow_ctx);
+    return;
+  }
 
   _extensions.clear();
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
@@ -395,7 +400,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
                                 max_pformats, pformat, (unsigned int *)&nformats)) {
     nformats = 0;
   }
-  nformats = min(nformats, max_pformats);
+  nformats = std::min(nformats, max_pformats);
 
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
@@ -706,7 +711,7 @@ make_twindow() {
 
   if (!_twindow) {
     wgldisplay_cat.error()
-      << "CreateWindow() failed!" << endl;
+      << "CreateWindow() failed!" << std::endl;
     return false;
   }
 
@@ -764,7 +769,7 @@ register_twindow_class() {
 
   if (!RegisterClass(&wc)) {
     wgldisplay_cat.error()
-      << "could not register window class!" << endl;
+      << "could not register window class!" << std::endl;
     return;
   }
   _twindow_class_registered = true;

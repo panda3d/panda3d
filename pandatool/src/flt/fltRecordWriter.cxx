@@ -28,7 +28,7 @@ static const int max_write_length = 65532;
  *
  */
 FltRecordWriter::
-FltRecordWriter(ostream &out) :
+FltRecordWriter(std::ostream &out) :
   _out(out)
 {
 }
@@ -75,7 +75,7 @@ FltError FltRecordWriter::
 advance() {
   int start_byte = 0;
   int write_length =
-    min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
+    std::min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
   FltOpcode opcode = _opcode;
 
   do {
@@ -107,7 +107,7 @@ advance() {
 
     start_byte += write_length;
     write_length =
-      min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
+      std::min((int)_datagram.get_length() - start_byte, max_write_length - header_size);
     opcode = FO_continuation;
   } while (write_length > 0);
 

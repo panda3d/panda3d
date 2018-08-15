@@ -205,7 +205,7 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPPointerType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   /*
   CPPFunctionType *ftype = _pointing_at->as_function_type();
   if (ftype != (CPPFunctionType *)NULL) {
@@ -235,10 +235,10 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
  * have special exceptions.
  */
 void CPPPointerType::
-output_instance(ostream &out, int indent_level, CPPScope *scope,
-                bool complete, const string &prename,
-                const string &name) const {
-  string star = "*";
+output_instance(std::ostream &out, int indent_level, CPPScope *scope,
+                bool complete, const std::string &prename,
+                const std::string &name) const {
+  std::string star = "*";
 
   CPPFunctionType *ftype = _pointing_at->as_function_type();
   if (ftype != nullptr &&

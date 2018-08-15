@@ -57,7 +57,7 @@ CollisionPolygon() {
 /**
  * Returns the number of vertices of the CollisionPolygon.
  */
-INLINE int CollisionPolygon::
+INLINE size_t CollisionPolygon::
 get_num_points() const {
   return _points.size();
 }
@@ -66,8 +66,8 @@ get_num_points() const {
  * Returns the nth vertex of the CollisionPolygon, expressed in 3-D space.
  */
 INLINE LPoint3 CollisionPolygon::
-get_point(int n) const {
-  nassertr(n >= 0 && n < (int)_points.size(), LPoint3::zero());
+get_point(size_t n) const {
+  nassertr(n < _points.size(), LPoint3::zero());
   LMatrix4 to_3d_mat;
   rederive_to_3d_mat(to_3d_mat);
   return to_3d(_points[n]._p, to_3d_mat);

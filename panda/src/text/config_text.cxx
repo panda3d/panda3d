@@ -31,6 +31,8 @@
   #error Buildsystem error: BUILDING_PANDA_TEXT not defined
 #endif
 
+using std::wstring;
+
 Configure(config_text);
 NotifyCategoryDef(text, "");
 

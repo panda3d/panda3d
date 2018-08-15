@@ -23,6 +23,9 @@
 #include "config_gobj.h"
 #include "plane.h"
 
+using std::max;
+using std::min;
+
 TypeHandle Lens::_type_handle;
 TypeHandle Lens::CData::_type_handle;
 
@@ -627,7 +630,7 @@ make_geometry() {
   PT(Geom) geom = new Geom(cdata->_geom_data);
   geom->add_primitive(line);
 
-  return geom.p();
+  return geom;
 }
 
 /**
@@ -676,7 +679,7 @@ make_bounds() const {
  *
  */
 void Lens::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -684,7 +687,7 @@ output(ostream &out) const {
  *
  */
 void Lens::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " fov = " << get_fov() << "\n";
 }
 

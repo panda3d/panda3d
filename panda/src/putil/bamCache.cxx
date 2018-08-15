@@ -27,6 +27,11 @@
 #include "configVariableFilename.h"
 #include "virtualFileSystem.h"
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 BamCache *BamCache::_global_ptr = nullptr;
 
 /**
@@ -966,7 +971,7 @@ hash_filename(const string &filename) {
   }
 
   ostringstream strm;
-  strm << hex << setw(8) << setfill('0') << hash;
+  strm << std::hex << std::setw(8) << std::setfill('0') << hash;
   return strm.str();
 
 #endif  // HAVE_OPENSSL

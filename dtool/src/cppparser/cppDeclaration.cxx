@@ -338,8 +338,8 @@ is_less(const CPPDeclaration *other) const {
 }
 
 
-ostream &
-operator << (ostream &out, const CPPDeclaration::SubstDecl &subst) {
+std::ostream &
+operator << (std::ostream &out, const CPPDeclaration::SubstDecl &subst) {
   CPPDeclaration::SubstDecl::const_iterator it;
   for (it = subst.begin(); it != subst.end(); ++it) {
     out << "  ";

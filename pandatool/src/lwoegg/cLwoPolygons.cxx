@@ -25,6 +25,8 @@
 #include "eggPoint.h"
 #include "deg_2_rad.h"
 
+using std::string;
+
 /**
  * Associates the indicated PolygonTags and Tags with the polygons in this
  * chunk.  This may define features such as per-polygon surfaces, parts, and

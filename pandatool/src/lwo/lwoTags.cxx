@@ -30,9 +30,9 @@ get_num_tags() const {
 /**
  * Returns the nth tag of this group.
  */
-string LwoTags::
+std::string LwoTags::
 get_tag(int n) const {
-  nassertr(n >= 0 && n < (int)_tags.size(), string());
+  nassertr(n >= 0 && n < (int)_tags.size(), std::string());
   return _tags[n];
 }
 
@@ -47,7 +47,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
 
   while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
-    string tag = lin->get_string();
+    std::string tag = lin->get_string();
     _tags.push_back(tag);
   }
 
@@ -58,7 +58,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoTags::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { ";
 

@@ -97,10 +97,12 @@ typedef std::ios::seekdir ios_seekdir;
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
 #include <tr1/tuple>
+#include <tr1/cmath>
 
 namespace std {
   using std::tr1::tuple;
   using std::tr1::tie;
+  using std::tr1::copysign;
 
   typedef decltype(nullptr) nullptr_t;
 
@@ -111,6 +113,8 @@ namespace std {
   template<class T> typename remove_reference<T>::type &&move(T &&t) {
     return static_cast<typename remove_reference<T>::type&&>(t);
   }
+
+  template<class T> struct owner_less;
 };
 #endif
 
@@ -157,36 +161,6 @@ namespace std {
 #define PUBLISHED public
 
 #endif  // CPPPARSER
-
-// This was previously `using namespace std`, but we don't want to pull in the
-// entire namespace, so we enumerate the things we are using without std::
-// prefix in the Panda headers.  It is intended that this list will shrink.
-using std::cerr;
-using std::cin;
-using std::cout;
-using std::dec;
-using std::endl;
-using std::hex;
-using std::ios;
-using std::iostream;
-using std::istream;
-using std::istringstream;
-using std::max;
-using std::min;
-using std::move;
-using std::ostream;
-using std::ostringstream;
-using std::pair;
-using std::setfill;
-using std::setw;
-using std::streambuf;
-using std::streamoff;
-using std::streampos;
-using std::streamsize;
-using std::string;
-using std::stringstream;
-using std::swap;
-using std::wstring;
 
 // The ReferenceCount class is defined later, within Panda, but we need to
 // pass around forward references to it here at the very low level.

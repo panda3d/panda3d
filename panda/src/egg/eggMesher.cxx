@@ -113,7 +113,7 @@ mesh(EggGroupNode *group, bool flat_shaded) {
  *
  */
 void EggMesher::
-write(ostream &out) const {
+write(std::ostream &out) const {
   /*
   out << _edges.size() << " edges:\n";
   copy(_edges.begin(), _edges.end(), ostream_iterator<Edge>(out, "\n"));
@@ -704,8 +704,8 @@ make_quads() {
   // and pair them up right away.  The others we'll get to later.  This way,
   // the uncertain matches won't pollute the quad alignment for everyone else.
 
-  typedef pair<EggMesherStrip *, EggMesherStrip *> Pair;
-  typedef pair<Pair, EggMesherEdge *> Matched;
+  typedef std::pair<EggMesherStrip *, EggMesherStrip *> Pair;
+  typedef std::pair<Pair, EggMesherEdge *> Matched;
   typedef pvector<Matched> SoulMates;
 
   SoulMates soulmates;

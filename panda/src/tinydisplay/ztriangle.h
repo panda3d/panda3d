@@ -14,7 +14,7 @@
   int error, derror;
   int x1, dxdy_min, dxdy_max;
   /* warning: x2 is multiplied by 2^16 */
-  UNUSED int x2, dx2dy2;
+  int x2, dx2dy2;
 
 #ifdef INTERP_Z
   int z1 = 0, dzdx = 0, dzdy = 0, dzdl_min = 0, dzdl_max = 0;
@@ -348,10 +348,10 @@
         int n;
 #ifdef INTERP_Z
         ZPOINT *pz;
-        UNUSED unsigned int z,zz;
+        unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB
-        UNUSED unsigned int or1,og1,ob1,oa1;
+        unsigned int or1,og1,ob1,oa1;
 #endif
 #ifdef INTERP_ST
         unsigned int s,t;

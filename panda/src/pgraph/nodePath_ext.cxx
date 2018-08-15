@@ -16,6 +16,8 @@
 #include "shaderInput_ext.h"
 #include "shaderAttrib.h"
 
+using std::move;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
@@ -123,9 +125,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
 
   vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << "Could not bamify " << _this;
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
     return nullptr;
   }
@@ -294,7 +296,7 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
       return;
     }
 
-    CPT_InternalName name(string(buffer, length));
+    CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
     invoke_extension(&input).__init__(move(name), value);
   }

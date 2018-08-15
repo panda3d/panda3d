@@ -38,6 +38,10 @@
 #include <linux/input.h>
 #endif
 
+using std::istream;
+using std::ostringstream;
+using std::string;
+
 struct _XcursorFile {
   void *closure;
   int (*read)(XcursorFile *, unsigned char *, int);
@@ -132,11 +136,46 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
-  pmap<Filename, X11_Cursor>::iterator it;
-
-  for (it = _cursor_filenames.begin(); it != _cursor_filenames.end(); it++) {
-    XFreeCursor(_display, it->second);
+  if (!_cursor_filenames.empty()) {
+    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+    for (auto item : _cursor_filenames) {
+      XFreeCursor(_display, item.second);
+    }
   }
+}
+
+/**
+ * Returns the MouseData associated with the nth input device's pointer.  This
+ * is deprecated; use get_pointer_device().get_pointer() instead, or for raw
+ * mice, use the InputDeviceManager interface.
+ */
+MouseData x11GraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = _input_devices[device].get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value, but we
+    // won't bother waiting for the lock if we can't.
+    if (device == 0 && !_dga_mouse_enabled && result._in_window &&
+        x11GraphicsPipe::_x_mutex.try_lock()) {
+      XEvent event;
+      if (_xwindow != None &&
+          XQueryPointer(_display, _xwindow, &event.xbutton.root,
+          &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+          &event.xbutton.x, &event.xbutton.y, &event.xbutton.state)) {
+        double time = ClockObject::get_global_clock()->get_real_time();
+        result._xpos = event.xbutton.x;
+        result._ypos = event.xbutton.y;
+        ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer_in_window(result._xpos, result._ypos, time);
+      }
+      x11GraphicsPipe::_x_mutex.release();
+    }
+  }
+  return result;
 }
 
 /**
@@ -163,6 +202,7 @@ move_pointer(int device, int x, int y) {
     const MouseData &md = _input_devices[0].get_pointer();
     if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
       if (!_dga_mouse_enabled) {
+        LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
         XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
       }
       _input_devices[0].set_pointer_in_window(x, y);
@@ -170,7 +210,7 @@ move_pointer(int device, int x, int y) {
     return true;
   } else {
     // Move a raw mouse.
-    if ((device < 1)||(device >= _input_devices.size())) {
+    if (device < 1 || (size_t)device >= _input_devices.size()) {
       return false;
     }
     _input_devices[device].set_pointer_in_window(x, y);
@@ -498,6 +538,8 @@ set_properties_now(WindowProperties &properties) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
 
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+
   // We're either going into or out of fullscreen, or are in fullscreen and
   // are changing the resolution.
   bool is_fullscreen = _properties.has_fullscreen() && _properties.get_fullscreen();
@@ -824,6 +866,7 @@ close_window() {
     _gsg.clear();
   }
 
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
   if (_ic != (XIC)nullptr) {
     XDestroyIC(_ic);
     _ic = (XIC)nullptr;
@@ -881,6 +924,9 @@ open_window() {
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
+
+  // Make sure we are not making X11 calls from other threads.
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
 
   if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
     XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
@@ -1025,6 +1071,8 @@ open_window() {
  * If already_mapped is true, the window has already been mapped (manifested)
  * on the display.  This means we may need to use a different action in some
  * cases.
+ *
+ * Assumes the X11 lock is held.
  */
 void x11GraphicsWindow::
 set_wm_properties(const WindowProperties &properties, bool already_mapped) {
@@ -1348,9 +1396,7 @@ open_raw_mice() {
 void x11GraphicsWindow::
 poll_raw_mice() {
 #ifdef PHAVE_LINUX_INPUT_H
-  for (int di = 0; di < _mouse_device_info.size(); ++di) {
-    MouseDeviceInfo &inf = _mouse_device_info[di];
-
+  for (MouseDeviceInfo &inf : _mouse_device_info) {
     // Read all bytes into buffer.
     if (inf._fd >= 0) {
       while (1) {
@@ -1912,7 +1958,7 @@ map_button(KeySym key) const {
   }
   if (x11display_cat.is_debug()) {
     x11display_cat.debug()
-      << "Unrecognized keysym 0x" << hex << key << dec << "\n";
+      << "Unrecognized keysym 0x" << std::hex << key << std::dec << "\n";
   }
   return ButtonHandle::none();
 }
@@ -2147,7 +2193,13 @@ get_cursor(const Filename &filename) {
       << "Could not read from cursor file " << filename << "\n";
     return None;
   }
-  str->seekg(0, istream::beg);
+
+  // Put back the read bytes. Do not use seekg, because this will
+  // corrupt the stream if it points to encrypted/compressed file
+  str->putback(magic[3]);
+  str->putback(magic[2]);
+  str->putback(magic[1]);
+  str->putback(magic[0]);
 
   X11_Cursor h = None;
   if (memcmp(magic, "Xcur", 4) == 0) {

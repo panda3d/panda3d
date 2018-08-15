@@ -11,7 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
-from pandac.PandaModules import GeomNode
+from panda3d.core import GeomNode
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
@@ -70,7 +70,7 @@ class SelectedNodePaths(DirectObject):
         """ Select the specified node path.  Multiselect as required """
         # Do nothing if nothing selected
         if not nodePath:
-            print 'Nothing selected!!'
+            print('Nothing selected!!')
             return None
 
         # Reset selected objects and highlight if multiSelect is false
@@ -78,7 +78,7 @@ class SelectedNodePaths(DirectObject):
             self.deselectAll()
 
         # Get this pointer
-        id = nodePath.id()
+        id = nodePath.get_key()
         # First see if its already in the selected dictionary
         dnp = self.getSelectedDict(id)
         # If so, we're done
@@ -96,7 +96,7 @@ class SelectedNodePaths(DirectObject):
                 # Show its bounding box
                 dnp.highlight()
             # Add it to the selected dictionary
-            self.selectedDict[dnp.id()] = dnp
+            self.selectedDict[dnp.get_key()] = dnp
         # And update last
         __builtins__["last"] = self.last = dnp
         return dnp
@@ -104,7 +104,7 @@ class SelectedNodePaths(DirectObject):
     def deselect(self, nodePath):
         """ Deselect the specified node path """
         # Get this pointer
-        id = nodePath.id()
+        id = nodePath.get_key()
         # See if it is in the selected dictionary
         dnp = self.getSelectedDict(id)
         if dnp:
@@ -124,7 +124,7 @@ class SelectedNodePaths(DirectObject):
         Return a list of all selected node paths.  No verification of
         connectivity is performed on the members of the list
         """
-        return self.selectedDict.values()[:]
+        return list(self.selectedDict.values())
 
     def __getitem__(self,index):
         return self.getSelectedAsList()[index]
@@ -141,7 +141,7 @@ class SelectedNodePaths(DirectObject):
             return None
 
     def getDeselectedAsList(self):
-        return self.deselectedDict.values()[:]
+        return list(self.deselectedDict.values())
 
     def getDeselectedDict(self, id):
         """
@@ -204,15 +204,24 @@ class SelectedNodePaths(DirectObject):
         # Remove all selected nodePaths from the Scene Graph
         self.forEachSelectedNodePathDo(NodePath.remove)
 
+    def toggleVis(self, nodePath):
+        if nodePath.is_hidden():
+            nodePath.show()
+        else:
+            nodePath.hide()
+
     def toggleVisSelected(self):
         selected = self.last
         # Toggle visibility of selected node paths
         if selected:
-            selected.toggleVis()
+            if selected.is_hidden():
+                selected.show()
+            else:
+                selected.hide()
 
     def toggleVisAll(self):
         # Toggle viz for all selected node paths
-        self.forEachSelectedNodePathDo(NodePath.toggleVis)
+        self.forEachSelectedNodePathDo(self.toggleVis)
 
     def isolateSelected(self):
         selected = self.last
@@ -221,7 +230,7 @@ class SelectedNodePaths(DirectObject):
 
     def getDirectNodePath(self, nodePath):
         # Get this pointer
-        id = nodePath.id()
+        id = nodePath.get_key()
         # First check selected dict
         dnp = self.getSelectedDict(id)
         if dnp:
@@ -376,7 +385,7 @@ class DirectBoundingBox:
         return '%.2f %.2f %.2f' % (vec[0], vec[1], vec[2])
 
     def __repr__(self):
-        return (`self.__class__` +
+        return (repr(self.__class__) +
                 '\nNodePath:\t%s\n' % self.nodePath.getName() +
                 'Min:\t\t%s\n' % self.vecAsString(self.min) +
                 'Max:\t\t%s\n' % self.vecAsString(self.max) +

@@ -23,8 +23,10 @@
 #include <malloc.h>
 #endif
 
+using std::string;
+
 static ofstream logfile;
-ostream *nout_stream = &logfile;
+std::ostream *nout_stream = &logfile;
 
 string global_root_dir;
 bool has_plugin_thread_async_call;
@@ -62,7 +64,7 @@ open_logfile() {
     if (log_directory.empty()) {
       log_directory = global_root_dir + "/log";
     }
-    mkdir_complete(log_directory, cerr);
+    mkdir_complete(log_directory, std::cerr);
 
     // Ensure that the log directory ends with a slash.
     if (!log_directory.empty() && log_directory[log_directory.size() - 1] != '/') {
@@ -92,13 +94,13 @@ open_logfile() {
       logfile.close();
       logfile.clear();
 #ifdef _WIN32
-      wstring log_pathname_w;
+      std::wstring log_pathname_w;
       string_to_wstring(log_pathname_w, log_pathname);
-      logfile.open(log_pathname_w.c_str(), ios::out | ios::trunc);
+      logfile.open(log_pathname_w.c_str(), std::ios::out | std::ios::trunc);
 #else
-      logfile.open(log_pathname.c_str(), ios::out | ios::trunc);
+      logfile.open(log_pathname.c_str(), std::ios::out | std::ios::trunc);
 #endif  // _WIN32
-      logfile.setf(ios::unitbuf);
+      logfile.setf(std::ios::unitbuf);
     }
 
     // If we didn't have a logfile name compiled in, we throw away log output

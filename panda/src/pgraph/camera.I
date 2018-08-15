@@ -64,7 +64,7 @@ get_num_display_regions() const {
  */
 INLINE DisplayRegion *Camera::
 get_display_region(size_t n) const {
-  nassertr(n < (int)_display_regions.size(), nullptr);
+  nassertr(n < _display_regions.size(), nullptr);
   return _display_regions[n];
 }
 

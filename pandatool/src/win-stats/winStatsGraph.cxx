@@ -467,8 +467,8 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
 void WinStatsGraph::
 setup_bitmap(int xsize, int ysize) {
   release_bitmap();
-  _bitmap_xsize = max(xsize, 0);
-  _bitmap_ysize = max(ysize, 0);
+  _bitmap_xsize = std::max(xsize, 0);
+  _bitmap_ysize = std::max(ysize, 0);
 
   HDC hdc = GetDC(_graph_window);
   _bitmap_dc = CreateCompatibleDC(hdc);
@@ -508,7 +508,7 @@ create_graph_window() {
   HINSTANCE application = GetModuleHandle(nullptr);
   register_graph_window_class(application);
 
-  string window_title = "graph";
+  std::string window_title = "graph";
   DWORD window_style = WS_CHILD | WS_CLIPSIBLINGS;
 
   _graph_window =

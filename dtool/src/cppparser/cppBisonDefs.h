@@ -27,8 +27,6 @@
 #include "cppExtensionType.h"
 #include "cppFile.h"
 
-using namespace std;
-
 class CPPParser;
 class CPPExpression;
 class CPPPreprocessor;

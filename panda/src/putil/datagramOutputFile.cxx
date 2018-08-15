@@ -16,6 +16,10 @@
 #include "zStream.h"
 #include <algorithm>
 
+using std::min;
+using std::streampos;
+using std::streamsize;
+
 /**
  * Opens the indicated filename for writing.  Returns true if successful,
  * false on failure.
@@ -47,7 +51,7 @@ open(const FileReference *file) {
  * are responsible for closing or deleting it when you are done.
  */
 bool DatagramOutputFile::
-open(ostream &out, const Filename &filename) {
+open(std::ostream &out, const Filename &filename) {
   close();
 
   _out = &out;
@@ -89,7 +93,7 @@ close() {
  * written.
  */
 bool DatagramOutputFile::
-write_header(const string &header) {
+write_header(const std::string &header) {
   nassertr(_out != nullptr, false);
   nassertr(!_wrote_first_datagram, false);
 
@@ -145,7 +149,7 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
   if (vfile == nullptr) {
     return false;
   }
-  istream *in = vfile->open_read_file(true);
+  std::istream *in = vfile->open_read_file(true);
   if (in == nullptr) {
     return false;
   }

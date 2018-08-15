@@ -16,6 +16,8 @@
 #include "pnmFileType.h"
 #include "pnmFileTypeRegistry.h"
 
+using std::string;
+
 
 // Extracts the first word of the string into param, and the remainder of the
 // line into value.

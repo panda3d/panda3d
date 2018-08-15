@@ -49,7 +49,7 @@ operator = (const CPPClosureType &copy) {
  * Adds a new capture to the beginning of the capture list.
  */
 void CPPClosureType::
-add_capture(string name, CaptureType type, CPPExpression *initializer) {
+add_capture(std::string name, CaptureType type, CPPExpression *initializer) {
   if (type == CT_none) {
     if (name == "this") {
       type = CT_by_reference;
@@ -58,8 +58,8 @@ add_capture(string name, CaptureType type, CPPExpression *initializer) {
     }
   }
 
-  Capture capture = {move(name), type, initializer};
-  _captures.insert(_captures.begin(), move(capture));
+  Capture capture = {std::move(name), type, initializer};
+  _captures.insert(_captures.begin(), std::move(capture));
 }
 
 /**
@@ -100,7 +100,7 @@ is_destructible() const {
  *
  */
 void CPPClosureType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   out.put('[');
 
   bool have_capture = false;

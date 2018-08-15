@@ -31,6 +31,8 @@ DtoolInstance_GetPointer(PyObject *self, T *&into) {
       if (_IS_FINAL(T)) {
         if (DtoolInstance_TYPE(self) == target_class) {
           into = (T *)DtoolInstance_VOID_PTR(self);
+        } else {
+          return false;
         }
       } else {
         into = (T *)DtoolInstance_UPCAST(self, *target_class);
@@ -52,6 +54,8 @@ DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &target_c
     if (_IS_FINAL(T)) {
       if (DtoolInstance_TYPE(self) == &target_class) {
         into = (T *)DtoolInstance_VOID_PTR(self);
+      } else {
+        return false;
       }
     } else {
       into = (T *)DtoolInstance_UPCAST(self, target_class);
@@ -91,6 +95,20 @@ INLINE int DtoolInstance_ComparePointers(PyObject *v1, PyObject *v2) {
 INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, int op) {
   int cmpval = DtoolInstance_ComparePointers(v1, v2);
   Py_RETURN_RICHCOMPARE(cmpval, 0, op);
+}
+
+/**
+ * Converts the enum value to a C long.
+ */
+INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
+  PyObject *val = PyObject_GetAttrString(value, "value");
+  if (val != nullptr) {
+    long as_long = PyLongOrInt_AS_LONG(val);
+    Py_DECREF(val);
+    return as_long;
+  } else {
+    return -1;
+  }
 }
 
 /**

@@ -105,7 +105,7 @@ remove_region(MouseWatcherRegion *region) {
  * indeterminate.
  */
 MouseWatcherRegion *MouseWatcherBase::
-find_region(const string &name) const {
+find_region(const std::string &name) const {
   LightMutexHolder holder(_lock);
 
   for (MouseWatcherRegion *region : _regions) {
@@ -169,7 +169,7 @@ get_region(size_t n) const {
  *
  */
 void MouseWatcherBase::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "MouseWatcherGroup (" << _regions.size() << " regions)";
 }
 
@@ -177,7 +177,7 @@ output(ostream &out) const {
  *
  */
 void MouseWatcherBase::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   LightMutexHolder holder(_lock);
 
   for (MouseWatcherRegion *region : _regions) {
@@ -192,7 +192,7 @@ write(ostream &out, int indent_level) const {
  * scene graph for the window.
  */
 void MouseWatcherBase::
-show_regions(const NodePath &render2d, const string &bin_name, int draw_order) {
+show_regions(const NodePath &render2d, const std::string &bin_name, int draw_order) {
   LightMutexHolder holder(_lock);
   do_show_regions(render2d, bin_name, draw_order);
 }
@@ -292,7 +292,7 @@ do_remove_region(MouseWatcherRegion *region) {
  * already held.
  */
 void MouseWatcherBase::
-do_show_regions(const NodePath &render2d, const string &bin_name,
+do_show_regions(const NodePath &render2d, const std::string &bin_name,
                 int draw_order) {
   do_hide_regions();
   _show_regions = true;

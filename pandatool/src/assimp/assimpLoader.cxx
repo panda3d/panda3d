@@ -41,6 +41,10 @@
 
 #include "postprocess.h"
 
+using std::ostringstream;
+using std::stringstream;
+using std::string;
+
 struct BoneWeight {
   CPT(JointVertexTransform) joint_vertex_xform;
   float weight;
@@ -99,9 +103,34 @@ bool AssimpLoader::
 read(const Filename &filename) {
   _filename = filename;
 
-  // I really don't know why we need to flip the winding order, but otherwise
-  // the models I tested with are showing inside out.
-  _scene = _importer.ReadFile(_filename.c_str(), aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_FlipWindingOrder);
+  unsigned int flags = aiProcess_Triangulate | aiProcess_GenUVCoords;
+
+  if (assimp_calc_tangent_space) {
+    flags |= aiProcess_CalcTangentSpace;
+  }
+  if (assimp_join_identical_vertices) {
+    flags |= aiProcess_JoinIdenticalVertices;
+  }
+  if (assimp_improve_cache_locality) {
+    flags |= aiProcess_ImproveCacheLocality;
+  }
+  if (assimp_remove_redundant_materials) {
+    flags |= aiProcess_RemoveRedundantMaterials;
+  }
+  if (assimp_fix_infacing_normals) {
+    flags |= aiProcess_FixInfacingNormals;
+  }
+  if (assimp_optimize_meshes) {
+    flags |= aiProcess_OptimizeMeshes;
+  }
+  if (assimp_optimize_graph) {
+    flags |= aiProcess_OptimizeGraph;
+  }
+  if (assimp_flip_winding_order) {
+    flags |= aiProcess_FlipWindingOrder;
+  }
+
+  _scene = _importer.ReadFile(_filename.c_str(), flags);
   if (_scene == nullptr) {
     _error = true;
     return false;

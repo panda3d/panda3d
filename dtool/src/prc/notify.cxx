@@ -29,6 +29,12 @@
 #include <android/log.h>
 #endif
 
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 Notify *Notify::_global_ptr = nullptr;
 
 /**
@@ -101,7 +107,7 @@ get_literal_flag() {
 
   if (!got_flag) {
 #ifndef PHAVE_IOSTREAM
-    flag = ios::bitalloc();
+    flag = std::ios::bitalloc();
 #else
     // We lost bitalloc in the new iostream?  Ok, this feature will just be
     // disabled for now.  No big deal.
@@ -187,7 +193,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  pair<Categories::iterator, bool> result =
+  std::pair<Categories::iterator, bool> result =
     _categories.insert(Categories::value_type(fullname, nullptr));
 
   bool inserted = result.second;
@@ -430,7 +436,7 @@ config_initialized() {
 
     if (!notify_output.empty()) {
       if (notify_output == "stdout") {
-        cout.setf(ios::unitbuf);
+        cout.setf(std::ios::unitbuf);
         set_ostream_ptr(&cout, false);
 
       } else if (notify_output == "stderr") {
@@ -459,7 +465,7 @@ config_initialized() {
           nout << "Unable to open file " << filename << " for output.\n";
           delete out;
         } else {
-          out->setf(ios::unitbuf);
+          out->setf(std::ios::unitbuf);
           set_ostream_ptr(out, true);
         }
 #endif  // BUILD_IPHONE

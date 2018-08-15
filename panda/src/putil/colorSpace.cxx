@@ -21,6 +21,11 @@
 
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 ColorSpace
 parse_color_space_string(const string &str) {
   if (cmp_nocase_uh(str, "linear") == 0 ||

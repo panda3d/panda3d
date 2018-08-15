@@ -263,7 +263,8 @@ class ParticlePanel(AppShell):
             'Factory', 'Factory Type',
             'Select type of particle factory',
             ('PointParticleFactory', 'ZSpinParticleFactory',
-             'OrientedParticleFactory'),
+             #'OrientedParticleFactory'
+             ),
             self.selectFactoryType)
         factoryWidgets = (
             ('Factory', 'Life Span',

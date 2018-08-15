@@ -20,6 +20,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomTristripsAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomTristrips::_type_handle;
 
 /**
@@ -98,7 +100,7 @@ make_adjacency() const {
   const int num_unused = 2;
 
   // First, build a map of each triangle's halfedges to its opposing vertices.
-  map<pair<int, int>, int> edge_map;
+  map<std::pair<int, int>, int> edge_map;
 
   int vi = -num_unused;
   int li = 0;
@@ -217,7 +219,7 @@ make_adjacency() const {
   }
   nassertr(vi == num_vertices, nullptr);
 
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -356,7 +358,7 @@ decompose_impl() const {
     nassertr(vi == num_vertices, nullptr);
   }
 
-  return triangles.p();
+  return triangles;
 }
 
 /**

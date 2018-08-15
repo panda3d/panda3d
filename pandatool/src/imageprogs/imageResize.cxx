@@ -87,11 +87,11 @@ run() {
  * Interprets the -x or -y parameters.
  */
 bool ImageResize::
-dispatch_size_request(const string &opt, const string &arg, void *var) {
+dispatch_size_request(const std::string &opt, const std::string &arg, void *var) {
   SizeRequest *ip = (SizeRequest *)var;
   if (!arg.empty() && arg[arg.length() - 1] == '%') {
     // A ratio.
-    string str = arg.substr(0, arg.length() - 1);
+    std::string str = arg.substr(0, arg.length() - 1);
     double ratio;
     if (!string_to_double(str, ratio)) {
       nout << "Invalid ratio for -" << opt << ": "

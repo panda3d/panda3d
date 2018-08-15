@@ -146,9 +146,9 @@ get_viz(const CullTraverser *, const CullTraverserData &, bool bounds_only) cons
   }
 
   if (bounds_only) {
-    return _bounds_viz_geom.p();
+    return _bounds_viz_geom;
   } else {
-    return _viz_geom.p();
+    return _viz_geom;
   }
 }
 
@@ -174,7 +174,7 @@ get_test_pcollector() {
  *
  */
 void CollisionSolid::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type();
 }
 
@@ -182,7 +182,7 @@ output(ostream &out) const {
  *
  */
 void CollisionSolid::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
 }
 

@@ -16,6 +16,11 @@
 #include "virtualFileSystem.h"
 #include "zStream.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
 TypeHandle VirtualFileMount::_type_handle;
 
 
@@ -53,7 +58,7 @@ make_virtual_file(const Filename &local_filename,
     make_directory(local);
   }
 
-  return file.p();
+  return file;
 }
 
 /**
@@ -134,7 +139,7 @@ read_file(const Filename &file, bool do_uncompress,
     return false;
   }
 
-  streamsize file_size = get_file_size(file, in);
+  std::streamsize file_size = get_file_size(file, in);
   if (file_size > 0) {
     result.reserve((size_t)file_size);
   }

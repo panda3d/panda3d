@@ -73,6 +73,13 @@
 
 #include <algorithm>
 
+using std::dec;
+using std::endl;
+using std::hex;
+using std::max;
+using std::min;
+using std::string;
+
 TypeHandle CLP(GraphicsStateGuardian)::_type_handle;
 
 PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:Transfer data:Display lists");
@@ -84,10 +91,6 @@ PStatCollector CLP(GraphicsStateGuardian)::_vertex_array_update_pcollector("Draw
 PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Update texture");
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
-
-#ifndef OPENGLES_1
-PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = nullptr;
-#endif
 
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
@@ -180,6 +183,48 @@ static const string default_vshader =
   "  texcoord = p3d_MultiTexCoord0;\n"
   "  color = p3d_Color * p3d_ColorScale;\n"
   "}\n";
+
+#ifndef OPENGLES
+// This version of the shader is used if vertices-float64 is enabled.
+static const string default_vshader_fp64 =
+#ifdef __APPLE__
+  "#version 150\n"
+#else
+  "#version 130\n"
+#endif
+  "#extension GL_ARB_vertex_attrib_64bit : require\n"
+  "#extension GL_ARB_gpu_shader_fp64 : require\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+
+// Same as above, but for OpenGL 4.1.
+static const string default_vshader_fp64_gl41 =
+  "#version 410\n"
+  "in dvec3 p3d_Vertex;\n"
+  "in vec4 p3d_Color;\n"
+  "in dvec2 p3d_MultiTexCoord0;\n"
+  "out vec2 texcoord;\n"
+  "out vec4 color;\n"
+  "uniform mat4 p3d_ModelViewMatrix;\n"
+  "uniform mat4 p3d_ProjectionMatrix;\n"
+  "uniform vec4 p3d_ColorScale;\n"
+  "void main(void) {\n" // Apply proj & modelview in two steps, more precise
+  "  gl_Position = vec4(dmat4(p3d_ProjectionMatrix) * (dmat4(p3d_ModelViewMatrix) * dvec4(p3d_Vertex, 1)));\n"
+  "  texcoord = vec2(p3d_MultiTexCoord0);\n"
+  "  color = p3d_Color * p3d_ColorScale;\n"
+  "}\n";
+#endif
 
 static const string default_fshader =
 #ifndef OPENGLES
@@ -606,6 +651,8 @@ reset() {
         get_extension_func("glDebugMessageControlARB");
       _supports_debug = true;
 #endif
+    } else {
+      _supports_debug = false;
     }
 
     if (_supports_debug) {
@@ -1690,6 +1737,14 @@ reset() {
        get_extension_func("glUniform3iv");
     _glUniform4iv = (PFNGLUNIFORM4IVPROC)
        get_extension_func("glUniform4iv");
+    _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+       get_extension_func("glUniform1uiv");
+    _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+       get_extension_func("glUniform2uiv");
+    _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+       get_extension_func("glUniform3uiv");
+    _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+       get_extension_func("glUniform4uiv");
     _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
        get_extension_func("glUniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
@@ -1768,6 +1823,10 @@ reset() {
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniform1iv = glUniform1iv;
+  _glUniform2iv = glUniform2iv;
+  _glUniform3iv = glUniform3iv;
+  _glUniform4iv = glUniform4iv;
   _glUniformMatrix3fv = glUniformMatrix3fv;
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
@@ -1818,7 +1877,17 @@ reset() {
   // shader just outputs a red color, indicating that something went wrong.
 #ifndef OPENGLES_1
   if (_default_shader == nullptr && !has_fixed_function_pipeline()) {
-    _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+#ifndef OPENGLES
+    bool use_float64 = vertices_float64;
+    if (use_float64 && is_at_least_gl_version(4, 1)) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64_gl41, default_fshader);
+    } else if (use_float64 && has_extension("GL_ARB_vertex_attrib_64bit")) {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader_fp64, default_fshader);
+    } else
+#endif
+    {
+      _default_shader = Shader::make(Shader::SL_GLSL, default_vshader, default_fshader);
+    }
   }
 #endif
 
@@ -2217,8 +2286,10 @@ reset() {
   if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access")) {
     _glGenerateTextureMipmap = (PFNGLGENERATETEXTUREMIPMAPPROC)
       get_extension_func("glGenerateTextureMipmap");
+
+    _supports_dsa = true;
   } else {
-    _glGenerateTextureMipmap = nullptr;
+    _supports_dsa = false;
   }
 #endif
 
@@ -2761,7 +2832,9 @@ reset() {
   // Check availability of anisotropic texture filtering.
   _supports_anisotropy = false;
   _max_anisotropy = 1.0;
-  if (has_extension("GL_EXT_texture_filter_anisotropic")) {
+  if (is_at_least_gl_version(4, 6) ||
+      has_extension("GL_EXT_texture_filter_anisotropic") ||
+      has_extension("GL_ARB_texture_filter_anisotropic")) {
     GLfloat max_anisotropy;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
     _max_anisotropy = (PN_stdfloat)max_anisotropy;
@@ -2988,6 +3061,50 @@ reset() {
   }
 #endif
 
+  // Set depth range from zero to one if requested.
+#ifndef OPENGLES
+  _use_depth_zero_to_one = false;
+  _use_remapped_depth_range = false;
+
+  if (gl_depth_zero_to_one) {
+    if (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_clip_control")) {
+      PFNGLCLIPCONTROLPROC pglClipControl =
+        (PFNGLCLIPCONTROLPROC)get_extension_func("glClipControl");
+
+      if (pglClipControl != nullptr) {
+        pglClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        _use_depth_zero_to_one = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glClipControl\n";
+        }
+      }
+    }/* else if (has_extension("GL_NV_depth_buffer_float")) {
+      // Alternatively, all GeForce 8+ and even some AMD drivers support this
+      // extension, which (unlike the core glDepthRange, which clamps its
+      // input parameters) can compensate for the built-in depth remapping.
+      _glDepthRangedNV = (PFNGLDEPTHRANGEDNVPROC)get_extension_func("glDepthRangedNV");
+
+      if (_glDepthRangedNV != nullptr) {
+        _glDepthRangedNV(-1.0, 1.0);
+        _use_depth_zero_to_one = true;
+        _use_remapped_depth_range = true;
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Set zero-to-one depth using glDepthRangedNV\n";
+        }
+      }
+    }*/
+
+    if (!_use_depth_zero_to_one) {
+      GLCAT.warning()
+        << "Zero-to-one depth was requested, but driver does not support it.\n";
+    }
+  }
+#endif
+
   // Set up all the enableddisabled flags to GL's known initial values:
   // everything off.
   _multisample_mode = 0;
@@ -3124,7 +3241,7 @@ reset() {
   if (GLCAT.is_debug()) {
     if (_supports_get_program_binary) {
       GLCAT.debug()
-        << "Supported shader binary formats:\n";
+        << "Supported program binary formats:\n";
       GLCAT.debug() << " ";
 
       pset<GLenum>::const_iterator it;
@@ -3136,7 +3253,7 @@ reset() {
       }
       GLCAT.debug(false) << "\n";
     } else {
-      GLCAT.debug() << "No shader binary formats supported.\n";
+      GLCAT.debug() << "No program binary formats supported.\n";
     }
   }
 #endif
@@ -3636,6 +3753,19 @@ calc_projection_mat(const Lens *lens) {
     LMatrix4::convert_mat(_internal_coordinate_system,
                           lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
+
+#ifndef OPENGLES
+  if (_use_depth_zero_to_one) {
+    // If we requested that the OpenGL NDC Z goes from zero to one like in
+    // Direct3D, we need to scale the projection matrix, which assumes -1..1.
+    static const LMatrix4 rescale_mat
+      (1, 0, 0, 0,
+       0, 1, 0, 0,
+       0, 0, 0.5, 0,
+       0, 0, 0.5, 1);
+    result *= rescale_mat;
+  }
+#endif
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the projection
@@ -4367,9 +4497,9 @@ unbind_buffers() {
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
     _glBindVertexBuffers(0, _current_vertex_buffers.size(), nullptr, nullptr, nullptr);
   } else {
-    for (int i = 0; i < _current_vertex_buffers.size(); ++i) {
+    for (size_t i = 0; i < _current_vertex_buffers.size(); ++i) {
       if (_current_vertex_buffers[i] != 0) {
-        _glBindVertexBuffer(i, 0, 0, 0);
+        _glBindVertexBuffer((GLuint)i, 0, 0, 0);
       }
     }
   }
@@ -6323,10 +6453,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
     if (_use_object_labels) {
       string name = data->get_name();
-      _glObjectLabel(GL_SHADER_STORAGE_BUFFER, gbc->_index, name.size(), name.data());
+      _glObjectLabel(GL_BUFFER, gbc->_index, name.size(), name.data());
     }
 
-    uint64_t num_bytes = data->get_data_size_bytes();
+    // Some drivers require the buffer to be padded to 16 byte boundary.
+    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {
@@ -7443,7 +7574,13 @@ do_issue_depth_offset() {
   glDepthRangef((GLclampf)min_value, (GLclampf)max_value);
 #else
   // Mainline OpenGL uses a double-precision call.
-  glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  if (!_use_remapped_depth_range) {
+    glDepthRange((GLclampd)min_value, (GLclampd)max_value);
+  } else {
+    // If we have a remapped depth range, we should adjust the values to range
+    // from -1 to 1.  We need to use an NV extension to pass unclamped values.
+    _glDepthRangedNV(min_value * 2.0 - 1.0, max_value * 2.0 - 1.0);
+  }
 #endif  // OPENGLES
 
   report_my_gl_errors();
@@ -7500,7 +7637,6 @@ do_issue_material() {
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.  The
     // diffuse component comes from the object's color.
-    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_DIFFUSE, _material_force_color);
@@ -7510,11 +7646,11 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
 
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.  The
     // ambient component comes from the object's color.
-    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
     if (has_material_force_color) {
       glDisable(GL_COLOR_MATERIAL);
       call_glMaterialfv(face, GL_AMBIENT, _material_force_color);
@@ -7524,6 +7660,7 @@ do_issue_material() {
 #endif  // OPENGLES
       glEnable(GL_COLOR_MATERIAL);
     }
+    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
 
   } else {
     // The material specifies neither a diffuse nor an ambient component.
@@ -7836,7 +7973,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   // State:Light:Bind:Directional"); PStatGPUTimer timer(this,
   // _draw_set_state_light_bind_directional_pcollector);
 
-  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
+  std::pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
   DirectionalLightFrameData &fdata = (*lookup.first).second;
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
@@ -8100,7 +8237,7 @@ get_error_string(GLenum error_code) {
   }
 
   // Other error, somehow?  Just display the error code then.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "GL error " << (int)error_code;
 
   return strm.str();
@@ -8307,7 +8444,7 @@ get_extra_extensions() {
 void CLP(GraphicsStateGuardian)::
 report_extensions() const {
   if (GLCAT.is_debug()) {
-    ostream &out = GLCAT.debug();
+    std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
     pset<string>::const_iterator ei;
@@ -11603,17 +11740,18 @@ do_issue_tex_gen() {
   // effectively define an identity matrix that maps the spatial coordinates
   // one-for-one to UV's.  If you want a mapping other than identity, use a
   // TexMatrixAttrib (or a TexProjectorEffect).
+#ifndef OPENGLES
   static const PN_stdfloat s_data[4] = { 1, 0, 0, 0 };
   static const PN_stdfloat t_data[4] = { 0, 1, 0, 0 };
   static const PN_stdfloat r_data[4] = { 0, 0, 1, 0 };
   static const PN_stdfloat q_data[4] = { 0, 0, 0, 1 };
+#endif
 
   _tex_gen_modifies_mat = false;
 
   bool got_point_sprites = false;
 
   for (int i = 0; i < _num_active_texture_stages; i++) {
-    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     set_active_texture_stage(i);
     if (_supports_point_sprite) {
 #ifdef OPENGLES
@@ -11629,6 +11767,7 @@ do_issue_tex_gen() {
     glDisable(GL_TEXTURE_GEN_R);
     glDisable(GL_TEXTURE_GEN_Q);
 
+    TextureStage *stage = _target_texture->get_on_ff_stage(i);
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
@@ -12769,7 +12908,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -12949,7 +13090,9 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 
       int width = tex->get_expected_mipmap_x_size(n);
       int height = tex->get_expected_mipmap_y_size(n);
+#ifndef OPENGLES_1
       int depth = tex->get_expected_mipmap_z_size(n);
+#endif
 
 #ifdef DO_PSTATS
       _data_transferred_pcollector.add_level(view_size);
@@ -13054,7 +13197,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
 void CLP(GraphicsStateGuardian)::
 generate_mipmaps(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES
-  if (_glGenerateTextureMipmap != nullptr) {
+  if (_supports_dsa) {
     // OpenGL 4.5 offers an easy way to do this without binding.
     _glGenerateTextureMipmap(gtc->_index);
     return;
@@ -13300,9 +13443,18 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
       << "glBindTexture(0x" << hex << target << dec << ", " << gtc->_index << "): " << *tex << "\n";
   }
 
+#ifndef OPENGLES
+  if (target == GL_TEXTURE_BUFFER) {
+    _glBindBuffer(GL_TEXTURE_BUFFER, gtc->_buffer);
+  }
+#endif
+
   GLint wrap_u, wrap_v, wrap_w;
   GLint minfilter, magfilter;
+
+#ifndef OPENGLES
   GLfloat border_color[4];
+#endif
 
 #ifdef OPENGLES
   if (true) {
@@ -13355,7 +13507,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint internal_format = GL_RGBA;
 #ifndef OPENGLES
-  glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  if (target != GL_TEXTURE_BUFFER) {
+    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+  } else {
+    // Some drivers give the wrong result for the above call.  No problem; we
+    // already know the internal format of a buffer texture since glTexBuffer
+    // required passing the exact sized format.
+    internal_format = gtc->_internal_format;
+  }
 #endif  // OPENGLES
 
   // Make sure we were able to query those parameters properly.
@@ -13796,11 +13955,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
     tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
     tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-    tex->set_border_color(LColor(border_color[0], border_color[1],
-                                 border_color[2], border_color[3]));
-
     tex->set_minfilter(get_panda_filter_type(minfilter));
     //tex->set_magfilter(get_panda_filter_type(magfilter));
+
+#ifndef OPENGLES
+    tex->set_border_color(LColor(border_color[0], border_color[1],
+                                 border_color[2], border_color[3]));
+#endif
   }
 
   PTA_uchar image;

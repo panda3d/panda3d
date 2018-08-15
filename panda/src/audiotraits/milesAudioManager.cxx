@@ -31,6 +31,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 TypeHandle MilesAudioManager::_type_handle;
 
@@ -153,7 +155,7 @@ get_sound(const string &file_name, bool, int) {
       }
       // Put it in the pool: The following is roughly like: _sounds[path] =
       // sd; But, it gives us an iterator into the map.
-      pair<SoundMap::const_iterator, bool> ib
+      std::pair<SoundMap::const_iterator, bool> ib
           = _sounds.insert(SoundMap::value_type(path, sd));
       if (!ib.second) {
         // The insert failed.
@@ -673,7 +675,7 @@ cleanup() {
  *
  */
 void MilesAudioManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LightReMutexHolder holder(_lock);
   out << get_type() << ": " << _sounds_playing.size()
       << " / " << _sounds_on_loan.size() << " sounds playing / total";
@@ -683,7 +685,7 @@ output(ostream &out) const {
  *
  */
 void MilesAudioManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   LightReMutexHolder holder(_lock);
 
   out << (*this) << "\n";
@@ -899,7 +901,7 @@ load(const Filename &file_name) {
 
   bool is_midi_file = (downcase(extension) == "mid");
 
-  if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (streamsize)miles_audio_preload_threshold) ||
+  if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (std::streamsize)miles_audio_preload_threshold) ||
       is_midi_file) {
     // If the file is sufficiently small, we'll preload it into memory.  MIDI
     // files cannot be streamed, so we always preload them, regardless of

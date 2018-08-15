@@ -41,6 +41,9 @@
 
 #include <algorithm>
 
+using std::max;
+using std::min;
+
 PStatCollector CollisionPolygon::_volume_pcollector("Collision Volumes:CollisionPolygon");
 PStatCollector CollisionPolygon::_test_pcollector("Collision Tests:CollisionPolygon");
 TypeHandle CollisionPolygon::_type_handle;
@@ -268,9 +271,9 @@ get_viz(const CullTraverser *trav, const CullTraverserData &data,
   draw_polygon(viz_geom_node, bounds_viz_geom_node, new_points);
 
   if (bounds_only) {
-    return bounds_viz_geom_node.p();
+    return bounds_viz_geom_node;
   } else {
-    return viz_geom_node.p();
+    return viz_geom_node;
   }
 }
 
@@ -296,7 +299,7 @@ get_test_pcollector() {
  *
  */
 void CollisionPolygon::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "cpolygon, (" << get_plane()
       << "), " << _points.size() << " vertices";
 }
@@ -305,7 +308,7 @@ output(ostream &out) const {
  *
  */
 void CollisionPolygon::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << (*this) << "\n";
   Points::const_iterator pi;
   for (pi = _points.begin(); pi != _points.end(); ++pi) {

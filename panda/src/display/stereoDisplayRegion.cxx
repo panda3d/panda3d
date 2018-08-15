@@ -262,7 +262,7 @@ set_target_tex_page(int page) {
  *
  */
 void StereoDisplayRegion::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "StereoDisplayRegion(" << *_left_eye << ")";
 }
 

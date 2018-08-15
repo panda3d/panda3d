@@ -34,7 +34,7 @@ enum class BitmapConfig : jint {
  *
  */
 PNMFileTypeAndroid::Writer::
-Writer(PNMFileType *type, ostream *file, bool owns_file,
+Writer(PNMFileType *type, std::ostream *file, bool owns_file,
        CompressFormat format) :
   PNMWriter(type, file, owns_file),
   _format(format)

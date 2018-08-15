@@ -37,6 +37,9 @@
 // Not used on Windows XP, but we still need to define it.
 #define TOUCH_COORD_TO_PIXEL(l) ((l) / 100)
 
+using std::endl;
+using std::wstring;
+
 DECLARE_HANDLE(HTOUCHINPUT);
 #endif
 
@@ -82,7 +85,7 @@ static PFN_CLOSETOUCHINPUTHANDLE pCloseTouchInputHandle = 0;
  */
 WinGraphicsWindow::
 WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -115,6 +118,30 @@ WinGraphicsWindow::
   if (_window_handle != nullptr) {
     DCAST(WinWindowHandle, _window_handle)->clear_window();
   }
+}
+
+/**
+ * Returns the MouseData associated with the nth input device's pointer.
+ */
+MouseData WinGraphicsWindow::
+get_pointer(int device) const {
+  MouseData result;
+  {
+    LightMutexHolder holder(_input_lock);
+    nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
+
+    result = _input_devices[device].get_pointer();
+
+    // We recheck this immediately to get the most up-to-date value.
+    POINT cpos;
+    if (device == 0 && result._in_window && GetCursorPos(&cpos) && ScreenToClient(_hWnd, &cpos)) {
+      double time = ClockObject::get_global_clock()->get_real_time();
+      result._xpos = cpos.x;
+      result._ypos = cpos.y;
+      ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer(result._in_window, result._xpos, result._ypos, time);
+    }
+  }
+  return result;
 }
 
 /**
@@ -257,7 +284,7 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_title()) {
-    string title = properties.get_title();
+    std::string title = properties.get_title();
     _properties.set_title(title);
     TextEncoder encoder;
     wstring title_w = encoder.decode_text(title);
@@ -1359,7 +1386,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // This is a message from the system indicating that the user has
     // requested to close the window (e.g.  alt-f4).
     {
-      string close_request_event = get_close_request_event();
+      std::string close_request_event = get_close_request_event();
       if (!close_request_event.empty()) {
         // In this case, the app has indicated a desire to intercept the
         // request and process it directly.
@@ -1724,8 +1751,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         size_t num_chars = result_size / sizeof(wchar_t);
 
         _input_devices[0].candidate(wstring(ime_buffer, num_chars),
-                                    min(cursor_pos, delta_start),
-                                    max(cursor_pos, delta_start),
+                                    std::min(cursor_pos, delta_start),
+                                    std::max(cursor_pos, delta_start),
                                     cursor_pos);
       }
       ImmReleaseContext(hwnd, hIMC);
@@ -2829,7 +2856,7 @@ register_window_class(const WindowProperties &props) {
   wclass_name << L"WinGraphicsWindow" << _window_class_index;
   wcreg._name = wclass_name.str();
 
-  pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
+  std::pair<WindowClasses::iterator, bool> found = _window_classes.insert(wcreg);
   const WindowClass &wclass = (*found.first);
 
   if (!found.second) {

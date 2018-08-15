@@ -151,7 +151,7 @@ transform_vertices(GeomNode *node, const LMatrix4 &mat) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
-        entry._geom = move(new_geom);
+        entry._geom = std::move(new_geom);
         any_changed = true;
       }
     }
@@ -1479,7 +1479,7 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   PT(GeomVertexData) new_vdata = new GeomVertexData(*vdata);
   new_vdata->unclean_set_num_rows(new_num_vertices);
 
-  int num_arrays = vdata->get_num_arrays();
+  size_t num_arrays = vdata->get_num_arrays();
   nassertv(num_arrays == new_vdata->get_num_arrays());
 
   GeomVertexDataPipelineReader reader(vdata, current_thread);
@@ -1487,7 +1487,7 @@ remove_unused_vertices(const GeomVertexData *vdata) {
   GeomVertexDataPipelineWriter writer(new_vdata, true, current_thread);
   writer.check_array_writers();
 
-  for (int a = 0; a < num_arrays; ++a) {
+  for (size_t a = 0; a < num_arrays; ++a) {
     const GeomVertexArrayDataHandle *array_reader = reader.get_array_reader(a);
     GeomVertexArrayDataHandle *array_writer = writer.get_array_writer(a);
 

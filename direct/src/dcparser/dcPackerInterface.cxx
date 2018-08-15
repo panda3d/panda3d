@@ -17,6 +17,8 @@
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
+using std::string;
+
 /**
  *
  */
@@ -139,7 +141,7 @@ bool DCPackerInterface::
 check_match(const string &description, DCFile *dcfile) const {
   bool match = false;
 
-  istringstream strm(description);
+  std::istringstream strm(description);
   dc_init_parser_parameter_description(strm, "check_match", dcfile);
   dcyyparse();
   dc_cleanup_parser();

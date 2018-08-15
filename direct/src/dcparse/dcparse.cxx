@@ -19,6 +19,9 @@
 #include "indent.h"
 #include "panda_getopt.h"
 
+using std::cerr;
+using std::cout;
+
 void
 usage() {
   cerr <<

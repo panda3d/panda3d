@@ -202,7 +202,7 @@ osxGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string osxGraphicsPipe::
+std::string osxGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
@@ -344,7 +344,7 @@ release_data(void *info, const void *data, size_t size) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) osxGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

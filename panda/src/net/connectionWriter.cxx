@@ -24,7 +24,7 @@
  *
  */
 ConnectionWriter::WriterThread::
-WriterThread(ConnectionWriter *writer, const string &thread_name,
+WriterThread(ConnectionWriter *writer, const std::string &thread_name,
              int thread_index) :
   Thread(make_thread_name(thread_name, thread_index),
          make_thread_name(thread_name, thread_index)),
@@ -50,7 +50,7 @@ thread_main() {
  */
 ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads,
-                 const string &thread_name) :
+                 const std::string &thread_name) :
   _manager(manager)
 {
   if (!Thread::is_threading_supported()) {
@@ -70,7 +70,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads,
   _immediate = (num_threads <= 0);
   _shutdown = false;
 
-  string writer_thread_name = thread_name;
+  std::string writer_thread_name = thread_name;
   if (thread_name.empty()) {
     writer_thread_name = "WriterThread";
   }

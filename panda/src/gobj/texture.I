@@ -2345,6 +2345,24 @@ get_unsigned_int(const unsigned char *&p) {
 /**
  * This is used by store() to retrieve the next consecutive component value
  * from the indicated element of the array, which is taken to be an array of
+ * unsigned ints with the value packed in the 24 least significant bits.
+ */
+INLINE double Texture::
+get_unsigned_int_24(const unsigned char *&p) {
+  union {
+    uint32_t ui;
+    uint8_t uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)(v.ui & 0xffffff) / (double)0xffffff;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
  * floats.
  */
 INLINE double Texture::

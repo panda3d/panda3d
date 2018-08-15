@@ -21,6 +21,8 @@
 #include "string_utils.h"
 #include "pandaFileStream.h"
 
+using std::string;
+
 /**
  *
  */

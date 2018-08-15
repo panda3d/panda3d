@@ -21,13 +21,12 @@
 #include <windows.h>
 #endif  // _WIN32
 
-
 #ifdef _WIN32
 /**
  * Encodes std::wstring to std::string using UTF-8.
  */
 bool
-wstring_to_string(string &result, const wstring &source) {
+wstring_to_string(std::string &result, const std::wstring &source) {
   bool success = false;
   int size = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.length(),
                                  nullptr, 0, nullptr, nullptr);
@@ -51,7 +50,7 @@ wstring_to_string(string &result, const wstring &source) {
  * Decodes std::string to std::wstring using UTF-8.
  */
 bool
-string_to_wstring(wstring &result, const string &source) {
+string_to_wstring(std::wstring &result, const std::string &source) {
   bool success = false;
   int size = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.length(),
                                  nullptr, 0);

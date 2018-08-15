@@ -97,7 +97,7 @@ run() {
     exit(1);
   }
 
-  string ref_name = col.get_character(0)->get_name();
+  std::string ref_name = col.get_character(0)->get_name();
 
   // Now rename all of the animations to the same name as the reference model,
   // and add the reference animation in to the same collection to match it up
@@ -111,7 +111,7 @@ run() {
   EggCharacterData *char_data = _collection->get_character(0);
   nout << "Processing " << char_data->get_name() << "\n";
 
-  typedef pset<string> Names;
+  typedef pset<std::string> Names;
   Names keep_names;
 
   vector_string::const_iterator si;
@@ -133,7 +133,7 @@ run() {
  */
 void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-              int reference_model, const pset<string> &keep_names,
+              int reference_model, const pset<std::string> &keep_names,
               EggCharacterDb &db) {
   if (keep_names.find(joint_data->get_name()) != keep_names.end()) {
     // Don't retarget this joint; keep the translation and scale and whatever.

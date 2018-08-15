@@ -409,7 +409,7 @@ configure_filters(FilterProperties *config) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) FmodAudioManager::
-get_sound(const string &file_name, bool positional, int) {
+get_sound(const std::string &file_name, bool positional, int) {
   ReMutexHolder holder(_lock);
   // Needed so People use Panda's Generic UNIX Style Paths for Filename.
   // path.to_os_specific() converts it back to the proper OS version later on.
@@ -419,15 +419,19 @@ get_sound(const string &file_name, bool positional, int) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
-  // Build a new AudioSound from the audio data.
-  PT(AudioSound) audioSound;
-  PT(FmodAudioSound) fmodAudioSound = new FmodAudioSound(this, path, positional);
+  // Locate the file on disk.
+  path.set_binary();
+  PT(VirtualFile) file = vfs->get_file(path);
+  if (file != nullptr) {
+    // Build a new AudioSound from the audio data.
+    PT(FmodAudioSound) sound = new FmodAudioSound(this, file, positional);
 
-  _all_sounds.insert(fmodAudioSound);
-
-  audioSound = fmodAudioSound;
-
-  return audioSound;
+    _all_sounds.insert(sound);
+    return sound;
+  } else {
+    audio_error("createSound(" << path << "): File not found.");
+    return get_null_sound();
+  }
 }
 
 /**
@@ -768,7 +772,7 @@ reduce_sounds_playing_to(unsigned int count) {
  * NOT USED FOR FMOD-EX!!! Clears a sound out of the sound cache.
  */
 void FmodAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const std::string& file_name) {
   audio_debug("FmodAudioManager::uncache_sound(\""<<file_name<<"\")");
 
 }

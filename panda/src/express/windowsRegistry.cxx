@@ -21,6 +21,8 @@
 #endif
 #include <windows.h>
 
+using std::string;
+
 /**
  * Sets the registry key to the indicated value as a string.  The supplied
  * string value is automatically converted from whatever encoding is set by
@@ -32,7 +34,7 @@ set_string_value(const string &key, const string &name, const string &value,
         WindowsRegistry::RegLevel rl)
 {
   TextEncoder encoder;
-  wstring wvalue = encoder.decode_text(value);
+  std::wstring wvalue = encoder.decode_text(value);
 
   // Now convert the string to Windows' idea of the correct wide-char
   // encoding, so we can store it in the registry.  This might well be the
@@ -152,7 +154,7 @@ get_string_value(const string &key, const string &name,
                       data.data(), data.length(),
                       wide_result, wide_result_len);
 
-  wstring wdata(wide_result, wide_result_len);
+  std::wstring wdata(wide_result, wide_result_len);
 
   TextEncoder encoder;
   string result = encoder.encode_wtext(wdata);

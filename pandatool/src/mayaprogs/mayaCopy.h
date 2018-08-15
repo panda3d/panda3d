@@ -17,15 +17,19 @@
 #include "pandatoolbase.h"
 #include "cvsCopy.h"
 #include "mayaApi.h"
-#include "mayaShaders.h"
 #include "dSearchPath.h"
 #include "pointerTo.h"
 
 #include "pset.h"
 
+#include "pre_maya_include.h"
+#include <maya/MObject.h>
+#include "post_maya_include.h"
+
+#include "mayaShaders.h"
+
 class MayaShader;
 class MayaShaderColorDef;
-class MDagPath;
 
 /**
  * A program to copy Maya .mb files into the cvs tree.
