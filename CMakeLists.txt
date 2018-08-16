@@ -38,6 +38,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 set(CMAKE_SHARED_MODULE_PREFIX "lib")
 if(WIN32)
   set(CMAKE_DEBUG_POSTFIX "_d")
+
+  # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 endif()
 
 # Set warning levels
