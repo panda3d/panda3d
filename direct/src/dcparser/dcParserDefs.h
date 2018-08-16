@@ -43,7 +43,7 @@ extern DCFile *dc_file;
 // that has member functions in a union), so we'll use a class instead.  That
 // means we need to declare it externally, here.
 
-class DCTokenType {
+class EXPCL_DIRECT_DCPARSER DCTokenType {
 public:
   union U {
     int s_int;

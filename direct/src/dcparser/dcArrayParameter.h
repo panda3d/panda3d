@@ -23,7 +23,7 @@
  * parameter type accepts an arbitrary (or possibly fixed) number of nested
  * fields, all of which are of the same type.
  */
-class DCArrayParameter : public DCParameter {
+class EXPCL_DIRECT_DCPARSER DCArrayParameter : public DCParameter {
 public:
   DCArrayParameter(DCParameter *element_type,
                    const DCUnsignedIntRange &size = DCUnsignedIntRange());

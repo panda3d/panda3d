@@ -20,7 +20,7 @@
 /**
  * This class generates an arbitrary hash number from a sequence of ints.
  */
-class HashGenerator {
+class EXPCL_DIRECT_DCPARSER HashGenerator {
 public:
   HashGenerator();
 
