@@ -23,7 +23,7 @@
  * to constrain simple numeric types, as well as array sizes.
  */
 template <class NUM>
-class DCNumericRange {
+class EXPCL_DIRECT_DCPARSER DCNumericRange {
 public:
   typedef NUM Number;
 
