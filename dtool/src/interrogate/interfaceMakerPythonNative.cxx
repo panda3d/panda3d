@@ -1089,6 +1089,27 @@ write_class_details(ostream &out, Object *obj) {
       }
     }
 
+    // Are there any implicit cast operators that can cast this object to our
+    // desired pointer?
+    for (Function *func : obj->_methods) {
+      for (FunctionRemap *remap : func->_remaps) {
+        if (remap->_type == FunctionRemap::T_typecast_method &&
+            is_remap_legal(remap) &&
+            !remap->_return_type->return_value_needs_management() &&
+            (remap->_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0 &&
+            TypeManager::is_pointer(remap->_return_type->get_new_type())) {
+
+          CPPType *cast_type = remap->_return_type->get_orig_type();
+          CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(remap->_return_type->get_new_type()));
+          string return_expr = "(" + cast_type->get_local_name(&parser) + ")*local_this";
+          out << "  // " << *remap->_cppfunc << "\n";
+          out << "  if (requested_type == Dtool_Ptr_" << make_safe_name(obj_type->get_local_name(&parser)) << ") {\n";
+          out << "    return (void *)(" << remap->_return_type->get_return_expr(return_expr) << ");\n";
+          out << "  }\n";
+        }
+      }
+    }
+
     out << "  return nullptr;\n";
     out << "}\n\n";
 
