@@ -37,7 +37,7 @@
  */
 class EXPCL_PANDA_EXPRESS Datagram : public TypedObject {
 PUBLISHED:
-  INLINE Datagram();
+  INLINE Datagram() = default;
   INLINE Datagram(const void *data, size_t size);
   INLINE explicit Datagram(vector_uchar data);
   Datagram(const Datagram &copy) = default;
@@ -114,7 +114,12 @@ PUBLISHED:
 
 private:
   PTA_uchar _data;
-  bool _stdfloat_double;
+
+#ifdef STDFLOAT_DOUBLE
+  bool _stdfloat_double = true;
+#else
+  bool _stdfloat_double = false;
+#endif
 
 public:
 

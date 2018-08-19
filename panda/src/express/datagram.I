@@ -12,29 +12,10 @@
  */
 
 /**
- * Constructs an empty datagram.
- */
-INLINE Datagram::
-Datagram() :
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
-}
-
-/**
  * Constructs a datagram from an existing block of data.
  */
 INLINE Datagram::
-Datagram(const void *data, size_t size) :
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
+Datagram(const void *data, size_t size) {
   append_data(data, size);
 }
 
@@ -43,13 +24,7 @@ Datagram(const void *data, size_t size) :
  */
 INLINE Datagram::
 Datagram(vector_uchar data) :
-  _data(std::move(data)),
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
+  _data(std::move(data)) {
 }
 
 /**
