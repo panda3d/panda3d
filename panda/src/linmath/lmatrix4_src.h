@@ -36,6 +36,7 @@ PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH FLOATTYPE &operator [](int i);
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase4) &() const;
   public:
     FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
@@ -46,6 +47,7 @@ PUBLISHED:
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
     INLINE_LINMATH static int size();
+    INLINE_LINMATH operator const FLOATNAME(LVecBase4) &() const;
   public:
     const FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix4);
@@ -60,10 +62,14 @@ PUBLISHED:
       const FLOATNAME(UnalignedLMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (FLOATTYPE fill_value);
 
-  INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
-                                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
-                                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
-                                     FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
+  INLINE_LINMATH FLOATNAME(LMatrix4)(FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE,
+                                     FLOATTYPE, FLOATTYPE, FLOATTYPE, FLOATTYPE);
+  INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &,
+                                     const FLOATNAME(LVecBase4) &);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix4));
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
