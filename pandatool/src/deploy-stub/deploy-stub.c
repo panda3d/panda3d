@@ -545,6 +545,7 @@ static void *map_blob(off_t offset, size_t size) {
     perror("readlink(/proc/self/exe)");
     return NULL;
   }
+  buffer[pathlen] = '\0';
   runtime = fopen(buffer, "rb");
 #endif
 
