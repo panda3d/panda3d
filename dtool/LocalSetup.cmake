@@ -280,6 +280,14 @@ message("See dtool_config.h for more details about the specified configuration."
 message("")
 
 # Generate dtool_config.h
-configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
-include_directories("${PROJECT_BINARY_DIR}/include")
-#install(FILES "${PROJECT_BINARY_DIR}/dtool_config.h" DESTINATION include/panda3d)
+if("${CMAKE_CFG_INTDIR}" STREQUAL ".")
+  # Single-configuration generator
+  set(intdir ".")
+else()
+  # Multi-configuration generator
+  set(intdir "${CMAKE_BUILD_TYPE}")
+endif()
+
+configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_config.h")
+install(FILES "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_config.h"
+  DESTINATION include/panda3d)
