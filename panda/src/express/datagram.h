@@ -85,11 +85,16 @@ PUBLISHED:
   void append_data(const void *data, size_t size);
   INLINE void append_data(const vector_uchar &data);
 
+public:
   void assign(const void *data, size_t size);
 
   INLINE std::string get_message() const;
-  INLINE vector_uchar __bytes__() const;
   INLINE const void *get_data() const;
+
+PUBLISHED:
+  EXTENSION(INLINE PyObject *get_message() const);
+  EXTENSION(INLINE PyObject *__bytes__() const);
+
   INLINE size_t get_length() const;
 
   INLINE void set_array(PTA_uchar data);
