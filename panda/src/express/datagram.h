@@ -81,6 +81,9 @@ PUBLISHED:
   INLINE void add_fixed_string(const std::string &str, size_t size);
   void add_wstring(const std::wstring &str);
 
+  INLINE void add_blob(const vector_uchar &);
+  INLINE void add_blob32(const vector_uchar &);
+
   void pad_bytes(size_t size);
   void append_data(const void *data, size_t size);
   INLINE void append_data(const vector_uchar &data);
@@ -158,6 +161,8 @@ INLINE void
 generic_write_datagram(Datagram &dest, const std::string &value);
 INLINE void
 generic_write_datagram(Datagram &dest, const std::wstring &value);
+INLINE void
+generic_write_datagram(Datagram &dest, const vector_uchar &value);
 
 
 #include "datagram.I"

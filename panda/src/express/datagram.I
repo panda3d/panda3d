@@ -271,6 +271,35 @@ add_fixed_string(const std::string &str, size_t size) {
 }
 
 /**
+ * Adds a variable-length binary blob to the datagram.  This actually adds a
+ * count followed by n bytes.
+ */
+INLINE void Datagram::
+add_blob(const vector_uchar &data) {
+  // The max sendable size for a blob is 2^16.
+  nassertv(data.size() <= (uint16_t)0xffff);
+
+  // Blobs always are preceded by their size
+  add_uint16((uint16_t)data.size());
+
+  // Add the blob
+  append_data(data.data(), data.size());
+}
+
+/**
+ * Adds a variable-length binary blob to the datagram, using a 32-bit length
+ * field to allow very long blobs.
+ */
+INLINE void Datagram::
+add_blob32(const vector_uchar &data) {
+  // Blobs always are preceded by their size
+  add_uint32((uint32_t)data.size());
+
+  // Add the blob
+  append_data(data.data(), data.size());
+}
+
+/**
  * Appends some more raw data to the end of the datagram.
  */
 INLINE void Datagram::
@@ -444,4 +473,9 @@ generic_write_datagram(Datagram &dest, const std::string &value) {
 INLINE void
 generic_write_datagram(Datagram &dest, const std::wstring &value) {
   dest.add_wstring(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, const vector_uchar &value) {
+  dest.add_blob(value);
 }

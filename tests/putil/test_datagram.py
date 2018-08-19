@@ -28,6 +28,9 @@ def datagram_small(request):
     dg.add_string32('this is another string')
     dg.add_string('this is yet a third string')
 
+    dg.add_blob(b'blob data \x00\xf2\xa0\x00\x00')
+    dg.add_blob32(b'\xc9\x8f\x00 test blob32')
+
     dg.add_stdfloat(800.2)
     dg.add_stdfloat(3.1415926)
     dg.add_stdfloat(2.7182818)
@@ -48,6 +51,9 @@ def datagram_small(request):
         assert dgi.get_string() == 'this is a string'
         assert dgi.get_string32() == 'this is another string'
         assert dgi.get_string() == 'this is yet a third string'
+
+        assert dgi.get_blob() == b'blob data \x00\xf2\xa0\x00\x00'
+        assert dgi.get_blob32() == b'\xc9\x8f\x00 test blob32'
 
         assert dgi.get_stdfloat() == pytest.approx(800.2)
         assert dgi.get_stdfloat() == pytest.approx(3.1415926)
@@ -86,6 +92,12 @@ def test_datagram_bytes():
 
     dgi = core.DatagramIterator(dg)
     dgi.get_remaining_bytes() == b'abc\x00\xff123'
+
+
+def test_datagram_get_message():
+    dg = core.Datagram(b'abc\x00')
+    dg.append_data(b'\xff123')
+    assert dg.get_message() == b'abc\x00\xff123'
 
 
 def test_iterator(datagram_small):
