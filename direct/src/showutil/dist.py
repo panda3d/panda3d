@@ -264,6 +264,16 @@ class build_apps(setuptools.Command):
             elif num_gui_apps == 1:
                 self.macos_main_app = list(self.gui_apps.keys())[0]
 
+        use_pipenv = (
+            'Pipfile' in os.path.basename(self.requirements_path) or
+            not os.path.exists(self.requirements_path) and os.path.exists('Pipfile')
+        )
+        if use_pipenv:
+            reqspath = os.path.join(self.build_base, 'requirements.txt')
+            with open(reqspath, 'w') as reqsfile:
+                subprocess.check_call(['pipenv', 'lock', '--requirements'], stdout=reqsfile)
+            self.requirements_path = reqspath
+
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
