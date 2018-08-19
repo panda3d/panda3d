@@ -50,9 +50,6 @@ class TargetColoredGrid:
 
                 frame = construct_frame(
                     pos_i,
-                    grid_pos=(
-                        x_i,
-                        y_i),
                     color=col_i,
                     drag_drop_type=col_key)
 
@@ -83,8 +80,7 @@ class Grid:
 
                 pos_i = (pos[0] + offset[0] * x_i, pos[1] + offset[1] * y_i)
                 frame = construct_frame(
-                    pos_i, grid_pos=(
-                        x_i, y_i), drag_drop_type=dd_type)
+                    pos_i, drag_drop_type=dd_type)
 
                 self.d[x_i][y_i] = frame
 
