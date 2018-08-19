@@ -23,19 +23,17 @@ endif()
 add_metalib(p3direct INIT init_libdirect direct.h COMPONENTS ${P3DIRECT_COMPONENTS})
 set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
 
+# Installation:
+install(TARGETS p3direct DESTINATION lib)
+
 if(HAVE_PYTHON)
+  # Now for the Python side of everything
+
   add_python_module(direct
     p3dcparser p3deadrec p3distributed p3interval
     p3motiontrail p3showbase LINK p3direct IMPORT panda3d.core)
 
-  # Make an __init__.py pointing at the source directory so users can run
-  # Panda3D code straight from their build path:
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.py" "__path__.insert(0,r\"${CMAKE_CURRENT_SOURCE_DIR}/src\")")
-endif()
-
-# Installation:
-install(TARGETS p3direct DESTINATION lib)
-if(HAVE_PYTHON)
+  # Copy Python source files into the build directory
   set(DIRECT_INSTALL_DIRECTORIES
       actor cluster controls directbase directdevices directnotify directscripts
       directtools directutil distributed extensions extensions_native ffi filter
@@ -47,15 +45,14 @@ if(HAVE_PYTHON)
       DIRECTORY "src/${dir}"
       DESTINATION "${PROJECT_BINARY_DIR}/direct"
       FILES_MATCHING PATTERN "*.py")
-    install(
-      DIRECTORY "src/${dir}"
-      DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct"
-      FILES_MATCHING PATTERN "*.py")
   endforeach()
 
   # We also need an __init__.py file, which we have to generate:
   file(WRITE "${PROJECT_BINARY_DIR}/direct/__init__.py" "")
+
+  # Install all files
   install(
-    FILES "${PROJECT_BINARY_DIR}/direct/__init__.py"
-    DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct")
+    DIRECTORY "${PROJECT_BINARY_DIR}/direct"
+    DESTINATION "${PYTHON_LIB_INSTALL_DIR}"
+    FILES_MATCHING REGEX "\\.py[co]?$")
 endif()
