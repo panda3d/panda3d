@@ -22,13 +22,29 @@ if(HAVE_PYTHON)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
       -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
-      OUTPUT_VARIABLE _LIB_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_VARIABLE _LIB_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
       -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
-      OUTPUT_VARIABLE _ARCH_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_VARIABLE _ARCH_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(
+    COMMAND ${PYTHON_EXECUTABLE}
+      -c "from sysconfig import get_config_var as g; print((g('EXT_SUFFIX') or g('SO'))[:])"
+    OUTPUT_VARIABLE _EXT_SUFFIX
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(NOT _EXT_SUFFIX)
+    if(CYGWIN)
+      set(_EXT_SUFFIX ".dll")
+    elseif(WIN32)
+      set(_EXT_SUFFIX ".pyd")
+    else()
+      set(_EXT_SUFFIX ".so")
+    endif()
+  endif()
 
   set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE STRING
     "Path to the Python architecture-independent package directory.")
@@ -36,9 +52,8 @@ if(HAVE_PYTHON)
   set(PYTHON_ARCH_INSTALL_DIR "${_ARCH_DIR}" CACHE STRING
     "Path to the Python architecture-dependent package directory.")
 
-  # Always include Python, because we include it pretty much everywhere
-  # though we don't usually want to link it in as well.
-  include_directories(${PYTHON_INCLUDE_DIRS})
+  set(PYTHON_EXTENSION_SUFFIX "${_EXT_SUFFIX}" CACHE STRING
+    "Suffix for Python binary extension modules.")
 endif()
 
 #

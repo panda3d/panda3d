@@ -297,9 +297,7 @@ function(add_python_module module)
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
     PREFIX ""
   )
-  if(WIN32 AND NOT CYGWIN)
-    set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
-  endif()
+  set_target_properties(${module} PROPERTIES SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 
   install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
 

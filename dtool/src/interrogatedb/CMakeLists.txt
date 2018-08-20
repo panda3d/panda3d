@@ -67,6 +67,7 @@ add_custom_command(
 
 add_library(interrogatedb ${MODULE_TYPE}
   "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx")
+set_target_properties(interrogatedb PROPERTIES SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 target_use_packages(interrogatedb PYTHON)
 target_link_libraries(interrogatedb p3dtoolconfig)
 
