@@ -94,6 +94,19 @@ EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", "
 # Plug-ins to install.
 PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio"]
 
+# Libraries included in manylinux ABI that should be ignored.  See PEP 513/571.
+MANYLINUX_LIBS = [
+    "libgcc_s.so.1", "libstdc++.so.6", "libm.so.6", "libdl.so.2", "librt.so.1",
+    "libcrypt.so.1", "libc.so.6", "libnsl.so.1", "libutil.so.1",
+    "libpthread.so.0", "libresolv.so.2", "libX11.so.6", "libXext.so.6",
+    "libXrender.so.1", "libICE.so.6", "libSM.so.6", "libGL.so.1",
+    "libgobject-2.0.so.0", "libgthread-2.0.so.0", "libglib-2.0.so.0",
+
+    # These are not mentioned in manylinux1 spec but should nonetheless always
+    # be excluded.
+    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2",
+]
+
 WHEEL_DATA = """Wheel-Version: 1.0
 Generator: makepanda
 Root-Is-Purelib: false
@@ -263,6 +276,7 @@ class WheelFile(object):
         # Used to locate dependency libraries.
         self.lib_path = []
         self.dep_paths = {}
+        self.ignore_deps = set()
 
     def consider_add_dependency(self, target_path, dep, search_path=None):
         """Considers adding a dependency library.
@@ -275,8 +289,10 @@ class WheelFile(object):
 
         self.dep_paths[dep] = None
 
-        if dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
-            # Don't include the Python library.
+        if dep in self.ignore_deps or dep.lower().startswith("python") or os.path.basename(dep).startswith("libpython"):
+            # Don't include the Python library, or any other explicit ignore.
+            if GetVerbose():
+                print("Ignoring {0} (explicitly ignored)".format(dep))
             return
 
         if sys.platform == "darwin" and dep.endswith(".so"):
@@ -297,7 +313,8 @@ class WheelFile(object):
 
         if not source_path:
             # Couldn't find library in the panda3d lib dir.
-            #print("Ignoring %s" % (dep))
+            if GetVerbose():
+                print("Ignoring {0} (not in search path)".format(dep))
             return
 
         self.dep_paths[dep] = target_path
@@ -306,6 +323,8 @@ class WheelFile(object):
 
     def write_file(self, target_path, source_path):
         """Adds the given file to the .whl file."""
+
+        orig_source_path = source_path
 
         # If this is a .so file, we should set the rpath appropriately.
         temp = None
@@ -402,7 +421,7 @@ class WheelFile(object):
         self.records.append("{0},sha256={1},{2}\n".format(target_path, digest, size))
 
         if GetVerbose():
-            print("Adding %s from %s" % (target_path, source_path))
+            print("Adding {0} from {1}".format(target_path, orig_source_path))
         self.zip_file.write(source_path, target_path)
 
         #if temp:
@@ -508,6 +527,18 @@ def makewheel(version, output_dir, platform=None):
 
     if sys.platform == "win32":
         whl.lib_path.append(join(output_dir, "python", "DLLs"))
+
+    if platform.startswith("manylinux"):
+        # On manylinux1, we pick up all libraries except for the ones specified
+        # by the manylinux1 ABI.
+        whl.lib_path.append("/usr/local/lib")
+
+        if platform.endswith("_x86_64"):
+            whl.lib_path += ["/lib64", "/usr/lib64"]
+        else:
+            whl.lib_path += ["/lib", "/usr/lib"]
+
+        whl.ignore_deps.update(MANYLINUX_LIBS)
 
     # Add the trees with Python modules.
     whl.write_directory('direct', direct_dir)
