@@ -1,6 +1,7 @@
 import pytest
 from panda3d import core
 import sys
+import tempfile
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -147,30 +148,39 @@ def do_file_test(dg, verify, filename):
     dgi = core.DatagramIterator(dg2)
     verify(dgi)
 
-def test_file_small(datagram_small, tmpdir):
+@pytest.fixture
+def tmpfile():
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    yield file
+    file.close()
+
+def test_file_small(datagram_small, tmpfile):
     """This tests DatagramOutputFile/DatagramInputFile on small datagrams."""
     dg, verify = datagram_small
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     do_file_test(dg, verify, filename)
 
-def test_file_large(datagram_large, tmpdir):
+def test_file_large(datagram_large, tmpfile):
     """This tests DatagramOutputFile/DatagramInputFile on very large datagrams."""
     dg, verify = datagram_large
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     do_file_test(dg, verify, filename)
 
-def test_file_corrupt(datagram_small, tmpdir):
+def test_file_corrupt(datagram_small, tmpfile):
     """This tests DatagramInputFile's handling of a corrupt size header."""
     dg, verify = datagram_small
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     dof = core.DatagramOutputFile()
     dof.open(filename)
@@ -178,9 +188,9 @@ def test_file_corrupt(datagram_small, tmpdir):
     dof.close()
 
     # Corrupt the size header to 1GB
-    with p.open(mode='r+b') as f:
-        f.seek(0)
-        f.write(b'\xFF\xFF\xFF\x4F')
+    file.seek(0)
+    file.write(b'\xFF\xFF\xFF\x4F')
+    file.flush()
 
     dg2 = core.Datagram()
     dif = core.DatagramInputFile()
@@ -190,8 +200,7 @@ def test_file_corrupt(datagram_small, tmpdir):
 
     # Truncate the file
     for size in [12, 8, 4, 3, 2, 1, 0]:
-        with p.open(mode='r+b') as f:
-            f.truncate(size)
+        file.truncate(size)
 
         dg2 = core.Datagram()
         dif = core.DatagramInputFile()
