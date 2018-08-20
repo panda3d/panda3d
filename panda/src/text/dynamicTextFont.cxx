@@ -1072,7 +1072,6 @@ render_polygon_contours(TextGlyph *glyph, bool face, bool extrude) {
     // create more vertices--they don't share the same normals.
     for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
       const Contour &contour = (*ci);
-      Points::const_iterator pi;
 
       for (size_t i = 0; i < contour._points.size(); ++i) {
         const ContourPoint &cp = contour._points[i];

@@ -5316,7 +5316,7 @@ if (PkgSkip("DIRECT")==0):
 #
 
 if (PkgSkip("DIRECT")==0):
-  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
+  OPTS=['DIR:direct/src/dcparser', 'BUILDING:DIRECT_DCPARSER', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])

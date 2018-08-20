@@ -23,7 +23,7 @@ class HashGenerator;
  * This is a list of keywords (see DCKeyword) that may be set on a particular
  * field.
  */
-class DCKeywordList {
+class EXPCL_DIRECT_DCPARSER DCKeywordList {
 public:
   DCKeywordList();
   DCKeywordList(const DCKeywordList &copy);

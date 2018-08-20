@@ -742,7 +742,6 @@ make_compatible_state(GeomNode *node) {
   }
 
   GeomNode::CDWriter cdata(node->_cycler);
-  GeomNode::GeomList::iterator gi;
   PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
 
   // For each geom, calculate a canonicalized RenderState, and classify all

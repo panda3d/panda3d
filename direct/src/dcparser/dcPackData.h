@@ -19,7 +19,7 @@
 /**
  * This is a block of data that receives the results of DCPacker.
  */
-class DCPackData {
+class EXPCL_DIRECT_DCPARSER DCPackData {
 PUBLISHED:
   INLINE DCPackData();
   INLINE ~DCPackData();

@@ -70,6 +70,11 @@
 #define END_PUBLISH
 #define BLOCKING
 
+// These control the declspec(dllexport/dllimport) on Windows.  When compiling
+// outside of Panda, we assume we aren't part of a DLL.
+#define EXPCL_DIRECT_DCPARSER
+#define EXPTP_DIRECT_DCPARSER
+
 // Panda defines some assert-type macros.  We map those to the standard assert
 // macro outside of Panda.
 #define nassertr(condition, return_value) assert(condition)

@@ -41,7 +41,7 @@ class DCParameter;
 /**
  * Defines a particular DistributedClass as read from an input .dc file.
  */
-class DCClass : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCClass : public DCDeclaration {
 public:
   DCClass(DCFile *dc_file, const std::string &name,
           bool is_struct, bool bogus_class);

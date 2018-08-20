@@ -34,7 +34,7 @@ class HashGenerator;
 /**
  * A single field of a Distributed Class, either atomic or molecular.
  */
-class DCField : public DCPackerInterface, public DCKeywordList {
+class EXPCL_DIRECT_DCPARSER DCField : public DCPackerInterface, public DCKeywordList {
 public:
   DCField();
   DCField(const std::string &name, DCClass *dclass);

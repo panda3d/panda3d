@@ -37,7 +37,8 @@ def test_egg2pg_transform_ident(egg_coordsys, coordsys):
 @pytest.mark.parametrize("coordsys", COORD_SYSTEMS)
 def test_egg2pg_transform_mat_unchanged(coordsys):
     # Ensures that the matrix remains unchanged if coordinate system is same.
-    mat = (5, 2, -3, 4, 5, 6, 7, 8, 9, 1, -3, 2, 5, 2, 5, 2)
+    matv = (5, 2, -3, 4, 5, 6, 7, 8, 9, 1, -3, 2, 5, 2, 5, 2)
+    mat = core.Mat4D(*matv)
     group = egg.EggGroup("group")
     group.add_matrix4(mat)
     assert not group.transform_is_identity()
@@ -57,7 +58,7 @@ def test_egg2pg_transform_mat_unchanged(coordsys):
     assert root
     node, = root.children
 
-    assert node.transform.mat == mat
+    assert node.transform.mat == core.Mat4(*matv)
 
 
 @pytest.mark.parametrize("egg_coordsys", COORD_SYSTEMS)

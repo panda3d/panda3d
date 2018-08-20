@@ -27,7 +27,7 @@ class DCField;
  * and represents two or more alternative unpacking schemes based on the first
  * field read.
  */
-class DCSwitch : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCSwitch : public DCDeclaration {
 public:
   DCSwitch(const std::string &name, DCField *key_parameter);
   virtual ~DCSwitch();

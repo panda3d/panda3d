@@ -1,6 +1,7 @@
 import pytest
 from panda3d import core
 import sys
+import tempfile
 
 # Fixtures for generating interesting datagrams (and verification functions) on
 # the fly...
@@ -28,6 +29,9 @@ def datagram_small(request):
     dg.add_string32('this is another string')
     dg.add_string('this is yet a third string')
 
+    dg.add_blob(b'blob data \x00\xf2\xa0\x00\x00')
+    dg.add_blob32(b'\xc9\x8f\x00 test blob32')
+
     dg.add_stdfloat(800.2)
     dg.add_stdfloat(3.1415926)
     dg.add_stdfloat(2.7182818)
@@ -48,6 +52,9 @@ def datagram_small(request):
         assert dgi.get_string() == 'this is a string'
         assert dgi.get_string32() == 'this is another string'
         assert dgi.get_string() == 'this is yet a third string'
+
+        assert dgi.get_blob() == b'blob data \x00\xf2\xa0\x00\x00'
+        assert dgi.get_blob32() == b'\xc9\x8f\x00 test blob32'
 
         assert dgi.get_stdfloat() == pytest.approx(800.2)
         assert dgi.get_stdfloat() == pytest.approx(3.1415926)
@@ -86,6 +93,12 @@ def test_datagram_bytes():
 
     dgi = core.DatagramIterator(dg)
     dgi.get_remaining_bytes() == b'abc\x00\xff123'
+
+
+def test_datagram_get_message():
+    dg = core.Datagram(b'abc\x00')
+    dg.append_data(b'\xff123')
+    assert dg.get_message() == b'abc\x00\xff123'
 
 
 def test_iterator(datagram_small):
@@ -135,30 +148,39 @@ def do_file_test(dg, verify, filename):
     dgi = core.DatagramIterator(dg2)
     verify(dgi)
 
-def test_file_small(datagram_small, tmpdir):
+@pytest.fixture
+def tmpfile():
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    yield file
+    file.close()
+
+def test_file_small(datagram_small, tmpfile):
     """This tests DatagramOutputFile/DatagramInputFile on small datagrams."""
     dg, verify = datagram_small
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     do_file_test(dg, verify, filename)
 
-def test_file_large(datagram_large, tmpdir):
+def test_file_large(datagram_large, tmpfile):
     """This tests DatagramOutputFile/DatagramInputFile on very large datagrams."""
     dg, verify = datagram_large
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     do_file_test(dg, verify, filename)
 
-def test_file_corrupt(datagram_small, tmpdir):
+def test_file_corrupt(datagram_small, tmpfile):
     """This tests DatagramInputFile's handling of a corrupt size header."""
     dg, verify = datagram_small
 
-    p = tmpdir.join('datagram.bin')
-    filename = core.Filename.from_os_specific(str(p))
+    file = tempfile.NamedTemporaryFile(suffix='.bin')
+    filename = core.Filename.from_os_specific(file.name)
+    filename.make_true_case()
 
     dof = core.DatagramOutputFile()
     dof.open(filename)
@@ -166,9 +188,9 @@ def test_file_corrupt(datagram_small, tmpdir):
     dof.close()
 
     # Corrupt the size header to 1GB
-    with p.open(mode='r+b') as f:
-        f.seek(0)
-        f.write(b'\xFF\xFF\xFF\x4F')
+    file.seek(0)
+    file.write(b'\xFF\xFF\xFF\x4F')
+    file.flush()
 
     dg2 = core.Datagram()
     dif = core.DatagramInputFile()
@@ -178,8 +200,7 @@ def test_file_corrupt(datagram_small, tmpdir):
 
     # Truncate the file
     for size in [12, 8, 4, 3, 2, 1, 0]:
-        with p.open(mode='r+b') as f:
-            f.truncate(size)
+        file.truncate(size)
 
         dg2 = core.Datagram()
         dif = core.DatagramInputFile()
