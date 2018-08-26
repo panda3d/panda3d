@@ -63,7 +63,7 @@ joystick(int button_number) {
   if (button_number >= 0) {
     // "button1" does not exist, it is called "trigger" instead
     static pvector<ButtonHandle> buttons(1, _trigger);
-    while (button_number >= buttons.size()) {
+    while ((size_t)button_number >= buttons.size()) {
       char numstr[20];
       sprintf(numstr, "joystick%d", (int)buttons.size() + 1);
       ButtonHandle handle;
