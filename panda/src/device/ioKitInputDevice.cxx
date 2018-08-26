@@ -172,7 +172,7 @@ on_remove() {
 void IOKitInputDevice::
 parse_element(IOHIDElementRef element) {
   ButtonHandle handle = ButtonHandle::none();
-  ControlAxis axis = C_none;
+  Axis axis = Axis::none;
   uint32_t page = IOHIDElementGetUsagePage(element);
   uint32_t usage = IOHIDElementGetUsage(element);
 
@@ -183,60 +183,60 @@ parse_element(IOHIDElementRef element) {
       switch (usage) {
       case kHIDUsage_GD_X:
         if (_device_class == DC_gamepad) {
-          axis = C_left_x;
+          axis = Axis::left_x;
         } else if (_device_class == DC_flight_stick) {
-          axis = C_roll;
+          axis = Axis::roll;
         } else if (_device_class == DC_mouse) {
           _pointer_x = element;
           return;
         } else {
-          axis = C_x;
+          axis = Axis::x;
         }
         break;
       case kHIDUsage_GD_Y:
         if (_device_class == DC_gamepad) {
-          axis = C_left_y;
+          axis = Axis::left_y;
         } else if (_device_class == DC_flight_stick) {
-          axis = C_pitch;
+          axis = Axis::pitch;
         } else if (_device_class == DC_mouse) {
           _pointer_y = element;
           return;
         } else {
-          axis = C_y;
+          axis = Axis::y;
         }
         break;
       case kHIDUsage_GD_Z:
         if (_device_class == DC_gamepad) {
-          axis = C_left_trigger;
+          axis = Axis::left_trigger;
         } else if (_device_class == DC_flight_stick) {
-          axis = C_throttle;
+          axis = Axis::throttle;
         } else {
-          axis = C_z;
+          axis = Axis::z;
         }
         break;
       case kHIDUsage_GD_Rx:
         if (_device_class == DC_gamepad) {
-          axis = C_right_x;
+          axis = Axis::right_x;
         } else {
-          axis = C_pitch;
+          axis = Axis::pitch;
         }
         break;
       case kHIDUsage_GD_Ry:
         if (_device_class == DC_gamepad) {
-          axis = C_right_y;
+          axis = Axis::right_y;
         } else {
-          axis = C_roll;
+          axis = Axis::roll;
         }
         break;
       case kHIDUsage_GD_Rz:
         if (_device_class == DC_gamepad) {
-          axis = C_right_trigger;
+          axis = Axis::right_trigger;
         } else {
-          axis = C_yaw;
+          axis = Axis::yaw;
         }
         break;
       case kHIDUsage_GD_Slider:
-        axis = C_rudder;
+        axis = Axis::rudder;
         break;
       case kHIDUsage_GD_Dial:
         break;
@@ -268,28 +268,28 @@ parse_element(IOHIDElementRef element) {
     case kHIDPage_Simulation:
       switch (usage) {
       case kHIDUsage_Sim_Rudder:
-        axis = C_rudder;
+        axis = Axis::rudder;
         break;
       case kHIDUsage_Sim_Throttle:
-        axis = C_throttle;
+        axis = Axis::throttle;
         break;
       case kHIDUsage_Sim_Accelerator:
-        axis = C_accelerator;
+        axis = Axis::accelerator;
         break;
       case kHIDUsage_Sim_Brake:
-        axis = C_brake;
+        axis = Axis::brake;
         break;
       }
       break;
     }
-    if (axis != C_none) {
+    if (axis != Axis::none) {
       int min = IOHIDElementGetLogicalMin(element);
       int max = IOHIDElementGetLogicalMax(element);
-      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == C_throttle) {
+      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
         add_control(axis, max, min, true);
-      } else if (axis == C_yaw || axis == C_rudder || axis == C_left_y || axis == C_right_y ||
-                 (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z || axis == C_roll))) {
+      } else if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
+                 (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
         // We'd like to reverse the Y axis to match the XInput behavior.
         // We also reverse yaw to obey the right-hand rule.
         add_control(axis, max, min);

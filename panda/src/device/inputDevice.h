@@ -95,35 +95,35 @@ public:
   ~InputDevice();
 
 PUBLISHED:
-  enum ControlAxis {
-    C_none,
+  enum class Axis {
+    none,
 
     // Generic translational axes
-    C_x,
-    C_y,
-    C_z,
+    x,
+    y,
+    z,
 
     // Generic rotational axes, used by joysticks and 3D mice
-    C_yaw,
-    C_pitch,
-    C_roll,
+    yaw,
+    pitch,
+    roll,
 
     // Gamepad
-    C_left_x,
-    C_left_y,
-    C_left_trigger,
-    C_right_x,
-    C_right_y,
-    C_right_trigger,
+    left_x,
+    left_y,
+    left_trigger,
+    right_x,
+    right_y,
+    right_trigger,
 
     // Flight stick specific
-    C_throttle,
-    C_rudder, // When available separately from yaw
+    throttle,
+    rudder, // When available separately from yaw
 
     // Steering wheel / pedals
-    C_wheel,
-    C_accelerator,
-    C_brake,
+    wheel,
+    accelerator,
+    brake,
   };
 
   INLINE std::string get_name() const;
@@ -172,8 +172,8 @@ PUBLISHED:
   INLINE bool is_button_known(size_t index) const;
 
   INLINE size_t get_num_controls() const;
-  INLINE void set_control_map(size_t index, ControlAxis axis);
-  INLINE ControlAxis get_control_map(size_t index) const;
+  INLINE void set_control_map(size_t index, Axis axis);
+  INLINE Axis get_control_map(size_t index) const;
   INLINE double get_control_state(size_t index) const;
   INLINE bool is_control_known(size_t index) const;
 
@@ -191,12 +191,12 @@ PUBLISHED:
 
   virtual void output(std::ostream &out) const;
   static std::string format_device_class(DeviceClass dc);
-  static std::string format_axis(ControlAxis axis);
+  static std::string format_axis(Axis axis);
 
 protected:
   // Called during the constructor to add new controls or buttons
-  int add_control(ControlAxis axis, int minimum, int maximum, bool centered);
-  int add_control(ControlAxis axis, int minimum, int maximum);
+  int add_control(Axis axis, int minimum, int maximum, bool centered);
+  int add_control(Axis axis, int minimum, int maximum);
 
   void set_pointer(bool inwin, double x, double y, double time);
   void set_pointer_out_of_window(double time);
@@ -271,28 +271,28 @@ PUBLISHED:
 
   class ButtonState {
   public:
-    INLINE ButtonState();
+    constexpr ButtonState() = default;
     INLINE ButtonState(ButtonHandle handle);
 
   PUBLISHED:
-    ButtonHandle handle;
-    State state;
+    ButtonHandle handle = ButtonHandle::none();
+    State state = S_unknown;
   };
   typedef pvector<ButtonState> Buttons;
   Buttons _buttons;
 
   class AnalogState {
   public:
-    INLINE AnalogState();
+    constexpr AnalogState() = default;
 
   PUBLISHED:
-    ControlAxis axis;
-    double state;
-    bool known;
+    Axis axis = Axis::none;
+    double state = 0.0;
+    bool known = false;
 
   public:
-    double _scale;
-    double _bias;
+    double _scale = 1.0;
+    double _bias = 0.0;
   };
   typedef pvector<AnalogState> Controls;
   Controls _controls;
@@ -307,7 +307,7 @@ PUBLISHED:
   INLINE ButtonState find_button(ButtonHandle handle) const;
 
   INLINE AnalogState get_control(size_t index) const;
-  INLINE AnalogState find_control(ControlAxis axis) const;
+  INLINE AnalogState find_control(Axis axis) const;
 
   // Make device buttons and controls iterable
   MAKE_SEQ_PROPERTY(buttons, get_num_buttons, get_button);
@@ -337,7 +337,7 @@ INLINE std::ostream &operator << (std::ostream &out, const InputDevice &device) 
 }
 
 EXPCL_PANDA_DEVICE std::ostream &operator << (std::ostream &out, InputDevice::DeviceClass dc);
-EXPCL_PANDA_DEVICE std::ostream &operator << (std::ostream &out, InputDevice::ControlAxis axis);
+EXPCL_PANDA_DEVICE std::ostream &operator << (std::ostream &out, InputDevice::Axis axis);
 
 #include "inputDevice.I"
 

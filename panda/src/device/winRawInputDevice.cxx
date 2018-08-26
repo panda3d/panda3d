@@ -478,71 +478,71 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         is_signed = false;
       }
 
-      ControlAxis axis = C_none;
+      Axis axis = Axis::none;
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_GENERIC:
         switch (usage) {
           case HID_USAGE_GENERIC_X:
           if (_device_class == DC_gamepad) {
-            axis = C_left_x;
+            axis = Axis::left_x;
           } else if (_device_class == DC_flight_stick) {
-            axis = C_roll;
+            axis = Axis::roll;
           } else {
-            axis = C_x;
+            axis = Axis::x;
           }
           break;
         case HID_USAGE_GENERIC_Y:
           if (_device_class == DC_gamepad) {
-            axis = C_left_y;
+            axis = Axis::left_y;
             swap(cap.LogicalMin, cap.LogicalMax);
           } else if (_device_class == DC_flight_stick) {
-            axis = C_pitch;
+            axis = Axis::pitch;
           } else {
-            axis = C_y;
+            axis = Axis::y;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_Z:
           if (_device_class == DC_gamepad) {
-            axis = C_left_trigger;
+            axis = Axis::left_trigger;
           } else if (_device_class == DC_flight_stick) {
-            axis = C_throttle;
+            axis = Axis::throttle;
           } else {
-            axis = C_z;
+            axis = Axis::z;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_RX:
           if (_device_class == DC_gamepad) {
-            axis = C_right_x;
+            axis = Axis::right_x;
           } else {
-            axis = C_pitch;
+            axis = Axis::pitch;
           }
           break;
         case HID_USAGE_GENERIC_RY:
           if (_device_class == DC_gamepad) {
-            axis = C_right_y;
+            axis = Axis::right_y;
           } else {
-            axis = C_roll;
+            axis = Axis::roll;
           }
           swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DC_gamepad) {
-            axis = C_right_trigger;
+            axis = Axis::right_trigger;
           } else {
             // Flip to match Panda's convention for heading.
-            axis = C_yaw;
+            axis = Axis::yaw;
             swap(cap.LogicalMin, cap.LogicalMax);
           }
           break;
         case HID_USAGE_GENERIC_SLIDER:
           // Flip to match Panda's convention for heading.
-          axis = C_rudder;
+          axis = Axis::rudder;
           swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_WHEEL:
-          axis = C_wheel;
+          axis = Axis::wheel;
           break;
         case HID_USAGE_GENERIC_HATSWITCH:
           // This is handled specially.
@@ -554,7 +554,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       }
 
       int control_index;
-      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == C_throttle) {
+      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
         control_index = add_control(axis, cap.LogicalMax, cap.LogicalMin, true);
       } else if (!is_signed) {

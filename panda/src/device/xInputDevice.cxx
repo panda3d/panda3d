@@ -315,42 +315,42 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   default:
   case XINPUT_DEVSUBTYPE_GAMEPAD:
     _device_class = DC_gamepad;
-    set_control_map(0, C_left_trigger);
-    set_control_map(1, C_right_trigger);
-    set_control_map(2, C_left_x);
-    set_control_map(3, C_left_y);
-    set_control_map(4, C_right_x);
-    set_control_map(5, C_right_y);
+    set_control_map(0, Axis::left_trigger);
+    set_control_map(1, Axis::right_trigger);
+    set_control_map(2, Axis::left_x);
+    set_control_map(3, Axis::left_y);
+    set_control_map(4, Axis::right_x);
+    set_control_map(5, Axis::right_y);
     break;
 
   case XINPUT_DEVSUBTYPE_WHEEL:
     _device_class = DC_steering_wheel;
-    set_control_map(0, C_brake);
-    set_control_map(1, C_accelerator);
-    set_control_map(2, C_wheel);
-    set_control_map(3, C_none);
-    set_control_map(4, C_none);
-    set_control_map(5, C_none);
+    set_control_map(0, Axis::brake);
+    set_control_map(1, Axis::accelerator);
+    set_control_map(2, Axis::wheel);
+    set_control_map(3, Axis::none);
+    set_control_map(4, Axis::none);
+    set_control_map(5, Axis::none);
     break;
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
     _device_class = DC_flight_stick;
-    set_control_map(0, C_yaw);
-    set_control_map(1, C_throttle);
-    set_control_map(2, C_roll);
-    set_control_map(3, C_pitch);
-    set_control_map(4, C_none);
-    set_control_map(5, C_none);
+    set_control_map(0, Axis::yaw);
+    set_control_map(1, Axis::throttle);
+    set_control_map(2, Axis::roll);
+    set_control_map(3, Axis::pitch);
+    set_control_map(4, Axis::none);
+    set_control_map(5, Axis::none);
     break;
 
   case XINPUT_DEVSUBTYPE_DANCE_PAD:
     _device_class = DC_dance_pad;
-    set_control_map(0, C_none);
-    set_control_map(1, C_none);
-    set_control_map(2, C_none);
-    set_control_map(3, C_none);
-    set_control_map(4, C_none);
-    set_control_map(5, C_none);
+    set_control_map(0, Axis::none);
+    set_control_map(1, Axis::none);
+    set_control_map(2, Axis::none);
+    set_control_map(3, Axis::none);
+    set_control_map(4, Axis::none);
+    set_control_map(5, Axis::none);
     break;
   }
 

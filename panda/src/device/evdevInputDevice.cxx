@@ -419,89 +419,89 @@ init_device() {
 
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
-        ControlAxis axis = C_none;
+        Axis axis = Axis::none;
         switch (i) {
         case ABS_X:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_x;
+            axis = InputDevice::Axis::left_x;
           } else if (_device_class == DC_flight_stick) {
-            axis = InputDevice::C_roll;
+            axis = InputDevice::Axis::roll;
           } else {
-            axis = InputDevice::C_x;
+            axis = InputDevice::Axis::x;
           }
           break;
         case ABS_Y:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_y;
+            axis = InputDevice::Axis::left_y;
           } else if (_device_class == DC_flight_stick) {
-            axis = InputDevice::C_pitch;
+            axis = InputDevice::Axis::pitch;
           } else {
-            axis = InputDevice::C_y;
+            axis = InputDevice::Axis::y;
           }
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::C_right_x;
+            axis = InputDevice::Axis::right_x;
           } else if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_trigger;
+            axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           } else if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_z;
+            axis = InputDevice::Axis::z;
           } else {
-            axis = InputDevice::C_throttle;
+            axis = InputDevice::Axis::throttle;
           }
           break;
         case ABS_RX:
           if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_pitch;
+            axis = InputDevice::Axis::pitch;
           } else if ((quirks & QB_rstick_from_z) == 0) {
-            axis = InputDevice::C_right_x;
+            axis = InputDevice::Axis::right_x;
           }
           break;
         case ABS_RY:
           if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_roll;
+            axis = InputDevice::Axis::roll;
           } else if ((quirks & QB_rstick_from_z) == 0) {
-            axis = InputDevice::C_right_y;
+            axis = InputDevice::Axis::right_y;
           }
           break;
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::C_right_y;
+            axis = InputDevice::Axis::right_y;
           } else if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_right_trigger;
+            axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_yaw;
+            axis = InputDevice::Axis::yaw;
           }
           break;
         case ABS_THROTTLE:
           if (quirks & QB_rudder_from_throttle) {
-            axis = InputDevice::C_rudder;
+            axis = InputDevice::Axis::rudder;
           } else {
-            axis = InputDevice::C_throttle;
+            axis = InputDevice::Axis::throttle;
           }
           break;
         case ABS_RUDDER:
-          axis = InputDevice::C_rudder;
+          axis = InputDevice::Axis::rudder;
           break;
         case ABS_WHEEL:
-          axis = InputDevice::C_wheel;
+          axis = InputDevice::Axis::wheel;
           break;
         case ABS_GAS:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_right_trigger;
+            axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_accelerator;
+            axis = InputDevice::Axis::accelerator;
           }
           break;
         case ABS_BRAKE:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_trigger;
+            axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_brake;
+            axis = InputDevice::Axis::brake;
           }
           break;
         case ABS_HAT0X:
@@ -539,12 +539,12 @@ init_device() {
           // We'd like to reverse the Y axis to match the XInput behavior.
           // Also reverse the yaw axis to match right-hand coordinate system.
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
-          if (axis == C_yaw || axis == C_rudder || axis == C_left_y || axis == C_right_y ||
-              (axis == C_throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z || axis == C_roll))) {
+          if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
+              (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
+              (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
-          if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
+          if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
             index = add_control(axis, absinfo.maximum, absinfo.minimum, true);
           } else {
             index = add_control(axis, absinfo.minimum, absinfo.maximum);
@@ -584,8 +584,8 @@ init_device() {
   if (_ltrigger_code >= 0 && _rtrigger_code >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
     _ltrigger_control = (int)_controls.size();
-    add_control(C_left_trigger, 0, 1, false);
-    add_control(C_right_trigger, 0, 1, false);
+    add_control(Axis::left_trigger, 0, 1, false);
+    add_control(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_code = -1;
     _rtrigger_code = -1;

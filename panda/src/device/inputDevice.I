@@ -292,14 +292,14 @@ get_num_controls() const {
 }
 
 /**
- * Associates the indicated ControlAxis with the control of the indicated index
- * number.  Pass C_none to turn off any association.
+ * Associates the indicated Axis with the control of the indicated index
+ * number.  Pass Axis::none to turn off any association.
  *
  * It is not necessary to call this if you simply want to query the state of
  * the various controls by index number.
  */
 INLINE void InputDevice::
-set_control_map(size_t index, InputDevice::ControlAxis axis) {
+set_control_map(size_t index, InputDevice::Axis axis) {
   LightMutexHolder holder(_lock);
   if (index >= _controls.size()) {
     _controls.resize(index + 1, AnalogState());
@@ -309,16 +309,16 @@ set_control_map(size_t index, InputDevice::ControlAxis axis) {
 }
 
 /**
- * Returns the ControlAxis that was previously associated with the given index
- * number by a call to set_control_map(), or C_none if no control was
+ * Returns the Axis that was previously associated with the given index
+ * number by a call to set_control_map(), or Axis::none if no control was
  * associated.
  */
-INLINE InputDevice::ControlAxis InputDevice::
+INLINE InputDevice::Axis InputDevice::
 get_control_map(size_t index) const {
   if (index < _controls.size()) {
     return _controls[index].axis;
   } else {
-    return C_none;
+    return Axis::none;
   }
 }
 
@@ -356,7 +356,7 @@ get_control(size_t index) const {
  * if the axis was not found in the list.
  */
 INLINE InputDevice::AnalogState InputDevice::
-find_control(InputDevice::ControlAxis axis) const {
+find_control(InputDevice::Axis axis) const {
   for (size_t i = 0; i < _controls.size(); ++i) {
     if (_controls[i].axis == axis) {
       return _controls[i];
@@ -448,31 +448,8 @@ operator < (const InputDevice &) const {
  *
  */
 INLINE InputDevice::ButtonState::
-ButtonState() :
-  handle(ButtonHandle::none()),
-  state(S_unknown)
-{
-}
-
-/**
- *
- */
-INLINE InputDevice::ButtonState::
 ButtonState(ButtonHandle handle) :
   handle(handle),
   state(S_unknown)
-{
-}
-
-/**
- *
- */
-INLINE InputDevice::AnalogState::
-AnalogState() :
-  axis(C_none),
-  state(0.0),
-  known(false),
-  _scale(1.0),
-  _bias(0.0)
 {
 }

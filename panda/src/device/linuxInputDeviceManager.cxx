@@ -118,10 +118,10 @@ consider_add_evdev_device(size_t ev_index) {
     _evdev_devices[ev_index] = device;
 
     if (device->is_connected()) {
-      _connected_devices.add_device(MOVE(device));
+      _connected_devices.add_device(std::move(device));
     } else {
       // Wait for activity on the device before it is considered connected.
-      _inactive_devices.add_device(MOVE(device));
+      _inactive_devices.add_device(std::move(device));
     }
     return _evdev_devices[ev_index];
   }
@@ -189,10 +189,10 @@ consider_add_js_device(size_t js_index) {
     InputDevice *device_p = device.p();
 
     if (device->is_connected()) {
-      _connected_devices.add_device(MOVE(device));
+      _connected_devices.add_device(std::move(device));
     } else {
       // Wait for activity on the device before it is considered connected.
-      _inactive_devices.add_device(MOVE(device));
+      _inactive_devices.add_device(std::move(device));
     }
     return device_p;
   }

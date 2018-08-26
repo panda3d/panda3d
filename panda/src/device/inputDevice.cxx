@@ -124,7 +124,7 @@ get_pointer_events() {
  * Called by the implementation to add a new known control.
  */
 int InputDevice::
-add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
+add_control(Axis axis, int minimum, int maximum, bool centered) {
   AnalogState state;
   state.axis = axis;
   if (centered) {
@@ -146,20 +146,20 @@ add_control(ControlAxis axis, int minimum, int maximum, bool centered) {
  * tries to guess whether the control is centered or not.
  */
 int InputDevice::
-add_control(ControlAxis axis, int minimum, int maximum) {
+add_control(Axis axis, int minimum, int maximum) {
   bool centered = (minimum < 0)
-    || axis == C_x
-    || axis == C_y
-    || axis == C_z
-    || axis == C_yaw
-    || axis == C_pitch
-    || axis == C_roll
-    || axis == C_left_x
-    || axis == C_left_y
-    || axis == C_right_x
-    || axis == C_right_y
-    || axis == C_wheel
-    || axis == C_rudder;
+    || axis == Axis::x
+    || axis == Axis::y
+    || axis == Axis::z
+    || axis == Axis::yaw
+    || axis == Axis::pitch
+    || axis == Axis::roll
+    || axis == Axis::left_x
+    || axis == Axis::left_y
+    || axis == Axis::right_x
+    || axis == Axis::right_y
+    || axis == Axis::wheel
+    || axis == Axis::rudder;
   return add_control(axis, minimum, maximum, centered);
 }
 
@@ -287,7 +287,7 @@ set_control_state(int index, double state) {
     device_cat.spam()
       << "Changed control " << index;
 
-    if (_controls[index].axis != C_none) {
+    if (_controls[index].axis != Axis::none) {
       device_cat.spam(false) << " (" << _controls[index].axis << ")";
     }
 
@@ -315,7 +315,7 @@ control_changed(int index, int state) {
     device_cat.spam()
       << "Changed control " << index;
 
-    if (_controls[index].axis != C_none) {
+    if (_controls[index].axis != Axis::none) {
       device_cat.spam(false) << " (" << _controls[index].axis << ")";
     }
 
@@ -556,63 +556,63 @@ format_device_class(DeviceClass dc) {
  * Returns a string describing the given axis enumerant.
  */
 std::string InputDevice::
-format_axis(ControlAxis axis) {
+format_axis(Axis axis) {
   switch (axis) {
-  case InputDevice::C_none:
+  case InputDevice::Axis::none:
     return "none";
 
-  case InputDevice::C_x:
+  case InputDevice::Axis::x:
     return "x";
 
-  case InputDevice::C_y:
+  case InputDevice::Axis::y:
     return "y";
 
-  case InputDevice::C_z:
+  case InputDevice::Axis::z:
     return "z";
 
-  case InputDevice::C_yaw:
+  case InputDevice::Axis::yaw:
     return "yaw";
 
-  case InputDevice::C_pitch:
+  case InputDevice::Axis::pitch:
     return "pitch";
 
-  case InputDevice::C_roll:
+  case InputDevice::Axis::roll:
     return "roll";
 
-  case InputDevice::C_left_x:
+  case InputDevice::Axis::left_x:
     return "left_x";
 
-  case InputDevice::C_left_y:
+  case InputDevice::Axis::left_y:
     return "left_y";
 
-  case InputDevice::C_left_trigger:
+  case InputDevice::Axis::left_trigger:
     return "left_trigger";
 
-  case InputDevice::C_right_x:
+  case InputDevice::Axis::right_x:
     return "right_x";
 
-  case InputDevice::C_right_y:
+  case InputDevice::Axis::right_y:
     return "right_y";
 
-  case InputDevice::C_right_trigger:
+  case InputDevice::Axis::right_trigger:
     return "right_trigger";
 
-  //case InputDevice::C_trigger:
+  //case InputDevice::Axis::trigger:
   //  return "trigger";
 
-  case InputDevice::C_throttle:
+  case InputDevice::Axis::throttle:
     return "throttle";
 
-  case InputDevice::C_rudder:
+  case InputDevice::Axis::rudder:
     return "rudder";
 
-  case InputDevice::C_wheel:
+  case InputDevice::Axis::wheel:
     return "wheel";
 
-  case InputDevice::C_accelerator:
+  case InputDevice::Axis::accelerator:
     return "accelerator";
 
-  case InputDevice::C_brake:
+  case InputDevice::Axis::brake:
     return "brake";
   }
   return "**invalid**";
@@ -625,7 +625,7 @@ operator << (std::ostream &out, InputDevice::DeviceClass dc) {
 }
 
 std::ostream &
-operator << (std::ostream &out, InputDevice::ControlAxis axis) {
+operator << (std::ostream &out, InputDevice::Axis axis) {
   out << InputDevice::format_axis(axis);
   return out;
 }

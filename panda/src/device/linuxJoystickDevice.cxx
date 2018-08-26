@@ -152,71 +152,71 @@ open_device() {
     ioctl(_fd, JSIOCGAXMAP, axmap);
 
     for (uint8_t i = 0; i < num_axes; ++i) {
-      ControlAxis axis = C_none;
+      Axis axis = Axis::none;
 
       switch (axmap[i]) {
       case ABS_X:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_left_x;
+          axis = InputDevice::Axis::left_x;
         } else if (_device_class == DC_flight_stick) {
-          axis = InputDevice::C_roll;
+          axis = InputDevice::Axis::roll;
         } else {
-          axis = InputDevice::C_x;
+          axis = InputDevice::Axis::x;
         }
         break;
 
       case ABS_Y:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_left_y;
+          axis = InputDevice::Axis::left_y;
         } else if (_device_class == DC_flight_stick) {
-          axis = InputDevice::C_pitch;
+          axis = InputDevice::Axis::pitch;
         } else {
-          axis = InputDevice::C_y;
+          axis = InputDevice::Axis::y;
         }
         break;
 
       case ABS_Z:
         if (_device_class == DC_gamepad) {
-          axis = C_left_trigger;
+          axis = Axis::left_trigger;
         } else {
-          //axis = C_trigger;
+          //axis = Axis::trigger;
         }
         break;
 
       case ABS_RX:
-        axis = C_right_x;
+        axis = Axis::right_x;
         break;
 
       case ABS_RY:
-        axis = C_right_y;
+        axis = Axis::right_y;
         break;
 
       case ABS_RZ:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_right_trigger;
+          axis = InputDevice::Axis::right_trigger;
         } else {
-          axis = InputDevice::C_yaw;
+          axis = InputDevice::Axis::yaw;
         }
         break;
 
       case ABS_THROTTLE:
-        axis = InputDevice::C_throttle;
+        axis = InputDevice::Axis::throttle;
         break;
 
       case ABS_RUDDER:
-        axis = InputDevice::C_rudder;
+        axis = InputDevice::Axis::rudder;
         break;
 
       case ABS_WHEEL:
-        axis = InputDevice::C_wheel;
+        axis = InputDevice::Axis::wheel;
         break;
 
       case ABS_GAS:
-        axis = InputDevice::C_accelerator;
+        axis = InputDevice::Axis::accelerator;
         break;
 
       case ABS_BRAKE:
-        axis = InputDevice::C_brake;
+        axis = InputDevice::Axis::brake;
         break;
 
       case ABS_HAT0X:
@@ -231,7 +231,7 @@ open_device() {
             _buttons.push_back(ButtonState(GamepadButton::hat_left()));
             _buttons.push_back(ButtonState(GamepadButton::hat_right()));
           }
-          axis = C_none;
+          axis = Axis::none;
         }
         break;
 
@@ -247,7 +247,7 @@ open_device() {
             _buttons.push_back(ButtonState(GamepadButton::hat_up()));
             _buttons.push_back(ButtonState(GamepadButton::hat_down()));
           }
-          axis = C_none;
+          axis = Axis::none;
         }
         break;
 
@@ -256,17 +256,17 @@ open_device() {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
             << " axis " << (int)i << ": 0x" << std::hex << (int)axmap[i] << "\n";
         }
-        axis = C_none;
+        axis = Axis::none;
         break;
       }
       _controls[i].axis = axis;
 
-      if (axis == C_left_trigger || axis == C_right_trigger) {
+      if (axis == Axis::left_trigger || axis == Axis::right_trigger) {
         // We'd like to use 0.0 to indicate the resting position.
         _controls[i]._scale = 1.0 / 65534.0;
         _controls[i]._bias = 0.5;
         have_analog_triggers = true;
-      } else if (axis == C_left_y || axis == C_right_y || axis == C_y) {
+      } else if (axis == Axis::left_y || axis == Axis::right_y || axis == Axis::y) {
         _controls[i]._scale = 1.0 / -32767.0;
         _controls[i]._bias = 0.0;
       } else {
@@ -279,8 +279,8 @@ open_device() {
   if (_ltrigger_button >= 0 && _rtrigger_button >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
     _ltrigger_control = (int)_controls.size();
-    add_control(C_left_trigger, 0, 1, false);
-    add_control(C_right_trigger, 0, 1, false);
+    add_control(Axis::left_trigger, 0, 1, false);
+    add_control(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_button = -1;
     _rtrigger_button = -1;
