@@ -2661,7 +2661,6 @@ set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
     } else {
       LMatrix4d mat = poly->get_vertex_to_node();
 
-      EggPolygon::const_iterator vi;
       LPoint3d v0 = (*poly)[0]->get_pos3() * mat;
       LPoint3d v1 = (*poly)[1]->get_pos3() * mat;
       LPoint3d v2 = (*poly)[2]->get_pos3() * mat;

@@ -2,9 +2,7 @@
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
 from direct.tkwidgets.AppShell import AppShell
-from tkFileDialog import *
-from tkSimpleDialog import askstring
-import os, Pmw, Tkinter
+import os, Pmw, sys
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
 from direct.tkwidgets.Slider import Slider
@@ -14,6 +12,15 @@ import sePlacer
 import seForceGroup
 import seParticles
 import seParticleEffect
+
+
+if sys.version_info >= (3, 0):
+    from tkinter.filedialog import *
+    from tkinter.simpledialog import askstring
+else:
+    from tkFileDialog import *
+    from tkSimpleDialog import askstring
+
 
 class ParticlePanel(AppShell):
     # Override class variables
@@ -774,7 +781,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['resolution'] = resolution
         kw['numDigits'] = numDigits
-        widget = apply(Floater, (parent,), kw)
+        widget = Floater(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -786,7 +793,7 @@ class ParticlePanel(AppShell):
                         command = None, **kw):
         kw['text'] = text
         kw['style'] = 'mini'
-        widget = apply(AngleDial,(parent,), kw)
+        widget = AngleDial(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -801,7 +808,7 @@ class ParticlePanel(AppShell):
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(Slider, (parent,), kw)
+        widget = Slider(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -813,7 +820,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(Vector2Entry, (parent,), kw)
+        widget = Vector2Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -825,7 +832,7 @@ class ParticlePanel(AppShell):
                            command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(Vector3Entry, (parent,), kw)
+        widget = Vector3Entry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -837,7 +844,7 @@ class ParticlePanel(AppShell):
                          command = None, **kw):
         # Set label's text
         kw['text'] = text
-        widget = apply(ColorEntry, (parent,) ,kw)
+        widget = ColorEntry(parent, **kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
@@ -992,7 +999,7 @@ class ParticlePanel(AppShell):
             self.mainNotebook.selectpage('System')
             self.updateInfo('System')
         else:
-            print 'ParticlePanel: No effect named ' + name
+            print('ParticlePanel: No effect named ' + name)
 
     def toggleEffect(self, effect, var):
         if var.get():
@@ -1041,15 +1048,15 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = askopenfilename(
             defaultextension = '.ptf',
@@ -1070,15 +1077,15 @@ class ParticlePanel(AppShell):
         # Find path to particle directory
         pPath = getParticlePath()
         if pPath.getNumDirectories() > 0:
-            if `pPath.getDirectory(0)` == '.':
+            if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
             else:
                 path = pPath.getDirectory(0).toOsSpecific()
         else:
             path = '.'
         if not os.path.isdir(path):
-            print 'ParticlePanel Warning: Invalid default DNA directory!'
-            print 'Using current directory'
+            print('ParticlePanel Warning: Invalid default DNA directory!')
+            print('Using current directory')
             path = '.'
         particleFilename = asksaveasfilename(
             defaultextension = '.ptf',
@@ -1654,7 +1661,7 @@ class ParticlePanel(AppShell):
     def setRendererSpriteNonAnimatedTheta(self, theta):
         self.particles.renderer.setNonanimatedTheta(theta)
     def setRendererSpriteBlendMethod(self, blendMethod):
-        print blendMethod
+        print(blendMethod)
         if blendMethod == 'PP_NO_BLEND':
             bMethod = BaseParticleRenderer.PPNOBLEND
         elif blendMethod == 'PP_BLEND_LINEAR':
@@ -1863,7 +1870,7 @@ class ParticlePanel(AppShell):
                                       count, force):
         def setVec(vec, f = force):
             f.setVector(vec[0], vec[1], vec[2])
-        forceName = 'Vector Force-' + `count`
+        forceName = 'Vector Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         vec = force.getLocalVector()
@@ -1875,7 +1882,7 @@ class ParticlePanel(AppShell):
 
     def createLinearRandomForceWidget(self, forcePage, pageName, count,
                                 force, type):
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createForceActiveWidget(frame, pageName, forceName, force)
@@ -1884,7 +1891,7 @@ class ParticlePanel(AppShell):
                                         count, force):
         def setCoef(coef, f = force):
             f.setCoef(coef)
-        forceName = 'Friction Force-' + `count`
+        forceName = 'Friction Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         self.createFloater(frame, pageName, forceName + ' Coef',
@@ -1895,7 +1902,7 @@ class ParticlePanel(AppShell):
 
     def createLinearCylinderVortexForceWidget(self, forcePage, pageName,
                                               count, force):
-        forceName = 'Vortex Force-' + `count`
+        forceName = 'Vortex Force-' + repr(count)
         def setCoef(coef, f = force):
             f.setCoef(coef)
         def setLength(length, f = force):
@@ -1934,7 +1941,7 @@ class ParticlePanel(AppShell):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
         def setRadius(radius, f = force):
             f.setRadius(radius)
-        forceName = type + ' Force-' + `count`
+        forceName = type + ' Force-' + repr(count)
         frame = self.createForceFrame(forcePage, forceName, force)
         self.createLinearForceWidgets(frame, pageName, forceName, force)
         var = self.createOptionMenu(

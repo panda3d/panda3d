@@ -203,6 +203,19 @@ get_suppress_flags() const {
 }
 
 /**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ */
+INLINE NodePath &PGItem::
+get_state_def(int state) {
+  nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
+
+  LightReMutexHolder holder(_lock);
+  return do_get_state_def(state);
+}
+
+/**
  * Returns the unique ID assigned to this PGItem.  This will be assigned to
  * the region created with the MouseWatcher, and will thus be used to generate
  * event names.

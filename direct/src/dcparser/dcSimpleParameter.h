@@ -25,7 +25,7 @@
  * divisor, which is meaningful only for the numeric type elements (and
  * represents a fixed-point numeric convention).
  */
-class DCSimpleParameter : public DCParameter {
+class EXPCL_DIRECT_DCPARSER DCSimpleParameter : public DCParameter {
 public:
   DCSimpleParameter(DCSubatomicType type, unsigned int divisor = 1);
   DCSimpleParameter(const DCSimpleParameter &copy);

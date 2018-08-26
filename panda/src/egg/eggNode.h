@@ -44,6 +44,9 @@ PUBLISHED:
   INLINE bool is_under_transform() const;
   INLINE bool is_local_coord() const;
 
+  MAKE_PROPERTY(parent, get_parent);
+  MAKE_PROPERTY(depth, get_depth);
+
   INLINE const LMatrix4d &get_vertex_frame() const;
   INLINE const LMatrix4d &get_node_frame() const;
   INLINE const LMatrix4d &get_vertex_frame_inv() const;
@@ -51,12 +54,12 @@ PUBLISHED:
   INLINE const LMatrix4d &get_vertex_to_node() const;
   INLINE const LMatrix4d &get_node_to_vertex() const;
 
-  INLINE const LMatrix4d *get_vertex_frame_ptr()const;
-  INLINE const LMatrix4d *get_node_frame_ptr()const;
-  INLINE const LMatrix4d *get_vertex_frame_inv_ptr()const;
-  INLINE const LMatrix4d *get_node_frame_inv_ptr()const;
-  INLINE const LMatrix4d *get_vertex_to_node_ptr()const;
-  INLINE const LMatrix4d *get_node_to_vertex_ptr()const;
+  INLINE const LMatrix4d *get_vertex_frame_ptr() const;
+  INLINE const LMatrix4d *get_node_frame_ptr() const;
+  INLINE const LMatrix4d *get_vertex_frame_inv_ptr() const;
+  INLINE const LMatrix4d *get_node_frame_inv_ptr() const;
+  INLINE const LMatrix4d *get_vertex_to_node_ptr() const;
+  INLINE const LMatrix4d *get_node_to_vertex_ptr() const;
 
   INLINE void transform(const LMatrix4d &mat);
   INLINE void transform_vertices_only(const LMatrix4d &mat);

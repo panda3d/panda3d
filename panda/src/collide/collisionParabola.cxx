@@ -157,7 +157,7 @@ compute_internal_bounds() const {
                            LPoint3(0.01, 0, max_z), LPoint3(-0.01, 0, max_z));
   // And convert that back into real space.
   volume->xform(from_parabola);
-  return volume.p();
+  return volume;
 }
 
 /**

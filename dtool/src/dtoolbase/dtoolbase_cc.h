@@ -97,10 +97,12 @@ typedef std::ios::seekdir ios_seekdir;
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
 #include <tr1/tuple>
+#include <tr1/cmath>
 
 namespace std {
   using std::tr1::tuple;
   using std::tr1::tie;
+  using std::tr1::copysign;
 
   typedef decltype(nullptr) nullptr_t;
 
@@ -111,6 +113,8 @@ namespace std {
   template<class T> typename remove_reference<T>::type &&move(T &&t) {
     return static_cast<typename remove_reference<T>::type&&>(t);
   }
+
+  template<class T> struct owner_less;
 };
 #endif
 

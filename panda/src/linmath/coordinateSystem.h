@@ -26,10 +26,10 @@ enum CoordinateSystem {
   // turn is loaded from the config variable "coordinate-system".
   CS_default,
 
-  CS_zup_right,
-  CS_yup_right,
-  CS_zup_left,
-  CS_yup_left,
+  CS_zup_right, // Z-Up, Right-handed
+  CS_yup_right, // Y-Up, Right-handed
+  CS_zup_left,  // Z-Up, Left-handed
+  CS_yup_left,  // Y-Up, Left-handed
 
   // CS_invalid is not a coordinate system at all.  It can be used in user-
   // input processing code to indicate a contradictory coordinate system

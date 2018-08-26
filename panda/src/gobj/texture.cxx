@@ -1427,8 +1427,7 @@ peek() {
  */
 PT(AsyncFuture) Texture::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_texture_future(this);
-  return obj.p();
+  return prepared_objects->enqueue_texture_future(this);
 }
 
 /**

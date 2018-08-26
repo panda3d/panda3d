@@ -679,7 +679,7 @@ write(std::ostream &out, int indent_level) const {
   int total_digits = num_decimals + 4;
   static const int max_digits = 32;  // totally arbitrary
   nassertv(total_digits <= max_digits);
-  char format_str[12];
+  char format_str[16];
   sprintf(format_str, "%%%d.%df", total_digits, num_decimals);
 
   indent(out, indent_level) << get_name() << ":\n";
@@ -708,7 +708,7 @@ timeline(std::ostream &out) const {
   int total_digits = num_decimals + 4;
   static const int max_digits = 32;  // totally arbitrary
   nassertv(total_digits <= max_digits);
-  char format_str[12];
+  char format_str[16];
   sprintf(format_str, "%%%d.%df", total_digits, num_decimals);
 
   int extra_indent_level = 0;

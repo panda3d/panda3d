@@ -401,6 +401,22 @@ get_be_float64() {
 }
 
 /**
+ * Extracts a variable-length binary blob.
+ */
+INLINE vector_uchar DatagramIterator::
+get_blob() {
+  return extract_bytes(get_uint16());
+}
+
+/**
+ * Extracts a variable-length binary blob with a 32-bit size field.
+ */
+INLINE vector_uchar DatagramIterator::
+get_blob32() {
+  return extract_bytes(get_uint32());
+}
+
+/**
  * Skips over the indicated number of bytes in the datagram.
  */
 INLINE void DatagramIterator::
@@ -484,4 +500,9 @@ generic_read_datagram(std::string &result, DatagramIterator &source) {
 INLINE void
 generic_read_datagram(std::wstring &result, DatagramIterator &source) {
   result = source.get_wstring();
+}
+
+INLINE void
+generic_read_datagram(vector_uchar &result, DatagramIterator &source) {
+  result = source.get_blob();
 }

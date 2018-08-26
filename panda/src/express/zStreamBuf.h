@@ -24,7 +24,7 @@
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.
  */
-class EXPCL_PANDA_DOWNLOADER ZStreamBuf : public std::streambuf {
+class EXPCL_PANDA_EXPRESS ZStreamBuf : public std::streambuf {
 public:
   ZStreamBuf();
   virtual ~ZStreamBuf();

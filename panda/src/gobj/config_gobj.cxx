@@ -260,18 +260,6 @@ ConfigVariableBool cache_generated_shaders
  PRC_DESC("Set this true to cause all generated shaders to be cached in "
           "memory.  This is useful to prevent unnecessary recompilation."));
 
-ConfigVariableBool enforce_attrib_lock
-("enforce-attrib-lock", true,
- PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "
-          "constructed, the corresponding Material, Texture, or Light "
-          "is 'attrib locked.'  The attrib lock prevents qualitative "
-          "changes to the object.  This makes it possible to hardwire "
-          "information about material, light, and texture properties "
-          "into generated shaders.  This config variable can disable "
-          "the attrib lock.  Disabling the lock will break the shader "
-          "generator, but doing so may be necessary for backward "
-          "compatibility with old code."));
-
 ConfigVariableBool vertices_float64
 ("vertices-float64", false,
  PRC_DESC("When this is true, the default float format for vertices "

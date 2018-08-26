@@ -39,6 +39,41 @@ PointerTo(PointerTo<T> &&from) noexcept :
 {
 }
 
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE PointerTo<T>::
+PointerTo(Y *ptr) noexcept :
+  PointerToBase<T>(ptr)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE PointerTo<T>::
+PointerTo(const PointerTo<Y> &r) noexcept :
+  PointerToBase<T>(r.p())
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE PointerTo<T>::
+PointerTo(PointerTo<Y> &&r) noexcept :
+  PointerToBase<T>(std::move(r))
+{
+}
+#endif  // !CPPPARSER
+
 /**
  *
  */
@@ -48,6 +83,30 @@ operator = (PointerTo<T> &&from) noexcept {
   this->reassign(std::move(from));
   return *this;
 }
+
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE PointerTo<T> &PointerTo<T>::
+operator = (const PointerTo<Y> &r) noexcept {
+  this->reassign(r.p());
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE PointerTo<T> &PointerTo<T>::
+operator = (PointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
+  return *this;
+}
+#endif  // !CPPPARSER
 
 /**
  *
@@ -172,6 +231,63 @@ ConstPointerTo(ConstPointerTo<T> &&from) noexcept :
 {
 }
 
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(const Y *ptr) noexcept :
+  PointerToBase<T>((Y *)ptr)
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(const PointerTo<Y> &r) noexcept :
+  PointerToBase<T>(r.p())
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(const ConstPointerTo<Y> &r) noexcept :
+  PointerToBase<T>((Y *)r.p())
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(PointerTo<Y> &&r) noexcept :
+  PointerToBase<T>(std::move(r))
+{
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T>::
+ConstPointerTo(ConstPointerTo<Y> &&r) noexcept :
+  PointerToBase<T>(std::move(r))
+{
+}
+#endif  // !CPPPARSER
+
 /**
  *
  */
@@ -191,6 +307,52 @@ operator = (ConstPointerTo<T> &&from) noexcept {
   this->reassign(std::move(from));
   return *this;
 }
+
+#ifndef CPPPARSER
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (const PointerTo<Y> &r) noexcept {
+  this->reassign(r.p());
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (const ConstPointerTo<Y> &r) noexcept {
+  this->reassign((Y *)r.p());
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (PointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
+  return *this;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+ALWAYS_INLINE ConstPointerTo<T> &ConstPointerTo<T>::
+operator = (ConstPointerTo<Y> &&r) noexcept {
+  this->reassign(std::move(r));
+  return *this;
+}
+#endif  // !CPPPARSER
 
 /**
  *

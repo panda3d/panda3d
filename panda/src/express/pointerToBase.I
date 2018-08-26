@@ -44,11 +44,24 @@ PointerToBase(const PointerToBase<T> &copy) {
  */
 template<class T>
 INLINE PointerToBase<T>::
-~PointerToBase() {
-  if (_void_ptr != nullptr) {
-    unref_delete((To *)_void_ptr);
-    _void_ptr = nullptr;
-  }
+PointerToBase(PointerToBase<T> &&from) noexcept {
+  _void_ptr = from._void_ptr;
+  from._void_ptr = nullptr;
+}
+
+/**
+ *
+ */
+template<class T>
+template<class Y>
+INLINE PointerToBase<T>::
+PointerToBase(PointerToBase<Y> &&r) noexcept {
+  // If this next line gives an error, you are trying to convert a PointerTo
+  // from an incompatible type of another PointerTo.
+  To *ptr = (Y *)r._void_ptr;
+
+  this->_void_ptr = ptr;
+  r._void_ptr = nullptr;
 }
 
 /**
@@ -56,9 +69,11 @@ INLINE PointerToBase<T>::
  */
 template<class T>
 INLINE PointerToBase<T>::
-PointerToBase(PointerToBase<T> &&from) noexcept {
-  _void_ptr = from._void_ptr;
-  from._void_ptr = nullptr;
+~PointerToBase() {
+  if (_void_ptr != nullptr) {
+    unref_delete((To *)_void_ptr);
+    _void_ptr = nullptr;
+  }
 }
 
 /**
@@ -75,6 +90,31 @@ reassign(PointerToBase<T> &&from) noexcept {
     To *old_ptr = (To *)this->_void_ptr;
 
     this->_void_ptr = from._void_ptr;
+    from._void_ptr = nullptr;
+
+    // Now delete the old pointer.
+    if (old_ptr != nullptr) {
+      unref_delete(old_ptr);
+    }
+  }
+}
+
+/**
+ * Like above, but casts from a compatible pointer type.
+ */
+template<class T>
+template<class Y>
+INLINE void PointerToBase<T>::
+reassign(PointerToBase<Y> &&from) noexcept {
+  // Protect against self-move-assignment.
+  if (from._void_ptr != this->_void_ptr) {
+    To *old_ptr = (To *)this->_void_ptr;
+
+    // If there is a compile error on this line, it means you tried to assign
+    // an incompatible type.
+    To *new_ptr = (Y *)from._void_ptr;
+
+    this->_void_ptr = new_ptr;
     from._void_ptr = nullptr;
 
     // Now delete the old pointer.

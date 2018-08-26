@@ -403,6 +403,9 @@ unlock_and_do_task() {
   Thread *current_thread = Thread::get_current_thread();
   nassertr(current_thread->_current_task == nullptr, DS_interrupt);
 
+#ifdef __GNUC__
+  __attribute__((unused))
+#endif
   void *ptr = AtomicAdjust::compare_and_exchange_ptr
     (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
 

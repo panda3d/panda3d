@@ -125,11 +125,13 @@ public:
     TS_do_windows,
     TS_do_compute,
     TS_do_extract,
+    TS_do_screenshot,
     TS_terminate,
     TS_done
   };
 
   void texture_uploaded(Texture *tex);
+  PT(Texture) do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg);
 
 public:
   static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
@@ -304,8 +306,9 @@ private:
 
     // These are stored for extract_texture_data and dispatch_compute.
     GraphicsStateGuardian *_gsg;
-    Texture *_texture;
+    PT(Texture) _texture;
     const RenderState *_state;
+    DisplayRegion *_region;
     LVecBase3i _work_groups;
     bool _result;
   };

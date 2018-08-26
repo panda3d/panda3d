@@ -26,6 +26,9 @@
 #include "eggPolysetMaker.h"
 #include "eggBin.h"
 
+using std::min;
+using std::max;
+
 #include <stdio.h>
 #include "Max.h"
 #include "istdplug.h"

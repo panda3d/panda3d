@@ -32,9 +32,9 @@ SimpleAllocator(size_t max_size, Mutex &lock) :
  * pointer.
  */
 SimpleAllocatorBlock *SimpleAllocator::
-alloc(size_t size) {
+alloc(size_t size, size_t alignment) {
   MutexHolder holder(_lock);
-  return do_alloc(size);
+  return do_alloc(size, alignment);
 }
 
 /**
@@ -149,11 +149,51 @@ SimpleAllocatorBlock(SimpleAllocator *alloc,
 }
 
 /**
+ * Transfers ownership from the given SimpleAllocatorBlock to this one.
+ */
+INLINE SimpleAllocatorBlock::
+SimpleAllocatorBlock(SimpleAllocatorBlock &&from) :
+  _allocator(from._allocator)
+{
+  if (_allocator == nullptr) {
+    return;
+  }
+
+  MutexHolder holder(_allocator->_lock);
+  _start = from._start;
+  _size = from._size;
+  LinkedListNode::operator = (std::move(from));
+  from._allocator = nullptr;
+}
+
+/**
  * The block automatically frees itself when it destructs.
  */
 INLINE SimpleAllocatorBlock::
 ~SimpleAllocatorBlock() {
   free();
+}
+
+/**
+ * Frees this block and instead takes ownership of the given other block.
+ */
+INLINE SimpleAllocatorBlock &SimpleAllocatorBlock::
+operator = (SimpleAllocatorBlock &&from) {
+  free();
+
+  _allocator = from._allocator;
+  if (_allocator == nullptr) {
+    _start = 0;
+    _size = 0;
+    return *this;
+  }
+
+  MutexHolder holder(_allocator->_lock);
+  _start = from._start;
+  _size = from._size;
+  LinkedListNode::operator = (std::move(from));
+  from._allocator = nullptr;
+  return *this;
 }
 
 /**

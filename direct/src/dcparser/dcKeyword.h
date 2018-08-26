@@ -25,7 +25,7 @@ class HashGenerator;
  * define a communication property associated with a field, for instance
  * "broadcast" or "airecv".
  */
-class DCKeyword : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCKeyword : public DCDeclaration {
 public:
   DCKeyword(const std::string &name, int historical_flag = ~0);
   virtual ~DCKeyword();

@@ -131,7 +131,7 @@ compute_internal_bounds() const {
                            LPoint3(0.01, -0.01, 0.01), LPoint3(-0.01, -0.01, 0.01));
 
   volume->xform(from_segment);
-  return volume.p();
+  return volume;
 }
 
 /**

@@ -435,6 +435,7 @@ write(std::ostream &out) const {
 PandaSystem *PandaSystem::
 get_global_ptr() {
   if (_global_ptr == nullptr) {
+    init_type();
     _global_ptr = new PandaSystem;
   }
 

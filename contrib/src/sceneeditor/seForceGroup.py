@@ -1,8 +1,6 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.PhysicsManagerGlobal import *
-#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
-from pandac.PandaModules import ForceNode
 from direct.directnotify import DirectNotifyGlobal
 import sys
 

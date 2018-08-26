@@ -23,7 +23,7 @@ class DCClass;
  * This represents a class (or struct) object used as a parameter itself.
  * This means that all the fields of the class get packed into the message.
  */
-class DCClassParameter : public DCParameter {
+class EXPCL_DIRECT_DCPARSER DCClassParameter : public DCParameter {
 public:
   DCClassParameter(const DCClass *dclass);
   DCClassParameter(const DCClassParameter &copy);

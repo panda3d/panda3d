@@ -755,7 +755,7 @@ make_frame() {
     frame_node->add_geom(geom2, state);
   }
 
-  return frame_node.p();
+  return frame_node;
 }
 
 /**
@@ -795,7 +795,7 @@ make_card() {
 
   card_node->add_geom(geom);
 
-  return card_node.p();
+  return card_node;
 }
 
 
@@ -896,7 +896,7 @@ make_card_with_border() {
 
   card_node->add_geom(geom);
 
-  return card_node.p();
+  return card_node;
 }
 
 /**

@@ -14,6 +14,7 @@
 #include "boundingHexahedron.h"
 #include "boundingSphere.h"
 #include "boundingBox.h"
+#include "boundingPlane.h"
 #include "config_mathutil.h"
 
 #include <math.h>
@@ -354,6 +355,14 @@ contains_box(const BoundingBox *box) const {
   }
 
   return result;
+}
+
+/**
+ *
+ */
+int BoundingHexahedron::
+contains_plane(const BoundingPlane *plane) const {
+  return plane->contains_hexahedron(this) & ~IF_all;
 }
 
 /**

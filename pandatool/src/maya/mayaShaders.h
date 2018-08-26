@@ -21,7 +21,6 @@
 #include "mayaShaderColorDef.h"
 
 class MayaShader;
-class MObject;
 
 /**
  * Collects the set of MayaShaders that have been encountered so far.

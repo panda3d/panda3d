@@ -138,7 +138,7 @@ make_adjacency() const {
   }
 
   adj->set_vertices(std::move(new_vertices));
-  return adj.p();
+  return adj;
 }
 
 /**
@@ -199,7 +199,7 @@ doubleside_impl() const {
     reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**
@@ -232,7 +232,7 @@ reverse_impl() const {
     break;
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**

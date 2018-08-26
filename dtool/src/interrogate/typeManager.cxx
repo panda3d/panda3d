@@ -125,6 +125,26 @@ is_reference(CPPType *type) {
 }
 
 /**
+ * Returns true if the indicated type is some kind of an rvalue reference.
+ */
+bool TypeManager::
+is_rvalue_reference(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_rvalue_reference(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return type->as_reference_type()->_value_category == CPPReferenceType::VC_rvalue;
+
+  case CPPDeclaration::ST_typedef:
+    return is_rvalue_reference(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
  * Returns true if the indicated type is some kind of a reference or const
  * reference type at all, false otherwise.
  */
@@ -304,6 +324,26 @@ is_struct(CPPType *type) {
 
   case CPPDeclaration::ST_typedef:
     return is_struct(type->as_typedef_type()->_type);
+
+  default:
+    return false;
+  }
+}
+
+/**
+ * Returns true if the indicated type is an enum class, const or otherwise.
+ */
+bool TypeManager::
+is_scoped_enum(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_enum:
+    return ((CPPEnumType *)type)->is_scoped();
+
+  case CPPDeclaration::ST_const:
+    return is_scoped_enum(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_typedef:
+    return is_scoped_enum(type->as_typedef_type()->_type);
 
   default:
     return false;

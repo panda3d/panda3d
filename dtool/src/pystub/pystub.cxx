@@ -36,7 +36,6 @@ extern "C" {
   EXPCL_PYSTUB int PyDict_SetItem(...);
   EXPCL_PYSTUB int PyDict_SetItemString(...);
   EXPCL_PYSTUB int PyDict_Size(...);
-  EXPCL_PYSTUB int PyDict_Type(...);
   EXPCL_PYSTUB int PyErr_Clear(...);
   EXPCL_PYSTUB int PyErr_ExceptionMatches(...);
   EXPCL_PYSTUB int PyErr_Fetch(...);
@@ -54,9 +53,7 @@ extern "C" {
   EXPCL_PYSTUB int PyEval_SaveThread(...);
   EXPCL_PYSTUB int PyFloat_AsDouble(...);
   EXPCL_PYSTUB int PyFloat_FromDouble(...);
-  EXPCL_PYSTUB int PyFloat_Type(...);
   EXPCL_PYSTUB int PyGen_Check(...);
-  EXPCL_PYSTUB int PyGen_Type(...);
   EXPCL_PYSTUB int PyGILState_Ensure(...);
   EXPCL_PYSTUB int PyGILState_Release(...);
   EXPCL_PYSTUB int PyImport_GetModuleDict(...);
@@ -65,14 +62,12 @@ extern "C" {
   EXPCL_PYSTUB int PyInt_AsSsize_t(...);
   EXPCL_PYSTUB int PyInt_FromLong(...);
   EXPCL_PYSTUB int PyInt_FromSize_t(...);
-  EXPCL_PYSTUB int PyInt_Type(...);
   EXPCL_PYSTUB int PyIter_Next(...);
   EXPCL_PYSTUB int PyList_Append(...);
   EXPCL_PYSTUB int PyList_AsTuple(...);
   EXPCL_PYSTUB int PyList_GetItem(...);
   EXPCL_PYSTUB int PyList_New(...);
   EXPCL_PYSTUB int PyList_SetItem(...);
-  EXPCL_PYSTUB int PyList_Type(...);
   EXPCL_PYSTUB int PyLong_AsLong(...);
   EXPCL_PYSTUB int PyLong_AsLongLong(...);
   EXPCL_PYSTUB int PyLong_AsSsize_t(...);
@@ -83,7 +78,6 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_FromSize_t(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLong(...);
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
-  EXPCL_PYSTUB int PyLong_Type(...);
   EXPCL_PYSTUB int PyMapping_GetItemString(...);
   EXPCL_PYSTUB int PyMem_Free(...);
   EXPCL_PYSTUB int PyMemoryView_FromObject(...);
@@ -121,9 +115,9 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_Repr(...);
   EXPCL_PYSTUB int PyObject_RichCompareBool(...);
   EXPCL_PYSTUB int PyObject_SelfIter(...);
+  EXPCL_PYSTUB int PyObject_SetAttr(...);
   EXPCL_PYSTUB int PyObject_SetAttrString(...);
   EXPCL_PYSTUB int PyObject_Str(...);
-  EXPCL_PYSTUB int PyObject_Type(...);
   EXPCL_PYSTUB int PySeqIter_New(...);
   EXPCL_PYSTUB int PySequence_Check(...);
   EXPCL_PYSTUB int PySequence_Fast(...);
@@ -138,7 +132,6 @@ extern "C" {
   EXPCL_PYSTUB int PyString_InternFromString(...);
   EXPCL_PYSTUB int PyString_InternInPlace(...);
   EXPCL_PYSTUB int PyString_Size(...);
-  EXPCL_PYSTUB int PyString_Type(...);
   EXPCL_PYSTUB int PySys_GetObject(...);
   EXPCL_PYSTUB int PyThreadState_Clear(...);
   EXPCL_PYSTUB int PyThreadState_Delete(...);
@@ -180,7 +173,6 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_GetSize(...);
   EXPCL_PYSTUB int PyUnicode_InternFromString(...);
   EXPCL_PYSTUB int PyUnicode_InternInPlace(...);
-  EXPCL_PYSTUB int PyUnicode_Type(...);
   EXPCL_PYSTUB int Py_BuildValue(...);
   EXPCL_PYSTUB int Py_GetVersion(...);
   EXPCL_PYSTUB int Py_InitModule4(...);
@@ -232,8 +224,17 @@ extern "C" {
   EXPCL_PYSTUB extern void *PyExc_SystemExit;
   EXPCL_PYSTUB extern void *PyExc_TypeError;
   EXPCL_PYSTUB extern void *PyExc_ValueError;
+  EXPCL_PYSTUB extern void *PyDict_Type;
+  EXPCL_PYSTUB extern void *PyFloat_Type;
+  EXPCL_PYSTUB extern void *PyGen_Type;
+  EXPCL_PYSTUB extern void *PyInt_Type;
+  EXPCL_PYSTUB extern void *PyList_Type;
+  EXPCL_PYSTUB extern void *PyLong_Type;
+  EXPCL_PYSTUB extern void *PyObject_Type;
+  EXPCL_PYSTUB extern void *PyString_Type;
   EXPCL_PYSTUB extern void *PyTuple_Type;
   EXPCL_PYSTUB extern void *PyType_Type;
+  EXPCL_PYSTUB extern void *PyUnicode_Type;
   EXPCL_PYSTUB extern void *_PyThreadState_Current;
   EXPCL_PYSTUB extern void *_Py_FalseStruct;
   EXPCL_PYSTUB extern void *_Py_NoneStruct;
@@ -265,7 +266,6 @@ int PyDict_Next(...) { return 0; };
 int PyDict_SetItem(...) { return 0; };
 int PyDict_SetItemString(...) { return 0; };
 int PyDict_Size(...){ return 0; }
-int PyDict_Type(...) { return 0; };
 int PyErr_Clear(...) { return 0; };
 int PyErr_ExceptionMatches(...) { return 0; };
 int PyErr_Fetch(...) { return 0; }
@@ -284,9 +284,7 @@ int PyEval_RestoreThread(...) { return 0; }
 int PyEval_SaveThread(...) { return 0; }
 int PyFloat_AsDouble(...) { return 0; }
 int PyFloat_FromDouble(...) { return 0; }
-int PyFloat_Type(...) { return 0; }
 int PyGen_Check(...) { return 0; }
-int PyGen_Type(...) { return 0; }
 int PyGILState_Ensure(...) { return 0; }
 int PyGILState_Release(...) { return 0; }
 int PyImport_GetModuleDict(...) { return 0; }
@@ -295,14 +293,12 @@ int PyInt_AsLong(...) { return 0; }
 int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
 int PyInt_FromSize_t(...) { return 0; }
-int PyInt_Type(...) { return 0; }
 int PyIter_Next(...) { return 0; }
 int PyList_Append(...) { return 0; }
 int PyList_AsTuple(...) { return 0; }
 int PyList_GetItem(...) { return 0; }
 int PyList_New(...) { return 0; }
 int PyList_SetItem(...) { return 0; }
-int PyList_Type(...) { return 0; }
 int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
 int PyLong_AsSsize_t(...) { return 0; }
@@ -313,7 +309,6 @@ int PyLong_FromLongLong(...) { return 0; }
 int PyLong_FromSize_t(...) { return 0; }
 int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
-int PyLong_Type(...) { return 0; }
 int PyMapping_GetItemString(...) { return 0; }
 int PyMem_Free(...) { return 0; }
 int PyMemoryView_FromObject(...) { return 0; }
@@ -351,9 +346,9 @@ int PyObject_Malloc(...) { return 0; }
 int PyObject_Repr(...) { return 0; }
 int PyObject_RichCompareBool(...) { return 0; }
 int PyObject_SelfIter(...) { return 0; }
+int PyObject_SetAttr(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
-int PyObject_Type(...) { return 0; }
 int PySeqIter_New(...) { return 0; }
 int PySequence_Check(...) { return 0; }
 int PySequence_Fast(...) { return 0; }
@@ -367,8 +362,6 @@ int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
 int PyString_InternFromString(...) { return 0; }
 int PyString_InternInPlace(...) { return 0; }
-int PyString_Size(...) { return 0; }
-int PyString_Type(...) { return 0; }
 int PySys_GetObject(...) { return 0; }
 int PyThreadState_Clear(...) { return 0; }
 int PyThreadState_Delete(...) { return 0; }
@@ -410,7 +403,6 @@ int PyUnicode_FromWideChar(...) { return 0; }
 int PyUnicode_GetSize(...) { return 0; }
 int PyUnicode_InternFromString(...) { return 0; }
 int PyUnicode_InternInPlace(...) { return 0; }
-int PyUnicode_Type(...) { return 0; }
 int Py_GetVersion(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
@@ -468,8 +460,17 @@ void *PyExc_StopIteration = nullptr;
 void *PyExc_SystemExit = nullptr;
 void *PyExc_TypeError = nullptr;
 void *PyExc_ValueError = nullptr;
+void *PyDict_Type = nullptr;
+void *PyFloat_Type = nullptr;
+void *PyGen_Type = nullptr;
+void *PyInt_Type = nullptr;
+void *PyList_Type = nullptr;
+void *PyLong_Type = nullptr;
+void *PyObject_Type = nullptr;
+void *PyString_Type = nullptr;
 void *PyTuple_Type = nullptr;
 void *PyType_Type = nullptr;
+void *PyUnicode_Type = nullptr;
 void *_PyThreadState_Current = nullptr;
 void *_Py_FalseStruct = nullptr;
 void *_Py_NoneStruct = nullptr;

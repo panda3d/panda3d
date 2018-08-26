@@ -258,8 +258,10 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
 /**
  * Wrapper around Python 3.4's enum library, which does not have a C API.
  */
-EXPCL_INTERROGATEDB PyObject *Dtool_EnumType_Create(const char *name, PyObject *names,
-                                                    const char *module = nullptr);
+EXPCL_INTERROGATEDB PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names,
+                                                        const char *module = nullptr);
+EXPCL_INTERROGATEDB INLINE long Dtool_EnumValue_AsLong(PyObject *value);
+
 
 /**
 

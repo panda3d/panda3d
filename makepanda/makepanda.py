@@ -1352,6 +1352,9 @@ def CompileCxx(obj,src,opts):
             # Fast math is nice, but we'd like to see NaN in dev builds.
             cmd += " -fno-finite-math-only"
 
+        # Make sure this is off to avoid GCC/Eigen bug (see GitHub #228)
+        cmd += " -fno-unsafe-math-optimizations"
+
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
@@ -5219,7 +5222,7 @@ if (PkgSkip("DIRECT")==0):
 #
 
 if (PkgSkip("DIRECT")==0):
-  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
+  OPTS=['DIR:direct/src/dcparser', 'BUILDING:DIRECT_DCPARSER', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])

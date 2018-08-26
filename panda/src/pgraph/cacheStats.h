@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPH CacheStats {
 public:
-  constexpr CacheStats() = default;
+  CacheStats() = default;
   void init();
   void reset(double now);
   void write(std::ostream &out, const char *name) const;

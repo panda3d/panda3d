@@ -77,7 +77,7 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
 #ifdef _WIN32
   _use_generic_attr = !gsg->get_supports_hlsl();
 #else
-  _use_generic_attr = false;
+  _use_generic_attr = true;
 #endif
 
   // Do we want to use the ARB_shadow extension?  This also allows us to use
@@ -252,8 +252,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   // Store the material flags (not the material values itself).
   const MaterialAttrib *material;
   rs->get_attrib_def(material);
-  if (material->get_material() != nullptr) {
-    key._material_flags = material->get_material()->get_flags();
+  Material *mat = material->get_material();
+  if (mat != nullptr) {
+    // The next time the Material flags change, the Material should cause the
+    // states to be rehashed.
+    mat->mark_used_by_auto_shader();
+    key._material_flags = mat->get_flags();
   }
 
   // Break out the lights by type.
@@ -731,6 +735,19 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     }
   }
 
+  bool need_color = false;
+  if (key._color_type != ColorAttrib::T_off) {
+    if (key._lighting) {
+      if (((key._material_flags & Material::F_ambient) == 0 && key._have_separate_ambient) ||
+          (key._material_flags & Material::F_diffuse) == 0 ||
+          key._calc_primary_alpha) {
+        need_color = true;
+      }
+    } else {
+      need_color = true;
+    }
+  }
+
   text << "void vshader(\n";
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
@@ -794,7 +811,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
     text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t in float4 vtx_color : " << color_vreg << ",\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
@@ -915,7 +932,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     string tcname = it->first->join("_");
     text << "\t l_" << tcname << " = vtx_" << tcname << ";\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t l_color = vtx_color;\n";
   }
   if (key._texture_flags & ShaderKey::TF_map_normal) {
@@ -1015,10 +1032,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "\t out float4 o_color : COLOR0,\n";
 
-  if (key._color_type == ColorAttrib::T_vertex) {
-    text << "\t in float4 l_color : COLOR0,\n";
-  } else if (key._color_type == ColorAttrib::T_flat) {
-    text << "\t uniform float4 attr_color,\n";
+  if (need_color) {
+    if (key._color_type == ColorAttrib::T_vertex) {
+      text << "\t in float4 l_color : COLOR0,\n";
+    } else if (key._color_type == ColorAttrib::T_flat) {
+      text << "\t uniform float4 attr_color,\n";
+    }
   }
 
   for (int i = 0; i < key._num_clip_planes; ++i) {

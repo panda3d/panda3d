@@ -446,7 +446,7 @@ fetch_buffer() {
         << " at frame " << _current_frame << ", returning NULL\n";
     }
   }
-  return frame.p();
+  return frame;
 }
 
 /**
@@ -455,7 +455,7 @@ fetch_buffer() {
 PT(MovieVideoCursor::Buffer) FfmpegVideoCursor::
 make_new_buffer() {
   PT(FfmpegBuffer) frame = new FfmpegBuffer(size_x() * size_y() * get_num_components(), _video_timebase);
-  return frame.p();
+  return frame;
 }
 
 /**

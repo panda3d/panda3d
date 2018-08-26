@@ -168,7 +168,7 @@ make_virtual_file(const Filename &local_filename,
     new VirtualFileHTTP(this, local_filename, implicit_pz_file, open_flags);
   vfile->set_original_filename(original_filename);
 
-  return vfile.p();
+  return vfile;
 }
 
 /**

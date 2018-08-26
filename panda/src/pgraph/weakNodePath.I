@@ -124,7 +124,7 @@ node() const {
  */
 INLINE bool WeakNodePath::
 operator == (const NodePath &other) const {
-  return _head == other._head;
+  return _head.get_orig() == other._head && !_head.was_deleted();
 }
 
 /**
@@ -132,7 +132,7 @@ operator == (const NodePath &other) const {
  */
 INLINE bool WeakNodePath::
 operator != (const NodePath &other) const {
-  return _head != other._head;
+  return !operator == (other);
 }
 
 /**
@@ -143,7 +143,7 @@ operator != (const NodePath &other) const {
  */
 INLINE bool WeakNodePath::
 operator < (const NodePath &other) const {
-  return _head < other._head;
+  return _head.owner_before(other._head);
 }
 
 /**
@@ -158,8 +158,8 @@ operator < (const NodePath &other) const {
  */
 INLINE int WeakNodePath::
 compare_to(const NodePath &other) const {
-  if (_head != other._head) {
-    return _head < other._head ? -1 : 1;
+  if (operator != (other)) {
+    return _head.owner_before(other._head) ? -1 : 1;
   }
   return 0;
 }
@@ -170,7 +170,7 @@ compare_to(const NodePath &other) const {
  */
 INLINE bool WeakNodePath::
 operator == (const WeakNodePath &other) const {
-  return _head == other._head;
+  return !_head.owner_before(other._head) && !other._head.owner_before(_head);
 }
 
 /**
@@ -178,7 +178,7 @@ operator == (const WeakNodePath &other) const {
  */
 INLINE bool WeakNodePath::
 operator != (const WeakNodePath &other) const {
-  return _head != other._head;
+  return _head.owner_before(other._head) || other._head.owner_before(_head);
 }
 
 /**
@@ -189,7 +189,7 @@ operator != (const WeakNodePath &other) const {
  */
 INLINE bool WeakNodePath::
 operator < (const WeakNodePath &other) const {
-  return _head < other._head;
+  return _head.owner_before(other._head);
 }
 
 /**
@@ -204,10 +204,7 @@ operator < (const WeakNodePath &other) const {
  */
 INLINE int WeakNodePath::
 compare_to(const WeakNodePath &other) const {
-  if (_head != other._head) {
-    return _head < other._head ? -1 : 1;
-  }
-  return 0;
+  return other._head.owner_before(_head) - _head.owner_before(other._head);
 }
 
 /**

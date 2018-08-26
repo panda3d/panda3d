@@ -26,7 +26,7 @@ class DCSwitchParameter;
  * requested from a particular field; its ownership is retained by the field
  * so it must not be deleted.
  */
-class DCPackerCatalog {
+class EXPCL_DIRECT_DCPARSER DCPackerCatalog {
 private:
   DCPackerCatalog(const DCPackerInterface *root);
   DCPackerCatalog(const DCPackerCatalog &copy);

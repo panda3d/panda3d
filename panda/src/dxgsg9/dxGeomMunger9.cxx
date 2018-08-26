@@ -300,8 +300,11 @@ compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::compare_to_impl(other);
@@ -321,8 +324,11 @@ geom_compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::geom_compare_to_impl(other);

@@ -25,8 +25,8 @@ class PyDatagram(Datagram):
         STUint64: (Datagram.addUint64, int),
         STFloat64: (Datagram.addFloat64, None),
         STString: (Datagram.addString, None),
-        STBlob: (Datagram.addString, None),
-        STBlob32: (Datagram.addString32, None),
+        STBlob: (Datagram.addBlob, None),
+        STBlob32: (Datagram.addBlob32, None),
         }
 
     #def addChannel(self, channelId):

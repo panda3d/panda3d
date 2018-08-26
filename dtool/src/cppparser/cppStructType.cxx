@@ -545,6 +545,13 @@ is_copy_constructible(CPPVisibility min_vis) const {
     return true;
   }
 
+  if (get_move_constructor() != nullptr ||
+      get_move_assignment_operator() != nullptr) {
+    // A user-declared move constructor or move assignment operator means that
+    // the implicitly-declared copy constructor is deleted.
+    return false;
+  }
+
   CPPInstance *destructor = get_destructor();
   if (destructor != nullptr) {
     if (destructor->_vis > min_vis) {

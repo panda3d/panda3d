@@ -82,7 +82,7 @@ PandaFramework::
  * control parameters.
  */
 void PandaFramework::
-open_framework(int &argc, char **&argv) {
+open_framework() {
   if (_is_open) {
     return;
   }
@@ -160,6 +160,14 @@ open_framework(int &argc, char **&argv) {
   }
 
   _event_handler.add_hook("window-event", event_window_event, this);
+}
+
+/**
+ * @deprecated See the version of open_framework() without arguments.
+ */
+void PandaFramework::
+open_framework(int &argc, char **&argv) {
+  open_framework();
 }
 
 /**
