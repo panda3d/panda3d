@@ -26,7 +26,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PHYSICS)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PHYSICS)
   #error Buildsystem error: BUILDING_PANDA_PHYSICS not defined
 #endif
 

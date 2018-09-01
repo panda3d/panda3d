@@ -15,7 +15,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PSTATCLIENT)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PSTATCLIENT)
   #error Buildsystem error: BUILDING_PANDA_PSTATCLIENT not defined
 #endif
 

@@ -19,7 +19,7 @@
 #include "pandaSystem.h"
 
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DOWNLOADER)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DOWNLOADER)
   #error Buildsystem error: BUILDING_PANDA_DOWNLOADER not defined
 #endif
 

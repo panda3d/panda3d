@@ -26,7 +26,7 @@ extern "C" {
   #include "libavutil/avutil.h"
 }
 
-#if !defined(CPPPARSER) && !defined(BUILDING_FFMPEG)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_FFMPEG)
   #error Buildsystem error: BUILDING_FFMPEG not defined
 #endif
 

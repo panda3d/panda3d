@@ -20,7 +20,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_WGLDISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_WGLDISPLAY)
   #error Buildsystem error: BUILDING_PANDA_WGLDISPLAY not defined
 #endif
 

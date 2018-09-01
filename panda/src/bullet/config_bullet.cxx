@@ -56,7 +56,7 @@ extern ContactDestroyedCallback gContactDestroyedCallback;
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDABULLET)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDABULLET)
   #error Buildsystem error: BUILDING_PANDABULLET not defined
 #endif
 

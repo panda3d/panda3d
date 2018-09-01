@@ -19,7 +19,7 @@ BEGIN_PUBLISH
 #include "tinyxml.h"
 END_PUBLISH
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DXML)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DXML)
   #error Buildsystem error: BUILDING_PANDA_DXML not defined
 #endif
 

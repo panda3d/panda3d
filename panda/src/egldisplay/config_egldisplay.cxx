@@ -19,7 +19,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGLES) && !defined(BUILDING_PANDAGLES2)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES) && !defined(BUILDING_PANDAGLES2)
   #error Buildsystem error: BUILDING_PANDAGLES(2) not defined
 #endif
 

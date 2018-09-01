@@ -16,7 +16,7 @@
 #include "filename.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DTOOL_DTOOLUTIL)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_DTOOLUTIL)
   #error Buildsystem error: BUILDING_DTOOL_DCTOOLUTIL not defined
 #endif
 

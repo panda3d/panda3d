@@ -14,7 +14,7 @@
 #include "config_distributed.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_DISTRIBUTED)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_DISTRIBUTED)
   #error Buildsystem error: BUILDING_DIRECT_DISTRIBUTED not defined
 #endif
 
