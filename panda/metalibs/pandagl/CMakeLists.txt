@@ -28,5 +28,5 @@ if(HAVE_GL)
   add_metalib(pandagl ${MODULE_TYPE} pandagl.cxx COMPONENTS ${PANDAGL_LINK_TARGETS})
   set_target_properties(pandagl PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
 
-  install(TARGETS pandagl DESTINATION lib)
+  install(TARGETS pandagl DESTINATION ${MODULE_DESTINATION})
 endif()

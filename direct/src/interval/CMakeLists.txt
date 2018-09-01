@@ -41,5 +41,7 @@ add_component_library(p3interval SYMBOL BUILDING_DIRECT_INTERVAL
 target_link_libraries(p3interval p3directbase panda)
 target_interrogate(p3interval ALL)
 
-install(TARGETS p3interval DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3interval DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3INTERVAL_HEADERS} DESTINATION include/panda3d)

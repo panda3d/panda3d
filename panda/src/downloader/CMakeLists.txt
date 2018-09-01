@@ -73,5 +73,7 @@ add_component_library(p3downloader SYMBOL BUILDING_PANDA_DOWNLOADER
 target_link_libraries(p3downloader p3express)
 target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
 
-install(TARGETS p3downloader DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3downloader DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DOWNLOADER_HEADERS} DESTINATION include/panda3d)

@@ -50,5 +50,7 @@ add_component_library(p3pgraphnodes SYMBOL BUILDING_PANDA_PGRAPHNODES
 target_link_libraries(p3pgraphnodes p3pgraph)
 target_interrogate(p3pgraphnodes ALL)
 
-install(TARGETS p3pgraphnodes DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3pgraphnodes DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PGRAPHNODES_HEADERS} DESTINATION include/panda3d)

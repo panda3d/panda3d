@@ -36,4 +36,6 @@ add_component_library(p3pnmimagetypes SYMBOL BUILDING_PANDA_PNMIMAGETYPES
 target_link_libraries(p3pnmimagetypes p3pnmimage)
 target_use_packages(p3pnmimagetypes JPEG TIFF PNG)
 
-install(TARGETS p3pnmimagetypes DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3pnmimagetypes DESTINATION lib RUNTIME DESTINATION bin)
+endif()

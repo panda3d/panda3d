@@ -50,7 +50,9 @@ target_link_libraries(p3linmath p3pandabase pandaexpress)
 target_use_packages(p3linmath EIGEN)
 target_interrogate(p3linmath ALL)
 
-install(TARGETS p3linmath DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3linmath DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3LINMATH_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target

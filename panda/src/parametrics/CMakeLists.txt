@@ -39,7 +39,9 @@ add_component_library(p3parametrics NOINIT SYMBOL BUILDING_PANDA_PARAMETRICS
 target_link_libraries(p3parametrics p3pgraph)
 target_interrogate(p3parametrics ALL)
 
-install(TARGETS p3parametrics DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3parametrics DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PARAMETRICS_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target

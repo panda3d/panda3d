@@ -11,5 +11,7 @@ add_component_library(p3deadrec SYMBOL BUILDING_DIRECT_DEADREC
 target_link_libraries(p3deadrec p3directbase panda)
 target_interrogate(p3deadrec ALL)
 
-install(TARGETS p3deadrec DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3deadrec DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DEADREC_HEADERS} DESTINATION include/panda3d)

@@ -43,5 +43,7 @@ add_component_library(p3particlesystem SYMBOL BUILDING_PANDA_PARTICLESYSTEM
 target_link_libraries(p3particlesystem p3physics panda)
 target_interrogate(p3particlesystem ALL)
 
-install(TARGETS p3particlesystem DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3particlesystem DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PARTICLESYSTEM_HEADERS} DESTINATION include/panda3d)

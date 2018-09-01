@@ -58,5 +58,7 @@ add_component_library(p3chan NOINIT SYMBOL BUILDING_PANDA_CHAN
 target_link_libraries(p3chan p3pgraph)
 target_interrogate(p3chan ALL)
 
-install(TARGETS p3chan DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3chan DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3CHAN_HEADERS} DESTINATION include/panda3d)

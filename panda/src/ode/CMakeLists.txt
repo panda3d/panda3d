@@ -91,5 +91,5 @@ target_link_libraries(p3ode panda)
 target_use_packages(p3ode ODE)
 target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} EXTENSIONS ${P3ODE_IGATEEXT})
 
-install(TARGETS p3ode DESTINATION lib)
+install(TARGETS p3ode DESTINATION lib RUNTIME DESTINATION bin)
 install(FILES ${P3ODE_HEADERS} DESTINATION include/panda3d)

@@ -24,7 +24,7 @@ add_metalib(p3direct INIT init_libdirect direct.h COMPONENTS ${P3DIRECT_COMPONEN
 set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
 
 # Installation:
-install(TARGETS p3direct DESTINATION lib)
+install(TARGETS p3direct DESTINATION lib RUNTIME DESTINATION bin)
 
 if(HAVE_PYTHON)
   # Now for the Python side of everything

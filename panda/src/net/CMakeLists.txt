@@ -38,5 +38,7 @@ if(WIN32)
   target_link_libraries(p3net Iphlpapi.lib)
 endif()
 
-install(TARGETS p3net DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3net DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3NET_HEADERS} DESTINATION include/panda3d)

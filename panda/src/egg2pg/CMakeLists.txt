@@ -38,5 +38,7 @@ add_component_library(p3egg2pg SYMBOL BUILDING_PANDA_EGG2PG
 target_link_libraries(p3egg2pg panda p3egg)
 target_interrogate(p3egg2pg ALL)
 
-install(TARGETS p3egg2pg DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3egg2pg DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3EGG2PG_HEADERS} DESTINATION include/panda3d)

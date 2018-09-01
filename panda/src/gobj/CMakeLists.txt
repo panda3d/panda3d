@@ -174,7 +174,9 @@ target_link_libraries(p3gobj p3gsgbase p3pnmimage)
 target_use_packages(p3gobj ZLIB SQUISH CG)
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
-install(TARGETS p3gobj DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3gobj DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3GOBJ_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target

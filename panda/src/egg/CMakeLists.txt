@@ -107,5 +107,7 @@ add_component_library(p3egg SYMBOL BUILDING_PANDA_EGG
 target_link_libraries(p3egg panda)
 target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} EXTENSIONS ${P3EGG_IGATEEXT})
 
-install(TARGETS p3egg DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3egg DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3EGG_HEADERS} DESTINATION include/panda3d)

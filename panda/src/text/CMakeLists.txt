@@ -42,5 +42,7 @@ if(HAVE_FREETYPE)
 endif()
 target_interrogate(p3text ALL)
 
-install(TARGETS p3text DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3text DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3TEXT_HEADERS} DESTINATION include/panda3d)

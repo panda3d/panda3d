@@ -39,7 +39,9 @@ add_component_library(p3interrogatedb NOINIT SYMBOL BUILDING_INTERROGATEDB
 target_link_libraries(p3interrogatedb p3dconfig)
 target_use_packages(p3interrogatedb PYTHON)
 
-install(TARGETS p3interrogatedb DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3interrogatedb DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3INTERROGATEDB_HEADERS} DESTINATION include/panda3d)
 
 # ALSO: This has an Interrogate binding! Take care of that if we want it.

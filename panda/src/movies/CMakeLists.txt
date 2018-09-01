@@ -47,5 +47,7 @@ add_component_library(p3movies SYMBOL BUILDING_PANDA_MOVIES
 target_link_libraries(p3movies p3pstatclient p3gobj p3pandabase pandaexpress)
 target_interrogate(p3movies ALL)
 
-install(TARGETS p3movies DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3movies DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3MOVIES_HEADERS} DESTINATION include/panda3d)

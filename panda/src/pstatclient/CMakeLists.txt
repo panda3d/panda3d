@@ -26,6 +26,8 @@ add_component_library(p3pstatclient SYMBOL BUILDING_PANDA_PSTATCLIENT
 target_link_libraries(p3pstatclient p3net p3putil pandaexpress)
 target_interrogate(p3pstatclient ALL)
 
-install(TARGETS p3pstatclient DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3pstatclient DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PSTATCLIENT_HEADERS} DESTINATION include/panda3d)
 install(FILES config_pstats.h DESTINATION include/panda3d)

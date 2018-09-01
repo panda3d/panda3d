@@ -53,5 +53,7 @@ target_link_libraries(p3dcparser p3directbase panda)
 target_use_packages(p3dcparser PYTHON)
 target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES})
 
-install(TARGETS p3dcparser DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3dcparser DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DCPARSER_HEADERS} DESTINATION include/panda3d)

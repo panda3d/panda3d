@@ -16,7 +16,9 @@ add_component_library(p3gsgbase NOINIT SYMBOL BUILDING_PANDA_GSGBASE
 target_link_libraries(p3gsgbase p3putil p3linmath)
 target_interrogate(p3gsgbase ALL)
 
-install(TARGETS p3gsgbase DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3gsgbase DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3GSGBASE_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target

@@ -92,7 +92,9 @@ add_component_library(p3display SYMBOL BUILDING_PANDA_DISPLAY
 target_link_libraries(p3display p3cull p3pgraphnodes)
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
-install(TARGETS p3display DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3display DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DISPLAY_HEADERS} DESTINATION include/panda3d)
 
 if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)

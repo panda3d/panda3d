@@ -41,5 +41,7 @@ add_component_library(p3physics SYMBOL BUILDING_PANDA_PHYSICS
 target_link_libraries(p3physics panda)
 target_interrogate(p3physics ALL)
 
-install(TARGETS p3physics DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3physics DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PHYSICS_HEADERS} DESTINATION include/panda3d)

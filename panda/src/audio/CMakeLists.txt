@@ -26,5 +26,7 @@ add_component_library(p3audio NOINIT SYMBOL BUILDING_PANDA_AUDIO
 target_link_libraries(p3audio p3putil p3event p3movies p3linmath)
 target_interrogate(p3audio ALL)
 
-install(TARGETS p3audio DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3audio DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3AUDIO_HEADERS} DESTINATION include/panda3d)

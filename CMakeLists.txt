@@ -32,6 +32,7 @@ set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(MODULE_DESTINATION "lib")
 
 # Runtime code assumes that dynamic modules have a "lib" prefix; Windows
 # assumes that debug libraries have a _d suffix.
@@ -41,6 +42,9 @@ if(WIN32)
 
   # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  if(BUILD_SHARED_LIBS)
+    set(MODULE_DESTINATION "bin")
+  endif()
 endif()
 
 # Set warning levels

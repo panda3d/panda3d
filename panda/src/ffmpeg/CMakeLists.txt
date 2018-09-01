@@ -25,5 +25,5 @@ set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
 target_link_libraries(p3ffmpeg panda)
 target_use_packages(p3ffmpeg FFMPEG SWSCALE SWRESAMPLE)
 
-install(TARGETS p3ffmpeg DESTINATION lib)
+install(TARGETS p3ffmpeg DESTINATION lib RUNTIME DESTINATION bin)
 install(FILES ${P3FFMPEG_HEADERS} DESTINATION include/panda3d)

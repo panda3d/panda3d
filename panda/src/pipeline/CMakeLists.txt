@@ -133,7 +133,9 @@ add_component_library(p3pipeline SYMBOL BUILDING_PANDA_PIPELINE
 target_link_libraries(p3pipeline pandaexpress)
 target_interrogate(p3pipeline ALL EXTENSIONS ${P3PIPELINE_IGATEEXT})
 
-install(TARGETS p3pipeline DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3pipeline DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PIPELINE_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target

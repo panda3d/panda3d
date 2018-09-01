@@ -93,5 +93,7 @@ target_include_directories(p3dtoolbase PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_use_packages(p3dtoolbase THREADS EIGEN)
 target_interrogate(p3dtoolbase ${P3DTOOLBASE_SOURCES} EXTENSIONS ${P3DTOOLBASE_IGATEEXT})
 
-install(TARGETS p3dtoolbase DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3dtoolbase DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DTOOLBASE_HEADERS} DESTINATION include/panda3d)

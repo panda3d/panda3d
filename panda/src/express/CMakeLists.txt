@@ -157,7 +157,9 @@ if(WIN32)
   target_link_libraries(p3express advapi32.lib ws2_32.lib)
 endif()
 
-install(TARGETS p3express DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3express DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3EXPRESS_HEADERS} DESTINATION include/panda3d)
 
 #add_executable(p3expressTestTypes test_types.cxx)

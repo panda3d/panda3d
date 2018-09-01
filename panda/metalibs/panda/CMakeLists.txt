@@ -13,4 +13,4 @@ endif()
 
 add_metalib(panda INIT init_libpanda panda.h COMPONENTS ${PANDA_LINK_TARGETS})
 
-install(TARGETS panda DESTINATION lib)
+install(TARGETS panda DESTINATION lib RUNTIME DESTINATION bin)

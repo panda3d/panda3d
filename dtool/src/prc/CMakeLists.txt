@@ -80,5 +80,7 @@ target_link_libraries(p3prc p3dtool)
 target_use_packages(p3prc OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
-install(TARGETS p3prc DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3prc DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PRC_HEADERS} DESTINATION include/panda3d)

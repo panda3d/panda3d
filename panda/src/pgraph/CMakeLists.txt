@@ -223,7 +223,9 @@ add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
 target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath pandaexpress)
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 
-install(TARGETS p3pgraph DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3pgraph DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3PGRAPH_HEADERS} DESTINATION include/panda3d)
 
 

@@ -27,7 +27,7 @@ if(HAVE_RAD_MSS)
   target_link_libraries(p3miles_audio panda)
   target_use_packages(p3miles_audio MILES)
 
-  install(TARGETS p3miles_audio DESTINATION lib)
+  install(TARGETS p3miles_audio DESTINATION lib RUNTIME DESTINATION bin)
 endif()
 
 if(HAVE_FMODEX)
@@ -46,7 +46,7 @@ if(HAVE_FMODEX)
   target_link_libraries(p3fmod_audio panda)
   target_use_packages(p3fmod_audio FMODEX)
 
-  install(TARGETS p3fmod_audio DESTINATION lib)
+  install(TARGETS p3fmod_audio DESTINATION lib RUNTIME DESTINATION bin)
 endif()
 
 if(HAVE_OPENAL)
@@ -66,5 +66,5 @@ if(HAVE_OPENAL)
   target_link_libraries(p3openal_audio panda)
   target_use_packages(p3openal_audio OPENAL)
 
-  install(TARGETS p3openal_audio DESTINATION lib)
+  install(TARGETS p3openal_audio DESTINATION lib RUNTIME DESTINATION bin)
 endif()

@@ -21,5 +21,7 @@ target_link_libraries(p3distributed p3directbase p3dcparser panda)
 target_use_packages(p3distributed PYTHON)
 target_interrogate(p3distributed ALL)
 
-install(TARGETS p3distributed DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3distributed DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3DISTRIBUTED_HEADERS} DESTINATION include/panda3d)

@@ -67,7 +67,9 @@ target_link_libraries(p3mathutil p3event)
 target_use_packages(p3mathutil FFTW)
 target_interrogate(p3mathutil ALL)
 
-install(TARGETS p3mathutil DESTINATION lib)
+if(NOT BUILD_METALIBS)
+  install(TARGETS p3mathutil DESTINATION lib RUNTIME DESTINATION bin)
+endif()
 install(FILES ${P3MATHUTIL_HEADERS} DESTINATION include/panda3d)
 
 #begin test_bin_target
