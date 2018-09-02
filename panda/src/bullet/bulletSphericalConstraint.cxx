@@ -12,7 +12,9 @@
  */
 
 #include "bulletSphericalConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletSphericalConstraint::_type_handle;
 

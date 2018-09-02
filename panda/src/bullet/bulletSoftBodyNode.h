@@ -29,6 +29,7 @@
 #include "nurbsSurfaceEvaluator.h"
 #include "pta_LVecBase3.h"
 
+class BulletRigidBodyNode;
 class BulletSoftBodyConfig;
 class BulletSoftBodyControl;
 class BulletSoftBodyMaterial;

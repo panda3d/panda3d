@@ -12,7 +12,9 @@
  */
 
 #include "bulletPersistentManifold.h"
+
 #include "bulletManifoldPoint.h"
+#include "bulletWorld.h"
 
 /**
  *

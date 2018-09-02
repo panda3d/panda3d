@@ -13,6 +13,10 @@
 
 #include "bulletHeightfieldShape.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 TypeHandle BulletHeightfieldShape::_type_handle;
 
 /**

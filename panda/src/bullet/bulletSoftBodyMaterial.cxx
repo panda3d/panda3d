@@ -13,6 +13,8 @@
 
 #include "bulletSoftBodyMaterial.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */

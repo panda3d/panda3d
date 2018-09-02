@@ -13,7 +13,10 @@
 
 #include "bulletTriangleMesh.h"
 
+#include "bulletWorld.h"
+
 #include "pvector.h"
+#include "geomTriangles.h"
 #include "geomVertexData.h"
 #include "geomVertexReader.h"
 
