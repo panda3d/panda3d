@@ -643,6 +643,7 @@ void AsyncTaskManager::
 make_global_ptr() {
   nassertv(_global_ptr == nullptr);
 
+  init_memory_hook();
   _global_ptr = new AsyncTaskManager("TaskManager");
   _global_ptr->ref();
 }

@@ -106,5 +106,6 @@ dequeue_event() {
  */
 void EventQueue::
 make_global_event_queue() {
+  init_memory_hook();
   _global_event_queue = new EventQueue;
 }
