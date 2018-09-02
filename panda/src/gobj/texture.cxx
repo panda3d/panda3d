@@ -5678,6 +5678,21 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
       break;
     }
 
+  case T_half_float:
+    for (int i = 0; i < num_components; ++i) {
+      union {
+        uint32_t ui;
+        float uf;
+      } v;
+      v.uf = clear_value[i];
+      uint16_t sign = ((v.ui & 0x80000000u) >> 16u);
+      uint32_t mantissa = (v.ui & 0x007fffffu);
+      uint16_t exponent = (uint16_t)std::min(std::max((int)((v.ui & 0x7f800000u) >> 23u) - 112, 0), 31);
+      mantissa += (mantissa & 0x00001000u) << 1u;
+      ((uint16_t *)into)[i] = (uint16_t)(sign | ((exponent << 10u) | (mantissa >> 13u)));
+    }
+    break;
+
   case T_unsigned_int:
     // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
     // normalization here, either.
