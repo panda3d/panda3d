@@ -106,8 +106,8 @@ def test_texture_store_srgb_alpha():
 
 
 def test_texture_clear_unsigned_byte():
-    col = peek_tex_with_clear_color(Texture.T_float, Texture.F_rgba, (0, 1 / 255.0, 254 / 255.0, 255.0))
-    assert col == LColor(0, 1 / 255.0, 254 / 255.0, 255.0)
+    col = peek_tex_with_clear_color(Texture.T_unsigned_byte, Texture.F_rgba, (0, 1 / 255.0, 254 / 255.0, 1.0))
+    assert col == LColor(0, 1 / 255.0, 254 / 255.0, 1.0)
 
 
 def test_texture_clear_float():
