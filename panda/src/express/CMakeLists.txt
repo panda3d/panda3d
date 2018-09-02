@@ -121,6 +121,7 @@ set(P3EXPRESS_SOURCES
 # Some of these reside in dtoolbase/dtoolutil. But dtool isn't run through
 # Interrogate; Panda is. So we're responsible for providing the extensions.
 set(P3EXPRESS_IGATEEXT
+  datagram_ext.h
   ../../../dtool/src/dtoolutil/filename_ext.cxx
   ../../../dtool/src/dtoolutil/filename_ext.h
   ../../../dtool/src/dtoolutil/globPattern_ext.cxx
