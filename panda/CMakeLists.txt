@@ -68,6 +68,8 @@ add_subdirectory(src/testbed)
 # physics
 add_subdirectory(src/physics)
 add_subdirectory(src/particlesystem)
+# bullet
+add_subdirectory(src/bullet)
 # ode
 add_subdirectory(src/ode)
 
@@ -95,6 +97,10 @@ endif()
 
 if(HAVE_PYTHON)
   add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
+
+  if(HAVE_BULLET)
+    add_python_module(bullet p3bullet IMPORT panda3d.core)
+  endif()
 
   if(HAVE_EGG)
     add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core)
