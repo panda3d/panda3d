@@ -5594,180 +5594,99 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
 size_t Texture::
 do_get_clear_data(const CData *cdata, unsigned char *into) const {
   nassertr(cdata->_has_clear_color, 0);
-  nassertr(cdata->_num_components <= 4, 0);
+
+  int num_components = cdata->_num_components;
+  nassertr(num_components > 0, 0);
+  nassertr(num_components <= 4, 0);
+
+  LVecBase4 clear_value = cdata->_clear_color;
+
+  // Swap red and blue components.
+  if (num_components >= 3) {
+    std::swap(clear_value[0], clear_value[2]);
+  }
 
   switch (cdata->_component_type) {
   case T_unsigned_byte:
     if (is_srgb(cdata->_format)) {
       xel color;
       xelval alpha;
-      encode_sRGB_uchar(cdata->_clear_color, color, alpha);
-      switch (cdata->_num_components) {
-      case 2:
-        into[1] = (unsigned char)color.g;
-      case 1:
-        into[0] = (unsigned char)color.r;
-        break;
-      case 4:
-        into[3] = (unsigned char)alpha;
-      case 3: // BGR <-> RGB
-        into[0] = (unsigned char)color.b;
-        into[1] = (unsigned char)color.g;
-        into[2] = (unsigned char)color.r;
-        break;
+      encode_sRGB_uchar(clear_value, color, alpha);
+      switch (num_components) {
+      case 4: into[3] = (unsigned char)alpha;
+      case 3: into[2] = (unsigned char)color.b;
+      case 2: into[1] = (unsigned char)color.g;
+      case 1: into[0] = (unsigned char)color.r;
       }
-      break;
     } else {
-      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
+      LColor scaled = clear_value.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 255;
-      switch (cdata->_num_components) {
-      case 2:
-        into[1] = (unsigned char)scaled[1];
-      case 1:
-        into[0] = (unsigned char)scaled[0];
-        break;
-      case 4:
-        into[3] = (unsigned char)scaled[3];
-      case 3: // BGR <-> RGB
-        into[0] = (unsigned char)scaled[2];
-        into[1] = (unsigned char)scaled[1];
-        into[2] = (unsigned char)scaled[0];
-        break;
+      for (int i = 0; i < num_components; ++i) {
+        into[i] = (unsigned char)scaled[i];
       }
-      break;
     }
+    break;
 
   case T_unsigned_short:
     {
-      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor::zero());
+      LColor scaled = clear_value.fmin(LColor(1)).fmax(LColor::zero());
       scaled *= 65535;
-      switch (cdata->_num_components) {
-      case 2:
-        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
-      case 1:
-        ((unsigned short *)into)[0] = (unsigned short)scaled[0];
-        break;
-      case 4:
-        ((unsigned short *)into)[3] = (unsigned short)scaled[3];
-      case 3: // BGR <-> RGB
-        ((unsigned short *)into)[0] = (unsigned short)scaled[2];
-        ((unsigned short *)into)[1] = (unsigned short)scaled[1];
-        ((unsigned short *)into)[2] = (unsigned short)scaled[0];
-        break;
+      for (int i = 0; i < num_components; ++i) {
+        ((unsigned short *)into)[i] = (unsigned short)scaled[i];
       }
       break;
     }
 
   case T_float:
-    switch (cdata->_num_components) {
-    case 2:
-      ((float *)into)[1] = cdata->_clear_color[1];
-    case 1:
-      ((float *)into)[0] = cdata->_clear_color[0];
-      break;
-    case 4:
-      ((float *)into)[3] = cdata->_clear_color[3];
-    case 3: // BGR <-> RGB
-      ((float *)into)[0] = cdata->_clear_color[2];
-      ((float *)into)[1] = cdata->_clear_color[1];
-      ((float *)into)[2] = cdata->_clear_color[0];
-      break;
+    for (int i = 0; i < num_components; ++i) {
+      ((float *)into)[i] = clear_value[i];
     }
     break;
 
   case T_unsigned_int_24_8:
-    nassertr(cdata->_num_components == 1, 0);
+    nassertr(num_components == 1, 0);
     *((unsigned int *)into) =
-      ((unsigned int)(cdata->_clear_color[0] * 16777215) << 8) +
-       (unsigned int)max(min(cdata->_clear_color[1], (PN_stdfloat)255), (PN_stdfloat)0);
+      ((unsigned int)(clear_value[0] * 16777215) << 8) +
+       (unsigned int)max(min(clear_value[1], (PN_stdfloat)255), (PN_stdfloat)0);
     break;
 
   case T_int:
-    {
-      // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
-      // normalization here, either.
-      switch (cdata->_num_components) {
-      case 2:
-        ((int *)into)[1] = (int)cdata->_clear_color[1];
-      case 1:
-        ((int *)into)[0] = (int)cdata->_clear_color[0];
-        break;
-      case 4:
-        ((int *)into)[3] = (int)cdata->_clear_color[3];
-      case 3: // BGR <-> RGB
-        ((int *)into)[0] = (int)cdata->_clear_color[2];
-        ((int *)into)[1] = (int)cdata->_clear_color[1];
-        ((int *)into)[2] = (int)cdata->_clear_color[0];
-        break;
-      }
-      break;
+    // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
+    // normalization here, either.
+    for (int i = 0; i < num_components; ++i) {
+      ((int *)into)[i] = (int)clear_value[i];
     }
+    break;
 
   case T_byte:
     {
-      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      LColor scaled = clear_value.fmin(LColor(1)).fmax(LColor(-1));
       scaled *= 127;
-      switch (cdata->_num_components) {
-      case 2:
-        into[1] = (char)scaled[1];
-      case 1:
-        into[0] = (char)scaled[0];
-        break;
-      case 4:
-        into[3] = (char)scaled[3];
-      case 3: // BGR <-> RGB
-        into[0] = (char)scaled[2];
-        into[1] = (char)scaled[1];
-        into[2] = (char)scaled[0];
-        break;
+      for (int i = 0; i < num_components; ++i) {
+        ((signed char *)into)[i] = (signed char)scaled[i];
       }
       break;
     }
 
   case T_short:
     {
-      LColor scaled = cdata->_clear_color.fmin(LColor(1)).fmax(LColor(-1));
+      LColor scaled = clear_value.fmin(LColor(1)).fmax(LColor(-1));
       scaled *= 32767;
-      switch (cdata->_num_components) {
-      case 2:
-        ((short *)into)[1] = (short)scaled[1];
-      case 1:
-        ((short *)into)[0] = (short)scaled[0];
-        break;
-      case 4:
-        ((short *)into)[3] = (short)scaled[3];
-      case 3: // BGR <-> RGB
-        ((short *)into)[0] = (short)scaled[2];
-        ((short *)into)[1] = (short)scaled[1];
-        ((short *)into)[2] = (short)scaled[0];
-        break;
+      for (int i = 0; i < num_components; ++i) {
+        ((short *)into)[i] = (short)scaled[i];
       }
       break;
     }
 
   case T_unsigned_int:
-    {
-      // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
-      // normalization here, either.
-      switch (cdata->_num_components) {
-      case 2:
-        ((unsigned int *)into)[1] = (unsigned int)cdata->_clear_color[1];
-      case 1:
-        ((unsigned int *)into)[0] = (unsigned int)cdata->_clear_color[0];
-        break;
-      case 4:
-        ((unsigned int *)into)[3] = (unsigned int)cdata->_clear_color[3];
-      case 3: // BGR <-> RGB
-        ((unsigned int *)into)[0] = (unsigned int)cdata->_clear_color[2];
-        ((unsigned int *)into)[1] = (unsigned int)cdata->_clear_color[1];
-        ((unsigned int *)into)[2] = (unsigned int)cdata->_clear_color[0];
-        break;
-      }
-      break;
+    // Note: there are no 32-bit UNORM textures.  Therefore, we don't do any
+    // normalization here, either.
+    for (int i = 0; i < num_components; ++i) {
+      ((unsigned int *)into)[i] = (unsigned int)clear_value[i];
     }
   }
 
-  return cdata->_num_components * cdata->_component_width;
+  return num_components * cdata->_component_width;
 }
 
 /**
