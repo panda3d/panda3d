@@ -24,15 +24,6 @@ BulletSoftBodyMaterial(btSoftBody::Material &material) : _material(material) {
 }
 
 /**
- *
- */
-btSoftBody::Material &BulletSoftBodyMaterial::
-get_material() const {
-
-  return _material;
-}
-
-/**
  * Getter for the property m_kLST.
  */
 PN_stdfloat BulletSoftBodyMaterial::
