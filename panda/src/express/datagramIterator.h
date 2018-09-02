@@ -61,6 +61,9 @@ PUBLISHED:
   std::string get_fixed_string(size_t size);
   std::wstring get_wstring();
 
+  INLINE vector_uchar get_blob();
+  INLINE vector_uchar get_blob32();
+
   INLINE void skip_bytes(size_t size);
   vector_uchar extract_bytes(size_t size);
   size_t extract_bytes(unsigned char *into, size_t size);

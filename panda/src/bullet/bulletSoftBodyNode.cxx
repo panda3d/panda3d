@@ -12,12 +12,14 @@
  */
 
 #include "bulletSoftBodyNode.h"
+
 #include "bulletSoftBodyConfig.h"
 #include "bulletSoftBodyControl.h"
 #include "bulletSoftBodyMaterial.h"
 #include "bulletSoftBodyShape.h"
 #include "bulletSoftBodyWorldInfo.h"
 #include "bulletHelper.h"
+#include "bulletWorld.h"
 
 #include "geomVertexRewriter.h"
 #include "geomVertexReader.h"

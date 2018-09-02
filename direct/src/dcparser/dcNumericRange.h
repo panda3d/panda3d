@@ -32,20 +32,20 @@ public:
   INLINE DCNumericRange(const DCNumericRange &copy);
   INLINE void operator = (const DCNumericRange &copy);
 
-  bool is_in_range(Number num) const;
+  INLINE bool is_in_range(Number num) const;
   INLINE void validate(Number num, bool &range_error) const;
 
   INLINE bool has_one_value() const;
   INLINE Number get_one_value() const;
 
-  void generate_hash(HashGenerator &hashgen) const;
+  INLINE void generate_hash(HashGenerator &hashgen) const;
 
-  void output(std::ostream &out, Number divisor = 1) const;
-  void output_char(std::ostream &out, Number divisor = 1) const;
+  INLINE void output(std::ostream &out, Number divisor = 1) const;
+  INLINE void output_char(std::ostream &out, Number divisor = 1) const;
 
 public:
   INLINE void clear();
-  bool add_range(Number min, Number max);
+  INLINE bool add_range(Number min, Number max);
 
   INLINE bool is_empty() const;
   INLINE int get_num_ranges() const;

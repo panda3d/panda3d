@@ -37,7 +37,7 @@ PUBLISHED:
   enum { num_bits = nbits };
 
   constexpr BitMask() = default;
-  constexpr BitMask(WordType init_value);
+  ALWAYS_INLINE constexpr BitMask(WordType init_value);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();

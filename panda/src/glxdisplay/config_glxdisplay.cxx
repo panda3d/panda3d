@@ -23,7 +23,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_GLXDISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_GLXDISPLAY)
   #error Buildsystem error: BUILDING_PANDA_GLXDISPLAY not defined
 #endif
 

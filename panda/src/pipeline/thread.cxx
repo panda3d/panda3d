@@ -211,6 +211,7 @@ init_main_thread() {
   static int count = 0;
   ++count;
   if (count == 1 && _main_thread == nullptr) {
+    init_memory_hook();
     _main_thread = new MainThread;
     _main_thread->ref();
   }
@@ -222,6 +223,7 @@ init_main_thread() {
 void Thread::
 init_external_thread() {
   if (_external_thread == nullptr) {
+    init_memory_hook();
     _external_thread = new ExternalThread;
     _external_thread->ref();
   }

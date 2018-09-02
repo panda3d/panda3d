@@ -21,7 +21,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDASPEEDTREE)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDASPEEDTREE)
   #error Buildsystem error: BUILDING_PANDASPEEDTREE not defined
 #endif
 

@@ -558,7 +558,7 @@ remove_doubled_verts(bool closed) {
  */
 void EggPrimitive::
 remove_nonunique_verts() {
-  Vertices::iterator vi, vj;
+  Vertices::iterator vi;
   Vertices new_vertices;
   int num_removed = 0;
 

@@ -13,7 +13,7 @@
 
 #include "config_dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DTOOL_DCONFIG)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_DCONFIG)
   #error Buildsystem error: BUILDING_DTOOL_DCONFIG not defined
 #endif
 

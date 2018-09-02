@@ -14,7 +14,7 @@
 #include "config_motiontrail.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_MOTIONTRAIL)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_MOTIONTRAIL)
   #error Buildsystem error: BUILDING_DIRECT_MOTIONTRAIL not defined
 #endif
 

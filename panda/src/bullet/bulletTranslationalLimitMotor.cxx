@@ -13,6 +13,8 @@
 
 #include "bulletTranslationalLimitMotor.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */

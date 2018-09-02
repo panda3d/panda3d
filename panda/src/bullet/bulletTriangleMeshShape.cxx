@@ -12,7 +12,11 @@
  */
 
 #include "bulletTriangleMeshShape.h"
+
+#include "config_bullet.h"
+
 #include "bulletTriangleMesh.h"
+#include "bulletWorld.h"
 
 #include "nodePathCollection.h"
 #include "geomNode.h"

@@ -13,6 +13,10 @@
 
 #include "bulletCharacterControllerNode.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 #if BT_BULLET_VERSION >= 285
 static const btVector3 up_vectors[3] = {btVector3(1.0f, 0.0f, 0.0f), btVector3(0.0f, 1.0f, 0.0f), btVector3(0.0f, 0.0f, 1.0f)};
 #endif

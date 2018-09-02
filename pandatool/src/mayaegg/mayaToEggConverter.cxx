@@ -2742,7 +2742,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
           // shader on the list is the base one, which should always pick up
           // the alpha from the texture file.  But the top textures may have
           // to strip the alpha
-          if (i!=shader._color.size()-1) {
+          if ((size_t)i != shader._color.size() - 1) {
             if (!i && is_interpolate) {
               // this is the grass path mode where alpha on this texture
               // determines whether to show layer1 or layer2. Since by now
@@ -2846,7 +2846,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         _textures.create_unique_texture(tex, ~0);
 
       if (mesh) {
-        if (uvset_name.find("not found") == -1) {
+        if (uvset_name.find("not found") == string::npos) {
           primitive.add_texture(new_tex);
           color_def->_uvset_name.assign(uvset_name.c_str());
           if (uvset_name != "map1") {

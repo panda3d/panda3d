@@ -789,8 +789,6 @@ InterfaceMakerPythonNative::
  */
 void InterfaceMakerPythonNative::
 write_prototypes(ostream &out_code, ostream *out_h) {
-  Functions::iterator fi;
-
   if (out_h != nullptr) {
     *out_h << "#include \"py_panda.h\"\n\n";
   }
@@ -917,7 +915,6 @@ write_prototypes_class_external(ostream &out, Object *obj) {
 void InterfaceMakerPythonNative::
 write_prototypes_class(ostream &out_code, ostream *out_h, Object *obj) {
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
-  Functions::iterator fi;
 
   out_code << "/**\n";
   out_code << " * Forward declarations for top-level class " << ClassName << "\n";
@@ -1086,6 +1083,27 @@ write_class_details(ostream &out, Object *obj) {
         out << "  if (requested_type == Dtool_Ptr_" << make_safe_name(di->second._to_class_name) << ") {\n";
         out << "    return " << di->second._up_cast_string << " local_this;\n";
         out << "  }\n";
+      }
+    }
+
+    // Are there any implicit cast operators that can cast this object to our
+    // desired pointer?
+    for (Function *func : obj->_methods) {
+      for (FunctionRemap *remap : func->_remaps) {
+        if (remap->_type == FunctionRemap::T_typecast_method &&
+            is_remap_legal(remap) &&
+            !remap->_return_type->return_value_needs_management() &&
+            (remap->_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0 &&
+            TypeManager::is_pointer(remap->_return_type->get_new_type())) {
+
+          CPPType *cast_type = remap->_return_type->get_orig_type();
+          CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(remap->_return_type->get_new_type()));
+          string return_expr = "(" + cast_type->get_local_name(&parser) + ")*local_this";
+          out << "  // " << *remap->_cppfunc << "\n";
+          out << "  if (requested_type == Dtool_Ptr_" << make_safe_name(obj_type->get_local_name(&parser)) << ") {\n";
+          out << "    return (void *)(" << remap->_return_type->get_return_expr(return_expr) << ");\n";
+          out << "  }\n";
+        }
       }
     }
 
@@ -3301,7 +3319,7 @@ write_prototype_for(ostream &out, InterfaceMaker::Function *func) {
  */
 void InterfaceMakerPythonNative::
 write_prototype_for_name(ostream &out, InterfaceMaker::Function *func, const std::string &function_namename) {
-  Function::Remaps::const_iterator ri;
+// Function::Remaps::const_iterator ri;
 
 // for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
 // FunctionRemap *remap = (*ri);

@@ -115,7 +115,6 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    GeomList::iterator gi;
     PT(GeomList) geoms = cdata->modify_geoms();
 
     // Iterate based on the number of geoms, not using STL iterators.  This
