@@ -489,7 +489,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) OpenALAudioManager::
-get_sound(const string &file_name, bool positional, int mode) {
+get_sound(const Filename &file_name, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
@@ -525,7 +525,7 @@ get_sound(const string &file_name, bool positional, int mode) {
  * use, then the sound cannot be deleted, and this function has no effect.
  */
 void OpenALAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const Filename &file_name) {
   ReMutexHolder holder(_lock);
   nassertv(is_valid());
   Filename path = file_name;

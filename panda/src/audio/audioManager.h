@@ -86,7 +86,7 @@ PUBLISHED:
   virtual bool is_valid() = 0;
 
   // Get a sound:
-  virtual PT(AudioSound) get_sound(const std::string& file_name, bool positional = false, int mode=SM_heuristic) = 0;
+  virtual PT(AudioSound) get_sound(const Filename &file_name, bool positional = false, int mode=SM_heuristic) = 0;
   virtual PT(AudioSound) get_sound(MovieAudio *source, bool positional = false, int mode=SM_heuristic) = 0;
 
   PT(AudioSound) get_null_sound();
@@ -95,7 +95,7 @@ PUBLISHED:
   // doesn't break any connection between AudioSounds that have already given
   // by get_sound() from this manager.  It's only affecting whether the
   // AudioManager keeps a copy of the sound in its poolcache.
-  virtual void uncache_sound(const std::string& file_name) = 0;
+  virtual void uncache_sound(const Filename &file_name) = 0;
   virtual void clear_cache() = 0;
   virtual void set_cache_limit(unsigned int count) = 0;
   virtual unsigned int get_cache_limit() const = 0;

@@ -122,7 +122,7 @@ is_valid() {
  *
  */
 PT(AudioSound) MilesAudioManager::
-get_sound(const string &file_name, bool, int) {
+get_sound(const Filename &file_name, bool, int) {
   LightReMutexHolder holder(_lock);
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
@@ -218,7 +218,7 @@ get_sound(MovieAudio *sound, bool, int) {
  *
  */
 void MilesAudioManager::
-uncache_sound(const string &file_name) {
+uncache_sound(const Filename &file_name) {
   audio_debug("MilesAudioManager::uncache_sound(file_name=\""
       <<file_name<<"\")");
   LightReMutexHolder holder(_lock);
