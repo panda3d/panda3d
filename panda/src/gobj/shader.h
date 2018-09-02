@@ -53,6 +53,7 @@ PUBLISHED:
     SL_Cg,
     SL_GLSL,
     SL_HLSL,
+    SL_SPIR_V,
   };
 
   enum ShaderType {
