@@ -147,8 +147,8 @@ void PGItem::
 transform_changed() {
   LightReMutexHolder holder(_lock);
   PandaNode::transform_changed();
-  if (has_notify()) {
-    get_notify()->item_transform_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_transform_changed(this);
   }
 }
 
@@ -161,8 +161,8 @@ void PGItem::
 draw_mask_changed() {
   LightReMutexHolder holder(_lock);
   PandaNode::draw_mask_changed();
-  if (has_notify()) {
-    get_notify()->item_draw_mask_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_draw_mask_changed(this);
   }
 }
 
@@ -530,8 +530,8 @@ enter_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_enter(this, param);
+  if (_notify != nullptr) {
+    _notify->item_enter(this, param);
   }
 }
 
@@ -554,8 +554,8 @@ exit_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_exit(this, param);
+  if (_notify != nullptr) {
+    _notify->item_exit(this, param);
   }
 
   // pgui_cat.info() << get_name() << "::exit()" << endl;
@@ -580,8 +580,8 @@ within_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_within(this, param);
+  if (_notify != nullptr) {
+    _notify->item_within(this, param);
   }
 }
 
@@ -602,8 +602,8 @@ without_region(const MouseWatcherParameter &param) {
   play_sound(event);
   throw_event(event, EventParameter(ep));
 
-  if (has_notify()) {
-    get_notify()->item_without(this, param);
+  if (_notify != nullptr) {
+    _notify->item_without(this, param);
   }
 }
 
@@ -623,8 +623,8 @@ focus_in() {
   play_sound(event);
   throw_event(event);
 
-  if (has_notify()) {
-    get_notify()->item_focus_in(this);
+  if (_notify != nullptr) {
+    _notify->item_focus_in(this);
   }
 }
 
@@ -644,8 +644,8 @@ focus_out() {
   play_sound(event);
   throw_event(event);
 
-  if (has_notify()) {
-    get_notify()->item_focus_out(this);
+  if (_notify != nullptr) {
+    _notify->item_focus_out(this);
   }
 }
 
@@ -673,8 +673,8 @@ press(const MouseWatcherParameter &param, bool background) {
     throw_event(event, EventParameter(ep));
   }
 
-  if (has_notify()) {
-    get_notify()->item_press(this, param);
+  if (_notify != nullptr) {
+    _notify->item_press(this, param);
   }
 }
 
@@ -697,8 +697,8 @@ release(const MouseWatcherParameter &param, bool background) {
     throw_event(event, EventParameter(ep));
   }
 
-  if (has_notify()) {
-    get_notify()->item_release(this, param);
+  if (_notify != nullptr) {
+    _notify->item_release(this, param);
   }
 }
 
@@ -757,8 +757,8 @@ move(const MouseWatcherParameter &param) {
       << *this << "::move(" << param << ")\n";
   }
 
-  if (has_notify()) {
-    get_notify()->item_move(this, param);
+  if (_notify != nullptr) {
+    _notify->item_move(this, param);
   }
 }
 
@@ -1169,9 +1169,10 @@ mouse_to_local(const LPoint2 &mouse_point) const {
  */
 void PGItem::
 frame_changed() {
+  LightReMutexHolder holder(_lock);
   mark_frames_stale();
-  if (has_notify()) {
-    get_notify()->item_frame_changed(this);
+  if (_notify != nullptr) {
+    _notify->item_frame_changed(this);
   }
 }
 
