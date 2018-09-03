@@ -58,12 +58,16 @@ before_script:
 - cd built
 
 script:
+# This is kind of a hack, but needed to test non-metalib builds (until
+# interrogate has a way of explicitly calling init_libpanda)
+- '[ "x$BUILD_METALIBS" == "xON" ] || export LDFLAGS=-Wl,--no-as-needed'
+
 - cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT .. 
 - make -j4
 
 - export PYTHONPATH=$PWD
 - python ../test_imports.py
-- pytest ../tests
+- pytest -v ../tests
 
 notifications:
   irc:
