@@ -33,7 +33,11 @@ ReMutexDirect()
 INLINE void ReMutexDirect::
 lock() {
   TAU_PROFILE("void ReMutexDirect::acquire()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
   _impl.lock();
+#else
+  ((ReMutexDirect *)this)->do_lock();
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
@@ -43,7 +47,11 @@ lock() {
 INLINE bool ReMutexDirect::
 try_lock() {
   TAU_PROFILE("void ReMutexDirect::try_acquire()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
   return _impl.try_lock();
+#else
+  return ((ReMutexDirect *)this)->do_try_lock();
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
@@ -53,7 +61,11 @@ try_lock() {
 INLINE void ReMutexDirect::
 unlock() {
   TAU_PROFILE("void ReMutexDirect::unlock()", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
   _impl.unlock();
+#else
+  ((ReMutexDirect *)this)->do_unlock();
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 /**
