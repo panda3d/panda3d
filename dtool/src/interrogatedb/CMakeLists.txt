@@ -67,16 +67,6 @@ add_custom_command(
   COMMENT "Interrogating interrogatedb"
 )
 
-add_library(interrogatedb ${MODULE_TYPE}
+add_python_target(panda3d.interrogatedb
   "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx")
-set_target_properties(interrogatedb PROPERTIES SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
-target_use_packages(interrogatedb PYTHON)
-target_link_libraries(interrogatedb p3dtoolconfig)
-
-set_target_properties(interrogatedb PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-  PREFIX ""
-  OUTPUT_NAME "interrogatedb"
-)
-
-install(TARGETS interrogatedb DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+target_link_libraries(panda3d.interrogatedb p3dtoolconfig)

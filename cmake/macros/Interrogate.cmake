@@ -6,6 +6,7 @@
 # Functions:
 #   target_interrogate(target [ALL] [source1 [source2 ...]])
 #   add_python_module(module [lib1 [lib2 ...]])
+#   add_python_target(target [source1 [source2 ...]])
 #
 
 set(IGATE_FLAGS -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable)
@@ -289,21 +290,41 @@ function(add_python_module module)
     COMMENT "Generating module ${module}"
   )
 
-  add_library(${module} ${MODULE_TYPE} "${module}_module.cxx" ${sources})
-  target_link_libraries(${module}
-    ${link_targets} ${PYTHON_LIBRARIES} p3dtool)
-
-  set_target_properties(${module} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-    PREFIX ""
-  )
-  set_target_properties(${module} PROPERTIES SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
-
-  install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+  add_python_target(panda3d.${module} "${module}_module.cxx" ${sources})
+  target_link_libraries(panda3d.${module}
+    ${link_targets} p3dtool)
 
   list(APPEND ALL_INTERROGATE_MODULES "${module}")
   set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
 endfunction(add_python_module)
+
+#
+# Function: add_python_target(target [source1 [source2 ...]])
+# Build the provided source(s) as a Python extension module, linked against the
+# Python runtime library.
+#
+# Note that this also takes care of installation, unlike other target creation
+# commands in CMake.
+#
+function(add_python_target target)
+  if(NOT HAVE_PYTHON)
+    return()
+  endif()
+
+  string(REGEX REPLACE "^.*\\." "" basename "${target}")
+  set(sources ${ARGN})
+
+  add_library(${target} ${MODULE_TYPE} ${sources})
+  target_use_packages(${target} PYTHON)
+
+  set_target_properties(${target} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
+    OUTPUT_NAME "${basename}"
+    PREFIX ""
+    SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
+
+  install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+endfunction(add_python_target)
 
 
 if(HAVE_PYTHON)
