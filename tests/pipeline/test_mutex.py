@@ -6,7 +6,7 @@ def test_mutex_acquire_release():
     m.acquire()
 
     # Assert that the lock is truly held now
-    assert not m.try_acquire()
+    assert m.debug_is_locked()
 
     # Release the lock
     m.release()
@@ -25,7 +25,7 @@ def test_mutex_try_acquire():
     assert m.try_acquire()
 
     # Assert that the lock is truly held now
-    assert not m.try_acquire()
+    assert m.debug_is_locked()
 
     # Clean up
     m.release()
@@ -45,8 +45,14 @@ def test_remutex_try_acquire():
     # Trying to acquire the lock should succeed
     assert m.try_acquire()
 
+    # Should report being locked
+    assert m.debug_is_locked()
+
     # Trying a second time should succeed
     assert m.try_acquire()
+
+    # Should still report being locked
+    assert m.debug_is_locked()
 
     # Clean up
     m.release()
