@@ -317,17 +317,26 @@ function(add_python_target target)
   add_library(${target} ${MODULE_TYPE} ${sources})
   target_use_packages(${target} PYTHON)
 
-  set_target_properties(${target} PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-    OUTPUT_NAME "${basename}"
-    PREFIX ""
-    SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
+  if(BUILD_SHARED_LIBS)
+    set_target_properties(${target} PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
+      OUTPUT_NAME "${basename}"
+      PREFIX ""
+      SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 
-  install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+    install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+  else()
+    set_target_properties(${target} PROPERTIES
+      OUTPUT_NAME "${basename}"
+      PREFIX "libpython_panda3d_")
+
+    install(TARGETS ${target} DESTINATION lib)
+  endif()
+
 endfunction(add_python_target)
 
 
-if(HAVE_PYTHON)
+if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
   # We have to create an __init__.py so that Python 2.x can recognize 'panda3d'
   # as a package.
   file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" "")
