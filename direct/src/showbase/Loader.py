@@ -934,8 +934,8 @@ class Loader(DirectObject):
         just as in loadModel(); otherwise, the loading happens before
         loadSound() returns."""
 
-        if not isinstance(soundPath, (MovieAudio, tuple, list, set)):
-            # We were given a single sound pathname.
+        if not isinstance(soundPath, (tuple, list, set)):
+            # We were given a single sound pathname or a MovieAudio instance.
             soundList = [soundPath]
             gotList = False
         else:
