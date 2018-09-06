@@ -12,9 +12,17 @@
  */
 
 #include "bulletBodyNode.h"
+
+#include "config_bullet.h"
+
 #include "bulletShape.h"
-#include "bulletWorld.h"
+#include "bulletBoxShape.h"
+#include "bulletCapsuleShape.h"
+#include "bulletPlaneShape.h"
+#include "bulletSphereShape.h"
+#include "bulletTriangleMeshShape.h"
 #include "bulletTriangleMesh.h"
+#include "bulletWorld.h"
 
 #include "collisionBox.h"
 #include "collisionPlane.h"

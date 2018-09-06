@@ -17,7 +17,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PNMIMAGE)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PNMIMAGE)
   #error Buildsystem error: BUILDING_PANDA_PNMIMAGE not defined
 #endif
 

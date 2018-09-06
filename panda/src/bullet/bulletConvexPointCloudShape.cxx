@@ -13,6 +13,10 @@
 
 #include "bulletConvexPointCloudShape.h"
 
+#include "bulletWorld.h"
+
+#include "bullet_utils.h"
+
 #include "geomVertexReader.h"
 
 TypeHandle BulletConvexPointCloudShape::_type_handle;

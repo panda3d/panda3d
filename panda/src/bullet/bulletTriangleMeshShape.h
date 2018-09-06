@@ -19,6 +19,7 @@
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
+#include "factoryParams.h"
 #include "luse.h"
 
 class BulletTriangleMesh;

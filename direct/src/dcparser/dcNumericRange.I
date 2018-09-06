@@ -52,7 +52,7 @@ operator = (const DCNumericRange<NUM> &copy) {
  * otherwise.
  */
 template <class NUM>
-bool DCNumericRange<NUM>::
+INLINE bool DCNumericRange<NUM>::
 is_in_range(Number num) const {
   if (_ranges.empty()) {
     return true;
@@ -106,7 +106,7 @@ get_one_value() const {
  *
  */
 template <class NUM>
-void DCNumericRange<NUM>::
+INLINE void DCNumericRange<NUM>::
 generate_hash(HashGenerator &hashgen) const {
   if (!_ranges.empty()) {
     hashgen.add_int(_ranges.size());
@@ -124,7 +124,7 @@ generate_hash(HashGenerator &hashgen) const {
  *
  */
 template <class NUM>
-void DCNumericRange<NUM>::
+INLINE void DCNumericRange<NUM>::
 output(std::ostream &out, Number divisor) const {
   if (!_ranges.empty()) {
     typename Ranges::const_iterator ri;
@@ -144,7 +144,7 @@ output(std::ostream &out, Number divisor) const {
  * characters.
  */
 template <class NUM>
-void DCNumericRange<NUM>::
+INLINE void DCNumericRange<NUM>::
 output_char(std::ostream &out, Number divisor) const {
   if (divisor != 1) {
     output(out, divisor);
@@ -179,7 +179,7 @@ clear() {
  * minmax overlaps an existing minmax.
  */
 template <class NUM>
-bool DCNumericRange<NUM>::
+INLINE bool DCNumericRange<NUM>::
 add_range(Number min, Number max) {
   // Check for an overlap.  This is probably indicative of a typo and should
   // be reported.

@@ -37,7 +37,7 @@ FILTERKEYS g_StartupFilterKeys = {sizeof(FILTERKEYS), 0};
 using std::max;
 using std::min;
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_SHOWBASE)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_SHOWBASE)
   #error Buildsystem error: BUILDING_DIRECT_SHOWBASE not defined
 #endif
 

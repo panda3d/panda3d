@@ -12,7 +12,9 @@
  */
 
 #include "bulletConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletShape.h"
 
 TypeHandle BulletConstraint::_type_handle;
 

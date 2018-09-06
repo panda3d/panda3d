@@ -44,6 +44,8 @@ EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
 EXPCL_PANDABULLET btTransform TransformState_to_btTrans(
   CPT(TransformState) ts);
 
+EXPCL_PANDABULLET void get_node_transform(btTransform &trans, PandaNode *node);
+
 // UpAxis
 BEGIN_PUBLISH
 

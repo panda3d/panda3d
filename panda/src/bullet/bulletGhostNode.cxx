@@ -12,7 +12,9 @@
  */
 
 #include "bulletGhostNode.h"
+
 #include "bulletShape.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletGhostNode::_type_handle;
 

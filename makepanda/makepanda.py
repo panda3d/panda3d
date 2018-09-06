@@ -2271,6 +2271,7 @@ DTOOL_CONFIG=[
     ("OS_SIMPLE_THREADS",              '1',                      '1'),
     ("DEBUG_THREADS",                  'UNDEF',                  'UNDEF'),
     ("HAVE_POSIX_THREADS",             'UNDEF',                  '1'),
+    ("MUTEX_SPINLOCK",                 'UNDEF',                  'UNDEF'),
     ("HAVE_AUDIO",                     '1',                      '1'),
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
@@ -5219,7 +5220,7 @@ if (PkgSkip("DIRECT")==0):
 #
 
 if (PkgSkip("DIRECT")==0):
-  OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
+  OPTS=['DIR:direct/src/dcparser', 'BUILDING:DIRECT_DCPARSER', 'WITHINPANDA', 'BISONPREFIX_dcyy', 'PYTHON']
   CreateFile(GetOutputDir()+"/include/dcParser.h")
   TargetAdd('p3dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
   TargetAdd('dcParser.h', input='p3dcparser_dcParser.obj', opts=['DEPENDENCYONLY'])

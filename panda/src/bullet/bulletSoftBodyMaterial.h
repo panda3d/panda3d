@@ -18,6 +18,8 @@
 
 #include "bullet_includes.h"
 
+#include "numeric_types.h"
+
 /**
  *
  */

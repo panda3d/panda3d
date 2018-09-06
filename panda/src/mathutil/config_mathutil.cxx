@@ -26,7 +26,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_MATHUTIL)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_MATHUTIL)
   #error Buildsystem error: BUILDING_PANDA_MATHUTIL not defined
 #endif
 

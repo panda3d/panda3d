@@ -138,15 +138,6 @@ output(std::ostream &out) const {
 }
 
 /**
- * Returns a special zero-valued ButtonHandle that is used to indicate no
- * button.
- */
-INLINE ButtonHandle ButtonHandle::
-none() {
-  return _none;
-}
-
-/**
  * ButtonHandle::none() evaluates to false, everything else evaluates to true.
  */
 INLINE ButtonHandle::

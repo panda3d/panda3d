@@ -22,7 +22,7 @@
 #include "cullBinManager.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_CULL)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_CULL)
   #error Buildsystem error: BUILDING_PANDA_CULL not defined
 #endif
 

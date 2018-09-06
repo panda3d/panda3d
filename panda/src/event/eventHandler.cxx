@@ -351,6 +351,7 @@ remove_all_hooks() {
  */
 void EventHandler::
 make_global_event_handler() {
+  init_memory_hook();
   _global_event_handler = new EventHandler(EventQueue::get_global_event_queue());
 }
 

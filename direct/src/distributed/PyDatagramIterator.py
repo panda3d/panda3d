@@ -23,8 +23,8 @@ class PyDatagramIterator(DatagramIterator):
         STUint64: DatagramIterator.getUint64,
         STFloat64: DatagramIterator.getFloat64,
         STString: DatagramIterator.getString,
-        STBlob: DatagramIterator.getString,
-        STBlob32: DatagramIterator.getString32,
+        STBlob: DatagramIterator.getBlob,
+        STBlob32: DatagramIterator.getBlob32,
         }
 
     getChannel = DatagramIterator.getUint64

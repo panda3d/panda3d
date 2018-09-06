@@ -16,7 +16,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAGLES)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES)
   #error Buildsystem error: BUILDING_PANDAGLES not defined
 #endif
 

@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#include "bulletShape.h"
+
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
@@ -24,8 +26,6 @@
 #include "collisionNode.h"
 #include "transformState.h"
 #include "boundingSphere.h"
-
-class BulletShape;
 
 /**
  *

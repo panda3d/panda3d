@@ -27,7 +27,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDADX)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDADX)
   #error Buildsystem error: BUILDING_PANDADX not defined
 #endif
 
