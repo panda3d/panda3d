@@ -61,7 +61,9 @@ class DirectFrame(DirectGuiWidget):
     def destroy(self):
         DirectGuiWidget.destroy(self)
 
-    def setText(self):
+    def setText(self,text=None):
+        if text!=None and type(text)==str:
+            self["text"]=text
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
             textList = (None,) * self['numStates']
