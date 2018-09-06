@@ -148,16 +148,16 @@ function(package_option name)
   # Create the option.
   option("HAVE_${name}" "${cache_string}" "${default}")
   if(HAVE_${name})
-    set(_${name}_INCLUDES ${${found_as}_INCLUDE_DIRS} ${${found_as}_INCLUDE_DIR}
+    set(_PKG_${name}_INCLUDES ${${found_as}_INCLUDE_DIRS} ${${found_as}_INCLUDE_DIR}
       CACHE INTERNAL "<Internal>")
     if(${found_as}_LIBRARIES)
-      set(_${name}_LIBRARIES ${${found_as}_LIBRARIES} CACHE INTERNAL "<Internal>")
+      set(_PKG_${name}_LIBRARIES ${${found_as}_LIBRARIES} CACHE INTERNAL "<Internal>")
     else()
-      set(_${name}_LIBRARIES "${${found_as}_LIBRARY}" CACHE INTERNAL "<Internal>")
+      set(_PKG_${name}_LIBRARIES "${${found_as}_LIBRARY}" CACHE INTERNAL "<Internal>")
     endif()
   else()
-    unset(_${name}_INCLUDES CACHE)
-    unset(_${name}_LIBRARIES CACHE)
+    unset(_PKG_${name}_INCLUDES CACHE)
+    unset(_PKG_${name}_LIBRARIES CACHE)
   endif()
 endfunction()
 
@@ -231,13 +231,13 @@ macro(target_use_packages target)
 
   foreach(lib ${libs})
     if(HAVE_${lib})
-      target_link_libraries("${target}" ${_${lib}_LIBRARIES})
+      target_link_libraries("${target}" ${_PKG_${lib}_LIBRARIES})
 
       # This is gross, but we actually want to hide package include directories
       # from Interrogate to make sure it relies on parser-inc instead, so we'll
       # use some generator expressions to do that.
       target_include_directories("${target}" PUBLIC
-        $<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${_${lib}_INCLUDES}>)
+        $<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${_PKG_${lib}_INCLUDES}>)
     endif()
   endforeach(lib)
 endmacro(target_use_packages)
