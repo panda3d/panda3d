@@ -66,9 +66,6 @@ composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
 
 add_component_library(p3dtoolutil SYMBOL BUILDING_DTOOL_DTOOLUTIL
   ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
-# The extensions need py_panda.h and extension.h from interrogatedb
-target_include_directories(p3dtoolutil PUBLIC
-  $<TARGET_PROPERTY:p3interrogatedb,INTERFACE_INCLUDE_DIRECTORIES>)
 target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})
 target_interrogate(p3dtoolutil ALL EXTENSIONS ${P3DTOOLUTIL_IGATEEXT})
 

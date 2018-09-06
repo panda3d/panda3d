@@ -219,6 +219,7 @@ function(interrogate_sources target output database language_flags)
       ${language_flags}
       ${define_flags}
       -S "${PROJECT_BINARY_DIR}/include"
+      -S "${PROJECT_SOURCE_DIR}/dtool/src/interrogatedb"
       -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
       -S "${PYTHON_INCLUDE_DIRS}"
       ${include_flags}
@@ -291,8 +292,7 @@ function(add_python_module module)
   )
 
   add_python_target(panda3d.${module} "${module}_module.cxx" ${sources})
-  target_link_libraries(panda3d.${module}
-    ${link_targets} p3dtool)
+  target_link_libraries(panda3d.${module} ${link_targets} p3igateruntime)
 
   list(APPEND ALL_INTERROGATE_MODULES "${module}")
   set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")

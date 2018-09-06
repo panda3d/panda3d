@@ -87,7 +87,7 @@ composite_sources(p3ode P3ODE_SOURCES)
 add_library(p3ode ${P3ODE_SOURCES} ${P3ODE_HEADERS})
 set_target_properties(p3ode PROPERTIES DEFINE_SYMBOL BUILDING_PANDAODE)
 target_compile_definitions(p3ode PUBLIC dSINGLE)
-target_link_libraries(p3ode panda)
+target_link_libraries(p3ode p3igateruntime panda)
 target_use_packages(p3ode ODE)
 target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} EXTENSIONS ${P3ODE_IGATEEXT})
 
