@@ -164,6 +164,12 @@ function(interrogate_sources target output database language_flags)
     endif()
   endforeach(source)
 
+  # Also add extensions, in relative-path form
+  foreach(extension ${extensions})
+    file(RELATIVE_PATH rel_extension "${srcdir}" "${extension}")
+    list(APPEND scan_sources "${rel_extension}")
+  endforeach(extension)
+
   # Interrogate also needs the include paths, so we'll extract them from the
   # target. These are available via a generator expression.
 
@@ -224,7 +230,6 @@ function(interrogate_sources target output database language_flags)
       -S "${PYTHON_INCLUDE_DIRS}"
       ${include_flags}
       ${scan_sources}
-      ${extensions}
     DEPENDS host_interrogate ${sources} ${extensions} ${nfiles}
     COMMENT "Interrogating ${target}"
   )
