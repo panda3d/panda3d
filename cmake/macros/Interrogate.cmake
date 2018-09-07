@@ -29,7 +29,7 @@ set(INTERROGATE_EXCLUDE_REGEXES
   ".*_src\\..*")
 
 if(WIN32)
-  list(APPEND IGATE_FLAGS -longlong __int64 -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
+  list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
 endif()
 if(INTERROGATE_VERBOSE)
   list(APPEND IGATE_FLAGS "-v")
