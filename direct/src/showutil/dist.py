@@ -49,12 +49,17 @@ def _parse_dict(input):
 
 def egg2bam(_build_cmd, srcpath, dstpath):
     dstpath = dstpath + '.bam'
-    subprocess.call([
-        'egg2bam',
-        '-o',
-        dstpath,
-        srcpath
-    ])
+    try:
+        subprocess.check_call([
+            'egg2bam',
+            '-o',
+            dstpath,
+            srcpath
+        ])
+    except FileNotFoundError:
+        raise RuntimeError('egg2bam failed: egg2bam was not found in the PATH')
+    except subprocess.SubprocessError as err:
+        raise RuntimeError('egg2bam failed: {}'.format(err))
     return dstpath
 
 macosx_binary_magics = (
@@ -757,7 +762,10 @@ class build_apps(setuptools.Command):
             if ext in self.file_handlers:
                 buildscript = self.file_handlers[ext]
                 self.announce('running {} on src ({})'.format(buildscript.__name__, src))
-                dst = self.file_handlers[ext](self, src, dst)
+                try:
+                    dst = self.file_handlers[ext](self, src, dst)
+                except Exception as err:
+                    self.announce('{}'.format(err), distutils.log.ERROR)
             else:
                 self.announce('copying {0} -> {1}'.format(src, dst))
                 shutil.copyfile(src, dst)
