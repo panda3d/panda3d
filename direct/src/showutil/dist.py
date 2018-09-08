@@ -179,6 +179,9 @@ class build_apps(setuptools.Command):
         ('build-base=', None, 'directory to build applications in'),
         ('requirements-path=', None, 'path to requirements.txt file for pip'),
     ]
+    default_file_handlers = {
+        '.egg': egg2bam,
+    }
 
     def initialize_options(self):
         self.build_base = os.path.join(os.getcwd(), 'build')
@@ -200,9 +203,7 @@ class build_apps(setuptools.Command):
         self.log_append = False
         self.requirements_path = './requirements.txt'
         self.pypi_extra_indexes = []
-        self.file_handlers= {
-            '.egg': egg2bam,
-        }
+        self.file_handlers = {}
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -276,6 +277,10 @@ class build_apps(setuptools.Command):
 
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
+
+        tmp = self.default_file_handlers.copy()
+        tmp.update(self.file_handlers)
+        self.file_handlers = tmp
 
     def run(self):
         if not self.platforms:
