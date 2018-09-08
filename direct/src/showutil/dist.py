@@ -225,6 +225,7 @@ class build_apps(setuptools.Command):
             'libgl.so.1', 'libx11.so.6', 'libreadline.so.5', 'libncursesw.so.5',
             'libbz2.so.1', 'libz.so.1', 'liblzma.so.0', 'librt.so.1', 'libutil.so.1',
         ]
+        self.package_data_dirs = {}
 
         # We keep track of the zip files we've opened.
         self._zip_files = {}
@@ -286,6 +287,10 @@ class build_apps(setuptools.Command):
         tmp = self.default_file_handlers.copy()
         tmp.update(self.file_handlers)
         self.file_handlers = tmp
+
+        tmp = self.package_data_dirs.copy()
+        tmp.update(self.package_data_dirs)
+        self.package_data_dirs = tmp
 
     def run(self):
         if not self.platforms:
@@ -674,7 +679,7 @@ class build_apps(setuptools.Command):
                         shutil.copytree(sub_dir, target_dir)
 
         # Extract any other data files from dependency packages.
-        for module, datadesc in PACKAGE_DATA_DIRS.items():
+        for module, datadesc in self.package_data_dirs.items():
             if module not in freezer_modules:
                 continue
 
