@@ -254,14 +254,13 @@ call_function(ostream &out, int indent_level, bool convert_result,
                                                            &parser);
         out << " = " << call << ";\n";
 
-        // MOVE() expands to std::move() when we are compiling with a compiler
-        // that supports rvalue references.  It basically turns an lvalue into
+        // Use of the C++11 std::move function basically turns an lvalue into
         // an rvalue, allowing a move constructor to be called instead of a
         // copy constructor (since we won't be using the return value any
         // more), which is usually more efficient if it exists.  If it
         // doesn't, it shouldn't do any harm.
         string new_str =
-          _return_type->prepare_return_expr(out, indent_level, "MOVE(result)");
+          _return_type->prepare_return_expr(out, indent_level, "std::move(result)");
         return_expr = _return_type->get_return_expr(new_str);
 
       } else {
