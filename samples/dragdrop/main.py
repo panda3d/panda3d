@@ -24,39 +24,7 @@ from panda3d.core import *
 from direct.gui.DirectGui import *
 from direct.showbase import ShowBase
 
-class TargetColoredGrid:
-    def __init__(self, pos, offset, colors, rows_collums=(5, 1)):
 
-        # making sure the "targets" are shuffled, so they rely on
-        # the type system
-        col_l = ["white", "black", "light_red", "light_blue", "light_green"]
-
-        random.shuffle(col_l)
-
-        x, y = rows_collums
-        self.d = {}
-
-        x_i = 0
-        while x_i < x:
-            col_key = col_l[x_i]
-            col_i = colors[col_key]
-            y_i = 0
-            self.d[x_i] = {}
-            while y_i < y:
-
-                dd_type = None
-
-                pos_i = (pos[0] + offset[0] * x_i, pos[1] + offset[1] * y_i)
-
-                frame = construct_frame(
-                    pos_i,
-                    color=col_i,
-                    drag_drop_type=col_key)
-
-                self.d[x_i][y_i] = frame
-
-                y_i += 1
-            x_i += 1
 
 
 class Grid:
@@ -88,6 +56,35 @@ class Grid:
             x_i += 1
 
 
+class TargetColoredGrid(Grid):
+    def __init__(self, pos, offset, colors, rows_collums=(5, 1),shuffle=True):
+        
+        super(TargetColoredGrid,self).__init__(pos,offset,rows_collums)
+        
+        if not rows_collums[0] <= len(colors) :
+            raise ValueError("collumn items have to be equal or fewer than colors")
+        # making sure the "targets" are shuffled, so they rely on
+        # the type system
+        col_l = ["white", "black", "light_red", "light_blue", "light_green"]
+        
+        if shuffle:
+            random.shuffle(col_l)
+
+        #color setting
+        x, y = rows_collums
+        
+        x_i = 0
+        while x_i < x:
+            col_key = col_l[x_i]
+            col_i = colors[col_key]
+            y_i = 0
+            while y_i < y:
+                self.d[x_i][y_i].setColor(col_i)
+                self.d[x_i][y_i].drag_drop_type=col_key
+                y_i += 1
+            x_i += 1
+
+
 def construct_frame(pos, frame_kwargs={}, color=(
         1, 1, 1, 1.0), drag_drop_type=None):
 
@@ -96,7 +93,8 @@ def construct_frame(pos, frame_kwargs={}, color=(
         kwargs = {"frameColor": color,
                   "frameSize": _rec2d(50, 50),
                   "state": DGG.NORMAL,
-                  "parent": pixel2d}
+                  "parent": pixel2d,
+                  "sortOrder":0}
 
     kwargs["frameColor"] = color
 
@@ -145,22 +143,24 @@ def get_mid_point(ob):
 
     return mid_x, mid_y
 
+class demo_arg_cont:
+    colors = {"red": (0.8, 0.2, 0.2, 1.0), "light_red": (1, 0.5, 0.5, 1.0),
+              "green": (0.2, 0.8, 0.2, 1.0), "light_green": (0.5, 1, 0.5, 1.0),
+              "blue": (0.2, 0.2, 0.8, 1.0), "light_blue": (0.5, 0.5, 1, 1.0),
+              "white": (1, 1, 1, 1.0), "black": (0, 0, 0, 1.0)}
+    
+    color_l = ["red", "green", "blue"]
+
 
 class App:
     def __init__(self):
-
+        self.dac=demo_arg_cont()
         # for demonstration purposes:
         # get a few colors as "types"
 
         # red green blue white black
         # only provide red green blue cubes
-
-        colors = {"red": (0.8, 0.2, 0.2, 1.0), "light_red": (1, 0.5, 0.5, 1.0),
-                  "green": (0.2, 0.8, 0.2, 1.0), "light_green": (0.5, 1, 0.5, 1.0),
-                  "blue": (0.2, 0.2, 0.8, 1.0), "light_blue": (0.5, 0.5, 1, 1.0),
-                  "white": (1, 1, 1, 1.0), "black": (0, 0, 0, 1.0)}
-
-        color_l = ["red", "green", "blue"]
+        
 
         # add a title/instructions
         wp = WindowProperties.getDefault()
@@ -168,10 +168,11 @@ class App:
         WindowProperties.setDefault(wp)
         # init showvase
         base = ShowBase.ShowBase()
-
-        self.grid = TargetColoredGrid((32, 32), (64, 64), colors)
-
-        self.bind_grid_events(self.grid)
+        
+        
+        self.grid = TargetColoredGrid((32, 32), (64, 64), self.dac.colors)
+        
+        bind_grid_events(self.grid,self.hover_in,self.hover_out)
 
         # helper attributes
 
@@ -183,25 +184,27 @@ class App:
 
         # the grid containing the starting items
         self.default_grid = Grid((64, 300), (64, 64), (3, 1))
-        self.bind_grid_events(self.default_grid)
+        bind_grid_events(self.default_grid,self.hover_in,self.hover_out)
         self.drag_items = {}
 
         # make some squares to be drag/dropped
         x = 0
-        for col in color_l:
+        for col in self.dac.color_l:
             self.drag_items[x] = {}
-            rel_col = colors[col]
+            rel_col = self.dac.colors[col]
 
             frame = DirectFrame(frameColor=rel_col,
                                 frameSize=_rec2d(30, 30),
                                 state=DGG.NORMAL,
-                                parent=pixel2d)
+                                parent=pixel2d,
+                                sortOrder=1)
 
             # bind the events
             frame.bind(DGG.B1PRESS, self.drag, [frame])
             frame.bind(DGG.B1RELEASE, self.drop)
 
             frame.set_pos(_pos2d(32 + x * 128, 264))
+            print(frame.getPos())
             # the type in our case is just the color, but it can be
             # anything that you can compare
             frame.drag_drop_type = col
@@ -217,14 +220,6 @@ class App:
         # run a task tracking the mouse cursor
         taskMgr.add(self.update, "update", sort=-50)
 
-    def bind_grid_events(self, grid):
-
-        # bind the events
-        for key1 in grid.d:
-            for key2 in grid.d[key1]:
-                ob = grid.d[key1][key2]
-                ob.bind(DGG.WITHIN, self.hover_in, [ob])
-                ob.bind(DGG.WITHOUT, self.hover_out)
 
     def hover_in(self, widget, mouse_pos=None):
         '''Set the widget to be the target to drop objects onto'''
@@ -266,8 +261,8 @@ class App:
 
     def drop(self, mouse_pos=None):
         '''Drop the currently dragged object on the last object the cursor hovered over'''
+        print("drop")
         if self.current_dragged:
-
             if self.last_hover_in:
                 if self.last_hover_drag_drop_type is not None:
                     if self.current_dragged.drag_drop_type in self.last_hover_drag_drop_type:
@@ -275,31 +270,51 @@ class App:
                         # hovered over.
                         snap_target = self.last_hover_in
                         self.current_dragged.last_drag_drop_anchor = snap_target
+                        #print("cool")
                     else:
                         # in this case the frame the user hovers over is invalid.
                         # the last one gets picked as default target and is
                         # snapped to.
                         snap_target = self.current_last_drag_drop_anchor
-
+                        #print("meh")
                 else:
                     snap_target = self.current_last_drag_drop_anchor
-
-                snap(self.current_dragged, snap_target)
+                    print("this")
+            else:
+                snap_target=self.current_last_drag_drop_anchor
+               # print(snap_target)
+               # print(snap_target.getPos())
+            snap(self.current_dragged, snap_target)
 
             self.current_dragged = None
 
+def bind_grid_events(grid,hover_in,hover_out):
+    #print(grid.d)
+    # bind the events
+    for key1 in grid.d:
+        for key2 in grid.d[key1]:
+            ob = grid.d[key1][key2]
+            ob.bind(DGG.WITHIN , hover_in, [ob])
+            ob.bind(DGG.WITHOUT, hover_out)
+            print("bound")
 
 def snap(ob, target):
 
     # this is just some math for nice centering
     lock_pos = get_mid_point(target)
+    print("center",lock_pos)
     h, w = get_local_center(ob)
+    print("my center",h,w)
     lock_pos = lock_pos + LPoint3f(h, w)
     lock_pos = LVecBase3f(*lock_pos)
-
+    lock_pos[1]=25
+    print("lock pos",lock_pos)
+    print("previous",ob.getPos())
     # this does the actual snapping
     ob.setPos(lock_pos)
     ob.wrt_reparent_to(target)
+    print("drop point",lock_pos)
+    
 
 
 app = App()
