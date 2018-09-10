@@ -30,7 +30,8 @@ else:
 
 class DirectFrame(DirectGuiWidget):
     DefDynGroups = ('text', 'geom', 'image')
-    def __init__(self, parent = None, **kw):
+
+    def __init__(self, parent=None, **kw):
         # Inherits from DirectGuiWidget
         optiondefs = (
             # Define type of DirectGuiWidget
@@ -47,10 +48,10 @@ class DirectFrame(DirectGuiWidget):
             # Change default value of text mayChange flag from 0
             # (OnscreenText.py) to 1
             ('textMayChange',  1,          None),
-            )
+        )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs,
-                           dynamicGroups = DirectFrame.DefDynGroups)
+                           dynamicGroups=DirectFrame.DefDynGroups)
 
         # Initialize superclasses
         DirectGuiWidget.__init__(self, parent)
@@ -61,7 +62,9 @@ class DirectFrame(DirectGuiWidget):
     def destroy(self):
         DirectGuiWidget.destroy(self)
 
-    def setText(self):
+    def setText(self, text=None):
+        if text is not None:
+            self["text"] = text
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
             textList = (None,) * self['numStates']
@@ -95,10 +98,10 @@ class DirectFrame(DirectGuiWidget):
                     self.createcomponent(
                         component, (), 'text',
                         OnscreenText,
-                        (), parent = self.stateNodePath[i],
-                        text = text, scale = 1, mayChange = self['textMayChange'],
-                        sort = DGG.TEXT_SORT_INDEX,
-                        )
+                        (), parent=self.stateNodePath[i],
+                        text=text, scale=1, mayChange=self['textMayChange'],
+                        sort=DGG.TEXT_SORT_INDEX,
+                    )
 
     def setGeom(self):
         # Determine argument type
@@ -108,7 +111,7 @@ class DirectFrame(DirectGuiWidget):
             # Passed in None
             geomList = (None,) * self['numStates']
         elif isinstance(geom, NodePath) or \
-             isinstance(geom, stringType):
+                isinstance(geom, stringType):
             # Passed in a single node path, make a tuple out of it
             geomList = (geom,) * self['numStates']
         else:
@@ -138,9 +141,9 @@ class DirectFrame(DirectGuiWidget):
                     self.createcomponent(
                         component, (), 'geom',
                         OnscreenGeom,
-                        (), parent = self.stateNodePath[i],
-                        geom = geom, scale = 1,
-                        sort = DGG.GEOM_SORT_INDEX)
+                        (), parent=self.stateNodePath[i],
+                        geom=geom, scale=1,
+                        sort=DGG.GEOM_SORT_INDEX)
 
     def setImage(self):
         # Determine argument type
@@ -149,15 +152,15 @@ class DirectFrame(DirectGuiWidget):
             # Passed in None
             imageList = (None,) * self['numStates']
         elif isinstance(arg, NodePath) or \
-             isinstance(arg, Texture) or \
-             isinstance(arg, stringType):
+                isinstance(arg, Texture) or \
+                isinstance(arg, stringType):
             # Passed in a single node path, make a tuple out of it
             imageList = (arg,) * self['numStates']
         else:
             # Otherwise, hope that the user has passed in a tuple/list
             if ((len(arg) == 2) and
                 isinstance(arg[0], stringType) and
-                isinstance(arg[1], stringType)):
+                    isinstance(arg[1], stringType)):
                 # Its a model/node pair of strings
                 imageList = (arg,) * self['numStates']
             else:
@@ -186,6 +189,6 @@ class DirectFrame(DirectGuiWidget):
                     self.createcomponent(
                         component, (), 'image',
                         OnscreenImage,
-                        (), parent = self.stateNodePath[i],
-                        image = image, scale = 1,
-                        sort = DGG.IMAGE_SORT_INDEX)
+                        (), parent=self.stateNodePath[i],
+                        image=image, scale=1,
+                        sort=DGG.IMAGE_SORT_INDEX)
