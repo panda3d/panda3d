@@ -63,7 +63,7 @@ class DirectFrame(DirectGuiWidget):
         DirectGuiWidget.destroy(self)
 
     def setText(self, text=None):
-        if text != None:
+        if text is not None:
             self["text"] = text
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
