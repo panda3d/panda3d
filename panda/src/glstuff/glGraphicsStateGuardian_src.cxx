@@ -7627,7 +7627,7 @@ do_issue_material() {
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
   glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
 
-  if (material->has_ambient() && material->has_diffuse()) {
+  if ((material->has_ambient() && material->has_diffuse()) || material->has_base_color()) {
     // The material has both an ambient and diffuse specified.  This means we
     // do not need glMaterialColor().
     glDisable(GL_COLOR_MATERIAL);

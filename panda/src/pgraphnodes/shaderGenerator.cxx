@@ -258,6 +258,11 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     // states to be rehashed.
     mat->mark_used_by_auto_shader();
     key._material_flags = mat->get_flags();
+
+    if ((key._material_flags & Material::F_base_color) != 0) {
+      key._material_flags |= (Material::F_diffuse | Material::F_specular | Material::F_ambient);
+      key._material_flags &= ~Material::F_base_color;
+    }
   }
 
   // Break out the lights by type.
