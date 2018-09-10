@@ -94,11 +94,13 @@ def construct_frame(pos, frame_kwargs={}, color=(
                   "frameSize": _rec2d(50, 50),
                   "state": DGG.NORMAL,
                   "parent": pixel2d,
-                  "sortOrder":0}
+                  #"sortOrder":1,
+                  }
 
     kwargs["frameColor"] = color
 
     frame = DirectFrame(**kwargs)
+    frame.setColorOff(0)
     frame.set_pos(_pos2d(*pos))
     frame.drag_drop_type = drag_drop_type
     return frame
@@ -184,6 +186,7 @@ class App:
 
         # the grid containing the starting items
         self.default_grid = Grid((64, 300), (64, 64), (3, 1))
+        #self.default_grid.setColorOff(0)
         bind_grid_events(self.default_grid,self.hover_in,self.hover_out)
         self.drag_items = {}
 
@@ -193,12 +196,14 @@ class App:
             self.drag_items[x] = {}
             rel_col = self.dac.colors[col]
 
-            frame = DirectFrame(frameColor=rel_col,
+            frame = DirectFrame(#frameColor=rel_col,
                                 frameSize=_rec2d(30, 30),
                                 state=DGG.NORMAL,
                                 parent=pixel2d,
-                                sortOrder=1)
-
+                                #sortOrder=0,
+                                )
+            frame.setColorOff(1)
+            frame.setColor(rel_col)
             # bind the events
             frame.bind(DGG.B1PRESS, self.drag, [frame])
             frame.bind(DGG.B1RELEASE, self.drop)
@@ -308,11 +313,14 @@ def snap(ob, target):
     lock_pos = lock_pos + LPoint3f(h, w)
     lock_pos = LVecBase3f(*lock_pos)
     lock_pos[1]=25
+    
     print("lock pos",lock_pos)
     print("previous",ob.getPos())
     # this does the actual snapping
+    
     ob.setPos(lock_pos)
     ob.wrt_reparent_to(target)
+    
     print("drop point",lock_pos)
     
 
