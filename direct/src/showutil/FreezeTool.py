@@ -1763,7 +1763,10 @@ class Freezer:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(sys.path[0], "%s%s"))' % (moduleName, moduleName, moduleName, modext)
                 else:
                     code = 'import sys;del sys.modules["%s"];import sys,os,imp;imp.load_dynamic("%s",os.path.join(os.path.dirname(sys.executable), "%s%s"))' % (moduleName, moduleName, moduleName, modext)
-                code = compile(code, moduleName, 'exec', optimize=2)
+                if sys.version_info >= (3, 2):
+                    code = compile(code, moduleName, 'exec', optimize=2)
+                else:
+                    code = compile(code, moduleName, 'exec')
                 code = marshal.dumps(code)
                 moduleList.append((moduleName, len(pool), len(code)))
                 pool += code
