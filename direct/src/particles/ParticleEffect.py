@@ -29,6 +29,17 @@ class ParticleEffect(NodePath):
             self.addParticles(particles)
         self.renderParent = None
 
+    def prepareForBurstEmission(self, parent, renderParent):
+        self.reparentTo(parent)
+        self.renderParent = renderParent
+        if not self.isEnabled():
+            self.enable()
+            self.softStop()
+
+    def emitBurst(self):
+        for p in self.particlesDict.values():
+            p.birth_litter()
+
     def cleanup(self):
         self.removeNode()
         self.disable()
