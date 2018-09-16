@@ -632,10 +632,10 @@ parse_element(IOHIDElementRef element) {
           // SNES-style USB gamepad
           static const ButtonHandle gamepad_buttons[] = {
             ButtonHandle::none(),
-            GamepadButton::action_x(),
-            GamepadButton::action_a(),
-            GamepadButton::action_b(),
-            GamepadButton::action_y(),
+            GamepadButton::face_x(),
+            GamepadButton::face_a(),
+            GamepadButton::face_b(),
+            GamepadButton::face_y(),
             GamepadButton::lshoulder(),
             GamepadButton::rshoulder(),
             ButtonHandle::none(),
@@ -651,10 +651,10 @@ parse_element(IOHIDElementRef element) {
           // driver.  I don't know if other drivers do the same thing at all.
           static const ButtonHandle gamepad_buttons[] = {
             ButtonHandle::none(),
-            GamepadButton::action_a(),
-            GamepadButton::action_b(),
-            GamepadButton::action_x(),
-            GamepadButton::action_y(),
+            GamepadButton::face_a(),
+            GamepadButton::face_b(),
+            GamepadButton::face_x(),
+            GamepadButton::face_y(),
             GamepadButton::lshoulder(),
             GamepadButton::rshoulder(),
             GamepadButton::lstick(),

@@ -332,10 +332,10 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   // Do we have a button mapping?
   static const ButtonHandle gamepad_buttons_common[] = {
     ButtonHandle::none(),
-    GamepadButton::action_a(),
-    GamepadButton::action_b(),
-    GamepadButton::action_x(),
-    GamepadButton::action_y(),
+    GamepadButton::face_a(),
+    GamepadButton::face_b(),
+    GamepadButton::face_x(),
+    GamepadButton::face_y(),
     GamepadButton::lshoulder(),
     GamepadButton::rshoulder(),
     GamepadButton::start(),
@@ -348,10 +348,10 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     // SNES-style USB gamepad
     static const ButtonHandle gamepad_buttons_snes[] = {
       ButtonHandle::none(),
-      GamepadButton::action_x(),
-      GamepadButton::action_a(),
-      GamepadButton::action_b(),
-      GamepadButton::action_y(),
+      GamepadButton::face_x(),
+      GamepadButton::face_a(),
+      GamepadButton::face_b(),
+      GamepadButton::face_y(),
       GamepadButton::lshoulder(),
       GamepadButton::rshoulder(),
       ButtonHandle::none(),

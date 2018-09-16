@@ -386,11 +386,10 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   set_button_map(8, GamepadButton::lshoulder());
   set_button_map(9, GamepadButton::rshoulder());
   set_button_map(10, GamepadButton::guide());
-  set_button_map(11, GamepadButton::action_a());
-  set_button_map(12, GamepadButton::action_b());
-  set_button_map(13, GamepadButton::action_x());
-  set_button_map(14, GamepadButton::action_y());
-
+  set_button_map(11, GamepadButton::face_a());
+  set_button_map(12, GamepadButton::face_b());
+  set_button_map(13, GamepadButton::face_x());
+  set_button_map(14, GamepadButton::face_y());
 
   if (caps.Vibration.wLeftMotorSpeed != 0 ||
       caps.Vibration.wRightMotorSpeed != 0) {

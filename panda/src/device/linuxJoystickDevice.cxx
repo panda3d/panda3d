@@ -134,7 +134,7 @@ open_device() {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
             << " button " << (int)i << ": 0x" << std::hex << btnmap[i] << "\n";
         }
-      } else if (handle == GamepadButton::action_a()) {
+      } else if (handle == GamepadButton::face_a()) {
         _device_class = DC_gamepad;
       } else if (handle == GamepadButton::trigger()) {
         _device_class = DC_flight_stick;

@@ -906,10 +906,10 @@ map_button(int code, DeviceClass device_class) {
     if (device_class == DC_gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
-        GamepadButton::action_x(),
-        GamepadButton::action_y(),
-        GamepadButton::action_a(),
-        GamepadButton::action_b(),
+        GamepadButton::face_x(),
+        GamepadButton::face_y(),
+        GamepadButton::face_a(),
+        GamepadButton::face_b(),
         GamepadButton::lshoulder(),
         GamepadButton::ltrigger(),
         GamepadButton::rshoulder(),
@@ -929,22 +929,22 @@ map_button(int code, DeviceClass device_class) {
 
   switch (code) {
   case BTN_A:
-    return GamepadButton::action_a();
+    return GamepadButton::face_a();
 
   case BTN_B:
-    return GamepadButton::action_b();
+    return GamepadButton::face_b();
 
   case BTN_C:
-    return GamepadButton::action_c();
+    return GamepadButton::face_c();
 
   case BTN_X:
-    return GamepadButton::action_x();
+    return GamepadButton::face_x();
 
   case BTN_Y:
-    return GamepadButton::action_y();
+    return GamepadButton::face_y();
 
   case BTN_Z:
-    return GamepadButton::action_z();
+    return GamepadButton::face_z();
 
   case BTN_TL:
     return GamepadButton::lshoulder();
@@ -959,10 +959,10 @@ map_button(int code, DeviceClass device_class) {
     return GamepadButton::rtrigger();
 
   case BTN_1:
-    return GamepadButton::action_1();
+    return GamepadButton::face_1();
 
   case BTN_2:
-    return GamepadButton::action_2();
+    return GamepadButton::face_2();
 
   case BTN_SELECT:
   case KEY_PREVIOUS:

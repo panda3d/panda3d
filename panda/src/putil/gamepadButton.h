@@ -43,15 +43,15 @@ PUBLISHED:
   static ButtonHandle next();
   static ButtonHandle previous();
 
-  static ButtonHandle action_a();
-  static ButtonHandle action_b();
-  static ButtonHandle action_c();
-  static ButtonHandle action_x();
-  static ButtonHandle action_y();
-  static ButtonHandle action_z();
+  static ButtonHandle face_a();
+  static ButtonHandle face_b();
+  static ButtonHandle face_c();
+  static ButtonHandle face_x();
+  static ButtonHandle face_y();
+  static ButtonHandle face_z();
 
-  static ButtonHandle action_1();
-  static ButtonHandle action_2();
+  static ButtonHandle face_1();
+  static ButtonHandle face_2();
 
   // Flight stick buttons, takes zero-based index.  First is always trigger.
   static ButtonHandle trigger();
