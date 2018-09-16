@@ -141,11 +141,11 @@ do_elevate_lock() {
  * mutex).
  */
 void ReMutexDirect::
-do_unlock() {
+do_unlock(Thread *current_thread) {
   _lock_impl.lock();
 
 #ifdef _DEBUG
-  if (_locking_thread != Thread::get_current_thread()) {
+  if (_locking_thread != current_thread) {
     std::ostringstream ostr;
     ostr << *_locking_thread << " attempted to release "
          << *this << " which it does not own";

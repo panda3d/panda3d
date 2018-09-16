@@ -13,6 +13,8 @@
 
 #include "bulletWheel.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */

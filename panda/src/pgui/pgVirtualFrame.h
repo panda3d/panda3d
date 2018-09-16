@@ -72,7 +72,7 @@ protected:
 private:
   void setup_child_nodes();
 
-private:
+protected:
   bool _has_clip_frame;
   LVecBase4 _clip_frame;
 

@@ -14,7 +14,7 @@
 #include "dtoolbase.h"
 #include "memoryHook.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DTOOL_DTOOLBASE)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DTOOL_DTOOLBASE)
   #error Buildsystem error: BUILDING_DTOOL_DTOOLBASE not defined
 #endif
 

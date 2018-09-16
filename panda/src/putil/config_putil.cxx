@@ -48,7 +48,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PUTIL)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PUTIL)
   #error Buildsystem error: BUILDING_PANDA_PUTIL not defined
 #endif
 

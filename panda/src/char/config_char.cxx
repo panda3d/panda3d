@@ -21,7 +21,7 @@
 #include "jointVertexTransform.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_CHAR)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_CHAR)
   #error Buildsystem error: BUILDING_PANDA_CHAR not defined
 #endif
 

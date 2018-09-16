@@ -13,6 +13,8 @@
 
 #include "bulletCapsuleShape.h"
 
+#include "config_bullet.h"
+
 TypeHandle BulletCapsuleShape::_type_handle;
 
 /**

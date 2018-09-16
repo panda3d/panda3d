@@ -88,7 +88,7 @@ public:
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const std::string&, bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(const Filename &, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
 
   virtual int get_speaker_setup();
@@ -146,7 +146,7 @@ public:
   virtual void set_concurrent_sound_limit(unsigned int limit = 0);
   virtual unsigned int get_concurrent_sound_limit() const;
   virtual void reduce_sounds_playing_to(unsigned int count);
-  virtual void uncache_sound(const std::string&);
+  virtual void uncache_sound(const Filename &);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;

@@ -30,3 +30,12 @@ empty() {
 
   return BulletSoftBodyMaterial(material);
 }
+
+/**
+ *
+ */
+INLINE btSoftBody::Material &BulletSoftBodyMaterial::
+get_material() const {
+
+  return _material;
+}

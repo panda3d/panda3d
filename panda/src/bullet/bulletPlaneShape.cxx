@@ -13,6 +13,8 @@
 
 #include "bulletPlaneShape.h"
 
+#include "bulletWorld.h"
+
 TypeHandle BulletPlaneShape::_type_handle;
 
 /**

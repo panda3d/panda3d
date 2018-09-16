@@ -17,7 +17,7 @@
 #include "loaderFileTypeDae.h"
 #include "loaderFileTypeRegistry.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_COLLADA)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_COLLADA)
   #error Buildsystem error: BUILDING_COLLADA not defined
 #endif
 

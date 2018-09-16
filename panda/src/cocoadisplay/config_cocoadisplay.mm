@@ -20,7 +20,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_COCOADISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_COCOADISPLAY)
   #error Buildsystem error: BUILDING_PANDA_COCOADISPLAY not defined
 #endif
 

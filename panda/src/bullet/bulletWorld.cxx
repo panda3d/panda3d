@@ -12,9 +12,14 @@
  */
 
 #include "bulletWorld.h"
+
+#include "config_bullet.h"
+
+#include "bulletFilterCallbackData.h"
 #include "bulletPersistentManifold.h"
 #include "bulletShape.h"
 #include "bulletSoftBodyWorldInfo.h"
+#include "bulletTickCallbackData.h"
 
 #include "collideMask.h"
 #include "lightMutexHolder.h"

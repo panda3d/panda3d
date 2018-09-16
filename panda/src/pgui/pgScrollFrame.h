@@ -20,6 +20,10 @@
 #include "pgSliderBarNotify.h"
 #include "pgSliderBar.h"
 
+#ifdef PHAVE_ATOMIC
+#include <atomic>
+#endif
+
 /**
  * This is a special kind of frame that pretends to be much larger than it
  * actually is.  You can scroll through the frame, as if you're looking
@@ -92,7 +96,7 @@ private:
 private:
   bool _needs_remanage;
   bool _needs_recompute_clip;
-  bool _needs_recompute_canvas;
+  std::atomic_flag _canvas_computed;
 
   bool _has_virtual_frame;
   LVecBase4 _virtual_frame;

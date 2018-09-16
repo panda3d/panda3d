@@ -516,7 +516,7 @@ main(int argc, char **argv) {
       cerr << "Error parsing file: '" << argv[i] << "'\n";
       exit(1);
     }
-    builder.add_source_file(filename);
+    builder.add_source_file(filename.to_os_generic());
   }
 
   // Now that we've parsed all the source code, change the way things are

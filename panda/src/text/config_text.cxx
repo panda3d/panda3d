@@ -27,7 +27,7 @@
 #include "dconfig.h"
 #include "config_express.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_TEXT)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_TEXT)
   #error Buildsystem error: BUILDING_PANDA_TEXT not defined
 #endif
 

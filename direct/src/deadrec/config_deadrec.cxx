@@ -15,7 +15,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_DEADREC)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_DEADREC)
   #error Buildsystem error: BUILDING_DIRECT_DEADREC not defined
 #endif
 

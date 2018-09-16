@@ -16,7 +16,7 @@
 #include "dconfig.h"
 #include "freetypeFace.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PNMTEXT)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PNMTEXT)
   #error Buildsystem error: BUILDING_PANDA_PNMTEXT not defined
 #endif
 

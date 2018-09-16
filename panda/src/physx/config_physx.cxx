@@ -67,7 +67,7 @@
 #include "physxWheel.h"
 #include "physxWheelShape.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAPHYSX)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAPHYSX)
   #error Buildsystem error: BUILDING_PANDAPHYSX not defined
 #endif
 

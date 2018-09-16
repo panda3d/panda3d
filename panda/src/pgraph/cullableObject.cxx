@@ -90,6 +90,15 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
       unsupported_bits = geom_rendering & ~gsg_bits;
 
+      if (unsupported_bits & Geom::GR_per_point_size) {
+        // If we have a shader that processes the point size, we can assume it
+        // does the right thing.
+        const ShaderAttrib *sattr;
+        if (_state->get_attrib(sattr) && sattr->get_flag(ShaderAttrib::F_shader_point_size)) {
+          unsupported_bits &= ~Geom::GR_per_point_size;
+        }
+      }
+
       if (geom_rendering & Geom::GR_point_bits) {
         if (geom_reader.get_primitive_type() != Geom::PT_points) {
           if (singular_points ||

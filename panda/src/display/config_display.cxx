@@ -33,7 +33,7 @@
 #include "subprocessWindow.h"
 #include "windowHandle.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DISPLAY)
   #error Buildsystem error: BUILDING_PANDA_DISPLAY not defined
 #endif
 

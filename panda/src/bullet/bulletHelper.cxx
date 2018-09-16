@@ -12,12 +12,16 @@
  */
 
 #include "bulletHelper.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletSoftBodyNode.h"
 #include "bulletGhostNode.h"
 
 #include "geomLines.h"
 #include "geomTriangles.h"
 #include "geomVertexRewriter.h"
+
+#include "bullet_utils.h"
 
 PT(InternalName) BulletHelper::_sb_index;
 PT(InternalName) BulletHelper::_sb_flip;

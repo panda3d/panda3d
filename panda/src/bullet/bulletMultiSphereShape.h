@@ -19,6 +19,7 @@
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
+#include "factoryParams.h"
 #include "pta_LVecBase3.h"
 #include "pta_stdfloat.h"
 
