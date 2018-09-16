@@ -362,11 +362,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     gamepad_buttons = gamepad_buttons_snes;
   }
 
-  // Prepare a mapping of data indices to button/control indices.
+  // Prepare a mapping of data indices to button/axis indices.
   _indices.resize(caps.NumberInputDataIndices);
 
   _buttons.clear();
-  _controls.clear();
+  _axes.clear();
 
   USHORT num_button_caps = caps.NumberInputButtonCaps;
   PHIDP_BUTTON_CAPS button_caps = (PHIDP_BUTTON_CAPS)alloca(num_button_caps * sizeof(HIDP_BUTTON_CAPS));
@@ -553,17 +553,17 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         break;
       }
 
-      int control_index;
+      int axis_index;
       if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
-        control_index = add_control(axis, cap.LogicalMax, cap.LogicalMin, true);
+        axis_index = add_axis(axis, cap.LogicalMax, cap.LogicalMin, true);
       } else if (!is_signed) {
         // All axes on the weird XInput-style mappings go from -1 to 1
-        control_index = add_control(axis, cap.LogicalMin, cap.LogicalMax, true);
+        axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax, true);
       } else {
-        control_index = add_control(axis, cap.LogicalMin, cap.LogicalMax);
+        axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax);
       }
-      _indices[data_index] = Index::control(control_index, is_signed);
+      _indices[data_index] = Index::axis(axis_index, is_signed);
     }
   }
 
@@ -635,11 +635,11 @@ on_input(PRAWINPUT input) {
       for (ULONG di = 0; di < count; ++di) {
         if (data[di].DataIndex != _hat_data_index) {
           const Index &idx = _indices[data[di].DataIndex];
-          if (idx._control >= 0) {
+          if (idx._axis >= 0) {
             if (idx._signed) {
-              control_changed(idx._control, (SHORT)data[di].RawValue);
+              axis_changed(idx._axis, (SHORT)data[di].RawValue);
             } else {
-              control_changed(idx._control, data[di].RawValue);
+              axis_changed(idx._axis, data[di].RawValue);
             }
           }
           if (idx._button >= 0) {

@@ -392,10 +392,10 @@ init_device() {
         }
 
         if (test_bit(i, states)) {
-          button.state = S_down;
+          button._state = S_down;
           all_values_zero = false;
         } else {
-          button.state = S_up;
+          button._state = S_up;
         }
         if (button.handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
@@ -415,7 +415,7 @@ init_device() {
   }
 
   if (has_axes) {
-    _control_indices.resize(num_bits, -1);
+    _axis_indices.resize(num_bits, -1);
 
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
@@ -545,12 +545,12 @@ init_device() {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
-            index = add_control(axis, absinfo.maximum, absinfo.minimum, true);
+            index = add_axis(axis, absinfo.maximum, absinfo.minimum, true);
           } else {
-            index = add_control(axis, absinfo.minimum, absinfo.maximum);
+            index = add_axis(axis, absinfo.minimum, absinfo.maximum);
           }
-          control_changed(index, absinfo.value);
-          _control_indices[i] = index;
+          axis_changed(index, absinfo.value);
+          _axis_indices[i] = index;
 
           if (absinfo.value != 0) {
             all_values_zero = false;
@@ -583,9 +583,9 @@ init_device() {
 
   if (_ltrigger_code >= 0 && _rtrigger_code >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
-    _ltrigger_control = (int)_controls.size();
-    add_control(Axis::left_trigger, 0, 1, false);
-    add_control(Axis::right_trigger, 0, 1, false);
+    _ltrigger_axis = (int)_axes.size();
+    add_axis(Axis::left_trigger, 0, 1, false);
+    add_axis(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_code = -1;
     _rtrigger_code = -1;
@@ -709,10 +709,10 @@ process_events() {
         button_changed(_dpad_up_button, events[i].value < 0);
         button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      nassertd(code >= 0 && (size_t)code < _control_indices.size()) break;
-      index = _control_indices[code];
+      nassertd(code >= 0 && (size_t)code < _axis_indices.size()) break;
+      index = _axis_indices[code];
       if (index >= 0) {
-        control_changed(index, events[i].value);
+        axis_changed(index, events[i].value);
       }
       break;
 
@@ -723,9 +723,9 @@ process_events() {
         button_changed(index, events[i].value != 0);
       }
       if (code == _ltrigger_code) {
-        control_changed(_ltrigger_control, events[i].value);
+        axis_changed(_ltrigger_axis, events[i].value);
       } else if (code == _rtrigger_code) {
-        control_changed(_ltrigger_control + 1, events[i].value);
+        axis_changed(_ltrigger_axis + 1, events[i].value);
       }
       break;
 

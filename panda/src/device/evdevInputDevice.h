@@ -49,7 +49,7 @@ private:
   int _ff_strong;
   int _ff_weak;
 
-  pvector<int> _control_indices;
+  pvector<int> _axis_indices;
   pvector<int> _button_indices;
 
   // These are used for D-pad emulation.
@@ -59,7 +59,7 @@ private:
   int _dpad_up_button;
 
   // This is used for axis emulation.
-  int _ltrigger_control;
+  int _ltrigger_axis;
   int _ltrigger_code;
   int _rtrigger_code;
 

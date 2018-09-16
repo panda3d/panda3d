@@ -33,12 +33,12 @@ typedef MouseData PointerData;
 
 /**
  * This is a structure representing a single input device.  Input devices may
- * have zero or more buttons, pointers, or controls associated with them, and
+ * have zero or more buttons, pointers, or axes associated with them, and
  * optionally a motion tracker.
  *
  * These devices are brought under a common interface because there is such a
  * large range of devices out there that may support any number of these types
- * of controls, we couldn't even begin to cover them with type-specific
+ * of axes, we couldn't even begin to cover them with type-specific
  * subclasses.
  *
  * Use the various has_() and get_num_() methods to determine information about
@@ -85,16 +85,6 @@ PUBLISHED:
     DC_COUNT,
   };
 
-protected:
-  InputDevice(const std::string &name, DeviceClass dev_class, int flags);
-
-public:
-  InputDevice();
-  InputDevice(const InputDevice &copy);
-  void operator = (const InputDevice &copy);
-  ~InputDevice();
-
-PUBLISHED:
   enum class Axis {
     none,
 
@@ -126,18 +116,93 @@ PUBLISHED:
     brake,
   };
 
+  enum State {
+    S_unknown,
+    S_up,
+    S_down
+  };
+
+  class ButtonState {
+  public:
+    constexpr ButtonState() = default;
+    INLINE ButtonState(ButtonHandle handle);
+    ALWAYS_INLINE bool is_known() const;
+    ALWAYS_INLINE bool is_pressed() const;
+
+  PUBLISHED:
+    MAKE_PROPERTY(known, is_known);
+    MAKE_PROPERTY(pressed, is_pressed);
+
+    ButtonHandle handle = ButtonHandle::none();
+
+  public:
+    State _state = S_unknown;
+  };
+
+  class AxisState {
+  public:
+    constexpr AxisState() = default;
+
+  PUBLISHED:
+    Axis axis = Axis::none;
+    double value = 0.0;
+    bool known = false;
+
+  public:
+    double _scale = 1.0;
+    double _bias = 0.0;
+  };
+
+  class BatteryData {
+  PUBLISHED:
+    // Ranges from 0 through max_level.
+    short level = -1;
+
+    // Maximum value of 'level' field.
+    short max_level = -1;
+  };
+
+protected:
+  InputDevice(const std::string &name, DeviceClass dev_class, int flags);
+
+public:
+  InputDevice();
+  InputDevice(const InputDevice &copy);
+  void operator = (const InputDevice &copy);
+  ~InputDevice();
+
   INLINE std::string get_name() const;
   INLINE std::string get_manufacturer() const;
+  INLINE std::string get_serial_number() const;
   INLINE unsigned short get_vendor_id() const;
   INLINE unsigned short get_product_id() const;
   INLINE bool is_connected() const;
   INLINE DeviceClass get_device_class() const;
 
+  INLINE PointerData get_pointer() const;
+  INLINE TrackerData get_tracker() const;
+  INLINE BatteryData get_battery() const;
+
+  INLINE size_t get_num_buttons() const;
+  INLINE ButtonHandle get_button_map(size_t index) const;
+  INLINE bool is_button_pressed(size_t index) const;
+  INLINE bool is_button_known(size_t index) const;
+  INLINE ButtonState get_button(size_t index) const;
+
+  INLINE size_t get_num_axes() const;
+  INLINE double get_axis_value(size_t index) const;
+  INLINE bool is_axis_known(size_t index) const;
+  INLINE AxisState get_axis(size_t index) const;
+
+PUBLISHED:
   // The human-readable name of this input device.
   MAKE_PROPERTY(name, get_name);
 
   // The device's manufacturer, or the empty string if not known.
   MAKE_PROPERTY(manufacturer, get_manufacturer);
+
+  // The device's serial number, or the empty string if not known.
+  MAKE_PROPERTY(serial_number, get_serial_number);
 
   // USB vendor ID of the device, or 0 if not known.
   MAKE_PROPERTY(vendor_id, get_vendor_id);
@@ -159,24 +224,22 @@ PUBLISHED:
   INLINE bool has_vibration() const;
   INLINE bool has_battery() const;
 
-  INLINE PointerData get_pointer() const;
-  INLINE TrackerData get_tracker() const;
+  // Getters for the various types of device data.
+  MAKE_PROPERTY2(pointer, has_pointer, get_pointer);
+  MAKE_PROPERTY2(tracker, has_tracker, get_tracker);
+  MAKE_PROPERTY2(battery, has_battery, get_battery);
 
-  INLINE short get_battery_level() const;
-  INLINE short get_max_battery_level() const;
+  // Make device buttons and axes iterable
+  MAKE_SEQ_PROPERTY(buttons, get_num_buttons, get_button);
+  MAKE_SEQ_PROPERTY(axes, get_num_axes, get_axis);
 
-  INLINE size_t get_num_buttons() const;
-  INLINE void set_button_map(size_t index, ButtonHandle button);
-  INLINE ButtonHandle get_button_map(size_t index) const;
-  INLINE bool get_button_state(size_t index) const;
-  INLINE bool is_button_known(size_t index) const;
+  // Associate buttons/axes with symbolic handles.
+  INLINE void map_button(size_t index, ButtonHandle handle);
+  INLINE void map_axis(size_t index, Axis axis);
+  INLINE ButtonState find_button(ButtonHandle handle) const;
+  INLINE AxisState find_axis(Axis axis) const;
 
-  INLINE size_t get_num_controls() const;
-  INLINE void set_control_map(size_t index, Axis axis);
-  INLINE Axis get_control_map(size_t index) const;
-  INLINE double get_control_state(size_t index) const;
-  INLINE bool is_control_known(size_t index) const;
-
+  // Enable rumble force-feedback effects
   INLINE void set_vibration(double strong, double weak);
 
   INLINE void enable_pointer_events();
@@ -194,19 +257,20 @@ PUBLISHED:
   static std::string format_axis(Axis axis);
 
 protected:
-  // Called during the constructor to add new controls or buttons
-  int add_control(Axis axis, int minimum, int maximum, bool centered);
-  int add_control(Axis axis, int minimum, int maximum);
+  // Called during the constructor to add new axes or buttons
+  int add_button(ButtonHandle handle);
+  int add_axis(Axis axis, int minimum, int maximum, bool centered);
+  int add_axis(Axis axis, int minimum, int maximum);
 
   void set_pointer(bool inwin, double x, double y, double time);
   void set_pointer_out_of_window(double time);
 
   void pointer_moved(double x, double y, double time);
   void button_changed(int index, bool down);
-  void control_changed(int index, int value);
-  void set_control_state(int index, double state);
+  void axis_changed(int index, int value);
+  void set_axis_value(int index, double state);
 
-  void set_tracker(const LPoint3 &pos, const LOrientation &orient, double time);
+  void tracker_changed(const LPoint3 &pos, const LOrientation &orient, double time);
 
   virtual void do_set_vibration(double low, double high);
   virtual void do_poll();
@@ -214,16 +278,9 @@ protected:
 public:
   INLINE void set_connected(bool connected);
 
-  // We need these methods to make VC++ happy when we try to
-  // instantiate a pvector<InputDevice>.  They don't do
-  // anything useful.
-  INLINE bool operator == (const InputDevice &other) const;
-  INLINE bool operator != (const InputDevice &other) const;
-  INLINE bool operator < (const InputDevice &other) const;
-
   void output_buttons(std::ostream &out) const;
   void write_buttons(std::ostream &out, int indent_level) const;
-  void write_controls(std::ostream &out, int indent_level) const;
+  void write_axes(std::ostream &out, int indent_level) const;
 
 protected:
   enum InputDeviceFlags {
@@ -263,55 +320,13 @@ protected:
   PT(PointerEventList) _pointer_events;
 
 PUBLISHED:
-  enum State {
-    S_unknown,
-    S_up,
-    S_down
-  };
-
-  class ButtonState {
-  public:
-    constexpr ButtonState() = default;
-    INLINE ButtonState(ButtonHandle handle);
-
-  PUBLISHED:
-    ButtonHandle handle = ButtonHandle::none();
-    State state = S_unknown;
-  };
   typedef pvector<ButtonState> Buttons;
+  typedef pvector<AxisState> Axes;
   Buttons _buttons;
+  Axes _axes;
 
-  class AnalogState {
-  public:
-    constexpr AnalogState() = default;
-
-  PUBLISHED:
-    Axis axis = Axis::none;
-    double state = 0.0;
-    bool known = false;
-
-  public:
-    double _scale = 1.0;
-    double _bias = 0.0;
-  };
-  typedef pvector<AnalogState> Controls;
-  Controls _controls;
-
-  short _battery_level;
-  short _max_battery_level;
-
+  BatteryData _battery_data;
   TrackerData _tracker_data;
-
-
-  INLINE ButtonState get_button(size_t index) const;
-  INLINE ButtonState find_button(ButtonHandle handle) const;
-
-  INLINE AnalogState get_control(size_t index) const;
-  INLINE AnalogState find_control(Axis axis) const;
-
-  // Make device buttons and controls iterable
-  MAKE_SEQ_PROPERTY(buttons, get_num_buttons, get_button);
-  MAKE_SEQ_PROPERTY(controls, get_num_controls, get_control);
 
 public:
   static TypeHandle get_class_type() {

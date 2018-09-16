@@ -126,7 +126,7 @@ XInputDevice(DWORD user_index) :
 
   nassertv(user_index >= 0 && user_index < XUSER_MAX_COUNT);
 
-  _controls.resize(6);
+  _axes.resize(6);
   _buttons.resize(16);
 }
 
@@ -301,6 +301,7 @@ init_xinput() {
 
 /**
  * Initializes the device.  Called when the device was just connected.
+ * Assumes either the lock is held or this is called from the constructor.
  */
 void XInputDevice::
 init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
@@ -315,81 +316,81 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   default:
   case XINPUT_DEVSUBTYPE_GAMEPAD:
     _device_class = DC_gamepad;
-    set_control_map(0, Axis::left_trigger);
-    set_control_map(1, Axis::right_trigger);
-    set_control_map(2, Axis::left_x);
-    set_control_map(3, Axis::left_y);
-    set_control_map(4, Axis::right_x);
-    set_control_map(5, Axis::right_y);
+    _axes[0].axis = Axis::left_trigger;
+    _axes[1].axis = Axis::right_trigger;
+    _axes[2].axis = Axis::left_x;
+    _axes[3].axis = Axis::left_y;
+    _axes[4].axis = Axis::right_x;
+    _axes[5].axis = Axis::right_y;
     break;
 
   case XINPUT_DEVSUBTYPE_WHEEL:
     _device_class = DC_steering_wheel;
-    set_control_map(0, Axis::brake);
-    set_control_map(1, Axis::accelerator);
-    set_control_map(2, Axis::wheel);
-    set_control_map(3, Axis::none);
-    set_control_map(4, Axis::none);
-    set_control_map(5, Axis::none);
+    _axes[0].axis = Axis::brake;
+    _axes[1].axis = Axis::accelerator;
+    _axes[2].axis = Axis::wheel;
+    _axes[3].axis = Axis::none;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
     _device_class = DC_flight_stick;
-    set_control_map(0, Axis::yaw);
-    set_control_map(1, Axis::throttle);
-    set_control_map(2, Axis::roll);
-    set_control_map(3, Axis::pitch);
-    set_control_map(4, Axis::none);
-    set_control_map(5, Axis::none);
+    _axes[0].axis = Axis::yaw;
+    _axes[1].axis = Axis::throttle;
+    _axes[2].axis = Axis::roll;
+    _axes[3].axis = Axis::pitch;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
 
   case XINPUT_DEVSUBTYPE_DANCE_PAD:
     _device_class = DC_dance_pad;
-    set_control_map(0, Axis::none);
-    set_control_map(1, Axis::none);
-    set_control_map(2, Axis::none);
-    set_control_map(3, Axis::none);
-    set_control_map(4, Axis::none);
-    set_control_map(5, Axis::none);
+    _axes[0].axis = Axis::none;
+    _axes[1].axis = Axis::none;
+    _axes[2].axis = Axis::none;
+    _axes[3].axis = Axis::none;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
   }
 
-  _controls[0]._scale = 1.0 / 255.0;
-  _controls[1]._scale = 1.0 / 255.0;
-  _controls[2]._scale = 1.0 / 32767.5;
-  _controls[3]._scale = 1.0 / 32767.5;
-  _controls[4]._scale = 1.0 / 32767.5;
-  _controls[5]._scale = 1.0 / 32767.5;
+  _axes[0]._scale = 1.0 / 255.0;
+  _axes[1]._scale = 1.0 / 255.0;
+  _axes[2]._scale = 1.0 / 32767.5;
+  _axes[3]._scale = 1.0 / 32767.5;
+  _axes[4]._scale = 1.0 / 32767.5;
+  _axes[5]._scale = 1.0 / 32767.5;
 
-  _controls[2]._bias = 0.5 / 32767.5;
-  _controls[3]._bias = 0.5 / 32767.5;
-  _controls[4]._bias = 0.5 / 32767.5;
-  _controls[5]._bias = 0.5 / 32767.5;
+  _axes[2]._bias = 0.5 / 32767.5;
+  _axes[3]._bias = 0.5 / 32767.5;
+  _axes[4]._bias = 0.5 / 32767.5;
+  _axes[5]._bias = 0.5 / 32767.5;
 
   if (caps.Flags & XINPUT_CAPS_NO_NAVIGATION) {
-    set_button_map(0, ButtonHandle::none());
-    set_button_map(1, ButtonHandle::none());
-    set_button_map(2, ButtonHandle::none());
-    set_button_map(3, ButtonHandle::none());
-    set_button_map(4, ButtonHandle::none());
-    set_button_map(5, ButtonHandle::none());
+    _buttons[0].handle = ButtonHandle::none();
+    _buttons[1].handle = ButtonHandle::none();
+    _buttons[2].handle = ButtonHandle::none();
+    _buttons[3].handle = ButtonHandle::none();
+    _buttons[4].handle = ButtonHandle::none();
+    _buttons[5].handle = ButtonHandle::none();
   } else {
-    set_button_map(0, GamepadButton::dpad_up());
-    set_button_map(1, GamepadButton::dpad_down());
-    set_button_map(2, GamepadButton::dpad_left());
-    set_button_map(3, GamepadButton::dpad_right());
-    set_button_map(4, GamepadButton::start());
-    set_button_map(5, GamepadButton::back());
+    _buttons[0].handle = GamepadButton::dpad_up();
+    _buttons[1].handle = GamepadButton::dpad_down();
+    _buttons[2].handle = GamepadButton::dpad_left();
+    _buttons[3].handle = GamepadButton::dpad_right();
+    _buttons[4].handle = GamepadButton::start();
+    _buttons[5].handle = GamepadButton::back();
   }
-  set_button_map(6, GamepadButton::lstick());
-  set_button_map(7, GamepadButton::rstick());
-  set_button_map(8, GamepadButton::lshoulder());
-  set_button_map(9, GamepadButton::rshoulder());
-  set_button_map(10, GamepadButton::guide());
-  set_button_map(11, GamepadButton::face_a());
-  set_button_map(12, GamepadButton::face_b());
-  set_button_map(13, GamepadButton::face_x());
-  set_button_map(14, GamepadButton::face_y());
+  _buttons[6].handle = GamepadButton::lstick();
+  _buttons[7].handle = GamepadButton::rstick();
+  _buttons[8].handle = GamepadButton::lshoulder();
+  _buttons[9].handle = GamepadButton::rshoulder();
+  _buttons[10].handle = GamepadButton::guide();
+  _buttons[11].handle = GamepadButton::face_a();
+  _buttons[12].handle = GamepadButton::face_b();
+  _buttons[13].handle = GamepadButton::face_x();
+  _buttons[14].handle = GamepadButton::face_y();
 
   if (caps.Vibration.wLeftMotorSpeed != 0 ||
       caps.Vibration.wRightMotorSpeed != 0) {
@@ -403,8 +404,8 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
           batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
         _flags |= IDF_has_battery;
-        _battery_level = batt.BatteryLevel;
-        _max_battery_level = BATTERY_LEVEL_FULL;
+        _battery_data.level = batt.BatteryLevel;
+        _battery_data.max_level = BATTERY_LEVEL_FULL;
       }
     }
   }
@@ -413,7 +414,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   WORD mask = 1;
   for (int i = 0; i < 16; ++i) {
     // Set the state without triggering a button event.
-    _buttons[i].state = (buttons & mask) ? S_down : S_up;
+    _buttons[i]._state = (buttons & mask) ? S_down : S_up;
     mask <<= 1;
     if (i == 10) {
       // XInput skips 0x0800.
@@ -421,12 +422,12 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
     }
   }
 
-  control_changed(0, state.Gamepad.bLeftTrigger);
-  control_changed(1, state.Gamepad.bRightTrigger);
-  control_changed(2, state.Gamepad.sThumbLX);
-  control_changed(3, state.Gamepad.sThumbLY);
-  control_changed(4, state.Gamepad.sThumbRX);
-  control_changed(5, state.Gamepad.sThumbRY);
+  axis_changed(0, state.Gamepad.bLeftTrigger);
+  axis_changed(1, state.Gamepad.bRightTrigger);
+  axis_changed(2, state.Gamepad.sThumbLX);
+  axis_changed(3, state.Gamepad.sThumbLY);
+  axis_changed(4, state.Gamepad.sThumbRX);
+  axis_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = buttons;
   _last_packet = state.dwPacketNumber;
@@ -491,12 +492,12 @@ do_poll() {
     }
   }
 
-  control_changed(0, state.Gamepad.bLeftTrigger);
-  control_changed(1, state.Gamepad.bRightTrigger);
-  control_changed(2, state.Gamepad.sThumbLX);
-  control_changed(3, state.Gamepad.sThumbLY);
-  control_changed(4, state.Gamepad.sThumbRX);
-  control_changed(5, state.Gamepad.sThumbRY);
+  axis_changed(0, state.Gamepad.bLeftTrigger);
+  axis_changed(1, state.Gamepad.bRightTrigger);
+  axis_changed(2, state.Gamepad.sThumbLX);
+  axis_changed(3, state.Gamepad.sThumbLY);
+  axis_changed(4, state.Gamepad.sThumbRX);
+  axis_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = state.Gamepad.wButtons;
   _last_packet = state.dwPacketNumber;

@@ -23,5 +23,5 @@ TypeHandle ClientAnalogDevice::_type_handle;
 void ClientAnalogDevice::
 write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << get_type() << " " << get_name() << ":\n";
-  write_controls(out, indent_level + 2);
+  write_axes(out, indent_level + 2);
 }

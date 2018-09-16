@@ -32,8 +32,6 @@ InputDevice(const std::string &name, DeviceClass dev_class, int flags) :
   _is_connected(true),
   _event_sequence(0),
   _enable_pointer_events(false),
-  _battery_level(-1),
-  _max_battery_level(-1),
   _lock("InputDevice")
 {
   _button_events = new ButtonEventList;
@@ -119,13 +117,22 @@ get_pointer_events() {
   return result;
 }
 
-
 /**
- * Called by the implementation to add a new known control.
+ * Called by the implementation to add a new known button.
  */
 int InputDevice::
-add_control(Axis axis, int minimum, int maximum, bool centered) {
-  AnalogState state;
+add_button(ButtonHandle button) {
+  int index = (int)_buttons.size();
+  _buttons.push_back(ButtonState(button));
+  return index;
+}
+
+/**
+ * Called by the implementation to add a new known axis.
+ */
+int InputDevice::
+add_axis(Axis axis, int minimum, int maximum, bool centered) {
+  AxisState state;
   state.axis = axis;
   if (centered) {
     // Centered, eg. for sticks.
@@ -136,17 +143,17 @@ add_control(Axis axis, int minimum, int maximum, bool centered) {
     state._scale = 1.0 / maximum;
     state._bias = 0.0;
   }
-  int index = (int)_controls.size();
-  _controls.push_back(state);
+  int index = (int)_axes.size();
+  _axes.push_back(state);
   return index;
 }
 
 /**
- * Called by the implementation to add a new known control.  This version
- * tries to guess whether the control is centered or not.
+ * Called by the implementation to add a new known axis.  This version tries
+ * to guess whether the axis is centered or not.
  */
 int InputDevice::
-add_control(Axis axis, int minimum, int maximum) {
+add_axis(Axis axis, int minimum, int maximum) {
   bool centered = (minimum < 0)
     || axis == Axis::x
     || axis == Axis::y
@@ -160,7 +167,7 @@ add_control(Axis axis, int minimum, int maximum) {
     || axis == Axis::right_y
     || axis == Axis::wheel
     || axis == Axis::rudder;
-  return add_control(axis, minimum, maximum, centered);
+  return add_axis(axis, minimum, maximum, centered);
 }
 
 /**
@@ -246,10 +253,10 @@ button_changed(int index, bool down) {
   }
 
   State new_state = down ? S_down : S_up;
-  if (_buttons[index].state == new_state) {
+  if (_buttons[index]._state == new_state) {
     return;
   }
-  _buttons[index].state = new_state;
+  _buttons[index]._state = new_state;
 
   ButtonHandle handle = _buttons[index].handle;
 
@@ -272,65 +279,67 @@ button_changed(int index, bool down) {
 /**
  * Sets the state of the indicated analog index.  The caller should ensure that
  * the lock is held while this call is made.  This should be a number in the
- * range -1.0 to 1.0, representing the current position of the control within
- * its total range of movement.
+ * range -1.0 to 1.0, representing the current position of the axis within its
+ * total range of movement.
  */
 void InputDevice::
-set_control_state(int index, double state) {
-  nassertv(_lock.debug_is_locked());
+set_axis_value(int index, double value) {
+  LightMutexHolder holder(_lock);
+
   nassertv(index >= 0);
-  if (index >= (int)_controls.size()) {
-    _controls.resize(index + 1, AnalogState());
+  if ((size_t)index >= _axes.size()) {
+    _axes.resize((size_t)index + 1u, AxisState());
   }
 
-  if (device_cat.is_spam() && _controls[index].state != state) {
+  if (device_cat.is_spam() && _axes[index].value != value) {
     device_cat.spam()
-      << "Changed control " << index;
+      << "Changed axis " << index;
 
-    if (_controls[index].axis != Axis::none) {
-      device_cat.spam(false) << " (" << _controls[index].axis << ")";
+    if (_axes[index].axis != Axis::none) {
+      device_cat.spam(false) << " (" << _axes[index].axis << ")";
     }
 
-    device_cat.spam(false) << " to " << state << "\n";
+    device_cat.spam(false) << " to " << value << "\n";
   }
 
-  _controls[index].state = state;
-  _controls[index].known = true;
+  _axes[index].value = value;
+  _axes[index].known = true;
 }
 
 /**
- * Like set_control_state, but instead passes a raw, unscaled value.
+ * Called by the implementation during do_poll to indicate that the indicated
+ * axis has received a new raw value.  Assumes the lock is held.
  */
 void InputDevice::
-control_changed(int index, int state) {
+axis_changed(int index, int state) {
   nassertv(_lock.debug_is_locked());
   nassertv(index >= 0);
-  if (index >= (int)_controls.size()) {
-    _controls.resize(index + 1, AnalogState());
+  if ((size_t)index >= _axes.size()) {
+    _axes.resize((size_t)index + 1u, AxisState());
   }
 
-  double new_state = fma((double)state, _controls[index]._scale, _controls[index]._bias);
+  double value = fma((double)state, _axes[index]._scale, _axes[index]._bias);
 
-  if (device_cat.is_spam() && _controls[index].state != new_state) {
+  if (device_cat.is_spam() && !IS_NEARLY_EQUAL(_axes[index].value, value)) {
     device_cat.spam()
-      << "Changed control " << index;
+      << "Changed axis " << index;
 
-    if (_controls[index].axis != Axis::none) {
-      device_cat.spam(false) << " (" << _controls[index].axis << ")";
+    if (_axes[index].axis != Axis::none) {
+      device_cat.spam(false) << " (" << _axes[index].axis << ")";
     }
 
-    device_cat.spam(false) << " to " << new_state << " (raw value " << state << ")\n";
+    device_cat.spam(false) << " to " << value << " (raw value " << state << ")\n";
   }
 
-  _controls[index].state = new_state;
-  _controls[index].known = true;
+  _axes[index].value = value;
+  _axes[index].known = true;
 }
 
 /**
  * Records that a tracker movement has taken place.
  */
 void InputDevice::
-set_tracker(const LPoint3 &pos, const LOrientation &orient, double time) {
+tracker_changed(const LPoint3 &pos, const LOrientation &orient, double time) {
   nassertv(_lock.debug_is_locked());
 
   _tracker_data.set_pos(pos);
@@ -364,11 +373,9 @@ output(std::ostream &out) const {
     }
   }
 
-  if (_controls.size() > 0) {
-    out << ", " << _controls.size() << " control";
-    if (_controls.size() != 1) {
-      out.put('s');
-    }
+  if (_axes.size() > 0) {
+    out << ", " << _axes.size() << " ax"
+        << (_axes.size() != 1 ? 'e' : 'i') << 's';
   }
 
   if (_flags & IDF_has_pointer) {
@@ -386,13 +393,13 @@ output(std::ostream &out) const {
   if (_flags & IDF_has_battery) {
     out << ", battery";
 
-    if (_battery_level > 0 && _max_battery_level > 0) {
+    if (_battery_data.level > 0 && _battery_data.max_level > 0) {
       out << " [";
       short i = 0;
-      for (; i < _battery_level; ++i) {
+      for (; i < _battery_data.level; ++i) {
         out << '=';
       }
-      for (; i < _max_battery_level; ++i) {
+      for (; i < _battery_data.max_level; ++i) {
         out << ' ';
       }
       out << ']';
@@ -411,13 +418,13 @@ output_buttons(std::ostream &out) const {
   Buttons::const_iterator bi;
   for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
     const ButtonState &state = (*bi);
-    if (state.state != S_unknown) {
+    if (state.is_known()) {
       if (any_buttons) {
         out << ", ";
       }
       any_buttons = true;
       out << (int)(bi - _buttons.begin()) << "=";
-      if (state.state == S_up) {
+      if (state._state == S_up) {
         out << "up";
       } else {
         out << "down";
@@ -439,7 +446,7 @@ write_buttons(std::ostream &out, int indent_level) const {
   Buttons::const_iterator bi;
   for (bi = _buttons.begin(); bi != _buttons.end(); ++bi) {
     const ButtonState &state = (*bi);
-    if (state.state != S_unknown) {
+    if (state.is_known()) {
       any_buttons = true;
 
       indent(out, indent_level)
@@ -449,7 +456,7 @@ write_buttons(std::ostream &out, int indent_level) const {
         out << "(" << state.handle << ") ";
       }
 
-      if (state.state == S_up) {
+      if (state._state == S_up) {
         out << "up";
       } else {
         out << "down";
@@ -465,27 +472,27 @@ write_buttons(std::ostream &out, int indent_level) const {
 }
 
 /**
- * Writes a multi-line description of the current analog control states.
+ * Writes a multi-line description of the current analog axis states.
  */
 void InputDevice::
-write_controls(std::ostream &out, int indent_level) const {
+write_axes(std::ostream &out, int indent_level) const {
   LightMutexHolder holder(_lock);
 
-  bool any_controls = false;
-  Controls::const_iterator ai;
-  for (ai = _controls.begin(); ai != _controls.end(); ++ai) {
-    const AnalogState &state = (*ai);
+  bool any_axis = false;
+  Axes::const_iterator ai;
+  for (ai = _axes.begin(); ai != _axes.end(); ++ai) {
+    const AxisState &state = (*ai);
     if (state.known) {
-      any_controls = true;
+      any_axis = true;
 
       indent(out, indent_level)
-        << (int)(ai - _controls.begin()) << ". " << state.state << "\n";
+        << (int)(ai - _axes.begin()) << ". " << state.value << "\n";
     }
   }
 
-  if (!any_controls) {
+  if (!any_axis) {
     indent(out, indent_level)
-      << "(no known analog controls)\n";
+      << "(no known analog axes)\n";
   }
 }
 

@@ -287,14 +287,14 @@ parse_element(IOHIDElementRef element) {
       int max = IOHIDElementGetLogicalMax(element);
       if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
-        add_control(axis, max, min, true);
+        add_axis(axis, max, min, true);
       } else if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
                  (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
         // We'd like to reverse the Y axis to match the XInput behavior.
         // We also reverse yaw to obey the right-hand rule.
-        add_control(axis, max, min);
+        add_axis(axis, max, min);
       } else {
-        add_control(axis, min, max);
+        add_axis(axis, min, max);
       }
 
       _analog_elements.push_back(element);
@@ -734,7 +734,7 @@ do_poll() {
     IOHIDValueRef value_ref;
     if (IOHIDDeviceGetValue(_device, _analog_elements[i], &value_ref) == kIOReturnSuccess) {
       int value = IOHIDValueGetIntegerValue(value_ref);
-      control_changed(i, value);
+      axis_changed(i, value);
     }
   }
 

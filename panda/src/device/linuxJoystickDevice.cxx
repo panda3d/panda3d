@@ -121,7 +121,7 @@ open_device() {
   ioctl(_fd, JSIOCGBUTTONS, &num_buttons);
 
   _buttons.resize(num_buttons);
-  _controls.resize(num_axes);
+  _axes.resize(num_axes);
 
   if (num_buttons > 0) {
     uint16_t btnmap[512];
@@ -225,11 +225,11 @@ open_device() {
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
           if (_device_class == DC_gamepad) {
-            _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+            add_button(GamepadButton::dpad_left());
+            add_button(GamepadButton::dpad_right());
           } else {
-            _buttons.push_back(ButtonState(GamepadButton::hat_left()));
-            _buttons.push_back(ButtonState(GamepadButton::hat_right()));
+            add_button(GamepadButton::hat_left());
+            add_button(GamepadButton::hat_right());
           }
           axis = Axis::none;
         }
@@ -241,11 +241,11 @@ open_device() {
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
           if (_device_class == DC_gamepad) {
-            _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+            add_button(GamepadButton::dpad_up());
+            add_button(GamepadButton::dpad_down());
           } else {
-            _buttons.push_back(ButtonState(GamepadButton::hat_up()));
-            _buttons.push_back(ButtonState(GamepadButton::hat_down()));
+            add_button(GamepadButton::hat_up());
+            add_button(GamepadButton::hat_down());
           }
           axis = Axis::none;
         }
@@ -259,28 +259,28 @@ open_device() {
         axis = Axis::none;
         break;
       }
-      _controls[i].axis = axis;
+      _axes[i].axis = axis;
 
       if (axis == Axis::left_trigger || axis == Axis::right_trigger) {
         // We'd like to use 0.0 to indicate the resting position.
-        _controls[i]._scale = 1.0 / 65534.0;
-        _controls[i]._bias = 0.5;
+        _axes[i]._scale = 1.0 / 65534.0;
+        _axes[i]._bias = 0.5;
         have_analog_triggers = true;
       } else if (axis == Axis::left_y || axis == Axis::right_y || axis == Axis::y) {
-        _controls[i]._scale = 1.0 / -32767.0;
-        _controls[i]._bias = 0.0;
+        _axes[i]._scale = 1.0 / -32767.0;
+        _axes[i]._bias = 0.0;
       } else {
-        _controls[i]._scale = 1.0 / 32767.0;
-        _controls[i]._bias = 0.0;
+        _axes[i]._scale = 1.0 / 32767.0;
+        _axes[i]._bias = 0.0;
       }
     }
   }
 
   if (_ltrigger_button >= 0 && _rtrigger_button >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
-    _ltrigger_control = (int)_controls.size();
-    add_control(Axis::left_trigger, 0, 1, false);
-    add_control(Axis::right_trigger, 0, 1, false);
+    _ltrigger_control = (int)_axes.size();
+    add_axis(Axis::left_trigger, 0, 1, false);
+    add_axis(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_button = -1;
     _rtrigger_button = -1;
@@ -343,8 +343,8 @@ open_device() {
   // are all 0, which indicates that the driver hasn't received any data for
   // this gamepad yet (which means it hasn't been plugged in for this session)
   if (strncmp(name, "Xbox 360 Wireless Receiver", 26) == 0) {
-    for (const auto &control : _controls) {
-      if (control.state != 0.0) {
+    for (const auto &control : _axes) {
+      if (control.value != 0.0) {
         _is_connected = true;
         return true;
       }
@@ -398,9 +398,9 @@ process_events() {
 
     if (events[i].type & JS_EVENT_BUTTON) {
       if (index == _ltrigger_button) {
-        control_changed(_ltrigger_control, events[i].value);
+        axis_changed(_ltrigger_control, events[i].value);
       } else if (index == _rtrigger_button) {
-        control_changed(_ltrigger_control + 1, events[i].value);
+        axis_changed(_ltrigger_control + 1, events[i].value);
       }
       button_changed(index, (events[i].value != 0));
 
@@ -413,7 +413,7 @@ process_events() {
         button_changed(_dpad_up_button+1, events[i].value > 1000);
       }
 
-      control_changed(index, events[i].value);
+      axis_changed(index, events[i].value);
     }
   }
 

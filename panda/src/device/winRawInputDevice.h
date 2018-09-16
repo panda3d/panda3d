@@ -49,28 +49,28 @@ private:
   // Indexed by report ID
   pvector<BitArray> _report_buttons;
 
-  // Either a button index or a control index.
+  // Either a button index or a axis index.
   struct Index {
-    Index() : _button(-1), _control(-1) {}
+    Index() : _button(-1), _axis(-1) {}
 
     static Index button(int index) {
       Index idx;
       idx._button = index;
       return idx;
     }
-    static Index control(int index, bool is_signed=true) {
+    static Index axis(int index, bool is_signed=true) {
       Index idx;
-      idx._control = index;
+      idx._axis = index;
       idx._signed = is_signed;
       return idx;
     }
 
     int _button;
-    int _control;
+    int _axis;
     bool _signed;
   };
 
-  // Maps a "data index" to either button index or control index.
+  // Maps a "data index" to either button index or axis index.
   pvector<Index> _indices;
   int _hat_data_index;
   int _hat_data_minimum;

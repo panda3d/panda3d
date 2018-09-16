@@ -81,7 +81,7 @@ write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_analog != nullptr) {
-    _analog->write_controls(out, indent_level + 2);
+    _analog->write_axes(out, indent_level + 2);
   }
 }
 
@@ -101,12 +101,14 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
 
     LPoint2 out(0.0f, 0.0f);
     for (int i = 0; i < max_outputs; i++) {
-      if (_outputs[i]._index >= 0 &&
-          _analog->is_control_known(_outputs[i]._index)) {
-        if (_outputs[i]._flip) {
-          out[i] = -_analog->get_control_state(_outputs[i]._index);
-        } else {
-          out[i] = _analog->get_control_state(_outputs[i]._index);
+      if (_outputs[i]._index >= 0) {
+        InputDevice::AxisState state = _analog->get_axis(_outputs[i]._index);
+        if (state.known) {
+          if (_outputs[i]._flip) {
+            out[i] = -state.value;
+          } else {
+            out[i] = state.value;
+          }
         }
       }
     }

@@ -46,9 +46,6 @@ PUBLISHED:
 
   INLINE static InputDeviceManager *get_global_ptr();
 
-  // The set of all currently connected devices.
-  MAKE_PROPERTY(devices, get_devices);
-
 protected:
   LightMutex _lock;
 

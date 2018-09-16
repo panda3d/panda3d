@@ -54,9 +54,27 @@ get_device() const {
 void InputDeviceNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
+
+  if (_device == nullptr && !_device->is_connected()) {
+    return;
+  }
+
+  _device->poll();
+
   // get all button events of the device and forward them to the data graph
   if (_device->has_button_event()) {
     PT(ButtonEventList) bel = _device->get_button_events();
+
+    // Register the current state for each button.
+    for (int i = 0; i < bel->get_num_events(); ++i) {
+      const ButtonEvent &event = bel->get_event(i);
+      if (event._type == ButtonEvent::T_down) {
+        _button_states[event._button] = true;
+      } else if (event._type == ButtonEvent::T_down) {
+        _button_states[event._button] = false;
+      }
+    }
+
     output.set_data(_button_events_output, EventParameter(bel));
   }
 

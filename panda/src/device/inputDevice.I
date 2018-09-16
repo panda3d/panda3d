@@ -24,9 +24,7 @@ InputDevice() :
   _product_id(0),
   _is_connected(false),
   _event_sequence(0),
-  _enable_pointer_events(false),
-  _battery_level(-1),
-  _max_battery_level(-1)
+  _enable_pointer_events(false)
 {
   _button_events = new ButtonEventList;
 }
@@ -48,6 +46,16 @@ INLINE std::string InputDevice::
 get_manufacturer() const {
   LightMutexHolder holder(_lock);
   return _manufacturer;
+}
+
+/**
+ * Returns a string containing the serial number of the device, if this
+ * information is known.
+ */
+INLINE std::string InputDevice::
+get_serial_number() const {
+  LightMutexHolder holder(_lock);
+  return _serial_number;
 }
 
 /**
@@ -160,23 +168,12 @@ get_tracker() const {
 
 /**
  * Returns a rough indication of the battery level, ranging from 0 (completely
- * empty battery) to the number reported by get_max_battery_level(), which
- * represents a full battery.  If this information is not known, returns -1.
+ * empty battery) to the indicated max_level value.
  */
-INLINE short InputDevice::
-get_battery_level() const {
+INLINE InputDevice::BatteryData InputDevice::
+get_battery() const {
   LightMutexHolder holder(_lock);
-  return _battery_level;
-}
-
-/**
- * Returns the maximum value that may be reported by get_battery_level(),
- * representing a full battery.  Returns -1 if no battery information is known.
- */
-INLINE short InputDevice::
-get_max_battery_level() const {
-  LightMutexHolder holder(_lock);
-  return _max_battery_level;
+  return _battery_data;
 }
 
 /**
@@ -202,7 +199,7 @@ get_num_buttons() const {
  * generate ButtonEvents when the buttons change state.
  */
 INLINE void InputDevice::
-set_button_map(size_t index, ButtonHandle button) {
+map_button(size_t index, ButtonHandle button) {
   LightMutexHolder holder(_lock);
   if (index >= _buttons.size()) {
     _buttons.resize(index + 1, ButtonState());
@@ -213,7 +210,7 @@ set_button_map(size_t index, ButtonHandle button) {
 
 /**
  * Returns the ButtonHandle that was previously associated with the given index
- * number by a call to set_button_map(), or ButtonHandle::none() if no button
+ * number by a call to map_button(), or ButtonHandle::none() if no button
  * was associated.
  */
 INLINE ButtonHandle InputDevice::
@@ -230,9 +227,9 @@ get_button_map(size_t index) const {
  * currently known to be down, or false if it is up or unknown.
  */
 INLINE bool InputDevice::
-get_button_state(size_t index) const {
+is_button_pressed(size_t index) const {
   if (index < _buttons.size()) {
-    return (_buttons[index].state == S_down);
+    return (_buttons[index]._state == S_down);
   } else {
     return false;
   }
@@ -245,14 +242,14 @@ get_button_state(size_t index) const {
 INLINE bool InputDevice::
 is_button_known(size_t index) const {
   if (index < _buttons.size()) {
-    return _buttons[index].state != S_unknown;
+    return _buttons[index]._state != S_unknown;
   } else {
     return false;
   }
 }
 
 /**
- * Returns the ButtonState that is set at the given index, or throw an assection
+ * Returns the ButtonState that is set at the given index, or throw an assert
  * if the index was not found in the list.
  */
 INLINE InputDevice::ButtonState InputDevice::
@@ -261,13 +258,13 @@ get_button(size_t index) const {
     return _buttons[index];
   } else {
     device_cat.error()
-      << "Index " << index << " was not found in the controls list\n";
+      << "Index " << index << " was not found in the axes list\n";
     return ButtonState();
   }
 }
 
 /**
- * Returns the first ButtonState found with the given axis, or throw an assection
+ * Returns the first ButtonState found with the given axis, or throw an assert
  * if the button handle was not found in the list.
  */
 INLINE InputDevice::ButtonState InputDevice::
@@ -278,103 +275,89 @@ find_button(ButtonHandle handle) const {
     }
   }
   device_cat.error()
-    << "Handle " << handle.get_name() << " was not found in the controls list\n";
+    << "Handle " << handle.get_name() << " was not found in the axes list\n";
   return ButtonState();
 }
 
 /**
- * Returns the number of analog controls known to the InputDevice.  This number
- * may change as more controls are discovered.
+ * Returns the number of analog axes known to the InputDevice.  This number
+ * may change as more axes are discovered.
  */
 INLINE size_t InputDevice::
-get_num_controls() const {
-  return _controls.size();
+get_num_axes() const {
+  return _axes.size();
 }
 
 /**
- * Associates the indicated Axis with the control of the indicated index
+ * Associates the indicated Axis with the axis of the indicated index
  * number.  Pass Axis::none to turn off any association.
  *
  * It is not necessary to call this if you simply want to query the state of
- * the various controls by index number.
+ * the various axes by index number.
  */
 INLINE void InputDevice::
-set_control_map(size_t index, InputDevice::Axis axis) {
+map_axis(size_t index, InputDevice::Axis axis) {
   LightMutexHolder holder(_lock);
-  if (index >= _controls.size()) {
-    _controls.resize(index + 1, AnalogState());
+  if (index >= _axes.size()) {
+    _axes.resize(index + 1, AxisState());
   }
 
-  _controls[index].axis = axis;
+  _axes[index].axis = axis;
 }
 
 /**
- * Returns the Axis that was previously associated with the given index
- * number by a call to set_control_map(), or Axis::none if no control was
- * associated.
- */
-INLINE InputDevice::Axis InputDevice::
-get_control_map(size_t index) const {
-  if (index < _controls.size()) {
-    return _controls[index].axis;
-  } else {
-    return Axis::none;
-  }
-}
-
-/**
- * Returns the current position of indicated analog control (identified by its
- * index number), or 0.0 if the control is unknown.  The normal range of a
- * single control is -1.0 to 1.0.
+ * Returns the current position of indicated analog axis (identified by its
+ * index number), or 0.0 if the axis is unknown.  The normal range of a
+ * single axis is -1.0 to 1.0.
  */
 INLINE double InputDevice::
-get_control_state(size_t index) const {
-  if (index < _controls.size()) {
-    return _controls[index].state;
+get_axis_value(size_t index) const {
+  if (index < _axes.size()) {
+    return _axes[index].value;
   } else {
     return 0.0;
   }
 }
 
 /**
- * Returns the AnalogAxis that is set at the given index, or throw an assection
+ * Returns the axis state that is set at the given index, or throw an assert
  * if the index was not found in the list.
  */
-INLINE InputDevice::AnalogState InputDevice::
-get_control(size_t index) const {
-  if (index < _controls.size()) {
-    return _controls[index];
+INLINE InputDevice::AxisState InputDevice::
+get_axis(size_t index) const {
+  if (index < _axes.size()) {
+    return _axes[index];
   } else {
     device_cat.error()
-      << "Index " << index<< " was not found in the controls list\n";
-    return AnalogState();
+      << "Index " << index << " was not found in the axes list\n";
+    return AxisState();
   }
 }
 
 /**
- * Returns the first AnalogAxis found with the given axis, or throw an assection
+ * Returns the first AnalogAxis found with the given axis, or throw an assert
  * if the axis was not found in the list.
  */
-INLINE InputDevice::AnalogState InputDevice::
-find_control(InputDevice::Axis axis) const {
-  for (size_t i = 0; i < _controls.size(); ++i) {
-    if (_controls[i].axis == axis) {
-      return _controls[i];
+INLINE InputDevice::AxisState InputDevice::
+find_axis(InputDevice::Axis axis) const {
+  for (size_t i = 0; i < _axes.size(); ++i) {
+    if (_axes[i].axis == axis) {
+      return _axes[i];
     }
   }
   device_cat.error()
-    << "Axis " << axis << " was not found in the controls list\n";
-  return AnalogState();
+    << "Axis " << axis << " was not found in the axes list\n";
+  return AxisState();
 }
 
 /**
- * Returns true if the state of the indicated analog control is known, or false
- * if we have never heard anything about this particular control.
+ * Returns true if the state of the indicated analog axis is known, or false
+ * if we have never heard anything about this particular axis.
  */
 INLINE bool InputDevice::
-is_control_known(size_t index) const {
-  if (index < _controls.size()) {
-    return _controls[index].known;
+is_axis_known(size_t index) const {
+  if (index < _axes.size()) {
+    return _axes[index].known;
   } else {
     return false;
   }
@@ -382,8 +365,8 @@ is_control_known(size_t index) const {
 
 /**
  * Sets the strength of the vibration effect, if supported.  The values are
- * clamped to 0-1 range. The first value controls the low-frequency rumble
- * motor, whereas the second controls the high-frequency motor, if present.
+ * clamped to 0-1 range. The first value axes the low-frequency rumble
+ * motor, whereas the second axes the high-frequency motor, if present.
  */
 INLINE void InputDevice::
 set_vibration(double strong, double weak) {
@@ -423,33 +406,23 @@ set_connected(bool connected) {
 /**
  *
  */
-INLINE bool InputDevice::
-operator == (const InputDevice &) const {
-  return true;
-}
-
-/**
- *
- */
-INLINE bool InputDevice::
-operator != (const InputDevice &) const {
-  return false;
-}
-
-/**
- *
- */
-INLINE bool InputDevice::
-operator < (const InputDevice &) const {
-  return false;
-}
-
-/**
- *
- */
 INLINE InputDevice::ButtonState::
 ButtonState(ButtonHandle handle) :
-  handle(handle),
-  state(S_unknown)
-{
+  handle(handle) {
+}
+
+/**
+ * True if the button state is currently known.
+ */
+ALWAYS_INLINE bool InputDevice::ButtonState::
+is_known() const {
+  return (_state != S_unknown);
+}
+
+/**
+ * True if the button is currently known to be pressed.
+ */
+ALWAYS_INLINE bool InputDevice::ButtonState::
+is_pressed() const {
+  return (_state == S_down);
 }
