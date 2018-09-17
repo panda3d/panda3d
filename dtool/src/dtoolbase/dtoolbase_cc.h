@@ -49,6 +49,8 @@
 // interrogate pass (CPPPARSER isn't defined), this maps to public.
 #define PUBLISHED __published
 
+#define PHAVE_ATOMIC 1
+
 typedef int ios_openmode;
 typedef int ios_fmtflags;
 typedef int ios_iostate;
@@ -93,6 +95,23 @@ typedef std::ios::iostate ios_iostate;
 typedef std::ios::seekdir ios_seekdir;
 #endif
 
+#ifdef _MSC_VER
+#define ALWAYS_INLINE __forceinline
+#elif defined(__GNUC__)
+#define ALWAYS_INLINE __attribute__((always_inline)) inline
+#else
+#define ALWAYS_INLINE inline
+#endif
+
+#ifdef FORCE_INLINING
+// If FORCE_INLINING is defined, we use the keyword __forceinline, which tells
+// MS VC++ to override its internal benefit heuristic and inline the fn if it
+// is technically possible to do so.
+#define INLINE ALWAYS_INLINE
+#else
+#define INLINE inline
+#endif
+
 // Apple has an outdated libstdc++.  Not all is lost, though, as we can fill
 // in some important missing functions.
 #if defined(__GLIBCXX__) && __GLIBCXX__ <= 20070719
@@ -115,24 +134,38 @@ namespace std {
   }
 
   template<class T> struct owner_less;
+
+  typedef enum memory_order {
+    memory_order_relaxed,
+    memory_order_consume,
+    memory_order_acquire,
+    memory_order_release,
+    memory_order_acq_rel,
+    memory_order_seq_cst,
+  } memory_order;
+
+  #define ATOMIC_FLAG_INIT { 0 }
+  class atomic_flag {
+    bool _flag;
+
+  public:
+    atomic_flag() noexcept = default;
+    ALWAYS_INLINE constexpr atomic_flag(bool flag) noexcept : _flag(flag) {}
+    atomic_flag(const atomic_flag &) = delete;
+    ~atomic_flag() noexcept = default;
+    atomic_flag &operator = (const atomic_flag&) = delete;
+
+    ALWAYS_INLINE bool test_and_set(memory_order order = memory_order_seq_cst) noexcept {
+      return __atomic_test_and_set(&_flag, order);
+    }
+    ALWAYS_INLINE void clear(memory_order order = memory_order_seq_cst) noexcept {
+      __atomic_clear(&_flag, order);
+    }
+  };
 };
-#endif
-
-#ifdef _MSC_VER
-#define ALWAYS_INLINE __forceinline
-#elif defined(__GNUC__)
-#define ALWAYS_INLINE __attribute__((always_inline)) inline
 #else
-#define ALWAYS_INLINE inline
-#endif
-
-#ifdef FORCE_INLINING
-// If FORCE_INLINING is defined, we use the keyword __forceinline, which tells
-// MS VC++ to override its internal benefit heuristic and inline the fn if it
-// is technically possible to do so.
-#define INLINE ALWAYS_INLINE
-#else
-#define INLINE inline
+// Expect that we have access to the <atomic> header.
+#define PHAVE_ATOMIC 1
 #endif
 
 // Determine the availability of C++11 features.

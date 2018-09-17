@@ -2951,7 +2951,7 @@ setup_material(GLMaterial *gl_material, const Material *material) {
 
   _color_material_flags = CMF_ambient | CMF_diffuse;
 
-  if (material->has_ambient()) {
+  if (material->has_ambient() || material->has_base_color()) {
     const LColor &ambient = material->get_ambient();
     gl_material->ambient.v[0] = ambient[0];
     gl_material->ambient.v[1] = ambient[1];
@@ -2961,7 +2961,7 @@ setup_material(GLMaterial *gl_material, const Material *material) {
     _color_material_flags &= ~CMF_ambient;
   }
 
-  if (material->has_diffuse()) {
+  if (material->has_diffuse() || material->has_base_color()) {
     const LColor &diffuse = material->get_diffuse();
     gl_material->diffuse.v[0] = diffuse[0];
     gl_material->diffuse.v[1] = diffuse[1];

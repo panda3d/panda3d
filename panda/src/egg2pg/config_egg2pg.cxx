@@ -20,7 +20,7 @@
 #include "configVariableCore.h"
 #include "eggRenderState.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_EGG2PG)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_EGG2PG)
   #error Buildsystem error: BUILDING_PANDA_EGG2PG not defined
 #endif
 

@@ -13,6 +13,10 @@
 
 #include "bulletConeShape.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 TypeHandle BulletConeShape::_type_handle;
 
 /**

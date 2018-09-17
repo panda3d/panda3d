@@ -19,19 +19,18 @@ TypeHandle PGScrollFrame::_type_handle;
  *
  */
 PGScrollFrame::
-PGScrollFrame(const std::string &name) : PGVirtualFrame(name)
+PGScrollFrame(const std::string &name) :
+  PGVirtualFrame(name),
+  _needs_remanage(false),
+  _needs_recompute_clip(false),
+  _has_virtual_frame(false),
+  _virtual_frame(0.0f, 0.0f, 0.0f, 0.0f),
+  _manage_pieces(false),
+  _auto_hide(false)
 {
-  set_cull_callback();
+  _canvas_computed.test_and_set();
 
-  _needs_remanage = false;
-  _needs_recompute_canvas = false;
-  _needs_recompute_clip = false;
-  _has_virtual_frame = false;
-  _virtual_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
-  _manage_pieces = false;
-  _auto_hide = false;
-  _horizontal_slider = nullptr;
-  _vertical_slider = nullptr;
+  set_cull_callback();
 }
 
 /**
@@ -55,8 +54,8 @@ PGScrollFrame(const PGScrollFrame &copy) :
   _auto_hide(copy._auto_hide)
 {
   _needs_remanage = false;
-  _needs_recompute_canvas = true;
   _needs_recompute_clip = true;
+  _canvas_computed.clear();
 }
 
 /**
@@ -97,7 +96,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (_needs_recompute_clip) {
     recompute_clip();
   }
-  if (_needs_recompute_canvas) {
+  if (!_canvas_computed.test_and_set()) {
     recompute_canvas();
   }
   return PGVirtualFrame::cull_callback(trav, data);
@@ -257,7 +256,7 @@ remanage() {
     // Showing or hiding one of the scroll bars might have set this flag again
     // indirectly; we clear it again to avoid a feedback loop.
     _needs_remanage = false;
-}
+  }
 
   // Are either or both of the scroll bars hidden?
   if (got_horizontal && _horizontal_slider->is_overall_hidden()) {
@@ -329,19 +328,20 @@ item_draw_mask_changed(PGItem *) {
  */
 void PGScrollFrame::
 slider_bar_adjust(PGSliderBar *) {
-  LightReMutexHolder holder(_lock);
-  _needs_recompute_canvas = true;
+  // Indicate that recompute_canvas() needs to be called.
+  _canvas_computed.clear();
 }
 
 /**
  * Recomputes the clipping window of the PGScrollFrame, based on the position
  * of the slider bars.
+ *
+ * Assumes the lock is held.
  */
 void PGScrollFrame::
 recompute_clip() {
-  LightReMutexHolder holder(_lock);
   _needs_recompute_clip = false;
-  _needs_recompute_canvas = true;
+  _canvas_computed.clear();
 
   // Figure out how to remove the scroll bars from the clip region.
   LVecBase4 clip = get_frame_style(get_state()).get_internal_frame(get_frame());
@@ -361,34 +361,40 @@ recompute_clip() {
 /**
  * Recomputes the portion of the virtual canvas that is visible within the
  * PGScrollFrame, based on the values of the slider bars.
+ *
+ * Assumes the lock is held.
  */
 void PGScrollFrame::
 recompute_canvas() {
-  LightReMutexHolder holder(_lock);
-  _needs_recompute_canvas = false;
+  const LVecBase4 &clip = _has_clip_frame ? _clip_frame : get_frame();
 
-  const LVecBase4 &clip = get_clip_frame();
+  // Set this to true before we sample the slider bar ratios.
+  // If slider_bar_adjust happens to get called while we do this, no big deal,
+  // this method will just be called again next frame.
+  _canvas_computed.test_and_set();
 
-  PN_stdfloat x = interpolate_canvas(clip[0], clip[1],
-                               _virtual_frame[0], _virtual_frame[1],
-                               _horizontal_slider);
+  PN_stdfloat cx, cy;
+  cx = interpolate_canvas(clip[0], clip[1],
+                          _virtual_frame[0], _virtual_frame[1],
+                          _horizontal_slider);
 
-  PN_stdfloat y = interpolate_canvas(clip[3], clip[2],
-                               _virtual_frame[3], _virtual_frame[2],
-                               _vertical_slider);
+  cy = interpolate_canvas(clip[3], clip[2],
+                          _virtual_frame[3], _virtual_frame[2],
+                          _vertical_slider);
 
-  get_canvas_node()->set_transform(TransformState::make_pos(LVector3::rfu(x, 0, y)));
+  _canvas_node->set_transform(TransformState::make_pos(LVector3::rfu(cx, 0, cy)));
 }
 
 /**
  * Computes the linear translation that should be applied to the virtual
  * canvas node, based on the corresponding slider bar's position.
+ *
+ * Assumes the lock is held.
  */
 PN_stdfloat PGScrollFrame::
 interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max,
                    PN_stdfloat canvas_min, PN_stdfloat canvas_max,
                    PGSliderBar *slider_bar) {
-  LightReMutexHolder holder(_lock);
   PN_stdfloat t = 0.0f;
   if (slider_bar != nullptr) {
     t = slider_bar->get_ratio();

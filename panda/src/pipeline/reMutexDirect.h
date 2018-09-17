@@ -59,7 +59,7 @@ PUBLISHED:
 
 private:
 #ifdef HAVE_REMUTEXTRUEIMPL
-  mutable ReMutexImpl _impl;
+  mutable ReMutexTrueImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, we have to hand-roll one.
@@ -68,7 +68,7 @@ private:
   INLINE bool do_try_lock();
   bool do_try_lock(Thread *current_thread);
   void do_elevate_lock();
-  void do_unlock();
+  void do_unlock(Thread *current_thread = Thread::get_current_thread());
 
   Thread *_locking_thread;
   int _lock_count;

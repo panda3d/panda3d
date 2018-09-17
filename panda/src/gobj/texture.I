@@ -2390,8 +2390,13 @@ get_half_float(const unsigned char *&p) {
   uint32_t t3 = in & 0x7c00; // Exponent
   t1 <<= 13; // Align mantissa on MSB
   t2 <<= 16; // Shift sign bit into position
-  t1 += 0x38000000; // Adjust bias
-  t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  if (t3 != 0x7c00) {
+    t1 += 0x38000000; // Adjust bias
+    t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  } else {
+    // Infinity / NaN
+    t1 |= 0x7f800000;
+  }
   t1 |= t2; // Re-insert sign bit
   v.ui = t1;
   return v.uf;

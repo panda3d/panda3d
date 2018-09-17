@@ -3463,7 +3463,7 @@ do_issue_material() {
   cur_material.Emissive = *(D3DCOLORVALUE *)(color.get_data());
   cur_material.Power = material->get_shininess();
 
-  if (material->has_diffuse()) {
+  if (material->has_diffuse() || material->has_base_color()) {
     // If the material specifies an diffuse color, use it.
     set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
   } else {
@@ -3476,7 +3476,7 @@ do_issue_material() {
       set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
     }
   }
-  if (material->has_ambient()) {
+  if (material->has_ambient() || material->has_base_color()) {
     // If the material specifies an ambient color, use it.
     set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
   } else {
@@ -3490,7 +3490,7 @@ do_issue_material() {
     }
   }
 
-  if (material->has_specular()) {
+  if (material->has_specular() || material->has_base_color()) {
     set_render_state(D3DRS_SPECULARENABLE, TRUE);
   } else {
     set_render_state(D3DRS_SPECULARENABLE, FALSE);

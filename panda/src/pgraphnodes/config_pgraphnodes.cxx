@@ -37,7 +37,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PGRAPHNODES)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PGRAPHNODES)
   #error Buildsystem error: BUILDING_PANDA_PGRAPHNODES not defined
 #endif
 

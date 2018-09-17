@@ -13,6 +13,8 @@
 
 #include "bulletManifoldPoint.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */

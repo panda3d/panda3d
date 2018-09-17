@@ -13,6 +13,8 @@
 
 #include "bulletMultiSphereShape.h"
 
+#include "bulletWorld.h"
+
 #include "geomVertexReader.h"
 
 TypeHandle BulletMultiSphereShape::_type_handle;

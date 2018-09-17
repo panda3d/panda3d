@@ -5491,7 +5491,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
           // Use move constructor when available for functions that take an
           // actual PointerTo.  This eliminates an unref()ref() pair.
-          pexpr_string = "MOVE(" + param_name + "_this)";
+          pexpr_string = "std::move(" + param_name + "_this)";
 
         } else {
           // This is a move-assignable type, such as TypeHandle or LVecBase4.
@@ -6156,7 +6156,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "return true;\n";
 
     } else if (TypeManager::is_reference_count(remap->_cpptype)) {
-      indent(out, indent_level) << "coerced = MOVE(" << return_expr << ");\n";
+      indent(out, indent_level) << "coerced = std::move(" << return_expr << ");\n";
       indent(out, indent_level) << "return true;\n";
 
     } else {

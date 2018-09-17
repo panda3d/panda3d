@@ -148,13 +148,7 @@ def do_file_test(dg, verify, filename):
     dgi = core.DatagramIterator(dg2)
     verify(dgi)
 
-@pytest.fixture
-def tmpfile():
-    file = tempfile.NamedTemporaryFile(suffix='.bin')
-    yield file
-    file.close()
-
-def test_file_small(datagram_small, tmpfile):
+def test_file_small(datagram_small):
     """This tests DatagramOutputFile/DatagramInputFile on small datagrams."""
     dg, verify = datagram_small
 
@@ -164,7 +158,7 @@ def test_file_small(datagram_small, tmpfile):
 
     do_file_test(dg, verify, filename)
 
-def test_file_large(datagram_large, tmpfile):
+def test_file_large(datagram_large):
     """This tests DatagramOutputFile/DatagramInputFile on very large datagrams."""
     dg, verify = datagram_large
 
@@ -174,7 +168,7 @@ def test_file_large(datagram_large, tmpfile):
 
     do_file_test(dg, verify, filename)
 
-def test_file_corrupt(datagram_small, tmpfile):
+def test_file_corrupt(datagram_small):
     """This tests DatagramInputFile's handling of a corrupt size header."""
     dg, verify = datagram_small
 

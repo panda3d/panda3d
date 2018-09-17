@@ -422,7 +422,7 @@ void Material::
 write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "Material " << get_name() << "\n";
   if (has_base_color()) {
-    indent(out, indent_level + 2) << "base_color = " << get_ambient() << "\n";
+    indent(out, indent_level + 2) << "base_color = " << get_base_color() << "\n";
   }
   if (has_ambient()) {
     indent(out, indent_level + 2) << "ambient = " << get_ambient() << "\n";

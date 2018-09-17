@@ -18,7 +18,7 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAX11)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAX11)
   #error Buildsystem error: BUILDING_PANDAX11 not defined
 #endif
 

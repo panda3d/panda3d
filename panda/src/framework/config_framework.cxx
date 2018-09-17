@@ -16,7 +16,7 @@
 #include "dconfig.h"
 #include "windowFramework.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_FRAMEWORK)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_FRAMEWORK)
   #error Buildsystem error: BUILDING_FRAMEWORK not defined
 #endif
 

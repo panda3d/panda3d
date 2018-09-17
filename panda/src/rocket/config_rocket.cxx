@@ -26,7 +26,7 @@
 #include <Rocket/Core.h>
 #undef Factory
 
-#if !defined(CPPPARSER) && !defined(BUILDING_ROCKET)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_ROCKET)
   #error Buildsystem error: BUILDING_ROCKET not defined
 #endif
 

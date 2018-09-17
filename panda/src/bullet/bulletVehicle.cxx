@@ -12,6 +12,9 @@
  */
 
 #include "bulletVehicle.h"
+
+#include "config_bullet.h"
+
 #include "bulletWorld.h"
 #include "bulletRigidBodyNode.h"
 #include "bulletWheel.h"
