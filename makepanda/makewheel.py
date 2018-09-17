@@ -107,6 +107,11 @@ MANYLINUX_LIBS = [
     "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2",
 ]
 
+# Binaries to never scan for dependencies on non-Windows systems.
+IGNORE_UNIX_DEPS_OF = [
+    "panda3d_tools/pstats",
+]
+
 WHEEL_DATA = """Wheel-Version: 1.0
 Generator: makepanda
 Root-Is-Purelib: false
@@ -328,11 +333,16 @@ class WheelFile(object):
 
         # If this is a .so file, we should set the rpath appropriately.
         temp = None
-        ext = os.path.splitext(source_path)[1]
+        basename, ext = os.path.splitext(source_path)
         if ext in ('.so', '.dylib') or '.so.' in os.path.basename(source_path) or \
             (not ext and is_executable(source_path)):
+
             # Scan and add Unix dependencies.
-            deps = scan_dependencies(source_path)
+            if target_path not in IGNORE_UNIX_DEPS_OF:
+                deps = scan_dependencies(source_path)
+            else:
+                deps = []
+
             for dep in deps:
                 # Only include dependencies with relative path.  Otherwise we
                 # end up overwriting system files like /lib/ld-linux.so.2!
