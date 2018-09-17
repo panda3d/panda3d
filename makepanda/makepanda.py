@@ -438,7 +438,7 @@ elif target == 'darwin':
 
     PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
 
-elif target == 'linux' and os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
     if GetTargetArch() in ('x86_64', 'amd64'):
         PLATFORM = 'manylinux1-x86_64'
