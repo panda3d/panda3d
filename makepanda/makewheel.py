@@ -28,7 +28,7 @@ default_platform = get_platform()
 
 if default_platform.startswith("linux-"):
     # Is this manylinux1?
-    if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+    if (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
         default_platform = default_platform.replace("linux", "manylinux1")
 
 
