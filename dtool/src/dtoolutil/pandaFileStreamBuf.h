@@ -28,16 +28,16 @@
 /**
  * The streambuf object that implements pifstream and pofstream.
  */
-class EXPCL_DTOOL PandaFileStreamBuf : public streambuf {
+class EXPCL_DTOOL_DTOOLUTIL PandaFileStreamBuf : public std::streambuf {
 public:
   PandaFileStreamBuf();
   virtual ~PandaFileStreamBuf();
 
-  void open(const char *filename, ios::openmode mode);
+  void open(const char *filename, std::ios::openmode mode);
 #ifdef _WIN32
-  void attach(const char *filename, HANDLE handle, ios::openmode mode);
+  void attach(const char *filename, HANDLE handle, std::ios::openmode mode);
 #else
-  void attach(const char *filename, int fd, ios::openmode mode);
+  void attach(const char *filename, int fd, std::ios::openmode mode);
 #endif
 
   bool is_open() const;
@@ -53,8 +53,8 @@ public:
   static NewlineMode _newline_mode;
 
 protected:
-  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
-  virtual streampos seekpos(streampos pos, ios_openmode which);
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
   virtual int overflow(int c);
   virtual int sync();
@@ -78,9 +78,9 @@ private:
                              const char *source, size_t source_length);
 
 private:
-  string _filename;
+  std::string _filename;
   bool _is_open;
-  ios::openmode _open_mode;
+  std::ios::openmode _open_mode;
 
   char _last_read_nl;
 
@@ -91,15 +91,15 @@ private:
 #endif  // _WIN32
 
   char *_buffer;
-  streampos _ppos;
-  streampos _gpos;
+  std::streampos _ppos;
+  std::streampos _gpos;
 };
 
-EXPCL_DTOOL ostream &
-operator << (ostream &out, PandaFileStreamBuf::NewlineMode newline_mode);
+EXPCL_DTOOL_DTOOLUTIL std::ostream &
+operator << (std::ostream &out, PandaFileStreamBuf::NewlineMode newline_mode);
 
-EXPCL_DTOOL istream &
-operator >> (istream &in, PandaFileStreamBuf::NewlineMode &newline_mode);
+EXPCL_DTOOL_DTOOLUTIL std::istream &
+operator >> (std::istream &in, PandaFileStreamBuf::NewlineMode &newline_mode);
 
 #endif  // USE_PANDAFILESTREAM
 

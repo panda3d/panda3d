@@ -14,7 +14,7 @@
 /**
  * Returns the name of this field, or empty string if the field is unnamed.
  */
-INLINE const string &DCPackerInterface::
+INLINE const std::string &DCPackerInterface::
 get_name() const {
   return _name;
 }

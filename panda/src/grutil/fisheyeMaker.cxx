@@ -177,7 +177,7 @@ generate() {
         int piece_size = max_vertices_per_primitive / 2 - 1;
         int vi = 0;
         while (vi < ring_size) {
-          int piece_end = min(ring_size + 1, piece_size + 1 + vi);
+          int piece_end = std::min(ring_size + 1, piece_size + 1 + vi);
           for (int pi = vi; pi < piece_end; ++pi) {
             tristrips->add_vertex(last_ring_vertex + pi % last_ring_size);
             tristrips->add_vertex(ring_vertex + pi % ring_size);
@@ -284,7 +284,7 @@ generate() {
       int piece_size = max_vertices_per_primitive / 2 - 1;
       int vi = 0;
       while (vi < ring_size) {
-        int piece_end = min(ring_size + 1, piece_size + 1 + vi);
+        int piece_end = std::min(ring_size + 1, piece_size + 1 + vi);
         for (int pi = vi; pi < piece_end; ++pi) {
           tristrips->add_vertex(last_ring_vertex + pi % last_ring_size);
           tristrips->add_vertex(ring_vertex + pi % ring_size);
@@ -322,7 +322,7 @@ generate() {
     }
   }
 
-  return geom_node.p();
+  return geom_node;
 }
 
 /**

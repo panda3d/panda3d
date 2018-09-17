@@ -17,27 +17,33 @@
 #include "pandabase.h"
 #include "inputDevice.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(CPPPARSER)
+
+#include <CfgMgr32.h>
 
 class InputDeviceManager;
 
-typedef struct _XINPUT_CAPABILITIES XINPUT_CAPABILITIES;
+typedef struct _XINPUT_CAPABILITIES_EX XINPUT_CAPABILITIES_EX;
 typedef struct _XINPUT_STATE XINPUT_STATE;
+
+typedef struct tagRID_DEVICE_INFO RID_DEVICE_INFO;
 
 /**
  * This implementation of InputDevice uses Microsoft's XInput library to
  * interface with an Xbox 360 game controller.
  */
-class EXPCL_PANDA_DEVICE XInputDevice FINAL : public InputDevice {
+class EXPCL_PANDA_DEVICE XInputDevice final : public InputDevice {
 public:
   XInputDevice(DWORD user_index);
   ~XInputDevice();
 
+  bool check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
+                     const std::string &name, const std::string &manufacturer);
   void detect(InputDeviceManager *mgr);
   static bool init_xinput();
 
 private:
-  void init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state);
+  void init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state);
   virtual void do_set_vibration(double strong, double weak);
   virtual void do_poll();
 

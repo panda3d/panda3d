@@ -13,18 +13,22 @@
 
 #include "animateVerticesRequest.h"
 #include "bufferContext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_gobj.h"
 #include "geom.h"
 #include "geomCacheEntry.h"
 #include "geomMunger.h"
 #include "geomPrimitive.h"
 #include "geomTriangles.h"
+#include "geomTrianglesAdjacency.h"
 #include "geomTristrips.h"
+#include "geomTristripsAdjacency.h"
 #include "geomTrifans.h"
 #include "geomPatches.h"
 #include "geomLines.h"
+#include "geomLinesAdjacency.h"
 #include "geomLinestrips.h"
+#include "geomLinestripsAdjacency.h"
 #include "geomPoints.h"
 #include "geomVertexArrayData.h"
 #include "geomVertexArrayFormat.h"
@@ -65,6 +69,10 @@
 
 #include "dconfig.h"
 #include "string_utils.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_GOBJ)
+  #error Buildsystem error: BUILDING_PANDA_GOBJ not defined
+#endif
 
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
@@ -251,18 +259,6 @@ ConfigVariableBool cache_generated_shaders
 ("cache-generated-shaders", true,
  PRC_DESC("Set this true to cause all generated shaders to be cached in "
           "memory.  This is useful to prevent unnecessary recompilation."));
-
-ConfigVariableBool enforce_attrib_lock
-("enforce-attrib-lock", true,
- PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "
-          "constructed, the corresponding Material, Texture, or Light "
-          "is 'attrib locked.'  The attrib lock prevents qualitative "
-          "changes to the object.  This makes it possible to hardwire "
-          "information about material, light, and texture properties "
-          "into generated shaders.  This config variable can disable "
-          "the attrib lock.  Disabling the lock will break the shader "
-          "generator, but doing so may be necessary for backward "
-          "compatibility with old code."));
 
 ConfigVariableBool vertices_float64
 ("vertices-float64", false,
@@ -546,14 +542,18 @@ ConfigureFn(config_gobj) {
   GeomPipelineReader::init_type();
   GeomContext::init_type();
   GeomLines::init_type();
+  GeomLinesAdjacency::init_type();
   GeomLinestrips::init_type();
+  GeomLinestripsAdjacency::init_type();
   GeomMunger::init_type();
   GeomPoints::init_type();
   GeomPrimitive::init_type();
   GeomPrimitivePipelineReader::init_type();
   GeomTriangles::init_type();
+  GeomTrianglesAdjacency::init_type();
   GeomTrifans::init_type();
   GeomTristrips::init_type();
+  GeomTristripsAdjacency::init_type();
   GeomPatches::init_type();
   GeomVertexArrayData::init_type();
   GeomVertexArrayDataHandle::init_type();
@@ -601,11 +601,15 @@ ConfigureFn(config_gobj) {
   // factory
   Geom::register_with_read_factory();
   GeomLines::register_with_read_factory();
+  GeomLinesAdjacency::register_with_read_factory();
   GeomLinestrips::register_with_read_factory();
+  GeomLinestripsAdjacency::register_with_read_factory();
   GeomPoints::register_with_read_factory();
   GeomTriangles::register_with_read_factory();
+  GeomTrianglesAdjacency::register_with_read_factory();
   GeomTrifans::register_with_read_factory();
   GeomTristrips::register_with_read_factory();
+  GeomTristripsAdjacency::register_with_read_factory();
   GeomPatches::register_with_read_factory();
   GeomVertexArrayData::register_with_read_factory();
   GeomVertexArrayFormat::register_with_read_factory();

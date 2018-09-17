@@ -44,17 +44,10 @@ PUBLISHED:
   virtual void mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const;
   virtual void accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
-  INLINE void check_matrix() const;
-  void compute_matrix();
-
   PT(CharacterJoint) _joint;
-
-  LMatrix4 _matrix;
-  bool _matrix_stale;
-  LightMutex _lock;
 
 public:
   static void register_with_read_factory();

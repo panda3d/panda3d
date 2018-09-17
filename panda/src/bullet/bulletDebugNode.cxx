@@ -13,6 +13,10 @@
 
 #include "bulletDebugNode.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 #include "cullHandler.h"
 #include "cullTraverser.h"
 #include "cullableObject.h"
@@ -31,8 +35,10 @@ PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
  *
  */
 BulletDebugNode::
-BulletDebugNode(const char *name) : PandaNode(name), _debug_stale(true) {
+BulletDebugNode(const char *name) : PandaNode(name) {
 
+  _debug_stale = false;
+  _debug_world = nullptr;
   _wireframe = true;
   _constraints = true;
   _bounds = false;
@@ -167,7 +173,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   PT(Geom) debug_triangles;
 
   {
-    LightMutexHolder holder(_lock);
+    LightMutexHolder holder(BulletWorld::get_global_lock());
     if (_debug_world == nullptr) {
       return;
     }
@@ -254,12 +260,12 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   trav->_geoms_pcollector.add_level(2);
   {
     CullableObject *object =
-      new CullableObject(move(debug_lines), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
+      new CullableObject(std::move(debug_lines), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
     trav->get_cull_handler()->record_object(object, trav);
   }
   {
     CullableObject *object =
-      new CullableObject(move(debug_triangles), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
+      new CullableObject(std::move(debug_triangles), RenderState::make_empty(), trav->get_scene()->get_cs_world_transform());
     trav->get_cull_handler()->record_object(object, trav);
   }
 }
@@ -268,8 +274,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  *
  */
 void BulletDebugNode::
-sync_b2p(btDynamicsWorld *world) {
-  LightMutexHolder holder(_lock);
+do_sync_b2p(btDynamicsWorld *world) {
 
   _debug_world = world;
   _debug_stale = true;
@@ -299,7 +304,7 @@ getDebugMode() const {
 void BulletDebugNode::DebugDraw::
 reportErrorWarning(const char *warning) {
 
-  bullet_cat.error() << warning << endl;
+  bullet_cat.error() << warning << std::endl;
 }
 
 /**
@@ -380,7 +385,7 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &n0, const btVector3 &n1, const btVector3 &n2, const btVector3 &color, btScalar alpha) {
 
-  bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << endl;
+  bullet_cat.debug() << "drawTriangle(2) - not yet implemented!" << std::endl;
 }
 
 /**
@@ -401,7 +406,7 @@ drawContactPoint(const btVector3 &point, const btVector3 &normal, btScalar dista
 void BulletDebugNode::DebugDraw::
 draw3dText(const btVector3 &location, const char *text) {
 
-  bullet_cat.debug() << "draw3dText - not yet implemented!" << endl;
+  bullet_cat.debug() << "draw3dText - not yet implemented!" << std::endl;
 }
 
 /**

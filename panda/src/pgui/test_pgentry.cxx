@@ -22,7 +22,7 @@ main(int argc, char *argv[]) {
   framework.set_window_title("Panda Viewer");
 
   WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     window->enable_keyboard();
 
     NodePath aspect2d = window->get_aspect_2d();

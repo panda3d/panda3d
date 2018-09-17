@@ -29,6 +29,10 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_TINYDISPLAY)
+  #error Buildsystem error: BUILDING_TINYDISPLAY not defined
+#endif
+
 Configure(config_tinydisplay);
 NotifyCategoryDef(tinydisplay, "display");
 

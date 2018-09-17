@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
-  explicit TrackerNode(ClientBase *client, const string &device_name);
+  explicit TrackerNode(ClientBase *client, const std::string &device_name);
   explicit TrackerNode(InputDevice *device);
   virtual ~TrackerNode();
 

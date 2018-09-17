@@ -36,7 +36,7 @@ class DSearchPath;
  * for file existence and searching a searchpath, as well as the best way to
  * open an fstream for reading or writing.
  */
-class EXPCL_DTOOL Filename {
+class EXPCL_DTOOL_DTOOLUTIL Filename {
 PUBLISHED:
   enum Type {
     // These type values must fit within the bits allocated for F_type, below.
@@ -55,14 +55,11 @@ public:
   };
 
   INLINE Filename(const char *filename);
-  INLINE Filename(const string &filename);
-  INLINE Filename(const wstring &filename);
+  INLINE Filename(const std::string &filename);
+  INLINE Filename(const std::wstring &filename);
   INLINE Filename(const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename(string &&filename) NOEXCEPT;
-  INLINE Filename(Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename(std::string &&filename) noexcept;
+  INLINE Filename(Filename &&from) noexcept;
 
 PUBLISHED:
   INLINE Filename();
@@ -78,22 +75,22 @@ PUBLISHED:
   // or binary file.  This is in lieu of calling set_text() or set_binary() or
   // set_type().
   INLINE static Filename text_filename(const Filename &filename);
-  INLINE static Filename text_filename(const string &filename);
+  INLINE static Filename text_filename(const std::string &filename);
   INLINE static Filename binary_filename(const Filename &filename);
-  INLINE static Filename binary_filename(const string &filename);
-  INLINE static Filename dso_filename(const string &filename);
-  INLINE static Filename executable_filename(const string &filename);
+  INLINE static Filename binary_filename(const std::string &filename);
+  INLINE static Filename dso_filename(const std::string &filename);
+  INLINE static Filename executable_filename(const std::string &filename);
 
-  INLINE static Filename pattern_filename(const string &filename);
+  INLINE static Filename pattern_filename(const std::string &filename);
 
-  static Filename from_os_specific(const string &os_specific,
+  static Filename from_os_specific(const std::string &os_specific,
                                    Type type = T_general);
-  static Filename from_os_specific_w(const wstring &os_specific,
+  static Filename from_os_specific_w(const std::wstring &os_specific,
                                      Type type = T_general);
-  static Filename expand_from(const string &user_string,
+  static Filename expand_from(const std::string &user_string,
                               Type type = T_general);
-  static Filename temporary(const string &dirname, const string &prefix,
-                            const string &suffix = string(),
+  static Filename temporary(const std::string &dirname, const std::string &prefix,
+                            const std::string &suffix = std::string(),
                             Type type = T_general);
 
   static const Filename &get_home_directory();
@@ -102,18 +99,15 @@ PUBLISHED:
   static const Filename &get_common_appdata_directory();
 
   // Assignment is via the = operator.
-  INLINE Filename &operator = (const string &filename);
-  INLINE Filename &operator = (const wstring &filename);
+  INLINE Filename &operator = (const std::string &filename);
+  INLINE Filename &operator = (const std::wstring &filename);
   INLINE Filename &operator = (const char *filename);
   INLINE Filename &operator = (const Filename &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Filename &operator = (string &&filename) NOEXCEPT;
-  INLINE Filename &operator = (Filename &&from) NOEXCEPT;
-#endif
+  INLINE Filename &operator = (std::string &&filename) noexcept;
+  INLINE Filename &operator = (Filename &&from) noexcept;
 
   // And retrieval is by any of the classic string operations.
-  INLINE operator const string & () const;
+  INLINE operator const std::string & () const;
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
@@ -122,29 +116,29 @@ PUBLISHED:
   EXTENSION(PyObject *__repr__() const);
   EXTENSION(PyObject *__fspath__() const);
 
-  INLINE string substr(size_t begin) const;
-  INLINE string substr(size_t begin, size_t end) const;
-  INLINE void operator += (const string &other);
-  INLINE Filename operator + (const string &other) const;
+  INLINE std::string substr(size_t begin) const;
+  INLINE std::string substr(size_t begin, size_t end) const;
+  INLINE void operator += (const std::string &other);
+  INLINE Filename operator + (const std::string &other) const;
 
   INLINE Filename operator / (const Filename &other) const;
 
   // Or, you can use any of these.
-  INLINE string get_fullpath() const;
-  INLINE wstring get_fullpath_w() const;
-  INLINE string get_dirname() const;
-  INLINE string get_basename() const;
-  INLINE string get_fullpath_wo_extension() const;
-  INLINE string get_basename_wo_extension() const;
-  INLINE string get_extension() const;
+  INLINE std::string get_fullpath() const;
+  INLINE std::wstring get_fullpath_w() const;
+  INLINE std::string get_dirname() const;
+  INLINE std::string get_basename() const;
+  INLINE std::string get_fullpath_wo_extension() const;
+  INLINE std::string get_basename_wo_extension() const;
+  INLINE std::string get_extension() const;
 
   // You can also use any of these to reassign pieces of the filename.
-  void set_fullpath(const string &s);
-  void set_dirname(const string &s);
-  void set_basename(const string &s);
-  void set_fullpath_wo_extension(const string &s);
-  void set_basename_wo_extension(const string &s);
-  void set_extension(const string &s);
+  void set_fullpath(const std::string &s);
+  void set_dirname(const std::string &s);
+  void set_basename(const std::string &s);
+  void set_fullpath_wo_extension(const std::string &s);
+  void set_basename_wo_extension(const std::string &s);
+  void set_extension(const std::string &s);
 
   // Setting these flags appropriately is helpful when opening or searching
   // for a file; it helps the Filename resolve OS-specific conventions (for
@@ -165,8 +159,8 @@ PUBLISHED:
   INLINE bool has_hash() const;
   Filename get_filename_index(int index) const;
 
-  INLINE string get_hash_to_end() const;
-  void set_hash_to_end(const string &s);
+  INLINE std::string get_hash_to_end() const;
+  void set_hash_to_end(const std::string &s);
 
   void extract_components(vector_string &components) const;
   void standardize();
@@ -181,11 +175,11 @@ PUBLISHED:
   bool make_canonical();
   bool make_true_case();
 
-  string to_os_specific() const;
-  wstring to_os_specific_w() const;
-  string to_os_generic() const;
-  string to_os_short_name() const;
-  string to_os_long_name() const;
+  std::string to_os_specific() const;
+  std::wstring to_os_specific_w() const;
+  std::string to_os_generic() const;
+  std::string to_os_short_name() const;
+  std::string to_os_long_name() const;
 
   bool exists() const;
   bool is_regular_file() const;
@@ -197,10 +191,10 @@ PUBLISHED:
                          bool other_missing_is_old = true) const;
   time_t get_timestamp() const;
   time_t get_access_timestamp() const;
-  streamsize get_file_size() const;
+  std::streamsize get_file_size() const;
 
   bool resolve_filename(const DSearchPath &searchpath,
-                        const string &default_extension = string());
+                        const std::string &default_extension = std::string());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
 
@@ -209,11 +203,11 @@ PUBLISHED:
   EXTENSION(PyObject *scan_directory() const);
 #endif
 
-  bool open_read(ifstream &stream) const;
-  bool open_write(ofstream &stream, bool truncate = true) const;
-  bool open_append(ofstream &stream) const;
-  bool open_read_write(fstream &stream, bool truncate = false) const;
-  bool open_read_append(fstream &stream) const;
+  bool open_read(std::ifstream &stream) const;
+  bool open_write(std::ofstream &stream, bool truncate = true) const;
+  bool open_append(std::ofstream &stream) const;
+  bool open_read_write(std::fstream &stream, bool truncate = false) const;
+  bool open_read_append(std::fstream &stream) const;
 
 #ifdef USE_PANDAFILESTREAM
   bool open_read(pifstream &stream) const;
@@ -234,31 +228,31 @@ PUBLISHED:
   bool rmdir() const;
 
   // Comparison operators are handy.
-  INLINE bool operator == (const string &other) const;
-  INLINE bool operator != (const string &other) const;
-  INLINE bool operator < (const string &other) const;
+  INLINE bool operator == (const std::string &other) const;
+  INLINE bool operator != (const std::string &other) const;
+  INLINE bool operator < (const std::string &other) const;
   INLINE int compare_to(const Filename &other) const;
   INLINE bool __nonzero__() const;
   int get_hash() const;
 
-  INLINE void output(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
 
   INLINE static void set_filesystem_encoding(TextEncoder::Encoding encoding);
   INLINE static TextEncoder::Encoding get_filesystem_encoding();
 
 public:
-  bool atomic_compare_and_exchange_contents(string &orig_contents, const string &old_contents, const string &new_contents) const;
-  bool atomic_read_contents(string &contents) const;
+  bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents) const;
+  bool atomic_read_contents(std::string &contents) const;
 
 protected:
   void locate_basename();
   void locate_extension();
   void locate_hash();
-  size_t get_common_prefix(const string &other) const;
-  static int count_slashes(const string &str);
+  size_t get_common_prefix(const std::string &other) const;
+  static int count_slashes(const std::string &str);
   bool r_make_canonical(const Filename &cwd);
 
-  string _filename;
+  std::string _filename;
   // We'll make these size_t instead of string::size_type to help out
   // cppParser.
   size_t _dirname_end;
@@ -278,7 +272,7 @@ protected:
 
 #ifdef ANDROID
 public:
-  static string _internal_data_dir;
+  static std::string _internal_data_dir;
 #endif
 
 public:
@@ -293,7 +287,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Filename &n) {
+INLINE std::ostream &operator << (std::ostream &out, const Filename &n) {
   n.output(out);
   return out;
 }

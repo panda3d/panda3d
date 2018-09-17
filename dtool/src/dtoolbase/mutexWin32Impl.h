@@ -26,19 +26,18 @@
 /**
  * Uses Windows native calls to implement a mutex.
  */
-class EXPCL_DTOOL MutexWin32Impl {
+class EXPCL_DTOOL_DTOOLBASE MutexWin32Impl {
 public:
   MutexWin32Impl();
+  MutexWin32Impl(const MutexWin32Impl &copy) = delete;
   INLINE ~MutexWin32Impl();
 
-private:
-  MutexWin32Impl(const MutexWin32Impl &copy) DELETED;
-  MutexWin32Impl &operator = (const MutexWin32Impl &copy) DELETED_ASSIGN;
+  MutexWin32Impl &operator = (const MutexWin32Impl &copy) = delete;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   CRITICAL_SECTION _lock;

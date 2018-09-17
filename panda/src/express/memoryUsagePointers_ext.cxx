@@ -36,18 +36,18 @@ get_python_pointer(size_t n) const {
   ReferenceCount *ref_ptr = _this->get_pointer(n);
 
   bool memory_rules = false;
-  if (ref_ptr != (ReferenceCount *)NULL) {
+  if (ref_ptr != nullptr) {
     memory_rules = true;
     ref_ptr->ref();
   }
 
-  if (typed_ptr != (TypedObject *)NULL) {
+  if (typed_ptr != nullptr) {
     return DTool_CreatePyInstanceTyped(typed_ptr, Dtool_TypedObject,
                                        memory_rules, false,
                                        typed_ptr->get_type_index());
   }
 
-  if (ref_ptr == (ReferenceCount *)NULL) {
+  if (ref_ptr == nullptr) {
     return Py_BuildValue("");
   }
 

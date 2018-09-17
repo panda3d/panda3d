@@ -29,6 +29,9 @@
 #include <maya/MFnEnumAttribute.h>
 #include "post_maya_include.h"
 
+using std::endl;
+using std::string;
+
 /**
  *
  */
@@ -63,7 +66,7 @@ MayaShaderColorDef() {
 
   _opposite = 0;
 
-  _color_object = (MObject *)NULL;
+  _color_object = nullptr;
 
   _has_texture = false;
   _has_flat_color = false;
@@ -74,7 +77,7 @@ MayaShaderColorDef() {
   _interpolate = false;
   _uvset_name = "map1";
 
-  _map_uvs = NULL;
+  _map_uvs = nullptr;
 }
 
 /**
@@ -128,7 +131,7 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
  */
 MayaShaderColorDef::
 ~MayaShaderColorDef() {
-  if (_color_object != (MObject *)NULL) {
+  if (_color_object != nullptr) {
     delete _color_object;
   }
 }
@@ -169,7 +172,7 @@ has_projection() const {
  */
 LTexCoordd MayaShaderColorDef::
 project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
-  nassertr(_map_uvs != NULL, LTexCoordd::zero());
+  nassertr(_map_uvs != nullptr, LTexCoordd::zero());
   return (this->*_map_uvs)(pos * _projection_matrix, centroid * _projection_matrix);
 }
 
@@ -177,7 +180,7 @@ project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
  *
  */
 void MayaShaderColorDef::
-write(ostream &out) const {
+write(std::ostream &out) const {
   if (_has_texture) {
     out << "    texture filename is " << _texture_filename << "\n"
         << "    texture name is " << _texture_name << "\n"
@@ -205,7 +208,7 @@ write(ostream &out) const {
  */
 bool MayaShaderColorDef::
 reset_maya_texture(const Filename &texture) {
-  if (_color_object != (MObject *)NULL) {
+  if (_color_object != nullptr) {
     _has_texture = set_string_attribute(*_color_object, "fileTextureName",
                                         texture.to_os_generic());
     _texture_filename = texture;
@@ -364,15 +367,17 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
       if (li > -1) {
         // found a blend mode
         if (maya_cat.is_spam()) {
+          MString name = inputsPlug.name();
           maya_cat.spam() << "*** Start doIt... ***" << endl;
-          maya_cat.spam() << "inputsPlug Name: " << inputsPlug.name() << endl;
+          maya_cat.spam() << "inputsPlug Name: " << name.asChar() << endl;
         }
         status = blendModePlug.selectAncestorLogicalIndex(li,inputsPlug);
         blendModePlug.getValue(blendValue);
 
         if (maya_cat.is_spam()) {
+          MString name = blendModePlug.name();
           maya_cat.spam()
-            << blendModePlug.name() << ": has value " << blendValue << endl;
+            << name.asChar() << ": has value " << blendValue << endl;
         }
 
         MFnEnumAttribute blendModeEnum(blendModePlug);
@@ -394,9 +399,13 @@ find_textures_legacy(MayaShader *shader, MObject color, bool trans) {
           bt = BT_add;
           break;
         }
-        maya_cat.info() << layered_fn.name() << ": blendMode used " << blendName << endl;
-        if (maya_cat.is_spam()) {
-          maya_cat.spam() << "*** END doIt... ***" << endl;
+
+        if (maya_cat.is_info()) {
+          MString name = layered_fn.name();
+          maya_cat.info() << name.asChar() << ": blendMode used " << blendName.asChar() << endl;
+          if (maya_cat.is_spam()) {
+            maya_cat.spam() << "*** END doIt... ***" << endl;
+          }
         }
 
         // advance to the next plug, because that is where the shader info are
@@ -686,7 +695,7 @@ set_projection_type(const string &type) {
     maya_cat.error()
       << "Don't know how to handle type " << type << " projections.\n";
     _projection_type = PT_off;
-    _map_uvs = NULL;
+    _map_uvs = nullptr;
   }
 }
 

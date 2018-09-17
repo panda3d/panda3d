@@ -26,7 +26,7 @@ TypeHandle MovieVideo::_type_handle;
  * need to construct a subclass of this class.
  */
 MovieVideo::
-MovieVideo(const string &name) :
+MovieVideo(const std::string &name) :
   Namable(name)
 {
 }
@@ -44,7 +44,7 @@ MovieVideo::
  */
 PT(MovieVideoCursor) MovieVideo::
 open() {
-  return NULL;
+  return nullptr;
 }
 
 /**

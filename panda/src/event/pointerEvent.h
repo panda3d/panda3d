@@ -31,7 +31,7 @@ public:
   INLINE bool operator != (const PointerEvent &other) const;
   INLINE bool operator < (const PointerEvent &other) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   void write_datagram(Datagram &dg) const;
   void read_datagram(DatagramIterator &scan);
@@ -49,7 +49,7 @@ public:
   double    _time;
 };
 
-INLINE ostream &operator << (ostream &out, const PointerEvent &pe) {
+INLINE std::ostream &operator << (std::ostream &out, const PointerEvent &pe) {
   pe.output(out);
   return out;
 }

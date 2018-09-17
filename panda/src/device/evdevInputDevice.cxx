@@ -18,10 +18,27 @@
 #include "gamepadButton.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
-#include "inputDeviceManager.h"
+#include "linuxInputDeviceManager.h"
 
 #include <fcntl.h>
 #include <linux/input.h>
+
+#ifndef BTN_DPAD_UP
+#define BTN_DPAD_UP 0x220
+#define BTN_DPAD_DOWN 0x221
+#define BTN_DPAD_LEFT 0x222
+#define BTN_DPAD_RIGHT 0x223
+#endif
+
+
+// Android introduces these in API level 21.
+#ifndef BTN_TRIGGER_HAPPY
+#define BTN_TRIGGER_HAPPY 0x2c0
+#define BTN_TRIGGER_HAPPY1 0x2c0
+#define BTN_TRIGGER_HAPPY2 0x2c1
+#define BTN_TRIGGER_HAPPY3 0x2c2
+#define BTN_TRIGGER_HAPPY4 0x2c3
+#endif
 
 #define test_bit(bit, array) ((array)[(bit)>>3] & (1<<((bit)&7)))
 
@@ -79,7 +96,8 @@ TypeHandle EvdevInputDevice::_type_handle;
  * Creates a new device representing the evdev device with the given index.
  */
 EvdevInputDevice::
-EvdevInputDevice(int index) :
+EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
+  _manager(manager),
   _index(index),
   _fd(-1),
   _can_write(false),
@@ -95,7 +113,7 @@ EvdevInputDevice(int index) :
   _rtrigger_code(-1) {
 
   char path[64];
-  sprintf(path, "/dev/input/event%d", index);
+  sprintf(path, "/dev/input/event%zd", index);
 
   _fd = open(path, O_RDWR | O_NONBLOCK);
   if (_fd >= 0) {
@@ -203,8 +221,9 @@ do_poll() {
     // If we got events, we are obviously connected.  Mark us so.
     if (!_is_connected) {
       _is_connected = true;
-      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-      mgr->add_device(this);
+      if (_manager != nullptr) {
+        _manager->add_device(this);
+      }
     }
   }
 }
@@ -214,11 +233,13 @@ do_poll() {
  */
 bool EvdevInputDevice::
 init_device() {
+  using std::string;
+
   nassertr(_fd >= 0, false);
 
   LightMutexHolder holder(_lock);
 
-  uint8_t evtypes[(EV_CNT + 7) >> 3];
+  uint8_t evtypes[(EV_MAX + 8) >> 3];
   memset(evtypes, 0, sizeof(evtypes));
   char name[128];
   if (ioctl(_fd, EVIOCGNAME(sizeof(name)), name) < 0 ||
@@ -246,7 +267,7 @@ init_device() {
   bool has_keys = false;
   bool has_axes = false;
 
-  uint8_t keys[(KEY_CNT + 7) >> 3];
+  uint8_t keys[(KEY_MAX + 8) >> 3];
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
     memset(keys, 0, sizeof(keys));
@@ -259,7 +280,7 @@ init_device() {
   }
 
   int num_bits = 0;
-  uint8_t axes[(ABS_CNT + 7) >> 3];
+  uint8_t axes[(ABS_MAX + 8) >> 3];
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
     memset(axes, 0, sizeof(axes));
@@ -317,8 +338,8 @@ init_device() {
 
     // Test for specific name tags
     string lowercase_name = _name;
-    for(int x=0; x<_name.length(); x++) {
-      lowercase_name[x]=tolower(lowercase_name[x]);
+    for(size_t x = 0; x < _name.length(); ++x) {
+      lowercase_name[x] = tolower(lowercase_name[x]);
     }
     if (lowercase_name.find("gamepad") != string::npos) {
       device_scores[DC_gamepad] += 10;
@@ -341,23 +362,23 @@ init_device() {
     }
 
     // Check which device type got the most points
-    size_t highest_score = 0;
+    int highest_score = 0;
     for (size_t i = 0; i < DC_COUNT; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
         _device_class = (DeviceClass)i;
       }
     }
-    //cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
+    //std::cerr << "Found highscore class " << _device_class << " with this score: " << highest_score << "\n";
   }
 
   if (has_keys) {
     // Also check whether the buttons are currently pressed.
-    uint8_t states[(KEY_CNT + 7) >> 3];
+    uint8_t states[(KEY_MAX + 8) >> 3];
     memset(states, 0, sizeof(states));
     ioctl(_fd, EVIOCGKEY(sizeof(states)), states);
 
-    for (int i = 0; i < KEY_CNT; ++i) {
+    for (int i = 0; i <= KEY_MAX; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
         button.handle = map_button(i, _device_class);
@@ -366,15 +387,15 @@ init_device() {
         if (button.handle == ButtonHandle::none()) {
           if (device_cat.is_debug()) {
             device_cat.debug() << "Unmapped /dev/input/event" << _index
-              << " button " << button_index << ": 0x" << hex << i << dec << "\n";
+              << " button " << button_index << ": 0x" << std::hex << i << std::dec << "\n";
           }
         }
 
         if (test_bit(i, states)) {
-          button.state = S_down;
+          button._state = S_down;
           all_values_zero = false;
         } else {
-          button.state = S_up;
+          button._state = S_up;
         }
         if (button.handle == GamepadButton::dpad_left()) {
           emulate_dpad = false;
@@ -385,7 +406,7 @@ init_device() {
         }
 
         _buttons.push_back(button);
-        if (i >= _button_indices.size()) {
+        if ((size_t)i >= _button_indices.size()) {
           _button_indices.resize(i + 1, -1);
         }
         _button_indices[i] = button_index;
@@ -394,93 +415,93 @@ init_device() {
   }
 
   if (has_axes) {
-    _control_indices.resize(num_bits, -1);
+    _axis_indices.resize(num_bits, -1);
 
     for (int i = 0; i < num_bits; ++i) {
       if (test_bit(i, axes)) {
-        ControlAxis axis = C_none;
+        Axis axis = Axis::none;
         switch (i) {
         case ABS_X:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_x;
+            axis = InputDevice::Axis::left_x;
           } else if (_device_class == DC_flight_stick) {
-            axis = InputDevice::C_roll;
+            axis = InputDevice::Axis::roll;
           } else {
-            axis = InputDevice::C_x;
+            axis = InputDevice::Axis::x;
           }
           break;
         case ABS_Y:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_y;
+            axis = InputDevice::Axis::left_y;
           } else if (_device_class == DC_flight_stick) {
-            axis = InputDevice::C_pitch;
+            axis = InputDevice::Axis::pitch;
           } else {
-            axis = InputDevice::C_y;
+            axis = InputDevice::Axis::y;
           }
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::C_right_x;
+            axis = InputDevice::Axis::right_x;
           } else if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_trigger;
+            axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           } else if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_z;
+            axis = InputDevice::Axis::z;
           } else {
-            axis = InputDevice::C_throttle;
+            axis = InputDevice::Axis::throttle;
           }
           break;
         case ABS_RX:
           if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_pitch;
+            axis = InputDevice::Axis::pitch;
           } else if ((quirks & QB_rstick_from_z) == 0) {
-            axis = InputDevice::C_right_x;
+            axis = InputDevice::Axis::right_x;
           }
           break;
         case ABS_RY:
           if (_device_class == DC_3d_mouse) {
-            axis = InputDevice::C_roll;
+            axis = InputDevice::Axis::roll;
           } else if ((quirks & QB_rstick_from_z) == 0) {
-            axis = InputDevice::C_right_y;
+            axis = InputDevice::Axis::right_y;
           }
           break;
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::C_right_y;
+            axis = InputDevice::Axis::right_y;
           } else if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_right_trigger;
+            axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_yaw;
+            axis = InputDevice::Axis::yaw;
           }
           break;
         case ABS_THROTTLE:
           if (quirks & QB_rudder_from_throttle) {
-            axis = InputDevice::C_rudder;
+            axis = InputDevice::Axis::rudder;
           } else {
-            axis = InputDevice::C_throttle;
+            axis = InputDevice::Axis::throttle;
           }
           break;
         case ABS_RUDDER:
-          axis = InputDevice::C_rudder;
+          axis = InputDevice::Axis::rudder;
           break;
         case ABS_WHEEL:
-          axis = InputDevice::C_wheel;
+          axis = InputDevice::Axis::wheel;
           break;
         case ABS_GAS:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_right_trigger;
+            axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_accelerator;
+            axis = InputDevice::Axis::accelerator;
           }
           break;
         case ABS_BRAKE:
           if (_device_class == DC_gamepad) {
-            axis = InputDevice::C_left_trigger;
+            axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           } else {
-            axis = InputDevice::C_brake;
+            axis = InputDevice::Axis::brake;
           }
           break;
         case ABS_HAT0X:
@@ -518,18 +539,18 @@ init_device() {
           // We'd like to reverse the Y axis to match the XInput behavior.
           // Also reverse the yaw axis to match right-hand coordinate system.
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
-          if (axis == C_yaw || axis == C_left_y || axis == C_right_y ||
-              (axis == C_throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DC_3d_mouse && (axis == C_y || axis == C_z))) {
-            swap(absinfo.maximum, absinfo.minimum);
+          if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
+              (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
+              (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+            std::swap(absinfo.maximum, absinfo.minimum);
           }
-          if (axis == C_throttle && (quirks & QB_centered_throttle) != 0) {
-            index = add_control(axis, absinfo.maximum, absinfo.minimum, true);
+          if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
+            index = add_axis(axis, absinfo.maximum, absinfo.minimum, true);
           } else {
-            index = add_control(axis, absinfo.minimum, absinfo.maximum);
+            index = add_axis(axis, absinfo.minimum, absinfo.maximum);
           }
-          control_changed(index, absinfo.value);
-          _control_indices[i] = index;
+          axis_changed(index, absinfo.value);
+          _axis_indices[i] = index;
 
           if (absinfo.value != 0) {
             all_values_zero = false;
@@ -544,7 +565,7 @@ init_device() {
   }
 
   if (test_bit(EV_FF, evtypes)) {
-    uint8_t effects[(FF_CNT + 7) >> 3];
+    uint8_t effects[(FF_MAX + 8) >> 3];
     memset(effects, 0, sizeof(effects));
     ioctl(_fd, EVIOCGBIT(EV_FF, sizeof(effects)), effects);
 
@@ -562,9 +583,9 @@ init_device() {
 
   if (_ltrigger_code >= 0 && _rtrigger_code >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
-    _ltrigger_control = (int)_controls.size();
-    add_control(C_left_trigger, 0, 1, false);
-    add_control(C_right_trigger, 0, 1, false);
+    _ltrigger_axis = (int)_axes.size();
+    add_axis(Axis::left_trigger, 0, 1, false);
+    add_axis(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_code = -1;
     _rtrigger_code = -1;
@@ -572,10 +593,16 @@ init_device() {
 
   char path[64];
   char buffer[256];
-  sprintf(path, "/sys/class/input/event%d/device/device/../product", _index);
+  const char *parent = "";
+  sprintf(path, "/sys/class/input/event%zd/device/device/../product", _index);
   FILE *f = fopen(path, "r");
+  if (!f) {
+    parent = "../";
+    sprintf(path, "/sys/class/input/event%zd/device/device/%s../product", _index, parent);
+    f = fopen(path, "r");
+  }
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       if (buffer[0] != 0) {
         _name.assign(buffer);
@@ -583,19 +610,19 @@ init_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/../manufacturer", _index);
+  sprintf(path, "/sys/class/input/event%zd/device/device/%s../manufacturer", _index, parent);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _manufacturer.assign(buffer);
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/event%d/device/device/../serial", _index);
+  sprintf(path, "/sys/class/input/event%zd/device/device/%s../serial", _index, parent);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _serial_number.assign(buffer);
     }
@@ -682,23 +709,23 @@ process_events() {
         button_changed(_dpad_up_button, events[i].value < 0);
         button_changed(_dpad_up_button+1, events[i].value > 0);
       }
-      nassertd(code >= 0 && code < _control_indices.size()) break;
-      index = _control_indices[code];
+      nassertd(code >= 0 && (size_t)code < _axis_indices.size()) break;
+      index = _axis_indices[code];
       if (index >= 0) {
-        control_changed(index, events[i].value);
+        axis_changed(index, events[i].value);
       }
       break;
 
     case EV_KEY:
-      nassertd(code >= 0 && code < _button_indices.size()) break;
+      nassertd(code >= 0 && (size_t)code < _button_indices.size()) break;
       index = _button_indices[code];
       if (index >= 0) {
         button_changed(index, events[i].value != 0);
       }
       if (code == _ltrigger_code) {
-        control_changed(_ltrigger_control, events[i].value);
+        axis_changed(_ltrigger_axis, events[i].value);
       } else if (code == _rtrigger_code) {
-        control_changed(_ltrigger_control + 1, events[i].value);
+        axis_changed(_ltrigger_axis + 1, events[i].value);
       }
       break;
 
@@ -879,10 +906,10 @@ map_button(int code, DeviceClass device_class) {
     if (device_class == DC_gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
-        GamepadButton::action_x(),
-        GamepadButton::action_y(),
-        GamepadButton::action_a(),
-        GamepadButton::action_b(),
+        GamepadButton::face_x(),
+        GamepadButton::face_y(),
+        GamepadButton::face_a(),
+        GamepadButton::face_b(),
         GamepadButton::lshoulder(),
         GamepadButton::ltrigger(),
         GamepadButton::rshoulder(),
@@ -902,22 +929,22 @@ map_button(int code, DeviceClass device_class) {
 
   switch (code) {
   case BTN_A:
-    return GamepadButton::action_a();
+    return GamepadButton::face_a();
 
   case BTN_B:
-    return GamepadButton::action_b();
+    return GamepadButton::face_b();
 
   case BTN_C:
-    return GamepadButton::action_c();
+    return GamepadButton::face_c();
 
   case BTN_X:
-    return GamepadButton::action_x();
+    return GamepadButton::face_x();
 
   case BTN_Y:
-    return GamepadButton::action_y();
+    return GamepadButton::face_y();
 
   case BTN_Z:
-    return GamepadButton::action_z();
+    return GamepadButton::face_z();
 
   case BTN_TL:
     return GamepadButton::lshoulder();
@@ -932,10 +959,10 @@ map_button(int code, DeviceClass device_class) {
     return GamepadButton::rtrigger();
 
   case BTN_1:
-    return GamepadButton::action_1();
+    return GamepadButton::face_1();
 
   case BTN_2:
-    return GamepadButton::action_2();
+    return GamepadButton::face_2();
 
   case BTN_SELECT:
   case KEY_PREVIOUS:
@@ -954,15 +981,19 @@ map_button(int code, DeviceClass device_class) {
   case BTN_THUMBR:
     return GamepadButton::rstick();
 
+  case BTN_DPAD_LEFT:
   case BTN_TRIGGER_HAPPY1:
     return GamepadButton::dpad_left();
 
+  case BTN_DPAD_RIGHT:
   case BTN_TRIGGER_HAPPY2:
     return GamepadButton::dpad_right();
 
+  case BTN_DPAD_UP:
   case BTN_TRIGGER_HAPPY3:
     return GamepadButton::dpad_up();
 
+  case BTN_DPAD_DOWN:
   case BTN_TRIGGER_HAPPY4:
     return GamepadButton::dpad_down();
 

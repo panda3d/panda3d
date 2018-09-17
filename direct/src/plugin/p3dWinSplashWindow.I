@@ -17,7 +17,7 @@
 inline P3DWinSplashWindow::WinImageData::
 WinImageData() {
   _filename_changed = false;
-  _bitmap = NULL;
+  _bitmap = nullptr;
 }
 
 /**

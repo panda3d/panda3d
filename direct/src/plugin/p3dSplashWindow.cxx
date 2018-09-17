@@ -20,6 +20,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+using std::max;
+using std::min;
+using std::string;
+
 // The number of pixels to move the block per byte downloaded, when we don't
 // know the actual file size we're downloading.
 const double P3DSplashWindow::_unknown_progress_rate = 1.0 / 4096;
@@ -348,10 +352,10 @@ read_image_data(ImageData &image, string &data,
   unsigned char *imgdata = stbi_load(image_filename.c_str(), &image._width,
                                      &image._height, &image._num_channels, 0);
 
-  if (imgdata == NULL) {
+  if (imgdata == nullptr) {
     nout << "Couldn't read splash file image: " << image_filename << "\n";
     const char *reason = stbi_failure_reason();
-    if (reason != NULL) {
+    if (reason != nullptr) {
       nout << "stbi_failure_reason: " << reason << "\n";
     }
     return false;
@@ -492,7 +496,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
  */
 void P3DSplashWindow::
 button_click_detected() {
-  assert(_inst != NULL);
+  assert(_inst != nullptr);
   nout << "Play button clicked by user\n";
   _inst->splash_button_clicked_sub_thread();
 }

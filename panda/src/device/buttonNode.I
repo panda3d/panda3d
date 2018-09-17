@@ -17,7 +17,7 @@
  */
 INLINE bool ButtonNode::
 is_valid() const {
-  return (_device != (ClientButtonDevice *)NULL) && _device->is_connected();
+  return (_device != nullptr) && _device->is_connected();
 }
 
 /**
@@ -43,7 +43,7 @@ get_num_buttons() const {
  */
 INLINE void ButtonNode::
 set_button_map(int index, ButtonHandle button) {
-  _device->set_button_map(index, button);
+  _device->map_button(index, button);
 }
 
 /**
@@ -62,7 +62,7 @@ get_button_map(int index) const {
  */
 INLINE bool ButtonNode::
 get_button_state(int index) const {
-  return _device->get_button_state(index);
+  return _device->is_button_pressed(index);
 }
 
 /**

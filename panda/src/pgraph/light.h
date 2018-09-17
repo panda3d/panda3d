@@ -67,8 +67,8 @@ public:
   virtual void attrib_ref();
   virtual void attrib_unref();
 
-  virtual void output(ostream &out) const=0;
-  virtual void write(ostream &out, int indent_level) const=0;
+  virtual void output(std::ostream &out) const=0;
+  virtual void write(std::ostream &out, int indent_level) const=0;
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id)=0;
 
@@ -151,7 +151,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Light &light) {
+INLINE std::ostream &operator << (std::ostream &out, const Light &light) {
   light.output(out);
   return out;
 }

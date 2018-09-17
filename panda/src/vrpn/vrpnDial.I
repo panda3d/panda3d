@@ -14,7 +14,7 @@
 /**
  * Returns the name of the dial device that was used to create this VrpnDial.
  */
-INLINE const string &VrpnDial::
+INLINE const std::string &VrpnDial::
 get_dial_name() const {
   return _dial_name;
 }

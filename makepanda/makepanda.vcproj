@@ -760,7 +760,6 @@
 				<File RelativePath="..\panda\src\gobj\bufferContext.cxx"></File>
 				<File RelativePath="..\panda\src\gobj\textureContext.I"></File>
 				<File RelativePath="..\panda\src\gobj\internalName.h"></File>
-				<File RelativePath="..\panda\src\gobj\test_gobj.cxx"></File>
 				<File RelativePath="..\panda\src\gobj\geomTristrips.h"></File>
 				<File RelativePath="..\panda\src\gobj\textureContext.h"></File>
 				<File RelativePath="..\panda\src\gobj\config_gobj.cxx"></File>
@@ -1114,7 +1113,6 @@
 				<File RelativePath="..\panda\src\collide\collisionHandlerGravity.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionLine.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerPhysical.I"></File>
-				<File RelativePath="..\panda\src\collide\test_collide.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionFloorMesh.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionPolygon.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionGeom.cxx"></File>
@@ -1228,7 +1226,7 @@
 				<File RelativePath="..\panda\src\putil\pta_double.h"></File>
 				<File RelativePath="..\panda\src\putil\copyOnWritePointer.cxx"></File>
 				<File RelativePath="..\panda\src\putil\bitMask.cxx"></File>
-				<File RelativePath="..\panda\src\putil\config_util.h"></File>
+				<File RelativePath="..\panda\src\putil\config_putil.h"></File>
 				<File RelativePath="..\panda\src\putil\clockObject.h"></File>
 				<File RelativePath="..\panda\src\putil\lineStream.h"></File>
 				<File RelativePath="..\panda\src\putil\datagramInputFile.cxx"></File>
@@ -1307,7 +1305,7 @@
 				<File RelativePath="..\panda\src\putil\bamCacheRecord.I"></File>
 				<File RelativePath="..\panda\src\putil\animInterface.cxx"></File>
 				<File RelativePath="..\panda\src\putil\lineStreamBuf.h"></File>
-				<File RelativePath="..\panda\src\putil\config_util.cxx"></File>
+				<File RelativePath="..\panda\src\putil\config_putil.cxx"></File>
 				<File RelativePath="..\panda\src\putil\cachedTypedWritableReferenceCount.cxx"></File>
 				<File RelativePath="..\panda\src\putil\pythonCallbackObject.cxx"></File>
 				<File RelativePath="..\panda\src\putil\test_linestream.cxx"></File>
@@ -1379,7 +1377,6 @@
 				<File RelativePath="..\panda\src\display\windowHandle.h"></File>
 				<File RelativePath="..\panda\src\display\displayRegionCullCallbackData.cxx"></File>
 				<File RelativePath="..\panda\src\display\graphicsOutput.cxx"></File>
-				<File RelativePath="..\panda\src\display\test_display.cxx"></File>
 				<File RelativePath="..\panda\src\display\graphicsBuffer.I"></File>
 				<File RelativePath="..\panda\src\display\stencilRenderStates.cxx"></File>
 				<File RelativePath="..\panda\src\display\stereoDisplayRegion.I"></File>
@@ -2322,8 +2319,8 @@
 				<File RelativePath="..\panda\src\pstatclient\pStatCollectorForward.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClientControlMessage.h"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatServerControlMessage.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.h"></File>
-				<File RelativePath="..\panda\src\pstatclient\config_pstats.cxx"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.h"></File>
+				<File RelativePath="..\panda\src\pstatclient\config_pstatclient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatClient.cxx"></File>
 				<File RelativePath="..\panda\src\pstatclient\pStatFrameData.I"></File>
 				<File RelativePath="..\panda\src\pstatclient\test_client.cxx"></File>
@@ -3706,7 +3703,6 @@
 				<File RelativePath="..\panda\src\testbed\test_map.cxx"></File>
 				<File RelativePath="..\panda\src\testbed\pgrid.cxx"></File>
 				<File RelativePath="..\panda\src\testbed\pview.cxx"></File>
-				<File RelativePath="..\panda\src\testbed\text_test.cxx"></File>
 			</Filter>
 			<Filter Name="cull">
 				<File RelativePath="..\panda\src\cull\config_cull.cxx"></File>
@@ -3735,18 +3731,6 @@
 				<File RelativePath="..\panda\src\cull\cull_composite2.cxx"></File>
 				<File RelativePath="..\panda\src\cull\cullBinFrontToBack.cxx"></File>
 				<File RelativePath="..\panda\src\cull\config_cull.h"></File>
-			</Filter>
-			<Filter Name="cftalk">
-				<File RelativePath="..\panda\src\cftalk\cfChannel.I"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.h"></File>
-				<File RelativePath="..\panda\src\cftalk\config_cftalk.h"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\config_cftalk.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cfChannel.h"></File>
-				<File RelativePath="..\panda\src\cftalk\cfCommand.I"></File>
-				<File RelativePath="..\panda\src\cftalk\cfChannel.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cftalk_composite2.cxx"></File>
-				<File RelativePath="..\panda\src\cftalk\cftalk_composite1.cxx"></File>
 			</Filter>
 			<Filter Name="audiotraits">
 				<File RelativePath="..\panda\src\audiotraits\milesAudioSequence.cxx"></File>

@@ -20,7 +20,7 @@ TypeHandle AsyncTaskSequence::_type_handle;
  *
  */
 AsyncTaskSequence::
-AsyncTaskSequence(const string &name) :
+AsyncTaskSequence(const std::string &name) :
   AsyncTask(name),
   _repeat_count(0),
   _task_index(0)
@@ -32,7 +32,7 @@ AsyncTaskSequence(const string &name) :
  */
 AsyncTaskSequence::
 ~AsyncTaskSequence() {
-  set_current_task(NULL, true);
+  set_current_task(nullptr, true);
 }
 
 /**
@@ -60,7 +60,7 @@ do_task() {
 
   if (_task_index >= get_num_tasks()) {
     // Ran off the end of the task list.
-    set_current_task(NULL, true);
+    set_current_task(nullptr, true);
     _task_index = 0;
     if (_task_index >= get_num_tasks()) {
       return DS_done;
@@ -76,7 +76,7 @@ do_task() {
 
   AsyncTask *task = get_task(_task_index);
   set_current_task(task, true);
-  nassertr(_current_task != (AsyncTask *)NULL, DS_exit);
+  nassertr(_current_task != nullptr, DS_exit);
 
   DoneStatus result = _current_task->do_task();
   switch (result) {
@@ -127,7 +127,7 @@ void AsyncTaskSequence::
 upon_birth(AsyncTaskManager *manager) {
   AsyncTask::upon_birth(manager);
   _task_index = 0;
-  set_current_task(NULL, true);
+  set_current_task(nullptr, true);
 }
 
 /**
@@ -147,7 +147,7 @@ upon_birth(AsyncTaskManager *manager) {
 void AsyncTaskSequence::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
   AsyncTask::upon_death(manager, clean_exit);
-  set_current_task(NULL, clean_exit);
+  set_current_task(nullptr, clean_exit);
 }
 
 /**
@@ -159,22 +159,22 @@ set_current_task(AsyncTask *task, bool clean_exit) {
     return;
   }
 
-  if (_current_task != (AsyncTask *)NULL) {
+  if (_current_task != nullptr) {
     nassertv(_current_task->_state == S_active_nested);
-    nassertv(_current_task->_manager == _manager || _manager == NULL);
+    nassertv(_current_task->_manager == _manager || _manager == nullptr);
     _current_task->_state = S_inactive;
-    _current_task->_manager = NULL;
+    _current_task->_manager = nullptr;
     _current_task->upon_death(_manager, clean_exit);
   }
 
   _current_task = task;
 
-  if (_current_task != (AsyncTask *)NULL) {
+  if (_current_task != nullptr) {
     nassertv(_current_task->_state == S_inactive);
-    nassertv(_current_task->_manager == NULL);
+    nassertv(_current_task->_manager == nullptr);
     _current_task->upon_birth(_manager);
     nassertv(_current_task->_state == S_inactive);
-    nassertv(_current_task->_manager == NULL);
+    nassertv(_current_task->_manager == nullptr);
     _current_task->_manager = _manager;
     _current_task->_state = S_active_nested;
 

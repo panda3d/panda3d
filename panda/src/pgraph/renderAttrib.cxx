@@ -18,8 +18,10 @@
 #include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
-LightReMutex *RenderAttrib::_attribs_lock = NULL;
-RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
+using std::ostream;
+
+LightReMutex *RenderAttrib::_attribs_lock = nullptr;
+RenderAttrib::Attribs *RenderAttrib::_attribs = nullptr;
 TypeHandle RenderAttrib::_type_handle;
 
 size_t RenderAttrib::_garbage_index = 0;
@@ -31,26 +33,10 @@ PStatCollector RenderAttrib::_garbage_collect_pcollector("*:State Cache:Garbage 
  */
 RenderAttrib::
 RenderAttrib() {
-  if (_attribs == (Attribs *)NULL) {
+  if (_attribs == nullptr) {
     init_attribs();
   }
   _saved_entry = -1;
-}
-
-/**
- * RenderAttribs are not meant to be copied.
- */
-RenderAttrib::
-RenderAttrib(const RenderAttrib &) {
-  nassertv(false);
-}
-
-/**
- * RenderAttribs are not meant to be copied.
- */
-void RenderAttrib::
-operator = (const RenderAttrib &) {
-  nassertv(false);
 }
 
 /**
@@ -171,7 +157,7 @@ int RenderAttrib::
 get_num_attribs() {
   LightReMutexHolder holder(*_attribs_lock);
 
-  if (_attribs == (Attribs *)NULL) {
+  if (_attribs == nullptr) {
     return 0;
   }
   return _attribs->get_num_entries();
@@ -200,7 +186,7 @@ list_attribs(ostream &out) {
  */
 int RenderAttrib::
 garbage_collect() {
-  if (_attribs == (Attribs *)NULL || !garbage_collect_states) {
+  if (_attribs == nullptr || !garbage_collect_states) {
     return 0;
   }
   LightReMutexHolder holder(*_attribs_lock);
@@ -214,7 +200,7 @@ garbage_collect() {
 
   // How many elements to process this pass?
   size_t size = orig_size;
-  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
@@ -224,7 +210,7 @@ garbage_collect() {
     si = 0;
   }
 
-  num_this_pass = min(num_this_pass, size);
+  num_this_pass = std::min(num_this_pass, size);
   size_t stop_at_element = (_garbage_index + num_this_pass) % size;
 
   do {
@@ -282,7 +268,7 @@ validate_attribs() {
     for (size_t si = 0; si < size; ++si) {
       const RenderAttrib *attrib = _attribs->get_key(si);
       //cerr << si << ": " << attrib << "\n";
-      attrib->write(cerr, 2);
+      attrib->write(std::cerr, 2);
     }
 
     return false;
@@ -329,7 +315,7 @@ validate_attribs() {
  */
 CPT(RenderAttrib) RenderAttrib::
 return_new(RenderAttrib *attrib) {
-  nassertr(attrib != (RenderAttrib *)NULL, attrib);
+  nassertr(attrib != nullptr, attrib);
   if (!uniquify_attribs) {
     attrib->calc_hash();
     return attrib;
@@ -350,7 +336,7 @@ return_new(RenderAttrib *attrib) {
  */
 CPT(RenderAttrib) RenderAttrib::
 return_unique(RenderAttrib *attrib) {
-  nassertr(attrib != (RenderAttrib *)NULL, attrib);
+  nassertr(attrib != nullptr, attrib);
 
   attrib->calc_hash();
 

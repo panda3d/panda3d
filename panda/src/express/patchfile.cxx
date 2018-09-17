@@ -32,8 +32,16 @@
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-istream *Patchfile::_tar_istream = NULL;
+istream *Patchfile::_tar_istream = nullptr;
 #endif  // HAVE_TAR
+
+using std::endl;
+using std::ios;
+using std::istream;
+using std::min;
+using std::ostream;
+using std::streampos;
+using std::string;
 
 // this actually slows things down... #define
 // USE_MD5_FOR_HASHTABLE_INDEX_VALUES
@@ -99,7 +107,7 @@ void Patchfile::
 init(PT(Buffer) buffer) {
   _rename_output_to_orig = false;
   _delete_patchfile = false;
-  _hash_table = NULL;
+  _hash_table = nullptr;
   _initiated = false;
   nassertv(!buffer.is_null());
   _buffer = buffer;
@@ -107,8 +115,8 @@ init(PT(Buffer) buffer) {
   _version_number = 0;
   _allow_multifile = true;
 
-  _patch_stream = NULL;
-  _origfile_stream = NULL;
+  _patch_stream = nullptr;
+  _origfile_stream = nullptr;
 
   reset_footprint_length();
 }
@@ -118,7 +126,7 @@ init(PT(Buffer) buffer) {
  */
 Patchfile::
 ~Patchfile() {
-  if (_hash_table != (uint32_t *)NULL) {
+  if (_hash_table != nullptr) {
     PANDA_FREE_ARRAY(_hash_table);
   }
 
@@ -126,8 +134,8 @@ Patchfile::
     cleanup();
   }
 
-  nassertv(_patch_stream == NULL);
-  nassertv(_origfile_stream == NULL);
+  nassertv(_patch_stream == nullptr);
+  nassertv(_origfile_stream == nullptr);
 }
 
 /**
@@ -144,13 +152,13 @@ cleanup() {
 
   // close files
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  if (_origfile_stream != NULL) {
+  if (_origfile_stream != nullptr) {
     vfs->close_read_file(_origfile_stream);
-    _origfile_stream = NULL;
+    _origfile_stream = nullptr;
   }
-  if (_patch_stream != NULL) {
+  if (_patch_stream != nullptr) {
     vfs->close_read_file(_patch_stream);
-    _patch_stream = NULL;
+    _patch_stream = nullptr;
   }
   _write_stream.close();
 
@@ -195,11 +203,11 @@ initiate(const Filename &patch_file, const Filename &orig_file,
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   // Open the original file for read
-  nassertr(_origfile_stream == NULL, EU_error_abort);
+  nassertr(_origfile_stream == nullptr, EU_error_abort);
   _orig_file = orig_file;
   _orig_file.set_binary();
   _origfile_stream = vfs->open_read_file(_orig_file, false);
-  if (_origfile_stream == NULL) {
+  if (_origfile_stream == nullptr) {
     express_cat.error()
       << "Patchfile::initiate() - Failed to open file: " << _orig_file << endl;
     return get_write_error();
@@ -241,10 +249,10 @@ read_header(const Filename &patch_file) {
   }
 
   int result = internal_read_header(patch_file);
-  if (_patch_stream != NULL) {
+  if (_patch_stream != nullptr) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_patch_stream);
-    _patch_stream = NULL;
+    _patch_stream = nullptr;
   }
   return result;
 }
@@ -272,8 +280,8 @@ run() {
     return EU_error_abort;
   }
 
-  nassertr(_patch_stream != NULL, EU_error_abort);
-  nassertr(_origfile_stream != NULL, EU_error_abort);
+  nassertr(_patch_stream != nullptr, EU_error_abort);
+  nassertr(_origfile_stream != nullptr, EU_error_abort);
   StreamReader patch_reader(*_patch_stream);
 
   buflen = _buffer->get_length();
@@ -399,10 +407,10 @@ run() {
         MD5_actual.hash_file(_output_file);
         if (_MD5_ofResult != MD5_actual) {
           // Whoops, patching screwed up somehow.
-          if (_origfile_stream != NULL) {
+          if (_origfile_stream != nullptr) {
             VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
             vfs->close_read_file(_origfile_stream);
-            _origfile_stream = NULL;
+            _origfile_stream = nullptr;
           }
           _write_stream.close();
 
@@ -520,11 +528,11 @@ int Patchfile::
 internal_read_header(const Filename &patch_file) {
   // Open the patch file for read
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  nassertr(_patch_stream == NULL, EU_error_abort);
+  nassertr(_patch_stream == nullptr, EU_error_abort);
   _patch_file = patch_file;
   _patch_file.set_binary();
   _patch_stream = vfs->open_read_file(_patch_file, true);
-  if (_patch_stream == NULL) {
+  if (_patch_stream == nullptr) {
     express_cat.error()
       << "Patchfile::initiate() - Failed to open file: " << _patch_file << endl;
     return get_write_error();
@@ -840,7 +848,7 @@ emit_add_and_copy(ostream &write_stream,
     emit_COPY(write_stream, max_write, copy_pos);
     copy_pos += max_write;
     copy_length -= max_write;
-    emit_ADD(write_stream, 0, NULL);
+    emit_ADD(write_stream, 0, nullptr);
   }
 
   emit_COPY(write_stream, copy_length, copy_pos);
@@ -946,7 +954,7 @@ void Patchfile::
 write_terminator(ostream &write_stream) {
   cache_flush(write_stream);
   // write terminator (null ADD, null COPY)
-  emit_ADD(write_stream, 0, NULL);
+  emit_ADD(write_stream, 0, nullptr);
   emit_COPY(write_stream, 0, 0);
 }
 
@@ -987,7 +995,7 @@ compute_file_patches(ostream &write_stream,
   stream_new.read(buffer_new, result_file_length);
 
   // allocate hashlink tables
-  if (_hash_table == (uint32_t *)NULL) {
+  if (_hash_table == nullptr) {
     if (express_cat.is_debug()) {
       express_cat.debug()
         << "Allocating hashtable of size " << _HASHTABLESIZE << " * 4\n";
@@ -1103,7 +1111,7 @@ compute_mf_patches(ostream &write_stream,
                             index_orig, index_new)) {
       return false;
     }
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_index_end(), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)mf_new.get_index_end(), false);
   }
 
   // Now walk through each subfile in the new multifile.  If a particular
@@ -1112,7 +1120,7 @@ compute_mf_patches(ostream &write_stream,
   // removed, we simply don't add it (we'll never even notice this case).
   int new_num_subfiles = mf_new.get_num_subfiles();
   for (int ni = 0; ni < new_num_subfiles; ++ni) {
-    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + mf_new.get_subfile_internal_start(ni), false);
+    nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)mf_new.get_subfile_internal_start(ni), false);
     string name = mf_new.get_subfile_name(ni);
     int oi = mf_orig.find_subfile(name);
 
@@ -1166,10 +1174,10 @@ read_tar(TarDef &tar, istream &stream) {
   tt.writefunc = tar_writefunc;
 
   stream.seekg(0, ios::beg);
-  nassertr(_tar_istream == NULL, false);
+  nassertr(_tar_istream == nullptr, false);
   _tar_istream = &stream;
   if (tar_open(&tfile, (char *)"dummy", &tt, O_RDONLY, 0, 0) != 0) {
-    _tar_istream = NULL;
+    _tar_istream = nullptr;
     return false;
   }
 
@@ -1205,7 +1213,7 @@ read_tar(TarDef &tar, istream &stream) {
   tar.push_back(subfile);
 
   tar_close(tfile);
-  _tar_istream = NULL;
+  _tar_istream = nullptr;
   return (flag == 1);
 }
 #endif  // HAVE_TAR
@@ -1326,7 +1334,7 @@ tar_closefunc(int) {
  */
 ssize_t Patchfile::
 tar_readfunc(int, void *buffer, size_t nbytes) {
-  nassertr(_tar_istream != NULL, 0);
+  nassertr(_tar_istream != nullptr, 0);
   _tar_istream->read((char *)buffer, nbytes);
   return (ssize_t)_tar_istream->gcount();
 }
@@ -1436,8 +1444,8 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
 #endif  // HAVE_TAR
 
   if (_allow_multifile) {
-    if (strstr(file_orig.get_basename().c_str(), ".mf") != NULL ||
-        strstr(file_new.get_basename().c_str(), ".mf") != NULL) {
+    if (strstr(file_orig.get_basename().c_str(), ".mf") != nullptr ||
+        strstr(file_new.get_basename().c_str(), ".mf") != nullptr) {
       // Read the first n bytes of both files for the Multifile magic number.
       string magic_number = Multifile::get_magic_number();
       char *buffer = (char *)PANDA_MALLOC_ARRAY(magic_number.size());
@@ -1456,8 +1464,8 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
       PANDA_FREE_ARRAY(buffer);
     }
 #ifdef HAVE_TAR
-    if (strstr(file_orig.get_basename().c_str(), ".tar") != NULL ||
-        strstr(file_new.get_basename().c_str(), ".tar") != NULL) {
+    if (strstr(file_orig.get_basename().c_str(), ".tar") != nullptr ||
+        strstr(file_new.get_basename().c_str(), ".tar") != nullptr) {
       if (read_tar(tar_orig, stream_orig) &&
           read_tar(tar_new, stream_new)) {
         is_tarfile = true;
@@ -1509,7 +1517,7 @@ patch_subfile(ostream &write_stream,
               const Filename &filename,
               IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
               IStreamWrapper &stream_new, streampos new_start, streampos new_end) {
-  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + new_start, false);
+  nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + (uint32_t)new_start, false);
 
   size_t new_size = new_end - new_start;
   size_t orig_size = orig_end - orig_start;
@@ -1534,7 +1542,7 @@ patch_subfile(ostream &write_stream,
       express_cat.debug()
         << "Keeping subfile " << filename << "\n";
     }
-    cache_add_and_copy(write_stream, 0, NULL,
+    cache_add_and_copy(write_stream, 0, nullptr,
                        orig_size, offset_orig + orig_start);
 
   } else {

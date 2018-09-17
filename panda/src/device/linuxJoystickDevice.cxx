@@ -17,6 +17,7 @@
 #ifdef PHAVE_LINUX_INPUT_H
 
 #include "gamepadButton.h"
+#include "linuxInputDeviceManager.h"
 
 #include <fcntl.h>
 #include <linux/joystick.h>
@@ -27,7 +28,8 @@ TypeHandle LinuxJoystickDevice::_type_handle;
  * Creates a new device using the Linux joystick device with the given index.
  */
 LinuxJoystickDevice::
-LinuxJoystickDevice(int index) :
+LinuxJoystickDevice(LinuxInputDeviceManager *manager, size_t index) :
+  _manager(manager),
   _fd(-1),
   _index(index),
   _dpad_x_axis(-1),
@@ -79,8 +81,9 @@ do_poll() {
     // If we got events, we are obviously connected.  Mark us so.
     if (!_is_connected) {
       _is_connected = true;
-      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-      mgr->add_device(this);
+      if (_manager != nullptr) {
+        _manager->add_device(this);
+      }
     }
   }
 }
@@ -94,7 +97,7 @@ open_device() {
   nassertr(_lock.debug_is_locked(), false);
 
   char path[64];
-  sprintf(path, "/dev/input/js%d", _index);
+  sprintf(path, "/dev/input/js%zd", _index);
 
   _fd = open(path, O_RDONLY | O_NONBLOCK);
 
@@ -118,7 +121,7 @@ open_device() {
   ioctl(_fd, JSIOCGBUTTONS, &num_buttons);
 
   _buttons.resize(num_buttons);
-  _controls.resize(num_axes);
+  _axes.resize(num_axes);
 
   if (num_buttons > 0) {
     uint16_t btnmap[512];
@@ -129,9 +132,9 @@ open_device() {
       if (handle == ButtonHandle::none()) {
         if (device_cat.is_debug()) {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
-            << " button " << (int)i << ": 0x" << hex << btnmap[i] << "\n";
+            << " button " << (int)i << ": 0x" << std::hex << btnmap[i] << "\n";
         }
-      } else if (handle == GamepadButton::action_a()) {
+      } else if (handle == GamepadButton::face_a()) {
         _device_class = DC_gamepad;
       } else if (handle == GamepadButton::trigger()) {
         _device_class = DC_flight_stick;
@@ -149,71 +152,71 @@ open_device() {
     ioctl(_fd, JSIOCGAXMAP, axmap);
 
     for (uint8_t i = 0; i < num_axes; ++i) {
-      ControlAxis axis = C_none;
+      Axis axis = Axis::none;
 
       switch (axmap[i]) {
       case ABS_X:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_left_x;
+          axis = InputDevice::Axis::left_x;
         } else if (_device_class == DC_flight_stick) {
-          axis = InputDevice::C_roll;
+          axis = InputDevice::Axis::roll;
         } else {
-          axis = InputDevice::C_x;
+          axis = InputDevice::Axis::x;
         }
         break;
 
       case ABS_Y:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_left_y;
+          axis = InputDevice::Axis::left_y;
         } else if (_device_class == DC_flight_stick) {
-          axis = InputDevice::C_pitch;
+          axis = InputDevice::Axis::pitch;
         } else {
-          axis = InputDevice::C_y;
+          axis = InputDevice::Axis::y;
         }
         break;
 
       case ABS_Z:
         if (_device_class == DC_gamepad) {
-          axis = C_left_trigger;
+          axis = Axis::left_trigger;
         } else {
-          //axis = C_trigger;
+          //axis = Axis::trigger;
         }
         break;
 
       case ABS_RX:
-        axis = C_right_x;
+        axis = Axis::right_x;
         break;
 
       case ABS_RY:
-        axis = C_right_y;
+        axis = Axis::right_y;
         break;
 
       case ABS_RZ:
         if (_device_class == DC_gamepad) {
-          axis = InputDevice::C_right_trigger;
+          axis = InputDevice::Axis::right_trigger;
         } else {
-          axis = InputDevice::C_yaw;
+          axis = InputDevice::Axis::yaw;
         }
         break;
 
       case ABS_THROTTLE:
-        axis = InputDevice::C_throttle;
+        axis = InputDevice::Axis::throttle;
         break;
 
       case ABS_RUDDER:
-        axis = InputDevice::C_rudder;
+        axis = InputDevice::Axis::rudder;
         break;
 
       case ABS_WHEEL:
-        axis = InputDevice::C_wheel;
+        axis = InputDevice::Axis::wheel;
         break;
 
       case ABS_GAS:
-        axis = InputDevice::C_accelerator;
+        axis = InputDevice::Axis::accelerator;
         break;
 
       case ABS_BRAKE:
-        axis = InputDevice::C_brake;
+        axis = InputDevice::Axis::brake;
         break;
 
       case ABS_HAT0X:
@@ -222,13 +225,13 @@ open_device() {
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
           if (_device_class == DC_gamepad) {
-            _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
+            add_button(GamepadButton::dpad_left());
+            add_button(GamepadButton::dpad_right());
           } else {
-            _buttons.push_back(ButtonState(GamepadButton::hat_left()));
-            _buttons.push_back(ButtonState(GamepadButton::hat_right()));
+            add_button(GamepadButton::hat_left());
+            add_button(GamepadButton::hat_right());
           }
-          axis = C_none;
+          axis = Axis::none;
         }
         break;
 
@@ -238,53 +241,53 @@ open_device() {
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
           if (_device_class == DC_gamepad) {
-            _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
-            _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
+            add_button(GamepadButton::dpad_up());
+            add_button(GamepadButton::dpad_down());
           } else {
-            _buttons.push_back(ButtonState(GamepadButton::hat_up()));
-            _buttons.push_back(ButtonState(GamepadButton::hat_down()));
+            add_button(GamepadButton::hat_up());
+            add_button(GamepadButton::hat_down());
           }
-          axis = C_none;
+          axis = Axis::none;
         }
         break;
 
       default:
         if (device_cat.is_debug()) {
           device_cat.debug() << "Unmapped /dev/input/js" << _index
-            << " axis " << (int)i << ": 0x" << hex << (int)axmap[i] << "\n";
+            << " axis " << (int)i << ": 0x" << std::hex << (int)axmap[i] << "\n";
         }
-        axis = C_none;
+        axis = Axis::none;
         break;
       }
-      _controls[i].axis = axis;
+      _axes[i].axis = axis;
 
-      if (axis == C_left_trigger || axis == C_right_trigger) {
+      if (axis == Axis::left_trigger || axis == Axis::right_trigger) {
         // We'd like to use 0.0 to indicate the resting position.
-        _controls[i]._scale = 1.0 / 65534.0;
-        _controls[i]._bias = 0.5;
+        _axes[i]._scale = 1.0 / 65534.0;
+        _axes[i]._bias = 0.5;
         have_analog_triggers = true;
-      } else if (axis == C_left_y || axis == C_right_y || axis == C_y) {
-        _controls[i]._scale = 1.0 / -32767.0;
-        _controls[i]._bias = 0.0;
+      } else if (axis == Axis::left_y || axis == Axis::right_y || axis == Axis::y) {
+        _axes[i]._scale = 1.0 / -32767.0;
+        _axes[i]._bias = 0.0;
       } else {
-        _controls[i]._scale = 1.0 / 32767.0;
-        _controls[i]._bias = 0.0;
+        _axes[i]._scale = 1.0 / 32767.0;
+        _axes[i]._bias = 0.0;
       }
     }
   }
 
   if (_ltrigger_button >= 0 && _rtrigger_button >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
-    _ltrigger_control = (int)_controls.size();
-    add_control(C_left_trigger, 0, 1, false);
-    add_control(C_right_trigger, 0, 1, false);
+    _ltrigger_control = (int)_axes.size();
+    add_axis(Axis::left_trigger, 0, 1, false);
+    add_axis(Axis::right_trigger, 0, 1, false);
   } else {
     _ltrigger_button = -1;
     _rtrigger_button = -1;
   }
 
   // Get additional information from sysfs.
-  sprintf(path, "/sys/class/input/js%d/device/id/vendor", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/id/vendor", _index);
   FILE *f = fopen(path, "r");
   if (f) {
     if (fscanf(f, "%hx", &_vendor_id) < 1) {
@@ -292,7 +295,7 @@ open_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/id/product", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/id/product", _index);
   f = fopen(path, "r");
   if (f) {
     if (fscanf(f, "%hx", &_product_id) < 1) {
@@ -301,10 +304,10 @@ open_device() {
     fclose(f);
   }
   char buffer[256];
-  sprintf(path, "/sys/class/input/js%d/device/device/../product", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../product", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       if (buffer[0] != 0) {
         _name.assign(buffer);
@@ -312,19 +315,19 @@ open_device() {
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/device/../manufacturer", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../manufacturer", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _manufacturer.assign(buffer);
     }
     fclose(f);
   }
-  sprintf(path, "/sys/class/input/js%d/device/device/../serial", _index);
+  sprintf(path, "/sys/class/input/js%zd/device/device/../serial", _index);
   f = fopen(path, "r");
   if (f) {
-    if (fgets(buffer, sizeof(buffer), f) != NULL) {
+    if (fgets(buffer, sizeof(buffer), f) != nullptr) {
       buffer[strcspn(buffer, "\r\n")] = 0;
       _serial_number.assign(buffer);
     }
@@ -340,8 +343,8 @@ open_device() {
   // are all 0, which indicates that the driver hasn't received any data for
   // this gamepad yet (which means it hasn't been plugged in for this session)
   if (strncmp(name, "Xbox 360 Wireless Receiver", 26) == 0) {
-    for (int i = 0; i < _controls.size(); ++i) {
-      if (_controls[i].state != 0.0) {
+    for (const auto &control : _axes) {
+      if (control.value != 0.0) {
         _is_connected = true;
         return true;
       }
@@ -395,9 +398,9 @@ process_events() {
 
     if (events[i].type & JS_EVENT_BUTTON) {
       if (index == _ltrigger_button) {
-        control_changed(_ltrigger_control, events[i].value);
+        axis_changed(_ltrigger_control, events[i].value);
       } else if (index == _rtrigger_button) {
-        control_changed(_ltrigger_control + 1, events[i].value);
+        axis_changed(_ltrigger_control + 1, events[i].value);
       }
       button_changed(index, (events[i].value != 0));
 
@@ -410,7 +413,7 @@ process_events() {
         button_changed(_dpad_up_button+1, events[i].value > 1000);
       }
 
-      control_changed(index, events[i].value);
+      axis_changed(index, events[i].value);
     }
   }
 

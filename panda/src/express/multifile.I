@@ -35,7 +35,7 @@ set_multifile_name(const Filename &multifile_name) {
  */
 INLINE bool Multifile::
 is_read_valid() const {
-  return (_read != (IStreamWrapper *)NULL);
+  return (_read != nullptr);
 }
 
 /**
@@ -44,7 +44,7 @@ is_read_valid() const {
  */
 INLINE bool Multifile::
 is_write_valid() const {
-  return (_write != (ostream *)NULL && !_write->fail());
+  return (_write != nullptr && !_write->fail());
 }
 
 /**
@@ -143,7 +143,7 @@ get_encryption_flag() const {
  * implicit call to flush().
  */
 INLINE void Multifile::
-set_encryption_password(const string &encryption_password) {
+set_encryption_password(const std::string &encryption_password) {
   if (_encryption_password != encryption_password) {
     if (!_new_subfiles.empty()) {
       flush();
@@ -156,7 +156,7 @@ set_encryption_password(const string &encryption_password) {
  * Returns the password that will be used to encrypt subfiles subsequently
  * added to the multifile.  See set_encryption_password().
  */
-INLINE const string &Multifile::
+INLINE const std::string &Multifile::
 get_encryption_password() const {
   return _encryption_password;
 }
@@ -176,7 +176,7 @@ get_encryption_password() const {
  * flush().
  */
 INLINE void Multifile::
-set_encryption_algorithm(const string &encryption_algorithm) {
+set_encryption_algorithm(const std::string &encryption_algorithm) {
   if (_encryption_algorithm != encryption_algorithm) {
     if (!_new_subfiles.empty()) {
       flush();
@@ -189,7 +189,7 @@ set_encryption_algorithm(const string &encryption_algorithm) {
  * Returns the encryption algorithm that was specified by
  * set_encryption_algorithm().
  */
-INLINE const string &Multifile::
+INLINE const std::string &Multifile::
 get_encryption_algorithm() const {
   return _encryption_algorithm;
 }
@@ -268,7 +268,7 @@ get_encryption_iteration_count() const {
  * reduced in size after this operation, until the next call to repack().
  */
 INLINE bool Multifile::
-remove_subfile(const string &subfile_name) {
+remove_subfile(const std::string &subfile_name) {
   int index = find_subfile(subfile_name);
   if (index >= 0) {
     remove_subfile(index);
@@ -278,12 +278,12 @@ remove_subfile(const string &subfile_name) {
 }
 
 /**
- * Returns a string that contains the entire contents of the indicated
+ * Returns a vector_uchar that contains the entire contents of the indicated
  * subfile.
  */
-INLINE string Multifile::
+INLINE vector_uchar Multifile::
 read_subfile(int index) {
-  string result;
+  vector_uchar result;
   read_subfile(index, result);
   return result;
 }
@@ -292,16 +292,16 @@ read_subfile(int index) {
  * Returns a string with the first n bytes written to a Multifile, to identify
  * it as a Multifile.
  */
-INLINE string Multifile::
+INLINE std::string Multifile::
 get_magic_number() {
-  return string(_header, _header_size);
+  return std::string(_header, _header_size);
 }
 
 /**
  * Returns the string that preceded the Multifile header on the file, if any.
  * See set_header_prefix().
  */
-INLINE const string &Multifile::
+INLINE const std::string &Multifile::
 get_header_prefix() const {
   return _header_prefix;
 }
@@ -310,9 +310,9 @@ get_header_prefix() const {
  * Converts a size_t address read from the file to a streampos byte address
  * within the file.
  */
-INLINE streampos Multifile::
+INLINE std::streampos Multifile::
 word_to_streampos(size_t word) const {
-  return (streampos)word * (streampos)_scale_factor;
+  return (std::streampos)word * (std::streampos)_scale_factor;
 }
 
 /**
@@ -320,16 +320,16 @@ word_to_streampos(size_t word) const {
  * suitable for writing to the file.
  */
 INLINE size_t Multifile::
-streampos_to_word(streampos fpos) const {
-  return (size_t)((fpos + (streampos)_scale_factor - (streampos)1) / (streampos)_scale_factor);
+streampos_to_word(std::streampos fpos) const {
+  return (size_t)((fpos + (std::streampos)_scale_factor - (std::streampos)1) / (std::streampos)_scale_factor);
 }
 
 /**
  * Rounds the streampos byte address up to the next multiple of _scale_factor.
  * Only multiples of _scale_factor may be written to the file.
  */
-INLINE streampos Multifile::
-normalize_streampos(streampos fpos) const {
+INLINE std::streampos Multifile::
+normalize_streampos(std::streampos fpos) const {
   return word_to_streampos(streampos_to_word(fpos));
 }
 
@@ -354,11 +354,11 @@ Subfile() {
   _data_start = 0;
   _data_length = 0;
   _timestamp = 0;
-  _source = (istream *)NULL;
+  _source = nullptr;
   _flags = 0;
   _compression_level = 0;
 #ifdef HAVE_OPENSSL
-  _pkey = NULL;
+  _pkey = nullptr;
 #endif
 }
 
@@ -418,8 +418,8 @@ is_cert_special() const {
  * contributes to this Subfile, either in the index record or in the subfile
  * data.
  */
-INLINE streampos Multifile::Subfile::
+INLINE std::streampos Multifile::Subfile::
 get_last_byte_pos() const {
-  return max(_index_start + (streampos)_index_length,
-             _data_start + (streampos)_data_length) - (streampos)1;
+  return std::max(_index_start + (std::streampos)_index_length,
+             _data_start + (std::streampos)_data_length) - (std::streampos)1;
 }

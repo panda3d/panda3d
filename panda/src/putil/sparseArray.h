@@ -80,7 +80,7 @@ PUBLISHED:
   bool has_bits_in_common(const SparseArray &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   INLINE bool operator == (const SparseArray &other) const;
   INLINE bool operator != (const SparseArray &other) const;
@@ -158,8 +158,8 @@ private:
 
 #include "sparseArray.I"
 
-INLINE ostream &
-operator << (ostream &out, const SparseArray &array) {
+INLINE std::ostream &
+operator << (std::ostream &out, const SparseArray &array) {
   array.output(out);
   return out;
 }

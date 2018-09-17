@@ -12,10 +12,9 @@
  */
 
 #include "py_compat.h"
+#include "py_panda.h"
 
 #ifdef HAVE_PYTHON
-
-PyTupleObject Dtool_EmptyTuple = {PyVarObject_HEAD_INIT(nullptr, 0)};
 
 #if PY_MAJOR_VERSION < 3
 /**

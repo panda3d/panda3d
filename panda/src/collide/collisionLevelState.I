@@ -147,7 +147,7 @@ any_in_bounds() {
 
             is_in = true;  // If there's no bounding volume, we're implicitly in.
 
-            if (col_gbv != (GeometricBoundingVolume *)NULL) {
+            if (col_gbv != nullptr) {
               is_in = (node_gbv->contains(col_gbv) != 0);
               _node_volume_pcollector.add_level(1);
 
@@ -231,7 +231,7 @@ apply_transform() {
     int num_colliders = get_num_colliders();
     new_bounds.reserve(num_colliders);
     for (int c = 0; c < num_colliders; c++) {
-      new_bounds.push_back((GeometricBoundingVolume *)NULL);
+      new_bounds.push_back(nullptr);
     }
 
     _local_bounds = new_bounds;
@@ -257,8 +257,8 @@ apply_transform() {
       new_bounds.reserve(num_colliders);
       for (int c = 0; c < num_colliders; c++) {
         if (!has_collider(c) ||
-            get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
-          new_bounds.push_back((GeometricBoundingVolume *)NULL);
+            get_local_bound(c) == nullptr) {
+          new_bounds.push_back(nullptr);
         } else {
           const GeometricBoundingVolume *old_bound = get_local_bound(c);
           GeometricBoundingVolume *new_bound =

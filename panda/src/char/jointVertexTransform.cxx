@@ -24,8 +24,7 @@ TypeHandle JointVertexTransform::_type_handle;
  * Constructs an invalid object; used only by the bam loader.
  */
 JointVertexTransform::
-JointVertexTransform() :
-  _matrix_stale(true)
+JointVertexTransform()
 {
 }
 
@@ -35,8 +34,7 @@ JointVertexTransform() :
  */
 JointVertexTransform::
 JointVertexTransform(CharacterJoint *joint) :
-  _joint(joint),
-  _matrix_stale(true)
+  _joint(joint)
 {
   // Tell the joint that we need to be informed when it moves.
   _joint->_vertex_transforms.insert(this);
@@ -57,8 +55,7 @@ JointVertexTransform::
  */
 void JointVertexTransform::
 get_matrix(LMatrix4 &matrix) const {
-  check_matrix();
-  matrix = _matrix;
+  matrix = _joint->_skinning_matrix;
 }
 
 /**
@@ -69,8 +66,7 @@ get_matrix(LMatrix4 &matrix) const {
  */
 void JointVertexTransform::
 mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const {
-  check_matrix();
-  result.multiply(_matrix, previous);
+  result.multiply(_joint->_skinning_matrix, previous);
 }
 
 /**
@@ -80,31 +76,16 @@ mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const {
  */
 void JointVertexTransform::
 accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
-  check_matrix();
-
-  accum.accumulate(_matrix, weight);
+  accum.accumulate(_joint->_skinning_matrix, weight);
 }
 
 /**
  *
  */
 void JointVertexTransform::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _joint->get_name();
 }
-
-/**
- * Recomputes _matrix if it needs it.  Uses locking.
- */
-void JointVertexTransform::
-compute_matrix() {
-  LightMutexHolder holder(_lock);
-  if (_matrix_stale) {
-    _matrix = _joint->_initial_net_transform_inverse * _joint->_net_transform;
-    _matrix_stale = false;
-  }
-}
-
 
 /**
  * Tells the BamReader how to create objects of type JointVertexTransform.
@@ -165,6 +146,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   VertexTransform::fillin(scan, manager);
 
   manager->read_pointer(scan);
-  _matrix_stale = true;
   mark_modified(Thread::get_current_thread());
 }

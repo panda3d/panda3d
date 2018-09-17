@@ -39,6 +39,10 @@
 #include "cppStructType.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 InterrogateType dummy_type;
 
 /**
@@ -315,7 +319,7 @@ write_module(ostream &, ostream *out_h, InterrogateModuleDef *) {
  */
 ParameterRemap *InterfaceMaker::
 remap_parameter(CPPType *struct_type, CPPType *param_type) {
-  nassertr(param_type != NULL, NULL);
+  nassertr(param_type != nullptr, nullptr);
 
   if (convert_strings) {
     if (TypeManager::is_char_pointer(param_type)) {
@@ -328,7 +332,7 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     // If we're exporting a method of basic_string<char> itself, don't convert
     // basic_string<char>'s to atomic strings.
 
-    if (struct_type == (CPPType *)NULL ||
+    if (struct_type == nullptr ||
         !(TypeManager::is_basic_string_char(struct_type) ||
           TypeManager::is_basic_string_wchar(struct_type))) {
       if (TypeManager::is_basic_string_char(param_type)) {
@@ -359,11 +363,11 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
         CPPType *pt_type = TypeManager::unwrap(param_type);
         if (TypeManager::is_basic_string_char(pt_type) ||
             TypeManager::is_basic_string_wchar(pt_type)) {
-          return (ParameterRemap *)NULL;
+          return nullptr;
         }
       }
     }
-    if (struct_type == (CPPType *)NULL ||
+    if (struct_type == nullptr ||
         !TypeManager::is_vector_unsigned_char(struct_type)) {
       if (TypeManager::is_vector_unsigned_char(param_type)) {
         if (TypeManager::is_reference(param_type)) {
@@ -385,7 +389,7 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
 
       // Don't convert PointerTo<>'s to pointers for methods of the PointerTo
       // itself!
-      if (struct_type == (CPPType *)NULL ||
+      if (struct_type == nullptr ||
           !(pt_type->get_local_name(&parser) == struct_type->get_local_name(&parser))) {
         return new ParameterRemapPTToPointer(param_type);
       }
@@ -417,7 +421,7 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
 
   } else {
     // Here's something we have a problem with.
-    return (ParameterRemap *)NULL;
+    return nullptr;
   }
 }
 
@@ -460,7 +464,7 @@ wrap_global_functions() {
  * added to the end.
  */
 void InterfaceMaker::
-get_function_remaps(vector<FunctionRemap *> &remaps) {
+get_function_remaps(std::vector<FunctionRemap *> &remaps) {
   FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi).second;
@@ -512,7 +516,7 @@ make_function_remap(const InterrogateType &itype,
 
   // No such FunctionRemap is valid.  Return NULL.
   delete remap;
-  return (FunctionRemap *)NULL;
+  return nullptr;
 }
 
 /**
@@ -576,7 +580,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
 // printf(" Function Name = %s\n", ifunc.get_name().c_str());
 
   // Now get all the valid FunctionRemaps for the function.
-  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+  if (ifunc._instances != nullptr) {
     InterrogateFunction::Instances::const_iterator ii;
     for (ii = ifunc._instances->begin(); ii != ifunc._instances->end(); ++ii) {
       CPPInstance *cppfunc = (*ii).second;
@@ -591,7 +595,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
              pi != parameters->_parameters.rend();
              ++pi) {
           CPPInstance *param = (*pi);
-          if (param->_initializer != (CPPExpression *)NULL) {
+          if (param->_initializer != nullptr) {
             // This parameter has a default value.
             max_default_parameters++;
           } else {
@@ -610,7 +614,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
            num_default_parameters++) {
         FunctionRemap *remap =
           make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
-        if (remap != (FunctionRemap *)NULL) {
+        if (remap != nullptr) {
 
           func->_remaps.push_back(remap);
 
@@ -654,7 +658,7 @@ InterfaceMaker::Object *InterfaceMaker::
 record_object(TypeIndex type_index) {
   if (type_index == 0) {
     // An invalid type.
-    return (Object *)NULL;
+    return nullptr;
   }
 
   Objects::iterator oi = _objects.find(type_index);
@@ -665,7 +669,6 @@ record_object(TypeIndex type_index) {
 
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   const InterrogateType &itype = idb->get_type(type_index);
-  assert(&itype != NULL);
 
   Object *object = new Object(itype);
   bool inserted = _objects.insert(Objects::value_type(type_index, object)).second;
@@ -756,8 +759,7 @@ manage_return_value(ostream &out, int indent_level,
       out << " = " << return_expr << ";\n";
 
       indent(out, indent_level)
-        << "if (" << return_expr << " != ("
-        << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+        << "if (" << return_expr << " != nullptr) {\n";
       indent(out, indent_level + 2)
         << "(" << return_expr << ")->ref();\n";
       indent(out, indent_level)
@@ -814,8 +816,7 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
     // attempt to ref it.
 
     indent(out, indent_level)
-      << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+      << "if (" << varname << " != nullptr) {\n";
     indent(out, indent_level + 2)
       << varname << "->ref();\n";
     indent(out, indent_level)
@@ -848,8 +849,7 @@ output_unref(ostream &out, int indent_level, FunctionRemap *remap,
     // attempt to ref it.
 
     indent(out, indent_level)
-      << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+      << "if (" << varname << " != nullptr) {\n";
 
     if (TypeManager::is_pointer_to_base(remap->_return_type->get_temporary_type())) {
       // We're sure the reference count won't reach zero since we have it
@@ -885,7 +885,7 @@ hash_function_signature(FunctionRemap *remap) {
     return;
   }
 
-  if ((*hi).second != (FunctionRemap *)NULL &&
+  if ((*hi).second != nullptr &&
       (*hi).second->_function_signature == remap->_function_signature) {
     // The same function signature has already appeared.  This shouldn't
     // happen.
@@ -897,9 +897,9 @@ hash_function_signature(FunctionRemap *remap) {
   }
 
   // We have a conflict.  Extend both strings to resolve the ambiguity.
-  if ((*hi).second != (FunctionRemap *)NULL) {
+  if ((*hi).second != nullptr) {
     FunctionRemap *other_remap = (*hi).second;
-    (*hi).second = (FunctionRemap *)NULL;
+    (*hi).second = nullptr;
     other_remap->_hash +=
       InterrogateBuilder::hash_string(other_remap->_function_signature, 11);
     bool inserted = _wrappers_by_hash.insert

@@ -12,7 +12,11 @@
  */
 
 #include "bulletTriangleMeshShape.h"
+
+#include "config_bullet.h"
+
 #include "bulletTriangleMesh.h"
+#include "bulletWorld.h"
 
 #include "nodePathCollection.h"
 #include "geomNode.h"
@@ -25,9 +29,9 @@ TypeHandle BulletTriangleMeshShape::_type_handle;
  */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape() :
-  _mesh(NULL),
-  _gimpact_shape(NULL),
-  _bvh_shape(NULL),
+  _mesh(nullptr),
+  _gimpact_shape(nullptr),
+  _bvh_shape(nullptr),
   _dynamic(false),
   _compress(false),
   _bvh(false) {
@@ -36,6 +40,7 @@ BulletTriangleMeshShape() :
 /**
  * The parameters 'compress' and 'bvh' are only used if 'dynamic' is set to
  * FALSE.
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 BulletTriangleMeshShape::
 BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, bool bvh) :
@@ -45,13 +50,13 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
 
   // Assert that mesh is not NULL
   if (!mesh) {
-    bullet_cat.warning() << "mesh is NULL! creating new mesh." << endl;
+    bullet_cat.warning() << "mesh is NULL! creating new mesh." << std::endl;
     mesh = new BulletTriangleMesh();
   }
 
   // Assert that mesh has at least one triangle
-  if (mesh->get_num_triangles() == 0) {
-    bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
+  if (mesh->do_get_num_triangles() == 0) {
+    bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << std::endl;
     mesh->add_triangle(LPoint3::zero(), LPoint3::zero(), LPoint3::zero());
   }
 
@@ -65,7 +70,7 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
     _gimpact_shape->updateBound();
     _gimpact_shape->setUserPointer(this);
 
-    _bvh_shape = NULL;
+    _bvh_shape = nullptr;
   }
 
   // Static will create a Bvh mesh shape
@@ -74,7 +79,31 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
     _bvh_shape = new btBvhTriangleMeshShape(mesh->ptr(), compress, bvh);
     _bvh_shape->setUserPointer(this);
 
-    _gimpact_shape = NULL;
+    _gimpact_shape = nullptr;
+  }
+}
+
+/**
+ *
+ */
+BulletTriangleMeshShape::
+BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _dynamic = copy._dynamic;
+  _compress = copy._compress;
+  _bvh = copy._bvh;
+  _mesh = copy._mesh;
+  
+  if (_dynamic) {
+    _gimpact_shape = new btGImpactMeshShape(_mesh->ptr());
+    _gimpact_shape->updateBound();
+    _gimpact_shape->setUserPointer(this);
+    _bvh_shape = nullptr;
+  } else {
+    _bvh_shape = new btBvhTriangleMeshShape(_mesh->ptr(), _compress, _bvh);
+    _bvh_shape->setUserPointer(this);
+    _gimpact_shape = nullptr;
   }
 }
 
@@ -92,7 +121,7 @@ ptr() const {
     return _gimpact_shape;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -100,6 +129,7 @@ ptr() const {
  */
 void BulletTriangleMeshShape::
 refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!aabb_max.is_nan());
   nassertv(!aabb_max.is_nan());
@@ -148,7 +178,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   _mesh = DCAST(BulletTriangleMesh, p_list[pi++]);
 
   btStridingMeshInterface *mesh_ptr = _mesh->ptr();
-  nassertr(mesh_ptr != NULL, pi);
+  nassertr(mesh_ptr != nullptr, pi);
 
   if (_dynamic) {
     _gimpact_shape = new btGImpactMeshShape(mesh_ptr);

@@ -14,6 +14,10 @@
 #include "pfstreamBuf.h"
 #include <assert.h>
 
+using std::cerr;
+using std::endl;
+using std::string;
+
 PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   _dir(dir)
 {
@@ -56,7 +60,7 @@ void PipeStreamBuf::command(const string cmd) {
 int PipeStreamBuf::overflow(int c) {
   assert(is_open());
   assert(_dir == Output);
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
   if (n != 0) {
     write_chars(pbase(), n, false);
     pbump(-n);  // reset pptr()
@@ -72,11 +76,11 @@ int PipeStreamBuf::overflow(int c) {
 int PipeStreamBuf::sync(void) {
   assert(is_open());
   if (_dir == Output) {
-    streamsize n = pptr() - pbase();
+    std::streamsize n = pptr() - pbase();
     write_chars(pbase(), n, false);
     pbump(-n);
   } else {
-    streamsize n = egptr() - gptr();
+    std::streamsize n = egptr() - gptr();
     if (n != 0) {
       gbump(n);  // flush all our stored input away
 #ifndef NDEBUG
@@ -89,8 +93,8 @@ int PipeStreamBuf::sync(void) {
 
 int PipeStreamBuf::underflow(void) {
   assert(_dir == Input);
-  if ((eback() == (char*)0L) || (gptr() == (char*)0L) ||
-      (egptr() == (char*)0L)) {
+  if ((eback() == nullptr) || (gptr() == nullptr) ||
+      (egptr() == nullptr)) {
     // must be new-style iostream library
     char* buf = new char[4096];
     char* ebuf = &(buf[4096]);
@@ -162,7 +166,7 @@ void PipeStreamBuf::write_chars(const char* start, int length, bool flush) {
  */
 void PipeStreamBuf::
 init_pipe() {
-  _pipe = NULL;
+  _pipe = nullptr;
 }
 
 /**
@@ -170,7 +174,7 @@ init_pipe() {
  */
 bool PipeStreamBuf::
 is_open() const {
-  return _pipe != NULL;
+  return _pipe != nullptr;
 }
 
 /**
@@ -179,7 +183,7 @@ is_open() const {
  */
 bool PipeStreamBuf::
 eof_pipe() const {
-  return (_pipe == NULL) && feof(_pipe);
+  return (_pipe == nullptr) && feof(_pipe);
 }
 
 /**
@@ -193,7 +197,7 @@ bool PipeStreamBuf::
 open_pipe(const string &cmd) {
   const char *typ = (_dir == Output)?"w":"r";
   _pipe = popen(cmd.c_str(), typ);
-  return (_pipe != NULL);
+  return (_pipe != nullptr);
 }
 
 /**
@@ -201,9 +205,9 @@ open_pipe(const string &cmd) {
  */
 void PipeStreamBuf::
 close_pipe() {
-  if (_pipe != NULL) {
+  if (_pipe != nullptr) {
     fclose(_pipe);
-    _pipe = NULL;
+    _pipe = nullptr;
   }
 }
 
@@ -289,7 +293,7 @@ open_pipe(const string &cmd) {
   SECURITY_ATTRIBUTES saAttr;
   saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
   saAttr.bInheritHandle = TRUE;
-  saAttr.lpSecurityDescriptor = NULL;
+  saAttr.lpSecurityDescriptor = nullptr;
   if (!CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 0)) {
 #ifndef NDEBUG
     cerr << "Unable to create output pipe\n";
@@ -391,7 +395,7 @@ read_pipe(char *data, size_t len) {
     return 0;
   }
   DWORD dwRead;
-  if (!ReadFile(_child_out, data, len, &dwRead, NULL)) {
+  if (!ReadFile(_child_out, data, len, &dwRead, nullptr)) {
     close_pipe();
     return 0;
   }

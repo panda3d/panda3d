@@ -16,6 +16,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAGLES2)
+  #error Buildsystem error: BUILDING_PANDAGLES2 not defined
+#endif
+
 ConfigureDef(config_gles2gsg);
 NotifyCategoryDef(gles2gsg, ":display:gsg");
 

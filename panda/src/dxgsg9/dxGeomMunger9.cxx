@@ -16,7 +16,7 @@
 #include "geomVertexWriter.h"
 #include "config_dxgsg9.h"
 
-GeomMunger *DXGeomMunger9::_deleted_chain = NULL;
+GeomMunger *DXGeomMunger9::_deleted_chain = nullptr;
 TypeHandle DXGeomMunger9::_type_handle;
 
 /**
@@ -28,6 +28,9 @@ DXGeomMunger9::
     unref_delete(_filtered_texture);
     _reffed_filtered_texture = false;
   }
+
+  _texture.remove_callback(this);
+  _tex_gen.remove_callback(this);
 }
 
 /**
@@ -69,7 +72,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   const GeomVertexColumn *normal_type = orig->get_normal_column();
   const GeomVertexColumn *color_type = orig->get_color_column();
 
-  if (vertex_type != (const GeomVertexColumn *)NULL) {
+  if (vertex_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_vertex(), 3, NT_float32,
        vertex_type->get_contents());
@@ -106,13 +109,13 @@ munge_format_impl(const GeomVertexFormat *orig,
     new_format->remove_column(InternalName::get_transform_blend());
   }
 
-  if (normal_type != (const GeomVertexColumn *)NULL) {
+  if (normal_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_normal(), 3, NT_float32, C_normal);
     new_format->remove_column(normal_type->get_name());
   }
 
-  if (color_type != (const GeomVertexColumn *)NULL) {
+  if (color_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_color(), 1, NT_packed_dabc, C_color);
     new_format->remove_column(color_type->get_name());
@@ -124,7 +127,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   // Now set up each of the active texture coordinate stages--or at least
   // those for which we're not generating texture coordinates automatically.
 
-  if (_filtered_texture != (TextureAttrib *)NULL) {
+  if (_filtered_texture != nullptr) {
     int num_stages = _filtered_texture->get_num_on_ff_stages();
     vector_int ff_tc_index(num_stages, 0);
 
@@ -137,7 +140,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear
@@ -150,7 +153,7 @@ munge_format_impl(const GeomVertexFormat *orig,
 
       const GeomVertexColumn *texcoord_type = orig->get_column(name);
 
-      if (texcoord_type != (const GeomVertexColumn *)NULL) {
+      if (texcoord_type != nullptr) {
         new_array_format->add_column
           (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
       } else {
@@ -198,7 +201,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   const GeomVertexColumn *normal_type = orig->get_normal_column();
   const GeomVertexColumn *color_type = orig->get_color_column();
 
-  if (vertex_type != (const GeomVertexColumn *)NULL) {
+  if (vertex_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_vertex(), 3, NT_float32,
        vertex_type->get_contents());
@@ -209,13 +212,13 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     return orig;
   }
 
-  if (normal_type != (const GeomVertexColumn *)NULL) {
+  if (normal_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_normal(), 3, NT_float32, C_normal);
     new_format->remove_column(normal_type->get_name());
   }
 
-  if (color_type != (const GeomVertexColumn *)NULL) {
+  if (color_type != nullptr) {
     new_array_format->add_column
       (InternalName::get_color(), 1, NT_packed_dabc, C_color);
     new_format->remove_column(color_type->get_name());
@@ -227,7 +230,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
   // Now set up each of the active texture coordinate stages--or at least
   // those for which we're not generating texture coordinates automatically.
 
-  if (_filtered_texture != (TextureAttrib *)NULL) {
+  if (_filtered_texture != nullptr) {
     int num_stages = _filtered_texture->get_num_on_ff_stages();
     vector_int ff_tc_index(num_stages, 0);
 
@@ -240,7 +243,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       int tc_index = _filtered_texture->get_ff_tc_index(si);
       nassertr(tc_index < num_stages, orig);
       ff_tc_index[tc_index] = si;
-      max_tc_index = max(tc_index, max_tc_index);
+      max_tc_index = std::max(tc_index, max_tc_index);
     }
 
     // Now walk through the texture coordinates in the order they will appear
@@ -253,7 +256,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
 
       const GeomVertexColumn *texcoord_type = orig->get_column(name);
 
-      if (texcoord_type != (const GeomVertexColumn *)NULL) {
+      if (texcoord_type != nullptr) {
         new_array_format->add_column
           (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
       } else {
@@ -297,8 +300,11 @@ compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::compare_to_impl(other);
@@ -318,8 +324,11 @@ geom_compare_to_impl(const GeomMunger *other) const {
   if (_filtered_texture != om->_filtered_texture) {
     return _filtered_texture < om->_filtered_texture ? -1 : 1;
   }
-  if (_tex_gen != om->_tex_gen) {
-    return _tex_gen < om->_tex_gen ? -1 : 1;
+  if (_tex_gen.owner_before(om->_tex_gen)) {
+    return -1;
+  }
+  if (om->_tex_gen.owner_before(_tex_gen)) {
+    return 1;
   }
 
   return StandardMunger::geom_compare_to_impl(other);

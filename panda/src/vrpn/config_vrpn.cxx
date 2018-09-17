@@ -21,6 +21,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_VRPN)
+  #error Buildsystem error: BUILDING_VRPN not defined
+#endif
+
 Configure(config_vrpn);
 NotifyCategoryDef(vrpn, "");
 

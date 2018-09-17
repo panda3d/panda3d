@@ -47,6 +47,10 @@
 #include "odeCollisionEntry.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAODE)
+  #error Buildsystem error: BUILDING_PANDAODE not defined
+#endif
+
 Configure(config_ode);
 NotifyCategoryDef(ode, "");
 NotifyCategoryDef(odeworld, "ode");

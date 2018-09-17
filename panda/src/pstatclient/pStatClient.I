@@ -25,7 +25,7 @@ get_num_collectors() const {
  */
 INLINE PStatCollectorDef *PStatClient::
 get_collector_def(int index) const {
-  nassertr(index >= 0 && index < _num_collectors, NULL);
+  nassertr(index >= 0 && index < _num_collectors, nullptr);
 
   return get_collector_ptr(index)->get_def(this, index);
 }
@@ -42,32 +42,29 @@ get_num_threads() const {
 /**
  * Returns the name of the indicated thread.
  */
-INLINE string PStatClient::
+INLINE std::string PStatClient::
 get_thread_name(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), std::string());
   return get_thread_ptr(index)->_name;
 }
 
 /**
  * Returns the sync_name of the indicated thread.
  */
-INLINE string PStatClient::
+INLINE std::string PStatClient::
 get_thread_sync_name(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), string());
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), std::string());
   return get_thread_ptr(index)->_sync_name;
 }
 
 /**
  * Returns the Panda Thread object associated with the indicated PStatThread.
  */
-INLINE Thread *PStatClient::
+INLINE PT(Thread) PStatClient::
 get_thread_object(int index) const {
-  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), NULL);
+  nassertr(index >= 0 && index < AtomicAdjust::get(_num_threads), nullptr);
   InternalThread *thread = get_thread_ptr(index);
-  if (thread->_thread.was_deleted()) {
-    return NULL;
-  }
-  return thread->_thread;
+  return thread->_thread.lock();
 }
 
 /**
@@ -75,7 +72,7 @@ get_thread_object(int index) const {
  * true if successful, false on failure.
  */
 INLINE bool PStatClient::
-connect(const string &hostname, int port) {
+connect(const std::string &hostname, int port) {
   return get_global_pstats()->client_connect(hostname, port);
 }
 
@@ -112,7 +109,7 @@ resume_after_pause() {
  */
 INLINE bool PStatClient::
 has_impl() const {
-  return (_impl != (PStatClientImpl *)NULL);
+  return (_impl != nullptr);
 }
 
 /**
@@ -122,7 +119,7 @@ has_impl() const {
 INLINE PStatClientImpl *PStatClient::
 get_impl() {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)NULL) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -135,7 +132,7 @@ get_impl() {
 INLINE const PStatClientImpl *PStatClient::
 get_impl() const {
   ReMutexHolder holder(_lock);
-  if (_impl == (PStatClientImpl *)NULL) {
+  if (_impl == nullptr) {
     make_impl();
   }
   return _impl;
@@ -164,8 +161,8 @@ get_thread_ptr(int thread_index) const {
  *
  */
 INLINE PStatClient::Collector::
-Collector(int parent_index, const string &name) :
-  _def(NULL),
+Collector(int parent_index, const std::string &name) :
+  _def(nullptr),
   _parent_index(parent_index),
   _name(name)
 {
@@ -182,7 +179,7 @@ get_parent_index() const {
 /**
  *
  */
-INLINE const string &PStatClient::Collector::
+INLINE const std::string &PStatClient::Collector::
 get_name() const {
   return _name;
 }
@@ -194,7 +191,7 @@ get_name() const {
  */
 INLINE bool PStatClient::Collector::
 is_active() const {
-  return _def != (PStatCollectorDef *)NULL && _def->_is_active;
+  return _def != nullptr && _def->_is_active;
 }
 
 /**
@@ -203,7 +200,7 @@ is_active() const {
  */
 INLINE PStatCollectorDef *PStatClient::Collector::
 get_def(const PStatClient *client, int this_index) const {
-  if (_def == (PStatCollectorDef *)NULL) {
+  if (_def == nullptr) {
     ((Collector *)this)->make_def(client, this_index);
   }
 

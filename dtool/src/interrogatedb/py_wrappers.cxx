@@ -377,7 +377,7 @@ static PyObject *Dtool_MutableSequenceWrapper_insert(PyObject *self, PyObject *a
       return PyErr_Format(PyExc_TypeError, "%s.insert() does not support negative indices", wrap->_base._name);
     }
   }
-  return wrap->_insert_func(wrap->_base._self, (ssize_t)max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
+  return wrap->_insert_func(wrap->_base._self, (ssize_t)std::max(index, (Py_ssize_t)0), PyTuple_GET_ITEM(args, 1));
 }
 
 /**
@@ -517,7 +517,7 @@ static PyObject *Dtool_MappingWrapper_keys(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Keys_Type, "MappingView");
   }
 
-  PyObject_INIT(keys, &Dtool_MappingWrapper_Keys_Type);
+  (void)PyObject_INIT(keys, &Dtool_MappingWrapper_Keys_Type);
   Py_XINCREF(wrap->_base._self);
   keys->_base._self = wrap->_base._self;
   keys->_base._name = wrap->_base._name;
@@ -552,7 +552,7 @@ static PyObject *Dtool_MappingWrapper_values(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Values_Type, "ValuesView");
   }
 
-  PyObject_INIT(values, &Dtool_MappingWrapper_Values_Type);
+  (void)PyObject_INIT(values, &Dtool_MappingWrapper_Values_Type);
   Py_XINCREF(wrap->_base._self);
   values->_base._self = wrap->_base._self;
   values->_base._name = wrap->_base._name;
@@ -588,7 +588,7 @@ static PyObject *Dtool_MappingWrapper_items(PyObject *self, PyObject *) {
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Items_Type, "MappingView");
   }
 
-  PyObject_INIT(items, &Dtool_MappingWrapper_Items_Type);
+  (void)PyObject_INIT(items, &Dtool_MappingWrapper_Items_Type);
   Py_XINCREF(wrap->_base._self);
   items->_base._self = wrap->_base._self;
   items->_base._name = wrap->_base._name;
@@ -797,15 +797,15 @@ static PyObject *Dtool_MutableMappingWrapper_update(PyObject *self, PyObject *ar
  */
 static PySequenceMethods Dtool_SequenceWrapper_SequenceMethods = {
   Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
+  nullptr, // sq_concat
+  nullptr, // sq_repeat
   Dtool_SequenceWrapper_getitem,
-  0, // sq_slice
-  0, // sq_ass_item
-  0, // sq_ass_slice
+  nullptr, // sq_slice
+  nullptr, // sq_ass_item
+  nullptr, // sq_ass_slice
   Dtool_SequenceWrapper_contains,
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
+  nullptr, // sq_inplace_concat
+  nullptr, // sq_inplace_repeat
 };
 
 static PyMethodDef Dtool_SequenceWrapper_Methods[] = {
@@ -820,47 +820,47 @@ PyTypeObject Dtool_SequenceWrapper_Type = {
   sizeof(Dtool_SequenceWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_SequenceWrapper_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_SequenceWrapper_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PySeqIter_New,
-  0, // tp_iternext
+  nullptr, // tp_iternext
   Dtool_SequenceWrapper_Methods,
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -868,15 +868,15 @@ PyTypeObject Dtool_SequenceWrapper_Type = {
  */
 static PySequenceMethods Dtool_MutableSequenceWrapper_SequenceMethods = {
   Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
+  nullptr, // sq_concat
+  nullptr, // sq_repeat
   Dtool_SequenceWrapper_getitem,
-  0, // sq_slice
+  nullptr, // sq_slice
   Dtool_MutableSequenceWrapper_setitem,
-  0, // sq_ass_slice
+  nullptr, // sq_ass_slice
   Dtool_SequenceWrapper_contains,
   Dtool_MutableSequenceWrapper_extend,
-  0, // sq_inplace_repeat
+  nullptr, // sq_inplace_repeat
 };
 
 static PyMethodDef Dtool_MutableSequenceWrapper_Methods[] = {
@@ -897,47 +897,47 @@ PyTypeObject Dtool_MutableSequenceWrapper_Type = {
   sizeof(Dtool_MutableSequenceWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_SequenceWrapper_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_MutableSequenceWrapper_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PySeqIter_New,
-  0, // tp_iternext
+  nullptr, // tp_iternext
   Dtool_MutableSequenceWrapper_Methods,
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -945,21 +945,21 @@ PyTypeObject Dtool_MutableSequenceWrapper_Type = {
  */
 static PySequenceMethods Dtool_MappingWrapper_SequenceMethods = {
   Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
-  0, // sq_item
-  0, // sq_slice
-  0, // sq_ass_item
-  0, // sq_ass_slice
+  nullptr, // sq_concat
+  nullptr, // sq_repeat
+  nullptr, // sq_item
+  nullptr, // sq_slice
+  nullptr, // sq_ass_item
+  nullptr, // sq_ass_slice
   Dtool_MappingWrapper_contains,
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
+  nullptr, // sq_inplace_concat
+  nullptr, // sq_inplace_repeat
 };
 
 static PyMappingMethods Dtool_MappingWrapper_MappingMethods = {
   Dtool_SequenceWrapper_length,
   Dtool_MappingWrapper_getitem,
-  0, // mp_ass_subscript
+  nullptr, // mp_ass_subscript
 };
 
 static PyMethodDef Dtool_MappingWrapper_Methods[] = {
@@ -976,47 +976,47 @@ PyTypeObject Dtool_MappingWrapper_Type = {
   sizeof(Dtool_MappingWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_WrapperBase_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_MappingWrapper_SequenceMethods,
   &Dtool_MappingWrapper_MappingMethods,
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   Dtool_MappingWrapper_iter,
-  0, // tp_iternext
+  nullptr, // tp_iternext
   Dtool_MappingWrapper_Methods,
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1047,47 +1047,47 @@ PyTypeObject Dtool_MutableMappingWrapper_Type = {
   sizeof(Dtool_MappingWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_WrapperBase_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_MappingWrapper_SequenceMethods,
   &Dtool_MutableMappingWrapper_MappingMethods,
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   Dtool_MappingWrapper_iter,
-  0, // tp_iternext
+  nullptr, // tp_iternext
   Dtool_MutableMappingWrapper_Methods,
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1131,15 +1131,15 @@ static PyObject *Dtool_MappingWrapper_Items_getitem(PyObject *self, Py_ssize_t i
 
 static PySequenceMethods Dtool_MappingWrapper_Items_SequenceMethods = {
   Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
+  nullptr, // sq_concat
+  nullptr, // sq_repeat
   Dtool_MappingWrapper_Items_getitem,
-  0, // sq_slice
-  0, // sq_ass_item
-  0, // sq_ass_slice
+  nullptr, // sq_slice
+  nullptr, // sq_ass_item
+  nullptr, // sq_ass_slice
   Dtool_MappingWrapper_contains,
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
+  nullptr, // sq_inplace_concat
+  nullptr, // sq_inplace_repeat
 };
 
 PyTypeObject Dtool_MappingWrapper_Items_Type = {
@@ -1148,47 +1148,47 @@ PyTypeObject Dtool_MappingWrapper_Items_Type = {
   sizeof(Dtool_MappingWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_MappingWrapper_Items_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_MappingWrapper_Items_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PySeqIter_New,
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_iternext
+  nullptr, // tp_methods
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1209,66 +1209,53 @@ static PyObject *Dtool_MappingWrapper_Keys_repr(PyObject *self) {
   return result;
 }
 
-static PySequenceMethods Dtool_MappingWrapper_Keys_SequenceMethods = {
-  Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
-  Dtool_MappingWrapper_Items_getitem,
-  0, // sq_slice
-  0, // sq_ass_item
-  0, // sq_ass_slice
-  Dtool_MappingWrapper_contains,
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
-};
-
 PyTypeObject Dtool_MappingWrapper_Keys_Type = {
   PyVarObject_HEAD_INIT(nullptr, 0)
   "sequence wrapper",
   sizeof(Dtool_SequenceWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_MappingWrapper_Keys_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_SequenceWrapper_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PySeqIter_New,
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_iternext
+  nullptr, // tp_methods
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1305,15 +1292,15 @@ static PyObject *Dtool_MappingWrapper_Values_getitem(PyObject *self, Py_ssize_t 
 
 static PySequenceMethods Dtool_MappingWrapper_Values_SequenceMethods = {
   Dtool_SequenceWrapper_length,
-  0, // sq_concat
-  0, // sq_repeat
+  nullptr, // sq_concat
+  nullptr, // sq_repeat
   Dtool_MappingWrapper_Values_getitem,
-  0, // sq_slice
-  0, // sq_ass_item
-  0, // sq_ass_slice
+  nullptr, // sq_slice
+  nullptr, // sq_ass_item
+  nullptr, // sq_ass_slice
   Dtool_MappingWrapper_contains,
-  0, // sq_inplace_concat
-  0, // sq_inplace_repeat
+  nullptr, // sq_inplace_concat
+  nullptr, // sq_inplace_repeat
 };
 
 PyTypeObject Dtool_MappingWrapper_Values_Type = {
@@ -1322,47 +1309,47 @@ PyTypeObject Dtool_MappingWrapper_Values_Type = {
   sizeof(Dtool_MappingWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
   Dtool_MappingWrapper_Values_repr,
-  0, // tp_as_number
+  nullptr, // tp_as_number
   &Dtool_MappingWrapper_Values_SequenceMethods,
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PySeqIter_New,
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_iternext
+  nullptr, // tp_methods
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1381,47 +1368,47 @@ PyTypeObject Dtool_GeneratorWrapper_Type = {
   sizeof(Dtool_GeneratorWrapper),
   0, // tp_itemsize
   Dtool_WrapperBase_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_compare
-  0, // tp_repr
-  0, // tp_as_number
-  0, // tp_as_sequence
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_compare
+  nullptr, // tp_repr
+  nullptr, // tp_as_number
+  nullptr, // tp_as_sequence
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
   PyObject_GenericSetAttr,
-  0, // tp_as_buffer
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
-  0, // tp_doc
-  0, // tp_traverse
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_doc
+  nullptr, // tp_traverse
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
   PyObject_SelfIter,
   Dtool_GeneratorWrapper_iternext,
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
-  0, // tp_descr_get
-  0, // tp_descr_set
+  nullptr, // tp_methods
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
+  nullptr, // tp_descr_get
+  nullptr, // tp_descr_set
   0, // tp_dictoffset
-  0, // tp_init
+  nullptr, // tp_init
   PyType_GenericAlloc,
-  0, // tp_new
+  nullptr, // tp_new
   PyObject_Del,
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1498,47 +1485,47 @@ PyTypeObject Dtool_StaticProperty_Type = {
   sizeof(PyGetSetDescrObject),
   0, // tp_itemsize
   (destructor)Dtool_StaticProperty_dealloc,
-  0, // tp_print
-  0, // tp_getattr
-  0, // tp_setattr
-  0, // tp_reserved
+  nullptr, // tp_print
+  nullptr, // tp_getattr
+  nullptr, // tp_setattr
+  nullptr, // tp_reserved
   (reprfunc)Dtool_StaticProperty_repr,
-  0, // tp_as_number
-  0, // tp_as_sequence
-  0, // tp_as_mapping
-  0, // tp_hash
-  0, // tp_call
-  0, // tp_str
+  nullptr, // tp_as_number
+  nullptr, // tp_as_sequence
+  nullptr, // tp_as_mapping
+  nullptr, // tp_hash
+  nullptr, // tp_call
+  nullptr, // tp_str
   PyObject_GenericGetAttr,
-  0, // tp_setattro
-  0, // tp_as_buffer
+  nullptr, // tp_setattro
+  nullptr, // tp_as_buffer
   Py_TPFLAGS_DEFAULT,
-  0, // tp_doc
+  nullptr, // tp_doc
   Dtool_StaticProperty_traverse,
-  0, // tp_clear
-  0, // tp_richcompare
+  nullptr, // tp_clear
+  nullptr, // tp_richcompare
   0, // tp_weaklistoffset
-  0, // tp_iter
-  0, // tp_iternext
-  0, // tp_methods
-  0, // tp_members
-  0, // tp_getset
-  0, // tp_base
-  0, // tp_dict
+  nullptr, // tp_iter
+  nullptr, // tp_iternext
+  nullptr, // tp_methods
+  nullptr, // tp_members
+  nullptr, // tp_getset
+  nullptr, // tp_base
+  nullptr, // tp_dict
   (descrgetfunc)Dtool_StaticProperty_get,
   (descrsetfunc)Dtool_StaticProperty_set,
   0, // tp_dictoffset
-  0, // tp_init
-  0, // tp_alloc
-  0, // tp_new
-  0, // tp_del
-  0, // tp_is_gc
-  0, // tp_bases
-  0, // tp_mro
-  0, // tp_cache
-  0, // tp_subclasses
-  0, // tp_weaklist
-  0, // tp_del
+  nullptr, // tp_init
+  nullptr, // tp_alloc
+  nullptr, // tp_new
+  nullptr, // tp_del
+  nullptr, // tp_is_gc
+  nullptr, // tp_bases
+  nullptr, // tp_mro
+  nullptr, // tp_cache
+  nullptr, // tp_subclasses
+  nullptr, // tp_weaklist
+  nullptr, // tp_del
 };
 
 /**
@@ -1557,7 +1544,7 @@ Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name
     _register_collection((PyTypeObject *)&Dtool_MutableSequenceWrapper_Type, "Sequence");
   }
 
-  PyObject_INIT(wrap, &Dtool_SequenceWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_SequenceWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1582,7 +1569,7 @@ Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, co
     _register_collection((PyTypeObject *)&Dtool_MutableSequenceWrapper_Type, "MutableSequence");
   }
 
-  PyObject_INIT(wrap, &Dtool_MutableSequenceWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MutableSequenceWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1609,7 +1596,7 @@ Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name) 
     _register_collection((PyTypeObject *)&Dtool_MappingWrapper_Type, "Mapping");
   }
 
-  PyObject_INIT(wrap, &Dtool_MappingWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MappingWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;
@@ -1636,7 +1623,7 @@ Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char 
     _register_collection((PyTypeObject *)&Dtool_MutableMappingWrapper_Type, "MutableMapping");
   }
 
-  PyObject_INIT(wrap, &Dtool_MutableMappingWrapper_Type);
+  (void)PyObject_INIT(wrap, &Dtool_MutableMappingWrapper_Type);
   Py_XINCREF(self);
   wrap->_base._self = self;
   wrap->_base._name = name;

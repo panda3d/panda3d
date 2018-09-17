@@ -29,9 +29,10 @@ class SimpleAllocatorBlock;
 class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
   INLINE explicit SimpleAllocator(size_t max_size, Mutex &lock);
+  SimpleAllocator(SimpleAllocator &&from) noexcept;
   virtual ~SimpleAllocator();
 
-  INLINE SimpleAllocatorBlock *alloc(size_t size);
+  INLINE SimpleAllocatorBlock *alloc(size_t size, size_t alignment=1);
 
   INLINE bool is_empty() const;
   INLINE size_t get_total_size() const;
@@ -41,11 +42,11 @@ PUBLISHED:
 
   INLINE SimpleAllocatorBlock *get_first_block() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 protected:
-  SimpleAllocatorBlock *do_alloc(size_t size);
+  SimpleAllocatorBlock *do_alloc(size_t size, size_t alignment=1);
   INLINE bool do_is_empty() const;
 
   virtual SimpleAllocatorBlock *make_block(size_t start, size_t size);
@@ -91,6 +92,14 @@ protected:
   INLINE SimpleAllocatorBlock(SimpleAllocator *alloc,
                               size_t start, size_t size);
 
+public:
+  SimpleAllocatorBlock() = default;
+  SimpleAllocatorBlock(const SimpleAllocatorBlock &copy) = delete;
+  INLINE SimpleAllocatorBlock(SimpleAllocatorBlock &&from);
+
+  SimpleAllocatorBlock &operator = (const SimpleAllocatorBlock &copy) = delete;
+  INLINE SimpleAllocatorBlock &operator = (SimpleAllocatorBlock &&from);
+
 PUBLISHED:
   INLINE ~SimpleAllocatorBlock();
   INLINE void free();
@@ -106,7 +115,7 @@ PUBLISHED:
 
   INLINE SimpleAllocatorBlock *get_next_block() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 protected:
   INLINE void do_free();
@@ -114,19 +123,19 @@ protected:
   INLINE bool do_realloc(size_t size);
 
 private:
-  SimpleAllocator *_allocator;
-  size_t _start;
-  size_t _size;
+  SimpleAllocator *_allocator = nullptr;
+  size_t _start = 0;
+  size_t _size = 0;
 
   friend class SimpleAllocator;
 };
 
-INLINE ostream &operator << (ostream &out, const SimpleAllocator &obj) {
+INLINE std::ostream &operator << (std::ostream &out, const SimpleAllocator &obj) {
   obj.output(out);
   return out;
 }
 
-INLINE ostream &operator << (ostream &out, const SimpleAllocatorBlock &obj) {
+INLINE std::ostream &operator << (std::ostream &out, const SimpleAllocatorBlock &obj) {
   obj.output(out);
   return out;
 }

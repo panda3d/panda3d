@@ -12,7 +12,9 @@
  */
 
 #include "bulletConeTwistConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 #include "deg_2_rad.h"
 
@@ -63,6 +65,7 @@ ptr() const {
  */
 void BulletConeTwistConstraint::
 set_limit(int index, PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   value = deg_2_rad(value);
 
@@ -74,6 +77,7 @@ set_limit(int index, PN_stdfloat value) {
  */
 void BulletConeTwistConstraint::
 set_limit(PN_stdfloat swing1, PN_stdfloat swing2, PN_stdfloat twist, PN_stdfloat softness, PN_stdfloat bias, PN_stdfloat relaxation) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   swing1 = deg_2_rad(swing1);
   swing2 = deg_2_rad(swing2);
@@ -87,6 +91,7 @@ set_limit(PN_stdfloat swing1, PN_stdfloat swing2, PN_stdfloat twist, PN_stdfloat
  */
 void BulletConeTwistConstraint::
 set_damping(PN_stdfloat damping) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setDamping(damping);
 }
@@ -96,6 +101,7 @@ set_damping(PN_stdfloat damping) {
  */
 PN_stdfloat BulletConeTwistConstraint::
 get_fix_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _constraint->getFixThresh();
 }
@@ -105,6 +111,7 @@ get_fix_threshold() const {
  */
 void BulletConeTwistConstraint::
 set_fix_threshold(PN_stdfloat threshold) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setFixThresh(threshold);
 }
@@ -114,6 +121,7 @@ set_fix_threshold(PN_stdfloat threshold) {
  */
 void BulletConeTwistConstraint::
 enable_motor(bool enable) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->enableMotor(enable);
 }
@@ -123,6 +131,7 @@ enable_motor(bool enable) {
  */
 void BulletConeTwistConstraint::
 set_max_motor_impulse(PN_stdfloat max_impulse) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMaxMotorImpulse(max_impulse);
 }
@@ -132,6 +141,7 @@ set_max_motor_impulse(PN_stdfloat max_impulse) {
  */
 void BulletConeTwistConstraint::
 set_max_motor_impulse_normalized(PN_stdfloat max_impulse) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMaxMotorImpulseNormalized(max_impulse);
 }
@@ -141,6 +151,7 @@ set_max_motor_impulse_normalized(PN_stdfloat max_impulse) {
  */
 void BulletConeTwistConstraint::
 set_motor_target(const LQuaternion &quat) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMotorTarget(LQuaternion_to_btQuat(quat));
 }
@@ -150,6 +161,7 @@ set_motor_target(const LQuaternion &quat) {
  */
 void BulletConeTwistConstraint::
 set_motor_target_in_constraint_space(const LQuaternion &quat) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _constraint->setMotorTargetInConstraintSpace(LQuaternion_to_btQuat(quat));
 }
@@ -159,9 +171,30 @@ set_motor_target_in_constraint_space(const LQuaternion &quat) {
  */
 void BulletConeTwistConstraint::
 set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btTransform frame_a = TransformState_to_btTrans(ts_a);
   btTransform frame_b = TransformState_to_btTrans(ts_b);
 
   _constraint->setFrames(frame_a, frame_b);
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletConeTwistConstraint::
+get_frame_a() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getAFrame());
+}
+
+/**
+ *
+ */
+CPT(TransformState) BulletConeTwistConstraint::
+get_frame_b() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return btTrans_to_TransformState(_constraint->getBFrame());
 }

@@ -13,7 +13,7 @@
 
 #include "ptsToBam.h"
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "geomPoints.h"
 #include "bamFile.h"
 #include "pandaNode.h"
@@ -21,6 +21,8 @@
 #include "dcast.h"
 #include "string_utils.h"
 #include "config_egg2pg.h"
+
+using std::string;
 
 /**
  *
@@ -49,7 +51,7 @@ PtsToBam() : WithOutputFile(true, false, true)
      "Decimates the point cloud by the indicated divisor.  The number of points\n"
      "added is 1/divisor; numbers larger than 1.0 mean correspondingly fewer\n"
      "points.",
-     &PtsToBam::dispatch_double, NULL, &_decimate_divisor);
+     &PtsToBam::dispatch_double, nullptr, &_decimate_divisor);
 
   _decimate_divisor = 1.0;
 }
@@ -71,13 +73,13 @@ run() {
   _num_points_expected = 0;
   _num_points_found = 0;
   _num_points_added = 0;
-  _decimate_factor = 1.0 / max(1.0, _decimate_divisor);
+  _decimate_factor = 1.0 / std::max(1.0, _decimate_divisor);
   _line_number = 0;
   _point_number = 0;
   _decimated_point_number = 0.0;
   _num_vdatas = 0;
   string line;
-  while (getline(pts, line)) {
+  while (std::getline(pts, line)) {
     process_line(line);
   }
   close_vertex_data();
@@ -132,7 +134,7 @@ process_line(const string &line) {
   _line_number++;
 
   if (_line_number % 1000000 == 0) {
-    cerr << "." << flush;
+    std::cerr << "." << std::flush;
   }
 
   if (line.empty() || !isdigit(line[0])) {
@@ -172,7 +174,7 @@ process_line(const string &line) {
  */
 void PtsToBam::
 add_point(const vector_string &words) {
-  if (_data == NULL || _data->get_num_rows() >= egg_max_vertices) {
+  if (_data == nullptr || _data->get_num_rows() >= egg_max_vertices) {
     open_vertex_data();
   }
 
@@ -190,7 +192,7 @@ add_point(const vector_string &words) {
  */
 void PtsToBam::
 open_vertex_data() {
-  if (_data != (GeomVertexData *)NULL) {
+  if (_data != nullptr) {
     close_vertex_data();
   }
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3();
@@ -203,7 +205,7 @@ open_vertex_data() {
  */
 void PtsToBam::
 close_vertex_data() {
-  if (_data == NULL) {
+  if (_data == nullptr) {
     return;
   }
 
@@ -215,7 +217,7 @@ close_vertex_data() {
   int num_vertices = _data->get_num_rows();
   int vertices_so_far = 0;
   while (num_vertices > 0) {
-    int this_num_vertices = min(num_vertices, (int)egg_max_indices);
+    int this_num_vertices = std::min(num_vertices, (int)egg_max_indices);
     PT(GeomPrimitive) points = new GeomPoints(GeomEnums::UH_static);
     points->add_consecutive_vertices(vertices_so_far, this_num_vertices);
     geom->add_primitive(points);
@@ -225,7 +227,7 @@ close_vertex_data() {
 
   _gnode->add_geom(geom);
 
-  _data = NULL;
+  _data = nullptr;
 }
 
 int main(int argc, char *argv[]) {

@@ -29,7 +29,7 @@
 /**
  * Uses Windows native calls to implement atomic adjustments.
  */
-class EXPCL_DTOOL AtomicAdjustWin32Impl {
+class EXPCL_DTOOL_DTOOLBASE AtomicAdjustWin32Impl {
 public:
 #ifdef _WIN64
   // For 64-bit builds, we'd prefer to use a 64-bit integer.
@@ -44,7 +44,7 @@ public:
 
   ALWAYS_INLINE static void inc(TVOLATILE Integer &var);
   ALWAYS_INLINE static bool dec(TVOLATILE Integer &var);
-  INLINE static void add(TVOLATILE Integer &var, Integer delta);
+  INLINE static Integer add(TVOLATILE Integer &var, Integer delta);
   ALWAYS_INLINE static Integer set(TVOLATILE Integer &var, Integer new_value);
   ALWAYS_INLINE static Integer get(const TVOLATILE Integer &var);
 

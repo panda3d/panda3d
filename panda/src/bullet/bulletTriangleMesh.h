@@ -32,7 +32,7 @@
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
 PUBLISHED:
   BulletTriangleMesh();
-  ~BulletTriangleMesh() DEFAULT_DTOR;
+  ~BulletTriangleMesh() = default;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,
@@ -51,14 +51,20 @@ PUBLISHED:
   size_t get_num_triangles() const;
   PN_stdfloat get_welding_distance() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
-  INLINE size_t get_num_vertices() const;
-  INLINE LPoint3 get_vertex(size_t index) const;
+  size_t get_num_vertices() const;
+  LPoint3 get_vertex(size_t index) const;
 
-  INLINE LVecBase3i get_triangle(size_t index) const;
+  LVecBase3i get_triangle(size_t index) const;
+
+  size_t do_get_num_triangles() const;
+  void do_add_triangle(const LPoint3 &p0,
+                       const LPoint3 &p1,
+                       const LPoint3 &p2,
+                       bool remove_duplicate_vertices=false);
 
 PUBLISHED:
   MAKE_PROPERTY(welding_distance, get_welding_distance, set_welding_distance);
@@ -106,7 +112,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const BulletTriangleMesh &obj);
+INLINE std::ostream &operator << (std::ostream &out, const BulletTriangleMesh &obj);
 
 #include "bulletTriangleMesh.I"
 

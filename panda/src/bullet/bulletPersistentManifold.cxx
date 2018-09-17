@@ -12,7 +12,9 @@
  */
 
 #include "bulletPersistentManifold.h"
+
 #include "bulletManifoldPoint.h"
+#include "bulletWorld.h"
 
 /**
  *
@@ -27,6 +29,7 @@ BulletPersistentManifold(btPersistentManifold *manifold) : _manifold(manifold) {
  */
 PN_stdfloat BulletPersistentManifold::
 get_contact_breaking_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_manifold->getContactBreakingThreshold();
 }
@@ -36,6 +39,7 @@ get_contact_breaking_threshold() const {
  */
 PN_stdfloat BulletPersistentManifold::
 get_contact_processing_threshold() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_manifold->getContactProcessingThreshold();
 }
@@ -45,6 +49,7 @@ get_contact_processing_threshold() const {
  */
 void BulletPersistentManifold::
 clear_manifold() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _manifold->clearManifold();
 }
@@ -54,6 +59,7 @@ clear_manifold() {
  */
 PandaNode *BulletPersistentManifold::
 get_node0() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
 #if BT_BULLET_VERSION >= 281
   const btCollisionObject *obj = _manifold->getBody0();
@@ -61,7 +67,7 @@ get_node0() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody0();
 #endif
 
-  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): nullptr;
 }
 
 /**
@@ -69,6 +75,7 @@ get_node0() {
  */
 PandaNode *BulletPersistentManifold::
 get_node1() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
 #if BT_BULLET_VERSION >= 281
   const btCollisionObject *obj = _manifold->getBody1();
@@ -76,7 +83,7 @@ get_node1() {
   const btCollisionObject *obj = (btCollisionObject *)_manifold->getBody1();
 #endif
 
-  return (obj) ? (PandaNode *)obj->getUserPointer(): NULL;
+  return (obj) ? (PandaNode *)obj->getUserPointer(): nullptr;
 }
 
 /**
@@ -84,6 +91,7 @@ get_node1() {
  */
 int BulletPersistentManifold::
 get_num_manifold_points() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _manifold->getNumContacts();
 }
@@ -93,8 +101,9 @@ get_num_manifold_points() const {
  */
 BulletManifoldPoint *BulletPersistentManifold::
 get_manifold_point(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx < _manifold->getNumContacts(), NULL)
+  nassertr(idx < _manifold->getNumContacts(), nullptr)
 
   return new BulletManifoldPoint(_manifold->getContactPoint(idx));
 }

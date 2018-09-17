@@ -15,7 +15,7 @@
  *
  */
 INLINE GlobPattern::
-GlobPattern(const string &pattern) : _pattern(pattern) {
+GlobPattern(const std::string &pattern) : _pattern(pattern) {
   _case_sensitive = true;
 }
 
@@ -69,14 +69,14 @@ operator < (const GlobPattern &other) const {
  * Changes the pattern string that the GlobPattern object matches.
  */
 INLINE void GlobPattern::
-set_pattern(const string &pattern) {
+set_pattern(const std::string &pattern) {
   _pattern = pattern;
 }
 
 /**
  * Returns the pattern string that the GlobPattern object matches.
  */
-INLINE const string &GlobPattern::
+INLINE const std::string &GlobPattern::
 get_pattern() const {
   return _pattern;
 }
@@ -103,14 +103,14 @@ get_case_sensitive() const {
  * Specifies a set of characters that are not matched by * or ?.
  */
 INLINE void GlobPattern::
-set_nomatch_chars(const string &nomatch_chars) {
+set_nomatch_chars(const std::string &nomatch_chars) {
   _nomatch_chars = nomatch_chars;
 }
 
 /**
  * Returns the set of characters that are not matched by * or ?.
  */
-INLINE const string &GlobPattern::
+INLINE const std::string &GlobPattern::
 get_nomatch_chars() const {
   return _nomatch_chars;
 }
@@ -119,7 +119,7 @@ get_nomatch_chars() const {
  * Returns true if the candidate string matches the pattern, false otherwise.
  */
 INLINE bool GlobPattern::
-matches(const string &candidate) const {
+matches(const std::string &candidate) const {
   return matches_substr(_pattern.begin(), _pattern.end(),
                         candidate.begin(), candidate.end());
 }
@@ -128,6 +128,6 @@ matches(const string &candidate) const {
  *
  */
 INLINE void GlobPattern::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _pattern;
 }

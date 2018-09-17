@@ -29,7 +29,7 @@
  * which will render the described path.
  */
 LineSegs::
-LineSegs(const string &name) : Namable(name) {
+LineSegs(const std::string &name) : Namable(name) {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _thick = 1.0f;
 }
@@ -105,7 +105,7 @@ is_empty() {
  */
 LVertex LineSegs::
 get_vertex(int n) const {
-  nassertr(_created_data != (GeomVertexData *)NULL, LVertex::zero());
+  nassertr(_created_data != nullptr, LVertex::zero());
   GeomVertexReader vertex(_created_data, InternalName::get_vertex());
   vertex.set_row_unsafe(n);
   return vertex.get_data3();
@@ -118,7 +118,7 @@ get_vertex(int n) const {
  */
 void LineSegs::
 set_vertex(int n, const LVertex &vert) {
-  nassertv(_created_data != (GeomVertexData *)NULL);
+  nassertv(_created_data != nullptr);
   GeomVertexWriter vertex(_created_data, InternalName::get_vertex());
   vertex.set_row_unsafe(n);
   vertex.set_data3(vert);
@@ -129,7 +129,7 @@ set_vertex(int n, const LVertex &vert) {
  */
 LColor LineSegs::
 get_vertex_color(int n) const {
-  nassertr(_created_data != (GeomVertexData *)NULL, LColor::zero());
+  nassertr(_created_data != nullptr, LColor::zero());
   GeomVertexReader color(_created_data, InternalName::get_color());
   color.set_row_unsafe(n);
   return color.get_data4();
@@ -140,7 +140,7 @@ get_vertex_color(int n) const {
  */
 void LineSegs::
 set_vertex_color(int n, const LColor &c) {
-  nassertv(_created_data != (GeomVertexData *)NULL);
+  nassertv(_created_data != nullptr);
   GeomVertexWriter color(_created_data, InternalName::get_color());
   color.set_row_unsafe(n);
   color.set_data4(c);

@@ -21,10 +21,10 @@
  * empty.
  */
 bool
-parse_bool_attrib(TiXmlElement *xelem, const string &attrib,
+parse_bool_attrib(TiXmlElement *xelem, const std::string &attrib,
                   bool default_value) {
   const char *value = xelem->Attribute(attrib.c_str());
-  if (value == NULL || *value == '\0') {
+  if (value == nullptr || *value == '\0') {
     return default_value;
   }
 

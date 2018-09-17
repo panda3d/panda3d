@@ -15,7 +15,7 @@
 #include "config_event.h"
 #include "lightMutexHolder.h"
 
-EventQueue *EventQueue::_global_event_queue = NULL;
+EventQueue *EventQueue::_global_event_queue = nullptr;
 
 
 /**
@@ -106,5 +106,6 @@ dequeue_event() {
  */
 void EventQueue::
 make_global_event_queue() {
+  init_memory_hook();
   _global_event_queue = new EventQueue;
 }

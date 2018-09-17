@@ -14,7 +14,7 @@
 #include "pStatServer.h"
 #include "pStatReader.h"
 #include "thread.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 /**
  *
@@ -122,7 +122,7 @@ poll() {
  */
 void PStatServer::
 main_loop(bool *interrupt_flag) {
-  while (interrupt_flag == (bool *)NULL || !*interrupt_flag) {
+  while (interrupt_flag == nullptr || !*interrupt_flag) {
     poll();
     Thread::sleep(0.1);
   }

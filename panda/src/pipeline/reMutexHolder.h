@@ -27,10 +27,10 @@ public:
   INLINE ReMutexHolder(const ReMutex &mutex);
   INLINE ReMutexHolder(const ReMutex &mutex, Thread *current_thread);
   INLINE ReMutexHolder(ReMutex *&mutex);
+  ReMutexHolder(const ReMutexHolder &copy) = delete;
   INLINE ~ReMutexHolder();
-private:
-  INLINE ReMutexHolder(const ReMutexHolder &copy);
-  INLINE void operator = (const ReMutexHolder &copy);
+
+  ReMutexHolder &operator = (const ReMutexHolder &copy) = delete;
 
 private:
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)

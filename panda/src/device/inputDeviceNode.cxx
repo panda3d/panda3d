@@ -19,7 +19,7 @@
 TypeHandle InputDeviceNode::_type_handle;
 
 InputDeviceNode::
-InputDeviceNode(InputDevice *device, const string &name) :
+InputDeviceNode(InputDevice *device, const std::string &name) :
   DataNode(name),
   _device(device)
 {
@@ -54,18 +54,36 @@ get_device() const {
 void InputDeviceNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
+
+  if (_device == nullptr && !_device->is_connected()) {
+    return;
+  }
+
+  _device->poll();
+
   // get all button events of the device and forward them to the data graph
   if (_device->has_button_event()) {
     PT(ButtonEventList) bel = _device->get_button_events();
+
+    // Register the current state for each button.
+    for (int i = 0; i < bel->get_num_events(); ++i) {
+      const ButtonEvent &event = bel->get_event(i);
+      if (event._type == ButtonEvent::T_down) {
+        _button_states[event._button] = true;
+      } else if (event._type == ButtonEvent::T_down) {
+        _button_states[event._button] = false;
+      }
+    }
+
     output.set_data(_button_events_output, EventParameter(bel));
   }
 
   // calculate the battery level in percent and set a warning if the level is to low
-  if (_device->has_battery()) {
+  /*if (_device->has_battery()) {
     short bl = _device->get_battery_level();
     short bl_percent = bl / (_device->get_max_battery_level() / (short)100);
     if (bl_percent <= low_battery_level) {
       output.set_data(_low_battery_event_output, EventParameter(1));
     }
-  }
+  }*/
 }

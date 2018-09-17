@@ -29,7 +29,7 @@ class EXPCL_MILES_AUDIO MilesAudioSequence : public MilesAudioSound {
 private:
   MilesAudioSequence(MilesAudioManager *manager,
                      MilesAudioManager::SoundData *sd,
-                     const string &file_name);
+                     const std::string &file_name);
 
 public:
   virtual ~MilesAudioSequence();

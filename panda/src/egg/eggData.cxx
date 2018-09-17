@@ -18,13 +18,16 @@
 #include "eggComment.h"
 #include "eggPoolUniquifier.h"
 #include "config_egg.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "string_utils.h"
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"
 #include "lightMutexHolder.h"
 #include "zStream.h"
+
+using std::istream;
+using std::ostream;
 
 extern int eggyyparse();
 #include "parserDefs.h"
@@ -59,7 +62,7 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
  * error is the output stream to which to write error messages.
  */
 bool EggData::
-read(Filename filename, string display_name) {
+read(Filename filename, std::string display_name) {
   filename.set_text();
   set_egg_filename(filename);
 
@@ -70,14 +73,14 @@ read(Filename filename, string display_name) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   PT(VirtualFile) vfile = vfs->get_file(filename);
-  if (vfile == NULL) {
+  if (vfile == nullptr) {
     egg_cat.error() << "Could not find " << display_name << "\n";
     return false;
   }
   set_egg_timestamp(vfile->get_timestamp());
 
   istream *file = vfile->open_read_file(true);
-  if (file == (istream *)NULL) {
+  if (file == nullptr) {
     egg_cat.error() << "Unable to open " << display_name << "\n";
     return false;
   }
@@ -158,7 +161,7 @@ merge(EggData &other) {
 bool EggData::
 load_externals(const DSearchPath &searchpath) {
   return
-    r_load_externals(searchpath, get_coordinate_system(), NULL);
+    r_load_externals(searchpath, get_coordinate_system(), nullptr);
 }
 
 /**
@@ -211,7 +214,7 @@ write_egg(Filename filename) {
   filename.set_text();
   vfs->delete_file(filename);
   ostream *file = vfs->open_write_file(filename, true, true);
-  if (file == (ostream *)NULL) {
+  if (file == nullptr) {
     egg_cat.error() << "Unable to open " << filename << " for writing.\n";
     return false;
   }
@@ -230,8 +233,8 @@ write_egg(ostream &out) {
 
   if (egg_precision > 0) {
     // Change the egg precision as requested.
-    streamsize orig_precision = out.precision();
-    out.precision((streamsize)egg_precision);
+    std::streamsize orig_precision = out.precision();
+    out.precision((std::streamsize)egg_precision);
     write(out, 0);
     out.precision(orig_precision);
   } else {
@@ -276,7 +279,7 @@ write(ostream &out, int indent_level) const {
   PT(EggCoordinateSystem) ecs = new EggCoordinateSystem(_coordsys);
   ecs->write(out, indent_level);
   EggGroupNode::write(out, indent_level);
-  out << flush;
+  out << std::flush;
 }
 
 

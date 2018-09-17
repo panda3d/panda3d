@@ -21,14 +21,14 @@
  * This is a convenience class to specialize ConfigVariable as an integer
  * type.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableInt : public ConfigVariable {
+class EXPCL_DTOOL_PRC ConfigVariableInt : public ConfigVariable {
 PUBLISHED:
-  INLINE ConfigVariableInt(const string &name);
-  INLINE ConfigVariableInt(const string &name, int default_value,
-                           const string &description = string(),
+  INLINE ConfigVariableInt(const std::string &name);
+  INLINE ConfigVariableInt(const std::string &name, int default_value,
+                           const std::string &description = std::string(),
                            int flags = 0);
-  INLINE ConfigVariableInt(const string &name, const string &default_value,
-                           const string &description = string(),
+  INLINE ConfigVariableInt(const std::string &name, const std::string &default_value,
+                           const std::string &description = std::string(),
                            int flags = 0);
 
   INLINE void operator = (int value);

@@ -19,6 +19,10 @@ BEGIN_PUBLISH
 #include "tinyxml.h"
 END_PUBLISH
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DXML)
+  #error Buildsystem error: BUILDING_PANDA_DXML not defined
+#endif
+
 Configure(config_dxml);
 NotifyCategoryDef(dxml, "");
 
@@ -50,12 +54,12 @@ BEGIN_PUBLISH
 //               Returns the document, or NULL on error.
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *
-read_xml_stream(istream &in) {
+read_xml_stream(std::istream &in) {
   TiXmlDocument *doc = new TiXmlDocument;
   in >> *doc;
   if (in.fail() && !in.eof()) {
     delete doc;
-    return NULL;
+    return nullptr;
   }
 
   return doc;
@@ -68,7 +72,7 @@ BEGIN_PUBLISH
 //  Description: Writes an XML document to the indicated stream.
 ////////////////////////////////////////////////////////////////////
 void
-write_xml_stream(ostream &out, TiXmlDocument *doc) {
+write_xml_stream(std::ostream &out, TiXmlDocument *doc) {
   out << *doc;
 }
 END_PUBLISH
@@ -93,13 +97,13 @@ BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 void
 print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
-  string os_name = filename.to_os_specific();
+  std::string os_name = filename.to_os_specific();
 #ifdef _WIN32
   FILE *file;
   if (fopen_s(&file, os_name.c_str(), "w") != 0) {
 #else
   FILE *file = fopen(os_name.c_str(), "w");
-  if (file == NULL) {
+  if (file == nullptr) {
 #endif
     dxml_cat.error() << "Failed to open " << filename << " for writing\n";
   }

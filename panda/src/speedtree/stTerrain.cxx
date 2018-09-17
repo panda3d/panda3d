@@ -62,7 +62,7 @@ clear() {
   _splat_map = "";
   _splat_layers.clear();
 
-  set_vertex_format(NULL);
+  set_vertex_format(nullptr);
 }
 
 /**
@@ -149,7 +149,7 @@ fill_vertices(GeomVertexData *data,
  *
  */
 void STTerrain::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Namable::output(out);
 }
 
@@ -157,7 +157,7 @@ output(ostream &out) const {
  *
  */
 void STTerrain::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << *this << "\n";
 }
@@ -169,7 +169,7 @@ write(ostream &out, int indent_level) const {
 const SpeedTree::SVertexAttribDesc *STTerrain::
 get_st_vertex_format() const {
   // return SpeedTree::std_vertex_format;
-  nassertr(!_st_vertex_attribs.empty(), NULL);
+  nassertr(!_st_vertex_attribs.empty(), nullptr);
 
   return &_st_vertex_attribs[0];
 }
@@ -181,8 +181,8 @@ get_st_vertex_format() const {
  */
 bool STTerrain::
 set_vertex_format(const GeomVertexFormat *format) {
-  if (format == NULL) {
-    _vertex_format = NULL;
+  if (format == nullptr) {
+    _vertex_format = nullptr;
     _st_vertex_attribs.clear();
     _is_valid = false;
     return true;

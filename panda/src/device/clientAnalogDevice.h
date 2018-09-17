@@ -28,10 +28,10 @@
  */
 class EXPCL_PANDA_DEVICE ClientAnalogDevice : public ClientDevice {
 protected:
-  INLINE ClientAnalogDevice(ClientBase *client, const string &device_name);
+  INLINE ClientAnalogDevice(ClientBase *client, const std::string &device_name);
 
 public:
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   static TypeHandle get_class_type() {

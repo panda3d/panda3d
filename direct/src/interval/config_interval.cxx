@@ -29,6 +29,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_INTERVAL)
+  #error Buildsystem error: BUILDING_DIRECT_INTERVAL not defined
+#endif
+
 Configure(config_interval);
 NotifyCategoryDef(interval, "");
 

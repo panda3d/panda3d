@@ -49,11 +49,11 @@ private:
   void remove_unused_elements();
 
   bool rename_file(SceneFiles::iterator begin, SceneFiles::iterator end);
-  bool scan_cvs(const string &dirname, pset<string> &cvs_elements);
-  bool scan_scene_file(istream &in, Multifile &multifile);
+  bool scan_cvs(const std::string &dirname, pset<std::string> &cvs_elements);
+  bool scan_scene_file(std::istream &in, Multifile &multifile);
 
-  bool cvs_add(const string &path);
-  bool cvs_add_or_remove(const string &cvs_command,
+  bool cvs_add(const std::string &path);
+  bool cvs_add_or_remove(const std::string &cvs_command,
                          const vector_string &paths);
 
   SceneFiles _scene_files;
@@ -64,7 +64,7 @@ private:
   vector_string _cvs_remove;
 
   bool _no_cvs;
-  string _cvs_binary;
+  std::string _cvs_binary;
 };
 
 #endif

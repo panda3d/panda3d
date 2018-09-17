@@ -16,6 +16,8 @@
 #include "pStatCollectorDef.h"
 #include "numeric_types.h"
 
+using std::string;
+
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 100;
 
@@ -246,7 +248,7 @@ copy_region(int start_x, int end_x, int dest_x) {
 
   // Also shift the brush origin over, so we still get proper dithering.
   _brush_origin += (dest_x - start_x);
-  SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, NULL);
+  SetBrushOrgEx(_bitmap_dc, _brush_origin, 0, nullptr);
 
   RECT rect = {
     dest_x, 0, dest_x + end_x - start_x, get_ysize()
@@ -596,7 +598,7 @@ move_graph_window(int graph_left, int graph_top, int graph_xsize, int graph_ysiz
                  _left_margin, _top_margin - _check_box_height - 1,
                  0, 0,
                  SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
-    InvalidateRect(_smooth_check_box, NULL, TRUE);
+    InvalidateRect(_smooth_check_box, nullptr, TRUE);
   }
 }
 
@@ -623,7 +625,7 @@ draw_guide_bar(HDC hdc, int from_x, int to_x,
       SelectObject(hdc, _dark_pen);
       break;
     }
-    MoveToEx(hdc, from_x, y, NULL);
+    MoveToEx(hdc, from_x, y, nullptr);
     LineTo(hdc, to_x + 1, y);
   }
 }
@@ -684,7 +686,7 @@ create_window() {
     return;
   }
 
-  HINSTANCE application = GetModuleHandle(NULL);
+  HINSTANCE application = GetModuleHandle(nullptr);
   register_window_class(application);
 
   string window_title = get_title_text();
@@ -703,7 +705,7 @@ create_window() {
                  CW_USEDEFAULT, CW_USEDEFAULT,
                  win_rect.right - win_rect.left,
                  win_rect.bottom - win_rect.top,
-                 WinStatsGraph::_monitor->get_window(), NULL, application, 0);
+                 WinStatsGraph::_monitor->get_window(), nullptr, application, 0);
   if (!_window) {
     nout << "Could not create StripChart window!\n";
     exit(1);
@@ -716,7 +718,7 @@ create_window() {
     CreateWindow("BUTTON", "",
                  WS_CHILD | BS_AUTOCHECKBOX,
                  0, 0, _check_box_width, _check_box_height,
-                 _window, NULL, application, 0);
+                 _window, nullptr, application, 0);
 
   // Ensure that the window is on top of the stack.
   SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0,
@@ -739,9 +741,9 @@ register_window_class(HINSTANCE application) {
   wc.style = 0;
   wc.lpfnWndProc = (WNDPROC)static_window_proc;
   wc.hInstance = application;
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+  wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
   wc.hbrBackground = (HBRUSH)COLOR_BACKGROUND;
-  wc.lpszMenuName = NULL;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = _window_class_name;
 
   // Reserve space to associate the this pointer with the window.
@@ -761,7 +763,7 @@ register_window_class(HINSTANCE application) {
 LONG WINAPI WinStatsStripChart::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WinStatsStripChart *self = (WinStatsStripChart *)GetWindowLongPtr(hwnd, 0);
-  if (self != (WinStatsStripChart *)NULL && self->_window == hwnd) {
+  if (self != nullptr && self->_window == hwnd) {
     return self->window_proc(hwnd, msg, wparam, lparam);
   } else {
     return DefWindowProc(hwnd, msg, wparam, lparam);

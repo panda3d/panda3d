@@ -18,6 +18,8 @@
 
 #ifdef PHAVE_LINUX_INPUT_H
 
+class LinuxInputDeviceManager;
+
 /**
  * This is a type of device that uses the Linux /dev/input/event# API to read
  * data from a raw mouse or other input device.  Unlike the joystick API, the
@@ -25,7 +27,7 @@
  */
 class EXPCL_PANDA_DEVICE EvdevInputDevice : public InputDevice {
 public:
-  EvdevInputDevice(int index);
+  EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index);
   virtual ~EvdevInputDevice();
 
 private:
@@ -36,15 +38,18 @@ private:
   bool process_events();
 
 private:
-  int _index;
+  LinuxInputDeviceManager *_manager;
+
   int _fd;
+  size_t _index;
+
   bool _can_write;
   int _ff_id;
   bool _ff_playing;
   int _ff_strong;
   int _ff_weak;
 
-  pvector<int> _control_indices;
+  pvector<int> _axis_indices;
   pvector<int> _button_indices;
 
   // These are used for D-pad emulation.
@@ -54,7 +59,7 @@ private:
   int _dpad_up_button;
 
   // This is used for axis emulation.
-  int _ltrigger_control;
+  int _ltrigger_axis;
   int _ltrigger_code;
   int _rtrigger_code;
 

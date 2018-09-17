@@ -30,10 +30,10 @@
 class EXPCL_PANDA_PIPELINE Semaphore {
 PUBLISHED:
   INLINE explicit Semaphore(int initial_count = 1);
-  INLINE ~Semaphore();
-private:
-  INLINE Semaphore(const Semaphore &copy);
-  INLINE void operator = (const Semaphore &copy);
+  Semaphore(const Semaphore &copy) = delete;
+  ~Semaphore() = default;
+
+  Semaphore &operator = (const Semaphore &copy) = delete;
 
 PUBLISHED:
   BLOCKING INLINE void acquire();
@@ -41,7 +41,7 @@ PUBLISHED:
   INLINE int release();
 
   INLINE int get_count() const;
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   Mutex _lock;
@@ -49,8 +49,8 @@ private:
   int _count;
 };
 
-INLINE ostream &
-operator << (ostream &out, const Semaphore &sem) {
+INLINE std::ostream &
+operator << (std::ostream &out, const Semaphore &sem) {
   sem.output(out);
   return out;
 }

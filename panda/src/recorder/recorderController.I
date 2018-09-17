@@ -46,7 +46,7 @@ get_random_seed() const {
  */
 INLINE bool RecorderController::
 is_recording() const {
-  return (_writer != (BamWriter *)NULL);
+  return (_writer != nullptr);
 }
 
 /**
@@ -54,7 +54,7 @@ is_recording() const {
  */
 INLINE bool RecorderController::
 is_playing() const {
-  return (_reader != (BamReader *)NULL);
+  return (_reader != nullptr);
 }
 
 /**
@@ -115,7 +115,7 @@ get_frame_offset() const {
  * recorder will begin receiving data.
  */
 INLINE void RecorderController::
-add_recorder(const string &name, RecorderBase *recorder) {
+add_recorder(const std::string &name, RecorderBase *recorder) {
   _user_table->add_recorder(name, recorder);
   _user_table_modified = true;
 
@@ -137,8 +137,8 @@ add_recorder(const string &name, RecorderBase *recorder) {
  * via add_recorder(); see get_recorder().
  */
 INLINE bool RecorderController::
-has_recorder(const string &name) const {
-  return (_user_table->get_recorder(name) != (RecorderBase *)NULL);
+has_recorder(const std::string &name) const {
+  return (_user_table->get_recorder(name) != nullptr);
 }
 
 /**
@@ -151,9 +151,9 @@ has_recorder(const string &name) const {
  * return false, but get_recorder() will return a non-NULL value.
  */
 INLINE RecorderBase *RecorderController::
-get_recorder(const string &name) const {
+get_recorder(const std::string &name) const {
   RecorderBase *recorder = _user_table->get_recorder(name);
-  if (is_playing() && recorder == (RecorderBase *)NULL) {
+  if (is_playing() && recorder == nullptr) {
     recorder = _active_table->get_recorder(name);
   }
   return recorder;
@@ -170,7 +170,7 @@ get_recorder(const string &name) const {
  * the data from the session file).
  */
 INLINE bool RecorderController::
-remove_recorder(const string &name) {
+remove_recorder(const std::string &name) {
   // If we are playing or recording, immediately remove the state flag from
   // the recorder.  (When we are playing, the state flag will get removed
   // automatically at the next call to play_frame(), but we might as well be
@@ -178,7 +178,7 @@ remove_recorder(const string &name) {
   // it now.)
   if (is_recording() || is_playing()) {
     RecorderBase *recorder = _user_table->get_recorder(name);
-    if (recorder != (RecorderBase *)NULL) {
+    if (recorder != nullptr) {
       recorder->_flags &= ~(RecorderBase::F_recording | RecorderBase::F_playing);
     }
   }
@@ -217,7 +217,7 @@ get_frame_tie() const {
  */
 INLINE RecorderController::RecorderFactory *RecorderController::
 get_factory() {
-  if (_factory == (RecorderFactory *)NULL) {
+  if (_factory == nullptr) {
     create_factory();
   }
   return _factory;

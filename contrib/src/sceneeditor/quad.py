@@ -9,10 +9,8 @@
 from direct.showbase.ShowBaseGlobal import *
 from direct.interval.IntervalGlobal import *
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import *
+from panda3d.core import *
 import math
-#Manakel 2/12/2005: replace from pandac import by from pandac.PandaModules import
-from pandac.PandaModules import MouseWatcher
 
 
 class ViewPort:
@@ -506,7 +504,7 @@ class QuadView(DirectObject):
             ansY=-1.0+y2
 
         self.xy=[ansX,ansY]
-        print "Sent X:%f Sent Y:%f"%(ansX,ansY)
+        print("Sent X:%f Sent Y:%f"%(ansX,ansY))
         #SEditor.iRay.pick(render,self.xy)
         SEditor.manipulationControl.manipulationStop(self.xy)
         #print "MouseX " + str(base.mouseWatcherNode.getMouseX()) + "MouseY " + str(base.mouseWatcherNode.getMouseY()) + "\n"
@@ -550,28 +548,28 @@ class QuadView(DirectObject):
             dr.setDimensions(0.5,1,0,0.5)
 
     def setLeft(self):
-        print "LEFT"
+        print("LEFT")
         self.CurrentQuad=3
         self.ChangeBaseDR()
         self.Left.setCam()
         #self.Left.setDR(self.mouseWatcherNode)
 
     def setTop(self):
-        print "TOP"
+        print("TOP")
         self.CurrentQuad=2
         self.ChangeBaseDR()
         self.Top.setCam()
         #self.Top.setDR(self.mouseWatcherNode)
 
     def setPerspective(self):
-        print "PERSPECTIVE"
+        print("PERSPECTIVE")
         self.CurrentQuad=4
         self.ChangeBaseDR()
         self.Perspective.setCam()
         #self.Perspective.setDR(self.mouseWatcherNode)
 
     def setFront(self):
-        print "FRONT"
+        print("FRONT")
         self.CurrentQuad=1
         self.ChangeBaseDR()
         self.Front.setCam()

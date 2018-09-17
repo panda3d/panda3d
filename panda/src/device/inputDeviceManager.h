@@ -21,10 +21,7 @@
 
 #ifdef _WIN32
 #include "xinputDevice.h"
-#endif
-
-#ifdef __APPLE__
-#include <IOKit/hid/IOHIDManager.h>
+class WinRawInputDevice;
 #endif
 
 /**
@@ -32,14 +29,11 @@
  * when a device has been hot-plugged.
  */
 class EXPCL_PANDA_DEVICE InputDeviceManager {
-private:
+protected:
   InputDeviceManager();
-  ~InputDeviceManager();
+  ~InputDeviceManager() = default;
 
-#ifdef PHAVE_LINUX_INPUT_H
-  InputDevice *consider_add_evdev_device(int index);
-  InputDevice *consider_add_js_device(int index);
-#endif
+  static void make_global_ptr();
 
 PUBLISHED:
   InputDeviceSet get_devices() const;
@@ -48,37 +42,15 @@ PUBLISHED:
   void add_device(InputDevice *device);
   void remove_device(InputDevice *device);
 
-  void update();
+  virtual void update();
 
   INLINE static InputDeviceManager *get_global_ptr();
 
-  // The set of all currently connected devices.
-  MAKE_PROPERTY(devices, get_devices);
-
-private:
+protected:
   LightMutex _lock;
 
 #ifdef PHAVE_LINUX_INPUT_H
-  int _inotify_fd;
-
-  pvector<InputDevice *> _evdev_devices;
   InputDeviceSet _inactive_devices;
-#endif
-
-#ifdef _WIN32
-  // There are always exactly four of these in existence.
-  LightMutex _update_lock;
-  XInputDevice _xinput_device0;
-  XInputDevice _xinput_device1;
-  XInputDevice _xinput_device2;
-  XInputDevice _xinput_device3;
-  double _last_detection;
-#endif
-
-#if defined(__APPLE__) && !defined(CPPPARSER)
-  IOHIDManagerRef _hid_manager;
-
-  static void on_match_device(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef device);
 #endif
 
   InputDeviceSet _connected_devices;

@@ -17,11 +17,13 @@
 #include "wdxGraphicsBuffer9.h"
 #include "config_dxgsg9.h"
 
+using std::endl;
+
 TypeHandle wdxGraphicsPipe9::_type_handle;
 
 static bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {
   *pFn = (FARPROC) GetProcAddress(hDLL, szExportedFnName);
-  if (*pFn == NULL) {
+  if (*pFn == nullptr) {
     wdxdisplay9_cat.error()
       << "GetProcAddr failed for " << szExportedFnName << ", error=" << GetLastError() <<endl;
     return false;
@@ -38,9 +40,9 @@ static bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFn
  */
 wdxGraphicsPipe9::
 wdxGraphicsPipe9() {
-  _hDDrawDLL = NULL;
-  _hD3D9_DLL = NULL;
-  __d3d9 = NULL;
+  _hDDrawDLL = nullptr;
+  _hD3D9_DLL = nullptr;
+  __d3d9 = nullptr;
   _is_valid = init();
 }
 
@@ -60,7 +62,7 @@ wdxGraphicsPipe9::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string wdxGraphicsPipe9::
+std::string wdxGraphicsPipe9::
 get_interface_name() const {
   return "DirectX9";
 }
@@ -78,7 +80,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) wdxGraphicsPipe9::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -89,12 +91,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   DXGraphicsStateGuardian9 *wdxgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(wdxgsg, gsg, NULL);
+    DCAST_INTO_R(wdxgsg, gsg, nullptr);
   }
 
   // First thing to try: a visible window.
@@ -107,7 +109,7 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -115,7 +117,7 @@ make_output(const string &name,
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     return new wdxGraphicsWindow9(engine, this, name, fb_prop, win_prop,
@@ -130,7 +132,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -139,13 +141,13 @@ make_output(const string &name,
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
           (fb_prop.get_multisamples() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
 
     // Early success - if we are sure that this buffer WILL meet specs, we can
     // precertify it.  This looks rather overly optimistic -- ie, buggy.
-    if ((wdxgsg != NULL) && wdxgsg->is_valid() && !wdxgsg->needs_reset() &&
+    if ((wdxgsg != nullptr) && wdxgsg->is_valid() && !wdxgsg->needs_reset() &&
         wdxgsg->get_supports_render_texture()) {
       precertify = true;
     }
@@ -154,7 +156,7 @@ make_output(const string &name,
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -165,7 +167,7 @@ make_output(const string &name,
 bool wdxGraphicsPipe9::
 init() {
   _hDDrawDLL = LoadLibrary("ddraw.dll");
-  if (_hDDrawDLL == NULL) {
+  if (_hDDrawDLL == nullptr) {
     wdxdisplay9_cat.error()
       << "LoadLibrary failed for ddraw.dll, error=" << GetLastError() <<endl;
     goto error;
@@ -180,7 +182,7 @@ init() {
   }
 
   _hD3D9_DLL = LoadLibrary("d3d9.dll");
-  if (_hD3D9_DLL == NULL) {
+  if (_hD3D9_DLL == nullptr) {
     wdxdisplay9_cat.error()
       << "LoadLibrary failed for d3d9.dll, error=" << GetLastError() <<endl;
     goto error;
@@ -213,7 +215,7 @@ init() {
     __is_dx9_1 = false;
     __d3d9 = (*_Direct3DCreate9)(D3D_SDK_VERSION_9_0);
   }
-  if (__d3d9 == NULL) {
+  if (__d3d9 == nullptr) {
     wdxdisplay9_cat.error() << "Direct3DCreate9(9." << (__is_dx9_1 ? "1" : "0") << ") failed!, error = " << GetLastError() << endl;
     // release_gsg();
     goto error;
@@ -270,11 +272,11 @@ find_all_card_memavails() {
     GUID *pGUID = &(_card_ids[i].DX7_DeviceGUID);
 
     if (IsEqualGUID(*pGUID, ZeroGUID)) {
-      pGUID = NULL;
+      pGUID = nullptr;
     }
 
     // Create the Direct Draw Object
-    hr = (*_DirectDrawCreateEx)(pGUID, (void **)&pDD, IID_IDirectDraw7, NULL);
+    hr = (*_DirectDrawCreateEx)(pGUID, (void **)&pDD, IID_IDirectDraw7, nullptr);
     if (FAILED(hr)) {
       wdxdisplay9_cat.error()
         << "DirectDrawCreateEx failed for device (" << i
@@ -404,14 +406,14 @@ dx7_driver_enum_callback(GUID *pGUID, TCHAR *strDesc, TCHAR *strName,
   CardID card_id;
   ZeroMemory(&card_id, sizeof(CardID));
 
-  if (hm == NULL) {
+  if (hm == nullptr) {
     card_id._monitor = MonitorFromWindow(GetDesktopWindow(),
                                      MONITOR_DEFAULTTOPRIMARY);
   } else {
     card_id._monitor = hm;
   }
 
-  if (pGUID != NULL) {
+  if (pGUID != nullptr) {
     memcpy(&card_id.DX7_DeviceGUID, pGUID, sizeof(GUID));
   }
 
@@ -844,7 +846,7 @@ make_device(void *scrn) {
   _device = device;
   wdxdisplay9_cat.info() << "walla: device" << device << "\n";
 
-  return device.p();
+  return device;
 }
 
 pmap<D3DFORMAT_FLAG, D3DFORMAT> g_D3DFORMATmap;

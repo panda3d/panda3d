@@ -26,7 +26,7 @@ class CLP(GraphicsStateGuardian);
 /**
  * xyz
  */
-class EXPCL_GL CLP(ShaderContext) FINAL : public ShaderContext {
+class EXPCL_GL CLP(ShaderContext) final : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -75,6 +75,7 @@ private:
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
+  CPT(ColorAttrib) _color_attrib;
 
 /*
  * struct ParamContext { CPT(InternalName) _name; GLint _location; GLsizei
@@ -98,7 +99,7 @@ private:
   struct StorageBlock {
     CPT(InternalName) _name;
     GLuint _binding_index;
-    GLint _min_size;
+    GLuint _min_size;
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;

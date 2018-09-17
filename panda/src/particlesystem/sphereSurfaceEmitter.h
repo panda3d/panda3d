@@ -19,7 +19,7 @@
 /**
  * Describes a curved space in which particles are generated.
  */
-class EXPCL_PANDAPHYSICS SphereSurfaceEmitter : public BaseParticleEmitter {
+class EXPCL_PANDA_PARTICLESYSTEM SphereSurfaceEmitter : public BaseParticleEmitter {
 PUBLISHED:
   SphereSurfaceEmitter();
   SphereSurfaceEmitter(const SphereSurfaceEmitter &copy);
@@ -30,8 +30,8 @@ PUBLISHED:
   INLINE void set_radius(PN_stdfloat r);
   INLINE PN_stdfloat get_radius() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _radius;

@@ -14,7 +14,7 @@
 #include "bamCacheIndex.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "config_util.h" // util_cat
+#include "config_putil.h" // util_cat
 #include "indent.h"
 #include <algorithm>
 
@@ -37,7 +37,7 @@ BamCacheIndex::
  *
  */
 void BamCacheIndex::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BamCacheIndex, " << _records.size() << " records:\n";
 
@@ -45,13 +45,13 @@ write(ostream &out, int indent_level) const {
   for (ri = _records.begin(); ri != _records.end(); ++ri) {
     BamCacheRecord *record = (*ri).second;
     indent(out, indent_level + 2)
-      << setw(10) << record->_record_size << " "
+      << std::setw(10) << record->_record_size << " "
       << record->get_cache_filename() << " "
       << record->get_source_pathname() << "\n";
   }
   out << "\n";
   indent(out, indent_level)
-    << setw(12) << _cache_size << " bytes total\n";
+    << std::setw(12) << _cache_size << " bytes total\n";
 }
 
 /**
@@ -94,8 +94,8 @@ release_records() {
   Records::const_iterator ri;
   for (ri = _records.begin(); ri != _records.end(); ++ri) {
     BamCacheRecord *record = (*ri).second;
-    record->_next = NULL;
-    record->_prev = NULL;
+    record->_next = nullptr;
+    record->_prev = nullptr;
   }
   _next = this;
   _prev = this;
@@ -110,13 +110,13 @@ PT(BamCacheRecord) BamCacheIndex::
 evict_old_file() {
   if (_next == this) {
     // Nothing in the cache.
-    return NULL;
+    return nullptr;
   }
 
   // The first record in the linked list is the least-recently-used one.
   PT(BamCacheRecord) record = (BamCacheRecord *)_next;
   bool removed = remove_record(record->get_source_pathname());
-  nassertr(removed, NULL);
+  nassertr(removed, nullptr);
 
   return record;
 }
@@ -129,7 +129,7 @@ evict_old_file() {
  */
 bool BamCacheIndex::
 add_record(BamCacheRecord *record) {
-  pair<Records::iterator, bool> result =
+  std::pair<Records::iterator, bool> result =
     _records.insert(Records::value_type(record->get_source_pathname(), record));
   if (!result.second) {
     // We already had a record for this filename; it gets replaced.
@@ -249,7 +249,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_records = scan.get_uint32();
   _record_vector.reserve(num_records);
   for (int i = 0; i < num_records; ++i) {
-    _record_vector.push_back(NULL);
+    _record_vector.push_back(nullptr);
     manager->read_pointer(scan);
   }
 }

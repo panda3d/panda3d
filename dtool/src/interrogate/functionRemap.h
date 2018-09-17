@@ -48,19 +48,19 @@ public:
                 InterfaceMaker *interface_maker);
   ~FunctionRemap();
 
-  string get_parameter_name(int n) const;
-  string call_function(ostream &out, int indent_level,
-                       bool convert_result, const string &container) const;
-  string call_function(ostream &out, int indent_level,
-                       bool convert_result, const string &container,
+  std::string get_parameter_name(int n) const;
+  std::string call_function(std::ostream &out, int indent_level,
+                       bool convert_result, const std::string &container) const;
+  std::string call_function(std::ostream &out, int indent_level,
+                       bool convert_result, const std::string &container,
                        const vector_string &pexprs) const;
 
-  void write_orig_prototype(ostream &out, int indent_level, bool local=false,
+  void write_orig_prototype(std::ostream &out, int indent_level, bool local=false,
                             int num_default_args=0) const;
 
   FunctionWrapperIndex make_wrapper_entry(FunctionIndex function_index);
 
-  string get_call_str(const string &container, const vector_string &pexprs) const;
+  std::string get_call_str(const std::string &container, const vector_string &pexprs) const;
 
   int get_min_num_args() const;
   int get_max_num_args() const;
@@ -68,7 +68,7 @@ public:
   class Parameter {
   public:
     bool _has_name;
-    string _name;
+    std::string _name;
     ParameterRemap *_remap;
   };
 
@@ -103,7 +103,7 @@ public:
     F_explicit_args      = 0x8000,
   };
 
-  typedef vector<Parameter> Parameters;
+  typedef std::vector<Parameter> Parameters;
 
   Parameters _parameters;
   ParameterRemap *_return_type;
@@ -118,12 +118,12 @@ public:
   Type _type;
   int _flags;
   int _args_type;
-  string _expression;
-  string _function_signature;
-  string _hash;
-  string _unique_name;
-  string _reported_name;
-  string _wrapper_name;
+  std::string _expression;
+  std::string _function_signature;
+  std::string _hash;
+  std::string _unique_name;
+  std::string _reported_name;
+  std::string _wrapper_name;
   FunctionWrapperIndex _wrapper_index;
 
   bool _return_value_needs_management;
@@ -138,7 +138,7 @@ public:
   bool _is_valid;
 
 private:
-  string get_parameter_expr(size_t n, const vector_string &pexprs) const;
+  std::string get_parameter_expr(size_t n, const vector_string &pexprs) const;
   bool setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker);
 };
 

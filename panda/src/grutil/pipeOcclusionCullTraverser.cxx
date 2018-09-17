@@ -103,30 +103,20 @@ PipeOcclusionCullTraverser(GraphicsOutput *host) {
   _buffer = engine->make_output(pipe, "occlusion", 0, fb_prop, win_prop,
                                 GraphicsPipe::BF_refuse_window,
                                 gsg, host->get_host());
-  nassertv(_buffer != (GraphicsOutput *)NULL);
+  nassertv(_buffer != nullptr);
 
   // This buffer isn't really active--we render it by hand; we don't want the
   // GraphicsEngine to render it.
   _buffer->set_active(0);
 
   _display_region = _buffer->make_display_region();
-  _internal_cull_handler = NULL;
+  _internal_cull_handler = nullptr;
 
   make_sphere();
   make_box();
   make_solid_test_state();
 
   _live = true;
-}
-
-/**
- *
- */
-PipeOcclusionCullTraverser::
-PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
-  CullTraverser(copy)
-{
-  nassertv(false);
 }
 
 /**
@@ -202,8 +192,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
   _internal_trav->set_view_frustum(get_view_frustum());
   _internal_trav->set_camera_mask(_occlusion_mask);
 
-  _current_query = NULL;
-  _next_query = NULL;
+  _current_query = nullptr;
+  _next_query = nullptr;
 
   // Begin by rendering all the occluders into our internal scene.
   PStatTimer timer2(_draw_occlusion_pcollector);
@@ -224,13 +214,13 @@ end_traverse() {
   GraphicsStateGuardian *gsg = _buffer->get_gsg();
   Thread *current_thread = get_current_thread();
 
-  _current_query = NULL;
-  _next_query = NULL;
+  _current_query = nullptr;
+  _next_query = nullptr;
 
   PendingObjects::iterator oi;
   for (oi = _pending_objects.begin(); oi != _pending_objects.end(); ++oi) {
     PendingObject &pobj = (*oi);
-    if (pobj._query == (OcclusionQueryContext *)NULL) {
+    if (pobj._query == nullptr) {
       _occlusion_untested_pcollector.add_level(1);
       _true_cull_handler->record_object(pobj._object, this);
     } else {
@@ -247,7 +237,7 @@ end_traverse() {
     // The CullableObject has by now either been recorded (which will
     // eventually delete it) or deleted directly.
 #ifndef NDEBUG
-    pobj._object = NULL;
+    pobj._object = nullptr;
 #endif  // NDEBUG
   }
   _pending_objects.clear();
@@ -260,7 +250,7 @@ end_traverse() {
   _buffer->end_flip();
 
   delete _internal_cull_handler;
-  _internal_cull_handler = NULL;
+  _internal_cull_handler = nullptr;
 
   _occlusion_untested_pcollector.flush_level();
   _occlusion_passed_pcollector.flush_level();
@@ -274,7 +264,7 @@ end_traverse() {
  */
 Texture *PipeOcclusionCullTraverser::
 get_texture() {
-  if (_texture != (Texture *)NULL) {
+  if (_texture != nullptr) {
     return _texture;
   }
 
@@ -298,7 +288,7 @@ get_texture() {
  */
 bool PipeOcclusionCullTraverser::
 is_in_view(CullTraverserData &data) {
-  _next_query = NULL;
+  _next_query = nullptr;
 
   if (!CullTraverser::is_in_view(data)) {
     return false;
@@ -307,7 +297,7 @@ is_in_view(CullTraverserData &data) {
     return true;
   }
 
-  if (_current_query != (OcclusionQueryContext *)NULL) {
+  if (_current_query != nullptr) {
     // We've already performed an occlusion test for some ancestor of this
     // node; no need to perform another.
     return true;
@@ -351,15 +341,15 @@ traverse_below(CullTraverserData &data) {
   // Save and restore _current_query, and clear _next_query, for traversing
   // the children of this node.
   PT(OcclusionQueryContext) prev_query = _current_query;
-  if (_next_query != (OcclusionQueryContext *)NULL) {
+  if (_next_query != nullptr) {
     _current_query = _next_query;
   }
-  _next_query = NULL;
+  _next_query = nullptr;
 
   CullTraverser::traverse_below(data);
 
   _current_query = prev_query;
-  _next_query = NULL;
+  _next_query = nullptr;
 }
 
 /**
@@ -379,12 +369,12 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
 
   Thread *current_thread = get_current_thread();
 
-  if (_next_query != (OcclusionQueryContext *)NULL) {
+  if (_next_query != nullptr) {
     // We have just performed an occlusion query for this node.  Don't perform
     // another one.
     pobj._query = _next_query;
 
-  } else if (_current_query != (OcclusionQueryContext *)NULL) {
+  } else if (_current_query != nullptr) {
     // We have previously performed an occlusion query for this node or some
     // ancestor.  Don't perform another one.
     pobj._query = _current_query;

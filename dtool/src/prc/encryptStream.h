@@ -31,21 +31,21 @@
  *
  * Seeking is not supported.
  */
-class EXPCL_DTOOLCONFIG IDecryptStream : public istream {
+class EXPCL_DTOOL_PRC IDecryptStream : public std::istream {
 PUBLISHED:
   INLINE IDecryptStream();
-  INLINE explicit IDecryptStream(istream *source, bool owns_source,
-                                 const string &password);
+  INLINE explicit IDecryptStream(std::istream *source, bool owns_source,
+                                 const std::string &password);
 
 #if _MSC_VER >= 1800
   INLINE IDecryptStream(const IDecryptStream &copy) = delete;
 #endif
 
-  INLINE IDecryptStream &open(istream *source, bool owns_source,
-                              const string &password);
+  INLINE IDecryptStream &open(std::istream *source, bool owns_source,
+                              const std::string &password);
   INLINE IDecryptStream &close();
 
-  INLINE const string &get_algorithm() const;
+  INLINE const std::string &get_algorithm() const;
   INLINE int get_key_length() const;
   INLINE int get_iteration_count() const;
 
@@ -66,27 +66,27 @@ private:
  *
  * Seeking is not supported.
  */
-class EXPCL_DTOOLCONFIG OEncryptStream : public ostream {
+class EXPCL_DTOOL_PRC OEncryptStream : public std::ostream {
 PUBLISHED:
   INLINE OEncryptStream();
-  INLINE explicit OEncryptStream(ostream *dest, bool owns_dest,
-                                 const string &password);
+  INLINE explicit OEncryptStream(std::ostream *dest, bool owns_dest,
+                                 const std::string &password);
 
 #if _MSC_VER >= 1800
   INLINE OEncryptStream(const OEncryptStream &copy) = delete;
 #endif
 
-  INLINE OEncryptStream &open(ostream *dest, bool owns_dest,
-                              const string &password);
+  INLINE OEncryptStream &open(std::ostream *dest, bool owns_dest,
+                              const std::string &password);
   INLINE OEncryptStream &close();
 
 public:
-  INLINE const string &get_algorithm() const;
+  INLINE const std::string &get_algorithm() const;
   INLINE int get_key_length() const;
   INLINE int get_iteration_count() const;
 
 PUBLISHED:
-  INLINE void set_algorithm(const string &algorithm);
+  INLINE void set_algorithm(const std::string &algorithm);
   INLINE void set_key_length(int key_length);
   INLINE void set_iteration_count(int iteration_count);
 

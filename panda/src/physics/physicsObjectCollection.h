@@ -22,7 +22,7 @@
  * This is a set of zero or more PhysicsObjects.  It's handy for returning
  * from functions that need to return multiple PhysicsObjects.
  */
-class EXPCL_PANDAPHYSICS PhysicsObjectCollection {
+class EXPCL_PANDA_PHYSICS PhysicsObjectCollection {
 PUBLISHED:
   PhysicsObjectCollection();
   PhysicsObjectCollection(const PhysicsObjectCollection &copy);
@@ -46,8 +46,8 @@ PUBLISHED:
   INLINE void operator += (const PhysicsObjectCollection &other);
   INLINE PhysicsObjectCollection operator + (const PhysicsObjectCollection &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   typedef PTA(PT(PhysicsObject)) PhysicsObjects;

@@ -64,13 +64,13 @@ PUBLISHED:
   INLINE void set_properties(const TextProperties &properties);
   INLINE const TextProperties &get_properties() const;
 
-  bool set_wtext(const wstring &wtext);
-  bool set_wsubstr(const wstring &wtext, int start, int count);
+  bool set_wtext(const std::wstring &wtext);
+  bool set_wsubstr(const std::wstring &wtext, int start, int count);
 
-  wstring get_plain_wtext() const;
-  wstring get_wordwrapped_plain_wtext() const;
-  wstring get_wtext() const;
-  wstring get_wordwrapped_wtext() const;
+  std::wstring get_plain_wtext() const;
+  std::wstring get_wordwrapped_plain_wtext() const;
+  std::wstring get_wtext() const;
+  std::wstring get_wordwrapped_wtext() const;
 
   bool calc_r_c(int &r, int &c, int n) const;
   INLINE int calc_r(int n) const;
@@ -116,12 +116,12 @@ private:
   public:
     INLINE ComputedProperties(const TextProperties &orig_properties);
     INLINE ComputedProperties(ComputedProperties *based_on,
-                              const wstring &wname, TextEncoder *encoder);
-    void append_delta(wstring &wtext, ComputedProperties *other);
+                              const std::wstring &wname, TextEncoder *encoder);
+    void append_delta(std::wstring &wtext, ComputedProperties *other);
 
     PT(ComputedProperties) _based_on;
     int _depth;
-    wstring _wname;
+    std::wstring _wname;
     TextProperties _properties;
   };
 
@@ -133,14 +133,14 @@ private:
   public:
     INLINE TextCharacter(wchar_t character, ComputedProperties *cprops);
     INLINE TextCharacter(const TextGraphic *graphic,
-                         const wstring &graphic_wname,
+                         const std::wstring &graphic_wname,
                          ComputedProperties *cprops);
     INLINE TextCharacter(const TextCharacter &copy);
     INLINE void operator = (const TextCharacter &copy);
 
     wchar_t _character;
     const TextGraphic *_graphic;
-    wstring _graphic_wname;
+    std::wstring _graphic_wname;
     PT(ComputedProperties) _cprops;
   };
   typedef pvector<TextCharacter> TextString;
@@ -169,8 +169,8 @@ private:
   TextBlock _text_block;
 
   void scan_wtext(TextString &output_string,
-                  wstring::const_iterator &si,
-                  const wstring::const_iterator &send,
+                  std::wstring::const_iterator &si,
+                  const std::wstring::const_iterator &send,
                   ComputedProperties *current_cprops);
 
   bool wordwrap_text();

@@ -14,7 +14,7 @@
 /**
  * Returns the filename that was passed to set_p3d_filename().
  */
-inline const string &P3DFileParams::
+inline const std::string &P3DFileParams::
 get_p3d_filename() const {
   return _p3d_filename;
 }
@@ -31,7 +31,7 @@ get_p3d_offset() const {
 /**
  * Returns the string that was passed to set_p3d_url().
  */
-inline const string &P3DFileParams::
+inline const std::string &P3DFileParams::
 get_p3d_url() const {
   return _p3d_url;
 }
@@ -47,7 +47,7 @@ get_num_tokens() const {
 /**
  * Returns the keyword of the nth token.
  */
-inline const string &P3DFileParams::
+inline const std::string &P3DFileParams::
 get_token_keyword(int n) const {
   assert(n >= 0 && n < (int)_tokens.size());
   return _tokens[n]._keyword;
@@ -56,7 +56,7 @@ get_token_keyword(int n) const {
 /**
  * Returns the value of the nth token.
  */
-inline const string &P3DFileParams::
+inline const std::string &P3DFileParams::
 get_token_value(int n) const {
   assert(n >= 0 && n < (int)_tokens.size());
   return _tokens[n]._value;

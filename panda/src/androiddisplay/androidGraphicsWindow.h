@@ -33,7 +33,7 @@ struct android_app;
 class AndroidGraphicsWindow : public GraphicsWindow {
 public:
   AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                        const string &name,
+                        const std::string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
                         int flags,
@@ -70,6 +70,8 @@ private:
 
   EGLDisplay _egl_display;
   EGLSurface _egl_surface;
+
+  int32_t _mouse_button_state;
 
   const ARect *rect;
 

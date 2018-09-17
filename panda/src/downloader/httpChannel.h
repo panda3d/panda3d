@@ -51,7 +51,7 @@ class HTTPClient;
  * requested from the same HTTPChannel until the first document has been fully
  * retrieved.
  */
-class EXPCL_PANDAEXPRESS HTTPChannel : public TypedReferenceCount {
+class EXPCL_PANDA_DOWNLOADER HTTPChannel : public TypedReferenceCount {
 private:
   HTTPChannel(HTTPClient *client);
 
@@ -100,13 +100,13 @@ PUBLISHED:
   INLINE const URLSpec &get_url() const;
   INLINE const DocumentSpec &get_document_spec() const;
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
-  INLINE const string &get_http_version_string() const;
+  INLINE const std::string &get_http_version_string() const;
   INLINE int get_status_code() const;
-  string get_status_string() const;
-  INLINE const string &get_www_realm() const;
-  INLINE const string &get_proxy_realm() const;
+  std::string get_status_string() const;
+  INLINE const std::string &get_www_realm() const;
+  INLINE const std::string &get_proxy_realm() const;
   INLINE const URLSpec &get_redirect() const;
-  string get_header_value(const string &key) const;
+  std::string get_header_value(const std::string &key) const;
 
   INLINE int get_num_redirect_steps() const;
   INLINE const URLSpec &get_redirect_step(int n) const;
@@ -143,8 +143,11 @@ PUBLISHED:
   INLINE void set_max_updates_per_second(double max_updates_per_second);
   INLINE double get_max_updates_per_second() const;
 
+  INLINE void set_content_type(std::string content_type);
+  INLINE std::string get_content_type() const;
+
   INLINE void set_expected_file_size(size_t file_size);
-  streamsize get_file_size() const;
+  std::streamsize get_file_size() const;
   INLINE bool is_file_size_known() const;
 
   INLINE size_t get_first_byte_requested() const;
@@ -152,20 +155,20 @@ PUBLISHED:
   INLINE size_t get_first_byte_delivered() const;
   INLINE size_t get_last_byte_delivered() const;
 
-  void write_headers(ostream &out) const;
+  void write_headers(std::ostream &out) const;
 
   INLINE void reset();
   INLINE void preserve_status();
 
   INLINE void clear_extra_headers();
-  INLINE void send_extra_header(const string &key, const string &value);
+  INLINE void send_extra_header(const std::string &key, const std::string &value);
 
   BLOCKING INLINE bool get_document(const DocumentSpec &url);
   BLOCKING INLINE bool get_subdocument(const DocumentSpec &url,
                                        size_t first_byte, size_t last_byte);
   BLOCKING INLINE bool get_header(const DocumentSpec &url);
-  BLOCKING INLINE bool post_form(const DocumentSpec &url, const string &body);
-  BLOCKING INLINE bool put_document(const DocumentSpec &url, const string &body);
+  BLOCKING INLINE bool post_form(const DocumentSpec &url, const std::string &body);
+  BLOCKING INLINE bool put_document(const DocumentSpec &url, const std::string &body);
   BLOCKING INLINE bool delete_document(const DocumentSpec &url);
   BLOCKING INLINE bool get_trace(const DocumentSpec &url);
   BLOCKING INLINE bool connect_to(const DocumentSpec &url);
@@ -175,16 +178,16 @@ PUBLISHED:
   INLINE void begin_get_subdocument(const DocumentSpec &url,
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const DocumentSpec &url);
-  INLINE void begin_post_form(const DocumentSpec &url, const string &body);
+  INLINE void begin_post_form(const DocumentSpec &url, const std::string &body);
   bool run();
   INLINE void begin_connect_to(const DocumentSpec &url);
 
   ISocketStream *open_read_body();
-  void close_read_body(istream *stream) const;
+  void close_read_body(std::istream *stream) const;
 
   BLOCKING bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
   BLOCKING bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
-  BLOCKING bool download_to_stream(ostream *strm, bool subdocument_resumes = true);
+  BLOCKING bool download_to_stream(std::ostream *strm, bool subdocument_resumes = true);
   SocketStream *get_connection();
 
   INLINE size_t get_bytes_downloaded() const;
@@ -192,7 +195,7 @@ PUBLISHED:
   INLINE bool is_download_complete() const;
 
 public:
-  static string downcase(const string &s);
+  static std::string downcase(const std::string &s);
   void body_stream_destructs(ISocketStream *stream);
 
 private:
@@ -224,7 +227,7 @@ private:
   bool run_download_to_stream();
 
   void begin_request(HTTPEnum::Method method, const DocumentSpec &url,
-                     const string &body, bool nonblocking,
+                     const std::string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reconsider_proxy();
   void reset_for_new_request();
@@ -232,32 +235,32 @@ private:
   void finished_body(bool has_trailer);
   bool open_download_file();
 
-  bool server_getline(string &str);
-  bool server_getline_failsafe(string &str);
-  bool server_get(string &str, size_t num_bytes);
-  bool server_get_failsafe(string &str, size_t num_bytes);
-  bool server_send(const string &str, bool secret);
-  bool parse_http_response(const string &line);
+  bool server_getline(std::string &str);
+  bool server_getline_failsafe(std::string &str);
+  bool server_get(std::string &str, size_t num_bytes);
+  bool server_get_failsafe(std::string &str, size_t num_bytes);
+  bool server_send(const std::string &str, bool secret);
+  bool parse_http_response(const std::string &line);
   bool parse_http_header();
-  bool parse_content_range(const string &content_range);
+  bool parse_content_range(const std::string &content_range);
 
   void check_socket();
 
   void check_preapproved_server_certificate(X509 *cert, bool &cert_preapproved,
                                             bool &cert_name_preapproved) const;
   bool validate_server_name(X509 *cert);
-  static bool match_cert_name(const string &cert_name, const string &hostname);
-  static string get_x509_name_component(X509_NAME *name, int nid);
+  static bool match_cert_name(const std::string &cert_name, const std::string &hostname);
+  static std::string get_x509_name_component(X509_NAME *name, int nid);
 
   void make_header();
   void make_proxy_request_text();
   void make_request_text();
 
   void reset_url(const URLSpec &old_url, const URLSpec &new_url);
-  void store_header_field(const string &field_name, const string &field_value);
+  void store_header_field(const std::string &field_name, const std::string &field_value);
 
 #ifndef NDEBUG
-  static void show_send(const string &message);
+  static void show_send(const std::string &message);
 #endif
 
   void reset_download_to();
@@ -301,7 +304,7 @@ private:
   public:
     INLINE StatusEntry();
     int _status_code;
-    string _status_string;
+    std::string _status_string;
   };
   typedef pvector<URLSpec> Proxies;
   typedef pvector<StatusEntry> StatusList;
@@ -328,14 +331,15 @@ private:
   int _bytes_per_update;
   bool _nonblocking;
   bool _wanted_nonblocking;
-  string _send_extra_headers;
+  std::string _send_extra_headers;
 
   DocumentSpec _document_spec;
   DocumentSpec _request;
   HTTPEnum::Method _method;
-  string request_path;
-  string _header;
-  string _body;
+  std::string request_path;
+  std::string _header;
+  std::string _body;
+  std::string _content_type;
   bool _want_ssl;
   bool _proxy_serves_document;
   bool _proxy_tunnel_now;
@@ -356,21 +360,21 @@ private:
   bool _subdocument_resumes;
   Filename _download_to_filename;
   Ramfile *_download_to_ramfile;
-  ostream *_download_to_stream;
+  std::ostream *_download_to_stream;
 
   int _read_index;
 
   HTTPEnum::HTTPVersion _http_version;
-  string _http_version_string;
+  std::string _http_version_string;
   StatusEntry _status_entry;
   URLSpec _redirect;
 
-  string _proxy_realm;
-  string _proxy_username;
+  std::string _proxy_realm;
+  std::string _proxy_username;
   PT(HTTPAuthorization) _proxy_auth;
 
-  string _www_realm;
-  string _www_username;
+  std::string _www_realm;
+  std::string _www_username;
   PT(HTTPAuthorization) _www_auth;
 
   // What type of response do we get to our HTTP request?
@@ -384,7 +388,7 @@ private:
   ResponseType _response_type;
 
   // Not a phash_map, to maintain sorted order.
-  typedef pmap<string, string> Headers;
+  typedef pmap<std::string, std::string> Headers;
   Headers _headers;
 
   size_t _expected_file_size;
@@ -406,17 +410,17 @@ private:
   double _started_connecting_time;
   double _sent_request_time;
   bool _started_download;
-  string _proxy_header;
-  string _proxy_request_text;
-  string _request_text;
-  string _working_get;
+  std::string _proxy_header;
+  std::string _proxy_request_text;
+  std::string _request_text;
+  std::string _working_get;
   size_t _sent_so_far;
-  string _current_field_name;
-  string _current_field_value;
+  std::string _current_field_name;
+  std::string _current_field_value;
   ISocketStream *_body_stream;
   bool _owns_body_stream;
   BIO *_sbio;
-  string _cipher_list;
+  std::string _cipher_list;
   pvector<URLSpec> _redirect_trail;
   int _last_status_code;
   double _last_run_time;
@@ -446,7 +450,7 @@ private:
   friend class HTTPClient;
 };
 
-ostream &operator << (ostream &out, HTTPChannel::State state);
+std::ostream &operator << (std::ostream &out, HTTPChannel::State state);
 
 #include "httpChannel.I"
 

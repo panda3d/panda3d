@@ -21,13 +21,13 @@ PhysxTriangleMeshDesc() {
   _desc.pointStrideBytes = sizeof(NxVec3);
   _desc.triangleStrideBytes = 3*sizeof(NxU32);
   _desc.materialIndexStride = sizeof(NxMaterialIndex);
-  _desc.points = NULL;
-  _desc.triangles = NULL;
-  _desc.materialIndices = NULL;
+  _desc.points = nullptr;
+  _desc.triangles = nullptr;
+  _desc.materialIndices = nullptr;
 
-  _vertices = NULL;
-  _triangles = NULL;
-  _materials = NULL;
+  _vertices = nullptr;
+  _triangles = nullptr;
+  _materials = nullptr;
 }
 
 /**

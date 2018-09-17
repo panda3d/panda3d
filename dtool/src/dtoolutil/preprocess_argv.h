@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 
-extern EXPCL_DTOOL void
+extern EXPCL_DTOOL_DTOOLUTIL void
 preprocess_argv(int &argc, char **&argv);
 
 #endif

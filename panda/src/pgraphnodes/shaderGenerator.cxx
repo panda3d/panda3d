@@ -47,6 +47,8 @@
 #include "config_pgraphnodes.h"
 #include "pStatTimer.h"
 
+using std::string;
+
 TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
@@ -75,7 +77,7 @@ ShaderGenerator(const GraphicsStateGuardianBase *gsg) {
 #ifdef _WIN32
   _use_generic_attr = !gsg->get_supports_hlsl();
 #else
-  _use_generic_attr = false;
+  _use_generic_attr = true;
 #endif
 
   // Do we want to use the ARB_shadow extension?  This also allows us to use
@@ -250,8 +252,17 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   // Store the material flags (not the material values itself).
   const MaterialAttrib *material;
   rs->get_attrib_def(material);
-  if (material->get_material() != nullptr) {
-    key._material_flags = material->get_material()->get_flags();
+  Material *mat = material->get_material();
+  if (mat != nullptr) {
+    // The next time the Material flags change, the Material should cause the
+    // states to be rehashed.
+    mat->mark_used_by_auto_shader();
+    key._material_flags = mat->get_flags();
+
+    if ((key._material_flags & Material::F_base_color) != 0) {
+      key._material_flags |= (Material::F_diffuse | Material::F_specular | Material::F_ambient);
+      key._material_flags &= ~Material::F_base_color;
+    }
   }
 
   // Break out the lights by type.
@@ -259,7 +270,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
   rs->get_attrib_def(la);
   bool have_ambient = false;
 
-  for (int i = 0; i < la->get_num_on_lights(); ++i) {
+  for (size_t i = 0; i < la->get_num_on_lights(); ++i) {
     NodePath np = la->get_on_light(i);
     nassertv(!np.is_empty());
     PandaNode *node = np.node();
@@ -287,8 +298,6 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       key._lighting = true;
     }
   }
-
-  bool normal_mapping = key._lighting && shader_attrib->auto_normal_on();
 
   // See if there is a normal map, height map, gloss map, or glow map.  Also
   // check if anything has TexGen.
@@ -344,7 +353,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
     case TextureStage::M_modulate_gloss:
       if (shader_attrib->auto_gloss_on()) {
-        info._flags = ShaderKey::TF_map_glow;
+        info._flags = ShaderKey::TF_map_gloss;
       } else {
         info._mode = TextureStage::M_modulate;
         info._flags = ShaderKey::TF_has_rgb;
@@ -355,7 +364,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (parallax_mapping_samples == 0) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on() ||
-                 (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+                 (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
         info._mode = TextureStage::M_height;
         info._flags = ShaderKey::TF_has_alpha;
       } else {
@@ -364,7 +373,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       break;
 
     case TextureStage::M_normal_gloss:
-      if (!shader_attrib->auto_gloss_on() || !key._lighting) {
+      if (!shader_attrib->auto_gloss_on() || key._lights.empty()) {
         info._mode = TextureStage::M_normal;
       } else if (!shader_attrib->auto_normal_on()) {
         info._mode = TextureStage::M_gloss;
@@ -406,14 +415,18 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         info._flags |= ShaderKey::TF_uses_last_saved_result;
       }
       break;
+
+    default:
+      break;
     }
 
     // In fact, perhaps this stage should be disabled altogether?
+    bool skip = false;
     switch (info._mode) {
     case TextureStage::M_normal:
       if (!shader_attrib->auto_normal_on() ||
-          (!key._lighting && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
-        continue;
+          (key._lights.empty() && (key._outputs & AuxBitplaneAttrib::ABO_aux_normal) == 0)) {
+        skip = true;
       } else {
         info._flags = ShaderKey::TF_map_normal;
       }
@@ -422,23 +435,35 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (shader_attrib->auto_glow_on()) {
         info._flags = ShaderKey::TF_map_glow;
       } else {
-        continue;
+        skip = true;
       }
       break;
     case TextureStage::M_gloss:
-      if (key._lighting && shader_attrib->auto_gloss_on()) {
+      if (!key._lights.empty() && shader_attrib->auto_gloss_on()) {
         info._flags = ShaderKey::TF_map_gloss;
       } else {
-        continue;
+        skip = true;
       }
       break;
     case TextureStage::M_height:
       if (parallax_mapping_samples > 0) {
         info._flags = ShaderKey::TF_map_height;
       } else {
-        continue;
+        skip = true;
       }
       break;
+    default:
+      break;
+    }
+    // We can't just drop a disabled slot from the list, since then the
+    // indices for the texture stages will no longer match up.  So we keep it,
+    // but set it to a noop state to indicate that it should be skipped.
+    if (skip) {
+      info._type = Texture::TT_1d_texture;
+      info._mode = TextureStage::M_modulate;
+      info._flags = 0;
+      key._textures.push_back(info);
+      continue;
     }
 
     // Check if this state has a texture matrix to transform the texture
@@ -652,23 +677,23 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // These variables will hold the results of register allocation.
 
-  const char *tangent_freg = 0;
-  const char *binormal_freg = 0;
+  const char *tangent_freg = nullptr;
+  const char *binormal_freg = nullptr;
   string tangent_input;
   string binormal_input;
   pmap<const InternalName *, const char *> texcoord_fregs;
   pvector<const char *> lightcoord_fregs;
-  const char *world_position_freg = 0;
-  const char *world_normal_freg = 0;
-  const char *eye_position_freg = 0;
-  const char *eye_normal_freg = 0;
-  const char *hpos_freg = 0;
+  const char *world_position_freg = nullptr;
+  const char *world_normal_freg = nullptr;
+  const char *eye_position_freg = nullptr;
+  const char *eye_normal_freg = nullptr;
+  const char *hpos_freg = nullptr;
 
   const char *position_vreg;
-  const char *transform_weight_vreg = 0;
+  const char *transform_weight_vreg = nullptr;
   const char *normal_vreg;
-  const char *color_vreg = 0;
-  const char *transform_index_vreg = 0;
+  const char *color_vreg = nullptr;
+  const char *transform_index_vreg = nullptr;
 
   if (_use_generic_attr) {
     position_vreg = "ATTR0";
@@ -689,7 +714,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // Generate the shader's text.
 
-  ostringstream text;
+  std::ostringstream text;
 
   text << "//Cg\n";
 
@@ -712,6 +737,19 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       have_specular = true;
     } else if ((key._texture_flags & ShaderKey::TF_map_gloss) != 0) {
       have_specular = true;
+    }
+  }
+
+  bool need_color = false;
+  if (key._color_type != ColorAttrib::T_off) {
+    if (key._lighting) {
+      if (((key._material_flags & Material::F_ambient) == 0 && key._have_separate_ambient) ||
+          (key._material_flags & Material::F_diffuse) == 0 ||
+          key._calc_primary_alpha) {
+        need_color = true;
+      }
+    } else {
+      need_color = true;
     }
   }
 
@@ -778,7 +816,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
     text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t in float4 vtx_color : " << color_vreg << ",\n";
     text << "\t out float4 l_color : COLOR0,\n";
   }
@@ -899,7 +937,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     string tcname = it->first->join("_");
     text << "\t l_" << tcname << " = vtx_" << tcname << ";\n";
   }
-  if (key._color_type == ColorAttrib::T_vertex) {
+  if (need_color && key._color_type == ColorAttrib::T_vertex) {
     text << "\t l_color = vtx_color;\n";
   }
   if (key._texture_flags & ShaderKey::TF_map_normal) {
@@ -947,6 +985,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
+
     text << "\t uniform sampler" << texture_type_as_string(tex._type) << " tex_" << i << ",\n";
 
     if (tex._flags & ShaderKey::TF_has_texscale) {
@@ -994,10 +1037,12 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "\t out float4 o_color : COLOR0,\n";
 
-  if (key._color_type == ColorAttrib::T_vertex) {
-    text << "\t in float4 l_color : COLOR0,\n";
-  } else if (key._color_type == ColorAttrib::T_flat) {
-    text << "\t uniform float4 attr_color,\n";
+  if (need_color) {
+    if (key._color_type == ColorAttrib::T_vertex) {
+      text << "\t in float4 l_color : COLOR0,\n";
+    } else if (key._color_type == ColorAttrib::T_flat) {
+      text << "\t uniform float4 attr_color,\n";
+    }
   }
 
   for (int i = 0; i < key._num_clip_planes; ++i) {
@@ -1023,6 +1068,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   // has a TexMatrixAttrib, also transform them.
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
     switch (tex._gen_mode) {
     case TexGenAttrib::M_off:
       // Cg seems to be able to optimize this temporary away when appropriate.
@@ -1099,6 +1148,10 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._textures.size(); ++i) {
     ShaderKey::TextureInfo &tex = key._textures[i];
+    if (tex._mode == TextureStage::M_modulate && tex._flags == 0) {
+      // Skip this stage.
+      continue;
+    }
     if ((tex._flags & ShaderKey::TF_map_height) == 0) {
       // Parallax mapping pushes the texture coordinates of the other textures
       // away from the camera.
@@ -1444,7 +1497,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
         text << "\t result.rgb = ";
         text << combine_mode_as_string(tex, combine_rgb, false, i);
         text << ";\n\t result.a = ";
-        text << combine_mode_as_string(tex, combine_alpha, false, i);
+        text << combine_mode_as_string(tex, combine_alpha, true, i);
         text << ";\n";
       }
       if (tex._flags & ShaderKey::TF_rgb_scale_2) {
@@ -1595,7 +1648,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
  */
 string ShaderGenerator::
 combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::CombineMode c_mode, bool alpha, short texindex) {
-  ostringstream text;
+  std::ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
     text << combine_source_as_string(info, 0, alpha, texindex);
@@ -1661,12 +1714,13 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
     c_src = UNPACK_COMBINE_SRC(info._combine_alpha, num);
     c_op = UNPACK_COMBINE_OP(info._combine_alpha, num);
   }
-  ostringstream csource;
+  std::ostringstream csource;
   if (c_op == TextureStage::CO_one_minus_src_color ||
       c_op == TextureStage::CO_one_minus_src_alpha) {
     csource << "saturate(1.0f - ";
   }
   switch (c_src) {
+    case TextureStage::CS_undefined:
     case TextureStage::CS_texture:
       csource << "tex" << texindex;
       break;
@@ -1684,8 +1738,6 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
       break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";
-      break;
-    case TextureStage::CS_undefined:
       break;
   }
   if (c_op == TextureStage::CO_one_minus_src_color ||

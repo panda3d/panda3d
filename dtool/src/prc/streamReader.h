@@ -19,22 +19,23 @@
 #include "numeric_types.h"
 #include "littleEndian.h"
 #include "bigEndian.h"
+#include "vector_uchar.h"
 
 /**
  * A class to read sequential binary data directly from an istream.  Its
  * interface is similar to DatagramIterator by design; see also StreamWriter.
  */
-class EXPCL_DTOOLCONFIG StreamReader {
+class EXPCL_DTOOL_PRC StreamReader {
 public:
-  INLINE StreamReader(istream &in);
+  INLINE StreamReader(std::istream &in);
 PUBLISHED:
-  INLINE explicit StreamReader(istream *in, bool owns_stream);
+  INLINE explicit StreamReader(std::istream *in, bool owns_stream);
   INLINE StreamReader(const StreamReader &copy);
   INLINE void operator = (const StreamReader &copy);
   INLINE ~StreamReader();
 
-  INLINE istream *get_istream() const;
-  MAKE_PROPERTY(istream, get_istream);
+  INLINE std::istream *get_istream() const;
+  MAKE_PROPERTY(std::istream, get_istream);
 
   BLOCKING INLINE bool get_bool();
   BLOCKING INLINE int8_t get_int8();
@@ -58,10 +59,10 @@ PUBLISHED:
   BLOCKING INLINE float get_be_float32();
   BLOCKING INLINE PN_float64 get_be_float64();
 
-  BLOCKING string get_string();
-  BLOCKING string get_string32();
-  BLOCKING string get_z_string();
-  BLOCKING string get_fixed_string(size_t size);
+  BLOCKING std::string get_string();
+  BLOCKING std::string get_string32();
+  BLOCKING std::string get_z_string();
+  BLOCKING std::string get_fixed_string(size_t size);
 
   BLOCKING void skip_bytes(size_t size);
   BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
@@ -71,11 +72,11 @@ PUBLISHED:
   EXTENSION(BLOCKING PyObject *readlines());
 
 public:
-  BLOCKING string extract_bytes(size_t size);
-  BLOCKING string readline();
+  BLOCKING vector_uchar extract_bytes(size_t size);
+  BLOCKING std::string readline();
 
 private:
-  istream *_in;
+  std::istream *_in;
   bool _owns_stream;
 };
 

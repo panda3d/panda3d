@@ -17,7 +17,8 @@
 INLINE BulletCylinderShape::
 BulletCylinderShape() :
   _half_extents(LVector3::zero()),
-  _shape(nullptr) {
+  _shape(nullptr),
+  _up(X_up) {
 }
 
 /**
@@ -27,48 +28,4 @@ INLINE BulletCylinderShape::
 ~BulletCylinderShape() {
 
   delete _shape;
-}
-
-/**
- *
- */
-INLINE BulletCylinderShape::
-BulletCylinderShape(const BulletCylinderShape &copy) :
-  _shape(copy._shape), _half_extents(copy._half_extents) {
-}
-
-/**
- *
- */
-INLINE void BulletCylinderShape::
-operator = (const BulletCylinderShape &copy) {
-  _shape = copy._shape;
-  _half_extents = copy._half_extents;
-}
-
-/**
- *
- */
-INLINE PN_stdfloat BulletCylinderShape::
-get_radius() const {
-
-  return (PN_stdfloat)_shape->getRadius();
-}
-
-/**
- *
- */
-INLINE LVecBase3 BulletCylinderShape::
-get_half_extents_without_margin() const {
-
-  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
-}
-
-/**
- *
- */
-INLINE LVecBase3 BulletCylinderShape::
-get_half_extents_with_margin() const {
-
-  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }

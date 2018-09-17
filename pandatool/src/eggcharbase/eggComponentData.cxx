@@ -39,7 +39,7 @@ EggComponentData::
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
-    if (back != (EggBackPointer *)NULL) {
+    if (back != nullptr) {
       delete back;
     }
   }
@@ -53,7 +53,7 @@ EggComponentData::
  * matched_name().
  */
 void EggComponentData::
-add_name(const string &name, NameUniquifier &uniquifier) {
+add_name(const std::string &name, NameUniquifier &uniquifier) {
   if (_names.insert(name).second) {
     // This is a new name for this component.
     if (!has_name()) {
@@ -71,7 +71,7 @@ add_name(const string &name, NameUniquifier &uniquifier) {
  * with this particular joint, false otherwise.
  */
 bool EggComponentData::
-matches_name(const string &name) const {
+matches_name(const std::string &name) const {
   if (name == get_name()) {
     return true;
   }
@@ -85,7 +85,7 @@ matches_name(const string &name) const {
 int EggComponentData::
 get_num_frames(int model_index) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)NULL) {
+  if (back == nullptr) {
     return 0;
   }
   return back->get_num_frames();
@@ -98,7 +98,7 @@ get_num_frames(int model_index) const {
 void EggComponentData::
 extend_to(int model_index, int num_frames) const {
   EggBackPointer *back = get_model(model_index);
-  nassertv(back != (EggBackPointer *)NULL);
+  nassertv(back != nullptr);
   back->extend_to(num_frames);
 }
 
@@ -109,7 +109,7 @@ extend_to(int model_index, int num_frames) const {
 double EggComponentData::
 get_frame_rate(int model_index) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)NULL) {
+  if (back == nullptr) {
     return 0.0;
   }
   return back->get_frame_rate();
@@ -121,10 +121,10 @@ get_frame_rate(int model_index) const {
 void EggComponentData::
 set_model(int model_index, EggBackPointer *back) {
   while ((int)_back_pointers.size() <= model_index) {
-    _back_pointers.push_back((EggBackPointer *)NULL);
+    _back_pointers.push_back(nullptr);
   }
 
-  if (_back_pointers[model_index] != (EggBackPointer *)NULL) {
+  if (_back_pointers[model_index] != nullptr) {
     nout << "Warning: deleting old back pointer.\n";
     delete _back_pointers[model_index];
   }

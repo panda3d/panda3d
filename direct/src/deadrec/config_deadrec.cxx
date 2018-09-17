@@ -15,6 +15,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_DEADREC)
+  #error Buildsystem error: BUILDING_DIRECT_DEADREC not defined
+#endif
+
 Configure(config_deadrec);
 NotifyCategoryDef(deadrec, "");
 

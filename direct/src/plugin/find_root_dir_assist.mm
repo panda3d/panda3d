@@ -70,7 +70,7 @@ get_osx_home_directory() {
 /**
  *
  */
-string
+std::string
 find_osx_root_dir() {
   string result = call_NSSearchPathForDirectories(NSCachesDirectory, NSUserDomainMask);
   if (!result.empty()) {

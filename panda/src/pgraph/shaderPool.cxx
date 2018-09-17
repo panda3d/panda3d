@@ -12,20 +12,20 @@
  */
 
 #include "shaderPool.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
 #include "loader.h"
 #include "shader.h"
 #include "string_utils.h"
 
-ShaderPool *ShaderPool::_global_ptr = (ShaderPool *)NULL;
+ShaderPool *ShaderPool::_global_ptr = nullptr;
 
 /**
  * Lists the contents of the shader pool to the indicated output stream.
  */
 void ShaderPool::
-write(ostream &out) {
+write(std::ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 
@@ -77,7 +77,7 @@ ns_load_shader(const Filename &orig_filename) {
   // the file extension.  This is really just guesswork - there are no
   // standardized extensions for shaders, especially for GLSL. These are the
   // ones that appear to be closest to "standard".
-  string ext = downcase(filename.get_extension());
+  std::string ext = downcase(filename.get_extension());
   if (ext == "cg" || ext == "sha") {
     // "sha" is for historical reasons.
     lang = Shader::SL_Cg;
@@ -89,9 +89,9 @@ ns_load_shader(const Filename &orig_filename) {
   }
 
   PT(Shader) shader = Shader::load(filename, lang);
-  if (shader == (Shader *)NULL) {
+  if (shader == nullptr) {
     // This shader was not found or could not be read.
-    return NULL;
+    return nullptr;
   }
 
   {
@@ -182,7 +182,7 @@ ns_garbage_collect() {
  * The nonstatic implementation of list_contents().
  */
 void ShaderPool::
-ns_list_contents(ostream &out) const {
+ns_list_contents(std::ostream &out) const {
   LightMutexHolder holder(_lock);
 
   out << _shaders.size() << " shaders:\n";
@@ -211,7 +211,7 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename) {
  */
 ShaderPool *ShaderPool::
 get_ptr() {
-  if (_global_ptr == (ShaderPool *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ShaderPool;
   }
   return _global_ptr;

@@ -23,11 +23,21 @@ CharacterJointEffect() {
  * Returns the Character that will get update() called on it when this node's
  * relative transform is queried, or NULL if there is no such character.
  */
-INLINE Character *CharacterJointEffect::
+INLINE PT(Character) CharacterJointEffect::
 get_character() const {
-  if (_character.is_valid_pointer()) {
-    return _character;
-  } else {
-    return NULL;
-  }
+  return _character.lock();
+}
+
+/**
+ * Returns true if this CharacterJointEffect contains the given Character.
+ * This exists because it is faster to check than get_character() and can even
+ * be called while the Character is destructing.
+ */
+INLINE bool CharacterJointEffect::
+matches_character(Character *character) const {
+  // This works because while the Character is destructing, the ref count will
+  // be 0 but was_deleted() will still return false.  We cannot construct a
+  // PointerTo to the character (via lock() or otherwise) when the reference
+  // count is 0 since that will cause double deletion.
+  return _character.get_orig() == character && !_character.was_deleted();
 }

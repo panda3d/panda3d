@@ -181,7 +181,7 @@ get_num_names() const {
  */
 const InternalName *InternalNameCollection::
 get_name(int index) const {
-  nassertr(index >= 0 && index < (int)_names.size(), NULL);
+  nassertr(index >= 0 && index < (int)_names.size(), nullptr);
 
   return _names[index];
 }
@@ -192,7 +192,7 @@ get_name(int index) const {
  */
 const InternalName *InternalNameCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_names.size(), NULL);
+  nassertr(index >= 0 && index < (int)_names.size(), nullptr);
 
   return _names[index];
 }
@@ -211,7 +211,7 @@ size() const {
  * indicated output stream.
  */
 void InternalNameCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_names() == 1) {
     out << "1 InternalName";
   } else {
@@ -224,7 +224,7 @@ output(ostream &out) const {
  * the indicated output stream.
  */
 void InternalNameCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_names(); i++) {
     indent(out, indent_level) << *get_name(i) << "\n";
   }

@@ -19,6 +19,7 @@
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
+#include "factoryParams.h"
 #include "luse.h"
 
 class BulletTriangleMesh;
@@ -32,8 +33,7 @@ private:
 
 PUBLISHED:
   explicit BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
-  INLINE BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
-  INLINE void operator = (const BulletTriangleMeshShape &copy);
+  BulletTriangleMeshShape(const BulletTriangleMeshShape &copy);
   INLINE ~BulletTriangleMeshShape();
 
   void refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max);

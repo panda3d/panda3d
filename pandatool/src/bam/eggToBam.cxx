@@ -13,7 +13,7 @@
 
 #include "eggToBam.h"
 
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamFile.h"
 #include "load_egg_file.h"
 #include "config_egg2pg.h"
@@ -80,7 +80,7 @@ EggToBam() :
      "egg geometry tagged as \"hidden\" will be removed from the final "
      "scene graph; otherwise, it will be preserved (but stashed).  The "
      "default is nonzero, to remove it.",
-     &EggToBam::dispatch_int, NULL, &_egg_suppress_hidden);
+     &EggToBam::dispatch_int, nullptr, &_egg_suppress_hidden);
 
   add_option
     ("ls", "", 0,
@@ -185,7 +185,7 @@ EggToBam() :
      "Set it to 'default' to use whatever is specified by the Config.prc "
      "file.  This is a global setting only; individual texture quality "
      "settings appearing within the egg file will override this.",
-     &EggToBam::dispatch_string, NULL, &_ctex_quality);
+     &EggToBam::dispatch_string, nullptr, &_ctex_quality);
 
   add_option
     ("load-display", "display name", 0,
@@ -197,7 +197,7 @@ EggToBam() :
      "Panda can compress textures without loading a display module."
 #endif  // HAVE_SQUISH
      ,
-     &EggToBam::dispatch_string, NULL, &_load_display);
+     &EggToBam::dispatch_string, nullptr, &_load_display);
 
   redescribe_option
     ("cs",
@@ -246,7 +246,7 @@ run() {
   if (_ctex_quality != "default") {
     // Override the user's config file with the command-line parameter for
     // texture compression.
-    string prc = "texture-quality-level " + _ctex_quality;
+    std::string prc = "texture-quality-level " + _ctex_quality;
     load_prc_file_data("prc", prc);
   }
 
@@ -257,7 +257,7 @@ run() {
   }
 
   PT(PandaNode) root = load_egg_data(_data);
-  if (root == (PandaNode *)NULL) {
+  if (root == nullptr) {
     nout << "Unable to build scene graph from egg file.\n";
     exit(1);
   }
@@ -385,7 +385,7 @@ collect_textures(PandaNode *node) {
 void EggToBam::
 collect_textures(const RenderState *state) {
   const TextureAttrib *tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_type()));
-  if (tex_attrib != (TextureAttrib *)NULL) {
+  if (tex_attrib != nullptr) {
     int num_on_stages = tex_attrib->get_num_on_stages();
     for (int i = 0; i < num_on_stages; ++i) {
       _textures.insert(tex_attrib->get_on_texture(tex_attrib->get_on_stage(i)));
@@ -442,13 +442,13 @@ bool EggToBam::
 make_buffer() {
   if (!_load_display.empty()) {
     // Override the user's config file with the command-line parameter.
-    string prc = "load-display " + _load_display;
+    std::string prc = "load-display " + _load_display;
     load_prc_file_data("prc", prc);
   }
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   _pipe = selection->make_default_pipe();
-  if (_pipe == (GraphicsPipe *)NULL) {
+  if (_pipe == nullptr) {
     nout << "Unable to create graphics pipe.\n";
     return false;
   }
@@ -473,7 +473,7 @@ make_buffer() {
                                  fbprops, winprops,
                                  GraphicsPipe::BF_fb_props_optional);
   _engine->open_windows();
-  if (_buffer == (GraphicsOutput *)NULL || !_buffer->is_valid()) {
+  if (_buffer == nullptr || !_buffer->is_valid()) {
     nout << "Unable to create graphics window.\n";
     return false;
   }

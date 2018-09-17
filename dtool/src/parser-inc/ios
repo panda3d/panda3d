@@ -1,0 +1,112 @@
+#pragma once
+
+#include <iosfwd>
+
+// We actually want to wrap streampos as streamoff.
+#define streampos streamoff
+
+namespace std {
+#ifdef _WIN64
+  typedef long long streamoff;
+  typedef long long streamsize;
+#elif defined(_WIN32)
+  typedef long streamoff;
+  typedef int streamsize;
+#else
+  typedef long long streamoff;
+  typedef ptrdiff_t streamsize;
+#endif
+
+  // We need to expose one method in each class to force it to publish.
+  // But we'd like to expose some of these methods anyway, so no
+  // problem.
+  class ios_base {
+  public:
+    class failure;
+    class Init;
+    enum event {
+      erase_event,
+      imbue_event,
+      copyfmt_event,
+    };
+
+    ios_base(const ios_base&) = delete;
+    ios_base &operator = (const ios_base&) = delete;
+
+  __published:
+    enum seekdir {
+      beg = 0,
+      cur = 1,
+      end = 2,
+    };
+    enum openmode {
+    };
+    enum iostate {
+    };
+    // Don't define these lest interrogate get tempted to actually
+    // substitute in the values, which are implementation-defined.
+    static const openmode app;
+    static const openmode binary;
+    static const openmode in;
+    static const openmode out;
+    static const openmode trunc;
+    static constexpr iostate goodbit = 0;
+    static constexpr iostate badbit;
+    static constexpr iostate failbit;
+    static constexpr iostate eofbit;
+  protected:
+    // Force this to be a non-trivial type.
+    ios_base() {};
+  };
+
+  template<class charT, class traits = char_traits<charT> >
+  class basic_ios : public ios_base {
+  public:
+    typedef charT char_type;
+    typedef typename traits::int_type int_type;
+    typedef typename traits::pos_type pos_type;
+    typedef typename traits::off_type off_type;
+    typedef traits traits_type;
+
+  __published:
+    typedef long fmtflags;
+
+    bool good() const;
+    bool eof() const;
+    bool fail() const;
+    bool bad() const;
+    void clear();
+
+  protected:
+    basic_ios();
+  };
+
+  ios_base &boolalpha(ios_base &str);
+  ios_base &noboolalpha(ios_base &str);
+  ios_base &showbase(ios_base &str);
+  ios_base &noshowbase(ios_base &str);
+  ios_base &showpoint(ios_base &str);
+  ios_base &noshowpoint(ios_base &str);
+  ios_base &showpos(ios_base &str);
+  ios_base &noshowpos(ios_base &str);
+  ios_base &skipws(ios_base &str);
+  ios_base &noskipws(ios_base &str);
+  ios_base &uppercase(ios_base &str);
+  ios_base &nouppercase(ios_base &str);
+  ios_base &unitbuf(ios_base &str);
+  ios_base &nounitbuf(ios_base &str);
+  ios_base &internal(ios_base &str);
+  ios_base &left(ios_base &str);
+  ios_base &right(ios_base &str);
+  ios_base &dec(ios_base &str);
+  ios_base &hex(ios_base &str);
+  ios_base &oct(ios_base &str);
+  ios_base &fixed(ios_base &str);
+  ios_base &scientific(ios_base &str);
+  ios_base &hexfloat(ios_base &str);
+  ios_base &defaultfloat(ios_base &str);
+
+  enum class io_errc {
+    stream = 1
+  };
+}

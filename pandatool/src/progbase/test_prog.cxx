@@ -46,13 +46,13 @@ TestProgram() {
 
   add_option
     ("b", "", 90, "Test option b",
-     &TestProgram::dispatch_count, NULL, &_count_b);
+     &TestProgram::dispatch_count, nullptr, &_count_b);
   _count_b = 0;
 
   add_option
     ("c", "integer_parameter", 90,
      "This is test option 'c'.  It takes an integer parameter.",
-     &TestProgram::dispatch_int, NULL, &_int_c);
+     &TestProgram::dispatch_int, nullptr, &_int_c);
   _int_c = 0;
 }
 

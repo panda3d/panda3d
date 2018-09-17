@@ -16,7 +16,7 @@
  * to begin an asynchronous load.
  */
 INLINE AudioLoadRequest::
-AudioLoadRequest(AudioManager *audio_manager, const string &filename,
+AudioLoadRequest(AudioManager *audio_manager, const std::string &filename,
                  bool positional) :
   _audio_manager(audio_manager),
   _filename(filename),
@@ -36,7 +36,7 @@ get_audio_manager() const {
 /**
  * Returns the filename associated with this asynchronous AudioLoadRequest.
  */
-INLINE const string &AudioLoadRequest::
+INLINE const std::string &AudioLoadRequest::
 get_filename() const {
   return _filename;
 }

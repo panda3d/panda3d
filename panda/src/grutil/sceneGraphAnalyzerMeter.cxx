@@ -29,7 +29,7 @@ TypeHandle SceneGraphAnalyzerMeter::_type_handle;
  *
  */
 SceneGraphAnalyzerMeter::
-SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
+SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node) : TextNode(name) {
   set_cull_callback();
 
   Thread *current_thread = Thread::get_current_thread();
@@ -105,10 +105,10 @@ setup_window(GraphicsOutput *window) {
  */
 void SceneGraphAnalyzerMeter::
 clear_window() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     _window->remove_display_region(_display_region);
-    _window = (GraphicsOutput *)NULL;
-    _display_region = (DisplayRegion *)NULL;
+    _window = nullptr;
+    _display_region = nullptr;
   }
   _root = NodePath();
 }

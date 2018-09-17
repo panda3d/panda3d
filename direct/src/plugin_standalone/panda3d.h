@@ -43,7 +43,7 @@ protected:
   bool read_contents_file(const Filename &contents_filename, bool fresh_download);
   void find_host(TiXmlElement *xcontents);
   void read_xhost(TiXmlElement *xhost);
-  void add_mirror(string mirror_url);
+  void add_mirror(std::string mirror_url);
   void choose_random_mirrors(vector_string &result, int num_mirrors);
   bool get_core_api();
   bool download_core_api();
@@ -51,14 +51,14 @@ protected:
   void usage();
 
 protected:
-  string _super_mirror_url;
-  string _host_url_prefix;
-  string _download_url_prefix;
-  string _super_mirror_url_prefix;
-  typedef pvector<string> Mirrors;
+  std::string _super_mirror_url;
+  std::string _host_url_prefix;
+  std::string _download_url_prefix;
+  std::string _super_mirror_url_prefix;
+  typedef pvector<std::string> Mirrors;
   Mirrors _mirrors;
 
-  string _coreapi_set_ver;
+  std::string _coreapi_set_ver;
   FileSpec _coreapi_dll;
 };
 

@@ -20,6 +20,10 @@
 #include "pandaSystem.h"
 
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_OSXDISPLAY)
+  #error Buildsystem error: BUILDING_PANDA_OSXDISPLAY not defined
+#endif
+
 Configure(config_osxdisplay);
 
 NotifyCategoryDef(osxdisplay, "display");

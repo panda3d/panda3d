@@ -13,7 +13,8 @@
 
 #include "xInputDevice.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(CPPPARSER)
+
 #include "gamepadButton.h"
 #include "inputDeviceManager.h"
 #include "string_utils.h"
@@ -73,27 +74,44 @@ typedef struct _XINPUT_BATTERY_INFORMATION {
 } XINPUT_BATTERY_INFORMATION;
 
 // Undocumented, I figured out how this looks by trial and error.
-struct XINPUT_BUSINFO {
+typedef struct _XINPUT_BUSINFO {
   WORD VendorID;
   WORD ProductID;
   WORD RevisionID;
   WORD Unknown1; // Unknown - padding?
   DWORD InstanceID;
   DWORD Unknown2;
-  //WORD Unknown3;
-};
+  WORD Unknown3;
+} XINPUT_BUSINFO;
+
+typedef struct _XINPUT_CAPABILITIES_EX {
+  BYTE Type;
+  BYTE SubType;
+  WORD Flags;
+  XINPUT_GAMEPAD Gamepad;
+  XINPUT_VIBRATION Vibration;
+
+  // The following fields are undocumented.
+  WORD VendorID;
+  WORD ProductID;
+  WORD RevisionID;
+  WORD Unknown1;
+  WORD Unknown2;
+} XINPUT_CAPABILITIES_EX;
 
 typedef DWORD (*pXInputGetState)(DWORD, XINPUT_STATE *);
 typedef DWORD (*pXInputSetState)(DWORD, XINPUT_VIBRATION *);
 typedef DWORD (*pXInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES *);
+typedef DWORD (*pXInputGetCapabilitiesEx)(DWORD, DWORD, DWORD, XINPUT_CAPABILITIES_EX *);
 typedef DWORD (*pXInputGetBatteryInformation)(DWORD, BYTE, XINPUT_BATTERY_INFORMATION *);
 typedef DWORD (*pXInputGetBaseBusInformation)(DWORD, XINPUT_BUSINFO *);
 
-static pXInputGetState get_state = NULL;
-static pXInputSetState set_state = NULL;
-static pXInputGetCapabilities get_capabilities = NULL;
-static pXInputGetBatteryInformation get_battery_information = NULL;
-static pXInputGetBaseBusInformation get_base_bus_information = NULL;
+static pXInputGetState get_state = nullptr;
+static pXInputSetState set_state = nullptr;
+static pXInputGetCapabilities get_capabilities = nullptr;
+static pXInputGetCapabilitiesEx get_capabilities_ex = nullptr;
+static pXInputGetBatteryInformation get_battery_information = nullptr;
+static pXInputGetBaseBusInformation get_base_bus_information = nullptr;
 
 bool XInputDevice::_initialized = false;
 
@@ -108,26 +126,8 @@ XInputDevice(DWORD user_index) :
 
   nassertv(user_index >= 0 && user_index < XUSER_MAX_COUNT);
 
-  if (!_initialized) {
-    nassertv(init_xinput());
-  }
-
-  _name = "XInput Device #";
-  _name += format_string(user_index);
-
-  _controls.resize(6);
+  _axes.resize(6);
   _buttons.resize(16);
-
-  // Check if the device is connected.  If so, initialize it.
-  XINPUT_CAPABILITIES caps;
-  XINPUT_STATE state;
-  if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS &&
-      get_state(_index, &state) == ERROR_SUCCESS) {
-    _is_connected = true;
-    init_device(caps, state);
-  } else {
-    _is_connected = false;
-  }
 }
 
 /**
@@ -139,16 +139,78 @@ XInputDevice::
 }
 
 /**
+ * Called when a new input device arrives in the InputDeviceManager.  This
+ * method checks whether it matches this XInput device.
+ */
+bool XInputDevice::
+check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
+              const std::string &name, const std::string &manufacturer) {
+  LightMutexHolder holder(_lock);
+  if (_is_connected) {
+    return false;
+  }
+
+  if (!_initialized) {
+    nassertr_always(init_xinput(), false);
+  }
+
+  XINPUT_CAPABILITIES_EX caps = {0};
+  XINPUT_STATE state;
+  if ((get_capabilities_ex && get_capabilities_ex(1, _index, 0, &caps) != ERROR_SUCCESS) &&
+       get_capabilities(_index, 0, (XINPUT_CAPABILITIES *)&caps) != ERROR_SUCCESS) {
+    return false;
+  }
+
+  // Extra check for VID/PID if we have it, just to be sure.
+  if ((caps.VendorID != 0 && caps.VendorID != info.hid.dwVendorId) ||
+      (caps.ProductID != 0 && caps.ProductID != info.hid.dwProductId)) {
+    return false;
+  }
+
+  // Yes, take the name and manufacturer.
+  if (!name.empty()) {
+    _name = name;
+  } else {
+    _name = "XInput Device #";
+    _name += format_string(_index + 1);
+  }
+  _manufacturer = manufacturer;
+
+  if (inst && caps.ProductID == 0 && caps.RevisionID != 0) {
+    // XInput does not report a product ID for the Xbox 360 wireless adapter.
+    // Instead, we check that the RevisionID matches.
+    char buffer[4096];
+    ULONG buflen = sizeof(buffer);
+    if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_HARDWAREID, 0, buffer, &buflen, 0) == CR_SUCCESS) {
+      std::string ids(buffer, buflen);
+      char revstr[16];
+      sprintf(revstr, "REV_%04x", caps.RevisionID);
+      if (ids.find(revstr) == std::string::npos) {
+        return false;
+      }
+    }
+  }
+
+  _is_connected = true;
+  init_device(caps, state);
+  _vendor_id = info.hid.dwVendorId;
+  _product_id = info.hid.dwProductId;
+  return true;
+}
+
+/**
  * Called periodically by the InputDeviceManager to detect whether the device
  * is currently connected.
+ * Returns true if the device wasn't connected, but now is.
  */
 void XInputDevice::
 detect(InputDeviceManager *mgr) {
   bool connected = false;
 
-  XINPUT_CAPABILITIES caps;
+  XINPUT_CAPABILITIES_EX caps = {0};
   XINPUT_STATE state;
-  if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS &&
+  if (((get_capabilities_ex && get_capabilities_ex(1, _index, 0, &caps) == ERROR_SUCCESS) ||
+       get_capabilities(_index, 0, (XINPUT_CAPABILITIES *)&caps) == ERROR_SUCCESS) &&
       get_state(_index, &state) == ERROR_SUCCESS) {
     connected = true;
   } else {
@@ -203,9 +265,9 @@ init_xinput() {
     // Undocumented version (XInputGetStateEx) that includes a
     // state bit for the guide button.
     get_state = (pXInputGetState)GetProcAddress(module, MAKEINTRESOURCE(100));
-    if (get_state == NULL) {
+    if (get_state == nullptr) {
       get_state = (pXInputGetState)GetProcAddress(module, "XInputGetState");
-      if (get_state == NULL) {
+      if (get_state == nullptr) {
         device_cat.error()
           << "Failed to find function XInputGetState in " << dll_name << ".\n";
         return false;
@@ -213,14 +275,14 @@ init_xinput() {
     }
 
     set_state = (pXInputSetState)GetProcAddress(module, "XInputSetState");
-    if (set_state == NULL) {
+    if (set_state == nullptr) {
       device_cat.error()
         << "Failed to find function XInputSetState in " << dll_name << ".\n";
       return false;
     }
 
     get_capabilities = (pXInputGetCapabilities)GetProcAddress(module, "XInputGetCapabilities");
-    if (get_capabilities == NULL) {
+    if (get_capabilities == nullptr) {
       device_cat.error()
         << "Failed to find function XInputGetCapabilities in " << dll_name << ".\n";
       return false;
@@ -228,6 +290,7 @@ init_xinput() {
 
     get_battery_information = (pXInputGetBatteryInformation)GetProcAddress(module, "XInputGetBatteryInformation");
     get_base_bus_information = (pXInputGetBaseBusInformation)GetProcAddress(module, MAKEINTRESOURCE(104));
+    get_capabilities_ex = (pXInputGetCapabilitiesEx)GetProcAddress(module, MAKEINTRESOURCE(108));
     return true;
   }
 
@@ -238,9 +301,11 @@ init_xinput() {
 
 /**
  * Initializes the device.  Called when the device was just connected.
+ * Assumes either the lock is held or this is called from the constructor.
  */
 void XInputDevice::
-init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
+init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
+  nassertv(_initialized);
   // It seems that the Xbox One controller is reported as having a DevType of
   // zero, at least when I tested in with XInput 1.3 on Windows 7.
   //if (caps.Type == XINPUT_DEVTYPE_GAMEPAD) {
@@ -251,136 +316,96 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   default:
   case XINPUT_DEVSUBTYPE_GAMEPAD:
     _device_class = DC_gamepad;
-    set_control_map(0, C_left_trigger);
-    set_control_map(1, C_right_trigger);
-    set_control_map(2, C_left_x);
-    set_control_map(3, C_left_y);
-    set_control_map(4, C_right_x);
-    set_control_map(5, C_right_y);
+    _axes[0].axis = Axis::left_trigger;
+    _axes[1].axis = Axis::right_trigger;
+    _axes[2].axis = Axis::left_x;
+    _axes[3].axis = Axis::left_y;
+    _axes[4].axis = Axis::right_x;
+    _axes[5].axis = Axis::right_y;
     break;
 
   case XINPUT_DEVSUBTYPE_WHEEL:
     _device_class = DC_steering_wheel;
-    set_control_map(0, C_brake);
-    set_control_map(1, C_accelerator);
-    set_control_map(2, C_wheel);
-    set_control_map(3, C_none);
-    set_control_map(4, C_none);
-    set_control_map(5, C_none);
+    _axes[0].axis = Axis::brake;
+    _axes[1].axis = Axis::accelerator;
+    _axes[2].axis = Axis::wheel;
+    _axes[3].axis = Axis::none;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
     _device_class = DC_flight_stick;
-    set_control_map(0, C_yaw);
-    set_control_map(1, C_throttle);
-    set_control_map(2, C_roll);
-    set_control_map(3, C_pitch);
-    set_control_map(4, C_hat_x);
-    set_control_map(5, C_hat_y);
+    _axes[0].axis = Axis::yaw;
+    _axes[1].axis = Axis::throttle;
+    _axes[2].axis = Axis::roll;
+    _axes[3].axis = Axis::pitch;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
 
   case XINPUT_DEVSUBTYPE_DANCE_PAD:
     _device_class = DC_dance_pad;
-    set_control_map(0, C_none);
-    set_control_map(1, C_none);
-    set_control_map(2, C_none);
-    set_control_map(3, C_none);
-    set_control_map(4, C_none);
-    set_control_map(5, C_none);
+    _axes[0].axis = Axis::none;
+    _axes[1].axis = Axis::none;
+    _axes[2].axis = Axis::none;
+    _axes[3].axis = Axis::none;
+    _axes[4].axis = Axis::none;
+    _axes[5].axis = Axis::none;
     break;
   }
 
-  _controls[0]._scale = 1.0 / 255.0;
-  _controls[1]._scale = 1.0 / 255.0;
-  _controls[2]._scale = 1.0 / 32767.5;
-  _controls[3]._scale = 1.0 / 32767.5;
-  _controls[4]._scale = 1.0 / 32767.5;
-  _controls[5]._scale = 1.0 / 32767.5;
+  _axes[0]._scale = 1.0 / 255.0;
+  _axes[1]._scale = 1.0 / 255.0;
+  _axes[2]._scale = 1.0 / 32767.5;
+  _axes[3]._scale = 1.0 / 32767.5;
+  _axes[4]._scale = 1.0 / 32767.5;
+  _axes[5]._scale = 1.0 / 32767.5;
 
-  _controls[2]._bias = 0.5 / 32767.5;
-  _controls[3]._bias = 0.5 / 32767.5;
-  _controls[4]._bias = 0.5 / 32767.5;
-  _controls[5]._bias = 0.5 / 32767.5;
+  _axes[2]._bias = 0.5 / 32767.5;
+  _axes[3]._bias = 0.5 / 32767.5;
+  _axes[4]._bias = 0.5 / 32767.5;
+  _axes[5]._bias = 0.5 / 32767.5;
 
   if (caps.Flags & XINPUT_CAPS_NO_NAVIGATION) {
-    set_button_map(0, ButtonHandle::none());
-    set_button_map(1, ButtonHandle::none());
-    set_button_map(2, ButtonHandle::none());
-    set_button_map(3, ButtonHandle::none());
-    set_button_map(4, ButtonHandle::none());
-    set_button_map(5, ButtonHandle::none());
+    _buttons[0].handle = ButtonHandle::none();
+    _buttons[1].handle = ButtonHandle::none();
+    _buttons[2].handle = ButtonHandle::none();
+    _buttons[3].handle = ButtonHandle::none();
+    _buttons[4].handle = ButtonHandle::none();
+    _buttons[5].handle = ButtonHandle::none();
   } else {
-    set_button_map(0, GamepadButton::dpad_up());
-    set_button_map(1, GamepadButton::dpad_down());
-    set_button_map(2, GamepadButton::dpad_left());
-    set_button_map(3, GamepadButton::dpad_right());
-    set_button_map(4, GamepadButton::start());
-    set_button_map(5, GamepadButton::back());
+    _buttons[0].handle = GamepadButton::dpad_up();
+    _buttons[1].handle = GamepadButton::dpad_down();
+    _buttons[2].handle = GamepadButton::dpad_left();
+    _buttons[3].handle = GamepadButton::dpad_right();
+    _buttons[4].handle = GamepadButton::start();
+    _buttons[5].handle = GamepadButton::back();
   }
-  set_button_map(6, GamepadButton::lstick());
-  set_button_map(7, GamepadButton::rstick());
-  set_button_map(8, GamepadButton::lshoulder());
-  set_button_map(9, GamepadButton::rshoulder());
-  set_button_map(10, GamepadButton::guide());
-  set_button_map(11, GamepadButton::action_a());
-  set_button_map(12, GamepadButton::action_b());
-  set_button_map(13, GamepadButton::action_x());
-  set_button_map(14, GamepadButton::action_y());
+  _buttons[6].handle = GamepadButton::lstick();
+  _buttons[7].handle = GamepadButton::rstick();
+  _buttons[8].handle = GamepadButton::lshoulder();
+  _buttons[9].handle = GamepadButton::rshoulder();
+  _buttons[10].handle = GamepadButton::guide();
+  _buttons[11].handle = GamepadButton::face_a();
+  _buttons[12].handle = GamepadButton::face_b();
+  _buttons[13].handle = GamepadButton::face_x();
+  _buttons[14].handle = GamepadButton::face_y();
 
-  if (caps.Flags & XINPUT_CAPS_FFB_SUPPORTED) {
+  if (caps.Vibration.wLeftMotorSpeed != 0 ||
+      caps.Vibration.wRightMotorSpeed != 0) {
     _flags |= IDF_has_vibration;
   }
 
-  if (get_battery_information != NULL) {
+  if (get_battery_information != nullptr) {
     XINPUT_BATTERY_INFORMATION batt;
     if (get_battery_information(_index, BATTERY_DEVTYPE_GAMEPAD, &batt) == ERROR_SUCCESS) {
       if (batt.BatteryType != BATTERY_TYPE_DISCONNECTED &&
           batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
         _flags |= IDF_has_battery;
-        _battery_level = batt.BatteryLevel;
-        _max_battery_level = BATTERY_LEVEL_FULL;
-      }
-    }
-  }
-
-  // Get information about the USB device.
-  // This is not documented at all.  I'm probably the first to try this.
-  XINPUT_BUSINFO businfo;
-  if (get_base_bus_information != NULL &&
-      get_base_bus_information(0, &businfo) == ERROR_SUCCESS) {
-    _vendor_id = businfo.VendorID;
-    _product_id = businfo.ProductID;
-
-    {
-      // Reformat the serial number into its original hex string form.
-      char sn[10];
-      sprintf_s(sn, 10, "%08X", businfo.InstanceID);
-      _serial_number.assign(sn, 8);
-    }
-
-    // Get information about the device from Windows.  For that, we'll
-    // first need to construct the device path.  Fortunately, we now have
-    // enough information to do so.
-    char path[32];
-    sprintf_s(path, 32, "USB\\VID_%04X&PID_%04X\\%08X", businfo.VendorID, businfo.ProductID, businfo.InstanceID);
-
-    DEVINST inst;
-    if (CM_Locate_DevNodeA(&inst, path, 0) != 0) {
-      if (device_cat.is_debug()) {
-        device_cat.debug()
-          << "Could not locate device node " << path << "\n";
-      }
-    } else {
-      // Get the device properties we need.
-      char buffer[4096];
-      ULONG buflen = 4096;
-      if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_DEVICEDESC, 0, buffer, &buflen, 0) == CR_SUCCESS) {
-        _name.assign(buffer);
-      }
-      buflen = 4096;
-      if (CM_Get_DevNode_Registry_Property(inst, CM_DRP_MFG, 0, buffer, &buflen, 0) == CR_SUCCESS) {
-        _manufacturer.assign(buffer);
+        _battery_data.level = batt.BatteryLevel;
+        _battery_data.max_level = BATTERY_LEVEL_FULL;
       }
     }
   }
@@ -388,10 +413,8 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
   WORD buttons = state.Gamepad.wButtons;
   WORD mask = 1;
   for (int i = 0; i < 16; ++i) {
-    if (buttons & mask) {
-      // Set the state without triggering a button event.
-      _buttons[i].state = (buttons & mask) ? S_down : S_up;
-    }
+    // Set the state without triggering a button event.
+    _buttons[i]._state = (buttons & mask) ? S_down : S_up;
     mask <<= 1;
     if (i == 10) {
       // XInput skips 0x0800.
@@ -399,12 +422,12 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
     }
   }
 
-  control_changed(0, state.Gamepad.bLeftTrigger);
-  control_changed(1, state.Gamepad.bRightTrigger);
-  control_changed(2, state.Gamepad.sThumbLX);
-  control_changed(3, state.Gamepad.sThumbLY);
-  control_changed(4, state.Gamepad.sThumbRX);
-  control_changed(5, state.Gamepad.sThumbRY);
+  axis_changed(0, state.Gamepad.bLeftTrigger);
+  axis_changed(1, state.Gamepad.bRightTrigger);
+  axis_changed(2, state.Gamepad.sThumbLX);
+  axis_changed(3, state.Gamepad.sThumbLY);
+  axis_changed(4, state.Gamepad.sThumbRX);
+  axis_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = buttons;
   _last_packet = state.dwPacketNumber;
@@ -417,6 +440,8 @@ init_device(const XINPUT_CAPABILITIES &caps, const XINPUT_STATE &state) {
  */
 void XInputDevice::
 do_set_vibration(double strong, double weak) {
+  nassertv_always(_is_connected);
+
   XINPUT_VIBRATION vibration;
   vibration.wLeftMotorSpeed = strong * 0xffff;
   vibration.wRightMotorSpeed = weak * 0xffff;
@@ -430,6 +455,11 @@ do_set_vibration(double strong, double weak) {
  */
 void XInputDevice::
 do_poll() {
+  // Not sure why someone would call this on a disconnected device.
+  if (!_is_connected) {
+    return;
+  }
+
   XINPUT_STATE state;
 
   if (get_state(_index, &state) != ERROR_SUCCESS) {
@@ -440,18 +470,6 @@ do_poll() {
       mgr->remove_device(this);
     }
     return;
-
-  } else if (!_is_connected) {
-    // Device was (re)connected.  It's a bit strange to call poll() on a
-    // disconnected device, but there's nothing stopping the user from
-    // doing so.
-    XINPUT_CAPABILITIES caps;
-    if (get_capabilities(_index, 0, &caps) == ERROR_SUCCESS) {
-      _is_connected = true;
-      init_device(caps, state);
-      InputDeviceManager *mgr = InputDeviceManager::get_global_ptr();
-      mgr->add_device(this);
-    }
   }
 
   if (state.dwPacketNumber == _last_packet) {
@@ -474,12 +492,12 @@ do_poll() {
     }
   }
 
-  control_changed(0, state.Gamepad.bLeftTrigger);
-  control_changed(1, state.Gamepad.bRightTrigger);
-  control_changed(2, state.Gamepad.sThumbLX);
-  control_changed(3, state.Gamepad.sThumbLY);
-  control_changed(4, state.Gamepad.sThumbRX);
-  control_changed(5, state.Gamepad.sThumbRY);
+  axis_changed(0, state.Gamepad.bLeftTrigger);
+  axis_changed(1, state.Gamepad.bRightTrigger);
+  axis_changed(2, state.Gamepad.sThumbLX);
+  axis_changed(3, state.Gamepad.sThumbLY);
+  axis_changed(4, state.Gamepad.sThumbRX);
+  axis_changed(5, state.Gamepad.sThumbRY);
 
   _last_buttons = state.Gamepad.wButtons;
   _last_packet = state.dwPacketNumber;

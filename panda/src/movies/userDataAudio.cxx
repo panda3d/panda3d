@@ -25,7 +25,7 @@ UserDataAudio(int rate, int channels, bool remove_after_read) :
   MovieAudio("User Data Audio"),
   _desired_rate(rate),
   _desired_channels(channels),
-  _cursor(NULL),
+  _cursor(nullptr),
   _aborted(false),
   _remove_after_read(remove_after_read)
 {
@@ -46,7 +46,7 @@ PT(MovieAudioCursor) UserDataAudio::
 open() {
   if (_cursor) {
     nassert_raise("A UserDataAudio can only be opened by one consumer at a time.");
-    return NULL;
+    return nullptr;
   }
   _cursor = new UserDataAudioCursor(this);
   return _cursor;
@@ -107,7 +107,7 @@ append(DatagramIterator *src, int n) {
  * but it may be convenient to deal with samples in python.
  */
 void UserDataAudio::
-append(const string &str) {
+append(const std::string &str) {
   nassertv(!_aborted);
   int samples = str.size() / (2 * _desired_channels);
   int words = samples * _desired_channels;

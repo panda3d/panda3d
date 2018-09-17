@@ -39,10 +39,10 @@ public:
   INLINE bool operator < (const WindowsGuid &other) const;
   INLINE int compare_to(const WindowsGuid &other) const;
 
-  bool parse_string(const string &str);
-  string format_string() const;
+  bool parse_string(const std::string &str);
+  std::string format_string() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   unsigned long _data1;
@@ -51,7 +51,7 @@ private:
   unsigned char _b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8;
 };
 
-INLINE ostream &operator << (ostream &out, const WindowsGuid &guid);
+INLINE std::ostream &operator << (std::ostream &out, const WindowsGuid &guid);
 
 #include "windowsGuid.I"
 

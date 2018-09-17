@@ -30,6 +30,8 @@
 #include <unistd.h>
 #endif
 
+using std::string;
+
 /**
  *
  */
@@ -53,7 +55,7 @@ P3DAuthSession(P3DInstance *inst) :
   _cert_filename = new P3DTemporaryFile(".crt");
   string filename = _cert_filename->get_filename();
   FILE *fp = fopen(filename.c_str(), "w");
-  if (fp == NULL) {
+  if (fp == nullptr) {
     nout << "Couldn't write temporary file\n";
     return;
   }
@@ -88,7 +90,7 @@ P3DAuthSession::
 ~P3DAuthSession() {
   shutdown(false);
 
-  if (_cert_filename != NULL) {
+  if (_cert_filename != nullptr) {
     delete _cert_filename;
   }
 }
@@ -101,7 +103,7 @@ shutdown(bool send_message) {
   if (!send_message) {
     // If we're not to send the instance the shutdown message as a result of
     // this, then clear the _inst pointer now.
-    _inst = NULL;
+    _inst = nullptr;
   }
 
   if (_p3dcert_running) {
@@ -119,7 +121,7 @@ shutdown(bool send_message) {
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 100000;
-    select(0, NULL, NULL, NULL, &tv);
+    select(0, nullptr, nullptr, nullptr, &tv);
     int status;
     waitpid(_p3dcert_pid, &status, WNOHANG);
 #endif  // _WIN32
@@ -133,7 +135,7 @@ shutdown(bool send_message) {
   join_wait_thread();
 
   // We're no longer bound to any particular instance.
-  _inst = NULL;
+  _inst = nullptr;
 }
 
 /**
@@ -146,7 +148,7 @@ start_p3dcert() {
     return;
   }
 
-  if (_inst->_p3dcert_package == NULL) {
+  if (_inst->_p3dcert_package == nullptr) {
     nout << "Couldn't start Python: no p3dcert package.\n";
     return;
   }
@@ -175,14 +177,14 @@ start_p3dcert() {
   const wchar_t *keep[] = {
     L"TMP", L"TEMP", L"HOME", L"USER",
     L"SYSTEMROOT", L"USERPROFILE", L"COMSPEC",
-    NULL
+    nullptr
   };
 
-  wstring env_w;
+  std::wstring env_w;
 
-  for (int ki = 0; keep[ki] != NULL; ++ki) {
+  for (int ki = 0; keep[ki] != nullptr; ++ki) {
     wchar_t *value = _wgetenv(keep[ki]);
-    if (value != NULL) {
+    if (value != nullptr) {
       env_w += keep[ki];
       env_w += L"=";
       env_w += value;
@@ -204,11 +206,11 @@ start_p3dcert() {
 #ifdef HAVE_X11
     "DISPLAY", "XAUTHORITY",
 #endif
-    NULL
+    nullptr
   };
-  for (int ki = 0; keep[ki] != NULL; ++ki) {
+  for (int ki = 0; keep[ki] != nullptr; ++ki) {
     char *value = getenv(keep[ki]);
-    if (value != NULL) {
+    if (value != nullptr) {
       _env += keep[ki];
       _env += "=";
       _env += value;
@@ -337,7 +339,7 @@ wt_thread_run() {
 
   // Notify the instance that we're done.
   P3DInstance *inst = _inst;
-  if (inst != NULL) {
+  if (inst != nullptr) {
     inst->auth_finished_sub_thread();
   }
 
@@ -369,7 +371,7 @@ win_create_process() {
 
   // Construct the command-line string, containing the quoted command-line
   // arguments.
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "\"" << _p3dcert_exe << "\" \""
          << _cert_filename->get_filename() << "\" \"" << _cert_dir << "\"";
 
@@ -388,7 +390,7 @@ win_create_process() {
   // anyway.
   PROCESS_INFORMATION process_info;
   BOOL result = CreateProcess
-    (_p3dcert_exe.c_str(), command_line, NULL, NULL, TRUE,
+    (_p3dcert_exe.c_str(), command_line, nullptr, nullptr, TRUE,
      0, (void *)_env.c_str(),
      start_dir_cstr, &startup_info, &process_info);
   bool started_program = (result != 0);
@@ -432,7 +434,7 @@ posix_create_process() {
     }
 
     // build up an array of char strings for the environment.
-    vector<const char *> ptrs;
+    std::vector<const char *> ptrs;
     size_t p = 0;
     size_t zero = _env.find('\0', p);
     while (zero != string::npos) {
@@ -440,7 +442,7 @@ posix_create_process() {
       p = zero + 1;
       zero = _env.find('\0', p);
     }
-    ptrs.push_back((char *)NULL);
+    ptrs.push_back(nullptr);
 
     execle(_p3dcert_exe.c_str(), _p3dcert_exe.c_str(),
            _cert_filename->get_filename().c_str(), _cert_dir.c_str(),

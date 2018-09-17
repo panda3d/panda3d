@@ -35,23 +35,20 @@
  * A Datagram is itself headerless; it is simply a collection of data
  * elements.
  */
-class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
+class EXPCL_PANDA_EXPRESS Datagram : public TypedObject {
 PUBLISHED:
-  INLINE Datagram();
+  INLINE Datagram() = default;
   INLINE Datagram(const void *data, size_t size);
-  INLINE Datagram(const string &data);
-  INLINE Datagram(const Datagram &copy);
-  INLINE void operator = (const Datagram &copy);
-
-#ifdef USE_MOVE_SEMANTICS
-  INLINE Datagram(Datagram &&from) NOEXCEPT;
-  INLINE void operator = (Datagram &&from) NOEXCEPT;
-#endif
-
+  INLINE explicit Datagram(vector_uchar data);
+  Datagram(const Datagram &copy) = default;
+  Datagram(Datagram &&from) noexcept = default;
   virtual ~Datagram();
 
+  Datagram &operator = (const Datagram &copy) = default;
+  Datagram &operator = (Datagram &&from) noexcept = default;
+
   virtual void clear();
-  void dump_hex(ostream &out, unsigned int indent=0) const;
+  void dump_hex(std::ostream &out, unsigned int indent=0) const;
 
   INLINE void add_bool(bool value);
   INLINE void add_int8(int8_t value);
@@ -78,20 +75,29 @@ PUBLISHED:
   INLINE void add_be_float32(PN_float32 value);
   INLINE void add_be_float64(PN_float64 value);
 
-  INLINE void add_string(const string &str);
-  INLINE void add_string32(const string &str);
-  INLINE void add_z_string(string str);
-  INLINE void add_fixed_string(const string &str, size_t size);
-  void add_wstring(const wstring &str);
+  INLINE void add_string(const std::string &str);
+  INLINE void add_string32(const std::string &str);
+  INLINE void add_z_string(const std::string &str);
+  INLINE void add_fixed_string(const std::string &str, size_t size);
+  void add_wstring(const std::wstring &str);
+
+  INLINE void add_blob(const vector_uchar &);
+  INLINE void add_blob32(const vector_uchar &);
 
   void pad_bytes(size_t size);
   void append_data(const void *data, size_t size);
-  INLINE void append_data(const string &data);
+  INLINE void append_data(const vector_uchar &data);
 
+public:
   void assign(const void *data, size_t size);
 
-  INLINE string get_message() const;
+  INLINE std::string get_message() const;
   INLINE const void *get_data() const;
+
+PUBLISHED:
+  EXTENSION(INLINE PyObject *get_message() const);
+  EXTENSION(INLINE PyObject *__bytes__() const);
+
   INLINE size_t get_length() const;
 
   INLINE void set_array(PTA_uchar data);
@@ -106,12 +112,17 @@ PUBLISHED:
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, unsigned int indent=0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, unsigned int indent=0) const;
 
 private:
   PTA_uchar _data;
-  bool _stdfloat_double;
+
+#ifdef STDFLOAT_DOUBLE
+  bool _stdfloat_double = true;
+#else
+  bool _stdfloat_double = false;
+#endif
 
 public:
 
@@ -147,9 +158,11 @@ generic_write_datagram(Datagram &dest, float value);
 INLINE void
 generic_write_datagram(Datagram &dest, double value);
 INLINE void
-generic_write_datagram(Datagram &dest, const string &value);
+generic_write_datagram(Datagram &dest, const std::string &value);
 INLINE void
-generic_write_datagram(Datagram &dest, const wstring &value);
+generic_write_datagram(Datagram &dest, const std::wstring &value);
+INLINE void
+generic_write_datagram(Datagram &dest, const vector_uchar &value);
 
 
 #include "datagram.I"

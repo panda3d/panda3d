@@ -13,6 +13,10 @@
 
 #include "bulletHeightfieldShape.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 TypeHandle BulletHeightfieldShape::_type_handle;
 
 /**
@@ -61,6 +65,7 @@ ptr() const {
  */
 void BulletHeightfieldShape::
 set_use_diamond_subdivision(bool flag) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return _shape->setUseDiamondSubdivision(flag);
 }
@@ -88,7 +93,7 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
       if (!peeker->lookup_bilinear(sample, row * step_x, column * step_y)) {
-        bullet_cat.error() << "Could not sample texture." << endl;
+        bullet_cat.error() << "Could not sample texture." << std::endl;
       }
       // Transpose
       _data[_num_rows * column + row] = max_height * sample.get_x();
@@ -100,6 +105,31 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
                                          _data,
                                          max_height,
                                          up,
+                                         true, false);
+  _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
+BulletHeightfieldShape::
+BulletHeightfieldShape(const BulletHeightfieldShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _num_rows = copy._num_rows;
+  _num_cols = copy._num_cols;
+  _max_height = copy._max_height;
+  _up = copy._up;
+
+  size_t size = (size_t)_num_rows * (size_t)_num_cols;
+  _data = new btScalar[size];
+  memcpy(_data, copy._data, size * sizeof(btScalar));
+
+  _shape = new btHeightfieldTerrainShape(_num_rows,
+                                         _num_cols,
+                                         _data,
+                                         _max_height,
+                                         _up,
                                          true, false);
   _shape->setUserPointer(this);
 }
@@ -169,8 +199,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_cols = scan.get_int32();
 
   size_t size = (size_t)_num_rows * (size_t)_num_cols;
-  delete[] _data;
+  delete [] _data;
   _data = new float[size];
+
   for (size_t i = 0; i < size; ++i) {
     _data[i]  = scan.get_stdfloat();
   }

@@ -28,6 +28,10 @@
 #include <libio.h>
 #endif // !_WIN32 && !__APPLE__ && !__FreeBSD__
 
+using std::cerr;
+using std::dec;
+using std::hex;
+
 static const size_t handle_buffer_size = 4096;
 
 /**
@@ -120,10 +124,10 @@ close() {
 void HandleStreamBuf::
 close_handle() {
 #ifdef _WIN32
-  if (_handle != NULL) {
+  if (_handle != nullptr) {
     CloseHandle(_handle);
   }
-  _handle = NULL;
+  _handle = nullptr;
 #else
   if (_handle != -1) {
     ::close(_handle);
@@ -256,7 +260,7 @@ read_chars(char *start, size_t length) {
 #ifdef _WIN32
   // Windows case.
   DWORD bytes_read = 0;
-  BOOL success = ReadFile(_handle, start, length, &bytes_read, NULL);
+  BOOL success = ReadFile(_handle, start, length, &bytes_read, nullptr);
   if (!success) {
     DWORD error = GetLastError();
     if (error != ERROR_HANDLE_EOF && error != ERROR_BROKEN_PIPE) {
@@ -304,7 +308,7 @@ write_chars(const char *start, size_t length) {
 #ifdef _WIN32
   // Windows case.
   DWORD bytes_written = 0;
-  BOOL success = WriteFile(_handle, start, length, &bytes_written, NULL);
+  BOOL success = WriteFile(_handle, start, length, &bytes_written, nullptr);
   if (!success) {
     assert(bytes_written <= length);
     DWORD error = GetLastError();

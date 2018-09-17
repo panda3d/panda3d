@@ -42,7 +42,7 @@ receive_datagram(Datagram &dg) {
   } else {
     // If we're not in playback mode, forward the request to the connection.
     bool got_data = false;
-    if (_stream != (SocketStream *)NULL) {
+    if (_stream != nullptr) {
       got_data = _stream->receive_datagram(dg);
     }
 
@@ -82,8 +82,7 @@ play_frame(DatagramIterator &scan, BamReader *manager) {
 
   int num_packets = scan.get_uint16();
   for (int i = 0; i < num_packets; i++) {
-    string packet = scan.get_string();
-    _data.push_back(Datagram(packet));
+    _data.push_back(Datagram(scan.get_blob()));
   }
 }
 

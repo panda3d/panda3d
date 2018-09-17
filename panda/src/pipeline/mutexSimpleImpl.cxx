@@ -23,7 +23,7 @@
  *
  */
 void MutexSimpleImpl::
-do_acquire() {
+do_lock() {
   // By the time we get here, we already know that someone else is holding the
   // lock: (_flags & F_lock_count) != 0.
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
@@ -41,7 +41,7 @@ do_acquire() {
  *
  */
 void MutexSimpleImpl::
-do_release() {
+do_unlock() {
   // By the time we get here, we already know that someone else is blocked on
   // this mutex: (_flags & F_waiters) != 0.
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
@@ -58,7 +58,7 @@ do_release() {
  *
  */
 void MutexSimpleImpl::
-do_release_quietly() {
+do_unlock_quietly() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   manager->unblock_one(this);
 }

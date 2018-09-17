@@ -13,6 +13,8 @@
 
 #include "bulletCapsuleShape.h"
 
+#include "config_bullet.h"
+
 TypeHandle BulletCapsuleShape::_type_handle;
 
 /**
@@ -21,7 +23,8 @@ TypeHandle BulletCapsuleShape::_type_handle;
 BulletCapsuleShape::
 BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
   _radius(radius),
-  _height(height) {
+  _height(height),
+  _up(up) {
 
   switch (up) {
   case X_up:
@@ -34,10 +37,41 @@ BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     _shape = new btCapsuleShapeZ(radius, height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << up << std::endl;
     break;
   }
 
+  nassertv(_shape);
+  _shape->setUserPointer(this);
+}
+
+/**
+ *
+ */
+BulletCapsuleShape::
+BulletCapsuleShape(const BulletCapsuleShape &copy) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _radius = copy._radius;
+  _height = copy._height;
+  _up = copy._up;
+
+  switch (_up) {
+  case X_up:
+    _shape = new btCapsuleShapeX(_radius, _height);
+    break;
+  case Y_up:
+    _shape = new btCapsuleShape(_radius, _height);
+    break;
+  case Z_up:
+    _shape = new btCapsuleShapeZ(_radius, _height);
+    break;
+  default:
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
+    break;
+  }
+
+  nassertv(_shape);
   _shape->setUserPointer(this);
 }
 
@@ -48,6 +82,22 @@ btCollisionShape *BulletCapsuleShape::
 ptr() const {
 
   return _shape;
+}
+
+
+/**
+ * Constructs a new BulletCapsuleShape using the information from a
+ * CollisionTube from the builtin collision system.
+ */
+BulletCapsuleShape *BulletCapsuleShape::
+make_from_solid(const CollisionTube *solid) {
+  
+  PN_stdfloat radius = solid->get_radius();
+  // CollisionTube height includes the hemispheres, Bullet only wants the cylinder height.
+  PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length() - (radius * 2);
+
+  // CollisionTubes are always Z-Up.
+  return new BulletCapsuleShape(radius, height, Z_up);
 }
 
 /**
@@ -105,9 +155,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // parameters to serialize: radius, height, up
   _radius = scan.get_stdfloat();
   _height = scan.get_stdfloat();
-  int up = (int) scan.get_int8();
+  _up = (BulletUpAxis) scan.get_int8();
 
-  switch (up) {
+  switch (_up) {
   case X_up:
     _shape = new btCapsuleShapeX(_radius, _height);
     break;
@@ -118,10 +168,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 
+  nassertv(_shape);
   _shape->setUserPointer(this);
   _shape->setMargin(margin);
 }

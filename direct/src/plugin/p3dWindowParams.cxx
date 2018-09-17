@@ -78,7 +78,7 @@ make_xml(P3DInstance *inst) {
     // TinyXml doesn't support a "long" attribute.  We'll use stringstream to
     // do it ourselves.
     {
-      ostringstream strm;
+      std::ostringstream strm;
       assert(_parent_window._window_handle_type == P3D_WHT_x11_window);
       strm << _parent_window._handle._x11_window._xwindow;
       xwparams->SetAttribute("parent_xwindow", strm.str());

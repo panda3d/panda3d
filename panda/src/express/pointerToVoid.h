@@ -30,16 +30,16 @@
  *
  * This is the base class for PointerToBase<T>.
  */
-class EXPCL_PANDAEXPRESS PointerToVoid : public MemoryBase {
+class EXPCL_PANDA_EXPRESS PointerToVoid : public MemoryBase {
 protected:
-  CONSTEXPR PointerToVoid() NOEXCEPT;
+  constexpr PointerToVoid() noexcept = default;
   //INLINE ~PointerToVoid();
 
 private:
-  PointerToVoid(const PointerToVoid &copy) DELETED;
+  PointerToVoid(const PointerToVoid &copy) = delete;
 
 PUBLISHED:
-  CONSTEXPR bool is_null() const;
+  constexpr bool is_null() const;
   INLINE size_t get_hash() const;
 
 public:
@@ -51,7 +51,7 @@ public:
   INLINE bool operator == (const PointerToVoid &other) const;
   INLINE bool operator != (const PointerToVoid &other) const;
 
-  INLINE void swap(PointerToVoid &other) NOEXCEPT;
+  INLINE void swap(PointerToVoid &other) noexcept;
 
 protected:
   // Within the PointerToVoid class, we only store a void pointer.  This is
@@ -63,7 +63,7 @@ protected:
   // a PointerTo any class that inherits virtually from ReferenceCount.  (You
   // can't downcast past a virtual inheritance level, but you can always
   // cross-cast from a void pointer.)
-  AtomicAdjust::Pointer _void_ptr;
+  AtomicAdjust::Pointer _void_ptr = nullptr;
 };
 
 #include "pointerToVoid.I"

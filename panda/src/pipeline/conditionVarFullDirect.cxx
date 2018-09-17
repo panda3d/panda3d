@@ -20,7 +20,7 @@
  * in ConditionVarFullDirect.
  */
 void ConditionVarFullDirect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConditionVarFull " << (void *)this << " on " << _mutex;
 }
 

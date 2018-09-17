@@ -41,7 +41,7 @@ get_composition_cache() const {
     PyObject *a, *b;
 
     const TransformState *source = _this->_composition_cache.get_key(si);
-    if (source == (TransformState *)NULL) {
+    if (source == nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -50,7 +50,7 @@ get_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_composition_cache.get_data(si)._result;
-    if (result == (TransformState *)NULL) {
+    if (result == nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -96,7 +96,7 @@ get_invert_composition_cache() const {
     PyObject *a, *b;
 
     const TransformState *source = _this->_invert_composition_cache.get_key(si);
-    if (source == (TransformState *)NULL) {
+    if (source == nullptr) {
       a = Py_None;
       Py_INCREF(a);
     } else {
@@ -105,7 +105,7 @@ get_invert_composition_cache() const {
                                       true, true, source->get_type_index());
     }
     const TransformState *result = _this->_invert_composition_cache.get_data(si)._result;
-    if (result == (TransformState *)NULL) {
+    if (result == nullptr) {
       b = Py_None;
       Py_INCREF(b);
     } else {
@@ -132,7 +132,7 @@ get_invert_composition_cache() const {
 PyObject *Extension<TransformState>::
 get_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
-  if (TransformState::_states == (TransformState::States *)NULL) {
+  if (TransformState::_states == nullptr) {
     return PyList_New(0);
   }
   LightReMutexHolder holder(*TransformState::_states_lock);
@@ -163,7 +163,7 @@ get_states() {
 PyObject *Extension<TransformState>::
 get_unused_states() {
   extern struct Dtool_PyTypedObject Dtool_TransformState;
-  if (TransformState::_states == (TransformState::States *)NULL) {
+  if (TransformState::_states == nullptr) {
     return PyList_New(0);
   }
   LightReMutexHolder holder(*TransformState::_states_lock);

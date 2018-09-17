@@ -46,7 +46,7 @@ begin_group() {
   }
   _current_colliding.clear();
   _collider_distance = 0;
-  _closest_collider = NULL;
+  _closest_collider = nullptr;
 }
 
 /**
@@ -55,12 +55,12 @@ begin_group() {
  */
 void CollisionHandlerHighestEvent::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != nullptr);
   LVector3 vec =
     entry->get_surface_point(entry->get_from_node_path()) -
     entry->get_from()->get_collision_origin();
   double dist = vec.length_squared();
-  if (_closest_collider == NULL || dist < _collider_distance) {
+  if (_closest_collider == nullptr || dist < _collider_distance) {
     _collider_distance = dist;
     _closest_collider = entry;
   }

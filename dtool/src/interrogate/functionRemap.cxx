@@ -32,6 +32,10 @@
 #include "interrogateType.h"
 #include "pnotify.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */
@@ -39,7 +43,7 @@ FunctionRemap::
 FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
               CPPInstance *cppfunc, int num_default_parameters,
               InterfaceMaker *interface_maker) {
-  _return_type = (ParameterRemap *)NULL;
+  _return_type = nullptr;
   _void_return = true;
   _ForcedVoidReturn = false;
   _has_this = false;
@@ -117,7 +121,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
   if (_type == T_destructor) {
     // A destructor wrapper is just a wrapper around the delete operator.
     assert(!container.empty());
-    assert(_cpptype != (CPPType *)NULL);
+    assert(_cpptype != nullptr);
 
     if (TypeManager::is_reference_count(_cpptype)) {
       // Except for a reference-count type object, in which case the
@@ -250,14 +254,13 @@ call_function(ostream &out, int indent_level, bool convert_result,
                                                            &parser);
         out << " = " << call << ";\n";
 
-        // MOVE() expands to std::move() when we are compiling with a compiler
-        // that supports rvalue references.  It basically turns an lvalue into
+        // Use of the C++11 std::move function basically turns an lvalue into
         // an rvalue, allowing a move constructor to be called instead of a
         // copy constructor (since we won't be using the return value any
         // more), which is usually more efficient if it exists.  If it
         // doesn't, it shouldn't do any harm.
         string new_str =
-          _return_type->prepare_return_expr(out, indent_level, "MOVE(result)");
+          _return_type->prepare_return_expr(out, indent_level, "std::move(result)");
         return_expr = _return_type->get_return_expr(new_str);
 
       } else {
@@ -279,7 +282,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
 void FunctionRemap::
 write_orig_prototype(ostream &out, int indent_level, bool local, int num_default_args) const {
   if (local) {
-    _cppfunc->output(out, indent_level, NULL, false, num_default_args);
+    _cppfunc->output(out, indent_level, nullptr, false, num_default_args);
   } else {
     _cppfunc->output(out, indent_level, &parser, false, num_default_args);
   }
@@ -299,7 +302,7 @@ make_wrapper_entry(FunctionIndex function_index) {
   iwrapper._name = _wrapper_name;
   iwrapper._unique_name = _unique_name;
 
-  if (_cppfunc->_leading_comment != (CPPCommentBlock *)NULL) {
+  if (_cppfunc->_leading_comment != nullptr) {
     iwrapper._comment = InterrogateBuilder::trim_blanks(_cppfunc->_leading_comment->_comment);
   }
 
@@ -395,7 +398,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 
     // It's not possible to assign arrays in C++, we have to copy them.
     CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
-    if (array_type != NULL) {
+    if (array_type != nullptr) {
       call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
     } else {
       call << expr << " = ";
@@ -404,7 +407,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
 
-    if (array_type != NULL) {
+    if (array_type != nullptr) {
       call << ')';
     }
 
@@ -439,7 +442,10 @@ get_call_str(const string &container, const vector_string &pexprs) const {
         call << ")." << _cppfunc->get_local_name();
 
       } else {
-        call << _cppfunc->get_local_name(&parser);
+        if (_cpptype != nullptr) {
+          call << _cpptype->get_local_name(&parser);
+        }
+        call << "::" << _cppfunc->get_local_name();
       }
     }
     call << "(";
@@ -490,7 +496,7 @@ get_min_num_args() const {
   }
   for (; pi != _parameters.end(); ++pi) {
     ParameterRemap *param = (*pi)._remap;
-    if (param->get_default_value() != (CPPExpression *)NULL) {
+    if (param->get_default_value() != nullptr) {
       // We've reached the first parameter that takes a default value.
       break;
     } else {
@@ -567,7 +573,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   string fname = _cppfunc->get_simple_name();
   CPPType *rtype = _ftype->_return_type->resolve_type(&parser, _cppscope);
 
-  if (_cpptype != (CPPType *)NULL &&
+  if (_cpptype != nullptr &&
       ((_cppfunc->_storage_class & CPPInstance::SC_static) == 0) &&
       _type != T_constructor) {
 
@@ -609,10 +615,10 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         fname == "operator >>=") {
       _type = T_assignment_method;
 
-    } else if (fname == "operator []" && !_const_method && rtype != NULL) {
+    } else if (fname == "operator []" && !_const_method && rtype != nullptr) {
        // Check if this is an item-assignment operator.
       CPPReferenceType *reftype = rtype->as_reference_type();
-      if (reftype != NULL && reftype->_pointing_at->as_const_type() == NULL) {
+      if (reftype != nullptr && reftype->_pointing_at->as_const_type() == nullptr) {
         // It returns a mutable reference.
         _type = T_item_assignment_operator;
       }
@@ -638,7 +644,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     }
 
     param._remap = interface_maker->remap_parameter(_cpptype, type);
-    if (param._remap == (ParameterRemap *)NULL) {
+    if (param._remap == nullptr) {
       // If we can't handle one of the parameter types, we can't call the
       // function.
       if (fname == "__traverse__") {
@@ -666,13 +672,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // by the parser, but we know they actually return a new concrete
     // instance.
 
-    if (_cpptype == (CPPType *)NULL) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     }
 
     _return_type = interface_maker->remap_parameter(_cpptype, _cpptype);
-    if (_return_type != (ParameterRemap *)NULL) {
+    if (_return_type != nullptr) {
       _void_return = false;
     }
 
@@ -681,13 +687,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // return *this, which is a semi-standard C++ convention anyway.  We just
     // enforce it.
 
-    if (_cpptype == (CPPType *)NULL) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     } else {
       CPPType *ref_type = CPPType::new_type(new CPPReferenceType(_cpptype));
       _return_type = interface_maker->remap_parameter(_cpptype, ref_type);
-      if (_return_type != (ParameterRemap *)NULL) {
+      if (_return_type != nullptr) {
         _void_return = false;
       }
     }
@@ -697,7 +703,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // scripting languages, so we use this to denote item-access operators
     // that return a non-const reference.
 
-    if (_cpptype == (CPPType *)NULL) {
+    if (_cpptype == nullptr) {
       nout << "Method " << *_cppfunc << " has no struct type\n";
       return false;
     } else {
@@ -711,7 +717,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       param._name = "assign_val";
       param._remap = interface_maker->remap_parameter(_cpptype, ref_type);
 
-      if (param._remap == NULL || !param._remap->is_valid()) {
+      if (param._remap == nullptr || !param._remap->is_valid()) {
         nout << "Invalid remap for assignment type of method " << *_cppfunc << "\n";
         return false;
       }
@@ -726,12 +732,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   } else {
     // The normal case.
     _return_type = interface_maker->remap_parameter(_cpptype, rtype);
-    if (_return_type != (ParameterRemap *)NULL) {
+    if (_return_type != nullptr) {
       _void_return = TypeManager::is_void(rtype);
     }
   }
 
-  if (_return_type == (ParameterRemap *)NULL ||
+  if (_return_type == nullptr ||
       !_return_type->is_valid()) {
     // If our return type isn't something we can deal with, treat the function
     // as if it returns NULL.
@@ -739,7 +745,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _ForcedVoidReturn = true;
     CPPType *void_type = TypeManager::get_void_type();
     _return_type = interface_maker->remap_parameter(_cpptype, void_type);
-    assert(_return_type != (ParameterRemap *)NULL);
+    assert(_return_type != nullptr);
   }
 
   // Do we need to manage the return value?
@@ -767,12 +773,12 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   // Check for a special meaning by name and signature.
-  int first_param = 0;
+  size_t first_param = 0;
   if (_has_this) {
     first_param = 1;
   }
 
-  if (_parameters.size() > (size_t)first_param && _parameters[first_param]._name == "self" &&
+  if (_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
       TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
     // Here's a special case.  If the first parameter of a nonstatic method
     // is a PyObject * called "self", then we will automatically fill it in
@@ -782,10 +788,10 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _flags |= F_explicit_self;
   }
 
-  if ((int)_parameters.size() == first_param) {
+  if (_parameters.size() == first_param) {
     _args_type = InterfaceMaker::AT_no_args;
-  } else if ((int)_parameters.size() == first_param + 1 &&
-             _parameters[first_param]._remap->get_default_value() == NULL) {
+  } else if (_parameters.size() == first_param + 1 &&
+             _parameters[first_param]._remap->get_default_value() == nullptr) {
     _args_type = InterfaceMaker::AT_single_arg;
   } else {
     _args_type = InterfaceMaker::AT_varargs;
@@ -833,7 +839,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "size" || fname == "__len__") {
-      if ((int)_parameters.size() == first_param &&
+      if (_parameters.size() == first_param &&
           TypeManager::is_integer(_return_type->get_new_type())) {
         // It receives no parameters, and returns an integer.
         _flags |= F_size;
@@ -847,7 +853,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       }
 
     } else if (fname == "__iter__") {
-      if ((int)_parameters.size() == first_param &&
+      if (_parameters.size() == first_param &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
         // It receives no parameters, and returns a pointer.
         _flags |= F_iter;
@@ -870,7 +876,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       if (_args_type == InterfaceMaker::AT_varargs) {
         // Of course methods named "make" can still take kwargs, if they are
         // named.
-        for (int i = first_param; i < _parameters.size(); ++i) {
+        for (size_t i = first_param; i < _parameters.size(); ++i) {
           if (_parameters[i]._has_name) {
             _args_type = InterfaceMaker::AT_keyword_args;
             break;
@@ -904,7 +910,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       if (_args_type == InterfaceMaker::AT_varargs) {
         // Every other method can take keyword arguments, if they take more
         // than one argument, and the arguments are named.
-        for (int i = first_param; i < _parameters.size(); ++i) {
+        for (size_t i = first_param; i < _parameters.size(); ++i) {
           if (_parameters[i]._has_name) {
             _args_type |= InterfaceMaker::AT_keyword_args;
             break;
@@ -960,7 +966,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     // Constructors always take varargs, and possibly keyword args.
     _args_type = InterfaceMaker::AT_varargs;
-    for (int i = first_param; i < _parameters.size(); ++i) {
+    for (size_t i = first_param; i < _parameters.size(); ++i) {
       if (_parameters[i]._has_name) {
         _args_type = InterfaceMaker::AT_keyword_args;
         break;

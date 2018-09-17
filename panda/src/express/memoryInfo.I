@@ -16,13 +16,13 @@
  * NULL.
  */
 void *MemoryInfo::get_void_ptr() const {
-  if (_void_ptr != (void *)NULL) {
+  if (_void_ptr != nullptr) {
     return _void_ptr;
   }
-  if (_ref_ptr == (void *)NULL) {
+  if (_ref_ptr == nullptr) {
     return _typed_ptr;
   }
-  if (_typed_ptr == (void *)NULL) {
+  if (_typed_ptr == nullptr) {
     return _ref_ptr;
   }
   return ((void *)_ref_ptr < (void *)_typed_ptr) ? (void *)_ref_ptr : (void *)_typed_ptr;

@@ -19,7 +19,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
-GeomVertexFormat::Registry *GeomVertexFormat::_registry = NULL;
+GeomVertexFormat::Registry *GeomVertexFormat::_registry = nullptr;
 TypeHandle GeomVertexFormat::_type_handle;
 
 /**
@@ -28,7 +28,7 @@ TypeHandle GeomVertexFormat::_type_handle;
 GeomVertexFormat::
 GeomVertexFormat() :
   _is_registered(false),
-  _post_animated_format(NULL)
+  _post_animated_format(nullptr)
 {
 }
 
@@ -38,7 +38,7 @@ GeomVertexFormat() :
 GeomVertexFormat::
 GeomVertexFormat(const GeomVertexArrayFormat *array_format) :
   _is_registered(false),
-  _post_animated_format(NULL)
+  _post_animated_format(nullptr)
 {
   add_array(array_format);
 }
@@ -51,7 +51,7 @@ GeomVertexFormat(const GeomVertexFormat &copy) :
   _is_registered(false),
   _animation(copy._animation),
   _arrays(copy._arrays),
-  _post_animated_format(NULL)
+  _post_animated_format(nullptr)
 {
 }
 
@@ -105,9 +105,9 @@ unref() const {
  */
 CPT(GeomVertexFormat) GeomVertexFormat::
 get_post_animated_format() const {
-  nassertr(is_registered(), NULL);
+  nassertr(is_registered(), nullptr);
 
-  if (_post_animated_format == (GeomVertexFormat *)NULL) {
+  if (_post_animated_format == nullptr) {
     PT(GeomVertexFormat) new_format = new GeomVertexFormat(*this);
     new_format->remove_column(InternalName::get_transform_blend());
 
@@ -145,7 +145,7 @@ get_post_animated_format() const {
  */
 CPT(GeomVertexFormat) GeomVertexFormat::
 get_union_format(const GeomVertexFormat *other) const {
-  nassertr(is_registered() && other->is_registered(), NULL);
+  nassertr(is_registered() && other->is_registered(), nullptr);
 
   PT(GeomVertexFormat) new_format = new GeomVertexFormat;
 
@@ -173,7 +173,7 @@ get_union_format(const GeomVertexFormat *other) const {
   // D, E) in array 1.  In general, a column will appear in the result in the
   // first array it appears in either of the inputs.
 
-  size_t num_arrays = max(_arrays.size(), other->_arrays.size());
+  size_t num_arrays = std::max(_arrays.size(), other->_arrays.size());
   for (size_t ai = 0; ai < num_arrays; ++ai) {
     PT(GeomVertexArrayFormat) new_array = new GeomVertexArrayFormat;
 
@@ -186,7 +186,7 @@ get_union_format(const GeomVertexFormat *other) const {
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
           const GeomVertexColumn *column_b = other->get_column(column_a->get_name());
-          if (column_b != (GeomVertexColumn *)NULL &&
+          if (column_b != nullptr &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
             new_array->add_column(column_b->get_name(),
@@ -213,7 +213,7 @@ get_union_format(const GeomVertexFormat *other) const {
         bool inserted = column_names.insert(column_a->get_name()).second;
         if (inserted) {
           const GeomVertexColumn *column_b = get_column(column_a->get_name());
-          if (column_b != (GeomVertexColumn *)NULL &&
+          if (column_b != nullptr &&
               column_b->get_total_bytes() > column_a->get_total_bytes()) {
             // Column b is larger.  Keep it.
             new_array->add_column(column_b->get_name(),
@@ -248,8 +248,8 @@ get_union_format(const GeomVertexFormat *other) const {
  */
 GeomVertexArrayFormat *GeomVertexFormat::
 modify_array(size_t array) {
-  nassertr(!is_registered(), NULL);
-  nassertr(array < _arrays.size(), NULL);
+  nassertr(!is_registered(), nullptr);
+  nassertr(array < _arrays.size(), nullptr);
 
   if (_arrays[array]->is_registered() ||
       _arrays[array]->get_ref_count() > 1) {
@@ -376,7 +376,7 @@ get_column(size_t i) const {
     i -= (*ai)->get_num_columns();
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -450,11 +450,11 @@ get_column(const InternalName *name) const {
     Arrays::const_iterator ai;
     for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
       const GeomVertexColumn *column = (*ai)->get_column(name);
-      if (column != (GeomVertexColumn *)NULL) {
+      if (column != nullptr) {
         return column;
       }
     }
-    return NULL;
+    return nullptr;
 
   } else {
     // If the format has been registered, we can just check the toplevel
@@ -466,10 +466,10 @@ get_column(const InternalName *name) const {
       int array_index = (*ai).second._array_index;
       int column_index = (*ai).second._column_index;
 
-      nassertr(array_index >= 0 && array_index < (int)_arrays.size(), NULL);
+      nassertr(array_index >= 0 && array_index < (int)_arrays.size(), nullptr);
       return _arrays[array_index]->get_column(column_index);
     }
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -491,7 +491,7 @@ remove_column(const InternalName *name, bool keep_empty_array) {
   for (int array = 0; array < (int)_arrays.size(); ++array) {
     GeomVertexArrayFormat *array_format = _arrays[array];
 
-    if (array_format->get_column(name) != (GeomVertexColumn *)NULL) {
+    if (array_format->get_column(name) != nullptr) {
       // Here's the array with the named column!
       if (array_format->is_registered() ||
           array_format->get_ref_count() > 1) {
@@ -565,7 +565,7 @@ maybe_align_columns_for_animation() {
  *
  */
 void GeomVertexFormat::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_arrays.empty()) {
     out << "(empty)";
 
@@ -589,7 +589,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexFormat::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (size_t i = 0; i < _arrays.size(); i++) {
     indent(out, indent_level)
       << "Array " << i << ":\n";
@@ -606,7 +606,7 @@ write(ostream &out, int indent_level) const {
  *
  */
 void GeomVertexFormat::
-write_with_data(ostream &out, int indent_level,
+write_with_data(std::ostream &out, int indent_level,
                 const GeomVertexData *data) const {
   indent(out, indent_level)
     << data->get_num_rows() << " rows.\n";
@@ -642,7 +642,7 @@ get_array_info(const InternalName *name, int &array_index,
   }
 
   array_index = -1;
-  column = NULL;
+  column = nullptr;
 
   return false;
 }
@@ -676,7 +676,7 @@ compare_to(const GeomVertexFormat &other) const {
  */
 void GeomVertexFormat::
 make_registry() {
-  if (_registry == (Registry *)NULL) {
+  if (_registry == nullptr) {
     _registry = new Registry;
     _registry->make_standard_formats();
   }
@@ -716,7 +716,7 @@ do_register() {
     int num_columns = array_format->get_num_columns();
     for (int i = 0; i < num_columns; i++) {
       const GeomVertexColumn *column = array_format->get_column(i);
-      pair<DataTypesByName::iterator, bool> result;
+      std::pair<DataTypesByName::iterator, bool> result;
       result = _columns_by_name.insert(DataTypesByName::value_type(column->get_name(), DataTypeRecord()));
       if (!result.second) {
         gobj_cat.warning()
@@ -813,11 +813,11 @@ do_unregister() {
   _texcoords.clear();
   _morphs.clear();
 
-  if (_post_animated_format != (GeomVertexFormat *)NULL &&
+  if (_post_animated_format != nullptr &&
       _post_animated_format != this) {
     unref_delete(_post_animated_format);
   }
-  _post_animated_format = NULL;
+  _post_animated_format = nullptr;
 }
 
 /**
@@ -892,7 +892,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _arrays.reserve(num_arrays);
   for (int i = 0; i < num_arrays; i++) {
     manager->read_pointer(scan);
-    _arrays.push_back(NULL);
+    _arrays.push_back(nullptr);
   }
 }
 

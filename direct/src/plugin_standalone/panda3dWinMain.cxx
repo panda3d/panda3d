@@ -22,7 +22,7 @@ static char *
 parse_quoted_arg(char *&p) {
   char quote = *p;
   ++p;
-  string result;
+  std::string result;
 
   while (*p != '\0' && *p != quote) {
     // TODO: handle escape characters?  Not sure if we need to.
@@ -39,7 +39,7 @@ parse_quoted_arg(char *&p) {
 // beginning at p.  Advances p to the first whitespace following the argument.
 static char *
 parse_unquoted_arg(char *&p) {
-  string result;
+  std::string result;
   while (*p != '\0' && !isspace(*p)) {
     result += *p;
     ++p;
@@ -51,7 +51,7 @@ int WINAPI
 WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   char *command_line = GetCommandLine();
 
-  vector<char *> argv;
+  std::vector<char *> argv;
 
   char *p = command_line;
   while (*p != '\0') {

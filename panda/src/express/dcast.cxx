@@ -30,7 +30,7 @@ bool
 _dcast_verify(TypeHandle want_handle, size_t want_size,
               const TypedObject *ptr) {
   if (get_verify_dcast()) {
-    if (ptr == (const TypedObject *)NULL) {
+    if (ptr == nullptr) {
       // This is allowed these days.  It used to be an error, but what the
       // heck.
       return true;

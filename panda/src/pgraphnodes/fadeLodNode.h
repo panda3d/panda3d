@@ -23,22 +23,22 @@
  */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNode : public LODNode {
 PUBLISHED:
-  explicit FadeLODNode(const string &name);
+  explicit FadeLODNode(const std::string &name);
 
 protected:
   FadeLODNode(const FadeLODNode &copy);
 public:
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE void set_fade_time(PN_stdfloat t);
   INLINE PN_stdfloat get_fade_time() const;
   MAKE_PROPERTY(fade_time, get_fade_time, set_fade_time);
 
-  void set_fade_bin(const string &name, int draw_order);
-  INLINE const string &get_fade_bin_name() const;
+  void set_fade_bin(const std::string &name, int draw_order);
+  INLINE const std::string &get_fade_bin_name() const;
   INLINE int get_fade_bin_draw_order() const;
   MAKE_PROPERTY(fade_bin_name, get_fade_bin_name);
   MAKE_PROPERTY(fade_bin_draw_order, get_fade_bin_draw_order);
@@ -56,7 +56,7 @@ private:
 
 private:
   PN_stdfloat _fade_time;
-  string _fade_bin_name;
+  std::string _fade_bin_name;
   int _fade_bin_draw_order;
   int _fade_state_override;
 

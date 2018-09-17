@@ -20,26 +20,26 @@ TypeHandle GenericAsyncTask::_type_handle;
  *
  */
 GenericAsyncTask::
-GenericAsyncTask(const string &name) :
+GenericAsyncTask(const std::string &name) :
   AsyncTask(name)
 {
-  _function = NULL;
-  _upon_birth = NULL;
-  _upon_death = NULL;
-  _user_data = NULL;
+  _function = nullptr;
+  _upon_birth = nullptr;
+  _upon_death = nullptr;
+  _user_data = nullptr;
 }
 
 /**
  *
  */
 GenericAsyncTask::
-GenericAsyncTask(const string &name, GenericAsyncTask::TaskFunc *function, void *user_data) :
+GenericAsyncTask(const std::string &name, GenericAsyncTask::TaskFunc *function, void *user_data) :
   AsyncTask(name),
   _function(function),
   _user_data(user_data)
 {
-  _upon_birth = NULL;
-  _upon_death = NULL;
+  _upon_birth = nullptr;
+  _upon_death = nullptr;
 }
 
 /**
@@ -51,7 +51,7 @@ GenericAsyncTask(const string &name, GenericAsyncTask::TaskFunc *function, void 
  */
 bool GenericAsyncTask::
 is_runnable() {
-  return _function != NULL;
+  return _function != nullptr;
 }
 
 /**
@@ -61,7 +61,7 @@ is_runnable() {
  */
 AsyncTask::DoneStatus GenericAsyncTask::
 do_task() {
-  nassertr(_function != NULL, DS_interrupt);
+  nassertr(_function != nullptr, DS_interrupt);
   return (*_function)(this, _user_data);
 }
 
@@ -75,7 +75,7 @@ void GenericAsyncTask::
 upon_birth(AsyncTaskManager *manager) {
   AsyncTask::upon_birth(manager);
 
-  if (_upon_birth != NULL) {
+  if (_upon_birth != nullptr) {
     (*_upon_birth)(this, _user_data);
   }
 }
@@ -97,7 +97,7 @@ void GenericAsyncTask::
 upon_death(AsyncTaskManager *manager, bool clean_exit) {
   AsyncTask::upon_death(manager, clean_exit);
 
-  if (_upon_death != NULL) {
+  if (_upon_death != nullptr) {
     (*_upon_death)(this, clean_exit, _user_data);
   }
 }

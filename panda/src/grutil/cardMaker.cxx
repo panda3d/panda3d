@@ -33,7 +33,7 @@ reset() {
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
   _has_normals = true;
-  _source_geometry = (PandaNode *)NULL;
+  _source_geometry = nullptr;
   _source_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -43,7 +43,7 @@ reset() {
  */
 PT(PandaNode) CardMaker::
 generate() {
-  if (_source_geometry != (PandaNode *)NULL) {
+  if (_source_geometry != nullptr) {
     return rescale_source_geometry();
   }
 
@@ -133,7 +133,7 @@ generate() {
 
   gnode->add_geom(geom, state);
 
-  return gnode.p();
+  return gnode;
 }
 
 /**

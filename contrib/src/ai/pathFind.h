@@ -40,9 +40,9 @@ public:
   LVecBase3 _prev_position;
   PT(GeomNode) _parent;
   LineSegs *_pen;
-  vector<int> _previous_obstacles;
+  std::vector<int> _previous_obstacles;
   bool _dynamic_avoid;
-  vector<NodePath> _dynamic_obstacle;
+  std::vector<NodePath> _dynamic_obstacle;
 
   PathFind(AICharacter *ai_ch);
   ~PathFind();
@@ -56,8 +56,8 @@ public:
   void clear_previous_obstacles();
 
   void set_path_find(const char* navmesh_filename);
-  void path_find(LVecBase3 pos, string type = "normal");
-  void path_find(NodePath target, string type = "normal");
+  void path_find(LVecBase3 pos, std::string type = "normal");
+  void path_find(NodePath target, std::string type = "normal");
   void add_obstacle_to_mesh(NodePath obstacle);
   void dynamic_avoid(NodePath obstacle);
 };

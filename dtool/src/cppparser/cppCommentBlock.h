@@ -33,9 +33,9 @@ public:
   int _col_number;
   int _last_line;
   bool _c_style;
-  string _comment;
+  std::string _comment;
 };
 
-typedef list<CPPCommentBlock *> CPPComments;
+typedef std::list<CPPCommentBlock *> CPPComments;
 
 #endif

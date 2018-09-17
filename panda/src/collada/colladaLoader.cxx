@@ -45,18 +45,18 @@
 #define domTargetable_floatRef domTargetableFloatRef
 #endif
 
-#define TOSTRING(x) (x == NULL ? "" : x)
+#define TOSTRING(x) (x == nullptr ? "" : x)
 
 /**
  *
  */
 ColladaLoader::
 ColladaLoader() :
-  _record (NULL),
+  _record (nullptr),
   _cs (CS_default),
   _error (false),
-  _root (NULL),
-  _collada (NULL) {
+  _root (nullptr),
+  _collada (nullptr) {
 
   _dae = new DAE;
 }
@@ -76,7 +76,7 @@ bool ColladaLoader::
 read(const Filename &filename) {
   _filename = filename;
 
-  string data;
+  std::string data;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   if (!vfs->read_file(_filename, data, true)) {
@@ -87,7 +87,7 @@ read(const Filename &filename) {
   }
 
   _collada = _dae->openFromMemory(_filename.to_os_specific(), data.c_str());
-  _error = (_collada == NULL);
+  _error = (_collada == nullptr);
   return !_error;
 }
 
@@ -116,7 +116,7 @@ build_graph() {
 void ColladaLoader::
 load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
-  if (scene.getUserData() != NULL) {
+  if (scene.getUserData() != nullptr) {
     parent->add_child((PandaNode *) scene.getUserData());
     return;
   }
@@ -156,7 +156,7 @@ load_visual_scene(domVisual_scene& scene, PandaNode *parent) {
 void ColladaLoader::
 load_node(domNode& node, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
-  if (node.getUserData() != NULL) {
+  if (node.getUserData() != nullptr) {
     parent->add_child((PandaNode *) node.getUserData());
     return;
   }
@@ -243,7 +243,7 @@ load_node(domNode& node, PandaNode *parent) {
   for (size_t i = 0; i < ctrlinst.getCount(); ++i) {
     domController* target = daeSafeCast<domController> (ctrlinst[i]->getUrl().getElement());
     // TODO: implement controllers.  For now, let's just read the geometry
-    if (target->getSkin() != NULL) {
+    if (target->getSkin() != nullptr) {
       domGeometry* geom = daeSafeCast<domGeometry> (target->getSkin()->getSource().getElement());
       // TODO load_geometry(*geom, ctrlinst[i]->getBind_material(), pnode);
     }
@@ -299,7 +299,7 @@ load_tags(domExtra &extra, PandaNode *node) {
         daeElement &child = *children[c];
 
         if (cmp_nocase(child.getElementName(), "tag") == 0) {
-          const string &name = child.getAttribute("name");
+          const std::string &name = child.getAttribute("name");
           if (name.size() > 0) {
             node->set_tag(name, child.getCharData());
           } else {
@@ -321,7 +321,7 @@ load_tags(domExtra &extra, PandaNode *node) {
 void ColladaLoader::
 load_camera(domCamera &cam, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
-  if (cam.getUserData() != NULL) {
+  if (cam.getUserData() != nullptr) {
     parent->add_child((PandaNode *) cam.getUserData());
     return;
   }
@@ -335,13 +335,13 @@ load_camera(domCamera &cam, PandaNode *parent) {
 void ColladaLoader::
 load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
-  if (inst.getUserData() != NULL) {
+  if (inst.getUserData() != nullptr) {
     parent->add_child((PandaNode *) inst.getUserData());
     return;
   }
 
   domGeometry* geom = daeSafeCast<domGeometry> (inst.getUrl().getElement());
-  nassertv(geom != NULL);
+  nassertv(geom != nullptr);
 
   // Create the node.
   PT(GeomNode) gnode = new GeomNode(TOSTRING(geom->getName()));
@@ -350,7 +350,7 @@ load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
 
   domBind_materialRef bind_mat = inst.getBind_material();
   ColladaBindMaterial cbm;
-  if (bind_mat != NULL) {
+  if (bind_mat != nullptr) {
     cbm.load_bind_material(*bind_mat);
   }
 
@@ -370,7 +370,7 @@ load_instance_geometry(domInstance_geometry &inst, PandaNode *parent) {
 void ColladaLoader::
 load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat) {
   domMesh* mesh = geom.getMesh();
-  if (mesh == NULL) {
+  if (mesh == nullptr) {
     // TODO: support non-mesh geometry.
     return;
   }
@@ -379,7 +379,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domLines_Array &lines_array = mesh->getLines_array();
   for (size_t i = 0; i < lines_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*lines_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -387,7 +387,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domLinestrips_Array &linestrips_array = mesh->getLinestrips_array();
   for (size_t i = 0; i < linestrips_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*linestrips_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -395,7 +395,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domPolygons_Array &polygons_array = mesh->getPolygons_array();
   for (size_t i = 0; i < polygons_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*polygons_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -403,7 +403,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domPolylist_Array &polylist_array = mesh->getPolylist_array();
   for (size_t i = 0; i < polylist_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*polylist_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -411,7 +411,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domTriangles_Array &triangles_array = mesh->getTriangles_array();
   for (size_t i = 0; i < triangles_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*triangles_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -419,7 +419,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domTrifans_Array &trifans_array = mesh->getTrifans_array();
   for (size_t i = 0; i < trifans_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*trifans_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -427,7 +427,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
   domTristrips_Array &tristrips_array = mesh->getTristrips_array();
   for (size_t i = 0; i < tristrips_array.getCount(); ++i) {
     PT(ColladaPrimitive) prim = ColladaPrimitive::from_dom(*tristrips_array[i]);
-    if (prim != NULL) {
+    if (prim != nullptr) {
       gnode->add_geom(prim->get_geom());
     }
   }
@@ -439,7 +439,7 @@ load_geometry(domGeometry &geom, GeomNode *gnode, ColladaBindMaterial &bind_mat)
 void ColladaLoader::
 load_light(domLight &light, PandaNode *parent) {
   // If we already loaded it before, instantiate the stored node.
-  if (light.getUserData() != NULL) {
+  if (light.getUserData() != nullptr) {
     parent->add_child((PandaNode *) light.getUserData());
     return;
   }
@@ -449,7 +449,7 @@ load_light(domLight &light, PandaNode *parent) {
 
   // Check for an ambient light.
   domLight::domTechnique_common::domAmbientRef ambient = tc.getAmbient();
-  if (ambient != NULL) {
+  if (ambient != nullptr) {
     PT(AmbientLight) alight = new AmbientLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, alight);
 
@@ -459,7 +459,7 @@ load_light(domLight &light, PandaNode *parent) {
 
   // Check for a directional light.
   domLight::domTechnique_common::domDirectionalRef directional = tc.getDirectional();
-  if (directional != NULL) {
+  if (directional != nullptr) {
     PT(DirectionalLight) dlight = new DirectionalLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, dlight);
 
@@ -470,7 +470,7 @@ load_light(domLight &light, PandaNode *parent) {
 
   // Check for a point light.
   domLight::domTechnique_common::domPointRef point = tc.getPoint();
-  if (point != NULL) {
+  if (point != nullptr) {
     PT(PointLight) plight = new PointLight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, plight);
 
@@ -479,15 +479,15 @@ load_light(domLight &light, PandaNode *parent) {
 
     LVecBase3f atten (1.0f, 0.0f, 0.0f);
     domTargetable_floatRef fval = point->getConstant_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[0] = fval->getValue();
     }
     fval = point->getLinear_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[1] = fval->getValue();
     }
     fval = point->getQuadratic_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[2] = fval->getValue();
     }
 
@@ -496,7 +496,7 @@ load_light(domLight &light, PandaNode *parent) {
 
   // Check for a spot light.
   domLight::domTechnique_common::domSpotRef spot = tc.getSpot();
-  if (spot != NULL) {
+  if (spot != nullptr) {
     PT(Spotlight) slight = new Spotlight(TOSTRING(light.getName()));
     lnode = DCAST(LightNode, slight);
 
@@ -505,36 +505,36 @@ load_light(domLight &light, PandaNode *parent) {
 
     LVecBase3f atten (1.0f, 0.0f, 0.0f);
     domTargetable_floatRef fval = spot->getConstant_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[0] = fval->getValue();
     }
     fval = spot->getLinear_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[1] = fval->getValue();
     }
     fval = spot->getQuadratic_attenuation();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       atten[2] = fval->getValue();
     }
 
     slight->set_attenuation(atten);
 
     fval = spot->getFalloff_angle();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       slight->get_lens()->set_fov(fval->getValue());
     } else {
       slight->get_lens()->set_fov(180.0f);
     }
 
     fval = spot->getFalloff_exponent();
-    if (fval != NULL) {
+    if (fval != nullptr) {
       slight->set_exponent(fval->getValue());
     } else {
       slight->set_exponent(0.0f);
     }
   }
 
-  if (lnode == NULL) {
+  if (lnode == nullptr) {
     return;
   }
   parent->add_child(lnode);

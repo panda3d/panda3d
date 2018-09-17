@@ -27,9 +27,9 @@ class ConfigVariableCore;
  * it may also represent a list of declarations built up by application code
  * and explicitly loaded.
  */
-class EXPCL_DTOOLCONFIG ConfigPage {
+class EXPCL_DTOOL_PRC ConfigPage {
 private:
-  ConfigPage(const string &name, bool implicit_load, int page_seq);
+  ConfigPage(const std::string &name, bool implicit_load, int page_seq);
   ~ConfigPage();
 
 public:
@@ -39,7 +39,7 @@ PUBLISHED:
   static ConfigPage *get_default_page();
   static ConfigPage *get_local_page();
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   MAKE_PROPERTY(name, get_name);
 
   INLINE bool is_special() const;
@@ -54,48 +54,48 @@ PUBLISHED:
   INLINE int get_page_seq() const;
   INLINE int get_trust_level() const;
   INLINE void set_trust_level(int trust_level);
-  INLINE const string &get_signature() const;
+  INLINE const std::string &get_signature() const;
   MAKE_PROPERTY(page_seq, get_page_seq);
   MAKE_PROPERTY(trust_level, get_trust_level, set_trust_level);
   MAKE_PROPERTY(signature, get_signature);
 
   void clear();
-  bool read_prc(istream &in);
-  bool read_encrypted_prc(istream &in, const string &password);
+  bool read_prc(std::istream &in);
+  bool read_encrypted_prc(std::istream &in, const std::string &password);
 
-  ConfigDeclaration *make_declaration(const string &variable, const string &value);
-  ConfigDeclaration *make_declaration(ConfigVariableCore *variable, const string &value);
+  ConfigDeclaration *make_declaration(const std::string &variable, const std::string &value);
+  ConfigDeclaration *make_declaration(ConfigVariableCore *variable, const std::string &value);
   bool delete_declaration(ConfigDeclaration *decl);
 
   size_t get_num_declarations() const;
   const ConfigDeclaration *get_declaration(size_t n) const;
   ConfigDeclaration *modify_declaration(size_t n);
-  string get_variable_name(size_t n) const;
-  string get_string_value(size_t n) const;
+  std::string get_variable_name(size_t n) const;
+  std::string get_string_value(size_t n) const;
   bool is_variable_used(size_t n) const;
 
   MAKE_SEQ_PROPERTY(declarations, get_num_declarations, modify_declaration);
 
-  void output(ostream &out) const;
-  void output_brief_signature(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void output_brief_signature(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   INLINE void make_dirty();
-  void read_prc_line(const string &line);
+  void read_prc_line(const std::string &line);
   static unsigned int hex_digit(unsigned char digit);
 
-  string _name;
+  std::string _name;
   bool _implicit_load;
   int _page_seq;
   int _sort;
   int _next_decl_seq;
   int _trust_level;
 
-  typedef vector<ConfigDeclaration *> Declarations;
+  typedef std::vector<ConfigDeclaration *> Declarations;
   Declarations _declarations;
 
-  string _signature;
+  std::string _signature;
 
 #ifdef HAVE_OPENSSL
   // This maintains the hash of the prc file as we are scanning it, so we can
@@ -109,7 +109,7 @@ private:
   friend class ConfigPageManager;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigPage &page);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigPage &page);
 
 #include "configPage.I"
 

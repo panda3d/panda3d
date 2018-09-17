@@ -15,6 +15,9 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
+using std::cerr;
+using std::cout;
+
 bool output_decimal = false;
 bool suppress_filename = false;
 pofstream binary_output;
@@ -45,7 +48,7 @@ help() {
 }
 
 void
-output_hash(const string &filename, const HashVal &hash) {
+output_hash(const std::string &filename, const HashVal &hash) {
   if (!suppress_filename && !filename.empty()) {
     cout << filename << " ";
   }
@@ -69,7 +72,7 @@ main(int argc, char **argv) {
   const char *optstr = "i:db:qh";
 
   bool got_input_string = false;
-  string input_string;
+  std::string input_string;
   Filename binary_output_filename;
 
   preprocess_argv(argc, argv);
@@ -87,7 +90,7 @@ main(int argc, char **argv) {
       break;
 
     case 'b':
-      binary_output_filename = Filename::binary_filename(string(optarg));
+      binary_output_filename = Filename::binary_filename(std::string(optarg));
       break;
 
     case 'q':

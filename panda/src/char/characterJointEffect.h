@@ -38,12 +38,14 @@ private:
 PUBLISHED:
   static CPT(RenderEffect) make(Character *character);
 
-  INLINE Character *get_character() const;
+  INLINE PT(Character) get_character() const;
 
 public:
+  INLINE bool matches_character(Character *character) const;
+
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual bool has_cull_callback() const;
   virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,

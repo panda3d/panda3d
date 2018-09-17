@@ -111,7 +111,7 @@ new_collector(int collector_index) {
 void GtkStatsStripChart::
 new_data(int thread_index, int frame_number) {
   if (is_title_unknown()) {
-    string window_title = get_title_text();
+    std::string window_title = get_title_text();
     if (!is_title_unknown()) {
       gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
     }
@@ -120,7 +120,7 @@ new_data(int thread_index, int frame_number) {
   if (!_pause) {
     update();
 
-    string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+    std::string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
     if (_net_value_text != text) {
       _net_value_text = text;
       gtk_label_set_text(GTK_LABEL(_total_label), _net_value_text.c_str());
@@ -575,7 +575,7 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
   }
 
   int y = height_to_pixel(bar._height);
-  const string &label = bar._label;
+  const std::string &label = bar._label;
 
   PangoLayout *layout = gtk_widget_create_pango_layout(_window, label.c_str());
   int width, height;

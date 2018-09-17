@@ -90,8 +90,8 @@ PUBLISHED:
                             LPoint3 &contact_pos,
                             LVector3 &contact_normal) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
   MAKE_PROPERTY(from_solid, get_from);
@@ -170,7 +170,7 @@ private:
   friend class CollisionHandlerFluidPusher;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionEntry &entry);
+INLINE std::ostream &operator << (std::ostream &out, const CollisionEntry &entry);
 
 #include "collisionEntry.I"
 

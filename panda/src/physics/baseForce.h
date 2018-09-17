@@ -26,7 +26,7 @@ class ForceNode;
 /**
  * pure virtual base class for all forces that could POSSIBLY exist.
  */
-class EXPCL_PANDAPHYSICS BaseForce : public TypedReferenceCount {
+class EXPCL_PANDA_PHYSICS BaseForce : public TypedReferenceCount {
 PUBLISHED:
   virtual ~BaseForce();
 
@@ -37,8 +37,8 @@ PUBLISHED:
   INLINE ForceNode *get_force_node() const;
   INLINE NodePath get_force_node_path() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level=0) const;
 
 protected:
   BaseForce(bool active = true);

@@ -31,7 +31,7 @@ get_id() const {
 
 INLINE bool OdeGeom::
 has_body() const {
-  return (dGeomGetBody(_id) != NULL);
+  return (dGeomGetBody(_id) != nullptr);
 }
 
 INLINE OdeBody OdeGeom::

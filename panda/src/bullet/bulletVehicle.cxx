@@ -12,6 +12,9 @@
  */
 
 #include "bulletVehicle.h"
+
+#include "config_bullet.h"
+
 #include "bulletWorld.h"
 #include "bulletRigidBodyNode.h"
 #include "bulletWheel.h"
@@ -39,6 +42,7 @@ BulletVehicle(BulletWorld *world, BulletRigidBodyNode *chassis) {
  */
 void BulletVehicle::
 set_coordinate_system(BulletUpAxis up) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   switch (up) {
   case X_up:
@@ -51,7 +55,7 @@ set_coordinate_system(BulletUpAxis up) {
     _vehicle->setCoordinateSystem(0, 2, 1);
     break;
   default:
-    bullet_cat.error() << "invalid up axis:" << up << endl;
+    bullet_cat.error() << "invalid up axis:" << up << std::endl;
     break;
   }
 }
@@ -62,8 +66,20 @@ set_coordinate_system(BulletUpAxis up) {
  */
 LVector3 BulletVehicle::
 get_forward_vector() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LVector3(_vehicle->getForwardVector());
+}
+
+/**
+ * Returns the chassis of this vehicle.  The chassis is a rigid body node.
+ * Assumes the lock(bullet global lock) is held by the caller
+ */
+BulletRigidBodyNode *BulletVehicle::
+do_get_chassis() {
+
+  btRigidBody *bodyPtr = _vehicle->getRigidBody();
+  return (bodyPtr) ? (BulletRigidBodyNode *)bodyPtr->getUserPointer() : nullptr;
 }
 
 /**
@@ -71,9 +87,9 @@ get_forward_vector() const {
  */
 BulletRigidBodyNode *BulletVehicle::
 get_chassis() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  btRigidBody *bodyPtr = _vehicle->getRigidBody();
-  return (bodyPtr) ? (BulletRigidBodyNode *)bodyPtr->getUserPointer() : NULL;
+  return do_get_chassis();
 }
 
 /**
@@ -82,6 +98,7 @@ get_chassis() {
  */
 PN_stdfloat BulletVehicle::
 get_current_speed_km_hour() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return (PN_stdfloat)_vehicle->getCurrentSpeedKmHour();
 }
@@ -91,6 +108,7 @@ get_current_speed_km_hour() const {
  */
 void BulletVehicle::
 reset_suspension() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _vehicle->resetSuspension();
 }
@@ -100,8 +118,9 @@ reset_suspension() {
  */
 PN_stdfloat BulletVehicle::
 get_steering_value(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx < get_num_wheels(), 0.0f);
+  nassertr(idx < _vehicle->getNumWheels(), 0.0f);
   return rad_2_deg(_vehicle->getSteeringValue(idx));
 }
 
@@ -110,8 +129,9 @@ get_steering_value(int idx) const {
  */
 void BulletVehicle::
 set_steering_value(PN_stdfloat steering, int idx) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertv(idx < get_num_wheels());
+  nassertv(idx < _vehicle->getNumWheels());
   _vehicle->setSteeringValue(deg_2_rad(steering), idx);
 }
 
@@ -120,8 +140,9 @@ set_steering_value(PN_stdfloat steering, int idx) {
  */
 void BulletVehicle::
 apply_engine_force(PN_stdfloat force, int idx) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertv(idx < get_num_wheels());
+  nassertv(idx < _vehicle->getNumWheels());
   _vehicle->applyEngineForce(force, idx);
 }
 
@@ -130,8 +151,9 @@ apply_engine_force(PN_stdfloat force, int idx) {
  */
 void BulletVehicle::
 set_brake(PN_stdfloat brake, int idx) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertv(idx < get_num_wheels());
+  nassertv(idx < _vehicle->getNumWheels());
   _vehicle->setBrake(brake, idx);
 }
 
@@ -140,6 +162,7 @@ set_brake(PN_stdfloat brake, int idx) {
  */
 void BulletVehicle::
 set_pitch_control(PN_stdfloat pitch) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   _vehicle->setPitchControl(pitch);
 }
@@ -149,6 +172,7 @@ set_pitch_control(PN_stdfloat pitch) {
  */
 BulletWheel BulletVehicle::
 create_wheel() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btVector3 pos(0.0, 0.0, 0.0);
   btVector3 direction = get_axis(_vehicle->getUpAxis());
@@ -159,7 +183,7 @@ create_wheel() {
 
   btWheelInfo &info = _vehicle->addWheel(pos, direction, axle, suspension, radius, _tuning._, false);
 
-  info.m_clientInfo = NULL;
+  info.m_clientInfo = nullptr;
 
   return BulletWheel(info);
 }
@@ -183,23 +207,37 @@ get_axis(int idx) {
 }
 
 /**
+ * Returns the number of wheels this vehicle has.
+ */
+int BulletVehicle::
+get_num_wheels() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _vehicle->getNumWheels();
+}
+
+/**
  * Returns the BulletWheel with index idx.  Causes an AssertionError if idx is
  * equal or larger than the number of wheels.
  */
 BulletWheel BulletVehicle::
 get_wheel(int idx) const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx < get_num_wheels(), BulletWheel::empty());
+  nassertr(idx < _vehicle->getNumWheels(), BulletWheel::empty());
   return BulletWheel(_vehicle->getWheelInfo(idx));
 }
 
 /**
- *
+ * Assumes the lock(bullet global lock) is held by the caller
  */
 void BulletVehicle::
-sync_b2p() {
+do_sync_b2p() {
 
-  for (int i=0; i < get_num_wheels(); i++) {
+  for (int i=0; i < _vehicle->getNumWheels(); i++) {
+    // synchronize the wheels with the (interpolated) chassis worldtransform
+    _vehicle->updateWheelTransform(i, true);
+
     btWheelInfo info = _vehicle->getWheelInfo(i);
 
     PandaNode *node = (PandaNode *)info.m_clientInfo;
@@ -216,3 +254,124 @@ sync_b2p() {
     }
   }
 }
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_suspension_stiffness(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_suspensionStiffness = (btScalar)value;
+}
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_suspension_compression(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_suspensionCompression = (btScalar)value;
+}
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_suspension_damping(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_suspensionDamping = (btScalar)value;
+}
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_max_suspension_travel_cm(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_maxSuspensionTravelCm = (btScalar)value;
+}
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_friction_slip(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_frictionSlip = (btScalar)value;
+}
+
+/**
+ *
+ */
+void BulletVehicleTuning::
+set_max_suspension_force(PN_stdfloat value) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _.m_maxSuspensionForce = (btScalar)value;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_suspension_stiffness() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_suspensionStiffness;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_suspension_compression() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_suspensionCompression;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_suspension_damping() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_suspensionDamping;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_max_suspension_travel_cm() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_maxSuspensionTravelCm;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_friction_slip() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_frictionSlip;
+}
+
+/**
+ *
+ */
+PN_stdfloat BulletVehicleTuning::
+get_max_suspension_force() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return (PN_stdfloat)_.m_maxSuspensionForce;
+}
+

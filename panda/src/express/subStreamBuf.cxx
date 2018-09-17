@@ -15,10 +15,10 @@
 #include "pnotify.h"
 #include "memoryHook.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
-typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
+using std::ios;
+using std::streamoff;
+using std::streampos;
+using std::streamsize;
 
 static const size_t substream_buffer_size = 4096;
 
@@ -27,8 +27,8 @@ static const size_t substream_buffer_size = 4096;
  */
 SubStreamBuf::
 SubStreamBuf() {
-  _source = (IStreamWrapper *)NULL;
-  _dest = (OStreamWrapper *)NULL;
+  _source = nullptr;
+  _dest = nullptr;
 
   // _start is the streampos of the first byte of the SubStream within its
   // parent stream.
@@ -98,8 +98,8 @@ close() {
   // Make sure the write buffer is flushed.
   sync();
 
-  _source = (IStreamWrapper *)NULL;
-  _dest = (OStreamWrapper *)NULL;
+  _source = nullptr;
+  _dest = nullptr;
   _start = 0;
   _end = 0;
 
@@ -251,7 +251,7 @@ overflow(int ch) {
       }
     }
 
-    nassertr(_dest != NULL, EOF);
+    nassertr(_dest != nullptr, EOF);
     bool fail = false;
     if (_append) {
       _dest->seek_eof_write(pbase(), n, fail);
@@ -291,7 +291,7 @@ sync() {
   size_t n = pptr() - pbase();
 
   if (n != 0) {
-    nassertr(_dest != NULL, EOF);
+    nassertr(_dest != nullptr, EOF);
     bool fail = false;
     if (_append) {
       _dest->seek_eof_write(pbase(), n, fail);
@@ -340,7 +340,7 @@ underflow() {
       nassertr(egptr() - gptr() == num_bytes, EOF);
     }
 
-    nassertr(_source != NULL, EOF);
+    nassertr(_source != nullptr, EOF);
     streamsize read_count;
     bool eof;
     _source->seek_read(_gpos, gptr(), num_bytes, read_count, eof);

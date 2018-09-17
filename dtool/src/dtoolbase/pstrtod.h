@@ -20,10 +20,10 @@
 extern "C" {
 #endif
 
-EXPCL_DTOOL double
+EXPCL_DTOOL_DTOOLBASE double
 pstrtod(const char *nptr, char **endptr);
 
-EXPCL_DTOOL double
+EXPCL_DTOOL_DTOOLBASE double
 patof(const char *str);
 
 #ifdef __cplusplus

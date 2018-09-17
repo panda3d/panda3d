@@ -33,8 +33,8 @@ public:
 
   bool parse_file(const Filename &filename);
 
-  CPPExpression *parse_expr(const string &expr);
-  CPPType *parse_type(const string &type);
+  CPPExpression *parse_expr(const std::string &expr);
+  CPPType *parse_type(const std::string &type);
 };
 
 /*

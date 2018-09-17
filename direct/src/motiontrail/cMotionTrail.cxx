@@ -55,14 +55,14 @@ CMotionTrail ( ) {
   _resolution_distance = 0.5f;
 
   // node path states
-  _geom_node = 0;
+  _geom_node = nullptr;
 
   // real-time data
   _vertex_index = 0;
-  _vertex_data = 0;
-  _triangles = 0;
+  _vertex_data = nullptr;
+  _triangles = nullptr;
 
-  _vertex_array = 0;
+  _vertex_array = nullptr;
 }
 
 /**
@@ -298,7 +298,7 @@ add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVect
  */
 void CMotionTrail::end_geometry ( ) {
   static CPT(RenderState) state;
-  if (state == (RenderState *)NULL) {
+  if (state == nullptr) {
     state = RenderState::make(ColorAttrib::make_vertex());
   }
 
@@ -674,7 +674,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
       }
 
       for (index = 0; index < total_vertices; index++) {
-        nurbs_curve_result_array [index] = 0;
+        nurbs_curve_result_array [index] = nullptr;
       }
 
       delete[] nurbs_curve_result_array;
@@ -804,6 +804,6 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
     this -> end_geometry ( );
 
     delete[] _vertex_array;
-    _vertex_array = 0;
+    _vertex_array = nullptr;
   }
 }

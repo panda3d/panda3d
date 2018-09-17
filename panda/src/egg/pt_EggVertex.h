@@ -24,16 +24,11 @@
  * template class.  It's not strictly necessary, but it doesn't hurt.
  */
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerToBase<EggVertex>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, PointerTo<EggVertex>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, ConstPointerTo<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, PointerToBase<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, PointerTo<EggVertex>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_EGG, EXPTP_PANDA_EGG, ConstPointerTo<EggVertex>)
 
 typedef PointerTo<EggVertex> PT_EggVertex;
 typedef ConstPointerTo<EggVertex> CPT_EggVertex;
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

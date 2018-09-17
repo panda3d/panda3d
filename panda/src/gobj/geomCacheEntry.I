@@ -17,8 +17,8 @@
 INLINE GeomCacheEntry::
 GeomCacheEntry() {
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 
@@ -31,8 +31,8 @@ remove_from_list() {
   _prev->_next = _next;
   _next->_prev = _prev;
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 
@@ -43,16 +43,16 @@ remove_from_list() {
 INLINE void GeomCacheEntry::
 insert_before(GeomCacheEntry *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (GeomCacheEntry *)NULL &&
-           _next == (GeomCacheEntry *)NULL);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;
   node->_prev = this;
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomCacheEntry &entry) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomCacheEntry &entry) {
   entry.output(out);
   return out;
 }

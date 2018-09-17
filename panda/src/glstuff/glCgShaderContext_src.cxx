@@ -195,7 +195,7 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
       // used, but it instead uses specially named variables.  A bit of
       // guesswork is involved here; Cg seems to mostly use the semantics as
       // attribute names in GLSL, with a few exceptions.
-      const char *attribname = NULL;
+      const char *attribname = nullptr;
       switch (res) {
       case CG_POSITION0:
         attribname = "cg_Vertex";
@@ -436,42 +436,43 @@ set_state_and_transform(const RenderState *target_rs,
     altered |= Shader::SSD_projection;
   }
 
-  if (_state_rs.was_deleted() || _state_rs == (const RenderState *)NULL) {
+  CPT(RenderState) state_rs = _state_rs.lock();
+  if (state_rs == nullptr) {
     // Reset all of the state.
     altered |= Shader::SSD_general;
     _state_rs = target_rs;
 
-  } else if (_state_rs != target_rs) {
+  } else if (state_rs != target_rs) {
     // The state has changed since last time.
-    if (_state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::SSD_color;
     }
-    if (_state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
         target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
       altered |= Shader::SSD_colorscale;
     }
-    if (_state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
         target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
       altered |= Shader::SSD_material;
     }
-    if (_state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ShaderAttrib::get_class_slot()) !=
         target_rs->get_attrib(ShaderAttrib::get_class_slot())) {
       altered |= Shader::SSD_shaderinputs;
     }
-    if (_state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
         target_rs->get_attrib(FogAttrib::get_class_slot())) {
       altered |= Shader::SSD_fog;
     }
-    if (_state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
         target_rs->get_attrib(LightAttrib::get_class_slot())) {
       altered |= Shader::SSD_light;
     }
-    if (_state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
         target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
       altered |= Shader::SSD_clip_planes;
     }
-    if (_state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+    if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
         target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
       altered |= Shader::SSD_tex_matrix;
     }
@@ -507,7 +508,7 @@ issue_parameters(int altered) {
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "Setting uniforms for " << _shader->get_filename()
-      << " (altered 0x" << hex << altered << dec << ")\n";
+      << " (altered 0x" << std::hex << altered << std::dec << ")\n";
   }
 
   // We have no way to track modifications to PTAs, so we assume that they are
@@ -518,13 +519,13 @@ issue_parameters(int altered) {
       Shader::ShaderPtrSpec &spec = _shader->_ptr_spec[i];
 
       const Shader::ShaderPtrData *ptr_data =_glgsg->fetch_ptr_parameter(spec);
-      if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
+      if (ptr_data == nullptr){ //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
 
       // Check if the size of the shader input and ptr_data match
-      int input_size = spec._dim[0] * spec._dim[1] * spec._dim[2];
+      size_t input_size = spec._dim[0] * spec._dim[1] * spec._dim[2];
 
       // dimension is negative only if the parameter had the (deprecated)k_
       // prefix.
@@ -647,6 +648,7 @@ issue_parameters(int altered) {
         continue;
 
       case Shader::SPT_int:
+      case Shader::SPT_uint:
         switch (spec._info._class) {
         case Shader::SAC_scalar:
           cgSetParameter1iv(p, (int*)ptr_data->_ptr);
@@ -735,8 +737,8 @@ update_transform_table(const TransformTable *table) {
   LMatrix4f *matrices = (LMatrix4f *)alloca(_transform_table_size * 64);
 
   int i = 0;
-  if (table != NULL) {
-    int num_transforms = min(_transform_table_size, (long)table->get_num_transforms());
+  if (table != nullptr) {
+    int num_transforms = std::min(_transform_table_size, (long)table->get_num_transforms());
     for (; i < num_transforms; ++i) {
 #ifdef STDFLOAT_DOUBLE
       LMatrix4 matrix;
@@ -763,8 +765,8 @@ update_slider_table(const SliderTable *table) {
   float *sliders = (float *)alloca(_slider_table_size * 4);
   memset(sliders, 0, _slider_table_size * 4);
 
-  if (table != NULL) {
-    int num_sliders = min(_slider_table_size, (long)table->get_num_sliders());
+  if (table != nullptr) {
+    int num_sliders = std::min(_slider_table_size, (long)table->get_num_sliders());
     for (int i = 0; i < num_sliders; ++i) {
       sliders[i] = table->get_slider(i)->get_slider();
     }
@@ -879,21 +881,25 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         // limited in the options we can set.
         GLenum type = _glgsg->get_numeric_type(numeric_type);
         if (p >= 0) {
-          max_p = max(max_p, (GLuint)p + 1);
+          max_p = std::max(max_p, (GLuint)p + 1);
 
           _glgsg->enable_vertex_attrib_array(p);
 
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(p, num_values, type,
-                                            stride, client_pointer);
-          } else if (numeric_type == GeomEnums::NT_packed_dabc) {
+          if (numeric_type == GeomEnums::NT_packed_dabc) {
             // GL_BGRA is a special accepted value available since OpenGL 3.2.
             // It requires us to pass GL_TRUE for normalized.
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
-          } else {
+          } else if (bind._numeric_type == Shader::SPT_float ||
+                     numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(p, num_values, type,
+                                            stride, client_pointer);
+          } else {
+            _glgsg->_glVertexAttribIPointer(p, num_values, type,
+                                            stride, client_pointer);
           }
 
           if (divisor > 0) {
@@ -950,10 +956,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           // So, we work around this by just binding something silly to 0.
           // This breaks flat colors, but it's better than invisible objects?
           _glgsg->enable_vertex_attrib_array(0);
-          if (bind._integer) {
-            _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
-          } else {
+          if (bind._numeric_type == Shader::SPT_float) {
             _glgsg->_glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+          } else if (bind._numeric_type == Shader::SPT_double) {
+            _glgsg->_glVertexAttribLPointer(0, 4, GL_DOUBLE, 0, 0);
+          } else {
+            _glgsg->_glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
           }
 
         } else if (p >= 0) {
@@ -1078,7 +1086,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
-    const InternalName *id = spec._name;
 
     CGparameter p = _cg_parameter_map[spec._id._seqno];
     if (p == 0) {
@@ -1110,7 +1117,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     _glgsg->set_active_texture_stage(texunit);
 
     TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
-    if (tc == (TextureContext*)NULL) {
+    if (tc == nullptr) {
       continue;
     }
 

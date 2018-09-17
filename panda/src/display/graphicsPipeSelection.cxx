@@ -19,11 +19,13 @@
 #include "config_display.h"
 #include "typeRegistry.h"
 #include "pset.h"
-#include "config_util.h"
+#include "config_putil.h"
 
 #include <algorithm>
 
-GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = NULL;
+using std::string;
+
+GraphicsPipeSelection *GraphicsPipeSelection::_global_ptr = nullptr;
 
 /**
  *
@@ -121,7 +123,7 @@ print_pipe_types() const {
   load_default_module();
 
   LightMutexHolder holder(_lock);
-  nout << "Known pipe types:" << endl;
+  nout << "Known pipe types:" << std::endl;
   PipeTypes::const_iterator pi;
   for (pi = _pipe_types.begin(); pi != _pipe_types.end(); ++pi) {
     const PipeType &pipe_type = (*pi);
@@ -171,7 +173,7 @@ make_pipe(const string &type_name, const string &module_name) {
   }
 
   if (type == TypeHandle::none()) {
-    return NULL;
+    return nullptr;
   }
 
   return make_pipe(type);
@@ -193,7 +195,7 @@ make_pipe(TypeHandle type) {
     if (ptype._type == type) {
       // Here's an exact match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
@@ -205,7 +207,7 @@ make_pipe(TypeHandle type) {
     if (ptype._type.is_derived_from(type)) {
       // Here's an approximate match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
@@ -218,14 +220,14 @@ make_pipe(TypeHandle type) {
     if (ptype._type.is_derived_from(type)) {
       // Here's an approximate match.
       PT(GraphicsPipe) pipe = (*ptype._constructor)();
-      if (pipe != (GraphicsPipe *)NULL) {
+      if (pipe != nullptr) {
         return pipe;
       }
     }
   }
 
   // Couldn't find a matching pipe type.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -242,7 +244,7 @@ make_module_pipe(const string &module_name) {
 
   TypeHandle pipe_type = load_named_module(module_name);
   if (pipe_type == TypeHandle::none()) {
-    return NULL;
+    return nullptr;
   }
 
   return make_pipe(pipe_type);
@@ -268,7 +270,7 @@ make_default_pipe() {
       if (cmp_nocase_uh(ptype._type.get_name(), _default_pipe_name) == 0) {
         // Here's an exact match.
         PT(GraphicsPipe) pipe = (*ptype._constructor)();
-        if (pipe != (GraphicsPipe *)NULL) {
+        if (pipe != nullptr) {
           return pipe;
         }
       }
@@ -282,7 +284,7 @@ make_default_pipe() {
       if (ptype_name.find(preferred_name) != string::npos) {
         // Here's a substring match.
         PT(GraphicsPipe) pipe = (*ptype._constructor)();
-        if (pipe != (GraphicsPipe *)NULL) {
+        if (pipe != nullptr) {
           return pipe;
         }
       }
@@ -293,13 +295,13 @@ make_default_pipe() {
   for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
     const PipeType &ptype = (*ti);
     PT(GraphicsPipe) pipe = (*ptype._constructor)();
-    if (pipe != (GraphicsPipe *)NULL) {
+    if (pipe != nullptr) {
       return pipe;
     }
   }
 
   // Nothing.  Probably the list was empty.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -325,7 +327,7 @@ load_aux_modules() {
  */
 bool GraphicsPipeSelection::
 add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
-  nassertr(func != NULL, false);
+  nassertr(func != nullptr, false);
 
   if (!type.is_derived_from(GraphicsPipe::get_class_type())) {
     display_cat->warning()
@@ -406,11 +408,11 @@ load_named_module(const string &name) {
   // We have not yet loaded this module.  Load it now.
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
-    << "loading display module: " << dlname.to_os_specific() << endl;
+    << "loading display module: " << dlname.to_os_specific() << std::endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
-  if (handle == (void *)NULL) {
+  if (handle == nullptr) {
     display_cat.warning()
-      << "Unable to load: " << load_dso_error() << endl;
+      << "Unable to load: " << load_dso_error() << std::endl;
     return TypeHandle::none();
   }
 
@@ -425,7 +427,7 @@ load_named_module(const string &name) {
 
   TypeHandle pipe_type = TypeHandle::none();
 
-  if (dso_symbol == (void *)NULL) {
+  if (dso_symbol == nullptr) {
     // Couldn't find the module function.
     display_cat.warning()
       << "Unable to find " << symbol_name << " in " << dlname.get_basename()

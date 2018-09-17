@@ -41,6 +41,10 @@
 
 #include "postprocess.h"
 
+using std::ostringstream;
+using std::stringstream;
+using std::string;
+
 struct BoneWeight {
   CPT(JointVertexTransform) joint_vertex_xform;
   float weight;
@@ -57,7 +61,7 @@ typedef pvector<BoneWeight> BoneWeightList;
 AssimpLoader::
 AssimpLoader() :
   _error (false),
-  _geoms (NULL) {
+  _geoms (nullptr) {
 
   PandaLogger::set_default();
   _importer.SetIOHandler(new PandaIOSystem);
@@ -82,11 +86,11 @@ get_extensions(string &ext) const {
 
   // The format is like: *.mdc;*.mdl;*.mesh.xml;*.mot
   char *sub = strtok(aexts.data, ";");
-  while (sub != NULL) {
+  while (sub != nullptr) {
     ext += sub + 2;
-    sub = strtok(NULL, ";");
+    sub = strtok(nullptr, ";");
 
-    if (sub != NULL) {
+    if (sub != nullptr) {
       ext += ' ';
     }
   }
@@ -99,10 +103,35 @@ bool AssimpLoader::
 read(const Filename &filename) {
   _filename = filename;
 
-  // I really don't know why we need to flip the winding order, but otherwise
-  // the models I tested with are showing inside out.
-  _scene = _importer.ReadFile(_filename.c_str(), aiProcess_Triangulate | aiProcess_GenUVCoords | aiProcess_FlipWindingOrder);
-  if (_scene == NULL) {
+  unsigned int flags = aiProcess_Triangulate | aiProcess_GenUVCoords;
+
+  if (assimp_calc_tangent_space) {
+    flags |= aiProcess_CalcTangentSpace;
+  }
+  if (assimp_join_identical_vertices) {
+    flags |= aiProcess_JoinIdenticalVertices;
+  }
+  if (assimp_improve_cache_locality) {
+    flags |= aiProcess_ImproveCacheLocality;
+  }
+  if (assimp_remove_redundant_materials) {
+    flags |= aiProcess_RemoveRedundantMaterials;
+  }
+  if (assimp_fix_infacing_normals) {
+    flags |= aiProcess_FixInfacingNormals;
+  }
+  if (assimp_optimize_meshes) {
+    flags |= aiProcess_OptimizeMeshes;
+  }
+  if (assimp_optimize_graph) {
+    flags |= aiProcess_OptimizeGraph;
+  }
+  if (assimp_flip_winding_order) {
+    flags |= aiProcess_FlipWindingOrder;
+  }
+
+  _scene = _importer.ReadFile(_filename.c_str(), flags);
+  if (_scene == nullptr) {
     _error = true;
     return false;
   }
@@ -117,7 +146,7 @@ read(const Filename &filename) {
  */
 void AssimpLoader::
 build_graph() {
-  nassertv(_scene != NULL); // read() must be called first
+  nassertv(_scene != nullptr); // read() must be called first
   nassertv(!_error);        // and have succeeded
 
   // Protect the import process
@@ -145,7 +174,7 @@ build_graph() {
   }
 
   // And now the node structure.
-  if (_scene->mRootNode != NULL) {
+  if (_scene->mRootNode != nullptr) {
     load_node(*_scene->mRootNode, _root);
   }
 
@@ -178,7 +207,7 @@ find_node(const aiNode &root, const aiString &name) {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -215,7 +244,7 @@ load_texture(size_t index) {
       if (img.read(str, "", ftype)) {
         ptex->load(img);
       } else {
-        ptex = NULL;
+        ptex = nullptr;
       }
     }
   } else {
@@ -255,7 +284,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   aiTextureMapMode mapmode;
 
   for (size_t i = 0; i < mat.GetTextureCount(ttype); ++i) {
-    mat.GetTexture(ttype, i, &path, &mapping, NULL, &blend, &op, &mapmode);
+    mat.GetTexture(ttype, i, &path, &mapping, nullptr, &blend, &op, &mapmode);
 
     if (AI_SUCCESS != mat.Get(AI_MATKEY_UVWSRC(ttype, i), uvindex)) {
       // If there's no texture coordinate set for this texture, assume that
@@ -270,12 +299,12 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
     if (uvindex > 0) {
       stage->set_texcoord_name(InternalName::get_texcoord_name(str.str()));
     }
-    PT(Texture) ptex = NULL;
+    PT(Texture) ptex = nullptr;
 
     // I'm not sure if this is the right way to handle it, as I couldn't find
     // much information on embedded textures.
     if (path.data[0] == '*') {
-      long num = strtol(path.data + 1, NULL, 10);
+      long num = strtol(path.data + 1, nullptr, 10);
       ptex = _textures[num];
 
     } else if (path.length > 0) {
@@ -308,7 +337,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
       ptex = TexturePool::load_texture(fn);
     }
 
-    if (ptex != NULL) {
+    if (ptex != nullptr) {
       tattr = DCAST(TextureAttrib, tattr->add_on_stage(stage, ptex));
     }
   }
@@ -424,7 +453,7 @@ create_anim_channel(const aiAnimation &anim, AnimBundle *bundle, AnimGroup *pare
   PT(AnimChannelMatrixXfmTable) group = new AnimChannelMatrixXfmTable(parent, node.mName.C_Str());
 
   // See if there is a channel for this node
-  aiNodeAnim *node_anim = NULL;
+  aiNodeAnim *node_anim = nullptr;
   for (size_t i = 0; i < anim.mNumChannels; ++i) {
     if (anim.mChannels[i]->mNodeName == node.mName) {
       node_anim = anim.mChannels[i];
@@ -502,7 +531,7 @@ load_mesh(size_t index) {
   const aiMesh &mesh = *_scene->mMeshes[index];
 
   // Check if we need to make a Character
-  PT(Character) character = NULL;
+  PT(Character) character = nullptr;
   if (mesh.HasBones()) {
     assimp_cat.debug()
       << "Creating character for " << mesh.mName.C_Str() << "\n";
@@ -544,7 +573,7 @@ load_mesh(size_t index) {
     for (size_t i = 0; i < mesh.mNumBones; ++i) {
       const aiBone &bone = *mesh.mBones[i];
       CharacterJoint *joint = character->find_joint(bone.mName.C_Str());
-      if (joint == NULL) {
+      if (joint == nullptr) {
         assimp_cat.debug()
           << "Could not find joint for bone: " << bone.mName.C_Str() << "\n";
         continue;

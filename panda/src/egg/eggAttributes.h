@@ -30,7 +30,7 @@
  * EggPolygon level with multiple appearances of the EggObject base class.
  * And making EggObject a virtual base class is just no fun.
  */
-class EXPCL_PANDAEGG EggAttributes : public MemoryBase {
+class EXPCL_PANDA_EGG EggAttributes : public MemoryBase {
 PUBLISHED:
   EggAttributes();
   EggAttributes(const EggAttributes &copy);
@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE bool matches_color(const EggAttributes &other) const;
   INLINE void copy_color(const EggAttributes &other);
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
   INLINE bool sorts_less_than(const EggAttributes &other) const;
   int compare_to(const EggAttributes &other) const;
 

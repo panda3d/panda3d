@@ -368,7 +368,7 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\pandac\input
         File /r "${BUILT}\pandac\input\*"
         SetOutPath $INSTDIR\Pmw
-        File /r /x CVS "${BUILT}\Pmw\*"
+        File /nonfatal /r /x CVS "${BUILT}\Pmw\*"
 
         !ifdef REGVIEW
         SetRegView ${REGVIEW}
@@ -1239,8 +1239,13 @@ done:
 
 FunctionEnd
 
+!ifndef LVM_GETITEMCOUNT
 !define LVM_GETITEMCOUNT 0x1004
+!endif
+
+!ifndef LVM_GETITEMTEXT
 !define LVM_GETITEMTEXT 0x102D
+!endif
 
 Function DumpLog
   Exch $5

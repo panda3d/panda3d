@@ -27,6 +27,11 @@
 
 #include <math.h>
 
+using std::max;
+using std::min;
+using std::string;
+using std::wstring;
+
 TypeHandle PGEntry::_type_handle;
 
 /**
@@ -49,7 +54,7 @@ PGEntry(const string &name) :
   _max_width = 0.0f;
   _num_lines = 1;
   _accept_enabled = true;
-  _last_text_def = (TextNode *)NULL;
+  _last_text_def = nullptr;
   _text_geom_stale = true;
   _text_geom_flattened = true;
   _blink_start = 0.0f;
@@ -117,7 +122,7 @@ PGEntry(const PGEntry &copy) :
   _overflow_mode(copy._overflow_mode)
 {
   _cursor_stale = true;
-  _last_text_def = (TextNode *)NULL;
+  _last_text_def = nullptr;
   _text_geom_stale = true;
   _text_geom_flattened = true;
 
@@ -642,7 +647,7 @@ void PGEntry::
 set_text_def(int state, TextNode *node) {
   LightReMutexHolder holder(_lock);
   nassertv(state >= 0 && state < 1000);  // Sanity check.
-  if (node == (TextNode *)NULL && state >= (int)_text_defs.size()) {
+  if (node == nullptr && state >= (int)_text_defs.size()) {
     // If we're setting it to NULL, we don't need to slot a new one.
     return;
   }
@@ -662,7 +667,7 @@ get_text_def(int state) const {
     // If we don't have a definition, use the global one.
     return get_text_node();
   }
-  if (_text_defs[state] == (TextNode *)NULL) {
+  if (_text_defs[state] == nullptr) {
     return get_text_node();
   }
   return _text_defs[state];
@@ -715,7 +720,7 @@ is_wtext() const {
 void PGEntry::
 slot_text_def(int state) {
   while (state >= (int)_text_defs.size()) {
-    _text_defs.push_back((TextNode *)NULL);
+    _text_defs.push_back(nullptr);
   }
 }
 
@@ -725,7 +730,7 @@ slot_text_def(int state) {
 void PGEntry::
 update_text() {
   TextNode *node = get_text_def(get_state());
-  nassertv(node != (TextNode *)NULL);
+  nassertv(node != nullptr);
 
   if (_text_geom_stale || node != _last_text_def) {
     TextProperties props = *node;
@@ -846,7 +851,7 @@ update_text() {
 void PGEntry::
 update_cursor() {
   TextNode *node = get_text_def(get_state());
-  nassertv(node != (TextNode *)NULL);
+  nassertv(node != nullptr);
   _cursor_scale.set_mat(node->get_transform());
   _cursor_scale.set_color(node->get_text_color());
 
@@ -864,6 +869,10 @@ update_cursor() {
       ypos = _obscure_text.get_ypos(row, column);
     } else {
       _text.calc_r_c(row, column, _cursor_position);
+      if (_cursor_position > 0 && _text.get_character(_cursor_position - 1) == '\n') {
+        row += 1;
+        column = 0;
+      }
       xpos = _text.get_xpos(row, column);
       ypos = _text.get_ypos(row, column);
     }

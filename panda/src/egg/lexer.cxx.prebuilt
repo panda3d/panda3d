@@ -963,6 +963,10 @@ char *eggyytext;
 
 #include <math.h>
 
+using std::istream;
+using std::ostream;
+using std::string;
+
 extern "C" int eggyywrap(void);  // declared below.
 
 static int yyinput(void);        // declared by flex.
@@ -1062,17 +1066,17 @@ eggyyerror(const string &msg) {
     }
     out 
       << " at line " << line_number << ", column " << col_number << ":\n"
-      << setiosflags(Notify::get_literal_flag())
+      << std::setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
     indent(out, col_number-1) 
       << "^\n" << msg << "\n\n" 
-      << resetiosflags(Notify::get_literal_flag()) << flush;
+      << std::resetiosflags(Notify::get_literal_flag()) << std::flush;
   }
   error_count++;
 }
 
 void
-eggyyerror(ostringstream &strm) {
+eggyyerror(std::ostringstream &strm) {
   string s = strm.str();
   eggyyerror(s);
 }
@@ -1088,18 +1092,18 @@ eggyywarning(const string &msg) {
     }
     out 
       << " at line " << line_number << ", column " << col_number << ":\n"
-      << setiosflags(Notify::get_literal_flag())
+      << std::setiosflags(Notify::get_literal_flag())
       << current_line << "\n";
     indent(out, col_number-1) 
       << "^\n" << msg << "\n\n" 
-      << resetiosflags(Notify::get_literal_flag()) << flush;
+      << std::resetiosflags(Notify::get_literal_flag()) << std::flush;
   }
   warning_count++;
 }
 
 void
-eggyywarning(ostringstream &strm) {
-  string s = strm.str();
+eggyywarning(std::ostringstream &strm) {
+  std::string s = strm.str();
   eggyywarning(s);
 }
 
@@ -1117,7 +1121,7 @@ input_chars(char *buffer, int &result, int max_size) {
       // from the stream, copy it into the current_line array.  This
       // is because the \n.* rule below, which fills current_line
       // normally, doesn't catch the first line.
-      int length = min(max_error_width, result);
+      int length = std::min(max_error_width, result);
       strncpy(current_line, buffer, length);
       current_line[length] = '\0';
       line_number++;
@@ -1141,7 +1145,7 @@ input_chars(char *buffer, int &result, int max_size) {
 // Define this macro carefully, since different flex versions call it
 // with a different type for result.
 #define YY_INPUT(buffer, result, max_size) { \
-  int int_result; \
+  int int_result = 0; \
   input_chars((buffer), int_result, (max_size)); \
   (result) = int_result; \
 }
@@ -1212,10 +1216,10 @@ eat_c_comment() {
   c = read_char(line, col);
   while (c != EOF && !(last_c == '*' && c == '/')) {
     if (last_c == '/' && c == '*') {
-      ostringstream errmsg;
+      std::ostringstream errmsg;
       errmsg << "This comment contains a nested /* symbol at line "
              << line << ", column " << col-1 << "--possibly unclosed?"
-             << ends;
+             << std::ends;
       eggyywarning(errmsg);
     }
     last_c = c;

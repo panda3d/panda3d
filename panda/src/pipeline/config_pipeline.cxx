@@ -12,6 +12,7 @@
  */
 
 #include "config_pipeline.h"
+#include "cycleData.h"
 #include "mainThread.h"
 #include "externalThread.h"
 #include "genericThread.h"
@@ -19,6 +20,10 @@
 #include "pandaSystem.h"
 
 #include "dconfig.h"
+
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PIPELINE)
+  #error Buildsystem error: BUILDING_PANDA_PIPELINE not defined
+#endif
 
 ConfigureDef(config_pipeline);
 NotifyCategoryDef(pipeline, "");
@@ -66,6 +71,7 @@ init_libpipeline() {
   }
   initialized = true;
 
+  CycleData::init_type();
   MainThread::init_type();
   ExternalThread::init_type();
   GenericThread::init_type();

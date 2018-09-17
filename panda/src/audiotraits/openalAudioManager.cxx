@@ -14,7 +14,7 @@
 
 // Panda headers.
 #include "config_audio.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_express.h"
 #include "config_openalAudio.h"
 #include "openalAudioManager.h"
@@ -33,20 +33,23 @@
 #define ALC_ALL_DEVICES_SPECIFIER 0x1013
 #endif
 
+using std::endl;
+using std::string;
+
 TypeHandle OpenALAudioManager::_type_handle;
 
 ReMutex OpenALAudioManager::_lock;
 int OpenALAudioManager::_active_managers = 0;
 bool OpenALAudioManager::_openal_active = false;
-ALCdevice* OpenALAudioManager::_device = NULL;
-ALCcontext* OpenALAudioManager::_context = NULL;
+ALCdevice* OpenALAudioManager::_device = nullptr;
+ALCcontext* OpenALAudioManager::_context = nullptr;
 
 // This is the list of all OpenALAudioManager objects in the world.  It must
 // be a pointer rather than a concrete object, so it won't be destructed at
 // exit time before we're done removing things from it.
-OpenALAudioManager::Managers *OpenALAudioManager::_managers = NULL;
+OpenALAudioManager::Managers *OpenALAudioManager::_managers = nullptr;
 
-OpenALAudioManager::SourceCache *OpenALAudioManager::_al_sources = NULL;
+OpenALAudioManager::SourceCache *OpenALAudioManager::_al_sources = nullptr;
 
 
 // Central dispatcher for audio errors.
@@ -79,7 +82,7 @@ AudioManager *Create_OpenALAudioManager() {
 OpenALAudioManager::
 OpenALAudioManager() {
   ReMutexHolder holder(_lock);
-  if (_managers == (Managers *)NULL) {
+  if (_managers == nullptr) {
     _managers = new Managers;
     _al_sources = new SourceCache;
   }
@@ -118,7 +121,7 @@ OpenALAudioManager() {
   // Initialization
   audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    _device = NULL;
+    _device = nullptr;
     string dev_name = select_audio_device();
 
     if (!dev_name.empty()) {
@@ -126,7 +129,7 @@ OpenALAudioManager() {
       audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
       _device = alcOpenDevice(dev_name.c_str());
 
-      if (_device == NULL) {
+      if (_device == nullptr) {
         audio_cat.error()
           << "Couldn't open OpenAL device \"" << dev_name << "\", falling back to default device\n";
       }
@@ -134,27 +137,27 @@ OpenALAudioManager() {
       audio_cat.info() << "Using default OpenAL device\n";
     }
 
-    if (_device == NULL) {
+    if (_device == nullptr) {
       // Open the default device.
-      _device = alcOpenDevice(NULL);
+      _device = alcOpenDevice(nullptr);
 
-      if (_device == NULL && dev_name != "OpenAL Soft") {
+      if (_device == nullptr && dev_name != "OpenAL Soft") {
         // Try the OpenAL Soft driver instead, which is fairly reliable.
         _device = alcOpenDevice("OpenAL Soft");
 
-        if (_device == NULL) {
+        if (_device == nullptr) {
           audio_cat.error()
             << "Couldn't open default OpenAL device\n";
         }
       }
     }
 
-    if (_device != NULL) {
+    if (_device != nullptr) {
       // We managed to get a device open.
       alcGetError(_device); // clear errors
-      _context = alcCreateContext(_device, NULL);
+      _context = alcCreateContext(_device, nullptr);
       alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
-      if (_context != NULL) {
+      if (_context != nullptr) {
         _openal_active = true;
       }
     }
@@ -197,7 +200,7 @@ OpenALAudioManager() {
 OpenALAudioManager::
 ~OpenALAudioManager() {
   ReMutexHolder holder(_lock);
-  nassertv(_managers != (Managers *)NULL);
+  nassertv(_managers != nullptr);
   Managers::iterator mi = _managers->find(this);
   nassertv(mi != _managers->end());
   _managers->erase(mi);
@@ -213,7 +216,7 @@ OpenALAudioManager::
 void OpenALAudioManager::
 shutdown() {
   ReMutexHolder holder(_lock);
-  if (_managers != (Managers *)NULL) {
+  if (_managers != nullptr) {
     Managers::iterator mi;
     for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
       (*mi)->cleanup();
@@ -241,12 +244,12 @@ string OpenALAudioManager::
 select_audio_device() {
   string selected_device = openal_device;
 
-  const char *devices = NULL;
+  const char *devices = nullptr;
 
   // This extension gives us all audio paths on all drivers.
-  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
-    string default_device = alcGetString(NULL, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
-    devices = (const char *)alcGetString(NULL, ALC_ALL_DEVICES_SPECIFIER);
+  if (alcIsExtensionPresent(nullptr, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
+    string default_device = alcGetString(nullptr, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices = (const char *)alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
 
     if (devices) {
       audio_cat.debug() << "All OpenAL devices:\n";
@@ -272,9 +275,9 @@ select_audio_device() {
 
   // This extension just gives us generic driver names, like "OpenAL Soft" and
   // "Generic Software", rather than individual outputs.
-  if (alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT") == AL_TRUE) {
-    string default_device = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
-    devices = (const char *)alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+  if (alcIsExtensionPresent(nullptr, "ALC_ENUMERATION_EXT") == AL_TRUE) {
+    string default_device = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices = (const char *)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
 
     if (devices) {
       audio_cat.debug() << "OpenAL drivers:\n";
@@ -402,14 +405,14 @@ get_sound_data(MovieAudio *movie, int mode) {
   }
 
   PT(MovieAudioCursor) stream = movie->open();
-  if (stream == 0) {
+  if (stream == nullptr) {
     audio_error("Cannot open file: "<<path);
-    return NULL;
+    return nullptr;
   }
 
   if (!can_use_audio(stream)) {
     audio_error("File is not in usable format: "<<path);
-    return NULL;
+    return nullptr;
   }
 
   SoundData *sd = new SoundData();
@@ -434,7 +437,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     if (sd->_sample == 0) {
       audio_error("Could not create an OpenAL buffer object");
       delete sd;
-      return NULL;
+      return nullptr;
     }
     int channels = stream->audio_channels();
     int samples = (int)(stream->length() * stream->audio_rate());
@@ -443,11 +446,12 @@ get_sound_data(MovieAudio *movie, int mode) {
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
+    delete[] data;
     int err = alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");
       delete sd;
-      return NULL;
+      return nullptr;
     }
     _sample_cache.insert(SampleCache::value_type(path, sd));
   } else {
@@ -470,6 +474,12 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, sound, positional, mode);
 
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
+
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
   return res;
@@ -479,7 +489,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) OpenALAudioManager::
-get_sound(const string &file_name, bool positional, int mode) {
+get_sound(const Filename &file_name, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
@@ -491,13 +501,19 @@ get_sound(const string &file_name, bool positional, int mode) {
 
   if (path.empty()) {
     audio_error("get_sound - invalid filename");
-    return NULL;
+    return nullptr;
   }
 
   PT(MovieAudio) mva = MovieAudio::get(path);
 
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
+
+  if(!oas->_manager) {
+    // The sound cleaned itself up immediately. It pretty clearly didn't like
+    // something, so we should just return a null sound instead.
+    return get_null_sound();
+  }
 
   _all_sounds.insert(oas);
   PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
@@ -509,9 +525,9 @@ get_sound(const string &file_name, bool positional, int mode) {
  * use, then the sound cannot be deleted, and this function has no effect.
  */
 void OpenALAudioManager::
-uncache_sound(const string& file_name) {
+uncache_sound(const Filename &file_name) {
   ReMutexHolder holder(_lock);
-  assert(is_valid());
+  nassertv(is_valid());
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -897,7 +913,7 @@ reduce_sounds_playing_to(unsigned int count) {
   int limit = _sounds_playing.size() - count;
   while (limit-- > 0) {
     SoundsPlaying::iterator sound = _sounds_playing.begin();
-    assert(sound != _sounds_playing.end());
+    nassertv(sound != _sounds_playing.end());
     // When the user stops a sound, there is still a PT in the user's hand.
     // When we stop a sound here, however, this can remove the last PT.  This
     // can cause an ugly recursion where stop calls the destructor, and the
@@ -994,18 +1010,18 @@ cleanup() {
 
       // make sure that the context is not current when it is destroyed
       alcGetError(_device); // clear errors
-      alcMakeContextCurrent(NULL);
+      alcMakeContextCurrent(nullptr);
       alc_audio_errcheck("alcMakeContextCurrent(NULL)",_device);
 
       alcDestroyContext(_context);
       alc_audio_errcheck("alcDestroyContext(_context)",_device);
-      _context = NULL;
+      _context = nullptr;
 
       if (_device) {
         audio_debug("Going to try to close openAL");
         alcCloseDevice(_device);
         // alc_audio_errcheck("alcCloseDevice(_device)",_device);
-        _device = NULL;
+        _device = nullptr;
         audio_debug("openAL Closed");
       }
 
@@ -1020,9 +1036,9 @@ cleanup() {
  */
 OpenALAudioManager::SoundData::
 SoundData() :
-  _manager(0),
+  _manager(nullptr),
   _sample(0),
-  _stream(NULL),
+  _stream(nullptr),
   _length(0.0),
   _rate(0),
   _channels(0),
@@ -1039,7 +1055,7 @@ OpenALAudioManager::SoundData::
   if (_sample != 0) {
     if (_manager->_is_valid) {
       _manager->make_current();
-      alDeleteBuffers(1,&_sample);
+      _manager->delete_buffer(_sample);
     }
     _sample = 0;
   }
@@ -1098,8 +1114,8 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_samples.size()) > sample_limit) {
     SoundData *sd = (SoundData*)(_expiring_samples.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_samples.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_samples.begin());
     _expiring_samples.pop_front();
     _sample_cache.erase(_sample_cache.find(sd->_movie->get_filename()));
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
@@ -1108,10 +1124,49 @@ discard_excess_cache(int sample_limit) {
 
   while (((int)_expiring_streams.size()) > stream_limit) {
     SoundData *sd = (SoundData*)(_expiring_streams.front());
-    assert(sd->_client_count == 0);
-    assert(sd->_expire == _expiring_streams.begin());
+    nassertv(sd->_client_count == 0);
+    nassertv(sd->_expire == _expiring_streams.begin());
     _expiring_streams.pop_front();
     audio_debug("Expiring: " << sd->_movie->get_filename().get_basename());
     delete sd;
   }
+}
+
+/**
+ * Deletes an OpenAL buffer.  This is a special function because some
+ * implementations of OpenAL (e.g. Apple's) don't unlock the buffers
+ * immediately, due to needing to coordinate with another thread.  If this is
+ * the case, the alDeleteBuffers call will error back with AL_INVALID_OPERATION
+ * as if trying to delete an actively-used buffer, which will tell us to wait a
+ * bit and try again.
+ */
+void OpenALAudioManager::
+delete_buffer(ALuint buffer) {
+  ReMutexHolder holder(_lock);
+  int tries = 0;
+  ALuint error;
+
+  // Keep trying until we succeed (or give up).
+  while (true) {
+    alDeleteBuffers(1, &buffer);
+    error = alGetError();
+
+    if (error == AL_NO_ERROR) {
+      // Success!  This will happen right away 99% of the time.
+      return;
+    } else if (error != AL_INVALID_OPERATION) {
+      // We weren't expecting that.  This should be reported.
+      break;
+    } else if (tries >= openal_buffer_delete_retries.get_value()) {
+      // We ran out of retries.  Give up.
+      break;
+    } else {
+      // Make another try after (delay * 2^n) seconds.
+      Thread::sleep(openal_buffer_delete_delay.get_value() * (1 << tries));
+      tries++;
+    }
+  }
+
+  // If we got here, one of the breaks above happened, indicating an error.
+  audio_error("failed to delete a buffer: " << alGetString(error) );
 }

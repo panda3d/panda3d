@@ -59,14 +59,18 @@ dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 
 /**
  * Atomically computes var += delta.  It is legal for delta to be negative.
+ * Returns the result of the addition.
  */
-INLINE void AtomicAdjustI386Impl::
+INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
 add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer delta) {
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   Integer orig_value = var;
-  while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
+  Integer new_value = orig_value + delta;
+  while (compare_and_exchange(var, orig_value, new_value) != orig_value) {
     orig_value = var;
+    new_value = orig_value + delta;
   }
+  return new_value;
 }
 
 /**

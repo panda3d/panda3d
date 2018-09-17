@@ -11,4 +11,8 @@
 #include "inputDeviceNode.cxx"
 #include "inputDeviceSet.cxx"
 #include "ioKitInputDevice.cxx"
+#include "ioKitInputDeviceManager.cxx"
+#include "linuxInputDeviceManager.cxx"
 #include "linuxJoystickDevice.cxx"
+#include "winInputDeviceManager.cxx"
+#include "winRawInputDevice.cxx"

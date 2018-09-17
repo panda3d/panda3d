@@ -32,11 +32,9 @@
  */
 class EXPCL_PANDA_GRUTIL MovieTexture : public Texture {
 PUBLISHED:
-  explicit MovieTexture(const string &name);
+  explicit MovieTexture(const std::string &name);
   explicit MovieTexture(MovieVideo *video);
-private:
-  MovieTexture(const MovieTexture &copy);
-PUBLISHED:
+  MovieTexture(const MovieTexture &copy) = delete;
   virtual ~MovieTexture();
 
   INLINE double get_video_length() const;
@@ -82,7 +80,7 @@ public:
 protected:
   class CData;
 
-  virtual PT(Texture) make_copy_impl();
+  virtual PT(Texture) make_copy_impl() const;
   void do_assign(CData *cdata, Texture::CData *cdata_tex, const MovieTexture *copy,
                  const CData *cdata_copy, const Texture::CData *cdata_copy_tex);
 
@@ -93,7 +91,7 @@ protected:
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
   virtual bool do_adjust_this_size(const Texture::CData *cdata,
-                                   int &x_size, int &y_size, const string &name,
+                                   int &x_size, int &y_size, const std::string &name,
                                    bool for_padding) const;
 
   virtual bool do_read_one(Texture::CData *cdata,
@@ -102,7 +100,10 @@ protected:
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(Texture::CData *cdata,
-                           const PNMImage &pnmimage, const string &name,
+                           const PNMImage &pnmimage, const std::string &name,
+                           int z, int n, const LoaderOptions &options);
+  virtual bool do_load_one(Texture::CData *cdata,
+                           const PfmFile &pfm, const std::string &name,
                            int z, int n, const LoaderOptions &options);
   bool do_load_one(Texture::CData *cdata,
                    PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha,

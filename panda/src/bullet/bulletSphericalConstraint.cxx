@@ -12,7 +12,9 @@
  */
 
 #include "bulletSphericalConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletSphericalConstraint::_type_handle;
 
@@ -61,6 +63,7 @@ ptr() const {
  */
 void BulletSphericalConstraint::
 set_pivot_a(const LPoint3 &pivot_a) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!pivot_a.is_nan());
   _constraint->setPivotA(LVecBase3_to_btVector3(pivot_a));
@@ -71,6 +74,7 @@ set_pivot_a(const LPoint3 &pivot_a) {
  */
 void BulletSphericalConstraint::
 set_pivot_b(const LPoint3 &pivot_b) {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   nassertv(!pivot_b.is_nan());
   _constraint->setPivotB(LVecBase3_to_btVector3(pivot_b));
@@ -81,6 +85,7 @@ set_pivot_b(const LPoint3 &pivot_b) {
  */
 LPoint3 BulletSphericalConstraint::
 get_pivot_in_a() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LPoint3(_constraint->getPivotInA());
 }
@@ -90,6 +95,7 @@ get_pivot_in_a() const {
  */
 LPoint3 BulletSphericalConstraint::
 get_pivot_in_b() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
 
   return btVector3_to_LPoint3(_constraint->getPivotInB());
 }

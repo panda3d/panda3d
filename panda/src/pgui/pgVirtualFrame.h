@@ -42,7 +42,7 @@ class TransformState;
  */
 class EXPCL_PANDA_PGUI PGVirtualFrame : public PGItem {
 PUBLISHED:
-  explicit PGVirtualFrame(const string &name = "");
+  explicit PGVirtualFrame(const std::string &name = "");
   virtual ~PGVirtualFrame();
 
 protected:
@@ -72,7 +72,7 @@ protected:
 private:
   void setup_child_nodes();
 
-private:
+protected:
   bool _has_clip_frame;
   LVecBase4 _clip_frame;
 

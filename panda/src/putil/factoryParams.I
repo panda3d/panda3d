@@ -14,47 +14,6 @@
 #include "pnotify.h"
 
 /**
- *
- */
-INLINE FactoryParams::
-FactoryParams() : _user_data(NULL) {
-}
-
-/**
- *
- */
-INLINE FactoryParams::
-FactoryParams(const FactoryParams &copy) :
-  _params(copy._params),
-  _user_data(copy._user_data) {}
-
-/**
- *
- */
-INLINE FactoryParams::
-~FactoryParams() {
-}
-
-#ifdef USE_MOVE_SEMANTICS
-/**
- *
- */
-INLINE FactoryParams::
-FactoryParams(FactoryParams &&from) NOEXCEPT :
-  _params(move(from._params)),
-  _user_data(from._user_data) {}
-
-/**
- *
- */
-INLINE void FactoryParams::
-operator = (FactoryParams &&from) NOEXCEPT {
-  _params = move(from._params);
-  _user_data = from._user_data;
-}
-#endif
-
-/**
  * Returns the custom pointer that was associated with the factory function.
  */
 INLINE void *FactoryParams::
@@ -72,8 +31,8 @@ template<class ParamType>
 bool get_param_into(ParamType *&pointer, const FactoryParams &params) {
   FactoryParam *param =
     params.get_param_of_type(ParamType::get_class_type());
-  if (param == (FactoryParam *)NULL) {
-    pointer = NULL;
+  if (param == nullptr) {
+    pointer = nullptr;
     return false;
   }
   DCAST_INTO_R(pointer, param, false);

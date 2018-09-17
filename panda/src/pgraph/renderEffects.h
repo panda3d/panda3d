@@ -42,12 +42,11 @@ class EXPCL_PANDA_PGRAPH RenderEffects : public TypedWritableReferenceCount {
 protected:
   RenderEffects();
 
-private:
-  RenderEffects(const RenderEffects &copy);
-  void operator = (const RenderEffects &copy);
-
 public:
+  RenderEffects(const RenderEffects &copy) = delete;
   virtual ~RenderEffects();
+
+  RenderEffects &operator = (const RenderEffects &copy) = delete;
 
   bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
@@ -86,11 +85,11 @@ PUBLISHED:
 
   virtual bool unref() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
-  static void list_states(ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
 
 public:
@@ -198,7 +197,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const RenderEffects &state) {
+INLINE std::ostream &operator << (std::ostream &out, const RenderEffects &state) {
   state.output(out);
   return out;
 }

@@ -2,8 +2,8 @@
 
 __all__ = ['Audio3DManager']
 
-from panda3d.core import Vec3, VBase3
-from direct.task import Task
+from panda3d.core import Vec3, VBase3, WeakNodePath
+from direct.task.TaskManagerGlobal import Task, taskMgr
 #
 class Audio3DManager:
 
@@ -181,7 +181,8 @@ class Audio3DManager:
 
     def attachSoundToObject(self, sound, object):
         """
-        Sound will come from the location of the object it is attached to
+        Sound will come from the location of the object it is attached to.
+        If the object is deleted, the sound will automatically be removed.
         """
         # sound is an AudioSound
         # object is any Panda object with coordinates
@@ -197,7 +198,7 @@ class Audio3DManager:
                     del self.sound_dict[known_object]
 
         if object not in self.sound_dict:
-            self.sound_dict[object] = []
+            self.sound_dict[WeakNodePath(object)] = []
 
         self.sound_dict[object].append(sound)
         return 1
@@ -258,14 +259,18 @@ class Audio3DManager:
             if self.audio_manager.getActive()==0:
                 return Task.cont
 
-        for known_object in list(self.sound_dict.keys()):
-            tracked_sound = 0
-            while tracked_sound < len(self.sound_dict[known_object]):
-                sound = self.sound_dict[known_object][tracked_sound]
-                pos = known_object.getPos(self.root)
+        for known_object, sounds in list(self.sound_dict.items()):
+            node_path = known_object.getNodePath()
+            if not node_path:
+                # The node has been deleted.
+                del self.sound_dict[known_object]
+                continue
+
+            pos = node_path.getPos(self.root)
+
+            for sound in sounds:
                 vel = self.getSoundVelocity(sound)
                 sound.set3dAttributes(pos[0], pos[1], pos[2], vel[0], vel[1], vel[2])
-                tracked_sound += 1
 
         # Update the position of the listener based on the object
         # to which it is attached

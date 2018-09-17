@@ -88,7 +88,7 @@ set_keycode(int keycode) {
  * Sets the candidate string associated with this event, if any.
  */
 INLINE void MouseWatcherParameter::
-set_candidate(const wstring &candidate_string,
+set_candidate(const std::wstring &candidate_string,
               size_t highlight_start, size_t highlight_end,
               size_t cursor_pos) {
   _candidate_string = candidate_string;
@@ -188,7 +188,7 @@ has_candidate() const {
  * Returns the candidate string associated with this event.  If
  * has_candidate(), above, returns false, this returns the empty string.
  */
-INLINE const wstring &MouseWatcherParameter::
+INLINE const std::wstring &MouseWatcherParameter::
 get_candidate_string() const {
   return _candidate_string;
 }
@@ -197,7 +197,7 @@ get_candidate_string() const {
  * Returns the candidate string associated with this event.  If
  * has_candidate(), above, returns false, this returns the empty string.
  */
-INLINE string MouseWatcherParameter::
+INLINE std::string MouseWatcherParameter::
 get_candidate_string_encoded() const {
   return get_candidate_string_encoded(TextEncoder::get_default_encoding());
 }
@@ -206,7 +206,7 @@ get_candidate_string_encoded() const {
  * Returns the candidate string associated with this event.  If
  * has_candidate(), above, returns false, this returns the empty string.
  */
-INLINE string MouseWatcherParameter::
+INLINE std::string MouseWatcherParameter::
 get_candidate_string_encoded(TextEncoder::Encoding encoding) const {
   return TextEncoder::encode_wtext(_candidate_string, encoding);
 }
@@ -274,8 +274,8 @@ is_outside() const {
   return (_flags & F_is_outside) != 0;
 }
 
-INLINE ostream &
-operator << (ostream &out, const MouseWatcherParameter &parm) {
+INLINE std::ostream &
+operator << (std::ostream &out, const MouseWatcherParameter &parm) {
   parm.output(out);
   return out;
 }

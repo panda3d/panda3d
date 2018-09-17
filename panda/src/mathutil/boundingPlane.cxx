@@ -53,7 +53,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void BoundingPlane::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "bplane, empty";
   } else if (is_infinite()) {
@@ -202,7 +202,29 @@ contains_line(const BoundingLine *line) const {
  */
 int BoundingPlane::
 contains_plane(const BoundingPlane *plane) const {
-  return IF_possible;
+  // We assume the plane normals are normalized.
+  LPlane other_plane = plane->get_plane();
+  PN_stdfloat dot = _plane.get_normal().dot(other_plane.get_normal());
+  if (dot >= 1.0) {
+    // The planes are parallel, with the same normal.
+    if (_plane.get_w() <= other_plane.get_w()) {
+      return IF_possible | IF_some | IF_all;
+    } else {
+      return IF_possible | IF_some;
+    }
+
+  } else if (dot <= -1.0) {
+    // The planes are opposing.
+    if (_plane.get_w() >= -other_plane.get_w()) {
+      return IF_no_intersection;
+    } else {
+      return IF_possible | IF_some;
+    }
+
+  } else {
+    // The planes are not parallel, so they inevitably intersect.
+    return IF_possible | IF_some;
+  }
 }
 
 /**

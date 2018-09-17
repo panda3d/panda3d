@@ -26,6 +26,10 @@
 #include <unistd.h>
 #endif
 
+using std::ostream;
+using std::string;
+using std::wstring;
+
 /**
  * Returns the directory component of the indicated pathname, or the empty
  * string if there is no directory prefix.
@@ -154,7 +158,7 @@ mkfile_complete(const string &filename, ostream &logfile) {
  */
 bool
 mkdir_complete_w(const wstring &dirname, ostream &logfile) {
-  if (CreateDirectoryW(dirname.c_str(), NULL) != 0) {
+  if (CreateDirectoryW(dirname.c_str(), nullptr) != 0) {
     // Success!
     return true;
   }
@@ -171,7 +175,7 @@ mkdir_complete_w(const wstring &dirname, ostream &logfile) {
     wstring parent = get_dirname_w(dirname);
     if (!parent.empty() && mkdir_complete_w(parent, logfile)) {
       // Parent successfully created.  Try again to make the child.
-      if (CreateDirectoryW(dirname.c_str(), NULL) != 0) {
+      if (CreateDirectoryW(dirname.c_str(), nullptr) != 0) {
         // Got it!
         return true;
       }
@@ -198,7 +202,7 @@ mkfile_complete_w(const wstring &filename, ostream &logfile) {
 
   HANDLE file = CreateFileW(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                            NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                            nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (file == INVALID_HANDLE_VALUE) {
     // Try to make the parent directory first.
     wstring parent = get_dirname_w(filename);
@@ -206,7 +210,7 @@ mkfile_complete_w(const wstring &filename, ostream &logfile) {
       // Parent successfully created.  Try again to make the file.
       file = CreateFileW(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                          FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                         NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                         nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     }
     if (file == INVALID_HANDLE_VALUE) {
       logfile

@@ -16,7 +16,7 @@
 int
 main(int argc, char *argv[]) {
   if (argc != 2 && argc != 3) {
-    cerr
+    std::cerr
       << "test_glob \"pattern\" [from-directory]\n\n"
       << "Attempts to match the pattern against each of the files in the\n"
       << "indicated directory if specified, or the current directory\n"
@@ -36,10 +36,10 @@ main(int argc, char *argv[]) {
   vector_string results;
   int num_matched = pattern.match_files(results, from_directory);
 
-  cerr << num_matched << " results:\n";
+  std::cerr << num_matched << " results:\n";
   vector_string::const_iterator si;
   for (si = results.begin(); si != results.end(); ++si) {
-    cerr << "  " << *si << "\n";
+    std::cerr << "  " << *si << "\n";
   }
 
   return (0);

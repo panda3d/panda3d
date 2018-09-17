@@ -40,6 +40,11 @@
 #include <hb.h>
 #endif
 
+using std::max;
+using std::min;
+using std::move;
+using std::wstring;
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -234,7 +239,7 @@ get_plain_wtext() const {
   TextString::const_iterator si;
   for (si = _text_string.begin(); si != _text_string.end(); ++si) {
     const TextCharacter &tch = (*si);
-    if (tch._graphic == (TextGraphic *)NULL) {
+    if (tch._graphic == nullptr) {
       wtext += tch._character;
     } else {
       wtext.push_back(0);
@@ -268,7 +273,7 @@ get_wordwrapped_plain_wtext() const {
     TextString::const_iterator si;
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
-      if (tch._graphic == (TextGraphic *)NULL) {
+      if (tch._graphic == nullptr) {
         wtext += tch._character;
       } else {
         wtext.push_back(0);
@@ -295,7 +300,7 @@ get_wtext() const {
   for (si = _text_string.begin(); si != _text_string.end(); ++si) {
     const TextCharacter &tch = (*si);
     current_cprops->append_delta(wtext, tch._cprops);
-    if (tch._graphic == (TextGraphic *)NULL) {
+    if (tch._graphic == nullptr) {
       wtext += tch._character;
     } else {
       wtext.push_back(text_embed_graphic_key);
@@ -341,7 +346,7 @@ get_wordwrapped_wtext() const {
     for (si = row._string.begin(); si != row._string.end(); ++si) {
       const TextCharacter &tch = (*si);
       current_cprops->append_delta(wtext, tch._cprops);
-      if (tch._graphic == (TextGraphic *)NULL) {
+      if (tch._graphic == nullptr) {
         wtext += tch._character;
       } else {
         wtext.push_back(text_embed_graphic_key);
@@ -519,7 +524,7 @@ assemble_text() {
   PT(GeomNode) text_geom_node = new GeomNode("text_geom");
   text_node->add_child(text_geom_node);
 
-  const TextProperties *properties = NULL;
+  const TextProperties *properties = nullptr;
   CPT(RenderState) text_state;
   CPT(RenderState) shadow_state;
   LVector2 shadow(0);
@@ -622,7 +627,7 @@ calc_width(wchar_t character, const TextProperties &properties) {
   if (character == ' ') {
     // A space is a special case.
     TextFont *font = properties.get_font();
-    nassertr(font != (TextFont *)NULL, 0.0f);
+    nassertr(font != nullptr, 0.0f);
     return font->get_space_advance() * properties.get_glyph_scale() * properties.get_text_scale();
   }
 
@@ -639,10 +644,10 @@ calc_width(wchar_t character, const TextProperties &properties) {
 
   PN_stdfloat advance = 0.0f;
 
-  if (first_glyph != (TextGlyph *)NULL) {
+  if (first_glyph != nullptr) {
     advance = first_glyph->get_advance() * advance_scale;
   }
-  if (second_glyph != (TextGlyph *)NULL) {
+  if (second_glyph != nullptr) {
     advance += second_glyph->get_advance();
   }
 
@@ -681,7 +686,7 @@ has_exact_character(wchar_t character, const TextProperties &properties) {
   }
 
   TextFont *font = properties.get_font();
-  nassertr(font != (TextFont *)NULL, false);
+  nassertr(font != nullptr, false);
 
   CPT(TextGlyph) glyph;
   return font->get_glyph(character, glyph);
@@ -740,7 +745,7 @@ is_whitespace(wchar_t character, const TextProperties &properties) {
 
 
   TextFont *font = properties.get_font();
-  nassertr(font != (TextFont *)NULL, false);
+  nassertr(font != nullptr, false);
 
   CPT(TextGlyph) glyph;
   if (!font->get_glyph(character, glyph)) {
@@ -827,14 +832,14 @@ scan_wtext(TextAssembler::TextString &output_string,
 
       // Now we have to encode the wstring into a string, for lookup in the
       // TextPropertiesManager.
-      string graphic_name = _encoder->encode_wtext(graphic_wname);
+      std::string graphic_name = _encoder->encode_wtext(graphic_wname);
 
       TextPropertiesManager *manager =
         TextPropertiesManager::get_global_ptr();
 
       // Get the graphic image.
       const TextGraphic *named_graphic = manager->get_graphic_ptr(graphic_name);
-      if (named_graphic != (TextGraphic *)NULL) {
+      if (named_graphic != nullptr) {
         output_string.push_back(TextCharacter(named_graphic, graphic_wname, current_cprops));
 
       } else {
@@ -1107,7 +1112,7 @@ wordwrap_text() {
 PN_stdfloat TextAssembler::
 calc_hyphen_width(const TextCharacter &tch) {
   TextFont *font = tch._cprops->_properties.get_font();
-  nassertr(font != (TextFont *)NULL, 0.0f);
+  nassertr(font != nullptr, 0.0f);
 
   PN_stdfloat hyphen_width = 0.0f;
   wstring text_soft_hyphen_output = get_text_soft_hyphen_output();
@@ -1132,52 +1137,30 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
     GeomTextGlyph::Glyphs glyphs;
     glyphs.reserve(quads.size());
 
-    static CPT(GeomVertexFormat) format;
-    if (format.is_null()) {
-      // The optimized code below assumes 32-bit floats, so let's make sure we
-      // got the right format by creating it ourselves.
-      format = GeomVertexFormat::register_format(new GeomVertexArrayFormat(
-        InternalName::get_vertex(), 3, GeomEnums::NT_float32, GeomEnums::C_point,
-        InternalName::get_texcoord(), 2, GeomEnums::NT_float32, GeomEnums::C_texcoord));
-    }
-
+    const GeomVertexFormat *format = GeomVertexFormat::get_v3t2();
     PT(GeomVertexData) vdata = new GeomVertexData("text", format, Geom::UH_static);
 
-    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
-    if (quads.size() > 10922) {
-      tris->set_index_type(GeomEnums::NT_uint32);
-    } else {
-      tris->set_index_type(GeomEnums::NT_uint16);
-    }
-
-    int i = 0;
+    Thread *current_thread = Thread::get_current_thread();
 
     // This is quite a critical loop and GeomVertexWriter quickly becomes the
     // bottleneck.  So, I've written this out the hard way instead.  Two
-    // versions of the loop: one for 32-bit indices, one for 16-bit.
+    // versions of the loop: one for 32-bit floats, the other for 64-bit.
     {
       PT(GeomVertexArrayDataHandle) vtx_handle = vdata->modify_array_handle(0);
       vtx_handle->unclean_set_num_rows(quads.size() * 4);
 
-      Thread *current_thread = Thread::get_current_thread();
       unsigned char *write_ptr = vtx_handle->get_write_pointer();
-      size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
-      PN_float32 *vtx_ptr = (PN_float32 *)
-        (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
-      PN_float32 *tex_ptr = (PN_float32 *)
-        (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
+      if (format->get_vertex_column()->get_numeric_type() == GeomEnums::NT_float32) {
+        // 32-bit vertex case.
+        size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float32);
 
-      if (tris->get_index_type() == GeomEnums::NT_uint32) {
-        // 32-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
-        idx_handle->unclean_set_num_rows(quads.size() * 6);
-        uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
+        PN_float32 *vtx_ptr = (PN_float32 *)
+          (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
+        PN_float32 *tex_ptr = (PN_float32 *)
+          (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
 
-        QuadDefs::const_iterator qi;
-        for (qi = quads.begin(); qi != quads.end(); ++qi) {
-          const QuadDef &quad = (*qi);
-
+        for (const QuadDef &quad : quads) {
           vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
           vtx_ptr[1] = 0;
           vtx_ptr[2] = quad._dimensions[3];
@@ -1214,26 +1197,18 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
-          *(idx_ptr++) = i + 0;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 2;
-          *(idx_ptr++) = i + 1;
-          *(idx_ptr++) = i + 3;
-          i += 4;
-
-          glyphs.push_back(MOVE(quad._glyph));
+          glyphs.push_back(move(quad._glyph));
         }
       } else {
-        // 16-bit index case.
-        PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
-        idx_handle->unclean_set_num_rows(quads.size() * 6);
-        uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
+        // 64-bit vertex case.
+        size_t stride = format->get_array(0)->get_stride() / sizeof(PN_float64);
 
-        QuadDefs::const_iterator qi;
-        for (qi = quads.begin(); qi != quads.end(); ++qi) {
-          const QuadDef &quad = (*qi);
+        PN_float64 *vtx_ptr = (PN_float64 *)
+          (write_ptr + format->get_column(InternalName::get_vertex())->get_start());
+        PN_float64 *tex_ptr = (PN_float64 *)
+          (write_ptr + format->get_column(InternalName::get_texcoord())->get_start());
 
+        for (const QuadDef &quad : quads) {
           vtx_ptr[0] = quad._dimensions[0] + quad._slanth;
           vtx_ptr[1] = 0;
           vtx_ptr[2] = quad._dimensions[3];
@@ -1270,21 +1245,51 @@ generate_quads(GeomNode *geom_node, const QuadMap &quad_map) {
           tex_ptr[1] = quad._uvs[1];
           tex_ptr += stride;
 
+          glyphs.push_back(move(quad._glyph));
+        }
+      }
+    }
+
+    // Now write the indices.  Two cases: 32-bit indices and 16-bit indices.
+    int vtx_count = quads.size() * 4;
+    PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+    if (vtx_count > 65535) {
+      tris->set_index_type(GeomEnums::NT_uint32);
+    } else {
+      tris->set_index_type(GeomEnums::NT_uint16);
+    }
+    {
+      PT(GeomVertexArrayDataHandle) idx_handle = tris->modify_vertices_handle(current_thread);
+      idx_handle->unclean_set_num_rows(quads.size() * 6);
+      if (tris->get_index_type() == GeomEnums::NT_uint16) {
+        // 16-bit index case.
+        uint16_t *idx_ptr = (uint16_t *)idx_handle->get_write_pointer();
+
+        for (int i = 0; i < vtx_count; i += 4) {
           *(idx_ptr++) = i + 0;
           *(idx_ptr++) = i + 1;
           *(idx_ptr++) = i + 2;
           *(idx_ptr++) = i + 2;
           *(idx_ptr++) = i + 1;
           *(idx_ptr++) = i + 3;
-          i += 4;
+        }
+      } else {
+        // 32-bit index case.
+        uint32_t *idx_ptr = (uint32_t *)idx_handle->get_write_pointer();
 
-          glyphs.push_back(MOVE(quad._glyph));
+        for (int i = 0; i < vtx_count; i += 4) {
+          *(idx_ptr++) = i + 0;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 2;
+          *(idx_ptr++) = i + 1;
+          *(idx_ptr++) = i + 3;
         }
       }
     }
 
     // We can compute this value much faster than GeomPrimitive can.
-    tris->set_minmax(0, i - 1, NULL, NULL);
+    tris->set_minmax(0, vtx_count - 1, nullptr, nullptr);
 
     PT(GeomTextGlyph) geom = new GeomTextGlyph(vdata);
     geom->_glyphs.swap(glyphs);
@@ -1412,9 +1417,9 @@ assemble_row(TextAssembler::TextRow &row,
   bool underscore = false;
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = nullptr;
-  const ComputedProperties *prev_cprops = nullptr;
 
 #ifdef HAVE_HARFBUZZ
+  const ComputedProperties *prev_cprops = nullptr;
   hb_buffer_t *harfbuff = nullptr;
 #endif
 
@@ -1439,7 +1444,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
 
     TextFont *font = properties->get_font();
-    nassertv(font != (TextFont *)NULL);
+    nassertv(font != nullptr);
 
     // We get the row's alignment property from the first character of the row
     if ((align == TextProperties::A_left) &&
@@ -1454,7 +1459,7 @@ assemble_row(TextAssembler::TextRow &row,
 
     // And the height of the row is the maximum of all the fonts used within
     // the row.
-    if (graphic != (TextGraphic *)NULL) {
+    if (graphic != nullptr) {
       LVecBase4 frame = graphic->get_frame();
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
@@ -1495,7 +1500,7 @@ assemble_row(TextAssembler::TextRow &row,
     } else if (character == text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
 
-    } else if (graphic != (TextGraphic *)NULL) {
+    } else if (graphic != nullptr) {
       // A special embedded graphic.
       GlyphPlacement placement;
 
@@ -1574,7 +1579,7 @@ assemble_row(TextAssembler::TextRow &row,
       // ligatures.
       GlyphPlacement placement;
 
-      placement._glyph = NULL;
+      placement._glyph = nullptr;
       placement._scale = glyph_scale;
       placement._xpos = xpos;
       placement._ypos = properties->get_glyph_shift();
@@ -1588,11 +1593,11 @@ assemble_row(TextAssembler::TextRow &row,
         // probably require the bounding volume of the glyph, so go get that.
         LPoint3 min_vert, max_vert;
         bool found_any = false;
-        if (first_glyph != NULL) {
+        if (first_glyph != nullptr) {
           first_glyph->calc_tight_bounds(min_vert, max_vert, found_any,
                                          current_thread);
         }
-        if (second_glyph != NULL) {
+        if (second_glyph != nullptr) {
           second_glyph->calc_tight_bounds(min_vert, max_vert, found_any,
                                           current_thread);
         }
@@ -1625,19 +1630,20 @@ assemble_row(TextAssembler::TextRow &row,
         }
       }
 
-      if (first_glyph != (TextGlyph *)NULL) {
-        assert(!first_glyph->is_whitespace());
+      if (first_glyph != nullptr) {
         advance = first_glyph->get_advance() * advance_scale;
-        swap(placement._glyph, first_glyph);
-        placed_glyphs.push_back(placement);
+        if (!first_glyph->is_whitespace()) {
+          std::swap(placement._glyph, first_glyph);
+          placed_glyphs.push_back(placement);
+        }
       }
 
       // Check if there is a second glyph to create a hacky ligature or some
       // such nonsense.
-      if (second_glyph != (TextGlyph *)NULL) {
+      if (second_glyph != nullptr) {
         placement._xpos += advance * glyph_scale;
         advance += second_glyph->get_advance();
-        swap(placement._glyph, second_glyph);
+        std::swap(placement._glyph, second_glyph);
         placed_glyphs.push_back(placement);
       }
 
@@ -1659,14 +1665,14 @@ assemble_row(TextAssembler::TextRow &row,
 
   row_width = xpos;
 
-  if (row._eol_cprops != (ComputedProperties *)NULL) {
+  if (row._eol_cprops != nullptr) {
     // If there's an _eol_cprops, it represents the cprops of the newline
     // character that ended the line, which should also contribute towards the
     // line_height.
 
     const TextProperties *properties = &(row._eol_cprops->_properties);
     TextFont *font = properties->get_font();
-    nassertv(font != (TextFont *)NULL);
+    nassertv(font != nullptr);
 
     if (line_height == 0.0f) {
       PN_stdfloat glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
@@ -1702,7 +1708,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
 
   DynamicTextFont *font = DCAST(DynamicTextFont, properties.get_font());
   hb_font_t *hb_font = font->get_hb_font();
-  hb_shape(hb_font, buf, NULL, 0);
+  hb_shape(hb_font, buf, nullptr, 0);
 
   PN_stdfloat glyph_scale = properties.get_glyph_scale() * properties.get_text_scale();
   PN_stdfloat scale = glyph_scale / (font->get_pixels_per_unit() * font->get_scale_factor() * 64.0);
@@ -1795,7 +1801,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &placed_glyphs,
   // LVecBase4(0), RenderState::make_empty());
 
   GlyphPlacement placement;
-  placement._glyph = MOVE(glyph);
+  placement._glyph = move(glyph);
   placement._xpos = 0;
   placement._ypos = 0;
   placement._scale = 1;
@@ -1824,11 +1830,11 @@ get_character_glyphs(int character, const TextProperties *properties,
                      int &additional_flags,
                      PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale) {
   TextFont *font = properties->get_font();
-  nassertv_always(font != (TextFont *)NULL);
+  nassertv_always(font != nullptr);
 
   got_glyph = false;
-  glyph = NULL;
-  second_glyph = NULL;
+  glyph = nullptr;
+  second_glyph = nullptr;
   accent_type = UnicodeLatinMap::AT_none;
   additional_flags = 0;
   glyph_scale = 1.0f;
@@ -1838,7 +1844,7 @@ get_character_glyphs(int character, const TextProperties *properties,
   // capital.
   const UnicodeLatinMap::Entry *map_entry =
     UnicodeLatinMap::look_up(character);
-  if (map_entry != NULL) {
+  if (map_entry != nullptr) {
     if (properties->get_small_caps() &&
         map_entry->_toupper_character != character) {
       character = map_entry->_toupper_character;
@@ -1848,7 +1854,7 @@ get_character_glyphs(int character, const TextProperties *properties,
   }
 
   got_glyph = font->get_glyph(character, glyph);
-  if (!got_glyph && map_entry != NULL && map_entry->_ascii_equiv != 0) {
+  if (!got_glyph && map_entry != nullptr && map_entry->_ascii_equiv != 0) {
     // If we couldn't find the Unicode glyph, try the ASCII equivalent
     // (without the accent marks).
     if (map_entry->_ascii_equiv == 'i') {
@@ -1869,7 +1875,7 @@ get_character_glyphs(int character, const TextProperties *properties,
       // If we still couldn't find it, try the uppercase equivalent.
       character = map_entry->_toupper_character;
       map_entry = UnicodeLatinMap::look_up(character);
-      if (map_entry != NULL) {
+      if (map_entry != nullptr) {
         got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
       }
     }
@@ -2066,7 +2072,7 @@ tack_on_accent(wchar_t accent_mark, TextAssembler::CheesyPosition position,
                const TextProperties *properties,
                TextAssembler::GlyphPlacement &placement) const {
   TextFont *font = properties->get_font();
-  nassertr(font != (TextFont *)NULL, false);
+  nassertr(font != nullptr, false);
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -2318,14 +2324,14 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
   if (this != other) {
     if (_depth > other->_depth) {
       // Back up a level from this properties.
-      nassertv(_based_on != NULL);
+      nassertv(_based_on != nullptr);
 
       wtext.push_back(text_pop_properties_key);
       _based_on->append_delta(wtext, other);
 
     } else if (other->_depth > _depth) {
       // Back up a level from the other properties.
-      nassertv(other->_based_on != NULL);
+      nassertv(other->_based_on != nullptr);
 
       append_delta(wtext, other->_based_on);
       wtext.push_back(text_push_properties_key);
@@ -2334,7 +2340,7 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
 
     } else if (_depth != 0) {
       // Back up a level from both properties.
-      nassertv(_based_on != NULL && other->_based_on != NULL);
+      nassertv(_based_on != nullptr && other->_based_on != nullptr);
 
       wtext.push_back(text_pop_properties_key);
       _based_on->append_delta(wtext, other->_based_on);
@@ -2380,7 +2386,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
 
   PT(Geom) geom = _glyph->get_geom(GeomEnums::UH_static);
 
-  int p, sp, s, e, i;
+  int sp, s, e, i;
 
   const GeomVertexData *vdata = geom->get_vertex_data();
   CPT(RenderState) rs = _glyph->get_state()->compose(state);
@@ -2397,7 +2403,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
   // that we don't needlessly duplicate vertices into our output vertex data.
   VertexIndexMap vimap;
 
-  for (p = 0; p < geom->get_num_primitives(); p++) {
+  for (size_t p = 0; p < geom->get_num_primitives(); ++p) {
     CPT(GeomPrimitive) primitive = geom->get_primitive(p)->decompose();
 
     // Get a new GeomPrimitive of the corresponding type.
@@ -2413,7 +2419,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
         int vi = primitive->get_vertex(i);
 
         // Attempt to insert number "vi" into the map.
-        pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
+        std::pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
         int new_vertex;
         if (added.second) {
           // The insert succeeded.  That means this is the first time we have
@@ -2452,7 +2458,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
     quad._dimensions += LVecBase4(offset[0], -offset[1], offset[0], -offset[1]);
     quad._glyph = _glyph;
 
-    quad_map[state->compose(_glyph->get_state())].push_back(MOVE(quad));
+    quad_map[state->compose(_glyph->get_state())].push_back(move(quad));
   }
 }
 
@@ -2462,7 +2468,7 @@ assign_quad_to(QuadMap &quad_map, const RenderState *state,
  */
 void TextAssembler::GlyphPlacement::
 copy_graphic_to(PandaNode *node, const RenderState *state) const {
-  if (_graphic_model != (PandaNode *)NULL) {
+  if (_graphic_model != nullptr) {
     // We need an intermediate node to hold the transform and state.
     PT(PandaNode) intermediate_node = new PandaNode("");
     node->add_child(intermediate_node);
@@ -2509,29 +2515,29 @@ GeomCollector(const TextAssembler::GeomCollector &copy) :
 GeomPrimitive *TextAssembler::GeomCollector::
 get_primitive(TypeHandle prim_type) {
   if (prim_type == GeomTriangles::get_class_type()) {
-    if (_triangles == (GeomPrimitive *)NULL) {
+    if (_triangles == nullptr) {
       _triangles = new GeomTriangles(Geom::UH_static);
       _geom->add_primitive(_triangles);
     }
     return _triangles;
 
   } else if (prim_type == GeomLines::get_class_type()) {
-    if (_lines == (GeomPrimitive *)NULL) {
+    if (_lines == nullptr) {
       _lines = new GeomLines(Geom::UH_static);
       _geom->add_primitive(_lines);
     }
     return _lines;
 
   } else if (prim_type == GeomPoints::get_class_type()) {
-    if (_points == (GeomPrimitive *)NULL) {
+    if (_points == nullptr) {
       _points = new GeomPoints(Geom::UH_static);
       _geom->add_primitive(_points);
     }
     return _points;
   }
 
-  nassertr(false, NULL);
-  return NULL;
+  nassertr(false, nullptr);
+  return nullptr;
 }
 
 /**

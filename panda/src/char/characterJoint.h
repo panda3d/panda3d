@@ -36,7 +36,7 @@ protected:
 
 PUBLISHED:
   explicit CharacterJoint(Character *character, PartBundle *root,
-                          PartGroup *parent, const string &name,
+                          PartGroup *parent, const std::string &name,
                           const LMatrix4 &default_value);
   virtual ~CharacterJoint();
 
@@ -107,6 +107,12 @@ public:
   // These are filled in as the joint animates.
   LMatrix4 _net_transform;
   LMatrix4 _initial_net_transform_inverse;
+
+  // This is the product of the above; the matrix that gets applied to a
+  // vertex (whose coordinates are in the coordinate space of the character
+  // in its neutral pose) to transform it from its neutral position to its
+  // animated position.
+  LMatrix4 _skinning_matrix;
 
 public:
   virtual TypeHandle get_type() const {

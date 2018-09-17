@@ -23,6 +23,10 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 
+#ifdef ANDROID
+typedef struct _JNIEnv JNIEnv;
+#endif
+
 class Mutex;
 class ReMutex;
 class MutexDebug;
@@ -41,26 +45,25 @@ class AsyncTask;
  */
 class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
-  Thread(const string &name, const string &sync_name);
+  Thread(const std::string &name, const std::string &sync_name);
+  Thread(const Thread &copy) = delete;
 
 PUBLISHED:
   virtual ~Thread();
 
-private:
-  INLINE Thread(const Thread &copy);
-  INLINE void operator = (const Thread &copy);
-
 protected:
+  Thread &operator = (const Thread &copy) = delete;
+
   virtual void thread_main()=0;
 
 PUBLISHED:
-  static PT(Thread) bind_thread(const string &name, const string &sync_name);
+  static PT(Thread) bind_thread(const std::string &name, const std::string &sync_name);
 
-  INLINE const string &get_sync_name() const;
+  INLINE const std::string &get_sync_name() const;
 
   INLINE int get_pstats_index() const;
   INLINE int get_python_index() const;
-  INLINE string get_unique_id() const;
+  INLINE std::string get_unique_id() const;
 
   INLINE int get_pipeline_stage() const;
   void set_pipeline_stage(int pipeline_stage);
@@ -78,9 +81,9 @@ PUBLISHED:
   BLOCKING INLINE static void force_yield();
   BLOCKING INLINE static void consider_yield();
 
-  virtual void output(ostream &out) const;
-  void output_blocker(ostream &out) const;
-  static void write_status(ostream &out);
+  virtual void output(std::ostream &out) const;
+  void output_blocker(std::ostream &out) const;
+  static void write_status(std::ostream &out);
 
   INLINE bool is_started() const;
   INLINE bool is_joinable() const;
@@ -89,7 +92,7 @@ PUBLISHED:
   BLOCKING INLINE void join();
   INLINE void preempt();
 
-  INLINE AsyncTask *get_current_task() const;
+  INLINE TypedReferenceCount *get_current_task() const;
 
   INLINE void set_python_index(int index);
 
@@ -128,6 +131,10 @@ public:
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
 
+#ifdef ANDROID
+  INLINE JNIEnv *get_jni_env() const;
+#endif
+
 private:
   static void init_main_thread();
   static void init_external_thread();
@@ -136,13 +143,13 @@ protected:
   bool _started;
 
 private:
-  string _sync_name;
+  std::string _sync_name;
   ThreadImpl _impl;
   int _pstats_index;
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AsyncTask *_current_task;
+  AtomicAdjust::Pointer _current_task;
 
   int _python_index;
 
@@ -187,7 +194,7 @@ private:
   friend class AsyncTask;
 };
 
-INLINE ostream &operator << (ostream &out, const Thread &thread);
+INLINE std::ostream &operator << (std::ostream &out, const Thread &thread);
 
 #include "thread.I"
 

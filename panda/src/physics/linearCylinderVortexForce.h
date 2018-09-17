@@ -23,7 +23,7 @@
  * warned- this will suck anything that it can reach directly into orbit and
  * will NOT let go.
  */
-class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearCylinderVortexForce : public LinearForce {
 PUBLISHED:
   explicit LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
                                      PN_stdfloat length = 0.0f,
@@ -42,8 +42,8 @@ PUBLISHED:
   INLINE void set_length(PN_stdfloat length);
   INLINE PN_stdfloat get_length() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   PN_stdfloat _radius;

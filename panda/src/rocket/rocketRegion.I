@@ -18,7 +18,7 @@
  * window.
  */
 INLINE RocketRegion *RocketRegion::
-make(const string &context_name, GraphicsOutput *window) {
+make(const std::string &context_name, GraphicsOutput *window) {
   return make(context_name, window, LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
 }
 
@@ -28,7 +28,7 @@ make(const string &context_name, GraphicsOutput *window) {
  * render to.
  */
 INLINE RocketRegion *RocketRegion::
-make(const string &context_name, GraphicsOutput *window,
+make(const std::string &context_name, GraphicsOutput *window,
      const LVecBase4 &dimensions) {
 
   return new RocketRegion(window, dimensions, context_name);

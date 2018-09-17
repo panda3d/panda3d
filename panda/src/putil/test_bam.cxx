@@ -17,6 +17,8 @@
 
 #include "test_bam.h"
 
+using std::endl;
+
 
 TypeHandle Person::_type_handle;
 TypeHandle Parent::_type_handle;
@@ -79,9 +81,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager)
 void Person::
 print_relationships(){
   nout << "My name is " << _name << endl;
-  if (_bro != NULL)
+  if (_bro != nullptr)
     nout << "My brother is " << _bro->name() << endl;
-  if (_sis != NULL)
+  if (_sis != nullptr)
     nout << "My sister is " << _sis->name() << endl;
 }
 
@@ -137,9 +139,9 @@ setDaughter(Child* daughter)
 void Parent::
 print_relationships(){
   Person::print_relationships();
-  if (_son != NULL)
+  if (_son != nullptr)
     nout << "My son is " << _son->name() << endl;
-  if (_daughter != NULL)
+  if (_daughter != nullptr)
     nout << "My daughter is " << _daughter->name() << endl;
 }
 
@@ -197,8 +199,8 @@ setMother(Parent* mom)
 void Child::
 print_relationships(){
   Person::print_relationships();
-  if (_dad != NULL)
+  if (_dad != nullptr)
       nout << "My dad is " << _dad->name() << endl;
-  if (_mom != NULL)
+  if (_mom != nullptr)
     nout << "My mom is " << _mom->name() << endl;
 }

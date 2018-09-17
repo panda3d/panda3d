@@ -26,21 +26,18 @@
 /**
  * Uses Posix threads to implement a mutex.
  */
-class EXPCL_DTOOL MutexPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE MutexPosixImpl {
 public:
-  CONSTEXPR MutexPosixImpl() NOEXCEPT;
+  constexpr MutexPosixImpl() noexcept;
+  MutexPosixImpl(const MutexPosixImpl &copy) = delete;
   INLINE ~MutexPosixImpl();
 
-private:
-  MutexPosixImpl(const MutexPosixImpl &copy) DELETED;
-  MutexPosixImpl &operator = (const MutexPosixImpl &copy) DELETED_ASSIGN;
+  MutexPosixImpl &operator = (const MutexPosixImpl &copy) = delete;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
-
-  INLINE pthread_mutex_t *get_posix_lock();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   pthread_mutex_t _lock;
@@ -50,25 +47,22 @@ private:
 /**
  * Uses Posix threads to implement a reentrant mutex.
  */
-class EXPCL_DTOOL ReMutexPosixImpl {
+class EXPCL_DTOOL_DTOOLBASE ReMutexPosixImpl {
 public:
 #ifdef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-  CONSTEXPR ReMutexPosixImpl() NOEXCEPT;
+  constexpr ReMutexPosixImpl() noexcept;
 #else
   INLINE ReMutexPosixImpl();
 #endif
+  ReMutexPosixImpl(const ReMutexPosixImpl &copy) = delete;
   INLINE ~ReMutexPosixImpl();
 
-private:
-  ReMutexPosixImpl(const ReMutexPosixImpl &copy) DELETED;
-  ReMutexPosixImpl &operator = (const ReMutexPosixImpl &copy) DELETED;
+  ReMutexPosixImpl &operator = (const ReMutexPosixImpl &copy) = delete;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
-
-  INLINE pthread_mutex_t *get_posix_lock();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   pthread_mutex_t _lock;

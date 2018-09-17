@@ -26,7 +26,7 @@ OutputData() {
  */
 INLINE bool AnalogNode::
 is_valid() const {
-  return (_analog != (ClientAnalogDevice *)NULL) && _analog->is_connected();
+  return (_analog != nullptr) && _analog->is_connected();
 }
 
 /**
@@ -35,7 +35,7 @@ is_valid() const {
  */
 INLINE int AnalogNode::
 get_num_controls() const {
-  return _analog->get_num_controls();
+  return _analog->get_num_axes();
 }
 
 /**
@@ -45,7 +45,7 @@ get_num_controls() const {
  */
 INLINE double AnalogNode::
 get_control_state(int index) const {
-  return _analog->get_control_state(index);
+  return _analog->get_axis_value(index);
 }
 
 /**
@@ -54,7 +54,7 @@ get_control_state(int index) const {
  */
 INLINE bool AnalogNode::
 is_control_known(int index) const {
-  return _analog->is_control_known(index);
+  return _analog->is_axis_known(index);
 }
 
 /**

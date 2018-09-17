@@ -176,7 +176,7 @@ clear() {
  * any, or NULL if no texture_stage has that name.
  */
 TextureStage *TextureStageCollection::
-find_texture_stage(const string &name) const {
+find_texture_stage(const std::string &name) const {
   int num_texture_stages = get_num_texture_stages();
   for (int i = 0; i < num_texture_stages; i++) {
     TextureStage *texture_stage = get_texture_stage(i);
@@ -184,7 +184,7 @@ find_texture_stage(const string &name) const {
       return texture_stage;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -200,7 +200,7 @@ get_num_texture_stages() const {
  */
 TextureStage *TextureStageCollection::
 get_texture_stage(int index) const {
-  nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
+  nassertr(index >= 0 && index < (int)_texture_stages.size(), nullptr);
 
   return _texture_stages[index];
 }
@@ -211,7 +211,7 @@ get_texture_stage(int index) const {
  */
 TextureStage *TextureStageCollection::
 operator [] (int index) const {
-  nassertr(index >= 0 && index < (int)_texture_stages.size(), NULL);
+  nassertr(index >= 0 && index < (int)_texture_stages.size(), nullptr);
 
   return _texture_stages[index];
 }
@@ -231,8 +231,8 @@ size() const {
  */
 void TextureStageCollection::
 sort() {
-  ::sort(_texture_stages.begin(), _texture_stages.end(),
-         CompareTextureStageSort());
+  std::sort(_texture_stages.begin(), _texture_stages.end(),
+            CompareTextureStageSort());
 }
 
 /**
@@ -240,7 +240,7 @@ sort() {
  * indicated output stream.
  */
 void TextureStageCollection::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (get_num_texture_stages() == 1) {
     out << "1 TextureStage";
   } else {
@@ -253,7 +253,7 @@ output(ostream &out) const {
  * the indicated output stream.
  */
 void TextureStageCollection::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_texture_stages(); i++) {
     indent(out, indent_level) << *get_texture_stage(i) << "\n";
   }

@@ -60,8 +60,8 @@ public:
   iterator begin() const;
   iterator end() const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   void r_make_complete(Groups &result, PaletteGroup *group);
@@ -103,7 +103,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const PaletteGroups &groups) {
+INLINE std::ostream &operator << (std::ostream &out, const PaletteGroups &groups) {
   groups.output(out);
   return out;
 }

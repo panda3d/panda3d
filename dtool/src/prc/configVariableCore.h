@@ -31,18 +31,18 @@ class ConfigDeclaration;
  * make() method, which may return a shared instance.  Once created, these
  * objects are never destructed.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableCore : public ConfigFlags {
+class EXPCL_DTOOL_PRC ConfigVariableCore : public ConfigFlags {
 private:
-  ConfigVariableCore(const string &name);
-  ConfigVariableCore(const ConfigVariableCore &templ, const string &name);
+  ConfigVariableCore(const std::string &name);
+  ConfigVariableCore(const ConfigVariableCore &templ, const std::string &name);
   ~ConfigVariableCore();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
   INLINE bool is_used() const;
 
   INLINE ValueType get_value_type() const;
-  INLINE const string &get_description() const;
+  INLINE const std::string &get_description() const;
   INLINE int get_flags() const;
   INLINE bool is_closed() const;
   INLINE int get_trust_level() const;
@@ -51,8 +51,8 @@ PUBLISHED:
 
   void set_value_type(ValueType value_type);
   void set_flags(int flags);
-  void set_description(const string &description);
-  void set_default_value(const string &default_value);
+  void set_description(const std::string &description);
+  void set_default_value(const std::string &default_value);
   INLINE void set_used();
 
   ConfigDeclaration *make_local_value();
@@ -77,8 +77,8 @@ PUBLISHED:
   MAKE_SEQ(get_unique_references, get_num_unique_references, get_unique_reference);
   MAKE_SEQ_PROPERTY(declarations, get_num_declarations, get_declaration);
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(used, is_used);
@@ -102,15 +102,15 @@ private:
   void sort_declarations();
 
 private:
-  string _name;
+  std::string _name;
   bool _is_used;
   ValueType _value_type;
-  string _description;
+  std::string _description;
   int _flags;
   ConfigDeclaration *_default_value;
   ConfigDeclaration *_local_value;
 
-  typedef vector<const ConfigDeclaration *> Declarations;
+  typedef std::vector<const ConfigDeclaration *> Declarations;
   Declarations _declarations;
   Declarations _trusted_declarations;
   Declarations _untrusted_declarations;
@@ -122,7 +122,7 @@ private:
   friend class ConfigVariableManager;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigVariableCore &variable);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigVariableCore &variable);
 
 #include "configVariableCore.I"
 

@@ -212,7 +212,7 @@ evaluate(const NodePath &rel_to) const {
  *
  */
 void NurbsSurfaceEvaluator::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "NurbsSurface, (" << get_num_u_knots() << ", " << get_num_v_knots()
       << ") knots.";
 }

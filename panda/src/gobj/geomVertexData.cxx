@@ -22,6 +22,8 @@
 #include "pset.h"
 #include "indent.h"
 
+using std::ostream;
+
 TypeHandle GeomVertexData::_type_handle;
 TypeHandle GeomVertexData::CDataCache::_type_handle;
 TypeHandle GeomVertexData::CacheEntry::_type_handle;
@@ -60,7 +62,7 @@ make_cow_copy() {
  *
  */
 GeomVertexData::
-GeomVertexData(const string &name,
+GeomVertexData(const std::string &name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
   _name(name),
@@ -89,7 +91,7 @@ GeomVertexData(const GeomVertexData &copy) :
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
     // It's important that we *not* copy the animated_vertices pointer.
-    cdata->_animated_vertices = NULL;
+    cdata->_animated_vertices = nullptr;
     cdata->_animated_vertices_modified = UpdateSeq();
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
@@ -128,7 +130,7 @@ GeomVertexData(const GeomVertexData &copy,
     }
 
     // It's important that we *not* copy the animated_vertices pointer.
-    cdata->_animated_vertices = NULL;
+    cdata->_animated_vertices = nullptr;
     cdata->_animated_vertices_modified = UpdateSeq();
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
@@ -155,7 +157,7 @@ operator = (const GeomVertexData &copy) {
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
     cdata->_modified = Geom::get_next_modified();
-    cdata->_animated_vertices = NULL;
+    cdata->_animated_vertices = nullptr;
     cdata->_animated_vertices_modified = UpdateSeq();
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
@@ -210,7 +212,7 @@ compare_to(const GeomVertexData &other) const {
  * graph for vertex computations.
  */
 void GeomVertexData::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
   _char_pcollector = PStatCollector(_animation_pcollector, name);
   _skinning_pcollector = PStatCollector(_char_pcollector, "Skinning");
@@ -342,7 +344,7 @@ void GeomVertexData::
 clear_rows() {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
-  nassertv(cdata->_format->get_num_arrays() == (int)cdata->_arrays.size());
+  nassertv(cdata->_format->get_num_arrays() == cdata->_arrays.size());
 
   Arrays::iterator ai;
   for (ai = cdata->_arrays.begin();
@@ -367,7 +369,7 @@ clear_rows() {
 void GeomVertexData::
 set_transform_table(const TransformTable *table) {
   Thread *current_thread = Thread::get_current_thread();
-  nassertv(table == (TransformTable *)NULL || table->is_registered());
+  nassertv(table == nullptr || table->is_registered());
 
   CDWriter cdata(_cycler, true, current_thread);
   cdata->_transform_table = (TransformTable *)table;
@@ -425,7 +427,7 @@ set_transform_blend_table(const TransformBlendTable *table) {
  */
 void GeomVertexData::
 set_slider_table(const SliderTable *table) {
-  nassertv(table == (SliderTable *)NULL || table->is_registered());
+  nassertv(table == nullptr || table->is_registered());
 
   CDWriter cdata(_cycler, true);
   cdata->_slider_table = (SliderTable *)table;
@@ -540,7 +542,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           dest_format->get_array(dest_i);
         const GeomVertexColumn *dest_column =
           dest_array_format->get_column(source_column->get_name());
-        nassertv(dest_column != (const GeomVertexColumn *)NULL);
+        nassertv(dest_column != nullptr);
 
         if (dest_column->is_bytewise_equivalent(*source_column)) {
           // We can do a quick bytewise copy.
@@ -604,7 +606,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
       // Convert Panda-style animation tables to hardware-style animation
       // tables.
       CPT(TransformBlendTable) blend_table = source->get_transform_blend_table();
-      if (blend_table != (TransformBlendTable *)NULL) {
+      if (blend_table != nullptr) {
         PT(TransformTable) transform_table = new TransformTable;
         TransformMap already_added;
 
@@ -725,14 +727,14 @@ convert_to(const GeomVertexFormat *new_format) const {
   } else {
     entry = (*ci).second;
     _cache_lock.release();
-    nassertr(entry->_source == this, NULL);
+    nassertr(entry->_source == this, nullptr);
 
     // Here's an element in the cache for this computation.  Record a cache
     // hit, so this element will stay in the cache a while longer.
     entry->refresh(current_thread);
 
     CDCacheReader cdata(entry->_cycler);
-    if (cdata->_result != (GeomVertexData *)NULL) {
+    if (cdata->_result != nullptr) {
       return cdata->_result;
     }
 
@@ -758,14 +760,11 @@ convert_to(const GeomVertexFormat *new_format) const {
   new_data->copy_from(this, false);
 
   // Record the new result in the cache.
-  if (entry == (CacheEntry *)NULL) {
+  if (entry == nullptr) {
     // Create a new entry for the result.
-#ifdef USE_MOVE_SEMANTICS
     // We don't need the key anymore, move the pointers into the CacheEntry.
-    entry = new CacheEntry((GeomVertexData *)this, move(key));
-#else
-    entry = new CacheEntry((GeomVertexData *)this, key);
-#endif
+    entry = new CacheEntry((GeomVertexData *)this, std::move(key));
+
     {
       LightMutexHolder holder(_cache_lock);
       bool inserted = ((GeomVertexData *)this)->_cache.insert(Cache::value_type(&entry->_key, entry)).second;
@@ -798,7 +797,7 @@ CPT(GeomVertexData) GeomVertexData::
 scale_color(const LVecBase4 &color_scale) const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
-  if (old_column == (GeomVertexColumn *)NULL) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -869,7 +868,7 @@ CPT(GeomVertexData) GeomVertexData::
 set_color(const LColor &color) const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_color());
-  if (old_column == (GeomVertexColumn *)NULL) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -913,7 +912,7 @@ CPT(GeomVertexData) GeomVertexData::
 reverse_normals() const {
   const GeomVertexColumn *old_column =
     get_format()->get_column(InternalName::get_normal());
-  if (old_column == (GeomVertexColumn *)NULL) {
+  if (old_column == nullptr) {
     return this;
   }
 
@@ -970,15 +969,15 @@ animate_vertices(bool force, Thread *current_thread) const {
   {
     PStatTimer timer2(((GeomVertexData *)this)->_blends_pcollector, current_thread);
     if (!cdata->_transform_blend_table.is_null()) {
-      if (cdata->_slider_table != (SliderTable *)NULL) {
+      if (cdata->_slider_table != nullptr) {
         modified =
-          max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
+          std::max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
               cdata->_slider_table->get_modified(current_thread));
       } else {
         modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
       }
 
-    } else if (cdata->_slider_table != (SliderTable *)NULL) {
+    } else if (cdata->_slider_table != nullptr) {
       modified = cdata->_slider_table->get_modified(current_thread);
 
     } else {
@@ -988,14 +987,14 @@ animate_vertices(bool force, Thread *current_thread) const {
   }
 
   if (cdata->_animated_vertices_modified == modified &&
-      cdata->_animated_vertices != (GeomVertexData *)NULL) {
+      cdata->_animated_vertices != nullptr) {
     // No changes.
     return cdata->_animated_vertices;
   }
 
   if (!force && !request_resident()) {
     // The vertex data isn't resident.  Return the best information we've got.
-    if (cdata->_animated_vertices != (GeomVertexData *)NULL) {
+    if (cdata->_animated_vertices != nullptr) {
       return cdata->_animated_vertices;
     }
     return this;
@@ -1115,7 +1114,7 @@ do_set_color(GeomVertexData *vdata, const LColor &color) {
   size_t stride = format->get_array(array_index)->get_stride();
 
   GeomVertexColumn::Packer *packer = column->_packer;
-  nassertv(packer != NULL);
+  nassertv(packer != nullptr);
 
   // Pack into a buffer, which we will then copy.
   unsigned char buffer[32];
@@ -1287,7 +1286,7 @@ write(ostream &out, int indent_level) const {
   }
   get_format()->write_with_data(out, indent_level + 2, this);
   CPT(TransformBlendTable) table = get_transform_blend_table();
-  if (table != (TransformBlendTable *)NULL) {
+  if (table != nullptr) {
     indent(out, indent_level)
       << "Transform blend table:\n";
     table->write(out, indent_level + 2);
@@ -1308,7 +1307,7 @@ describe_vertex(ostream &out, int row) const {
   reader.set_row_unsafe(row);
   const GeomVertexFormat *format = get_format();
 
-  const TransformBlendTable *tb_table = NULL;
+  const TransformBlendTable *tb_table = nullptr;
   if (format->get_animation().get_animation_type() == AT_panda) {
     tb_table = get_transform_blend_table();
   }
@@ -1319,7 +1318,7 @@ describe_vertex(ostream &out, int row) const {
     const GeomVertexColumn *column = format->get_column(ci);
     reader.set_column(ai, column);
 
-    int num_values = min(column->get_num_values(), 4);
+    int num_values = std::min(column->get_num_values(), 4);
     const LVecBase4 &d = reader.get_data4();
 
     out << "  " << *column->get_name();
@@ -1329,7 +1328,7 @@ describe_vertex(ostream &out, int row) const {
     out << "\n";
 
     if (column->get_name() == InternalName::get_transform_blend() &&
-        tb_table != NULL) {
+        tb_table != nullptr) {
       // This is an index into the transform blend table.  Look up the index
       // and report the vertex weighting.
       reader.set_column(ai, column);
@@ -1347,15 +1346,15 @@ describe_vertex(ostream &out, int row) const {
   for (int ai = 0; ai < num_arrays; ++ai) {
     const GeomVertexArrayData *array = get_array(ai);
     const GeomVertexArrayFormat *aformat = format->get_array(ai);
-    nassertv(array != NULL && aformat != NULL);
+    nassertv(array != nullptr && aformat != nullptr);
     out << "  " << *aformat << "\n";
     CPT(GeomVertexArrayDataHandle) handle = array->get_handle();
-    nassertv(handle != (const GeomVertexArrayDataHandle *)NULL);
+    nassertv(handle != nullptr);
     const unsigned char *data = handle->get_read_pointer(true);
-    nassertv(data != NULL);
+    nassertv(data != nullptr);
     int stride = aformat->get_stride();
     int start = stride * row;
-    if (data != NULL) {
+    if (data != nullptr) {
       Datagram dg(data + start, stride);
       dg.dump_hex(out, 4);
     }
@@ -1396,7 +1395,7 @@ clear_cache_stage() {
        ++ci) {
     CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler);
-    cdata->_result = NULL;
+    cdata->_result = nullptr;
   }
 }
 
@@ -1469,11 +1468,11 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   const GeomVertexFormat *orig_format = cdata->_format;
   CPT(GeomVertexFormat) new_format = orig_format;
 
-  if (cdata->_animated_vertices == (GeomVertexData *)NULL) {
+  if (cdata->_animated_vertices == nullptr) {
     new_format = orig_format->get_post_animated_format();
     cdata->_animated_vertices =
       new GeomVertexData(get_name(), new_format,
-                         min(get_usage_hint(), UH_dynamic));
+                         std::min(get_usage_hint(), UH_dynamic));
   }
   PT(GeomVertexData) new_data = cdata->_animated_vertices;
 
@@ -1485,7 +1484,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
   // First, apply all of the morphs.
   CPT(SliderTable) slider_table = cdata->_slider_table;
-  if (slider_table != (SliderTable *)NULL) {
+  if (slider_table != nullptr) {
     PStatTimer timer2(_morphs_pcollector);
     int num_morphs = orig_format->get_num_morphs();
     for (int mi = 0; mi < num_morphs; mi++) {
@@ -1568,7 +1567,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
   // Then apply the transforms.
   CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer(current_thread);
-  if (tb_table != (TransformBlendTable *)NULL) {
+  if (tb_table != nullptr) {
     // Recompute all the blends up front, so we don't have to test each one
     // for staleness at each vertex.
     {
@@ -1836,17 +1835,21 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
   bool normalize = false;
   if (data_column->get_contents() == C_normal) {
     // This is to preserve perpendicularity to the surface.
-    LVecBase3 scale, shear, hpr;
-    if (decompose_matrix(mat.get_upper_3(), scale, shear, hpr) &&
-        IS_NEARLY_EQUAL(scale[0], scale[1]) &&
-        IS_NEARLY_EQUAL(scale[0], scale[2])) {
-      if (scale[0] == 1) {
+    LVecBase3 scale_sq(mat.get_row3(0).length_squared(),
+                       mat.get_row3(1).length_squared(),
+                       mat.get_row3(2).length_squared());
+    if (IS_THRESHOLD_EQUAL(scale_sq[0], scale_sq[1], 2.0e-3f) &&
+        IS_THRESHOLD_EQUAL(scale_sq[0], scale_sq[2], 2.0e-3f)) {
+      // There is a uniform scale.
+      LVecBase3 scale, shear, hpr;
+      if (IS_THRESHOLD_EQUAL(scale_sq[0], 1, 2.0e-3f)) {
         // No scale to worry about.
         xform = mat;
-      } else {
-        // Simply take the uniform scale out of the transformation.  Not sure
-        // if it might be better to just normalize?
+      } else if (decompose_matrix(mat.get_upper_3(), scale, shear, hpr)) {
+        // Make a new matrix with scale/translate taken out of the equation.
         compose_matrix(xform, LVecBase3(1, 1, 1), shear, hpr, LVecBase3::zero());
+      } else {
+        normalize = true;
       }
     } else {
       // There is a non-uniform scale, so we need to do all this to preserve
@@ -2071,14 +2074,14 @@ finalize(BamReader *manager) {
     array_obj->_array_format = new_array_format;
   }
 
-  if (cdata->_transform_table != (TransformTable *)NULL) {
+  if (cdata->_transform_table != nullptr) {
     CPT(TransformTable) new_transform_table =
       TransformTable::register_table(cdata->_transform_table);
     manager->change_pointer(cdata->_transform_table, new_transform_table);
     cdata->_transform_table = new_transform_table;
   }
 
-  if (cdata->_slider_table != (SliderTable *)NULL) {
+  if (cdata->_slider_table != nullptr) {
     CPT(SliderTable) new_slider_table =
       SliderTable::register_table(cdata->_slider_table);
     manager->change_pointer(cdata->_slider_table, new_slider_table);
@@ -2185,7 +2188,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     CPT(GeomVertexArrayData) adata = _arrays[0].get_read_pointer();
     all_rows.set_range(0, adata->get_num_rows());
 
-    if (_slider_table != (SliderTable *)NULL) {
+    if (_slider_table != nullptr) {
       int num_sliders = _slider_table->get_num_sliders();
       for (int i = 0; i < num_sliders; ++i) {
         ((SliderTable *)_slider_table.p())->set_slider_rows(i, all_rows);
@@ -2212,7 +2215,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _arrays.reserve(num_arrays);
   for (size_t i = 0; i < num_arrays; ++i) {
     manager->read_pointer(scan);
-    _arrays.push_back(NULL);
+    _arrays.push_back(nullptr);
   }
 
   manager->read_pointer(scan);
@@ -2240,7 +2243,7 @@ get_num_bytes() const {
  */
 int GeomVertexDataPipelineReader::
 get_num_rows() const {
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), 0);
   nassertr(_got_array_readers, 0);
 
   if (_cdata->_format->get_num_arrays() == 0) {
@@ -2392,7 +2395,7 @@ make_array_readers() {
  */
 int GeomVertexDataPipelineWriter::
 get_num_rows() const {
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), 0);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), 0);
   nassertr(_got_array_writers, 0);
 
   if (_cdata->_format->get_num_arrays() == 0) {
@@ -2411,7 +2414,7 @@ get_num_rows() const {
 bool GeomVertexDataPipelineWriter::
 set_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
@@ -2507,7 +2510,7 @@ set_num_rows(int n) {
 bool GeomVertexDataPipelineWriter::
 unclean_set_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
@@ -2534,7 +2537,7 @@ unclean_set_num_rows(int n) {
 bool GeomVertexDataPipelineWriter::
 reserve_num_rows(int n) {
   nassertr(_got_array_writers, false);
-  nassertr(_cdata->_format->get_num_arrays() == (int)_cdata->_arrays.size(), false);
+  nassertr(_cdata->_format->get_num_arrays() == _cdata->_arrays.size(), false);
 
   bool any_changed = false;
 

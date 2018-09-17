@@ -37,6 +37,8 @@
 #endif
 #endif
 
+using std::string;
+
 LoaderOptions PandaFramework::_loader_options;
 
 /**
@@ -50,7 +52,7 @@ PandaFramework() :
   _is_open = false;
   _made_default_pipe = false;
   _window_title = string();
-  _engine = (GraphicsEngine *)NULL;
+  _engine = nullptr;
   _start_time = 0.0;
   _frame_count = 0;
   _wireframe_enabled = false;
@@ -80,7 +82,7 @@ PandaFramework::
  * control parameters.
  */
 void PandaFramework::
-open_framework(int &argc, char **&argv) {
+open_framework() {
   if (_is_open) {
     return;
   }
@@ -91,7 +93,7 @@ open_framework(int &argc, char **&argv) {
   // If we're statically linking, we need to explicitly link with at least one
   // of the available renderers.
   #if defined(HAVE_GL)
-  extern EXPCL_PANDAGL void init_libpandagl();
+  extern void init_libpandagl();
   init_libpandagl();
   #elif defined(HAVE_DX9)
   extern EXPCL_PANDADX void init_libpandadx9();
@@ -161,6 +163,14 @@ open_framework(int &argc, char **&argv) {
 }
 
 /**
+ * @deprecated See the version of open_framework() without arguments.
+ */
+void PandaFramework::
+open_framework(int &argc, char **&argv) {
+  open_framework();
+}
+
+/**
  * Should be called at the end of an application to close Panda.  This is
  * optional, as the destructor will do the same thing.
  */
@@ -172,9 +182,9 @@ close_framework() {
 
   close_all_windows();
   // Also close down any other windows that might have been opened.
-  if (_engine != (GraphicsEngine *)NULL) {
+  if (_engine != nullptr) {
     _engine->remove_all_windows();
-    _engine = NULL;
+    _engine = nullptr;
   }
 
   _event_handler.remove_all_hooks();
@@ -191,7 +201,7 @@ close_framework() {
   _default_keys_enabled = false;
   _exit_flag = false;
 
-  _recorder = NULL;
+  _recorder = nullptr;
 
   Thread::prepare_for_exit();
 }
@@ -208,7 +218,7 @@ close_framework() {
  */
 GraphicsPipe *PandaFramework::
 get_default_pipe() {
-  nassertr(_is_open, NULL);
+  nassertr(_is_open, nullptr);
   if (!_made_default_pipe) {
     make_default_pipe();
     _made_default_pipe = true;
@@ -240,7 +250,7 @@ get_mouse(GraphicsOutput *window) {
     mouse = data_root.attach_new_node(mouse_node);
 
     RecorderController *recorder = get_recorder();
-    if (recorder != (RecorderController *)NULL) {
+    if (recorder != nullptr) {
       // If we're in recording or playback mode, associate a recorder.
       MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
       mouse = mouse.attach_new_node(mouse_recorder);
@@ -324,13 +334,13 @@ get_default_window_props(WindowProperties &props) {
 WindowFramework *PandaFramework::
 open_window() {
   GraphicsPipe *pipe = get_default_pipe();
-  if (pipe == (GraphicsPipe *)NULL) {
+  if (pipe == nullptr) {
     // Can't get a pipe.
-    return NULL;
+    return nullptr;
   }
 
-  WindowFramework *wf = open_window(pipe, NULL);
-  if (wf == (WindowFramework *)NULL) {
+  WindowFramework *wf = open_window(pipe, nullptr);
+  if (wf == nullptr) {
     // Ok, the default graphics pipe failed; try a little harder.
     GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
     selection->load_aux_modules();
@@ -340,9 +350,9 @@ open_window() {
       TypeHandle pipe_type = selection->get_pipe_type(i);
       if (pipe_type != _default_pipe->get_type()) {
         PT(GraphicsPipe) new_pipe = selection->make_pipe(pipe_type);
-        if (new_pipe != (GraphicsPipe *)NULL) {
-          wf = open_window(new_pipe, NULL);
-          if (wf != (WindowFramework *)NULL) {
+        if (new_pipe != nullptr) {
+          wf = open_window(new_pipe, nullptr);
+          if (wf != nullptr) {
             // Here's the winner!
             _default_pipe = new_pipe;
             return wf;
@@ -364,7 +374,7 @@ open_window() {
  */
 WindowFramework *PandaFramework::
 open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  nassertr(_is_open, NULL);
+  nassertr(_is_open, nullptr);
 
   WindowProperties props;
   get_default_window_props(props);
@@ -387,15 +397,15 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 WindowFramework *PandaFramework::
 open_window(const WindowProperties &props, int flags,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  if (pipe == (GraphicsPipe *)NULL) {
+  if (pipe == nullptr) {
     pipe = get_default_pipe();
-    if (pipe == (GraphicsPipe *)NULL) {
+    if (pipe == nullptr) {
       // Can't get a pipe.
-      return NULL;
+      return nullptr;
     }
   }
 
-  nassertr(_is_open, NULL);
+  nassertr(_is_open, nullptr);
   PT(WindowFramework) wf = make_window_framework();
   wf->set_wireframe(get_wireframe());
   wf->set_texture(get_texture());
@@ -407,18 +417,18 @@ open_window(const WindowProperties &props, int flags,
   GraphicsOutput *win = wf->open_window(props, flags, get_graphics_engine(),
                                         pipe, gsg);
   _engine->open_windows();
-  if (win != (GraphicsOutput *)NULL && !win->is_valid()) {
+  if (win != nullptr && !win->is_valid()) {
     // The window won't open.
     _engine->remove_window(win);
     wf->close_window();
-    win = NULL;
+    win = nullptr;
   }
 
-  if (win == (GraphicsOutput *)NULL) {
+  if (win == nullptr) {
     // Oops, couldn't make a window or buffer.
     framework_cat.error()
       << "Unable to create window.\n";
-    return NULL;
+    return nullptr;
   }
 
   _windows.push_back(wf);
@@ -467,7 +477,7 @@ close_window(int n) {
   WindowFramework *wf = _windows[n];
 
   GraphicsOutput *win = wf->get_graphics_output();
-  if (win != (GraphicsOutput *)NULL) {
+  if (win != nullptr) {
     _engine->remove_window(win);
   }
 
@@ -485,7 +495,7 @@ close_all_windows() {
     WindowFramework *wf = (*wi);
 
     GraphicsOutput *win = wf->get_graphics_output();
-    if (win != (GraphicsOutput *)NULL) {
+    if (win != nullptr) {
       _engine->remove_window(win);
     }
 
@@ -535,7 +545,7 @@ get_models() {
  * Reports the currently measured average frame rate to the indicated ostream.
  */
 void PandaFramework::
-report_frame_rate(ostream &out) const {
+report_frame_rate(std::ostream &out) const {
   double now = ClockObject::get_global_clock()->get_frame_time();
   double delta = now - _start_time;
 
@@ -780,7 +790,7 @@ make_default_pipe() {
 
   _default_pipe = selection->make_default_pipe();
 
-  if (_default_pipe == (GraphicsPipe*)NULL) {
+  if (_default_pipe == nullptr) {
     nout << "No graphics pipe is available!\n"
          << "Your Config.prc file must name at least one valid panda display\n"
          << "library via load-display or aux-display.\n";
@@ -1175,10 +1185,10 @@ event_arrow_right(const Event *, void *data) {
 void PandaFramework::
 event_S(const Event *, void *) {
 #ifdef DO_PSTATS
-  nout << "Connecting to stats host" << endl;
+  nout << "Connecting to stats host" << std::endl;
   PStatClient::connect();
 #else
-  nout << "Stats host not supported." << endl;
+  nout << "Stats host not supported." << std::endl;
 #endif
 }
 
@@ -1219,7 +1229,7 @@ event_f9(const Event *event, void *data) {
     self->_screenshot_text.set_scale(0.06);
     self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
     self->_screenshot_text.reparent_to(wf->get_aspect_2d());
-    cout << "Screenshot saved: " + output_text + "\n";
+    std::cout << "Screenshot saved: " + output_text + "\n";
 
     // Set a do-later to remove the text in 3 seconds.
     self->_task_mgr.remove(self->_task_mgr.find_tasks("clear_text"));
@@ -1273,7 +1283,7 @@ event_question(const Event *event, void *data) {
 
     } else {
       // Build up a string to display.
-      ostringstream help;
+      std::ostringstream help;
       KeyDefinitions::const_iterator ki;
       for (ki = self->_key_definitions.begin();
            ki != self->_key_definitions.end();
@@ -1294,7 +1304,7 @@ event_question(const Event *event, void *data) {
       LVecBase4 frame = text_node->get_frame_actual();
 
       PN_stdfloat height = frame[3] - frame[2];
-      PN_stdfloat scale = min(0.06, 1.8 / height);
+      PN_stdfloat scale = std::min(0.06, 1.8 / height);
       self->_help_text.set_scale(scale);
 
       PN_stdfloat pos_scale = scale / -2.0;
@@ -1391,11 +1401,17 @@ AsyncTask::DoneStatus PandaFramework::
 task_igloop(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_engine != (GraphicsEngine *)NULL) {
-    self->_engine->render_frame();
+  // This exists to work around a crash that happens when the PandaFramework
+  // is destructed because the application is exited during render_frame().
+  // The proper fix is not to instantiate PandaFramework in the global scope
+  // but many C++ applications (including pview) do this anyway.
+  PT(GraphicsEngine) engine = self->_engine;
+  if (engine != nullptr) {
+    engine->render_frame();
+    return AsyncTask::DS_cont;
+  } else {
+    return AsyncTask::DS_done;
   }
-
-  return AsyncTask::DS_cont;
 }
 
 /**
@@ -1406,7 +1422,7 @@ AsyncTask::DoneStatus PandaFramework::
 task_record_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_recorder != (RecorderController *)NULL) {
+  if (self->_recorder != nullptr) {
     self->_recorder->record_frame();
   }
 
@@ -1421,7 +1437,7 @@ AsyncTask::DoneStatus PandaFramework::
 task_play_frame(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
 
-  if (self->_recorder != (RecorderController *)NULL) {
+  if (self->_recorder != nullptr) {
     self->_recorder->play_frame();
   }
 

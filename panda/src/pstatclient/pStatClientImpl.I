@@ -16,14 +16,14 @@
  * will presumably be written in the title bar or something.
  */
 INLINE void PStatClientImpl::
-set_client_name(const string &name) {
+set_client_name(const std::string &name) {
   _client_name = name;
 }
 
 /**
  * Retrieves the name of the client as set.
  */
-INLINE string PStatClientImpl::
+INLINE std::string PStatClientImpl::
 get_client_name() const {
   return _client_name;
 }

@@ -36,8 +36,8 @@ public:
 PUBLISHED:
   enum { num_bits = nbits };
 
-  INLINE BitMask();
-  INLINE BitMask(WordType init_value);
+  constexpr BitMask() = default;
+  ALWAYS_INLINE constexpr BitMask(WordType init_value);
 
   INLINE static BitMask<WType, nbits> all_on();
   INLINE static BitMask<WType, nbits> all_off();
@@ -45,10 +45,10 @@ PUBLISHED:
   INLINE static BitMask<WType, nbits> bit(int index);
   INLINE static BitMask<WType, nbits> range(int low_bit, int size);
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
+  constexpr static bool has_max_num_bits() { return true; }
+  constexpr static int get_max_num_bits() { return num_bits; }
 
-  CONSTEXPR static int get_num_bits();
+  constexpr int get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
@@ -78,10 +78,10 @@ PUBLISHED:
   INLINE bool has_bits_in_common(const BitMask<WType, nbits> &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
-  void output_binary(ostream &out, int spaces_every = 4) const;
-  void output_hex(ostream &out, int spaces_every = 4) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void output_binary(std::ostream &out, int spaces_every = 4) const;
+  void output_hex(std::ostream &out, int spaces_every = 4) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool operator == (const BitMask<WType, nbits> &other) const;
   INLINE bool operator != (const BitMask<WType, nbits> &other) const;
@@ -131,13 +131,13 @@ public:
   INLINE void generate_hash(ChecksumHashGenerator &hashgen) const;
 
 private:
-  WordType _word;
+  WordType _word = 0u;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const string &name);
+  static void init_type(const std::string &name);
 
 private:
   static TypeHandle _type_handle;
@@ -146,7 +146,7 @@ private:
 #include "bitMask.I"
 
 template<class WType, int nbits>
-INLINE ostream &operator << (ostream &out, const BitMask<WType, nbits> &bitmask) {
+INLINE std::ostream &operator << (std::ostream &out, const BitMask<WType, nbits> &bitmask) {
   bitmask.output(out);
   return out;
 }
@@ -171,10 +171,5 @@ typedef BitMask64 BitMaskNative;
 #else
 #error No definition for NATIVE_WORDSIZE--should be defined in dtoolbase.h.
 #endif  // NATIVE_WORDSIZE
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

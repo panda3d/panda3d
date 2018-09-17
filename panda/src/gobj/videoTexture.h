@@ -27,7 +27,7 @@
  */
 class EXPCL_PANDA_GOBJ VideoTexture : public Texture, public AnimInterface {
 protected:
-  VideoTexture(const string &name);
+  VideoTexture(const std::string &name);
   VideoTexture(const VideoTexture &copy);
 
 PUBLISHED:
@@ -53,7 +53,7 @@ protected:
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
   virtual bool do_adjust_this_size(const Texture::CData *cdata,
-                                   int &x_size, int &y_size, const string &name,
+                                   int &x_size, int &y_size, const std::string &name,
                                    bool for_padding) const;
 
   virtual void consider_update();

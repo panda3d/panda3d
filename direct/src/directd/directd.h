@@ -52,7 +52,7 @@ typedef int HANDLE;
  * presented in order chronologically by their intended usage.  The first
  * group will probably provide everthing needed for DirectD.
  */
-class EXPCL_DIRECT DirectD {
+class EXPCL_DIRECT_DIRECTD DirectD {
 PUBLISHED:
   DirectD();
   ~DirectD();
@@ -73,7 +73,7 @@ PUBLISHED:
  * one command, you should use connect_to(), send_command(), and
  * disconnect_from().
  */
-  int client_ready(const string& server_host, int port, const string& cmd);
+  int client_ready(const std::string& server_host, int port, const std::string& cmd);
 
 /**
  * Tell the server to do the command cmd.  cmd is one of the following:
@@ -85,7 +85,7 @@ PUBLISHED:
  * client_ready(), it prefixes "!" for you.  A new connection will be created
  * and closed.
  */
-  int tell_server(const string& server_host, int port, const string& cmd);
+  int tell_server(const std::string& server_host, int port, const std::string& cmd);
 
 /**
  * Call this function from the client after calling <count> client_ready()
@@ -102,7 +102,7 @@ PUBLISHED:
  * Call this function from the server when import ShowbaseGlobal is nearly
  * finished.
  */
-  int server_ready(const string& client_host, int port);
+  int server_ready(const std::string& client_host, int port);
 
 /**
  * Call connect_to from client for each server.  returns the port number of
@@ -110,28 +110,28 @@ PUBLISHED:
  * second argument).  The return value can be used for the port arguemnt in
  * disconnect_from().
  */
-  int connect_to(const string& server_host, int port);
+  int connect_to(const std::string& server_host, int port);
 
 /**
  * This is the counterpart to connect_to().  Pass the same server_host as for
  * connect_to(), but pass the return value from connect_to() for the port, not
  * the port passed to connect_to().
  */
-  void disconnect_from(const string& server_host, int port);
+  void disconnect_from(const std::string& server_host, int port);
 
 /**
  * Send the same command string to all current connections.
  */
-  void send_command(const string& cmd);
+  void send_command(const std::string& cmd);
 
 protected:
-  void start_app(const string& cmd);
+  void start_app(const std::string& cmd);
   void kill_app(int index);
   void kill_all();
-  virtual void handle_command(const string& cmd);
+  virtual void handle_command(const std::string& cmd);
   void handle_datagram(NetDatagram& datagram);
-  void send_one_message(const string& host_name,
-      int port, const string& message);
+  void send_one_message(const std::string& host_name,
+      int port, const std::string& message);
 
   QueuedConnectionManager _cm;
   QueuedConnectionReader _reader;

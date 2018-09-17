@@ -3,7 +3,7 @@
 
 Node::Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h) {
   for(int i = 0; i < 8; ++i) {
-    _neighbours[i] = NULL;
+    _neighbours[i] = nullptr;
   }
 
   _position = pos;
@@ -17,8 +17,8 @@ Node::Node(int grid_x, int grid_y, LVecBase3 pos, float w, float l, float h) {
   _score = 0;
   _cost = 0;
   _heuristic = 0;
-  _next = NULL;
-  _prv_node =  NULL;
+  _next = nullptr;
+  _prv_node =  nullptr;
 }
 
 Node::~Node() {

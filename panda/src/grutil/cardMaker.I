@@ -15,7 +15,7 @@
  *
  */
 INLINE CardMaker::
-CardMaker(const string &name) : Namable(name) {
+CardMaker(const std::string &name) : Namable(name) {
   reset();
 }
 
@@ -134,5 +134,5 @@ set_source_geometry(PandaNode *node, const LVecBase4 &frame) {
  */
 INLINE void CardMaker::
 clear_source_geometry() {
-  _source_geometry = (PandaNode *)NULL;
+  _source_geometry = nullptr;
 }

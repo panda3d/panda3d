@@ -15,7 +15,7 @@
  *
  */
 INLINE ModelNode::
-ModelNode(const string &name) :
+ModelNode(const std::string &name) :
   PandaNode(name)
 {
   _preserve_transform = PT_none;

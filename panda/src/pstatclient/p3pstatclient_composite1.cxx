@@ -1,5 +1,5 @@
 
-#include "config_pstats.cxx"
+#include "config_pstatclient.cxx"
 #include "pStatClient.cxx"
 #include "pStatClientImpl.cxx"
 #include "pStatClientVersion.cxx"

@@ -27,8 +27,8 @@
  * any characters special to egg, writes quotation marks around it.  If
  * always_quote is true, writes quotation marks regardless.
  */
-ostream &
-enquote_string(ostream &out, const string &str,
+std::ostream &
+enquote_string(std::ostream &out, const std::string &str,
                int indent_level = 0,
                bool always_quote = false);
 
@@ -38,13 +38,13 @@ enquote_string(ostream &out, const string &str,
  * A helper function to write out a 3x3 transform matrix.
  */
 void
-write_transform(ostream &out, const LMatrix3d &mat, int indent_level);
+write_transform(std::ostream &out, const LMatrix3d &mat, int indent_level);
 
 /**
  * A helper function to write out a 4x4 transform matrix.
  */
 void
-write_transform(ostream &out, const LMatrix4d &mat, int indent_level);
+write_transform(std::ostream &out, const LMatrix4d &mat, int indent_level);
 
 
 #include "eggMiscFuncs.I"

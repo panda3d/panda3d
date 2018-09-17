@@ -16,8 +16,12 @@
 
 #include "pandabase.h"
 
+#include "pandaNode.h"
+
 #include "bullet_includes.h"
-#include "lightMutex.h"
+
+class CullTraverser;
+class CullTraverserData;
 
 /**
  *
@@ -55,7 +59,7 @@ public:
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 private:
-  void sync_b2p(btDynamicsWorld *world);
+  void do_sync_b2p(btDynamicsWorld *world);
 
   struct Line {
     LVecBase3 _p0;
@@ -101,7 +105,6 @@ private:
     int _mode;
   };
 
-  LightMutex _lock;
   DebugDraw _drawer;
 
   bool _debug_stale;

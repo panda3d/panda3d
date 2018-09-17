@@ -14,7 +14,7 @@
 #include "eggReader.h"
 
 #include "pnmImage.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "eggTextureCollection.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"
@@ -50,7 +50,7 @@ EggReader() {
      "which should be self-contained and include only relative pathnames.",
      &EggReader::dispatch_none, &_noabs);
 
-  _tex_type = (PNMFileType *)NULL;
+  _tex_type = nullptr;
   _delod = -1.0;
 
   _got_tex_dirname = false;
@@ -90,7 +90,7 @@ add_texture_options() {
      "the image format can be determined by the extension, but sometimes "
      "the extension is insufficient to unambiguously specify an image "
      "type.",
-     &EggReader::dispatch_image_type, NULL, &_tex_type);
+     &EggReader::dispatch_image_type, nullptr, &_tex_type);
 }
 
 /**
@@ -111,7 +111,7 @@ add_delod_options(double default_delod) {
        "a camera at the indicated fixed distance from each LOD.  "
        "Use -delod -1 to keep all the LOD's as they are, which is "
        "the default.\n",
-       &EggReader::dispatch_double, NULL, &_delod);
+       &EggReader::dispatch_double, nullptr, &_delod);
 
   } else {
     add_option
@@ -120,7 +120,7 @@ add_delod_options(double default_delod) {
        "a camera at the indicated fixed distance from each LOD.  "
        "Use -delod -1 to keep all the LOD's as they are.  The default value "
        "is " + format_string(default_delod) + ".",
-       &EggReader::dispatch_double, NULL, &_delod);
+       &EggReader::dispatch_double, nullptr, &_delod);
   }
 }
 
@@ -178,7 +178,7 @@ handle_args(ProgramBase::Args &args) {
         exit(1);
       }
     } else {
-      if (!file_data.read(cin)) {
+      if (!file_data.read(std::cin)) {
         exit(1);
       }
     }

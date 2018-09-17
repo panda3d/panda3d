@@ -107,7 +107,7 @@ sleep(double seconds) {
   struct timespec rqtp;
   rqtp.tv_sec = time_t(seconds);
   rqtp.tv_nsec = long((seconds - (double)rqtp.tv_sec) * 1000000000.0);
-  nanosleep(&rqtp, NULL);
+  nanosleep(&rqtp, nullptr);
 #endif  // WIN32
 }
 

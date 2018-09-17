@@ -65,18 +65,18 @@ public:
   const InterrogateElement &get_element(ElementIndex element);
   const InterrogateMakeSeq &get_make_seq(MakeSeqIndex element);
 
-  INLINE TypeIndex lookup_type_by_name(const string &name);
-  INLINE TypeIndex lookup_type_by_scoped_name(const string &name);
-  INLINE TypeIndex lookup_type_by_true_name(const string &name);
-  INLINE ManifestIndex lookup_manifest_by_name(const string &name);
-  INLINE ElementIndex lookup_element_by_name(const string &name);
-  INLINE ElementIndex lookup_element_by_scoped_name(const string &name);
+  INLINE TypeIndex lookup_type_by_name(const std::string &name);
+  INLINE TypeIndex lookup_type_by_scoped_name(const std::string &name);
+  INLINE TypeIndex lookup_type_by_true_name(const std::string &name);
+  INLINE ManifestIndex lookup_manifest_by_name(const std::string &name);
+  INLINE ElementIndex lookup_element_by_name(const std::string &name);
+  INLINE ElementIndex lookup_element_by_scoped_name(const std::string &name);
 
   void remove_type(TypeIndex type);
 
   void *get_fptr(FunctionWrapperIndex wrapper);
 
-  FunctionWrapperIndex get_wrapper_by_unique_name(const string &unique_name);
+  FunctionWrapperIndex get_wrapper_by_unique_name(const std::string &unique_name);
 
   static int get_file_major_version();
   static int get_file_minor_version();
@@ -106,14 +106,14 @@ public:
   int remap_indices(int first_index);
   int remap_indices(int first_index, IndexRemapper &remap);
 
-  void write(ostream &out, InterrogateModuleDef *def) const;
-  bool read(istream &in, InterrogateModuleDef *def);
+  void write(std::ostream &out, InterrogateModuleDef *def) const;
+  bool read(std::istream &in, InterrogateModuleDef *def);
 
 private:
   INLINE void check_latest();
   void load_latest();
 
-  bool read_new(istream &in, InterrogateModuleDef *def);
+  bool read_new(std::istream &in, InterrogateModuleDef *def);
   void merge_from(const InterrogateDatabase &other);
 
   bool find_module(FunctionWrapperIndex wrapper,
@@ -121,44 +121,44 @@ private:
   int binary_search_module(int begin, int end, FunctionIndex function);
   int binary_search_wrapper_hash(InterrogateUniqueNameDef *begin,
                                  InterrogateUniqueNameDef *end,
-                                 const string &wrapper_hash_name);
+                                 const std::string &wrapper_hash_name);
 
   // This data is loaded from the various database files.
-  typedef map<TypeIndex, InterrogateType> TypeMap;
+  typedef std::map<TypeIndex, InterrogateType> TypeMap;
   TypeMap _type_map;
-  typedef map<FunctionIndex, InterrogateFunction *> FunctionMap;
+  typedef std::map<FunctionIndex, InterrogateFunction *> FunctionMap;
   FunctionMap _function_map;
-  typedef map<FunctionWrapperIndex, InterrogateFunctionWrapper> FunctionWrapperMap;
+  typedef std::map<FunctionWrapperIndex, InterrogateFunctionWrapper> FunctionWrapperMap;
   FunctionWrapperMap _wrapper_map;
 
-  typedef map<ManifestIndex, InterrogateManifest> ManifestMap;
+  typedef std::map<ManifestIndex, InterrogateManifest> ManifestMap;
   ManifestMap _manifest_map;
-  typedef map<ElementIndex, InterrogateElement> ElementMap;
+  typedef std::map<ElementIndex, InterrogateElement> ElementMap;
   ElementMap _element_map;
 
-  typedef map<MakeSeqIndex, InterrogateMakeSeq> MakeSeqMap;
+  typedef std::map<MakeSeqIndex, InterrogateMakeSeq> MakeSeqMap;
   MakeSeqMap _make_seq_map;
 
-  typedef vector<TypeIndex> GlobalTypes;
+  typedef std::vector<TypeIndex> GlobalTypes;
   GlobalTypes _global_types;
   GlobalTypes _all_types;
-  typedef vector<FunctionIndex> GlobalFunctions;
+  typedef std::vector<FunctionIndex> GlobalFunctions;
   GlobalFunctions _global_functions;
   GlobalFunctions _all_functions;
-  typedef vector<ManifestIndex> GlobalManifests;
+  typedef std::vector<ManifestIndex> GlobalManifests;
   GlobalManifests _global_manifests;
-  typedef vector<ElementIndex> GlobalElements;
+  typedef std::vector<ElementIndex> GlobalElements;
   GlobalElements _global_elements;
 
   // This data is compiled in directly to the shared libraries that we link
   // with.
-  typedef vector<InterrogateModuleDef *> Modules;
+  typedef std::vector<InterrogateModuleDef *> Modules;
   Modules _modules;
-  typedef map<string, InterrogateModuleDef *> ModulesByHash;
+  typedef std::map<std::string, InterrogateModuleDef *> ModulesByHash;
   ModulesByHash _modules_by_hash;
 
   // This records the set of database files that are still to be loaded.
-  typedef vector<InterrogateModuleDef *> Requests;
+  typedef std::vector<InterrogateModuleDef *> Requests;
   Requests _requests;
 
   bool _error_flag;
@@ -174,7 +174,7 @@ private:
   };
 
   int _lookups_fresh;
-  typedef map<string, int> Lookup;
+  typedef std::map<std::string, int> Lookup;
   Lookup _types_by_name;
   Lookup _types_by_scoped_name;
   Lookup _types_by_true_name;
@@ -189,7 +189,7 @@ private:
   void freshen_elements_by_name();
   void freshen_elements_by_scoped_name();
 
-  int lookup(const string &name,
+  int lookup(const std::string &name,
              Lookup &lookup, LookupType type,
              void (InterrogateDatabase::*freshen)());
 

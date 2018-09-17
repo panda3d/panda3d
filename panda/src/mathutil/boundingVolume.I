@@ -94,7 +94,7 @@ contains(const BoundingVolume *vol) const {
   return vol->contains_other(this);
 }
 
-INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound) {
+INLINE_MATHUTIL std::ostream &operator << (std::ostream &out, const BoundingVolume &bound) {
   bound.output(out);
   return out;
 }

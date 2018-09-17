@@ -23,16 +23,16 @@ TypeHandle ButtonNode::_type_handle;
  *
  */
 ButtonNode::
-ButtonNode(ClientBase *client, const string &device_name) :
+ButtonNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
-  nassertv(client != (ClientBase *)NULL);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientButtonDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)NULL) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open button device " << device_name << "\n";
     return;
@@ -74,10 +74,10 @@ ButtonNode::
  *
  */
 void ButtonNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   DataNode::output(out);
 
-  if (_device != (InputDevice *)NULL) {
+  if (_device != nullptr) {
     out << " (";
     _device->output_buttons(out);
     out << ")";
@@ -88,10 +88,10 @@ output(ostream &out) const {
  *
  */
 void ButtonNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_device != (InputDevice *)NULL) {
+  if (_device != nullptr) {
     _device->write_buttons(out, indent_level + 2);
   }
 }

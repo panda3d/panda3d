@@ -18,6 +18,8 @@
 #include "bamReader.h"
 #include "preparedGraphicsObjects.h"
 
+using std::string;
+
 PT(InternalName) InternalName::_root;
 PT(InternalName) InternalName::_error;
 PT(InternalName) InternalName::_default;
@@ -65,7 +67,7 @@ InternalName(InternalName *parent, const string &basename) :
 InternalName::
 ~InternalName() {
 #ifndef NDEBUG
-  if (_parent != (const InternalName *)NULL) {
+  if (_parent != nullptr) {
     // unref() should have removed us from our parent's table already.
     LightMutexHolder holder(_parent->_name_table_lock);
     NameTable::iterator ni = _parent->_name_table.find(_basename);
@@ -80,7 +82,7 @@ InternalName::
  */
 bool InternalName::
 unref() const {
-  if (_parent == (const InternalName *)NULL) {
+  if (_parent == nullptr) {
     // No parent; no problem.  This is the root InternalName.  Actually, this
     // probably shouldn't be destructing, but I guess it might at application
     // shutdown.
@@ -140,7 +142,7 @@ get_name() const {
   if (_parent == get_root()) {
     return _basename;
 
-  } else if (_parent == (InternalName *)NULL) {
+  } else if (_parent == nullptr) {
     return string();
 
   } else {
@@ -156,7 +158,7 @@ join(const string &sep) const {
   if (_parent == get_root()) {
     return _basename;
 
-  } else if (_parent == (InternalName *)NULL) {
+  } else if (_parent == nullptr) {
     return string();
 
   } else {
@@ -178,7 +180,7 @@ find_ancestor(const string &basename) const {
   if (_basename == basename) {
     return 0;
 
-  } else if (_parent != (InternalName *)NULL) {
+  } else if (_parent != nullptr) {
     int index = _parent->find_ancestor(basename);
     if (index >= 0) {
       return index + 1;
@@ -200,7 +202,7 @@ get_ancestor(int n) const {
   if (n == 0) {
     return this;
 
-  } else if (_parent != (InternalName *)NULL) {
+  } else if (_parent != nullptr) {
     return _parent->get_ancestor(n - 1);
 
   } else {
@@ -217,7 +219,7 @@ const InternalName *InternalName::
 get_top() const {
   test_ref_count_integrity();
 
-  if (_parent != (InternalName *)NULL && _parent != get_root()) {
+  if (_parent != nullptr && _parent != get_root()) {
     return _parent->get_top();
   }
   return this;
@@ -236,7 +238,7 @@ get_net_basename(int n) const {
   } else if (n == 0) {
     return _basename;
 
-  } else if (_parent != (InternalName *)NULL && _parent != get_root()) {
+  } else if (_parent != nullptr && _parent != get_root()) {
     return _parent->get_net_basename(n - 1) + "." + _basename;
 
   } else {
@@ -248,11 +250,11 @@ get_net_basename(int n) const {
  *
  */
 void InternalName::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_parent == get_root()) {
     out << _basename;
 
-  } else if (_parent == (InternalName *)NULL) {
+  } else if (_parent == nullptr) {
     out << "(root)";
 
   } else {

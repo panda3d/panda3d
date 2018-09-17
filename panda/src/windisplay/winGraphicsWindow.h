@@ -64,7 +64,7 @@ typedef struct tagTOUCHINPUT {
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
   WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -72,6 +72,7 @@ public:
                     GraphicsOutput *host);
   virtual ~WinGraphicsWindow();
 
+  virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
 
   virtual void close_ime();
@@ -199,7 +200,7 @@ private:
 
 private:
   // We need this map to support per-window calls to window_proc().
-  typedef map<HWND, WinGraphicsWindow *> WindowHandles;
+  typedef std::map<HWND, WinGraphicsWindow *> WindowHandles;
   static WindowHandles _window_handles;
 
   // And we need a static pointer to the current WinGraphicsWindow we are
@@ -244,7 +245,7 @@ private:
     INLINE WindowClass(const WindowProperties &props);
     INLINE bool operator < (const WindowClass &other) const;
 
-    wstring _name;
+    std::wstring _name;
     HICON _icon;
   };
 

@@ -242,7 +242,7 @@ INLINE void DrawableRegion::
 update_pixel_factor() {
   PN_stdfloat new_pixel_factor;
   if (supports_pixel_zoom()) {
-    new_pixel_factor = (PN_stdfloat)1 / sqrt(max(_pixel_zoom, (PN_stdfloat)1.0));
+    new_pixel_factor = (PN_stdfloat)1 / sqrt(std::max(_pixel_zoom, (PN_stdfloat)1.0));
   } else {
     new_pixel_factor = 1;
   }

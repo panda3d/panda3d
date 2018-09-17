@@ -41,7 +41,9 @@ def window(graphics_pipe, graphics_engine):
     )
     graphics_engine.open_windows()
 
-    assert win is not None
+    if win is None:
+        pytest.skip("GraphicsPipe cannot make windows")
+
     yield win
 
     if win is not None:
@@ -66,7 +68,9 @@ def gsg(graphics_pipe, graphics_engine):
     )
     graphics_engine.open_windows()
 
-    assert buffer is not None
+    if buffer is None:
+        pytest.skip("GraphicsPipe cannot make offscreen buffers")
+
     yield buffer.gsg
 
     if buffer is not None:

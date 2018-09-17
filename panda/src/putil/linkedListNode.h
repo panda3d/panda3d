@@ -32,7 +32,10 @@ class EXPCL_PANDA_PUTIL LinkedListNode {
 protected:
   INLINE LinkedListNode();
   INLINE LinkedListNode(bool);
+  INLINE LinkedListNode(LinkedListNode &&from) noexcept;
   INLINE ~LinkedListNode();
+
+  INLINE LinkedListNode &operator = (LinkedListNode &&from);
 
   INLINE bool is_on_list() const;
   INLINE void remove_from_list();

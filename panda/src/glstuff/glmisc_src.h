@@ -40,8 +40,8 @@
 
 // #define GSG_VERBOSE 1
 
-extern ConfigVariableInt gl_version;
-extern EXPCL_PANDAGL ConfigVariableBool gl_support_fbo;
+extern EXPCL_GL ConfigVariableInt gl_version;
+extern EXPCL_GL ConfigVariableBool gl_support_fbo;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
@@ -58,7 +58,7 @@ extern ConfigVariableBool gl_interleaved_arrays;
 extern ConfigVariableBool gl_parallel_arrays;
 extern ConfigVariableInt gl_max_errors;
 extern ConfigVariableEnum<GeomEnums::UsageHint> gl_min_buffer_usage_hint;
-extern ConfigVariableBool gl_debug;
+extern EXPCL_GL ConfigVariableBool gl_debug;
 extern ConfigVariableBool gl_debug_synchronous;
 extern ConfigVariableEnum<NotifySeverity> gl_debug_abort_level;
 extern ConfigVariableBool gl_debug_object_labels;
@@ -87,8 +87,8 @@ extern EXPCL_GL void CLP(init_classes)();
 
 
 #if !defined(WIN32) && defined(GSG_VERBOSE)
-ostream &output_gl_enum(ostream &out, GLenum v);
-INLINE ostream &operator << (ostream &out, GLenum v) {
+std::ostream &output_gl_enum(std::ostream &out, GLenum v);
+INLINE std::ostream &operator << (std::ostream &out, GLenum v) {
   return output_gl_enum(out, v);
 }
 #endif

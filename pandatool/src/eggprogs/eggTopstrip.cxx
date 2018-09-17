@@ -44,7 +44,7 @@ EggTopstrip() {
     ("t", "name", 0,
      "Specify the name of the 'top' joint, from which to draw the "
      "animation channels which will be applied to the entire animation.",
-     &EggTopstrip::dispatch_string, NULL, &_top_joint_name);
+     &EggTopstrip::dispatch_string, nullptr, &_top_joint_name);
 
   add_option
     ("i", "", 0,
@@ -64,13 +64,13 @@ EggTopstrip() {
      "any combination of the nine token letters: i, j, k represent the "
      "three scale axes; h, p, r represent rotation; and x, y, z represent "
      "translation.  The default is everything: -s ijkphrxyz.",
-     &EggTopstrip::dispatch_string, NULL, &_transform_channels);
+     &EggTopstrip::dispatch_string, nullptr, &_transform_channels);
 
   add_option
     ("r", "file.egg", 0,
      "Read the animation channel from the indicated egg file.  If this "
      "is not specified, each egg file will supply its own animation channel.",
-     &EggTopstrip::dispatch_filename, NULL, &_channel_filename);
+     &EggTopstrip::dispatch_filename, nullptr, &_channel_filename);
 
   _invert_transform = true;
   _transform_channels = "ijkphrxyz";
@@ -81,7 +81,7 @@ EggTopstrip() {
  */
 void EggTopstrip::
 run() {
-  nassertv(_collection != (EggCharacterCollection *)NULL);
+  nassertv(_collection != nullptr);
   nassertv(_collection->get_num_eggs() > 0);
 
   check_transform_channels();
@@ -97,7 +97,7 @@ run() {
   if (!_channel_filename.empty()) {
     // Read in the extra egg file that we use for extracting the channels out.
     PT(EggData) channel_egg = read_egg(_channel_filename);
-    if (channel_egg == (EggData *)NULL) {
+    if (channel_egg == nullptr) {
       nout << "Cannot read " << _channel_filename << "\n";
       exit(1);
     }
@@ -134,7 +134,7 @@ run() {
     }
 
     // Determine which joint we'll use to extract the transform to apply.
-    EggJointData *top_joint = (EggJointData *)NULL;
+    EggJointData *top_joint = nullptr;
     if (_top_joint_name.empty()) {
       // The default top joint name is the alphabetically first joint in the
       // top level.
@@ -145,7 +145,7 @@ run() {
       top_joint = root_joint->get_child(0);
     } else {
       top_joint = from_char->find_joint(_top_joint_name);
-      if (top_joint == (EggJointData *)NULL) {
+      if (top_joint == nullptr) {
         nout << "Character " << from_char->get_name()
              << " has no joint named " << _top_joint_name << "\n";
         exit(1);
@@ -185,14 +185,14 @@ run() {
  */
 void EggTopstrip::
 check_transform_channels() {
-  static string expected = "ijkphrxyz";
+  static std::string expected = "ijkphrxyz";
   static const int num_channels = 9;
   bool has_each[num_channels];
   memset(has_each, 0, num_channels * sizeof(bool));
 
   for (size_t p = 0; p < _transform_channels.size(); p++) {
     int i = expected.find(_transform_channels[p]);
-    if (i == (int)string::npos) {
+    if (i == (int)std::string::npos) {
       nout << "Invalid letter for -s: " << _transform_channels[p] << "\n";
       exit(1);
     }
@@ -235,10 +235,10 @@ strip_anim(EggCharacterData *char_data, EggJointData *joint_data,
       int num_into_frames = char_data->get_num_frames(i);
       int num_from_frames = from_char->get_num_frames(model);
 
-      int num_frames = max(num_into_frames, num_from_frames);
+      int num_frames = std::max(num_into_frames, num_from_frames);
 
       EggBackPointer *back = joint_data->get_model(i);
-      nassertv(back != (EggBackPointer *)NULL);
+      nassertv(back != nullptr);
       EggJointPointer *joint;
       DCAST_INTO_V(joint, back);
 

@@ -28,7 +28,7 @@ GeomTextGlyph(const TextGlyph *glyph, const GeomVertexData *data) :
 {
   // Initially, there is only one glyph in the Geom.  There might be
   // additional Glyphs later when we flatten the graph and call Geom::unify().
-  if (glyph != (const TextGlyph *)NULL) {
+  if (glyph != nullptr) {
     _glyphs.reserve(1);
     _glyphs.push_back(glyph);
   }
@@ -61,7 +61,7 @@ GeomTextGlyph::
 GeomTextGlyph(const Geom &copy, const TextGlyph *glyph) :
   Geom(copy)
 {
-  if (glyph != (const TextGlyph *)NULL) {
+  if (glyph != nullptr) {
     _glyphs.reserve(1);
     _glyphs.push_back(glyph);
   }
@@ -142,13 +142,13 @@ count_geom(const Geom *other) {
  *
  */
 void GeomTextGlyph::
-output(ostream &out) const {
+output(std::ostream &out) const {
   Geom::output(out);
   out << ", glyphs: [";
   Glyphs::const_iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     const TextGlyph *glyph = (*gi);
-    nassertv(glyph != (const TextGlyph *)NULL);
+    nassertv(glyph != nullptr);
     out << " " << glyph->get_character();
   }
   out << " ]";
@@ -158,14 +158,14 @@ output(ostream &out) const {
  *
  */
 void GeomTextGlyph::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Geom::write(out, indent_level);
   indent(out, indent_level)
     << "Glyphs: [";
   Glyphs::const_iterator gi;
   for (gi = _glyphs.begin(); gi != _glyphs.end(); ++gi) {
     const TextGlyph *glyph = (*gi);
-    nassertv(glyph != (const TextGlyph *)NULL);
+    nassertv(glyph != nullptr);
     out << " " << glyph->get_character();
   }
   out << " ]\n";
@@ -192,8 +192,8 @@ register_with_read_factory() {
  */
 TypedWritable* GeomTextGlyph::
 make_GeomTextGlyph(const FactoryParams &params) {
-  GeomTextGlyph *me = new GeomTextGlyph((const TextGlyph *)NULL,
-                                        (GeomVertexData *)NULL);
+  GeomTextGlyph *me = new GeomTextGlyph(nullptr,
+                                        nullptr);
   DatagramIterator scan;
   BamReader *manager;
 

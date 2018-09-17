@@ -14,10 +14,10 @@
 #include "pandatoolbase.h"
 #include "gtkStats.h"
 #include "gtkStatsServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 GtkWidget *main_window;
-static GtkStatsServer *server = NULL;
+static GtkStatsServer *server = nullptr;
 
 static gboolean
 delete_event(GtkWidget *widget,
@@ -61,14 +61,14 @@ main(int argc, char *argv[]) {
   // Connect the delete and destroy events, so the user can exit the
   // application by closing the main window.
   g_signal_connect(G_OBJECT(main_window), "delete_event",
-       G_CALLBACK(delete_event), NULL);
+       G_CALLBACK(delete_event), nullptr);
 
   g_signal_connect(G_OBJECT(main_window), "destroy",
-       G_CALLBACK(destroy), NULL);
+       G_CALLBACK(destroy), nullptr);
 
-  ostringstream stream;
+  std::ostringstream stream;
   stream << "Listening on port " << pstats_port;
-  string str = stream.str();
+  std::string str = stream.str();
   GtkWidget *label = gtk_label_new(str.c_str());
   gtk_container_add(GTK_CONTAINER(main_window), label);
   gtk_widget_show(label);
@@ -76,12 +76,12 @@ main(int argc, char *argv[]) {
   // Create the server object.
   server = new GtkStatsServer;
   if (!server->listen()) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream
       << "Unable to open port " << pstats_port
       << ".  Try specifying a different\n"
       << "port number using pstats-port in your Config file.";
-    string str = stream.str();
+    std::string str = stream.str();
 
     GtkWidget *dialog =
       gtk_message_dialog_new(GTK_WINDOW(main_window),
@@ -97,7 +97,7 @@ main(int argc, char *argv[]) {
   gtk_widget_show(main_window);
 
   // Set up a timer to poll the pstats every so often.
-  g_timeout_add(200, timer, NULL);
+  g_timeout_add(200, timer, nullptr);
 
   // Now get lost in the message loop.
   gtk_main();

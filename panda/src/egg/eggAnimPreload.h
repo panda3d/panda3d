@@ -21,9 +21,9 @@
 /**
  * This corresponds to an <AnimPreload> entry.
  */
-class EXPCL_PANDAEGG EggAnimPreload : public EggNode {
+class EXPCL_PANDA_EGG EggAnimPreload : public EggNode {
 PUBLISHED:
-  INLINE explicit EggAnimPreload(const string &name = "");
+  INLINE explicit EggAnimPreload(const std::string &name = "");
   INLINE EggAnimPreload(const EggAnimPreload &copy);
   INLINE EggAnimPreload &operator = (const EggAnimPreload &copy);
 
@@ -37,7 +37,7 @@ PUBLISHED:
   INLINE bool has_num_frames() const;
   INLINE int get_num_frames() const;
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
   double _fps;

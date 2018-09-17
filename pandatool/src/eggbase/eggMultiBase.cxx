@@ -148,13 +148,13 @@ read_egg(const Filename &filename) {
 
   if (!data->read(filename)) {
     // Failure reading.
-    return (EggData *)NULL;
+    return nullptr;
   }
 
   if (_noabs && data->original_had_absolute_pathnames()) {
     nout << filename.get_basename()
          << " includes absolute pathnames!\n";
-    return (EggData *)NULL;
+    return nullptr;
   }
 
   DSearchPath file_path;
@@ -168,7 +168,7 @@ read_egg(const Filename &filename) {
 
   if (_force_complete) {
     if (!data->load_externals()) {
-      return (EggData *)NULL;
+      return nullptr;
     }
   }
 

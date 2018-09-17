@@ -28,7 +28,7 @@ protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 
 public:
-  AnimChannelMatrixFixed(const string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  AnimChannelMatrixFixed(const std::string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
@@ -40,7 +40,7 @@ public:
   virtual void get_pos(int frame, LVecBase3 &pos);
   virtual void get_shear(int frame, LVecBase3 &shear);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   LVecBase3 _pos, _hpr, _scale;

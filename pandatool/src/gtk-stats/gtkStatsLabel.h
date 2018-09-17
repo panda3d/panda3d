@@ -36,6 +36,7 @@ public:
   int get_height() const;
 
   int get_collector_index() const;
+  int get_thread_index() const;
 
   void set_highlight(bool highlight);
   bool get_highlight() const;
@@ -58,7 +59,7 @@ private:
   GtkStatsGraph *_graph;
   int _thread_index;
   int _collector_index;
-  string _text;
+  std::string _text;
   GtkWidget *_widget;
   GdkColor _fg_color;
   GdkColor _bg_color;

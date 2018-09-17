@@ -15,7 +15,7 @@
  *
  */
 INLINE Material::
-Material(const string &name) : Namable(name) {
+Material(const std::string &name) : Namable(name) {
   _base_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _ambient.set(1.0f, 1.0f, 1.0f, 1.0f);
   _diffuse.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -32,8 +32,18 @@ Material(const string &name) : Namable(name) {
  *
  */
 INLINE Material::
-Material(const Material &copy) : Namable(copy) {
-  operator = (copy);
+Material(const Material &copy) :
+  Namable(copy) ,
+  _base_color(copy._base_color),
+  _ambient(copy._ambient),
+  _diffuse(copy._diffuse),
+  _specular(copy._specular),
+  _emission(copy._emission),
+  _shininess(copy._shininess),
+  _roughness(copy._roughness),
+  _metallic(copy._metallic),
+  _refractive_index(copy._refractive_index),
+  _flags(copy._flags & ~(F_attrib_lock | F_used_by_auto_shader)) {
 }
 
 /**
@@ -99,8 +109,8 @@ get_ambient() const {
  */
 INLINE void Material::
 clear_ambient() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (has_ambient() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _flags &= ~F_ambient;
   _ambient = _base_color;
@@ -129,8 +139,8 @@ get_diffuse() const {
  */
 INLINE void Material::
 clear_diffuse() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (has_diffuse() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _flags &= ~F_diffuse;
   _diffuse = _base_color * (1 - _metallic);
@@ -177,8 +187,8 @@ get_emission() const {
  */
 INLINE void Material::
 clear_emission() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (has_emission() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _flags &= ~F_emission;
   _emission.set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -253,8 +263,8 @@ get_local() const {
  */
 INLINE void Material::
 set_local(bool local) {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (is_used_by_auto_shader() && get_local() != local) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   if (local) {
     _flags |= F_local;
@@ -278,8 +288,8 @@ get_twoside() const {
  */
 INLINE void Material::
 set_twoside(bool twoside) {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (is_used_by_auto_shader() && get_twoside() != twoside) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   if (twoside) {
     _flags |= F_twoside;
@@ -313,7 +323,7 @@ operator < (const Material &other) const {
 }
 
 /**
- *
+ * @deprecated This no longer has any meaning in 1.10.
  */
 INLINE bool Material::
 is_attrib_locked() const {
@@ -321,7 +331,7 @@ is_attrib_locked() const {
 }
 
 /**
- *
+ * @deprecated This no longer has any meaning in 1.10.
  */
 INLINE void Material::
 set_attrib_lock() {
@@ -329,9 +339,27 @@ set_attrib_lock() {
 }
 
 /**
+ * Internal.  Returns true if a shader has been generated that uses this.
+ */
+INLINE bool Material::
+is_used_by_auto_shader() const {
+  return (_flags & F_attrib_lock) != 0;
+}
+
+/**
+ * Called by the shader generator to indicate that a shader has been generated
+ * that uses this material.
+ */
+INLINE void Material::
+mark_used_by_auto_shader() {
+  _flags |= F_used_by_auto_shader;
+}
+
+/**
  *
  */
 INLINE int Material::
 get_flags() const {
-  return _flags;
+  // F_used_by_auto_shader is an internal flag, ignore it.
+  return _flags & ~F_used_by_auto_shader;
 }

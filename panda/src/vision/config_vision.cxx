@@ -23,8 +23,16 @@
 #include "texturePool.h"
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_VISION)
+  #error Buildsystem error: BUILDING_VISION not defined
+#endif
+
 Configure(config_vision);
 NotifyCategoryDef(vision, "");
+
+ConfigVariableBool v4l_blocking
+("v4l-blocking", false,
+ PRC_DESC("Set this to true if you want to block waiting for webcam frames."));
 
 ConfigureFn(config_vision) {
   init_libvision();

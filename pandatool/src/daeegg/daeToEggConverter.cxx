@@ -48,6 +48,9 @@
   #include "FCDocument/FCDGeometryPolygonsInput.h"
 #endif
 
+using std::endl;
+using std::string;
+
 /**
  *
  */
@@ -55,9 +58,9 @@ DAEToEggConverter::
 DAEToEggConverter() {
   _unit_name = "meter";
   _unit_meters = 1.0;
-  _document = NULL;
-  _table = NULL;
-  _error_handler = NULL;
+  _document = nullptr;
+  _table = nullptr;
+  _error_handler = nullptr;
   _invert_transparency = false;
 }
 
@@ -75,7 +78,7 @@ DAEToEggConverter(const DAEToEggConverter &copy) :
  */
 DAEToEggConverter::
 ~DAEToEggConverter() {
-  if (_error_handler != NULL) {
+  if (_error_handler != nullptr) {
     delete _error_handler;
   }
 }
@@ -114,7 +117,7 @@ convert_file(const Filename &filename) {
   // Reset stuff
   clear_error();
   _joints.clear();
-  if (_error_handler == NULL) {
+  if (_error_handler == nullptr) {
     _error_handler = new FUErrorSimpleHandler;
   }
 
@@ -126,13 +129,13 @@ convert_file(const Filename &filename) {
   // Read the file
   FCollada::Initialize();
   _document = FCollada::LoadDocument(filename.to_os_specific().c_str());
-  if (_document == NULL) {
+  if (_document == nullptr) {
     daeegg_cat.error() << "Failed to load document: " << _error_handler->GetErrorString() << endl;
     FCollada::Release();
     return false;
   }
   // Make sure the file uses consistent coordinate system and length
-  if (_document->GetAsset() != NULL) {
+  if (_document->GetAsset() != nullptr) {
     FCDocumentTools::StandardizeUpAxisAndLength(_document);
   }
 
@@ -142,7 +145,7 @@ convert_file(const Filename &filename) {
   string model_name = _character_name;
 
   FCDSceneNode* visual_scene = _document->GetVisualSceneInstance();
-  if (visual_scene != NULL) {
+  if (visual_scene != nullptr) {
     if (model_name.empty()) {
       // By lack of anything better...
       model_name = FROM_FSTRING(visual_scene->GetName());
@@ -170,7 +173,7 @@ convert_file(const Filename &filename) {
 
         const FCDGeometryMesh *mesh = character->_skin_mesh;
 
-        if (mesh != NULL) {
+        if (mesh != nullptr) {
           PT(DaeMaterials) materials = new DaeMaterials(character->_instance);
           daeegg_cat.spam() << "Processing mesh for controller\n";
           process_mesh(character->_node_group, mesh, materials, character);
@@ -183,7 +186,7 @@ convert_file(const Filename &filename) {
       character->adjust_joints(visual_scene->GetChild(ch), _joints, LMatrix4d::ident_mat());
     }
 
-    if (scene_group != NULL) {
+    if (scene_group != nullptr) {
       // Mark the scene as character.
       if (get_animation_convert() == AC_chan) {
         _egg_data->remove_child(scene_group);
@@ -342,7 +345,7 @@ get_input_units() {
 void DAEToEggConverter::
 process_asset() {
   const FCDAsset *asset = _document->GetAsset();
-  if (_document->GetAsset() == NULL) {
+  if (_document->GetAsset() == nullptr) {
     return;
   }
 
@@ -368,7 +371,7 @@ process_asset() {
 // to be a skeleton root.
 void DAEToEggConverter::
 process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
-  nassertv(node != NULL);
+  nassertv(node != nullptr);
   string node_id = FROM_FSTRING(node->GetDaeId());
   daeegg_cat.spam() << "Processing node with ID '" << node_id << "'" << endl;
 
@@ -416,15 +419,15 @@ process_node(EggGroupNode *parent, const FCDSceneNode* node, bool forced) {
 
 void DAEToEggConverter::
 process_instance(EggGroup *parent, const FCDEntityInstance* instance) {
-  nassertv(instance != NULL);
-  nassertv(instance->GetEntity() != NULL);
+  nassertv(instance != nullptr);
+  nassertv(instance->GetEntity() != nullptr);
   // Check what kind of instance this is
   switch (instance->GetType()) {
   case FCDEntityInstance::GEOMETRY:
     {
       if (get_animation_convert() != AC_chan) {
         const FCDGeometry* geometry = (const FCDGeometry*) instance->GetEntity();
-        assert(geometry != NULL);
+        assert(geometry != nullptr);
         if (geometry->IsMesh()) {
           // Now, handle the mesh.
           process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
@@ -466,7 +469,7 @@ void DAEToEggConverter::
 process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
              DaeMaterials *materials, DaeCharacter *character) {
 
-  nassertv(mesh != NULL);
+  nassertv(mesh != nullptr);
   daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
 
   // Create the egg stuff to hold this mesh
@@ -481,7 +484,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
     return;
   }
   const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);
-  if (vsource == NULL) {
+  if (vsource == nullptr) {
     daeegg_cat.debug() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has no source for POSITION data" << endl;
     return;
   }
@@ -501,7 +504,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
     PT(EggGroup) primitiveholder;
     // If we have materials, make a group for each material.  Then, apply the
     // material's per-group stuff.
-    if (materials != NULL && (!polygons->GetMaterialSemantic().empty()) && mesh->GetPolygonsCount() > 1) {
+    if (materials != nullptr && (!polygons->GetMaterialSemantic().empty()) && mesh->GetPolygonsCount() > 1) {
       // primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." +
       // material_semantic);
       primitiveholder = new EggGroup;
@@ -511,41 +514,41 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
     }
     primitive_holders[gr] = primitiveholder;
     // Apply the per-group data of the materials, if we have it.
-    if (materials != NULL) {
+    if (materials != nullptr) {
       materials->apply_to_group(material_semantic, primitiveholder, _invert_transparency);
     }
     // Find the position sources
     const FCDGeometryPolygonsInput* pinput = polygons->FindInput(FUDaeGeometryInput::POSITION);
-    assert(pinput != NULL);
+    assert(pinput != nullptr);
     const uint32* indices = pinput->GetIndices();
     // Find the normal sources
     const FCDGeometrySource* nsource = mesh->FindSourceByType(FUDaeGeometryInput::NORMAL);
     const FCDGeometryPolygonsInput* ninput = polygons->FindInput(FUDaeGeometryInput::NORMAL);
     const uint32* nindices;
-    if (ninput != NULL) nindices = ninput->GetIndices();
+    if (ninput != nullptr) nindices = ninput->GetIndices();
     // Find texcoord sources
     const FCDGeometrySource* tcsource = mesh->FindSourceByType(FUDaeGeometryInput::TEXCOORD);
     const FCDGeometryPolygonsInput* tcinput = polygons->FindInput(FUDaeGeometryInput::TEXCOORD);
     const uint32* tcindices;
-    if (tcinput != NULL) tcindices = tcinput->GetIndices();
+    if (tcinput != nullptr) tcindices = tcinput->GetIndices();
     // Find vcolor sources
     const FCDGeometrySource* csource = mesh->FindSourceByType(FUDaeGeometryInput::COLOR);
     const FCDGeometryPolygonsInput* cinput = polygons->FindInput(FUDaeGeometryInput::COLOR);
     const uint32* cindices;
-    if (cinput != NULL) cindices = cinput->GetIndices();
+    if (cinput != nullptr) cindices = cinput->GetIndices();
     // Find binormal sources
     const FCDGeometrySource* bsource = mesh->FindSourceByType(FUDaeGeometryInput::TEXBINORMAL);
     const FCDGeometryPolygonsInput* binput = polygons->FindInput(FUDaeGeometryInput::TEXBINORMAL);
     const uint32* bindices;
-    if (binput != NULL) bindices = binput->GetIndices();
+    if (binput != nullptr) bindices = binput->GetIndices();
     // Find tangent sources
     const FCDGeometrySource* tsource = mesh->FindSourceByType(FUDaeGeometryInput::TEXTANGENT);
     const FCDGeometryPolygonsInput* tinput = polygons->FindInput(FUDaeGeometryInput::TEXTANGENT);
     const uint32* tindices;
-    if (tinput != NULL) tindices = tinput->GetIndices();
+    if (tinput != nullptr) tindices = tinput->GetIndices();
     // Get a name for potential coordinate sets
     string tcsetname;
-    if (materials != NULL && tcinput != NULL) {
+    if (materials != nullptr && tcinput != nullptr) {
       if (daeegg_cat.is_debug()) {
         daeegg_cat.debug()
           << "Assigning texcoord set " << tcinput->GetSet()
@@ -555,7 +558,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
                     FUDaeGeometryInput::TEXCOORD, tcinput->GetSet());
     }
     string tbsetname;
-    if (materials != NULL && binput != NULL) {
+    if (materials != nullptr && binput != nullptr) {
       if (daeegg_cat.is_debug()) {
         daeegg_cat.debug()
           << "Assigning texbinormal set " << binput->GetSet()
@@ -565,7 +568,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
                     FUDaeGeometryInput::TEXBINORMAL, binput->GetSet());
     }
     string ttsetname;
-    if (materials != NULL && tinput != NULL) {
+    if (materials != nullptr && tinput != nullptr) {
       if (daeegg_cat.is_debug()) {
         daeegg_cat.debug()
           << "Assigning textangent set " << tinput->GetSet()
@@ -580,19 +583,19 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
       const float* data = &vsource->GetData()[indices[ix]*3];
       vertex->set_pos(LPoint3d(data[0], data[1], data[2]));
 
-      if (character != NULL) {
+      if (character != nullptr) {
         // If this is skinned geometry, add the vertex influences.
         character->influence_vertex(indices[ix], vertex);
       }
 
       // Process the normal
-      if (nsource != NULL && ninput != NULL) {
+      if (nsource != nullptr && ninput != nullptr) {
         assert(nsource->GetStride() == 3);
         data = &nsource->GetData()[nindices[ix]*3];
         vertex->set_normal(LVecBase3d(data[0], data[1], data[2]));
       }
       // Process the texcoords
-      if (tcsource != NULL && tcinput != NULL) {
+      if (tcsource != nullptr && tcinput != nullptr) {
         assert(tcsource->GetStride() == 2 || tcsource->GetStride() == 3);
         data = &tcsource->GetData()[tcindices[ix]*tcsource->GetStride()];
         if (tcsource->GetStride() == 2) {
@@ -602,7 +605,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
         }
       }
       // Process the color
-      if (csource != NULL && cinput != NULL) {
+      if (csource != nullptr && cinput != nullptr) {
         assert(csource->GetStride() == 3 || csource->GetStride() == 4);
         if (csource->GetStride() == 3) {
           data = &csource->GetData()[cindices[ix]*3];
@@ -613,21 +616,21 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
         }
       }
       // Possibly add a UV object
-      if ((bsource != NULL && binput != NULL) || (tsource != NULL && tinput != NULL)) {
-        if (bsource != NULL && binput != NULL) {
+      if ((bsource != nullptr && binput != nullptr) || (tsource != nullptr && tinput != nullptr)) {
+        if (bsource != nullptr && binput != nullptr) {
           assert(bsource->GetStride() == 3);
           data = &bsource->GetData()[bindices[ix]*3];
           PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(tbsetname);
-          if (uv_obj == NULL) {
+          if (uv_obj == nullptr) {
             uv_obj = new EggVertexUV(tbsetname, LTexCoordd());
           }
           uv_obj->set_binormal(LVecBase3d(data[0], data[1], data[2]));
         }
-        if (tsource != NULL && tinput != NULL) {
+        if (tsource != nullptr && tinput != nullptr) {
           assert(tsource->GetStride() == 3);
           data = &tsource->GetData()[tindices[ix]*3];
           PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(ttsetname);
-          if (uv_obj == NULL) {
+          if (uv_obj == nullptr) {
             uv_obj = new EggVertexUV(ttsetname, LTexCoordd());
           }
           uv_obj->set_tangent(LVecBase3d(data[0], data[1], data[2]));
@@ -642,7 +645,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
     // Now loop through the faces
     uint32 offset = 0;
     for (size_t fa = 0; fa < polygons->GetFaceVertexCountCount(); ++fa) {
-      PT(EggPrimitive) primitive = NULL;
+      PT(EggPrimitive) primitive = nullptr;
       // Create a primitive that matches the fcollada type
       switch (polygons->GetPrimitiveType()) {
       case FCDGeometryPolygons::LINES:
@@ -666,9 +669,9 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
       default:
         daeegg_cat.warning() << "Unsupported primitive type found!" << endl;
       }
-      if (primitive != NULL) {
+      if (primitive != nullptr) {
         primitive_holders[gr]->add_child(primitive);
-        if (materials != NULL) {
+        if (materials != nullptr) {
           materials->apply_to_primitive(FROM_FSTRING(polygons->GetMaterialSemantic()), primitive);
         }
         for (size_t ve = 0; ve < polygons->GetFaceVertexCount(fa); ++ve) {
@@ -684,7 +687,7 @@ process_mesh(EggGroup *parent, const FCDGeometryMesh* mesh,
 
 void DAEToEggConverter::
 process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geometry_spline) {
-  assert(geometry_spline != NULL);
+  assert(geometry_spline != nullptr);
   PT(EggGroup) result = new EggGroup(group_name);
   parent->add_child(result);
   // TODO: if its not a nurbs, make it convert between the types
@@ -700,7 +703,7 @@ process_spline(EggGroup *parent, const string group_name, FCDGeometrySpline* geo
 
 void DAEToEggConverter::
 process_spline(EggGroup *parent, const FCDSpline* spline) {
-  assert(spline != NULL);
+  assert(spline != nullptr);
   nassertv(spline->GetSplineType() == FUDaeSplineType::NURBS);
   // Now load in the nurbs curve to the egg library
   PT(EggNurbsCurve) nurbs_curve = new EggNurbsCurve(FROM_FSTRING(spline->GetName()));
@@ -709,7 +712,7 @@ process_spline(EggGroup *parent, const FCDSpline* spline) {
   nurbs_curve->setup(0, ((const FCDNURBSSpline*) spline)->GetKnotCount());
   for (size_t kn = 0; kn < ((const FCDNURBSSpline*) spline)->GetKnotCount(); ++kn) {
     const float* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
-    assert(knot != NULL);
+    assert(knot != nullptr);
     nurbs_curve->set_knot(kn, *knot);
   }
   for (size_t cv = 0; cv < spline->GetCVCount(); ++cv) {
@@ -722,14 +725,14 @@ process_spline(EggGroup *parent, const FCDSpline* spline) {
 
 void DAEToEggConverter::
 process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
-  assert(instance != NULL);
+  assert(instance != nullptr);
   const FCDController* controller = (const FCDController *)instance->GetEntity();
-  assert(controller != NULL);
+  assert(controller != nullptr);
 
   if (get_animation_convert() == AC_none) {
     // If we're exporting a static mesh, export the base geometry as-is.
     const FCDGeometryMesh *mesh = controller->GetBaseGeometry()->GetMesh();
-    if (mesh != NULL) {
+    if (mesh != nullptr) {
       PT(DaeMaterials) materials = new DaeMaterials(instance);
       daeegg_cat.spam() << "Processing mesh for controller\n";
       process_mesh(parent, mesh, materials);
@@ -741,9 +744,9 @@ process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
   }
 
   if (controller->IsMorph()) {
-    assert(controller != NULL);
+    assert(controller != nullptr);
     const FCDMorphController* morph_controller = controller->GetMorphController();
-    assert(morph_controller != NULL);
+    assert(morph_controller != nullptr);
     PT(EggTable) bundle = new EggTable(parent->get_name());
     bundle->set_table_type(EggTable::TT_bundle);
     PT(EggTable) morph = new EggTable("morph");
@@ -752,7 +755,7 @@ process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
     // Loop through the morph targets.
     for (size_t mt = 0; mt < morph_controller->GetTargetCount(); ++mt) {
       const FCDMorphTarget* morph_target = morph_controller->GetTarget(mt);
-      assert(morph_target != NULL);
+      assert(morph_target != nullptr);
       PT(EggSAnimData) target = new EggSAnimData(FROM_FSTRING(morph_target->GetGeometry()->GetName()));
       if (morph_target->IsAnimated()) {
         // TODO
@@ -766,18 +769,18 @@ process_controller(EggGroup *parent, const FCDControllerInstance *instance) {
 
 void DAEToEggConverter::
 process_extra(EggGroup *group, const FCDExtra* extra) {
-  if (extra == NULL) {
+  if (extra == nullptr) {
     return;
   }
-  nassertv(group != NULL);
+  nassertv(group != nullptr);
 
   const FCDEType* etype = extra->GetDefaultType();
-  if (etype == NULL) {
+  if (etype == nullptr) {
     return;
   }
 
   const FCDENode* enode = (const FCDENode*) etype->FindTechnique("PANDA3D");
-  if (enode == NULL) {
+  if (enode == nullptr) {
     return;
   }
 
@@ -802,8 +805,8 @@ convert_matrix(const FMMatrix44 &matrix) {
 
 void DAEToEggConverter::
 apply_transform(EggGroup *to, const FCDTransform* from) {
-  assert(from != NULL);
-  assert(to != NULL);
+  assert(from != nullptr);
+  assert(to != nullptr);
   // to->set_transform3d(convert_matrix(from->ToMatrix()) *
   // to->get_transform3d());
   switch (from->GetType()) {

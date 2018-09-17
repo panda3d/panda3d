@@ -29,11 +29,8 @@
 #include "asyncTask.h"
 #include "boundingSphere.h"
 
-// By including checkPandaVersion.h, we guarantee that runtime attempts to run
-// pview will fail if it inadvertently links with the wrong version of
-// libdtool.so.dll.
-
-#include "checkPandaVersion.h"
+using std::cerr;
+using std::endl;
 
 PandaFramework framework;
 
@@ -64,8 +61,8 @@ event_W(const Event *, void *) {
   // shift-W: open a new window on the same scene.
 
   // If we already have a window, use the same GSG.
-  GraphicsPipe *pipe = (GraphicsPipe *)NULL;
-  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)NULL;
+  GraphicsPipe *pipe = nullptr;
+  GraphicsStateGuardian *gsg = nullptr;
 
   if (framework.get_num_windows() > 0) {
     WindowFramework *old_window = framework.get_window(0);
@@ -75,7 +72,7 @@ event_W(const Event *, void *) {
   }
 
   WindowFramework *window = framework.open_window(pipe, gsg);
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
@@ -93,15 +90,15 @@ event_Enter(const Event *, void *) {
   // alt-enter: toggle between windowfullscreen in the same scene.
 
   // If we already have a window, use the same GSG.
-  GraphicsPipe *pipe = (GraphicsPipe *)NULL;
-  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)NULL;
+  GraphicsPipe *pipe = nullptr;
+  GraphicsStateGuardian *gsg = nullptr;
 
   WindowProperties props;
 
   for (int i = 0; i < framework.get_num_windows(); ++i) {
     WindowFramework *old_window = framework.get_window(i);
     GraphicsWindow *win = old_window->get_graphics_window();
-    if (win != (GraphicsWindow *)NULL) {
+    if (win != nullptr) {
       pipe = win->get_pipe();
       gsg = win->get_gsg();
       props = win->get_properties();
@@ -115,7 +112,7 @@ event_Enter(const Event *, void *) {
   int flags = GraphicsPipe::BF_require_window;
 
   WindowFramework *window = framework.open_window(props, flags, pipe, gsg);
-  if (window != (WindowFramework *)NULL) {
+  if (window != nullptr) {
     window->enable_keyboard();
     window->setup_trackball();
     framework.get_models().instance_to(window->get_render());
@@ -131,7 +128,7 @@ event_2(const Event *event, void *) {
   DCAST_INTO_V(wf, param.get_ptr());
 
   WindowFramework *split = wf->split_window();
-  if (split != (WindowFramework *)NULL) {
+  if (split != nullptr) {
     split->enable_keyboard();
     split->setup_trackball();
     framework.get_models().instance_to(split->get_render());
@@ -243,14 +240,14 @@ report_version() {
 //
 class AdjustCameraClipPlanesTask : public AsyncTask {
 public:
-  AdjustCameraClipPlanesTask(const string &name, Camera *camera) :
-    AsyncTask(name), _camera(camera), _lens(camera->get_lens(0)), _sphere(NULL)
+  AdjustCameraClipPlanesTask(const std::string &name, Camera *camera) :
+    AsyncTask(name), _camera(camera), _lens(camera->get_lens(0)), _sphere(nullptr)
   {
     NodePath np = framework.get_models();
     PT(BoundingVolume) volume = np.get_bounds();
 
     // We expect at least a geometric bounding volume around the world.
-    nassertv(volume != (BoundingVolume *)NULL);
+    nassertv(volume != nullptr);
     nassertv(volume->is_of_type(GeometricBoundingVolume::get_class_type()));
     CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
@@ -323,12 +320,12 @@ public:
 
     // Ensure the far plane is far enough back to see the entire object.
     PN_stdfloat ideal_far_plane = distance + radius * 1.5;
-    _lens->set_far(max(_lens->get_default_far(), ideal_far_plane));
+    _lens->set_far(std::max(_lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward, but if inside
     // the sphere, keep above 0.
-    PN_stdfloat ideal_near_plane = max(min_distance * 10, distance - radius);
-    _lens->set_near(min(_lens->get_default_near(), ideal_near_plane));
+    PN_stdfloat ideal_near_plane = std::max(min_distance * 10, distance - radius);
+    _lens->set_near(std::min(_lens->get_default_near(), ideal_near_plane));
 
     return DS_cont;
   }
@@ -354,7 +351,7 @@ main(int argc, char **argv) {
   Filename screenshotfn;
   bool delete_models = false;
   bool apply_lighting = false;
-  PointerTo<GraphicsPipe> pipe = NULL;
+  PointerTo<GraphicsPipe> pipe = nullptr;
 
   extern char *optarg;
   extern int optind;
@@ -423,8 +420,8 @@ main(int argc, char **argv) {
   argc -= (optind - 1);
   argv += (optind - 1);
 
-  WindowFramework *window = framework.open_window(pipe, NULL);
-  if (window != (WindowFramework *)NULL) {
+  WindowFramework *window = framework.open_window(pipe, nullptr);
+  if (window != nullptr) {
     // We've successfully opened a window.
 
     NodePath loading_np;
@@ -459,7 +456,7 @@ main(int argc, char **argv) {
 
       if (delete_models) {
         VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-        for (int i = 1; i < argc && argv[i] != (char *)NULL; i++) {
+        for (int i = 1; i < argc && argv[i] != nullptr; i++) {
           Filename model = Filename::from_os_specific(argv[i]);
           if (vfs->exists(model)) {
             nout << "Deleting " << model << "\n";
@@ -495,12 +492,12 @@ main(int argc, char **argv) {
     framework.get_task_mgr().add(task);
 
     framework.enable_default_keys();
-    framework.define_key("shift-w", "open a new window", event_W, NULL);
-    framework.define_key("shift-f", "flatten hierarchy", event_F, NULL);
-    framework.define_key("alt-enter", "toggle between window/fullscreen", event_Enter, NULL);
-    framework.define_key("2", "split the window", event_2, NULL);
+    framework.define_key("shift-w", "open a new window", event_W, nullptr);
+    framework.define_key("shift-f", "flatten hierarchy", event_F, nullptr);
+    framework.define_key("alt-enter", "toggle between window/fullscreen", event_Enter, nullptr);
+    framework.define_key("2", "split the window", event_2, nullptr);
     if (pview_test_hack) {
-      framework.define_key("0", "run quick hacky test", event_0, NULL);
+      framework.define_key("0", "run quick hacky test", event_0, nullptr);
     }
     framework.main_loop();
     framework.report_frame_rate(nout);

@@ -52,14 +52,14 @@ protected:
   bool copy_binary_file(Filename source, Filename dest);
 
   bool cvs_add(const Filename &filename);
-  static string protect_from_shell(const string &source);
+  static std::string protect_from_shell(const std::string &source);
 
-  virtual string filter_filename(const string &source);
+  virtual std::string filter_filename(const std::string &source);
 
 private:
   bool scan_hierarchy();
-  bool scan_for_root(const string &dirname);
-  string prompt(const string &message);
+  bool scan_for_root(const std::string &dirname);
+  std::string prompt(const std::string &message);
 
 protected:
   bool _force;
@@ -72,7 +72,7 @@ protected:
   Filename _root_dirname;
   Filename _key_filename;
   bool _no_cvs;
-  string _cvs_binary;
+  std::string _cvs_binary;
   bool _user_aborted;
 
   typedef pvector<Filename> SourceFiles;
@@ -82,7 +82,7 @@ protected:
   CVSSourceDirectory *_model_dir;
   CVSSourceDirectory *_map_dir;
 
-  typedef pmap<string, CVSSourceTree::FilePath> CopiedFiles;
+  typedef pmap<std::string, CVSSourceTree::FilePath> CopiedFiles;
   CopiedFiles _copied_files;
 };
 

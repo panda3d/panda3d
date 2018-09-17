@@ -32,6 +32,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */
@@ -60,7 +62,7 @@ EggMakeFont() : EggWriter(true, false) {
      "Specifies the foreground color of the generated texture map.  The "
      "default is white: 1,1,1,1, which leads to the most flexibility "
      "as the color can be modulated at runtime to any suitable color.",
-     &EggMakeFont::dispatch_color, NULL, &_fg[0]);
+     &EggMakeFont::dispatch_color, nullptr, &_fg[0]);
 
   add_option
     ("bg", "r,g,b[,a]", 0,
@@ -72,7 +74,7 @@ EggMakeFont() : EggWriter(true, false) {
      "alpha component; if both colors specify an alpha component of 1 "
      "(or do not specify an alpha compenent), then the generated images "
      "will not include an alpha component.",
-     &EggMakeFont::dispatch_color, NULL, &_bg[0]);
+     &EggMakeFont::dispatch_color, nullptr, &_bg[0]);
 
   add_option
     ("interior", "r,g,b[,a]", 0,
@@ -93,7 +95,7 @@ EggMakeFont() : EggWriter(true, false) {
      "within square brackets, e.g. '[A-Za-z0-9]'.  If this is not specified, "
      "the default set has all ASCII characters and an assorted set of "
      "latin-1 characters, diacritics and punctuation marks.",
-     &EggMakeFont::dispatch_range, NULL, &_range);
+     &EggMakeFont::dispatch_range, nullptr, &_range);
 
   add_option
     ("extra", "file.egg", 0,
@@ -103,7 +105,7 @@ EggMakeFont() : EggWriter(true, false) {
      "number of a character and should contain one polygon.  These groups "
      "are simply copied into the output egg file as if they were generated "
      "locally.  This option may be repeated.",
-     &EggMakeFont::dispatch_vector_string, NULL, &_extra_filenames);
+     &EggMakeFont::dispatch_vector_string, nullptr, &_extra_filenames);
 
   add_option
     ("ppu", "pixels", 0,
@@ -112,27 +114,27 @@ EggMakeFont() : EggWriter(true, false) {
      "10 points of font; see -ps).  Setting this number larger results in "
      "an easier-to-read font, but at the cost of more texture memory.  "
      "The default is 40.",
-     &EggMakeFont::dispatch_double, NULL, &_pixels_per_unit);
+     &EggMakeFont::dispatch_double, nullptr, &_pixels_per_unit);
 
   add_option
     ("ps", "size", 0,
      "Specify the point size of the resulting font.  This controls the "
      "apparent size of the font when it is rendered onscreen.  By convention, "
      "a 10 point font is 1 screen unit high, so the default is 10.",
-     &EggMakeFont::dispatch_double, NULL, &_point_size);
+     &EggMakeFont::dispatch_double, nullptr, &_point_size);
 
   add_option
     ("sdf", "", 0,
      "If this is set, a signed distance field will be generated, which "
      "results in crisp text even when the text is enlarged or zoomed in.",
-     &EggMakeFont::dispatch_true, NULL, &_generate_distance_field);
+     &EggMakeFont::dispatch_true, nullptr, &_generate_distance_field);
 
   add_option
     ("pm", "n", 0,
      "The number of extra pixels around a single character in the "
      "generated polygon.  This may be a floating-point number.  The "
      "default is 1.",
-     &EggMakeFont::dispatch_double, NULL, &_poly_margin);
+     &EggMakeFont::dispatch_double, nullptr, &_poly_margin);
 
   add_option
     ("tm", "n", 0,
@@ -140,7 +142,7 @@ EggMakeFont() : EggWriter(true, false) {
      "This may only be an integer.  The default is 2.  This is meaningful "
      "when -nopal is also used; in the normal case, use -pm to control "
      "both the polygon size and the texture map spacing.",
-     &EggMakeFont::dispatch_int, NULL, &_tex_margin);
+     &EggMakeFont::dispatch_int, nullptr, &_tex_margin);
 
   add_option
     ("rm", "n", 0,
@@ -149,7 +151,7 @@ EggMakeFont() : EggWriter(true, false) {
      "generated texture map, only on the generated egg.  Use this in order to "
      "space the characters out in case they appear to be too close together "
      "when rendered. The default is 0.",
-     &EggMakeFont::dispatch_double, NULL, &_render_margin);
+     &EggMakeFont::dispatch_double, nullptr, &_render_margin);
 
   add_option
     ("sf", "factor", 0,
@@ -192,7 +194,7 @@ EggMakeFont() : EggWriter(true, false) {
      "If it is omitted, the default is based on the name of the egg file.  "
      "This is used only if -nopal is specified; in the normal case, "
      "without -nopal, use -pp instead.",
-     &EggMakeFont::dispatch_string, NULL, &_output_glyph_pattern);
+     &EggMakeFont::dispatch_string, nullptr, &_output_glyph_pattern);
 
   add_option
     ("pp", "pattern", 0,
@@ -200,20 +202,20 @@ EggMakeFont() : EggWriter(true, false) {
      "string is effectively passed to egg-palettize as the -tn option, and "
      "thus should contain %i for the palette index number.  This is used "
      "if -nopal is not specified.",
-     &EggMakeFont::dispatch_string, NULL, &_output_palette_pattern);
+     &EggMakeFont::dispatch_string, nullptr, &_output_palette_pattern);
 
   add_option
     ("palsize", "xsize,ysize", 0,
      "Specify the size of the palette texture images.  This is used if "
      "-nopal is not specified.",
-     &EggMakeFont::dispatch_int_pair, NULL, _palette_size);
+     &EggMakeFont::dispatch_int_pair, nullptr, _palette_size);
 
   add_option
     ("face", "index", 0,
      "Specify the face index of the particular face within the font file "
      "to use.  Some font files contain multiple faces, indexed beginning "
      "at 0.  The default is face 0.",
-     &EggMakeFont::dispatch_int, NULL, &_face_index);
+     &EggMakeFont::dispatch_int, nullptr, &_face_index);
 
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(1.0, 1.0, 1.0, 0.0);
@@ -227,9 +229,9 @@ EggMakeFont() : EggWriter(true, false) {
   _face_index = 0;
   _generate_distance_field = false;
 
-  _text_maker = NULL;
-  _vpool = NULL;
-  _group = NULL;
+  _text_maker = nullptr;
+  _vpool = nullptr;
+  _group = nullptr;
 }
 
 
@@ -424,7 +426,7 @@ run() {
           _bg[0], _bg[1], _bg[2], _bg[3],
           _palette_size[0], _palette_size[1],
           100.0 / _palettize_scale_factor);
-  istringstream txa_script(buffer);
+  std::istringstream txa_script(buffer);
   pal->read_txa_file(txa_script, "default script");
 
   pal->all_params_set();
@@ -538,7 +540,7 @@ make_vertex(const LPoint2d &xy) {
 void EggMakeFont::
 add_character(int code) {
   PNMTextGlyph *glyph = _text_maker->get_glyph(code);
-  if (glyph == (PNMTextGlyph *)NULL) {
+  if (glyph == nullptr) {
     nout << "No definition in font for character " << code << ".\n";
     return;
   }

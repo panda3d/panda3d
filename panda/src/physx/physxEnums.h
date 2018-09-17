@@ -714,7 +714,7 @@ PUBLISHED:
 
 };
 
-EXPCL_PANDAPHYSX ostream &operator << (ostream &out, PhysxEnums::PhysxUpAxis axis);
-EXPCL_PANDAPHYSX istream &operator >> (istream &in, PhysxEnums::PhysxUpAxis &axis);
+EXPCL_PANDAPHYSX std::ostream &operator << (std::ostream &out, PhysxEnums::PhysxUpAxis axis);
+EXPCL_PANDAPHYSX std::istream &operator >> (std::istream &in, PhysxEnums::PhysxUpAxis &axis);
 
 #endif

@@ -42,12 +42,12 @@ enum ColorSpace {
   CS_scRGB,
 };
 
-EXPCL_PANDA_PUTIL ColorSpace parse_color_space_string(const string &str);
-EXPCL_PANDA_PUTIL string format_color_space(ColorSpace cs);
+EXPCL_PANDA_PUTIL ColorSpace parse_color_space_string(const std::string &str);
+EXPCL_PANDA_PUTIL std::string format_color_space(ColorSpace cs);
 
 END_PUBLISH
 
-EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, ColorSpace cs);
-EXPCL_PANDA_PUTIL istream &operator >> (istream &in, ColorSpace &cs);
+EXPCL_PANDA_PUTIL std::ostream &operator << (std::ostream &out, ColorSpace cs);
+EXPCL_PANDA_PUTIL std::istream &operator >> (std::istream &in, ColorSpace &cs);
 
 #endif

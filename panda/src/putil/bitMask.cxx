@@ -13,11 +13,14 @@
 
 #include "bitMask.h"
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
-#endif
-
 template class BitMask<uint16_t, 16>;
 template class BitMask<uint32_t, 32>;
 template class BitMask<uint64_t, 64>;
+
+#if !defined(CPPPARSER) && !defined(__APPLE__)
+#include <type_traits>
+
+static_assert(std::is_literal_type<BitMask16>::value, "BitMask16 is not a literal type");
+static_assert(std::is_literal_type<BitMask32>::value, "BitMask32 is not a literal type");
+static_assert(std::is_literal_type<BitMask64>::value, "BitMask64 is not a literal type");
+#endif

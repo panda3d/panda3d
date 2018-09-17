@@ -27,6 +27,9 @@
 
 #include <algorithm>
 
+using std::cerr;
+using std::string;
+
 Filename output_code_filename;
 string module_name;
 string library_name;
@@ -52,15 +55,15 @@ enum CommandOptions {
 };
 
 static struct option long_options[] = {
-  { "oc", required_argument, NULL, CO_oc },
-  { "module", required_argument, NULL, CO_module },
-  { "library", required_argument, NULL, CO_library },
-  { "c", no_argument, NULL, CO_c },
-  { "python", no_argument, NULL, CO_python },
-  { "python-native", no_argument, NULL, CO_python_native },
-  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
-  { "import", required_argument, NULL, CO_import },
-  { NULL }
+  { "oc", required_argument, nullptr, CO_oc },
+  { "module", required_argument, nullptr, CO_module },
+  { "library", required_argument, nullptr, CO_library },
+  { "c", no_argument, nullptr, CO_c },
+  { "python", no_argument, nullptr, CO_python },
+  { "python-native", no_argument, nullptr, CO_python_native },
+  { "track-interpreter", no_argument, nullptr, CO_track_interpreter },
+  { "import", required_argument, nullptr, CO_import },
+  { nullptr }
 };
 
 /*
@@ -76,14 +79,87 @@ upcase_string(const string &str) {
 }
 */
 
-int write_python_table_native(ostream &out) {
+/**
+ * Finds a dependency cycle between the given dependency mapping, starting at
+ * the node that is already placed in the given cycle vector.
+ */
+static bool find_dependency_cycle(vector_string &cycle, std::map<string, std::set<string> > &dependencies) {
+  assert(!cycle.empty());
+
+  const std::set<string> &deps = dependencies[cycle.back()];
+  for (auto it = deps.begin(); it != deps.end(); ++it) {
+    auto it2 = std::find(cycle.begin(), cycle.end(), *it);
+    if (it2 != cycle.end()) {
+      // Chop off the part of the chain that is not relevant.
+      cycle.erase(cycle.begin(), it2);
+      cycle.push_back(*it);
+      return true;
+    }
+
+    // Recurse.
+    cycle.push_back(*it);
+    if (find_dependency_cycle(cycle, dependencies)) {
+      return true;
+    }
+    cycle.pop_back();
+  }
+
+  return false;
+}
+
+/**
+ * Given that a direct link has been established between the two libraries,
+ * finds the two types that make up this relationship and prints out the
+ * nature of their dependency.
+ */
+static bool print_dependent_types(const string &lib1, const string &lib2) {
+  for (int ti = 0; ti < interrogate_number_of_global_types(); ti++) {
+    TypeIndex thetype  = interrogate_get_global_type(ti);
+    if (interrogate_type_has_module_name(thetype) &&
+        interrogate_type_has_library_name(thetype) &&
+        lib1 == interrogate_type_library_name(thetype) &&
+        module_name == interrogate_type_module_name(thetype)) {
+
+      // Get the dependencies for this library.
+      int num_derivations = interrogate_type_number_of_derivations(thetype);
+      for (int di = 0; di < num_derivations; ++di) {
+        TypeIndex basetype = interrogate_type_get_derivation(thetype, di);
+        if (interrogate_type_is_global(basetype) &&
+            interrogate_type_has_library_name(basetype) &&
+            interrogate_type_library_name(basetype) == lib2) {
+          cerr
+            << "  " << interrogate_type_scoped_name(thetype) << " ("
+            << lib1 << ") inherits from "
+            << interrogate_type_scoped_name(basetype) << " (" << lib2 << ")\n";
+          return true;
+        }
+      }
+
+      // It also counts if this is a typedef pointing to another type.
+      if (interrogate_type_is_typedef(thetype)) {
+        TypeIndex wrapped = interrogate_type_wrapped_type(thetype);
+        if (interrogate_type_is_global(wrapped) &&
+            interrogate_type_has_library_name(wrapped) &&
+            interrogate_type_library_name(wrapped) == lib2) {
+          cerr
+            << "  " << interrogate_type_scoped_name(thetype) << " ("
+            << lib1 << ") is a typedef to "
+            << interrogate_type_scoped_name(wrapped) << " (" << lib2 << ")\n";
+        }
+      }
+    }
+  }
+  return false;
+}
+
+int write_python_table_native(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#include \"py_panda.h\"\n\n";
 
   int count = 0;
 
-  vector_string libraries;
+  std::map<string, std::set<string> > dependencies;
 
 // out << "extern \"C\" {\n";
 
@@ -99,21 +175,110 @@ int write_python_table_native(ostream &out) {
     // name add it to set of libraries
       if (interrogate_function_has_library_name(function_index)) {
         string library_name = interrogate_function_library_name(function_index);
-        if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
-          libraries.push_back(library_name);
-        }
+        dependencies[library_name];
       }
     // }
   }
 
-  for (int ti = 0; ti < interrogate_number_of_types(); ti++) {
-    TypeIndex thetype  = interrogate_get_type(ti);
+  for (int ti = 0; ti < interrogate_number_of_global_types(); ti++) {
+    TypeIndex thetype  = interrogate_get_global_type(ti);
     if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
       if (interrogate_type_has_library_name(thetype)) {
         string library_name = interrogate_type_library_name(thetype);
+        std::set<string> &deps = dependencies[library_name];
+
+        // Get the dependencies for this library.
+        int num_derivations = interrogate_type_number_of_derivations(thetype);
+        for (int di = 0; di < num_derivations; ++di) {
+          TypeIndex basetype = interrogate_type_get_derivation(thetype, di);
+          if (interrogate_type_is_global(basetype) &&
+              interrogate_type_has_library_name(basetype)) {
+            string baselib = interrogate_type_library_name(basetype);
+            if (baselib != library_name) {
+              deps.insert(std::move(baselib));
+            }
+          }
+        }
+
+        if (interrogate_type_is_typedef(thetype)) {
+          TypeIndex wrapped = interrogate_type_wrapped_type(thetype);
+          if (interrogate_type_is_global(wrapped) &&
+              interrogate_type_has_library_name(wrapped)) {
+            string wrappedlib = interrogate_type_library_name(wrapped);
+            if (wrappedlib != library_name) {
+              deps.insert(std::move(wrappedlib));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Now add the libraries in their proper ordering, based on dependencies.
+  vector_string libraries;
+  while (libraries.size() < dependencies.size()) {
+    // We have this check to make sure we don't enter an infinite loop.
+    bool added_any = false;
+
+    for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
+      const string &library_name = it->first;
+      std::set<string> &deps = dependencies[library_name];
+
+      // Remove the dependencies that have already been added from the deps.
+      if (!deps.empty()) {
+        for (auto li = libraries.begin(); li != libraries.end(); ++li) {
+          deps.erase(*li);
+        }
+      }
+
+      if (deps.empty()) {
+        // OK, no remaining dependencies, so we can add this.
         if (std::find(libraries.begin(), libraries.end(), library_name) == libraries.end()) {
           libraries.push_back(library_name);
+          added_any = true;
         }
+      }
+    }
+
+    if (!added_any) {
+      // Oh dear, we must have hit a circular dependency.  Go through the
+      // remaining libraries to figure it out and print it.
+      cerr << "Circular dependency between libraries detected:\n";
+      for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
+        const string &library_name = it->first;
+        std::set<string> &deps = dependencies[library_name];
+        if (deps.empty()) {
+          continue;
+        }
+
+        // But since it does indicate a potential architectural flaw, we do
+        // want to let the user know about this.
+        vector_string cycle;
+        cycle.push_back(library_name);
+        if (!find_dependency_cycle(cycle, dependencies)) {
+          continue;
+        }
+        assert(cycle.size() >= 2);
+
+        // Show the cycle of library dependencies.
+        auto ci = cycle.begin();
+        cerr << "  " << *ci;
+        for (++ci; ci != cycle.end(); ++ci) {
+          cerr << " -> " << *ci;
+        }
+        cerr << "\n";
+
+        // Now print out the actual types that make up the cycle.
+        ci = cycle.begin();
+        string prev = *ci;
+        for (++ci; ci != cycle.end(); ++ci) {
+          print_dependent_types(prev, *ci);
+          prev = *ci;
+        }
+
+        // We have to arbitrarily break one of the dependencies in order to be
+        // able to proceed.  Break the first dependency.
+        dependencies[cycle[0]].erase(cycle[1]);
       }
     }
   }
@@ -154,10 +319,10 @@ int write_python_table_native(ostream &out) {
       << "static struct PyModuleDef py_" << library_name << "_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
-      << "  NULL,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr,\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n"
       << "\n"
       << "PyObject *PyInit_" << library_name << "() {\n";
@@ -184,10 +349,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -231,10 +396,10 @@ int write_python_table_native(ostream &out) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -248,7 +413,7 @@ int write_python_table_native(ostream &out) {
       << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
       << "compiled for Python \" PY_VERSION \", which is incompatible "
       << "with Python 3\");\n"
-      << "  return (PyObject *)NULL;\n"
+      << "  return nullptr;\n"
       << "}\n"
       << "#endif\n"
       << "#endif\n"
@@ -258,7 +423,7 @@ int write_python_table_native(ostream &out) {
   return count;
 }
 
-int write_python_table(ostream &out) {
+int write_python_table(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"
@@ -335,17 +500,17 @@ int write_python_table(ostream &out) {
     library_name = module_name;
   }
 
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_methods,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"
@@ -383,7 +548,7 @@ int main(int argc, char *argv[]) {
   pystub();
 
   preprocess_argv(argc, argv);
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+  flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
     switch (flag) {
     case CO_oc:
@@ -421,7 +586,7 @@ int main(int argc, char *argv[]) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+    flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   }
 
   argc -= (optind-1);
@@ -455,7 +620,7 @@ int main(int argc, char *argv[]) {
       pathname.set_type(Filename::T_dso);
       nout << "Loading " << pathname << "\n";
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         nout << "Unable to load: " << load_dso_error() << "\n";
         exit(1);
       }

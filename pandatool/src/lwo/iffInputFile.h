@@ -33,7 +33,7 @@ public:
   virtual ~IffInputFile();
 
   bool open_read(Filename filename);
-  void set_input(istream *input, bool owns_istream);
+  void set_input(std::istream *input, bool owns_istream);
 
   INLINE void set_filename(const Filename &filename);
   INLINE const Filename &get_filename() const;
@@ -52,7 +52,7 @@ public:
   uint32_t get_be_uint32();
   PN_stdfloat get_be_float32();
 
-  string get_string();
+  std::string get_string();
 
   IffId get_id();
 
@@ -66,7 +66,7 @@ public:
 protected:
   virtual IffChunk *make_new_chunk(IffId id);
 
-  istream *_input;
+  std::istream *_input;
   Filename _filename;
   bool _owns_istream;
   bool _eof;

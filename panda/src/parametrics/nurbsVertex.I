@@ -69,14 +69,14 @@ get_vertex() const {
 INLINE void NurbsVertex::
 set_space(const NodePath &space) {
   _space = space;
-  _space_path = string();
+  _space_path = std::string();
 }
 
 /**
  * Sets the space of this vertex as a relative path from the rel_to node.
  */
 INLINE void NurbsVertex::
-set_space(const string &space) {
+set_space(const std::string &space) {
   _space = NodePath();
   _space_path = space;
 }

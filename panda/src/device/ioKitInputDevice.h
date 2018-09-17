@@ -25,7 +25,7 @@
  * This implementation uses the IOKit HID code that was introduced with macOS
  * 10.5 to interface with USB HID devices.
  */
-class EXPCL_PANDA_DEVICE IOKitInputDevice FINAL : public InputDevice {
+class EXPCL_PANDA_DEVICE IOKitInputDevice final : public InputDevice {
 public:
   IOKitInputDevice(IOHIDDeviceRef device);
   ~IOKitInputDevice();

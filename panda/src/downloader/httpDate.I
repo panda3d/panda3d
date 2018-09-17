@@ -45,7 +45,7 @@ operator = (const HTTPDate &copy) {
  */
 INLINE HTTPDate HTTPDate::
 now() {
-  return HTTPDate(time(NULL));
+  return HTTPDate(time(nullptr));
 }
 
 /**
@@ -147,16 +147,16 @@ operator - (const HTTPDate &other) const {
 }
 
 
-INLINE istream &
-operator >> (istream &in, HTTPDate &date) {
+INLINE std::istream &
+operator >> (std::istream &in, HTTPDate &date) {
   if (!date.input(in)) {
-    in.clear(ios::failbit | in.rdstate());
+    in.clear(std::ios::failbit | in.rdstate());
   }
   return in;
 }
 
-INLINE ostream &
-operator << (ostream &out, const HTTPDate &date) {
+INLINE std::ostream &
+operator << (std::ostream &out, const HTTPDate &date) {
   date.output(out);
   return out;
 }

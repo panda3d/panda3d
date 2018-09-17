@@ -41,7 +41,7 @@ public:
   bool has_material() const;
   bool has_texture() const;
 
-  XFileDataNode *make_x_material(XFileNode *x_meshMaterials, const string &suffix);
+  XFileDataNode *make_x_material(XFileNode *x_meshMaterials, const std::string &suffix);
   bool fill_material(XFileDataNode *obj);
 
 private:

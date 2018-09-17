@@ -22,6 +22,10 @@
 #include "ropeNode.h"
 #include "sheetNode.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PARAMETRICS)
+  #error Buildsystem error: BUILDING_PANDA_PARAMETRICS not defined
+#endif
+
 Configure(config_parametrics);
 NotifyCategoryDef(parametrics, "");
 

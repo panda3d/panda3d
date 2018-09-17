@@ -37,8 +37,8 @@
  */
 CPT(RenderState) ColladaBindMaterial::
 get_material(const ColladaPrimitive *prim) const {
-  if (prim == NULL || _states.count(prim->get_material()) == 0) {
-    return NULL;
+  if (prim == nullptr || _states.count(prim->get_material()) == 0) {
+    return nullptr;
   }
   return _states.find(prim->get_material())->second;
 }
@@ -48,9 +48,9 @@ get_material(const ColladaPrimitive *prim) const {
  * found.
  */
 CPT(RenderState) ColladaBindMaterial::
-get_material(const string &symbol) const {
+get_material(const std::string &symbol) const {
   if (_states.count(symbol) == 0) {
-    return NULL;
+    return nullptr;
   }
   return _states.find(symbol)->second;
 }
@@ -74,10 +74,10 @@ load_bind_material(domBind_material &bind_mat) {
 void ColladaBindMaterial::
 load_instance_material(domInstance_material &inst) {
   domMaterialRef mat = daeSafeCast<domMaterial> (inst.getTarget().getElement());
-  nassertv(mat != NULL);
+  nassertv(mat != nullptr);
 
   domInstance_effectRef einst = mat->getInstance_effect();
-  nassertv(einst != NULL);
+  nassertv(einst != nullptr);
 
   domInstance_effect::domSetparam_Array &setparams = einst->getSetparam_array();
 

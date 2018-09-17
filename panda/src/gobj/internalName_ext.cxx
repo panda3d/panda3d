@@ -13,6 +13,8 @@
 
 #include "internalName_ext.h"
 
+using std::string;
+
 #ifdef HAVE_PYTHON
 
 /**
@@ -27,8 +29,8 @@ make(PyUnicodeObject *str) {
     // Not an interned string; don't bother.
     Py_ssize_t len = 0;
     const char *c_str = PyUnicode_AsUTF8AndSize((PyObject *)str, &len);
-    if (c_str == NULL) {
-      return NULL;
+    if (c_str == nullptr) {
+      return nullptr;
     }
 
     string name(c_str, len);
@@ -73,8 +75,8 @@ make(PyStringObject *str) {
     Py_INCREF(str);
     iname->ref();
 
-    InternalName::_py_intern_table.insert(make_pair((PyObject *)str, iname.p()));
-    return iname.p();
+    InternalName::_py_intern_table.insert(std::make_pair((PyObject *)str, iname.p()));
+    return iname;
   }
 
 }

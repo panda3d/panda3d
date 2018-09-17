@@ -1,0 +1,13 @@
+#pragma once
+
+namespace std {
+  class bad_alloc;
+  class bad_array_new_length;
+
+  struct nothrow_t {
+    explicit nothrow_t() = default;
+  };
+  extern const nothrow_t nothrow;
+
+  using new_handler = void (*)();
+}

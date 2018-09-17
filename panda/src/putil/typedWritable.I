@@ -15,14 +15,14 @@
  *
  */
 INLINE TypedWritable::
-TypedWritable() : _bam_writers(NULL) {
+TypedWritable() : _bam_writers(nullptr) {
 }
 
 /**
  *
  */
 INLINE TypedWritable::
-TypedWritable(const TypedWritable &) : _bam_writers(NULL) {
+TypedWritable(const TypedWritable &) : _bam_writers(nullptr) {
 }
 
 /**

@@ -56,6 +56,10 @@ extern ContactDestroyedCallback gContactDestroyedCallback;
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDABULLET)
+  #error Buildsystem error: BUILDING_PANDABULLET not defined
+#endif
+
 Configure(config_bullet);
 NotifyCategoryDef(bullet, "");
 
@@ -203,7 +207,7 @@ init_libbullet() {
 
   // Initialize notification category
   bullet_cat.init();
-  bullet_cat.debug() << "initialize module" << endl;
+  bullet_cat.debug() << "initialize module" << std::endl;
 
   // Register the Bullet system
   PandaSystem *ps = PandaSystem::get_global_ptr();

@@ -18,13 +18,18 @@
 #include "p3dStringObject.h"
 #include "p3dInstanceManager.h"
 
+using std::ios;
+using std::max;
+using std::streamsize;
+using std::string;
+
 /**
  *
  */
 P3DMainObject::
 P3DMainObject() :
-  _pyobj(NULL),
-  _inst(NULL),
+  _pyobj(nullptr),
+  _inst(nullptr),
   _unauth_play(false)
 {
 }
@@ -34,7 +39,7 @@ P3DMainObject() :
  */
 P3DMainObject::
 ~P3DMainObject() {
-  set_pyobj(NULL);
+  set_pyobj(nullptr);
 
   // Clear the local properties.
   Properties::const_iterator pi;
@@ -83,10 +88,10 @@ get_float() {
  */
 void P3DMainObject::
 make_string(string &value) {
-  if (_pyobj == NULL) {
+  if (_pyobj == nullptr) {
     value = "P3DMainObject";
   } else {
-    int size = P3D_OBJECT_GET_STRING(_pyobj, NULL, 0);
+    int size = P3D_OBJECT_GET_STRING(_pyobj, nullptr, 0);
     char *buffer = new char[size];
     P3D_OBJECT_GET_STRING(_pyobj, buffer, size);
     value = string(buffer, size);
@@ -100,7 +105,7 @@ make_string(string &value) {
  */
 P3D_object *P3DMainObject::
 get_property(const string &property) {
-  if (_pyobj == NULL) {
+  if (_pyobj == nullptr) {
     // Without a pyobj, we just report whatever's been stored locally.
     Properties::const_iterator pi;
     pi = _properties.find(property);
@@ -109,7 +114,7 @@ get_property(const string &property) {
       P3D_OBJECT_INCREF(result);
       return result;
     }
-    return NULL;
+    return nullptr;
   }
 
   // With a pyobj, we pass the query down to it.
@@ -123,9 +128,9 @@ get_property(const string &property) {
 bool P3DMainObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
   // First, we set the property locally.
-  if (value != NULL) {
+  if (value != nullptr) {
     Properties::iterator pi;
-    pi = _properties.insert(Properties::value_type(property, (P3D_object *)NULL)).first;
+    pi = _properties.insert(Properties::value_type(property, nullptr)).first;
     assert(pi != _properties.end());
     P3D_object *orig_value = (*pi).second;
     if (orig_value != value) {
@@ -144,7 +149,7 @@ set_property(const string &property, bool needs_response, P3D_object *value) {
     }
   }
 
-  if (_pyobj == NULL) {
+  if (_pyobj == nullptr) {
     // Without a pyobj, that's all we do.
     return true;
   }
@@ -171,7 +176,7 @@ has_method(const string &method_name) {
     return true;
   }
 
-  if (_pyobj == NULL) {
+  if (_pyobj == nullptr) {
     // No methods until we get our pyobj.
     return false;
   }
@@ -197,7 +202,7 @@ call(const string &method_name, bool needs_response,
     if (i != 0) {
       nout << ", ";
     }
-    int buffer_size = P3D_OBJECT_GET_REPR(params[i], NULL, 0);
+    int buffer_size = P3D_OBJECT_GET_REPR(params[i], nullptr, 0);
     char *buffer = new char[buffer_size];
     P3D_OBJECT_GET_REPR(params[i], buffer, buffer_size);
     nout.write(buffer, buffer_size);
@@ -217,9 +222,9 @@ call(const string &method_name, bool needs_response,
     return call_uninstall(params, num_params);
   }
 
-  if (_pyobj == NULL) {
+  if (_pyobj == nullptr) {
     // No methods until we get our pyobj.
-    return NULL;
+    return nullptr;
   }
 
   return P3D_OBJECT_CALL(_pyobj, method_name.c_str(), needs_response,
@@ -231,7 +236,7 @@ call(const string &method_name, bool needs_response,
  * This is intended for developer assistance.
  */
 void P3DMainObject::
-output(ostream &out) {
+output(std::ostream &out) {
   out << "P3DMainObject";
 }
 
@@ -251,9 +256,9 @@ set_pyobj(P3D_object *pyobj) {
     // actually need to set the reference; instead, we clear anything we had
     // set.
     nout << "application shares main object\n";
-    pyobj = NULL;
+    pyobj = nullptr;
 
-  } else if (pyobj != NULL) {
+  } else if (pyobj != nullptr) {
     // In the alternate case, the application has its own, separate
     // appRunner.main object.  Thus, we do need to set the pointer.
     nout << "application has its own main object\n";
@@ -262,7 +267,7 @@ set_pyobj(P3D_object *pyobj) {
   if (_pyobj != pyobj) {
     P3D_OBJECT_XDECREF(_pyobj);
     _pyobj = pyobj;
-    if (_pyobj != NULL) {
+    if (_pyobj != nullptr) {
       P3D_OBJECT_INCREF(_pyobj);
 
       // Now that we have a pyobj, we have to transfer down all of the
@@ -288,7 +293,7 @@ get_pyobj() const {
  */
 void P3DMainObject::
 apply_properties(P3D_object *pyobj) {
-  P3DPythonObject *p3dpyobj = NULL;
+  P3DPythonObject *p3dpyobj = nullptr;
   if (pyobj->_class == &P3DObject::_object_class) {
     p3dpyobj = ((P3DObject *)pyobj)->as_python_object();
   }
@@ -297,7 +302,7 @@ apply_properties(P3D_object *pyobj) {
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     const string &property_name = (*pi).first;
     P3D_object *value = (*pi).second;
-    if (p3dpyobj != NULL && P3D_OBJECT_GET_TYPE(value) != P3D_OT_object) {
+    if (p3dpyobj != nullptr && P3D_OBJECT_GET_TYPE(value) != P3D_OT_object) {
       // If we know we have an actual P3DPythonObject (we really expect this),
       // then we can call set_property_insecure() directly, because we want to
       // allow setting the initial properties even if Javascript has no
@@ -317,7 +322,7 @@ apply_properties(P3D_object *pyobj) {
  */
 void P3DMainObject::
 set_instance(P3DInstance *inst) {
-  if (_inst != NULL) {
+  if (_inst != nullptr) {
     // Save the game log filename of the instance just before it goes away, in
     // case JavaScript asks for it later.
     _game_log_pathname = _inst->get_log_pathname();
@@ -341,7 +346,7 @@ set_instance(P3DInstance *inst) {
 P3D_object *P3DMainObject::
 call_play(P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (_inst == NULL) {
+  if (_inst == nullptr) {
     return inst_mgr->new_bool_object(false);
   }
 
@@ -372,7 +377,7 @@ call_play(P3D_object *params[], int num_params) {
  */
 P3D_object *P3DMainObject::
 call_read_game_log(P3D_object *params[], int num_params) {
-  if (_inst != NULL) {
+  if (_inst != nullptr) {
     string log_pathname = _inst->get_log_pathname();
     return read_log(log_pathname, params, num_params);
   }
@@ -413,7 +418,7 @@ call_read_log(P3D_object *params[], int num_params) {
     return inst_mgr->new_undefined_object();
   }
 
-  int size = P3D_OBJECT_GET_STRING(params[0], NULL, 0);
+  int size = P3D_OBJECT_GET_STRING(params[0], nullptr, 0);
   char *buffer = new char[size];
   P3D_OBJECT_GET_STRING(params[0], buffer, size);
   string log_filename = string(buffer, size);
@@ -459,7 +464,7 @@ P3D_object *P3DMainObject::
 read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string log_directory = inst_mgr->get_log_directory();
-  ostringstream log_data;
+  std::ostringstream log_data;
 
   // Check the first parameter, if any--if given, it specifies the last n
   // bytes to retrieve.
@@ -512,7 +517,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
   }
 
   // Read matching files
-  vector<string> all_logs;
+  std::vector<string> all_logs;
   int log_matches_found = 0;
   string log_matching_pathname;
   inst_mgr->scan_directory(log_directory, all_logs);
@@ -544,7 +549,7 @@ read_log(const string &log_pathname, P3D_object *params[], int num_params) {
 void P3DMainObject::
 read_log_file(const string &log_pathname,
               size_t tail_bytes, size_t head_bytes,
-              ostringstream &log_data) {
+              std::ostringstream &log_data) {
 
   // Get leaf name
   string log_leafname = log_pathname;
@@ -599,7 +604,7 @@ read_log_file(const string &log_pathname,
   size_t buffer_bytes = max(max(full_bytes, head_bytes), tail_bytes) + 1;
   nout << "allocating " << buffer_bytes << " bytes to read at a time from file of size " << file_size << ".\n";
   char *buffer = new char[buffer_bytes];
-  if (buffer == NULL) {
+  if (buffer == nullptr) {
     log_data << "== PandaLog-" << "Error allocating buffer";
     log_data << " " << "(" << log_leafname << ")" << "\n";
     return;
@@ -659,7 +664,7 @@ read_log_file(const string &log_pathname,
 
   // cleanup
   delete[] buffer;
-  buffer = NULL;
+  buffer = nullptr;
 }
 
 /**
@@ -673,7 +678,7 @@ call_uninstall(P3D_object *params[], int num_params) {
   // Get the first parameter, the uninstall mode.
   string mode;
   if (num_params > 0) {
-    int size = P3D_OBJECT_GET_STRING(params[0], NULL, 0);
+    int size = P3D_OBJECT_GET_STRING(params[0], nullptr, 0);
     char *buffer = new char[size];
     P3D_OBJECT_GET_STRING(params[0], buffer, size);
     mode = string(buffer, size);
@@ -686,7 +691,7 @@ call_uninstall(P3D_object *params[], int num_params) {
     return inst_mgr->new_bool_object(true);
   }
 
-  if (_inst != NULL) {
+  if (_inst != nullptr) {
     nout << "uninstall " << mode << " for " << _inst << "\n";
     bool success = false;
     if (mode == "host") {

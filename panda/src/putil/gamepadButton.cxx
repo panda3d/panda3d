@@ -37,15 +37,15 @@ DEFINE_GAMEPAD_BUTTON_HANDLE(start)
 DEFINE_GAMEPAD_BUTTON_HANDLE(next)
 DEFINE_GAMEPAD_BUTTON_HANDLE(previous)
 
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_a)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_b)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_c)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_x)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_y)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_z)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_a)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_b)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_c)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_x)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_y)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_z)
 
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_1)
-DEFINE_GAMEPAD_BUTTON_HANDLE(action_2)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_1)
+DEFINE_GAMEPAD_BUTTON_HANDLE(face_2)
 
 DEFINE_GAMEPAD_BUTTON_HANDLE(trigger)
 DEFINE_GAMEPAD_BUTTON_HANDLE(hat_up)
@@ -63,7 +63,7 @@ joystick(int button_number) {
   if (button_number >= 0) {
     // "button1" does not exist, it is called "trigger" instead
     static pvector<ButtonHandle> buttons(1, _trigger);
-    while (button_number >= buttons.size()) {
+    while ((size_t)button_number >= buttons.size()) {
       char numstr[20];
       sprintf(numstr, "joystick%d", (int)buttons.size() + 1);
       ButtonHandle handle;
@@ -100,15 +100,15 @@ init_gamepad_buttons() {
   ButtonRegistry::ptr()->register_button(_next, "next");
   ButtonRegistry::ptr()->register_button(_previous, "previous");
 
-  ButtonRegistry::ptr()->register_button(_action_a, "action_a");
-  ButtonRegistry::ptr()->register_button(_action_b, "action_b");
-  ButtonRegistry::ptr()->register_button(_action_c, "action_c");
-  ButtonRegistry::ptr()->register_button(_action_x, "action_x");
-  ButtonRegistry::ptr()->register_button(_action_y, "action_y");
-  ButtonRegistry::ptr()->register_button(_action_z, "action_z");
+  ButtonRegistry::ptr()->register_button(_face_a, "face_a");
+  ButtonRegistry::ptr()->register_button(_face_b, "face_b");
+  ButtonRegistry::ptr()->register_button(_face_c, "face_c");
+  ButtonRegistry::ptr()->register_button(_face_x, "face_x");
+  ButtonRegistry::ptr()->register_button(_face_y, "face_y");
+  ButtonRegistry::ptr()->register_button(_face_z, "face_z");
 
-  ButtonRegistry::ptr()->register_button(_action_1, "action_1");
-  ButtonRegistry::ptr()->register_button(_action_2, "action_2");
+  ButtonRegistry::ptr()->register_button(_face_1, "face_1");
+  ButtonRegistry::ptr()->register_button(_face_2, "face_2");
 
   ButtonRegistry::ptr()->register_button(_trigger, "trigger");
   ButtonRegistry::ptr()->register_button(_hat_up, "hat_up");

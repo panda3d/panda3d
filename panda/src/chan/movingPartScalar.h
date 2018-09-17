@@ -30,7 +30,7 @@ protected:
   INLINE MovingPartScalar(const MovingPartScalar &copy);
 
 public:
-  INLINE MovingPartScalar(PartGroup *parent, const string &name,
+  INLINE MovingPartScalar(PartGroup *parent, const std::string &name,
                           const PN_stdfloat &default_value = 0);
   virtual ~MovingPartScalar();
 
@@ -69,10 +69,5 @@ private:
 };
 
 #include "movingPartScalar.I"
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

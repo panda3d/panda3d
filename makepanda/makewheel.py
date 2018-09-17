@@ -28,7 +28,7 @@ default_platform = get_platform()
 
 if default_platform.startswith("linux-"):
     # Is this manylinux1?
-    if os.path.isfile("/lib/libc-2.5.so") and os.path.isdir("/opt/python"):
+    if (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
         default_platform = default_platform.replace("linux", "manylinux1")
 
 
@@ -488,7 +488,10 @@ def makewheel(version, output_dir, platform=default_platform):
 
     # Write the panda3d tree.  We use a custom empty __init__ since the
     # default one adds the bin directory to the PATH, which we don't have.
-    whl.write_file_data('panda3d/__init__.py', '')
+    whl.write_file_data('panda3d/__init__.py', """"Python bindings for the Panda3D libraries"
+
+__version__ = '{0}'
+""".format(version))
 
     ext_suffix = GetExtensionSuffix()
 

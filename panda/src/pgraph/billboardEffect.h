@@ -50,7 +50,7 @@ PUBLISHED:
 public:
   virtual bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual bool has_cull_callback() const;
   virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,

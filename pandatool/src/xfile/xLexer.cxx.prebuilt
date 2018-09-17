@@ -643,12 +643,11 @@ goto find_rule; \
 #define YY_RESTORE_YY_MORE_OFFSET
 char *xyytext;
 #line 1 "xLexer.lxx"
-/*
-// Filename: xLexer.lxx
-// Created by:  drose (03Oct04)
-// 
-////////////////////////////////////////////////////////////////////
-*/
+/**
+ * @file xLexer.lxx
+ * @author drose
+ * @date 2004-10-03
+ */
 #line 9 "xLexer.lxx"
 #include "xLexerDefs.h"
 #include "xParserDefs.h"
@@ -678,11 +677,11 @@ static int error_count = 0;
 static int warning_count = 0;
 
 // This is the pointer to the current input stream.
-static istream *input_p = NULL;
+static std::istream *input_p = nullptr;
 
 // This is the name of the x file we're parsing.  We keep it so we
 // can print it out for error messages.
-static string x_filename;
+static std::string x_filename;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -690,7 +689,7 @@ static string x_filename;
 ////////////////////////////////////////////////////////////////////
 
 void
-x_init_lexer(istream &in, const string &filename) {
+x_init_lexer(std::istream &in, const std::string &filename) {
   input_p = &in;
   x_filename = filename;
   x_line_number = 0;
@@ -720,13 +719,13 @@ xyywrap(void) {
 }
 
 void
-xyyerror(const string &msg) {
+xyyerror(const std::string &msg) {
   xyyerror(msg, x_line_number, x_col_number, x_current_line);
 }
 
 void
-xyyerror(const string &msg, int line_number, int col_number, 
-         const string &current_line) {
+xyyerror(const std::string &msg, int line_number, int col_number,
+         const std::string &current_line) {
   xfile_cat.error(false) << "\nError";
   if (!x_filename.empty()) {
     xfile_cat.error(false) << " in " << x_filename;
@@ -741,7 +740,7 @@ xyyerror(const string &msg, int line_number, int col_number,
 }
 
 void
-xyywarning(const string &msg) {
+xyywarning(const std::string &msg) {
   xfile_cat.warning(false) << "\nWarning";
   if (!x_filename.empty()) {
     xfile_cat.warning(false) << " in " << x_filename;
@@ -795,7 +794,7 @@ input_chars(char *buffer, int &result, int max_size) {
 // Define this macro carefully, since different flex versions call it
 // with a different type for result.
 #define YY_INPUT(buffer, result, max_size) { \
-  int int_result; \
+  int int_result = 0; \
   input_chars((buffer), int_result, (max_size)); \
   (result) = int_result; \
 }
@@ -817,9 +816,9 @@ read_char(int &line, int &col) {
 
 // scan_quoted_string reads a string delimited by quotation marks and
 // returns it.
-static string
+static std::string
 scan_quoted_string(char quote_mark) {
-  string result;
+  std::string result;
 
   // We don't touch the current line number and column number during
   // scanning, so that if we detect an error while scanning the string
@@ -939,7 +938,7 @@ scan_quoted_string(char quote_mark) {
 
 // scan_guid_string reads a string of hexadecimal digits delimited by
 // angle brackets and returns the corresponding string.
-static string
+static std::string
 scan_guid_string() {
   // We don't touch the current line number and column number during
   // scanning, so that if we detect an error while scanning the string
@@ -956,7 +955,7 @@ scan_guid_string() {
   int num_digits = 0;
   int num_hyphens = 0;
 
-  string result;
+  std::string result;
 
   int c;
   c = read_char(line, col);
@@ -971,7 +970,7 @@ scan_guid_string() {
       x_line_number = line;
       x_col_number = col;
       xyyerror("Invalid character in GUID.");
-      return string();
+      return std::string();
     }
 
     result += c;
@@ -981,15 +980,15 @@ scan_guid_string() {
 
   if (c == EOF) {
     xyyerror("This GUID string is unterminated.");
-    return string();
+    return std::string();
 
   } else if (num_digits != 32) {
     xyyerror("Incorrect number of hex digits in GUID.");
-    return string();
+    return std::string();
 
   } else if (num_hyphens != 4) {
     xyyerror("Incorrect number of hyphens in GUID.");
-    return string();
+    return std::string();
   }
 
   x_line_number = line;
@@ -1000,7 +999,7 @@ scan_guid_string() {
 
 // Parses the text into a list of integers and returns them.
 static PTA_int
-scan_int_list(const string &text) {
+scan_int_list(const std::string &text) {
   PTA_int result;
 
   vector_string words;
@@ -1008,7 +1007,7 @@ scan_int_list(const string &text) {
 
   vector_string::const_iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    string trimmed = trim(*wi);
+    std::string trimmed = trim(*wi);
     if (!trimmed.empty()) {
       int number = 0;
       string_to_int(trimmed, number);
@@ -1021,7 +1020,7 @@ scan_int_list(const string &text) {
 
 // Parses the text into a list of doubles and returns them.
 static PTA_double
-scan_double_list(const string &text) {
+scan_double_list(const std::string &text) {
   PTA_double result;
 
   vector_string words;
@@ -1029,7 +1028,7 @@ scan_double_list(const string &text) {
 
   vector_string::const_iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    string trimmed = trim(*wi);
+    std::string trimmed = trim(*wi);
     if (!trimmed.empty()) {
       double number = 0.0;
       string_to_double(trimmed, number);
@@ -1655,7 +1654,7 @@ YY_RULE_SETUP
 {
   // Any other character is invalid.
   accept();
-  xyyerror("Invalid character '" + string(xyytext) + "'.");
+  xyyerror("Invalid character '" + std::string(xyytext) + "'.");
 }
 	YY_BREAK
 case 35:

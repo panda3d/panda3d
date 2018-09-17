@@ -36,8 +36,8 @@ public:
 
   virtual bool read_iff(IffInputFile *in, size_t stop_at)=0;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   virtual IffChunk *make_new_chunk(IffInputFile *in, IffId id);
 
@@ -64,7 +64,7 @@ private:
 
 #include "iffChunk.I"
 
-INLINE ostream &operator << (ostream &out, const IffChunk &chunk) {
+INLINE std::ostream &operator << (std::ostream &out, const IffChunk &chunk) {
   chunk.output(out);
   return out;
 }

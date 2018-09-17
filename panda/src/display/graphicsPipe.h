@@ -52,9 +52,8 @@ class DisplayInformation;
 class EXPCL_PANDA_DISPLAY GraphicsPipe : public TypedReferenceCount {
 protected:
   GraphicsPipe();
-private:
-  GraphicsPipe(const GraphicsPipe &copy) DELETED;
-  GraphicsPipe &operator = (const GraphicsPipe &copy) DELETED_ASSIGN;
+  GraphicsPipe(const GraphicsPipe &copy) = delete;
+  GraphicsPipe &operator = (const GraphicsPipe &copy) = delete;
 
 PUBLISHED:
   virtual ~GraphicsPipe();
@@ -100,7 +99,7 @@ PUBLISHED:
 
   virtual void lookup_cpu_data();
 
-  virtual string get_interface_name() const=0;
+  virtual std::string get_interface_name() const=0;
   MAKE_PROPERTY(interface_name, get_interface_name);
 
 public:
@@ -111,14 +110,14 @@ public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
   INLINE GraphicsDevice *get_device() const;
-  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
+  virtual PT(GraphicsDevice) make_device(void *scrn = nullptr);
 
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 
 protected:
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
-  virtual PT(GraphicsOutput) make_output(const string &name,
+  virtual PT(GraphicsOutput) make_output(const std::string &name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

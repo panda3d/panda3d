@@ -33,12 +33,12 @@ LightReMutex x11GraphicsPipe::_x_mutex;
  *
  */
 x11GraphicsPipe::
-x11GraphicsPipe(const string &display) :
+x11GraphicsPipe(const std::string &display) :
   _have_xrandr(false),
   _xcursor_size(-1),
-  _XF86DGADirectVideo(NULL) {
+  _XF86DGADirectVideo(nullptr) {
 
-  string display_spec = display;
+  std::string display_spec = display;
   if (display_spec.empty()) {
     display_spec = display_cfg;
   }
@@ -60,10 +60,10 @@ x11GraphicsPipe(const string &display) :
 
   _is_valid = false;
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
-  _display = NULL;
+  _display = nullptr;
   _screen = 0;
-  _root = (X11_Window)NULL;
-  _im = (XIM)NULL;
+  _root = (X11_Window)nullptr;
+  _im = (XIM)nullptr;
   _hidden_cursor = None;
 
   install_error_handlers();
@@ -82,7 +82,7 @@ x11GraphicsPipe(const string &display) :
 
   if (!XSupportsLocale()) {
     x11display_cat.warning()
-      << "X does not support locale " << setlocale(LC_ALL, NULL) << "\n";
+      << "X does not support locale " << setlocale(LC_ALL, nullptr) << "\n";
   }
   XSetLocaleModifiers("");
 
@@ -94,20 +94,20 @@ x11GraphicsPipe(const string &display) :
 
   // Dynamically load the xf86dga extension.
   void *xf86dga = dlopen("libXxf86dga.so.1", RTLD_NOW | RTLD_LOCAL);
-  if (xf86dga != NULL) {
+  if (xf86dga != nullptr) {
     pfn_XF86DGAQueryVersion _XF86DGAQueryVersion = (pfn_XF86DGAQueryVersion)dlsym(xf86dga, "XF86DGAQueryVersion");
     _XF86DGADirectVideo = (pfn_XF86DGADirectVideo)dlsym(xf86dga, "XF86DGADirectVideo");
 
     int major_ver, minor_ver;
-    if (_XF86DGAQueryVersion == NULL || _XF86DGADirectVideo == NULL) {
+    if (_XF86DGAQueryVersion == nullptr || _XF86DGADirectVideo == nullptr) {
       x11display_cat.warning()
         << "libXxf86dga.so.1 does not provide required functions; relative mouse mode will not work.\n";
 
     } else if (!_XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
-      _XF86DGADirectVideo = NULL;
+      _XF86DGADirectVideo = nullptr;
     }
   } else {
-    _XF86DGADirectVideo = NULL;
+    _XF86DGADirectVideo = nullptr;
     if (x11display_cat.is_debug()) {
       x11display_cat.debug()
         << "cannot dlopen libXxf86dga.so.1; cursor changing will not work.\n";
@@ -116,7 +116,7 @@ x11GraphicsPipe(const string &display) :
 
   // Dynamically load the XCursor extension.
   void *xcursor = dlopen("libXcursor.so.1", RTLD_NOW | RTLD_LOCAL);
-  if (xcursor != NULL) {
+  if (xcursor != nullptr) {
     pfn_XcursorGetDefaultSize _XcursorGetDefaultSize = (pfn_XcursorGetDefaultSize)dlsym(xcursor, "XcursorGetDefaultSize");
     _XcursorXcFileLoadImages = (pfn_XcursorXcFileLoadImages)dlsym(xcursor, "XcursorXcFileLoadImages");
     _XcursorImagesLoadCursor = (pfn_XcursorImagesLoadCursor)dlsym(xcursor, "XcursorImagesLoadCursor");
@@ -125,10 +125,10 @@ x11GraphicsPipe(const string &display) :
     _XcursorImageLoadCursor = (pfn_XcursorImageLoadCursor)dlsym(xcursor, "XcursorImageLoadCursor");
     _XcursorImageDestroy = (pfn_XcursorImageDestroy)dlsym(xcursor, "XcursorImageDestroy");
 
-    if (_XcursorGetDefaultSize == NULL || _XcursorXcFileLoadImages == NULL ||
-        _XcursorImagesLoadCursor == NULL || _XcursorImagesDestroy == NULL ||
-        _XcursorImageCreate == NULL || _XcursorImageLoadCursor == NULL ||
-        _XcursorImageDestroy == NULL) {
+    if (_XcursorGetDefaultSize == nullptr || _XcursorXcFileLoadImages == nullptr ||
+        _XcursorImagesLoadCursor == nullptr || _XcursorImagesDestroy == nullptr ||
+        _XcursorImageCreate == nullptr || _XcursorImageLoadCursor == nullptr ||
+        _XcursorImageDestroy == nullptr) {
       _xcursor_size = -1;
       x11display_cat.warning()
         << "libXcursor.so.1 does not provide required functions; cursor changing will not work.\n";
@@ -148,7 +148,7 @@ x11GraphicsPipe(const string &display) :
 
   // Dynamically load the XRandr extension.
   void *xrandr = dlopen("libXrandr.so.2", RTLD_NOW | RTLD_LOCAL);
-  if (xrandr != NULL) {
+  if (xrandr != nullptr) {
     pfn_XRRQueryExtension _XRRQueryExtension = (pfn_XRRQueryExtension)dlsym(xrandr, "XRRQueryExtension");
     _XRRSizes = (pfn_XRRSizes)dlsym(xrandr, "XRRSizes");
     _XRRRates = (pfn_XRRRates)dlsym(xrandr, "XRRRates");
@@ -156,9 +156,9 @@ x11GraphicsPipe(const string &display) :
     _XRRConfigCurrentConfiguration = (pfn_XRRConfigCurrentConfiguration)dlsym(xrandr, "XRRConfigCurrentConfiguration");
     _XRRSetScreenConfig = (pfn_XRRSetScreenConfig)dlsym(xrandr, "XRRSetScreenConfig");
 
-    if (_XRRQueryExtension == NULL || _XRRSizes == NULL || _XRRRates == NULL ||
-        _XRRGetScreenInfo == NULL || _XRRConfigCurrentConfiguration == NULL ||
-        _XRRSetScreenConfig == NULL) {
+    if (_XRRQueryExtension == nullptr || _XRRSizes == nullptr || _XRRRates == nullptr ||
+        _XRRGetScreenInfo == nullptr || _XRRConfigCurrentConfiguration == nullptr ||
+        _XRRSetScreenConfig == nullptr) {
       _have_xrandr = false;
       x11display_cat.warning()
         << "libXrandr.so.2 does not provide required functions; resolution setting will not work.\n";
@@ -204,8 +204,8 @@ x11GraphicsPipe(const string &display) :
   }
 
   // Connect to an input method for supporting international text entry.
-  _im = XOpenIM(_display, NULL, NULL, NULL);
-  if (_im == (XIM)NULL) {
+  _im = XOpenIM(_display, nullptr, nullptr, nullptr);
+  if (_im == (XIM)nullptr) {
     x11display_cat.warning()
       << "Couldn't open input method.\n";
   }

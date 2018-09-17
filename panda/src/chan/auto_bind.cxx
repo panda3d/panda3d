@@ -18,6 +18,8 @@
 #include "string_utils.h"
 #include "partGroup.h"
 
+using std::string;
+
 typedef pset<AnimBundle *> AnimBundles;
 typedef pmap<string, AnimBundles> Anims;
 
@@ -52,15 +54,15 @@ bind_anims(const PartBundles &parts, const AnimBundles &anims,
       if (name.empty()) {
         name = anim->get_name();
       }
-      if (control != (AnimControl *)NULL) {
-        if (controls.find_anim(name) != (AnimControl *)NULL) {
+      if (control != nullptr) {
+        if (controls.find_anim(name) != nullptr) {
           // That name's already used; synthesize another one.
           int index = 0;
           string new_name;
           do {
             index++;
             new_name = name + '.' + format_string(index);
-          } while (controls.find_anim(new_name) != (AnimControl *)NULL);
+          } while (controls.find_anim(new_name) != nullptr);
           name = new_name;
         }
 
@@ -68,7 +70,7 @@ bind_anims(const PartBundles &parts, const AnimBundles &anims,
       }
 
       if (chan_cat.is_info()) {
-        if (control == (AnimControl *)NULL) {
+        if (control == nullptr) {
           chan_cat.info()
             << "Bind failed.\n";
         } else {

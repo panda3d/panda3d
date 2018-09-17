@@ -37,6 +37,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PGRAPHNODES)
+  #error Buildsystem error: BUILDING_PANDA_PGRAPHNODES not defined
+#endif
+
 ConfigureDef(config_pgraphnodes);
 NotifyCategoryDef(pgraphnodes, "");
 

@@ -21,16 +21,21 @@
 #include "linmath_events.h"
 
 /**
- * Reads the controler data sent from the InputDeviceManager, and
- * transmits it down the data graph.
+ * Reads the controller data sent from the InputDeviceManager, and transmits
+ * it down the data graph.
  *
- *
+ * This is intended to only be accessed from the app thread.
  */
 class EXPCL_PANDA_DEVICE InputDeviceNode : public DataNode {
 PUBLISHED:
-  InputDeviceNode(InputDevice *device, const string &name);
+  InputDeviceNode(InputDevice *device, const std::string &name);
+
+public:
   void set_device(InputDevice *device);
   PT(InputDevice) get_device() const;
+
+PUBLISHED:
+  MAKE_PROPERTY(device, get_device, set_device);
 
 protected:
   // Inherited from DataNode
@@ -39,6 +44,9 @@ protected:
                                 DataNodeTransmit &output);
 
 private:
+  pmap<ButtonHandle, bool> _button_states;
+  pmap<InputDevice::Axis, double> _control_states;
+
   // outputs
   int _button_events_output;
   int _low_battery_event_output;

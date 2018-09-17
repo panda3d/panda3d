@@ -56,7 +56,7 @@ factory(NxShapeType shapeType) {
   }
 
   physx_cat.error() << "Unknown shape type.\n";
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -66,11 +66,11 @@ factory(NxShapeType shapeType) {
 PhysxForceField *PhysxForceFieldShape::
 get_force_field() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   NxForceField *fieldPtr = ptr()->getForceField();
-  if (fieldPtr == NULL) {
-    return NULL;
+  if (fieldPtr == nullptr) {
+    return nullptr;
   }
   return (PhysxForceField *)(fieldPtr->userData);
 }
@@ -81,7 +81,7 @@ get_force_field() const {
 PhysxForceFieldShapeGroup *PhysxForceFieldShape::
 get_shape_group() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxForceFieldShapeGroup *)(ptr()->getShapeGroup().userData);
 }
 

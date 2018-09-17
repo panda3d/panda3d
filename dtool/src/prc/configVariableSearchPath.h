@@ -33,18 +33,18 @@
  * variable, created by using the same name to the constructor, will not
  * reflect the local changes.
  */
-class EXPCL_DTOOLCONFIG ConfigVariableSearchPath : public ConfigVariableBase {
+class EXPCL_DTOOL_PRC ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  INLINE ConfigVariableSearchPath(const string &name,
-                                  const string &description = string(),
+  INLINE ConfigVariableSearchPath(const std::string &name,
+                                  const std::string &description = std::string(),
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name,
+  INLINE ConfigVariableSearchPath(const std::string &name,
                                   const DSearchPath &default_value,
-                                  const string &description,
+                                  const std::string &description,
                                   int flags = 0);
-  INLINE ConfigVariableSearchPath(const string &name,
-                                  const string &default_value,
-                                  const string &description,
+  INLINE ConfigVariableSearchPath(const std::string &name,
+                                  const std::string &default_value,
+                                  const std::string &description,
                                   int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
@@ -59,8 +59,8 @@ PUBLISHED:
   INLINE void clear();
   INLINE void append_directory(const Filename &directory);
   INLINE void prepend_directory(const Filename &directory);
-  INLINE void append_path(const string &path,
-                          const string &separator = string());
+  INLINE void append_path(const std::string &path,
+                          const std::string &separator = std::string());
   INLINE void append_path(const DSearchPath &path);
   INLINE void prepend_path(const DSearchPath &path);
 
@@ -75,8 +75,8 @@ PUBLISHED:
                                DSearchPath::Results &results) const;
   INLINE DSearchPath::Results find_all_files(const Filename &filename) const;
 
-  INLINE void output(ostream &out) const;
-  INLINE void write(ostream &out) const;
+  INLINE void output(std::ostream &out) const;
+  INLINE void write(std::ostream &out) const;
 
 private:
   void reload_search_path();
@@ -88,7 +88,7 @@ private:
   DSearchPath _cache;
 };
 
-INLINE ostream &operator << (ostream &out, const ConfigVariableSearchPath &variable);
+INLINE std::ostream &operator << (std::ostream &out, const ConfigVariableSearchPath &variable);
 
 #include "configVariableSearchPath.I"
 

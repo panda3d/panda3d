@@ -63,7 +63,7 @@ PUBLISHED:
 
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular
   // string version
-  void loadURL2(const string& url, const string& frameName ="", const string& username="" , const string& password="");
+  void loadURL2(const std::string& url, const std::string& frameName ="", const std::string& username="" , const std::string& password="");
 
   // VC7 linker doesn't like wstring from VS2008, hence using the all regular
   // string version

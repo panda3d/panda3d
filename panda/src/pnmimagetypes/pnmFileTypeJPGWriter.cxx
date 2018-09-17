@@ -53,7 +53,7 @@ extern "C" {
 typedef struct {
   struct jpeg_destination_mgr pub; /* public fields */
 
-  ostream * outfile;            /* target stream */
+  std::ostream * outfile;            /* target stream */
   JOCTET * buffer;              /* start of buffer */
 } my_destination_mgr;
 
@@ -156,7 +156,7 @@ term_destination (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
+jpeg_ostream_dest (j_compress_ptr cinfo, std::ostream * outfile)
 {
   my_dest_ptr dest;
 
@@ -166,7 +166,7 @@ jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
    * manager serially with the same JPEG object, because their private object
    * sizes may be different.  Caveat programmer.
    */
-  if (cinfo->dest == NULL) {    /* first time for this JPEG object? */
+  if (cinfo->dest == nullptr) {    /* first time for this JPEG object? */
     cinfo->dest = (struct jpeg_destination_mgr *)
       (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
                                   sizeof(my_destination_mgr));
@@ -187,7 +187,7 @@ jpeg_ostream_dest (j_compress_ptr cinfo, ostream * outfile)
  *
  */
 PNMFileTypeJPG::Writer::
-Writer(PNMFileType *type, ostream *file, bool owns_file) :
+Writer(PNMFileType *type, std::ostream *file, bool owns_file) :
   PNMWriter(type, file, owns_file)
 {
 }

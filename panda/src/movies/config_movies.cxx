@@ -32,6 +32,10 @@
 #include "wavAudio.h"
 #include "wavAudioCursor.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_MOVIES)
+  #error Buildsystem error: BUILDING_PANDA_MOVIES not defined
+#endif
+
 ConfigureDef(config_movies);
 NotifyCategoryDef(movies, "");
 

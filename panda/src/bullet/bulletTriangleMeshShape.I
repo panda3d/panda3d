@@ -15,27 +15,6 @@
  *
  */
 INLINE BulletTriangleMeshShape::
-BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) :
-  _bvh_shape(copy._bvh_shape),
-  _gimpact_shape(copy._gimpact_shape),
-  _mesh(copy._mesh) {
-}
-
-/**
- *
- */
-INLINE void BulletTriangleMeshShape::
-operator = (const BulletTriangleMeshShape &copy) {
-
-  _bvh_shape = copy._bvh_shape;
-  _gimpact_shape = copy._gimpact_shape;
-  _mesh = copy._mesh;
-}
-
-/**
- *
- */
-INLINE BulletTriangleMeshShape::
 ~BulletTriangleMeshShape() {
 
   if (_bvh_shape) {
@@ -53,7 +32,7 @@ INLINE BulletTriangleMeshShape::
 INLINE bool BulletTriangleMeshShape::
 is_static() const {
 
-  return (_bvh_shape != NULL);
+  return (_bvh_shape != nullptr);
 }
 
 /**
@@ -62,5 +41,5 @@ is_static() const {
 INLINE bool BulletTriangleMeshShape::
 is_dynamic() const {
 
-  return (_gimpact_shape != NULL);
+  return (_gimpact_shape != nullptr);
 }

@@ -25,11 +25,11 @@ get_panda_framework() const {
  */
 INLINE GraphicsWindow *WindowFramework::
 get_graphics_window() const {
-  if (_window != (GraphicsOutput *)NULL &&
+  if (_window != nullptr &&
       _window->is_of_type(GraphicsWindow::get_class_type())) {
     return DCAST(GraphicsWindow, _window);
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -55,7 +55,7 @@ get_num_cameras() const {
  */
 INLINE Camera *WindowFramework::
 get_camera(int n) const {
-  nassertr(n >= 0 && n < (int)_cameras.size(), NULL);
+  nassertr(n >= 0 && n < (int)_cameras.size(), nullptr);
   return _cameras[n];
 }
 

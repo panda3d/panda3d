@@ -14,7 +14,7 @@
 #include "pStatProperties.h"
 #include "pStatCollectorDef.h"
 #include "pStatClient.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "configVariableBool.h"
 #include "configVariableColor.h"
 #include "configVariableDouble.h"
@@ -22,6 +22,8 @@
 #include "configVariableString.h"
 
 #include <ctype.h>
+
+using std::string;
 
 static const int current_pstat_major_version = 3;
 static const int current_pstat_minor_version = 0;
@@ -146,7 +148,7 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Draw:Set State",                   { 0.2, 0.6, 0.8 } },
   { 1, "Draw:Wait occlusion",              { 1.0, 0.5, 0.0 } },
   { 1, "Draw:Bind FBO",                    { 0.0, 0.8, 0.8 } },
-  { 0, NULL }
+  { 0, nullptr }
 };
 
 static LevelCollectorProperties level_properties[] = {
@@ -218,7 +220,7 @@ static LevelCollectorProperties level_properties[] = {
   { 1, "Collision Volumes",                { 1.0, 0.8, 0.5 },  "", 500 },
   { 1, "Collision Tests",                  { 0.5, 0.8, 1.0 },  "", 100 },
   { 1, "Command latency",                  { 0.8, 0.2, 0.0 },  "ms", 10, 1.0 / 1000.0 },
-  { 0, NULL }
+  { 0, nullptr }
 };
 
 
@@ -231,7 +233,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   int i;
 
   for (i = 0;
-       time_properties[i].name != (const char *)NULL;
+       time_properties[i].name != nullptr;
        i++) {
     const TimeCollectorProperties &tp = time_properties[i];
     if (fullname == tp.name) {
@@ -248,7 +250,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   }
 
   for (i = 0;
-       level_properties[i].name != (const char *)NULL;
+       level_properties[i].name != nullptr;
        i++) {
     const LevelCollectorProperties &lp = level_properties[i];
     if (fullname == lp.name) {
@@ -260,7 +262,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
       if (lp.suggested_scale != 0.0) {
         def->_suggested_scale = lp.suggested_scale;
       }
-      if (lp.units != (const char *)NULL) {
+      if (lp.units != nullptr) {
         def->_level_units = lp.units;
       }
       if (lp.inv_factor != 0.0) {

@@ -18,6 +18,9 @@
 
 #include <algorithm>
 
+using std::istream;
+using std::ostream;
+
 /**
  *
  */
@@ -32,8 +35,8 @@ InterrogateType(InterrogateModuleDef *def) :
   _array_size = 1;
   _destructor = 0;
 
-  _cpptype = (CPPType *)NULL;
-  _cppscope = (CPPScope *)NULL;
+  _cpptype = nullptr;
+  _cppscope = nullptr;
 }
 
 /**
@@ -112,14 +115,16 @@ operator = (const InterrogateType &copy) {
 
 /**
  * Combines type with the other similar definition.  If one type is "fully
- * defined" and the other one isn't, the fully-defined type wins.
+ * defined" and the other one isn't, the fully-defined type wins.  If both
+ * types are fully defined, whichever type is marked "global" wins.
  */
 void InterrogateType::
 merge_with(const InterrogateType &other) {
   // The only thing we care about copying from the non-fully-defined type
   // right now is the global flag.
 
-  if (is_fully_defined()) {
+  if (is_fully_defined() &&
+      (!other.is_fully_defined() || (other._flags & F_global) == 0)) {
     // We win.
     _flags |= (other._flags & F_global);
 

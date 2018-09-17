@@ -209,7 +209,7 @@ get_all_contact_info(const NodePath &space, LPoint3 &contact_pos,
  *
  */
 void CollisionEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _from_node_path;
   if (!_into_node_path.is_empty()) {
     out << " into " << _into_node_path;
@@ -223,7 +223,7 @@ output(ostream &out) const {
  *
  */
 void CollisionEntry::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionEntry:\n";
   if (!_from_node_path.is_empty()) {
@@ -239,7 +239,7 @@ write(ostream &out, int indent_level) const {
     out << "]";
 
     const ClipPlaneAttrib *cpa = get_into_clip_planes();
-    if (cpa != (ClipPlaneAttrib *)NULL) {
+    if (cpa != nullptr) {
       out << " (clipped)";
     }
     out << "\n";

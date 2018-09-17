@@ -41,6 +41,6 @@ get_bool() {
  * to a string.
  */
 void P3DUndefinedObject::
-make_string(string &value) {
+make_string(std::string &value) {
   value = "Undefined";
 }

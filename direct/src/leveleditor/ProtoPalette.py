@@ -3,6 +3,7 @@ Palette for Prototyping
 """
 
 from .ProtoPaletteBase import *
+import os
 
 class ProtoPalette(ProtoPaletteBase):
     def __init__(self):

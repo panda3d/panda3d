@@ -16,7 +16,6 @@
 
 #include "get_tinyxml.h"
 #include <string>
-using namespace std;
 
 /**
  * This simple class is used both within the core API in this module, as well
@@ -33,39 +32,39 @@ public:
   void load_xml(TiXmlElement *xelement);
   void store_xml(TiXmlElement *xelement);
 
-  inline const string &get_filename() const;
-  inline void set_filename(const string &filename);
-  inline string get_pathname(const string &package_dir) const;
+  inline const std::string &get_filename() const;
+  inline void set_filename(const std::string &filename);
+  inline std::string get_pathname(const std::string &package_dir) const;
   inline size_t get_size() const;
   inline time_t get_timestamp() const;
   inline bool has_hash() const;
 
-  bool quick_verify(const string &package_dir);
-  bool quick_verify_pathname(const string &pathname);
-  bool full_verify(const string &package_dir);
+  bool quick_verify(const std::string &package_dir);
+  bool quick_verify_pathname(const std::string &pathname);
+  bool full_verify(const std::string &package_dir);
   inline const FileSpec *get_actual_file() const;
-  const FileSpec *force_get_actual_file(const string &pathname);
+  const FileSpec *force_get_actual_file(const std::string &pathname);
 
-  bool check_hash(const string &pathname) const;
-  bool read_hash(const string &pathname);
-  bool read_hash_stream(istream &in);
+  bool check_hash(const std::string &pathname) const;
+  bool read_hash(const std::string &pathname);
+  bool read_hash_stream(std::istream &in);
   int compare_hash(const FileSpec &other) const;
 
-  void write(ostream &out) const;
-  void output_hash(ostream &out) const;
+  void write(std::ostream &out) const;
+  void output_hash(std::ostream &out) const;
 
 private:
-  bool priv_check_hash(const string &pathname, void *stp);
+  bool priv_check_hash(const std::string &pathname, void *stp);
   static inline int decode_hexdigit(char c);
   static inline char encode_hexdigit(int c);
 
   static bool decode_hex(unsigned char *dest, const char *source, size_t size);
   static void encode_hex(char *dest, const unsigned char *source, size_t size);
-  static void stream_hex(ostream &out, const unsigned char *source, size_t size);
+  static void stream_hex(std::ostream &out, const unsigned char *source, size_t size);
 
   enum { hash_size = 16 };
 
-  string _filename;
+  std::string _filename;
   size_t _size;
   time_t _timestamp;
   unsigned char _hash[hash_size];

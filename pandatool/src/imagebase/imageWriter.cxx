@@ -26,7 +26,7 @@ ImageWriter(bool allow_last_param) :
   }
   add_runline("[opts] -o outputimage");
 
-  string o_description;
+  std::string o_description;
   if (_allow_last_param) {
     o_description =
       "Specify the filename to which the resulting image file will be written.  "

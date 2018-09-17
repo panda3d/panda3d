@@ -37,7 +37,7 @@ TypeHandle FltHeader::_type_handle;
  */
 FltHeader::
 FltHeader(PathReplace *path_replace) : FltBeadID(this) {
-  if (path_replace == (PathReplace *)NULL) {
+  if (path_replace == nullptr) {
     _path_replace = new PathReplace;
     _path_replace->_path_store = PS_absolute;
   } else {
@@ -190,8 +190,8 @@ read_flt(Filename filename) {
   _flt_filename = filename;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  std::istream *in = vfs->open_read_file(filename, true);
+  if (in == nullptr) {
     assert(!flt_error_abort);
     return FE_could_not_open;
   }
@@ -205,7 +205,7 @@ read_flt(Filename filename) {
  * Returns FE_ok on success, otherwise on failure.
  */
 FltError FltHeader::
-read_flt(istream &in) {
+read_flt(std::istream &in) {
   FltRecordReader reader(in);
   FltError result = reader.advance();
   if (result == FE_end_of_file) {
@@ -237,7 +237,7 @@ FltError FltHeader::
 write_flt(Filename filename) {
   filename.set_binary();
 
-  ofstream out;
+  std::ofstream out;
   if (!filename.open_write(out)) {
     assert(!flt_error_abort);
     return FE_could_not_open;
@@ -260,7 +260,7 @@ write_flt(Filename filename) {
  * Returns FE_ok on success, otherwise on failure.
  */
 FltError FltHeader::
-write_flt(ostream &out) {
+write_flt(std::ostream &out) {
   FltRecordWriter writer(out);
   FltError result = write_record_and_children(writer);
 
@@ -425,7 +425,7 @@ get_instance(int instance_index) const {
   if (mi != _instances.end()) {
     return (*mi).second;
   }
-  return (FltInstanceDefinition *)NULL;
+  return nullptr;
 }
 
 /**
@@ -467,7 +467,7 @@ get_num_vertices() const {
  */
 FltVertex *FltHeader::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), 0);
+  nassertr(n >= 0 && n < (int)_vertices.size(), nullptr);
   return _vertices[n];
 }
 
@@ -512,7 +512,7 @@ get_vertex_by_offset(int offset) {
   vi = _vertices_by_offset.find(offset);
   if (vi == _vertices_by_offset.end()) {
     nout << "No vertex with offset " << offset << "\n";
-    return (FltVertex *)NULL;
+    return nullptr;
   }
   return (*vi).second;
 }
@@ -600,14 +600,14 @@ has_color_name(int color_index) const {
 /**
  * Returns the name associated with the given color, if any.
  */
-string FltHeader::
+std::string FltHeader::
 get_color_name(int color_index) const {
   ColorNames::const_iterator ni;
   ni = _color_names.find(color_index);
   if (ni != _color_names.end()) {
     return (*ni).second;
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -810,7 +810,7 @@ get_material(int material_index) const {
   if (mi != _materials.end()) {
     return (*mi).second;
   }
-  return (FltMaterial *)NULL;
+  return nullptr;
 }
 
 /**
@@ -836,7 +836,7 @@ add_material(FltMaterial *material) {
   } else {
     // Make sure our next generated material index will be different from any
     // existing material indices.
-    _next_material_index = max(_next_material_index, material->_material_index + 1);
+    _next_material_index = std::max(_next_material_index, material->_material_index + 1);
   }
 
   _materials[material->_material_index] = material;
@@ -869,7 +869,7 @@ get_texture(int texture_index) const {
   if (mi != _textures.end()) {
     return (*mi).second;
   }
-  return (FltTexture *)NULL;
+  return nullptr;
 }
 
 /**
@@ -895,7 +895,7 @@ add_texture(FltTexture *texture) {
   } else {
     // Make sure our next generated pattern index will be different from any
     // existing texture indices.
-    _next_pattern_index = max(_next_pattern_index, texture->_pattern_index + 1);
+    _next_pattern_index = std::max(_next_pattern_index, texture->_pattern_index + 1);
   }
 
   _textures[texture->_pattern_index] = texture;
@@ -928,7 +928,7 @@ get_light_source(int light_index) const {
   if (li != _light_sources.end()) {
     return (*li).second;
   }
-  return (FltLightSourceDefinition *)NULL;
+  return nullptr;
 }
 
 /**
@@ -993,7 +993,7 @@ get_num_eyepoints() const {
  */
 FltEyepoint *FltHeader::
 get_eyepoint(int n) {
-  nassertr(n >= 0 && n < get_num_eyepoints(), (FltEyepoint *)NULL);
+  nassertr(n >= 0 && n < get_num_eyepoints(), nullptr);
   return &_eyepoints[n];
 }
 
@@ -1011,7 +1011,7 @@ get_num_trackplanes() const {
  */
 FltTrackplane *FltHeader::
 get_trackplane(int n) {
-  nassertr(n >= 0 && n < get_num_trackplanes(), (FltTrackplane *)NULL);
+  nassertr(n >= 0 && n < get_num_trackplanes(), nullptr);
   return &_trackplanes[n];
 }
 
@@ -1563,7 +1563,7 @@ write_color_palette(FltRecordWriter &writer) const {
   // Now append all the names at the end.
   ColorNames::const_iterator ni;
   for (ni = _color_names.begin(); ni != _color_names.end(); ++ni) {
-    string name = (*ni).second.substr(0, 80);
+    std::string name = (*ni).second.substr(0, 80);
     int entry_length = name.length() + 8;
     datagram.add_be_uint16(entry_length);
     datagram.pad_bytes(2);

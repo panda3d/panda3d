@@ -38,12 +38,12 @@ public:
 protected:
   virtual bool handle_args(Args &args);
 
-  static bool dispatch_scale(const string &opt, const string &arg, void *var);
-  static bool dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var);
-  bool ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var);
-  static bool dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var);
-  bool ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var);
-  static bool dispatch_translate(const string &opt, const string &arg, void *var);
+  static bool dispatch_scale(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_rotate_xyz(ProgramBase *self, const std::string &opt, const std::string &arg, void *var);
+  bool ns_dispatch_rotate_xyz(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_rotate_axis(ProgramBase *self, const std::string &opt, const std::string &arg, void *var);
+  bool ns_dispatch_rotate_axis(const std::string &opt, const std::string &arg, void *var);
+  static bool dispatch_translate(const std::string &opt, const std::string &arg, void *var);
 
 private:
   typedef pvector<Filename> Filenames;

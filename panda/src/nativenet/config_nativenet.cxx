@@ -26,6 +26,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_NATIVENET)
+  #error Buildsystem error: BUILDING_PANDA_NATIVENET not defined
+#endif
+
 Configure(config_nativenet);
 NotifyCategoryDef(nativenet, "");
 

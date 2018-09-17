@@ -41,7 +41,7 @@ TypeHandle CollisionVisualizer::_type_handle;
  *
  */
 CollisionVisualizer::
-CollisionVisualizer(const string &name) : PandaNode(name) {
+CollisionVisualizer(const std::string &name) : PandaNode(name), _lock("CollisionVisualizer") {
   set_cull_callback();
 
   // We always want to render the CollisionVisualizer node itself (even if it
@@ -49,6 +49,23 @@ CollisionVisualizer(const string &name) : PandaNode(name) {
   set_internal_bounds(new OmniBoundingVolume());
   _point_scale = 1.0f;
   _normal_scale = 1.0f;
+}
+
+/**
+ * Copy constructor.
+ */
+CollisionVisualizer::
+CollisionVisualizer(const CollisionVisualizer &copy) :
+  PandaNode(copy),
+  _lock("CollisionVisualizer"),
+  _point_scale(copy._point_scale),
+  _normal_scale(copy._normal_scale) {
+
+  set_cull_callback();
+
+  // We always want to render the CollisionVisualizer node itself (even if it
+  // doesn't appear to have any geometry within it).
+  set_internal_bounds(new OmniBoundingVolume());
 }
 
 /**
@@ -64,6 +81,7 @@ CollisionVisualizer::
  */
 void CollisionVisualizer::
 clear() {
+  LightMutexHolder holder(_lock);
   _data.clear();
 }
 
@@ -99,6 +117,8 @@ bool CollisionVisualizer::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Now we go through and actually draw our visualized collision solids.
 
+  LightMutexHolder holder(_lock);
+
   Data::const_iterator di;
   for (di = _data.begin(); di != _data.end(); ++di) {
     const TransformState *net_transform = (*di).first;
@@ -124,7 +144,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       const SolidInfo &solid_info = (*si).second;
       bool was_detected = (solid_info._detected_count > 0);
       PT(PandaNode) node = solid->get_viz(trav, xform_data, !was_detected);
-      if (node != (PandaNode *)NULL) {
+      if (node != nullptr) {
         CullTraverserData next_data(xform_data, node);
 
         // We don't want to inherit the render state from above for these
@@ -243,7 +263,7 @@ is_renderable() const {
  * classes to include some information relevant to the class.
  */
 void CollisionVisualizer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   out << " ";
   CollisionRecorder::output(out);
@@ -257,6 +277,7 @@ output(ostream &out) const {
 void CollisionVisualizer::
 begin_traversal() {
   CollisionRecorder::begin_traversal();
+  LightMutexHolder holder(_lock);
   _data.clear();
 }
 
@@ -271,12 +292,13 @@ collision_tested(const CollisionEntry &entry, bool detected) {
 
   NodePath node_path = entry.get_into_node_path();
   CPT(TransformState) net_transform = node_path.get_net_transform();
-  const CollisionSolid *solid = entry.get_into();
-  nassertv(solid != (CollisionSolid *)NULL);
+  CPT(CollisionSolid) solid = entry.get_into();
+  nassertv(!solid.is_null());
 
-  VizInfo &viz_info = _data[net_transform];
+  LightMutexHolder holder(_lock);
+  VizInfo &viz_info = _data[std::move(net_transform)];
   if (detected) {
-    viz_info._solids[solid]._detected_count++;
+    viz_info._solids[std::move(solid)]._detected_count++;
 
     if (entry.has_surface_point()) {
       CollisionPoint p;
@@ -286,7 +308,7 @@ collision_tested(const CollisionEntry &entry, bool detected) {
     }
 
   } else {
-    viz_info._solids[solid]._missed_count++;
+    viz_info._solids[std::move(solid)]._missed_count++;
   }
 }
 
@@ -299,8 +321,8 @@ CPT(RenderState) CollisionVisualizer::
 get_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make());
   }

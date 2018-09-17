@@ -19,6 +19,8 @@
 
 #include <math.h>
 
+using std::string;
+
 /**
  *
  */
@@ -73,7 +75,7 @@ get_num_elements() const {
  */
 DCParameter *DCAtomicField::
 get_element(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_elements.size(), nullptr);
   return _elements[n];
 }
 
@@ -127,7 +129,7 @@ DCSubatomicType DCAtomicField::
 get_element_type(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
   DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
-  nassertr(simple_parameter != (DCSimpleParameter *)NULL, ST_invalid);
+  nassertr(simple_parameter != nullptr, ST_invalid);
   return simple_parameter->get_type();
 }
 
@@ -143,7 +145,7 @@ int DCAtomicField::
 get_element_divisor(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), 1);
   DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
-  nassertr(simple_parameter != (DCSimpleParameter *)NULL, 1);
+  nassertr(simple_parameter != nullptr, 1);
   return simple_parameter->get_divisor();
 }
 
@@ -151,7 +153,7 @@ get_element_divisor(int n) const {
  *
  */
 void DCAtomicField::
-output(ostream &out, bool brief) const {
+output(std::ostream &out, bool brief) const {
   out << _name << "(";
 
   if (!_elements.empty()) {
@@ -174,7 +176,7 @@ output(ostream &out, bool brief) const {
  * stream.
  */
 void DCAtomicField::
-write(ostream &out, bool brief, int indent_level) const {
+write(std::ostream &out, bool brief, int indent_level) const {
   indent(out, indent_level);
   output(out, brief);
   out << ";";
@@ -207,7 +209,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 DCPackerInterface *DCAtomicField::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
+  nassertr(n >= 0 && n < (int)_elements.size(), nullptr);
   return _elements[n];
 }
 
@@ -270,7 +272,7 @@ do_check_match_atomic_field(const DCAtomicField *other) const {
  *
  */
 void DCAtomicField::
-output_element(ostream &out, bool brief, DCParameter *element) const {
+output_element(std::ostream &out, bool brief, DCParameter *element) const {
   element->output(out, brief);
 
   if (!brief && element->has_default_value()) {

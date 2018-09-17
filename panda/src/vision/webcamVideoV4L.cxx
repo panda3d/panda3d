@@ -94,7 +94,7 @@ TypeHandle WebcamVideoV4L::_type_handle;
  *
  */
 void WebcamVideoV4L::
-add_options_for_size(int fd, const string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
+add_options_for_size(int fd, const std::string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
   struct v4l2_frmivalenum frmivalenum;
   for (int k = 0;; k++) {
     memset(&frmivalenum, 0, sizeof frmivalenum);
@@ -132,7 +132,7 @@ add_options_for_size(int fd, const string &dev, const char *name, unsigned width
     wc->_size_y = height;
     wc->_fps = fps;
     wc->_pformat = pixelformat;
-    wc->_pixel_format = string((char*) &pixelformat, 4);
+    wc->_pixel_format = std::string((char*) &pixelformat, 4);
 
     WebcamVideoV4L::_all_webcams.push_back(DCAST(WebcamVideo, wc));
   }
@@ -174,6 +174,7 @@ void find_all_webcams_v4l() {
             case V4L2_PIX_FMT_BGR32:
             case V4L2_PIX_FMT_RGB24:
             case V4L2_PIX_FMT_RGB32:
+            case V4L2_PIX_FMT_GREY:
               break;
 
             default:

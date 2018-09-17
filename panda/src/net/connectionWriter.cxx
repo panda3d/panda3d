@@ -24,7 +24,7 @@
  *
  */
 ConnectionWriter::WriterThread::
-WriterThread(ConnectionWriter *writer, const string &thread_name,
+WriterThread(ConnectionWriter *writer, const std::string &thread_name,
              int thread_index) :
   Thread(make_thread_name(thread_name, thread_index),
          make_thread_name(thread_name, thread_index)),
@@ -50,7 +50,7 @@ thread_main() {
  */
 ConnectionWriter::
 ConnectionWriter(ConnectionManager *manager, int num_threads,
-                 const string &thread_name) :
+                 const std::string &thread_name) :
   _manager(manager)
 {
   if (!Thread::is_threading_supported()) {
@@ -70,7 +70,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads,
   _immediate = (num_threads <= 0);
   _shutdown = false;
 
-  string writer_thread_name = thread_name;
+  std::string writer_thread_name = thread_name;
   if (thread_name.empty()) {
     writer_thread_name = "WriterThread";
   }
@@ -91,7 +91,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads,
  */
 ConnectionWriter::
 ~ConnectionWriter() {
-  if (_manager != (ConnectionManager *)NULL) {
+  if (_manager != nullptr) {
     _manager->remove_writer(this);
   }
 
@@ -142,7 +142,7 @@ get_current_queue_size() const {
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection, bool block) {
   nassertr(!_shutdown, false);
-  nassertr(connection != (Connection *)NULL, false);
+  nassertr(connection != nullptr, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_TCP::get_class_type()), false);
 
   NetDatagram copy(datagram);
@@ -177,7 +177,7 @@ bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection,
      const NetAddress &address, bool block) {
   nassertr(!_shutdown, false);
-  nassertr(connection != (Connection *)NULL, false);
+  nassertr(connection != nullptr, false);
   nassertr(connection->get_socket()->is_exact_type(Socket_UDP::get_class_type()), false);
 
   if ((int)datagram.get_length() > maximum_udp_datagram) {
@@ -309,7 +309,7 @@ shutdown() {
  */
 void ConnectionWriter::
 clear_manager() {
-  _manager = (ConnectionManager *)NULL;
+  _manager = nullptr;
   shutdown();
 }
 

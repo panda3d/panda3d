@@ -45,17 +45,17 @@ public:
   virtual int get_int();
   virtual double get_float();
 
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 
-  virtual P3D_object *get_property(const string &property);
-  virtual bool set_property(const string &property, bool needs_response,
+  virtual P3D_object *get_property(const std::string &property);
+  virtual bool set_property(const std::string &property, bool needs_response,
                             P3D_object *value);
 
-  virtual bool has_method(const string &method_name);
-  virtual P3D_object *call(const string &method_name, bool needs_response,
+  virtual bool has_method(const std::string &method_name);
+  virtual P3D_object *call(const std::string &method_name, bool needs_response,
                            P3D_object *params[], int num_params);
 
-  virtual void output(ostream &out);
+  virtual void output(std::ostream &out);
 
   void set_pyobj(P3D_object *pyobj);
   P3D_object *get_pyobj() const;
@@ -68,11 +68,11 @@ private:
   P3D_object *call_read_game_log(P3D_object *params[], int num_params);
   P3D_object *call_read_system_log(P3D_object *params[], int num_params);
   P3D_object *call_read_log(P3D_object *params[], int num_params);
-  P3D_object *read_log(const string &log_pathname,
+  P3D_object *read_log(const std::string &log_pathname,
                        P3D_object *params[], int num_params);
-  void read_log_file(const string &log_pathname,
+  void read_log_file(const std::string &log_pathname,
                      size_t tail_bytes, size_t head_bytes,
-                     ostringstream &log_data);
+                     std::ostringstream &log_data);
   P3D_object *call_uninstall(P3D_object *params[], int num_params);
 
 private:
@@ -80,12 +80,12 @@ private:
   P3DInstance *_inst;
 
   bool _unauth_play;
-  string _game_log_pathname;
+  std::string _game_log_pathname;
 
   // This map is used to store properties and retrieve until set_pyobj() is
   // called for the firs ttime.  At that point, the properties stored here are
   // transferred down to the internal PyObject.
-  typedef map<string, P3D_object *> Properties;
+  typedef std::map<std::string, P3D_object *> Properties;
   Properties _properties;
 };
 

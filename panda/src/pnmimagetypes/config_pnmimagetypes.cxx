@@ -32,6 +32,14 @@
 #include "dconfig.h"
 #include "pandaSystem.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PNMIMAGETYPES)
+  #error Buildsystem error: BUILDING_PANDA_PNMIMAGETYPES not defined
+#endif
+
+using std::istream;
+using std::ostream;
+using std::string;
+
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);
@@ -265,6 +273,7 @@ init_libpnmimagetypes() {
 
   // And register with the PandaSystem.
   PandaSystem *ps = PandaSystem::get_global_ptr();
+  (void)ps; // Suppress unused variable warning
 
 #ifdef HAVE_JPEG
   ps->add_system("libjpeg");

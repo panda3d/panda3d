@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
 PUBLISHED:
-  explicit OccluderNode(const string &name);
+  explicit OccluderNode(const std::string &name);
 
 protected:
   OccluderNode(const OccluderNode &copy);
@@ -44,7 +44,7 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE void set_double_sided(bool value);

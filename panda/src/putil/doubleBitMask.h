@@ -27,7 +27,7 @@
 template<class BMType>
 class DoubleBitMask {
 public:
-  typedef TYPENAME BMType::WordType WordType;
+  typedef typename BMType::WordType WordType;
 
 PUBLISHED:
   typedef BMType BitMaskType;
@@ -37,9 +37,7 @@ PUBLISHED:
     num_bits = BMType::num_bits * 2,
   };
 
-  INLINE DoubleBitMask();
-  INLINE DoubleBitMask(const DoubleBitMask<BMType> &copy);
-  INLINE DoubleBitMask<BMType> &operator = (const DoubleBitMask<BMType> &copy);
+  constexpr DoubleBitMask() = default;
 
   INLINE static DoubleBitMask<BMType> all_on();
   INLINE static DoubleBitMask<BMType> all_off();
@@ -47,12 +45,10 @@ PUBLISHED:
   INLINE static DoubleBitMask<BMType> bit(int index);
   INLINE static DoubleBitMask<BMType> range(int low_bit, int size);
 
-  INLINE ~DoubleBitMask();
+  constexpr static bool has_max_num_bits() {return true;}
+  constexpr static int get_max_num_bits() {return num_bits;}
 
-  CONSTEXPR static bool has_max_num_bits();
-  CONSTEXPR static int get_max_num_bits();
-
-  CONSTEXPR static int get_num_bits();
+  constexpr int get_num_bits() const;
   INLINE bool get_bit(int index) const;
   INLINE void set_bit(int index);
   INLINE void clear_bit(int index);
@@ -80,10 +76,10 @@ PUBLISHED:
   INLINE bool has_bits_in_common(const DoubleBitMask<BMType> &other) const;
   INLINE void clear();
 
-  void output(ostream &out) const;
-  void output_binary(ostream &out, int spaces_every = 4) const;
-  void output_hex(ostream &out, int spaces_every = 4) const;
-  void write(ostream &out, int indent_level = 0) const;
+  void output(std::ostream &out) const;
+  void output_binary(std::ostream &out, int spaces_every = 4) const;
+  void output_hex(std::ostream &out, int spaces_every = 4) const;
+  void write(std::ostream &out, int indent_level = 0) const;
 
   INLINE bool operator == (const DoubleBitMask<BMType> &other) const;
   INLINE bool operator != (const DoubleBitMask<BMType> &other) const;
@@ -133,7 +129,7 @@ private:
 #include "doubleBitMask.I"
 
 template<class BMType>
-INLINE ostream &operator << (ostream &out, const DoubleBitMask<BMType> &doubleBitMask) {
+INLINE std::ostream &operator << (std::ostream &out, const DoubleBitMask<BMType> &doubleBitMask) {
   doubleBitMask.output(out);
   return out;
 }
@@ -143,10 +139,5 @@ typedef DoubleBitMask<BitMaskNative> DoubleBitMaskNative;
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, DoubleBitMask<DoubleBitMaskNative>);
 typedef DoubleBitMask<DoubleBitMaskNative> QuadBitMaskNative;
-
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #endif

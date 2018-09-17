@@ -17,6 +17,8 @@
 #include "cppTemplateScope.h"
 #include "indent.h"
 
+using std::string;
+
 /**
  *
  */
@@ -27,7 +29,7 @@ CPPTypedefType(CPPType *type, const string &name, CPPScope *current_scope) :
   _ident(new CPPIdentifier(name)),
   _using(false)
 {
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     _ident->_native_scope = current_scope;
   }
 
@@ -47,7 +49,7 @@ CPPTypedefType(CPPType *type, CPPIdentifier *ident, CPPScope *current_scope) :
   _ident(ident),
   _using(false)
 {
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     _ident->_native_scope = current_scope;
   }
   _subst_decl_recursive_protect = false;
@@ -64,13 +66,13 @@ CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
   CPPType(file),
   _using(false)
 {
-  assert(ii != NULL);
+  assert(ii != nullptr);
   _type = ii->unroll_type(type);
   _ident = ii->_ident;
-  ii->_ident = NULL;
+  ii->_ident = nullptr;
   delete ii;
 
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     _ident->_native_scope = current_scope;
   }
 
@@ -82,7 +84,7 @@ CPPTypedefType(CPPType *type, CPPInstanceIdentifier *ii,
  */
 bool CPPTypedefType::
 is_scoped() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return false;
   } else {
     return _ident->is_scoped();
@@ -95,7 +97,7 @@ is_scoped() const {
 CPPScope *CPPTypedefType::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
           CPPPreprocessor *error_sink) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return current_scope;
   } else {
     return _ident->get_scope(current_scope, global_scope, error_sink);
@@ -107,7 +109,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
  */
 string CPPTypedefType::
 get_simple_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_simple_name();
@@ -118,7 +120,7 @@ get_simple_name() const {
  */
 string CPPTypedefType::
 get_local_name(CPPScope *scope) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_local_name(scope);
@@ -129,7 +131,7 @@ get_local_name(CPPScope *scope) const {
  */
 string CPPTypedefType::
 get_fully_scoped_name() const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return "";
   }
   return _ident->get_fully_scoped_name();
@@ -151,7 +153,7 @@ is_incomplete() const {
  */
 bool CPPTypedefType::
 is_tbd() const {
-  if (_ident != NULL && _ident->is_tbd()) {
+  if (_ident != nullptr && _ident->is_tbd()) {
     return true;
   }
   return _type->is_tbd();
@@ -228,7 +230,7 @@ is_destructible() const {
  */
 bool CPPTypedefType::
 is_fully_specified() const {
-  if (_ident != NULL && !_ident->is_fully_specified()) {
+  if (_ident != nullptr && !_ident->is_fully_specified()) {
     return false;
   }
   return CPPDeclaration::is_fully_specified() &&
@@ -253,7 +255,7 @@ CPPDeclaration *CPPTypedefType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
 
-  if (_ident != NULL && _ident->get_scope(current_scope, global_scope) == global_scope) {
+  if (_ident != nullptr && _ident->get_scope(current_scope, global_scope) == global_scope) {
     // Hack... I know that size_t etc is supposed to work fine, so preserve
     // these top-level typedefs.
     CPPDeclaration *top =
@@ -373,9 +375,9 @@ is_equivalent(const CPPType &other) const {
  *
  */
 void CPPTypedefType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   string name;
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     name = _ident->get_local_name(scope);
   }
 
@@ -420,7 +422,7 @@ as_typedef_type() {
 bool CPPTypedefType::
 is_equal(const CPPDeclaration *other) const {
   const CPPTypedefType *ot = ((CPPDeclaration *)other)->as_typedef_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (*_type == *ot->_type) && (*_ident == *ot->_ident) && (_using == ot->_using);
 }

@@ -24,6 +24,8 @@
 #include "trueClock.h"
 #include "pstrtod.h"
 
+using std::cerr;
+
 #ifdef WIN32_VC
 // Under Windows, the rand() function seems to return a sequence per-thread,
 // so we use this trick to set each thread to a different seed.
@@ -42,7 +44,7 @@ static double random_f(double max)
   return max * (double)i / (double)RAND_MAX;
 }
 
-#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << flush; }
+#define PRINTMSG(x) { MutexHolder l(Mutex::_notify_mutex); x << std::flush; }
 
 // n philosophers sharing n chopsticks.  Philosophers are poor folk and can't
 // afford luxuries like 2 chopsticks per person.
@@ -50,7 +52,7 @@ static double random_f(double max)
 
 class ChopstickMutex : public Mutex {
 public:
-  void output(ostream &out) const {
+  void output(std::ostream &out) const {
     out << "chopstick " << _n;
   }
   int _n;
@@ -121,7 +123,7 @@ public:
     _id = id;
   }
 
-  virtual void output(ostream &out) const {
+  virtual void output(std::ostream &out) const {
     out << "philosopher " << _id;
   }
 };

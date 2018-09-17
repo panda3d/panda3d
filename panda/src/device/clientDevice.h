@@ -27,7 +27,7 @@ class ClientBase;
 class EXPCL_PANDA_DEVICE ClientDevice : public InputDevice {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,
-               const string &device_name, int device_flags=0);
+               const std::string &device_name, int device_flags=0);
 
 public:
   virtual ~ClientDevice();
@@ -37,10 +37,10 @@ public:
 
   void disconnect();
 
-  virtual void do_poll() FINAL;
+  virtual void do_poll() final;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   ClientBase *_client;
@@ -66,7 +66,7 @@ private:
   friend class ClientBase;
 };
 
-INLINE ostream &operator <<(ostream &out, const ClientDevice &device) {
+INLINE std::ostream &operator <<(std::ostream &out, const ClientDevice &device) {
   device.output(out);
   return out;
 }

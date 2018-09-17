@@ -28,7 +28,7 @@ DataPoint() :
  *
  */
 INLINE void CurveFitter::DataPoint::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Time " << _t << " xyz " << _xyz << " hpr " << _hpr
       << " tan " << _tangent;
 }

@@ -222,7 +222,7 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  explicit Texture(const string &name = string());
+  explicit Texture(const std::string &name = std::string());
 
 protected:
   Texture(const Texture &copy);
@@ -279,18 +279,18 @@ PUBLISHED:
   BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
                      int primary_file_num_channels, int alpha_file_channel,
                      int z, int n, bool read_pages, bool read_mipmaps,
-                     BamCacheRecord *record = NULL,
+                     BamCacheRecord *record = nullptr,
                      const LoaderOptions &options = LoaderOptions());
 
   BLOCKING INLINE bool write(const Filename &fullpath);
   BLOCKING INLINE bool write(const Filename &fullpath, int z, int n,
                              bool write_pages, bool write_mipmaps);
 
-  BLOCKING bool read_txo(istream &in, const string &filename = "");
-  BLOCKING static PT(Texture) make_from_txo(istream &in, const string &filename = "");
-  BLOCKING bool write_txo(ostream &out, const string &filename = "") const;
-  BLOCKING bool read_dds(istream &in, const string &filename = "", bool header_only = false);
-  BLOCKING bool read_ktx(istream &in, const string &filename = "", bool header_only = false);
+  BLOCKING bool read_txo(std::istream &in, const std::string &filename = "");
+  BLOCKING static PT(Texture) make_from_txo(std::istream &in, const std::string &filename = "");
+  BLOCKING bool write_txo(std::ostream &out, const std::string &filename = "") const;
+  BLOCKING bool read_dds(std::istream &in, const std::string &filename = "", bool header_only = false);
+  BLOCKING bool read_ktx(std::istream &in, const std::string &filename = "", bool header_only = false);
 
   BLOCKING INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
@@ -443,17 +443,17 @@ PUBLISHED:
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
-  CPTA_uchar get_ram_image_as(const string &requested_format);
+  CPTA_uchar get_ram_image_as(const std::string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
 #ifndef CPPPARSER
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
-  void set_ram_image_as(CPTA_uchar image, const string &provided_format);
+  void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
 #else
   EXTEND void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
-  EXTEND void set_ram_image_as(PyObject *image, const string &provided_format);
+  EXTEND void set_ram_image_as(PyObject *image, const std::string &provided_format);
 #endif
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
@@ -464,10 +464,10 @@ PUBLISHED:
   MAKE_PROPERTY(keep_ram_image, get_keep_ram_image, set_keep_ram_image);
   MAKE_PROPERTY(cacheable, is_cacheable);
 
-  INLINE bool compress_ram_image(CompressionMode compression = CM_on,
-                                 QualityLevel quality_level = QL_default,
-                                 GraphicsStateGuardianBase *gsg = NULL);
-  INLINE bool uncompress_ram_image();
+  BLOCKING INLINE bool compress_ram_image(CompressionMode compression = CM_on,
+                                          QualityLevel quality_level = QL_default,
+                                          GraphicsStateGuardianBase *gsg = nullptr);
+  BLOCKING INLINE bool uncompress_ram_image();
 
   INLINE int get_num_ram_mipmap_images() const;
   INLINE bool has_ram_mipmap_image(int n) const;
@@ -533,13 +533,13 @@ PUBLISHED:
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
   size_t estimate_texture_memory() const;
 
-  void set_aux_data(const string &key, TypedReferenceCount *aux_data);
-  void clear_aux_data(const string &key);
-  TypedReferenceCount *get_aux_data(const string &key) const;
+  void set_aux_data(const std::string &key, TypedReferenceCount *aux_data);
+  void clear_aux_data(const std::string &key);
+  TypedReferenceCount *get_aux_data(const std::string &key) const;
   MAKE_MAP_PROPERTY(aux_data, get_aux_data, get_aux_data,
                     set_aux_data, clear_aux_data);
 
@@ -593,23 +593,23 @@ PUBLISHED:
   static int down_to_power_2(int value);
 
   void consider_rescale(PNMImage &pnmimage);
-  static void consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_texture_scale = ATS_unspecified);
+  static void consider_rescale(PNMImage &pnmimage, const std::string &name, AutoTextureScale auto_texture_scale = ATS_unspecified);
   INLINE bool rescale_texture();
 
-  static string format_texture_type(TextureType tt);
-  static TextureType string_texture_type(const string &str);
+  static std::string format_texture_type(TextureType tt);
+  static TextureType string_texture_type(const std::string &str);
 
-  static string format_component_type(ComponentType ct);
-  static ComponentType string_component_type(const string &str);
+  static std::string format_component_type(ComponentType ct);
+  static ComponentType string_component_type(const std::string &str);
 
-  static string format_format(Format f);
-  static Format string_format(const string &str);
+  static std::string format_format(Format f);
+  static Format string_format(const std::string &str);
 
-  static string format_compression_mode(CompressionMode cm);
-  static CompressionMode string_compression_mode(const string &str);
+  static std::string format_compression_mode(CompressionMode cm);
+  static CompressionMode string_compression_mode(const std::string &str);
 
-  static string format_quality_level(QualityLevel tql);
-  static QualityLevel string_quality_level(const string &str);
+  static std::string format_quality_level(QualityLevel tql);
+  static QualityLevel string_quality_level(const std::string &str);
 
 public:
   void texture_uploaded();
@@ -626,9 +626,9 @@ public:
   static bool has_binary_alpha(Format format);
   static bool is_srgb(Format format);
 
-  static bool adjust_size(int &x_size, int &y_size, const string &name,
+  static bool adjust_size(int &x_size, int &y_size, const std::string &name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
-  INLINE bool adjust_this_size(int &x_size, int &y_size, const string &name,
+  INLINE bool adjust_this_size(int &x_size, int &y_size, const std::string &name,
                                bool for_padding) const;
 
   virtual void ensure_loader_type(const Filename &filename);
@@ -647,7 +647,7 @@ protected:
   // pointer representing that lock); generally, they also avoid adjusting the
   // _properties_modified and _image_modified semaphores.
   virtual bool do_adjust_this_size(const CData *cdata,
-                                   int &x_size, int &y_size, const string &name,
+                                   int &x_size, int &y_size, const std::string &name,
                                    bool for_padding) const;
 
   virtual bool do_read(CData *cdata,
@@ -661,19 +661,19 @@ protected:
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(CData *cdata,
-                           const PNMImage &pnmimage, const string &name,
+                           const PNMImage &pnmimage, const std::string &name,
                            int z, int n, const LoaderOptions &options);
   virtual bool do_load_one(CData *cdata,
-                           const PfmFile &pfm, const string &name,
+                           const PfmFile &pfm, const std::string &name,
                            int z, int n, const LoaderOptions &options);
   virtual bool do_load_sub_image(CData *cdata, const PNMImage &image,
                                  int x, int y, int z, int n);
   bool do_read_txo_file(CData *cdata, const Filename &fullpath);
-  bool do_read_txo(CData *cdata, istream &in, const string &filename);
+  bool do_read_txo(CData *cdata, std::istream &in, const std::string &filename);
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
-  bool do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only);
+  bool do_read_dds(CData *cdata, std::istream &in, const std::string &filename, bool header_only);
   bool do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only);
-  bool do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only);
+  bool do_read_ktx(CData *cdata, std::istream &in, const std::string &filename, bool header_only);
 
   bool do_write(CData *cdata, const Filename &fullpath, int z, int n,
                 bool write_pages, bool write_mipmaps);
@@ -681,7 +681,7 @@ protected:
   bool do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n);
   bool do_store_one(CData *cdata, PfmFile &pfm, int z, int n);
   bool do_write_txo_file(const CData *cdata, const Filename &fullpath) const;
-  bool do_write_txo(const CData *cdata, ostream &out, const string &filename) const;
+  bool do_write_txo(const CData *cdata, std::ostream &out, const std::string &filename) const;
 
   virtual CData *unlocked_ensure_ram_image(bool allow_compression);
   virtual void do_reload_ram_image(CData *cdata, bool allow_compression);
@@ -810,44 +810,44 @@ private:
                              CPTA_uchar image, size_t page_size,
                              int z);
   static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header,
-                                       int n, istream &in);
+                                       int n, std::istream &in);
   static PTA_uchar read_dds_level_rgb8(Texture *tex, CData *cdata, const DDSHeader &header,
-                                       int n, istream &in);
+                                       int n, std::istream &in);
   static PTA_uchar read_dds_level_abgr8(Texture *tex, CData *cdata, const DDSHeader &header,
-                                        int n, istream &in);
+                                        int n, std::istream &in);
   static PTA_uchar read_dds_level_rgba8(Texture *tex, CData *cdata, const DDSHeader &header,
-                                        int n, istream &in);
+                                        int n, std::istream &in);
   static PTA_uchar read_dds_level_abgr16(Texture *tex, CData *cdata, const DDSHeader &header,
-                                         int n, istream &in);
+                                         int n, std::istream &in);
   static PTA_uchar read_dds_level_abgr32(Texture *tex, CData *cdata, const DDSHeader &header,
-                                         int n, istream &in);
+                                         int n, std::istream &in);
   static PTA_uchar read_dds_level_raw(Texture *tex, CData *cdata, const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
   static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, CData *cdata,
                                                        const DDSHeader &header,
-                                                       int n, istream &in);
+                                                       int n, std::istream &in);
   static PTA_uchar read_dds_level_luminance_uncompressed(Texture *tex, CData *cdata,
                                                          const DDSHeader &header,
-                                                         int n, istream &in);
+                                                         int n, std::istream &in);
   static PTA_uchar read_dds_level_bc1(Texture *tex, CData *cdata,
                                       const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
   static PTA_uchar read_dds_level_bc2(Texture *tex, CData *cdata,
                                       const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
   static PTA_uchar read_dds_level_bc3(Texture *tex, CData *cdata,
                                       const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
   static PTA_uchar read_dds_level_bc4(Texture *tex, CData *cdata,
                                       const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
   static PTA_uchar read_dds_level_bc5(Texture *tex, CData *cdata,
                                       const DDSHeader &header,
-                                      int n, istream &in);
+                                      int n, std::istream &in);
 
   void clear_prepared(int view, PreparedGraphicsObjects *prepared_objects);
 
-  static void consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name);
+  static void consider_downgrade(PNMImage &pnmimage, int num_channels, const std::string &name);
 
   static bool compare_images(const PNMImage &a, const PNMImage &b);
 
@@ -858,6 +858,7 @@ private:
   INLINE static double get_unsigned_byte(const unsigned char *&p);
   INLINE static double get_unsigned_short(const unsigned char *&p);
   INLINE static double get_unsigned_int(const unsigned char *&p);
+  INLINE static double get_unsigned_int_24(const unsigned char *&p);
   INLINE static double get_float(const unsigned char *&p);
   INLINE static double get_half_float(const unsigned char *&p);
 
@@ -1058,7 +1059,7 @@ protected:
 
 private:
   // The auxiliary data is not recorded to a bam file.
-  typedef pmap<string, PT(TypedReferenceCount) > AuxData;
+  typedef pmap<std::string, PT(TypedReferenceCount) > AuxData;
   AuxData _aux_data;
 
   static AutoTextureScale _textures_power_2;
@@ -1108,13 +1109,13 @@ private:
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::TextureType tt);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::ComponentType ct);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::Format f);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, Texture::TextureType tt);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, Texture::ComponentType ct);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, Texture::Format f);
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::CompressionMode cm);
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::QualityLevel tql);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, Texture::QualityLevel &tql);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, Texture::CompressionMode cm);
+EXPCL_PANDA_GOBJ std::ostream &operator << (std::ostream &out, Texture::QualityLevel tql);
+EXPCL_PANDA_GOBJ std::istream &operator >> (std::istream &in, Texture::QualityLevel &tql);
 
 #include "texture.I"
 

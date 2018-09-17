@@ -26,7 +26,7 @@ PhysxScene() : PhysxObject() {
 INLINE PhysxScene::
 ~PhysxScene() {
 
-  _debugNode = NULL;
+  _debugNode = nullptr;
 }
 
 /**
@@ -42,7 +42,7 @@ ls() const {
  *
  */
 INLINE void PhysxScene::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
 
   indent(out, indent_level) << get_type().get_name()
                             << " (at 0x" << this << ")\n";

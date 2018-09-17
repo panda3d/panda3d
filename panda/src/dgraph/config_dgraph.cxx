@@ -17,6 +17,10 @@
 
 #include "dconfig.h"
 
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DGRAPH)
+  #error Buildsystem error: BUILDING_PANDA_DGRAPH not defined
+#endif
+
 Configure(config_dgraph);
 NotifyCategoryDef(dgraph, "");
 

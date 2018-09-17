@@ -24,6 +24,7 @@
 #include "indirectLess.h"
 #include "referenceCount.h"
 #include "pvector.h"
+#include "vector_uchar.h"
 
 #ifdef HAVE_OPENSSL
 typedef struct x509_st X509;
@@ -33,22 +34,21 @@ typedef struct evp_pkey_st EVP_PKEY;
 /**
  * A file that contains a set of files.
  */
-class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
+class EXPCL_PANDA_EXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();
+  Multifile(const Multifile &copy) = delete;
   ~Multifile();
 
-private:
-  Multifile(const Multifile &copy);
-  void operator = (const Multifile &copy);
+  Multifile &operator = (const Multifile &copy) = delete;
 
 PUBLISHED:
-  BLOCKING bool open_read(const Filename &multifile_name, const streampos &offset = 0);
-  BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false, const streampos &offset = 0);
+  BLOCKING bool open_read(const Filename &multifile_name, const std::streampos &offset = 0);
+  BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false, const std::streampos &offset = 0);
   BLOCKING bool open_write(const Filename &multifile_name);
-  BLOCKING bool open_write(ostream *multifile_stream, bool owns_pointer = false);
+  BLOCKING bool open_write(std::ostream *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_read_write(const Filename &multifile_name);
-  BLOCKING bool open_read_write(iostream *multifile_stream, bool owns_pointer = false);
+  BLOCKING bool open_read_write(std::iostream *multifile_stream, bool owns_pointer = false);
   BLOCKING void close();
 
   INLINE const Filename &get_multifile_name() const;
@@ -68,37 +68,37 @@ PUBLISHED:
 
   INLINE void set_encryption_flag(bool flag);
   INLINE bool get_encryption_flag() const;
-  INLINE void set_encryption_password(const string &encryption_password);
-  INLINE const string &get_encryption_password() const;
+  INLINE void set_encryption_password(const std::string &encryption_password);
+  INLINE const std::string &get_encryption_password() const;
 
-  INLINE void set_encryption_algorithm(const string &encryption_algorithm);
-  INLINE const string &get_encryption_algorithm() const;
+  INLINE void set_encryption_algorithm(const std::string &encryption_algorithm);
+  INLINE const std::string &get_encryption_algorithm() const;
   INLINE void set_encryption_key_length(int encryption_key_length);
   INLINE int get_encryption_key_length() const;
   INLINE void set_encryption_iteration_count(int encryption_iteration_count);
   INLINE int get_encryption_iteration_count() const;
 
-  string add_subfile(const string &subfile_name, const Filename &filename,
+  std::string add_subfile(const std::string &subfile_name, const Filename &filename,
                      int compression_level);
-  string add_subfile(const string &subfile_name, istream *subfile_data,
+  std::string add_subfile(const std::string &subfile_name, std::istream *subfile_data,
                      int compression_level);
-  string update_subfile(const string &subfile_name, const Filename &filename,
+  std::string update_subfile(const std::string &subfile_name, const Filename &filename,
                         int compression_level);
 
 #ifdef HAVE_OPENSSL
   bool add_signature(const Filename &certificate,
                      const Filename &chain,
                      const Filename &pkey,
-                     const string &password = "");
+                     const std::string &password = "");
   bool add_signature(const Filename &composite,
-                     const string &password = "");
+                     const std::string &password = "");
 
   int get_num_signatures() const;
-  string get_signature_subject_name(int n) const;
-  string get_signature_friendly_name(int n) const;
-  string get_signature_public_key(int n) const;
-  void print_signature_certificate(int n, ostream &out) const;
-  void write_signature_certificate(int n, ostream &out) const;
+  std::string get_signature_subject_name(int n) const;
+  std::string get_signature_friendly_name(int n) const;
+  std::string get_signature_public_key(int n) const;
+  void print_signature_certificate(int n, std::ostream &out) const;
+  void write_signature_certificate(int n, std::ostream &out) const;
 
   int validate_signature_certificate(int n) const;
 #endif  // HAVE_OPENSSL
@@ -107,13 +107,13 @@ PUBLISHED:
   BLOCKING bool repack();
 
   int get_num_subfiles() const;
-  int find_subfile(const string &subfile_name) const;
-  bool has_directory(const string &subfile_name) const;
+  int find_subfile(const std::string &subfile_name) const;
+  bool has_directory(const std::string &subfile_name) const;
   bool scan_directory(vector_string &contents,
-                      const string &subfile_name) const;
+                      const std::string &subfile_name) const;
   void remove_subfile(int index);
-  INLINE bool remove_subfile(const string &subfile_name);
-  const string &get_subfile_name(int index) const;
+  INLINE bool remove_subfile(const std::string &subfile_name);
+  const std::string &get_subfile_name(int index) const;
   MAKE_SEQ(get_subfile_names, get_num_subfiles, get_subfile_name);
   size_t get_subfile_length(int index) const;
   time_t get_subfile_timestamp(int index) const;
@@ -121,25 +121,25 @@ PUBLISHED:
   bool is_subfile_encrypted(int index) const;
   bool is_subfile_text(int index) const;
 
-  streampos get_index_end() const;
-  streampos get_subfile_internal_start(int index) const;
+  std::streampos get_index_end() const;
+  std::streampos get_subfile_internal_start(int index) const;
   size_t get_subfile_internal_length(int index) const;
 
-  BLOCKING INLINE string read_subfile(int index);
-  BLOCKING istream *open_read_subfile(int index);
-  BLOCKING static void close_read_subfile(istream *stream);
+  BLOCKING INLINE vector_uchar read_subfile(int index);
+  BLOCKING std::istream *open_read_subfile(int index);
+  BLOCKING static void close_read_subfile(std::istream *stream);
   BLOCKING bool extract_subfile(int index, const Filename &filename);
-  BLOCKING bool extract_subfile_to(int index, ostream &out);
+  BLOCKING bool extract_subfile_to(int index, std::ostream &out);
   BLOCKING bool compare_subfile(int index, const Filename &filename);
 
-  void output(ostream &out) const;
-  void ls(ostream &out = cout) const;
+  void output(std::ostream &out) const;
+  void ls(std::ostream &out = std::cout) const;
 
-  static INLINE string get_magic_number();
+  static INLINE std::string get_magic_number();
   MAKE_PROPERTY(magic_number, get_magic_number);
 
-  void set_header_prefix(const string &header_prefix);
-  INLINE const string &get_header_prefix() const;
+  void set_header_prefix(const std::string &header_prefix);
+  INLINE const std::string &get_header_prefix() const;
 
 public:
 #ifdef HAVE_OPENSSL
@@ -158,8 +158,8 @@ public:
   const CertChain &get_signature(int n) const;
 #endif  // HAVE_OPENSSL
 
-  bool read_subfile(int index, string &result);
-  bool read_subfile(int index, pvector<unsigned char> &result);
+  bool read_subfile(int index, std::string &result);
+  bool read_subfile(int index, vector_uchar &result);
 
 private:
   enum SubfileFlags {
@@ -176,28 +176,28 @@ private:
   public:
     INLINE Subfile();
     INLINE bool operator < (const Subfile &other) const;
-    streampos read_index(istream &read, streampos fpos,
+    std::streampos read_index(std::istream &read, std::streampos fpos,
                          Multifile *multfile);
-    streampos write_index(ostream &write, streampos fpos,
+    std::streampos write_index(std::ostream &write, std::streampos fpos,
                           Multifile *multifile);
-    streampos write_data(ostream &write, istream *read, streampos fpos,
+    std::streampos write_data(std::ostream &write, std::istream *read, std::streampos fpos,
                          Multifile *multifile);
-    void rewrite_index_data_start(ostream &write, Multifile *multifile);
-    void rewrite_index_flags(ostream &write);
+    void rewrite_index_data_start(std::ostream &write, Multifile *multifile);
+    void rewrite_index_flags(std::ostream &write);
     INLINE bool is_deleted() const;
     INLINE bool is_index_invalid() const;
     INLINE bool is_data_invalid() const;
     INLINE bool is_cert_special() const;
-    INLINE streampos get_last_byte_pos() const;
+    INLINE std::streampos get_last_byte_pos() const;
 
-    string _name;
-    streampos _index_start;
+    std::string _name;
+    std::streampos _index_start;
     size_t _index_length;
-    streampos _data_start;
+    std::streampos _data_start;
     size_t _data_length;
     size_t _uncompressed_length;
     time_t _timestamp;
-    istream *_source;
+    std::istream *_source;
     Filename _source_filename;
     int _flags;
     int _compression_level;  // Not preserved on disk.
@@ -206,14 +206,14 @@ private:
 #endif
   };
 
-  INLINE streampos word_to_streampos(size_t word) const;
-  INLINE size_t streampos_to_word(streampos fpos) const;
-  INLINE streampos normalize_streampos(streampos fpos) const;
-  streampos pad_to_streampos(streampos fpos);
+  INLINE std::streampos word_to_streampos(size_t word) const;
+  INLINE size_t streampos_to_word(std::streampos fpos) const;
+  INLINE std::streampos normalize_streampos(std::streampos fpos) const;
+  std::streampos pad_to_streampos(std::streampos fpos);
 
   void add_new_subfile(Subfile *subfile, int compression_level);
-  istream *open_read_subfile(Subfile *subfile);
-  string standardize_subfile_name(const string &subfile_name) const;
+  std::istream *open_read_subfile(Subfile *subfile);
+  std::string standardize_subfile_name(const std::string &subfile_name) const;
 
   void clear_subfiles();
   bool read_index();
@@ -235,13 +235,13 @@ private:
   Certificates _signatures;
 #endif
 
-  streampos _offset;
+  std::streampos _offset;
   IStreamWrapper *_read;
-  ostream *_write;
+  std::ostream *_write;
   bool _owns_stream;
-  streampos _next_index;
-  streampos _last_index;
-  streampos _last_data_byte;
+  std::streampos _next_index;
+  std::streampos _last_index;
+  std::streampos _last_data_byte;
 
   bool _needs_repack;
   time_t _timestamp;
@@ -251,8 +251,8 @@ private:
   size_t _new_scale_factor;
 
   bool _encryption_flag;
-  string _encryption_password;
-  string _encryption_algorithm;
+  std::string _encryption_password;
+  std::string _encryption_algorithm;
   int _encryption_key_length;
   int _encryption_iteration_count;
 
@@ -262,7 +262,7 @@ private:
   pfstream _read_write_file;
   StreamWrapper _read_write_filew;
   Filename _multifile_name;
-  string _header_prefix;
+  std::string _header_prefix;
 
   int _file_major_ver;
   int _file_minor_ver;

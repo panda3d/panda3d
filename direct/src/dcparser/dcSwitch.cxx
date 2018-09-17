@@ -18,6 +18,9 @@
 #include "dcindent.h"
 #include "dcPacker.h"
 
+using std::ostream;
+using std::string;
+
 /**
  * The key_parameter must be recently allocated via new; it will be deleted
  * via delete when the switch destructs.
@@ -27,7 +30,7 @@ DCSwitch(const string &name, DCField *key_parameter) :
   _name(name),
   _key_parameter(key_parameter)
 {
-  _default_case = NULL;
+  _default_case = nullptr;
   _fields_added = false;
 }
 
@@ -36,7 +39,7 @@ DCSwitch(const string &name, DCField *key_parameter) :
  */
 DCSwitch::
 ~DCSwitch() {
-  nassertv(_key_parameter != (DCField *)NULL);
+  nassertv(_key_parameter != nullptr);
   delete _key_parameter;
 
   Cases::iterator ci;
@@ -121,7 +124,7 @@ get_case_by_value(const string &case_value) const {
  */
 DCPackerInterface *DCSwitch::
 get_case(int n) const {
-  nassertr(n >= 0 && n < (int)_cases.size(), NULL);
+  nassertr(n >= 0 && n < (int)_cases.size(), nullptr);
   return _cases[n]->_fields;
 }
 
@@ -157,8 +160,8 @@ get_num_fields(int case_index) const {
  */
 DCField *DCSwitch::
 get_field(int case_index, int n) const {
-  nassertr(case_index >= 0 && case_index < (int)_cases.size(), NULL);
-  nassertr(n >= 0 && n < (int)_cases[case_index]->_fields->_fields.size(), NULL);
+  nassertr(case_index >= 0 && case_index < (int)_cases.size(), nullptr);
+  nassertr(n >= 0 && n < (int)_cases[case_index]->_fields->_fields.size(), nullptr);
   return _cases[case_index]->_fields->_fields[n];
 }
 
@@ -168,7 +171,7 @@ get_field(int case_index, int n) const {
  */
 DCField *DCSwitch::
 get_field_by_name(int case_index, const string &name) const {
-  nassertr(case_index >= 0 && case_index < (int)_cases.size(), NULL);
+  nassertr(case_index >= 0 && case_index < (int)_cases.size(), nullptr);
 
   const FieldsByName &fields_by_name = _cases[case_index]->_fields->_fields_by_name;
   FieldsByName::const_iterator ni;
@@ -177,7 +180,7 @@ get_field_by_name(int case_index, const string &name) const {
     return (*ni).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -226,7 +229,7 @@ add_invalid_case() {
  */
 bool DCSwitch::
 add_default() {
-  if (_default_case != (SwitchFields *)NULL) {
+  if (_default_case != nullptr) {
     add_invalid_case();
     return false;
   }
@@ -286,12 +289,12 @@ apply_switch(const char *value_data, size_t length) const {
   }
 
   // Unexpected value--use the default.
-  if (_default_case != (SwitchFields *)NULL) {
+  if (_default_case != nullptr) {
     return _default_case;
   }
 
   // No default.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -326,26 +329,26 @@ output_instance(ostream &out, bool brief, const string &prename,
   _key_parameter->output(out, brief);
   out << ") {";
 
-  const SwitchFields *last_fields = NULL;
+  const SwitchFields *last_fields = nullptr;
 
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
-    if (dcase->_fields != last_fields && last_fields != (SwitchFields *)NULL) {
+    if (dcase->_fields != last_fields && last_fields != nullptr) {
       last_fields->output(out, brief);
     }
     last_fields = dcase->_fields;
     out << "case " << _key_parameter->format_data(dcase->_value, false) << ": ";
   }
 
-  if (_default_case != (SwitchFields *)NULL) {
-    if (_default_case != last_fields && last_fields != (SwitchFields *)NULL) {
+  if (_default_case != nullptr) {
+    if (_default_case != last_fields && last_fields != nullptr) {
       last_fields->output(out, brief);
     }
     last_fields = _default_case;
     out << "default: ";
   }
-  if (last_fields != (SwitchFields *)NULL) {
+  if (last_fields != nullptr) {
     last_fields->output(out, brief);
   }
 
@@ -372,12 +375,12 @@ write_instance(ostream &out, bool brief, int indent_level,
   _key_parameter->output(out, brief);
   out << ") {\n";
 
-  const SwitchFields *last_fields = NULL;
+  const SwitchFields *last_fields = nullptr;
 
   Cases::const_iterator ci;
   for (ci = _cases.begin(); ci != _cases.end(); ++ci) {
     const SwitchCase *dcase = (*ci);
-    if (dcase->_fields != last_fields && last_fields != (SwitchFields *)NULL) {
+    if (dcase->_fields != last_fields && last_fields != nullptr) {
       last_fields->write(out, brief, indent_level + 2);
     }
     last_fields = dcase->_fields;
@@ -385,15 +388,15 @@ write_instance(ostream &out, bool brief, int indent_level,
       << "case " << _key_parameter->format_data(dcase->_value, false) << ":\n";
   }
 
-  if (_default_case != (SwitchFields *)NULL) {
-    if (_default_case != last_fields && last_fields != (SwitchFields *)NULL) {
+  if (_default_case != nullptr) {
+    if (_default_case != last_fields && last_fields != nullptr) {
       last_fields->write(out, brief, indent_level + 2);
     }
     last_fields = _default_case;
     indent(out, indent_level)
       << "default:\n";
   }
-  if (last_fields != (SwitchFields *)NULL) {
+  if (last_fields != nullptr) {
     last_fields->write(out, brief, indent_level + 2);
   }
 
@@ -428,7 +431,7 @@ generate_hash(HashGenerator &hashgen) const {
     }
   }
 
-  if (_default_case != (SwitchFields *)NULL) {
+  if (_default_case != nullptr) {
     const SwitchFields *fields = _default_case;
     hashgen.add_int(fields->_fields.size());
     Fields::const_iterator fi;
@@ -446,7 +449,7 @@ generate_hash(HashGenerator &hashgen) const {
  */
 bool DCSwitch::
 pack_default_value(DCPackData &pack_data, bool &pack_error) const {
-  SwitchFields *fields = NULL;
+  SwitchFields *fields = nullptr;
   DCPacker packer;
   packer.begin_pack(_key_parameter);
   if (!_cases.empty()) {
@@ -466,7 +469,7 @@ pack_default_value(DCPackData &pack_data, bool &pack_error) const {
     pack_error = true;
   }
 
-  if (fields == (SwitchFields *)NULL) {
+  if (fields == nullptr) {
     pack_error = true;
 
   } else {
@@ -528,7 +531,7 @@ do_check_match_switch(const DCSwitch *other) const {
  */
 DCSwitch::SwitchFields *DCSwitch::
 start_new_case() {
-  SwitchFields *fields = NULL;
+  SwitchFields *fields = nullptr;
 
   if (_current_fields.empty() || _fields_added) {
     // If we have recently encountered a break (which removes all of the
@@ -587,7 +590,7 @@ DCSwitch::SwitchFields::
  */
 DCPackerInterface *DCSwitch::SwitchFields::
 get_nested_field(int n) const {
-  nassertr(n >= 0 && n < (int)_fields.size(), NULL);
+  nassertr(n >= 0 && n < (int)_fields.size(), nullptr);
   return _fields[n];
 }
 

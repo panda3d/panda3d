@@ -27,7 +27,7 @@ P3DDownload() {
 
   _canceled = false;
   _download_id = 0;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
@@ -46,7 +46,7 @@ P3DDownload(const P3DDownload &copy) :
 
   _canceled = false;
   _download_id = 0;
-  _instance = NULL;
+  _instance = nullptr;
 }
 
 /**
@@ -60,7 +60,7 @@ P3DDownload::
  * Supplies the source URL for the download.
  */
 void P3DDownload::
-set_url(const string &url) {
+set_url(const std::string &url) {
   _url = url;
 }
 
@@ -119,7 +119,7 @@ feed_url_stream(P3D_result_code result_code,
     _total_data += this_data_size;
   }
 
-  total_expected_data = max(total_expected_data, _total_data);
+  total_expected_data = std::max(total_expected_data, _total_data);
   if (total_expected_data > _total_expected_data) {
     // If the expected data grows during the download, we don't really know
     // how much we're getting.
@@ -162,7 +162,7 @@ receive_data(const unsigned char *this_data, size_t this_data_size) {
  */
 void P3DDownload::
 download_progress() {
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   if (now - _last_reported_time > 10) {
     _last_reported_time = now;
     nout << "Downloading " << get_url() << ": ";

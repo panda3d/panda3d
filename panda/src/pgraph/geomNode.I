@@ -48,7 +48,7 @@ INLINE CPT(Geom) GeomNode::
 get_geom(int n) const {
   CDReader cdata(_cycler);
   CPT(GeomList) geoms = cdata->get_geoms();
-  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  nassertr(n >= 0 && n < (int)geoms->size(), nullptr);
   return (*geoms)[n]._geom.get_read_pointer();
 }
 
@@ -68,7 +68,7 @@ INLINE PT(Geom) GeomNode::
 modify_geom(int n) {
   CDWriter cdata(_cycler, true);
   PT(GeomList) geoms = cdata->modify_geoms();
-  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  nassertr(n >= 0 && n < (int)geoms->size(), nullptr);
   mark_internal_bounds_stale();
   return (*geoms)[n]._geom.get_write_pointer();
 }
@@ -83,7 +83,7 @@ INLINE const RenderState *GeomNode::
 get_geom_state(int n) const {
   CDReader cdata(_cycler);
   CPT(GeomList) geoms = cdata->get_geoms();
-  nassertr(n >= 0 && n < (int)geoms->size(), NULL);
+  nassertr(n >= 0 && n < (int)geoms->size(), nullptr);
   return (*geoms)[n]._state;
 }
 
@@ -142,7 +142,7 @@ get_default_collide_mask() {
  */
 INLINE void GeomNode::
 count_name(GeomNode::NameCount &name_count, const InternalName *name) {
-  pair<NameCount::iterator, bool> result =
+  std::pair<NameCount::iterator, bool> result =
     name_count.insert(NameCount::value_type(name, 1));
   if (!result.second) {
     (*result.first).second++;
@@ -255,13 +255,12 @@ operator = (const GeomNode::Geoms &copy) {
   _geoms = copy._geoms;
 }
 
-#ifdef USE_MOVE_SEMANTICS
 /**
  *
  */
 INLINE GeomNode::Geoms::
-Geoms(GeomNode::Geoms &&from) NOEXCEPT :
-  _geoms(move(from._geoms))
+Geoms(GeomNode::Geoms &&from) noexcept :
+  _geoms(std::move(from._geoms))
 {
 }
 
@@ -269,10 +268,9 @@ Geoms(GeomNode::Geoms &&from) NOEXCEPT :
  *
  */
 INLINE void GeomNode::Geoms::
-operator = (GeomNode::Geoms &&from) NOEXCEPT {
-  _geoms = move(from._geoms);
+operator = (GeomNode::Geoms &&from) noexcept {
+  _geoms = std::move(from._geoms);
 }
-#endif  // USE_MOVE_SEMANTICS
 
 /**
  * Returns the number of geoms of the node.
@@ -289,8 +287,8 @@ get_num_geoms() const {
  */
 INLINE CPT(Geom) GeomNode::Geoms::
 get_geom(int n) const {
-  nassertr(!_geoms.is_null(), NULL);
-  nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
+  nassertr(!_geoms.is_null(), nullptr);
+  nassertr(n >= 0 && n < (int)_geoms->size(), nullptr);
   return (*_geoms)[n]._geom.get_read_pointer();
 }
 
@@ -302,7 +300,7 @@ get_geom(int n) const {
  */
 INLINE const RenderState *GeomNode::Geoms::
 get_geom_state(int n) const {
-  nassertr(!_geoms.is_null(), NULL);
-  nassertr(n >= 0 && n < (int)_geoms->size(), NULL);
+  nassertr(!_geoms.is_null(), nullptr);
+  nassertr(n >= 0 && n < (int)_geoms->size(), nullptr);
   return (*_geoms)[n]._state;
 }

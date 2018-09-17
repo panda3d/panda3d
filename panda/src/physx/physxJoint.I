@@ -32,7 +32,7 @@ ls() const {
  *
  */
 INLINE void PhysxJoint::
-ls(ostream &out, int indent_level) const {
+ls(std::ostream &out, int indent_level) const {
 
   indent(out, indent_level) << get_type().get_name()
                             << " " << _name

@@ -45,8 +45,8 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename);
@@ -56,12 +56,12 @@ public:
 
   EggTexture *create_unique_texture(const EggTexture &copy);
   EggMaterial *create_unique_material(const EggMaterial &copy);
-  EggGroup *find_joint(const string &joint_name);
+  EggGroup *find_joint(const std::string &joint_name);
   void strip_nodes(TypeHandle t);
 
 public:
   bool _make_char;
-  string _char_name;
+  std::string _char_name;
   double _frame_rate;
   bool _keep_model;
   bool _keep_animation;
@@ -80,10 +80,10 @@ private:
   bool convert_animation(XFileDataNode *obj,
                          XFileAnimationSet &animation_set);
   bool convert_animation_object(XFileDataNode *obj,
-                                const string &joint_name, FrameData &table);
-  bool convert_animation_key(XFileDataNode *obj, const string &joint_name,
+                                const std::string &joint_name, FrameData &table);
+  bool convert_animation_key(XFileDataNode *obj, const std::string &joint_name,
                              FrameData &table);
-  bool set_animation_frame(const string &joint_name, FrameData &table,
+  bool set_animation_frame(const std::string &joint_name, FrameData &table,
                            int frame, int key_type,
                            const XFileDataObject &values);
   bool convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent);
@@ -105,7 +105,7 @@ private:
   typedef pvector<XFileAnimationSet *> AnimationSets;
   AnimationSets _animation_sets;
 
-  typedef pmap<string, EggGroup *> Joints;
+  typedef pmap<std::string, EggGroup *> Joints;
   Joints _joints;
 
   EggGroup *_dart_node;

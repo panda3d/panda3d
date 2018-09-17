@@ -13,6 +13,8 @@
 
 #include "parameterRemap.h"
 
+using std::string;
+
 
 /**
  *
@@ -26,7 +28,7 @@ ParameterRemap::
  * original type to the new type, for passing into the actual C++ function.
  */
 void ParameterRemap::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const string &variable_name) {
   out << variable_name;
 }
 
@@ -37,7 +39,7 @@ pass_parameter(ostream &out, const string &variable_name) {
  * return the modified expression.
  */
 string ParameterRemap::
-prepare_return_expr(ostream &, int, const string &expression) {
+prepare_return_expr(std::ostream &, int, const string &expression) {
   return expression;
 }
 

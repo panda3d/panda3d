@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#include "bulletShape.h"
+
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
@@ -24,8 +26,6 @@
 #include "collisionNode.h"
 #include "transformState.h"
 #include "boundingSphere.h"
-
-class BulletShape;
 
 /**
  *
@@ -42,8 +42,8 @@ PUBLISHED:
   void add_shape(BulletShape *shape, const TransformState *xform=TransformState::make_identity());
   void remove_shape(BulletShape *shape);
 
-  INLINE int get_num_shapes() const;
-  INLINE BulletShape *get_shape(int idx) const;
+  int get_num_shapes() const;
+  BulletShape *get_shape(int idx) const;
   MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
 
   LPoint3 get_shape_pos(int idx) const;
@@ -54,8 +54,8 @@ PUBLISHED:
   void add_shapes_from_collision_solids(CollisionNode *cnode);
 
   // Static and kinematic
-  INLINE bool is_static() const;
-  INLINE bool is_kinematic() const;
+  bool is_static() const;
+  bool is_kinematic() const;
   
   INLINE void set_static(bool value);
   INLINE void set_kinematic(bool value);
@@ -92,19 +92,19 @@ PUBLISHED:
   INLINE bool is_debug_enabled() const;
 
   // Friction and Restitution
-  INLINE PN_stdfloat get_restitution() const;
-  INLINE void set_restitution(PN_stdfloat restitution);
+  PN_stdfloat get_restitution() const;
+  void set_restitution(PN_stdfloat restitution);
 
-  INLINE PN_stdfloat get_friction() const;
-  INLINE void set_friction(PN_stdfloat friction);
+  PN_stdfloat get_friction() const;
+  void set_friction(PN_stdfloat friction);
 
 #if BT_BULLET_VERSION >= 281
-  INLINE PN_stdfloat get_rolling_friction() const;
-  INLINE void set_rolling_friction(PN_stdfloat friction);
+  PN_stdfloat get_rolling_friction() const;
+  void set_rolling_friction(PN_stdfloat friction);
   MAKE_PROPERTY(rolling_friction, get_rolling_friction, set_rolling_friction);
 #endif
 
-  INLINE bool has_anisotropic_friction() const;
+  bool has_anisotropic_friction() const;
   void set_anisotropic_friction(const LVecBase3 &friction);
   LVecBase3 get_anisotropic_friction() const;
 
@@ -150,11 +150,12 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  virtual void do_output(std::ostream &out) const;
 
 protected:
-  INLINE void set_collision_flag(int flag, bool value);
-  INLINE bool get_collision_flag(int flag) const;
+  void set_collision_flag(int flag, bool value);
+  bool get_collision_flag(int flag) const;
 
   btCollisionShape *_shape;
 
@@ -162,7 +163,9 @@ protected:
   BulletShapes _shapes;
 
 private:
-  virtual void shape_changed();
+  virtual void do_shape_changed();
+  void do_add_shape(BulletShape *shape, const TransformState *xform=TransformState::make_identity());
+  CPT(TransformState) do_get_shape_transform(int idx) const;
 
   static bool is_identity(btTransform &trans);
 

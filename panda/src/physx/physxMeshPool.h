@@ -50,7 +50,7 @@ PUBLISHED:
   static bool release_soft_body_mesh(PhysxSoftBodyMesh *mesh);
 
   static void list_contents();
-  static void list_contents(ostream &out);
+  static void list_contents(std::ostream &out);
 
 private:
   static bool check_filename(const Filename &fn);

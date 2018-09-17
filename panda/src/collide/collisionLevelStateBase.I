@@ -88,7 +88,7 @@ get_num_colliders() const {
  */
 INLINE const CollisionSolid *CollisionLevelStateBase::
 get_collider(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), nullptr);
 
   return _colliders[n]._collider;
 }
@@ -98,7 +98,7 @@ get_collider(int n) const {
  */
 INLINE CollisionNode *CollisionLevelStateBase::
 get_collider_node(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), nullptr);
 
   return _colliders[n]._node;
 }
@@ -119,8 +119,8 @@ get_collider_node_path(int n) const {
  */
 INLINE const GeometricBoundingVolume *CollisionLevelStateBase::
 get_local_bound(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
-  nassertr(n >= 0 && n < (int)_local_bounds.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), nullptr);
+  nassertr(n >= 0 && n < (int)_local_bounds.size(), nullptr);
 
   // For whatever reason, the Intel compiler can't figure this line out.
   // return _local_bounds[n];
@@ -137,8 +137,8 @@ get_local_bound(int n) const {
  */
 INLINE const GeometricBoundingVolume *CollisionLevelStateBase::
 get_parent_bound(int n) const {
-  nassertr(n >= 0 && n < (int)_colliders.size(), NULL);
-  nassertr(n >= 0 && n < (int)_parent_bounds.size(), NULL);
+  nassertr(n >= 0 && n < (int)_colliders.size(), nullptr);
+  nassertr(n >= 0 && n < (int)_parent_bounds.size(), nullptr);
 
   // But it can figure out this equivalent line.
   return *(_parent_bounds + n);

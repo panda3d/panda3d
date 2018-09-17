@@ -20,7 +20,7 @@
  *
  */
 CPPFunctionGroup::
-CPPFunctionGroup(const string &name) :
+CPPFunctionGroup(const std::string &name) :
   CPPDeclaration(CPPFile()),
   _name(name)
 {
@@ -40,7 +40,7 @@ CPPFunctionGroup::
  */
 CPPType *CPPFunctionGroup::
 get_return_type() const {
-  CPPType *return_type = NULL;
+  CPPType *return_type = nullptr;
 
   if (!_instances.empty()) {
     Instances::const_iterator ii = _instances.begin();
@@ -48,7 +48,7 @@ get_return_type() const {
     ++ii;
     while (ii != _instances.end()) {
       if ((*ii)->_type->as_function_type()->_return_type != return_type) {
-        return (CPPType *)NULL;
+        return nullptr;
       }
       ++ii;
     }
@@ -61,7 +61,7 @@ get_return_type() const {
  *
  */
 void CPPFunctionGroup::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   if (!_instances.empty()) {
     Instances::const_iterator ii = _instances.begin();
     (*ii)->output(out, indent_level, scope, complete);

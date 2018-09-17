@@ -16,7 +16,7 @@
  */
 INLINE DCPackData::
 DCPackData() {
-  _buffer = NULL;
+  _buffer = nullptr;
   _allocated_size = 0;
   _used_length = 0;
 }
@@ -26,7 +26,7 @@ DCPackData() {
  */
 INLINE DCPackData::
 ~DCPackData() {
-  if (_buffer != (const char *)NULL) {
+  if (_buffer != nullptr) {
     delete[] _buffer;
   }
 }
@@ -82,16 +82,16 @@ rewrite_data(size_t position, const char *buffer, size_t size) {
  */
 INLINE char *DCPackData::
 get_rewrite_pointer(size_t position, size_t size) {
-  nassertr(position + size <= _used_length, NULL);
+  nassertr(position + size <= _used_length, nullptr);
   return _buffer + position;
 }
 
 /**
  * Returns the data buffer as a string.  Also see get_data().
  */
-INLINE string DCPackData::
+INLINE std::string DCPackData::
 get_string() const {
-  return string(_buffer, _used_length);
+  return std::string(_buffer, _used_length);
 }
 
 /**
@@ -129,7 +129,7 @@ INLINE char *DCPackData::
 take_data() {
   char *data = _buffer;
 
-  _buffer = NULL;
+  _buffer = nullptr;
   _allocated_size = 0;
   _used_length = 0;
 

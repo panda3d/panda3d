@@ -23,6 +23,11 @@
 
 #include <stdlib.h>
 
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::string;
+
 static ostream &
 indent(ostream &out, int indent_level) {
   for (int i = 0; i < indent_level; i++) {
@@ -586,7 +591,7 @@ main(int argc, char **argv) {
 #endif
 
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         cerr << "Unable to load: " << load_dso_error() << "\n";
         return_status++;
       }

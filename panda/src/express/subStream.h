@@ -27,16 +27,16 @@
  * The source stream must be one that we can randomly seek within.  The
  * resulting ISubStream will also support arbitrary seeks.
  */
-class EXPCL_PANDAEXPRESS ISubStream : public istream {
+class EXPCL_PANDA_EXPRESS ISubStream : public std::istream {
 PUBLISHED:
   INLINE ISubStream();
-  INLINE explicit ISubStream(IStreamWrapper *source, streampos start, streampos end);
+  INLINE explicit ISubStream(IStreamWrapper *source, std::streampos start, std::streampos end);
 
 #if _MSC_VER >= 1800
   INLINE ISubStream(const ISubStream &copy) = delete;
 #endif
 
-  INLINE ISubStream &open(IStreamWrapper *source, streampos start, streampos end);
+  INLINE ISubStream &open(IStreamWrapper *source, std::streampos start, std::streampos end);
   INLINE ISubStream &close();
 
 private:
@@ -52,16 +52,16 @@ private:
  * The dest stream must be one that we can randomly seek within.  The
  * resulting OSubStream will also support arbitrary seeks.
  */
-class EXPCL_PANDAEXPRESS OSubStream : public ostream {
+class EXPCL_PANDA_EXPRESS OSubStream : public std::ostream {
 PUBLISHED:
   INLINE OSubStream();
-  INLINE explicit OSubStream(OStreamWrapper *dest, streampos start, streampos end, bool append = false);
+  INLINE explicit OSubStream(OStreamWrapper *dest, std::streampos start, std::streampos end, bool append = false);
 
 #if _MSC_VER >= 1800
   INLINE OSubStream(const OSubStream &copy) = delete;
 #endif
 
-  INLINE OSubStream &open(OStreamWrapper *dest, streampos start, streampos end, bool append = false);
+  INLINE OSubStream &open(OStreamWrapper *dest, std::streampos start, std::streampos end, bool append = false);
   INLINE OSubStream &close();
 
 private:
@@ -71,16 +71,16 @@ private:
 /**
  * Combined ISubStream and OSubStream for bidirectional I/O.
  */
-class EXPCL_PANDAEXPRESS SubStream : public iostream {
+class EXPCL_PANDA_EXPRESS SubStream : public std::iostream {
 PUBLISHED:
   INLINE SubStream();
-  INLINE explicit SubStream(StreamWrapper *nested, streampos start, streampos end, bool append = false);
+  INLINE explicit SubStream(StreamWrapper *nested, std::streampos start, std::streampos end, bool append = false);
 
 #if _MSC_VER >= 1800
   INLINE SubStream(const SubStream &copy) = delete;
 #endif
 
-  INLINE SubStream &open(StreamWrapper *nested, streampos start, streampos end, bool append = false);
+  INLINE SubStream &open(StreamWrapper *nested, std::streampos start, std::streampos end, bool append = false);
   INLINE SubStream &close();
 
 private:
