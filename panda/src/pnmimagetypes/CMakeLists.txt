@@ -33,8 +33,7 @@ set(P3PNMIMAGETYPES_SOURCES
 composite_sources(p3pnmimagetypes P3PNMIMAGETYPES_SOURCES)
 add_component_library(p3pnmimagetypes SYMBOL BUILDING_PANDA_PNMIMAGETYPES
   ${P3PNMIMAGETYPES_HEADERS} ${P3PNMIMAGETYPES_SOURCES})
-target_link_libraries(p3pnmimagetypes p3pnmimage)
-target_use_packages(p3pnmimagetypes JPEG TIFF PNG)
+target_link_libraries(p3pnmimagetypes p3pnmimage PKG::JPEG PKG::TIFF PKG::PNG)
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3pnmimagetypes DESTINATION lib RUNTIME DESTINATION bin)

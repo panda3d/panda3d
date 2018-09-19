@@ -61,8 +61,7 @@ add_library(p3igateruntime
   ${P3IGATERUNTIME_HEADERS} ${P3IGATERUNTIME_SOURCES})
 set_target_properties(p3igateruntime PROPERTIES
   DEFINE_SYMBOL BUILDING_INTERROGATEDB) # HACK
-target_link_libraries(p3igateruntime p3dtoolconfig)
-target_use_packages(p3igateruntime PYTHON)
+target_link_libraries(p3igateruntime p3dtoolconfig PKG::PYTHON)
 
 install(TARGETS p3igateruntime DESTINATION lib RUNTIME DESTINATION bin)
 install(FILES ${P3IGATERUNTIME_HEADERS} DESTINATION include/panda3d)

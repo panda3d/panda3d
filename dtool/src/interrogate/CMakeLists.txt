@@ -52,14 +52,12 @@ set(INTERROGATE_SOURCES
 composite_sources(interrogate INTERROGATE_SOURCES)
 
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
-target_link_libraries(interrogate
-  p3cppParser p3dtoolconfig p3pystub)
-target_use_packages(interrogate OPENSSL)
+target_link_libraries(interrogate p3cppParser p3dtoolconfig p3pystub
+  PKG::OPENSSL)
 
 add_executable(interrogate_module interrogate_module.cxx)
-target_link_libraries(interrogate_module
-  p3cppParser p3dtoolconfig p3pystub)
-target_use_packages(interrogate_module OPENSSL)
+target_link_libraries(interrogate_module p3cppParser p3dtoolconfig p3pystub
+  PKG::OPENSSL)
 
 if(NOT CMAKE_CROSSCOMPILING)
   add_executable(host_interrogate ALIAS interrogate)

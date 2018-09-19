@@ -109,8 +109,7 @@ set(P3BULLET_SOURCES
 composite_sources(p3bullet P3BULLET_SOURCES)
 add_library(p3bullet ${P3BULLET_SOURCES} ${P3BULLET_HEADERS})
 set_target_properties(p3bullet PROPERTIES DEFINE_SYMBOL BUILDING_PANDABULLET)
-target_link_libraries(p3bullet panda)
-target_use_packages(p3bullet BULLET)
+target_link_libraries(p3bullet panda PKG::BULLET)
 target_interrogate(p3bullet ALL)
 
 install(TARGETS p3bullet DESTINATION lib RUNTIME DESTINATION bin)

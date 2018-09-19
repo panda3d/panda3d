@@ -317,7 +317,7 @@ function(add_python_target target)
   set(sources ${ARGN})
 
   add_library(${target} ${MODULE_TYPE} ${sources})
-  target_use_packages(${target} PYTHON)
+  target_link_libraries(${target} PKG::PYTHON)
 
   if(BUILD_SHARED_LIBS)
     set_target_properties(${target} PROPERTIES

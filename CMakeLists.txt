@@ -73,7 +73,7 @@ if(WIN32)
 endif()
 
 # Include global modules needed for configure scripts
-include(PackageConfig)      # Defines package_option AND target_use_packages
+include(PackageConfig)      # Defines package_option
 
 # Configure Panda3D
 include(dtool/PandaVersion.cmake)

@@ -22,8 +22,8 @@ set(P3FFMPEG_SOURCES
 composite_sources(p3ffmpeg P3FFMPEG_SOURCES)
 add_library(p3ffmpeg ${P3FFMPEG_HEADERS} ${P3FFMPEG_SOURCES})
 set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
-target_link_libraries(p3ffmpeg panda)
-target_use_packages(p3ffmpeg FFMPEG SWSCALE SWRESAMPLE)
+target_link_libraries(p3ffmpeg panda
+  PKG::FFMPEG PKG::SWSCALE PKG::SWRESAMPLE)
 
 install(TARGETS p3ffmpeg DESTINATION lib RUNTIME DESTINATION bin)
 install(FILES ${P3FFMPEG_HEADERS} DESTINATION include/panda3d)

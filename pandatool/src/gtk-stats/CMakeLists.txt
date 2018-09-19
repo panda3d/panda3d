@@ -26,8 +26,7 @@ set(GTKSTATS_SOURCES
 
 composite_sources(gtkstats GTKSTATS_SOURCES)
 add_executable(gtkstats ${GTKSTATS_HEADERS} ${GTKSTATS_SOURCES})
-target_link_libraries(gtkstats p3progbase p3pstatserver p3pystub)
-target_use_packages(gtkstats GTK2)
+target_link_libraries(gtkstats p3progbase p3pstatserver p3pystub PKG::GTK2)
 
 # This program is NOT actually called gtkstats. It's pstats-gtk on Win32 and
 # pstats everywhere else (as the Win32 GUI is not built).

@@ -6,6 +6,11 @@
 # Assumes an attempt to find the package has already been made with
 # find_package(). (i.e. relies on packagename_FOUND variable)
 #
+# The packages are added as imported/interface libraries in the PKG::
+# namespace.  If the package is not found (or disabled by the user),
+# a dummy package will be created instead.  Therefore, it is safe
+# to link against the PKG::PACKAGENAME target unconditionally.
+#
 # Function: package_option
 # Usage:
 #   package_option(package_name package_doc_string
@@ -38,13 +43,6 @@
 #
 #   This prints the package usage report using the information provided in
 #   calls to config_package above.
-#
-#
-# Function: target_use_packages
-# Usage:
-#   target_use_packages(target [PACKAGES ...])
-# Examples:
-#   target_use_packages(mylib PYTHON PNG)
 #
 
 #
@@ -112,7 +110,6 @@ function(package_option name)
       else()
         list(FIND PANDA_DIST_USE_LICENSES ${license} license_index)
         # If the license isn't in the accept listed, don't use the package
-        message("INDEX for ${name}: ${license_index}")
         if(${license_index} EQUAL "-1")
           set(default OFF)
         else()
@@ -147,19 +144,31 @@ function(package_option name)
 
   # Create the option.
   option("HAVE_${name}" "${cache_string}" "${default}")
+
+  # Create the library if the package is available.
+  add_library(PKG::${name} INTERFACE IMPORTED GLOBAL)
+
   if(HAVE_${name})
-    set(_PKG_${name}_INCLUDES ${${found_as}_INCLUDE_DIRS} ${${found_as}_INCLUDE_DIR}
-      CACHE INTERNAL "<Internal>")
-    if(${found_as}_LIBRARIES)
-      set(_PKG_${name}_LIBRARIES ${${found_as}_LIBRARIES} CACHE INTERNAL "<Internal>")
+    if(${found_as}_INCLUDE_DIRS)
+      set(includes ${${found_as}_INCLUDE_DIRS})
     else()
-      set(_PKG_${name}_LIBRARIES "${${found_as}_LIBRARY}" CACHE INTERNAL "<Internal>")
+      set(includes "${${found_as}_INCLUDE_DIR}")
     endif()
-  else()
-    unset(_PKG_${name}_INCLUDES CACHE)
-    unset(_PKG_${name}_LIBRARIES CACHE)
+    if(${found_as}_LIBRARIES)
+      set(libs ${${found_as}_LIBRARIES})
+    else()
+      set(libs "${${found_as}_LIBRARY}")
+    endif()
+
+    target_link_libraries(PKG::${name} INTERFACE ${libs})
+
+    # This is gross, but we actually want to hide package include directories
+    # from Interrogate to make sure it relies on parser-inc instead, so we'll
+    # use some generator expressions to do that.
+    set_target_properties(PKG::${name} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+      "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${includes}>")
   endif()
-endfunction()
+endfunction(package_option)
 
 set(_ALL_CONFIG_PACKAGES CACHE INTERNAL "Internal variable")
 
@@ -218,26 +227,3 @@ function(show_packages)
     endif()
   endforeach()
 endfunction()
-
-#
-# target_use_packages
-#
-# Useful macro that picks up a package located using find_package
-# as dependencies of a target that is going to be built.
-#
-macro(target_use_packages target)
-  set(libs ${ARGV})
-  list(REMOVE_AT libs 0)
-
-  foreach(lib ${libs})
-    if(HAVE_${lib})
-      target_link_libraries("${target}" ${_PKG_${lib}_LIBRARIES})
-
-      # This is gross, but we actually want to hide package include directories
-      # from Interrogate to make sure it relies on parser-inc instead, so we'll
-      # use some generator expressions to do that.
-      target_include_directories("${target}" PUBLIC
-        $<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${_PKG_${lib}_INCLUDES}>)
-    endif()
-  endforeach(lib)
-endmacro(target_use_packages)

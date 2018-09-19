@@ -63,8 +63,7 @@ set(P3MATHUTIL_SOURCES
 composite_sources(p3mathutil P3MATHUTIL_SOURCES)
 add_component_library(p3mathutil SYMBOL BUILDING_PANDA_MATHUTIL
   ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
-target_link_libraries(p3mathutil p3event)
-target_use_packages(p3mathutil FFTW)
+target_link_libraries(p3mathutil p3event PKG::FFTW)
 target_interrogate(p3mathutil ALL)
 
 if(NOT BUILD_METALIBS)
