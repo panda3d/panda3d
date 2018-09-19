@@ -192,8 +192,6 @@ function(interrogate_sources target output database language_flags)
   # a JOIN will cause it to be escaped. Tabs are not escaped and will
   # separate correctly.
   set(include_flags "-I$<JOIN:$<TARGET_PROPERTY:${target}_igate_internal,INTERFACE_INCLUDE_DIRECTORIES>,\t-I>")
-  # The above must also be included when compiling the resulting _igate.cxx file:
-  include_directories("$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
 
   # Get the compiler definition flags. These must be passed to Interrogate
   # in the same way that they are passed to the compiler so that Interrogate
@@ -224,7 +222,6 @@ function(interrogate_sources target output database language_flags)
       ${IGATE_FLAGS}
       ${language_flags}
       ${define_flags}
-      -S "${PROJECT_BINARY_DIR}/include"
       -S "${PROJECT_SOURCE_DIR}/dtool/src/interrogatedb"
       -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
       -S "${PYTHON_INCLUDE_DIRS}"

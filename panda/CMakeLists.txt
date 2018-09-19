@@ -2,16 +2,6 @@ if(NOT BUILD_DTOOL)
   message(FATAL_ERROR "Cannot build panda without dtool!  Please enable the BUILD_DTOOL option.")
 endif()
 
-# Not sure where I want to hide these inludes yet, but it is annoying
-# to have to add them to every CMakeLists that either directly, or
-# recursively includes linmath, and other libraries etc...
-if(HAVE_CG)
-  include_directories(${CG_INCLUDE_DIRS})
-endif()
-if(HAVE_FREETYPE)
-  include_directories(${FREETYPE_INCLUDE_DIRS})
-endif()
-
 # Include panda source directories
 add_subdirectory(src/configfiles)
 add_subdirectory(src/pandabase)
