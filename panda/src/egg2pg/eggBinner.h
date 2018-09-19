@@ -27,7 +27,7 @@ class EggLoader;
  * It is used to collect similar polygons together for a Geom, as well as to
  * group related LOD children together under a single LOD node.
  */
-class EggBinner : public EggBinMaker {
+class EXPCL_PANDA_EGG2PG EggBinner : public EggBinMaker {
 public:
   // The BinNumber serves to identify why a particular EggBin was created.
   enum BinNumber {

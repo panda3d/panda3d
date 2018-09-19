@@ -64,7 +64,7 @@ class CharacterMaker;
  *
  * This class isn't exported from this package.
  */
-class EggLoader {
+class EXPCL_PANDA_EGG2PG EggLoader {
 public:
   EggLoader();
   EggLoader(const EggData *data);
