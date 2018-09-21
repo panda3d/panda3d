@@ -88,8 +88,10 @@ endif()
 #
 find_package(OpenSSL COMPONENTS ssl crypto QUIET)
 
-package_option(OPENSSL DEFAULT ON
-  "Enable OpenSSL support")
+package_option(OPENSSL
+  DEFAULT ON
+  "Enable OpenSSL support"
+  IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
 
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
@@ -112,7 +114,10 @@ config_package(JPEG "libjpeg")
 
 # PNG:
 find_package(PNG QUIET)
-package_option(PNG DEFAULT ON "Enable support for loading .png images.")
+package_option(PNG
+  DEFAULT ON
+  "Enable support for loading .png images."
+  IMPORTED_AS PNG::PNG)
 config_package(PNG "libpng")
 
 # TIFF:
@@ -201,7 +206,8 @@ config_package(VRPN "VRPN")
 find_package(zlib QUIET)
 
 package_option(ZLIB
-  "Enables support for compression of Panda assets.")
+  "Enables support for compression of Panda assets."
+  IMPORTED_AS ZLIB::ZLIB)
 
 config_package(ZLIB "zlib")
 
@@ -260,6 +266,7 @@ package_option(OPENAL
   "This enables support for audio output via OpenAL. Some platforms, such as
   macOS, provide their own OpenAL implementation, which Panda3D can use. But,
   on most platforms this will imply OpenAL Soft, which is LGPL licensed."
+  IMPORTED_AS OpenAL::OpenAL
   LICENSE "LGPL")
 config_package(OPENAL "OpenAL sound library")
 
@@ -272,7 +279,8 @@ find_package(Freetype QUIET)
 
 package_option(FREETYPE
   "This enables support for the FreeType font-rendering library. If disabled,
-  Panda3D will only be able to read fonts specially made with egg-mkfont.")
+  Panda3D will only be able to read fonts specially made with egg-mkfont."
+  IMPORTED_AS freetype)
 
 config_package(FREETYPE "FreeType")
 

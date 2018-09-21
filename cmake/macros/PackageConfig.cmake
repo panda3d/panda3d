@@ -15,6 +15,7 @@
 # Usage:
 #   package_option(package_name package_doc_string
 #                  [DEFAULT ON | OFF]
+#                  [IMPORTED_AS CMake::Imported::Target [...]]
 #                  [FOUND_AS find_name]
 #                  [LICENSE license])
 # Examples:
@@ -27,6 +28,11 @@
 #
 #       FOUND_AS indicates the name of the CMake find_package() module, which
 #       may differ from Panda3D's internal name for that package.
+#
+#       IMPORTED_AS is used to indicate that the find_package() may have
+#       provided one or more IMPORTED targets, and that if at least one is
+#       found, the IMPORTED target(s) should be used instead of the
+#       variables provided by find_package()
 #
 #
 # Function: config_package
@@ -62,6 +68,7 @@ function(package_option name)
   set(command)
   set(default)
   set(found_as "${name}")
+  set(imported_as)
   set(license "")
   set(cache_string)
 
@@ -87,6 +94,12 @@ function(package_option name)
     elseif(arg STREQUAL "LICENSE")
       set(command "LICENSE")
 
+    elseif(arg STREQUAL "IMPORTED_AS")
+      set(command "IMPORTED_AS")
+
+    elseif(command STREQUAL "IMPORTED_AS")
+      list(APPEND imported_as "${arg}")
+
     else()
       # Yes, a list, because semicolons can be in there, and
       # that gets split up into multiple args, so we have to
@@ -96,8 +109,8 @@ function(package_option name)
     endif()
   endforeach()
 
-  if(command STREQUAL "DEFAULT")
-    message(SEND_ERROR "DEFAULT in package_option takes an argument")
+  if(command AND NOT command STREQUAL "IMPORTED_AS")
+    message(SEND_ERROR "${command} in package_option takes an argument")
   endif()
 
   # If the default is not set, we set it.
@@ -142,31 +155,47 @@ function(package_option name)
 
   set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
 
-  # Create the option.
-  option("HAVE_${name}" "${cache_string}" "${default}")
-
-  # Create the library if the package is available.
+  # Create the INTERFACE library used to depend on this package.
   add_library(PKG::${name} INTERFACE IMPORTED GLOBAL)
 
+  # Create the option, and if it actually is enabled, populate the INTERFACE
+  # library created above
+  option("HAVE_${name}" "${cache_string}" "${default}")
   if(HAVE_${name})
-    if(${found_as}_INCLUDE_DIRS)
-      set(includes ${${found_as}_INCLUDE_DIRS})
-    else()
-      set(includes "${${found_as}_INCLUDE_DIR}")
-    endif()
-    if(${found_as}_LIBRARIES)
-      set(libs ${${found_as}_LIBRARIES})
-    else()
-      set(libs "${${found_as}_LIBRARY}")
-    endif()
+    set(use_variables ON)
 
-    target_link_libraries(PKG::${name} INTERFACE ${libs})
+    foreach(implib ${imported_as})
+      if(TARGET ${implib})
+        # We found one of the implibs, so we don't need to use variables
+        # (below) anymore
+        set(use_variables OFF)
 
-    # This is gross, but we actually want to hide package include directories
-    # from Interrogate to make sure it relies on parser-inc instead, so we'll
-    # use some generator expressions to do that.
-    set_target_properties(PKG::${name} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-      "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${includes}>")
+        # Yes, this is ugly.  See below for an explanation.
+        target_link_libraries(PKG::${name} INTERFACE
+          "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${implib}>")
+      endif()
+    endforeach(implib)
+
+    if(use_variables)
+      if(${found_as}_INCLUDE_DIRS)
+        set(includes ${${found_as}_INCLUDE_DIRS})
+      else()
+        set(includes "${${found_as}_INCLUDE_DIR}")
+      endif()
+      if(${found_as}_LIBRARIES)
+        set(libs ${${found_as}_LIBRARIES})
+      else()
+        set(libs "${${found_as}_LIBRARY}")
+      endif()
+
+      target_link_libraries(PKG::${name} INTERFACE ${libs})
+
+      # This is gross, but we actually want to hide package include directories
+      # from Interrogate to make sure it relies on parser-inc instead, so we'll
+      # use some generator expressions to do that.
+      set_target_properties(PKG::${name} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
+        "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${includes}>")
+    endif()
   endif()
 endfunction(package_option)
 
