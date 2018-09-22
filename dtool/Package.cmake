@@ -315,24 +315,42 @@ config_package(ODE "Open Dynamics Engine")
 # PhysX
 find_package(PhysX QUIET)
 
-package_option(PhysX
+package_option(PHYSX
   "Enable this option to support game dynamics with Nvidia PhysX."
   LICENSE "Nvidia")
 
-config_package(PhysX "Nvidia PhysX")
+config_package(PHYSX "Nvidia PhysX")
 
+#
+# ------------ SpeedTree ------------
+#
+
+# SpeedTree
+find_package(SpeedTree QUIET)
+
+package_option(SPEEDTREE
+  "Enable this option to include scenegraph support for SpeedTree trees."
+  LICENSE "SpeedTree")
+
+config_package(SPEEDTREE "SpeedTree")
+
+#
+# ------------ Rendering APIs ------------
+#
+
+# OpenGL
+find_package(OpenGL QUIET)
+
+package_option(GL
+  "Enable OpenGL support."
+  FOUND_AS OPENGL
+  IMPORTED_AS OpenGL::GL)
+
+config_package(GL "OpenGL")
 
 ########
 # TODO #
 ########
-
-# Find and configure PhysX
-#find_package(PhysX)
-#config_package(PHYSX "Aegia PhysX")
-
-# Find and configure SpeedTree
-#find_package(SpeedTree)
-#config_package(SPEEDTREE "SpeedTree")
 
 # Find and configure OpenGL ES 1
 #find_package(GLES)

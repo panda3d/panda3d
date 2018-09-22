@@ -155,22 +155,10 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_SPEEDTREE)
-  message("+ SpeedTree")
-else()
-  message("- Did not find SpeedTree")
-endif()
-
 if(HAVE_GTK2)
   message("+ gtk+-2")
 else()
   message("- Did not find gtk+-2")
-endif()
-
-if(HAVE_GL)
-  message("+ OpenGL")
-else()
-  message("- Did not find OpenGL")
 endif()
 
 if(HAVE_GLES)

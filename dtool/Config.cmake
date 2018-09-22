@@ -419,11 +419,6 @@ option(HAVE_VIDEO4LINUX
   "Set this to enable webcam support on Linux." ${IS_LINUX})
 
 
-# Is OpenGL installed, and where?
-find_package(OpenGL QUIET)
-set(GL_FOUND ${OPENGL_FOUND})
-package_option(GL "Enable OpenGL support.")
-
 # If you are having trouble linking in OpenGL extension functions at
 # runtime for some reason, you can set this variable. It also,
 # requires you to install the OpenGL header files and compile-time
