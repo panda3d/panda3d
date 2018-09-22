@@ -296,7 +296,7 @@ package_option(GTK2)
 #
 
 # Bullet
-find_package(Bullet QUIET)
+find_package(Bullet MODULE QUIET)
 
 package_option(BULLET
   "Enable this option to support game dynamics with the Bullet physics library.")

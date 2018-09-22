@@ -256,3 +256,31 @@ function(show_packages)
     endif()
   endforeach()
 endfunction()
+
+#
+# find_package
+#
+# This override is necessary because CMake's default behavior is to run
+# find_package in MODULE mode, *then* in CONFIG mode.  This is silly!  CONFIG
+# mode makes more sense to be done first, since any system config file will
+# know vastly more about the package's configuration than a module can hope to
+# guess.
+#
+macro(find_package name)
+  if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
+    # Caller explicitly asking for a certain mode; so be it.
+    _find_package(${ARGV})
+  else()
+    string(TOUPPER "${name}" __pkgname_upper)
+
+    # Try CONFIG
+    _find_package("${name}" CONFIG ${ARGN})
+    if(NOT ${name}_FOUND)
+      # CONFIG didn't work, fall back to MODULE
+      _find_package("${name}" MODULE ${ARGN})
+    else()
+      # Case-sensitivity
+      set(${__pkgname_upper}_FOUND 1)
+    endif()
+  endif()
+endmacro(find_package)
