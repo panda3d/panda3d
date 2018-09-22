@@ -14,9 +14,6 @@
 #include "buttonHandle.h"
 #include "buttonRegistry.h"
 
-// This is initialized to zero by static initialization.
-ButtonHandle ButtonHandle::_none;
-
 TypeHandle ButtonHandle::_type_handle;
 
 /**

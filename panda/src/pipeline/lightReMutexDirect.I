@@ -12,21 +12,6 @@
  */
 
 /**
- *
- */
-INLINE LightReMutexDirect::
-LightReMutexDirect()
-#ifndef HAVE_REMUTEXIMPL
-  : _cvar_impl(_lock_impl)
-#endif
-{
-#ifndef HAVE_REMUTEXIMPL
-  _locking_thread = nullptr;
-  _lock_count = 0;
-#endif
-}
-
-/**
  * Alias for acquire() to match C++11 semantics.
  * @see acquire()
  */
