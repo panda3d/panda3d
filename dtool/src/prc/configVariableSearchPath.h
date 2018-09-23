@@ -48,8 +48,8 @@ PUBLISHED:
                                   int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
-  INLINE operator const DSearchPath & () const;
-  INLINE const DSearchPath &get_value() const;
+  INLINE operator DSearchPath () const;
+  INLINE DSearchPath get_value() const;
   INLINE const DSearchPath &get_default_value() const;
   MAKE_PROPERTY(value, get_value);
   MAKE_PROPERTY(default_value, get_default_value);
@@ -81,6 +81,7 @@ PUBLISHED:
 private:
   void reload_search_path();
 
+  mutable MutexImpl _lock;
   DSearchPath _default_value;
   DSearchPath _prefix, _postfix;
 

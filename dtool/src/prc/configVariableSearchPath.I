@@ -93,20 +93,24 @@ INLINE ConfigVariableSearchPath::
  * Returns the variable's value.
  */
 INLINE ConfigVariableSearchPath::
-operator const DSearchPath & () const {
+operator DSearchPath () const {
   return get_value();
 }
 
 /**
  *
  */
-INLINE const DSearchPath &ConfigVariableSearchPath::
+INLINE DSearchPath ConfigVariableSearchPath::
 get_value() const {
   TAU_PROFILE("const DSearchPath &ConfigVariableSearchPath::get_value() const", " ", TAU_USER);
+  DSearchPath value;
+  _lock.lock();
   if (!is_cache_valid(_local_modified)) {
     ((ConfigVariableSearchPath *)this)->reload_search_path();
   }
-  return _cache;
+  value = _cache;
+  _lock.unlock();
+  return value;
 }
 
 /**
@@ -123,6 +127,7 @@ get_default_value() const {
  */
 INLINE bool ConfigVariableSearchPath::
 clear_local_value() {
+  _lock.lock();
   nassertr(_core != nullptr, false);
 
   bool any_to_clear = !_prefix.is_empty() || _postfix.is_empty();
@@ -134,6 +139,7 @@ clear_local_value() {
   }
 
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
   return any_to_clear;
 }
 
@@ -151,8 +157,10 @@ clear() {
  */
 INLINE void ConfigVariableSearchPath::
 append_directory(const Filename &directory) {
+  _lock.lock();
   _postfix.append_directory(directory);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -160,8 +168,10 @@ append_directory(const Filename &directory) {
  */
 INLINE void ConfigVariableSearchPath::
 prepend_directory(const Filename &directory) {
+  _lock.lock();
   _prefix.prepend_directory(directory);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -170,8 +180,10 @@ prepend_directory(const Filename &directory) {
  */
 INLINE void ConfigVariableSearchPath::
 append_path(const std::string &path, const std::string &separator) {
+  _lock.lock();
   _postfix.append_path(path, separator);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -180,8 +192,10 @@ append_path(const std::string &path, const std::string &separator) {
  */
 INLINE void ConfigVariableSearchPath::
 append_path(const DSearchPath &path) {
+  _lock.lock();
   _postfix.append_path(path);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
@@ -190,8 +204,10 @@ append_path(const DSearchPath &path) {
  */
 INLINE void ConfigVariableSearchPath::
 prepend_path(const DSearchPath &path) {
+  _lock.lock();
   _prefix.prepend_path(path);
   _local_modified = initial_invalid_cache();
+  _lock.unlock();
 }
 
 /**
