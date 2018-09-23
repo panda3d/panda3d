@@ -117,13 +117,6 @@ write(ostream &out, int indent_level) const {
 }
 
 /**
- * Creates an empty search path.
- */
-DSearchPath::
-DSearchPath() {
-}
-
-/**
  *
  */
 DSearchPath::
@@ -137,30 +130,6 @@ DSearchPath(const string &path, const string &separator) {
 DSearchPath::
 DSearchPath(const Filename &directory) {
   append_directory(directory);
-}
-
-/**
- *
- */
-DSearchPath::
-DSearchPath(const DSearchPath &copy) :
-  _directories(copy._directories)
-{
-}
-
-/**
- *
- */
-void DSearchPath::
-operator = (const DSearchPath &copy) {
-  _directories = copy._directories;
-}
-
-/**
- *
- */
-DSearchPath::
-~DSearchPath() {
 }
 
 /**
