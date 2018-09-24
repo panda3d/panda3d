@@ -109,6 +109,9 @@ class DoInterestManager(DirectObject.DirectObject):
         # keep track of request contexts that have not completed
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
+        # keep track of tagged interests
+        self._tag2interest = {}
+        self._interest2tags = {}
 
     def __verbose(self):
         return self.InterestDebug.getValue() or self.getVerbose()
@@ -194,7 +197,16 @@ class DoInterestManager(DirectObject.DirectObject):
         return InterestHandle(handle)
     
     def addTaggedInterest(self, parentId, zoneIdList, mainTag, description, otherTags=[], event=None):
-        return self.addInterest(parentId, zoneIdList, description, event)
+        otherTags.insert(0, mainTag)
+        description = '%s | %s' % (description, ' '.join(otherTags))
+        handle = self.addInterest(parentId, zoneId, description, event)
+        if handle:
+            for tag in otherTags:
+                self._tag2interest[tag] = handle
+
+            self._interest2tags[handle.asInt()] = otherTags
+
+        return handle
 
     def addAutoInterest(self, parentId, zoneIdList, description):
         """
@@ -277,6 +289,34 @@ class DoInterestManager(DirectObject.DirectObject):
                 "removeInterest: handle not found: %s" % (handle))
         assert self.printInterestsIfDebug()
         return existed
+    
+    def removeTaggedInterest(self, handle, event=None):
+        tags = self._interest2tags.pop(handle.asInt(), [])
+        if tags:
+            for tag in tags:
+                self._tag2interest.pop(tag, None)
+
+            self.removeInterest(handle, event)
+
+        return tags
+    
+    def removeInterestTag(self, tag, event=None):
+        handle = self._tag2interest.get(tag)
+        if event:
+            if not handle:
+                messenger.send(event)
+                return
+
+            def interestClosed(interestHandle):
+                messenger.send(event)
+
+            subEvent = '%s-0' % event
+            self.acceptOnce(subEvent, interestClosed)
+            self.removeTaggedInterest(handle, event=subEvent)
+        else:
+            self.removeTaggedInterest(handle)
+
+        return handle
 
     def removeAutoInterest(self, handle):
         """
@@ -396,6 +436,12 @@ class DoInterestManager(DirectObject.DirectObject):
     def _getRemoveInterestEvent(self):
         return self._removeInterestEvent
 
+    def getInterestTags(self, handle):
+        return self._interest2tags.get(handle.asInt(), [])
+
+    def getInterestHandles(self, tag):
+        return self._tag2interest.get(tag, [])
+    
     def _getInterestState(self, handle):
         return DoInterestManager._interests[handle]
 
