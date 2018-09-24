@@ -86,7 +86,7 @@ endif()
 #
 # ------------ OpenSSL ------------
 #
-find_package(OpenSSL COMPONENTS ssl crypto QUIET)
+find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
 
 package_option(OPENSSL
   DEFAULT ON
