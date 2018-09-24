@@ -1138,6 +1138,105 @@ class bdist_apps(setuptools.Command):
         with tarfile.open('{}.tar.{}'.format(basename, tar_compression), 'w|{}'.format(tar_compression)) as tf:
             tf.add(build_dir, base_dir, filter=tarfilter)
 
+    def create_nsis(self, basename, build_dir, is_64bit):
+        # Get a list of build applications
+        build_cmd = self.get_finalized_command('build_apps')
+        apps = build_cmd.gui_apps.copy()
+        apps.update(build_cmd.console_apps)
+        apps = [
+            '{}.exe'.format(i)
+            for i in apps
+        ]
+
+        fullname = self.distribution.get_fullname()
+        shortname = self.distribution.get_name()
+
+        # Create the .nsi installer script
+        nsifile = p3d.Filename(build_cmd.build_base, shortname + ".nsi")
+        nsifile.unlink()
+        nsi = open(nsifile.to_os_specific(), "w")
+
+        # Some global info
+        nsi.write('Name "%s"\n' % shortname)
+        nsi.write('OutFile "%s"\n' % (fullname+'.exe'))
+        if is_64bit:
+            nsi.write('InstallDir "$PROGRAMFILES64\\%s"\n' % shortname)
+        else:
+            nsi.write('InstallDir "$PROGRAMFILES\\%s"\n' % shortname)
+        nsi.write('SetCompress auto\n')
+        nsi.write('SetCompressor lzma\n')
+        nsi.write('ShowInstDetails nevershow\n')
+        nsi.write('ShowUninstDetails nevershow\n')
+        nsi.write('InstType "Typical"\n')
+
+        # Tell Vista that we require admin rights
+        nsi.write('RequestExecutionLevel admin\n')
+        nsi.write('\n')
+
+        # TODO offer run and desktop shortcut after we figure out how to deal
+        # with multiple apps
+
+        nsi.write('!include "MUI2.nsh"\n')
+        nsi.write('!define MUI_ABORTWARNING\n')
+        nsi.write('\n')
+        nsi.write('Var StartMenuFolder\n')
+        nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
+        # TODO license file
+        nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
+        nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
+        nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
+        nsi.write('!insertmacro MUI_PAGE_FINISH\n')
+        nsi.write('!insertmacro MUI_UNPAGE_WELCOME\n')
+        nsi.write('!insertmacro MUI_UNPAGE_CONFIRM\n')
+        nsi.write('!insertmacro MUI_UNPAGE_INSTFILES\n')
+        nsi.write('!insertmacro MUI_UNPAGE_FINISH\n')
+        nsi.write('!insertmacro MUI_LANGUAGE "English"\n')
+
+        # This section defines the installer.
+        nsi.write('Section "" SecCore\n')
+        nsi.write('  SetOutPath "$INSTDIR"\n')
+        curdir = ""
+        for root, dirs, files in os.walk(build_dir):
+            for name in files:
+                basefile = p3d.Filename.fromOsSpecific(os.path.join(root, name))
+                file = p3d.Filename(basefile)
+                file.makeAbsolute()
+                file.makeRelativeTo(build_dir)
+                outdir = file.getDirname().replace('/', '\\')
+                if curdir != outdir:
+                    nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
+                    curdir = outdir
+                nsi.write('  File "%s"\n' % (basefile.toOsSpecific()))
+        nsi.write('  SetOutPath "$INSTDIR"\n')
+        nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
+        nsi.write('  ; Start menu items\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
+        nsi.write('    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"\n')
+        for app in apps:
+            nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s"\n' % (shortname, app))
+        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
+        nsi.write('SectionEnd\n')
+
+        # This section defines the uninstaller.
+        nsi.write('Section Uninstall\n')
+        nsi.write('  RMDir /r "$INSTDIR"\n')
+        nsi.write('  ; Desktop icon\n')
+        nsi.write('  Delete "$DESKTOP\\%s.lnk"\n' % shortname)
+        nsi.write('  ; Start menu items\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder\n')
+        nsi.write('  RMDir /r "$SMPROGRAMS\\$StartMenuFolder"\n')
+        nsi.write('SectionEnd\n')
+        nsi.close()
+
+        cmd = ['makensis']
+        for flag in ["V2"]:
+            cmd.append(
+                '{}{}'.format('/' if sys.platform.startswith('win') else '-', flag)
+            )
+        cmd.append(nsifile.to_os_specific())
+        subprocess.check_call(cmd)
+
     def run(self):
         build_cmd = self.get_finalized_command('build_apps')
         if not build_cmd.platforms:
@@ -1165,5 +1264,23 @@ class bdist_apps(setuptools.Command):
                         compress = 'bz2'
 
                     self.create_tarball(basename, build_dir, compress)
+                elif installer == 'nsis':
+                    if not platform.startswith('win'):
+                        self.announce(
+                            '\tNSIS installer not supported for platform: {}'.format(platform),
+                            distutils.log.ERROR
+                        )
+                        continue
+                    try:
+                        subprocess.call(['makensis', '--version'])
+                    except OSError:
+                        self.announce(
+                            '\tCould not find makensis tool that is required to build NSIS installers',
+                            distutils.log.ERROR
+                        )
+                        # continue
+                    is_64bit = platform == 'win_amd64'
+                    self.create_nsis(basename, build_dir, is_64bit)
+
                 else:
                     self.announce('\tUnknown installer: {}'.format(installer), distutils.log.ERROR)
