@@ -255,11 +255,16 @@ is_whitespace(wchar_t character) const {
  */
 PN_stdfloat TextNode::
 calc_width(const std::wstring &line) const {
+  TextFont *font = get_font();
+  if (font == nullptr) {
+    return 0.0f;
+  }
+
   PN_stdfloat width = 0.0f;
 
   std::wstring::const_iterator si;
   for (si = line.begin(); si != line.end(); ++si) {
-    width += calc_width(*si);
+    width += TextAssembler::calc_width(*si, *this);
   }
 
   return width;
@@ -730,15 +735,16 @@ make_frame() {
   CPT(RenderState) state = RenderState::make(thick);
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("text", GeomVertexFormat::get_v3(), get_usage_hint());
+    ("text", GeomVertexFormat::get_v3(), _usage_hint);
+  vdata->unclean_set_num_rows(4);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
-  vertex.add_data3(left, 0.0f, top);
-  vertex.add_data3(left, 0.0f, bottom);
-  vertex.add_data3(right, 0.0f, bottom);
-  vertex.add_data3(right, 0.0f, top);
+  vertex.set_data3(left, 0.0f, top);
+  vertex.set_data3(left, 0.0f, bottom);
+  vertex.set_data3(right, 0.0f, bottom);
+  vertex.set_data3(right, 0.0f, top);
 
-  PT(GeomLinestrips) frame = new GeomLinestrips(get_usage_hint());
+  PT(GeomLinestrips) frame = new GeomLinestrips(_usage_hint);
   frame->add_consecutive_vertices(0, 4);
   frame->add_vertex(0);
   frame->close_primitive();
@@ -772,19 +778,20 @@ make_card() {
   PN_stdfloat top = dimensions[3];
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
+    ("text", GeomVertexFormat::get_v3t2(), _usage_hint);
+  vdata->unclean_set_num_rows(4);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  vertex.add_data3(left, 0.0f, top);
-  vertex.add_data3(left, 0.0f, bottom);
-  vertex.add_data3(right, 0.0f, top);
-  vertex.add_data3(right, 0.0f, bottom);
+  vertex.set_data3(left, 0.0f, top);
+  vertex.set_data3(left, 0.0f, bottom);
+  vertex.set_data3(right, 0.0f, top);
+  vertex.set_data3(right, 0.0f, bottom);
 
-  texcoord.add_data2(0.0f, 1.0f);
-  texcoord.add_data2(0.0f, 0.0f);
-  texcoord.add_data2(1.0f, 1.0f);
-  texcoord.add_data2(1.0f, 0.0f);
+  texcoord.set_data2(0.0f, 1.0f);
+  texcoord.set_data2(0.0f, 0.0f);
+  texcoord.set_data2(1.0f, 1.0f);
+  texcoord.set_data2(1.0f, 0.0f);
 
   PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
   card->add_consecutive_vertices(0, 4);
@@ -820,57 +827,59 @@ make_card_with_border() {
  */
 
   PT(GeomVertexData) vdata = new GeomVertexData
-    ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
+    ("text", GeomVertexFormat::get_v3t2(), _usage_hint);
+  vdata->unclean_set_num_rows(16);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   // verts 1,2,3,4
-  vertex.add_data3(left, 0.02, top);
-  vertex.add_data3(left, 0.02, top - _card_border_size);
-  vertex.add_data3(left + _card_border_size, 0.02, top);
-  vertex.add_data3(left + _card_border_size, 0.02,
+  vertex.set_data3(left, 0.02, top);
+  vertex.set_data3(left, 0.02, top - _card_border_size);
+  vertex.set_data3(left + _card_border_size, 0.02, top);
+  vertex.set_data3(left + _card_border_size, 0.02,
                     top - _card_border_size);
   // verts 5,6,7,8
-  vertex.add_data3(right - _card_border_size, 0.02, top);
-  vertex.add_data3(right - _card_border_size, 0.02,
+  vertex.set_data3(right - _card_border_size, 0.02, top);
+  vertex.set_data3(right - _card_border_size, 0.02,
                     top - _card_border_size);
-  vertex.add_data3(right, 0.02, top);
-  vertex.add_data3(right, 0.02, top - _card_border_size);
+  vertex.set_data3(right, 0.02, top);
+  vertex.set_data3(right, 0.02, top - _card_border_size);
   // verts 9,10,11,12
-  vertex.add_data3(left, 0.02, bottom + _card_border_size);
-  vertex.add_data3(left, 0.02, bottom);
-  vertex.add_data3(left + _card_border_size, 0.02,
+  vertex.set_data3(left, 0.02, bottom + _card_border_size);
+  vertex.set_data3(left, 0.02, bottom);
+  vertex.set_data3(left + _card_border_size, 0.02,
                     bottom + _card_border_size);
-  vertex.add_data3(left + _card_border_size, 0.02, bottom);
+  vertex.set_data3(left + _card_border_size, 0.02, bottom);
   // verts 13,14,15,16
-  vertex.add_data3(right - _card_border_size, 0.02,
+  vertex.set_data3(right - _card_border_size, 0.02,
                     bottom + _card_border_size);
-  vertex.add_data3(right - _card_border_size, 0.02, bottom);
-  vertex.add_data3(right, 0.02, bottom + _card_border_size);
-  vertex.add_data3(right, 0.02, bottom);
+  vertex.set_data3(right - _card_border_size, 0.02, bottom);
+  vertex.set_data3(right, 0.02, bottom + _card_border_size);
+  vertex.set_data3(right, 0.02, bottom);
 
-  texcoord.add_data2(0.0f, 1.0f); //1
-  texcoord.add_data2(0.0f, 1.0f - _card_border_uv_portion); //2
-  texcoord.add_data2(0.0f + _card_border_uv_portion, 1.0f); //3
-  texcoord.add_data2(0.0f + _card_border_uv_portion,
+  texcoord.set_data2(0.0f, 1.0f); //1
+  texcoord.set_data2(0.0f, 1.0f - _card_border_uv_portion); //2
+  texcoord.set_data2(0.0f + _card_border_uv_portion, 1.0f); //3
+  texcoord.set_data2(0.0f + _card_border_uv_portion,
                       1.0f - _card_border_uv_portion); //4
-  texcoord.add_data2(1.0f -_card_border_uv_portion, 1.0f); //5
-  texcoord.add_data2(1.0f -_card_border_uv_portion,
+  texcoord.set_data2(1.0f -_card_border_uv_portion, 1.0f); //5
+  texcoord.set_data2(1.0f -_card_border_uv_portion,
                       1.0f - _card_border_uv_portion); //6
-  texcoord.add_data2(1.0f, 1.0f); //7
-  texcoord.add_data2(1.0f, 1.0f - _card_border_uv_portion); //8
+  texcoord.set_data2(1.0f, 1.0f); //7
+  texcoord.set_data2(1.0f, 1.0f - _card_border_uv_portion); //8
 
-  texcoord.add_data2(0.0f, _card_border_uv_portion); //9
-  texcoord.add_data2(0.0f, 0.0f); //10
-  texcoord.add_data2(_card_border_uv_portion, _card_border_uv_portion); //11
-  texcoord.add_data2(_card_border_uv_portion, 0.0f); //12
+  texcoord.set_data2(0.0f, _card_border_uv_portion); //9
+  texcoord.set_data2(0.0f, 0.0f); //10
+  texcoord.set_data2(_card_border_uv_portion, _card_border_uv_portion); //11
+  texcoord.set_data2(_card_border_uv_portion, 0.0f); //12
 
-  texcoord.add_data2(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
-  texcoord.add_data2(1.0f - _card_border_uv_portion, 0.0f);//14
-  texcoord.add_data2(1.0f, _card_border_uv_portion);//15
-  texcoord.add_data2(1.0f, 0.0f);//16
+  texcoord.set_data2(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
+  texcoord.set_data2(1.0f - _card_border_uv_portion, 0.0f);//14
+  texcoord.set_data2(1.0f, _card_border_uv_portion);//15
+  texcoord.set_data2(1.0f, 0.0f);//16
 
-  PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
+  PT(GeomTristrips) card = new GeomTristrips(_usage_hint);
+  card->reserve_num_vertices(24);
 
   // tristrip #1
   card->add_consecutive_vertices(0, 8);
