@@ -65,7 +65,9 @@ if(NOT "x${CMAKE_CXX_COMPILER_ID}" STREQUAL "xMSVC")
 
   if(MSVC)
     # Clang behaving as MSVC
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-microsoft-template")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-command-line-argument")
+    set(CMAKE_CXX_FLAGS
+      "${CMAKE_CXX_FLAGS} -Wno-microsoft-template -Wno-unused-command-line-argument")
   endif()
 endif()
 if(WIN32)
