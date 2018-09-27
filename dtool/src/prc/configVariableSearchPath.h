@@ -66,7 +66,7 @@ PUBLISHED:
 
   INLINE bool is_empty() const;
   INLINE size_t get_num_directories() const;
-  INLINE const Filename &get_directory(size_t n) const;
+  INLINE Filename get_directory(size_t n) const;
   MAKE_SEQ(get_directories, get_num_directories, get_directory);
   MAKE_SEQ_PROPERTY(directories, get_num_directories, get_directory);
 

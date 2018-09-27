@@ -229,9 +229,13 @@ get_num_directories() const {
 /**
  * Returns the nth directory on the search list.
  */
-INLINE const Filename &ConfigVariableSearchPath::
+INLINE Filename ConfigVariableSearchPath::
 get_directory(size_t n) const {
-  return get_value().get_directory(n);
+  Filename dir;
+  _lock.lock();
+  dir = _cache.get_directory(n);
+  _lock.unlock();
+  return dir;
 }
 
 /**
