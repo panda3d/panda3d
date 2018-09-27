@@ -82,10 +82,10 @@ def test_textnode_flatten_color():
     path.set_color(color)
     path.flatten_strong()
 
-    assert text.text_color == color
-    assert text.shadow_color == color
-    assert text.frame_color == color
-    assert text.card_color == color
+    assert text.text_color.almost_equal(color)
+    assert text.shadow_color.almost_equal(color)
+    assert text.frame_color.almost_equal(color)
+    assert text.card_color.almost_equal(color)
 
 
 def test_textnode_flatten_colorscale():
@@ -100,7 +100,7 @@ def test_textnode_flatten_colorscale():
     path.set_color_scale(color)
     path.flatten_strong()
 
-    assert text.text_color == (.5, 0, 0, 0)
-    assert text.shadow_color == (0, .5, 0, 0)
-    assert text.frame_color == (0, 0, .5, 0)
-    assert text.card_color == (0, 0, 0, .5)
+    assert text.text_color.almost_equal((.5, 0, 0, 0))
+    assert text.shadow_color.almost_equal((0, .5, 0, 0))
+    assert text.frame_color.almost_equal((0, 0, .5, 0))
+    assert text.card_color.almost_equal((0, 0, 0, .5))
