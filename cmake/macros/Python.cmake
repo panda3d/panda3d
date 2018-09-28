@@ -24,21 +24,25 @@ function(add_python_target target)
   string(REGEX REPLACE "^.*\\." "" basename "${target}")
   set(sources ${ARGN})
 
+  string(REGEX REPLACE "\\.[^.]+$" "" namespace "${target}")
+  string(REPLACE "." "_" underscore_namespace "${namespace}")
+  string(REPLACE "." "/" slash_namespace "${namespace}")
+
   add_library(${target} ${MODULE_TYPE} ${sources})
   target_link_libraries(${target} PKG::PYTHON)
 
   if(BUILD_SHARED_LIBS)
     set_target_properties(${target} PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${slash_namespace}"
       OUTPUT_NAME "${basename}"
       PREFIX ""
       SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 
-    install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+    install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
   else()
     set_target_properties(${target} PROPERTIES
       OUTPUT_NAME "${basename}"
-      PREFIX "libpython_panda3d_")
+      PREFIX "libpython_${underscore_namespace}_")
 
     install(TARGETS ${target} DESTINATION lib)
   endif()
