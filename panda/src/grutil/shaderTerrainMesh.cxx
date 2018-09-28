@@ -122,6 +122,7 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
  * @return true if the terrain was initialized, false if an error occured
  */
 bool ShaderTerrainMesh::generate() {
+  MutexHolder holder(_lock);
   if (!do_check_heightfield())
     return false;
 
@@ -461,6 +462,7 @@ bool ShaderTerrainMesh::safe_to_combine() const {
  * @copydoc PandaNode::add_for_draw()
  */
 void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
+  MutexHolder holder(_lock);
 
   // Make sure the terrain was properly initialized, and the geom was created
   // successfully
@@ -711,6 +713,7 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
  * @return World-Space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
+  MutexHolder holder(_lock);
   nassertr(_heightfield_tex != nullptr, LPoint3(0)); // Heightfield not set yet
   nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
 

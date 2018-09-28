@@ -24,6 +24,8 @@
 #include "pandaNode.h"
 #include "luse.h"
 #include "geom.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 /**
  * The primary interface to this module.  This class does basic text assembly;
@@ -225,11 +227,11 @@ PUBLISHED:
 
   INLINE int get_num_rows() const;
 
-  PT(PandaNode) generate();
+  INLINE PT(PandaNode) generate();
   INLINE void update();
   INLINE void force_update();
 
-  PandaNode *get_internal_geom() const;
+  PT(PandaNode) get_internal_geom() const;
 
 PUBLISHED:
   MAKE_PROPERTY(max_rows, get_max_rows, set_max_rows);
@@ -312,12 +314,16 @@ private:
   void do_rebuild();
   void do_measure();
 
+  PT(PandaNode) do_generate();
+  PT(PandaNode) do_get_internal_geom() const;
+
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
 
   static int count_geoms(PandaNode *node);
 
+  Mutex _lock;
   PT(PandaNode) _internal_geom;
 
   PT(Texture) _card_texture;
