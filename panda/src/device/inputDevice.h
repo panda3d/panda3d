@@ -165,9 +165,9 @@ protected:
 
 public:
   InputDevice();
-  InputDevice(const InputDevice &copy);
-  void operator = (const InputDevice &copy);
-  ~InputDevice();
+  InputDevice(const InputDevice &copy) = delete;
+  InputDevice &operator = (const InputDevice &copy) = delete;
+  virtual ~InputDevice();
 
   INLINE std::string get_name() const;
   INLINE std::string get_manufacturer() const;
