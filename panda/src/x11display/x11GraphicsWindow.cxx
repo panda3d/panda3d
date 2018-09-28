@@ -354,7 +354,7 @@ process_events() {
 
     case MotionNotify:
       if (_dga_mouse_enabled) {
-        const MouseData &md = _input->get_pointer();
+        PointerData md = _input->get_pointer();
         _input->set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
       } else {
         _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
@@ -376,7 +376,7 @@ process_events() {
 
     case EnterNotify:
       if (_dga_mouse_enabled) {
-        const MouseData &md = _input->get_pointer();
+        PointerData md = _input->get_pointer();
         _input->set_pointer_in_window(md.get_x(), md.get_y());
       } else {
         _input->set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);

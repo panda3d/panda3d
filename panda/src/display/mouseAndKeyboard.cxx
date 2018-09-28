@@ -99,7 +99,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     output.set_data(_pixel_size_output, EventParameter(_pixel_size));
 
     if (device->has_pointer()) {
-      const MouseData &mdata = device->get_pointer();
+      PointerData mdata = device->get_pointer();
 
       if (mdata._in_window) {
         // Get mouse motion in pixels.

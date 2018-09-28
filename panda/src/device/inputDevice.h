@@ -20,7 +20,7 @@
 #include "buttonEventList.h"
 #include "pointerEvent.h"
 #include "pointerEventList.h"
-#include "mouseData.h"
+#include "pointerData.h"
 #include "trackerData.h"
 #include "clockObject.h"
 
@@ -28,8 +28,6 @@
 #include "pvector.h"
 #include "lightMutex.h"
 #include "lightMutexHolder.h"
-
-typedef MouseData PointerData;
 
 /**
  * This is a structure representing a single input device.  Input devices may
