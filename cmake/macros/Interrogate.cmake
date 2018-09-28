@@ -300,43 +300,6 @@ function(add_python_module module)
   set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
 endfunction(add_python_module)
 
-#
-# Function: add_python_target(target [source1 [source2 ...]])
-# Build the provided source(s) as a Python extension module, linked against the
-# Python runtime library.
-#
-# Note that this also takes care of installation, unlike other target creation
-# commands in CMake.
-#
-function(add_python_target target)
-  if(NOT HAVE_PYTHON)
-    return()
-  endif()
-
-  string(REGEX REPLACE "^.*\\." "" basename "${target}")
-  set(sources ${ARGN})
-
-  add_library(${target} ${MODULE_TYPE} ${sources})
-  target_link_libraries(${target} PKG::PYTHON)
-
-  if(BUILD_SHARED_LIBS)
-    set_target_properties(${target} PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
-      OUTPUT_NAME "${basename}"
-      PREFIX ""
-      SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
-
-    install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
-  else()
-    set_target_properties(${target} PROPERTIES
-      OUTPUT_NAME "${basename}"
-      PREFIX "libpython_panda3d_")
-
-    install(TARGETS ${target} DESTINATION lib)
-  endif()
-
-endfunction(add_python_target)
-
 
 if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
   # We have to create an __init__.py so that Python 2.x can recognize 'panda3d'
@@ -345,5 +308,5 @@ if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
 
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
-  install(FILES "${PROJECT_BINARY_DIR}/panda3d/__init__.py" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+  install_python_package("${PROJECT_BINARY_DIR}/panda3d")
 endif()

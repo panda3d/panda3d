@@ -87,6 +87,7 @@ include(AddBisonTarget)     # Defines add_bison_target function
 include(AddFlexTarget)      # Defines add_flex_target function
 include(BuildMetalib)       # Defines add_component_library AND add_metalib
 include(CompositeSources)   # Defines composite_sources function
+include(Python)             # Defines add_python_target AND install_python_package
 include(Interrogate)        # Defines target_interrogate AND add_python_module
 include(RunPzip)            # Defines run_pzip function
 include(Versioning)         # Hooks 'add_library' to apply VERSION/SOVERSION
@@ -174,7 +175,5 @@ except ImportError as err:
   file(WRITE "${PROJECT_BINARY_DIR}/pandac/__init__.py" "")
 
   # Now install ourselves:
-  install(
-    FILES "${PROJECT_BINARY_DIR}/pandac/__init__.py" "${PROJECT_BINARY_DIR}/pandac/PandaModules.py"
-    DESTINATION "${PYTHON_LIB_INSTALL_DIR}/pandac")
+  install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB)
 endif()

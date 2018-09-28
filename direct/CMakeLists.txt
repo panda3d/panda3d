@@ -51,8 +51,5 @@ if(HAVE_PYTHON)
   file(WRITE "${PROJECT_BINARY_DIR}/direct/__init__.py" "")
 
   # Install all files
-  install(
-    DIRECTORY "${PROJECT_BINARY_DIR}/direct"
-    DESTINATION "${PYTHON_LIB_INSTALL_DIR}"
-    FILES_MATCHING REGEX "\\.py[co]?$")
+  install_python_package("${PROJECT_BINARY_DIR}/direct" LIB)
 endif()
