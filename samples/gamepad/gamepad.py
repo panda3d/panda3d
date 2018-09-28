@@ -9,21 +9,51 @@ move the camera where the right stick will rotate the camera.
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import TextNode, InputDevice, loadPrcFileData, Vec3
+from panda3d.core import TextPropertiesManager
 from direct.gui.OnscreenText import OnscreenText
 
-loadPrcFileData("", "notify-level-device debug")
+loadPrcFileData("", """
+    default-fov 60
+    notify-level-device debug
+""")
+
+# Informational text in the bottom-left corner.  We use the special \5
+# character to embed an image representing the gamepad buttons.
+INFO_TEXT = """Move \5lstick\5 to strafe, \5rstick\5 to turn
+Press \5ltrigger\5 and \5rtrigger\5 to go down/up
+Press \5face_x\5 to reset camera"""
+
 
 class App(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-        # print all events sent through the messenger
-        self.messenger.toggleVerbose()
+        # Print all events sent through the messenger
+        #self.messenger.toggleVerbose()
+
+        # Load the graphics for the gamepad buttons and register them, so that
+        # we can embed them in our information text.
+        graphics = loader.loadModel("models/xbone-icons.egg")
+        mgr = TextPropertiesManager.getGlobalPtr()
+        for name in ["face_a", "face_b", "face_x", "face_y", "ltrigger", "rtrigger", "lstick", "rstick"]:
+            graphic = graphics.find("**/" + name)
+            graphic.setScale(1.5)
+            mgr.setGraphic(name, graphic)
+            graphic.setZ(-0.5)
+
+        # Show the informational text in the corner.
+        self.lblInfo = OnscreenText(
+            parent = self.a2dBottomLeft,
+            pos = (0.1, 0.3),
+            fg = (1, 1, 1, 1),
+            bg = (0.2, 0.2, 0.2, 0.9),
+            align = TextNode.A_left,
+            text = INFO_TEXT)
+        self.lblInfo.textNode.setCardAsMargin(0.5, 0.5, 0.5, 0.2)
 
         self.lblWarning = OnscreenText(
             text = "No devices found",
             fg=(1,0,0,1),
             scale = .25)
-        self.lblWarning.hide()
 
         self.lblAction = OnscreenText(
             text = "Action",
@@ -31,99 +61,133 @@ class App(ShowBase):
             scale = .15)
         self.lblAction.hide()
 
-        self.checkDevices()
+        # Is there a gamepad connected?
+        self.gamepad = None
+        devices = self.devices.getDevices(InputDevice.DC_gamepad)
+        if devices:
+            self.connect(devices[0])
 
         # Accept device dis-/connection events
-        # NOTE: catching the events here will overwrite the accept in showbase, hence
-        #       we need to forward the event in the functions we set here!
         self.accept("connect-device", self.connect)
         self.accept("disconnect-device", self.disconnect)
 
         self.accept("escape", exit)
-        self.accept("gamepad0-start", exit)
-        self.accept("flight_stick0-start", exit)
 
         # Accept button events of the first connected gamepad
-        self.accept("gamepad0-action_a", self.doAction, extraArgs=[True, "Action"])
-        self.accept("gamepad0-action_a-up", self.doAction, extraArgs=[False, "Release"])
-        self.accept("gamepad0-action_b", self.doAction, extraArgs=[True, "Action 2"])
-        self.accept("gamepad0-action_b-up", self.doAction, extraArgs=[False, "Release"])
+        self.accept("gamepad-back", exit)
+        self.accept("gamepad-start", exit)
+        self.accept("gamepad-face_x", self.reset)
+        self.accept("gamepad-face_a", self.action, extraArgs=["face_a"])
+        self.accept("gamepad-face_a-up", self.actionUp)
+        self.accept("gamepad-face_b", self.action, extraArgs=["face_b"])
+        self.accept("gamepad-face_b-up", self.actionUp)
+        self.accept("gamepad-face_y", self.action, extraArgs=["face_y"])
+        self.accept("gamepad-face_y-up", self.actionUp)
 
         self.environment = loader.loadModel("environment")
         self.environment.reparentTo(render)
 
-        # disable pandas default mouse-camera controls so we can handle the camera
-        # movements by ourself
+        # Disable the default mouse-camera controls since we need to handle
+        # our own camera controls.
         self.disableMouse()
-
-        # list of connected gamepad devices
-        gamepads = base.devices.getDevices(InputDevice.DC_gamepad)
-
-        # set the center position of the control sticks
-        # NOTE: here we assume, that the wheel is centered when the application get started.
-        #       In real world applications, you should notice the user and give him enough time
-        #       to center the wheel until you store the center position of the controler!
-        self.lxcenter = gamepads[0].findControl(InputDevice.C_left_x).state
-        self.lycenter = gamepads[0].findControl(InputDevice.C_left_y).state
-        self.rxcenter = gamepads[0].findControl(InputDevice.C_right_x).state
-        self.rycenter = gamepads[0].findControl(InputDevice.C_right_y).state
-
+        self.reset()
 
         self.taskMgr.add(self.moveTask, "movement update task")
 
     def connect(self, device):
-        # we need to forward the event to the connectDevice function of showbase
-        self.connectDevice(device)
-        # Now we can check for ourself
-        self.checkDevices()
+        """Event handler that is called when a device is discovered."""
+
+        # We're only interested if this is a gamepad and we don't have a
+        # gamepad yet.
+        if device.device_class == InputDevice.DC_gamepad and not self.gamepad:
+            print("Found %s" % (device))
+            self.gamepad = device
+
+            # Enable this device to ShowBase so that we can receive events.
+            # We set up the events with a prefix of "gamepad-".
+            self.attachInputDevice(device, prefix="gamepad")
+
+            # Hide the warning that we have no devices.
+            self.lblWarning.hide()
 
     def disconnect(self, device):
-        # we need to forward the event to the disconnectDevice function of showbase
-        self.disconnectDevice(device)
-        # Now we can check for ourself
-        self.checkDevices()
+        """Event handler that is called when a device is removed."""
 
-    def checkDevices(self):
-        # check if we have gamepad devices connected
-        if self.devices.get_devices(InputDevice.DC_gamepad):
-            # we have at least one gamepad device
-            self.lblWarning.hide()
+        if self.gamepad != device:
+            # We don't care since it's not our gamepad.
+            return
+
+        # Tell ShowBase that the device is no longer needed.
+        print("Disconnected %s" % (device))
+        self.detachInputDevice(device)
+        self.gamepad = None
+
+        # Do we have any other gamepads?  Attach the first other gamepad.
+        devices = self.devices.getDevices(InputDevice.DC_gamepad)
+        if devices:
+            self.connect(devices[0])
         else:
-            # no devices connected
+            # No devices.  Show the warning.
             self.lblWarning.show()
 
-    def doAction(self, showText, text):
-        if showText and self.lblAction.isHidden():
-            self.lblAction.show()
-        else:
-            self.lblAction.hide()
+    def reset(self):
+        """Reset the camera to the initial position."""
+
+        self.camera.setPosHpr(0, -200, 10, 0, 0, 0)
+
+    def action(self, button):
+        # Just show which button has been pressed.
+        self.lblAction.text = "Pressed \5%s\5" % button
+        self.lblAction.show()
+
+    def actionUp(self):
+        # Hide the label showing which button is pressed.
+        self.lblAction.hide()
 
     def moveTask(self, task):
         dt = globalClock.getDt()
-        movementVec = Vec3()
 
-        gamepads = base.devices.getDevices(InputDevice.DC_gamepad)
-        if len(gamepads) == 0:
-            # savety check
+        if not self.gamepad:
             return task.cont
+
+        strafe_speed = 85
+        vert_speed = 50
+        turn_speed = 100
+
+        # If the left stick is pressed, we will go faster.
+        lstick = self.gamepad.findButton("lstick")
+        if lstick.pressed:
+            strafe_speed *= 2.0
 
         # we will use the first found gamepad
         # Move the camera left/right
-        left_x = gamepads[0].findControl(InputDevice.C_left_x)
-        movementVec.setX(left_x.state - self.lxcenter)
-        # Move the camera forward/backward
-        left_y = gamepads[0].findControl(InputDevice.C_left_y)
-        movementVec.setY(left_y.state - self.lycenter)
-        # Control the cameras heading
-        right_x = gamepads[0].findControl(InputDevice.C_right_x)
-        base.camera.setH(base.camera, 100 * dt * (right_x.state - self.rxcenter))
-        # Control the cameras pitch
-        right_y = gamepads[0].findControl(InputDevice.C_right_y)
-        base.camera.setP(base.camera, 100 * dt * (right_y.state - self.rycenter))
+        strafe = Vec3(0)
+        left_x = self.gamepad.findAxis(InputDevice.Axis.left_x)
+        left_y = self.gamepad.findAxis(InputDevice.Axis.left_y)
+        strafe.x = left_x.value
+        strafe.y = left_y.value
 
-        # calculate movement
-        base.camera.setX(base.camera, 100 * dt * movementVec.getX())
-        base.camera.setY(base.camera, 100 * dt * movementVec.getY())
+        # Apply some deadzone, since the sticks don't center exactly at 0
+        if strafe.lengthSquared() >= 0.01:
+            self.camera.setPos(self.camera, strafe * strafe_speed * dt)
+
+        # Use the triggers for the vertical position.
+        trigger_l = self.gamepad.findAxis(InputDevice.Axis.left_trigger)
+        trigger_r = self.gamepad.findAxis(InputDevice.Axis.right_trigger)
+        lift = trigger_r.value - trigger_l.value
+        self.camera.setZ(self.camera.getZ() + (lift * vert_speed * dt))
+
+        # Move the camera forward/backward
+        right_x = self.gamepad.findAxis(InputDevice.Axis.right_x)
+        right_y = self.gamepad.findAxis(InputDevice.Axis.right_y)
+
+        # Again, some deadzone
+        if abs(right_x.value) >= 0.1 or abs(right_y.value) >= 0.1:
+            self.camera.setH(self.camera, turn_speed * dt * -right_x.value)
+            self.camera.setP(self.camera, turn_speed * dt * right_y.value)
+
+            # Reset the roll so that the camera remains upright.
+            self.camera.setR(0)
 
         return task.cont
 

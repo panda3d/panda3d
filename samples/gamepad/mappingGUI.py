@@ -16,62 +16,75 @@ from panda3d.core import (
     TextNode,
     Vec2,
     InputDevice,
-    loadPrcFileData)
+    loadPrcFileData,
+    GamepadButton,
+    KeyboardButton)
 
 # Make sure the textures look crisp on every device that supports
 # non-power-2 textures
 loadPrcFileData("", "textures-auto-power-2 #t")
 
-class App(ShowBase):
+# How much an axis should have moved for it to register as a movement.
+DEAD_ZONE = 0.33
+
+
+class InputMapping(object):
+    """A container class for storing a mapping from a string action to either
+    an axis or a button.  You could extend this with additional methods to load
+    the default mappings from a configuration file. """
+
+    # Define all the possible actions.
+    actions = (
+        "Move forward", "Move backward", "Move left", "Move right", "Jump",
+        "Buy", "Use", "Break", "Fix", "Trash", "Change", "Mail", "Upgrade",
+    )
+
     def __init__(self):
-        ShowBase.__init__(self)
+        self.__map = dict.fromkeys(self.actions)
 
-        self.setBackgroundColor(0, 0, 0)
-        # make the font look nice at a big scale
-        DGG.getDefaultFont().setPixelsPerUnit(100)
+    def mapButton(self, action, button):
+        self.__map[action] = ("button", str(button))
 
-        # a dict of actions and button/axis events
-        self.gamepadMapping = {
-            "Move forward":"Left Stick Y",
-            "Move backward":"Left Stick Y",
-            "Move left":"Left Stick X",
-            "Move right":"Left Stick X",
-            "Jump":"a",
-            "Action":"b",
-            "Sprint":"x",
-            "Map":"y",
-            "action-1":"c",
-            "action-2":"d",
-            "action-3":"e",
-            "action-4":"f",
-            "action-5":"g",
-            "action-6":"h",
-            "action-7":"i",
-            "action-8":"j",
-            "action-9":"k",
-            "action-10":"l",
-            "action-11":"m",
-        }
-        # this will store the action that we want to remap
-        self.actionToMap = ""
-        # this will store the key/axis that we want to asign to an action
-        self.newActionKey = ""
-        # this will store the label that needs to be actualized in the list
-        self.actualizeLabel = None
+    def mapAxis(self, action, axis):
+        self.__map[action] = ("axis", axis.name)
 
-        # The geometry for our basic buttons
-        maps = loader.loadModel("models/button_map")
-        self.buttonGeom = (
-            maps.find("**/ready"),
-            maps.find("**/click"),
-            maps.find("**/hover"),
-            maps.find("**/disabled"))
+    def unmap(self):
+        self.__map[action] = None
 
-        # Create the dialog that asks the user for input on a given
-        # action to map a key to.
-        DGG.setDefaultDialogGeom("models/dialog.png")
-        # setup a dialog to ask for device input
-        self.dlgInput = OkCancelDialog(
+    def formatMapping(self, action):
+        """Returns a string label describing the mapping for a given action,
+        for displaying in a GUI. """
+        mapping = self.__map.get(action)
+        if not mapping:
+            return "Unmapped"
+
+        # Format the symbolic string from Panda nicely.  In a real-world game,
+        # you might want to look these up in a translation table, or so.
+        label = mapping[1].replace('_', ' ').title()
+        if mapping[0] == "axis":
+            return "Axis: " + label
+        else:
+            return "Button: " + label
+
+
+class ChangeActionDialog(object):
+    """Encapsulates the UI dialog that opens up when changing a mapping.  It
+    holds the state of which action is being set and which button is pressed
+    and invokes a callback function when the dialog is exited."""
+
+    def __init__(self, action, button_geom, command):
+        # This stores which action we are remapping.
+        self.action = action
+
+        # This will store the key/axis that we want to asign to an action
+        self.newInputType = ""
+        self.newInput = ""
+        self.setKeyCalled = False
+
+        self.__command = command
+
+        # Initialize the DirectGUI stuff.
+        self.dialog = OkCancelDialog(
             dialogName="dlg_device_input",
             pos=(0, 0, 0.25),
             text="Hit desired key:",
@@ -82,7 +95,7 @@ class App(ShowBase):
             text_align=TextNode.ACenter,
             fadeScreen=0.65,
             frameColor=VBase4(0.3, 0.3, 0.3, 1),
-            button_geom=self.buttonGeom,
+            button_geom=button_geom,
             button_scale=0.15,
             button_text_scale=0.35,
             button_text_align=TextNode.ALeft,
@@ -93,13 +106,73 @@ class App(ShowBase):
             button_frameColor=VBase4(0, 0, 0, 0),
             button_frameSize=VBase4(-1.0, 1.0, -0.25, 0.25),
             button_pressEffect=False,
-            command=self.closeDialog)
-        self.dlgInput.setTransparency(True)
-        self.dlgInput.configureDialog()
-        scale = self.dlgInput["image_scale"]
-        self.dlgInput["image_scale"] = (scale[0]/2.0, scale[1], scale[2]/2.0)
-        self.dlgInput["text_pos"] = (self.dlgInput["text_pos"][0], self.dlgInput["text_pos"][1] + 0.06)
-        self.dlgInput.hide()
+            command=self.onClose)
+        self.dialog.setTransparency(True)
+        self.dialog.configureDialog()
+        scale = self.dialog["image_scale"]
+        self.dialog["image_scale"] = (scale[0]/2.0, scale[1], scale[2]/2.0)
+        self.dialog["text_pos"] = (self.dialog["text_pos"][0], self.dialog["text_pos"][1] + 0.06)
+
+    def buttonPressed(self, button):
+        if any(button.guiItem.getState() == 1 for button in self.dialog.buttonList):
+            # Ignore events while any of the dialog buttons are active, because
+            # otherwise we register mouse clicks when the user is trying to
+            # exit the dialog.
+            return
+
+        text = str(button).replace('_', ' ').title()
+        self.dialog["text"] = "New event will be:\n\nButton: " + text
+        self.newInputType = "button"
+        self.newInput = button
+
+    def axisMoved(self, axis):
+        text = axis.name.replace('_', ' ').title()
+        self.dialog["text"] = "New event will be:\n\nAxis: " + text
+        self.newInputType = "axis"
+        self.newInput = axis
+
+    def onClose(self, result):
+        """Called when the OK or Cancel button is pressed."""
+        self.dialog.cleanup()
+
+        # Call the constructor-supplied callback with our new setting, if any.
+        if self.newInput and result == DGG.DIALOG_OK:
+            self.__command(self.action, self.newInputType, self.newInput)
+        else:
+            # Cancel (or no input was pressed)
+            self.__command(self.action, None, None)
+
+
+class MappingGUIDemo(ShowBase):
+    def __init__(self):
+        ShowBase.__init__(self)
+
+        self.setBackgroundColor(0, 0, 0)
+        # make the font look nice at a big scale
+        DGG.getDefaultFont().setPixelsPerUnit(100)
+
+        # Store our mapping, with some sensible defaults.  In a real game, you
+        # will want to load these from a configuration file.
+        self.mapping = InputMapping()
+        self.mapping.mapAxis("Move forward", InputDevice.Axis.left_y)
+        self.mapping.mapAxis("Move backward", InputDevice.Axis.left_y)
+        self.mapping.mapAxis("Move left", InputDevice.Axis.left_x)
+        self.mapping.mapAxis("Move right", InputDevice.Axis.left_x)
+        self.mapping.mapButton("Jump", GamepadButton.face_a())
+        self.mapping.mapButton("Use", GamepadButton.face_b())
+        self.mapping.mapButton("Break", GamepadButton.face_x())
+        self.mapping.mapButton("Fix", GamepadButton.face_y())
+
+        # The geometry for our basic buttons
+        maps = loader.loadModel("models/button_map")
+        self.buttonGeom = (
+            maps.find("**/ready"),
+            maps.find("**/click"),
+            maps.find("**/hover"),
+            maps.find("**/disabled"))
+
+        # Change the default dialog skin.
+        DGG.setDefaultDialogGeom("models/dialog.png")
 
         # create a sample title
         self.textscale = 0.1
@@ -135,6 +208,7 @@ class App(ShowBase):
             decMaps.find("**/dec_click"),
             decMaps.find("**/dec_hover"),
             decMaps.find("**/dec_disabled"))
+
         # create the scrolled frame that will hold our list
         self.lstActionMap = DirectScrolledFrame(
             # make the frame occupy the whole window
@@ -167,135 +241,116 @@ class App(ShowBase):
         idx = 0
         self.listBGEven = base.loader.loadModel("models/list_item_even")
         self.listBGOdd = base.loader.loadModel("models/list_item_odd")
-        for key, value in self.gamepadMapping.items():
-            item = self.__makeListItem(key, key, value, idx)
+        self.actionLabels = {}
+        for action in self.mapping.actions:
+            mapped = self.mapping.formatMapping(action)
+            item = self.__makeListItem(action, mapped, idx)
             item.reparentTo(self.lstActionMap.getCanvas())
             idx += 1
 
         # recalculate the canvas size to set scrollbars if necesary
         self.lstActionMap["canvasSize"] = (
             base.a2dLeft+0.05, base.a2dRight-0.05,
-            -(len(self.gamepadMapping.keys())*0.1), 0.09)
+            -(len(self.mapping.actions)*0.1), 0.09)
         self.lstActionMap.setCanvasSize()
 
-    def closeDialog(self, result):
-        self.dlgInput.hide()
-        if result == DGG.DIALOG_OK:
+    def closeDialog(self, action, newInputType, newInput):
+        """Called in callback when the dialog is closed.  newInputType will be
+        "button" or "axis", or None if the remapping was cancelled."""
+
+        self.dlgInput = None
+
+        if newInputType is not None:
             # map the event to the given action
-            self.gamepadMapping[self.actionToMap] = self.newActionKey
+            if newInputType == "axis":
+                self.mapping.mapAxis(action, newInput)
+            else:
+                self.mapping.mapButton(action, newInput)
+
             # actualize the label in the list that shows the current
             # event for the action
-            self.actualizeLabel["text"] = self.newActionKey
+            self.actionLabels[action]["text"] = self.mapping.formatMapping(action)
 
         # cleanup
-        self.dlgInput["text"] ="Hit desired key:"
-        self.actionToMap = ""
-        self.newActionKey = ""
-        self.actualizeLabel = None
         for bt in base.buttonThrowers:
+            bt.node().setSpecificFlag(True)
             bt.node().setButtonDownEvent("")
         for bt in base.deviceButtonThrowers:
+            bt.node().setSpecificFlag(True)
             bt.node().setButtonDownEvent("")
         taskMgr.remove("checkControls")
 
-    def changeMapping(self, action, label):
-        # set the action that we want to map a new key to
-        self.actionToMap = action
-        # set the label that needs to be actualized
-        self.actualizeLabel = label
-        # show our dialog
-        self.dlgInput.show()
+        # Now detach all the input devices.
+        for device in self.attachedDevices:
+            base.detachInputDevice(device)
+        self.attachedDevices.clear()
 
-        # catch all button events
+    def changeMapping(self, action):
+        # Create the dialog window
+        self.dlgInput = ChangeActionDialog(action, button_geom=self.buttonGeom, command=self.closeDialog)
+
+        # Attach all input devices.
+        devices = base.devices.getDevices()
+        for device in devices:
+            base.attachInputDevice(device)
+            self.attachedDevices = devices
+
+        # Disable regular button events on all button event throwers, and
+        # instead broadcast a generic event.
         for bt in base.buttonThrowers:
+            bt.node().setSpecificFlag(False)
             bt.node().setButtonDownEvent("keyListenEvent")
         for bt in base.deviceButtonThrowers:
+            bt.node().setSpecificFlag(False)
             bt.node().setButtonDownEvent("deviceListenEvent")
-        self.setKeyCalled = False
-        self.accept("keyListenEvent", self.setKey)
-        self.accept("deviceListenEvent", self.setDeviceKey)
 
-        # As there are no events thrown for control changes, we set up
-        # a task to check if the controls got moved
-        # This list will help us for checking which controls got moved
-        self.controlStates = {None:{}}
+        self.accept("keyListenEvent", self.dlgInput.buttonPressed)
+        self.accept("deviceListenEvent", self.dlgInput.buttonPressed)
+
+        # As there are no events thrown for control changes, we set up a task
+        # to check if the controls were moved
+        # This list will help us for checking which controls were moved
+        self.axisStates = {None: {}}
         # fill it with all available controls
-        for device in base.devices.get_devices():
-            for ctrl in device.controls:
-                if device not in self.controlStates.keys():
-                    self.controlStates.update({device: {ctrl.axis: ctrl.state}})
+        for device in devices:
+            for axis in device.axes:
+                if device not in self.axisStates.keys():
+                    self.axisStates.update({device: {axis.axis: axis.value}})
                 else:
-                    self.controlStates[device].update({ctrl.axis: ctrl.state})
+                    self.axisStates[device].update({axis.axis: axis.value})
         # start the task
         taskMgr.add(self.watchControls, "checkControls")
 
     def watchControls(self, task):
         # move through all devices and all it's controls
-        for device in base.devices.get_devices():
-            for ctrl in device.controls:
-                # if a control got changed more than the given puffer zone
-                if self.controlStates[device][ctrl.axis] + 0.2 < ctrl.state or \
-                   self.controlStates[device][ctrl.axis] - 0.2 > ctrl.state:
+        for device in self.attachedDevices:
+            if device.device_class == InputDevice.DC_mouse:
+                # Ignore mouse axis movement, or the user can't even navigate
+                # to the OK/Cancel buttons!
+                continue
+
+            for axis in device.axes:
+                # if a control got changed more than the given dead zone
+                if self.axisStates[device][axis.axis] + DEAD_ZONE < axis.value or \
+                   self.axisStates[device][axis.axis] - DEAD_ZONE > axis.value:
                     # set the current state in the dict
-                    self.controlStates[device][ctrl.axis] = ctrl.state
-                    # check which axis got moved
-                    if ctrl.axis == InputDevice.C_left_x:
-                        self.setKey("Left Stick X")
-                    elif ctrl.axis == InputDevice.C_left_y:
-                        self.setKey("Left Stick Y")
-                    elif ctrl.axis == InputDevice.C_left_trigger:
-                        self.setKey("Left Trigger")
-                    elif ctrl.axis == InputDevice.C_right_x:
-                        self.setKey("Right Stick X")
-                    elif ctrl.axis == InputDevice.C_right_y:
-                        self.setKey("Right Stick Y")
-                    elif ctrl.axis == InputDevice.C_right_trigger:
-                        self.setKey("Right Trigger")
-                    elif ctrl.axis == InputDevice.C_x:
-                        self.setKey("X")
-                    elif ctrl.axis == InputDevice.C_y:
-                        self.setKey("Y")
-                    elif ctrl.axis == InputDevice.C_trigger:
-                        self.setKey("Trigger")
-                    elif ctrl.axis == InputDevice.C_throttle:
-                        self.setKey("Throttle")
-                    elif ctrl.axis == InputDevice.C_rudder:
-                        self.setKey("Rudder")
-                    elif ctrl.axis == InputDevice.C_hat_x:
-                        self.setKey("Hat X")
-                    elif ctrl.axis == InputDevice.C_hat_y:
-                        self.setKey("Hat Y")
-                    elif ctrl.axis == InputDevice.C_wheel:
-                        self.setKey("Wheel")
-                    elif ctrl.axis == InputDevice.C_accelerator:
-                        self.setKey("Acclerator")
-                    elif ctrl.axis == InputDevice.C_brake:
-                        self.setKey("Break")
+                    self.axisStates[device][axis.axis] = axis.value
+
+                    # Format the axis for being displayed.
+                    if axis.axis != InputDevice.Axis.none:
+                        #label = axis.axis.name.replace('_', ' ').title()
+                        self.dlgInput.axisMoved(axis.axis)
+
         return task.cont
 
-    def setKey(self, args):
-        self.setKeyCalled = True
-        if self.dlgInput.buttonList[0].guiItem.getState() == 1:
-            # this occurs if the OK button was clicked. To prevent to
-            # always set the mouse1 event whenever the OK button was
-            # pressed, we instantly return from this function
-            return
-        self.dlgInput["text"] = "New event will be:\n\n" + args
-        self.newActionKey = args
-
-    def setDeviceKey(self, args):
-        if not self.setKeyCalled:
-            self.setKey(args)
-        self.setKeyCalled = False
-
-    def __makeListItem(self, itemName, action, event, index):
+    def __makeListItem(self, action, event, index):
         def dummy(): pass
         if index % 2 == 0:
             bg = self.listBGEven
         else:
             bg = self.listBGOdd
         item = DirectFrame(
-            text=itemName,
+            text=action,
             geom=bg,
             geom_scale=(base.a2dRight-0.05, 1, 0.1),
             frameSize=VBase4(base.a2dLeft+0.05, base.a2dRight-0.05, -0.05, 0.05),
@@ -317,6 +372,8 @@ class App(ShowBase):
             )
         lbl.reparentTo(item)
         lbl.setTransparency(True)
+        self.actionLabels[action] = lbl
+
         buttonScale = 0.15
         btn = DirectButton(
             text="Change",
@@ -333,10 +390,10 @@ class App(ShowBase):
             pos=(base.a2dRight-(0.898*buttonScale+0.3), 0, 0),
             pressEffect=False,
             command=self.changeMapping,
-            extraArgs=[action, lbl])
+            extraArgs=[action])
         btn.setTransparency(True)
         btn.reparentTo(item)
         return item
 
-app = App()
+app = MappingGUIDemo()
 app.run()

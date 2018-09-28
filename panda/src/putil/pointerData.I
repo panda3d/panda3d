@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file mouseData.I
+ * @file pointerData.I
  * @author drose
  * @date 2002-07-15
  */
@@ -14,8 +14,8 @@
 /**
  *
  */
-INLINE MouseData::
-MouseData() {
+INLINE PointerData::
+PointerData() {
   _in_window = false;
   _xpos = 0;
   _ypos = 0;
@@ -24,8 +24,8 @@ MouseData() {
 /**
  *
  */
-INLINE MouseData::
-MouseData(const MouseData &copy) :
+INLINE PointerData::
+PointerData(const PointerData &copy) :
   _in_window(copy._in_window),
   _xpos(copy._xpos),
   _ypos(copy._ypos)
@@ -35,8 +35,8 @@ MouseData(const MouseData &copy) :
 /**
  *
  */
-INLINE void MouseData::
-operator = (const MouseData &copy) {
+INLINE void PointerData::
+operator = (const PointerData &copy) {
   _in_window = copy._in_window;
   _xpos = copy._xpos;
   _ypos = copy._ypos;
@@ -45,7 +45,7 @@ operator = (const MouseData &copy) {
 /**
  *
  */
-INLINE double MouseData::
+INLINE double PointerData::
 get_x() const {
   return _xpos;
 }
@@ -53,7 +53,7 @@ get_x() const {
 /**
  *
  */
-INLINE double MouseData::
+INLINE double PointerData::
 get_y() const {
   return _ypos;
 }
@@ -61,13 +61,13 @@ get_y() const {
 /**
  *
  */
-INLINE bool MouseData::
+INLINE bool PointerData::
 get_in_window() const {
   return _in_window;
 }
 
 
-INLINE std::ostream &operator << (std::ostream &out, const MouseData &md) {
+INLINE std::ostream &operator << (std::ostream &out, const PointerData &md) {
   md.output(out);
   return out;
 }

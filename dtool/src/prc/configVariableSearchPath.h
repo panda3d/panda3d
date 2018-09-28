@@ -48,8 +48,8 @@ PUBLISHED:
                                   int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
-  INLINE operator const DSearchPath & () const;
-  INLINE const DSearchPath &get_value() const;
+  INLINE operator DSearchPath () const;
+  INLINE DSearchPath get_value() const;
   INLINE const DSearchPath &get_default_value() const;
   MAKE_PROPERTY(value, get_value);
   MAKE_PROPERTY(default_value, get_default_value);
@@ -66,7 +66,7 @@ PUBLISHED:
 
   INLINE bool is_empty() const;
   INLINE size_t get_num_directories() const;
-  INLINE const Filename &get_directory(size_t n) const;
+  INLINE Filename get_directory(size_t n) const;
   MAKE_SEQ(get_directories, get_num_directories, get_directory);
   MAKE_SEQ_PROPERTY(directories, get_num_directories, get_directory);
 
@@ -81,6 +81,7 @@ PUBLISHED:
 private:
   void reload_search_path();
 
+  mutable MutexImpl _lock;
   DSearchPath _default_value;
   DSearchPath _prefix, _postfix;
 

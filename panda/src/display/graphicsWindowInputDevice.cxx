@@ -63,29 +63,6 @@ pointer_and_keyboard(GraphicsWindow *host, const string &name) {
 }
 
 /**
- *
- */
-GraphicsWindowInputDevice::
-GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) {
-  *this = copy;
-}
-
-/**
- *
- */
-void GraphicsWindowInputDevice::
-operator = (const GraphicsWindowInputDevice &copy) {
-  InputDevice::operator = (copy);
-}
-
-/**
- *
- */
-GraphicsWindowInputDevice::
-~GraphicsWindowInputDevice() {
-}
-
-/**
  * Records that the indicated button has been depressed.
  */
 void GraphicsWindowInputDevice::

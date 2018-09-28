@@ -30,7 +30,7 @@
  * connectivity, and generates a set of EggTriangleStrips that represent the
  * same geometry.
  */
-class EggMesher {
+class EXPCL_PANDA_EGG EggMesher {
 public:
   EggMesher();
 

@@ -35,9 +35,6 @@ public:
   static PT(GraphicsWindowInputDevice) pointer_and_keyboard(GraphicsWindow *host, const std::string &name);
 
   INLINE GraphicsWindowInputDevice();
-  GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy);
-  void operator = (const GraphicsWindowInputDevice &copy);
-  ~GraphicsWindowInputDevice();
 
 PUBLISHED:
   // The following interface is for the various kinds of GraphicsWindows to

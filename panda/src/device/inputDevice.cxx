@@ -41,22 +41,6 @@ InputDevice(const std::string &name, DeviceClass dev_class, int flags) :
  *
  */
 InputDevice::
-InputDevice(const InputDevice &copy) {
-  nassertv(false);
-}
-
-/**
- *
- */
-void InputDevice::
-operator = (const InputDevice &copy) {
-  nassertv(false);
-}
-
-/**
- *
- */
-InputDevice::
 ~InputDevice() {
 }
 
