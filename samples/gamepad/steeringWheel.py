@@ -11,19 +11,21 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import TextNode, InputDevice, loadPrcFileData, Vec3
 from direct.gui.OnscreenText import OnscreenText
 
-loadPrcFileData("", "notify-level-device debug")
+loadPrcFileData("", """
+    default-fov 60
+    notify-level-device debug
+""")
 
 class App(ShowBase):
     def __init__(self):
         ShowBase.__init__(self)
-        # print all events sent through the messenger
-        self.messenger.toggleVerbose()
+        # Print all events sent through the messenger
+        #self.messenger.toggleVerbose()
 
         self.lblWarning = OnscreenText(
             text = "No devices found",
             fg=(1,0,0,1),
             scale = .25)
-        self.lblWarning.hide()
 
         self.lblAction = OnscreenText(
             text = "Action",
@@ -31,7 +33,11 @@ class App(ShowBase):
             scale = .15)
         self.lblAction.hide()
 
-        self.checkDevices()
+        # Is there a steering wheel connected?
+        self.wheel = None
+        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        if devices:
+            self.connect(devices[0])
 
         self.currentMoveSpeed = 0.0
         self.maxAccleration = 28.0
@@ -40,17 +46,15 @@ class App(ShowBase):
         self.maxSpeed = 80.0
 
         # Accept device dis-/connection events
-        # NOTE: catching the events here will overwrite the accept in showbase, hence
-        #       we need to forward the event in the functions we set here!
         self.accept("connect-device", self.connect)
         self.accept("disconnect-device", self.disconnect)
 
         self.accept("escape", exit)
-        self.accept("flight_stick0-start", exit)
 
         # Accept button events of the first connected steering wheel
-        self.accept("steering_wheel0-action_a", self.doAction, extraArgs=[True, "Action"])
-        self.accept("steering_wheel0-action_a-up", self.doAction, extraArgs=[False, "Release"])
+        self.accept("steering_wheel0-face_a", self.action, extraArgs=["Action"])
+        self.accept("steering_wheel0-face_a-up", self.actionUp)
+        self.accept("steering_wheel0-hat_up", self.center_wheel)
 
         self.environment = loader.loadModel("environment")
         self.environment.reparentTo(render)
@@ -60,51 +64,74 @@ class App(ShowBase):
         #       In real world applications, you should notice the user and give him enough time
         #       to center the wheel until you store the center position of the controler!
         self.wheelCenter = 0
-        wheels = base.devices.getDevices(InputDevice.DC_steering_wheel)
-        if len(wheels) > 0:
-            self.wheelCenter = wheels[0].findControl(InputDevice.C_wheel).state
+        if self.wheel is not None:
+            self.wheelCenter = self.wheel.findAxis(InputDevice.Axis.wheel).value
 
         # disable pandas default mouse-camera controls so we can handle the camera
         # movements by ourself
         self.disableMouse()
-        base.camera.setZ(2)
+        self.reset()
 
         self.taskMgr.add(self.moveTask, "movement update task")
 
     def connect(self, device):
-        # we need to forward the event to the connectDevice function of showbase
-        self.connectDevice(device)
-        # Now we can check for ourself
-        self.checkDevices()
+        """Event handler that is called when a device is discovered."""
+
+        # We're only interested if this is a steering wheel and we don't have a
+        # wheel yet.
+        if device.device_class == InputDevice.DC_steering_wheel and not self.wheel:
+            print("Found %s" % (device))
+            self.wheel = device
+
+            # Enable this device to ShowBase so that we can receive events.
+            # We set up the events with a prefix of "steering_wheel0-".
+            self.attachInputDevice(device, prefix="steering_wheel0")
+
+            # Hide the warning that we have no devices.
+            self.lblWarning.hide()
 
     def disconnect(self, device):
-        # we need to forward the event to the disconnectDevice function of showbase
-        self.disconnectDevice(device)
-        # Now we can check for ourself
-        self.checkDevices()
+        """Event handler that is called when a device is removed."""
 
-    def checkDevices(self):
-        # check if we have wheel devices connected
-        if self.devices.get_devices(InputDevice.DC_steering_wheel):
-            # we have at least one steering wheel device
-            self.lblWarning.hide()
+        if self.wheel != device:
+            # We don't care since it's not our wheel.
+            return
+
+        # Tell ShowBase that the device is no longer needed.
+        print("Disconnected %s" % (device))
+        self.detachInputDevice(device)
+        self.wheel = None
+
+        # Do we have any steering wheels?  Attach the first other steering wheel.
+        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        if devices:
+            self.connect(devices[0])
         else:
-            # no devices connected
+            # No devices.  Show the warning.
             self.lblWarning.show()
 
-    def doAction(self, showText, text):
-        if showText and self.lblAction.isHidden():
-            self.lblAction.show()
-        else:
-            self.lblAction.hide()
+    def reset(self):
+        """Reset the camera to the initial position."""
+        self.camera.setPosHpr(0, -200, 2, 0, 0, 0)
+
+    def action(self, button):
+        # Just show which button has been pressed.
+        self.lblAction.text = "Pressed %s" % button
+        self.lblAction.show()
+
+    def actionUp(self):
+        # Hide the label showing which button is pressed.
+        self.lblAction.hide()
+
+    def center_wheel(self):
+        """Reset the wheels center rotation to the current rotation of the wheel"""
+        self.wheelCenter = self.wheel.findAxis(InputDevice.Axis.wheel).value
 
     def moveTask(self, task):
         dt = globalClock.getDt()
         movementVec = Vec3()
 
-        wheels = base.devices.getDevices(InputDevice.DC_steering_wheel)
-        if len(wheels) == 0:
-            # savety check
+        if not self.wheel:
             return task.cont
 
         if self.currentMoveSpeed > 0:
@@ -114,21 +141,21 @@ class App(ShowBase):
 
         # we will use the first found wheel
         # Acclerate
-        acclearatorPedal = wheels[0].findControl(InputDevice.C_accelerator).state
+        accleratorPedal = self.wheel.findAxis(InputDevice.Axis.accelerator).value
         accleration = accleratorPedal * self.maxAccleration
         if self.currentMoveSpeed > accleratorPedal * self.maxSpeed:
             self.currentMoveSpeed -= dt * self.deaccleration
         self.currentMoveSpeed += dt * accleration
 
         # Break
-        breakPedal = wheels[0].findControl(InputDevice.C_brake).state
+        breakPedal = self.wheel.findAxis(InputDevice.Axis.brake).value
         deacleration = breakPedal * self.deaclerationBreak
         self.currentMoveSpeed -= dt * deacleration
         if self.currentMoveSpeed < 0:
             self.currentMoveSpeed = 0
 
         # Steering
-        rotation = self.wheelCenter - wheels[0].findControl(InputDevice.C_wheel).state
+        rotation = self.wheelCenter - self.wheel.findAxis(InputDevice.Axis.wheel).value
         base.camera.setH(base.camera, 100 * dt * rotation)
 
         # calculate movement
