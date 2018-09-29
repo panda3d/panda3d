@@ -302,10 +302,6 @@ endfunction(add_python_module)
 
 
 if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
-  # We have to create an __init__.py so that Python 2.x can recognize 'panda3d'
-  # as a package.
-  file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" "")
-
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
   install_python_package("${PROJECT_BINARY_DIR}/panda3d")

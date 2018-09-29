@@ -172,8 +172,6 @@ except ImportError as err:
 ")
   endforeach()
 
-  file(WRITE "${PROJECT_BINARY_DIR}/pandac/__init__.py" "")
-
   # Now install ourselves:
   install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB)
 endif()

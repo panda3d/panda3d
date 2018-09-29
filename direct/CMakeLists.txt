@@ -47,9 +47,6 @@ if(HAVE_PYTHON)
       FILES_MATCHING PATTERN "*.py")
   endforeach()
 
-  # We also need an __init__.py file, which we have to generate:
-  file(WRITE "${PROJECT_BINARY_DIR}/direct/__init__.py" "")
-
   # Install all files
   install_python_package("${PROJECT_BINARY_DIR}/direct" LIB)
 endif()
