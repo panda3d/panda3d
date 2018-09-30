@@ -7,10 +7,9 @@ set(WANT_PYTHON_VERSION ""
 
 find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
 find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
-if(PYTHONINTERP_FOUND AND PYTHONLIBS_FOUND)
+
+if(PYTHONLIBS_FOUND)
   set(PYTHON_FOUND ON)
-else()
-  set(PYTHON_FOUND OFF)
 endif()
 
 package_option(PYTHON DEFAULT ON
@@ -19,16 +18,26 @@ is also enabled, Python bindings will be generated.")
 
 # Also detect the optimal install paths:
 if(HAVE_PYTHON)
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE}
-      -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
-    OUTPUT_VARIABLE _LIB_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE}
-      -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
-    OUTPUT_VARIABLE _ARCH_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(WIN32 AND NOT CYGWIN)
+    set(_LIB_DIR ".")
+    set(_ARCH_DIR ".")
+  elseif(PYTHON_EXECUTABLE)
+    execute_process(
+      COMMAND ${PYTHON_EXECUTABLE}
+        -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(False))"
+      OUTPUT_VARIABLE _LIB_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(
+      COMMAND ${PYTHON_EXECUTABLE}
+        -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
+      OUTPUT_VARIABLE _ARCH_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  else()
+    set(_LIB_DIR "")
+    set(_ARCH_DIR "")
+  endif()
+
+
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
       -c "from sysconfig import get_config_var as g; print((g('EXT_SUFFIX') or g('SO'))[:])"

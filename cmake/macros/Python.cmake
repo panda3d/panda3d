@@ -39,7 +39,9 @@ function(add_python_target target)
       PREFIX ""
       SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 
-    install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
+    if(PYTHON_ARCH_INSTALL_DIR)
+      install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
+    endif()
   else()
     set_target_properties(${target} PROPERTIES
       OUTPUT_NAME "${basename}"
