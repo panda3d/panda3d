@@ -5,16 +5,25 @@
 set(WANT_PYTHON_VERSION ""
   CACHE STRING "Which Python version to seek out for building Panda3D against.")
 
-find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
-find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
+find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Development)
 
-if(PYTHONLIBS_FOUND)
+if(Python_FOUND)
   set(PYTHON_FOUND ON)
+  set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+else()
+  find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
+  find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
+
+  if(PYTHONLIBS_FOUND)
+    set(PYTHON_FOUND ON)
+  endif()
 endif()
 
-package_option(PYTHON DEFAULT ON
+package_option(PYTHON
+  DEFAULT ON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
-is also enabled, Python bindings will be generated.")
+is also enabled, Python bindings will be generated."
+  IMPORTED_AS Python::Python)
 
 # Also detect the optimal install paths:
 if(HAVE_PYTHON)
