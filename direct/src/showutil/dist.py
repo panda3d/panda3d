@@ -219,11 +219,18 @@ class build_apps(setuptools.Command):
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll', 'iphlpapi.dll',
             'msvcrt.dll', 'kernelbase.dll', 'msimg32.dll', 'msacm32.dll',
 
-            # manylinux1
-            'libdl.so.2', 'libstdc++.so.6', 'libm.so.6', 'libgcc_s.so.1',
-            'libpthread.so.0', 'libc.so.6', 'ld-linux-x86-64.so.2',
-            'libgl.so.1', 'libx11.so.6', 'libreadline.so.5', 'libncursesw.so.5',
-            'libbz2.so.1', 'libz.so.1', 'liblzma.so.0', 'librt.so.1', 'libutil.so.1',
+            # manylinux1/linux
+            'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
+            'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
+            'libgl.so.*', 'libx11.so.*', 'libreadline.so.*', 'libncursesw.so.*',
+            'libbz2.so.*', 'libz.so.*', 'liblzma.so.*', 'librt.so.*', 'libutil.so.*',
+
+            # macOS
+            '*foundation.framework*', '*appkit.framework*', '*libstdc++.*.dylib',
+            '*libobjc.*.dylib', '*trustevaluationagent.framework*', '*libz.*.dylib',
+            '*coreservices.framework*', '*applicationservices.framework*',
+            '*opengl.framework*', '*carbon.framework*', '*cocoa.framework*',
+            '*libsystem.*.dylib'
         ]
         self.package_data_dirs = {}
 
@@ -283,6 +290,8 @@ class build_apps(setuptools.Command):
 
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
+
+        self.exclude_dependencies = [p3d.GlobPattern(i) for i in self.exclude_dependencies]
 
         tmp = self.default_file_handlers.copy()
         tmp.update(self.file_handlers)
@@ -803,8 +812,9 @@ class build_apps(setuptools.Command):
             # We've already added it earlier.
             return
 
-        if name.lower() in self.exclude_dependencies:
-            return
+        for dep in self.exclude_dependencies:
+            if  dep.matches(name.lower()):
+                return
 
         for dir in search_path:
             source_path = os.path.join(dir, name)
@@ -851,7 +861,7 @@ class build_apps(setuptools.Command):
 
         # Warn if we can't find it, but only once.
         self.warn("could not find dependency {0} (referenced by {1})".format(name, referenced_by))
-        self.exclude_dependencies.append(name.lower())
+        self.exclude_dependencies.append(p3d.GlobPattern(name.lower()))
 
     def copy(self, source_path, target_path):
         """ Copies source_path to target_path.
