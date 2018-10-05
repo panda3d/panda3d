@@ -57,6 +57,18 @@ add_string(const std::string &str) {
 }
 
 /**
+ * Adds a blob to the hash, by breaking it down into a sequence of integers.
+ */
+void HashGenerator::
+add_blob(const vector_uchar &bytes) {
+  add_int(bytes.size());
+  vector_uchar::const_iterator bi;
+  for (bi = bytes.begin(); bi != bytes.end(); ++bi) {
+    add_int(*bi);
+  }
+}
+
+/**
  * Returns the hash number generated.
  */
 unsigned long HashGenerator::
