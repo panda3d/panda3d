@@ -40,6 +40,9 @@ set(CMAKE_SHARED_MODULE_PREFIX "lib")
 if(WIN32)
   set(CMAKE_DEBUG_POSTFIX "_d")
 
+  # Windows uses libfoo.lib for static libraries and foo.lib/dll for dynamic.
+  set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
+
   # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
   if(BUILD_SHARED_LIBS)
