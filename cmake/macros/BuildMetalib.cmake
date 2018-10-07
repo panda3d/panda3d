@@ -30,6 +30,10 @@ function(target_link_libraries target)
       set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
       set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
 
+      # And for INTERFACE_COMPILE_DEFINITIONS as well
+      set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
+      set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
+
       # Libraries are only linked transitively if they aren't components.
       # Unfortunately, it seems like INTERFACE_LINK_LIBRARIES can't have
       # generator expressions on an object library(?) so we resort to taking
