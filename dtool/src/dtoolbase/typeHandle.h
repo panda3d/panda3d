@@ -147,9 +147,6 @@ public:
 private:
   constexpr TypeHandle(int index);
 
-  // Only kept temporarily for ABI compatibility.
-  static TypeHandle _none;
-
   int _index;
   friend class TypeRegistry;
 };

@@ -2943,7 +2943,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
   // specifically flag get_class_type() as published.
   bool force_publish = false;
   if (function->get_simple_name() == "get_class_type" &&
-      (function->_storage_class && CPPInstance::SC_static) != 0 &&
+      (function->_storage_class & CPPInstance::SC_static) != 0 &&
       function->_vis <= V_public) {
     force_publish = true;
   }

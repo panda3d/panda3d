@@ -19,6 +19,7 @@
 #include "movieVideo.h"
 #include "filename.h"
 #include "pmap.h"
+#include "reMutex.h"
 
 /**
  * This class records the different types of MovieAudio and MovieVideo that
@@ -43,9 +44,11 @@ public:
 private:
   static MovieTypeRegistry *_global_ptr;
 
+  ReMutex _audio_lock;
   pmap<std::string, MakeAudioFunc> _audio_type_registry;
   pmap<std::string, std::string> _deferred_audio_types;
 
+  ReMutex _video_lock;
   pmap<std::string, MakeVideoFunc> _video_type_registry;
   pmap<std::string, std::string> _deferred_video_types;
 };

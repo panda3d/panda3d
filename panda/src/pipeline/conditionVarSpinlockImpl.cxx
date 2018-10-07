@@ -58,4 +58,6 @@ wait(double timeout) {
   _mutex.lock();
 }
 
+#undef PAUSE
+
 #endif  // MUTEX_SPINLOCK

@@ -27,17 +27,10 @@ reload_search_path() {
   size_t num_unique_references = _core->get_num_unique_references();
   for (size_t i = 0; i < num_unique_references; i++) {
     const ConfigDeclaration *decl = _core->get_unique_reference(i);
-    const ConfigPage *page = decl->get_page();
 
-    Filename page_filename(page->get_name());
-    Filename page_dirname = page_filename.get_dirname();
-    ExecutionEnvironment::shadow_environment_variable("THIS_PRC_DIR", page_dirname.to_os_specific());
-    std::string expanded = ExecutionEnvironment::expand_string(decl->get_string_value());
-    ExecutionEnvironment::clear_shadow("THIS_PRC_DIR");
-    if (!expanded.empty()) {
-      Filename dir = Filename::from_os_specific(expanded);
-      dir.make_true_case();
-      _cache.append_directory(dir);
+    Filename fn = decl->get_filename_value();
+    if (!fn.empty()) {
+      _cache.append_directory(std::move(fn));
     }
   }
 

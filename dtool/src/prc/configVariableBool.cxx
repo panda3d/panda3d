@@ -18,6 +18,18 @@
  */
 void ConfigVariableBool::
 reload_value() const {
-  mark_cache_valid(_local_modified);
-  _cache = get_bool_word(0);
+  // NB. MSVC doesn't guarantee that this mutex is initialized in a
+  // thread-safe manner.  But chances are that the first time this is called
+  // is at static init time, when there is no risk of data races.
+  static MutexImpl lock;
+  lock.lock();
+
+  // We check again for cache validity since another thread may have beaten
+  // us to the punch while we were waiting for the lock.
+  if (!is_cache_valid(_local_modified)) {
+    _cache = get_bool_word(0);
+    mark_cache_valid(_local_modified);
+  }
+
+  lock.unlock();
 }
