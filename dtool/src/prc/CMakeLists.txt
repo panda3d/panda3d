@@ -72,7 +72,7 @@ composite_sources(p3prc P3PRC_SOURCES)
 
 add_component_library(p3prc NOINIT SYMBOL BUILDING_DTOOL_PRC
   ${P3PRC_HEADERS} ${P3PRC_SOURCES})
-target_include_directories(p3prc PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(p3prc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 target_link_libraries(p3prc p3dtool PKG::OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
