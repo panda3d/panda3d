@@ -540,7 +540,7 @@ init_device() {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
-            index = add_axis(axis, absinfo.maximum, absinfo.minimum, true);
+            index = add_axis(axis, absinfo.minimum, absinfo.maximum, true);
           } else {
             index = add_axis(axis, absinfo.minimum, absinfo.maximum);
           }
