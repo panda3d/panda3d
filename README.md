@@ -165,6 +165,36 @@ python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --n
 If successful, this will produce a .pkg file in the root of the source
 directory which you can install using `pkg install`.
 
+Android
+-------
+
+Note: building on Android is very experimental and not guaranteed to work.
+
+You can experimentally build the Android Python runner via the [termux](https://termux.com/)
+shell.  You will need to install [Termux](https://play.google.com/store/apps/details?id=com.termux)
+and [Termux API](https://play.google.com/store/apps/details?id=com.termux.api)
+from the Play Store.  Many of the dependencies can be installed by running the
+following command in the Termux shell:
+
+```bash
+pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libopus-dev opusfile-dev openal-soft-dev freetype-dev harfbuzz-dev libpng-dev ecj4.6 dx patchelf aapt apksigner libcrypt-dev
+```
+
+Then, you can build and install the .apk right away using these commands:
+
+```bash
+python makepanda/makepanda.py --everything --target android-21 --installer
+xdg-open panda3d.apk
+```
+
+To launch a Python program from Termux, you can use the `run_python.sh` script
+inside the `panda/src/android` directory.  It will launch Python in a separate
+activity, load it with the Python script you passed as argument, and use a
+socket for returning the command-line output to the Termux shell.  Do note
+that this requires the Python application to reside on the SD card and that
+Termux needs to be set up with access to the SD card (using the
+`termux-setup-storage` command).
+
 Running Tests
 =============
 
