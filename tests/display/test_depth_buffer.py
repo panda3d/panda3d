@@ -91,8 +91,6 @@ def render_depth_pixel(region, distance, near, far, clear=None, write=True):
     region.window.engine.render_frame()
     region.window.clear_render_textures()
 
-    depth_texture.write("test2.png")
-
     col = core.LColor()
     depth_texture.peek().lookup(col, 0.5, 0.5)
     return col[0]
