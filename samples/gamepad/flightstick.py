@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 '''
-Demonstrate usage of steering wheels
+Demonstrate usage of flight stick
 
-In this sample you can use a wheel type device to control the camera and
-show some messages on screen.  You can acclerate forward using the
-accleration pedal and slow down using the break pedal.
+In this sample you can use a flight stick to control the camera and show some
+messages on screen.  You can accelerate using the throttle.
 '''
 
 from direct.showbase.ShowBase import ShowBase
@@ -15,6 +14,10 @@ loadPrcFileData("", """
     default-fov 60
     notify-level-device debug
 """)
+
+STICK_DEAD_ZONE = 0.02
+THROTTLE_DEAD_ZONE = 0.02
+
 
 class App(ShowBase):
     def __init__(self):
@@ -53,23 +56,11 @@ class App(ShowBase):
         self.accept("flight_stick0-start", exit)
 
         # Accept button events of the first connected flight stick
-        self.accept("flight_stick0-action_a", self.action, extraArgs=["Action"])
-        self.accept("flight_stick0-action_a-up", self.actionUp)
+        self.accept("flight_stick0-trigger", self.action, extraArgs=["Trigger"])
+        self.accept("flight_stick0-trigger-up", self.actionUp)
 
         self.environment = loader.loadModel("environment")
         self.environment.reparentTo(render)
-
-        # save the center position of the stick
-        # NOTE: here we assume, that the stick is centered when the application get started.
-        #       In real world applications, you should notice the user and give him enough time
-        #       to center the wheel until you store the center position of the controler!
-        self.hcenter = 0
-        self.xcenter = 0
-        self.ycenter = 0
-        if self.flightStick:
-            self.hcenter = self.flightStick.findAxis(InputDevice.Axis.pitch).value
-            self.xcenter = self.flightStick.findAxis(InputDevice.Axis.x).value
-            self.ycenter = self.flightStick.findAxis(InputDevice.Axis.y).value
 
         # disable pandas default mouse-camera controls so we can handle the camera
         # movements by ourself
@@ -139,9 +130,10 @@ class App(ShowBase):
             if self.currentMoveSpeed < 0:
                 self.currentMoveSpeed = 0
 
-        # we will use the first found wheel
-        # Acclerate
+        # Accelerate using the throttle.  Apply deadzone of 0.01.
         throttle = self.flightStick.findAxis(InputDevice.Axis.throttle).value
+        if abs(throttle) < THROTTLE_DEAD_ZONE:
+            throttle = 0
         accleration = throttle * self.maxAccleration
         if self.currentMoveSpeed > throttle * self.maxSpeed:
             self.currentMoveSpeed -= dt * self.deaccleration
@@ -151,16 +143,25 @@ class App(ShowBase):
 
         # Control the cameras yaw/Headding
         stick_yaw = self.flightStick.findAxis(InputDevice.Axis.yaw)
-        base.camera.setH(base.camera, 100 * dt * (stick_yaw.value - self.hcenter))
+        if abs(stick_yaw.value) > STICK_DEAD_ZONE:
+            base.camera.setH(base.camera, 100 * dt * stick_yaw.value)
+
         # Control the cameras pitch
         stick_y = self.flightStick.findAxis(InputDevice.Axis.pitch)
-        base.camera.setP(base.camera, 100 * dt * (stick_y.value - self.ycenter))
+        if abs(stick_y.value) > STICK_DEAD_ZONE:
+            base.camera.setP(base.camera, 100 * dt * stick_y.value)
+
         # Control the cameras roll
-        stick_X = self.flightStick.findAxis(InputDevice.Axis.roll)
-        base.camera.setR(base.camera, 100 * dt * (stick_X.value - self.xcenter))
+        stick_x = self.flightStick.findAxis(InputDevice.Axis.roll)
+        if abs(stick_x.value) > STICK_DEAD_ZONE:
+            base.camera.setR(base.camera, 100 * dt * stick_x.value)
 
         # calculate movement
         base.camera.setY(base.camera, dt * self.currentMoveSpeed)
+
+        # Make sure camera does not go below the ground.
+        if base.camera.getZ() < 1:
+            base.camera.setZ(1)
 
         return task.cont
 
