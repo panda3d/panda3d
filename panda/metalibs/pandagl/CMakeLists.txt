@@ -7,7 +7,7 @@ if(HAVE_GL)
     HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
   endif()
 
-  set(PANDAGL_LINK_TARGETS p3glgsg)
+  set(PANDAGL_LINK_TARGETS p3glgsg p3glstuff)
 
   if(HAVE_GLX)
     list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay p3x11display)

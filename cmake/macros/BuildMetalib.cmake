@@ -201,7 +201,11 @@ function(add_metalib target_name)
     endif()
   endforeach()
 
-  set(defines)
+  string(REPLACE ";" "|" piped_components "${components}")
+  set(component_genex_regex ".*TARGET_PROPERTY:(${piped_components}),.*")
+
+  set(private_defines)
+  set(interface_defines)
   set(includes)
   set(libs)
   set(component_init_funcs "")
@@ -212,6 +216,7 @@ function(add_metalib target_name)
         "Missing component library ${component} referenced by metalib ${target_name}!
         (Component library targets must be created BEFORE add_metalib.)")
     endif()
+
     get_target_property(is_component "${component}" IS_COMPONENT)
     if(NOT is_component)
       message(FATAL_ERROR
@@ -231,9 +236,49 @@ function(add_metalib target_name)
     endif()
 
     if(BUILD_METALIBS)
-      list(APPEND defines "$<TARGET_PROPERTY:${component},COMPILE_DEFINITIONS>")
-      list(APPEND includes "$<TARGET_PROPERTY:${component},INTERFACE_INCLUDE_DIRECTORIES>")
-      list(APPEND libs "$<TARGET_PROPERTY:${component},INTERFACE_LINK_LIBRARIES>")
+      # This will be an object library we're pulling in; rather than link,
+      # let's try to "flatten" all of its properties into ours.
+
+      # Private defines: Just reference using a generator expression
+      list(APPEND private_defines "$<TARGET_PROPERTY:${component},COMPILE_DEFINITIONS>")
+      # Interface defines: Copy those
+      get_target_property(component_defines "${component}" INTERFACE_COMPILE_DEFINITIONS)
+      if(component_defines)
+        list(APPEND interface_defines ${component_defines})
+      endif()
+
+      # Include directories: Filter out anything that references a component
+      # library or anything in the project path
+      get_target_property(component_includes "${component}" INTERFACE_INCLUDE_DIRECTORIES)
+      foreach(component_include ${component_includes})
+        if(component_include MATCHES "${component_genex_regex}")
+          # Ignore component references
+        elseif(component_include MATCHES "^${PROJECT_SOURCE_DIR}")
+          # Include path within project; should only be included when building
+          list(APPEND includes "$<BUILD_INTERFACE:${component_include}>")
+        else()
+          # Anything else gets included
+          list(APPEND includes "${component_include}")
+        endif()
+      endforeach(component_include)
+
+      # Link libraries: Filter out component libraries; we aren't linking
+      # against them, we're using their objects
+      get_target_property(component_libraries "${component}" INTERFACE_LINK_LIBRARIES)
+      foreach(component_library ${component_libraries})
+        if(NOT component_library)
+          # NOTFOUND - guess there are no INTERFACE_LINK_LIBRARIES
+        elseif(component_library MATCHES "${component_genex_regex}")
+          # Ignore component references
+        elseif(component_library MATCHES ".*(${piped_components}).*")
+          # Component library, ignore
+        else()
+          # Anything else gets included
+          list(APPEND libs "${component_library}")
+        endif()
+      endforeach(component_library)
+
+      # Consume this component's objects
       list(APPEND sources "$<TARGET_OBJECTS:${component}>")
     else()
       list(APPEND libs "${component}")
@@ -252,8 +297,12 @@ function(add_metalib target_name)
   endif()
 
   add_library("${target_name}" ${sources})
-  target_compile_definitions("${target_name}" PRIVATE ${defines})
+  target_compile_definitions("${target_name}"
+    PRIVATE ${private_defines}
+    INTERFACE ${interface_defines})
   target_link_libraries("${target_name}" ${libs})
-  target_include_directories("${target_name}" PUBLIC ${includes})
+  target_include_directories("${target_name}"
+    PUBLIC ${includes}
+    INTERFACE "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include/panda3d>")
 
 endfunction(add_metalib)
