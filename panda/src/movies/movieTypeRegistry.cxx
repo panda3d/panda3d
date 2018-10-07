@@ -12,10 +12,12 @@
  */
 
 #include "movieTypeRegistry.h"
+
 #include "string_utils.h"
 #include "config_movies.h"
 #include "config_putil.h"
 #include "load_dso.h"
+#include "reMutexHolder.h"
 
 using std::endl;
 using std::string;

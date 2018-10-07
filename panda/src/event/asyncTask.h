@@ -99,6 +99,27 @@ PUBLISHED:
 
   virtual void output(std::ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(state, get_state);
+  MAKE_PROPERTY(alive, is_alive);
+  MAKE_PROPERTY(manager, get_manager);
+
+  // The name of this task.
+  MAKE_PROPERTY(name, get_name, set_name);
+
+  // This is a number guaranteed to be unique for each different AsyncTask
+  // object in the universe.
+  MAKE_PROPERTY(id, get_task_id);
+
+  MAKE_PROPERTY(task_chain, get_task_chain, set_task_chain);
+  MAKE_PROPERTY(sort, get_sort, set_sort);
+  MAKE_PROPERTY(priority, get_priority, set_priority);
+  MAKE_PROPERTY(done_event, get_done_event, set_done_event);
+
+  MAKE_PROPERTY(dt, get_dt);
+  MAKE_PROPERTY(max_dt, get_max_dt);
+  MAKE_PROPERTY(average_dt, get_average_dt);
+
 protected:
   void jump_to_task_chain(AsyncTaskManager *manager);
   DoneStatus unlock_and_do_task();
