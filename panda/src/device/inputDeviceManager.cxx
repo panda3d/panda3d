@@ -33,6 +33,8 @@ InputDeviceManager() : _lock("InputDeviceManager") {
  */
 void InputDeviceManager::
 make_global_ptr() {
+  init_libputil();
+
 #ifdef _WIN32
   _global_ptr = new WinInputDeviceManager;
 #elif defined(__APPLE__)
