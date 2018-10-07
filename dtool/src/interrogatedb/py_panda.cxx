@@ -235,8 +235,8 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     "'%.100s' object has no attribute '%.200s'",
     Py_TYPE(obj)->tp_name, attribute);
 
-  Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  Py_INCREF(PyExc_AttributeError);
+  PyErr_Restore(PyExc_AttributeError, message, nullptr);
   return nullptr;
 }
 
