@@ -673,7 +673,6 @@ process_events() {
   int y = _pointer_data.get_y();
   bool have_pointer = false;
   double time = ClockObject::get_global_clock()->get_frame_time();
-  ButtonHandle button;
   int index;
 
   // It seems that some devices send a single EV_SYN event when being

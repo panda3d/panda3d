@@ -16,6 +16,7 @@
 #include "linuxInputDeviceManager.h"
 #include "winInputDeviceManager.h"
 #include "throw_event.h"
+#include "config_putil.h"
 
 InputDeviceManager *InputDeviceManager::_global_ptr = nullptr;
 
