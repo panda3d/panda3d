@@ -43,8 +43,9 @@ Building Panda3D
 Windows
 -------
 
-We currently build using the Microsoft Visual C++ 2015 compiler.  You will
-also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
+You can build Panda3D with the Microsoft Visual C++ 2015 or 2017 compiler,
+which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
+You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
 and if you intend to target Windows XP, you will also need the
 [Windows 7.1 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=8279).
 
@@ -58,11 +59,12 @@ http://rdb.name/thirdparty-vc14-x64.7z
 http://rdb.name/thirdparty-vc14.7z
 
 After acquiring these dependencies, you may simply build Panda3D from the
-command prompt using the following command.  (Add the `--windows-sdk=10`
-option if you don't need to support Windows XP.)
+command prompt using the following command.  (Change `14.1` to `14` if you are
+using Visual C++ 2015 instead of 2017.  Add the `--windows-sdk=10` option if
+you don't need to support Windows XP and did not install the Windows 7.1 SDK.)
 
 ```bash
-makepanda\makepanda.bat --everything --installer --no-eigen --threads=2
+makepanda\makepanda.bat --everything --installer --msvc-version=14.1 --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
