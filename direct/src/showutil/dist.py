@@ -230,7 +230,7 @@ class build_apps(setuptools.Command):
             '*libobjc.*.dylib', '*trustevaluationagent.framework*', '*libz.*.dylib',
             '*coreservices.framework*', '*applicationservices.framework*',
             '*opengl.framework*', '*carbon.framework*', '*cocoa.framework*',
-            '*libsystem.*.dylib'
+            '*libsystem.*.dylib', '*libedit.*.dylib'
         ]
         self.package_data_dirs = {}
 
