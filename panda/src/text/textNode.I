@@ -1010,61 +1010,6 @@ clear_glyph_shift() {
   invalidate_with_measure();
 }
 
-
-/**
- * Changes the text that is displayed under the TextNode.
- */
-INLINE void TextNode::
-set_text(const std::string &text) {
-  MutexHolder holder(_lock);
-  TextEncoder::set_text(text);
-  invalidate_with_measure();
-}
-
-/**
- * The two-parameter version of set_text() accepts an explicit encoding; the
- * text is immediately decoded and stored as a wide-character string.
- * Subsequent calls to get_text() will return the same text re-encoded using
- * whichever encoding is specified by set_encoding().
- */
-INLINE void TextNode::
-set_text(const std::string &text, TextNode::Encoding encoding) {
-  MutexHolder holder(_lock);
-  TextEncoder::set_text(text, encoding);
-  invalidate_with_measure();
-}
-
-/**
- * Removes the text from the TextNode.
- */
-INLINE void TextNode::
-clear_text() {
-  MutexHolder holder(_lock);
-  TextEncoder::clear_text();
-  invalidate_with_measure();
-}
-
-/**
- * Appends the indicates string to the end of the stored text.
- */
-INLINE void TextNode::
-append_text(const std::string &text) {
-  MutexHolder holder(_lock);
-  TextEncoder::append_text(text);
-  invalidate_with_measure();
-}
-
-/**
- * Appends a single character to the end of the stored text.  This may be a
- * wide character, up to 16 bits in Unicode.
- */
-INLINE void TextNode::
-append_unicode_char(wchar_t character) {
-  MutexHolder holder(_lock);
-  TextEncoder::append_unicode_char(character);
-  invalidate_with_measure();
-}
-
 /**
  * Returns a string that represents the contents of the text, as it has been
  * formatted by wordwrap rules.
@@ -1084,28 +1029,6 @@ get_wordwrapped_text() const {
 INLINE PN_stdfloat TextNode::
 calc_width(const std::string &line) const {
   return calc_width(decode_text(line));
-}
-
-/**
- * Changes the text that is displayed under the TextNode, with a wide text.
- * This automatically sets the string reported by get_text() to the 8-bit
- * encoded version of the same string.
- */
-INLINE void TextNode::
-set_wtext(const std::wstring &wtext) {
-  MutexHolder holder(_lock);
-  TextEncoder::set_wtext(wtext);
-  invalidate_with_measure();
-}
-
-/**
- * Appends the indicates string to the end of the stored wide-character text.
- */
-INLINE void TextNode::
-append_wtext(const std::wstring &wtext) {
-  MutexHolder holder(_lock);
-  TextEncoder::append_wtext(wtext);
-  invalidate_with_measure();
 }
 
 /**

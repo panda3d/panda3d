@@ -3551,6 +3551,7 @@ IGATEFILES += [
     "dSearchPath.h",
     "executionEnvironment.h",
     "textEncoder.h",
+    "textEncoder_ext.h",
     "filename.h",
     "filename_ext.h",
     "globPattern.h",

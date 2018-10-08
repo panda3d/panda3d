@@ -90,6 +90,7 @@ set_text(const std::string &text) {
   if (!has_text() || _text != text) {
     _text = text;
     _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
   }
 }
 
@@ -101,7 +102,11 @@ set_text(const std::string &text) {
  */
 INLINE void TextEncoder::
 set_text(const std::string &text, TextEncoder::Encoding encoding) {
-  set_wtext(decode_text(text, encoding));
+  if (encoding == _encoding) {
+    set_text(text);
+  } else {
+    set_wtext(decode_text(text, encoding));
+  }
 }
 
 /**
@@ -112,6 +117,7 @@ clear_text() {
   _text = std::string();
   _wtext = std::wstring();
   _flags |= (F_got_text | F_got_wtext);
+  text_changed();
 }
 
 /**
@@ -151,8 +157,11 @@ get_text(TextEncoder::Encoding encoding) const {
  */
 INLINE void TextEncoder::
 append_text(const std::string &text) {
-  _text = get_text() + text;
-  _flags = (_flags | F_got_text) & ~F_got_wtext;
+  if (!text.empty()) {
+    _text = get_text() + text;
+    _flags = (_flags | F_got_text) & ~F_got_wtext;
+    text_changed();
+  }
 }
 
 /**
@@ -163,6 +172,7 @@ INLINE void TextEncoder::
 append_unicode_char(int character) {
   _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
   _flags = (_flags | F_got_wtext) & ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -200,6 +210,7 @@ set_unicode_char(size_t index, int character) {
   if (index < _wtext.length()) {
     _wtext[index] = character;
     _flags &= ~F_got_text;
+    text_changed();
   }
 }
 
@@ -418,6 +429,7 @@ set_wtext(const std::wstring &wtext) {
   if (!has_text() || _wtext != wtext) {
     _wtext = wtext;
     _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
   }
 }
 
@@ -439,8 +451,11 @@ get_wtext() const {
  */
 INLINE void TextEncoder::
 append_wtext(const std::wstring &wtext) {
-  _wtext = get_wtext() + wtext;
-  _flags = (_flags | F_got_wtext) & ~F_got_text;
+  if (!wtext.empty()) {
+    _wtext = get_wtext() + wtext;
+    _flags = (_flags | F_got_wtext) & ~F_got_text;
+    text_changed();
+  }
 }
 
 /**

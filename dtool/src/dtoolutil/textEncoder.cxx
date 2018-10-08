@@ -35,6 +35,7 @@ make_upper() {
     (*si) = unicode_toupper(*si);
   }
   _flags &= ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -49,6 +50,7 @@ make_lower() {
     (*si) = unicode_tolower(*si);
   }
   _flags &= ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -314,6 +316,12 @@ expand_amp_sequence(StringDecoder &decoder) const {
 }
 */
 
+/**
+ * Called whenever the text has been changed.
+ */
+void TextEncoder::
+text_changed() {
+}
 
 /**
  *
