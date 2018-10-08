@@ -113,14 +113,38 @@ def render_color_pixel(region, state, vertex_color=None):
     camera.node().get_lens(0).set_near_far(1, 3)
     camera.node().set_cull_bounds(core.OmniBoundingVolume())
 
-    cm = core.CardMaker("card")
-    cm.set_frame(-1, 1, -1, 1)
+    if vertex_color is not None:
+        format = core.GeomVertexFormat.get_v3cp()
+    else:
+        format = core.GeomVertexFormat.get_v3()
+
+    vdata = core.GeomVertexData("card", format, core.Geom.UH_static)
+    vdata.unclean_set_num_rows(4)
+
+    vertex = core.GeomVertexWriter(vdata, "vertex")
+    vertex.set_data3(core.Vec3.rfu(-1, 0, 1))
+    vertex.set_data3(core.Vec3.rfu(-1, 0, -1))
+    vertex.set_data3(core.Vec3.rfu(1, 0, 1))
+    vertex.set_data3(core.Vec3.rfu(1, 0, -1))
 
     if vertex_color is not None:
-        cm.set_color(vertex_color)
+        color = core.GeomVertexWriter(vdata, "color")
+        color.set_data4(vertex_color)
+        color.set_data4(vertex_color)
+        color.set_data4(vertex_color)
+        color.set_data4(vertex_color)
 
-    card = scene.attach_new_node(cm.generate())
-    card.set_state(state)
+    strip = core.GeomTristrips(core.Geom.UH_static)
+    strip.set_shade_model(core.Geom.SM_uniform)
+    strip.add_next_vertices(4)
+    strip.close_primitive()
+
+    geom = core.Geom(vdata)
+    geom.add_primitive(strip)
+
+    gnode = core.GeomNode("card")
+    gnode.add_geom(geom, state)
+    card = scene.attach_new_node(gnode)
     card.set_pos(0, 2, 0)
     card.set_scale(60)
 
@@ -197,14 +221,13 @@ def test_color_empty_vertex(color_region, shader_attrib, material_attrib):
 
 
 def test_color_off_vertex(color_region, shader_attrib, material_attrib):
-    #XXX This behaviour is really odd.
     state = core.RenderState.make(
         core.ColorAttrib.make_off(),
         shader_attrib,
         material_attrib,
     )
     result = render_color_pixel(color_region, state, vertex_color=TEST_COLOR)
-    assert result.almost_equal(TEST_COLOR, FUZZ)
+    assert result == (1, 1, 1, 1)
 
 
 def test_scaled_color_empty(color_region, shader_attrib, material_attrib):
@@ -259,7 +282,6 @@ def test_scaled_color_empty_vertex(color_region, shader_attrib, material_attrib)
 
 
 def test_scaled_color_off_vertex(color_region, shader_attrib, material_attrib):
-    #XXX This behaviour is really odd.
     state = core.RenderState.make(
         core.ColorAttrib.make_off(),
         core.ColorScaleAttrib.make(TEST_COLOR_SCALE),
@@ -267,5 +289,5 @@ def test_scaled_color_off_vertex(color_region, shader_attrib, material_attrib):
         material_attrib,
     )
     result = render_color_pixel(color_region, state, vertex_color=TEST_COLOR)
-    assert result.almost_equal(TEST_SCALED_COLOR, FUZZ)
+    assert result.almost_equal(TEST_COLOR_SCALE, FUZZ)
 
