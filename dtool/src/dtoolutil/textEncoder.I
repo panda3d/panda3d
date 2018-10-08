@@ -169,8 +169,23 @@ append_text(const std::string &text) {
  * wide character, up to 16 bits in Unicode.
  */
 INLINE void TextEncoder::
-append_unicode_char(int character) {
+append_unicode_char(char32_t character) {
+#if WCHAR_MAX >= 0x10FFFF
+  // wchar_t might be UTF-32.
   _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+#else
+  if ((character & ~0xffff) == 0) {
+    _wtext = get_wtext() + std::wstring(1, (wchar_t)character);
+  } else {
+    // Encode as a surrogate pair.
+    uint32_t v = (uint32_t)character - 0x10000u;
+    wchar_t wstr[2] = {
+      (wchar_t)((v >> 10u) | 0xd800u),
+      (wchar_t)((v & 0x3ffu) | 0xdc00u),
+    };
+    _wtext = get_wtext() + std::wstring(wstr, 2);
+  }
+#endif
   _flags = (_flags | F_got_wtext) & ~F_got_text;
   text_changed();
 }

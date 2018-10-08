@@ -35,7 +35,10 @@ PUBLISHED:
   enum Encoding {
     E_iso8859,
     E_utf8,
-    E_unicode
+    E_utf16be,
+
+    // Deprecated alias for E_utf16be
+    E_unicode = E_utf16be,
   };
 
   INLINE TextEncoder();
@@ -70,7 +73,7 @@ PUBLISHED:
   INLINE std::string get_text(Encoding encoding) const;
   INLINE void append_text(const std::string &text);
 #endif
-  INLINE void append_unicode_char(int character);
+  INLINE void append_unicode_char(char32_t character);
   INLINE size_t get_num_chars() const;
   INLINE int get_unicode_char(size_t index) const;
   INLINE void set_unicode_char(size_t index, int character);
@@ -103,13 +106,13 @@ PUBLISHED:
   bool is_wtext() const;
 
 #ifdef CPPPARSER
-  EXTEND static PyObject *encode_wchar(wchar_t ch, Encoding encoding);
+  EXTEND static PyObject *encode_wchar(char32_t ch, Encoding encoding);
   EXTEND INLINE PyObject *encode_wtext(const std::wstring &wtext) const;
   EXTEND static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding);
   EXTEND INLINE PyObject *decode_text(PyObject *text) const;
   EXTEND static PyObject *decode_text(PyObject *text, Encoding encoding);
 #else
-  static std::string encode_wchar(wchar_t ch, Encoding encoding);
+  static std::string encode_wchar(char32_t ch, Encoding encoding);
   INLINE std::string encode_wtext(const std::wstring &wtext) const;
   static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
   INLINE std::wstring decode_text(const std::string &text) const;
