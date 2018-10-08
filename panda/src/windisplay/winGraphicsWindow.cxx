@@ -283,6 +283,25 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
+  if (properties.has_undecorated() ||
+      properties.has_fixed_size()) {
+    if (properties.has_undecorated()) {
+      _properties.set_undecorated(properties.get_undecorated());
+      properties.clear_undecorated();
+    }
+    if (properties.has_fixed_size()) {
+      _properties.set_fixed_size(properties.get_fixed_size());
+      properties.clear_fixed_size();
+    }
+    DWORD window_style = make_style(_properties);
+    SetWindowLong(_hWnd, GWL_STYLE, window_style);
+
+    // We need to call this to ensure that the style change takes effect.
+    SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
+      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+      SWP_FRAMECHANGED | SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+  }
+
   if (properties.has_title()) {
     std::string title = properties.get_title();
     _properties.set_title(title);
@@ -487,7 +506,7 @@ open_window() {
   // CreateWindow() and know which window it is sending events to even before
   // it gives us a handle.  Warning: this is not thread safe!
   _creating_window = this;
-  bool opened = open_graphic_window(is_fullscreen());
+  bool opened = open_graphic_window();
   _creating_window = nullptr;
 
   if (!opened) {
@@ -865,7 +884,9 @@ do_fullscreen_switch() {
     return false;
   }
 
-  DWORD window_style = make_style(true);
+  WindowProperties props(_properties);
+  props.set_fullscreen(true);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -885,7 +906,10 @@ do_fullscreen_switch() {
 bool WinGraphicsWindow::
 do_windowed_switch() {
   do_fullscreen_disable();
-  DWORD window_style = make_style(false);
+
+  WindowProperties props(_properties);
+  props.set_fullscreen(false);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -928,7 +952,7 @@ support_overlay_window(bool) {
  * Constructs a dwStyle for the specified mode, be it windowed or fullscreen.
  */
 DWORD WinGraphicsWindow::
-make_style(bool fullscreen) {
+make_style(const WindowProperties &properties) {
   // from MSDN: An OpenGL window has its own pixel format.  Because of this,
   // only device contexts retrieved for the client area of an OpenGL window
   // are allowed to draw into the window.  As a result, an OpenGL window
@@ -938,7 +962,7 @@ make_style(bool fullscreen) {
 
   DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (fullscreen){
+  if (_properties.get_fullscreen()) {
     window_style |= WS_SYSMENU;
   } else if (!_properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
@@ -1015,8 +1039,8 @@ calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
  * Creates a regular or fullscreen window.
  */
 bool WinGraphicsWindow::
-open_graphic_window(bool fullscreen) {
-  DWORD window_style = make_style(fullscreen);
+open_graphic_window() {
+  DWORD window_style = make_style(_properties);
 
   wstring title;
   if (_properties.has_title()) {
