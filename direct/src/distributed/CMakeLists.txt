@@ -16,7 +16,6 @@ set(P3DISTRIBUTED_SOURCES
 
 add_component_library(p3distributed SYMBOL BUILDING_DIRECT_DISTRIBUTED
   ${P3DISTRIBUTED_HEADERS} ${P3DISTRIBUTED_SOURCES})
-target_compile_definitions(p3distributed PUBLIC WITHIN_PANDA)
 target_link_libraries(p3distributed p3directbase p3dcparser panda PKG::PYTHON)
 target_interrogate(p3distributed ALL)
 
