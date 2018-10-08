@@ -799,9 +799,9 @@ clear(DrawableRegion *clearable) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
-  if (clearable->get_clear_depth_active()) {
+  if (clearable->get_clear_depth_active() &&
+      _screen->_presentation_params.EnableAutoDepthStencil) {
     aux_flags |=  D3DCLEAR_ZBUFFER;
-    nassertv(_screen->_presentation_params.EnableAutoDepthStencil);
   }
 
   if (clearable->get_clear_stencil_active()) {
