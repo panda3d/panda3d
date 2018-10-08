@@ -196,15 +196,8 @@ function(interrogate_sources target output database language_flags)
   # Get the compiler definition flags. These must be passed to Interrogate
   # in the same way that they are passed to the compiler so that Interrogate
   # will preprocess each file in the same way.
-  set(define_flags)
-  get_target_property(target_defines "${target}" INTERFACE_COMPILE_DEFINITIONS)
-  if(target_defines)
-    foreach(target_define ${target_defines})
-      list(APPEND define_flags "-D${target_define}")
-      # And add the same definition when we compile the _igate.cxx file:
-      add_definitions("-D${target_define}")
-    endforeach(target_define)
-  endif()
+  set(define_flags "$<JOIN:\t$<SEMICOLON>$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>,\t-D>")
+
   # If this is a release build that has NDEBUG defined, we need that too:
   string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
   if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
@@ -230,6 +223,11 @@ function(interrogate_sources target output database language_flags)
     DEPENDS host_interrogate ${sources} ${extensions} ${nfiles}
     COMMENT "Interrogating ${target}"
   )
+
+  # Propagate the target's compile definitions to the output file
+  set_source_files_properties("${output}" PROPERTIES
+    COMPILE_DEFINITIONS "$<TARGET_PROPERTY:${target},INTERFACE_COMPILE_DEFINITIONS>")
+
 endfunction(interrogate_sources)
 
 #
@@ -295,6 +293,22 @@ function(add_python_module module)
 
   add_python_target(panda3d.${module} "${module}_module.cxx" ${sources})
   target_link_libraries(panda3d.${module} ${link_targets} p3igateruntime)
+
+  if(CMAKE_VERSION VERSION_LESS "3.11")
+    # CMake <3.11 doesn't allow generator expressions on source files, so we
+    # need to copy them to our target, which does allow them.
+
+    foreach(target ${targets})
+      set(igate_file "${target}_igate.cxx")
+      get_source_file_property(compile_definitions "${igate_file}" COMPILE_DEFINITIONS)
+      if(compile_definitions)
+        set_property(TARGET panda3d.${module} APPEND PROPERTY
+          COMPILE_DEFINITIONS ${compile_definitions})
+
+        set_source_files_properties("${igate_file}" PROPERTIES COMPILE_DEFINITIONS "")
+      endif()
+    endforeach(target)
+  endif()
 
   list(APPEND ALL_INTERROGATE_MODULES "${module}")
   set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
