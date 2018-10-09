@@ -131,6 +131,14 @@ function(add_component_library target_name)
   endforeach()
 
   if(BUILD_METALIBS)
+    # CMake 3.0.2 doesn't like .I/.N/.T files!  We let it know that they're only
+    # headers.
+    foreach(source ${sources})
+      if(source MATCHES "\\.[INT]$")
+        set_source_files_properties(${source} PROPERTIES HEADER_FILE_ONLY ON)
+      endif()
+    endforeach(source)
+
     add_library("${target_name}" OBJECT ${sources})
   else()
     add_library("${target_name}" ${sources})
