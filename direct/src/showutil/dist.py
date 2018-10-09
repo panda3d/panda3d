@@ -7,6 +7,7 @@ import plistlib
 import sys
 import subprocess
 import zipfile
+import re
 import shutil
 import stat
 import struct
@@ -207,6 +208,8 @@ class build_apps(setuptools.Command):
         self.log_filename = None
         self.log_append = False
         self.requirements_path = './requirements.txt'
+        self.use_optimized_wheels = True
+        self.optimized_wheel_index = ''
         self.pypi_extra_indexes = []
         self.file_handlers = {}
         self.exclude_dependencies = [
@@ -288,6 +291,17 @@ class build_apps(setuptools.Command):
                 subprocess.check_call(['pipenv', 'lock', '--requirements'], stdout=reqsfile)
             self.requirements_path = reqspath
 
+        if self.use_optimized_wheels:
+            if not self.optimized_wheel_index:
+                # Try to find an appropriate wheel index
+                with open(self.requirements_path) as reqsfile:
+                    reqsdata = reqsfile.read()
+                matches = re.search(r'--extra-index-url (https*://archive.panda3d.org/.*\b)', reqsdata)
+                if matches and matches.group(1):
+                    self.optimized_wheel_index = matches.group(1) + '/opt'
+
+            assert self.optimized_wheel_index, 'An index for optimized wheels must be defined if use_optimized_wheels is set'
+
         assert os.path.exists(self.requirements_path), 'Requirements.txt path does not exist: {}'.format(self.requirements_path)
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
@@ -361,6 +375,11 @@ class build_apps(setuptools.Command):
             '--platform', platform,
             '--abi', abi_tag
         ]
+
+        if self.use_optimized_wheels:
+            pip_args += [
+                '--extra-index-url', self.optimized_wheel_index
+            ]
 
         for index in self.pypi_extra_indexes:
             pip_args += ['--extra-index-url', index]
@@ -451,6 +470,15 @@ class build_apps(setuptools.Command):
                     break
             else:
                 raise RuntimeError("Missing panda3d wheel for platform: {}".format(platform))
+
+            if self.use_optimized_wheels:
+                # Check to see if we have an optimized wheel
+                localtag = p3dwhlfn.split('+')[1].split('-')[0]
+                if not localtag.endswith('opt'):
+                    self.announce(
+                        'Could not find an optimized wheel (using index {}) for platform: {}'.format(self.optimized_wheel_index, platform),
+                        distutils.log.WARN
+                    )
 
             #whlfiles = {whl: self._get_zip_file(whl) for whl in wheelpaths}
 
