@@ -22,7 +22,7 @@
 #include "pandaSystem.h"
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_MILES_AUDIO)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_MILES_AUDIO)
   #error Buildsystem error: BUILDING_MILES_AUDIO not defined
 #endif
 

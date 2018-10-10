@@ -53,7 +53,7 @@ PUBLISHED:
 
   constexpr int get_index() const;
   INLINE void output(std::ostream &out) const;
-  INLINE static ButtonHandle none();
+  constexpr static ButtonHandle none() { return ButtonHandle(0); }
 
   INLINE operator bool () const;
 
@@ -65,7 +65,6 @@ PUBLISHED:
 
 private:
   int _index;
-  static ButtonHandle _none;
 
 public:
   static TypeHandle get_class_type() {

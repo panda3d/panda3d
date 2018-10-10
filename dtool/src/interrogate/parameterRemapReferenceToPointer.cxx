@@ -42,7 +42,7 @@ pass_parameter(std::ostream &out, const std::string &variable_name) {
     // this parameter is an rvalue reference, but CPPParser can't know that,
     // and it might have an overload that takes an rvalue reference.  It
     // shouldn't hurt either way.
-    out << "MOVE(" << variable_name.substr(1) << ")";
+    out << "std::move(" << variable_name.substr(1) << ")";
   } else {
     out << "*" << variable_name;
   }

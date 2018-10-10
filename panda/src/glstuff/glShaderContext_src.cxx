@@ -2440,9 +2440,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         if (p == _color_attrib_index) {
           // Vertex colors are disabled or not present.  Apply flat color.
 #ifdef STDFLOAT_DOUBLE
-          _glgsg->_glVertexAttrib4dv(p, color_attrib->get_color().get_data());
+          _glgsg->_glVertexAttrib4dv(p, _glgsg->_scene_graph_color.get_data());
 #else
-          _glgsg->_glVertexAttrib4fv(p, color_attrib->get_color().get_data());
+          _glgsg->_glVertexAttrib4fv(p, _glgsg->_scene_graph_color.get_data());
 #endif
         }
       }

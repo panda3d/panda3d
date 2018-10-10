@@ -27,7 +27,7 @@
  * This defines an interface to the Distributed Class, and is always
  * implemented as a remote procedure method.
  */
-class DCAtomicField : public DCField {
+class EXPCL_DIRECT_DCPARSER DCAtomicField : public DCField {
 public:
   DCAtomicField(const std::string &name, DCClass *dclass, bool bogus_field);
   virtual ~DCAtomicField();

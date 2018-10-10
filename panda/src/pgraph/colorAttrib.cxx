@@ -68,7 +68,7 @@ make_off() {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_default() {
-  return make_off();
+  return make_vertex();
 }
 
 /**
@@ -133,17 +133,17 @@ get_hash_impl() const {
 }
 
 /**
- * Quantizes the color color to the nearest multiple of 1000, just to prevent
+ * Quantizes the flat color to the nearest multiple of 1024, just to prevent
  * runaway accumulation of only slightly-different ColorAttribs.
  */
 void ColorAttrib::
 quantize_color() {
   switch (_type) {
   case T_flat:
-    _color[0] = cfloor(_color[0] * 1000.0f + 0.5f) * 0.001f;
-    _color[1] = cfloor(_color[1] * 1000.0f + 0.5f) * 0.001f;
-    _color[2] = cfloor(_color[2] * 1000.0f + 0.5f) * 0.001f;
-    _color[3] = cfloor(_color[3] * 1000.0f + 0.5f) * 0.001f;
+    _color[0] = cfloor(_color[0] * 1024.0f + 0.5f) / 1024.0f;
+    _color[1] = cfloor(_color[1] * 1024.0f + 0.5f) / 1024.0f;
+    _color[2] = cfloor(_color[2] * 1024.0f + 0.5f) / 1024.0f;
+    _color[3] = cfloor(_color[3] * 1024.0f + 0.5f) / 1024.0f;
     break;
 
   case T_off:

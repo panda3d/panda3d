@@ -283,6 +283,13 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     rebuild_bitplanes();
   }
 
+  // The host window may not have had sRGB enabled, so we need to do this.
+#ifndef OPENGLES
+  if (get_fb_properties().get_srgb_color()) {
+    glEnable(GL_FRAMEBUFFER_SRGB);
+  }
+#endif
+
   _gsg->set_current_properties(&get_fb_properties());
   report_my_gl_errors();
   return true;

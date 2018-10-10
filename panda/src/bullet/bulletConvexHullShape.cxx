@@ -13,6 +13,8 @@
 
 #include "bulletConvexHullShape.h"
 
+#include "bulletWorld.h"
+
 #include "nodePathCollection.h"
 #include "geomNode.h"
 #include "geomVertexReader.h"

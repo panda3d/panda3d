@@ -23,7 +23,7 @@ class DCParameter;
  * This represents a single typedef declaration in the dc file.  It assigns a
  * particular type to a new name, just like a C typedef.
  */
-class DCTypedef : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCTypedef : public DCDeclaration {
 public:
   DCTypedef(DCParameter *parameter, bool implicit = false);
   DCTypedef(const std::string &name);

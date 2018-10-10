@@ -12,7 +12,9 @@
  */
 
 #include "bulletGenericConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletGenericConstraint::_type_handle;
 

@@ -22,8 +22,10 @@ def image_rgb_path():
     "Generates an RGB image."
 
     file = tempfile.NamedTemporaryFile(suffix='-rgb.png')
-    write_image(file.name, 3)
-    yield file.name
+    path = core.Filename.from_os_specific(file.name)
+    path.make_true_case()
+    write_image(path, 3)
+    yield path
     file.close()
 
 
@@ -32,8 +34,10 @@ def image_rgba_path():
     "Generates an RGBA image."
 
     file = tempfile.NamedTemporaryFile(suffix='-rgba.png')
-    write_image(file.name, 4)
-    yield file.name
+    path = core.Filename.from_os_specific(file.name)
+    path.make_true_case()
+    write_image(path, 4)
+    yield path
     file.close()
 
 
@@ -42,8 +46,10 @@ def image_gray_path():
     "Generates a grayscale image."
 
     file = tempfile.NamedTemporaryFile(suffix='-gray.png')
-    write_image(file.name, 1)
-    yield file.name
+    path = core.Filename.from_os_specific(file.name)
+    path.make_true_case()
+    write_image(path, 1)
+    yield path
     file.close()
 
 

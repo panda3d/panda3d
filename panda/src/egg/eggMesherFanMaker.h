@@ -31,7 +31,7 @@ class EggMesher;
  * This class is used by EggMesher::find_fans() to attempt to make an
  * EggTriangleFan out of the polygons connected to the indicated vertex.
  */
-class EggMesherFanMaker {
+class EXPCL_PANDA_EGG EggMesherFanMaker {
 public:
   typedef plist<const EggMesherEdge *> Edges;
   typedef plist<EggMesherStrip *> Strips;

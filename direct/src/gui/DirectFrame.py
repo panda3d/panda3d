@@ -61,7 +61,14 @@ class DirectFrame(DirectGuiWidget):
     def destroy(self):
         DirectGuiWidget.destroy(self)
 
-    def setText(self):
+    def clearText(self):
+        self['text'] = None
+        self.setText()
+
+    def setText(self, text=None):
+        if text is not None:
+            self['text'] = text
+
         # Determine if user passed in single string or a sequence
         if self['text'] == None:
             textList = (None,) * self['numStates']
@@ -100,7 +107,14 @@ class DirectFrame(DirectGuiWidget):
                         sort = DGG.TEXT_SORT_INDEX,
                         )
 
-    def setGeom(self):
+    def clearGeom(self):
+        self['geom'] = None
+        self.setGeom()
+
+    def setGeom(self, geom=None):
+        if geom is not None:
+            self['geom'] = geom
+
         # Determine argument type
         geom = self['geom']
 
@@ -142,7 +156,14 @@ class DirectFrame(DirectGuiWidget):
                         geom = geom, scale = 1,
                         sort = DGG.GEOM_SORT_INDEX)
 
-    def setImage(self):
+    def clearImage(self):
+        self['image'] = None
+        self.setImage()
+
+    def setImage(self, image=None):
+        if image is not None:
+            self['image'] = image
+
         # Determine argument type
         arg = self['image']
         if arg == None:

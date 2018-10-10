@@ -29,7 +29,7 @@ class Thread;
  */
 class EXPCL_PANDA_PIPELINE LightReMutexDirect {
 protected:
-  INLINE LightReMutexDirect();
+  LightReMutexDirect() = default;
   LightReMutexDirect(const LightReMutexDirect &copy) = delete;
   ~LightReMutexDirect() = default;
 
@@ -57,7 +57,7 @@ PUBLISHED:
 
 private:
 #ifdef HAVE_REMUTEXTRUEIMPL
-  mutable ReMutexImpl _impl;
+  mutable ReMutexTrueImpl _impl;
 
 #else
   // If we don't have a reentrant mutex, use the one we hand-rolled in

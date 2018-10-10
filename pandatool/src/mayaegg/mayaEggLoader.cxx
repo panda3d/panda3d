@@ -837,12 +837,12 @@ int MayaEggGeom::GetVert(EggVertex *vert, EggGroup *context)
 void MayaEggGeom::AssignNames(void)
 {
   string name = _pool->get_name();
-  int nsize = name.size();
-  if ((nsize > 6) && (name.rfind(".verts")==(nsize-6))) {
-    name.resize(nsize-6);
+  size_t nsize = name.size();
+  if (nsize > 6 && name.rfind(".verts") == (nsize - 6)) {
+    name.resize(nsize - 6);
   }
-  if ((nsize > 4) && (name.rfind(".cvs")==(nsize-4))) {
-    name.resize(nsize-4);
+  if (nsize > 4 && name.rfind(".cvs") == (nsize - 4)) {
+    name.resize(nsize - 4);
   }
 
   MFnDependencyNode dnshape(_shapeNode);
@@ -913,7 +913,7 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
 typedef phash_map<LTexCoordd, int>             TVertTable;
 typedef phash_map<LColor, int>                CVertTable;
 
-class MayaEggMesh : public MayaEggGeom
+class MayaEggMesh final : public MayaEggGeom
 {
 public:
   MColorArray         _faceColorArray;
@@ -937,7 +937,7 @@ public:
   int GetCVert(const LColor &col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
-  void ConnectTextures(void);
+  void ConnectTextures(void) override;
 };
 
 int MayaEggMesh::GetTVert(const LTexCoordd &uv)
@@ -2012,7 +2012,7 @@ void MayaEggLoader::PrintData(MayaEggMesh *mesh)
 
 void MayaEggLoader::ParseFrameInfo(string comment)
 {
-  int pos, ls, le;
+  size_t pos, ls, le;
 
   pos = comment.find("-fri");
   if (pos != string::npos) {
@@ -2143,7 +2143,7 @@ bool MayaEggLoader::ConvertEggFile(const char *name, bool merge, bool model, boo
 MObject MayaEggLoader::GetDependencyNode(string givenName)
 {
   MObject node = MObject::kNullObj;
-  int pos;
+  size_t pos;
   string name;
 
   pos = givenName.find(":");

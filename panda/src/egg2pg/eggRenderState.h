@@ -36,7 +36,7 @@ class EggMaterial;
  * should be assigned to each primitive.  It is assigned to EggPrimitive
  * objects via the EggBinner.
  */
-class EggRenderState : public EggUserData {
+class EXPCL_PANDA_EGG2PG EggRenderState : public EggUserData {
 public:
   INLINE EggRenderState(EggLoader &loader);
   INLINE void add_attrib(const RenderAttrib *attrib);

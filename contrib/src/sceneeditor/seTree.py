@@ -12,15 +12,21 @@
 #
 #################################################################
 
-import os, sys, string, Pmw, Tkinter
+import os, sys, string, Pmw
 from direct.showbase.DirectObject import DirectObject
-from Tkinter import IntVar, Menu, PhotoImage, Label, Frame, Entry
-from pandac.PandaModules import *
+from panda3d.core import *
+
+if sys.version_info >= (3, 0):
+    import tkinter
+    from tkinter import IntVar, Menu, PhotoImage, Label, Frame, Entry
+else:
+    import Tkinter as tkinter
+    from Tkinter import IntVar, Menu, PhotoImage, Label, Frame, Entry
 
 # Initialize icon directory
 ICONDIR = getModelPath().findFile(Filename('icons')).toOsSpecific()
 if not os.path.isdir(ICONDIR):
-    raise RuntimeError, "can't find DIRECT icon directory (%s)" % `ICONDIR`
+    raise RuntimeError("can't find DIRECT icon directory (%r)" % ICONDIR)
 
 class TreeNode:
 
@@ -187,9 +193,9 @@ class TreeNode:
             oldcursor = self.canvas['cursor']
             self.canvas['cursor'] = "watch"
             self.canvas.update()
-            self.canvas.delete(Tkinter.ALL)     # XXX could be more subtle
+            self.canvas.delete(tkinter.ALL)     # XXX could be more subtle
             self.draw(7, 2)
-            x0, y0, x1, y1 = self.canvas.bbox(Tkinter.ALL)
+            x0, y0, x1, y1 = self.canvas.bbox(tkinter.ALL)
             self.canvas.configure(scrollregion=(0, 0, x1, y1))
             self.canvas['cursor'] = oldcursor
 
@@ -208,7 +214,7 @@ class TreeNode:
         self.kidKeys = []
         for item in sublist:
             key = item.GetKey()
-            if self.children.has_key(key):
+            if key in self.children:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
@@ -309,7 +315,7 @@ class TreeNode:
     def edit(self, event=None):
         self.entry = Entry(self.label, bd=0, highlightthickness=1, width=0)
         self.entry.insert(0, self.label['text'])
-        self.entry.selection_range(0, Tkinter.END)
+        self.entry.selection_range(0, tkinter.END)
         self.entry.pack(ipadx=5)
         self.entry.focus_set()
         self.entry.bind("<Return>", self.edit_finish)
@@ -344,7 +350,7 @@ class TreeNode:
         for item in sublist:
             key = item.GetKey()
             # Use existing child or create new TreeNode if none exists
-            if self.children.has_key(key):
+            if key in self.children:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)

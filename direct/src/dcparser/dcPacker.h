@@ -31,7 +31,7 @@ class DCSwitchParameter;
  * See also direct/src/doc/dcPacker.txt for a more complete description and
  * examples of using this class.
  */
-class DCPacker {
+class EXPCL_DIRECT_DCPARSER DCPacker {
 PUBLISHED:
   DCPacker();
   ~DCPacker();

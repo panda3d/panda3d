@@ -13,21 +13,14 @@
 
 #include "bulletSoftBodyMaterial.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */
 BulletSoftBodyMaterial::
 BulletSoftBodyMaterial(btSoftBody::Material &material) : _material(material) {
 
-}
-
-/**
- *
- */
-btSoftBody::Material &BulletSoftBodyMaterial::
-get_material() const {
-
-  return _material;
 }
 
 /**

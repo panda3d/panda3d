@@ -13,6 +13,10 @@
 
 #include "bulletDebugNode.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 #include "cullHandler.h"
 #include "cullTraverser.h"
 #include "cullableObject.h"

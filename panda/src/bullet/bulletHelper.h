@@ -23,6 +23,8 @@
 #include "nodePath.h"
 #include "nodePathCollection.h"
 
+class BulletSoftBodyNode;
+
 /**
  *
  */

@@ -15,9 +15,6 @@
 #include "typeRegistryNode.h"
 #include "atomicAdjust.h"
 
-// This is initialized to zero by static initialization.
-TypeHandle TypeHandle::_none;
-
 /**
  * Returns the total allocated memory used by objects of this type, for the
  * indicated memory class.  This is only updated if track-memory-usage is set

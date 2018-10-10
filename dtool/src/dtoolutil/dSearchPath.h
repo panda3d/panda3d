@@ -52,12 +52,15 @@ PUBLISHED:
     Files _files;
   };
 
-  DSearchPath();
+  DSearchPath() = default;
   DSearchPath(const std::string &path, const std::string &separator = std::string());
   DSearchPath(const Filename &directory);
-  DSearchPath(const DSearchPath &copy);
-  void operator = (const DSearchPath &copy);
-  ~DSearchPath();
+  DSearchPath(const DSearchPath &copy) = default;
+  DSearchPath(DSearchPath &&from) = default;
+  ~DSearchPath() = default;
+
+  DSearchPath &operator = (const DSearchPath &copy) = default;
+  DSearchPath &operator = (DSearchPath &&from) = default;
 
   void clear();
   void append_directory(const Filename &directory);

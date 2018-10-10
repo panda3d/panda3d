@@ -30,7 +30,7 @@
 
 #include "pset.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_DIRECT_DIRECTD)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_DIRECT_DIRECTD)
   #error Buildsystem error: BUILDING_DIRECT_DIRECTD not defined
 #endif
 

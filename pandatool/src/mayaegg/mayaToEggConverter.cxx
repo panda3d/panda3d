@@ -838,12 +838,14 @@ process_model_node(MayaNodeDesc *node_desc) {
       // Extract some interesting Camera data
       if (mayaegg_cat.is_spam()) {
         MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+        MVector upDirection = camera.upDirection(MSpace::kWorld);
+        MVector viewDirection = camera.viewDirection(MSpace::kWorld);
         mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " "
                            << eyePoint.y << " " << eyePoint.z << endl;
-        mayaegg_cat.spam() << "  upDirection: "
-                           << camera.upDirection(MSpace::kWorld) << endl;
-        mayaegg_cat.spam() << "  viewDirection: "
-                           << camera.viewDirection(MSpace::kWorld) << endl;
+        mayaegg_cat.spam() << "  upDirection: " << upDirection.x << " "
+                           << upDirection.y << " " << upDirection.z << endl;
+        mayaegg_cat.spam() << "  viewDirection: " << viewDirection.x << " "
+                           << viewDirection.y << " " << viewDirection.z << endl;
         mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
         mayaegg_cat.spam() << "  horizontalFilmAperture: "
                            << camera.horizontalFilmAperture() << endl;
@@ -922,9 +924,12 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.error() << "light extraction failed" << endl;
       return false;
     }
-    mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
 
-    mayaegg_cat.info() << "\"" << dag_path.partialPathName() << "\" : \n";
+    if (mayaegg_cat.is_info()) {
+      MString name = dag_path.partialPathName();
+      mayaegg_cat.info() << "-- Light found -- tranlations in cm, rotations in rads\n";
+      mayaegg_cat.info() << "\"" << name.asChar() << "\" : \n";
+    }
 
     // Get the translationrotationscale data
     MObject transformNode = dag_path.transform(&status);
@@ -2737,7 +2742,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
           // shader on the list is the base one, which should always pick up
           // the alpha from the texture file.  But the top textures may have
           // to strip the alpha
-          if (i!=shader._color.size()-1) {
+          if ((size_t)i != shader._color.size() - 1) {
             if (!i && is_interpolate) {
               // this is the grass path mode where alpha on this texture
               // determines whether to show layer1 or layer2. Since by now
@@ -2841,7 +2846,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         _textures.create_unique_texture(tex, ~0);
 
       if (mesh) {
-        if (uvset_name.find("not found") == -1) {
+        if (uvset_name.find("not found") == string::npos) {
           primitive.add_texture(new_tex);
           color_def->_uvset_name.assign(uvset_name.c_str());
           if (uvset_name != "map1") {

@@ -40,7 +40,7 @@ pass_parameter(std::ostream &out, const std::string &variable_name) {
   if (variable_name.size() > 1 && variable_name[0] == '&') {
     // Prevent generating something like *&param Also, if this is really some
     // local type, we can presumably just move it?
-    out << "MOVE(" << variable_name.substr(1) << ")";
+    out << "std::move(" << variable_name.substr(1) << ")";
   } else {
     out << "*" << variable_name;
   }

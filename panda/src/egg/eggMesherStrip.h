@@ -27,7 +27,7 @@ class EggMesherEdge;
  * mesher.  It might also represent a single polygon such as a triangle or
  * quad, since that's how strips generally start out.
  */
-class EggMesherStrip {
+class EXPCL_PANDA_EGG EggMesherStrip {
 public:
   enum PrimType {
     PT_poly,

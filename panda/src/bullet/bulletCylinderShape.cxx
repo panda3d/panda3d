@@ -13,6 +13,8 @@
 
 #include "bulletCylinderShape.h"
 
+#include "config_bullet.h"
+
 using std::endl;
 
 TypeHandle BulletCylinderShape::_type_handle;

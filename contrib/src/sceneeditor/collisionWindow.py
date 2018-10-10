@@ -9,9 +9,8 @@ from seColorEntry import *
 from direct.tkwidgets import VectorWidgets
 from direct.tkwidgets import Floater
 from direct.tkwidgets import Slider
-from Tkinter import *
 import string, math, types
-from pandac.PandaModules import *
+from panda3d.core import *
 
 
 class collisionWindow(AppShell):
@@ -195,7 +194,7 @@ class collisionWindow(AppShell):
         # put the object into a CollisionNode and attach it to the target nodePath
         #################################################################
         collisionObject = None
-        print self.objType
+        print(self.objType)
         if self.objType=='collisionPolygon':
             pointA =  Point3(float(self.widgetDict['PolygonPoint A'][0]._entry.get()),
                              float(self.widgetDict['PolygonPoint A'][1]._entry.get()),
@@ -236,7 +235,7 @@ class collisionWindow(AppShell):
                            float(self.widgetDict['RayDirection'][1]._entry.get()),
                            float(self.widgetDict['RayDirection'][2]._entry.get()))
 
-            print vector, point
+            print(vector, point)
 
             collisionObject = CollisionRay()
             collisionObject.setOrigin(point)
