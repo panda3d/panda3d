@@ -1092,7 +1092,7 @@ update_texture(TextureContext *tc, bool force) {
   VulkanTextureContext *vtc;
   DCAST_INTO_R(vtc, tc, false);
 
-  if (vtc->was_image_modified()) {
+  if (vtc->was_modified()) {
     Texture *tex = tc->get_texture();
 
     VkExtent3D extent;
@@ -1642,19 +1642,22 @@ set_state_and_transform(const RenderState *state,
   Texture *texture;
   if (tex_attrib->has_on_stage(TextureStage::get_default())) {
     texture = tex_attrib->get_on_texture(TextureStage::get_default());
-    VulkanTextureContext *tc;
-    DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
-    tc->set_active(true);
-    update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
-    tc->transition(_transfer_cmd, _graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                   VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                   VK_ACCESS_SHADER_READ_BIT);
+  } else {
+    texture = _white_texture;
   }
+
+  VulkanTextureContext *tc;
+  DCAST_INTO_V(tc, texture->prepare_now(0, get_prepared_objects(), this));
+  tc->set_active(true);
+  update_texture(tc, true);
+
+  // Transition the texture so that it can be read by the shader.  This has
+  // to happen on the transfer command buffer, since it can't happen during
+  // an active render pass.
+  tc->transition(_transfer_cmd, _graphics_queue_family_index,
+                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                 VK_ACCESS_SHADER_READ_BIT);
 
   VkDescriptorSet ds = get_descriptor_set(state);
   vkCmdBindDescriptorSets(_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
