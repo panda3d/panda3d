@@ -34,6 +34,7 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
         # And for INTERFACE_COMPILE_DEFINITIONS as well
         set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
         set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
+        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS "${compile_definitions}")
 
         # Build up some generator expressions for determining whether `library`
         # is a component library or not.
@@ -58,12 +59,6 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
         # Libraries are only linked transitively if they aren't components.
         set_property(TARGET "${target}" APPEND PROPERTY
           INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
-
-        # Also build with the same BUILDING_ macros, because these will all end
-        # up in the same library.
-        set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
-        set_property(TARGET "${target}" APPEND PROPERTY
-          COMPILE_DEFINITIONS "$<${is_component}:${compile_definitions}>")
       else()
         # This is a file path to an out-of-tree library - this needs to be
         # recorded so that the metalib can link them. (They aren't needed at
