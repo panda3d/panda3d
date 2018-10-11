@@ -151,8 +151,17 @@ function(add_component_library target_name)
     INIT_FUNCTION "${init_func}"
     INIT_HEADER "${init_header}")
   if(symbol)
-    # ... DEFINE_SYMBOL is apparently not respected for object libraries?
-    set_property(TARGET "${target_name}" APPEND PROPERTY COMPILE_DEFINITIONS "${symbol}")
+    set_property(TARGET "${target_name}" PROPERTY DEFINE_SYMBOL "${symbol}")
+
+    if(BUILD_METALIBS)
+      # ... DEFINE_SYMBOL is apparently not respected for object libraries?
+      set_property(TARGET "${target_name}" APPEND PROPERTY COMPILE_DEFINITIONS "${symbol}")
+
+      # Make sure other component libraries relying on this one inherit the
+      # symbol
+      set_property(TARGET "${target_name}" APPEND PROPERTY
+        INTERFACE_COMPILE_DEFINITIONS "$<$<BOOL:$<TARGET_PROPERTY:IS_COMPONENT>>:${symbol}>")
+    endif()
   endif()
   if(BUILD_METALIBS)
     # Apparently neither is CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE?
@@ -243,10 +252,19 @@ function(add_metalib target_name)
 
       # Private defines: Just reference using a generator expression
       list(APPEND private_defines "$<TARGET_PROPERTY:${component},COMPILE_DEFINITIONS>")
-      # Interface defines: Copy those
+      # Interface defines: Copy those, but filter out generator expressions
+      # referencing a component library
       get_target_property(component_defines "${component}" INTERFACE_COMPILE_DEFINITIONS)
       if(component_defines)
-        list(APPEND interface_defines ${component_defines})
+        foreach(component_define ${component_defines})
+          if(component_define MATCHES "${component_genex_regex}")
+            # Filter, it's a genex referencing one of our components
+          elseif(component_define MATCHES ".*IS_COMPONENT.*")
+            # Filter, it's testing to see if the consumer is a component
+          else()
+            list(APPEND interface_defines ${component_define})
+          endif()
+        endforeach(component_define)
       endif()
 
       # Include directories: Filter out anything that references a component
