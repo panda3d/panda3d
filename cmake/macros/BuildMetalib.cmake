@@ -34,31 +34,35 @@ function(target_link_libraries target)
       set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
       set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
 
-      # Libraries are only linked transitively if they aren't components.
-      # Unfortunately, it seems like INTERFACE_LINK_LIBRARIES can't have
-      # generator expressions on an object library(?) so we resort to taking
-      # care of this at configuration time.
-      if(TARGET "${library}")
-        get_target_property(target_type "${library}" TYPE)
-        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
-          get_target_property(is_component "${library}" IS_COMPONENT)
-        else()
-          set(is_component OFF)
-        endif()
+      # Build up some generator expressions for determining whether `library`
+      # is a component library or not.
+      if(library MATCHES ".*::.*")
+        # "::" messes up CMake's genex parser; fortunately, a library whose
+        # name contains that is either an interface library or alias, and
+        # definitely not a component
+        set(is_component 0)
+        set(name_of_component "")
+        set(name_of_non_component "${library}")
       else()
-        # This is a safe assumption, since we define all component libraries
-        # before the metalib they appear in:
-        set(is_component OFF)
+        set(is_component "$<TARGET_PROPERTY:${library},IS_COMPONENT>")
+
+        # CMake complains if we lookup IS_COMPONENT on an INTERFACE library :(
+        set(is_object "$<STREQUAL:$<TARGET_PROPERTY:${library},TYPE>,OBJECT_LIBRARY>")
+        set(is_component "$<BOOL:$<${is_object}:${is_component}>>")
+
+        set(name_of_component "$<${is_component}:${library}>")
+        set(name_of_non_component "$<$<NOT:${is_component}>:${library}>")
       endif()
 
-      if(is_component)
-        # Also build with the same BUILDING_ macros, because these will all end
-        # up in the same library.
-        set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
-        set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
-      else()
-        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
-      endif()
+      # Libraries are only linked transitively if they aren't components.
+      set_property(TARGET "${target}" APPEND PROPERTY
+        INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
+
+      # Also build with the same BUILDING_ macros, because these will all end
+      # up in the same library.
+      set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
+      set_property(TARGET "${target}" APPEND PROPERTY
+        COMPILE_DEFINITIONS "$<${is_component}:${compile_definitions}>")
     else()
       # This is a file path to an out-of-tree library - this needs to be
       # recorded so that the metalib can link them. (They aren't needed at
@@ -66,7 +70,8 @@ function(target_link_libraries target)
       # transitively.)
       set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
     endif()
-  endforeach()
+
+  endforeach(library)
 
 endfunction(target_link_libraries)
 
