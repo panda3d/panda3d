@@ -53,21 +53,28 @@ def color_region(request, graphics_pipe):
     engine = core.GraphicsEngine()
     engine.set_threading_model("")
 
-    host_fbprops = core.FrameBufferProperties()
-    host_fbprops.force_hardware = True
+    # Vulkan needs no host window.
+    if graphics_pipe.get_interface_name() != "Vulkan":
+        host_fbprops = core.FrameBufferProperties()
+        host_fbprops.force_hardware = True
 
-    host = engine.make_output(
-        graphics_pipe,
-        'host',
-        0,
-        host_fbprops,
-        core.WindowProperties.size(32, 32),
-        core.GraphicsPipe.BF_refuse_window,
-    )
-    engine.open_windows()
+        host = engine.make_output(
+            graphics_pipe,
+            'host',
+            0,
+            host_fbprops,
+            core.WindowProperties.size(32, 32),
+            core.GraphicsPipe.BF_refuse_window,
+        )
+        engine.open_windows()
 
-    if host is None:
-        pytest.skip("GraphicsPipe cannot make offscreen buffers")
+        if host is None:
+            pytest.skip("GraphicsPipe cannot make offscreen buffers")
+
+        host_gsg = host.gsg
+    else:
+        host = None
+        host_gsg = None
 
     fbprops = core.FrameBufferProperties()
     fbprops.force_hardware = True
@@ -81,7 +88,7 @@ def color_region(request, graphics_pipe):
         fbprops,
         core.WindowProperties.size(32, 32),
         core.GraphicsPipe.BF_refuse_window,
-        host.gsg,
+        host_gsg,
         host
     )
     engine.open_windows()
