@@ -2662,16 +2662,16 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       break;
     case GeomEnums::NT_packed_dcba:
       if (normalized) {
-        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UNORM;
+        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
       } else {
-        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UINT;
+        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
       }
       break;
     case GeomEnums::NT_packed_dabc:
       if (normalized) {
-        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UNORM_PACK32;
+        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UNORM;
       } else {
-        attrib_desc[i].format = VK_FORMAT_A8B8G8R8_UINT_PACK32;
+        attrib_desc[i].format = VK_FORMAT_B8G8R8A8_UINT;
       }
       break;
 #ifndef STDFLOAT_DOUBLE
