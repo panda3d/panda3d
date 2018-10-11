@@ -2566,6 +2566,9 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   binding_desc[i].stride = 0;
   binding_desc[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+  const ColorAttrib *color_attr;
+  state->get_attrib_def(color_attr);
+
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = _default_sc->get_shader();
   pvector<Shader::ShaderVarSpec>::const_iterator it;
@@ -2581,7 +2584,9 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
 
     attrib_desc[i].location = spec._id._seqno;
 
-    if (!format->get_array_info(spec._name, array_index, column)) {
+    if (!format->get_array_info(spec._name, array_index, column) ||
+        (spec._name == InternalName::get_color() &&
+         color_attr->get_color_type() != ColorAttrib::T_vertex)) {
       // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "dummy" vertex buffer
       // containing a fixed value with a stride of 0.
@@ -2592,26 +2597,28 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
       attrib_desc[i].binding = dummy_binding;
       if (spec._name == InternalName::get_color()) {
         // Look up the offset into the color palette.
-        const ColorAttrib *color_attr;
-        state->get_attrib_def(color_attr);
-        LColorf color = LCAST(float, color_attr->get_color());
-
-        ColorPaletteIndices::const_iterator it = _color_palette.find(color);
-        if (it != _color_palette.end()) {
-          attrib_desc[i].offset = it->second * 16;
+        if (color_attr->get_color_type() != ColorAttrib::T_flat) {
+          attrib_desc[i].offset = 16;
         } else {
-          // Not yet in the palette.  Write an entry.
-          if (_next_palette_index >= vulkan_color_palette_size) {
-            attrib_desc[i].offset = 1;
-            vulkandisplay_cat.error()
-              << "Ran out of color palette entries.  Increase "
-                 "vulkan-color-palette-size value in Config.prc.\n";
+          LColorf color = LCAST(float, color_attr->get_color());
+
+          ColorPaletteIndices::const_iterator it = _color_palette.find(color);
+          if (it != _color_palette.end()) {
+            attrib_desc[i].offset = it->second * 16;
           } else {
-            uint32_t offset = _next_palette_index * 16;
-            attrib_desc[i].offset = offset;
-            _color_palette[color] = _next_palette_index++;
-            vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
-                              (const uint32_t *)color.get_data());
+            // Not yet in the palette.  Write an entry.
+            if (_next_palette_index >= vulkan_color_palette_size) {
+              attrib_desc[i].offset = 1;
+              vulkandisplay_cat.error()
+                << "Ran out of color palette entries.  Increase "
+                   "vulkan-color-palette-size value in Config.prc.\n";
+            } else {
+              uint32_t offset = _next_palette_index * 16;
+              attrib_desc[i].offset = offset;
+              _color_palette[color] = _next_palette_index++;
+              vkCmdUpdateBuffer(_transfer_cmd, _color_vertex_buffer, offset, 16,
+                                (const uint32_t *)color.get_data());
+            }
           }
         }
       } else {
