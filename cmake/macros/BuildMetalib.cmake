@@ -10,70 +10,72 @@
 #
 # Overrides CMake's target_link_libraries() to support "linking" object
 # libraries. This is a partial reimplementation of CMake commit dc38970f83,
-# which as of this writing has not yet landed in any release.
+# which is only available in CMake 3.12+
 #
-function(target_link_libraries target)
-  get_target_property(target_type "${target}" TYPE)
-  if(NOT target_type STREQUAL "OBJECT_LIBRARY")
-    _target_link_libraries("${target}" ${ARGN})
-    return()
-  endif()
-
-  foreach(library ${ARGN})
-    # This is a quick and dirty regex to tell targets apart from other stuff.
-    # It just checks if it's alphanumeric and starts with p3/panda.
-    if(library MATCHES "^(PKG::|p3|panda)[A-Za-z0-9]*$")
-      # We need to add "library"'s include directories to "target"
-      # (and transitively to INTERFACE_INCLUDE_DIRECTORIES so further
-      # dependencies will work)
-      set(include_directories "$<TARGET_PROPERTY:${library},INTERFACE_INCLUDE_DIRECTORIES>")
-      set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
-      set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
-
-      # And for INTERFACE_COMPILE_DEFINITIONS as well
-      set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
-      set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
-
-      # Build up some generator expressions for determining whether `library`
-      # is a component library or not.
-      if(library MATCHES ".*::.*")
-        # "::" messes up CMake's genex parser; fortunately, a library whose
-        # name contains that is either an interface library or alias, and
-        # definitely not a component
-        set(is_component 0)
-        set(name_of_component "")
-        set(name_of_non_component "${library}")
-      else()
-        set(is_component "$<TARGET_PROPERTY:${library},IS_COMPONENT>")
-
-        # CMake complains if we lookup IS_COMPONENT on an INTERFACE library :(
-        set(is_object "$<STREQUAL:$<TARGET_PROPERTY:${library},TYPE>,OBJECT_LIBRARY>")
-        set(is_component "$<BOOL:$<${is_object}:${is_component}>>")
-
-        set(name_of_component "$<${is_component}:${library}>")
-        set(name_of_non_component "$<$<NOT:${is_component}>:${library}>")
-      endif()
-
-      # Libraries are only linked transitively if they aren't components.
-      set_property(TARGET "${target}" APPEND PROPERTY
-        INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
-
-      # Also build with the same BUILDING_ macros, because these will all end
-      # up in the same library.
-      set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
-      set_property(TARGET "${target}" APPEND PROPERTY
-        COMPILE_DEFINITIONS "$<${is_component}:${compile_definitions}>")
-    else()
-      # This is a file path to an out-of-tree library - this needs to be
-      # recorded so that the metalib can link them. (They aren't needed at
-      # all for the object libraries themselves, so they don't have to work
-      # transitively.)
-      set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
+if(CMAKE_VERSION VERSION_LESS "3.12")
+  function(target_link_libraries target)
+    get_target_property(target_type "${target}" TYPE)
+    if(NOT target_type STREQUAL "OBJECT_LIBRARY")
+      _target_link_libraries("${target}" ${ARGN})
+      return()
     endif()
 
-  endforeach(library)
+    foreach(library ${ARGN})
+      # This is a quick and dirty regex to tell targets apart from other stuff.
+      # It just checks if it's alphanumeric and starts with p3/panda.
+      if(library MATCHES "^(PKG::|p3|panda)[A-Za-z0-9]*$")
+        # We need to add "library"'s include directories to "target"
+        # (and transitively to INTERFACE_INCLUDE_DIRECTORIES so further
+        # dependencies will work)
+        set(include_directories "$<TARGET_PROPERTY:${library},INTERFACE_INCLUDE_DIRECTORIES>")
+        set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
+        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
 
-endfunction(target_link_libraries)
+        # And for INTERFACE_COMPILE_DEFINITIONS as well
+        set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
+        set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
+
+        # Build up some generator expressions for determining whether `library`
+        # is a component library or not.
+        if(library MATCHES ".*::.*")
+          # "::" messes up CMake's genex parser; fortunately, a library whose
+          # name contains that is either an interface library or alias, and
+          # definitely not a component
+          set(is_component 0)
+          set(name_of_component "")
+          set(name_of_non_component "${library}")
+        else()
+          set(is_component "$<TARGET_PROPERTY:${library},IS_COMPONENT>")
+
+          # CMake complains if we lookup IS_COMPONENT on an INTERFACE library :(
+          set(is_object "$<STREQUAL:$<TARGET_PROPERTY:${library},TYPE>,OBJECT_LIBRARY>")
+          set(is_component "$<BOOL:$<${is_object}:${is_component}>>")
+
+          set(name_of_component "$<${is_component}:${library}>")
+          set(name_of_non_component "$<$<NOT:${is_component}>:${library}>")
+        endif()
+
+        # Libraries are only linked transitively if they aren't components.
+        set_property(TARGET "${target}" APPEND PROPERTY
+          INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
+
+        # Also build with the same BUILDING_ macros, because these will all end
+        # up in the same library.
+        set(compile_definitions "$<TARGET_PROPERTY:${library},COMPILE_DEFINITIONS>")
+        set_property(TARGET "${target}" APPEND PROPERTY
+          COMPILE_DEFINITIONS "$<${is_component}:${compile_definitions}>")
+      else()
+        # This is a file path to an out-of-tree library - this needs to be
+        # recorded so that the metalib can link them. (They aren't needed at
+        # all for the object libraries themselves, so they don't have to work
+        # transitively.)
+        set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
+      endif()
+
+    endforeach(library)
+
+  endfunction(target_link_libraries)
+endif()
 
 #
 # Function: add_component_library(target [SYMBOL building_symbol]
