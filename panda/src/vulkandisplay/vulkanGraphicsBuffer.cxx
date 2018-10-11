@@ -280,7 +280,7 @@ open_buffer() {
     {16,  5,  6,  5,  0, false, VK_FORMAT_R5G6B5_UNORM_PACK16},
     {15,  5,  5,  5,  1, false, VK_FORMAT_A1R5G5B5_UNORM_PACK16},
     {16, 16,  0,  0,  0,  true, VK_FORMAT_R16_SFLOAT},
-    {24,  8,  8,  8,  8, false, VK_FORMAT_R8G8B8A8_UNORM},
+    {24,  8,  8,  8,  8, false, VK_FORMAT_B8G8R8A8_UNORM},
     {32, 16, 16,  0,  0, false, VK_FORMAT_R16G16_SFLOAT},
     {30, 10, 10, 10,  2, false, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
     {48, 16, 16, 16, 16,  true, VK_FORMAT_R16G16B16A16_SFLOAT},
@@ -294,7 +294,7 @@ open_buffer() {
 
   if (_fb_properties.get_srgb_color()) {
     // This the only sRGB format.  Deal with it.
-    _color_format = VK_FORMAT_R8G8B8A8_SRGB;
+    _color_format = VK_FORMAT_B8G8R8A8_SRGB;
     _fb_properties.set_rgba_bits(8, 8, 8, 8);
     _fb_properties.set_float_color(false);
 

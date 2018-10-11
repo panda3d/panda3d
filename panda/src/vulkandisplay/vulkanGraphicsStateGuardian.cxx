@@ -3250,10 +3250,25 @@ lookup_image_format(VkFormat vk_format, Texture::Format &format,
     type = Texture::T_float;
     format = Texture::F_r16;
     break;
+  case VK_FORMAT_R8G8B8_UNORM:
+  case VK_FORMAT_B8G8R8_UNORM:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_rgb8;
+    break;
+  case VK_FORMAT_R8G8B8_SRGB:
+  case VK_FORMAT_B8G8R8_SRGB:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_srgb;
+    break;
   case VK_FORMAT_R8G8B8A8_UNORM:
   case VK_FORMAT_B8G8R8A8_UNORM:
     type = Texture::T_unsigned_byte;
     format = Texture::F_rgba8;
+    break;
+  case VK_FORMAT_R8G8B8A8_SRGB:
+  case VK_FORMAT_B8G8R8A8_SRGB:
+    type = Texture::T_unsigned_byte;
+    format = Texture::F_srgb_alpha;
     break;
   case VK_FORMAT_R16G16_SFLOAT:
     type = Texture::T_float;
