@@ -50,13 +50,10 @@ make_pipeline_layout(VkDevice device) {
     return false;
   }
 
-  VkPushConstantRange ranges[2];
+  VkPushConstantRange ranges[1];
   ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
   ranges[0].offset = 0;
-  ranges[0].size = 64;
-  ranges[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-  ranges[1].offset = 64;
-  ranges[1].size = 16;
+  ranges[0].size = 64 + 16;
 
   VkPipelineLayoutCreateInfo layout_info;
   layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -64,7 +61,7 @@ make_pipeline_layout(VkDevice device) {
   layout_info.flags = 0;
   layout_info.setLayoutCount = 1;
   layout_info.pSetLayouts = &_descriptor_set_layout;
-  layout_info.pushConstantRangeCount = 2;
+  layout_info.pushConstantRangeCount = 1;
   layout_info.pPushConstantRanges = ranges;
 
   err = vkCreatePipelineLayout(device, &layout_info, nullptr, &_pipeline_layout);
