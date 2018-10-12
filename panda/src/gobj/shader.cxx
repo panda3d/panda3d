@@ -3546,8 +3546,31 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
         << "Shader encountered an error.\n";
       return nullptr;
     }
-  }
+  } else
 #endif
+  if (lang == SL_SPIR_V) {
+    bool success = true;
+    if (!shader->_text._vertex.empty()) {
+      success = success && shader->spirv_analyze_shader(shader->_text._vertex);
+    }
+    if (!shader->_text._fragment.empty()) {
+      success = success && shader->spirv_analyze_shader(shader->_text._fragment);
+    }
+    if (!shader->_text._geometry.empty()) {
+      success = success && shader->spirv_analyze_shader(shader->_text._geometry);
+    }
+    if (!shader->_text._tess_control.empty()) {
+      success = success && shader->spirv_analyze_shader(shader->_text._tess_control);
+    }
+    if (!shader->_text._tess_evaluation.empty()) {
+      success = success && shader->spirv_analyze_shader(shader->_text._tess_evaluation);
+    }
+    if (!success) {
+      shader_cat.error()
+        << "Shader encountered an error.\n";
+      return nullptr;
+    }
+  }
 
   if (cache_generated_shaders) {
     _make_table[shader->_text] = shader;
@@ -3561,7 +3584,7 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
  */
 PT(Shader) Shader::
 make_compute(ShaderLanguage lang, string body) {
-  if (lang != SL_GLSL) {
+  if (lang != SL_GLSL && lang != SL_SPIR_V) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
     return nullptr;
@@ -3581,6 +3604,14 @@ make_compute(ShaderLanguage lang, string body) {
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
   shader->_text = move(sbody);
+
+  if (lang == SL_SPIR_V) {
+    if (!shader->spirv_analyze_shader(shader->_text._compute)) {
+      shader_cat.error()
+        << "Shader encountered an error.\n";
+      return nullptr;
+    }
+  }
 
   if (cache_generated_shaders) {
     _make_table[shader->_text] = shader;
