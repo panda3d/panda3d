@@ -27,7 +27,7 @@
 #include <Cg/cg.h>
 #endif
 
-#include <vulkan/spirv.h>
+#include "spirv.h"
 #include <stdint.h>
 
 using std::istream;
