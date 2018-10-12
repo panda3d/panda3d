@@ -38,7 +38,7 @@ INLINE void set_matrix_view(Py_buffer &view, int flags, int length, int size, bo
   } else if (size == 4 && double_prec) {
     mat_size = sizeof(UnalignedLMatrix4d);
   } else {
-    assert(false);
+    nassertv_always(false);
   }
 
   view.len = length * mat_size;

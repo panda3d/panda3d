@@ -2210,12 +2210,12 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {
-      SystemParametersInfo(SPI_SETMOUSETRAILS, 0,
-                           (PVOID)_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, _saved_mouse_trails,
+                           0, 0);
       SystemParametersInfo(SPI_SETCURSORSHADOW, 0,
-                           (PVOID)_saved_cursor_shadow, 0);
+                           _saved_cursor_shadow ? (PVOID)1 : nullptr, 0);
       SystemParametersInfo(SPI_SETMOUSEVANISH, 0,
-                           (PVOID)_saved_mouse_vanish, 0);
+                           _saved_mouse_vanish ? (PVOID)1 : nullptr, 0);
       _got_saved_params = false;
     }
 
