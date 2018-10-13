@@ -44,6 +44,8 @@ PUBLISHED:
   INLINE TextEncoder();
   INLINE TextEncoder(const TextEncoder &copy);
 
+  virtual ~TextEncoder() = default;
+
   INLINE void set_encoding(Encoding encoding);
   INLINE Encoding get_encoding() const;
 
