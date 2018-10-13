@@ -11,12 +11,17 @@ if(Python_FOUND)
   set(PYTHON_FOUND ON)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
   set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
+  set(PYTHON_VERSION_STRING ${Python_VERSION})
 else()
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
   find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
 
   if(PYTHONLIBS_FOUND)
     set(PYTHON_FOUND ON)
+
+    if(NOT PYTHON_VERSION_STRING)
+      set(PYTHON_VERSION_STRING ${PYTHONLIBS_VERSION_STRING})
+    endif()
   endif()
 endif()
 
