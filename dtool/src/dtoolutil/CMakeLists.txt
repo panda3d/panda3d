@@ -60,6 +60,8 @@ set(P3DTOOLUTIL_IGATEEXT
   filename_ext.h
   globPattern_ext.cxx
   globPattern_ext.h
+  textEncoder_ext.cxx
+  textEncoder_ext.h
 )
 
 composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
