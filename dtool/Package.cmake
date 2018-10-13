@@ -10,6 +10,7 @@ find_package(Python ${WANT_PYTHON_VERSION} QUIET COMPONENTS Interpreter Developm
 if(Python_FOUND)
   set(PYTHON_FOUND ON)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+  set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
 else()
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
   find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
