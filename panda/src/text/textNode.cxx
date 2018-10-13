@@ -320,6 +320,15 @@ get_internal_geom() const {
 }
 
 /**
+ * Called whenever the text has been changed.
+ */
+void TextNode::
+text_changed() {
+  MutexHolder holder(_lock);
+  invalidate_with_measure();
+}
+
+/**
  * Returns the union of all attributes from SceneGraphReducer::AttribTypes
  * that may not safely be applied to the vertices of this node.  If this is
  * nonzero, these attributes must be dropped at this node as a state change.

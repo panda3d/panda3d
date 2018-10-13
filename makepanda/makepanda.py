@@ -2882,6 +2882,9 @@ else:
     # otherwise, disable it.
     confautoprc = confautoprc.replace('#st#', '#')
 
+if PkgSkip("ASSIMP"):
+    confautoprc = confautoprc.replace("load-file-type p3assimp", "#load-file-type p3assimp")
+
 if (os.path.isfile("makepanda/myconfig.in")):
     configprc = ReadFile("makepanda/myconfig.in")
 else:
@@ -3548,6 +3551,7 @@ IGATEFILES += [
     "dSearchPath.h",
     "executionEnvironment.h",
     "textEncoder.h",
+    "textEncoder_ext.h",
     "filename.h",
     "filename_ext.h",
     "globPattern.h",

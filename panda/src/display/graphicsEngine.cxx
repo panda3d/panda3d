@@ -593,8 +593,7 @@ remove_all_windows() {
   Windows old_windows;
   old_windows.swap(_windows);
   Windows::iterator wi;
-  for (wi = old_windows.begin(); wi != old_windows.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  for (GraphicsOutput *win : old_windows) {
     nassertv(win != nullptr);
     do_remove_window(win, current_thread);
     GraphicsStateGuardian *gsg = win->get_gsg();
@@ -605,6 +604,14 @@ remove_all_windows() {
 
   {
     MutexHolder new_windows_holder(_new_windows_lock, current_thread);
+    for (GraphicsOutput *win : _new_windows) {
+      nassertv(win != nullptr);
+      do_remove_window(win, current_thread);
+      GraphicsStateGuardian *gsg = win->get_gsg();
+      if (gsg != nullptr) {
+        gsg->release_all();
+      }
+    }
     _new_windows.clear();
   }
 

@@ -97,11 +97,11 @@ __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
 
 #ifdef _MSC_VER
 // Ugh... MSVC needs this because they still don't have a decent linker.
-#include "PTA_uchar.h"
-#include "PTA_ushort.h"
-#include "PTA_float.h"
-#include "PTA_double.h"
-#include "PTA_int.h"
+#include "pta_uchar.h"
+#include "pta_ushort.h"
+#include "pta_float.h"
+#include "pta_double.h"
+#include "pta_int.h"
 
 template class EXPORT_THIS Extension<PTA_uchar>;
 template class EXPORT_THIS Extension<PTA_ushort>;

@@ -68,7 +68,7 @@ make_off() {
  */
 CPT(RenderAttrib) ColorAttrib::
 make_default() {
-  return make_off();
+  return make_vertex();
 }
 
 /**

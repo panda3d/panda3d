@@ -61,9 +61,6 @@ PUBLISHED:
   int __clear__();
 
 PUBLISHED:
-  // The name of this task.
-  MAKE_PROPERTY(name, get_name, set_name);
-
   // The amount of seconds that have elapsed since the task was started,
   // according to the task manager's clock.
   MAKE_PROPERTY(time, get_elapsed_time);
@@ -87,10 +84,6 @@ PUBLISHED:
   // The number of frames that have elapsed since the task was started,
   // according to the task manager's clock.
   MAKE_PROPERTY(frame, get_elapsed_frames);
-
-  // This is a number guaranteed to be unique for each different AsyncTask
-  // object in the universe.
-  MAKE_PROPERTY(id, get_task_id);
 
   // This is a special variable to hold the instance dictionary in which
   // custom variables may be stored.

@@ -2722,7 +2722,7 @@ do_issue_color_scale() {
   }
 
   if (_alpha_scale_via_texture && !_has_scene_graph_color &&
-      target_color_scale->has_alpha_scale()) {
+      _vertex_colors_enabled && target_color_scale->has_alpha_scale()) {
     // This color scale will set a special texture--so again, clear the
     // texture.
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
@@ -3166,6 +3166,17 @@ determine_light_color_scale() {
                                 _scene_graph_color[1] * _current_color_scale[1],
                                 _scene_graph_color[2] * _current_color_scale[2],
                                 _scene_graph_color[3] * _current_color_scale[3]);
+    }
+
+  } else if (!_vertex_colors_enabled) {
+    // We don't have a scene graph color, but we don't want to enable vertex
+    // colors either, so we still need to force a white material color in
+    // absence of any other color.
+    _has_material_force_color = true;
+    _material_force_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+    _light_color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
+    if (!_color_blend_involves_color_scale && _color_scale_enabled) {
+      _material_force_color.componentwise_mult(_current_color_scale);
     }
 
   } else {

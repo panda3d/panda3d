@@ -4392,7 +4392,8 @@ update_standard_vertex_arrays(bool force) {
       GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
     } else
 #endif // NDEBUG
-      if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
+      if (_vertex_colors_enabled &&
+          _data_reader->get_color_info(array_reader, num_values, numeric_type,
                                        start, stride)) {
         if (!setup_array_data(client_pointer, array_reader, force)) {
           return false;
@@ -4409,7 +4410,13 @@ update_standard_vertex_arrays(bool force) {
         glDisableClientState(GL_COLOR_ARRAY);
 
         // Since we don't have per-vertex color, the implicit color is white.
-        GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
+        if (_color_scale_via_lighting) {
+          GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
+        } else {
+          LColor color = _scene_graph_color;
+          color.componentwise_mult(_current_color_scale);
+          GLPf(Color4)(color[0], color[1], color[2], color[3]);
+        }
       }
 
     // Now set up each of the active texture coordinate stages--or at least
