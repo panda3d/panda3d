@@ -532,13 +532,10 @@ else()
   option(HAVE_WGL "Enable WGL.  Requires OpenGL on Windows." OFF)
 endif()
 
-if(IS_OSX)
-  option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON)
-  option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." ON)
-else()
-  option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." OFF)
-  option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." OFF)
-endif()
+cmake_dependent_option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON
+  "APPLE" OFF)
+cmake_dependent_option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." OFF
+  "APPLE" OFF)
 
 #
 # <<<<<< Insert the rest of the Config.pp
