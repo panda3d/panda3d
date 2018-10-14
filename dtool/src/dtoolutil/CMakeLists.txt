@@ -29,6 +29,7 @@ set(P3DTOOLUTIL_HEADERS
 if(APPLE)
   set(P3DTOOLUTIL_HEADERS ${P3DTOOLUTIL_HEADERS}
     filename_assist.mm filename_assist.h)
+  set_source_files_properties(filename_assist.mm filename_assist.h PROPERTIES WRAP_EXCLUDE YES)
 endif()
 
 set(P3DTOOLUTIL_SOURCES
@@ -72,6 +73,7 @@ target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})
 target_interrogate(p3dtoolutil ALL EXTENSIONS ${P3DTOOLUTIL_IGATEEXT})
 
 if(APPLE)
+  set_target_properties(p3dtoolutil PROPERTIES COMPILE_FLAGS "-ObjC++")
   find_library(FOUNDATION_LIBRARY Foundation)
   find_library(APPKIT_LIBRARY AppKit)
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})

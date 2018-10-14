@@ -15,6 +15,9 @@
 /* Define if we have RAD game tools, Miles Sound System installed.  */
 #cmakedefine HAVE_RAD_MSS
 
+/* Define if we have OpenAL installed as a framework. */
+#cmakedefine HAVE_OPENAL_FRAMEWORK
+
 /* Define if we have Freetype 2.0 or better available. */
 #cmakedefine HAVE_FREETYPE
 

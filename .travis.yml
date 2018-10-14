@@ -2,15 +2,24 @@ language: cpp
 sudo: false
 
 # Build matrix:
+os:
+- linux
+- osx
 compiler:
-- gcc
 - clang
 env:
-- BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=0
-- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
-- BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=30
 - BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30
 - BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30 PYTHON_INTERP=python2.7
+- BUILD_METALIBS=OFF COMPOSITE_SOURCE_LIMIT=30
+- BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
+matrix:
+  exclude:
+    - os: osx
+      env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
+  include:
+    - os: osx
+      env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30 COMPOSITE_SOURCE_EXCLUSIONS=p3showbase;p3dtoolutil;p3cocoadisplay;p3osxdisplay;p3tinydisplay;p3display
+    - compiler: gcc
 
 addons:
   apt:
@@ -40,6 +49,7 @@ addons:
     - nvidia-cg-toolkit
     - python-dev
     - python3-dev
+    - python3-pip
     - python-virtualenv
     - zlib1g-dev
     - fakeroot
@@ -50,7 +60,19 @@ before_install:
 - makepanda/selfdestruct.py --yes
 
 install:
-- virtualenv --python=${PYTHON_INTERP:-python3.4} venv && source venv/bin/activate
+- >
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew install python@3 eigen libtar fftw libsquish zlib ffmpeg freetype \
+    bullet opencv assimp libvorbis openssl || true
+    brew install ode --with-shared
+
+    # We can't trust brew to make the right symlinks, so execute commands as modules
+    ${PYTHON_INTERP:-python3} -m pip install virtualenv
+    ${PYTHON_INTERP:-python3} -m virtualenv venv
+  else
+    virtualenv --python=${PYTHON_INTERP:-python3} venv
+  fi
+- source venv/bin/activate
 - pip install pytest
 
 before_script:
@@ -62,7 +84,19 @@ script:
 # interrogate has a way of explicitly calling init_libpanda)
 - '[ "x$BUILD_METALIBS" == "xON" ] || export LDFLAGS=-Wl,--no-as-needed'
 
-- cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT .. 
+- >
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    if [[ "$PYTHON_INTERP" == "python2.7" ]]; then
+      export PY2_CMAKE_ARGS=-DPYTHON_EXECUTABLE=/usr/local/Frameworks/Python.framework/Versions/2.7/bin/python
+    fi
+
+    cmake -DHAVE_CARBON=NO -DBUILD_METALIBS=$BUILD_METALIBS \
+    -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT \
+    -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl $PY2_CMAKE_ARGS ..
+  else
+    cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS \
+    -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT ..
+  fi
 - make -j4
 
 - export PYTHONPATH=$PWD
