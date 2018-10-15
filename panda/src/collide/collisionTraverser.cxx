@@ -1254,7 +1254,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
 
     if (geom->get_primitive_type() == Geom::PT_polygons) {
       Thread *current_thread = Thread::get_current_thread();
-      CPT(GeomVertexData) data = geom->get_vertex_data()->animate_vertices(true, current_thread);
+      CPT(GeomVertexData) data = geom->get_animated_vertex_data(true, current_thread);
       GeomVertexReader vertex(data, InternalName::get_vertex());
 
       int num_primitives = geom->get_num_primitives();
