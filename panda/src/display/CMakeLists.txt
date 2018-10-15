@@ -89,7 +89,8 @@ endif()
 composite_sources(p3display P3DISPLAY_SOURCES)
 add_component_library(p3display SYMBOL BUILDING_PANDA_DISPLAY
   ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES})
-target_link_libraries(p3display p3cull p3pgraphnodes)
+target_link_libraries(p3display p3cull p3pgraphnodes
+  PKG::X11)
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
