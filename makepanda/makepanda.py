@@ -1332,9 +1332,10 @@ def CompileCxx(obj,src,opts):
                     # Work around Apple compiler bug.
                     cmd += " -U__EXCEPTIONS"
 
-            if 'RTTI' not in opts:
+            target = GetTarget()
+            if 'RTTI' not in opts and target != "darwin":
                 # We always disable RTTI on Android for memory usage reasons.
-                if optlevel >= 4 or GetTarget() == "android":
+                if optlevel >= 4 or target == "android":
                     cmd += " -fno-rtti"
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
