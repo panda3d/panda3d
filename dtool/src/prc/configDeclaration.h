@@ -19,6 +19,7 @@
 #include "configPage.h"
 #include "vector_string.h"
 #include "numeric_types.h"
+#include "filename.h"
 
 #include <vector>
 
@@ -67,6 +68,8 @@ PUBLISHED:
   void set_int_word(size_t n, int value);
   void set_int64_word(size_t n, int64_t value);
   void set_double_word(size_t n, double value);
+
+  Filename get_filename_value() const;
 
   INLINE int get_decl_seq() const;
 

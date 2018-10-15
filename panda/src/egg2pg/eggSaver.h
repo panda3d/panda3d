@@ -50,7 +50,7 @@ class EggVertex;
  * complete (some Panda or egg constructs are not fully supported by this
  * class).
  */
-class EggSaver {
+class EXPCL_PANDA_EGG2PG EggSaver {
 PUBLISHED:
   EggSaver(EggData *data = nullptr);
 

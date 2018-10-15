@@ -200,7 +200,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
 
   if (search) {
     // Look for the file along the model path.
-    const ConfigVariableSearchPath &model_path = get_model_path();
+    DSearchPath model_path(get_model_path());
     int num_dirs = model_path.get_num_directories();
     for (int i = 0; i < num_dirs; ++i) {
       Filename pathname(model_path.get_directory(i), this_filename);

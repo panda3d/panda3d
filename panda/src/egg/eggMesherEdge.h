@@ -26,7 +26,7 @@ class EggMesherStrip;
  * connected triangles.  The edge is actually represented as a pair of vertex
  * indices into the same vertex pool.
  */
-class EggMesherEdge {
+class EXPCL_PANDA_EGG EggMesherEdge {
 public:
   INLINE EggMesherEdge(int vi_a, int vi_b);
   INLINE EggMesherEdge(const EggMesherEdge &copy);

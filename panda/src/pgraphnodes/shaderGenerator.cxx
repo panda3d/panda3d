@@ -53,13 +53,21 @@ TypeHandle ShaderGenerator::_type_handle;
 
 #ifdef HAVE_CG
 
-#define PACK_COMBINE(src0, op0, src1, op1, src2, op2) ( \
-  ((uint16_t)src0) | ((((uint16_t)op0 - 1u) & 3u) << 3u) | \
-  ((uint16_t)src1 << 5u) | ((((uint16_t)op1 - 1u) & 3u) << 8u) | \
-  ((uint16_t)src2 << 10u) | ((((uint16_t)op2 - 1u) & 3u) << 13u))
-
 #define UNPACK_COMBINE_SRC(from, n) (TextureStage::CombineSource)((from >> ((uint16_t)n * 5u)) & 7u)
 #define UNPACK_COMBINE_OP(from, n) (TextureStage::CombineOperand)(((from >> (((uint16_t)n * 5u) + 3u)) & 3u) + 1u)
+
+static inline uint16_t
+pack_combine(TextureStage::CombineSource src0, TextureStage::CombineOperand op0,
+             TextureStage::CombineSource src1, TextureStage::CombineOperand op1,
+             TextureStage::CombineSource src2, TextureStage::CombineOperand op2) {
+  if (op0 == TextureStage::CO_undefined) op0 = TextureStage::CO_src_alpha;
+  if (op1 == TextureStage::CO_undefined) op1 = TextureStage::CO_src_alpha;
+  if (op2 == TextureStage::CO_undefined) op2 = TextureStage::CO_src_alpha;
+
+  return ((uint16_t)src0) | ((((uint16_t)op0 - 1u) & 3u) << 3u) |
+         ((uint16_t)src1 << 5u) | ((((uint16_t)op1 - 1u) & 3u) << 8u) |
+         ((uint16_t)src2 << 10u) | ((((uint16_t)op2 - 1u) & 3u) << 13u);
+}
 
 static PStatCollector lookup_collector("*:Munge:ShaderGen:Lookup");
 static PStatCollector synthesize_collector("*:Munge:ShaderGen:Synthesize");
@@ -399,11 +407,12 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
       if (stage->get_alpha_scale() == 4) {
         info._flags |= ShaderKey::TF_alpha_scale_4;
       }
-      info._combine_rgb = PACK_COMBINE(
+
+      info._combine_rgb = pack_combine(
         stage->get_combine_rgb_source0(), stage->get_combine_rgb_operand0(),
         stage->get_combine_rgb_source1(), stage->get_combine_rgb_operand1(),
         stage->get_combine_rgb_source2(), stage->get_combine_rgb_operand2());
-      info._combine_alpha = PACK_COMBINE(
+      info._combine_alpha = pack_combine(
         stage->get_combine_alpha_source0(), stage->get_combine_alpha_operand0(),
         stage->get_combine_alpha_source1(), stage->get_combine_alpha_operand1(),
         stage->get_combine_alpha_source2(), stage->get_combine_alpha_operand2());

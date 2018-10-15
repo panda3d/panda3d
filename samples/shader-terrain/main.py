@@ -34,7 +34,10 @@ class ShaderTerrainDemo(ShowBase):
 
         # Set a heightfield, the heightfield should be a 16-bit png and
         # have a quadratic size of a power of two.
-        self.terrain_node.heightfield = self.loader.loadTexture("heightfield.png")
+        heightfield = self.loader.loadTexture("heightfield.png")
+        heightfield.wrap_u = SamplerState.WM_clamp
+        heightfield.wrap_v = SamplerState.WM_clamp
+        self.terrain_node.heightfield = heightfield
 
         # Set the target triangle width. For a value of 10.0 for example,
         # the terrain will attempt to make every triangle 10 pixels wide on screen.

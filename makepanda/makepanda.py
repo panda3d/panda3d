@@ -1010,8 +1010,6 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
-        if (PkgSkip("OPENCV")==0):
-            LibName("OPENCV", "-framework QuickTime")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
@@ -1398,9 +1396,10 @@ def CompileCxx(obj,src,opts):
                     # Work around Apple compiler bug.
                     cmd += " -U__EXCEPTIONS"
 
-            if 'RTTI' not in opts:
+            target = GetTarget()
+            if 'RTTI' not in opts and target != "darwin":
                 # We always disable RTTI on Android for memory usage reasons.
-                if optlevel >= 4 or GetTarget() == "android":
+                if optlevel >= 4 or target == "android":
                     cmd += " -fno-rtti"
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
@@ -2979,6 +2978,9 @@ else:
     # otherwise, disable it.
     confautoprc = confautoprc.replace('#st#', '#')
 
+if PkgSkip("ASSIMP"):
+    confautoprc = confautoprc.replace("load-file-type p3assimp", "#load-file-type p3assimp")
+
 if (os.path.isfile("makepanda/myconfig.in")):
     configprc = ReadFile("makepanda/myconfig.in")
 else:
@@ -3645,6 +3647,7 @@ IGATEFILES += [
     "dSearchPath.h",
     "executionEnvironment.h",
     "textEncoder.h",
+    "textEncoder_ext.h",
     "filename.h",
     "filename_ext.h",
     "globPattern.h",

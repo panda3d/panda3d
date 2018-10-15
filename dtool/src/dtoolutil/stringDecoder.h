@@ -26,7 +26,7 @@ public:
   INLINE StringDecoder(const std::string &input);
   virtual ~StringDecoder();
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
   INLINE bool is_eof();
 
   static void set_notify_ptr(std::ostream *ptr);
@@ -48,19 +48,22 @@ class StringUtf8Decoder : public StringDecoder {
 public:
   INLINE StringUtf8Decoder(const std::string &input);
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
 };
 
 /**
  * This decoder extracts characters two at a time to get a plain wide
- * character sequence.
+ * character sequence.  It supports surrogate pairs.
  */
-class StringUnicodeDecoder : public StringDecoder {
+class StringUtf16Decoder : public StringDecoder {
 public:
-  INLINE StringUnicodeDecoder(const std::string &input);
+  INLINE StringUtf16Decoder(const std::string &input);
 
-  virtual int get_next_character();
+  virtual char32_t get_next_character();
 };
+
+// Deprecated alias of StringUtf16Encoder.
+typedef StringUtf16Decoder StringUnicodeDecoder;
 
 #include "stringDecoder.I"
 

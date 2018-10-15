@@ -53,5 +53,5 @@ StringUtf8Decoder(const std::string &input) : StringDecoder(input) {
  *
  */
 INLINE StringUnicodeDecoder::
-StringUnicodeDecoder(const std::string &input) : StringDecoder(input) {
+StringUtf16Decoder(const std::string &input) : StringDecoder(input) {
 }

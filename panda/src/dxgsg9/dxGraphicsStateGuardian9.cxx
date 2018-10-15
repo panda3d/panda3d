@@ -140,6 +140,7 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
 
   _last_fvf = 0;
   _num_bound_streams = 0;
+  _white_vbuffer = nullptr;
 
   _vertex_shader_version_major = 0;
   _vertex_shader_version_minor = 0;
@@ -798,9 +799,9 @@ clear(DrawableRegion *clearable) {
     main_flags |=  D3DCLEAR_TARGET;
   }
 
-  if (clearable->get_clear_depth_active()) {
+  if (clearable->get_clear_depth_active() &&
+      _screen->_presentation_params.EnableAutoDepthStencil) {
     aux_flags |=  D3DCLEAR_ZBUFFER;
-    nassertv(_screen->_presentation_params.EnableAutoDepthStencil);
   }
 
   if (clearable->get_clear_stencil_active()) {
@@ -4545,6 +4546,11 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     release_all_vertex_buffers();
     release_all_index_buffers();
 
+    if (_white_vbuffer != nullptr) {
+      _white_vbuffer->Release();
+      _white_vbuffer = nullptr;
+    }
+
     // must be called before reset
     Thread *current_thread = Thread::get_current_thread();
     _prepared_objects->begin_frame(this, current_thread);
@@ -5402,6 +5408,40 @@ set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
     _cg_device = cg_device;
   }
 #endif // HAVE_CG
+}
+
+/**
+ * Returns a vertex buffer containing only a full-white color.
+ */
+LPDIRECT3DVERTEXBUFFER9 DXGraphicsStateGuardian9::
+get_white_vbuffer() {
+  if (_white_vbuffer != nullptr) {
+    return _white_vbuffer;
+  }
+
+  LPDIRECT3DVERTEXBUFFER9 vbuffer;
+  HRESULT hr;
+  hr = _screen->_d3d_device->CreateVertexBuffer(sizeof(D3DCOLOR), D3DUSAGE_WRITEONLY, D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &vbuffer, nullptr);
+
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "CreateVertexBuffer failed" << D3DERRORSTRING(hr);
+    return nullptr;
+  }
+
+  D3DCOLOR *local_pointer;
+  hr = vbuffer->Lock(0, sizeof(D3DCOLOR), (void **) &local_pointer, D3DLOCK_DISCARD);
+  if (FAILED(hr)) {
+    dxgsg9_cat.error()
+      << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
+    return false;
+  }
+
+  *local_pointer = D3DCOLOR_ARGB(255, 255, 255, 255);
+
+  vbuffer->Unlock();
+  _white_vbuffer = vbuffer;
+  return vbuffer;
 }
 
 typedef std::string KEY;
