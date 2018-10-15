@@ -220,7 +220,7 @@ get_unicode_char(size_t index) const {
  * according to set_encoding().
  */
 INLINE void TextEncoder::
-set_unicode_char(size_t index, int character) {
+set_unicode_char(size_t index, char32_t character) {
   get_wtext();
   if (index < _wtext.length()) {
     _wtext[index] = character;
@@ -283,7 +283,7 @@ reencode_text(const std::string &text, TextEncoder::Encoding from,
  * otherwise.  This is akin to ctype's isalpha(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isalpha(int character) {
+unicode_isalpha(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -297,7 +297,7 @@ unicode_isalpha(int character) {
  * otherwise.  This is akin to ctype's isdigit(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isdigit(int character) {
+unicode_isdigit(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     // The digits aren't actually listed in the map.
@@ -312,7 +312,7 @@ unicode_isdigit(int character) {
  * otherwise.  This is akin to ctype's ispunct(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_ispunct(int character) {
+unicode_ispunct(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     // Some punctuation marks aren't listed in the map.
@@ -326,7 +326,7 @@ unicode_ispunct(int character) {
  * otherwise.  This is akin to ctype's isupper(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isupper(int character) {
+unicode_isupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -339,7 +339,7 @@ unicode_isupper(int character) {
  * otherwise.  This is akin to ctype's isspace(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_isspace(int character) {
+unicode_isspace(char32_t character) {
   switch (character) {
   case ' ':
   case '\t':
@@ -356,7 +356,7 @@ unicode_isspace(int character) {
  * otherwise.  This is akin to ctype's islower(), extended to Unicode.
  */
 INLINE bool TextEncoder::
-unicode_islower(int character) {
+unicode_islower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return false;
@@ -369,7 +369,7 @@ unicode_islower(int character) {
  * akin to ctype's toupper(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_toupper(int character) {
+unicode_toupper(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return character;
@@ -382,7 +382,7 @@ unicode_toupper(int character) {
  * akin to ctype's tolower(), extended to Unicode.
  */
 INLINE int TextEncoder::
-unicode_tolower(int character) {
+unicode_tolower(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     return character;
