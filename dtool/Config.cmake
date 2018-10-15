@@ -485,14 +485,15 @@ mark_as_advanced(SDL_LIBRARY_TEMP)
 # Is X11 insalled, and where?
 find_package(X11 QUIET)
 
+if(NOT X11_Xkb_FOUND OR NOT X11_Xutil_FOUND)
+  # Panda implicitly requires these supplementary X11 libs; if we can't find
+  # them, we just say we didn't find X11 at all.
+  set(X11_FOUND OFF)
+endif()
+
 package_option(X11
   "Provides X-server support on Unix platforms. X11 may need to be linked
 against for tinydisplay, but probably only on a Linux platform.")
-if(NOT UNIX AND HAVE_X11)
-  message(SEND_ERROR
-    "X11 support is only supported on Unix platforms:
-ie. Linux, BSD, OS X, Cygwin, etc...")
-endif()
 
 
 # TODO: XF86DGA
