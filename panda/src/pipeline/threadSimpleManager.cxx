@@ -237,7 +237,7 @@ next_context() {
 
 #ifdef HAVE_PYTHON
   // Save the current Python thread state.
-  _current_thread->_python_state = PyThreadState_Swap(nullptr);
+  _current_thread->_python_state = thread_state_swap(nullptr);
 #endif  // HAVE_PYTHON
 
 #ifdef DO_PSTATS
@@ -258,7 +258,7 @@ next_context() {
 #endif  // DO_PSTATS
 
 #ifdef HAVE_PYTHON
-  PyThreadState_Swap(_current_thread->_python_state);
+  thread_state_swap(_current_thread->_python_state);
 #endif  // HAVE_PYTHON
 }
 
@@ -470,16 +470,6 @@ init_pointers() {
     _pointers_initialized = true;
     _global_ptr = new ThreadSimpleManager;
     Thread::get_main_thread();
-
-#ifdef HAVE_PYTHON
-    // Ensure that the Python threading system is initialized and ready to go.
-
-#if PY_VERSION_HEX >= 0x03020000
-    Py_Initialize();
-#endif
-
-    PyEval_InitThreads();
-#endif
   }
 }
 

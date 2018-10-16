@@ -752,6 +752,11 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
     PyErr_Clear();
     initialized_main_dir = true;
+
+    // Also, while we are at it, initialize the thread swap hook.
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    global_thread_state_swap = PyThreadState_Swap;
+#endif
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);
