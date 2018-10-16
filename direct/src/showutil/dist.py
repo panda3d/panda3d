@@ -26,6 +26,11 @@ if 'basestring' not in globals():
     basestring = str
 
 
+if sys.version_info < (3, 0):
+    # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
+    FileNotFoundError = IOError
+
+
 def _parse_list(input):
     if isinstance(input, basestring):
         input = input.strip().replace(',', '\n')
@@ -59,7 +64,7 @@ def egg2bam(_build_cmd, srcpath, dstpath):
         ])
     except FileNotFoundError:
         raise RuntimeError('egg2bam failed: egg2bam was not found in the PATH')
-    except subprocess.SubprocessError as err:
+    except subprocess.CalledProcessError as err:
         raise RuntimeError('egg2bam failed: {}'.format(err))
     return dstpath
 
