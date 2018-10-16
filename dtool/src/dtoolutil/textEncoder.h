@@ -23,7 +23,7 @@ class StringDecoder;
 
 /**
  * This class can be used to convert text between multiple representations,
- * e.g.  utf-8 to Unicode.  You may use it as a static class object, passing
+ * e.g.  UTF-8 to UTF-16.  You may use it as a static class object, passing
  * the encoding each time, or you may create an instance and use that object,
  * which will record the current encoding and retain the current string.
  *
@@ -78,21 +78,21 @@ PUBLISHED:
   INLINE void append_unicode_char(char32_t character);
   INLINE size_t get_num_chars() const;
   INLINE int get_unicode_char(size_t index) const;
-  INLINE void set_unicode_char(size_t index, int character);
+  INLINE void set_unicode_char(size_t index, char32_t character);
   INLINE std::string get_encoded_char(size_t index) const;
   INLINE std::string get_encoded_char(size_t index, Encoding encoding) const;
   INLINE std::string get_text_as_ascii() const;
 
   INLINE static std::string reencode_text(const std::string &text, Encoding from, Encoding to);
 
-  INLINE static bool unicode_isalpha(int character);
-  INLINE static bool unicode_isdigit(int character);
-  INLINE static bool unicode_ispunct(int character);
-  INLINE static bool unicode_islower(int character);
-  INLINE static bool unicode_isupper(int character);
-  INLINE static bool unicode_isspace(int character);
-  INLINE static int unicode_toupper(int character);
-  INLINE static int unicode_tolower(int character);
+  INLINE static bool unicode_isalpha(char32_t character);
+  INLINE static bool unicode_isdigit(char32_t character);
+  INLINE static bool unicode_ispunct(char32_t character);
+  INLINE static bool unicode_islower(char32_t character);
+  INLINE static bool unicode_isupper(char32_t character);
+  INLINE static bool unicode_isspace(char32_t character);
+  INLINE static int unicode_toupper(char32_t character);
+  INLINE static int unicode_tolower(char32_t character);
 
   INLINE static std::string upper(const std::string &source);
   INLINE static std::string upper(const std::string &source, Encoding encoding);
