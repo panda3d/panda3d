@@ -82,7 +82,7 @@ before_script:
 script:
 # This is kind of a hack, but needed to test non-metalib builds (until
 # interrogate has a way of explicitly calling init_libpanda)
-- '[ "x$BUILD_METALIBS" == "xON" ] || export LDFLAGS=-Wl,--no-as-needed'
+- '[ "x$BUILD_METALIBS" == "xON" || "x$TRAVIS_OS_NAME" == "xosx" ] || export LDFLAGS=-Wl,--no-as-needed'
 
 - >
   if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
