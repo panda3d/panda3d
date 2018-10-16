@@ -77,6 +77,20 @@ if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+# As long as we're figuring out compiler flags, figure out the flags for
+# turning C++ exception support on and off
+if(MSVC)
+  set(cxx_exceptions_on "/EHsc")
+  set(cxx_exceptions_off "/D_HAS_EXCEPTIONS=0")
+else()
+  set(cxx_exceptions_on "-fexceptions")
+  set(cxx_exceptions_off "-fno-exceptions")
+endif()
+set(cxx_exceptions_property "$<BOOL:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>")
+add_compile_options(
+  "$<${cxx_exceptions_property}:${cxx_exceptions_on}>"
+  "$<$<NOT:${cxx_exceptions_property}>:${cxx_exceptions_off}>")
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
 
