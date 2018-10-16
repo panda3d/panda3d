@@ -316,7 +316,7 @@ unicode_ispunct(char32_t character) {
   const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
   if (entry == nullptr) {
     // Some punctuation marks aren't listed in the map.
-    return (character >= 0 && character < 128 && ispunct(character));
+    return (character < 128 && ispunct(character));
   }
   return entry->_char_type == UnicodeLatinMap::CT_punct;
 }
