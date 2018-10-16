@@ -1,8 +1,4 @@
-/* Filename: contextSwitch_windows_src.c
- * Created by:  drose (15Apr10)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch_windows_src.c
+ * @author drose
+ * @date 2010-04-15
+ */
 
 /* This is the implementation of user-space context switching using
    native Windows threading constructs to manage the different
@@ -37,7 +36,7 @@ struct ThreadContext {
   /* This event is in the signaled state when the thread is ready to
      roll. */
   HANDLE _ready;
-  
+
   /* This is set FALSE while the thread is alive, and TRUE if the
      thread is to be terminated when it next wakes up. */
   int _terminated;
@@ -71,13 +70,13 @@ thread_main(LPVOID data) {
 }
 
 void
-init_thread_context(struct ThreadContext *context, 
+init_thread_context(struct ThreadContext *context,
                     unsigned char *stack, size_t stack_size,
                     ThreadFunction *thread_func, void *data) {
   context->_thread_func = thread_func;
   context->_data = data;
 
-  context->_thread = CreateThread(NULL, stack_size, 
+  context->_thread = CreateThread(NULL, stack_size,
                                   thread_main, context, 0, NULL);
 }
 
@@ -117,7 +116,7 @@ switch_to_thread_context(struct ThreadContext *from_context,
     /* We've been rudely terminated.  Exit gracefully. */
     ExitThread(1);
   }
-  
+
   /* Now we have been signaled again, and we're ready to resume the
      thread. */
   longjmp(from_context->_jmp_context, 1);
