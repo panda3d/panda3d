@@ -63,7 +63,9 @@
 /* Windows likes to define min() and max() macros, which will conflict with
    std::min() and std::max() respectively, unless we do this: */
 #ifdef WIN32
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #endif
 
 #ifndef __has_builtin
