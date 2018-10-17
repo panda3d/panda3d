@@ -18,7 +18,7 @@ matrix:
       env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=0
   include:
     - os: osx
-      env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30 COMPOSITE_SOURCE_EXCLUSIONS=p3showbase;p3dtoolutil;p3cocoadisplay;p3osxdisplay;p3tinydisplay;p3display
+      env: BUILD_METALIBS=ON COMPOSITE_SOURCE_LIMIT=30 COMPOSITE_SOURCE_EXCLUSIONS='p3showbase;p3dtoolutil;p3cocoadisplay;p3osxdisplay;p3tinydisplay;p3display'
     - compiler: gcc
 
 addons:
@@ -91,10 +91,12 @@ script:
     fi
 
     cmake -DBUILD_METALIBS=$BUILD_METALIBS \
+    -DCOMPOSITE_SOURCE_EXCLUSIONS="$COMPOSITE_SOURCE_EXCLUSIONS" \
     -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT \
     -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl $PY2_CMAKE_ARGS ..
   else
     cmake -DHAVE_GTK2=NO -DBUILD_METALIBS=$BUILD_METALIBS \
+    -DCOMPOSITE_SOURCE_EXCLUSIONS="$COMPOSITE_SOURCE_EXCLUSIONS" \
     -DCOMPOSITE_SOURCE_LIMIT=$COMPOSITE_SOURCE_LIMIT ..
   fi
 - make -j4
