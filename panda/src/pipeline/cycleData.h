@@ -50,11 +50,11 @@ class EXPCL_PANDA_PIPELINE CycleData
 {
 public:
   INLINE CycleData() = default;
-  INLINE CycleData(CycleData &&from) noexcept = default;
+  INLINE CycleData(CycleData &&from) = default;
   INLINE CycleData(const CycleData &copy) = default;
   virtual ~CycleData();
 
-  CycleData &operator = (CycleData &&from) noexcept = default;
+  CycleData &operator = (CycleData &&from) = default;
   CycleData &operator = (const CycleData &copy) = default;
 
   virtual CycleData *make_copy() const=0;
