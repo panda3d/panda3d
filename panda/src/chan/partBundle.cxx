@@ -558,6 +558,12 @@ control_removed(AnimControl *control) {
     if (cbi != cdata->_blend.end()) {
       cdata->_blend.erase(cbi);
       cdata->_anim_changed = true;
+
+      // We need to make sure that any _effective_channel pointers that point
+      // to this control are cleared.
+      if (pipeline_stage == 0) {
+        determine_effective_channels(cdata);
+      }
     }
   }
   CLOSE_ITERATE_ALL_STAGES(_cycler);
