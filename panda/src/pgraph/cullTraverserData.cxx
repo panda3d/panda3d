@@ -54,6 +54,9 @@ apply_transform_and_state(CullTraverser *trav) {
     CPT(TransformState) node_transform = _node_reader.get_transform();
     node_effects->cull_callback(trav, *this, node_transform, node_state);
     apply_transform(node_transform);
+
+    // The cull callback may have changed the node properties.
+    _node_reader.check_cached(false);
   }
 
   if (!node_state->is_empty()) {
