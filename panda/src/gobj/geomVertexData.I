@@ -772,7 +772,9 @@ set_object(const GeomVertexData *object) {
   _cdata = (GeomVertexData::CData *)_object->_cycler.read_unlocked(_current_thread);
   _got_array_readers = false;
 
+#ifdef DO_PIPELINING
   _cdata->ref();
+#endif  // DO_PIPELINING
 }
 
 /**

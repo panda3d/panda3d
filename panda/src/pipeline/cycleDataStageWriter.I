@@ -63,23 +63,6 @@ CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy) :
 }
 
 /**
- *
- */
-template<class CycleDataType>
-INLINE void CycleDataStageWriter<CycleDataType>::
-operator = (const CycleDataStageWriter<CycleDataType> &copy) {
-  nassertv(_pointer == nullptr);
-  nassertv(_current_thread == copy._current_thread);
-
-  _cycler = copy._cycler;
-  _pointer = copy._pointer;
-  _stage = copy._stage;
-
-  nassertv(_pointer != nullptr);
-  _cycler->increment_write(_pointer);
-}
-
-/**
  * This flavor of the constructor elevates the pointer from the
  * CycleDataLockedStageReader from a read to a write pointer (and invalidates
  * the reader).
@@ -126,6 +109,23 @@ CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) noexcept :
   _stage(from._stage)
 {
   from._pointer = nullptr;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataStageWriter<CycleDataType>::
+operator = (const CycleDataStageWriter<CycleDataType> &copy) {
+  nassertv(_pointer == nullptr);
+  nassertv(_current_thread == copy._current_thread);
+
+  _cycler = copy._cycler;
+  _pointer = copy._pointer;
+  _stage = copy._stage;
+
+  nassertv(_pointer != nullptr);
+  _cycler->increment_write(_pointer);
 }
 
 /**
@@ -231,9 +231,32 @@ CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy) :
  *
  */
 template<class CycleDataType>
+INLINE CycleDataStageWriter<CycleDataType>::
+CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) noexcept :
+  _pointer(from._pointer)
+{
+  from._pointer = nullptr;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
 INLINE void CycleDataStageWriter<CycleDataType>::
 operator = (const CycleDataStageWriter<CycleDataType> &copy) {
   _pointer = copy._pointer;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataStageWriter<CycleDataType>::
+operator = (CycleDataStageWriter<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
+
+  _pointer = from._pointer;
+  from._pointer = nullptr;
 }
 
 /**
