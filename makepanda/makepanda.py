@@ -3158,10 +3158,10 @@ CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
+CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/chan')
 CopyAllHeaders('panda/src/char')
 CopyAllHeaders('panda/src/dgraph')
-CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/device')
 CopyAllHeaders('panda/src/pnmtext')
 CopyAllHeaders('panda/src/text')
@@ -3875,6 +3875,31 @@ if (not RUNTIME):
   TargetAdd('libp3cull_igate.obj', input='libp3cull.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: panda/src/display/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
+  TargetAdd('p3display_graphicsStateGuardian.obj', opts=OPTS, input='graphicsStateGuardian.cxx')
+  TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
+  TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
+
+  OPTS=['DIR:panda/src/display', 'PYTHON']
+  IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite*.cxx"])
+  IGATEFILES.remove("renderBuffer.h")
+  TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
+  TargetAdd('libp3display_igate.obj', input='libp3display.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('p3display_graphicsStateGuardian_ext.obj', opts=OPTS, input='graphicsStateGuardian_ext.cxx')
+  TargetAdd('p3display_graphicsWindow_ext.obj', opts=OPTS, input='graphicsWindow_ext.cxx')
+  TargetAdd('p3display_pythonGraphicsWindowProc.obj', opts=OPTS, input='pythonGraphicsWindowProc.cxx')
+
+  if RTDIST and GetTarget() == 'darwin':
+    OPTS=['DIR:panda/src/display']
+    TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
+    TargetAdd('libp3subprocbuffer.ilb', input='subprocessWindowBuffer.obj')
+
+#
 # DIRECTORY: panda/src/chan/
 #
 
@@ -3920,30 +3945,6 @@ if (not RUNTIME):
   TargetAdd('libp3dgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3dgraph.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dgraph', 'SRCDIR:panda/src/dgraph'])
   TargetAdd('libp3dgraph_igate.obj', input='libp3dgraph.in', opts=["DEPENDENCYONLY"])
-
-#
-# DIRECTORY: panda/src/display/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
-  TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
-  TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
-
-  OPTS=['DIR:panda/src/display', 'PYTHON']
-  IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite*.cxx"])
-  IGATEFILES.remove("renderBuffer.h")
-  TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
-  TargetAdd('libp3display_igate.obj', input='libp3display.in', opts=["DEPENDENCYONLY"])
-  TargetAdd('p3display_graphicsStateGuardian_ext.obj', opts=OPTS, input='graphicsStateGuardian_ext.cxx')
-  TargetAdd('p3display_graphicsWindow_ext.obj', opts=OPTS, input='graphicsWindow_ext.cxx')
-  TargetAdd('p3display_pythonGraphicsWindowProc.obj', opts=OPTS, input='pythonGraphicsWindowProc.cxx')
-
-  if RTDIST and GetTarget() == 'darwin':
-    OPTS=['DIR:panda/src/display']
-    TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
-    TargetAdd('libp3subprocbuffer.ilb', input='subprocessWindowBuffer.obj')
 
 #
 # DIRECTORY: panda/src/device/
@@ -4166,6 +4167,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3device_composite2.obj')
   TargetAdd('libpanda.dll', input='p3dgraph_composite1.obj')
   TargetAdd('libpanda.dll', input='p3dgraph_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian.obj')
   TargetAdd('libpanda.dll', input='p3display_composite1.obj')
   TargetAdd('libpanda.dll', input='p3display_composite2.obj')
   TargetAdd('libpanda.dll', input='p3pipeline_composite1.obj')
