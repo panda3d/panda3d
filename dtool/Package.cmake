@@ -336,7 +336,8 @@ find_package(ODE QUIET)
 
 package_option(ODE
   "Enable this option to support game dynamics with the Open Dynamics Engine (ODE)."
-  LICENSE "BSD-3")
+  LICENSE "BSD-3"
+  IMPORTED_AS ODE::ODE)
 
 config_package(ODE "Open Dynamics Engine")
 

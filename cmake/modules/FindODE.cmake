@@ -7,74 +7,144 @@
 # Once done this will define:
 #   ODE_FOUND       - system has ode
 #   ODE_INCLUDE_DIR - the ode include directory
-#   ODE_LIBRARY_DIR - the ode library directory
-#   ODE_LIBRARY     - the path to the library binary
 #
 #   ODE_RELEASE_LIBRARY - the filepath of the ode release library
 #   ODE_DEBUG_LIBRARY   - the filepath of the ode debug library
+#
+#   ODE_SINGLE_DEBUG_LIBRARY   - the filepath of the single-precision ode debug library
+#   ODE_SINGLE_RELEASE_LIBRARY   - the filepath of the single-precision ode release library
+#   ODE_DOUBLE_DEBUG_LIBRARY   - the filepath of the double-precision ode debug library
+#   ODE_DOUBLE_RELEASE_LIBRARY   - the filepath of the double-precision ode release library
+#
+#   ODE::ODE        - The recommended ODE library to link against
+#   ODE::ODE_single - If available, this links against single-precision ODE
+#   ODE::ODE_double - If available, this links against double-precision ODE
 #
 
 if(NOT ODE_INCLUDE_DIR OR NOT ODE_LIBRARY_DIR)
 	# Find the libode include files
 	find_path(ODE_INCLUDE_DIR
 		NAMES "ode.h"
-		PATHS "/usr/include"
-		      "/usr/local/include"
-		      "/sw/include"
-		      "/opt/include"
-		      "/opt/local/include"
-		      "/opt/csw/include"
-		PATH_SUFFIXES "" "ode"
-	)
+		PATH_SUFFIXES "ode")
 
 	# Find the libode library built for release
 	find_library(ODE_RELEASE_LIBRARY
-		NAMES "ode" "libode"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+		NAMES "ode" "libode")
 
 	# Find the libode library built for debug
 	find_library(ODE_DEBUG_LIBRARY
-		NAMES "oded" "liboded"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+		NAMES "oded" "liboded")
 
+  # Find the single-precision library built for release
+  find_library(ODE_SINGLE_RELEASE_LIBRARY
+		NAMES "ode_single" "libode_single")
+
+	# Find the single-precision library built for debug
+  find_library(ODE_SINGLE_DEBUG_LIBRARY
+		NAMES "ode_singled" "libode_singled")
+
+  # Find the double-precision library built for release
+  find_library(ODE_DOUBLE_RELEASE_LIBRARY
+		NAMES "ode_double" "libode_double"	)
+
+	# Find the double-precision library built for debug
+  find_library(ODE_DOUBLE_DEBUG_LIBRARY
+		NAMES "ode_doubled" "libode_doubled")
+
+  unset(_ODE_LIB_PATHS)
 
 	mark_as_advanced(ODE_INCLUDE_DIR)
 	mark_as_advanced(ODE_RELEASE_LIBRARY)
 	mark_as_advanced(ODE_DEBUG_LIBRARY)
+  mark_as_advanced(ODE_SINGLE_RELEASE_LIBRARY)
+  mark_as_advanced(ODE_SINGLE_DEBUG_LIBRARY)
+  mark_as_advanced(ODE_DOUBLE_RELEASE_LIBRARY)
+  mark_as_advanced(ODE_DOUBLE_DEBUG_LIBRARY)
 endif()
 
-# Choose library
-if(CMAKE_BUILD_TYPE MATCHES "Debug" AND ODE_DEBUG_LIBRARY)	
-	set(ODE_LIBRARY ${ODE_DEBUG_LIBRARY} CACHE FILEPATH "The filepath to libode's library binary.")
-elseif(ODE_RELEASE_LIBRARY)	
-	set(ODE_LIBRARY ${ODE_RELEASE_LIBRARY} CACHE FILEPATH "The filepath to libode's library binary.")
-elseif(ODE_DEBUG_LIBRARY)	
-	set(ODE_LIBRARY ${ODE_DEBUG_LIBRARY} CACHE FILEPATH "The filepath to libode's library binary.")
+# Define targets for both precisions (and unspecified)
+foreach(_precision _single _double "")
+  string(TOUPPER "${_precision}" _PRECISION)
+
+  if(EXISTS "${ODE${_PRECISION}_RELEASE_LIBRARY}" OR
+      EXISTS "${ODE${_PRECISION}_DEBUG_LIBRARY}")
+    if(NOT TARGET ODE::ODE${_precision})
+      add_library(ODE::ODE${_precision} UNKNOWN IMPORTED GLOBAL)
+
+      set_target_properties(ODE::ODE${_precision} PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${ODE_INCLUDE_DIR}")
+
+      if(EXISTS "${ODE${_PRECISION}_RELEASE_LIBRARY}")
+        set_property(TARGET ODE::ODE${_precision} APPEND PROPERTY
+          IMPORTED_CONFIGURATIONS RELEASE)
+        set_target_properties(ODE::ODE${_precision} PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+          IMPORTED_LOCATION_RELEASE "${ODE${_PRECISION}_RELEASE_LIBRARY}")
+      endif()
+
+      if(EXISTS "${ODE${_PRECISION}_DEBUG_LIBRARY}")
+        set_property(TARGET ODE::ODE${_precision} APPEND PROPERTY
+          IMPORTED_CONFIGURATIONS DEBUG)
+        set_target_properties(ODE::ODE${_precision} PROPERTIES
+          IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
+          IMPORTED_LOCATION_DEBUG "${ODE${_PRECISION}_DEBUG_LIBRARY}")
+      endif()
+
+      # If this has a precision, we should be sure to define
+      # dIDESINGLE/dIDEDOUBLE to keep it consistent
+      if(_precision)
+        string(REPLACE "_" "dIDE" _precision_symbol "${_PRECISION}")
+
+        set_target_properties(ODE::ODE${_precision} PROPERTIES
+          INTERFACE_COMPILE_DEFINITIONS "${_precision_symbol}")
+
+        unset(_precision_symbol)
+      endif()
+
+    endif()
+  endif()
+endforeach(_precision)
+unset(_precision)
+unset(_PRECISION)
+
+# OKAY.  If everything went well, we have ODE::ODE_single and/or
+# ODE::ODE_double.  We might even have an ODE::ODE, but if not, we need to
+# alias one of the other two to it.
+if(NOT TARGET ODE::ODE)
+  if(TARGET ODE::ODE_single)
+    set(_copy_from "ODE::ODE_single")
+  elseif(TARGET ODE::ODE_double)
+    set(_copy_from "ODE::ODE_double")
+  endif()
+
+  if(DEFINED _copy_from)
+    add_library(ODE::ODE UNKNOWN IMPORTED GLOBAL)
+
+    foreach(_prop
+        INTERFACE_INCLUDE_DIRECTORIES
+        INTERFACE_COMPILE_DEFINITIONS
+        IMPORTED_CONFIGURATIONS
+        IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE
+        IMPORTED_LOCATION_RELEASE
+        IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG
+        IMPORTED_LOCATION_DEBUG)
+
+      get_target_property(_value "${_copy_from}" "${_prop}")
+      if(DEFINED _value)
+        set_target_properties(ODE::ODE PROPERTIES "${_prop}" "${_value}")
+      endif()
+      unset(_value)
+    endforeach(_prop)
+  endif()
+
+  unset(_copy_from)
 endif()
 
-# Translate library into library directory
-if(ODE_LIBRARY)
-	unset(ODE_LIBRARY_DIR CACHE)
-	get_filename_component(ODE_LIBRARY_DIR "${ODE_LIBRARY}" PATH)
-	set(ODE_LIBRARY_DIR "${ODE_LIBRARY_DIR}" CACHE PATH "The path to libode's library directory.") # Library path
+if(TARGET ODE::ODE)
+  set(_HAS_ODE_LIBRARY ON)
 endif()
-
-mark_as_advanced(ODE_LIBRARY)
-mark_as_advanced(ODE_LIBRARY_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ODE DEFAULT_MSG ODE_LIBRARY ODE_INCLUDE_DIR ODE_LIBRARY_DIR)
+find_package_handle_standard_args(ODE DEFAULT_MSG ODE_INCLUDE_DIR _HAS_ODE_LIBRARY)
+
+unset(_HAS_ODE_LIBRARY)
