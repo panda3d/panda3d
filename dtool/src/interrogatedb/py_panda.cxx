@@ -722,7 +722,10 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 
     // Extract the __file__ attribute, if present.
     Filename main_dir;
-    PyObject *file_attr = PyObject_GetAttrString(main_module, "__file__");
+    PyObject *file_attr = nullptr;
+    if (main_module != nullptr) {
+      file_attr = PyObject_GetAttrString(main_module, "__file__");
+    }
     if (file_attr == nullptr) {
       // Must be running in the interactive interpreter.  Use the CWD.
       main_dir = ExecutionEnvironment::get_cwd();
