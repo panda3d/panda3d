@@ -35,16 +35,14 @@ isDebugBuild = (python.lower().endswith('_d'))
 # NB. if encodings are removed, be sure to remove them from the shortcut in
 # deploy-stub.c.
 startupModules = [
-    'encodings', 'encodings.aliases', 'encodings.undefined', 'encodings.ascii',
-    'encodings.cp1252', 'encodings.latin_1', 'encodings.utf_8',
-    'encodings.mbcs', 'encodings.cp850', 'encodings.cp437', 'imp',
-    ]
+    'imp', 'encodings', 'encodings.*',
+]
 if sys.version_info >= (3, 0):
     # Modules specific to Python 3
     startupModules += ['io', 'marshal', 'importlib.machinery', 'importlib.util']
 else:
     # Modules specific to Python 2
-    startupModules += ['encodings.string_escape']
+    startupModules += []
 
 # These are some special init functions for some built-in Python modules that
 # deviate from the standard naming convention.  A value of None means that a
@@ -1048,7 +1046,7 @@ class Freezer:
 
             for moduleName in startupModules:
                 if moduleName not in self.modules:
-                    self.modules[moduleName] = self.ModuleDef(moduleName, implicit = True)
+                    self.addModule(moduleName, implicit = True)
 
         # Excluding a parent module also excludes all its
         # (non-explicit) children, unless the parent has allowChildren
