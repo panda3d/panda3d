@@ -556,6 +556,7 @@ control_removed(AnimControl *control) {
     CDStageWriter cdata(_cycler, pipeline_stage);
     ChannelBlend::iterator cbi = cdata->_blend.find(control);
     if (cbi != cdata->_blend.end()) {
+      cdata->_net_blend -= cbi->second;
       cdata->_blend.erase(cbi);
       cdata->_anim_changed = true;
 
