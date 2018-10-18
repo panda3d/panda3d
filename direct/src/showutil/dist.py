@@ -478,7 +478,7 @@ class build_apps(setuptools.Command):
 
             if self.use_optimized_wheels:
                 # Check to see if we have an optimized wheel
-                localtag = p3dwhlfn.split('+')[1].split('-')[0]
+                localtag = p3dwhlfn.split('+')[1].split('-')[0] if '+' in p3dwhlfn else ''
                 if not localtag.endswith('opt'):
                     self.announce(
                         'Could not find an optimized wheel (using index {}) for platform: {}'.format(self.optimized_wheel_index, platform),
