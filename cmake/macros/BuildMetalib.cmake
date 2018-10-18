@@ -31,6 +31,12 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
         set_property(TARGET "${target}" APPEND PROPERTY INCLUDE_DIRECTORIES "${include_directories}")
         set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${include_directories}")
 
+        # SYSTEM include directories should still be reported as SYSTEM, so
+        # that warnings from those includes are suppressed
+        set(sys_include_directories
+          "$<TARGET_PROPERTY:${library},INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>")
+        target_include_directories("${target}" SYSTEM PUBLIC "${sys_include_directories}")
+
         # And for INTERFACE_COMPILE_DEFINITIONS as well
         set(compile_definitions "$<TARGET_PROPERTY:${library},INTERFACE_COMPILE_DEFINITIONS>")
         set_property(TARGET "${target}" APPEND PROPERTY COMPILE_DEFINITIONS "${compile_definitions}")
