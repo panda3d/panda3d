@@ -211,7 +211,7 @@ garbage_collect() {
   }
 
   num_this_pass = std::min(num_this_pass, size);
-  size_t stop_at_element = (_garbage_index + num_this_pass) % size;
+  size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
     RenderAttrib *attrib = (RenderAttrib *)_attribs->get_key(si);
@@ -229,6 +229,9 @@ garbage_collect() {
       // still need to visit.
       --size;
       --si;
+      if (stop_at_element > 0) {
+        --stop_at_element;
+      }
     }
 
     si = (si + 1) % size;

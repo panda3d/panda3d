@@ -32,14 +32,14 @@ AnimControl(const std::string &name, PartBundle *part,
   Namable(name),
   _pending_lock(name),
   _pending_cvar(_pending_lock),
-  _bound_joints(BitArray::all_on())
+  _bound_joints(BitArray::all_on()),
+  _part(part)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif
 
   _pending = true;
-  _part = part;
   _anim = nullptr;
   _channel_index = -1;
   set_frame_rate(frame_rate);

@@ -54,6 +54,9 @@ public:
   INLINE CycleData(const CycleData &copy) = default;
   virtual ~CycleData();
 
+  CycleData &operator = (CycleData &&from) = default;
+  CycleData &operator = (const CycleData &copy) = default;
+
   virtual CycleData *make_copy() const=0;
 
   virtual void write_datagram(BamWriter *, Datagram &) const;

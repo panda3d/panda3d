@@ -1216,6 +1216,9 @@ garbage_collect() {
       // still need to visit.
       --size;
       --si;
+      if (stop_at_element > 0) {
+        --stop_at_element;
+      }
     }
 
     si = (si + 1) % size;

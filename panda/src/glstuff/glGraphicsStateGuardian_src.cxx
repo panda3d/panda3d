@@ -8925,6 +8925,9 @@ get_panda_wrap_mode(GLenum wm) {
   case GL_REPEAT:
     return SamplerState::WM_repeat;
 
+  case GL_MIRRORED_REPEAT:
+    return SamplerState::WM_mirror;
+
 #ifndef OPENGLES
   case GL_MIRROR_CLAMP_EXT:
   case GL_MIRROR_CLAMP_TO_EDGE_EXT:
