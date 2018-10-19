@@ -631,42 +631,27 @@ set(HAVE_FLEX ${FLEX_FOUND})
 #
 
 ### Configure threading support ###
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads QUIET)
 
-# Add basic use flag for threading
-if(THREADS_FOUND)
-  option(HAVE_THREADS
-    "If on, compile Panda3D with threading support.
-Building in support for threading will enable Panda to take
-advantage of multiple CPU's if you have them (and if the OS
-supports kernel threads running on different CPU's), but it will
-slightly slow down Panda for the single CPU case." ON)
-else()
-  option(HAVE_THREADS
-    "If on, compile Panda3D with threading support.
-Building in support for threading will enable Panda to take
-advantage of multiple CPU's if you have them (and if the OS
-supports kernel threads running on different CPU's), but it will
-slightly slow down Panda for the single CPU case." OFF)
-endif()
+set(THREADS_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
 
+# Add basic use flag for threading
+package_option(THREADS
+  "If on, compile Panda3D with threading support.
+Building in support for threading will enable Panda to take
+advantage of multiple CPU's if you have them (and if the OS
+supports kernel threads running on different CPU's), but it will
+slightly slow down Panda for the single CPU case."
+  IMPORTED_AS Threads::Threads)
 
 # Configure debug threads
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
 else()
   option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
-endif()
-
-if(HAVE_THREADS)
-  set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
-  if(HAVE_POSIX_THREADS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pthread")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pthread")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -pthread")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -pthread")
-  endif()
 endif()
 
 option(SIMPLE_THREADS
