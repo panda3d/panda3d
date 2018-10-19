@@ -23,9 +23,7 @@
 
 if(NOT ODE_INCLUDE_DIR OR NOT ODE_LIBRARY_DIR)
 	# Find the libode include files
-	find_path(ODE_INCLUDE_DIR
-		NAMES "ode.h"
-		PATH_SUFFIXES "ode")
+	find_path(ODE_INCLUDE_DIR "ode/ode.h")
 
 	# Find the libode library built for release
 	find_library(ODE_RELEASE_LIBRARY
