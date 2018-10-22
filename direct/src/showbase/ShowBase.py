@@ -1034,10 +1034,13 @@ class ShowBase(DirectObject.DirectObject):
             if not self.frameRateMeter:
                 self.frameRateMeter = FrameRateMeter('frameRateMeter')
                 self.frameRateMeter.setupWindow(self.win)
+            else:
+                displayRegion = self.frameRateMeter.getDisplayRegion()
+                displayRegion.setActive(True)
         else:
             if self.frameRateMeter:
-                self.frameRateMeter.clearWindow()
-                self.frameRateMeter = None
+                displayRegion = self.frameRateMeter.getDisplayRegion()
+                displayRegion.setActive(False)
 
     def setSceneGraphAnalyzerMeter(self, flag):
         """
@@ -1048,10 +1051,13 @@ class ShowBase(DirectObject.DirectObject):
             if not self.sceneGraphAnalyzerMeter:
                 self.sceneGraphAnalyzerMeter = SceneGraphAnalyzerMeter('sceneGraphAnalyzerMeter', self.render.node())
                 self.sceneGraphAnalyzerMeter.setupWindow(self.win)
+            else:
+                displayRegion = self.sceneGraphAnalyzerMeter.getDisplayRegion()
+                displayRegion.setActive(True)
         else:
             if self.sceneGraphAnalyzerMeter:
-                self.sceneGraphAnalyzerMeter.clearWindow()
-                self.sceneGraphAnalyzerMeter = None
+                displayRegion = self.sceneGraphAnalyzerMeter.getDisplayRegion()
+                displayRegion.setActive(False)
 
     # [gjeon] now you can add more winControls after creating a showbase instance
     def setupWindowControls(self, winCtrl=None):
