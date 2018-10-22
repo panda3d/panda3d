@@ -482,20 +482,6 @@ mark_as_advanced(SDL_LIBRARY)
 mark_as_advanced(SDL_LIBRARY_TEMP)
 
 
-# Is X11 insalled, and where?
-find_package(X11 QUIET)
-
-if(NOT X11_Xkb_FOUND OR NOT X11_Xutil_FOUND)
-  # Panda implicitly requires these supplementary X11 libs; if we can't find
-  # them, we just say we didn't find X11 at all.
-  set(X11_FOUND OFF)
-endif()
-
-package_option(X11
-  "Provides X-server support on Unix platforms. X11 may need to be linked
-against for tinydisplay, but probably only on a Linux platform.")
-
-
 # TODO: XF86DGA
 # This defines if we have XF86DGA installed.
 #find_package(XF86DGA QUIET)

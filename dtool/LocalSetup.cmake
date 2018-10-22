@@ -155,24 +155,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_GTK2)
-  message("+ gtk+-2")
-else()
-  message("- Did not find gtk+-2")
-endif()
-
-if(HAVE_GLES)
-  message("+ OpenGL ES 1")
-else()
-  message("- Did not find OpenGL ES 1")
-endif()
-
-if(HAVE_GLES2)
-  message("+ OpenGL ES 2")
-else()
-  message("- Did not find OpenGL ES 2")
-endif()
-
 if(HAVE_DX9)
   message("+ DirectX9")
 else()
@@ -183,12 +165,6 @@ if(HAVE_TINYDISPLAY)
   message("+ Tinydisplay")
 else()
   message("- Not building Tinydisplay")
-endif()
-
-if(HAVE_X11)
-  message("+ X11")
-else()
-  message("- Did not find X11")
 endif()
 
 if(HAVE_OPENCV)

@@ -300,8 +300,10 @@ endif()
 
 
 #
-# ------------ FreeType ------------
+# ------------ UI libraries ------------
 #
+
+# Freetype
 
 find_package(Freetype QUIET)
 
@@ -312,12 +314,14 @@ package_option(FREETYPE
 
 config_package(FREETYPE "FreeType")
 
+# GTK2
+
 # Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
-#config_package(GTK2 "gtk+-2")
 package_option(GTK2)
+config_package(GTK2 "gtk+-2")
 
 #
 # ------------ Physics engines ------------
@@ -377,17 +381,69 @@ package_option(GL
 
 config_package(GL "OpenGL")
 
+# OpenGL ES 1
+find_package(OpenGLES1 QUIET)
+
+package_option(GLES1
+  "Enable support for OpenGL ES 1.x rendering APIs."
+  FOUND_AS OPENGLES1)
+
+config_package(GLES1 "OpenGL ES 1.x")
+
+# OpenGL ES 2
+find_package(OpenGLES2 QUIET)
+
+package_option(GLES2
+  "Enable support for OpenGL ES 2.x rendering APIs."
+  FOUND_AS OPENGLES2)
+
+config_package(GLES2 "OpenGL ES 2.x")
+
+#
+# ------------ Display APIs ------------
+#
+
+# X11
+find_package(X11 QUIET)
+
+if(NOT X11_Xkb_FOUND OR NOT X11_Xutil_FOUND)
+  # Panda implicitly requires these supplementary X11 libs; if we can't find
+  # them, we just say we didn't find X11 at all.
+  set(X11_FOUND OFF)
+endif()
+
+package_option(X11
+  "Provides X-server support on Unix platforms. X11 may need to be linked
+against for tinydisplay, but probably only on a Linux platform.")
+
+set(HAVE_GLX_AVAILABLE OFF)
+if(HAVE_GL AND HAVE_X11 AND NOT APPLE)
+  set(HAVE_GLX_AVAILABLE ON)
+endif()
+
+option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." ${HAVE_GLX_AVAILABLE})
+if(HAVE_GLX AND NOT HAVE_GLX_AVAILABLE)
+  message(SEND_ERROR "HAVE_GLX manually set to ON but it is not available!")
+endif()
+
+if(HAVE_GLX)
+  config_package(X11 "X11 (with GLX)")
+else()
+  config_package(X11 "X11 (without GLX)")
+endif()
+
+# EGL
+find_package(EGL QUIET)
+
+package_option(EGL
+  "Enable support for the Khronos EGL context management interface for
+  OpenGL ES.  This is necessary to support OpenGL ES under X11.")
+
+config_package(EGL "EGL")
+
 ########
 # TODO #
 ########
-
-# Find and configure OpenGL ES 1
-#find_package(GLES)
-#config_package(GLES COMMENT "OpenGL ES 1")
-
-# Find and configure OpenGL ES 2
-#find_package(GLES)
-#config_package(GLES COMMENT "OpenGL ES 2")
 
 # Find and configure DirectX 9
 #find_package(DX9)
