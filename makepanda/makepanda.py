@@ -680,6 +680,9 @@ if (COMPILER == "MSVC"):
         IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
     if (PkgSkip("ASSIMP")==0):
         LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/assimp.lib")
+        path = GetThirdpartyDir() + "assimp/lib/IrrXML.lib"
+        if os.path.isfile(path):
+            LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/IrrXML.lib")
         IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include/assimp")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
