@@ -1126,7 +1126,7 @@ class build_apps(setuptools.Command):
 class bdist_apps(setuptools.Command):
     DEFAULT_INSTALLERS = {
         'manylinux1_x86_64': ['gztar'],
-        'manylinux1_i386': ['gztar'],
+        'manylinux1_i686': ['gztar'],
         # Everything else defaults to ['zip']
     }
 
