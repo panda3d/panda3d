@@ -134,6 +134,12 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   if (accelerated) {
     properties.set_force_hardware(1);
   }
+
+  // Cautiously setting this to true.  It appears that macOS framebuffers are
+  // sRGB-capable, but I don't really know how to verify this.
+  if (color_size == 32 && !color_float) {
+    properties.set_srgb_color(true);
+  }
 }
 
 /**
