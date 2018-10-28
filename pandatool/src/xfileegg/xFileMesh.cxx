@@ -12,6 +12,7 @@
  */
 
 #include "xFileMesh.h"
+#include "xFileToEggConverter.h"
 #include "xFileFace.h"
 #include "xFileVertex.h"
 #include "xFileNormal.h"
@@ -22,6 +23,7 @@
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "eggPolygon.h"
+#include "eggGroup.h"
 #include "eggGroupNode.h"
 
 using std::min;
