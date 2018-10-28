@@ -743,6 +743,9 @@ if (COMPILER == "MSVC"):
         IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
     if (PkgSkip("ASSIMP")==0):
         LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/assimp.lib")
+        path = GetThirdpartyDir() + "assimp/lib/IrrXML.lib"
+        if os.path.isfile(path):
+            LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/IrrXML.lib")
         IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include/assimp")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
@@ -1659,6 +1662,8 @@ def CompileLib(lib, obj, opts):
         else:
             cmd = GetAR() + ' cru ' + BracketNameWithQuotes(lib)
         for x in obj:
+            if GetLinkAllStatic() and x.endswith('.a'):
+                continue
             cmd += ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
 
@@ -3391,7 +3396,6 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/ptloader')
     CopyAllHeaders('pandatool/src/miscprogs')
     CopyAllHeaders('pandatool/src/pstatserver')
-    CopyAllHeaders('pandatool/src/softprogs')
     CopyAllHeaders('pandatool/src/text-stats')
     CopyAllHeaders('pandatool/src/vrmlprogs')
     CopyAllHeaders('pandatool/src/win-stats')
@@ -3912,7 +3916,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH']
   TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
-  TargetAdd('p3gobj_composite2.obj', opts=OPTS, input='p3gobj_composite2.cxx')
+  TargetAdd('p3gobj_composite2.obj', opts=OPTS+['BIGOBJ'], input='p3gobj_composite2.cxx')
 
   OPTS=['DIR:panda/src/gobj', 'NVIDIACG', 'ZLIB', 'SQUISH', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
@@ -6443,21 +6447,6 @@ if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/pstatserver']
     TargetAdd('p3pstatserver_composite1.obj', opts=OPTS, input='p3pstatserver_composite1.cxx')
     TargetAdd('libp3pstatserver.lib', input='p3pstatserver_composite1.obj')
-
-#
-# DIRECTORY: pandatool/src/softprogs/
-#
-
-if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/softprogs', 'OPENSSL']
-    TargetAdd('softcvs_softCVS.obj', opts=OPTS, input='softCVS.cxx')
-    TargetAdd('softcvs_softFilename.obj', opts=OPTS, input='softFilename.cxx')
-    TargetAdd('softcvs.exe', input='softcvs_softCVS.obj')
-    TargetAdd('softcvs.exe', input='softcvs_softFilename.obj')
-    TargetAdd('softcvs.exe', input='libp3progbase.lib')
-    TargetAdd('softcvs.exe', input='libp3pandatoolbase.lib')
-    TargetAdd('softcvs.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('softcvs.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/text-stats/

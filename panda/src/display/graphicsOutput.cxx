@@ -697,9 +697,6 @@ void GraphicsOutput::
 remove_all_display_regions() {
   LightMutexHolder holder(_lock);
 
-  CDWriter cdata(_cycler, true);
-  cdata->_active_display_regions_stale = true;
-
   TotalDisplayRegions::iterator dri;
   for (dri = _total_display_regions.begin();
        dri != _total_display_regions.end();
@@ -713,6 +710,12 @@ remove_all_display_regions() {
   }
   _total_display_regions.clear();
   _total_display_regions.push_back(_overlay_display_region);
+
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    cdata->_active_display_regions_stale = true;
+  }
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
 
 /**
@@ -740,13 +743,8 @@ set_overlay_display_region(DisplayRegion *display_region) {
  */
 int GraphicsOutput::
 get_num_display_regions() const {
-  determine_display_regions();
-  int result;
-  {
-    LightMutexHolder holder(_lock);
-    result = _total_display_regions.size();
-  }
-  return result;
+  LightMutexHolder holder(_lock);
+  return _total_display_regions.size();
 }
 
 /**
@@ -1504,13 +1502,15 @@ do_remove_display_region(DisplayRegion *display_region) {
     find(_total_display_regions.begin(), _total_display_regions.end(), drp);
   if (dri != _total_display_regions.end()) {
     // Let's aggressively clean up the display region too.
-    CDWriter cdata(_cycler, true);
     display_region->cleanup();
     display_region->_window = nullptr;
     _total_display_regions.erase(dri);
 
-    cdata->_active_display_regions_stale = true;
-
+    OPEN_ITERATE_ALL_STAGES(_cycler) {
+      CDStageWriter cdata(_cycler, pipeline_stage);
+      cdata->_active_display_regions_stale = true;
+    }
+    CLOSE_ITERATE_ALL_STAGES(_cycler);
     return true;
   }
 
