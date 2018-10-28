@@ -3299,7 +3299,6 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/ptloader')
     CopyAllHeaders('pandatool/src/miscprogs')
     CopyAllHeaders('pandatool/src/pstatserver')
-    CopyAllHeaders('pandatool/src/softprogs')
     CopyAllHeaders('pandatool/src/text-stats')
     CopyAllHeaders('pandatool/src/vrmlprogs')
     CopyAllHeaders('pandatool/src/win-stats')
@@ -6351,21 +6350,6 @@ if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/pstatserver']
     TargetAdd('p3pstatserver_composite1.obj', opts=OPTS, input='p3pstatserver_composite1.cxx')
     TargetAdd('libp3pstatserver.lib', input='p3pstatserver_composite1.obj')
-
-#
-# DIRECTORY: pandatool/src/softprogs/
-#
-
-if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/softprogs', 'OPENSSL']
-    TargetAdd('softcvs_softCVS.obj', opts=OPTS, input='softCVS.cxx')
-    TargetAdd('softcvs_softFilename.obj', opts=OPTS, input='softFilename.cxx')
-    TargetAdd('softcvs.exe', input='softcvs_softCVS.obj')
-    TargetAdd('softcvs.exe', input='softcvs_softFilename.obj')
-    TargetAdd('softcvs.exe', input='libp3progbase.lib')
-    TargetAdd('softcvs.exe', input='libp3pandatoolbase.lib')
-    TargetAdd('softcvs.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('softcvs.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/text-stats/
