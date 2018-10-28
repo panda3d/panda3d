@@ -1598,6 +1598,8 @@ def CompileLib(lib, obj, opts):
         else:
             cmd = GetAR() + ' cru ' + BracketNameWithQuotes(lib)
         for x in obj:
+            if GetLinkAllStatic() and x.endswith('.a'):
+                continue
             cmd += ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
 
