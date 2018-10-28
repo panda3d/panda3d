@@ -17,6 +17,7 @@
 #include "textureImage.h"
 #include "palettizer.h"
 #include "paletteImage.h"
+#include "sourceTextureImage.h"
 
 #include "indent.h"
 #include "datagram.h"

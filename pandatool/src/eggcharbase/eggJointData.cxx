@@ -12,6 +12,8 @@
  */
 
 #include "eggJointData.h"
+
+#include "eggCharacterDb.h"
 #include "eggJointNodePointer.h"
 #include "eggMatrixTablePointer.h"
 #include "pvector.h"

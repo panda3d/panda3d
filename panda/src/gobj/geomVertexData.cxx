@@ -621,13 +621,26 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
             LVecBase4i indices(0, 0, 0, 0);
-            nassertv(blend.get_num_transforms() <= 4);
 
-            for (size_t i = 0; i < blend.get_num_transforms(); i++) {
-              weights[i] = blend.get_weight(i);
-              indices[i] = add_transform(transform_table, blend.get_transform(i),
-                                         already_added);
+            if (blend.get_num_transforms() <= 4) {
+              for (size_t i = 0; i < blend.get_num_transforms(); i++) {
+                weights[i] = blend.get_weight(i);
+                indices[i] = add_transform(transform_table, blend.get_transform(i),
+                                           already_added);
+              }
+            } else {
+              // Limit the number of blends to the four with highest weights.
+              TransformBlend blend2(blend);
+              blend2.limit_transforms(4);
+              blend2.normalize_weights();
+
+              for (size_t i = 0; i < 4; i++) {
+                weights[i] = blend2.get_weight(i);
+                indices[i] = add_transform(transform_table, blend2.get_transform(i),
+                                           already_added);
+              }
             }
+
             if (weight.has_column()) {
               weight.set_data4(weights);
             }

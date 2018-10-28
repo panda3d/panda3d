@@ -94,7 +94,12 @@ append_text(PyObject *text) {
 #if PY_VERSION_HEX >= 0x03030000
     Py_ssize_t len;
     const char *str = PyUnicode_AsUTF8AndSize(text, &len);
-    _this->append_text(std::string(str, len));
+    std::string text_str(str, len);
+    if (_this->get_encoding() == TextEncoder::E_utf8) {
+      _this->append_text(text_str);
+    } else {
+      _this->append_wtext(TextEncoder::decode_text(text_str, TextEncoder::E_utf8));
+    }
 #else
     Py_ssize_t len = PyUnicode_GET_SIZE(text);
     wchar_t *str = (wchar_t *)alloca(sizeof(wchar_t) * (len + 1));

@@ -293,13 +293,29 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_fixed_size(properties.get_fixed_size());
       properties.clear_fixed_size();
     }
+    // When switching undecorated mode, Windows will keep the window at the
+    // current outer size, whereas we want to keep it with the configured
+    // inner size.  Store the current size and origin.
+    LPoint2i top_left = _properties.get_origin();
+    LPoint2i bottom_right = top_left + _properties.get_size();
+
     DWORD window_style = make_style(_properties);
     SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
+    // Now calculate the proper size and origin with the new window style.
+    RECT view_rect;
+    SetRect(&view_rect, top_left[0], top_left[1],
+            bottom_right[0], bottom_right[1]);
+    WINDOWINFO wi;
+    GetWindowInfo(_hWnd, &wi);
+    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+
     // We need to call this to ensure that the style change takes effect.
-    SetWindowPos(_hWnd, HWND_NOTOPMOST, 0, 0, 0, 0,
-      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
-      SWP_FRAMECHANGED | SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+    SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
+                 view_rect.right - view_rect.left,
+                 view_rect.bottom - view_rect.top,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                 SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
   }
 
   if (properties.has_title()) {

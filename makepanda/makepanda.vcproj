@@ -4770,12 +4770,6 @@
 				<File RelativePath="..\pandatool\src\ptloader\config_ptloader.h"></File>
 				<File RelativePath="..\pandatool\src\ptloader\loaderFileTypePandatool.h"></File>
 			</Filter>
-			<Filter Name="softprogs">
-				<File RelativePath="..\pandatool\src\softprogs\softCVS.cxx"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softFilename.h"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softCVS.h"></File>
-				<File RelativePath="..\pandatool\src\softprogs\softFilename.cxx"></File>
-			</Filter>
 			<Filter Name="imageprogs">
 				<File RelativePath="..\pandatool\src\imageprogs\imageTrans.h"></File>
 				<File RelativePath="..\pandatool\src\imageprogs\imageTransformColors.cxx"></File>
@@ -5304,20 +5298,6 @@
 				<File RelativePath="..\pandatool\src\lwo\iffChunk.I"></File>
 				<File RelativePath="..\pandatool\src\lwo\lwoSurfaceBlockImage.h"></File>
 				<File RelativePath="..\pandatool\src\lwo\lwoSurfaceBlockCoordSys.cxx"></File>
-			</Filter>
-			<Filter Name="softegg">
-				<File RelativePath="..\pandatool\src\softegg\soft2Egg.c"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeTree.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeDesc.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.I"></File>
-				<File RelativePath="..\pandatool\src\softegg\config_softegg.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softToEggConverter.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeTree.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\config_softegg.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softNodeDesc.cxx"></File>
-				<File RelativePath="..\pandatool\src\softegg\softToEggConverter.h"></File>
-				<File RelativePath="..\pandatool\src\softegg\softEggGroupUserData.h"></File>
 			</Filter>
 			<Filter Name="xfileprogs">
 				<File RelativePath="..\pandatool\src\xfileprogs\eggToX.cxx"></File>
