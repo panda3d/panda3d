@@ -3,22 +3,27 @@ if(NOT HAVE_NET)
 endif()
 
 set(P3PSTATSERVER_HEADERS
-    pStatClientData.h pStatGraph.I
-    pStatGraph.h pStatListener.h pStatMonitor.I
-    pStatMonitor.h pStatPianoRoll.I
-    pStatPianoRoll.h pStatReader.h
-    pStatServer.h pStatStripChart.I
-    pStatStripChart.h pStatThreadData.I
-    pStatThreadData.h pStatView.I pStatView.h
-    pStatViewLevel.I pStatViewLevel.h)
+  pStatClientData.h
+  pStatGraph.h pStatGraph.I
+  pStatListener.h
+  pStatMonitor.h pStatMonitor.I
+  pStatPianoRoll.h pStatPianoRoll.I
+  pStatReader.h
+  pStatServer.h
+  pStatStripChart.h pStatStripChart.I
+  pStatThreadData.h pStatThreadData.I
+  pStatView.h pStatView.I
+  pStatViewLevel.h pStatViewLevel.I
+)
 
 set(P3PSTATSERVER_SOURCES
-    pStatClientData.cxx pStatGraph.cxx
-    pStatListener.cxx
-    pStatMonitor.cxx pStatPianoRoll.cxx
-    pStatReader.cxx pStatServer.cxx
-    pStatStripChart.cxx pStatThreadData.cxx
-    pStatView.cxx pStatViewLevel.cxx)
+  pStatClientData.cxx pStatGraph.cxx
+  pStatListener.cxx
+  pStatMonitor.cxx pStatPianoRoll.cxx
+  pStatReader.cxx pStatServer.cxx
+  pStatStripChart.cxx pStatThreadData.cxx
+  pStatView.cxx pStatViewLevel.cxx
+)
 
 composite_sources(p3pstatserver P3PSTATSERVER_SOURCES)
 add_library(p3pstatserver STATIC ${P3PSTATSERVER_HEADERS} ${P3PSTATSERVER_SOURCES})

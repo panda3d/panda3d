@@ -3,26 +3,28 @@ if(NOT HAVE_GTK2 OR NOT HAVE_NET)
 endif()
 
 set(GTKSTATS_HEADERS
-    gtkStatsChartMenu.h
-    gtkStatsGraph.h
-    gtkStatsLabel.h
-    gtkStatsLabelStack.h
-    gtkStatsMenuId.h
-    gtkStatsMonitor.h gtkStatsMonitor.I
-    gtkStatsPianoRoll.h
-    gtkStatsServer.h
-    gtkStatsStripChart.h)
+  gtkStatsChartMenu.h
+  gtkStatsGraph.h
+  gtkStatsLabel.h
+  gtkStatsLabelStack.h
+  gtkStatsMenuId.h
+  gtkStatsMonitor.h gtkStatsMonitor.I
+  gtkStatsPianoRoll.h
+  gtkStatsServer.h
+  gtkStatsStripChart.h
+)
 
 set(GTKSTATS_SOURCES
-    gtkStats.cxx
-    gtkStatsChartMenu.cxx
-    gtkStatsGraph.cxx
-    gtkStatsLabel.cxx
-    gtkStatsLabelStack.cxx
-    gtkStatsMonitor.cxx
-    gtkStatsPianoRoll.cxx
-    gtkStatsServer.cxx
-    gtkStatsStripChart.cxx)
+  gtkStats.cxx
+  gtkStatsChartMenu.cxx
+  gtkStatsGraph.cxx
+  gtkStatsLabel.cxx
+  gtkStatsLabelStack.cxx
+  gtkStatsMonitor.cxx
+  gtkStatsPianoRoll.cxx
+  gtkStatsServer.cxx
+  gtkStatsStripChart.cxx
+)
 
 composite_sources(gtkstats GTKSTATS_SOURCES)
 add_executable(gtkstats ${GTKSTATS_HEADERS} ${GTKSTATS_SOURCES})

@@ -1,18 +1,20 @@
 set(P3PANDATOOLBASE_HEADERS
-    animationConvert.h
-    config_pandatoolbase.h
-    distanceUnit.h
-    pandatoolbase.h pandatoolsymbols.h
-    pathReplace.I pathReplace.h
-    pathStore.h)
+  animationConvert.h
+  config_pandatoolbase.h
+  distanceUnit.h
+  pandatoolbase.h pandatoolsymbols.h
+  pathReplace.h pathReplace.I
+  pathStore.h
+)
 
 set(P3PANDATOOLBASE_SOURCES
-    animationConvert.cxx
-    config_pandatoolbase.cxx
-    distanceUnit.cxx
-    pandatoolbase.cxx
-    pathReplace.cxx
-    pathStore.cxx)
+  animationConvert.cxx
+  config_pandatoolbase.cxx
+  distanceUnit.cxx
+  pandatoolbase.cxx
+  pathReplace.cxx
+  pathStore.cxx
+)
 
 composite_sources(p3pandatoolbase P3PANDATOOLBASE_SOURCES)
 add_library(p3pandatoolbase STATIC ${P3PANDATOOLBASE_HEADERS} ${P3PANDATOOLBASE_SOURCES})
