@@ -864,7 +864,7 @@ class build_apps(setuptools.Command):
                 whlfile = self._get_zip_file(whl)
 
                 # Normalize the path separator
-                wf = wf.replace(os.path.sep, '/')
+                wf = os.path.normpath(wf).replace(os.path.sep, '/')
 
                 # Look case-insensitively.
                 namelist = whlfile.namelist()
@@ -935,9 +935,10 @@ class build_apps(setuptools.Command):
         self.copy(source_path, target_path)
 
         fp = open(target_path, 'rb')
+        source_dir = os.path.dirname(source_path)
         target_dir = os.path.dirname(target_path)
         base = os.path.basename(target_path)
-        self.copy_dependencies(fp, target_dir, search_path, base)
+        self.copy_dependencies(fp, target_dir, search_path + [source_dir], base)
 
     def copy_dependencies(self, fp, target_dir, search_path, referenced_by):
         """ Copies the dependencies of the given open file. """
