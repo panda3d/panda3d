@@ -20,5 +20,12 @@ composite_sources(p3pandatoolbase P3PANDATOOLBASE_SOURCES)
 add_library(p3pandatoolbase STATIC ${P3PANDATOOLBASE_HEADERS} ${P3PANDATOOLBASE_SOURCES})
 target_link_libraries(p3pandatoolbase panda)
 
+# ptloader - a module - may need to link in libraries in this package, so:
+if(MODULE_TYPE STREQUAL "MODULE")
+  set_target_properties(p3pandatoolbase PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    INTERFACE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # This is only needed for binaries in the pandatool package. It is not useful
 # for user applications, so it is not installed.

@@ -1,0 +1,7 @@
+add_executable(egg2obj eggToObj.cxx eggToObj.h)
+target_link_libraries(egg2obj p3objegg p3eggbase)
+install(TARGETS egg2obj DESTINATION bin)
+
+add_executable(obj2egg objToEgg.cxx objToEgg.h)
+target_link_libraries(obj2egg p3objegg p3eggbase p3progbase)
+install(TARGETS obj2egg DESTINATION bin)
