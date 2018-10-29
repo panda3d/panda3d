@@ -306,7 +306,6 @@ is_trivial() const {
   }
 
   // Now look for functions that are virtual or con/destructors.
-  bool is_default_constructible = true;
   CPPScope::Functions::const_iterator fi;
   for (fi = _scope->_functions.begin(); fi != _scope->_functions.end(); ++fi) {
     CPPFunctionGroup *fgroup = (*fi).second;
@@ -343,9 +342,6 @@ is_trivial() const {
           // Same for the default constructor.
           return false;
         }
-        // The presence of a non-default constructor makes the class not
-        // default-constructible.
-        is_default_constructible = false;
       }
 
       if (fgroup->_name == "operator =") {
@@ -356,7 +352,7 @@ is_trivial() const {
   }
 
   // Finally, the class must be default-constructible.
-  return is_default_constructible;
+  return is_default_constructible(V_public);
 }
 
 /**
