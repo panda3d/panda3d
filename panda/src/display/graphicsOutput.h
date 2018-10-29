@@ -394,6 +394,7 @@ protected:
   typedef CycleDataLockedReader<CData> CDLockedReader;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+  typedef CycleDataStageWriter<CData> CDStageWriter;
 
 protected:
   int _creation_flags;

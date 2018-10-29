@@ -12,10 +12,14 @@
  */
 
 #include "standardMunger.h"
-#include "renderState.h"
-#include "graphicsStateGuardian.h"
+
 #include "config_gobj.h"
+
 #include "displayRegion.h"
+#include "graphicsStateGuardian.h"
+#include "lightAttrib.h"
+#include "materialAttrib.h"
+#include "renderState.h"
 
 TypeHandle StandardMunger::_type_handle;
 
@@ -55,24 +59,10 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
     const ColorScaleAttrib *color_scale_attrib;
 
     if (state->get_attrib(color_attrib) &&
-        color_attrib->get_color_type() == ColorAttrib::T_flat) {
+        color_attrib->get_color_type() != ColorAttrib::T_vertex) {
 
-      if (!get_gsg()->get_color_scale_via_lighting()) {
-        // We only need to munge the color directly if the GSG says it can't
-        // cheat the color via lighting (presumably, in this case, by applying
-        // a material).
-        _color = color_attrib->get_color();
-        if (state->get_attrib(color_scale_attrib) &&
-            color_scale_attrib->has_scale()) {
-          const LVecBase4 &cs = color_scale_attrib->get_scale();
-          _color.set(_color[0] * cs[0],
-                     _color[1] * cs[1],
-                     _color[2] * cs[2],
-                     _color[3] * cs[3]);
-        }
-        _munge_color = true;
-        _should_munge_state = true;
-      }
+      // In this case, we don't need to munge anything as we can apply the
+      // color and color scale via glColor4f.
 
     } else if (state->get_attrib(color_scale_attrib) &&
                color_scale_attrib->has_scale()) {

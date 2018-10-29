@@ -1389,7 +1389,8 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
     // We can only generate a getter and a setter if we can talk about the
     // type it is.
 
-    if (parameter_type->as_struct_type() != nullptr) {
+    if (parameter_type->as_struct_type() != nullptr &&
+        !parameter_type->is_trivial()) {
       // Wrap the type in a const reference.
       parameter_type = TypeManager::wrap_const_reference(parameter_type);
     }

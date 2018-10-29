@@ -22,6 +22,8 @@
 #include "namable.h"
 #include "coordinateSystem.h"
 
+#include "luse.h"
+
 class XFileNode;
 class XFileDataNode;
 class XFileMesh;

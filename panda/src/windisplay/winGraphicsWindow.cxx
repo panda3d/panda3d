@@ -283,6 +283,41 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
+  if (properties.has_undecorated() ||
+      properties.has_fixed_size()) {
+    if (properties.has_undecorated()) {
+      _properties.set_undecorated(properties.get_undecorated());
+      properties.clear_undecorated();
+    }
+    if (properties.has_fixed_size()) {
+      _properties.set_fixed_size(properties.get_fixed_size());
+      properties.clear_fixed_size();
+    }
+    // When switching undecorated mode, Windows will keep the window at the
+    // current outer size, whereas we want to keep it with the configured
+    // inner size.  Store the current size and origin.
+    LPoint2i top_left = _properties.get_origin();
+    LPoint2i bottom_right = top_left + _properties.get_size();
+
+    DWORD window_style = make_style(_properties);
+    SetWindowLong(_hWnd, GWL_STYLE, window_style);
+
+    // Now calculate the proper size and origin with the new window style.
+    RECT view_rect;
+    SetRect(&view_rect, top_left[0], top_left[1],
+            bottom_right[0], bottom_right[1]);
+    WINDOWINFO wi;
+    GetWindowInfo(_hWnd, &wi);
+    AdjustWindowRectEx(&view_rect, wi.dwStyle, FALSE, wi.dwExStyle);
+
+    // We need to call this to ensure that the style change takes effect.
+    SetWindowPos(_hWnd, HWND_NOTOPMOST, view_rect.left, view_rect.top,
+                 view_rect.right - view_rect.left,
+                 view_rect.bottom - view_rect.top,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED |
+                 SWP_NOSENDCHANGING | SWP_SHOWWINDOW);
+  }
+
   if (properties.has_title()) {
     std::string title = properties.get_title();
     _properties.set_title(title);
@@ -487,7 +522,7 @@ open_window() {
   // CreateWindow() and know which window it is sending events to even before
   // it gives us a handle.  Warning: this is not thread safe!
   _creating_window = this;
-  bool opened = open_graphic_window(is_fullscreen());
+  bool opened = open_graphic_window();
   _creating_window = nullptr;
 
   if (!opened) {
@@ -866,7 +901,9 @@ do_fullscreen_switch() {
     return false;
   }
 
-  DWORD window_style = make_style(true);
+  WindowProperties props(_properties);
+  props.set_fullscreen(true);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -886,7 +923,10 @@ do_fullscreen_switch() {
 bool WinGraphicsWindow::
 do_windowed_switch() {
   do_fullscreen_disable();
-  DWORD window_style = make_style(false);
+
+  WindowProperties props(_properties);
+  props.set_fullscreen(false);
+  DWORD window_style = make_style(props);
   SetWindowLong(_hWnd, GWL_STYLE, window_style);
 
   WINDOW_METRICS metrics;
@@ -929,7 +969,7 @@ support_overlay_window(bool) {
  * Constructs a dwStyle for the specified mode, be it windowed or fullscreen.
  */
 DWORD WinGraphicsWindow::
-make_style(bool fullscreen) {
+make_style(const WindowProperties &properties) {
   // from MSDN: An OpenGL window has its own pixel format.  Because of this,
   // only device contexts retrieved for the client area of an OpenGL window
   // are allowed to draw into the window.  As a result, an OpenGL window
@@ -939,7 +979,7 @@ make_style(bool fullscreen) {
 
   DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (fullscreen){
+  if (_properties.get_fullscreen()) {
     window_style |= WS_SYSMENU;
   } else if (!_properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
@@ -1016,8 +1056,8 @@ calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
  * Creates a regular or fullscreen window.
  */
 bool WinGraphicsWindow::
-open_graphic_window(bool fullscreen) {
-  DWORD window_style = make_style(fullscreen);
+open_graphic_window() {
+  DWORD window_style = make_style(_properties);
 
   wstring title;
   if (_properties.has_title()) {
@@ -2187,12 +2227,12 @@ update_cursor_window(WinGraphicsWindow *to_window) {
     // We are leaving a graphics window; we should restore the Win2000
     // effects.
     if (_got_saved_params) {
-      SystemParametersInfo(SPI_SETMOUSETRAILS, 0,
-                           (PVOID)_saved_mouse_trails, 0);
+      SystemParametersInfo(SPI_SETMOUSETRAILS, _saved_mouse_trails,
+                           0, 0);
       SystemParametersInfo(SPI_SETCURSORSHADOW, 0,
-                           (PVOID)_saved_cursor_shadow, 0);
+                           _saved_cursor_shadow ? (PVOID)1 : nullptr, 0);
       SystemParametersInfo(SPI_SETMOUSEVANISH, 0,
-                           (PVOID)_saved_mouse_vanish, 0);
+                           _saved_mouse_vanish ? (PVOID)1 : nullptr, 0);
       _got_saved_params = false;
     }
 

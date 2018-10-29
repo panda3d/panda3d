@@ -291,8 +291,8 @@ output(std::ostream &out) const {
  */
 void TextNode::
 write(std::ostream &out, int indent_level) const {
-  MutexHolder holder(_lock);
   PandaNode::write(out, indent_level);
+  MutexHolder holder(_lock);
   TextProperties::write(out, indent_level + 2);
   indent(out, indent_level + 2)
     << "transform is: " << *TransformState::make_mat(_transform) << "\n";
@@ -317,6 +317,15 @@ get_internal_geom() const {
   text_cat.info()
     << "TextNode::get_internal_geom() called.\n";
   return do_get_internal_geom();
+}
+
+/**
+ * Called whenever the text has been changed.
+ */
+void TextNode::
+text_changed() {
+  MutexHolder holder(_lock);
+  invalidate_with_measure();
 }
 
 /**

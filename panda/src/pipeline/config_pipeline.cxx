@@ -71,7 +71,10 @@ init_libpipeline() {
   }
   initialized = true;
 
+#ifdef DO_PIPELINING
   CycleData::init_type();
+#endif
+
   MainThread::init_type();
   ExternalThread::init_type();
   GenericThread::init_type();

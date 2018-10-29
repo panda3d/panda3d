@@ -182,14 +182,6 @@ PUBLISHED:
   INLINE void set_glyph_shift(PN_stdfloat glyph_shift);
   INLINE void clear_glyph_shift();
 
-  // These methods are inherited from TextEncoder, but we override here so we
-  // can flag the TextNode as dirty when they have been changed.
-  INLINE void set_text(const std::string &text);
-  INLINE void set_text(const std::string &text, Encoding encoding);
-  INLINE void clear_text();
-  INLINE void append_text(const std::string &text);
-  INLINE void append_unicode_char(wchar_t character);
-
   // After the text has been set, you can query this to determine how it will
   // be wordwrapped.
   INLINE std::string get_wordwrapped_text() const;
@@ -202,10 +194,6 @@ PUBLISHED:
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
   bool is_whitespace(wchar_t character) const;
-
-  // Direct support for wide-character strings.
-  INLINE void set_wtext(const std::wstring &wtext);
-  INLINE void append_wtext(const std::wstring &text);
 
   INLINE std::wstring get_wordwrapped_wtext() const;
   PN_stdfloat calc_width(const std::wstring &line) const;
@@ -245,8 +233,6 @@ PUBLISHED:
   MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
   MAKE_PROPERTY(flatten_flags, get_flatten_flags, set_flatten_flags);
 
-  MAKE_PROPERTY(text, get_text, set_text);
-
   MAKE_PROPERTY2(font, has_font, get_font, set_font, clear_font);
   MAKE_PROPERTY2(small_caps, has_small_caps, get_small_caps,
                              set_small_caps, clear_small_caps);
@@ -281,6 +267,9 @@ PUBLISHED:
                              set_text_scale, clear_text_scale);
 
 public:
+  // From parent class TextEncoder;
+  virtual void text_changed() final;
+
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,

@@ -445,7 +445,7 @@ do_flush() {
     if (data_sent > 0) {
       total_sent += data_sent;
     }
-    double last_report = 0;
+
     while (!okflag && tcp->Active() &&
            (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
       if (data_sent == 0) {

@@ -1,5 +1,4 @@
 #include "graphicsPipeSelection.cxx"
-#include "graphicsStateGuardian.cxx"
 #include "graphicsThreadingModel.cxx"
 #include "graphicsWindow.cxx"
 #include "graphicsWindowProc.cxx"

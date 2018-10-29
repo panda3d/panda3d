@@ -1229,7 +1229,10 @@ init_resized_window() {
   DWORD flags;
   D3DCOLOR clear_color;
 
-  flags = D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER;
+  flags = D3DCLEAR_TARGET;
+  if (_fb_properties.get_depth_bits() > 0) {
+    flags |= D3DCLEAR_ZBUFFER;
+  }
   clear_color = 0x00000000;
   hr = _wcontext._d3d_device-> Clear (0, nullptr, flags, clear_color, 0.0f, 0);
   if (FAILED(hr)) {

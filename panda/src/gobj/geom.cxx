@@ -287,6 +287,28 @@ make_nonindexed(bool composite_only) {
 }
 
 /**
+ * Returns a GeomVertexData that represents the results of computing the
+ * vertex animation on the CPU for this Geom's vertex data.
+ *
+ * If there is no CPU-defined vertex animation on this object, this just
+ * returns the original object.
+ *
+ * If there is vertex animation, but the VertexTransform values have not
+ * changed since last time, this may return the same pointer it returned
+ * previously.  Even if the VertexTransform values have changed, it may still
+ * return the same pointer, but with its contents modified (this is preferred,
+ * since it allows the graphics backend to update vertex buffers optimally).
+ *
+ * If force is false, this method may return immediately with stale data, if
+ * the vertex data is not completely resident.  If force is true, this method
+ * will never return stale data, but may block until the data is available.
+ */
+CPT(GeomVertexData) Geom::
+get_animated_vertex_data(bool force, Thread *current_thread) const {
+  return get_vertex_data()->animate_vertices(force, current_thread);
+}
+
+/**
  * Replaces the ith GeomPrimitive object stored within the Geom with the new
  * object.
  *
@@ -1311,8 +1333,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
 
   // Get the vertex data, after animation.
-  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer(current_thread);
-  vertex_data = vertex_data->animate_vertices(true, current_thread);
+  CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
