@@ -46,7 +46,7 @@ class DeviceConnectivityMonitor(DirectObject):
         self.create_device_menu()
 
         self.devices = {}
-        for device in self.mgr.devices:
+        for device in self.mgr.get_devices():
             self.connect_device(device)
 
         self.accept("connect-device", self.connect_device)
@@ -159,19 +159,19 @@ class DeviceMonitor(DirectObject):
     def activate(self):
         print("Device connected")
         print("  Name        : {}".format(self.device.name))
-        dc_name = InputDevice.format_device_class(self.device.getDeviceClass())
+        dc_name = InputDevice.format_device_class(self.device.device_class)
         print("  Type        : {}".format(dc_name))
         print("  Manufacturer: {}".format(self.device.manufacturer))
         print("  ID          : {:04x}:{:04x}".format(self.device.vendor_id,
                                                      self.device.product_id))
-        axis_names = [InputDevice.format_axis(self.device.get_control_map(i))
-                      for i in range(self.device.get_num_controls())]
-        print("  Axes        : {} ({})".format(self.device.get_num_controls(),
+        axis_names = [axis.axis.name for axis in self.device.axes]
+        print("  Axes        : {} ({})".format(len(self.device.axes),
                                                ', '.join(axis_names)))
-        button_names = [str(self.device.get_button_map(i))
-                        for i in range(self.device.get_num_buttons())]
-        print("  Buttons     : {} ({})".format(self.device.get_num_buttons(),
+        button_names = [button.handle.name for button in self.device.buttons]
+        print("  Buttons     : {} ({})".format(len(self.device.buttons),
                                                ', '.join(button_names)))
+
+        base.attachInputDevice(self.device)
 
         self.task = base.taskMgr.add(
             self.update,
@@ -277,7 +277,7 @@ class DeviceMonitor(DirectObject):
             ('Name', self.device.name),
             ('Device class',
              InputDevice.format_device_class(
-                 self.device.getDeviceClass(),
+                 self.device.device_class,
              ),
             ),
             ('Manufacturer', self.device.manufacturer),
@@ -295,7 +295,7 @@ class DeviceMonitor(DirectObject):
         # Axes
 
         self.axis_sliders = []
-        if self.device.get_num_controls() > 0:
+        if len(self.device.axes) > 0:
             offset -= 0.1
             self.axes_header = DirectLabel(
                 text="Axes",
@@ -334,9 +334,9 @@ class DeviceMonitor(DirectObject):
                 return slider
 
             # FIXME: Can't I enumerate() the axes?
-            for i in range(self.device.get_num_controls()):
+            for i in range(len(self.device.axes)):
                 axis_name = InputDevice.format_axis(
-                    self.device.get_control_map(i)
+                    self.device.axes[i].axis
                 )
                 axis_slider = add_axis(offset, axis_name)
                 self.axis_sliders.append(axis_slider)
@@ -345,7 +345,7 @@ class DeviceMonitor(DirectObject):
         # Buttons
 
         self.button_buttons = []
-        if self.device.get_num_buttons() > 0:
+        if len(self.device.buttons) > 0:
             offset -= 0.1
             self.buttons_header = DirectLabel(
                 text="Buttons",
@@ -380,8 +380,8 @@ class DeviceMonitor(DirectObject):
                 )
                 return button
 
-            for i in range(self.device.get_num_buttons()):
-                button_name = str(self.device.get_button_map(i))
+            for i in range(len(self.device.buttons)):
+                button_name = self.device.buttons[i].handle.name
                 button_button = add_button(offset, button_name)
                 self.button_buttons.append(button_button)
                 offset -= 0.1
@@ -456,15 +456,16 @@ class DeviceMonitor(DirectObject):
     def update(self, task):
         # FIXME: There needs to be a demo of events here, too.
         for idx, slider in enumerate(self.axis_sliders):
-            slider["value"] = self.device.controls[idx].state
+            slider["value"] = self.device.axes[idx].value
         for idx, button in enumerate(self.button_buttons):
             # TODO: Use btn.pressed here once it's available.
-            if self.device.buttons[idx].state == InputDevice.S_down:
-                button['frameColor'] = VBase4(0.0, 0.8, 0.0, 1)
-                button['text'] = "down"
-            elif self.device.buttons[idx].state == InputDevice.S_up:
-                button['frameColor'] = VBase4(0.3, 0.3, 0.3, 1)
-                button['text'] = "up"
+            if self.device.buttons[idx].known:
+                if self.device.buttons[idx].pressed:
+                    button['frameColor'] = VBase4(0.0, 0.8, 0.0, 1)
+                    button['text'] = "down"
+                else:
+                    button['frameColor'] = VBase4(0.3, 0.3, 0.3, 1)
+                    button['text'] = "up"
             else:
                 # State is InputDevice.S_unknown. This happens if the device
                 # manager hasn't polled yet, and in some cases before a button
