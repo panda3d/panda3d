@@ -141,8 +141,8 @@ start(ThreadPriority priority, bool joinable) {
 
 #ifdef HAVE_PYTHON
   // Query the current Python thread state.
-  _python_state = PyThreadState_Swap(nullptr);
-  PyThreadState_Swap(_python_state);
+  _python_state = thread_state_swap(nullptr);
+  thread_state_swap(_python_state);
 #endif  // HAVE_PYTHON
 
   init_thread_context(_context, _stack, _stack_size, st_begin_thread, this);
@@ -204,6 +204,14 @@ prepare_for_exit() {
 /**
  *
  */
+bool ThreadSimpleImpl::
+is_true_threads() {
+  return (is_os_threads != 0);
+}
+
+/**
+ *
+ */
 void ThreadSimpleImpl::
 sleep_this(double seconds) {
   _manager->enqueue_sleep(this, seconds);
@@ -238,7 +246,7 @@ st_begin_thread(void *data) {
 void ThreadSimpleImpl::
 begin_thread() {
 #ifdef HAVE_PYTHON
-  PyThreadState_Swap(_python_state);
+  thread_state_swap(_python_state);
 #endif  // HAVE_PYTHON
 
 #ifdef HAVE_POSIX_THREADS

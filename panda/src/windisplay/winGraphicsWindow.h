@@ -119,7 +119,7 @@ protected:
   virtual bool calculate_metrics(bool fullscreen, DWORD style,
                                  WINDOW_METRICS &metrics, bool &has_origin);
 
-  virtual DWORD make_style(bool fullscreen);
+  DWORD make_style(const WindowProperties &properties);
 
   virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size,
                                           DWORD &bitdepth);
@@ -127,7 +127,7 @@ protected:
   virtual void support_overlay_window(bool flag);
 
 private:
-  bool open_graphic_window(bool fullscreen);
+  bool open_graphic_window();
   void adjust_z_order();
   void adjust_z_order(WindowProperties::ZOrder last_z_order,
                       WindowProperties::ZOrder this_z_order);

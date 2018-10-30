@@ -62,8 +62,6 @@ private:
   PN_stdfloat _lifespan;
   bool _alive;
   int _index;
-
-  LPoint3 _last_position;
 };
 
 #include "baseParticle.I"

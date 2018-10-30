@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 '''
-Demonstrate usage of steering wheels
+Demonstrate usage of flight stick
 
-In this sample you can use a wheel type device to control the camera and
-show some messages on screen.  You can acclerate forward using the
-accleration pedal and slow down using the break pedal.
+In this sample you can use a flight stick to control the camera and show some
+messages on screen.  You can accelerate using the throttle.
 '''
 
 from direct.showbase.ShowBase import ShowBase
@@ -15,6 +14,10 @@ loadPrcFileData("", """
     default-fov 60
     notify-level-device debug
 """)
+
+STICK_DEAD_ZONE = 0.02
+THROTTLE_DEAD_ZONE = 0.02
+
 
 class App(ShowBase):
     def __init__(self):
@@ -33,9 +36,9 @@ class App(ShowBase):
             scale = .15)
         self.lblAction.hide()
 
-        # Is there a steering wheel connected?
-        self.wheel = None
-        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        # Is there a gamepad connected?
+        self.flightStick = None
+        devices = self.devices.getDevices(InputDevice.DC_flight_stick)
         if devices:
             self.connect(devices[0])
 
@@ -50,22 +53,14 @@ class App(ShowBase):
         self.accept("disconnect-device", self.disconnect)
 
         self.accept("escape", exit)
+        self.accept("flight_stick0-start", exit)
 
-        # Accept button events of the first connected steering wheel
-        self.accept("steering_wheel0-face_a", self.action, extraArgs=["Action"])
-        self.accept("steering_wheel0-face_a-up", self.actionUp)
-        self.accept("steering_wheel0-hat_up", self.center_wheel)
+        # Accept button events of the first connected flight stick
+        self.accept("flight_stick0-trigger", self.action, extraArgs=["Trigger"])
+        self.accept("flight_stick0-trigger-up", self.actionUp)
 
         self.environment = loader.loadModel("environment")
         self.environment.reparentTo(render)
-
-        # save the center position of the wheel
-        # NOTE: here we assume, that the wheel is centered when the application get started.
-        #       In real world applications, you should notice the user and give him enough time
-        #       to center the wheel until you store the center position of the controler!
-        self.wheelCenter = 0
-        if self.wheel is not None:
-            self.wheelCenter = self.wheel.findAxis(InputDevice.Axis.wheel).value
 
         # disable pandas default mouse-camera controls so we can handle the camera
         # movements by ourself
@@ -77,15 +72,15 @@ class App(ShowBase):
     def connect(self, device):
         """Event handler that is called when a device is discovered."""
 
-        # We're only interested if this is a steering wheel and we don't have a
-        # wheel yet.
-        if device.device_class == InputDevice.DC_steering_wheel and not self.wheel:
+        # We're only interested if this is a flight stick and we don't have a
+        # flight stick yet.
+        if device.device_class == InputDevice.DC_flight_stick and not self.flightStick:
             print("Found %s" % (device))
-            self.wheel = device
+            self.flightStick = device
 
             # Enable this device to ShowBase so that we can receive events.
-            # We set up the events with a prefix of "steering_wheel0-".
-            self.attachInputDevice(device, prefix="steering_wheel0")
+            # We set up the events with a prefix of "flight_stick0-".
+            self.attachInputDevice(device, prefix="flight_stick0")
 
             # Hide the warning that we have no devices.
             self.lblWarning.hide()
@@ -93,17 +88,17 @@ class App(ShowBase):
     def disconnect(self, device):
         """Event handler that is called when a device is removed."""
 
-        if self.wheel != device:
-            # We don't care since it's not our wheel.
+        if self.flightStick != device:
+            # We don't care since it's not our gamepad.
             return
 
         # Tell ShowBase that the device is no longer needed.
         print("Disconnected %s" % (device))
         self.detachInputDevice(device)
-        self.wheel = None
+        self.flightStick = None
 
-        # Do we have any steering wheels?  Attach the first other steering wheel.
-        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        # Do we have any other gamepads?  Attach the first other gamepad.
+        devices = self.devices.getDevices(InputDevice.DC_flight_stick)
         if devices:
             self.connect(devices[0])
         else:
@@ -112,7 +107,8 @@ class App(ShowBase):
 
     def reset(self):
         """Reset the camera to the initial position."""
-        self.camera.setPosHpr(0, -200, 2, 0, 0, 0)
+
+        self.camera.setPosHpr(0, -200, 10, 0, 0, 0)
 
     def action(self, button):
         # Just show which button has been pressed.
@@ -123,15 +119,10 @@ class App(ShowBase):
         # Hide the label showing which button is pressed.
         self.lblAction.hide()
 
-    def center_wheel(self):
-        """Reset the wheels center rotation to the current rotation of the wheel"""
-        self.wheelCenter = self.wheel.findAxis(InputDevice.Axis.wheel).value
-
     def moveTask(self, task):
         dt = globalClock.getDt()
-        movementVec = Vec3()
 
-        if not self.wheel:
+        if not self.flightStick:
             return task.cont
 
         if self.currentMoveSpeed > 0:
@@ -139,27 +130,38 @@ class App(ShowBase):
             if self.currentMoveSpeed < 0:
                 self.currentMoveSpeed = 0
 
-        # we will use the first found wheel
-        # Acclerate
-        accleratorPedal = self.wheel.findAxis(InputDevice.Axis.accelerator).value
-        accleration = accleratorPedal * self.maxAccleration
-        if self.currentMoveSpeed > accleratorPedal * self.maxSpeed:
+        # Accelerate using the throttle.  Apply deadzone of 0.01.
+        throttle = self.flightStick.findAxis(InputDevice.Axis.throttle).value
+        if abs(throttle) < THROTTLE_DEAD_ZONE:
+            throttle = 0
+        accleration = throttle * self.maxAccleration
+        if self.currentMoveSpeed > throttle * self.maxSpeed:
             self.currentMoveSpeed -= dt * self.deaccleration
         self.currentMoveSpeed += dt * accleration
 
-        # Break
-        breakPedal = self.wheel.findAxis(InputDevice.Axis.brake).value
-        deacleration = breakPedal * self.deaclerationBreak
-        self.currentMoveSpeed -= dt * deacleration
-        if self.currentMoveSpeed < 0:
-            self.currentMoveSpeed = 0
-
         # Steering
-        rotation = self.wheelCenter - self.wheel.findAxis(InputDevice.Axis.wheel).value
-        base.camera.setH(base.camera, 100 * dt * rotation)
+
+        # Control the cameras yaw/Headding
+        stick_yaw = self.flightStick.findAxis(InputDevice.Axis.yaw)
+        if abs(stick_yaw.value) > STICK_DEAD_ZONE:
+            base.camera.setH(base.camera, 100 * dt * stick_yaw.value)
+
+        # Control the cameras pitch
+        stick_y = self.flightStick.findAxis(InputDevice.Axis.pitch)
+        if abs(stick_y.value) > STICK_DEAD_ZONE:
+            base.camera.setP(base.camera, 100 * dt * stick_y.value)
+
+        # Control the cameras roll
+        stick_x = self.flightStick.findAxis(InputDevice.Axis.roll)
+        if abs(stick_x.value) > STICK_DEAD_ZONE:
+            base.camera.setR(base.camera, 100 * dt * stick_x.value)
 
         # calculate movement
         base.camera.setY(base.camera, dt * self.currentMoveSpeed)
+
+        # Make sure camera does not go below the ground.
+        if base.camera.getZ() < 1:
+            base.camera.setZ(1)
 
         return task.cont
 

@@ -32,6 +32,7 @@ class GraphicsWindow;
 class EXPCL_PANDA_DISPLAY GraphicsWindowProc {
 public:
   GraphicsWindowProc();
+  virtual ~GraphicsWindowProc() = default;
 #if defined(__WIN32__) || defined(_WIN32)
   virtual LONG wnd_proc(GraphicsWindow* graphicsWindow, HWND hwnd,
                         UINT msg, WPARAM wparam, LPARAM lparam);

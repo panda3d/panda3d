@@ -12,7 +12,9 @@
  */
 
 #include "eggMatrixTablePointer.h"
+
 #include "dcast.h"
+#include "eggCharacterDb.h"
 #include "eggSAnimData.h"
 #include "eggXfmAnimData.h"
 #include "eggXfmSAnim.h"

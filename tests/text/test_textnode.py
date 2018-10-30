@@ -1,6 +1,13 @@
 from panda3d import core
 
 
+def test_textnode_write():
+    out = core.StringStream()
+    text = core.TextNode("test")
+    text.write(out, 0)
+    assert out.data.startswith(b"TextNode test")
+
+
 def test_textnode_card_as_margin():
     text = core.TextNode("test")
     text.text = "Test"

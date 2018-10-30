@@ -45,7 +45,9 @@ has_column(const InternalName *name) const {
  */
 INLINE int GeomVertexArrayData::
 get_num_rows() const {
-  return get_handle()->get_num_rows();
+  CDReader cdata(_cycler);
+  nassertr(_array_format->get_stride() != 0, 0);
+  return cdata->_buffer.get_size() / _array_format->get_stride();
 }
 
 /**

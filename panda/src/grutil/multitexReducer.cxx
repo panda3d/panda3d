@@ -866,7 +866,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     PT(Geom) geom = orig_geom->make_copy();
 
     // Ensure that any vertex animation has been applied.
-    geom->set_vertex_data(geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread));
+    geom->set_vertex_data(geom->get_animated_vertex_data(true, current_thread));
 
     // Now get a modifiable pointer to the vertex data in the new Geom.  This
     // will actually perform a deep copy of the vertex data.

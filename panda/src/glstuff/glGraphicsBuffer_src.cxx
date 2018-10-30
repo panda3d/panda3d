@@ -283,6 +283,13 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     rebuild_bitplanes();
   }
 
+  // The host window may not have had sRGB enabled, so we need to do this.
+#ifndef OPENGLES
+  if (get_fb_properties().get_srgb_color()) {
+    glEnable(GL_FRAMEBUFFER_SRGB);
+  }
+#endif
+
   _gsg->set_current_properties(&get_fb_properties());
   report_my_gl_errors();
   return true;
@@ -1090,6 +1097,15 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
 #endif
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
       GLuint format = GL_DEPTH_COMPONENT;
+#ifndef OPENGLES
+      if (_fb_properties.get_float_depth()) {
+        if (!glgsg->_use_remapped_depth_range) {
+          format = GL_DEPTH_COMPONENT32F;
+        } else {
+          format = GL_DEPTH_COMPONENT32F_NV;
+        }
+      } else
+#endif
       if (tex) {
         switch (tex->get_format()) {
           case Texture::F_depth_component16:

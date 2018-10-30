@@ -64,7 +64,7 @@ private:
   CGGammaValue _gOriginalRedTable[ 256 ];
   CGGammaValue _gOriginalGreenTable[ 256 ];
   CGGammaValue _gOriginalBlueTable[ 256 ];
-  CGTableCount _sampleCount;
+  uint32_t _sampleCount;
   CGDisplayErr _cgErr;
 
 public:

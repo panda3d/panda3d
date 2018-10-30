@@ -235,8 +235,8 @@ PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute) {
     "'%.100s' object has no attribute '%.200s'",
     Py_TYPE(obj)->tp_name, attribute);
 
-  Py_INCREF(PyExc_TypeError);
-  PyErr_Restore(PyExc_TypeError, message, nullptr);
+  Py_INCREF(PyExc_AttributeError);
+  PyErr_Restore(PyExc_AttributeError, message, nullptr);
   return nullptr;
 }
 
@@ -722,7 +722,10 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 
     // Extract the __file__ attribute, if present.
     Filename main_dir;
-    PyObject *file_attr = PyObject_GetAttrString(main_module, "__file__");
+    PyObject *file_attr = nullptr;
+    if (main_module != nullptr) {
+      file_attr = PyObject_GetAttrString(main_module, "__file__");
+    }
     if (file_attr == nullptr) {
       // Must be running in the interactive interpreter.  Use the CWD.
       main_dir = ExecutionEnvironment::get_cwd();
@@ -752,6 +755,11 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
     PyErr_Clear();
     initialized_main_dir = true;
+
+    // Also, while we are at it, initialize the thread swap hook.
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    global_thread_state_swap = PyThreadState_Swap;
+#endif
   }
 
   PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);

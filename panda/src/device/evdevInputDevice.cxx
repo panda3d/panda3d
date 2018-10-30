@@ -239,8 +239,7 @@ init_device() {
 
   LightMutexHolder holder(_lock);
 
-  uint8_t evtypes[(EV_MAX + 8) >> 3];
-  memset(evtypes, 0, sizeof(evtypes));
+  uint8_t evtypes[(EV_MAX + 8) >> 3] = {0};
   char name[128];
   if (ioctl(_fd, EVIOCGNAME(sizeof(name)), name) < 0 ||
       ioctl(_fd, EVIOCGBIT(0, sizeof(evtypes)), evtypes) < 0) {
@@ -267,10 +266,9 @@ init_device() {
   bool has_keys = false;
   bool has_axes = false;
 
-  uint8_t keys[(KEY_MAX + 8) >> 3];
+  uint8_t keys[(KEY_MAX + 8) >> 3] = {0};
   if (test_bit(EV_KEY, evtypes)) {
     // Check which buttons are on the device.
-    memset(keys, 0, sizeof(keys));
     ioctl(_fd, EVIOCGBIT(EV_KEY, sizeof(keys)), keys);
     has_keys = true;
 
@@ -280,10 +278,9 @@ init_device() {
   }
 
   int num_bits = 0;
-  uint8_t axes[(ABS_MAX + 8) >> 3];
+  uint8_t axes[(ABS_MAX + 8) >> 3] = {0};
   if (test_bit(EV_ABS, evtypes)) {
     // Check which axes are on the device.
-    memset(axes, 0, sizeof(axes));
     num_bits = ioctl(_fd, EVIOCGBIT(EV_ABS, sizeof(axes)), axes) << 3;
     has_axes = true;
   }
@@ -302,8 +299,7 @@ init_device() {
 
   // Try to detect which type of device we have here
   if (_device_class == DC_unknown) {
-    int device_scores[DC_COUNT];
-    memset(device_scores, 0, sizeof(device_scores));
+    int device_scores[DC_COUNT] = {0};
 
     // Test for specific keys
     if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
@@ -374,8 +370,7 @@ init_device() {
 
   if (has_keys) {
     // Also check whether the buttons are currently pressed.
-    uint8_t states[(KEY_MAX + 8) >> 3];
-    memset(states, 0, sizeof(states));
+    uint8_t states[(KEY_MAX + 8) >> 3] = {0};
     ioctl(_fd, EVIOCGKEY(sizeof(states)), states);
 
     for (int i = 0; i <= KEY_MAX; ++i) {
@@ -545,7 +540,7 @@ init_device() {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
-            index = add_axis(axis, absinfo.maximum, absinfo.minimum, true);
+            index = add_axis(axis, absinfo.minimum, absinfo.maximum, true);
           } else {
             index = add_axis(axis, absinfo.minimum, absinfo.maximum);
           }
@@ -565,8 +560,7 @@ init_device() {
   }
 
   if (test_bit(EV_FF, evtypes)) {
-    uint8_t effects[(FF_MAX + 8) >> 3];
-    memset(effects, 0, sizeof(effects));
+    uint8_t effects[(FF_MAX + 8) >> 3] = {0};
     ioctl(_fd, EVIOCGBIT(EV_FF, sizeof(effects)), effects);
 
     if (test_bit(FF_RUMBLE, effects)) {
@@ -679,7 +673,6 @@ process_events() {
   int y = _pointer_data.get_y();
   bool have_pointer = false;
   double time = ClockObject::get_global_clock()->get_frame_time();
-  ButtonHandle button;
   int index;
 
   // It seems that some devices send a single EV_SYN event when being

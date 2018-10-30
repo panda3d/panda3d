@@ -1,8 +1,4 @@
-/* Filename: contextSwitch_ucontext_src.c
- * Created by:  drose (15Apr10)
- *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *
+/**
  * PANDA 3D SOFTWARE
  * Copyright (c) Carnegie Mellon University.  All rights reserved.
  *
@@ -10,7 +6,10 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ * @file contextSwitch_ucontext_src.c
+ * @author drose
+ * @date 2010-04-15
+ */
 
 /* This is the implementation of user-space context switching using
    getcontext() / setcontext().  This is the preferred implementation,
@@ -43,7 +42,7 @@ begin_context(ThreadFunction *thread_func, void *data) {
 }
 
 void
-init_thread_context(struct ThreadContext *context, 
+init_thread_context(struct ThreadContext *context,
                     unsigned char *stack, size_t stack_size,
                     ThreadFunction *thread_func, void *data) {
   if (getcontext(&context->_ucontext) != 0) {

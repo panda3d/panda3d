@@ -16,6 +16,7 @@
 #include "linuxInputDeviceManager.h"
 #include "winInputDeviceManager.h"
 #include "throw_event.h"
+#include "config_putil.h"
 
 InputDeviceManager *InputDeviceManager::_global_ptr = nullptr;
 
@@ -33,6 +34,8 @@ InputDeviceManager() : _lock("InputDeviceManager") {
  */
 void InputDeviceManager::
 make_global_ptr() {
+  init_libputil();
+
 #ifdef _WIN32
   _global_ptr = new WinInputDeviceManager;
 #elif defined(__APPLE__)

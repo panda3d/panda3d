@@ -681,6 +681,9 @@ if (COMPILER == "MSVC"):
         IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
     if (PkgSkip("ASSIMP")==0):
         LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/assimp.lib")
+        path = GetThirdpartyDir() + "assimp/lib/IrrXML.lib"
+        if os.path.isfile(path):
+            LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/IrrXML.lib")
         IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include/assimp")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
@@ -947,8 +950,6 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
-        if (PkgSkip("OPENCV")==0):
-            LibName("OPENCV", "-framework QuickTime")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
@@ -1335,9 +1336,10 @@ def CompileCxx(obj,src,opts):
                     # Work around Apple compiler bug.
                     cmd += " -U__EXCEPTIONS"
 
-            if 'RTTI' not in opts:
+            target = GetTarget()
+            if 'RTTI' not in opts and target != "darwin":
                 # We always disable RTTI on Android for memory usage reasons.
-                if optlevel >= 4 or GetTarget() == "android":
+                if optlevel >= 4 or target == "android":
                     cmd += " -fno-rtti"
 
         if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
@@ -1597,6 +1599,8 @@ def CompileLib(lib, obj, opts):
         else:
             cmd = GetAR() + ' cru ' + BracketNameWithQuotes(lib)
         for x in obj:
+            if GetLinkAllStatic() and x.endswith('.a'):
+                continue
             cmd += ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
 
@@ -2884,6 +2888,9 @@ else:
     # otherwise, disable it.
     confautoprc = confautoprc.replace('#st#', '#')
 
+if PkgSkip("ASSIMP"):
+    confautoprc = confautoprc.replace("load-file-type p3assimp", "#load-file-type p3assimp")
+
 if (os.path.isfile("makepanda/myconfig.in")):
     configprc = ReadFile("makepanda/myconfig.in")
 else:
@@ -3158,10 +3165,10 @@ CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
+CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/chan')
 CopyAllHeaders('panda/src/char')
 CopyAllHeaders('panda/src/dgraph')
-CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/device')
 CopyAllHeaders('panda/src/pnmtext')
 CopyAllHeaders('panda/src/text')
@@ -3294,7 +3301,6 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllHeaders('pandatool/src/ptloader')
     CopyAllHeaders('pandatool/src/miscprogs')
     CopyAllHeaders('pandatool/src/pstatserver')
-    CopyAllHeaders('pandatool/src/softprogs')
     CopyAllHeaders('pandatool/src/text-stats')
     CopyAllHeaders('pandatool/src/vrmlprogs')
     CopyAllHeaders('pandatool/src/win-stats')
@@ -3550,6 +3556,7 @@ IGATEFILES += [
     "dSearchPath.h",
     "executionEnvironment.h",
     "textEncoder.h",
+    "textEncoder_ext.h",
     "filename.h",
     "filename_ext.h",
     "globPattern.h",
@@ -3814,7 +3821,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH']
   TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
-  TargetAdd('p3gobj_composite2.obj', opts=OPTS, input='p3gobj_composite2.cxx')
+  TargetAdd('p3gobj_composite2.obj', opts=OPTS+['BIGOBJ'], input='p3gobj_composite2.cxx')
 
   OPTS=['DIR:panda/src/gobj', 'NVIDIACG', 'ZLIB', 'SQUISH', 'PYTHON']
   IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
@@ -3874,38 +3881,6 @@ if (not RUNTIME):
   TargetAdd('libp3cull_igate.obj', input='libp3cull.in', opts=["DEPENDENCYONLY"])
 
 #
-# DIRECTORY: panda/src/chan/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA']
-  TargetAdd('p3chan_composite1.obj', opts=OPTS, input='p3chan_composite1.cxx')
-  TargetAdd('p3chan_composite2.obj', opts=OPTS, input='p3chan_composite2.cxx')
-
-  OPTS=['DIR:panda/src/chan', 'PYTHON']
-  IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite*.cxx"])
-  IGATEFILES.remove('movingPart.h')
-  IGATEFILES.remove('animChannelFixed.h')
-  TargetAdd('libp3chan.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3chan.in', opts=['IMOD:panda3d.core', 'ILIB:libp3chan', 'SRCDIR:panda/src/chan'])
-  TargetAdd('libp3chan_igate.obj', input='libp3chan.in', opts=["DEPENDENCYONLY"])
-
-
-# DIRECTORY: panda/src/char/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/char', 'BUILDING:PANDA']
-  TargetAdd('p3char_composite1.obj', opts=OPTS, input='p3char_composite1.cxx')
-  TargetAdd('p3char_composite2.obj', opts=OPTS, input='p3char_composite2.cxx')
-
-  OPTS=['DIR:panda/src/char', 'PYTHON']
-  IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libp3char.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3char.in', opts=['IMOD:panda3d.core', 'ILIB:libp3char', 'SRCDIR:panda/src/char'])
-  TargetAdd('libp3char_igate.obj', input='libp3char.in', opts=["DEPENDENCYONLY"])
-
-#
 # DIRECTORY: panda/src/dgraph/
 #
 
@@ -3941,6 +3916,7 @@ if (not RUNTIME):
 
 if (not RUNTIME):
   OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
+  TargetAdd('p3display_graphicsStateGuardian.obj', opts=OPTS, input='graphicsStateGuardian.cxx')
   TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
   TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
 
@@ -3958,6 +3934,38 @@ if (not RUNTIME):
     OPTS=['DIR:panda/src/display']
     TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
     TargetAdd('libp3subprocbuffer.ilb', input='subprocessWindowBuffer.obj')
+
+#
+# DIRECTORY: panda/src/chan/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA']
+  TargetAdd('p3chan_composite1.obj', opts=OPTS, input='p3chan_composite1.cxx')
+  TargetAdd('p3chan_composite2.obj', opts=OPTS, input='p3chan_composite2.cxx')
+
+  OPTS=['DIR:panda/src/chan', 'PYTHON']
+  IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite*.cxx"])
+  IGATEFILES.remove('movingPart.h')
+  IGATEFILES.remove('animChannelFixed.h')
+  TargetAdd('libp3chan.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3chan.in', opts=['IMOD:panda3d.core', 'ILIB:libp3chan', 'SRCDIR:panda/src/chan'])
+  TargetAdd('libp3chan_igate.obj', input='libp3chan.in', opts=["DEPENDENCYONLY"])
+
+
+# DIRECTORY: panda/src/char/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/char', 'BUILDING:PANDA']
+  TargetAdd('p3char_composite1.obj', opts=OPTS, input='p3char_composite1.cxx')
+  TargetAdd('p3char_composite2.obj', opts=OPTS, input='p3char_composite2.cxx')
+
+  OPTS=['DIR:panda/src/char', 'PYTHON']
+  IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3char.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3char.in', opts=['IMOD:panda3d.core', 'ILIB:libp3char', 'SRCDIR:panda/src/char'])
+  TargetAdd('libp3char_igate.obj', input='libp3char.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/pnmtext/
@@ -4166,6 +4174,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3device_composite2.obj')
   TargetAdd('libpanda.dll', input='p3dgraph_composite1.obj')
   TargetAdd('libpanda.dll', input='p3dgraph_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian.obj')
   TargetAdd('libpanda.dll', input='p3display_composite1.obj')
   TargetAdd('libpanda.dll', input='p3display_composite2.obj')
   TargetAdd('libpanda.dll', input='p3pipeline_composite1.obj')
@@ -6344,21 +6353,6 @@ if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/pstatserver']
     TargetAdd('p3pstatserver_composite1.obj', opts=OPTS, input='p3pstatserver_composite1.cxx')
     TargetAdd('libp3pstatserver.lib', input='p3pstatserver_composite1.obj')
-
-#
-# DIRECTORY: pandatool/src/softprogs/
-#
-
-if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/softprogs', 'OPENSSL']
-    TargetAdd('softcvs_softCVS.obj', opts=OPTS, input='softCVS.cxx')
-    TargetAdd('softcvs_softFilename.obj', opts=OPTS, input='softFilename.cxx')
-    TargetAdd('softcvs.exe', input='softcvs_softCVS.obj')
-    TargetAdd('softcvs.exe', input='softcvs_softFilename.obj')
-    TargetAdd('softcvs.exe', input='libp3progbase.lib')
-    TargetAdd('softcvs.exe', input='libp3pandatoolbase.lib')
-    TargetAdd('softcvs.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('softcvs.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/text-stats/

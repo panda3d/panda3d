@@ -49,6 +49,19 @@ CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy) :
  *
  */
 template<class CycleDataType>
+INLINE CycleDataLockedReader<CycleDataType>::
+CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept :
+  _cycler(from._cycler),
+  _current_thread(from._current_thread),
+  _pointer(from._pointer)
+{
+  from._pointer = nullptr;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
 operator = (const CycleDataLockedReader<CycleDataType> &copy) {
   nassertv(_pointer == nullptr);
@@ -59,19 +72,6 @@ operator = (const CycleDataLockedReader<CycleDataType> &copy) {
 
   nassertv(_pointer != nullptr);
   _cycler->increment_read(_pointer);
-}
-
-/**
- *
- */
-template<class CycleDataType>
-INLINE CycleDataLockedReader<CycleDataType>::
-CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept :
-  _cycler(from._cycler),
-  _current_thread(from._current_thread),
-  _pointer(from._pointer)
-{
-  from._pointer = nullptr;
 }
 
 /**
@@ -175,6 +175,18 @@ template<class CycleDataType>
 INLINE void CycleDataLockedReader<CycleDataType>::
 operator = (const CycleDataLockedReader<CycleDataType> &copy) {
   _pointer = copy._pointer;
+}
+
+/**
+ *
+ */
+template<class CycleDataType>
+INLINE void CycleDataLockedReader<CycleDataType>::
+operator = (CycleDataLockedReader<CycleDataType> &&from) noexcept {
+  nassertv(_pointer == nullptr);
+
+  _pointer = from._pointer;
+  from._pointer = nullptr;
 }
 
 /**
