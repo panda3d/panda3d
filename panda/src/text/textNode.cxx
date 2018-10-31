@@ -291,8 +291,8 @@ output(std::ostream &out) const {
  */
 void TextNode::
 write(std::ostream &out, int indent_level) const {
-  MutexHolder holder(_lock);
   PandaNode::write(out, indent_level);
+  MutexHolder holder(_lock);
   TextProperties::write(out, indent_level + 2);
   indent(out, indent_level + 2)
     << "transform is: " << *TransformState::make_mat(_transform) << "\n";

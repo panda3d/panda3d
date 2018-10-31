@@ -85,6 +85,8 @@ PUBLISHED:
   void offset_vertices(const GeomVertexData *data, int offset);
   int make_nonindexed(bool composite_only);
 
+  CPT(GeomVertexData) get_animated_vertex_data(bool force, Thread *current_thread) const;
+
   INLINE bool is_empty() const;
 
   INLINE size_t get_num_primitives() const;

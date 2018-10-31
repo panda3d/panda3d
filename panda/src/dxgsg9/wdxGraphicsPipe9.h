@@ -93,7 +93,6 @@ private:
 
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
-  bool __is_dx9_1;
 
 public:
   static TypeHandle get_class_type() {

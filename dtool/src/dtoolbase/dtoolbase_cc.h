@@ -233,6 +233,15 @@ INLINE void thread_consider_yield() {
   (*global_thread_consider_yield)();
 }
 
+#ifdef HAVE_PYTHON
+typedef struct _ts PyThreadState;
+extern EXPCL_DTOOL_DTOOLBASE PyThreadState *(*global_thread_state_swap)(PyThreadState *tstate);
+
+INLINE PyThreadState *thread_state_swap(PyThreadState *tstate) {
+  return (*global_thread_state_swap)(tstate);
+}
+#endif  // HAVE_PYTHON
+
 #else
 
 INLINE void thread_yield() {

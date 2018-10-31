@@ -1557,8 +1557,8 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        ++qsi) {
     Shader *shader = qsi->first;
     ShaderContext *sc = shader->prepare_now(this, gsg);
-    if (qti->second != nullptr) {
-      qti->second->set_result(sc);
+    if (qsi->second != nullptr) {
+      qsi->second->set_result(sc);
     }
   }
 

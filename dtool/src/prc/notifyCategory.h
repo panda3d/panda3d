@@ -55,8 +55,8 @@ PUBLISHED:
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
 #else
-  constexpr static bool is_spam();
-  constexpr static bool is_debug();
+  constexpr static bool is_spam() { return false; }
+  constexpr static bool is_debug() { return false; }
 #endif
   INLINE bool is_info() const;
   INLINE bool is_warning() const;

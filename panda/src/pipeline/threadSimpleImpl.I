@@ -55,14 +55,6 @@ is_threading_supported() {
  *
  */
 INLINE bool ThreadSimpleImpl::
-is_true_threads() {
-  return (is_os_threads != 0);
-}
-
-/**
- *
- */
-INLINE bool ThreadSimpleImpl::
 is_simple_threads() {
   return true;
 }

@@ -753,7 +753,7 @@ render_frame() {
         // frames, so we won't have to recompute it each frame.
         int num_drs = win->get_num_active_display_regions();
         for (int i = 0; i < num_drs; ++i) {
-          DisplayRegion *dr = win->get_active_display_region(i);
+          PT(DisplayRegion) dr = win->get_active_display_region(i);
           if (dr != nullptr) {
             NodePath camera_np = dr->get_camera(current_thread);
             if (!camera_np.is_empty()) {
@@ -1359,7 +1359,7 @@ is_scene_root(const PandaNode *node) {
     if (win->is_active() && win->get_gsg()->is_active()) {
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; i++) {
-        DisplayRegion *dr = win->get_active_display_region(i);
+        PT(DisplayRegion) dr = win->get_active_display_region(i);
         if (dr != nullptr) {
           NodePath camera = dr->get_camera();
           if (camera.is_empty()) {
@@ -1435,7 +1435,7 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
 
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
-          DisplayRegion *dr = win->get_active_display_region(i);
+          PT(DisplayRegion) dr = win->get_active_display_region(i);
           if (dr != nullptr) {
             cull_and_draw_together(win, dr, current_thread);
           }
@@ -1539,7 +1539,7 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
       PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
       int num_display_regions = win->get_num_active_display_regions();
       for (int i = 0; i < num_display_regions; ++i) {
-        DisplayRegion *dr = win->get_active_display_region(i);
+        PT(DisplayRegion) dr = win->get_active_display_region(i);
         if (dr != nullptr) {
           PT(SceneSetup) scene_setup;
           PT(CullResult) cull_result;
@@ -1659,7 +1659,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
           }
           int num_display_regions = win->get_num_active_display_regions();
           for (int i = 0; i < num_display_regions; ++i) {
-            DisplayRegion *dr = win->get_active_display_region(i);
+            PT(DisplayRegion) dr = win->get_active_display_region(i);
             if (dr != nullptr) {
               do_draw(win, gsg, dr, current_thread);
             }

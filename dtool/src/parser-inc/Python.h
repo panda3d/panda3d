@@ -28,7 +28,7 @@ typedef _typeobject PyTypeObject;
 typedef struct {} PyStringObject;
 typedef struct {} PyUnicodeObject;
 
-class PyThreadState;
+typedef struct _ts PyThreadState;
 typedef int Py_ssize_t;
 typedef struct bufferinfo Py_buffer;
 

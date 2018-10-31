@@ -193,30 +193,10 @@ init() {
   }
 
   // Create a Direct3D object.
+  __d3d9 = (*_Direct3DCreate9)(D3D_SDK_VERSION);
 
-  // these were taken from the 8.0 and 8.1 d3d8.h SDK headers
-    __is_dx9_1 = false;
-
-#define D3D_SDK_VERSION_9_0 D3D_SDK_VERSION
-#define D3D_SDK_VERSION_9_1 D3D_SDK_VERSION
-
-  // are we using 9.0 or 9.1?
-  WIN32_FIND_DATA TempFindData;
-  HANDLE hFind;
-  char tmppath[_MAX_PATH + 128];
-  GetSystemDirectory(tmppath, MAX_PATH);
-  strcat(tmppath, "\\dpnhpast.dll");
-  hFind = FindFirstFile (tmppath, &TempFindData);
-  if (hFind != INVALID_HANDLE_VALUE) {
-    FindClose(hFind);
-// ??? This was from DX8 __is_dx9_1 = true;
-    __d3d9 = (*_Direct3DCreate9)(D3D_SDK_VERSION_9_1);
-  } else {
-    __is_dx9_1 = false;
-    __d3d9 = (*_Direct3DCreate9)(D3D_SDK_VERSION_9_0);
-  }
   if (__d3d9 == nullptr) {
-    wdxdisplay9_cat.error() << "Direct3DCreate9(9." << (__is_dx9_1 ? "1" : "0") << ") failed!, error = " << GetLastError() << endl;
+    wdxdisplay9_cat.error() << "Direct3DCreate9 failed!, error = " << GetLastError() << endl;
     // release_gsg();
     goto error;
   }

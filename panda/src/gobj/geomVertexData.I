@@ -60,9 +60,20 @@ has_column(const InternalName *name) const {
  */
 INLINE int GeomVertexData::
 get_num_rows() const {
-  GeomVertexDataPipelineReader reader(this, Thread::get_current_thread());
-  reader.check_array_readers();
-  return reader.get_num_rows();
+  CPT(GeomVertexArrayData) array;
+  {
+    CDReader cdata(_cycler);
+    nassertr(cdata->_format->get_num_arrays() == cdata->_arrays.size(), 0);
+
+    if (cdata->_arrays.size() == 0) {
+      // No arrays means no rows.  Weird but legal.
+      return 0;
+    }
+
+    array = cdata->_arrays[0].get_read_pointer();
+  }
+
+  return array->get_num_rows();
 }
 
 /**
@@ -761,7 +772,9 @@ set_object(const GeomVertexData *object) {
   _cdata = (GeomVertexData::CData *)_object->_cycler.read_unlocked(_current_thread);
   _got_array_readers = false;
 
+#ifdef DO_PIPELINING
   _cdata->ref();
+#endif  // DO_PIPELINING
 }
 
 /**

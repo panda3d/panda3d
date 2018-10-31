@@ -225,7 +225,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
     } else {
       // No exception.  Restore the thread state normally.
-      PyThreadState *state = PyThreadState_Swap(orig_thread_state);
+      PyThreadState_Swap(orig_thread_state);
       thread_states.push_back(new_thread_state);
       // PyThreadState_Clear(new_thread_state);
       // PyThreadState_Delete(new_thread_state);

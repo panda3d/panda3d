@@ -13,6 +13,8 @@
 
 #include "eggBackPointer.h"
 
+#include "pnotify.h"
+
 
 TypeHandle EggBackPointer::_type_handle;
 

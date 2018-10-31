@@ -19,6 +19,7 @@
 
 #include "eggData.h"
 #include "eggGroup.h"
+#include "eggTable.h"
 #include "eggXfmSAnim.h"
 #include "eggGroupUniquifier.h"
 #include "datagram.h"

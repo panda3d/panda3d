@@ -12,10 +12,14 @@
  */
 
 #include "standardMunger.h"
-#include "renderState.h"
-#include "graphicsStateGuardian.h"
+
 #include "config_gobj.h"
+
 #include "displayRegion.h"
+#include "graphicsStateGuardian.h"
+#include "lightAttrib.h"
+#include "materialAttrib.h"
+#include "renderState.h"
 
 TypeHandle StandardMunger::_type_handle;
 

@@ -14,8 +14,9 @@
 #include "eggJointNodePointer.h"
 
 #include "dcast.h"
-#include "eggObject.h"
+#include "eggCharacterDb.h"
 #include "eggGroup.h"
+#include "eggObject.h"
 #include "pointerTo.h"
 
 

@@ -878,7 +878,7 @@ choose_device() {
     LARGE_INTEGER *DrvVer = &adapter_info.DriverVersion;
 
     wdxdisplay9_cat.info()
-      << "D3D9." << (dxpipe->__is_dx9_1 ?"1":"0") << " Adapter[" << i << "]: " << adapter_info.Description
+      << "D3D9 Adapter[" << i << "]: " << adapter_info.Description
       << ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
       << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
       << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart)
@@ -979,7 +979,6 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 
   nassertr(_dxgsg != nullptr, false);
   _wcontext._d3d9 = _d3d9;
-  _wcontext._is_dx9_1 = dxpipe->__is_dx9_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
 
   bool bWantStencil = (_fb_properties.get_stencil_bits() > 0);
