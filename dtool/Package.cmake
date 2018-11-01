@@ -196,16 +196,16 @@ package_option(CG
 package_option(CGGL
   "Enable support for Nvidia Cg's OpenGL API."
   LICENSE "Nvidia")
-package_option(CGDX9
-  "Enable support for Nvidia Cg's DirectX 9 API."
+package_option(CGD3D9
+  "Enable support for Nvidia Cg's Direct3D 9 API."
   LICENSE "Nvidia")
 
-if(HAVE_CGGL AND HAVE_CGDX9)
-  set(cg_apis "supporting OpenGL and DirectX 9")
+if(HAVE_CGGL AND HAVE_CGD3D9)
+  set(cg_apis "supporting OpenGL and Direct3D 9")
 elseif(HAVE_CGGL)
   set(cg_apis "supporting OpenGL")
 elseif(HAVE_CGDX9)
-  set(cg_apis "supporting DirectX 9")
+  set(cg_apis "supporting Direct3D 9")
 else()
   set(cg_apis "WITHOUT rendering backend support")
 endif()

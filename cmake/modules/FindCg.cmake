@@ -42,7 +42,7 @@ macro(find_cggl)
 
     # Find the library directory
     find_library(CGGL_LIBRARY
-      NAMES "CgGL" "libCgGL"
+      NAMES "cgGL" "libCgGL"
       PATHS "C:/Program Files/Cg"
             "C:/Program Files/NVIDIA Corporation/Cg"
             "/usr"
@@ -66,21 +66,48 @@ macro(find_cggl)
 endmacro()
 
 
-# Find Cg for DirectX 8
-macro(find_cgdx8)
-  # TODO: Implement
-endmacro()
+# Find Cg for Direct3D 9
+macro(find_cgd3d9)
+  if(Cg_FIND_QUIETLY)
+    set(CgD3D9_FIND_QUIETLY TRUE)
+  endif()
+  if(NOT CGD3D9_LIBRARY_DIR OR NOT CGD3D9_INCLUDE_DIR)
+    # Find the include directory
+    find_path(CGD3D9_INCLUDE_DIR
+      NAMES "cgD3D9.h"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg/include"
+            "/usr/include"
+            "/usr/local/include"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit/include" # Gentoo
+      PATH_SUFFIXES "" "Cg" "cg"
+      DOC "The path to NvidiaCgD3D9's include directory."
+    )
 
+    # Find the library directory
+    find_library(CGD3D9_LIBRARY
+      NAMES "cgD3D9" "libCgD3D9"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg"
+            "/usr"
+            "/usr/lib/x86_64-linux-gnu"
+            "/usr/local"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit" # Gentoo
+      PATH_SUFFIXES "" "lib" "lib32" "lib64"
+      DOC "The filepath to NvidiaCgD3D9's libary binary."
+    )
+    get_filename_component(CGD3D9_LIBRARY_DIR "${CGD3D9_LIBRARY}" PATH)
+    set(CGD3D9_LIBRARY_DIR "${CGD3D9_LIBRARY_DIR}" CACHE PATH "The path to the CgD3D9 library directory.") # Library path
 
-# Find Cg for DirectX 9
-macro(find_cgdx9)
-  # TODO: Implement
-endmacro()
+    mark_as_advanced(CGD3D9_INCLUDE_DIR)
+    mark_as_advanced(CGD3D9_LIBRARY_DIR)
+    mark_as_advanced(CGD3D9_LIBRARY)
+  endif()
 
+  find_package_handle_standard_args(CgD3D9 DEFAULT_MSG CGD3D9_LIBRARY CGD3D9_INCLUDE_DIR CGD3D9_LIBRARY_DIR)
 
-# Find Cg for DirectX 10
-macro(find_cgdx10)
-  # TODO: Implement
 endmacro()
 
 
@@ -155,11 +182,8 @@ find_package_handle_standard_args(Cg DEFAULT_MSG CG_LIBRARY CG_INCLUDE_DIRS CG_L
 
 if(CG_INCLUDE_DIR AND CG_LIBRARY_DIR)
   find_cggl()
-  find_cgdx8()
-  find_cgdx9()
-  find_cgdx10()
+  find_cgd3d9()
 
-  set(CG_LIBRARIES ${CG_LIBRARY} ${CGGL_LIBRARY}
-    ${CGDX8_LIBRARY} ${CGDX9_LIBRARY} ${CGDX10_LIBRARY})
+  set(CG_LIBRARIES ${CG_LIBRARY} ${CGGL_LIBRARY} ${CGD3D9_LIBRARY})
   mark_as_advanced(CG_LIBRARIES)
 endif()
