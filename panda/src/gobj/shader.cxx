@@ -2723,7 +2723,6 @@ r_preprocess_include(ostream &out, const Filename &fn,
   // would just be too long to display.
   _included_files.push_back(fn);
 
-  out << "#line 1 " << fileno << " // " << fn << "\n";
   if (shader_cat.is_debug()) {
     shader_cat.debug()
       << "Preprocessing shader include " << fileno << ": " << fn << "\n";
@@ -2752,11 +2751,17 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
   int ext_google_line = 0;
   bool had_include = false;
   int lineno = 0;
+  bool write_line_directive = (fileno != 0);
+
   while (std::getline(in, line)) {
     ++lineno;
 
     if (line.empty()) {
-      out.put('\n');
+      // We still write a newline to make sure the line numbering remains
+      // consistent, unless we are about to write a #line directive anyway.
+      if (!write_line_directive) {
+        out.put('\n');
+      }
       continue;
     }
 
@@ -2768,7 +2773,9 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
 
       if (std::getline(in, line2)) {
         line += line2;
-        out.put('\n');
+        if (!write_line_directive) {
+          out.put('\n');
+        }
         ++lineno;
       } else {
         break;
@@ -2796,7 +2803,9 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
       while (block_end == string::npos) {
         // Didn't find it - look in the next line.
         if (std::getline(in, line2)) {
-          out.put('\n');
+          if (!write_line_directive) {
+            out.put('\n');
+          }
           ++lineno;
           block_end = line2.find("*/");
         } else {
@@ -2814,10 +2823,21 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
       line.resize(line.size() - 1);
     }
 
+    if (line.empty()) {
+      if (!write_line_directive) {
+        out.put('\n');
+      }
+      continue;
+    }
+
     // Check if this line contains a #directive.
     char directive[64];
     if (line.size() < 8 || sscanf(line.c_str(), " # %63s", directive) != 1) {
       // Nope.  Just pass the line through unmodified.
+      if (write_line_directive) {
+        out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
+        write_line_directive = false;
+      }
       out << line << "\n";
       continue;
     }
@@ -2862,8 +2882,9 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
         }
 
         // Restore the line counter.
-        out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
+        write_line_directive = true;
         had_include = true;
+        continue;
 
       } else if (strcmp(pragma, "once") == 0) {
         // Do a stricter syntax check, just to be extra safe.
@@ -2888,17 +2909,15 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
         if (!full_fn.empty()) {
           once_files.insert(full_fn);
         }
-      } else {
-        // Forward it, the driver will ignore it if it doesn't know it.
-        out << line << "\n";
+        continue;
       }
+      // Otherwise, just pass it through to the driver.
 
     } else if (strcmp(directive, "endif") == 0) {
       // Check for an #endif after an include.  We have to restore the line
       // number in case the include happened under an #if block.
-      out << line << "\n";
       if (had_include) {
-        out << "#line " << (lineno + 1) << " " << fileno << "\n";
+        write_line_directive = true;
       }
 
     } else if (strcmp(directive, "extension") == 0) {
@@ -2931,7 +2950,8 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
           }
           ext_google_include = mode;
           ext_google_line = mode;
-          out << line << "\n";
+          // Still pass it through to the driver, so it can enable other
+          // extensions.
 
         } else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
           // Enable the Google extension support for #include statements.
@@ -2939,14 +2959,12 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
           // This matches the behavior of Khronos' glslang reference compiler.
           ext_google_include = mode;
           ext_google_line = mode;
+          continue;
 
         } else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
           // Enables strings in #line statements.
           ext_google_line = mode;
-
-        } else {
-          // It's an extension the driver should worry about.
-          out << line << "\n";
+          continue;
         }
       } else {
         shader_cat.error()
@@ -2954,6 +2972,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
           << lineno << " of file " << fn << ":\n  " << line << "\n";
         return false;
       }
+
     } else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
       // Warn about extension use if requested.
       if (ext_google_include == 1) {
@@ -2991,8 +3010,9 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
       }
 
       // Restore the line counter.
-      out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
+      write_line_directive = true;
       had_include = true;
+      continue;
 
     } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
       // It's a #line directive.  See if it uses a string instead of number.
@@ -3016,15 +3036,15 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
         _included_files.push_back(Filename(filestr));
 
         out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
-
-      } else {
-        // We couldn't parse the #line directive.  Pass it through unmodified.
-        out << line << "\n";
+        continue;
       }
-    } else {
-      // Different directive (eg. #version).  Leave it untouched.
-      out << line << "\n";
     }
+
+    if (write_line_directive) {
+      out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
+      write_line_directive = false;
+    }
+    out << line << "\n";
   }
 
   return true;
