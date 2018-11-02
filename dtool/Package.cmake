@@ -427,9 +427,9 @@ if(HAVE_GLX AND NOT HAVE_GLX_AVAILABLE)
 endif()
 
 if(HAVE_GLX)
-  config_package(X11 "X11 (with GLX)")
+  config_package(X11 "X11" "with GLX")
 else()
-  config_package(X11 "X11 (without GLX)")
+  config_package(X11 "X11" "without GLX")
 endif()
 
 # EGL
@@ -441,13 +441,19 @@ package_option(EGL
 
 config_package(EGL "EGL")
 
+# Direct3D 9
+
+find_package(Direct3D9 QUIET COMPONENTS dxguid dxerr d3dx9)
+
+package_option(DX9
+  "Enable support for DirectX 9.  This is typically only viable on Windows."
+  FOUND_AS DIRECT3D9)
+
+config_package(DX9 "Direct3D 9.x")
+
 ########
 # TODO #
 ########
-
-# Find and configure DirectX 9
-#find_package(DX9)
-#config_package(DX9 COMMENT "DirectX9")
 
 # Find and configure OpenCV
 #find_package(OpenCV)

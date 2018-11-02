@@ -155,12 +155,6 @@ endif()
 # Now go through all the packages and report whether we have them.
 show_packages()
 
-if(HAVE_DX9)
-  message("+ DirectX9")
-else()
-  message("- Did not find DirectX9")
-endif()
-
 if(HAVE_TINYDISPLAY)
   message("+ Tinydisplay")
 else()
