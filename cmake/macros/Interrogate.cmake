@@ -100,8 +100,14 @@ function(target_interrogate target)
   # relative to it, thereby shortening the command-line even more.
   # Since this is not an Interrogate-specific property, it is not named with
   # an IGATE_ prefix.
-  set_target_properties("${target}" PROPERTIES TARGET_SRCDIR
-    "${CMAKE_CURRENT_SOURCE_DIR}")
+  set_target_properties("${target}" PROPERTIES
+    TARGET_SRCDIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  # Also store where the build files are kept, so the Interrogate output can go
+  # there as well.
+  set_target_properties("${target}" PROPERTIES
+    TARGET_BINDIR "${CMAKE_CURRENT_BINARY_DIR}")
+
 endfunction(target_interrogate)
 
 #
@@ -248,6 +254,7 @@ function(add_python_module module)
   set(import_flags)
   set(infiles)
   set(sources)
+  set(extensions)
 
   set(link_keyword OFF)
   set(import_keyword OFF)
@@ -272,11 +279,22 @@ function(add_python_module module)
   endif()
 
   foreach(target ${targets})
-    interrogate_sources(${target} "${target}_igate.cxx" "${target}.in"
+    get_target_property(workdir "${target}" TARGET_BINDIR)
+    if(NOT workdir)
+      # No TARGET_BINDIR was set, so we'll just use our current directory:
+      set(workdir "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+    # Keep command lines short
+    file(RELATIVE_PATH workdir "${CMAKE_CURRENT_BINARY_DIR}" "${workdir}")
+
+    interrogate_sources(${target}
+      "${workdir}/${target}_igate.cxx" "${workdir}/${target}.in"
       "-python-native;-module;panda3d.${module}")
+
     get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
-    list(APPEND infiles "${target}.in")
-    list(APPEND sources "${target}_igate.cxx" ${target_extensions})
+    list(APPEND infiles "${workdir}/${target}.in")
+    list(APPEND sources "${workdir}/${target}_igate.cxx")
+    list(APPEND extensions ${target_extensions})
   endforeach(target)
 
   add_custom_command(
@@ -291,23 +309,22 @@ function(add_python_module module)
     COMMENT "Generating module ${module}"
   )
 
-  add_python_target(panda3d.${module} "${module}_module.cxx" ${sources})
+  add_python_target(panda3d.${module} "${module}_module.cxx" ${sources} ${extensions})
   target_link_libraries(panda3d.${module} ${link_targets} p3igateruntime)
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
     # CMake <3.11 doesn't allow generator expressions on source files, so we
     # need to copy them to our target, which does allow them.
 
-    foreach(target ${targets})
-      set(igate_file "${target}_igate.cxx")
-      get_source_file_property(compile_definitions "${igate_file}" COMPILE_DEFINITIONS)
+    foreach(source ${sources})
+      get_source_file_property(compile_definitions "${source}" COMPILE_DEFINITIONS)
       if(compile_definitions)
         set_property(TARGET panda3d.${module} APPEND PROPERTY
           COMPILE_DEFINITIONS ${compile_definitions})
 
-        set_source_files_properties("${igate_file}" PROPERTIES COMPILE_DEFINITIONS "")
+        set_source_files_properties("${source}" PROPERTIES COMPILE_DEFINITIONS "")
       endif()
-    endforeach(target)
+    endforeach(source)
   endif()
 
   list(APPEND ALL_INTERROGATE_MODULES "${module}")
