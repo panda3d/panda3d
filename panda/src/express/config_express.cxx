@@ -190,11 +190,3 @@ get_verify_dcast() {
 
   return *verify_dcast;
 }
-
-// Returns the configure object for accessing config variables from a
-// scripting language.
-DConfig &
-get_config_express() {
-  static DConfig config_express;
-  return config_express;
-}

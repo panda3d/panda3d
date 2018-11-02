@@ -6,8 +6,7 @@ from .ClockDelta import *
 from . import DistributedNode
 from . import DistributedSmoothNodeBase
 from direct.task.Task import cont
-
-config = get_config_showbase()
+from direct.showbase import DConfig as config
 
 # This number defines our tolerance for out-of-sync telemetry packets.
 # If a packet appears to have originated from more than MaxFuture

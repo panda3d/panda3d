@@ -2862,6 +2862,20 @@ except ImportError as err:
     if "No module named %s" not in str(err):
         raise""" % (module, module)
 
+panda_modules_code += """
+
+from direct.showbase import DConfig
+
+def get_config_showbase():
+    return DConfig
+
+def get_config_express():
+    return DConfig
+
+getConfigShowbase = get_config_showbase
+getConfigExpress = get_config_express
+"""
+
 exthelpers_code = """
 "This module is deprecated.  Import from direct.extensions_native.extension_native_helpers instead."
 from direct.extensions_native.extension_native_helpers import *
@@ -3413,20 +3427,12 @@ TargetAdd('p3prc_composite1.obj', opts=OPTS, input='p3prc_composite1.cxx')
 TargetAdd('p3prc_composite2.obj', opts=OPTS, input='p3prc_composite2.cxx')
 
 #
-# DIRECTORY: dtool/src/dconfig/
-#
-
-OPTS=['DIR:dtool/src/dconfig', 'BUILDING:DTOOLCONFIG']
-TargetAdd('p3dconfig_composite1.obj', opts=OPTS, input='p3dconfig_composite1.cxx')
-
-#
 # DIRECTORY: dtool/metalibs/dtoolconfig/
 #
 
 OPTS=['DIR:dtool/metalibs/dtoolconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('p3dtoolconfig_dtoolconfig.obj', opts=OPTS, input='dtoolconfig.cxx')
 TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_dtoolconfig.obj')
-TargetAdd('libp3dtoolconfig.dll', input='p3dconfig_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
@@ -5640,7 +5646,6 @@ if (RTDIST):
       TargetAdd('plugin_standalone_dtoolutil_filename_assist.obj', opts=OPTS, input='filename_assist.mm')
   TargetAdd('plugin_standalone_prc_composite1.obj', opts=OPTS, input='p3prc_composite1.cxx')
   TargetAdd('plugin_standalone_prc_composite2.obj', opts=OPTS, input='p3prc_composite2.cxx')
-  TargetAdd('plugin_standalone_dconfig_composite1.obj', opts=OPTS, input='p3dconfig_composite1.cxx')
   TargetAdd('plugin_standalone_express_composite1.obj', opts=OPTS, input='p3express_composite1.cxx')
   TargetAdd('plugin_standalone_express_composite2.obj', opts=OPTS, input='p3express_composite2.cxx')
   TargetAdd('plugin_standalone_downloader_composite1.obj', opts=OPTS, input='p3downloader_composite1.cxx')
@@ -5659,7 +5664,6 @@ if (RTDIST):
       TargetAdd('p3dembed.exe', input='plugin_standalone_dtoolutil_filename_assist.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_prc_composite1.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_prc_composite2.obj')
-  TargetAdd('p3dembed.exe', input='plugin_standalone_dconfig_composite1.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_express_composite1.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_express_composite2.obj')
   TargetAdd('p3dembed.exe', input='plugin_standalone_downloader_composite1.obj')
@@ -5688,7 +5692,6 @@ if (RTDIST):
     TargetAdd('p3dembedw.exe', input='plugin_standalone_dtoolutil_composite2.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_prc_composite1.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_prc_composite2.obj')
-    TargetAdd('p3dembedw.exe', input='plugin_standalone_dconfig_composite1.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_express_composite1.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_express_composite2.obj')
     TargetAdd('p3dembedw.exe', input='plugin_standalone_downloader_composite1.obj')

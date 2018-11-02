@@ -16,9 +16,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 #include "configVariableSearchPath.h"
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
+#include "configVariableInt.h"
 #include "bamEnums.h"
 #include "dconfig.h"
 
