@@ -211,7 +211,6 @@ struct DXScreenData {
   bool _is_tnl_device;
   bool _can_use_hw_vertex_shaders;
   bool _can_use_pixel_shaders;
-  bool _is_dx9_1;
   UINT _supported_screen_depths_mask;
   UINT _supported_tex_formats_mask;
   bool _supports_rgba16f_texture_format;

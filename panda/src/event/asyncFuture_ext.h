@@ -16,7 +16,7 @@
 
 #include "extension.h"
 #include "py_panda.h"
-#include "modelLoadRequest.h"
+#include "asyncFuture.h"
 
 #ifdef HAVE_PYTHON
 
