@@ -1133,10 +1133,16 @@ class bdist_apps(setuptools.Command):
     }
 
     description = 'bundle built Panda3D applications into distributable forms'
-    user_options = []
+    user_options = build_apps.user_options + [
+    ]
+
+    def _build_apps_options(self):
+        return [opt[0].replace('-', '_').replace('=', '') for opt in build_apps.user_options]
 
     def initialize_options(self):
         self.installers = {}
+        for opt in self._build_apps_options():
+            setattr(self, opt, None)
 
     def finalize_options(self):
         # We need to massage the inputs a bit in case they came from a
@@ -1283,14 +1289,16 @@ class bdist_apps(setuptools.Command):
         subprocess.check_call(cmd)
 
     def run(self):
-        build_cmd = self.get_finalized_command('build_apps')
-        if not build_cmd.platforms:
-            platforms = [p3d.PandaSystem.get_platform()]
-        else:
-            platforms = build_cmd.platforms
-        build_base = build_cmd.build_base
-
+        build_cmd = self.distribution.get_command_obj('build_apps')
+        for opt in self._build_apps_options():
+            optval = getattr(self, opt)
+            if optval is not None:
+                setattr(build_cmd, opt, optval)
+        build_cmd.finalize_options()
         self.run_command('build_apps')
+
+        platforms = build_cmd.platforms
+        build_base = build_cmd.build_base
         os.chdir(build_base)
 
         for platform in platforms:
