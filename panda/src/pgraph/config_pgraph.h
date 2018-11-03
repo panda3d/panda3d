@@ -21,6 +21,7 @@
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
 #include "configVariableList.h"
+#include "configVariableString.h"
 
 class DSearchPath;
 

@@ -589,7 +589,6 @@ Section "3ds Max plug-ins" SecMaxPlugins
     File /nonfatal /r "${BUILT}\plugins\*.dle"
     File /nonfatal /r "${BUILT}\plugins\*.dlo"
     File /nonfatal /r "${BUILT}\plugins\*.ms"
-    File "${SOURCE}\doc\INSTALLING-PLUGINS.TXT"
 SectionEnd
 !endif
 
@@ -604,7 +603,6 @@ Section "Maya plug-ins" SecMayaPlugins
     SetOutPath $INSTDIR\plugins
     File /nonfatal /r "${BUILT}\plugins\*.mll"
     File /nonfatal /r "${BUILT}\plugins\*.mel"
-    File "${SOURCE}\doc\INSTALLING-PLUGINS.TXT"
 SectionEnd
 !endif
 

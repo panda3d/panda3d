@@ -10,8 +10,9 @@ __all__ = ['ShowBase', 'WindowControls']
 #import VerboseImport
 
 from panda3d.core import *
-from panda3d.direct import get_config_showbase, throw_new_frame, init_app_for_gui
+from panda3d.direct import throw_new_frame, init_app_for_gui
 from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
+from . import DConfig
 
 # Register the extension methods for NodePath.
 from direct.extensions_native import NodePath_extensions
@@ -22,7 +23,7 @@ if sys.version_info >= (3, 0):
     import builtins
 else:
     import __builtin__ as builtins
-builtins.config = get_config_showbase()
+builtins.config = DConfig
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from .MessengerGlobal import messenger
@@ -57,7 +58,7 @@ def exitfunc():
 # *seem* to cause anyone any problems.
 class ShowBase(DirectObject.DirectObject):
 
-    config = get_config_showbase()
+    config = DConfig
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self, fStartDirect = True, windowType = None):

@@ -17,7 +17,6 @@
 #include "pandabase.h"
 #include "winGraphicsWindow.h"
 #include "dxGraphicsStateGuardian9.h"
-#include "dxInput9.h"
 #include "wdxGraphicsPipe9.h"
 
 class wdxGraphicsPipe9;

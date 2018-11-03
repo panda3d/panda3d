@@ -38,7 +38,6 @@ EXPCL_DIRECT_SHOWBASE ConfigVariableSearchPath &get_particle_path();
 
 EXPCL_DIRECT_SHOWBASE void throw_new_frame();
 
-EXPCL_DIRECT_SHOWBASE DConfig &get_config_showbase();
 EXPCL_DIRECT_SHOWBASE void init_app_for_gui();
 
 // klunky interface since we cant pass array from python->C++

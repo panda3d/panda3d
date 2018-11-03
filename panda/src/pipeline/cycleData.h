@@ -44,7 +44,7 @@ class EXPCL_PANDA_PIPELINE CycleData : public NodeReferenceCount
 // If we are *not* compiling in pipelining support, the CycleData object is
 // stored directly within its containing classes, and hence should not be a
 // ReferenceCount object.
-class EXPCL_PANDA_PIPELINE CycleData
+class EXPCL_PANDA_PIPELINE CycleData : public MemoryBase
 
 #endif  // DO_PIPELINING
 {
