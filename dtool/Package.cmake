@@ -308,11 +308,23 @@ endif()
 find_package(Freetype QUIET)
 
 package_option(FREETYPE
-  "This enables support for the FreeType font-rendering library. If disabled,
+  "This enables support for the FreeType font-rendering library.  If disabled,
   Panda3D will only be able to read fonts specially made with egg-mkfont."
   IMPORTED_AS freetype)
 
 config_package(FREETYPE "FreeType")
+
+# HarfBuzz
+
+# Some versions of harfbuzz-config.cmake contain an endless while loop, so we
+# force MODULE mode here.
+find_package(HarfBuzz MODULE QUIET)
+
+package_option(HARFBUZZ
+  "This enables support for the HarfBuzz text shaping library."
+  IMPORTED_AS harfbuzz::harfbuzz)
+
+config_package(HARFBUZZ "HarfBuzz")
 
 # GTK2
 

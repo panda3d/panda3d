@@ -21,6 +21,9 @@
 /* Define if we have Freetype 2.0 or better available. */
 #cmakedefine HAVE_FREETYPE
 
+/* Define if we have HarfBuzz available. */
+#cmakedefine HAVE_HARFBUZZ
+
 /* Define if we want to compile in a default font. */
 #cmakedefine COMPILE_IN_DEFAULT_FONT
 
