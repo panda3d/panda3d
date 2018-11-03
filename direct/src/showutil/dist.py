@@ -189,6 +189,7 @@ class build_apps(setuptools.Command):
     user_options = [
         ('build-base=', None, 'directory to build applications in'),
         ('requirements-path=', None, 'path to requirements.txt file for pip'),
+        ('platforms=', 'p', 'a list of platforms to build for'),
     ]
     default_file_handlers = {
         '.egg': egg2bam,
