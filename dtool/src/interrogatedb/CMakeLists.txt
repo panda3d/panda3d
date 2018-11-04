@@ -39,7 +39,7 @@ composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 
 add_component_library(p3interrogatedb NOINIT SYMBOL BUILDING_INTERROGATEDB
   ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
-target_link_libraries(p3interrogatedb p3dconfig)
+target_link_libraries(p3interrogatedb p3prc p3dconfig p3dtool)
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3interrogatedb DESTINATION lib RUNTIME DESTINATION bin)
