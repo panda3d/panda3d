@@ -463,21 +463,30 @@ package_option(DX9
 
 config_package(DX9 "Direct3D 9.x")
 
+#
+# ------------ Vision tools ------------
+#
+
+# OpenCV
+find_package(OpenCV QUIET COMPONENTS core highgui)
+
+package_option(OPENCV
+  "Enable support for OpenCV.  This will be built into the 'vision' package."
+  FOUND_AS OpenCV)
+
+config_package(OPENCV "OpenCV")
+
+# ARToolKit
+find_package(ARToolKit QUIET)
+
+package_option(ARTOOLKIT
+  "Enable support for ARToolKit.  This will be built into the 'vision' package.")
+
+config_package(ARTOOLKIT "ARToolKit")
+
 ########
 # TODO #
 ########
-
-# Find and configure OpenCV
-#find_package(OpenCV)
-#config_package(OPENCV COMMENT "OpenCV")
-
-# Find and configure FFMPEG
-#find_package(FFMPEG)
-#config_package(FFMPEG)
-
-# Find and configure ODE
-#find_package(ODE)
-#config_package(ODE)
 
 # Find and configure Awesomium
 #find_package(Awesomium)
@@ -505,10 +514,6 @@ config_package(DX9 "Direct3D 9.x")
 #find_package(Assimp)
 #config_package(ASSIMP COMMENT "Assimp")
 
-# Find and configure ARToolKit
-#find_package(ARToolKit)
-#config_package(ARTOOLKIT COMMENT "ARToolKit")
-
 # Find and configure libRocket
 #find_package(Rocket)
 #config_package(ROCKET COMMENT "libRocket")
@@ -530,10 +535,6 @@ config_package(DX9 "Direct3D 9.x")
 #else()
 # unset(USE_ROCKET_PYTHON CACHE)
 #endif()
-
-# Find and configure Bullet
-#find_package(Bullet)
-#config_package(BULLET COMMENT "Bullet Physics")
 
 # Find and configure Vorbis
 #find_package(Vorbis)

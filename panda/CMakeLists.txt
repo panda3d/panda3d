@@ -54,6 +54,7 @@ add_subdirectory(src/recorder)
 add_subdirectory(src/testbed)
 add_subdirectory(src/text)
 add_subdirectory(src/tform)
+add_subdirectory(src/vision)
 add_subdirectory(src/vrpn)
 add_subdirectory(src/wgldisplay)
 add_subdirectory(src/windisplay)
@@ -108,6 +109,10 @@ if(HAVE_PYTHON)
 
   if(HAVE_ODE)
     add_python_module(ode p3ode IMPORT panda3d.core)
+  endif()
+
+  if(HAVE_OPENCV OR HAVE_ARTOOLKIT)
+    add_python_module(vision p3vision IMPORT panda3d.core)
   endif()
 
   if(HAVE_VRPN)
