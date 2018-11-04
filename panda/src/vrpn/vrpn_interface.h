@@ -16,16 +16,6 @@
 
 #include "pandabase.h"
 
-#ifdef CPPPARSER
-  // For correct interrogate parsing of UNC's vrpn library.
-  #if defined(WIN32_VC) || defined(WIN64_VC)
-    #define SOCKET int
-  #else
-    #define linux
-    typedef struct timeval timeval;
-  #endif
-#endif
-
 // VPRN misses an include to this in vrpn_Shared.h.
 #include <stdint.h>
 
