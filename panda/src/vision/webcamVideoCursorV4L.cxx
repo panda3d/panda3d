@@ -11,7 +11,12 @@
  * @date 2010-06-11
  */
 
+#include "webcamVideoCursorV4L.h"
+
+#include "config_vision.h"
 #include "webcamVideoV4L.h"
+
+#include "movieVideoCursor.h"
 
 #if defined(HAVE_VIDEO4LINUX) && !defined(CPPPARSER)
 
