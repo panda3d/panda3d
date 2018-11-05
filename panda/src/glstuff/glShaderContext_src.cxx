@@ -1167,14 +1167,48 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
             << "p3d_Fog.color should be vec3 or vec4\n";
           return;
         }
-      } else if (noprefix == "Fog.parameters") {
+        
+      } else if (noprefix == "Fog.density") {
         bind._part[0] = Shader::SMO_attr_fog;
         
-        if (param_type == GL_FLOAT_VEC4) {
-          bind._piece = Shader::SMP_row3;
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_row3x1;
         } else {
           GLCAT.error()
-            << "p3d_Fog.parameters should be vec4\n";
+            << "p3d_Fog.density should be float\n";
+          return;
+        }
+        
+      } else if (noprefix == "Fog.start") {
+        bind._part[0] = Shader::SMO_attr_fog;
+        
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell13;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.start should be float\n";
+          return;
+        }
+        
+      } else if (noprefix == "Fog.end") {
+        bind._part[0] = Shader::SMO_attr_fog;
+        
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell14;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.end should be float\n";
+          return;
+        }
+        
+      } else if (noprefix == "Fog.scale") {
+        bind._part[0] = Shader::SMO_attr_fog;
+        
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell15;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.scale should be float\n";
           return;
         }
       }
