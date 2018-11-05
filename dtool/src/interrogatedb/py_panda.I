@@ -26,7 +26,7 @@
 template<class T> INLINE bool
 DtoolInstance_GetPointer(PyObject *self, T *&into) {
   if (DtoolInstance_Check(self)) {
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
     if (target_class != nullptr) {
       if (_IS_FINAL(T)) {
         if (DtoolInstance_TYPE(self) == target_class) {
@@ -116,28 +116,28 @@ INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
  */
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
 }

@@ -45,6 +45,7 @@ PUBLISHED:
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const std::string &name);
+  void record_python_type(TypeHandle type, PyObject *python_type);
 
   TypeHandle find_type(const std::string &name) const;
   TypeHandle find_type_by_id(int id) const;

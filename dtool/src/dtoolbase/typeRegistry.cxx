@@ -208,6 +208,22 @@ record_alternate_name(TypeHandle type, const string &name) {
 }
 
 /**
+ * Records the given Python type pointer in the type registry for the benefit
+ * of interrogate.
+ */
+void TypeRegistry::
+record_python_type(TypeHandle type, PyObject *python_type) {
+  _lock->lock();
+
+  TypeRegistryNode *rnode = look_up(type, nullptr);
+  if (rnode != nullptr) {
+    rnode->_python_type = python_type;
+  }
+
+  _lock->unlock();
+}
+
+/**
  * Looks for a previously-registered type of the given name.  Returns its
  * TypeHandle if it exists, or TypeHandle::none() if there is no such type.
  */

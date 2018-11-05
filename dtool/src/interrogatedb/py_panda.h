@@ -190,11 +190,9 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
-EXPCL_INTERROGATEDB void RegisterNamedClass(const std::string &name, Dtool_PyTypedObject &otype);
-EXPCL_INTERROGATEDB void RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype);
+typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
 
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const std::string &name);
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupRuntimeTypedClass(TypeHandle handle);
+EXPCL_INTERROGATEDB Dtool_TypeMap *Dtool_GetGlobalTypeMap();
 
 EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
 
@@ -326,14 +324,22 @@ EXPCL_INTERROGATEDB void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &th
 // We need a way to runtime merge compile units into a python "Module" .. this
 // is done with the fallowing structors and code.. along with the support of
 // interigate_module
+
+struct Dtool_TypeDef {
+  const char *const name;
+  Dtool_PyTypedObject *type;
+};
+
 struct LibraryDef {
-  PyMethodDef *_methods;
+  PyMethodDef *const _methods;
+  const Dtool_TypeDef *const _types;
+  Dtool_TypeDef *const _external_types;
 };
 
 #if PY_MAJOR_VERSION >= 3
-EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def);
+EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def);
 #else
-EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename);
+EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulename);
 #endif
 
 // HACK.... Be carefull Dtool_BorrowThisReference This function can be used to

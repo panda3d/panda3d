@@ -286,9 +286,8 @@ int write_python_table_native(std::ostream &out) {
   vector_string::const_iterator ii;
   for (ii = libraries.begin(); ii != libraries.end(); ++ii) {
     printf("Referencing Library %s\n", (*ii).c_str());
-    out << "extern LibraryDef " << *ii << "_moddef;\n";
+    out << "extern const struct LibraryDef " << *ii << "_moddef;\n";
     out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";
-    out << "extern void Dtool_" << *ii << "_ResolveExternals();\n";
     out << "extern void Dtool_" << *ii << "_BuildInstants(PyObject *module);\n";
   }
 
@@ -339,12 +338,9 @@ int write_python_table_native(std::ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }
@@ -386,12 +382,9 @@ int write_python_table_native(std::ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }

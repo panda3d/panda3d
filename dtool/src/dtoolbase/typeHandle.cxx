@@ -154,6 +154,19 @@ deallocate_array(void *ptr) {
 }
 
 /**
+ * Returns the internal void pointer that is stored for interrogate's benefit.
+ */
+PyObject *TypeHandle::
+get_python_type() const {
+  TypeRegistryNode *rnode = TypeRegistry::ptr()->look_up(*this, nullptr);
+  if (rnode != nullptr) {
+    return rnode->get_python_type();
+  } else {
+    return nullptr;
+  }
+}
+
+/**
  * Return the Index of the BEst fit Classs from a set
  */
 int TypeHandle::

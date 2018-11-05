@@ -29,10 +29,6 @@ PyMemberDef standard_type_members[] = {
   {nullptr}  /* Sentinel */
 };
 
-static RuntimeTypeMap runtime_type_map;
-static RuntimeTypeSet runtime_type_set;
-static NamedTypeMap named_type_map;
-
 /**
 
  */
@@ -431,7 +427,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // IF the class is possibly a run time typed object
   if (type_index > 0) {
     // get best fit class...
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(type_index);
+    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)TypeHandle::from_index(type_index).get_python_type();
     if (target_class != nullptr) {
       // cast to the type...
       void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
@@ -507,109 +503,30 @@ void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   }
 }
 
-// ** HACK ** alert.. Need to keep a runtime type dictionary ... that is
-// forward declared of typed object.  We rely on the fact that typed objects
-// are uniquly defined by an integer.
-void
-RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype) {
-  std::pair<NamedTypeMap::iterator, bool> result =
-    named_type_map.insert(NamedTypeMap::value_type(name, &otype));
-
-  if (!result.second) {
-    // There was already a class with this name in the dictionary.
-    interrogatedb_cat.warning()
-      << "Double definition for class " << name << "\n";
-  }
-}
-
-void
-RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype) {
-  int type_index = otype._type.get_index();
-
-  if (type_index == 0) {
-    interrogatedb_cat.warning()
-      << "Class " << otype._PyType.tp_name
-      << " has a zero TypeHandle value; check that init_type() is called.\n";
-
-  } else if (type_index < 0 || type_index >= TypeRegistry::ptr()->get_num_typehandles()) {
-    interrogatedb_cat.warning()
-      << "Class " << otype._PyType.tp_name
-      << " has an illegal TypeHandle value; check that init_type() is called.\n";
-
+/**
+ * Returns a borrowed reference to the global type dictionary.
+ */
+Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
+  PyObject *capsule = PySys_GetObject("_interrogate_types");
+  if (capsule != nullptr) {
+    return (Dtool_TypeMap *)PyCapsule_GetPointer(capsule, nullptr);
   } else {
-    std::pair<RuntimeTypeMap::iterator, bool> result =
-      runtime_type_map.insert(RuntimeTypeMap::value_type(type_index, &otype));
-    if (!result.second) {
-      // There was already an entry in the dictionary for type_index.
-      Dtool_PyTypedObject *other_type = (*result.first).second;
-      interrogatedb_cat.warning()
-        << "Classes " << otype._PyType.tp_name
-        << " and " << other_type->_PyType.tp_name
-        << " share the same TypeHandle value (" << type_index
-        << "); check class definitions.\n";
-
-    } else {
-      runtime_type_set.insert(type_index);
-    }
-  }
-}
-
-Dtool_PyTypedObject *
-LookupNamedClass(const string &name) {
-  NamedTypeMap::const_iterator it;
-  it = named_type_map.find(name);
-
-  if (it == named_type_map.end()) {
-    // Find a type named like this in the type registry.
-    TypeHandle handle = TypeRegistry::ptr()->find_type(name);
-    if (handle.get_index() > 0) {
-      RuntimeTypeMap::const_iterator it2;
-      it2 = runtime_type_map.find(handle.get_index());
-      if (it2 != runtime_type_map.end()) {
-        return it2->second;
-      }
-    }
-
-    interrogatedb_cat.error()
-      << "Attempt to use type " << name << " which has not yet been defined!\n";
-    return nullptr;
-  } else {
-    return it->second;
-  }
-}
-
-Dtool_PyTypedObject *
-LookupRuntimeTypedClass(TypeHandle handle) {
-  RuntimeTypeMap::const_iterator it;
-  it = runtime_type_map.find(handle.get_index());
-
-  if (it == runtime_type_map.end()) {
-    interrogatedb_cat.error()
-      << "Attempt to use type " << handle << " which has not yet been defined!\n";
-    return nullptr;
-  } else {
-    return it->second;
+    Dtool_TypeMap *type_map = new Dtool_TypeMap;
+    capsule = PyCapsule_New((void *)type_map, nullptr, nullptr);
+    PySys_SetObject("_interrogate_types", capsule);
+    Py_DECREF(capsule);
+    return type_map;
   }
 }
 
 Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
-  RuntimeTypeMap::iterator di = runtime_type_map.find(type);
-  if (di != runtime_type_map.end()) {
-    return di->second;
-  } else {
-    int type2 = get_best_parent_from_Set(type, runtime_type_set);
-    di = runtime_type_map.find(type2);
-    if (di != runtime_type_map.end()) {
-      return di->second;
-    }
-  }
-  return nullptr;
+  return (Dtool_PyTypedObject *)TypeHandle::from_index(type).get_python_type();
 }
 
 #if PY_MAJOR_VERSION >= 3
-PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def) {
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def) {
 #else
-PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulename) {
 #endif
   // Check the version so we can print a helpful error if it doesn't match.
   string version = Py_GetVersion();
@@ -672,10 +589,40 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(nullptr);
   }
 
+  Dtool_TypeMap *type_map = Dtool_GetGlobalTypeMap();
+
   // the module level function inits....
   MethodDefmap functions;
-  for (int xx = 0; defs[xx] != nullptr; xx++) {
-    Dtool_Accum_MethDefs(defs[xx]->_methods, functions);
+  for (size_t i = 0; defs[i] != nullptr; i++) {
+    const LibraryDef &def = *defs[i];
+    Dtool_Accum_MethDefs(def._methods, functions);
+
+    // Define exported types.
+    const Dtool_TypeDef *types = def._types;
+    if (types != nullptr) {
+      while (types->name != nullptr) {
+        (*type_map)[std::string(types->name)] = types->type;
+        ++types;
+      }
+    }
+  }
+
+  // Resolve external types, in a second pass.
+  for (size_t i = 0; defs[i] != nullptr; i++) {
+    const LibraryDef &def = *defs[i];
+
+    Dtool_TypeDef *types = def._external_types;
+    if (types != nullptr) {
+      while (types->name != nullptr) {
+        auto it = type_map->find(std::string(types->name));
+        if (it != type_map->end()) {
+          types->type = it->second;
+        } else {
+          return PyErr_Format(PyExc_NameError, "name '%s' is not defined", types->name);
+        }
+        ++types;
+      }
+    }
   }
 
   PyMethodDef *newdef = new PyMethodDef[functions.size() + 1];
