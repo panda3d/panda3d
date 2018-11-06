@@ -560,26 +560,39 @@ def makewheel(version, output_dir, platform=None):
 __version__ = '{0}'
 """.format(version))
 
+    # Copy the extension modules from the panda3d directory.
+    ext_suffix = GetExtensionSuffix()
+
+    for file in os.listdir(panda3d_dir):
+        if file == '__init__.py':
+            pass
+        elif file.endswith('.py') or (file.endswith(ext_suffix) and '.' not in file[:-len(ext_suffix)]):
+            source_path = os.path.join(panda3d_dir, file)
+
+            if file.endswith('.pyd') and platform.startswith('cygwin'):
+                # Rename it to .dll for cygwin Python to be able to load it.
+                target_path = 'panda3d/' + os.path.splitext(file)[0] + '.dll'
+            else:
+                target_path = 'panda3d/' + file
+
+            whl.write_file(target_path, source_path)
+
+    # And copy the extension modules from the Python installation into the
+    # deploy_libs directory, for use by deploy-ng.
     ext_suffix = '.pyd' if sys.platform in ('win32', 'cygwin') else '.so'
+    ext_mod_dir = get_python_ext_module_dir()
 
-    ext_mod_dirs = [
-        (panda3d_dir, 'panda3d/'),
-        (get_python_ext_module_dir(), 'deploy_libs/'),
-    ]
-    for srcdir, targetdir in ext_mod_dirs:
-        for file in os.listdir(srcdir):
-            if file == '__init__.py':
-                pass
-            elif file.endswith(ext_suffix) or file.endswith('.py'):
-                source_path = os.path.join(srcdir, file)
+    for file in os.listdir(ext_mod_dir):
+        if file.endswith(ext_suffix):
+            source_path = os.path.join(ext_mod_dir, file)
 
-                if file.endswith('.pyd') and platform.startswith('cygwin'):
-                    # Rename it to .dll for cygwin Python to be able to load it.
-                    target_path = targetdir + os.path.splitext(file)[0] + '.dll'
-                else:
-                    target_path = targetdir + file
+            if file.endswith('.pyd') and platform.startswith('cygwin'):
+                # Rename it to .dll for cygwin Python to be able to load it.
+                target_path = 'deploy_libs/' + os.path.splitext(file)[0] + '.dll'
+            else:
+                target_path = 'deploy_libs/' + file
 
-                whl.write_file(target_path, source_path)
+            whl.write_file(target_path, source_path)
 
     # Add plug-ins.
     for lib in PLUGIN_LIBS:

@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.I
  * @author rdb
  * @date 2016-06-06
@@ -26,7 +19,7 @@
 template<class T> INLINE bool
 DtoolInstance_GetPointer(PyObject *self, T *&into) {
   if (DtoolInstance_Check(self)) {
-    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+    Dtool_PyTypedObject *target_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
     if (target_class != nullptr) {
       if (_IS_FINAL(T)) {
         if (DtoolInstance_TYPE(self) == target_class) {
@@ -116,30 +109,42 @@ INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
  */
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, true);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstance(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstance((void*) obj, *known_class, memory_rules, false);
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(const T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, true, obj->get_type().get_index());
 }
 
 template<class T> INLINE PyObject *
 DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
-  Dtool_PyTypedObject *known_class = Dtool_RuntimeTypeDtoolType(get_type_handle(T).get_index());
+  Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
+}
+
+/**
+ * Finishes initializing the Dtool_PyInstDef.
+ */
+INLINE int
+DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
+  ((Dtool_PyInstDef *)self)->_My_Type = type;
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
+  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
+  ((Dtool_PyInstDef *)self)->_is_const = is_const;
+  return 0;
 }
 
 /**

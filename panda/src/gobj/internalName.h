@@ -96,11 +96,7 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   // These versions are exposed to Python, which have additional logic to map
   // from Python interned strings.
-#if PY_MAJOR_VERSION >= 3
-  EXTENSION(static PT(InternalName) make(PyUnicodeObject *str));
-#else
-  EXTENSION(static PT(InternalName) make(PyStringObject *str));
-#endif
+  EXTENSION(static PT(InternalName) make(PyObject *str));
 #endif
 
 public:

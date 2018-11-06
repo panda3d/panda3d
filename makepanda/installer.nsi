@@ -329,13 +329,24 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\panda3d
         File /r "${BUILT}\panda3d\*.py"
 
-        File /r /x bullet.pyd /x ode.pyd /x physx.pyd /x rocket.pyd "${BUILT}\panda3d\*.pyd"
+        File /nonfatal /r "${BUILT}\panda3d\core${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\ai${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\awesomium${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\direct${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\egg${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\fx${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\interrogatedb${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\physics${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\_rplight${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\skel${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\vision${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\vrpn${EXT_SUFFIX}"
 
         !ifdef HAVE_BULLET
             SectionGetFlags ${SecBullet} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipBulletPyd
-            File /nonfatal /r "${BUILT}\panda3d\bullet.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\bullet${EXT_SUFFIX}"
             SkipBulletPyd:
         !endif
 
@@ -343,7 +354,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecODE} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipODEPyd
-            File /nonfatal /r "${BUILT}\panda3d\ode.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\ode${EXT_SUFFIX}"
             SkipODEPyd:
         !endif
 
@@ -351,7 +362,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecPhysX} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipPhysXPyd
-            File /nonfatal /r "${BUILT}\panda3d\physx.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\physx${EXT_SUFFIX}"
             SkipPhysXPyd:
         !endif
 
@@ -359,7 +370,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecRocket} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipRocketPyd
-            File /nonfatal /r "${BUILT}\panda3d\rocket.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\rocket${EXT_SUFFIX}"
             SkipRocketPyd:
         !endif
 
