@@ -153,6 +153,7 @@ deallocate_array(void *ptr) {
   PANDA_FREE_ARRAY(ptr);
 }
 
+#ifdef HAVE_PYTHON
 /**
  * Returns the internal void pointer that is stored for interrogate's benefit.
  */
@@ -165,6 +166,7 @@ get_python_type() const {
     return nullptr;
   }
 }
+#endif
 
 /**
  * Return the Index of the BEst fit Classs from a set

@@ -207,6 +207,7 @@ record_alternate_name(TypeHandle type, const string &name) {
   _lock->unlock();
 }
 
+#ifdef HAVE_PYTHON
 /**
  * Records the given Python type pointer in the type registry for the benefit
  * of interrogate.
@@ -222,6 +223,7 @@ record_python_type(TypeHandle type, PyObject *python_type) {
 
   _lock->unlock();
 }
+#endif
 
 /**
  * Looks for a previously-registered type of the given name.  Returns its
