@@ -61,14 +61,6 @@ throw_new_frame() {
   throw_event("NewFrame");
 }
 
-// Returns the configure object for accessing config variables from a
-// scripting language.
-DConfig &
-get_config_showbase() {
-  static DConfig config_showbase;
-  return config_showbase;
-}
-
 // Initialize the application for making a Gui-based app, such as wx.  At the
 // moment, this is a no-op except on Mac.
 void

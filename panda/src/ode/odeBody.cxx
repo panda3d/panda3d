@@ -15,10 +15,6 @@
 #include "odeBody.h"
 #include "odeJoint.h"
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#endif
-
 TypeHandle OdeBody::_type_handle;
 
 OdeBody::
@@ -38,28 +34,13 @@ OdeBody::
 
 void OdeBody::
 destroy() {
-#ifdef HAVE_PYTHON
-  Py_XDECREF((PyObject*) dBodyGetData(_id));
-#endif
+  if (_destroy_callback != nullptr) {
+    _destroy_callback(*this);
+    _destroy_callback = nullptr;
+  }
   nassertv(_id);
   dBodyDestroy(_id);
 }
-
-#ifdef HAVE_PYTHON
-void OdeBody::
-set_data(PyObject *data) {
-  Py_XDECREF((PyObject*) dBodyGetData(_id));
-  Py_XINCREF(data);
-  dBodySetData(_id, data);
-}
-
-PyObject* OdeBody::
-get_data() const {
-  PyObject* data = (PyObject*) dBodyGetData(_id);
-  Py_XINCREF(data);
-  return data;
-}
-#endif
 
 OdeJoint OdeBody::
 get_joint(int index) const {

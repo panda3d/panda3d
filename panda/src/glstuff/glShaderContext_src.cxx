@@ -1145,6 +1145,78 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       }
       return;
     }
+    if (size > 4 && noprefix.substr(0, 4) == "Fog.") {
+      Shader::ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = Shader::SMF_first;
+      bind._arg[0] = nullptr;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_fog;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = Shader::SSD_NONE;
+
+      if (noprefix == "Fog.color") {
+        bind._part[0] = Shader::SMO_attr_fogcolor;
+
+        if (param_type == GL_FLOAT_VEC3) {
+          bind._piece = Shader::SMP_row3x3;
+        } else if (param_type == GL_FLOAT_VEC4) {
+          bind._piece = Shader::SMP_row3;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.color should be vec3 or vec4\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.density") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_row3x1;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.density should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.start") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell13;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.start should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.end") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell14;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.end should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.scale") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell15;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.scale should be float\n";
+          return;
+        }
+      }
+
+      _shader->_mat_spec.push_back(bind);
+      _shader->_mat_deps |= bind._dep[0];
+      return;
+    }
     if (noprefix == "LightModel.ambient") {
       Shader::ShaderMatSpec bind;
       bind._id = arg_id;

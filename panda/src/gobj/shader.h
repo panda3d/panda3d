@@ -616,11 +616,18 @@ private:
   Shader(ShaderLanguage lang);
 
   bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
+  bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
   bool do_read_source(std::string &into, const Filename &fn, BamCacheRecord *record);
-  bool r_preprocess_source(std::ostream &out, const Filename &fn,
-                           const Filename &source_dir,
+  bool do_load_source(std::string &into, const std::string &source, BamCacheRecord *record);
+  bool r_preprocess_include(std::ostream &out, const Filename &fn,
+                            const Filename &source_dir,
+                            std::set<Filename> &open_files,
+                            BamCacheRecord *record, int depth);
+  bool r_preprocess_source(std::ostream &out, std::istream &in,
+                           const Filename &fn, const Filename &full_fn,
                            std::set<Filename> &open_files,
-                           BamCacheRecord *record, int depth = 0);
+                           BamCacheRecord *record,
+                           int fileno = 0, int depth = 0);
 
   bool check_modified() const;
 

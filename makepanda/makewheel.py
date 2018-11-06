@@ -498,7 +498,7 @@ __version__ = '{0}'
     for file in os.listdir(panda3d_dir):
         if file == '__init__.py':
             pass
-        elif file.endswith(ext_suffix) or file.endswith('.py'):
+        elif file.endswith('.py') or (file.endswith(ext_suffix) and '.' not in file[:-len(ext_suffix)]):
             source_path = os.path.join(panda3d_dir, file)
 
             if file.endswith('.pyd') and platform.startswith('cygwin'):

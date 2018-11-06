@@ -54,11 +54,6 @@ extern ConfigVariableBool multifile_always_binary;
 extern EXPCL_PANDA_EXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDA_EXPRESS ConfigVariableDouble collect_tcp_interval;
 
-// Expose the Config variable for Python access.
-BEGIN_PUBLISH
-EXPCL_PANDA_EXPRESS DConfig &get_config_express();
-END_PUBLISH
-
 extern EXPCL_PANDA_EXPRESS void init_libexpress();
 
 #endif /* __CONFIG_UTIL_H__ */
