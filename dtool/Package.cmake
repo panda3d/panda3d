@@ -149,6 +149,11 @@ find_package(TIFF QUIET)
 package_option(TIFF "Enable support for loading .tif images.")
 config_package(TIFF "libtiff")
 
+# OpenEXR:
+find_package(OpenEXR QUIET)
+package_option(OPENEXR "Enable support for loading .exr images.")
+config_package(OPENEXR "OpenEXR")
+
 #
 # ------------ LIBTAR ------------
 #

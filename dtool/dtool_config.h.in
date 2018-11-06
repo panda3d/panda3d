@@ -67,6 +67,9 @@
 /* Define if we have libtiff installed.  */
 #cmakedefine HAVE_TIFF
 
+/* Define if we have OpenEXR installed.  */
+#cmakedefine HAVE_OPENEXR
+
 /* Define if we want to build these other image file formats. */
 #cmakedefine HAVE_SGI_RGB
 #cmakedefine HAVE_TGA
