@@ -11,6 +11,8 @@ matrix:
       before_install:
         - export CC=gcc-4.7
         - export CXX=g++-4.7
+    - compiler: clang
+      env: PYTHONV=python3 FLAGS=--no-python SKIP_TESTS=1
 addons:
   apt:
     sources:
@@ -42,8 +44,8 @@ install:
     - $PYTHONV -m pip install pytest
 script:
     - $PYTHONV makepanda/makepanda.py --everything --git-commit $TRAVIS_COMMIT $FLAGS --threads 4
-    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
-    - LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest -v tests
+    - test -n "$SKIP_TESTS" || LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV makepanda/test_imports.py
+    - test -n "$SKIP_TESTS" || LD_LIBRARY_PATH=built/lib PYTHONPATH=built $PYTHONV -m pytest -v tests
 notifications:
   irc:
     channels:
