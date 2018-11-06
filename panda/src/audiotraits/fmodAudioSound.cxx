@@ -651,7 +651,7 @@ get_3d_max_distance() const {
  * a balance [pan] function what is the point?
  */
 PN_stdfloat FmodAudioSound::
-get_speaker_mix(AudioManager::SpeakerId speaker) {
+get_speaker_mix(int speaker) {
   ReMutexHolder holder(FmodAudioManager::_lock);
   if (_channel == 0) {
     return 0.0;
