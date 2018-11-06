@@ -89,12 +89,10 @@ set_data(void *data) {
   dBodySetData(_id, data);
 }
 
-#ifndef HAVE_PYTHON
-INLINE void* OdeBody::
+INLINE void *OdeBody::
 get_data() const {
   return dBodyGetData(_id);
 }
-#endif
 
 INLINE void OdeBody::
 set_position(dReal x, dReal y, dReal z) {
