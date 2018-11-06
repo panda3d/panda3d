@@ -175,6 +175,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/applications")
     oscmd("mkdir -m 0755 -p "+destdir+libdir+"/panda3d")
     oscmd("mkdir -m 0755 -p "+destdir+PPATH)
+    oscmd("mkdir -m 0755 -p "+destdir+PPATH+"/panda3d")
 
     if (sys.platform.startswith("freebsd")):
         oscmd("mkdir -m 0755 -p "+destdir+prefix+"/etc")
@@ -194,12 +195,16 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
 
     oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
     oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/")
-    oscmd("cp -R "+outputdir+"/panda3d          "+destdir+PPATH+"/")
     oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir(outputdir+"/direct"):   oscmd("cp -R "+outputdir+"/direct           "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir(outputdir+"/Pmw"):      oscmd("cp -R "+outputdir+"/Pmw     "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir(outputdir+"/plugins"):  oscmd("cp -R "+outputdir+"/plugins "+destdir+prefix+"/share/panda3d/")
+
+    suffix = GetExtensionSuffix()
+    for base in os.listdir(outputdir + "/panda3d"):
+        if base.endswith(".py") or (base.endswith(suffix) and '.' not in base[:-len(suffix)]):
+            oscmd("cp "+outputdir+"/panda3d/"+base+" "+destdir+PPATH+"/panda3d/"+base)
 
     WriteMimeFile(destdir+prefix+"/share/mime-info/panda3d.mime", MIME_INFO)
     WriteKeysFile(destdir+prefix+"/share/mime-info/panda3d.keys", MIME_INFO)

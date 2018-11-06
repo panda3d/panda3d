@@ -3239,6 +3239,8 @@ def WriteEmbeddedStringFile(basename, inputs, string_name=None):
 ########################################################################
 
 ORIG_EXT = {}
+PYABI_SPECIFIC = set()
+WARNED_FILES = set()
 
 def GetOrigExt(x):
     return ORIG_EXT[x]
@@ -3249,13 +3251,41 @@ def SetOrigExt(x, v):
 def GetExtensionSuffix():
     if sys.version_info >= (3, 0):
         suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if suffix:
+        if suffix == '.so':
+            # On my FreeBSD system, this is not set correctly, but SOABI is.
+            soabi = sysconfig.get_config_var('SOABI')
+            if soabi:
+                return '.%s.so' % (soabi)
+        elif suffix:
             return suffix
+
     target = GetTarget()
     if target == 'windows':
         return '.pyd'
     else:
         return '.so'
+
+def GetPythonABI():
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi:
+        return soabi
+
+    soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    debug_flag = sysconfig.get_config_var('Py_DEBUG')
+    if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
+        soabi += 'd'
+
+    malloc_flag = sysconfig.get_config_var('WITH_PYMALLOC')
+    if malloc_flag is None or malloc_flag:
+        soabi += 'm'
+
+    if sys.version_info < (3, 3):
+        usize = sysconfig.get_config_var('Py_UNICODE_SIZE')
+        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
+            soabi += 'u'
+
+    return soabi
 
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
@@ -3327,11 +3357,25 @@ def CalcLocation(fn, ipath):
     return fn
 
 
-def FindLocation(fn, ipath):
+def FindLocation(fn, ipath, pyabi=None):
     if (GetLinkAllStatic() and fn.endswith(".dll")):
         fn = fn[:-4] + ".lib"
     loc = CalcLocation(fn, ipath)
     base, ext = os.path.splitext(fn)
+
+    # If this is a target created with PyTargetAdd, we need to make sure it
+    # it put in a Python-version-specific directory.
+    if loc in PYABI_SPECIFIC:
+        if loc.startswith(OUTPUTDIR + "/tmp"):
+            if pyabi is not None:
+                loc = OUTPUTDIR + "/tmp/" + pyabi + loc[len(OUTPUTDIR) + 4:]
+            else:
+                raise RuntimeError("%s is a Python-specific target, use PyTargetAdd instead of TargetAdd" % (fn))
+
+        elif ext != ".pyd" and loc not in WARNED_FILES:
+            WARNED_FILES.add(loc)
+            print("%sWARNING:%s file depends on Python but is not in an ABI-specific directory: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), loc, GetColor()))
+
     ORIG_EXT[loc] = ext
     return loc
 
@@ -3377,6 +3421,11 @@ def FindLocation(fn, ipath):
 ## be inserted: bison generates an OBJ and a secondary header
 ## file, interrogate generates an IN and a secondary IGATE.OBJ.
 ##
+## PyTargetAdd is a special version for targets that depend on Python.
+## It will create a target for each Python version we are building with,
+## ensuring that builds with different Python versions won't conflict
+## when we build for multiple Python ABIs side-by-side.
+##
 ########################################################################
 
 class Target:
@@ -3385,7 +3434,7 @@ class Target:
 TARGET_LIST = []
 TARGET_TABLE = {}
 
-def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None):
+def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None, pyabi=None):
     if (dummy != 0):
         exit("Syntax error in TargetAdd "+target)
     if ipath is None: ipath = opts
@@ -3393,11 +3442,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
 
-    if os.path.splitext(target)[1] == '.pyd' and PkgSkip("PYTHON"):
-        # It makes no sense to build Python modules with python disabled.
-        return
+    if target.endswith(".pyd") and not pyabi:
+        raise RuntimeError("Use PyTargetAdd to build .pyd targets")
 
-    full = FindLocation(target, [OUTPUTDIR + "/include"])
+    full = FindLocation(target, [OUTPUTDIR + "/include"], pyabi=pyabi)
 
     if (full not in TARGET_TABLE):
         t = Target()
@@ -3416,7 +3464,7 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     ipath = [OUTPUTDIR + "/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
     for x in input:
-        fullinput = FindLocation(x, ipath)
+        fullinput = FindLocation(x, ipath, pyabi=pyabi)
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
@@ -3455,7 +3503,7 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
                 t.deps[fulln] = 1
 
     for x in dep:
-        fulldep = FindLocation(x, ipath)
+        fulldep = FindLocation(x, ipath, pyabi=pyabi)
         t.deps[fulldep] = 1
 
     if winrc and GetTarget() == 'windows':
@@ -3472,3 +3520,32 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     if target.endswith(".pz") and not CrossCompiling():
         t.deps[FindLocation("pzip.exe", [])] = 1
+
+    if target.endswith(".in"):
+        # Also add a target to compile the _igate.cxx file into an _igate.obj.
+        outbase = os.path.basename(target)[:-3]
+        woutc = OUTPUTDIR + "/tmp/" + outbase + "_igate.cxx"
+        CxxDependencyCache[woutc] = []
+        PyTargetAdd(outbase + "_igate.obj", opts=opts+['PYTHON','BIGOBJ'], input=woutc, dep=target)
+
+
+def PyTargetAdd(target, opts=[], **kwargs):
+    if PkgSkip("PYTHON"):
+        return
+
+    if 'PYTHON' not in opts:
+        opts = opts + ['PYTHON']
+
+    abi = GetPythonABI()
+
+    MakeDirectory(OUTPUTDIR + "/tmp/" + abi)
+
+    # Mark this target as being a Python-specific target.
+    orig = CalcLocation(target, [OUTPUTDIR + "/include"])
+    PYABI_SPECIFIC.add(orig)
+
+    if orig.startswith(OUTPUTDIR + "/tmp/") and os.path.exists(orig):
+        print("Removing file %s" % (orig))
+        os.unlink(orig)
+
+    TargetAdd(target, opts=opts, pyabi=abi, **kwargs)
