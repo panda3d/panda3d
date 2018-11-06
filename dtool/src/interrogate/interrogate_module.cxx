@@ -30,6 +30,9 @@
 using std::cerr;
 using std::string;
 
+// This contains a big source string determined at compile time.
+extern const char interrogate_preamble_python_native[];
+
 Filename output_code_filename;
 string module_name;
 string library_name;
@@ -635,8 +638,10 @@ int main(int argc, char *argv[]) {
 
       if (build_python_native_wrappers) {
         write_python_table_native(output_code);
-      }
 
+        // Output the support code.
+        output_code << interrogate_preamble_python_native << "\n";
+      }
     }
   }
 

@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.cxx
  * @author drose
  * @date 2005-07-04
@@ -480,47 +473,20 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
   return (PyObject *)self;
 }
 
-// Th Finalizer for simple instances..
-int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
-  // lets put some code in here that checks to see the memory is properly
-  // configured.. prior to my call ..
-
-  ((Dtool_PyInstDef *)self)->_My_Type = type;
-  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
-  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
-  ((Dtool_PyInstDef *)self)->_is_const = is_const;
-  return 0;
-}
-
-// A helper function to glue method definition together .. that can not be
-// done at code generation time because of multiple generation passes in
-// interrogate..
-void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
-  for (; in->ml_name != nullptr; in++) {
-    if (themap.find(in->ml_name) == themap.end()) {
-      themap[in->ml_name] = in;
-    }
-  }
-}
-
 /**
  * Returns a borrowed reference to the global type dictionary.
  */
 Dtool_TypeMap *Dtool_GetGlobalTypeMap() {
-  PyObject *capsule = PySys_GetObject("_interrogate_types");
+  PyObject *capsule = PySys_GetObject((char *)"_interrogate_types");
   if (capsule != nullptr) {
     return (Dtool_TypeMap *)PyCapsule_GetPointer(capsule, nullptr);
   } else {
     Dtool_TypeMap *type_map = new Dtool_TypeMap;
     capsule = PyCapsule_New((void *)type_map, nullptr, nullptr);
-    PySys_SetObject("_interrogate_types", capsule);
+    PySys_SetObject((char *)"_interrogate_types", capsule);
     Py_DECREF(capsule);
     return type_map;
   }
-}
-
-Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
-  return (Dtool_PyTypedObject *)TypeHandle::from_index(type).get_python_type();
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -544,58 +510,19 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
     return nullptr;
   }
 
-  // Initialize the types we define in py_panda.
-  static bool dtool_inited = false;
-  if (!dtool_inited) {
-    dtool_inited = true;
-
-    if (PyType_Ready(&Dtool_SequenceWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_SequenceWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MutableSequenceWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableSequenceWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MutableMappingWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MutableMappingWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Keys_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Keys)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Values_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Values)");
-    }
-
-    if (PyType_Ready(&Dtool_MappingWrapper_Items_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_MappingWrapper_Items)");
-    }
-
-    if (PyType_Ready(&Dtool_GeneratorWrapper_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_GeneratorWrapper)");
-    }
-
-    if (PyType_Ready(&Dtool_StaticProperty_Type) < 0) {
-      return Dtool_Raise_TypeError("PyType_Ready(Dtool_StaticProperty_Type)");
-    }
-
-    // Initialize the base class of everything.
-    Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(nullptr);
-  }
-
   Dtool_TypeMap *type_map = Dtool_GetGlobalTypeMap();
 
   // the module level function inits....
   MethodDefmap functions;
   for (size_t i = 0; defs[i] != nullptr; i++) {
     const LibraryDef &def = *defs[i];
-    Dtool_Accum_MethDefs(def._methods, functions);
+
+    // Accumulate method definitions.
+    for (PyMethodDef *meth = def._methods; meth->ml_name != nullptr; meth++) {
+      if (functions.find(meth->ml_name) == functions.end()) {
+        functions[meth->ml_name] = meth;
+      }
+    }
 
     // Define exported types.
     const Dtool_TypeDef *types = def._types;
@@ -746,7 +673,7 @@ PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
 
 // We do expose a dictionay for dtool classes .. this should be removed at
 // some point..
-EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
+PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
   PyObject *self;
   PyObject *subject;
   PyObject *key;

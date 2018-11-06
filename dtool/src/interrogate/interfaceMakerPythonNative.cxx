@@ -3097,7 +3097,7 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
   } else {
-    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)&Dtool_DTOOL_SUPER_BASE;\n";
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();

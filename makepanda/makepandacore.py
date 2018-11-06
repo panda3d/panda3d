@@ -3190,6 +3190,48 @@ def WriteResourceFile(basename, **kwargs):
     ConditionalWriteFile(basename, GenerateResourceFile(**kwargs))
     return basename
 
+
+def WriteEmbeddedStringFile(basename, inputs, string_name=None):
+    if os.path.splitext(basename)[1] not in SUFFIX_INC:
+        basename += '.cxx'
+    target = GetOutputDir() + "/tmp/" + basename
+
+    if string_name is None:
+        string_name = os.path.basename(os.path.splitext(target)[0])
+        string_name = string_name.replace('-', '_')
+
+    data = bytearray()
+    for input in inputs:
+        fp = open(input, 'rb')
+
+        # Insert a #line so that we get meaningful compile/assert errors when
+        # the result is inserted by interrogate_module into generated code.
+        if os.path.splitext(input)[1] in SUFFIX_INC:
+            line = '#line 1 "%s"\n' % (input)
+            data += bytearray(line.encode('ascii', 'replace'))
+
+        data += bytearray(fp.read())
+        fp.close()
+
+    data.append(0)
+
+    output = 'extern const char %s[] = {\n' % (string_name)
+
+    i = 0
+    for byte in data:
+        if i == 0:
+            output += ' '
+
+        output += ' 0x%02x,' % (byte)
+        i += 1
+        if i >= 12:
+            output += '\n'
+            i = 0
+
+    output += '\n};\n'
+    ConditionalWriteFile(target, output)
+    return target
+
 ########################################################################
 ##
 ## FindLocation

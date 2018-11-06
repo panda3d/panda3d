@@ -3442,14 +3442,13 @@ TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'
 # DIRECTORY: dtool/src/interrogatedb/
 #
 
-OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB', 'PYTHON']
+OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
 TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
 TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
 TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
 TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
 TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
 TargetAdd('libp3interrogatedb.dll', input='libp3dtoolconfig.dll')
-TargetAdd('libp3interrogatedb.dll', opts=['PYTHON'])
 
 if not PkgSkip("PYTHON"):
   # This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
@@ -3489,8 +3488,16 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='libp3pystub.lib')
   TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
+  preamble = WriteEmbeddedStringFile('interrogate_preamble_python_native', inputs=[
+    'dtool/src/interrogatedb/py_panda.cxx',
+    'dtool/src/interrogatedb/py_compat.cxx',
+    'dtool/src/interrogatedb/py_wrappers.cxx',
+    'dtool/src/interrogatedb/dtool_super_base.cxx',
+  ])
+  TargetAdd('interrogate_module_preamble_python_native.obj', opts=OPTS, input=preamble)
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
   TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
+  TargetAdd('interrogate_module.exe', input='interrogate_module_preamble_python_native.obj')
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
   TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')

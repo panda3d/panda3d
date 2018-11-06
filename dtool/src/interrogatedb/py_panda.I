@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.I
  * @author rdb
  * @date 2016-06-06
@@ -140,6 +133,18 @@ DTool_CreatePyInstanceTyped(T *obj, bool memory_rules) {
   Dtool_PyTypedObject *known_class = (Dtool_PyTypedObject *)get_type_handle(T).get_python_type();
   nassertr(known_class != nullptr, nullptr);
   return DTool_CreatePyInstanceTyped((void*) obj, *known_class, memory_rules, false, obj->get_type().get_index());
+}
+
+/**
+ * Finishes initializing the Dtool_PyInstDef.
+ */
+INLINE int
+DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
+  ((Dtool_PyInstDef *)self)->_My_Type = type;
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
+  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
+  ((Dtool_PyInstDef *)self)->_is_const = is_const;
+  return 0;
 }
 
 /**
