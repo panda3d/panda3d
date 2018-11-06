@@ -42,7 +42,7 @@ macro(find_cggl)
 
     # Find the library directory
     find_library(CGGL_LIBRARY
-      NAMES "cgGL" "libCgGL"
+      NAMES "CgGL" "libCgGL"
       PATHS "C:/Program Files/Cg"
             "C:/Program Files/NVIDIA Corporation/Cg"
             "/usr"
@@ -87,7 +87,7 @@ macro(find_cgd3d9)
 
     # Find the library directory
     find_library(CGD3D9_LIBRARY
-      NAMES "cgD3D9" "libCgD3D9"
+      NAMES "CgD3D9" "libCgD3D9"
       PATHS "C:/Program Files/Cg"
             "C:/Program Files/NVIDIA Corporation/Cg"
             "/usr"
@@ -184,6 +184,11 @@ if(CG_INCLUDE_DIR AND CG_LIBRARY_DIR)
   find_cggl()
   find_cgd3d9()
 
-  set(CG_LIBRARIES ${CG_LIBRARY} ${CGGL_LIBRARY} ${CGD3D9_LIBRARY})
-  mark_as_advanced(CG_LIBRARIES)
+  set(CG_LIBRARIES ${CG_LIBRARY})
+  if(CGGL_LIBRARY)
+    list(APPEND CG_LIBRARIES "${CGGL_LIBRARY}")
+  endif()
+  if(CGD3D9_LIBRARY)
+    list(APPEND CG_LIBRARIES "${CGD3D9_LIBRARY}")
+  endif()
 endif()
