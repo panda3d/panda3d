@@ -24,7 +24,12 @@ using std::string;
  */
 #if PY_MAJOR_VERSION >= 3
 PT(InternalName) Extension<InternalName>::
-make(PyUnicodeObject *str) {
+make(PyObject *str) {
+  if (!PyUnicode_Check(str)) {
+    Dtool_Raise_ArgTypeError(str, 0, "InternalName.make", "str");
+    return nullptr;
+  }
+
   if (!PyUnicode_CHECK_INTERNED(str)) {
     // Not an interned string; don't bother.
     Py_ssize_t len = 0;
@@ -50,7 +55,12 @@ make(PyUnicodeObject *str) {
 
 #else
 PT(InternalName) Extension<InternalName>::
-make(PyStringObject *str) {
+make(PyObject *str) {
+  if (!PyString_Check(str)) {
+    Dtool_Raise_ArgTypeError(str, 0, "InternalName.make", "str");
+    return nullptr;
+  }
+
   if (!PyString_CHECK_INTERNED(str)) {
     // Not an interned string; don't bother.
     string name(PyString_AS_STRING(str), PyString_GET_SIZE(str));
