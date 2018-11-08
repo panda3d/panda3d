@@ -2573,9 +2573,9 @@ WriteConfigSettings()
 
 WarnConflictingFiles()
 if SystemLibraryExists("dtoolbase"):
-    print("%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor()))
+    Warn("Found conflicting Panda3D libraries from other ppremake build!")
 if SystemLibraryExists("p3dtoolconfig"):
-    print("%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor()))
+    Warn("Found conflicting Panda3D libraries from other makepanda build!")
 
 ##########################################################################################
 #
@@ -3061,7 +3061,7 @@ if tp_dir is not None:
                 pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', 'Manifests', sxs_name + '_*.manifest')
                 manifests = glob.glob(pattern)
                 if not manifests:
-                    print("%sWARNING:%s Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (GetColor("red"), GetColor(), pattern))
+                    Warn("Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (pattern))
                     continue
 
                 CopyFile(GetOutputDir() + "/python/" + ident.get('name') + ".manifest", manifests[0])
@@ -7008,7 +7008,7 @@ def MakeInstallerLinux():
         rpmbuild_present = True
 
     if dpkg_present and rpmbuild_present:
-        print("Warning: both dpkg and rpmbuild present.")
+        Warn("both dpkg and rpmbuild present.")
 
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
