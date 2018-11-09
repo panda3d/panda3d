@@ -31,6 +31,15 @@ shutil.rmtree(os.path.join(root, 'makepanda'))
 # Then we look under each of the separate project trees:
 projects = ['contrib', 'direct', 'dtool', 'panda', 'pandatool']
 for project in projects:
+    # Remove non-CMakeLists.txt files from */metalibs/*/
+    for path, dirs, files in os.walk(os.path.join(root, project, 'metalibs')):
+        for filename in files:
+            if filename.lower() != 'cmakelists.txt':
+                os.unlink(os.path.join(path, filename))
+        # Unlink the directory itself, if empty
+        if not os.listdir(path):
+            os.rmdir(path)
+
     for path, dirs, files in os.walk(os.path.join(root, project)):
         # Get rid of _composite#.cxx files
         for filename in files:
