@@ -6763,10 +6763,13 @@ def MakeInstallerNSIS(file, title, installdir):
     elif (os.path.isdir(file)):
         shutil.rmtree(file)
 
+    pyver = SDK["PYTHONVERSION"][6:9]
     if GetTargetArch() == 'x64':
         regview = '64'
     else:
         regview = '32'
+        if int(pyver[0]) == 3 and int(pyver[2]) >= 5:
+            pyver += '-32'
 
     if (RUNTIME):
         # Invoke the make_installer script.
@@ -6799,7 +6802,7 @@ def MakeInstallerNSIS(file, title, installdir):
         'OUTFILE'     : '..\\' + file,
         'BUILT'       : '..\\' + GetOutputDir(),
         'SOURCE'      : '..',
-        'PYVER'       : SDK["PYTHONVERSION"][6:9],
+        'PYVER'       : pyver,
         'REGVIEW'     : regview,
         'EXT_SUFFIX'  : GetExtensionSuffix(),
     }
