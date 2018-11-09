@@ -35,12 +35,12 @@
 #       variables provided by find_package()
 #
 #
-# Function: config_package
+# Function: package_status
 # Usage:
-#   config_package(package_name "Package description" ["Config summary"])
+#   package_status(package_name "Package description" ["Config summary"])
 # Examples:
-#   config_package(OpenAL "OpenAL Audio Output")
-#   config_package(ROCKET "Rocket" "without Python bindings")
+#   package_status(OpenAL "OpenAL Audio Output")
+#   package_status(ROCKET "Rocket" "without Python bindings")
 #
 #
 # Function: show_packages
@@ -48,7 +48,7 @@
 #   show_packages()
 #
 #   This prints the package usage report using the information provided in
-#   calls to config_package above.
+#   calls to package_status above.
 #
 
 #
@@ -214,22 +214,22 @@ endfunction(package_option)
 set(_ALL_CONFIG_PACKAGES CACHE INTERNAL "Internal variable")
 
 #
-# config_package
+# package_status
 #
-function(config_package name desc)
+function(package_status name desc)
   set(note "")
   foreach(arg ${ARGN})
     set(note "${arg}")
   endforeach()
 
   if(NOT PANDA_DID_SET_OPTION_${name})
-    message(SEND_ERROR "config_package(${name}) was called before package_option(${name}).
+    message(SEND_ERROR "package_status(${name}) was called before package_option(${name}).
                         This is a bug in the cmake build scripts.")
   endif()
 
   list(FIND _ALL_CONFIG_PACKAGES "${name}" called_twice)
   if(called_twice GREATER -1)
-    message(SEND_ERROR "config_package(${name}) was called twice.
+    message(SEND_ERROR "package_status(${name}) was called twice.
                         This is a bug in the cmake build scripts.")
   else()
     list(APPEND _ALL_CONFIG_PACKAGES "${name}")
