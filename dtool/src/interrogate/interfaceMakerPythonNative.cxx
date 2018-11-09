@@ -1495,11 +1495,15 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";
 
-  out << "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, ";
   if (_external_imports.empty()) {
-    out << "nullptr};\n";
+    out << "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n";
   } else {
-    out << "imports};\n";
+    out <<
+      "#ifdef LINK_ALL_STATIC\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n"
+      "#else\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, imports};\n"
+      "#endif\n";
   }
   if (out_h != nullptr) {
     *out_h << "extern const struct LibraryDef " << def->library_name << "_moddef;\n";
