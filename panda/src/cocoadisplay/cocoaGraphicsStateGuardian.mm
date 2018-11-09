@@ -254,6 +254,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
     "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
   get_properties(_fbprops, format, 0);
 
+  // Don't enable sRGB unless it was explicitly requested.
+  if (!properties.get_srgb_color()) {
+    _fbprops.set_srgb_color(false);
+  }
+
   // TODO: print out renderer
 
   _context = [[NSOpenGLContext alloc] initWithFormat:format shareContext:_share_context];
