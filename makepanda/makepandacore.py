@@ -3260,14 +3260,8 @@ def SetOrigExt(x, v):
 
 def GetExtensionSuffix():
     if sys.version_info >= (3, 0):
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if suffix == '.so':
-            # On my FreeBSD system, this is not set correctly, but SOABI is.
-            soabi = sysconfig.get_config_var('SOABI')
-            if soabi:
-                return '.%s.so' % (soabi)
-        elif suffix:
-            return suffix
+        import _imp
+        return _imp.extension_suffixes()[0]
 
     target = GetTarget()
     if target == 'windows':
