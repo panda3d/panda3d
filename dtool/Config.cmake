@@ -442,26 +442,6 @@ that is built into Panda. TinyDisplay is not as full-featured as Mesa
 but is many times faster." ${IS_NOT_MINSIZE_BUILD})
 
 
-# TODO: OpenGL ES
-# Is OpenGL ES 1.x installed, and where?
-#find_package(OpenGLES)
-
-#package_option(GLES
-#  "Enable OpenGL ES 1.x support, a minimal subset of
-#OpenGL for mobile devices.")
-
-# Is OpenGL ES 2.x installed, and where?
-#find_package(OpenGLES)
-
-#package_option(GLES2
-#  "Enable OpenGL ES 2.x support, a version of OpenGL ES but without
-#fixed-function pipeline - everything is programmable there.")
-
-# Is EGL installed, and where?
-#package_option(EGL
-#  "Enable EGL support. EGL is like GLX, but for OpenGL ES.")
-
-
 # Is SDL installed, and where?
 set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
 set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
@@ -481,26 +461,6 @@ mark_as_advanced(SDL_INCLUDE_DIR)
 mark_as_advanced(SDL_LIBRARY)
 mark_as_advanced(SDL_LIBRARY_TEMP)
 
-
-# TODO: XF86DGA
-# This defines if we have XF86DGA installed.
-#find_package(XF86DGA QUIET)
-
-#package_option(XF86DGA
-#  "This enables smooth FPS-style mouse in x11display,
-#when mouse mode M_relative is used.")
-
-
-# TODO: XRANDR
-#find_package(Xrandr QUIET)
-#package_option(XRANDR
-#  "This enables resolution switching in x11display.")
-
-
-# TODO: XCURSOR
-#find_package(Xcursor QUIET)
-#package_option(XCURSOR
-#  "This enables custom cursor support in x11display.")
 
 if(HAVE_GL AND HAVE_X11 AND NOT APPLE)
   option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." ON)
@@ -523,15 +483,6 @@ cmake_dependent_option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON
   "APPLE" OFF)
 cmake_dependent_option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." OFF
   "APPLE" OFF)
-
-#
-# <<<<<< Insert the rest of the Config.pp
-#        port of third-party libs here <<<<<<<
-#
-
-
-
-
 
 #
 # Miscellaneous settings
@@ -582,16 +533,6 @@ mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
   HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
 
 
-#
-# <<<<< Insert the rest of the Config.pp
-#       port of miscellaneous settings here <<<<<
-#
-
-
-
-
-
-
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and
 # flex, not some other versions of yacc and lex.  However, you only
@@ -609,12 +550,6 @@ find_package(FLEX QUIET)
 set(HAVE_BISON ${BISON_FOUND})
 set(HAVE_FLEX ${FLEX_FOUND})
 
-
-#
-# >>>>> Below is entirely temporary config information
-#       until the port of Config.pp is finished.
-#       It should be re-arranged for above. >>>>>>
-#
 
 ### Configure threading support ###
 set(CMAKE_THREAD_PREFER_PTHREAD ON)
@@ -634,11 +569,7 @@ slightly slow down Panda for the single CPU case."
   IMPORTED_AS Threads::Threads)
 
 # Configure debug threads
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
-else()
-  option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
-endif()
+option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ${IS_DEBUG_BUILD})
 
 option(SIMPLE_THREADS
   "If on, compile with simulated threads.  Threads, by default, use
