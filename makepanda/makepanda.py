@@ -5072,6 +5072,9 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
 
+  if GetLinkAllStatic() and not PkgSkip("GL"):
+    TargetAdd('pview.exe', input='libpandagl.dll')
+
 #
 # DIRECTORY: panda/src/android/
 #
