@@ -24,15 +24,15 @@ def test_wheel(wheel, verbose=False):
         subprocess.call([sys.executable, "-m", "virtualenv", "--clear", envdir])
 
     # Make sure pip is up-to-date first.
-    if sys.platform == "win32":
-        pip = os.path.join(envdir, "Scripts", "pip.exe")
-    else:
-        pip = os.path.join(envdir, "bin", "pip")
-    if subprocess.call([pip, "install", "-U", "pip"]) != 0:
+    if subprocess.call([sys.executable, "-m", "pip", "install", "-U", "pip"]) != 0:
         shutil.rmtree(envdir)
         sys.exit(1)
 
     # Install pytest into the environment, as well as our wheel.
+    if sys.platform == "win32":
+        pip = os.path.join(envdir, "Scripts", "pip.exe")
+    else:
+        pip = os.path.join(envdir, "bin", "pip")
     if subprocess.call([pip, "install", "pytest", wheel]) != 0:
         shutil.rmtree(envdir)
         sys.exit(1)
