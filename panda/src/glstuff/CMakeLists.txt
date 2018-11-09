@@ -34,7 +34,7 @@ set(P3GLSTUFF_SOURCES
 )
 
 composite_sources(p3glstuff P3GLSTUFF_SOURCES)
-add_component_library(p3glstuff ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
+add_component_library(p3glstuff NOINIT ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
 target_link_libraries(p3glstuff panda)
 
 if(NOT BUILD_METALIBS)

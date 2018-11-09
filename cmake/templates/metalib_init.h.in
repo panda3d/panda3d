@@ -4,5 +4,6 @@
 #include "dtoolbase.h"
 
 IMPORT_CLASS void @init_func@();
+@export_declarations@
 
 #endif

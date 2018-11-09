@@ -1,32 +1,37 @@
-if(HAVE_GL)
-  # Check that we actually have a display subsystem.
-  if(NOT HAVE_WGL AND NOT HAVE_COCOA AND NOT HAVE_CARBON AND NOT HAVE_GLX)
-    message("") # Add extra line before error
-    message(SEND_ERROR
-      "When compiling with OpenGL (HAVE_GL), at least one of:
-    HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
-  endif()
-
-  set(PANDAGL_LINK_TARGETS p3glgsg p3glstuff)
-
-  if(HAVE_GLX)
-    list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay p3x11display)
-  endif()
-
-  if(HAVE_WGL)
-    list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay p3windisplay)
-  endif()
-
-  if(HAVE_COCOA)
-    list(APPEND PANDAGL_LINK_TARGETS p3cocoadisplay)
-  endif()
-
-  if(HAVE_CARBON)
-    list(APPEND PANDAGL_LINK_TARGETS p3osxdisplay)
-  endif()
-
-  add_metalib(pandagl ${MODULE_TYPE} pandagl.cxx COMPONENTS ${PANDAGL_LINK_TARGETS})
-  set_target_properties(pandagl PROPERTIES DEFINE_SYMBOL BUILDING_PANDAGL)
-
-  install(TARGETS pandagl DESTINATION ${MODULE_DESTINATION})
+if(NOT HAVE_GL)
+  return()
 endif()
+
+set(PANDAGL_LINK_TARGETS p3glgsg p3glstuff)
+
+if(HAVE_GLX)
+  list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay p3x11display)
+  set(PANDAGL_PIPE_TYPE "glxGraphicsPipe")
+elseif(HAVE_WGL)
+  list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay p3windisplay)
+  set(PANDAGL_PIPE_TYPE "wglGraphicsPipe")
+elseif(HAVE_COCOA)
+  list(APPEND PANDAGL_LINK_TARGETS p3cocoadisplay)
+  set(PANDAGL_PIPE_TYPE "CocoaGraphicsPipe")
+  set(PANDAGL_PIPE_INCLUDE "cocoaGraphicsPipe.h")
+elseif(HAVE_CARBON)
+  list(APPEND PANDAGL_LINK_TARGETS p3osxdisplay)
+  set(PANDAGL_PIPE_TYPE "osxGraphicsPipe")
+else()
+  message("") # Add extra line before error
+  message(SEND_ERROR
+    "When compiling with OpenGL (HAVE_GL), at least one of:
+  HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
+endif()
+
+if(NOT PANDAGL_PIPE_INCLUDE)
+  set(PANDAGL_PIPE_INCLUDE "${PANDAGL_PIPE_TYPE}.h")
+endif()
+
+add_metalib(pandagl ${MODULE_TYPE}
+  INCLUDE "${PANDAGL_PIPE_INCLUDE}"
+  INIT init_libpandagl pandagl.h
+  EXPORT int get_pipe_type_pandagl "${PANDAGL_PIPE_TYPE}::get_class_type().get_index()"
+  COMPONENTS ${PANDAGL_LINK_TARGETS})
+
+install(TARGETS pandagl DESTINATION ${MODULE_DESTINATION})

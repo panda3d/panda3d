@@ -29,6 +29,7 @@ composite_sources(p3egldisplay P3EGLDISPLAY_SOURCES)
 # We actually build this twice!  Once for GLES1, once for GLES2.
 if(HAVE_GLES1)
   add_component_library(p3egldisplay_gles1 SYMBOL BUILDING_PANDAGLES
+    INIT init_libegldisplay config_egldisplay.h
     ${P3EGLDISPLAY_HEADERS} ${P3EGLDISPLAY_SOURCES})
   target_compile_definitions(p3egldisplay_gles1 PUBLIC OPENGLES_1)
   target_link_libraries(p3egldisplay_gles1 p3glesgsg p3x11display
@@ -41,6 +42,7 @@ endif()
 
 if(HAVE_GLES2)
   add_component_library(p3egldisplay_gles2 SYMBOL BUILDING_PANDAGLES2
+    INIT init_libegldisplay config_egldisplay.h
     ${P3EGLDISPLAY_HEADERS} ${P3EGLDISPLAY_SOURCES})
   target_compile_definitions(p3egldisplay_gles2 PUBLIC OPENGLES_2)
   target_link_libraries(p3egldisplay_gles2 p3gles2gsg p3x11display
