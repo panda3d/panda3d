@@ -131,6 +131,7 @@ PUBLISHED:
   INLINE bool get_raw_mice() const;
   INLINE bool has_raw_mice() const;
   INLINE void clear_raw_mice();
+  MAKE_PROPERTY2(raw_mice, has_raw_mice, get_raw_mice, set_raw_mice, clear_raw_mice);
 
   INLINE void set_open(bool open);
   INLINE bool get_open() const;
