@@ -651,6 +651,18 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fullscreen();
   }
 
+  // Same for minimized.
+  if (properties.has_minimized()) {
+    _properties.set_minimized(properties.get_minimized());
+    properties.clear_minimized();
+  }
+
+  // Same for undecorated.
+  if (properties.has_undecorated()) {
+    _properties.set_undecorated(properties.get_undecorated());
+    properties.clear_undecorated();
+  }
+
   // The size and position of an already-open window are changed via explicit
   // X calls.  These may still get intercepted by the window manager.  Rather
   // than changing _properties immediately, we'll wait for the ConfigureNotify
@@ -669,6 +681,7 @@ set_properties_now(WindowProperties &properties) {
     changes.y = properties.get_y_origin();
     if (changes.x != -1) value_mask |= CWX;
     if (changes.y != -1) value_mask |= CWY;
+    _properties.set_origin(properties.get_origin());
     properties.clear_origin();
   }
 
@@ -687,6 +700,7 @@ set_properties_now(WindowProperties &properties) {
     if (_properties.get_fixed_size()) {
       _fixed_size = properties.get_size();
     }
+    _properties.set_size(properties.get_size());
     properties.clear_size();
   }
 
@@ -710,6 +724,7 @@ set_properties_now(WindowProperties &properties) {
     }
 
     value_mask |= (CWStackMode);
+    _properties.set_z_order(properties.get_z_order());
     properties.clear_z_order();
   }
 
@@ -726,8 +741,6 @@ set_properties_now(WindowProperties &properties) {
       _properties.set_cursor_filename(cursor_filename);
       properties.clear_cursor_filename();
     }
-    Filename filename = properties.get_cursor_filename();
-    _properties.set_cursor_filename(filename);
 
     if (_properties.get_cursor_hidden()) {
       XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
@@ -754,6 +767,7 @@ set_properties_now(WindowProperties &properties) {
     } else {
       XSetInputFocus(_display, PointerRoot, RevertToPointerRoot, CurrentTime);
     }
+    _properties.set_foreground(properties.get_foreground());
     properties.clear_foreground();
   }
 
