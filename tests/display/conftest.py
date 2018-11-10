@@ -50,6 +50,12 @@ def window(graphics_pipe, graphics_engine):
         graphics_engine.remove_window(win)
 
 
+@pytest.fixture
+def win_props(window):
+    from panda3d.core import WindowProperties
+    yield WindowProperties(window.properties)
+
+
 @pytest.fixture(scope='module')
 def gsg(graphics_pipe, graphics_engine):
     "Returns a windowless GSG that can be used for offscreen rendering."
