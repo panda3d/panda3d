@@ -80,9 +80,92 @@ if(HAVE_PYTHON)
     "Suffix for Python binary extension modules.")
 endif()
 
+
 #
-# ------------ Eigen ------------
+# ------------ Data handling libraries ------------
 #
+
+# OpenSSL
+find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
+
+package_option(OPENSSL
+  DEFAULT ON
+  "Enable OpenSSL support"
+  IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
+
+option(REPORT_OPENSSL_ERRORS
+  "Define this true to include the OpenSSL code to report verbose
+error messages when they occur." ${IS_DEBUG_BUILD})
+
+if(REPORT_OPENSSL_ERRORS)
+  package_status(OPENSSL "OpenSSL" "with verbose error reporting")
+else()
+  package_status(OPENSSL "OpenSSL")
+endif()
+
+# zlib
+find_package(ZLIB QUIET)
+
+package_option(ZLIB
+  "Enables support for compression of Panda assets."
+  IMPORTED_AS ZLIB::ZLIB)
+
+package_status(ZLIB "zlib")
+
+
+#
+# ------------ Image formats ------------
+#
+
+# JPEG
+find_package(JPEG QUIET)
+package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
+package_status(JPEG "libjpeg")
+
+# PNG
+find_package(PNG QUIET)
+package_option(PNG
+  DEFAULT ON
+  "Enable support for loading .png images."
+  IMPORTED_AS PNG::PNG)
+package_status(PNG "libpng")
+
+# TIFF
+find_package(TIFF QUIET)
+package_option(TIFF "Enable support for loading .tif images.")
+package_status(TIFF "libtiff")
+
+# OpenEXR
+find_package(OpenEXR QUIET)
+package_option(OPENEXR "Enable support for loading .exr images.")
+package_status(OPENEXR "OpenEXR")
+
+# libsquish
+find_package(LibSquish QUIET)
+
+package_option(SQUISH
+  "Enables support for automatic compression of DXT textures."
+  FOUND_AS LIBSQUISH)
+
+package_status(SQUISH "libsquish")
+
+
+#
+# ------------ Archival formats ------------
+#
+
+# libtar
+find_package(Tar QUIET)
+package_option(TAR
+  "This is used to optimize patch generation against tar files.")
+package_status(TAR "libtar")
+
+
+#
+# ------------ Math libraries ------------
+#
+
+# Eigen
 find_package(Eigen3 QUIET)
 
 package_option(EIGEN
@@ -107,65 +190,7 @@ else()
   package_status(EIGEN "Eigen linear algebra library" "vectorization NOT enabled in build")
 endif()
 
-#
-# ------------ OpenSSL ------------
-#
-find_package(OpenSSL COMPONENTS SSL Crypto QUIET)
-
-package_option(OPENSSL
-  DEFAULT ON
-  "Enable OpenSSL support"
-  IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
-
-option(REPORT_OPENSSL_ERRORS
-  "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${IS_DEBUG_BUILD})
-
-if(REPORT_OPENSSL_ERRORS)
-  package_status(OPENSSL "OpenSSL" "with verbose error reporting")
-else()
-  package_status(OPENSSL "OpenSSL")
-endif()
-
-#
-# ------------ IMAGE FORMATS ------------
-#
-
-# JPEG:
-find_package(JPEG QUIET)
-package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
-package_status(JPEG "libjpeg")
-
-# PNG:
-find_package(PNG QUIET)
-package_option(PNG
-  DEFAULT ON
-  "Enable support for loading .png images."
-  IMPORTED_AS PNG::PNG)
-package_status(PNG "libpng")
-
-# TIFF:
-find_package(TIFF QUIET)
-package_option(TIFF "Enable support for loading .tif images.")
-package_status(TIFF "libtiff")
-
-# OpenEXR:
-find_package(OpenEXR QUIET)
-package_option(OPENEXR "Enable support for loading .exr images.")
-package_status(OPENEXR "OpenEXR")
-
-#
-# ------------ LIBTAR ------------
-#
-find_package(Tar QUIET)
-package_option(TAR
-  "This is used to optimize patch generation against tar files.")
-package_status(TAR "libtar")
-
-#
-# ------------ FFTW ------------
-#
-
+# FFTW
 find_package(FFTW3 QUIET)
 
 package_option(FFTW
@@ -177,73 +202,12 @@ package_option(FFTW
 
 package_status(FFTW "FFTW")
 
-#
-# ------------ libsquish ------------
-#
-
-find_package(LibSquish QUIET)
-
-package_option(SQUISH
-  "Enables support for automatic compression of DXT textures."
-  FOUND_AS LIBSQUISH)
-
-package_status(SQUISH "libsquish")
 
 #
-# ------------ Nvidia Cg ------------
+# ------------ Multimedia formats ------------
 #
 
-find_package(Cg QUIET)
-
-package_option(CG
-  "Enable support for Nvidia Cg Shading Language"
-  LICENSE "Nvidia")
-package_option(CGGL
-  "Enable support for Nvidia Cg's OpenGL API."
-  LICENSE "Nvidia")
-package_option(CGD3D9
-  "Enable support for Nvidia Cg's Direct3D 9 API."
-  LICENSE "Nvidia")
-
-if(HAVE_CGGL AND HAVE_CGD3D9)
-  set(cg_apis "supporting OpenGL and Direct3D 9")
-elseif(HAVE_CGGL)
-  set(cg_apis "supporting OpenGL")
-elseif(HAVE_CGDX9)
-  set(cg_apis "supporting Direct3D 9")
-else()
-  set(cg_apis "WITHOUT rendering backend support")
-endif()
-package_status(CG "Nvidia Cg Shading Language" "${cg_apis}")
-
-#
-# ------------ VRPN ------------
-#
-
-find_package(VRPN QUIET)
-
-package_option(VRPN
-  "Enables support for connecting to VRPN servers. This is only needed if you
-  are building Panda3D for a fixed VRPN-based VR installation.")
-
-package_status(VRPN "VRPN")
-
-#
-# ------------ zlib ------------
-#
-
-find_package(zlib QUIET)
-
-package_option(ZLIB
-  "Enables support for compression of Panda assets."
-  IMPORTED_AS ZLIB::ZLIB)
-
-package_status(ZLIB "zlib")
-
-#
-# ------------ FFmpeg ------------
-#
-
+# FFmpeg
 find_package(FFMPEG QUIET)
 find_package(SWScale QUIET)
 find_package(SWResample QUIET)
@@ -333,12 +297,12 @@ package_status(HARFBUZZ "HarfBuzz")
 
 # GTK2
 
-# Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
 package_option(GTK2)
 package_status(GTK2 "gtk+-2")
+
 
 #
 # ------------ Physics engines ------------
@@ -371,6 +335,7 @@ package_option(PHYSX
 
 package_status(PHYSX "Nvidia PhysX")
 
+
 #
 # ------------ SpeedTree ------------
 #
@@ -383,6 +348,7 @@ package_option(SPEEDTREE
   LICENSE "SpeedTree")
 
 package_status(SPEEDTREE "SpeedTree")
+
 
 #
 # ------------ Rendering APIs ------------
@@ -416,11 +382,45 @@ package_option(GLES2
 
 package_status(GLES2 "OpenGL ES 2.x")
 
+# Direct3D 9
+find_package(Direct3D9 QUIET COMPONENTS dxguid dxerr d3dx9)
+
+package_option(DX9
+  "Enable support for DirectX 9.  This is typically only viable on Windows."
+  FOUND_AS DIRECT3D9)
+
+package_status(DX9 "Direct3D 9.x")
+
+# Nvidia Cg
+find_package(Cg QUIET)
+
+package_option(CG
+  "Enable support for Nvidia Cg Shading Language"
+  LICENSE "Nvidia")
+package_option(CGGL
+  "Enable support for Nvidia Cg's OpenGL API."
+  LICENSE "Nvidia")
+package_option(CGD3D9
+  "Enable support for Nvidia Cg's Direct3D 9 API."
+  LICENSE "Nvidia")
+
+if(HAVE_CGGL AND HAVE_CGD3D9)
+  set(cg_apis "supporting OpenGL and Direct3D 9")
+elseif(HAVE_CGGL)
+  set(cg_apis "supporting OpenGL")
+elseif(HAVE_CGDX9)
+  set(cg_apis "supporting Direct3D 9")
+else()
+  set(cg_apis "WITHOUT rendering backend support")
+endif()
+package_status(CG "Nvidia Cg Shading Language" "${cg_apis}")
+
+
 #
 # ------------ Display APIs ------------
 #
 
-# X11
+# X11 (and GLX)
 find_package(X11 QUIET)
 
 if(NOT X11_Xkb_FOUND OR NOT X11_Xutil_FOUND)
@@ -458,16 +458,6 @@ package_option(EGL
 
 package_status(EGL "EGL")
 
-# Direct3D 9
-
-find_package(Direct3D9 QUIET COMPONENTS dxguid dxerr d3dx9)
-
-package_option(DX9
-  "Enable support for DirectX 9.  This is typically only viable on Windows."
-  FOUND_AS DIRECT3D9)
-
-package_status(DX9 "Direct3D 9.x")
-
 #
 # ------------ Vision tools ------------
 #
@@ -488,3 +478,17 @@ package_option(ARTOOLKIT
   "Enable support for ARToolKit.  This will be built into the 'vision' package.")
 
 package_status(ARTOOLKIT "ARToolKit")
+
+
+#
+# ------------ VR integration ------------
+#
+
+# VRPN
+find_package(VRPN QUIET)
+
+package_option(VRPN
+  "Enables support for connecting to VRPN servers.  This is only needed if you
+  are building Panda3D for a fixed VRPN-based VR installation.")
+
+package_status(VRPN "VRPN")
