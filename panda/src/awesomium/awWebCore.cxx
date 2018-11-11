@@ -13,7 +13,8 @@
 
 #include "config_awesomium.h"
 #include "awWebCore.h"
-#include "WebCore.h"
+
+#include <WebCore.h>
 
 TypeHandle AwWebCore::_type_handle;
 

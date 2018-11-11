@@ -24,7 +24,7 @@
  *
  */
 
-#include "stdint.h"
+#include <stdint.h>
 
 /**
  * @brief Appends an integer to the GPUCommand.

@@ -68,7 +68,7 @@
 #include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
-#include "Cg/cgGL.h"
+#include <Cg/cgGL.h>
 #endif
 
 #include <algorithm>

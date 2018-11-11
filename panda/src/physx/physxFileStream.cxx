@@ -13,7 +13,7 @@
 
 #include "physxFileStream.h"
 
-#include "stdio.h"
+#include <stdio.h>
 
 #include "virtualFileSystem.h"
 

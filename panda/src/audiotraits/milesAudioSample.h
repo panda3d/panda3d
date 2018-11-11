@@ -20,7 +20,8 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * A sound file, such as a WAV or MP3 file, that is preloaded into memory and

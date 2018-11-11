@@ -25,8 +25,9 @@
 #include "bamCacheRecord.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "math.h"
 #include "audioSound.h"
+
+#include <math.h>
 
 TypeHandle MovieTexture::_type_handle;
 

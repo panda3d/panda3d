@@ -66,7 +66,7 @@
 #include "config_pgraph.h"
 #include "shaderGenerator.h"
 #ifdef HAVE_CG
-#include "Cg/cgD3D9.h"
+#include <Cg/cgD3D9.h>
 #endif
 
 #include <mmsystem.h>

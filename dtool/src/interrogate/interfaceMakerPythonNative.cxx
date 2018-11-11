@@ -31,13 +31,13 @@
 #include "cppSimpleType.h"
 #include "cppStructType.h"
 #include "cppExpression.h"
-#include "vector"
 #include "cppParameterList.h"
-#include "algorithm"
 #include "lineStream.h"
 
-#include <set>
+#include <algorithm>
 #include <map>
+#include <set>
+#include <vector>
 
 using std::dec;
 using std::hex;

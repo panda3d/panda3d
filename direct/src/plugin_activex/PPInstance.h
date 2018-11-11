@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include "afxmt.h"
+#include <afxmt.h>
 
 #include "p3d_plugin.h"
 #include "PPDownloadCallback.h"
