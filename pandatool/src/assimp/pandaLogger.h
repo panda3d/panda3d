@@ -16,7 +16,7 @@
 
 #include "config_assimp.h"
 
-#include "Logger.hpp"
+#include <assimp/Logger.hpp>
 
 /**
  * Custom implementation of Assimp::Logger.  It simply wraps around the
