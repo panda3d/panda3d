@@ -89,11 +89,14 @@ overrideModules = {
     # lines from the main executable, which we don't want.
     'linecache': """__all__ = ["getline", "clearcache", "checkcache"]
 
+cache = {}
+
 def getline(filename, lineno, module_globals=None):
     return ''
 
 def clearcache():
-    pass
+    global cache
+    cache = {}
 
 def getlines(filename, module_globals=None):
     return []
