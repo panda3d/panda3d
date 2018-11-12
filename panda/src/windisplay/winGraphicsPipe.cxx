@@ -18,8 +18,8 @@
 #include "dtool_config.h"
 #include "pbitops.h"
 
-#include "psapi.h"
-#include "powrprof.h"
+#include <psapi.h>
+#include <powrprof.h>
 #include <intrin.h>
 
 TypeHandle WinGraphicsPipe::_type_handle;

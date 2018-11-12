@@ -6,38 +6,32 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file odeBody_ext.h
+ * @file windowProperties_ext.h
  * @author rdb
- * @date 2013-12-11
+ * @date 2018-11-12
  */
 
-#ifndef ODEBODY_EXT_H
-#define ODEBODY_EXT_H
+#ifndef WINDOWPROPERTIES_EXT_H
+#define WINDOWPROPERTIES_EXT_H
 
 #include "dtoolbase.h"
 
 #ifdef HAVE_PYTHON
 
-#include "config_ode.h"
-#include "odeBody.h"
 #include "extension.h"
+#include "windowProperties.h"
 #include "py_panda.h"
 
 /**
- * This class defines the extension methods for NodePathCollection, which are
+ * This class defines the extension methods for WindowProperties, which are
  * called instead of any C++ methods with the same prototype.
  */
 template<>
-class Extension<OdeBody> : public ExtensionBase<OdeBody> {
+class Extension<WindowProperties> : public ExtensionBase<WindowProperties> {
 public:
-  void set_data(PyObject *);
-  INLINE PyObject *get_data() const;
-
-  INLINE PyObject *get_converted_joint(int i) const;
+  void __init__(PyObject *self, PyObject *args, PyObject *kwds);
 };
-
-#include "odeBody_ext.I"
 
 #endif  // HAVE_PYTHON
 
-#endif  // ODEBODY_EXT_H
+#endif  // WINDOWPROPERTIES_EXT_H

@@ -47,9 +47,6 @@ PyObject _Py_FalseStruct;
 #define Py_False ((PyObject *) &_Py_FalseStruct)
 #endif
 
-// This file defines PY_VERSION_HEX, which is used in some places.
-#include "patchlevel.h"
-
 typedef void *visitproc;
 
 #endif  // PYTHON_H

@@ -15,12 +15,12 @@
 #include "config_daeegg.h"
 #include "fcollada_utils.h"
 
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDMaterial.h"
-#include "FCDocument/FCDEffect.h"
-#include "FCDocument/FCDTexture.h"
-#include "FCDocument/FCDEffectParameterSampler.h"
-#include "FCDocument/FCDImage.h"
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDMaterial.h>
+#include <FCDocument/FCDEffect.h>
+#include <FCDocument/FCDTexture.h>
+#include <FCDocument/FCDEffectParameterSampler.h>
+#include <FCDocument/FCDImage.h>
 
 #include "filename.h"
 #include "string_utils.h"

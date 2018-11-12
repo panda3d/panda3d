@@ -23,15 +23,15 @@
 #include "eggNurbsCurve.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDTransform.h"
-#include "FCDocument/FCDEntityInstance.h"
-#include "FCDocument/FCDControllerInstance.h"
-#include "FCDocument/FCDGeometryMesh.h"
-#include "FCDocument/FCDGeometrySpline.h"
-#include "FCDocument/FCDMaterial.h"
-#include "FMath/FMMatrix44.h"
+#include <FCollada.h>
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDTransform.h>
+#include <FCDocument/FCDEntityInstance.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDGeometryMesh.h>
+#include <FCDocument/FCDGeometrySpline.h>
+#include <FCDocument/FCDMaterial.h>
+#include <FMath/FMMatrix44.h>
 
 #include "daeMaterials.h"
 #include "daeCharacter.h"

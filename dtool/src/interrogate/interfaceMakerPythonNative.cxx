@@ -31,13 +31,13 @@
 #include "cppSimpleType.h"
 #include "cppStructType.h"
 #include "cppExpression.h"
-#include "vector"
 #include "cppParameterList.h"
-#include "algorithm"
 #include "lineStream.h"
 
-#include <set>
+#include <algorithm>
 #include <map>
+#include <set>
+#include <vector>
 
 using std::dec;
 using std::hex;
@@ -822,8 +822,52 @@ write_prototypes(ostream &out_code, ostream *out_h) {
   }
 
   out_code << "/**\n";
+  out_code << " * Declarations for exported classes\n";
+  out_code << " */\n";
+
+  out_code << "static const Dtool_TypeDef exports[] = {\n";
+
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    Object *object = (*oi).second;
+
+    if (object->_itype.is_class() || object->_itype.is_struct()) {
+      CPPType *type = object->_itype._cpptype;
+
+      if (isExportThisRun(type) && is_cpp_type_legal(type)) {
+        string class_name = type->get_local_name(&parser);
+        string safe_name = make_safe_name(class_name);
+
+        out_code << "  {\"" << class_name << "\", &Dtool_" << safe_name << "},\n";
+      }
+    }
+  }
+
+  out_code << "  {nullptr, nullptr},\n";
+  out_code << "};\n\n";
+
+  out_code << "/**\n";
   out_code << " * Extern declarations for imported classes\n";
   out_code << " */\n";
+
+  // Write out a table of the externally imported types that will be filled in
+  // upon module initialization.
+  if (!_external_imports.empty()) {
+    out_code << "#ifndef LINK_ALL_STATIC\n";
+    out_code << "static Dtool_TypeDef imports[] = {\n";
+
+    int idx = 0;
+    for (CPPType *type : _external_imports) {
+      string class_name = type->get_local_name(&parser);
+      string safe_name = make_safe_name(class_name);
+
+      out_code << "  {\"" << class_name << "\", nullptr},\n";
+      out_code << "#define Dtool_Ptr_" << safe_name << " (imports[" << idx << "].type)\n";
+      ++idx;
+    }
+    out_code << "  {nullptr, nullptr},\n";
+    out_code << "};\n";
+    out_code << "#endif\n\n";
+  }
 
   for (CPPType *type : _external_imports) {
     string class_name = type->get_local_name(&parser);
@@ -834,7 +878,9 @@ write_prototypes(ostream &out_code, ostream *out_h) {
     out_code << "#ifndef LINK_ALL_STATIC\n";
     // out_code << "IMPORT_THIS struct Dtool_PyTypedObject Dtool_" <<
     // safe_name << ";\n";
-    out_code << "static struct Dtool_PyTypedObject *Dtool_Ptr_" << safe_name << ";\n";
+    //if (has_get_class_type_function(type)) {
+    //  out_code << "static struct Dtool_PyTypedObject *Dtool_Ptr_" << safe_name << ";\n";
+    //}
     // out_code << "#define Dtool_Ptr_" << safe_name << " &Dtool_" <<
     // safe_name << "\n"; out_code << "IMPORT_THIS void
     // Dtool_PyModuleClassInit_" << safe_name << "(PyObject *module);\n";
@@ -1258,36 +1304,36 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   Objects::iterator oi;
 
-  out << "void Dtool_" << def->library_name << "_RegisterTypes() {\n";
+  out << "void Dtool_" << def->library_name << "_RegisterTypes() {\n"
+         "  TypeRegistry *registry = TypeRegistry::ptr();\n"
+         "  nassertv(registry != nullptr);\n";
+
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     Object *object = (*oi).second;
-    if (object->_itype.is_class() ||
-        object->_itype.is_struct()) {
-      if (is_cpp_type_legal(object->_itype._cpptype) &&
-          isExportThisRun(object->_itype._cpptype)) {
-        string class_name = make_safe_name(object->_itype.get_scoped_name());
-        bool is_typed = has_get_class_type_function(object->_itype._cpptype);
+    if (object->_itype.is_class() || object->_itype.is_struct()) {
+      CPPType *type = object->_itype._cpptype;
+      if (is_cpp_type_legal(type) && isExportThisRun(type)) {
+        string class_name = object->_itype.get_scoped_name();
+        string safe_name = make_safe_name(class_name);
+        bool is_typed = has_get_class_type_function(type);
 
         if (is_typed) {
-          if (has_init_type_function(object->_itype._cpptype)) {
+          out << "  {\n";
+          if (has_init_type_function(type)) {
             // Call the init_type function.  This isn't necessary for all
             // types as many of them are automatically initialized at static
             // init type, but for some extension classes it's useful.
-            out << "  " << object->_itype._cpptype->get_local_name(&parser)
+            out << "    " << type->get_local_name(&parser)
                 << "::init_type();\n";
           }
-          out << "  Dtool_" << class_name << "._type = "
-              << object->_itype._cpptype->get_local_name(&parser)
-              << "::get_class_type();\n"
-              << "  RegisterRuntimeTypedClass(Dtool_" << class_name << ");\n";
-
+          out << "    TypeHandle handle = " << type->get_local_name(&parser)
+              << "::get_class_type();\n";
+          out << "    Dtool_" << safe_name << "._type = handle;\n";
+          out << "    registry->record_python_type(handle, "
+                 "(PyObject *)&Dtool_" << safe_name << ");\n";
+          out << "  }\n";
         } else {
-          out << "#ifndef LINK_ALL_STATIC\n"
-              << "  RegisterNamedClass(\"" << object->_itype.get_scoped_name()
-              << "\", Dtool_" << class_name << ");\n"
-              << "#endif\n";
-
-          if (IsPandaTypedObject(object->_itype._cpptype->as_struct_type())) {
+          if (IsPandaTypedObject(type->as_struct_type())) {
             nout << object->_itype.get_scoped_name() << " derives from TypedObject, "
                  << "but does not define a get_class_type() function.\n";
           }
@@ -1295,23 +1341,6 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
       }
     }
   }
-  out << "}\n\n";
-
-  out << "void Dtool_" << def->library_name << "_ResolveExternals() {\n";
-  out << "#ifndef LINK_ALL_STATIC\n";
-  out << "  // Resolve externally imported types.\n";
-
-  for (CPPType *type : _external_imports) {
-    string class_name = type->get_local_name(&parser);
-    string safe_name = make_safe_name(class_name);
-
-    if (has_get_class_type_function(type)) {
-      out << "  Dtool_Ptr_" << safe_name << " = LookupRuntimeTypedClass(" << class_name << "::get_class_type());\n";
-    } else {
-      out << "  Dtool_Ptr_" << safe_name << " = LookupNamedClass(\"" << class_name << "\");\n";
-    }
-  }
-  out << "#endif\n";
   out << "}\n\n";
 
   out << "void Dtool_" << def->library_name << "_BuildInstants(PyObject *module) {\n";
@@ -1466,9 +1495,18 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";
 
-  out << "struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs};\n";
+  if (_external_imports.empty()) {
+    out << "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n";
+  } else {
+    out <<
+      "#ifdef LINK_ALL_STATIC\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n"
+      "#else\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, imports};\n"
+      "#endif\n";
+  }
   if (out_h != nullptr) {
-    *out_h << "extern struct LibraryDef " << def->library_name << "_moddef;\n";
+    *out_h << "extern const struct LibraryDef " << def->library_name << "_moddef;\n";
   }
 }
 
@@ -1610,6 +1648,16 @@ write_module_class(ostream &out, Object *obj) {
 
     if (!func->_has_this) {
       flags += " | METH_STATIC";
+
+      // Skip adding this entry if we also have a property with the same name.
+      // In that case, we will use a Dtool_StaticProperty to disambiguate
+      // access to this method.  See GitHub issue #444.
+      for (const Property *property : obj->_properties) {
+        if (property->_has_this &&
+            property->_ielement.get_name() == func->_ifunc.get_name()) {
+          continue;
+        }
+      }
     }
 
     bool has_nonslotted = false;
@@ -2627,6 +2675,14 @@ write_module_class(ostream &out, Object *obj) {
         continue;
       }
 
+      // Actually, if we have a conflicting static method with the same name,
+      // we will need to use Dtool_StaticProperty instead.
+      for (const Function *func : obj->_methods) {
+        if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+          continue;
+        }
+      }
+
       if (num_getset == 0) {
         out << "static PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
       }
@@ -3063,7 +3119,7 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "    Dtool_" << ClassName << "._PyType.tp_bases = PyTuple_Pack(" << bases.size() << baseargs << ");\n";
   } else {
-    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)&Dtool_DTOOL_SUPER_BASE;\n";
+    out << "    Dtool_" << ClassName << "._PyType.tp_base = (PyTypeObject *)Dtool_GetSuperBase();\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -3202,8 +3258,22 @@ write_module_class(ostream &out, Object *obj) {
   // Also add the static properties, which can't be added via getset.
   for (Property *property : obj->_properties) {
     const InterrogateElement &ielem = property->_ielement;
-    if (property->_has_this || property->_getter_remaps.empty()) {
+    if (property->_getter_remaps.empty()) {
       continue;
+    }
+    if (property->_has_this) {
+      // Actually, continue if we have a conflicting static method with the
+      // same name, which may still require use of Dtool_StaticProperty.
+      bool have_shadow = false;
+      for (const Function *func : obj->_methods) {
+        if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+          have_shadow = true;
+          break;
+        }
+      }
+      if (!have_shadow) {
+        continue;
+      }
     }
 
     string name1 = methodNameFromCppName(ielem.get_name(), "", false);
@@ -6858,8 +6928,42 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   // Now write the actual getter wrapper.  It will be a different wrapper
   // depending on whether it's a mapping or a sequence.
+  out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
+
+  // Is this property shadowing a static method with the same name?  This is a
+  // special case to handle WindowProperties::make -- see GH #444.
+  if (property->_has_this) {
+    for (const Function *func : obj->_methods) {
+      if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+        string flags;
+        string fptr = "&" + func->_name;
+        switch (func->_args_type) {
+        case AT_keyword_args:
+          flags = "METH_VARARGS | METH_KEYWORDS";
+          fptr = "(PyCFunction) " + fptr;
+          break;
+        case AT_varargs:
+          flags = "METH_VARARGS";
+          break;
+        case AT_single_arg:
+          flags = "METH_O";
+          break;
+        default:
+          flags = "METH_NOARGS";
+          break;
+        }
+        out << "  if (self == nullptr) {\n"
+            << "    static PyMethodDef def = {\"" << ielem.get_name() << "\", "
+            << fptr << ", " << flags << " | METH_STATIC, (const char *)"
+            << func->_name << "_comment};\n"
+            << "    return PyCFunction_New(&def, nullptr);\n"
+            << "  }\n\n";
+        break;
+      }
+    }
+  }
+
   if (ielem.is_mapping()) {
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
       out << "  nassertr(self != nullptr, nullptr);\n";
     }
@@ -6886,7 +6990,6 @@ write_getset(ostream &out, Object *obj, Property *property) {
             "}\n\n";
 
   } else if (ielem.is_sequence()) {
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
       out << "  nassertr(self != nullptr, nullptr);\n";
     }
@@ -6917,7 +7020,6 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   } else {
     // Write out a regular, unwrapped getter.
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     FunctionRemap *remap = property->_getter_remaps.front();
 
     if (remap->_has_this) {

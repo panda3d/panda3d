@@ -64,7 +64,7 @@ extern bool has_plugin_thread_async_call;
 
 #include "npapi.h"
 #if NP_VERSION_MAJOR == 0 && NP_VERSION_MINOR <= 19
-  #include "npupp.h"
+  #include <npupp.h>
 #else
   // Somewhere between version 0.19 and 0.22, Mozilla renamed npupp.h to
   // npfunctions.h.

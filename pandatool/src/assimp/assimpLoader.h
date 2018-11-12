@@ -20,8 +20,8 @@
 #include "texture.h"
 #include "pmap.h"
 
-#include "scene.h"
-#include "Importer.hpp"
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
 
 class Character;
 class CharacterJointBundle;

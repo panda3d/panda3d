@@ -20,8 +20,8 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "openssl/rand.h"
-#include "openssl/evp.h"
+#include <openssl/rand.h>
+#include <openssl/evp.h>
 
 // The iteration count is scaled by this factor for writing to the stream.
 static const int iteration_count_factor = 1000;

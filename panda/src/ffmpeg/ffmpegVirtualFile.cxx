@@ -21,8 +21,8 @@ using std::streampos;
 using std::streamsize;
 
 extern "C" {
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
 }
 
 #ifndef AVSEEK_SIZE

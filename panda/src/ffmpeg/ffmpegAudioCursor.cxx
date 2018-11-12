@@ -16,15 +16,15 @@
 
 #include "ffmpegAudio.h"
 extern "C" {
-  #include "libavutil/dict.h"
-  #include "libavutil/opt.h"
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
+  #include <libavutil/dict.h>
+  #include <libavutil/opt.h>
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
 }
 
 #ifdef HAVE_SWRESAMPLE
 extern "C" {
-  #include "libswresample/swresample.h"
+  #include <libswresample/swresample.h>
 }
 #endif
 

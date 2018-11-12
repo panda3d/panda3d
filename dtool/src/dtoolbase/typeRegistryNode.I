@@ -12,6 +12,19 @@
  */
 
 /**
+ * Returns the Python type object associated with this node.
+ */
+INLINE PyObject *TypeRegistryNode::
+get_python_type() const {
+  if (_python_type != nullptr || _parent_classes.empty()) {
+    return _python_type;
+  } else {
+    // Recurse through parent classes.
+    return r_get_python_type();
+  }
+}
+
+/**
  *
  */
 INLINE TypeRegistryNode::Inherit::

@@ -168,14 +168,7 @@ static PyObject *gen_next(PyObject *self) {
  */
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
-  Dtool_GeneratorWrapper *gen;
-  gen = (Dtool_GeneratorWrapper *)PyType_GenericAlloc(&Dtool_GeneratorWrapper_Type, 0);
-  if (gen != nullptr) {
-    Py_INCREF(self);
-    gen->_base._self = self;
-    gen->_iternext_func = &gen_next;
-  }
-  return (PyObject *)gen;
+  return Dtool_NewGenerator(self, &gen_next);
 }
 
 /**

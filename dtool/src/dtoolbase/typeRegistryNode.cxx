@@ -309,6 +309,29 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
 }
 
 /**
+ * Recurses through the parent nodes to find the best Python type object to
+ * represent objects of this type.
+ */
+PyObject *TypeRegistryNode::
+r_get_python_type() const {
+  Classes::const_iterator ni;
+  for (ni = _parent_classes.begin(); ni != _parent_classes.end(); ++ni) {
+    const TypeRegistryNode *parent = *ni;
+    if (parent->_python_type != nullptr) {
+      return parent->_python_type;
+
+    } else if (!parent->_parent_classes.empty()) {
+      PyObject *py_type = parent->r_get_python_type();
+      if (py_type != nullptr) {
+        return py_type;
+      }
+    }
+  }
+
+  return nullptr;
+}
+
+/**
  * A recursive function to double-check the result of is_derived_from().  This
  * is the slow, examine-the-whole-graph approach, as opposed to the clever and
  * optimal algorithm of is_derived_from(); it's intended to be used only for

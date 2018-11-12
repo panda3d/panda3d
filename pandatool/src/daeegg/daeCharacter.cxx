@@ -21,16 +21,16 @@
 
 #include "eggExternalReference.h"
 
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDController.h"
-#include "FCDocument/FCDGeometry.h"
-#include "FCDocument/FCDSceneNodeTools.h"
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDController.h>
+#include <FCDocument/FCDGeometry.h>
+#include <FCDocument/FCDSceneNodeTools.h>
 
-#include "FCDocument/FCDSceneNode.h"
-#include "FCDocument/FCDTransform.h"
-#include "FCDocument/FCDAnimated.h"
-#include "FCDocument/FCDAnimationCurve.h"
-#include "FCDocument/FCDAnimationKey.h"
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDTransform.h>
+#include <FCDocument/FCDAnimated.h>
+#include <FCDocument/FCDAnimationCurve.h>
+#include <FCDocument/FCDAnimationKey.h>
 
 TypeHandle DaeCharacter::_type_handle;
 
