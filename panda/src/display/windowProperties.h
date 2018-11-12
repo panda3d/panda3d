@@ -27,6 +27,10 @@
  * properties for a window after it has been opened.
  */
 class EXPCL_PANDA_DISPLAY WindowProperties {
+public:
+  WindowProperties();
+  INLINE WindowProperties(const WindowProperties &copy);
+
 PUBLISHED:
   enum ZOrder {
     Z_bottom,
@@ -40,8 +44,9 @@ PUBLISHED:
     M_confined,
   };
 
-  WindowProperties();
-  INLINE WindowProperties(const WindowProperties &copy);
+  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
+
+PUBLISHED:
   void operator = (const WindowProperties &copy);
   INLINE ~WindowProperties();
 

@@ -15,7 +15,7 @@
 #define PHYSX_INCLUDES_H
 
 // This one is safe to include
-#include "NxVersionNumber.h"
+#include <NxVersionNumber.h>
 
 // Platform-specific defines
 #if defined(_WIN64)
@@ -49,15 +49,15 @@
 
 
 // PhysX headers
-#include "Nxp.h"
-#include "NxPhysics.h"
-#include "NxExtended.h"
-#include "NxStream.h"
-#include "NxCooking.h"
-#include "NxController.h"
-#include "NxControllerManager.h"
-#include "NxBoxController.h"
-#include "NxCapsuleController.h"
+#include <Nxp.h>
+#include <NxPhysics.h>
+#include <NxExtended.h>
+#include <NxStream.h>
+#include <NxCooking.h>
+#include <NxController.h>
+#include <NxControllerManager.h>
+#include <NxBoxController.h>
+#include <NxCapsuleController.h>
 
 
 #endif // PHYSX_INCLUDES_H

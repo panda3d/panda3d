@@ -31,13 +31,13 @@
 #include "cppSimpleType.h"
 #include "cppStructType.h"
 #include "cppExpression.h"
-#include "vector"
 #include "cppParameterList.h"
-#include "algorithm"
 #include "lineStream.h"
 
-#include <set>
+#include <algorithm>
 #include <map>
+#include <set>
+#include <vector>
 
 using std::dec;
 using std::hex;
@@ -1495,11 +1495,15 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   out << "  {nullptr, nullptr, 0, nullptr}\n" << "};\n\n";
 
-  out << "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, ";
   if (_external_imports.empty()) {
-    out << "nullptr};\n";
+    out << "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n";
   } else {
-    out << "imports};\n";
+    out <<
+      "#ifdef LINK_ALL_STATIC\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, nullptr};\n"
+      "#else\n"
+      "extern const struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, exports, imports};\n"
+      "#endif\n";
   }
   if (out_h != nullptr) {
     *out_h << "extern const struct LibraryDef " << def->library_name << "_moddef;\n";
@@ -1644,6 +1648,16 @@ write_module_class(ostream &out, Object *obj) {
 
     if (!func->_has_this) {
       flags += " | METH_STATIC";
+
+      // Skip adding this entry if we also have a property with the same name.
+      // In that case, we will use a Dtool_StaticProperty to disambiguate
+      // access to this method.  See GitHub issue #444.
+      for (const Property *property : obj->_properties) {
+        if (property->_has_this &&
+            property->_ielement.get_name() == func->_ifunc.get_name()) {
+          continue;
+        }
+      }
     }
 
     bool has_nonslotted = false;
@@ -2661,6 +2675,14 @@ write_module_class(ostream &out, Object *obj) {
         continue;
       }
 
+      // Actually, if we have a conflicting static method with the same name,
+      // we will need to use Dtool_StaticProperty instead.
+      for (const Function *func : obj->_methods) {
+        if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+          continue;
+        }
+      }
+
       if (num_getset == 0) {
         out << "static PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
       }
@@ -3236,8 +3258,22 @@ write_module_class(ostream &out, Object *obj) {
   // Also add the static properties, which can't be added via getset.
   for (Property *property : obj->_properties) {
     const InterrogateElement &ielem = property->_ielement;
-    if (property->_has_this || property->_getter_remaps.empty()) {
+    if (property->_getter_remaps.empty()) {
       continue;
+    }
+    if (property->_has_this) {
+      // Actually, continue if we have a conflicting static method with the
+      // same name, which may still require use of Dtool_StaticProperty.
+      bool have_shadow = false;
+      for (const Function *func : obj->_methods) {
+        if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+          have_shadow = true;
+          break;
+        }
+      }
+      if (!have_shadow) {
+        continue;
+      }
     }
 
     string name1 = methodNameFromCppName(ielem.get_name(), "", false);
@@ -6892,8 +6928,42 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   // Now write the actual getter wrapper.  It will be a different wrapper
   // depending on whether it's a mapping or a sequence.
+  out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
+
+  // Is this property shadowing a static method with the same name?  This is a
+  // special case to handle WindowProperties::make -- see GH #444.
+  if (property->_has_this) {
+    for (const Function *func : obj->_methods) {
+      if (!func->_has_this && func->_ifunc.get_name() == ielem.get_name()) {
+        string flags;
+        string fptr = "&" + func->_name;
+        switch (func->_args_type) {
+        case AT_keyword_args:
+          flags = "METH_VARARGS | METH_KEYWORDS";
+          fptr = "(PyCFunction) " + fptr;
+          break;
+        case AT_varargs:
+          flags = "METH_VARARGS";
+          break;
+        case AT_single_arg:
+          flags = "METH_O";
+          break;
+        default:
+          flags = "METH_NOARGS";
+          break;
+        }
+        out << "  if (self == nullptr) {\n"
+            << "    static PyMethodDef def = {\"" << ielem.get_name() << "\", "
+            << fptr << ", " << flags << " | METH_STATIC, (const char *)"
+            << func->_name << "_comment};\n"
+            << "    return PyCFunction_New(&def, nullptr);\n"
+            << "  }\n\n";
+        break;
+      }
+    }
+  }
+
   if (ielem.is_mapping()) {
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
       out << "  nassertr(self != nullptr, nullptr);\n";
     }
@@ -6920,7 +6990,6 @@ write_getset(ostream &out, Object *obj, Property *property) {
             "}\n\n";
 
   } else if (ielem.is_sequence()) {
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     if (property->_has_this) {
       out << "  nassertr(self != nullptr, nullptr);\n";
     }
@@ -6951,7 +7020,6 @@ write_getset(ostream &out, Object *obj, Property *property) {
 
   } else {
     // Write out a regular, unwrapped getter.
-    out << "static PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *) {\n";
     FunctionRemap *remap = property->_getter_remaps.front();
 
     if (remap->_has_this) {

@@ -13,7 +13,7 @@
 
 #include "fileSpec.h"
 #include "wstring_encode.h"
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 
 #include <fstream>
 #include <fcntl.h>

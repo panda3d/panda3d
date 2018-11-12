@@ -19,7 +19,8 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * A MIDI file, preloaded and played from a memory buffer.  MIDI files cannot

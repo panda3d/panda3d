@@ -21,8 +21,9 @@
 #include "tinySDLGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
-#include "SDL.h"
 #include "zbuffer.h"
+
+#include <SDL.h>
 
 /**
  * This graphics window class is implemented via SDL.

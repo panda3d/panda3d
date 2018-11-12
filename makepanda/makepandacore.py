@@ -150,7 +150,7 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
 def WarnConflictingFiles(delete = False):
     for cfile in CONFLICTING_FILES:
         if os.path.exists(cfile):
-            print("%sWARNING:%s file may conflict with build: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), cfile, GetColor()))
+            Warn("file may conflict with build:", cfile)
             if delete:
                 os.unlink(cfile)
                 print("Deleted.")
@@ -283,6 +283,20 @@ def exit(msg = ""):
     else:
         print(msg)
         raise "initiate-exit"
+
+def Warn(msg, extra=None):
+    if extra is not None:
+        print("%sWARNING:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sWARNING:%s %s" % (GetColor("red"), GetColor(), msg))
+    sys.stdout.flush()
+
+def Error(msg, extra=None):
+    if extra is not None:
+        print("%sERROR:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sERROR:%s %s" % (GetColor("red"), GetColor(), msg))
+    exit()
 
 ########################################################################
 ##
@@ -723,7 +737,7 @@ def NeedsBuild(files, others):
                     print("    dependency changed: %s" % (key))
 
         if VERBOSE and frozenset(cached) != frozenset(dates):
-            print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
+            Warn("file dependencies changed:", files)
 
     return True
 
@@ -1298,7 +1312,7 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
 
     else:
-        print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
+        Warn("Unsupported platform:", target)
         return
 
     if (GetVerbose()):
@@ -1744,11 +1758,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     if not custom_loc and pkgconfig is not None and not libs:
         # pkg-config is all we can do, abort if it wasn't found.
         if pkg in PkgListGet():
-            print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
+            Warn("Could not locate pkg-config package %s, excluding from build" % (pkgconfig))
             PkgDisable(pkg)
         else:
-            print("%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig))
-            exit()
+            Error("Could not locate pkg-config package %s, aborting build" % (pkgconfig))
 
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
@@ -1812,14 +1825,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
         if not have_pkg:
             if custom_loc:
-                print("%sERROR:%s Could not locate thirdparty package %s in specified directory, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s in specified directory, aborting build" % (pkg.lower()))
             elif pkg in PkgListGet():
-                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower()))
+                Warn("Could not locate thirdparty package %s, excluding from build" % (pkg.lower()))
                 PkgDisable(pkg)
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (pkg.lower()))
 
 ########################################################################
 ##
@@ -2100,7 +2111,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         if sys.version[:3] != ver:
-            print("Warning: running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -2743,12 +2754,11 @@ def LibName(opt, name):
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
             if (opt in PkgListGet()):
                 if not PkgSkip(opt):
-                    print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+                    Warn("Could not locate thirdparty package %s, excluding from build" % (opt.lower()))
                     PkgDisable(opt)
                 return
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (opt.lower()))
     LIBNAMES.append((opt, name))
 
 def DefSymbol(opt, sym, val=""):
@@ -2831,7 +2841,7 @@ def SetupBuildEnvironment(compiler):
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
-            print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed" % (cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
         # Now extract the preprocessor's include directories.
@@ -2860,7 +2870,7 @@ def SetupBuildEnvironment(compiler):
                 print("Ignoring non-existent include directory %s" % (line))
 
         if handle.returncode != 0 or not SYS_INC_DIRS:
-            print("%sWARNING:%s %s failed or did not produce the expected result" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed or did not produce the expected result" % (cmd))
             sysroot = SDK.get("SYSROOT", "")
             # Add some sensible directories as a fallback.
             SYS_INC_DIRS = [
@@ -3250,14 +3260,8 @@ def SetOrigExt(x, v):
 
 def GetExtensionSuffix():
     if sys.version_info >= (3, 0):
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if suffix == '.so':
-            # On my FreeBSD system, this is not set correctly, but SOABI is.
-            soabi = sysconfig.get_config_var('SOABI')
-            if soabi:
-                return '.%s.so' % (soabi)
-        elif suffix:
-            return suffix
+        import _imp
+        return _imp.extension_suffixes()[0]
 
     target = GetTarget()
     if target == 'windows':
@@ -3374,7 +3378,7 @@ def FindLocation(fn, ipath, pyabi=None):
 
         elif ext != ".pyd" and loc not in WARNED_FILES:
             WARNED_FILES.add(loc)
-            print("%sWARNING:%s file depends on Python but is not in an ABI-specific directory: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), loc, GetColor()))
+            Warn("file depends on Python but is not in an ABI-specific directory:", loc)
 
     ORIG_EXT[loc] = ext
     return loc

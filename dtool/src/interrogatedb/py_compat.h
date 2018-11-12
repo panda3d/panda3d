@@ -29,7 +29,7 @@
 // See PEP 353
 #define PY_SSIZE_T_CLEAN 1
 
-#include "Python.h"
+#include <Python.h>
 
 /* Python 2.4 */
 

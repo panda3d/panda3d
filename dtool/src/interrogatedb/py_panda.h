@@ -21,7 +21,7 @@
 
 // py_compat.h includes Python.h.
 #include "py_compat.h"
-#include "structmember.h"
+#include <structmember.h>
 
 using namespace std;
 

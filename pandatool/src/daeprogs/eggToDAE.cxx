@@ -15,9 +15,9 @@
 #include "dcast.h"
 #include "pandaVersion.h"
 
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDAsset.h"
-#include "FCDocument/FCDTransform.h"
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDAsset.h>
+#include <FCDocument/FCDTransform.h>
 
 // Useful conversion stuff
 #define TO_VEC3(v) (LVecBase3d(v[0], v[1], v[2]))

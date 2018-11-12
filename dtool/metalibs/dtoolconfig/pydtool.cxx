@@ -17,7 +17,7 @@
 #if PYTHON_FRAMEWORK
   #include <Python/Python.h>
 #else
-  #include "Python.h"
+  #include <Python.h>
 #endif
 
 static PyObject *_inP07yttbRf(PyObject *self, PyObject *args);
