@@ -79,8 +79,6 @@ set(P3ODE_IGATEEXT
   odeUtil_ext.h)
 
 set(P3ODE_IGATE_SOURCES "${P3ODE_HEADERS};${P3ODE_SOURCES}")
-list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeConvexGeom.h")
-list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHeightFieldGeom.h")
 list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHelperStructs.h")
 
 composite_sources(p3ode P3ODE_SOURCES)
