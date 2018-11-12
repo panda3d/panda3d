@@ -3875,9 +3875,7 @@ if (not RUNTIME):
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
-  PyTargetAdd('p3display_graphicsStateGuardian_ext.obj', opts=OPTS, input='graphicsStateGuardian_ext.cxx')
-  PyTargetAdd('p3display_graphicsWindow_ext.obj', opts=OPTS, input='graphicsWindow_ext.cxx')
-  PyTargetAdd('p3display_pythonGraphicsWindowProc.obj', opts=OPTS, input='pythonGraphicsWindowProc.cxx')
+  PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_composite.cxx')
 
   if RTDIST and GetTarget() == 'darwin':
     OPTS=['DIR:panda/src/display']
@@ -4277,9 +4275,7 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='p3event_pythonTask.obj')
   PyTargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
-  PyTargetAdd('core.pyd', input='p3display_graphicsStateGuardian_ext.obj')
-  PyTargetAdd('core.pyd', input='p3display_graphicsWindow_ext.obj')
-  PyTargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
+  PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
 
   PyTargetAdd('core.pyd', input='core_module.obj')
   if not GetLinkAllStatic() and GetTarget() != 'emscripten':
