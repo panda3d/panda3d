@@ -3,6 +3,7 @@ if(NOT BUILD_PANDA)
 endif()
 
 # Include pandatool source directories
+add_subdirectory(src/assimp)
 add_subdirectory(src/bam)
 add_subdirectory(src/converter)
 add_subdirectory(src/cvscopy)

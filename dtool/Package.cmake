@@ -162,6 +162,17 @@ package_status(TAR "libtar")
 
 
 #
+# ------------ Asset formats ------------
+#
+
+# Assimp
+find_package(Assimp QUIET)
+package_option(ASSIMP
+  "Build pandatool with support for loading 3D assets supported by Assimp.")
+package_status(ASSIMP "Assimp")
+
+
+#
 # ------------ Math libraries ------------
 #
 
