@@ -310,7 +310,7 @@ function(add_python_module module)
   )
 
   add_python_target(panda3d.${module} "${module}_module.cxx" ${sources} ${extensions})
-  target_link_libraries(panda3d.${module} ${link_targets} p3igateruntime)
+  target_link_libraries(panda3d.${module} ${link_targets})
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
     # CMake <3.11 doesn't allow generator expressions on source files, so we

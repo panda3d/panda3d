@@ -39,7 +39,8 @@ set(P3ODE_HEADERS
   odeTriMeshData.I odeTriMeshData.h
   odeTriMeshGeom.I odeTriMeshGeom.h
   odeCollisionEntry.I odeCollisionEntry.h
-  odeHelperStructs.h)
+  odeHelperStructs.h
+)
 
 set(P3ODE_SOURCES
   config_ode.cxx
@@ -62,9 +63,11 @@ set(P3ODE_SOURCES
   odePlaneGeom.cxx odeCappedCylinderGeom.cxx
   odeCylinderGeom.cxx odeRayGeom.cxx
   odeTriMeshData.cxx  odeTriMeshGeom.cxx
-  odeCollisionEntry.cxx)
+  odeCollisionEntry.cxx
+)
 
 set(P3ODE_IGATEEXT
+  odeBody_ext.cxx
   odeBody_ext.h
   odeBody_ext.I
   odeGeom_ext.cxx
@@ -76,7 +79,8 @@ set(P3ODE_IGATEEXT
   odeSpace_ext.h
   odeSpace_ext.I
   odeUtil_ext.cxx
-  odeUtil_ext.h)
+  odeUtil_ext.h
+)
 
 set(P3ODE_IGATE_SOURCES "${P3ODE_HEADERS};${P3ODE_SOURCES}")
 list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHelperStructs.h")
@@ -84,7 +88,8 @@ list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHelperStructs.h")
 composite_sources(p3ode P3ODE_SOURCES)
 add_library(p3ode ${P3ODE_SOURCES} ${P3ODE_HEADERS})
 set_target_properties(p3ode PROPERTIES DEFINE_SYMBOL BUILDING_PANDAODE)
-target_link_libraries(p3ode p3igateruntime panda PKG::ODE)
+target_link_libraries(p3ode panda
+  PKG::ODE)
 target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} EXTENSIONS ${P3ODE_IGATEEXT})
 
 install(TARGETS p3ode DESTINATION lib RUNTIME DESTINATION bin)

@@ -71,6 +71,8 @@ set(P3DISPLAY_IGATEEXT
   graphicsWindow_ext.h
   pythonGraphicsWindowProc.cxx
   pythonGraphicsWindowProc.h
+  windowProperties_ext.cxx
+  windowProperties_ext.h
 )
 
 if(APPLE)
