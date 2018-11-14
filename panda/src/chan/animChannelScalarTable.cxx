@@ -146,16 +146,10 @@ void AnimChannelScalarTable::
 write_datagram(BamWriter *manager, Datagram &me) {
   AnimChannelScalar::write_datagram(manager, me);
 
-  if (compress_channels) {
-    chan_cat.warning()
-      << "FFT compression of animations is deprecated.  For compatibility "
-         "with future versions of Panda3D, set compress-channels to false.\n";
-
-    if (!FFTCompressor::is_compression_available()) {
-      chan_cat.error()
-        << "Compression is not available; writing uncompressed channels.\n";
-      compress_channels = false;
-    }
+  if (compress_channels && !FFTCompressor::is_compression_available()) {
+    chan_cat.error()
+      << "Compression is not available; writing uncompressed channels.\n";
+    compress_channels = false;
   }
 
   me.add_bool(compress_channels);
