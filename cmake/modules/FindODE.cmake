@@ -21,44 +21,46 @@
 #   ODE::ODE_double - If available, this links against double-precision ODE
 #
 
-if(NOT ODE_INCLUDE_DIR OR NOT ODE_LIBRARY_DIR)
-	# Find the libode include files
-	find_path(ODE_INCLUDE_DIR "ode/ode.h")
+# Find the libode include files
+find_path(ODE_INCLUDE_DIR "ode/ode.h")
 
-	# Find the libode library built for release
-	find_library(ODE_RELEASE_LIBRARY
-		NAMES "ode" "libode")
+# Find the libode library built for release
+find_library(ODE_RELEASE_LIBRARY
+  NAMES "ode" "libode")
 
-	# Find the libode library built for debug
-	find_library(ODE_DEBUG_LIBRARY
-		NAMES "oded" "liboded")
+# Find the libode library built for debug
+find_library(ODE_DEBUG_LIBRARY
+  NAMES "oded" "liboded")
 
-  # Find the single-precision library built for release
-  find_library(ODE_SINGLE_RELEASE_LIBRARY
-		NAMES "ode_single" "libode_single")
+# Find the single-precision library built for release
+find_library(ODE_SINGLE_RELEASE_LIBRARY
+  NAMES "ode_single" "libode_single")
 
-	# Find the single-precision library built for debug
-  find_library(ODE_SINGLE_DEBUG_LIBRARY
-		NAMES "ode_singled" "libode_singled")
+# Find the single-precision library built for debug
+find_library(ODE_SINGLE_DEBUG_LIBRARY
+  NAMES "ode_singled" "libode_singled")
 
-  # Find the double-precision library built for release
-  find_library(ODE_DOUBLE_RELEASE_LIBRARY
-		NAMES "ode_double" "libode_double"	)
+# Find the double-precision library built for release
+find_library(ODE_DOUBLE_RELEASE_LIBRARY
+  NAMES "ode_double" "libode_double")
 
-	# Find the double-precision library built for debug
-  find_library(ODE_DOUBLE_DEBUG_LIBRARY
-		NAMES "ode_doubled" "libode_doubled")
+# Find the double-precision library built for debug
+find_library(ODE_DOUBLE_DEBUG_LIBRARY
+  NAMES "ode_doubled" "libode_doubled")
 
-  unset(_ODE_LIB_PATHS)
+# Find libccd, which ODE sometimes links against, so we want to let the linker
+# know about it if it's present.
+find_library(ODE_LIBCCD_LIBRARY
+  NAMES "ccd" "libccd")
 
-	mark_as_advanced(ODE_INCLUDE_DIR)
-	mark_as_advanced(ODE_RELEASE_LIBRARY)
-	mark_as_advanced(ODE_DEBUG_LIBRARY)
-  mark_as_advanced(ODE_SINGLE_RELEASE_LIBRARY)
-  mark_as_advanced(ODE_SINGLE_DEBUG_LIBRARY)
-  mark_as_advanced(ODE_DOUBLE_RELEASE_LIBRARY)
-  mark_as_advanced(ODE_DOUBLE_DEBUG_LIBRARY)
-endif()
+mark_as_advanced(ODE_INCLUDE_DIR)
+mark_as_advanced(ODE_RELEASE_LIBRARY)
+mark_as_advanced(ODE_DEBUG_LIBRARY)
+mark_as_advanced(ODE_SINGLE_RELEASE_LIBRARY)
+mark_as_advanced(ODE_SINGLE_DEBUG_LIBRARY)
+mark_as_advanced(ODE_DOUBLE_RELEASE_LIBRARY)
+mark_as_advanced(ODE_DOUBLE_DEBUG_LIBRARY)
+mark_as_advanced(ODE_LIBCCD_LIBRARY)
 
 # Define targets for both precisions (and unspecified)
 foreach(_precision _single _double "")
@@ -71,6 +73,11 @@ foreach(_precision _single _double "")
 
       set_target_properties(ODE::ODE${_precision} PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${ODE_INCLUDE_DIR}")
+
+      if(ODE_LIBCCD_LIBRARY)
+        set_target_properties(ODE::ODE${_precision} PROPERTIES
+          INTERFACE_LINK_LIBRARIES "${ODE_LIBCCD_LIBRARY}")
+      endif()
 
       if(EXISTS "${ODE${_PRECISION}_RELEASE_LIBRARY}")
         set_property(TARGET ODE::ODE${_precision} APPEND PROPERTY
@@ -121,6 +128,7 @@ if(NOT TARGET ODE::ODE)
     foreach(_prop
         INTERFACE_INCLUDE_DIRECTORIES
         INTERFACE_COMPILE_DEFINITIONS
+        INTERFACE_LINK_LIBRARIES
         IMPORTED_CONFIGURATIONS
         IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE
         IMPORTED_LOCATION_RELEASE
@@ -128,11 +136,12 @@ if(NOT TARGET ODE::ODE)
         IMPORTED_LOCATION_DEBUG)
 
       get_target_property(_value "${_copy_from}" "${_prop}")
-      if(DEFINED _value)
+      if(_value)
         set_target_properties(ODE::ODE PROPERTIES "${_prop}" "${_value}")
       endif()
       unset(_value)
     endforeach(_prop)
+    unset(_prop)
   endif()
 
   unset(_copy_from)
