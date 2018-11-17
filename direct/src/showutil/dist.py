@@ -58,8 +58,9 @@ def egg2bam(_build_cmd, srcpath, dstpath):
     try:
         subprocess.check_call([
             'egg2bam',
-            '-o',
-            dstpath,
+            '-o', dstpath,
+            '-pd', os.path.dirname(os.path.abspath(srcpath)),
+            '-ps', 'rel',
             srcpath
         ])
     except FileNotFoundError:
