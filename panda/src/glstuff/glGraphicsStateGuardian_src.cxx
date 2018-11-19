@@ -91,6 +91,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_vertex_array_update_pcollector("Draw
 PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Update texture");
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
+PStatCollector CLP(GraphicsStateGuardian)::_check_residency_pcollector("*:PStats:Check residency");
 
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
@@ -3949,6 +3950,7 @@ end_frame(Thread *current_thread) {
   // connects PStats, at which point it will then correct the assessment.  No
   // harm done.
   if (has_fixed_function_pipeline() && PStatClient::is_connected()) {
+    PStatTimer timer(_check_residency_pcollector);
     check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
     check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
 
@@ -7208,6 +7210,8 @@ do_issue_shade_model() {
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
+  PStatTimer timer(_draw_set_state_shader_pcollector);
+
   ShaderContext *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
@@ -10919,7 +10923,6 @@ set_state_and_transform(const RenderState *target,
   _instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
-    // PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
@@ -11075,7 +11078,7 @@ set_state_and_transform(const RenderState *target,
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
-    // PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+    PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
     do_issue_texture();
 

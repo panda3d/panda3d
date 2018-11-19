@@ -1126,6 +1126,7 @@ public:
   static PStatCollector _texture_update_pcollector;
   static PStatCollector _fbo_bind_pcollector;
   static PStatCollector _check_error_pcollector;
+  static PStatCollector _check_residency_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

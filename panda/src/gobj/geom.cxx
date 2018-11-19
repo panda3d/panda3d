@@ -1844,8 +1844,11 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg,
      const GeomVertexDataPipelineReader *data_reader, bool force) const {
-  PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-  bool all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  bool all_ok;
+  {
+    PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
+    all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  }
   if (all_ok) {
     Geom::Primitives::const_iterator pi;
     for (pi = _cdata->_primitives.begin();
