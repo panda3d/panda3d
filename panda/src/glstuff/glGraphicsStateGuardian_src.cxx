@@ -3405,7 +3405,6 @@ finish() {
  */
 void CLP(GraphicsStateGuardian)::
 clear(DrawableRegion *clearable) {
-  PStatGPUTimer timer(this, _clear_pcollector);
   report_my_gl_errors();
 
   if (!clearable->is_any_clear_active()) {

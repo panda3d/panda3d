@@ -113,8 +113,6 @@ clear(Thread *current_thread) {
       << get_name() << " " << (void *)this << "\n";
   }
 
-  PStatGPUTimer timer(glgsg, glgsg->_clear_pcollector);
-
   // Disable the scissor test, so we can clear the whole buffer.
   glDisable(GL_SCISSOR_TEST);
   glgsg->_scissor_enabled = false;

@@ -1431,7 +1431,11 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
-        win->clear(current_thread);
+        if (win->is_any_clear_active()) {
+          GraphicsStateGuardian *gsg = win->get_gsg();
+          PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+          win->clear(current_thread);
+        }
 
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
@@ -1476,6 +1480,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     gsg->prepare_display_region(&dr_reader);
 
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr);
     }
 
@@ -1651,7 +1656,10 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // a current context for PStatGPUTimer to work.
         {
           PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
-          win->clear(current_thread);
+          if (win->is_any_clear_active()) {
+            PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+            win->clear(current_thread);
+          }
 
           if (display_cat.is_spam()) {
             display_cat.spam()
@@ -2015,6 +2023,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     win->change_scenes(&dr_reader);
     gsg->prepare_display_region(&dr_reader);
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr_reader.get_object());
     }
 

@@ -289,6 +289,7 @@ public:
 
   INLINE PStatCollector &get_cull_window_pcollector();
   INLINE PStatCollector &get_draw_window_pcollector();
+  INLINE PStatCollector &get_clear_window_pcollector();
 
 protected:
   virtual void pixel_factor_changed();
@@ -409,6 +410,7 @@ protected:
   static PStatCollector _draw_pcollector;
   PStatCollector _cull_window_pcollector;
   PStatCollector _draw_window_pcollector;
+  PStatCollector _clear_window_pcollector;
 
 public:
   static TypeHandle get_class_type() {
