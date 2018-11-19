@@ -87,6 +87,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {
+    wglgsg->push_group_marker(std::string("wglGraphicsWindow ") + get_name());
     clear_cube_map_selection();
   }
 
@@ -114,6 +115,10 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     trigger_flip();
     clear_cube_map_selection();
+
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+    wglgsg->pop_group_marker();
   }
 }
 

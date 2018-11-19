@@ -230,6 +230,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
   }
 
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
+  glgsg->push_group_marker(std::string(CLASSPREFIX_QUOTED "GraphicsBuffer ") + get_name());
+
   // Figure out the desired size of the  buffer.
   if (mode == FM_render) {
     clear_cube_map_selection();
@@ -255,6 +258,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     if (_needs_rebuild) {
       // If we still need rebuild, something went wrong with
       // rebuild_bitplanes().
+      glgsg->pop_group_marker();
       return false;
     }
 
@@ -1314,6 +1318,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
     clear_cube_map_selection();
   }
   report_my_gl_errors();
+
+  glgsg->pop_group_marker();
 }
 
 /**

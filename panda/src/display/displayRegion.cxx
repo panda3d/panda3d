@@ -677,7 +677,7 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
  */
 void DisplayRegion::
 set_active_index(int index) {
-#ifdef DO_PSTATS
+#if defined(DO_PSTATS) || !defined(NDEBUG)
   std::ostringstream strm;
 
   // To make a more useful name for PStats and debug output, we add the scene
@@ -697,10 +697,12 @@ set_active_index(int index) {
   // And add the index in case we have two scene graphs with the same name.
   strm << "#" << index;
 
-  string name = strm.str();
+  _debug_name = strm.str();
+#endif
 
-  _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), name);
-  _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), name);
+#ifdef DO_PSTATS
+  _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), _debug_name);
+  _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), _debug_name);
 #endif  // DO_PSTATS
 }
 

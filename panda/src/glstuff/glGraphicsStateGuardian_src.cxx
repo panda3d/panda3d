@@ -616,6 +616,22 @@ reset() {
   // Print out a list of all extensions.
   report_extensions();
 
+  // Check if we are running under a profiling tool such as apitrace.
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_debug_marker")) {
+    _glPushGroupMarker = (PFNGLPUSHGROUPMARKEREXTPROC)
+      get_extension_func("glPushGroupMarkerEXT");
+    _glPopGroupMarker = (PFNGLPOPGROUPMARKEREXTPROC)
+      get_extension_func("glPopGroupMarkerEXT");
+
+    // Start a group right away.
+    push_group_marker("reset");
+  } else {
+    _glPushGroupMarker = nullptr;
+    _glPopGroupMarker = nullptr;
+  }
+#endif
+
   // Initialize OpenGL debugging output first, if enabled and supported.
   _supports_debug = false;
   _use_object_labels = false;
@@ -3372,6 +3388,8 @@ reset() {
     }
   }
 #endif
+
+  pop_group_marker();
 
   // Now that the GSG has been initialized, make it available for
   // optimizations.

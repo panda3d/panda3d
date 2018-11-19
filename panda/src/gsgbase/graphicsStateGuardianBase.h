@@ -235,6 +235,9 @@ public:
 #endif
   }
 
+  virtual void push_group_marker(const std::string &marker) {}
+  virtual void pop_group_marker() {}
+
 PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();
   static void set_default_gsg(GraphicsStateGuardianBase *default_gsg);
