@@ -10661,6 +10661,71 @@ reissue_transforms() {
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
 #endif
+
+  // Since this is called by clear_state_and_transform(), we also should reset
+  // the states that won't automatically be respecified when clearing the
+  // state mask.
+  _active_color_write_mask = ColorWriteAttrib::C_all;
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+  if (_dithering_enabled) {
+    glEnable(GL_DITHER);
+  } else {
+    glDisable(GL_DITHER);
+  }
+  if (_depth_test_enabled) {
+    glEnable(GL_DEPTH_TEST);
+  } else {
+    glDisable(GL_DEPTH_TEST);
+  }
+  if (_stencil_test_enabled) {
+    glEnable(GL_STENCIL_TEST);
+  } else {
+    glDisable(GL_STENCIL_TEST);
+  }
+  if (_blend_enabled) {
+    glEnable(GL_BLEND);
+  } else {
+    glDisable(GL_BLEND);
+  }
+
+#ifndef OPENGLES_2
+  if (_multisample_mode != 0) {
+    glEnable(GL_MULTISAMPLE);
+  } else {
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+  }
+  if (_line_smooth_enabled) {
+    glEnable(GL_LINE_SMOOTH);
+  } else {
+    glDisable(GL_LINE_SMOOTH);
+  }
+#endif
+
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glEnable(GL_POLYGON_SMOOTH);
+  } else {
+    glDisable(GL_POLYGON_SMOOTH);
+  }
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    if (_alpha_test_enabled) {
+      glEnable(GL_ALPHA_TEST);
+    } else {
+      glDisable(GL_ALPHA_TEST);
+    }
+    if (_point_smooth_enabled) {
+      glEnable(GL_POINT_SMOOTH);
+    } else {
+      glDisable(GL_POINT_SMOOTH);
+    }
+  }
+#endif
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
