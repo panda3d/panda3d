@@ -872,6 +872,13 @@ if (COMPILER=="GCC"):
         else:
             PkgDisable("OPENCV")
 
+        if not PkgSkip("ASSIMP") and \
+            os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
+            # Also pick up IrrXML, which is needed when linking statically.
+            irrxml = GetThirdpartyDir() + "assimp/lib/libIrrXML.a"
+            if os.path.isfile(irrxml):
+                LibName("ASSIMP", irrxml)
+
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
             rocket_libs += ("RocketDebugger",)
