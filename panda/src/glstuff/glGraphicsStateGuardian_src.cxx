@@ -1754,14 +1754,6 @@ reset() {
        get_extension_func("glUniform3iv");
     _glUniform4iv = (PFNGLUNIFORM4IVPROC)
        get_extension_func("glUniform4iv");
-    _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
-       get_extension_func("glUniform1uiv");
-    _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
-       get_extension_func("glUniform2uiv");
-    _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
-       get_extension_func("glUniform3uiv");
-    _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
-       get_extension_func("glUniform4uiv");
     _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
        get_extension_func("glUniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
@@ -1776,9 +1768,35 @@ reset() {
        get_extension_func("glVertexAttribPointer");
 
     if (is_at_least_gl_version(3, 0)) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocation");
       _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
          get_extension_func("glVertexAttribIPointer");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uiv");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uiv");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uiv");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uiv");
+
+    } else if (has_extension("GL_EXT_gpu_shader4")) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocationEXT");
+      _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
+         get_extension_func("glVertexAttribIPointerEXT");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uivEXT");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uivEXT");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uivEXT");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uivEXT");
+
     } else {
+      _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
@@ -1807,6 +1825,7 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointerARB");
 
+    _glBindFragDataLocation = nullptr;
     _glVertexAttribIPointer = nullptr;
     _glVertexAttribLPointer = nullptr;
   }
@@ -1857,6 +1876,13 @@ reset() {
       get_extension_func("glVertexAttribIPointer");
   } else {
     _glVertexAttribIPointer = nullptr;
+  }
+
+  if (has_extension("GL_EXT_blend_func_extended")) {
+    _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+       get_extension_func("glBindFragDataLocationEXT");
+  } else {
+    _glBindFragDataLocation = nullptr;
   }
 #endif
 

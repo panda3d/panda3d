@@ -146,6 +146,7 @@ typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum d
 // GLSL shader functions
 typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
 typedef void (APIENTRYP PFNGLBINDATTRIBLOCATIONPROC) (GLuint program, GLuint index, const GLchar *name);
+typedef void (APIENTRYP PFNGLBINDFRAGDATALOCATIONPROC) (GLuint program, GLuint color, const GLchar *name);
 typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
 typedef GLuint (APIENTRYP PFNGLCREATEPROGRAMPROC) (void);
 typedef GLuint (APIENTRYP PFNGLCREATESHADERPROC) (GLenum type);
@@ -963,6 +964,7 @@ public:
   // GLSL functions
   PFNGLATTACHSHADERPROC _glAttachShader;
   PFNGLBINDATTRIBLOCATIONPROC _glBindAttribLocation;
+  PFNGLBINDFRAGDATALOCATIONPROC _glBindFragDataLocation;
   PFNGLCOMPILESHADERPROC _glCompileShader;
   PFNGLCREATEPROGRAMPROC _glCreateProgram;
   PFNGLCREATESHADERPROC _glCreateShader;
