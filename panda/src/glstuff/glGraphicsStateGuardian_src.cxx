@@ -3754,6 +3754,10 @@ clear_before_callback() {
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
 
+  // It's also quite reasonable to presume there aren't any funny color write
+  // mask settings active.
+  clear_color_write_mask();
+
   // Clear the bound sampler object, so that we do not inadvertently override
   // the callback's desired sampler settings.
 #ifndef OPENGLES_1
