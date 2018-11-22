@@ -154,6 +154,8 @@ end_flip() {
  */
 void glxGraphicsWindow::
 close_window() {
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+
   if (_gsg != nullptr) {
     glXMakeCurrent(_display, None, nullptr);
     _gsg.clear();
@@ -203,6 +205,8 @@ open_window() {
       << "No X visual: cannot open window.\n";
     return false;
   }
+
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
