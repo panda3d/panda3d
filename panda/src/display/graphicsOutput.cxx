@@ -441,9 +441,10 @@ is_active() const {
   if (cdata->_active_display_regions_stale) {
     CDWriter cdataw(((GraphicsOutput *)this)->_cycler, cdata, false);
     ((GraphicsOutput *)this)->do_determine_display_regions(cdataw);
+    return !cdataw->_active_display_regions.empty();
+  } else {
+    return !cdata->_active_display_regions.empty();
   }
-
-  return !cdata->_active_display_regions.empty();
 }
 
 /**
