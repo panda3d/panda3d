@@ -47,6 +47,7 @@
 #include "displayRegionCullCallbackData.h"
 #include "displayRegionDrawCallbackData.h"
 #include "callbackGraphicsWindow.h"
+#include "depthTestAttrib.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -2046,9 +2047,12 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
   if (cbobj != nullptr) {
     // Issue the draw callback on this DisplayRegion.
 
-    // Set the GSG to the initial state.
+    // Set the GSG to the initial state.  We disable depth testing since that
+    // is the default OpenGL state, and some libraries (eg. Kivy) expect that.
+    static CPT(RenderState) state = RenderState::make(
+      DepthTestAttrib::make(DepthTestAttrib::M_none));
     gsg->clear_before_callback();
-    gsg->set_state_and_transform(RenderState::make_empty(), TransformState::make_identity());
+    gsg->set_state_and_transform(state, TransformState::make_identity());
 
     DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);
     cbobj->do_callback(&cbdata);
