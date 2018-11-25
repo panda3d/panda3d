@@ -17,8 +17,8 @@
 
 #include "httpChannel.h"
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
-#include "openssl/md5.h"
+#include <openssl/ssl.h>
+#include <openssl/md5.h>
 #include <time.h>
 
 using std::ostream;

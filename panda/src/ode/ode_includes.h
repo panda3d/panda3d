@@ -35,7 +35,7 @@
 #define int32 ode_int32
 #define uint32 ode_uint32
 
-#include "ode/ode.h"
+#include <ode/ode.h>
 
 // These are the ones that conflict with other defines in Panda.  It may be
 // necessary to add to this list at a later time.

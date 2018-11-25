@@ -15,8 +15,8 @@
 #include "wstring_encode.h"
 #include "mkdir_complete.h"
 
-#include "wx/cmdline.h"
-#include "wx/filename.h"
+#include <wx/cmdline.h>
+#include <wx/filename.h>
 
 #include "ca_bundle_data_src.c"
 

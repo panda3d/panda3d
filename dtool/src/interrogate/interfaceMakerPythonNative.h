@@ -11,8 +11,8 @@
 
 #ifndef INTERFACEMAKERPYTHONNATIVE_H
 #define INTERFACEMAKERPYTHONNATIVE_H
-#include "map"
-#include "set"
+#include <map>
+#include <set>
 #include "dtoolbase.h"
 
 #include "interfaceMakerPython.h"

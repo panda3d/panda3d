@@ -960,8 +960,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (!_has_this && _parameters.size() > 0 &&
                (_cppfunc->_storage_class & CPPInstance::SC_explicit) == 0) {
-      // A non-explicit non-copy constructor might be eligible for coercion.
-      _flags |= F_coerce_constructor;
+      // A non-explicit non-copy constructor might be eligible for coercion,
+      // as long as it does not require explicit keyword args.
+      if ((_flags & F_explicit_args) == 0 ||
+          _args_type != InterfaceMaker::AT_keyword_args) {
+
+        _flags |= F_coerce_constructor;
+      }
     }
 
     // Constructors always take varargs, and possibly keyword args.

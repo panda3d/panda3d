@@ -61,7 +61,7 @@
 #ifndef __FMOD_AUDIO_SOUND_H__
 #define __FMOD_AUDIO_SOUND_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "audioSound.h"
 #include "reMutex.h"

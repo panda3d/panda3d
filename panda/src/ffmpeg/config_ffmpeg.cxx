@@ -21,9 +21,9 @@
 #include "movieTypeRegistry.h"
 
 extern "C" {
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
-  #include "libavutil/avutil.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
+  #include <libavutil/avutil.h>
 }
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_FFMPEG)

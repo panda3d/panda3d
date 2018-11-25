@@ -28,24 +28,24 @@
 #include "eggSAnimData.h"
 #include "pt_EggVertex.h"
 
-#include "FCDocument/FCDAsset.h"
-#include "FCDocument/FCDocumentTools.h"
-#include "FCDocument/FCDSceneNode.h"
-#include "FCDocument/FCDSceneNodeTools.h"
-#include "FCDocument/FCDGeometry.h"
-#include "FCDocument/FCDGeometryInstance.h"
-#include "FCDocument/FCDGeometryPolygons.h"
-#include "FCDocument/FCDGeometrySource.h"
-#include "FCDocument/FCDSkinController.h"
-#include "FCDocument/FCDController.h"
-#include "FCDocument/FCDControllerInstance.h"
-#include "FCDocument/FCDMorphController.h"
-#include "FCDocument/FCDMaterialInstance.h"
-#include "FCDocument/FCDExtra.h"
-#include "FCDocument/FCDEffect.h"
-#include "FCDocument/FCDEffectStandard.h"
+#include <FCDocument/FCDAsset.h>
+#include <FCDocument/FCDocumentTools.h>
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDSceneNodeTools.h>
+#include <FCDocument/FCDGeometry.h>
+#include <FCDocument/FCDGeometryInstance.h>
+#include <FCDocument/FCDGeometryPolygons.h>
+#include <FCDocument/FCDGeometrySource.h>
+#include <FCDocument/FCDSkinController.h>
+#include <FCDocument/FCDController.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDMorphController.h>
+#include <FCDocument/FCDMaterialInstance.h>
+#include <FCDocument/FCDExtra.h>
+#include <FCDocument/FCDEffect.h>
+#include <FCDocument/FCDEffectStandard.h>
 #if FCOLLADA_VERSION >= 0x00030005
-  #include "FCDocument/FCDGeometryPolygonsInput.h"
+  #include <FCDocument/FCDGeometryPolygonsInput.h>
 #endif
 
 using std::endl;

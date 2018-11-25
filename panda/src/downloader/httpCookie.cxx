@@ -15,8 +15,9 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "ctype.h"
 #include "httpChannel.h"
+
+#include <ctype.h>
 
 using std::string;
 

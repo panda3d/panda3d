@@ -20,8 +20,8 @@
 #include "eggTransform.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDSceneNode.h"
+#include <FCollada.h>
+#include <FCDocument/FCDSceneNode.h>
 
 /**
  * A program to read an egg file and write a DAE file.

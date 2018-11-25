@@ -385,26 +385,36 @@ SectionGroup "Python support"
         SetRegView ${REGVIEW}
         !endif
 
-        ; Check for a system-wide Python installation.
-        ; We could check for a user installation of Python as well, but there
-        ; is no distinction between 64-bit and 32-bit regviews in HKCU, so we
-        ; can't guess whether it might be a compatible version.
+        ; Check for a non-Panda3D system-wide Python installation.
         ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+        StrCmp $0 "$INSTDIR\python" UserExternalPthCheck 0
+        StrCmp $0 "" UserExternalPthCheck 0
+        IfFileExists "$0\ppython.exe" UserExternalPthCheck 0
+        IfFileExists "$0\python.exe" AskExternalPth UserExternalPthCheck
+
+        ; Check for a non-Panda3D user installation of Python.
+        UserExternalPthCheck:
+        ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" SkipExternalPth 0
         StrCmp $0 "" SkipExternalPth 0
         IfFileExists "$0\ppython.exe" SkipExternalPth 0
-        IfFileExists "$0\python.exe" 0 SkipExternalPth
+        IfFileExists "$0\python.exe" AskExternalPth SkipExternalPth
 
         ; We're pretty sure this Python build is of the right architecture.
+        AskExternalPth:
         MessageBox MB_YESNO|MB_ICONQUESTION \
             "Your system already has a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\nWould you like to configure it to be able to use the Panda3D libraries?$\r$\nIf you choose no, you will only be able to use Panda3D's own copy of Python." \
             IDYES WriteExternalPth IDNO SkipExternalPth
 
         WriteExternalPth:
-        FileOpen $1 "$0\Lib\site-packages\panda.pth" w
-        FileWrite $1 "$INSTDIR$\r$\n"
-        FileWrite $1 "$INSTDIR\bin$\r$\n"
-        FileClose $1
+        ;FileOpen $1 "$0\Lib\site-packages\panda.pth" w
+        ;FileWrite $1 "$INSTDIR$\r$\n"
+        ;FileWrite $1 "$INSTDIR\bin$\r$\n"
+        ;FileClose $1
+
+        ; Actually, it looks like we can just do this instead:
+        WriteRegStr HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" "" "$INSTDIR"
+
         SkipExternalPth:
     SectionEnd
 
@@ -735,6 +745,10 @@ Section Uninstall
     ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
     StrCmp $0 "$INSTDIR\python" 0 +2
     DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}"
+
+    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" ""
+    StrCmp $0 "$INSTDIR" 0 +2
+    DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D"
 
     SetDetailsPrint both
     DetailPrint "Deleting files..."

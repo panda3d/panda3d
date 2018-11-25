@@ -92,7 +92,6 @@ PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive:Draw");
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
-PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
 

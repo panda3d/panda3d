@@ -27,11 +27,11 @@
 #define OPENSSL_NO_KRB5
 #endif
 
-#include "openssl/ssl.h"
-#include "openssl/rand.h"
-#include "openssl/err.h"
-#include "openssl/x509.h"
-#include "openssl/x509v3.h"
+#include <openssl/ssl.h>
+#include <openssl/rand.h>
+#include <openssl/err.h>
+#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 // Windows may define this macro inappropriately.
 #ifdef X509_NAME

@@ -22,7 +22,7 @@
 #include <ctype.h>
 
 #ifdef HAVE_OPENSSL
-#include "openssl/evp.h"
+#include <openssl/evp.h>
 #endif
 
 using std::istream;

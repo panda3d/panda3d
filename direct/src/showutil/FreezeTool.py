@@ -246,7 +246,7 @@ class CompilationEnvironment:
 frozenMainCode = """
 /* Python interpreter main program for frozen scripts */
 
-#include "Python.h"
+#include <Python.h>
 
 #if PY_MAJOR_VERSION >= 3
 #include <locale.h>
@@ -386,7 +386,7 @@ error:
 # The code from frozen_dllmain.c in the Python source repository.
 # Windows only.
 frozenDllMainCode = """
-#include "windows.h"
+#include <windows.h>
 
 static char *possibleModules[] = {
     "pywintypes",
@@ -555,9 +555,9 @@ static PyMethodDef nullMethods[] = {
 """
 
 programFile = """
-#include "Python.h"
+#include <Python.h>
 #ifdef _WIN32
-#include "malloc.h"
+#include <malloc.h>
 #endif
 
 %(moduleDefs)s

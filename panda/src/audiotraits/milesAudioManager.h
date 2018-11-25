@@ -19,7 +19,6 @@
 #ifdef HAVE_RAD_MSS //[
 
 #include "audioManager.h"
-#include "mss.h"
 #include "pset.h"
 #include "pmap.h"
 #include "pdeque.h"
@@ -29,6 +28,8 @@
 #include "lightReMutex.h"
 #include "conditionVar.h"
 #include "vector_uchar.h"
+
+#include <mss.h>
 
 class MilesAudioSound;
 

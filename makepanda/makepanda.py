@@ -684,7 +684,7 @@ if (COMPILER == "MSVC"):
         path = GetThirdpartyDir() + "assimp/lib/IrrXML.lib"
         if os.path.isfile(path):
             LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/IrrXML.lib")
-        IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include/assimp")
+        IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include")
     if (PkgSkip("SQUISH")==0):
         if GetOptimize() <= 2:
             LibName("SQUISH",   GetThirdpartyDir() + "squish/lib/squishd.lib")
@@ -829,7 +829,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
-        SmartPkgEnable("ASSIMP",    "",          ("assimp"), "assimp")
+        SmartPkgEnable("ASSIMP",    "assimp",    ("assimp"), "assimp/Importer.hpp")
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ("libavformat/avformat.h", "libavcodec/avcodec.h", "libavutil/avutil.h"))
         SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale/swscale.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
@@ -872,6 +872,13 @@ if (COMPILER=="GCC"):
                                ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
         else:
             PkgDisable("OPENCV")
+
+        if not PkgSkip("ASSIMP") and \
+            os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
+            # Also pick up IrrXML, which is needed when linking statically.
+            irrxml = GetThirdpartyDir() + "assimp/lib/libIrrXML.a"
+            if os.path.isfile(irrxml):
+                LibName("ASSIMP", irrxml)
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
@@ -2575,9 +2582,9 @@ WriteConfigSettings()
 
 WarnConflictingFiles()
 if SystemLibraryExists("dtoolbase"):
-    print("%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor()))
+    Warn("Found conflicting Panda3D libraries from other ppremake build!")
 if SystemLibraryExists("p3dtoolconfig"):
-    print("%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor()))
+    Warn("Found conflicting Panda3D libraries from other makepanda build!")
 
 ##########################################################################################
 #
@@ -3063,7 +3070,7 @@ if tp_dir is not None:
                 pattern = os.path.join('C:' + os.sep, 'Windows', 'WinSxS', 'Manifests', sxs_name + '_*.manifest')
                 manifests = glob.glob(pattern)
                 if not manifests:
-                    print("%sWARNING:%s Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (GetColor("red"), GetColor(), pattern))
+                    Warn("Could not locate manifest %s.  You may need to reinstall the Visual C++ Redistributable." % (pattern))
                     continue
 
                 CopyFile(GetOutputDir() + "/python/" + ident.get('name') + ".manifest", manifests[0])
@@ -3905,9 +3912,7 @@ if (not RUNTIME):
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3display.in', opts=['IMOD:panda3d.core', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
-  PyTargetAdd('p3display_graphicsStateGuardian_ext.obj', opts=OPTS, input='graphicsStateGuardian_ext.cxx')
-  PyTargetAdd('p3display_graphicsWindow_ext.obj', opts=OPTS, input='graphicsWindow_ext.cxx')
-  PyTargetAdd('p3display_pythonGraphicsWindowProc.obj', opts=OPTS, input='pythonGraphicsWindowProc.cxx')
+  PyTargetAdd('p3display_ext_composite.obj', opts=OPTS, input='p3display_ext_composite.cxx')
 
   if RTDIST and GetTarget() == 'darwin':
     OPTS=['DIR:panda/src/display']
@@ -4280,9 +4285,7 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='p3event_pythonTask.obj')
   PyTargetAdd('core.pyd', input='p3gobj_ext_composite.obj')
   PyTargetAdd('core.pyd', input='p3pgraph_ext_composite.obj')
-  PyTargetAdd('core.pyd', input='p3display_graphicsStateGuardian_ext.obj')
-  PyTargetAdd('core.pyd', input='p3display_graphicsWindow_ext.obj')
-  PyTargetAdd('core.pyd', input='p3display_pythonGraphicsWindowProc.obj')
+  PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
 
   PyTargetAdd('core.pyd', input='core_module.obj')
   if not GetLinkAllStatic() and GetTarget() != 'emscripten':
@@ -4865,7 +4868,6 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/ode', 'ODE']
   IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("odeConvexGeom.h")
-  IGATEFILES.remove("odeHeightFieldGeom.h")
   IGATEFILES.remove("odeHelperStructs.h")
   TargetAdd('libpandaode.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaode.in', opts=['IMOD:panda3d.ode', 'ILIB:libpandaode', 'SRCDIR:panda/src/ode'])
@@ -4958,7 +4960,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
   TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC'])
+  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC', 'PYTHON'])
 
   OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC']
   PyTargetAdd('physx_module.obj', input='libpandaphysx.in')
@@ -5074,6 +5076,9 @@ if (not RTDIST and not RUNTIME and PkgSkip("PVIEW")==0):
     TargetAdd('pview.exe', input='libpandaegg.dll')
   TargetAdd('pview.exe', input=COMMON_PANDA_LIBS)
   TargetAdd('pview.exe', opts=['ADVAPI', 'WINSOCK2', 'WINSHELL'])
+
+  if GetLinkAllStatic() and not PkgSkip("GL"):
+    TargetAdd('pview.exe', input='libpandagl.dll')
 
 #
 # DIRECTORY: panda/src/android/
@@ -6763,10 +6768,13 @@ def MakeInstallerNSIS(file, title, installdir):
     elif (os.path.isdir(file)):
         shutil.rmtree(file)
 
+    pyver = SDK["PYTHONVERSION"][6:9]
     if GetTargetArch() == 'x64':
         regview = '64'
     else:
         regview = '32'
+        if int(pyver[0]) == 3 and int(pyver[2]) >= 5:
+            pyver += '-32'
 
     if (RUNTIME):
         # Invoke the make_installer script.
@@ -6799,7 +6807,7 @@ def MakeInstallerNSIS(file, title, installdir):
         'OUTFILE'     : '..\\' + file,
         'BUILT'       : '..\\' + GetOutputDir(),
         'SOURCE'      : '..',
-        'PYVER'       : SDK["PYTHONVERSION"][6:9],
+        'PYVER'       : pyver,
         'REGVIEW'     : regview,
         'EXT_SUFFIX'  : GetExtensionSuffix(),
     }
@@ -6846,17 +6854,16 @@ Architecture: ARCH
 Essential: no
 Depends: DEPENDS
 Recommends: RECOMMENDS
-Suggests: panda3d-runtime
-Provides: panda3d
-Conflicts: panda3d
-Replaces: panda3d
+Provides: panda3d, pythonPV-panda3d
+Conflicts: panda3d, pythonPV-panda3d
+Replaces: panda3d, pythonPV-panda3d
 Maintainer: rdb <me@rdb.name>
 Installed-Size: INSTSIZE
 Description: Panda3D free 3D engine SDK
  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
  .
- This package contains the SDK for development with Panda3D, install panda3d-runtime for the runtime files.
+ This package contains the SDK for development with Panda3D.
 
 """
 
@@ -7011,7 +7018,7 @@ def MakeInstallerLinux():
         rpmbuild_present = True
 
     if dpkg_present and rpmbuild_present:
-        print("Warning: both dpkg and rpmbuild present.")
+        Warn("both dpkg and rpmbuild present.")
 
     if dpkg_present:
         # Invoke installpanda.py to install it into a temporary dir
