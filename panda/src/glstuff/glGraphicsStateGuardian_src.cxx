@@ -10692,6 +10692,20 @@ reissue_transforms() {
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
 #endif
 
+  // Some libraries (Kivy) leave their buffers bound.  How clumsy of them.
+  if (_supports_buffers) {
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    _current_vbuffer_index = 0;
+    _current_ibuffer_index = 0;
+  }
+#ifndef OPENGLES
+  if (_supports_glsl) {
+    _glDisableVertexAttribArray(0);
+    _glDisableVertexAttribArray(1);
+  }
+#endif
+
   // Since this is called by clear_state_and_transform(), we also should reset
   // the states that won't automatically be respecified when clearing the
   // state mask.
