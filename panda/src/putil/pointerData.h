@@ -24,24 +24,29 @@
  */
 class EXPCL_PANDA_PUTIL PointerData {
 PUBLISHED:
-  INLINE PointerData();
-  INLINE PointerData(const PointerData &copy);
-  INLINE void operator = (const PointerData &copy);
-
   INLINE double get_x() const;
   INLINE double get_y() const;
   INLINE bool get_in_window() const;
 
+public:
+  INLINE int get_id() const;
+  INLINE double get_pressure() const;
+
   void output(std::ostream &out) const;
 
+PUBLISHED:
   MAKE_PROPERTY(x, get_x);
   MAKE_PROPERTY(y, get_y);
+  MAKE_PROPERTY(id, get_id);
   MAKE_PROPERTY(in_window, get_in_window);
+  MAKE_PROPERTY(pressure, get_pressure);
 
 public:
-  bool _in_window;
-  double _xpos;
-  double _ypos;
+  bool _in_window = false;
+  double _xpos = 0.0;
+  double _ypos = 0.0;
+  double _pressure = 0.0;
+  int _id = 0;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerData &md);

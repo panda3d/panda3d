@@ -14,37 +14,6 @@
 /**
  *
  */
-INLINE PointerData::
-PointerData() {
-  _in_window = false;
-  _xpos = 0;
-  _ypos = 0;
-}
-
-/**
- *
- */
-INLINE PointerData::
-PointerData(const PointerData &copy) :
-  _in_window(copy._in_window),
-  _xpos(copy._xpos),
-  _ypos(copy._ypos)
-{
-}
-
-/**
- *
- */
-INLINE void PointerData::
-operator = (const PointerData &copy) {
-  _in_window = copy._in_window;
-  _xpos = copy._xpos;
-  _ypos = copy._ypos;
-}
-
-/**
- *
- */
 INLINE double PointerData::
 get_x() const {
   return _xpos;
@@ -59,11 +28,32 @@ get_y() const {
 }
 
 /**
- *
+ * If this returns false, the pointer is not currently present in the window
+ * and the values returned by get_x() and get_y() may not be meaningful.
  */
 INLINE bool PointerData::
 get_in_window() const {
   return _in_window;
+}
+
+/**
+ * Returns a unique identifier for this pointer.  This is for tracking
+ * individual fingers.  This value should not be assumed to have a specific
+ * meaning other than that there will not be two different pointers active
+ * simultaneously with the same identifier.
+ */
+INLINE int PointerData::
+get_id() const {
+  return _id;
+}
+
+/**
+ * Returns the pressure of the pointer.  For mice, this will be 1.0 if any
+ * button is pressed, 0.0 otherwise.
+ */
+INLINE double PointerData::
+get_pressure() const {
+  return _pressure;
 }
 
 
