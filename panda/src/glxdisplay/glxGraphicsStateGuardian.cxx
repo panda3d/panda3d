@@ -64,7 +64,9 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
-  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+  // Actually, the lock might have already destructed, so we can't reliably
+  // grab the X11 lock here.
+  //LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   destroy_temp_xwindow();
   if (_visuals != nullptr) {
     XFree(_visuals);
