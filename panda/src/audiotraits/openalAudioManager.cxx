@@ -553,6 +553,7 @@ uncache_sound(const Filename &file_name) {
       if (sd->_movie->get_filename() == path ||
           sd->_movie->get_filename() == file_name) {
         exqi = _expiring_streams.erase(exqi);
+        delete sd;
         continue;
       }
     }
