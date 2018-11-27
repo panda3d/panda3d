@@ -333,7 +333,10 @@ close() {
   if (_owns_stream) {
     // We prefer to delete the IStreamWrapper over the ostream, if possible.
     if (_read != nullptr) {
-      delete _read;
+      // Only delete it if no SubStream is still referencing it.
+      if (!_read->unref()) {
+        delete _read;
+      }
     } else if (_write != nullptr) {
       delete _write;
     }
