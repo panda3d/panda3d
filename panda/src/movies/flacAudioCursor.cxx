@@ -59,7 +59,8 @@ FlacAudioCursor::
 FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
-  _drflac(nullptr)
+  _drflac(nullptr),
+  _stream(stream)
 {
   nassertv(stream != nullptr);
   nassertv(stream->good());
@@ -90,6 +91,9 @@ FlacAudioCursor::
 ~FlacAudioCursor() {
   if (_drflac != nullptr) {
     drflac_close(_drflac);
+  }
+  if (_stream != nullptr) {
+    VirtualFileSystem::close_read_file(_stream);
   }
 }
 
