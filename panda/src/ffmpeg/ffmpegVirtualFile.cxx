@@ -189,7 +189,10 @@ register_protocol() {
   }
 
   // Here's a good place to call this global ffmpeg initialization function.
+  // However, ffmpeg (but not libav) deprecated this, hence this check.
+#if LIBAVFORMAT_VERSION_MICRO < 100 || LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(58, 9, 100)
   av_register_all();
+#endif
 
   // And this one.
   avformat_network_init();
