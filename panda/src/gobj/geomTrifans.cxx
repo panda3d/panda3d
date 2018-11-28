@@ -139,7 +139,7 @@ CPT(GeomVertexArrayData) GeomTrifans::
 rotate_impl() const {
   // Actually, we can't rotate fans without chaging the winding order.  It's
   // an error to define a flat shade model for a GeomTrifan.
-  nassertr(false, nullptr);
+  nassert_raise("GeomTrifans cannot have flat shading model");
   return nullptr;
 }
 

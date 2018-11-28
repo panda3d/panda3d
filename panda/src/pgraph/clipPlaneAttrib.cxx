@@ -72,7 +72,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -110,7 +110,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -152,7 +152,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -197,7 +197,7 @@ make(ClipPlaneAttrib::Operation op, PlaneNode *plane1, PlaneNode *plane2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 

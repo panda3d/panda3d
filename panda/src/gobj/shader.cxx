@@ -3705,7 +3705,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // which the texture didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 

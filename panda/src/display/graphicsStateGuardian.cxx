@@ -743,7 +743,7 @@ issue_timer_query(int pstats_index) {
  */
 void GraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
-  nassertv(false /* Compute shaders not supported by GSG */);
+  nassert_raise("Compute shaders not supported by GSG");
 }
 
 /**

@@ -14144,8 +14144,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
-    nassertr(false, false);
-    return false;
+  nassert_raise("OpenGL ES does not support extracting texture data");
+  return false;
 #else
 
   // Make sure the GL driver does not align textures, otherwise we get corrupt

@@ -221,7 +221,7 @@ add_vertex(int vertex) {
       ((uint32_t *)ptr)[num_rows] = vertex;
       break;
     default:
-      nassertv(false);
+      nassert_raise("unsupported index type");
       break;
     }
   }
@@ -1510,7 +1510,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // which the data array didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -2230,7 +2230,7 @@ get_vertex(int i) const {
       return ((uint32_t *)ptr)[i];
       break;
     default:
-      nassertr(false, -1);
+      nassert_raise("unsupported index type");
       return -1;
     }
 
@@ -2296,7 +2296,7 @@ get_referenced_vertices(BitArray &bits) const {
       }
       break;
     default:
-      nassertv(false);
+      nassert_raise("unsupported index type");
       break;
     }
   } else {

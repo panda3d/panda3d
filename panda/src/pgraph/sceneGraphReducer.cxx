@@ -333,7 +333,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
             << child_node->get_type() << "\n";
 
           if (no_unsupported_copy) {
-            nassertv(false);
+            nassert_raise("unsupported copy");
+            return;
           }
           resist_copy = true;
 

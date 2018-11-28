@@ -54,7 +54,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
   LightMutexHolder holder(gsg_list->_lock);
   if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), default_gsg) == gsg_list->_gsgs.end()) {
     // The specified GSG doesn't exist or it has already destructed.
-    nassertv(false);
+    nassert_raise("GSG not found or already destructed");
     return;
   }
 
