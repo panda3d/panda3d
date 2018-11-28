@@ -42,6 +42,7 @@ set(P3PUTIL_HEADERS
   indirectCompareTo.I indirectCompareTo.h
   ioPtaDatagramFloat.h ioPtaDatagramInt.h
   ioPtaDatagramShort.h keyboardButton.h
+  iterator_types.h
   linkedListNode.I linkedListNode.h
   load_prc_file.h
   loaderOptions.I loaderOptions.h
@@ -59,7 +60,9 @@ set(P3PUTIL_HEADERS
   typedWritableReferenceCount.h updateSeq.I updateSeq.h
   uniqueIdAllocator.h
   vector_typedWritable.h
+  vector_ulong.h
   vector_ushort.h vector_writable.h
+  weakKeyHashMap.h weakKeyHashMap.I
   writableConfigurable.h
   writableParam.I writableParam.h
 )
@@ -109,7 +112,9 @@ set(P3PUTIL_SOURCES
   typedWritableReferenceCount.cxx updateSeq.cxx
   uniqueIdAllocator.cxx
   vector_typedWritable.cxx
+  vector_ulong.cxx
   vector_ushort.cxx vector_writable.cxx
+  weakKeyHashMap.cxx
   writableConfigurable.cxx writableParam.cxx
 )
 

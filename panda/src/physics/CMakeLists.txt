@@ -3,6 +3,7 @@ set(P3PHYSICS_HEADERS
     angularIntegrator.h angularVectorForce.I
     angularVectorForce.h baseForce.I baseForce.h
     baseIntegrator.I baseIntegrator.h config_physics.h
+    forces.h
     forceNode.I forceNode.h
     linearControlForce.I linearControlForce.h
     linearCylinderVortexForce.I linearCylinderVortexForce.h

@@ -45,7 +45,8 @@ set(P3PIPELINE_HEADERS
   pmutex.h pmutex.I
   reMutex.I reMutex.h
   reMutexDirect.h reMutexDirect.I
-  reMutexHolder.I reMutexHolder.h
+  reMutexHolder.h reMutexHolder.I
+  reMutexSpinlockImpl.h reMutexSpinlockImpl.I
   psemaphore.h psemaphore.I
   thread.h thread.I threadImpl.h
   threadDummyImpl.h threadDummyImpl.I
@@ -97,6 +98,7 @@ set(P3PIPELINE_SOURCES
   reMutex.cxx
   reMutexDirect.cxx
   reMutexHolder.cxx
+  reMutexSpinlockImpl.cxx
   psemaphore.cxx
   thread.cxx
   threadDummyImpl.cxx

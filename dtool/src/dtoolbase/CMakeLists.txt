@@ -15,6 +15,7 @@ set(P3DTOOLBASE_HEADERS
     addHash.I addHash.h
     atomicAdjust.h
     atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I
+    atomicAdjustGccImpl.h atomicAdjustGccImpl.I
     atomicAdjustI386Impl.h atomicAdjustI386Impl.I
     atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I
     atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I
@@ -48,6 +49,7 @@ set(P3DTOOLBASE_HEADERS
     pdeque.h plist.h pmap.h pset.h
     pvector.h epvector.h
     lookup3.h
+    version.h
 )
 
 set(P3DTOOLBASE_SOURCES

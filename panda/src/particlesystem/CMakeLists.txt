@@ -5,8 +5,11 @@ set(P3PARTICLESYSTEM_HEADERS
     baseParticleRenderer.h arcEmitter.I arcEmitter.h
     boxEmitter.I boxEmitter.h
     config_particlesystem.h discEmitter.I discEmitter.h
+    emitters.h
     geomParticleRenderer.I geomParticleRenderer.h lineEmitter.I
     lineEmitter.h lineParticleRenderer.I lineParticleRenderer.h
+    particlefactories.h
+    particles.h
     particleSystem.I particleSystem.h particleSystemManager.I
     particleSystemManager.h pointEmitter.I pointEmitter.h
     pointParticle.h pointParticleFactory.h
@@ -36,12 +39,16 @@ set(P3PARTICLESYSTEM_SOURCES
     tangentRingEmitter.cxx zSpinParticle.cxx
     zSpinParticleFactory.cxx colorInterpolationManager.cxx)
 
+set(P3PARTICLESYSTEM_IGATE_SOURCES "${P3PARTICLESYSTEM_HEADERS};${P3PARTICLESYSTEM_SOURCES}")
+list(REMOVE_ITEM P3PARTICLESYSTEM_IGATE_SOURCES "emitters.h")
+list(REMOVE_ITEM P3PARTICLESYSTEM_IGATE_SOURCES "particlefactories.h")
+list(REMOVE_ITEM P3PARTICLESYSTEM_IGATE_SOURCES "particles.h")
 
 composite_sources(p3particlesystem P3PARTICLESYSTEM_SOURCES)
 add_component_library(p3particlesystem SYMBOL BUILDING_PANDA_PARTICLESYSTEM
   ${P3PARTICLESYSTEM_HEADERS} ${P3PARTICLESYSTEM_SOURCES})
 target_link_libraries(p3particlesystem p3physics panda)
-target_interrogate(p3particlesystem ALL)
+target_interrogate(p3particlesystem ${P3PARTICLESYSTEM_IGATE_SOURCES})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3particlesystem DESTINATION lib RUNTIME DESTINATION bin)

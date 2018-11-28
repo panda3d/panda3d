@@ -1,4 +1,5 @@
 set(P3MOVIES_HEADERS
+    dr_flac.h
     config_movies.h
     flacAudio.h flacAudio.I
     flacAudioCursor.h flacAudioCursor.I

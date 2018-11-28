@@ -4,8 +4,9 @@ set(P3TFORM_HEADERS
   driveInterface.I driveInterface.h
   mouseInterfaceNode.I mouseInterfaceNode.h
   mouseSubregion.I mouseSubregion.h
-  mouseWatcher.I mouseWatcher.h
-  mouseWatcherBase.h mouseWatcherGroup.h
+  mouseWatcher.h mouseWatcher.I
+  mouseWatcherBase.h mouseWatcherBase.I
+  mouseWatcherGroup.h
   mouseWatcherParameter.I mouseWatcherParameter.h
   mouseWatcherRegion.I mouseWatcherRegion.h
   trackball.h

@@ -20,6 +20,7 @@ set(P3DTOOLUTIL_HEADERS
   vector_double.h
   vector_float.h
   vector_int.h
+  vector_stdfloat.h
   vector_string.h
   vector_uchar.h
   vector_src.h

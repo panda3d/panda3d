@@ -28,6 +28,7 @@ set(P3COLLIDE_HEADERS
   collisionTraverser.I collisionTraverser.h
   collisionTube.I collisionTube.h
   collisionVisualizer.I collisionVisualizer.h
+  config_collide.h
 )
 set(P3COLLIDE_SOURCES
   collisionBox.cxx

@@ -30,7 +30,7 @@ set(P3INTERROGATEDB_IGATE
 )
 
 set(P3IGATERUNTIME_HEADERS
-  extension.h py_compat.h py_panda.h py_wrappers.h
+  extension.h py_compat.h py_panda.h py_panda.I py_wrappers.h
 )
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)

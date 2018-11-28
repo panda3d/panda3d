@@ -8,7 +8,7 @@ set(P3DOWNLOADER_HEADERS
   decompressor.h decompressor.I
   documentSpec.h documentSpec.I
   download_utils.h downloadDb.h downloadDb.I
-  extractor.h
+  extractor.h extractor.I
   httpAuthorization.I httpAuthorization.h
   httpBasicAuthorization.I httpBasicAuthorization.h
   httpChannel.I httpChannel.h

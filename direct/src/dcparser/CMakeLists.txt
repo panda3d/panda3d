@@ -20,7 +20,9 @@ set(P3DCPARSER_HEADERS
      dcSwitch.h
      dcTypedef.h
      dcPython.h
-     dcbase.h dcindent.h hashGenerator.h
+     dcbase.h dcindent.h
+     dcmsgtypes.h
+     hashGenerator.h
      primeNumberGenerator.h)
 
 set(P3DCPARSER_SOURCES

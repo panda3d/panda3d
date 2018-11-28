@@ -7,7 +7,7 @@ set(P3GLXDISPLAY_HEADERS
   glxGraphicsBuffer.h glxGraphicsBuffer.I
   glxGraphicsPipe.h glxGraphicsPipe.I
   glxGraphicsPixmap.h glxGraphicsPixmap.I
-  glxGraphicsWindow.h
+  glxGraphicsWindow.h glxGraphicsWindow.I
   glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I
   posixGraphicsStateGuardian.h posixGraphicsStateGuardian.I
   panda_glxext.h

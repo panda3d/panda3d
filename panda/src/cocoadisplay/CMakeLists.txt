@@ -4,10 +4,14 @@ endif()
 
 set(P3COCOADISPLAY_HEADERS
     config_cocoadisplay.h
+    cocoaGraphicsBuffer.h cocoaGraphicsBuffer.I
     cocoaGraphicsPipe.h cocoaGraphicsPipe.I
     cocoaGraphicsWindow.h cocoaGraphicsWindow.I
     cocoaGraphicsStateGuardian.h cocoaGraphicsStateGuardian.I
-    cocoaPandaApp.h cocoaPandaView.h cocoaPandaWindowDelegate.h
+    cocoaPandaApp.h
+    cocoaPandaView.h
+    cocoaPandaWindow.h
+    cocoaPandaWindowDelegate.h
     cocoaPandaAppDelegate.h)
 
 set(P3COCOADISPLAY_SOURCES

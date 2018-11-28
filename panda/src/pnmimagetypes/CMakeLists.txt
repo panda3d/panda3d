@@ -1,5 +1,6 @@
 set(P3PNMIMAGETYPES_HEADERS
-  config_pnmimagetypes.h pnmFileTypeBMP.h
+  config_pnmimagetypes.h
+  pnmFileTypeBMP.h
   pnmFileTypeEXR.h
   pnmFileTypeIMG.h
   pnmFileTypePNG.h
@@ -10,6 +11,7 @@ set(P3PNMIMAGETYPES_HEADERS
   pnmFileTypeTGA.h
   pnmFileTypeTIFF.h
   pnmFileTypeJPG.h
+  sgi.h
 )
 
 set(P3PNMIMAGETYPES_SOURCES

@@ -4,12 +4,14 @@ endif()
 
 set(P3OSXDISPLAY_HEADERS
     config_osxdisplay.h
+    osxGraphicsBuffer.h
     osxGraphicsPipe.h
     osxGraphicsWindow.h osxGraphicsWindow.I
     osxGraphicsStateGuardian.h)
 
 set(P3OSXDISPLAY_SOURCES
-    config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsStateGuardian.cxx
+    config_osxdisplay.cxx
+    osxGraphicsPipe.cxx osxGraphicsStateGuardian.cxx
     osxGraphicsBuffer.cxx)
 
 composite_sources(p3osxdisplay P3OSXDISPLAY_SOURCES)

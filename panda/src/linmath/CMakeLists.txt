@@ -5,11 +5,14 @@ set(P3LINMATH_HEADERS
   configVariableColor.h configVariableColor.I
   coordinateSystem.h dbl2fltnames.h dblnames.h
   deg_2_rad.h deg_2_rad.I
-  flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h
-  lcast_to_src.I lmatrix.h lmatrix_ext.h lmatrix3_src.I
-  lmatrix3_src.h lmatrix4_src.I
-  lmatrix4_src.h lorientation.h
-  lorientation_src.I lorientation_src.h
+  flt2dblnames.h fltnames.h
+  intnames.h
+  lcast_to.h lcast_to_src.h lcast_to_src.I
+  lmatrix.h lmatrix_ext.h
+  lmat_ops.h lmat_ops_src.h lmat_ops_src.I
+  lmatrix3_src.h lmatrix3_src.I
+  lmatrix4_src.h lmatrix4_src.I
+  lorientation.h lorientation_src.h lorientation_src.I
   lpoint2.h lpoint2_src.I lpoint2_src.h
   lpoint3.h lpoint3_src.I lpoint3_src.h
   lpoint4.h lpoint4_src.I lpoint4_src.h
