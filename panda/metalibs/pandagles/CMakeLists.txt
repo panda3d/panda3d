@@ -14,6 +14,6 @@ add_metalib(pandagles ${MODULE_TYPE}
   INCLUDE "${GLES1_PIPE_INCLUDE}"
   INIT init_libpandagles pandagles.h
   EXPORT int get_pipe_type_pandagles "${GLES1_PIPE_TYPE}::get_class_type().get_index()"
-  COMPONENTS p3egldisplay_gles1 p3glesgsg)
+  COMPONENTS p3egldisplay_gles1 p3glesgsg p3glstuff p3x11display)
 
 install(TARGETS pandagles DESTINATION ${MODULE_DESTINATION})
