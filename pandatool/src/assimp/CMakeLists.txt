@@ -23,7 +23,7 @@ set(P3ASSIMP_SOURCES
 composite_sources(p3assimp P3ASSIMP_SOURCES)
 add_library(p3assimp ${MODULE_TYPE} ${P3ASSIMP_HEADERS} ${P3ASSIMP_SOURCES})
 set_target_properties(p3assimp PROPERTIES DEFINE_SYMBOL BUILDING_ASSIMP)
-target_link_libraries(p3assimp p3pandatoolbase
-  PKG::ASSIMP)
+target_link_libraries(p3assimp PRIVATE p3pandatoolbase)
+target_link_libraries(p3assimp PUBLIC PKG::ASSIMP)
 
 install(TARGETS p3assimp DESTINATION ${MODULE_DESTINATION})
