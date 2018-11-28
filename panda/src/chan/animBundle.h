@@ -38,6 +38,9 @@ PUBLISHED:
   INLINE double get_base_frame_rate() const;
   INLINE int get_num_frames() const;
 
+  MAKE_PROPERTY(base_frame_rate, get_base_frame_rate);
+  MAKE_PROPERTY(num_frames, get_num_frames);
+
   virtual void output(std::ostream &out) const;
 
 protected:

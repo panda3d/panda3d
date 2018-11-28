@@ -44,6 +44,8 @@ PUBLISHED:
   INLINE bool has_table() const;
   INLINE void clear_table();
 
+  MAKE_PROPERTY2(table, has_table, get_table, set_table, clear_table);
+
 public:
   virtual void write(std::ostream &out, int indent_level) const;
 

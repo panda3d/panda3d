@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE const TransformState *get_value_transform() const;
   INLINE PandaNode *get_value_node() const;
 
+  MAKE_PROPERTY(value_node, get_value_node, set_value_node);
+
 protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
 
