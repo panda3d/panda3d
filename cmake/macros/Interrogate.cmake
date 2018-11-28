@@ -252,8 +252,9 @@ function(add_python_module module)
   set(targets)
   set(link_targets)
   set(import_flags)
-  set(infiles)
-  set(sources)
+  set(infiles_rel)
+  set(infiles_abs)
+  set(sources_abs)
   set(extensions)
 
   set(link_keyword OFF)
@@ -279,21 +280,22 @@ function(add_python_module module)
   endif()
 
   foreach(target ${targets})
-    get_target_property(workdir "${target}" TARGET_BINDIR)
-    if(NOT workdir)
+    get_target_property(workdir_abs "${target}" TARGET_BINDIR)
+    if(NOT workdir_abs)
       # No TARGET_BINDIR was set, so we'll just use our current directory:
-      set(workdir "${CMAKE_CURRENT_BINARY_DIR}")
+      set(workdir_abs "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
     # Keep command lines short
-    file(RELATIVE_PATH workdir "${CMAKE_CURRENT_BINARY_DIR}" "${workdir}")
+    file(RELATIVE_PATH workdir_rel "${CMAKE_CURRENT_BINARY_DIR}" "${workdir_abs}")
 
     interrogate_sources(${target}
-      "${workdir}/${target}_igate.cxx" "${workdir}/${target}.in"
+      "${workdir_abs}/${target}_igate.cxx" "${workdir_abs}/${target}.in"
       "-python-native;-module;panda3d.${module}")
 
     get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
-    list(APPEND infiles "${workdir}/${target}.in")
-    list(APPEND sources "${workdir}/${target}_igate.cxx")
+    list(APPEND infiles_rel "${workdir_rel}/${target}.in")
+    list(APPEND infiles_abs "${workdir_abs}/${target}.in")
+    list(APPEND sources_abs "${workdir_abs}/${target}_igate.cxx")
     list(APPEND extensions ${target_extensions})
   endforeach(target)
 
@@ -304,19 +306,19 @@ function(add_python_module module)
       -module ${module} -library ${module}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
-      ${IMOD_FLAGS} ${infiles}
-    DEPENDS host_interrogate_module ${infiles}
+      ${IMOD_FLAGS} ${infiles_rel}
+    DEPENDS host_interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}"
   )
 
-  add_python_target(panda3d.${module} "${module}_module.cxx" ${sources} ${extensions})
+  add_python_target(panda3d.${module} "${module}_module.cxx" ${sources_abs} ${extensions})
   target_link_libraries(panda3d.${module} ${link_targets})
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
     # CMake <3.11 doesn't allow generator expressions on source files, so we
     # need to copy them to our target, which does allow them.
 
-    foreach(source ${sources})
+    foreach(source ${sources_abs})
       get_source_file_property(compile_definitions "${source}" COMPILE_DEFINITIONS)
       if(compile_definitions)
         set_property(TARGET panda3d.${module} APPEND PROPERTY
