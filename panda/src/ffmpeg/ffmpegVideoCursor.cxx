@@ -595,7 +595,14 @@ close_stream() {
   // Hold the global lock while we free avcodec objects.
   ReMutexHolder av_holder(_av_lock);
 
-  if ((_video_ctx)&&(_video_ctx->codec)) {
+  if (_video_ctx && _video_ctx->codec) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+    // We need to drain the codec to prevent a memory leak.
+    avcodec_send_packet(_video_ctx, nullptr);
+    while (avcodec_receive_frame(_video_ctx, _frame) == 0) {}
+    avcodec_flush_buffers(_video_ctx);
+#endif
+
     avcodec_close(_video_ctx);
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);
