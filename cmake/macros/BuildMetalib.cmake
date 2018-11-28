@@ -58,8 +58,8 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
           set(is_object "$<STREQUAL:$<TARGET_PROPERTY:${library},TYPE>,OBJECT_LIBRARY>")
           set(is_component "$<BOOL:$<${is_object}:${is_component}>>")
 
-          set(name_of_component "$<${is_component}:${library}>")
-          set(name_of_non_component "$<$<NOT:${is_component}>:${library}>")
+          set(name_of_component "$<${is_component}:$<TARGET_NAME:${library}>>")
+          set(name_of_non_component "$<$<NOT:${is_component}>:$<TARGET_NAME:${library}>>")
         endif()
 
         # Libraries are only linked transitively if they aren't components.
