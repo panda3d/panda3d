@@ -93,8 +93,8 @@ BulletCapsuleShape *BulletCapsuleShape::
 make_from_solid(const CollisionTube *solid) {
   
   PN_stdfloat radius = solid->get_radius();
-  // CollisionTube height includes the hemispheres, Bullet only wants the cylinder height.
-  PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length() - (radius * 2);
+  // Get tube's cylinder height: length from point A to point B
+  PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length();
 
   // CollisionTubes are always Z-Up.
   return new BulletCapsuleShape(radius, height, Z_up);
