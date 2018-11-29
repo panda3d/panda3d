@@ -40,6 +40,11 @@ ConfigVariableBool x_error_abort
           "of an error from the X window system.  This can make it easier "
           "to discover where these errors are generated."));
 
+ConfigVariableBool x_init_threads
+("x-init-threads", false,
+ PRC_DESC("Set this true to ask Panda3D to call XInitThreads() upon loading "
+          "the display module, which may help with some threading issues."));
+
 ConfigVariableInt x_wheel_up_button
 ("x-wheel-up-button", 4,
  PRC_DESC("This is the mouse button index of the wheel_up event: which "

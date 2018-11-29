@@ -46,7 +46,8 @@ DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("invalid header size");
+    return;
   }
 
   nassertv((int)_header.get_length() == header_size);

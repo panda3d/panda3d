@@ -487,7 +487,8 @@ fetch_buffer() {
       block[i + 2] = ex;
     }
 #else
-    nassertr(false /* Not compiled with JPEG support*/, nullptr);
+    nassert_raise("JPEG support not compiled-in");
+    return nullptr;
 #endif
     break;
   }

@@ -41,6 +41,7 @@ public:
 
 protected:
   drflac *_drflac;
+  std::istream *_stream;
 
 public:
   static TypeHandle get_class_type() {

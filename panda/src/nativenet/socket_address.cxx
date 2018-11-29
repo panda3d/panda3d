@@ -98,7 +98,7 @@ get_ip() const {
     getnameinfo(&_addr, sizeof(sockaddr_in6), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST);
 
   } else {
-    nassertr(false, std::string());
+    nassert_raise("unsupported address family");
   }
 
   return std::string(buf);
@@ -124,7 +124,7 @@ get_ip_port() const {
     sprintf(buf + strlen(buf), "]:%hu", get_port());
 
   } else {
-    nassertr(false, std::string());
+    nassert_raise("unsupported address family");
   }
 
   return std::string(buf);

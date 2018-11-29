@@ -59,6 +59,8 @@ PUBLISHED:
   INLINE bool has_table(char table_id) const;
   INLINE void clear_table(char table_id);
 
+  MAKE_MAP_PROPERTY(tables, has_table, get_table, set_table, clear_table);
+
 public:
   virtual void write(std::ostream &out, int indent_level) const;
 

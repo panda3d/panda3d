@@ -298,7 +298,7 @@ wake_task(AsyncTask *task) {
     return;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected task state");
     return;
   }
 }

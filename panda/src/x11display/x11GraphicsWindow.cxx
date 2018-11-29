@@ -219,6 +219,23 @@ move_pointer(int device, int x, int y) {
 }
 
 /**
+ * Clears the entire framebuffer before rendering, according to the settings
+ * of get_color_clear_active() and get_depth_clear_active() (inherited from
+ * DrawableRegion).
+ *
+ * This function is called only within the draw thread.
+ */
+void x11GraphicsWindow::
+clear(Thread *current_thread) {
+  if (is_any_clear_active()) {
+    // Evidently the NVIDIA driver may call glXCreateNewContext inside
+    // prepare_display_region, so we need to hold the X11 lock.
+    LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+    GraphicsOutput::clear(current_thread);
+  }
+}
+
+/**
  * This function will be called within the draw thread before beginning
  * rendering for a given frame.  It should do whatever setup is required, and
  * return true if the frame should be rendered, or false if it should be

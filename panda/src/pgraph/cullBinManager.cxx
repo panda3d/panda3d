@@ -199,7 +199,7 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg,
   }
 
   // Hmm, unknown (or unregistered) bin type.
-  nassertr(false, nullptr);
+  nassert_raise("unknown bin type");
   return nullptr;
 }
 

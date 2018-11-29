@@ -64,6 +64,9 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 glxGraphicsStateGuardian::
 ~glxGraphicsStateGuardian() {
+  // Actually, the lock might have already destructed, so we can't reliably
+  // grab the X11 lock here.
+  //LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   destroy_temp_xwindow();
   if (_visuals != nullptr) {
     XFree(_visuals);
@@ -224,6 +227,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
                     X11_Display *display,
                     int screen, bool need_pbuffer, bool need_pixmap) {
 
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   _display = display;
   _screen = screen;
   _context = nullptr;
@@ -457,6 +461,7 @@ gl_get_error() const {
  */
 void glxGraphicsStateGuardian::
 query_gl_version() {
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   PosixGraphicsStateGuardian::query_gl_version();
 
   show_glx_client_string("GLX_VENDOR", GLX_VENDOR);
@@ -483,6 +488,7 @@ query_gl_version() {
  */
 void glxGraphicsStateGuardian::
 get_extra_extensions() {
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   save_extensions(glXQueryExtensionsString(_display, _screen));
 }
 
@@ -497,6 +503,8 @@ do_get_extension_func(const char *name) {
   nassertr(name != nullptr, nullptr);
 
   if (glx_get_proc_address) {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+
     // First, check if we have glXGetProcAddress available.  This will be
     // superior if we can get it.
 

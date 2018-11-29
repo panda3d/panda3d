@@ -298,29 +298,6 @@ PixelSpec(const xel &rgb, xelval alpha) :
 /**
  *
  */
-INLINE PNMImageHeader::PixelSpec::
-PixelSpec(const PixelSpec &copy) :
-  _red(copy._red),
-  _green(copy._green),
-  _blue(copy._blue),
-  _alpha(copy._alpha)
-{
-}
-
-/**
- *
- */
-INLINE void PNMImageHeader::PixelSpec::
-operator = (const PixelSpec &copy) {
-  _red = copy._red;
-  _green = copy._green;
-  _blue = copy._blue;
-  _alpha = copy._alpha;
-}
-
-/**
- *
- */
 INLINE bool PNMImageHeader::PixelSpec::
 operator < (const PixelSpec &other) const {
   return compare_to(other) < 0;

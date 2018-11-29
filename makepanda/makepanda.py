@@ -891,7 +891,7 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(fcollada_libs, "FCOLLADA"), ("FCollada", "FCollada/FCollada.h"))
-        SmartPkgEnable("ASSIMP",    "",          ("assimp"), "assimp/Importer.hpp")
+        SmartPkgEnable("ASSIMP",    "assimp",    ("assimp"), "assimp/Importer.hpp")
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ("libavformat/avformat.h", "libavcodec/avcodec.h", "libavutil/avutil.h"))
         SmartPkgEnable("SWSCALE",   "libswscale", "libswscale", ("libswscale/swscale.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
@@ -934,6 +934,13 @@ if (COMPILER=="GCC"):
                                ("opencv", "opencv/cv.h", "opencv/cxcore.h", "opencv/highgui.h"))
         else:
             PkgDisable("OPENCV")
+
+        if not PkgSkip("ASSIMP") and \
+            os.path.isfile(GetThirdpartyDir() + "assimp/lib/libassimp.a"):
+            # Also pick up IrrXML, which is needed when linking statically.
+            irrxml = GetThirdpartyDir() + "assimp/lib/libIrrXML.a"
+            if os.path.isfile(irrxml):
+                LibName("ASSIMP", irrxml)
 
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):

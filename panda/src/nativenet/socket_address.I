@@ -43,7 +43,7 @@ Socket_Address(const struct sockaddr &inaddr) {
     _addr6 = (const sockaddr_in6 &)inaddr;
 
   } else {
-    nassertv(false);
+    nassert_raise("unsupported address family");
     clear();
   }
 }
@@ -106,7 +106,7 @@ operator == (const Socket_Address &in) const {
   }
 
   // Unsupported address family.
-  nassertr(false, false);
+  nassert_raise("unsupported address family");
   return false;
 }
 
@@ -224,7 +224,7 @@ operator < (const Socket_Address &in) const {
   }
 
   // Unsupported address family.
-  nassertr(false, false);
+  nassert_raise("unsupported address family");
   return false;
 }
 

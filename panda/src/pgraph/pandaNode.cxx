@@ -2383,7 +2383,8 @@ r_copy_subgraph(PandaNode::InstanceMap &inst_map, Thread *current_thread) const 
       << "Don't know how to copy nodes of type " << get_type() << "\n";
 
     if (no_unsupported_copy) {
-      nassertr(false, nullptr);
+      nassert_raise("unsupported copy");
+      return nullptr;
     }
   }
 

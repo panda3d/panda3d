@@ -185,8 +185,8 @@ class CommonFilters:
             if ("BlurSharpen" in configuration):
                 blur0=self.textures["blur0"]
                 blur1=self.textures["blur1"]
-                self.blur.append(self.manager.renderQuadInto(colortex=blur0,div=2))
-                self.blur.append(self.manager.renderQuadInto(colortex=blur1))
+                self.blur.append(self.manager.renderQuadInto("filter-blur0", colortex=blur0,div=2))
+                self.blur.append(self.manager.renderQuadInto("filter-blur1", colortex=blur1))
                 self.blur[0].setShaderInput("src", self.textures["color"])
                 self.blur[0].setShader(Shader.make(BLUR_X, Shader.SL_Cg))
                 self.blur[1].setShaderInput("src", blur0)
@@ -196,9 +196,9 @@ class CommonFilters:
                 ssao0=self.textures["ssao0"]
                 ssao1=self.textures["ssao1"]
                 ssao2=self.textures["ssao2"]
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao0))
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao1,div=2))
-                self.ssao.append(self.manager.renderQuadInto(colortex=ssao2))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao0", colortex=ssao0))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao1", colortex=ssao1,div=2))
+                self.ssao.append(self.manager.renderQuadInto("filter-ssao2", colortex=ssao2))
                 self.ssao[0].setShaderInput("depth", self.textures["depth"])
                 self.ssao[0].setShaderInput("normal", self.textures["aux"])
                 self.ssao[0].setShaderInput("random", loader.loadTexture("maps/random.rgb"))
@@ -216,17 +216,20 @@ class CommonFilters:
                 bloom3=self.textures["bloom3"]
                 if (bloomconf.size == "large"):
                     scale=8
+                    downsamplerName="filter-down4"
                     downsampler=DOWN_4
                 elif (bloomconf.size == "medium"):
                     scale=4
+                    downsamplerName="filter-copy"
                     downsampler=COPY
                 else:
                     scale=2
+                    downsamplerName="filter-copy"
                     downsampler=COPY
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom0, div=2,     align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom1, div=scale, align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom2, div=scale, align=scale))
-                self.bloom.append(self.manager.renderQuadInto(colortex=bloom3, div=scale, align=scale))
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomi", colortex=bloom0, div=2,     align=scale))
+                self.bloom.append(self.manager.renderQuadInto(downsamplerName, colortex=bloom1, div=scale, align=scale))
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomx", colortex=bloom2, div=scale, align=scale))
+                self.bloom.append(self.manager.renderQuadInto("filter-bloomy", colortex=bloom3, div=scale, align=scale))
                 self.bloom[0].setShaderInput("src", self.textures["color"])
                 self.bloom[0].setShader(Shader.make(BLOOM_I, Shader.SL_Cg))
                 self.bloom[1].setShaderInput("src", bloom0)

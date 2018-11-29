@@ -202,8 +202,6 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
  */
 void TinyGraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
-  PStatTimer timer(_clear_pcollector);
-
   if ((!clearable->get_clear_color_active())&&
       (!clearable->get_clear_depth_active())&&
       (!clearable->get_clear_stencil_active())) {
