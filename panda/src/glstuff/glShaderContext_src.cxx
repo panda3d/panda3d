@@ -3219,6 +3219,11 @@ glsl_compile_and_link() {
     _glgsg->_glBindAttribLocation(_glsl_program, 8, "texcoord");
   }
 
+  // Also bind the p3d_FragData array to the first index always.
+  if (_glgsg->_glBindFragDataLocation != nullptr) {
+    _glgsg->_glBindFragDataLocation(_glsl_program, 0, "p3d_FragData");
+  }
+
   // If we requested to retrieve the shader, we should indicate that before
   // linking.
   bool retrieve_binary = false;

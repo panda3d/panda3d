@@ -12,6 +12,30 @@
  */
 
 /**
+ * If debug markers are enabled, pushes the beginning of a group marker.
+ */
+INLINE void CLP(GraphicsStateGuardian)::
+push_group_marker(const std::string &marker) {
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (_glPushGroupMarker != nullptr) {
+    _glPushGroupMarker(marker.size(), marker.data());
+  }
+#endif
+}
+
+/**
+ * If debug markers are enabled, closes a group debug marker.
+ */
+INLINE void CLP(GraphicsStateGuardian)::
+pop_group_marker() {
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (_glPopGroupMarker != nullptr) {
+    _glPopGroupMarker();
+  }
+#endif
+}
+
+/**
  * Checks for any outstanding error codes and outputs them, if found.  If
  * NDEBUG is defined, this function does nothing.  The return value is true if
  * everything is ok, or false if we should shut down.

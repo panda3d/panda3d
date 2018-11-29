@@ -718,7 +718,8 @@ get_state(const NodePath &other, Thread *current_thread) const {
     } else {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
-      nassertr(false, RenderState::make_empty());
+      nassert_raise("unrelated nodes");
+      return RenderState::make_empty();
     }
   }
 
@@ -792,7 +793,8 @@ get_transform(const NodePath &other, Thread *current_thread) const {
     } else {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
-      nassertr(false, TransformState::make_identity());
+      nassert_raise("unrelated nodes");
+      return TransformState::make_identity();
     }
   }
 
@@ -877,7 +879,8 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
     } else {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
-      nassertr(false, TransformState::make_identity());
+      nassert_raise("unrelated nodes");
+      return TransformState::make_identity();
     }
   }
 

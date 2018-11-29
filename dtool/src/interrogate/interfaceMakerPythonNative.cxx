@@ -6975,7 +6975,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
     out << "  if (wrap != nullptr) {\n"
            "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Getitem;\n";
     if (!property->_setter_remaps.empty()) {
-      out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
+      if (property->_has_this) {
+        out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
+      } else {
+        out << "    {\n";
+      }
       out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Mapping_Setitem;\n";
       out << "    }\n";
     }
@@ -7006,7 +7010,11 @@ write_getset(ostream &out, Object *obj, Property *property) {
         "    wrap->_len_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Len;\n"
         "    wrap->_getitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Getitem;\n";
       if (!property->_setter_remaps.empty()) {
-        out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
+        if (property->_has_this) {
+          out << "    if (!DtoolInstance_IS_CONST(self)) {\n";
+        } else {
+          out << "    {\n";
+        }
         out << "      wrap->_setitem_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_Setitem;\n";
         if (property->_inserter != nullptr) {
           out << "      wrap->_insert_func = &Dtool_" << ClassName << "_" << ielem.get_name() << "_Sequence_insert;\n";

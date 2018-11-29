@@ -23,6 +23,7 @@
 class EXPCL_PANDA_EXPRESS SubStreamBuf : public std::streambuf {
 public:
   SubStreamBuf();
+  SubStreamBuf(const SubStreamBuf &copy) = delete;
   virtual ~SubStreamBuf();
 
   void open(IStreamWrapper *source, OStreamWrapper *dest, std::streampos start, std::streampos end, bool append);

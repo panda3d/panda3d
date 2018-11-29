@@ -89,12 +89,41 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   glxgsg->reset_if_new();
 
   if (mode == FM_render) {
+    glxgsg->push_group_marker(std::string("glxGraphicsWindow ") + get_name());
     // begin_render_texture();
     clear_cube_map_selection();
   }
 
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
+}
+
+
+/**
+ * This function will be called within the draw thread after rendering is
+ * completed for a given frame.  It should do whatever finalization is
+ * required.
+ */
+void glxGraphicsWindow::
+end_frame(FrameMode mode, Thread *current_thread) {
+  end_frame_spam(mode);
+  nassertv(_gsg != nullptr);
+
+  if (mode == FM_render) {
+    // end_render_texture();
+    copy_to_textures();
+  }
+
+  _gsg->end_frame(current_thread);
+
+  if (mode == FM_render) {
+    trigger_flip();
+    clear_cube_map_selection();
+
+    glxGraphicsStateGuardian *glxgsg;
+    DCAST_INTO_V(glxgsg, _gsg);
+    glxgsg->pop_group_marker();
+  }
 }
 
 /**
@@ -125,6 +154,8 @@ end_flip() {
  */
 void glxGraphicsWindow::
 close_window() {
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+
   if (_gsg != nullptr) {
     glXMakeCurrent(_display, None, nullptr);
     _gsg.clear();
@@ -174,6 +205,8 @@ open_window() {
       << "No X visual: cannot open window.\n";
     return false;
   }
+
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);

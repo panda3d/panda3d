@@ -85,7 +85,7 @@ void AmbientLight::
 bind(GraphicsStateGuardianBase *, const NodePath &, int) {
   // AmbientLights aren't bound to light id's; this function should never be
   // called.
-  nassertv(false);
+  nassert_raise("cannot bind AmbientLight");
 }
 
 /**

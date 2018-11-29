@@ -32,7 +32,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                  UpdateSeq modified) {
 #if defined(OPENGLES) || !defined(SUPPORT_FIXED_FUNCTION)
   // Display lists not supported by OpenGL ES.
-  nassertr(false, false);
+  nassert_raise("OpenGL ES does not support display lists");
   return false;
 
 #else

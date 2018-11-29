@@ -1240,7 +1240,7 @@ shadow_inherited_field(const string &name) {
   }
 
   // If we get here, the named field wasn't in the list.  Huh.
-  nassertv(false);
+  nassert_raise("named field not in list");
 }
 
 /**

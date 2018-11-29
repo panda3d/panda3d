@@ -113,6 +113,9 @@ PUBLISHED:
   // make_histogram().  Note that pixels are stored by integer value, not by
   // floating-point scaled value.
   class EXPCL_PANDA_PNMIMAGE PixelSpec {
+  public:
+    INLINE PixelSpec() = default;
+
   PUBLISHED:
     INLINE PixelSpec(xelval gray_value);
     INLINE PixelSpec(xelval gray_value, xelval alpha);
@@ -120,8 +123,6 @@ PUBLISHED:
     INLINE PixelSpec(xelval red, xelval green, xelval blue, xelval alpha);
     INLINE PixelSpec(const xel &rgb);
     INLINE PixelSpec(const xel &rgb, xelval alpha);
-    INLINE PixelSpec(const PixelSpec &copy);
-    INLINE void operator = (const PixelSpec &copy);
 
     INLINE bool operator < (const PixelSpec &other) const;
     INLINE bool operator == (const PixelSpec &other) const;

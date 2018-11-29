@@ -478,7 +478,8 @@ check_send_error(bool okflag) {
   if (!okflag) {
     static ConfigVariableBool abort_send_error("abort-send-error", false);
     if (abort_send_error) {
-      nassertr(false, false);
+      nassert_raise("send error");
+      return false;
     }
 
     // Assume any error means the connection has been reset; tell our manager

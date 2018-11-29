@@ -110,7 +110,7 @@ out(NotifySeverity severity, bool prefix) const {
       nout << *this << "(" << severity << "): ";
     }
     if (assert_abort) {
-      nassertr(false, nout);
+      nassert_raise("unprotected debug statement");
     }
 
     return nout;

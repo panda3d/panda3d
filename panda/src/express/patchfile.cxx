@@ -32,7 +32,7 @@
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-istream *Patchfile::_tar_istream = nullptr;
+std::istream *Patchfile::_tar_istream = nullptr;
 #endif  // HAVE_TAR
 
 using std::endl;

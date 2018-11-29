@@ -59,6 +59,24 @@ release() {
 }
 
 /**
+ * Increments the reference count.  Only has impact if the class that manages
+ * this StreamWrapper's lifetime (eg. Multifile) respects it.
+ */
+INLINE void StreamWrapperBase::
+ref() const {
+  AtomicAdjust::inc(_ref_count);
+}
+
+/**
+ * Decrements the reference count.  Only has impact if the class that manages
+ * this StreamWrapper's lifetime (eg. Multifile) respects it.
+ */
+INLINE bool StreamWrapperBase::
+unref() const {
+  return AtomicAdjust::dec(_ref_count);
+}
+
+/**
  *
  */
 INLINE IStreamWrapper::

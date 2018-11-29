@@ -1121,7 +1121,8 @@ do_set_color(GeomVertexData *vdata, const LColor &color) {
   const GeomVertexColumn *column;
   int array_index;
   if (!format->get_array_info(InternalName::get_color(), array_index, column)) {
-    nassertv(false);
+    nassert_raise("no color column");
+    return;
   }
 
   size_t stride = format->get_array(array_index)->get_stride();
