@@ -12,24 +12,6 @@
  */
 
 /**
- *
- */
-INLINE PointerEvent::
-PointerEvent() :
-  _in_window(false),
-  _xpos(0),
-  _ypos(0),
-  _dx(0),
-  _dy(0),
-  _length(0.0),
-  _direction(0.0),
-  _rotation(0.0),
-  _sequence(0),
-  _time(0.0)
-{
-}
-
-/**
  * The equality operator does not consider time significant.
  */
 INLINE bool PointerEvent::

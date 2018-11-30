@@ -77,6 +77,42 @@ write(std::ostream &out, int indent_level) const {
 }
 
 /**
+ * Adds a new event from the given PointerData object.
+ */
+void PointerEventList::
+add_event(const PointerData &data, int seq, double time) {
+  PointerEvent pe;
+  pe._in_window = data._in_window;
+  pe._type = data._type;
+  pe._id = data._id;
+  pe._xpos = data._xpos;
+  pe._ypos = data._ypos;
+  pe._pressure = data._pressure;
+  pe._sequence = seq;
+  pe._time = time;
+  if (_events.size() > 0) {
+    pe._dx = data._xpos - _events.back()._xpos;
+    pe._dy = data._ypos - _events.back()._ypos;
+    double ddx = pe._dx;
+    double ddy = pe._dy;
+    pe._length = csqrt(ddx*ddx + ddy*ddy);
+    if (pe._length > 0.0) {
+      pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
+    } else {
+      pe._direction = _events.back()._direction;
+    }
+    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+  } else {
+    pe._dx = 0;
+    pe._dy = 0;
+    pe._length = 0.0;
+    pe._direction = 0.0;
+    pe._rotation = 0.0;
+  }
+  _events.push_back(pe);
+}
+
+/**
  * Adds a new event to the end of the list.  Automatically calculates the dx,
  * dy, length, direction, and rotation for all but the first event.
  */

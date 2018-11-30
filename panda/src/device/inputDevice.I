@@ -19,6 +19,7 @@
 INLINE InputDevice::
 InputDevice() {
   _button_events = new ButtonEventList;
+  _pointer_events = new PointerEventList;
 }
 
 /**
@@ -140,16 +141,6 @@ has_vibration() const {
 INLINE bool InputDevice::
 has_battery() const {
   return has_feature(Feature::battery);
-}
-
-/**
- * Returns the PointerData associated with the input device's pointer.  This
- * only makes sense if has_pointer() also returns true.
- */
-INLINE PointerData InputDevice::
-get_pointer() const {
-  LightMutexHolder holder(_lock);
-  return _pointer_data;
 }
 
 /**

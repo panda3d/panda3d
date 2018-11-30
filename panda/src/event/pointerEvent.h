@@ -15,7 +15,7 @@
 #define POINTEREVENT_H
 
 #include "pandabase.h"
-#include "mouseData.h"
+#include "pointerData.h"
 
 class Datagram;
 class DatagramIterator;
@@ -25,7 +25,7 @@ class DatagramIterator;
  */
 class EXPCL_PANDA_EVENT PointerEvent {
 public:
-  INLINE PointerEvent();
+  PointerEvent() = default;
 
   INLINE bool operator == (const PointerEvent &other) const;
   INLINE bool operator != (const PointerEvent &other) const;
@@ -37,16 +37,19 @@ public:
   void read_datagram(DatagramIterator &scan);
 
 public:
-  bool      _in_window;
-  int       _xpos;
-  int       _ypos;
-  double    _dx;
-  double    _dy;
-  double    _length;
-  double    _direction;
-  double    _rotation;
-  int       _sequence;
-  double    _time;
+  bool _in_window = false;
+  int _id = 0;
+  PointerType _type = PointerType::unknown;
+  double _xpos = 0.0;
+  double _ypos = 0.0;
+  double _dx = 0.0;
+  double _dy = 0.0;
+  double _length = 0.0;
+  double _direction = 0.0;
+  double _pressure = 0.0;
+  double _rotation = 0.0;
+  int _sequence = 0;
+  double _time = 0.0;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const PointerEvent &pe) {

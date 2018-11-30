@@ -48,6 +48,14 @@ get_id() const {
 }
 
 /**
+ * Returns the type of pointing device.
+ */
+INLINE PointerType PointerData::
+get_type() const {
+  return _type;
+}
+
+/**
  * Returns the pressure of the pointer.  For mice, this will be 1.0 if any
  * button is pressed, 0.0 otherwise.
  */

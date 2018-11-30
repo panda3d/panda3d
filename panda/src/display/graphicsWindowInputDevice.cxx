@@ -34,6 +34,7 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, bool pointer
 {
   if (pointer) {
     enable_feature(Feature::pointer);
+    add_pointer(PointerType::mouse, 0);
   }
   if (keyboard) {
     enable_feature(Feature::keyboard);
@@ -155,4 +156,46 @@ void GraphicsWindowInputDevice::
 raw_button_up(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events->add_event(ButtonEvent(button, ButtonEvent::T_raw_up, time));
+}
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer is within the window, at the given pixel coordinates.
+ */
+void GraphicsWindowInputDevice::
+set_pointer_in_window(double x, double y, double time) {
+  LightMutexHolder holder(_lock);
+  PointerData data = _pointers[0];
+  data._id = 0;
+  data._type = PointerType::mouse;
+  data._xpos = x;
+  data._ypos = y;
+  data._in_window = true;
+  InputDevice::update_pointer(data, time);
+}
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer is no longer within the window.
+ */
+void GraphicsWindowInputDevice::
+set_pointer_out_of_window(double time) {
+  LightMutexHolder holder(_lock);
+  if (_pointers.empty()) {
+    return;
+  }
+
+  _pointers[0]._in_window = false;
+  _pointers[0]._pressure = 0.0;
+
+  if (_enable_pointer_events) {
+    int seq = _event_sequence++;
+    if (_pointer_events.is_null()) {
+      _pointer_events = new PointerEventList();
+    }
+    _pointer_events->add_event(_pointers[0]._in_window,
+                               _pointers[0]._xpos,
+                               _pointers[0]._ypos,
+                               seq, time);
+  }
 }

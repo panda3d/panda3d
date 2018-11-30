@@ -12,23 +12,27 @@
  */
 
 /**
- * To be called by a particular kind of GraphicsWindow to indicate that the
- * pointer is within the window, at the given pixel coordinates.
+ * Returns the PointerData associated with the input device's pointer.  This
+ * only makes sense if has_pointer() also returns true.
  */
-INLINE void GraphicsWindowInputDevice::
-set_pointer_in_window(double x, double y, double time) {
+INLINE PointerData GraphicsWindowInputDevice::
+get_pointer() const {
   LightMutexHolder holder(_lock);
-  InputDevice::set_pointer(true, x, y, time);
+  if (!_pointers.empty()) {
+    return _pointers[0];
+  } else {
+    return PointerData();
+  }
 }
 
 /**
  * To be called by a particular kind of GraphicsWindow to indicate that the
- * pointer is no longer within the window.
+ * pointer data has changed.
  */
 INLINE void GraphicsWindowInputDevice::
-set_pointer_out_of_window(double time) {
+update_pointer(PointerData data, double time) {
   LightMutexHolder holder(_lock);
-  InputDevice::set_pointer_out_of_window(time);
+  InputDevice::update_pointer(std::move(data), time);
 }
 
 /**
@@ -38,5 +42,15 @@ set_pointer_out_of_window(double time) {
 INLINE void GraphicsWindowInputDevice::
 pointer_moved(double x, double y, double time) {
   LightMutexHolder holder(_lock);
-  InputDevice::pointer_moved(x, y, time);
+  InputDevice::pointer_moved(0, x, y, time);
+}
+
+/**
+ * To be called by a particular kind of GraphicsWindow to indicate that the
+ * pointer no longer exists.
+ */
+INLINE void GraphicsWindowInputDevice::
+remove_pointer(int id) {
+  LightMutexHolder holder(_lock);
+  InputDevice::remove_pointer(id);
 }

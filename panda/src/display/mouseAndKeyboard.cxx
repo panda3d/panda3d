@@ -27,7 +27,7 @@ MouseAndKeyboard::
 MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   DataNode(name),
   _window(window),
-  _device(device)
+  _device(window->get_input_device(device))
 {
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
@@ -38,6 +38,8 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+
+  _device->enable_pointer_events();
 }
 
 /**
@@ -47,23 +49,9 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
 void MouseAndKeyboard::
 set_source(GraphicsWindow *window, int device) {
   _window = window;
-  _device = device;
-}
+  _device = window->get_input_device(device);
 
-/**
- * Returns the associated source window.
- */
-PT(GraphicsWindow) MouseAndKeyboard::
-get_source_window() const {
-  return _window;
-}
-
-/**
- * Returns the associated source device.
- */
-int MouseAndKeyboard::
-get_source_device() const {
-  return _device;
+  //_device->enable_pointer_events();
 }
 
 /**
@@ -78,7 +66,7 @@ void MouseAndKeyboard::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
 
-  PT(InputDevice) device = _window->get_input_device(_device);
+  GraphicsWindowInputDevice *device = (GraphicsWindowInputDevice *)_device.p();
 
   if (device->has_button_event()) {
     PT(ButtonEventList) bel = device->get_button_events();

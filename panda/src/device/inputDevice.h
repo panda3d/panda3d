@@ -201,7 +201,6 @@ public:
   INLINE bool has_vibration() const;
   INLINE bool has_battery() const;
 
-  INLINE PointerData get_pointer() const;
   INLINE TrackerData get_tracker() const;
   INLINE BatteryData get_battery() const;
 
@@ -244,7 +243,6 @@ PUBLISHED:
   INLINE bool has_feature(Feature feature) const;
 
   // Getters for the various types of device data.
-  MAKE_PROPERTY2(pointer, has_pointer, get_pointer);
   MAKE_PROPERTY2(tracker, has_tracker, get_tracker);
   MAKE_PROPERTY2(battery, has_battery, get_battery);
 
@@ -285,10 +283,10 @@ protected:
   int add_axis(Axis axis, int minimum, int maximum, bool centered);
   int add_axis(Axis axis, int minimum, int maximum);
 
-  void set_pointer(bool inwin, double x, double y, double time);
-  void set_pointer_out_of_window(double time);
-
-  void pointer_moved(double x, double y, double time);
+  int add_pointer(PointerType type, int id, bool primary = false);
+  void remove_pointer(int id);
+  void update_pointer(PointerData data, double time);
+  void pointer_moved(int id, double x, double y, double time);
   void button_changed(int index, bool down);
   void axis_changed(int index, int value);
   void set_axis_value(int index, double state);
@@ -322,6 +320,10 @@ protected:
   bool _enable_pointer_events = false;
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
+
+  size_t _num_pointers = 0;
+  typedef pvector<PointerData> Pointers;
+  Pointers _pointers;
 
 PUBLISHED:
   typedef pvector<ButtonState> Buttons;

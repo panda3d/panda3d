@@ -557,6 +557,7 @@ init_device() {
 
   if (test_bit(EV_REL, evtypes)) {
     enable_feature(Feature::pointer);
+    add_pointer(PointerType::unknown, 0);
   }
 
   if (test_bit(EV_FF, evtypes)) {
@@ -669,9 +670,8 @@ process_events() {
 
   n_read /= sizeof(struct input_event);
 
-  int x = _pointer_data.get_x();
-  int y = _pointer_data.get_y();
-  bool have_pointer = false;
+  int rel_x = 0;
+  int rel_y = 0;
   double time = ClockObject::get_global_clock()->get_frame_time();
   int index;
 
@@ -689,9 +689,8 @@ process_events() {
       break;
 
     case EV_REL:
-      if (code == REL_X) x += events[i].value;
-      if (code == REL_Y) y += events[i].value;
-      have_pointer = true;
+      if (code == REL_X) rel_x += events[i].value;
+      if (code == REL_Y) rel_y += events[i].value;
       break;
 
     case EV_ABS:
@@ -728,8 +727,8 @@ process_events() {
     }
   }
 
-  if (have_pointer) {
-    set_pointer(true, x, y, time);
+  if (rel_x != 0 || rel_y != 0) {
+    pointer_moved(0, rel_x, rel_y, time);
   }
 
   return true;

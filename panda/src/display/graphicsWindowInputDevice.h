@@ -53,9 +53,12 @@ PUBLISHED:
   void raw_button_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void raw_button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
 
-  INLINE void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
-  INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE PointerData get_pointer() const;
+  void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
+  void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void update_pointer(PointerData data, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void pointer_moved(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void remove_pointer(int id);
 
 private:
   typedef pset<ButtonHandle> ButtonsHeld;

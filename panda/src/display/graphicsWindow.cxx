@@ -363,7 +363,7 @@ get_pointer(int device) const {
   {
     LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
-    result = _input_devices[device]->get_pointer();
+    result = ((const GraphicsWindowInputDevice *)_input_devices[device].p())->get_pointer();
   }
   return result;
 }

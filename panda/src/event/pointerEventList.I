@@ -44,6 +44,22 @@ get_num_events() const {
 }
 
 /**
+ * Returns true if the list is empty.
+ */
+INLINE bool PointerEventList::
+empty() const {
+  return _events.empty();
+}
+
+/**
+ * Returns the nth event in the list.
+ */
+INLINE const PointerEvent &PointerEventList::
+get_event(size_t n) const {
+  return _events[n];
+}
+
+/**
  * Get the in-window flag of the nth event.
  */
 INLINE bool PointerEventList::

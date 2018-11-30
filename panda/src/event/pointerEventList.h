@@ -48,6 +48,7 @@ PUBLISHED:
 
   INLINE void   clear();
   INLINE void   pop_front();
+  void add_event(const PointerData &data, int seq, double time);
   void add_event(bool in_win, int xpos, int ypos, int seq, double time);
   void add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta,
                  int seq, double time);
@@ -59,6 +60,9 @@ PUBLISHED:
 public:
   INLINE PointerEventList(const PointerEventList &copy);
   INLINE void operator = (const PointerEventList &copy);
+
+  INLINE bool empty() const;
+  INLINE const PointerEvent &get_event(size_t n) const;
 
   virtual void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
