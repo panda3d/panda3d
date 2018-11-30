@@ -30,6 +30,7 @@ PGButton(const std::string &name) : PGItem(name)
 {
   _button_down = false;
   _click_buttons.insert(MouseButton::one());
+  _click_buttons.insert(MouseButton::touch());
 
   set_active(true);
 }

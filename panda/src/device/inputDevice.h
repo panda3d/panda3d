@@ -259,6 +259,7 @@ PUBLISHED:
   // Enable rumble force-feedback effects
   INLINE void set_vibration(double strong, double weak);
 
+public:
   INLINE void enable_pointer_events();
   INLINE void disable_pointer_events();
 

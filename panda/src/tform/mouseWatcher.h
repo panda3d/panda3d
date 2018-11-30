@@ -84,6 +84,7 @@ PUBLISHED:
   MouseWatcherRegion *get_over_region(const LPoint2 &pos) const;
 
   INLINE bool is_button_down(ButtonHandle button) const;
+  INLINE bool is_pointer_down(int id) const;
 
   INLINE void set_button_down_pattern(const std::string &pattern);
   INLINE const std::string &get_button_down_pattern() const;
@@ -177,6 +178,10 @@ protected:
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
 
+  void pointer_down(PointerType type, int id, const LPoint2 &pos, double pressure);
+  void pointer_move(int id, const LPoint2 &pos, double pressure);
+  void pointer_up(int id, const LPoint2 &pos);
+
   void move();
   void press(ButtonHandle button, bool keyrepeat);
   void release(ButtonHandle button);
@@ -216,6 +221,17 @@ private:
   LPoint2 _mouse;
   LPoint2 _mouse_pixel;
   BitArray _current_buttons_down;
+
+  // Keeps track of which pointers are down and which regions they went down
+  // in.
+  struct ActivePointer {
+    PT(MouseWatcherRegion) _region;
+    PointerType _type;
+    double _max_pressure;
+    double _time;
+  };
+  pmap<int, ActivePointer> _active_pointers;
+  int _primary_pointer = -1;
 
   LVecBase4 _frame;
 

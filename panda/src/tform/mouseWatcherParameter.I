@@ -132,6 +132,23 @@ set_outside(bool flag) {
 }
 
 /**
+ * Returns the identifier of the pointer that caused this event.
+ */
+INLINE int MouseWatcherParameter::
+get_pointer_id() const {
+  return _pointer_id;
+}
+
+/**
+ * Returns the pressure with which this button or pointer was pressed down,
+ * where 0.0 is the minimum and 1.0 is the maximum amount of pressure.
+ */
+INLINE int MouseWatcherParameter::
+get_pressure() const {
+  return _pressure;
+}
+
+/**
  * Returns true if this parameter has an associated mouse or keyboard button,
  * false otherwise.
  */
@@ -170,7 +187,7 @@ has_keycode() const {
  * Returns the keycode associated with this event.  If has_keycode(), above,
  * returns false, this returns 0.
  */
-INLINE int MouseWatcherParameter::
+INLINE char32_t MouseWatcherParameter::
 get_keycode() const {
   return _keycode;
 }

@@ -34,6 +34,7 @@ PUBLISHED:
   static ButtonHandle wheel_down();
   static ButtonHandle wheel_left();
   static ButtonHandle wheel_right();
+  static ButtonHandle touch();
 
   static bool is_mouse_button(ButtonHandle button);
 
@@ -46,6 +47,7 @@ public:
   static ButtonHandle _wheel_down;
   static ButtonHandle _wheel_left;
   static ButtonHandle _wheel_right;
+  static ButtonHandle _touch;
 };
 
 #endif

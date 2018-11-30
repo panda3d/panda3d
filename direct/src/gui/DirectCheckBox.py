@@ -23,7 +23,7 @@ class DirectCheckBox(DirectButton):
             ('command',        None,       None),
             ('extraArgs',      [],         None),
             # Which mouse buttons can be used to click the button
-            ('commandButtons', (DGG.LMB,),     self.setCommandButtons),
+            ('commandButtons', (DGG.LMB, DGG.TOUCH), self.setCommandButtons),
             # Sounds to be used for button events
             ('rolloverSound', DGG.getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
