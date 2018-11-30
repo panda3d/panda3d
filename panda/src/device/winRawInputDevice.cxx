@@ -244,15 +244,15 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   LightMutexHolder holder(_lock);
 
-  _name = move(name);
+  _name = std::move(name);
 
   switch (info.dwType) {
   case RIM_TYPEMOUSE:
-    _device_class = DC_mouse;
+    _device_class = DeviceClass::mouse;
     break;
 
   case RIM_TYPEKEYBOARD:
-    _device_class = DC_keyboard;
+    _device_class = DeviceClass::keyboard;
     break;
 
   case RIM_TYPEHID:
@@ -262,27 +262,27 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     // Gamepads
     if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
         info.hid.usUsage == HID_USAGE_GENERIC_GAMEPAD) {
-      _device_class = DC_gamepad;
+      _device_class = DeviceClass::gamepad;
 
     // Flight sticks
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_JOYSTICK) {
-      _device_class = DC_flight_stick;
+      _device_class = DeviceClass::flight_stick;
 
       if (_name == "usb gamepad") {
         // Well, it claims to be a gamepad...
-        _device_class = DC_gamepad;
+        _device_class = DeviceClass::gamepad;
       }
 
     // Mice
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_MOUSE) {
-      _device_class = DC_mouse;
+      _device_class = DeviceClass::mouse;
 
     // Keyboards
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_KEYBOARD) {
-      _device_class = DC_keyboard;
+      _device_class = DeviceClass::keyboard;
 
     // 3Dconnexion SpaceNavigator and friends.
     } else if (_vendor_id == 0x046d &&
@@ -293,7 +293,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
          _product_id == 0xc628 ||
          _product_id == 0xc629 ||
          _product_id == 0xc62b)) {
-      _device_class = DC_3d_mouse;
+      _device_class = DeviceClass::spatial_mouse;
     }
     break;
 
@@ -410,15 +410,15 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       ButtonHandle handle = ButtonHandle::none();
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_BUTTON:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           if (usage < sizeof(gamepad_buttons_common) / sizeof(ButtonHandle)) {
             handle = gamepad_buttons[usage];
           }
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           if (usage > 0) {
             handle = GamepadButton::joystick(usage - 1);
           }
-        } else if (_device_class == DC_mouse) {
+        } else if (_device_class == DeviceClass::mouse) {
           // In Panda, wheel and right button are flipped around...
           int button = (usage == 2 || usage == 3) ? (4 - usage) : (usage - 1);
           handle = MouseButton::button(button);
@@ -483,19 +483,19 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       case HID_USAGE_PAGE_GENERIC:
         switch (usage) {
           case HID_USAGE_GENERIC_X:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::left_x;
-          } else if (_device_class == DC_flight_stick) {
+          } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::roll;
           } else {
             axis = Axis::x;
           }
           break;
         case HID_USAGE_GENERIC_Y:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::left_y;
             swap(cap.LogicalMin, cap.LogicalMax);
-          } else if (_device_class == DC_flight_stick) {
+          } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::pitch;
           } else {
             axis = Axis::y;
@@ -503,9 +503,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           }
           break;
         case HID_USAGE_GENERIC_Z:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::left_trigger;
-          } else if (_device_class == DC_flight_stick) {
+          } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::throttle;
           } else {
             axis = Axis::z;
@@ -513,14 +513,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           }
           break;
         case HID_USAGE_GENERIC_RX:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::right_x;
           } else {
             axis = Axis::pitch;
           }
           break;
         case HID_USAGE_GENERIC_RY:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::right_y;
           } else {
             axis = Axis::roll;
@@ -528,7 +528,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           swap(cap.LogicalMin, cap.LogicalMax);
           break;
         case HID_USAGE_GENERIC_RZ:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = Axis::right_trigger;
           } else {
             // Flip to match Panda's convention for heading.
@@ -570,7 +570,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   // Do we need to emulate a hat switch or directional pad?
   if (_hat_data_index != -1) {
     _hat_left_button = (int)_buttons.size();
-    if (_device_class == DC_gamepad) {
+    if (_device_class == DeviceClass::gamepad) {
       _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
       _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
       _buttons.push_back(ButtonState(GamepadButton::dpad_down()));

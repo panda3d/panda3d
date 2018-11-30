@@ -27,14 +27,15 @@ class GraphicsWindow;
  */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice : public InputDevice {
 private:
-  GraphicsWindowInputDevice(GraphicsWindow *host, const std::string &name, int flags);
+  GraphicsWindowInputDevice(GraphicsWindow *host, const std::string &name,
+                            bool pointer, bool keyboard);
 
 public:
   static PT(GraphicsWindowInputDevice) pointer_only(GraphicsWindow *host, const std::string &name);
   static PT(GraphicsWindowInputDevice) keyboard_only(GraphicsWindow *host, const std::string &name);
   static PT(GraphicsWindowInputDevice) pointer_and_keyboard(GraphicsWindow *host, const std::string &name);
 
-  INLINE GraphicsWindowInputDevice();
+  GraphicsWindowInputDevice() = default;
 
 PUBLISHED:
   // The following interface is for the various kinds of GraphicsWindows to

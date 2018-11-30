@@ -84,18 +84,18 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   if (IOHIDDeviceConformsTo(device, kHIDPage_GenericDesktop, kHIDUsage_GD_Mouse)) {
-    _device_class = DC_mouse;
+    _device_class = DeviceClass::mouse;
   } else if (IOHIDDeviceConformsTo(device, kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard)) {
-    _device_class = DC_keyboard;
+    _device_class = DeviceClass::keyboard;
   } else if (IOHIDDeviceConformsTo(device, kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad)) {
-    _device_class = DC_gamepad;
+    _device_class = DeviceClass::gamepad;
   } else if (IOHIDDeviceConformsTo(device, kHIDPage_Simulation, kHIDUsage_Sim_FlightStick)) {
-    _device_class = DC_flight_stick;
+    _device_class = DeviceClass::flight_stick;
   } else if (IOHIDDeviceConformsTo(device, kHIDPage_Simulation, kHIDUsage_GD_Joystick)) {
-    _device_class = DC_flight_stick;
+    _device_class = DeviceClass::flight_stick;
   } else if (_vendor_id == 0x044f && _product_id == 0xb108) {
     // T.Flight Hotas X
-    _device_class = DC_flight_stick;
+    _device_class = DeviceClass::flight_stick;
   } else if (_vendor_id == 0x046d &&
       (_product_id == 0xc623 ||
        _product_id == 0xc625 ||
@@ -105,9 +105,9 @@ IOKitInputDevice(IOHIDDeviceRef device) :
        _product_id == 0xc629 ||
        _product_id == 0xc62b)) {
     // 3Dconnexion SpaceNavigator and friends.
-    _device_class = DC_3d_mouse;
+    _device_class = DeviceClass::spatial_mouse;
   } else if (_name == "usb gamepad") {
-    _device_class = DC_gamepad;
+    _device_class = DeviceClass::gamepad;
   }
 
   CFArrayRef elements = IOHIDDeviceCopyMatchingElements(device, nullptr, 0);
@@ -127,7 +127,7 @@ IOKitInputDevice(IOHIDDeviceRef device) :
   }
 
   if (_pointer_x != nullptr && _pointer_y != nullptr) {
-    _flags |= IDF_has_pointer;
+    enable_feature(Feature::pointer);
   }
 
   _is_connected = true;
@@ -182,11 +182,11 @@ parse_element(IOHIDElementRef element) {
     case kHIDPage_GenericDesktop:
       switch (usage) {
       case kHIDUsage_GD_X:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::left_x;
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           axis = Axis::roll;
-        } else if (_device_class == DC_mouse) {
+        } else if (_device_class == DeviceClass::mouse) {
           _pointer_x = element;
           return;
         } else {
@@ -194,11 +194,11 @@ parse_element(IOHIDElementRef element) {
         }
         break;
       case kHIDUsage_GD_Y:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::left_y;
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           axis = Axis::pitch;
-        } else if (_device_class == DC_mouse) {
+        } else if (_device_class == DeviceClass::mouse) {
           _pointer_y = element;
           return;
         } else {
@@ -206,30 +206,30 @@ parse_element(IOHIDElementRef element) {
         }
         break;
       case kHIDUsage_GD_Z:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::left_trigger;
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           axis = Axis::throttle;
         } else {
           axis = Axis::z;
         }
         break;
       case kHIDUsage_GD_Rx:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::right_x;
         } else {
           axis = Axis::pitch;
         }
         break;
       case kHIDUsage_GD_Ry:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::right_y;
         } else {
           axis = Axis::roll;
         }
         break;
       case kHIDUsage_GD_Rz:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::right_trigger;
         } else {
           axis = Axis::yaw;
@@ -289,7 +289,7 @@ parse_element(IOHIDElementRef element) {
         // T.Flight Hotas X throttle is reversed and can go backwards.
         add_axis(axis, max, min, true);
       } else if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
-                 (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+                 (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
         // We'd like to reverse the Y axis to match the XInput behavior.
         // We also reverse yaw to obey the right-hand rule.
         add_axis(axis, max, min);
@@ -627,7 +627,7 @@ parse_element(IOHIDElementRef element) {
       break;
 
     case kHIDPage_Button:
-      if (_device_class == DC_gamepad) {
+      if (_device_class == DeviceClass::gamepad) {
         if (_vendor_id == 0x0810 && _product_id == 0xe501) {
           // SNES-style USB gamepad
           static const ButtonHandle gamepad_buttons[] = {
@@ -671,11 +671,11 @@ parse_element(IOHIDElementRef element) {
             handle = gamepad_buttons[usage];
           }
         }
-      } else if (_device_class == DC_flight_stick) {
+      } else if (_device_class == DeviceClass::flight_stick) {
         if (usage > 0) {
           handle = GamepadButton::joystick(usage - 1);
         }
-      } else if (_device_class == DC_mouse) {
+      } else if (_device_class == DeviceClass::mouse) {
         // In Panda, wheel and right button are flipped around...
         int button = (usage == 2 || usage == 3) ? (4 - usage) : (usage - 1);
         handle = MouseButton::button(button);

@@ -27,7 +27,7 @@ class ClientBase;
 class EXPCL_PANDA_DEVICE ClientDevice : public InputDevice {
 protected:
   ClientDevice(ClientBase *client, TypeHandle device_type,
-               const std::string &device_name, int device_flags=0);
+               const std::string &device_name);
 
 public:
   virtual ~ClientDevice();

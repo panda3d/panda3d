@@ -52,35 +52,49 @@ class EXPCL_PANDA_DEVICE InputDevice : public TypedReferenceCount {
 PUBLISHED:
   // This enum contains information that can be used to identify the
   // type of input device.
-  enum DeviceClass {
+  enum class DeviceClass {
     // It is not known what type of device this is.
-    DC_unknown,
+    unknown,
 
     // This means that the device doesn't correspond to a physical
     // device, but rather to a dynamic source of input events.
-    DC_virtual,
+    virtual_device,
 
     // A physical, alphabetical keyboard.
-    DC_keyboard,
+    keyboard,
 
-    DC_mouse,
-    DC_touch,
+    mouse,
+    touch,
 
     // A gamepad with action buttons, a D-pad, and thumbsticks.
-    DC_gamepad,
+    gamepad,
 
-    DC_flight_stick,
-    DC_steering_wheel,
-    DC_dance_pad,
+    flight_stick,
+    steering_wheel,
+    dance_pad,
 
     // Head-mounted display.
-    DC_hmd,
+    hmd,
 
     // 3D mouse, such as produced by 3Dconnexion.
-    DC_3d_mouse,
+    spatial_mouse,
+  };
 
-    // Count of this enum, used for loops
-    DC_COUNT,
+  enum class Feature {
+    // The device provides absolute screen coordinates.
+    pointer,
+
+    // The device has an interface for providing text input.
+    keyboard,
+
+    // The device has a motion tracker, such as an HMD.
+    tracker,
+
+    // The device can produce force feedback.
+    vibration,
+
+    // The device provides information about battery life.
+    battery,
   };
 
   enum class Axis {
@@ -161,7 +175,7 @@ PUBLISHED:
   };
 
 protected:
-  InputDevice(const std::string &name, DeviceClass dev_class, int flags);
+  InputDevice(const std::string &name, DeviceClass dev_class);
 
 public:
   InputDevice();
@@ -176,6 +190,12 @@ public:
   INLINE unsigned short get_product_id() const;
   INLINE bool is_connected() const;
   INLINE DeviceClass get_device_class() const;
+
+  INLINE bool has_pointer() const;
+  INLINE bool has_keyboard() const;
+  INLINE bool has_tracker() const;
+  INLINE bool has_vibration() const;
+  INLINE bool has_battery() const;
 
   INLINE PointerData get_pointer() const;
   INLINE TrackerData get_tracker() const;
@@ -216,11 +236,8 @@ PUBLISHED:
   // this could not be determined, it is set to DC_unknown.
   MAKE_PROPERTY(device_class, get_device_class);
 
-  INLINE bool has_pointer() const;
-  INLINE bool has_keyboard() const;
-  INLINE bool has_tracker() const;
-  INLINE bool has_vibration() const;
-  INLINE bool has_battery() const;
+  // Determine supported features
+  INLINE bool has_feature(Feature feature) const;
 
   // Getters for the various types of device data.
   MAKE_PROPERTY2(pointer, has_pointer, get_pointer);
@@ -255,6 +272,8 @@ PUBLISHED:
   static std::string format_axis(Axis axis);
 
 protected:
+  INLINE void enable_feature(Feature feature);
+
   // Called during the constructor to add new axes or buttons
   int add_button(ButtonHandle handle);
   int add_axis(Axis axis, int minimum, int maximum, bool centered);
@@ -281,39 +300,20 @@ public:
   void write_axes(std::ostream &out, int indent_level) const;
 
 protected:
-  enum InputDeviceFlags {
-    // The device provides absolute screen coordinates.
-    IDF_has_pointer    = 0x01,
-
-    // The device has an interface for providing text input.
-    IDF_has_keyboard   = 0x02,
-
-    // The device has a motion tracker, such as an HMD.
-    IDF_has_tracker    = 0x04,
-
-    // The device can produce force feedback.
-    IDF_has_vibration  = 0x08,
-
-    // The device provides information about battery life.
-    IDF_has_battery    = 0x10,
-  };
-
-protected:
   typedef pdeque<ButtonEvent> ButtonEvents;
 
-  LightMutex _lock;
+  LightMutex _lock {"InputDevice"};
 
   std::string _name;
   std::string _serial_number;
   std::string _manufacturer;
-  DeviceClass _device_class;
-  int _flags;
-  int _event_sequence;
-  unsigned short _vendor_id;
-  unsigned short _product_id;
-  bool _is_connected;
-  bool _enable_pointer_events;
-  PointerData _pointer_data;
+  DeviceClass _device_class = DeviceClass::unknown;
+  unsigned int _features = 0;
+  int _event_sequence = 0;
+  unsigned short _vendor_id = 0;
+  unsigned short _product_id = 0;
+  bool _is_connected = false;
+  bool _enable_pointer_events = false;
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
 
@@ -323,6 +323,7 @@ PUBLISHED:
   Buttons _buttons;
   Axes _axes;
 
+  PointerData _pointer_data;
   BatteryData _battery_data;
   TrackerData _tracker_data;
 

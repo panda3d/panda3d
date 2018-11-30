@@ -29,9 +29,15 @@ using std::string;
  * below.
  */
 GraphicsWindowInputDevice::
-GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
-  InputDevice(name, DC_virtual, flags)
+GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, bool pointer, bool keyboard) :
+  InputDevice(name, DeviceClass::virtual_device)
 {
+  if (pointer) {
+    enable_feature(Feature::pointer);
+  }
+  if (keyboard) {
+    enable_feature(Feature::keyboard);
+  }
 }
 
 /**
@@ -40,7 +46,7 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
  */
 PT(GraphicsWindowInputDevice) GraphicsWindowInputDevice::
 pointer_only(GraphicsWindow *host, const string &name) {
-  return new GraphicsWindowInputDevice(host, name, IDF_has_pointer);
+  return new GraphicsWindowInputDevice(host, name, true, false);
 }
 
 /**
@@ -49,7 +55,7 @@ pointer_only(GraphicsWindow *host, const string &name) {
  */
 PT(GraphicsWindowInputDevice) GraphicsWindowInputDevice::
 keyboard_only(GraphicsWindow *host, const string &name) {
-  return new GraphicsWindowInputDevice(host, name, IDF_has_keyboard);
+  return new GraphicsWindowInputDevice(host, name, false, true);
 }
 
 /**
@@ -58,8 +64,7 @@ keyboard_only(GraphicsWindow *host, const string &name) {
  */
 PT(GraphicsWindowInputDevice) GraphicsWindowInputDevice::
 pointer_and_keyboard(GraphicsWindow *host, const string &name) {
-  return new
-    GraphicsWindowInputDevice(host, name, IDF_has_pointer | IDF_has_keyboard);
+  return new GraphicsWindowInputDevice(host, name, true, true);
 }
 
 /**

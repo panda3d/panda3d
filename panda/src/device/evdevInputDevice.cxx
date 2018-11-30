@@ -66,27 +66,27 @@ static const struct DeviceMapping {
   int quirks;
 } mapping_presets[] = {
   // NVIDIA Shield Controller
-  {0x0955, 0x7214, InputDevice::DC_gamepad, QB_rstick_from_z},
+  {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, QB_rstick_from_z},
   // T.Flight Hotas X
-  {0x044f, 0xb108, InputDevice::DC_flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
+  {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
   // Xbox 360 Wireless Controller
-  {0x045e, 0x0719, InputDevice::DC_gamepad, QB_connect_if_nonzero},
+  {0x045e, 0x0719, InputDevice::DeviceClass::gamepad, QB_connect_if_nonzero},
   // Jess Tech Colour Rumble Pad
-  {0x0f30, 0x0111, InputDevice::DC_gamepad, 0},
+  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
   // 3Dconnexion Space Traveller 3D Mouse
-  {0x046d, 0xc623, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
-  {0x046d, 0xc625, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc625, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Navigator 3D Mouse
-  {0x046d, 0xc626, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc626, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Explorer 3D Mouse
-  {0x046d, 0xc627, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc627, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Navigator for Notebooks
-  {0x046d, 0xc628, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc628, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion SpacePilot Pro 3D Mouse
-  {0x046d, 0xc629, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc629, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Mouse Pro
-  {0x046d, 0xc62b, InputDevice::DC_3d_mouse, 0},
+  {0x046d, 0xc62b, InputDevice::DeviceClass::spatial_mouse, 0},
   {0},
 };
 
@@ -273,7 +273,7 @@ init_device() {
     has_keys = true;
 
     if (test_bit(KEY_A, keys) && test_bit(KEY_Z, keys)) {
-      _flags |= IDF_has_keyboard;
+      enable_feature(Feature::keyboard);
     }
   }
 
@@ -298,38 +298,38 @@ init_device() {
   }
 
   // Try to detect which type of device we have here
-  if (_device_class == DC_unknown) {
-    int device_scores[DC_COUNT] = {0};
+  if (_device_class == DeviceClass::unknown) {
+    int device_scores[(size_t)DeviceClass::spatial_mouse] = {0};
 
     // Test for specific keys
     if (test_bit(BTN_GAMEPAD, keys) && test_bit(ABS_X, axes) && test_bit(ABS_RX, axes)) {
-      device_scores[DC_gamepad] += 5;
-      device_scores[DC_steering_wheel] += 5;
-      device_scores[DC_flight_stick] += 5;
+      device_scores[(size_t)DeviceClass::gamepad] += 5;
+      device_scores[(size_t)DeviceClass::steering_wheel] += 5;
+      device_scores[(size_t)DeviceClass::flight_stick] += 5;
     }
 
     if (test_bit(ABS_WHEEL, axes) && test_bit(ABS_GAS, axes) && test_bit(ABS_BRAKE, axes)) {
-      device_scores[DC_steering_wheel] += 10;
+      device_scores[(size_t)DeviceClass::steering_wheel] += 10;
     }
     if (test_bit(BTN_GEAR_DOWN, keys) && test_bit(BTN_GEAR_UP, keys)) {
-      device_scores[DC_steering_wheel] += 10;
+      device_scores[(size_t)DeviceClass::steering_wheel] += 10;
     }
     if (test_bit(BTN_JOYSTICK, keys) && test_bit(ABS_X, axes)) {
-      device_scores[DC_flight_stick] += 10;
+      device_scores[(size_t)DeviceClass::flight_stick] += 10;
     }
     if (test_bit(BTN_MOUSE, keys) && test_bit(EV_REL, evtypes)) {
-      device_scores[DC_mouse] += 20;
+      device_scores[(size_t)DeviceClass::mouse] += 20;
     }
     uint8_t unknown_keys[] = {KEY_POWER};
     for (int i = 0; i < 1; i++) {
       if (test_bit(unknown_keys[i], keys)) {
         if (unknown_keys[i] == KEY_POWER) {
         }
-        device_scores[DC_unknown] += 20;
+        device_scores[(size_t)DeviceClass::unknown] += 20;
       }
     }
-    if (_flags & IDF_has_keyboard) {
-      device_scores[DC_keyboard] += 20;
+    if (_features & (unsigned int)Feature::keyboard) {
+      device_scores[(size_t)DeviceClass::keyboard] += 20;
     }
 
     // Test for specific name tags
@@ -338,28 +338,28 @@ init_device() {
       lowercase_name[x] = tolower(lowercase_name[x]);
     }
     if (lowercase_name.find("gamepad") != string::npos) {
-      device_scores[DC_gamepad] += 10;
+      device_scores[(size_t)DeviceClass::gamepad] += 10;
     }
     if (lowercase_name.find("wheel") != string::npos) {
-      device_scores[DC_steering_wheel] += 10;
+      device_scores[(size_t)DeviceClass::steering_wheel] += 10;
     }
     if (lowercase_name.find("mouse") != string::npos || lowercase_name.find("touchpad") != string::npos) {
-      device_scores[DC_mouse] += 10;
+      device_scores[(size_t)DeviceClass::mouse] += 10;
     }
     if (lowercase_name.find("keyboard") != string::npos) {
-      device_scores[DC_keyboard] += 10;
+      device_scores[(size_t)DeviceClass::keyboard] += 10;
     }
     // List of lowercase names that occur in unknown devices
     string unknown_names[] = {"video bus", "power button", "sleep button"};
     for(int i = 0; i < 3; i++) {
       if (lowercase_name.find(unknown_names[i]) != string::npos) {
-        device_scores[DC_unknown] += 20;
+        device_scores[(size_t)DeviceClass::unknown] += 20;
       }
     }
 
     // Check which device type got the most points
     int highest_score = 0;
-    for (size_t i = 0; i < DC_COUNT; i++) {
+    for (size_t i = 0; i < (size_t)DeviceClass::spatial_mouse; i++) {
       if (device_scores[i] > highest_score) {
         highest_score = device_scores[i];
         _device_class = (DeviceClass)i;
@@ -417,18 +417,18 @@ init_device() {
         Axis axis = Axis::none;
         switch (i) {
         case ABS_X:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::left_x;
-          } else if (_device_class == DC_flight_stick) {
+          } else if (_device_class == DeviceClass::flight_stick) {
             axis = InputDevice::Axis::roll;
           } else {
             axis = InputDevice::Axis::x;
           }
           break;
         case ABS_Y:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::left_y;
-          } else if (_device_class == DC_flight_stick) {
+          } else if (_device_class == DeviceClass::flight_stick) {
             axis = InputDevice::Axis::pitch;
           } else {
             axis = InputDevice::Axis::y;
@@ -437,24 +437,24 @@ init_device() {
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
             axis = InputDevice::Axis::right_x;
-          } else if (_device_class == DC_gamepad) {
+          } else if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
-          } else if (_device_class == DC_3d_mouse) {
+          } else if (_device_class == DeviceClass::spatial_mouse) {
             axis = InputDevice::Axis::z;
           } else {
             axis = InputDevice::Axis::throttle;
           }
           break;
         case ABS_RX:
-          if (_device_class == DC_3d_mouse) {
+          if (_device_class == DeviceClass::spatial_mouse) {
             axis = InputDevice::Axis::pitch;
           } else if ((quirks & QB_rstick_from_z) == 0) {
             axis = InputDevice::Axis::right_x;
           }
           break;
         case ABS_RY:
-          if (_device_class == DC_3d_mouse) {
+          if (_device_class == DeviceClass::spatial_mouse) {
             axis = InputDevice::Axis::roll;
           } else if ((quirks & QB_rstick_from_z) == 0) {
             axis = InputDevice::Axis::right_y;
@@ -463,7 +463,7 @@ init_device() {
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
             axis = InputDevice::Axis::right_y;
-          } else if (_device_class == DC_gamepad) {
+          } else if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
@@ -484,7 +484,7 @@ init_device() {
           axis = InputDevice::Axis::wheel;
           break;
         case ABS_GAS:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;
           } else {
@@ -492,7 +492,7 @@ init_device() {
           }
           break;
         case ABS_BRAKE:
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
           } else {
@@ -503,7 +503,7 @@ init_device() {
           if (emulate_dpad) {
             _dpad_x_axis = i;
             _dpad_left_button = (int)_buttons.size();
-            if (_device_class == DC_gamepad) {
+            if (_device_class == DeviceClass::gamepad) {
               _buttons.push_back(ButtonState(GamepadButton::dpad_left()));
               _buttons.push_back(ButtonState(GamepadButton::dpad_right()));
             } else {
@@ -516,7 +516,7 @@ init_device() {
           if (emulate_dpad) {
             _dpad_y_axis = i;
             _dpad_up_button = (int)_buttons.size();
-            if (_device_class == DC_gamepad) {
+            if (_device_class == DeviceClass::gamepad) {
               _buttons.push_back(ButtonState(GamepadButton::dpad_up()));
               _buttons.push_back(ButtonState(GamepadButton::dpad_down()));
             } else {
@@ -536,7 +536,7 @@ init_device() {
           // Also T.Flight Hotas X throttle is reversed and can go backwards.
           if (axis == Axis::yaw || axis == Axis::rudder || axis == Axis::left_y || axis == Axis::right_y ||
               (axis == Axis::throttle && (quirks & QB_reversed_throttle) != 0) ||
-              (_device_class == DC_3d_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
+              (_device_class == DeviceClass::spatial_mouse && (axis == Axis::y || axis == Axis::z || axis == Axis::roll))) {
             std::swap(absinfo.maximum, absinfo.minimum);
           }
           if (axis == Axis::throttle && (quirks & QB_centered_throttle) != 0) {
@@ -556,7 +556,7 @@ init_device() {
   }
 
   if (test_bit(EV_REL, evtypes)) {
-    _flags |= IDF_has_pointer;
+    enable_feature(Feature::pointer);
   }
 
   if (test_bit(EV_FF, evtypes)) {
@@ -565,7 +565,7 @@ init_device() {
 
     if (test_bit(FF_RUMBLE, effects)) {
       if (_can_write) {
-        _flags |= IDF_has_vibration;
+        enable_feature(Feature::vibration);
       } else {
         // Let the user know what he's missing out on.
         device_cat.warning()
@@ -896,7 +896,7 @@ map_button(int code, DeviceClass device_class) {
     }
 
   } else if ((code & 0xfff0) == BTN_JOYSTICK) {
-    if (device_class == DC_gamepad) {
+    if (device_class == DeviceClass::gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
         GamepadButton::face_x(),

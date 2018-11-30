@@ -12,13 +12,6 @@
  */
 
 /**
- *
- */
-INLINE GraphicsWindowInputDevice::
-GraphicsWindowInputDevice() {
-}
-
-/**
  * To be called by a particular kind of GraphicsWindow to indicate that the
  * pointer is within the window, at the given pixel coordinates.
  */

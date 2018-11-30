@@ -135,9 +135,9 @@ open_device() {
             << " button " << (int)i << ": 0x" << std::hex << btnmap[i] << "\n";
         }
       } else if (handle == GamepadButton::face_a()) {
-        _device_class = DC_gamepad;
+        _device_class = DeviceClass::gamepad;
       } else if (handle == GamepadButton::trigger()) {
-        _device_class = DC_flight_stick;
+        _device_class = DeviceClass::flight_stick;
       } else if (handle == GamepadButton::ltrigger()) {
         _ltrigger_button = i;
       } else if (handle == GamepadButton::rtrigger()) {
@@ -156,9 +156,9 @@ open_device() {
 
       switch (axmap[i]) {
       case ABS_X:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = InputDevice::Axis::left_x;
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           axis = InputDevice::Axis::roll;
         } else {
           axis = InputDevice::Axis::x;
@@ -166,9 +166,9 @@ open_device() {
         break;
 
       case ABS_Y:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = InputDevice::Axis::left_y;
-        } else if (_device_class == DC_flight_stick) {
+        } else if (_device_class == DeviceClass::flight_stick) {
           axis = InputDevice::Axis::pitch;
         } else {
           axis = InputDevice::Axis::y;
@@ -176,7 +176,7 @@ open_device() {
         break;
 
       case ABS_Z:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = Axis::left_trigger;
         } else {
           //axis = Axis::trigger;
@@ -192,7 +192,7 @@ open_device() {
         break;
 
       case ABS_RZ:
-        if (_device_class == DC_gamepad) {
+        if (_device_class == DeviceClass::gamepad) {
           axis = InputDevice::Axis::right_trigger;
         } else {
           axis = InputDevice::Axis::yaw;
@@ -224,7 +224,7 @@ open_device() {
           // Emulate D-Pad or hat switch.
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             add_button(GamepadButton::dpad_left());
             add_button(GamepadButton::dpad_right());
           } else {
@@ -240,7 +240,7 @@ open_device() {
           // Emulate D-Pad.
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
-          if (_device_class == DC_gamepad) {
+          if (_device_class == DeviceClass::gamepad) {
             add_button(GamepadButton::dpad_up());
             add_button(GamepadButton::dpad_down());
           } else {

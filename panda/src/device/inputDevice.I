@@ -17,15 +17,7 @@
  *
  */
 INLINE InputDevice::
-InputDevice() :
-  _flags(0),
-  _device_class(DC_unknown),
-  _vendor_id(0),
-  _product_id(0),
-  _is_connected(false),
-  _event_sequence(0),
-  _enable_pointer_events(false)
-{
+InputDevice() {
   _button_events = new ButtonEventList;
 }
 
@@ -90,7 +82,7 @@ is_connected() const {
 
 /**
  * Returns an identification of the general type of device.  If this could not
- * be determined, returns DC_unknown.
+ * be determined, returns DeviceClass.unknown.
  */
 INLINE InputDevice::DeviceClass InputDevice::
 get_device_class() const {
@@ -99,12 +91,20 @@ get_device_class() const {
 }
 
 /**
+ * Returns true if the device supports the indicated feature.
+ */
+INLINE bool InputDevice::
+has_feature(Feature feature) const {
+  LightMutexHolder holder(_lock);
+  return (_features & (1 << (unsigned int)feature)) != 0;
+}
+
+/**
  * Returns true if this is a pointing device.
  */
 INLINE bool InputDevice::
 has_pointer() const {
-  LightMutexHolder holder(_lock);
-  return ((_flags & IDF_has_pointer) != 0);
+  return has_feature(Feature::pointer);
 }
 
 /**
@@ -112,8 +112,7 @@ has_pointer() const {
  */
 INLINE bool InputDevice::
 has_keyboard() const {
-  LightMutexHolder holder(_lock);
-  return ((_flags & IDF_has_keyboard) != 0);
+  return has_feature(Feature::keyboard);
 }
 
 /**
@@ -122,8 +121,7 @@ has_keyboard() const {
  */
 INLINE bool InputDevice::
 has_tracker() const {
-  LightMutexHolder holder(_lock);
-  return ((_flags & IDF_has_tracker) != 0);
+  return has_feature(Feature::tracker);
 }
 
 /**
@@ -132,8 +130,7 @@ has_tracker() const {
  */
 INLINE bool InputDevice::
 has_vibration() const {
-  LightMutexHolder holder(_lock);
-  return ((_flags & IDF_has_vibration) != 0);
+  return has_feature(Feature::vibration);
 }
 
 /**
@@ -142,8 +139,7 @@ has_vibration() const {
  */
 INLINE bool InputDevice::
 has_battery() const {
-  LightMutexHolder holder(_lock);
-  return ((_flags & IDF_has_battery) != 0);
+  return has_feature(Feature::battery);
 }
 
 /**
@@ -391,6 +387,15 @@ disable_pointer_events() {
   LightMutexHolder holder(_lock);
   _enable_pointer_events = false;
   _pointer_events.clear();
+}
+
+/**
+ * Called to indicate that the device supports the given feature.
+ * Assumes the lock is held.
+ */
+INLINE void InputDevice::
+enable_feature(Feature feature) {
+  _features |= (1 << (unsigned int)feature);
 }
 
 /**

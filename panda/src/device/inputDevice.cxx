@@ -23,16 +23,10 @@ TypeHandle InputDevice::_type_handle;
  * Defines a new InputDevice.
  */
 InputDevice::
-InputDevice(const std::string &name, DeviceClass dev_class, int flags) :
+InputDevice(const std::string &name, DeviceClass dev_class) :
   _name(name),
-  _flags(flags),
   _device_class(dev_class),
-  _vendor_id(0),
-  _product_id(0),
-  _is_connected(true),
-  _event_sequence(0),
-  _enable_pointer_events(false),
-  _lock("InputDevice")
+  _is_connected(true)
 {
   _button_events = new ButtonEventList;
 }
@@ -346,7 +340,7 @@ output(std::ostream &out) const {
 
   out << "connected)";
 
-  if (_device_class != DC_unknown) {
+  if (_device_class != DeviceClass::unknown) {
     out << ", " << _device_class;
   }
 
@@ -362,19 +356,19 @@ output(std::ostream &out) const {
         << (_axes.size() != 1 ? 'e' : 'i') << 's';
   }
 
-  if (_flags & IDF_has_pointer) {
+  if (_features & (unsigned int)Feature::pointer) {
     out << ", pointer";
   }
-  if (_flags & IDF_has_keyboard) {
+  if (_features & (unsigned int)Feature::keyboard) {
     out << ", keyboard";
   }
-  if (_flags & IDF_has_tracker) {
+  if (_features & (unsigned int)Feature::tracker) {
     out << ", tracker";
   }
-  if (_flags & IDF_has_vibration) {
+  if (_features & (unsigned int)Feature::vibration) {
     out << ", vibration";
   }
-  if (_flags & IDF_has_battery) {
+  if (_features & (unsigned int)Feature::battery) {
     out << ", battery";
 
     if (_battery_data.level > 0 && _battery_data.max_level > 0) {
@@ -504,41 +498,38 @@ do_poll() {
 std::string InputDevice::
 format_device_class(DeviceClass dc) {
   switch (dc) {
-  case InputDevice::DC_unknown:
+  case InputDevice::DeviceClass::unknown:
     return "unknown";
 
-  case InputDevice::DC_virtual:
-    return "virtual";
+  case InputDevice::DeviceClass::virtual_device:
+    return "virtual_device";
 
-  case InputDevice::DC_keyboard:
+  case InputDevice::DeviceClass::keyboard:
     return "keyboard";
 
-  case InputDevice::DC_mouse:
+  case InputDevice::DeviceClass::mouse:
     return "mouse";
 
-  case InputDevice::DC_touch:
+  case InputDevice::DeviceClass::touch:
     return "touch";
 
-  case InputDevice::DC_gamepad:
+  case InputDevice::DeviceClass::gamepad:
     return "gamepad";
 
-  case InputDevice::DC_flight_stick:
+  case InputDevice::DeviceClass::flight_stick:
     return "flight_stick";
 
-  case InputDevice::DC_steering_wheel:
+  case InputDevice::DeviceClass::steering_wheel:
     return "steering_wheel";
 
-  case InputDevice::DC_dance_pad:
+  case InputDevice::DeviceClass::dance_pad:
     return "dance_pad";
 
-  case InputDevice::DC_hmd:
+  case InputDevice::DeviceClass::hmd:
     return "hmd";
 
-  case InputDevice::DC_3d_mouse:
-    return "3d_mouse";
-
-  case InputDevice::DC_COUNT:
-    break;
+  case InputDevice::DeviceClass::spatial_mouse:
+    return "spatial_mouse";
   }
   return "**invalid**";
 }

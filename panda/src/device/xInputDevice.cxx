@@ -315,7 +315,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
   switch (caps.SubType) {
   default:
   case XINPUT_DEVSUBTYPE_GAMEPAD:
-    _device_class = DC_gamepad;
+    _device_class = DeviceClass::gamepad;
     _axes[0].axis = Axis::left_trigger;
     _axes[1].axis = Axis::right_trigger;
     _axes[2].axis = Axis::left_x;
@@ -325,7 +325,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
     break;
 
   case XINPUT_DEVSUBTYPE_WHEEL:
-    _device_class = DC_steering_wheel;
+    _device_class = DeviceClass::steering_wheel;
     _axes[0].axis = Axis::brake;
     _axes[1].axis = Axis::accelerator;
     _axes[2].axis = Axis::wheel;
@@ -335,7 +335,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
     break;
 
   case XINPUT_DEVSUBTYPE_FLIGHT_STICK:
-    _device_class = DC_flight_stick;
+    _device_class = DeviceClass::flight_stick;
     _axes[0].axis = Axis::yaw;
     _axes[1].axis = Axis::throttle;
     _axes[2].axis = Axis::roll;
@@ -345,7 +345,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
     break;
 
   case XINPUT_DEVSUBTYPE_DANCE_PAD:
-    _device_class = DC_dance_pad;
+    _device_class = DeviceClass::dance_pad;
     _axes[0].axis = Axis::none;
     _axes[1].axis = Axis::none;
     _axes[2].axis = Axis::none;
@@ -394,7 +394,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
 
   if (caps.Vibration.wLeftMotorSpeed != 0 ||
       caps.Vibration.wRightMotorSpeed != 0) {
-    _flags |= IDF_has_vibration;
+    enable_feature(Feature::vibration);
   }
 
   if (get_battery_information != nullptr) {
@@ -403,7 +403,7 @@ init_device(const XINPUT_CAPABILITIES_EX &caps, const XINPUT_STATE &state) {
       if (batt.BatteryType != BATTERY_TYPE_DISCONNECTED &&
           batt.BatteryType != BATTERY_TYPE_WIRED) {
         // This device has a battery.  Report the battery level.
-        _flags |= IDF_has_battery;
+        enable_feature(Feature::battery);
         _battery_data.level = batt.BatteryLevel;
         _battery_data.max_level = BATTERY_LEVEL_FULL;
       }

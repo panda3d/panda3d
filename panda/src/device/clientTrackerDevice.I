@@ -16,6 +16,7 @@
  */
 INLINE ClientTrackerDevice::
 ClientTrackerDevice(ClientBase *client, const std::string &device_name):
-  ClientDevice(client, get_class_type(), device_name, IDF_has_tracker)
+  ClientDevice(client, get_class_type(), device_name)
 {
+  enable_feature(Feature::tracker);
 }
