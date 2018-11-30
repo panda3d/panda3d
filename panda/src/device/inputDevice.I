@@ -250,13 +250,8 @@ is_button_known(size_t index) const {
  */
 INLINE InputDevice::ButtonState InputDevice::
 get_button(size_t index) const {
-  if (index < _buttons.size()) {
-    return _buttons[index];
-  } else {
-    device_cat.error()
-      << "Index " << index << " was not found in the axes list\n";
-    return ButtonState();
-  }
+  nassertr_always(index < _buttons.size(), ButtonState());
+  return _buttons[index];
 }
 
 /**
@@ -270,8 +265,6 @@ find_button(ButtonHandle handle) const {
       return _buttons[i];
     }
   }
-  device_cat.error()
-    << "Handle " << handle.get_name() << " was not found in the axes list\n";
   return ButtonState();
 }
 
@@ -321,13 +314,8 @@ get_axis_value(size_t index) const {
  */
 INLINE InputDevice::AxisState InputDevice::
 get_axis(size_t index) const {
-  if (index < _axes.size()) {
-    return _axes[index];
-  } else {
-    device_cat.error()
-      << "Index " << index << " was not found in the axes list\n";
-    return AxisState();
-  }
+  nassertr_always(index < _axes.size(), AxisState());
+  return _axes[index];
 }
 
 /**
@@ -341,8 +329,6 @@ find_axis(InputDevice::Axis axis) const {
       return _axes[i];
     }
   }
-  device_cat.error()
-    << "Axis " << axis << " was not found in the axes list\n";
   return AxisState();
 }
 

@@ -142,6 +142,8 @@ PUBLISHED:
     ALWAYS_INLINE bool is_pressed() const;
 
   PUBLISHED:
+    operator bool() { return _state != S_unknown; }
+
     MAKE_PROPERTY(known, is_known);
     MAKE_PROPERTY(pressed, is_pressed);
 
@@ -156,6 +158,8 @@ PUBLISHED:
     constexpr AxisState() = default;
 
   PUBLISHED:
+    operator bool() { return known && value != 0.0; }
+
     Axis axis = Axis::none;
     double value = 0.0;
     bool known = false;
@@ -268,6 +272,8 @@ PUBLISHED:
   PT(PointerEventList) get_pointer_events();
 
   virtual void output(std::ostream &out) const;
+
+public:
   static std::string format_device_class(DeviceClass dc);
   static std::string format_axis(Axis axis);
 
