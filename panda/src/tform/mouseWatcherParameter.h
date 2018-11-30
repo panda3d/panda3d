@@ -43,13 +43,16 @@ public:
   INLINE void set_mouse(const LPoint2 &mouse);
   INLINE void set_outside(bool flag);
 
+  INLINE int get_pointer_id() const;
+  INLINE int get_pressure() const;
+
 PUBLISHED:
   INLINE bool has_button() const;
   INLINE ButtonHandle get_button() const;
   INLINE bool is_keyrepeat() const;
 
   INLINE bool has_keycode() const;
-  INLINE int get_keycode() const;
+  INLINE char32_t get_keycode() const;
 
   INLINE bool has_candidate() const;
 
@@ -72,15 +75,24 @@ PUBLISHED:
 
   void output(std::ostream &out) const;
 
+PUBLISHED:
+  MAKE_PROPERTY2(button, has_button, get_button);
+  MAKE_PROPERTY(modifier_buttons, get_modifier_buttons);
+  MAKE_PROPERTY2(keycode, has_keycode, get_keycode);
+  MAKE_PROPERTY2(pointer_id, has_mouse, get_pointer_id);
+  MAKE_PROPERTY(pressure, get_pressure);
+
 public:
-  ButtonHandle _button;
-  int _keycode;
+  ButtonHandle _button = ButtonHandle::none();
+  char32_t _keycode;
   std::wstring _candidate_string;
   size_t _highlight_start;
   size_t _highlight_end;
   size_t _cursor_pos;
   ModifierButtons _mods;
   LPoint2 _mouse;
+  int _pointer_id = 0;
+  double _pressure = 0.0;
 
   enum Flags {
     F_has_button    = 0x001,

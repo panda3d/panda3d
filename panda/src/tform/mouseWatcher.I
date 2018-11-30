@@ -148,6 +148,14 @@ is_button_down(ButtonHandle button) const {
 }
 
 /**
+ * Returns true if the pointer with the given identifier is currently pressed.
+ */
+INLINE bool MouseWatcher::
+is_pointer_down(int id) const {
+  return _active_pointers.find(id) != _active_pointers.end();
+}
+
+/**
  * Sets the pattern string that indicates how the event names are generated
  * when a button is depressed.  This is a string that may contain any of the
  * following:
