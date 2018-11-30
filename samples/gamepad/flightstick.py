@@ -38,7 +38,7 @@ class App(ShowBase):
 
         # Is there a gamepad connected?
         self.flightStick = None
-        devices = self.devices.getDevices(InputDevice.DC_flight_stick)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.flight_stick)
         if devices:
             self.connect(devices[0])
 
@@ -74,7 +74,7 @@ class App(ShowBase):
 
         # We're only interested if this is a flight stick and we don't have a
         # flight stick yet.
-        if device.device_class == InputDevice.DC_flight_stick and not self.flightStick:
+        if device.device_class == InputDevice.DeviceClass.flight_stick and not self.flightStick:
             print("Found %s" % (device))
             self.flightStick = device
 
@@ -98,7 +98,7 @@ class App(ShowBase):
         self.flightStick = None
 
         # Do we have any other gamepads?  Attach the first other gamepad.
-        devices = self.devices.getDevices(InputDevice.DC_flight_stick)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.flight_stick)
         if devices:
             self.connect(devices[0])
         else:

@@ -83,6 +83,8 @@ class ChangeActionDialog(object):
 
         self.__command = command
 
+        self.attachedDevices = []
+
         # Initialize the DirectGUI stuff.
         self.dialog = OkCancelDialog(
             dialogName="dlg_device_input",
@@ -293,7 +295,7 @@ class MappingGUIDemo(ShowBase):
         devices = base.devices.getDevices()
         for device in devices:
             base.attachInputDevice(device)
-            self.attachedDevices = devices
+        self.attachedDevices = devices
 
         # Disable regular button events on all button event throwers, and
         # instead broadcast a generic event.
@@ -324,7 +326,7 @@ class MappingGUIDemo(ShowBase):
     def watchControls(self, task):
         # move through all devices and all it's controls
         for device in self.attachedDevices:
-            if device.device_class == InputDevice.DC_mouse:
+            if device.device_class == InputDevice.DeviceClass.mouse:
                 # Ignore mouse axis movement, or the user can't even navigate
                 # to the OK/Cancel buttons!
                 continue

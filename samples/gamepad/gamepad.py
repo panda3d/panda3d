@@ -63,7 +63,7 @@ class App(ShowBase):
 
         # Is there a gamepad connected?
         self.gamepad = None
-        devices = self.devices.getDevices(InputDevice.DC_gamepad)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.gamepad)
         if devices:
             self.connect(devices[0])
 
@@ -99,7 +99,7 @@ class App(ShowBase):
 
         # We're only interested if this is a gamepad and we don't have a
         # gamepad yet.
-        if device.device_class == InputDevice.DC_gamepad and not self.gamepad:
+        if device.device_class == InputDevice.DeviceClass.gamepad and not self.gamepad:
             print("Found %s" % (device))
             self.gamepad = device
 
@@ -123,7 +123,7 @@ class App(ShowBase):
         self.gamepad = None
 
         # Do we have any other gamepads?  Attach the first other gamepad.
-        devices = self.devices.getDevices(InputDevice.DC_gamepad)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.gamepad)
         if devices:
             self.connect(devices[0])
         else:

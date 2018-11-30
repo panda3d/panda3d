@@ -35,7 +35,7 @@ class App(ShowBase):
 
         # Is there a steering wheel connected?
         self.wheel = None
-        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.steering_wheel)
         if devices:
             self.connect(devices[0])
 
@@ -79,7 +79,7 @@ class App(ShowBase):
 
         # We're only interested if this is a steering wheel and we don't have a
         # wheel yet.
-        if device.device_class == InputDevice.DC_steering_wheel and not self.wheel:
+        if device.device_class == InputDevice.DeviceClass.steering_wheel and not self.wheel:
             print("Found %s" % (device))
             self.wheel = device
 
@@ -103,7 +103,7 @@ class App(ShowBase):
         self.wheel = None
 
         # Do we have any steering wheels?  Attach the first other steering wheel.
-        devices = self.devices.getDevices(InputDevice.DC_steering_wheel)
+        devices = self.devices.getDevices(InputDevice.DeviceClass.steering_wheel)
         if devices:
             self.connect(devices[0])
         else:
