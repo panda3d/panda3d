@@ -47,28 +47,13 @@ CallbackGraphicsWindow::
 ~CallbackGraphicsWindow() {
 }
 
-
-/**
- * Returns a writable reference to the nth input device (mouse).  This is
- * intended to be used for the window implementation to record mouse and
- * keyboard input information for the Panda system.
- */
-GraphicsWindowInputDevice &CallbackGraphicsWindow::
-get_input_device(int device) {
-  LightMutexHolder holder(_input_lock);
-  nassertr(device >= 0 && device < (int)_input_devices.size(), _input_devices[0]);
-  return _input_devices[device];
-}
-
 /**
  * Adds a new input device (mouse) to the window with the indicated name.
  * Returns the index of the new device.
  */
 int CallbackGraphicsWindow::
 create_input_device(const std::string &name) {
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, name);
-  return add_input_device(device);
+  return add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, name));
 }
 
 /**

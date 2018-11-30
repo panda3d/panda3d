@@ -6,21 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file mouseData.cxx
- * @author drose
- * @date 1999-02-08
+ * @file evdevInputDevice.I
+ * @author rdb
+ * @date 2015-08-24
  */
-
-#include "mouseData.h"
-
-/**
- *
- */
-void MouseData::
-output(std::ostream &out) const {
-  if (!_in_window) {
-    out << "MouseData: Not in window";
-  } else {
-    out << "MouseData: (" << _xpos << ", " << _ypos << ")";
-  }
-}

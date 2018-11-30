@@ -27,7 +27,7 @@ MouseAndKeyboard::
 MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   DataNode(name),
   _window(window),
-  _device(device)
+  _device(window->get_input_device(device))
 {
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
@@ -38,7 +38,8 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
   _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
-  _button_events = new ButtonEventList;
+
+  _device->enable_pointer_events();
 }
 
 /**
@@ -48,23 +49,9 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
 void MouseAndKeyboard::
 set_source(GraphicsWindow *window, int device) {
   _window = window;
-  _device = device;
-}
+  _device = window->get_input_device(device);
 
-/**
- * Returns the associated source window.
- */
-PT(GraphicsWindow) MouseAndKeyboard::
-get_source_window() const {
-  return _window;
-}
-
-/**
- * Returns the associated source device.
- */
-int MouseAndKeyboard::
-get_source_device() const {
-  return _device;
+  //_device->enable_pointer_events();
 }
 
 /**
@@ -78,17 +65,15 @@ get_source_device() const {
 void MouseAndKeyboard::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
-  if (_window->has_button_event(_device)) {
-    // Fill up the button events.
-    _button_events->clear();
-    while (_window->has_button_event(_device)) {
-      ButtonEvent be = _window->get_button_event(_device);
-      _button_events->add_event(be);
-    }
-    output.set_data(_button_events_output, EventParameter(_button_events));
+
+  GraphicsWindowInputDevice *device = (GraphicsWindowInputDevice *)_device.p();
+
+  if (device->has_button_event()) {
+    PT(ButtonEventList) bel = device->get_button_events();
+    output.set_data(_button_events_output, EventParameter(bel));
   }
-  if (_window->has_pointer_event(_device)) {
-    PT(PointerEventList) pel = _window->get_pointer_events(_device);
+  if (device->has_pointer_event()) {
+    PT(PointerEventList) pel = device->get_pointer_events();
     output.set_data(_pointer_events_output, EventParameter(pel));
   }
 
@@ -101,8 +86,8 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     _pixel_size->set_value(LPoint2(w, h));
     output.set_data(_pixel_size_output, EventParameter(_pixel_size));
 
-    if (_window->has_pointer(_device)) {
-      const MouseData &mdata = _window->get_pointer(_device);
+    if (device->has_pointer()) {
+      PointerData mdata = device->get_pointer();
 
       if (mdata._in_window) {
         // Get mouse motion in pixels.
