@@ -1,0 +1,117 @@
+<Comment> {
+  "egg-texture-cards -o inc_map.egg -p 32,32 -g -0.04,0.04,-0.04,0.04 -wm clamp inc_ready.png inc_click.png inc_hover.png inc_disabled.png"
+}
+<Texture> inc_ready {
+  inc_ready.png
+  <Scalar> wrap { clamp }
+}
+<Texture> inc_hover {
+  inc_hover.png
+  <Scalar> wrap { clamp }
+}
+<Texture> inc_disabled {
+  inc_disabled.png
+  <Scalar> wrap { clamp }
+}
+<Texture> inc_click {
+  inc_click.png
+  <Scalar> wrap { clamp }
+}
+<Group> {
+  <Switch> { 1 }
+  <Scalar> fps { 2 }
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.04 0.04 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.04 -0.04 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.04 -0.04 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.04 0.04 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 4 {
+      -0.04 0.04 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 5 {
+      -0.04 -0.04 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 6 {
+      0.04 -0.04 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 7 {
+      0.04 0.04 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 8 {
+      -0.04 0.04 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 9 {
+      -0.04 -0.04 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 10 {
+      0.04 -0.04 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 11 {
+      0.04 0.04 0
+      <UV> { 1 1 }
+    }
+    <Vertex> 12 {
+      -0.04 0.04 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 13 {
+      -0.04 -0.04 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 14 {
+      0.04 -0.04 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 15 {
+      0.04 0.04 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> inc_ready {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { inc_ready }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> inc_click {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { inc_click }
+      <VertexRef> { 4 5 6 7 <Ref> { vpool } }
+    }
+  }
+  <Group> inc_hover {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { inc_hover }
+      <VertexRef> { 8 9 10 11 <Ref> { vpool } }
+    }
+  }
+  <Group> inc_disabled {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { inc_disabled }
+      <VertexRef> { 12 13 14 15 <Ref> { vpool } }
+    }
+  }
+}

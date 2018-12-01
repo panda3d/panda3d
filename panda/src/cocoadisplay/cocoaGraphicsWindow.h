@@ -89,6 +89,7 @@ private:
   NSUInteger _modifier_keys;
   UInt32 _dead_key_state;
   CGDirectDisplayID _display;
+  PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
 

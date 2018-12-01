@@ -31,30 +31,7 @@ protected:
   INLINE ClientAnalogDevice(ClientBase *client, const std::string &device_name);
 
 public:
-  INLINE int get_num_controls() const;
-
-  INLINE void set_control_state(int index, double state);
-  INLINE double get_control_state(int index) const;
-  INLINE bool is_control_known(int index) const;
-
   virtual void write(std::ostream &out, int indent_level = 0) const;
-  void write_controls(std::ostream &out, int indent_level) const;
-
-private:
-  void ensure_control_index(int index);
-
-protected:
-  class AnalogState {
-  public:
-    INLINE AnalogState();
-
-    double _state;
-    bool _known;
-  };
-
-  typedef pvector<AnalogState> Controls;
-  Controls _controls;
-
 
 public:
   static TypeHandle get_class_type() {

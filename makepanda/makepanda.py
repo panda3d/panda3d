@@ -679,6 +679,7 @@ if (COMPILER == "MSVC"):
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
     LibName("IPHLPAPI", "iphlpapi.lib")
+    LibName("SETUPAPI", "setupapi.lib")
     LibName("GL", "opengl32.lib")
     LibName("GLES", "libgles_cm.lib")
     LibName("GLES2", "libGLESv2.lib")
@@ -2504,6 +2505,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_GLX"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
         # 10.4 had a broken ucontext implementation
         if int(platform.mac_ver()[0][3]) <= 4:
@@ -3965,6 +3967,34 @@ if (not RUNTIME):
   TargetAdd('libp3cull.in', opts=['IMOD:panda3d.core', 'ILIB:libp3cull', 'SRCDIR:panda/src/cull'])
 
 #
+# DIRECTORY: panda/src/dgraph/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/dgraph', 'BUILDING:PANDA']
+  TargetAdd('p3dgraph_composite1.obj', opts=OPTS, input='p3dgraph_composite1.cxx')
+  TargetAdd('p3dgraph_composite2.obj', opts=OPTS, input='p3dgraph_composite2.cxx')
+
+  OPTS=['DIR:panda/src/dgraph']
+  IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3dgraph.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3dgraph.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dgraph', 'SRCDIR:panda/src/dgraph'])
+
+#
+# DIRECTORY: panda/src/device/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
+  TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
+  TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
+
+  OPTS=['DIR:panda/src/device']
+  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3device.in', opts=['IMOD:panda3d.core', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
+
+#
 # DIRECTORY: panda/src/display/
 #
 
@@ -4015,34 +4045,6 @@ if (not RUNTIME):
   IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3char.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3char.in', opts=['IMOD:panda3d.core', 'ILIB:libp3char', 'SRCDIR:panda/src/char'])
-
-#
-# DIRECTORY: panda/src/dgraph/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/dgraph', 'BUILDING:PANDA']
-  TargetAdd('p3dgraph_composite1.obj', opts=OPTS, input='p3dgraph_composite1.cxx')
-  TargetAdd('p3dgraph_composite2.obj', opts=OPTS, input='p3dgraph_composite2.cxx')
-
-  OPTS=['DIR:panda/src/dgraph']
-  IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libp3dgraph.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3dgraph.in', opts=['IMOD:panda3d.core', 'ILIB:libp3dgraph', 'SRCDIR:panda/src/dgraph'])
-
-#
-# DIRECTORY: panda/src/device/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/device', 'BUILDING:PANDA']
-  TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
-  TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
-
-  OPTS=['DIR:panda/src/device']
-  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
-  TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3device.in', opts=['IMOD:panda3d.core', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
 
 #
 # DIRECTORY: panda/src/pnmtext/
@@ -4208,7 +4210,8 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
       'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
-      'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI']
+      'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
+      'SETUPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
