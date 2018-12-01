@@ -17,9 +17,13 @@
 
 #include "httpChannel.h"
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
-#include "openssl/md5.h"
+#include <openssl/ssl.h>
+#include <openssl/md5.h>
 #include <time.h>
+
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 const string HTTPDigestAuthorization::_mechanism = "digest";
 
@@ -86,7 +90,7 @@ HTTPDigestAuthorization(const HTTPAuthorization::Tokens &tokens,
 
   // Compute an arbitrary client nonce.
   ostringstream strm;
-  strm << time(NULL) << ":" << clock() << ":"
+  strm << time(nullptr) << ":" << clock() << ":"
        << url.get_url() << ":Panda";
 
   _cnonce = calc_md5(strm.str());
@@ -277,7 +281,7 @@ get_a2(HTTPEnum::Method method, const string &request_path,
 string HTTPDigestAuthorization::
 get_hex_nonce_count() const {
   ostringstream strm;
-  strm << hex << setfill('0') << setw(8) << _nonce_count;
+  strm << std::hex << std::setfill('0') << std::setw(8) << _nonce_count;
   return strm.str();
 }
 

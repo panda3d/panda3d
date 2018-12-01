@@ -17,7 +17,7 @@
  *
  */
 void WeakNodePath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (was_deleted()) {
     out << "deleted";
   } else {

@@ -1,0 +1,7 @@
+#pragma once
+
+#include <stddef.h>
+
+namespace std {
+  enum class byte : unsigned char {};
+}

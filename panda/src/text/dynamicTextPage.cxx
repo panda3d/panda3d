@@ -17,7 +17,6 @@
 
 #ifdef HAVE_FREETYPE
 
-
 TypeHandle DynamicTextPage::_type_handle;
 
 /**
@@ -40,7 +39,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   setup_2d_texture(_size[0], _size[1], T_unsigned_byte, font->get_tex_format());
 
   // Assign a name to the Texture.
-  ostringstream strm;
+  std::ostringstream strm;
   strm << font->get_name() << "_" << page_number;
   set_name(strm.str());
 
@@ -72,7 +71,7 @@ slot_glyph(int character, int x_size, int y_size, int margin,
   int x, y;
   if (!find_hole(x, y, x_size, y_size)) {
     // No room for the glyph.
-    return (DynamicTextGlyph *)NULL;
+    return nullptr;
   }
 
   // The glyph can be fit at (x, y).  Slot it.
@@ -209,13 +208,13 @@ find_hole(int &x, int &y, int x_size, int y_size) const {
       // Consider the spot at x, y.
       DynamicTextGlyph *overlap = find_overlap(x, y, x_size, y_size);
 
-      if (overlap == (DynamicTextGlyph *)NULL) {
+      if (overlap == nullptr) {
         // Hooray!
         return true;
       }
 
       next_x = overlap->_x + overlap->_x_size;
-      next_y = min(next_y, overlap->_y + overlap->_y_size);
+      next_y = std::min(next_y, overlap->_y + overlap->_y_size);
       nassertr(next_x > x, false);
       x = next_x;
     }
@@ -245,7 +244,7 @@ find_overlap(int x, int y, int x_size, int y_size) const {
     }
   }
 
-  return (DynamicTextGlyph *)NULL;
+  return nullptr;
 }
 
 

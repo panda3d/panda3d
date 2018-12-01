@@ -13,6 +13,8 @@
 
 #include "p3dConcreteStruct.h"
 
+using std::string;
+
 /**
  *
  */
@@ -53,7 +55,7 @@ get_bool() {
  */
 void P3DConcreteStruct::
 make_string(string &value) {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "{";
   if (!_elements.empty()) {
     Elements::iterator ei;
@@ -82,7 +84,7 @@ get_property(const string &property) {
     return (*ei).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -91,7 +93,7 @@ get_property(const string &property) {
  */
 bool P3DConcreteStruct::
 set_property(const string &property, P3D_object *value) {
-  if (value == NULL) {
+  if (value == nullptr) {
     // Delete an element.
     Elements::iterator ei = _elements.find(property);
     if (ei == _elements.end()) {
@@ -105,7 +107,7 @@ set_property(const string &property, P3D_object *value) {
   } else {
     // Replace or insert an element.
     P3D_OBJECT_INCREF(value);
-    pair<Elements::iterator, bool> result = _elements.insert(Elements::value_type(property, value));
+    std::pair<Elements::iterator, bool> result = _elements.insert(Elements::value_type(property, value));
     if (!result.second) {
       // Replacing an element.
       Elements::iterator ei = result.first;
@@ -139,7 +141,7 @@ has_method(const string &method_name) {
 P3D_object *P3DConcreteStruct::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
-  P3D_object *result = NULL;
+  P3D_object *result = nullptr;
 
   if (method_name == "toString") {
     string value;
@@ -147,9 +149,9 @@ call(const string &method_name, bool needs_response,
     result = P3D_new_string_object(value.data(), value.length());
   }
 
-  if (result != NULL && !needs_response) {
+  if (result != nullptr && !needs_response) {
     P3D_OBJECT_DECREF(result);
-    result = NULL;
+    result = nullptr;
   }
 
   return result;

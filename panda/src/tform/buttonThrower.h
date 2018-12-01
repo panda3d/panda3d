@@ -34,25 +34,25 @@
  */
 class EXPCL_PANDA_TFORM ButtonThrower : public DataNode {
 PUBLISHED:
-  explicit ButtonThrower(const string &name);
+  explicit ButtonThrower(const std::string &name);
   ~ButtonThrower();
 
-  INLINE void set_button_down_event(const string &button_down_event);
-  INLINE const string &get_button_down_event() const;
-  INLINE void set_button_up_event(const string &button_up_event);
-  INLINE const string &get_button_up_event() const;
-  INLINE void set_button_repeat_event(const string &button_repeat_event);
-  INLINE const string &get_button_repeat_event() const;
-  INLINE void set_keystroke_event(const string &keystroke_event);
-  INLINE const string &get_keystroke_event() const;
-  INLINE void set_candidate_event(const string &candidate_event);
-  INLINE const string &get_candidate_event() const;
-  INLINE void set_move_event(const string &move_event);
-  INLINE const string &get_move_event() const;
-  INLINE void set_raw_button_down_event(const string &raw_button_down_event);
-  INLINE const string &get_raw_button_down_event() const;
-  INLINE void set_raw_button_up_event(const string &raw_button_up_event);
-  INLINE const string &get_raw_button_up_event() const;
+  INLINE void set_button_down_event(const std::string &button_down_event);
+  INLINE const std::string &get_button_down_event() const;
+  INLINE void set_button_up_event(const std::string &button_up_event);
+  INLINE const std::string &get_button_up_event() const;
+  INLINE void set_button_repeat_event(const std::string &button_repeat_event);
+  INLINE const std::string &get_button_repeat_event() const;
+  INLINE void set_keystroke_event(const std::string &keystroke_event);
+  INLINE const std::string &get_keystroke_event() const;
+  INLINE void set_candidate_event(const std::string &candidate_event);
+  INLINE const std::string &get_candidate_event() const;
+  INLINE void set_move_event(const std::string &move_event);
+  INLINE const std::string &get_move_event() const;
+  INLINE void set_raw_button_down_event(const std::string &raw_button_down_event);
+  INLINE const std::string &get_raw_button_down_event() const;
+  INLINE void set_raw_button_up_event(const std::string &raw_button_up_event);
+  INLINE const std::string &get_raw_button_up_event() const;
   MAKE_PROPERTY(button_down_event, get_button_down_event, set_button_down_event);
   MAKE_PROPERTY(button_up_event, get_button_up_event, set_button_up_event);
   MAKE_PROPERTY(button_repeat_event, get_button_repeat_event, set_button_repeat_event);
@@ -62,8 +62,8 @@ PUBLISHED:
   MAKE_PROPERTY(raw_button_down_event, get_raw_button_down_event, set_raw_button_down_event);
   MAKE_PROPERTY(raw_button_up_event, get_raw_button_up_event, set_raw_button_up_event);
 
-  INLINE void set_prefix(const string &prefix);
-  INLINE const string &get_prefix() const;
+  INLINE void set_prefix(const std::string &prefix);
+  INLINE const std::string &get_prefix() const;
   INLINE void set_specific_flag(bool specific_flag);
   INLINE bool get_specific_flag() const;
   MAKE_PROPERTY(prefix, get_prefix, set_prefix);
@@ -94,24 +94,24 @@ PUBLISHED:
   void clear_throw_buttons();
 
 public:
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
-  void do_specific_event(const string &event_name, double time);
+  void do_specific_event(const std::string &event_name, double time);
   void do_general_event(const ButtonEvent &button_event,
-                        const string &event_name);
+                        const std::string &event_name);
 
 private:
-  string _button_down_event;
-  string _button_up_event;
-  string _button_repeat_event;
-  string _keystroke_event;
-  string _candidate_event;
-  string _move_event;
-  string _raw_button_up_event;
-  string _raw_button_down_event;
+  std::string _button_down_event;
+  std::string _button_up_event;
+  std::string _button_repeat_event;
+  std::string _keystroke_event;
+  std::string _candidate_event;
+  std::string _move_event;
+  std::string _raw_button_up_event;
+  std::string _raw_button_down_event;
   bool _specific_flag;
-  string _prefix;
+  std::string _prefix;
   bool _time_flag;
   ModifierButtons _mods;
 

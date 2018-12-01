@@ -13,6 +13,8 @@
 
 #include "bulletMultiSphereShape.h"
 
+#include "bulletWorld.h"
+
 #include "geomVertexReader.h"
 
 TypeHandle BulletMultiSphereShape::_type_handle;
@@ -23,7 +25,7 @@ TypeHandle BulletMultiSphereShape::_type_handle;
 BulletMultiSphereShape::
 BulletMultiSphereShape(const PTA_LVecBase3 &points, const PTA_stdfloat &radii) {
 
-  int num_spheres = min(points.size(), radii.size());
+  int num_spheres = std::min(points.size(), radii.size());
 
   // Convert points
   btVector3 *bt_points = new btVector3[num_spheres];

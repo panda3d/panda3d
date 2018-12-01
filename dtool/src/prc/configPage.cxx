@@ -22,11 +22,15 @@
 #include <ctype.h>
 
 #ifdef HAVE_OPENSSL
-#include "openssl/evp.h"
+#include <openssl/evp.h>
 #endif
 
-ConfigPage *ConfigPage::_default_page = NULL;
-ConfigPage *ConfigPage::_local_page = NULL;
+using std::istream;
+using std::ostream;
+using std::string;
+
+ConfigPage *ConfigPage::_default_page = nullptr;
+ConfigPage *ConfigPage::_local_page = nullptr;
 
 /**
  * The constructor is private because a ConfigPage should be constructed via
@@ -58,7 +62,7 @@ ConfigPage::
  */
 ConfigPage *ConfigPage::
 get_default_page() {
-  if (_default_page == (ConfigPage *)NULL) {
+  if (_default_page == nullptr) {
     _default_page = new ConfigPage("default", false, 0);
   }
   return _default_page;
@@ -71,7 +75,7 @@ get_default_page() {
  */
 ConfigPage *ConfigPage::
 get_local_page() {
-  if (_local_page == (ConfigPage *)NULL) {
+  if (_local_page == nullptr) {
     _local_page = new ConfigPage("local", false, 0);
   }
   return _local_page;
@@ -142,7 +146,7 @@ read_prc(istream &in) {
 
     // Look for the first line in the buffer..
     char *newline = (char *)memchr((void *)buffer, '\n', count);
-    if (newline == (char *)NULL) {
+    if (newline == nullptr) {
       // The buffer was one long line.  Huh.
       prev_line += string(buffer, count);
 
@@ -154,7 +158,7 @@ read_prc(istream &in) {
       // Now look for the next line, etc.
       char *start = newline + 1;
       newline = (char *)memchr((void *)start, '\n', buffer_end - start);
-      while (newline != (char *)NULL) {
+      while (newline != nullptr) {
         length = newline - start;
         read_prc_line(string(start, length + 1));
         start = newline + 1;
@@ -189,7 +193,7 @@ read_prc(istream &in) {
     int num_keys = pkr->get_num_keys();
     for (int i = 1; i < num_keys && _trust_level == 0; i++) {
       EVP_PKEY *pkey = pkr->get_key(i);
-      if (pkey != (EVP_PKEY *)NULL) {
+      if (pkey != nullptr) {
         int verify_result =
           EVP_VerifyFinal((EVP_MD_CTX *)_md_ctx,
                           (unsigned char *)_signature.data(),
@@ -283,7 +287,7 @@ get_num_declarations() const {
  */
 const ConfigDeclaration *ConfigPage::
 get_declaration(size_t n) const {
-  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _declarations.size(), nullptr);
   return _declarations[n];
 }
 
@@ -294,7 +298,7 @@ get_declaration(size_t n) const {
  */
 ConfigDeclaration *ConfigPage::
 modify_declaration(size_t n) {
-  nassertr(n < _declarations.size(), (ConfigDeclaration *)NULL);
+  nassertr(n < _declarations.size(), nullptr);
   return _declarations[n];
 }
 
@@ -340,7 +344,7 @@ output(ostream &out) const {
  */
 void ConfigPage::
 output_brief_signature(ostream &out) const {
-  size_t num_bytes = min(_signature.size(), (size_t)8);
+  size_t num_bytes = std::min(_signature.size(), (size_t)8);
   for (size_t p = 0; p < num_bytes; ++p) {
     unsigned int byte = _signature[p];
 

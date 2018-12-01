@@ -26,7 +26,7 @@
 class x11GraphicsWindow : public GraphicsWindow {
 public:
   x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -34,7 +34,10 @@ public:
                     GraphicsOutput *host);
   virtual ~x11GraphicsWindow();
 
+  virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
+
+  virtual void clear(Thread *current_thread);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
@@ -67,11 +70,10 @@ protected:
   static Bool check_event(X11_Display *display, XEvent *event, char *arg);
 
   void open_raw_mice();
-  void poll_raw_mice();
 
 private:
   X11_Cursor get_cursor(const Filename &filename);
-  X11_Cursor read_ico(istream &ico);
+  X11_Cursor read_ico(std::istream &ico);
 
 protected:
   X11_Display *_display;
@@ -85,18 +87,13 @@ protected:
 
   LVecBase2i _fixed_size;
 
+  GraphicsWindowInputDevice *_input;
+
   long _event_mask;
   bool _awaiting_configure;
   bool _dga_mouse_enabled;
   Bool _override_redirect;
   Atom _wm_delete_window;
-
-  struct MouseDeviceInfo {
-    int    _fd;
-    int    _input_device_index;
-    string _io_buffer;
-  };
-  pvector<MouseDeviceInfo> _mouse_device_info;
 
   x11GraphicsPipe::pfn_XRRGetScreenInfo _XRRGetScreenInfo;
   x11GraphicsPipe::pfn_XRRSetScreenConfig _XRRSetScreenConfig;

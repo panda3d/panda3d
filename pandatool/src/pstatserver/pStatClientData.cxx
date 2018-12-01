@@ -16,6 +16,8 @@
 
 #include "pStatCollectorDef.h"
 
+using std::string;
+
 PStatCollectorDef PStatClientData::_null_collector(-1, "Unknown");
 
 
@@ -55,9 +57,9 @@ is_alive() const {
  */
 void PStatClientData::
 close() {
-  if (_is_alive && _reader != (PStatReader *)NULL) {
+  if (_is_alive && _reader != nullptr) {
     _reader->close();
-    _reader = (PStatReader *)NULL;
+    _reader = nullptr;
     _is_alive = false;
   }
 }
@@ -78,7 +80,7 @@ get_num_collectors() const {
 bool PStatClientData::
 has_collector(int index) const {
   return (index >= 0 && index < (int)_collectors.size() &&
-          _collectors[index]._def != (PStatCollectorDef *)NULL);
+          _collectors[index]._def != nullptr);
 }
 
 /**
@@ -144,7 +146,7 @@ set_collector_has_level(int index, int thread_index, bool flag) {
   // ancestors.
   if (flag) {
     PStatCollectorDef *def = _collectors[index]._def;
-    if (def != (PStatCollectorDef *)NULL && def->_parent_index != 0) {
+    if (def != nullptr && def->_parent_index != 0) {
       if (set_collector_has_level(def->_parent_index, thread_index, flag)) {
         any_changed = true;
       }
@@ -222,7 +224,7 @@ get_thread_name(int index) const {
 const PStatThreadData *PStatClientData::
 get_thread_data(int index) const {
   ((PStatClientData *)this)->define_thread(index);
-  nassertr(index >= 0 && index < (int)_threads.size(), NULL);
+  nassertr(index >= 0 && index < (int)_threads.size(), nullptr);
   return _threads[index]._data;
 }
 
@@ -261,7 +263,7 @@ add_collector(PStatCollectorDef *def) {
   slot_collector(def->_index);
   nassertv(def->_index >= 0 && def->_index < (int)_collectors.size());
 
-  if (_collectors[def->_index]._def != (PStatCollectorDef *)NULL) {
+  if (_collectors[def->_index]._def != nullptr) {
     // Free the old definition, if any.
     delete _collectors[def->_index]._def;
   }
@@ -330,7 +332,7 @@ slot_collector(int collector_index) {
 
   while ((int)_collectors.size() <= collector_index) {
     Collector collector;
-    collector._def = (PStatCollectorDef *)NULL;
+    collector._def = nullptr;
     _collectors.push_back(collector);
   }
 }
@@ -345,7 +347,7 @@ update_toplevel_collectors() {
   Collectors::const_iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
     PStatCollectorDef *def = (*ci)._def;
-    if (def != (PStatCollectorDef *)NULL && def->_parent_index == 0) {
+    if (def != nullptr && def->_parent_index == 0) {
       _toplevel_collectors.push_back(def->_index);
     }
   }

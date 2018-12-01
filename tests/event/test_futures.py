@@ -1,6 +1,5 @@
 from panda3d import core
 import pytest
-import threading
 import time
 import sys
 
@@ -39,7 +38,11 @@ def test_future_timeout():
         fut.result(0.001)
 
 
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
 def test_future_wait():
+    threading = pytest.importorskip("direct.stdpy.threading")
+
     fut = core.AsyncFuture()
 
     # Launch a thread to set the result value.
@@ -48,10 +51,9 @@ def test_future_wait():
         fut.set_result(None)
 
     thread = threading.Thread(target=thread_main)
-    thread.start()
 
-    # Make sure it didn't sneakily already run the thread
     assert not fut.done()
+    thread.start()
 
     assert fut.result() is None
 
@@ -60,7 +62,11 @@ def test_future_wait():
     assert fut.result() is None
 
 
+@pytest.mark.skipif(not core.Thread.is_threading_supported(),
+                    reason="Threading support disabled")
 def test_future_wait_cancel():
+    threading = pytest.importorskip("direct.stdpy.threading")
+
     fut = core.AsyncFuture()
 
     # Launch a thread to cancel the future.
@@ -69,10 +75,9 @@ def test_future_wait_cancel():
         fut.cancel()
 
     thread = threading.Thread(target=thread_main)
-    thread.start()
 
-    # Make sure it didn't sneakily already run the thread
     assert not fut.done()
+    thread.start()
 
     with pytest.raises(CancelledError):
         fut.result()

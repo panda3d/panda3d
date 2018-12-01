@@ -42,14 +42,15 @@ public:
   virtual bool is_trivial() const;
   virtual bool is_default_constructible() const;
   virtual bool is_copy_constructible() const;
+  virtual bool is_copy_assignable() const;
   virtual bool is_equivalent(const CPPType &other) const;
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
-  virtual void output_instance(ostream &out, int indent_level,
+  virtual void output_instance(std::ostream &out, int indent_level,
                                CPPScope *scope,
-                               bool complete, const string &prename,
-                               const string &name) const;
+                               bool complete, const std::string &prename,
+                               const std::string &name) const;
 
   virtual SubType get_subtype() const;
 

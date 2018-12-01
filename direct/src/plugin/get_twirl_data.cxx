@@ -12,7 +12,7 @@
  */
 
 #include "get_twirl_data.h"
-#include "string.h"
+#include <string.h>
 
 struct twirl_flip {
   int _index;

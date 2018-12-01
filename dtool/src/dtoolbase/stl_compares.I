@@ -169,7 +169,7 @@ add_hash(size_t hash, const Key &key) {
 #ifdef _DEBUG
   // We assume that the sequence is laid out sequentially in memory.
   if (key.size() > 0) {
-    assert(&key[key.size() - 1] - &key[0] == key.size() - 1);
+    assert(&key[key.size() - 1] - &key[0] == (ptrdiff_t)key.size() - 1);
   }
 #endif
   size_t num_bytes = (key.size() * sizeof(key[0]));

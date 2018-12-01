@@ -17,10 +17,11 @@
 #include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
-#include "mss.h"
 #include "pset.h"
 #include "lightMutex.h"
 #include "lightMutexHolder.h"
+
+#include <mss.h>
 
 #ifndef UINTa
 #define UINTa U32
@@ -67,7 +68,7 @@ public:
   // For software MIDI:
   HDLSDEVICE _dls_device;
   HDLSFILEID _dls_file;
-  pvector<unsigned char> _dls_data;
+  vector_uchar _dls_data;
 
 private:
   void open_api();

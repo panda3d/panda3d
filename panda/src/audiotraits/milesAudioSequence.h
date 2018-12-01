@@ -19,7 +19,8 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * A MIDI file, preloaded and played from a memory buffer.  MIDI files cannot
@@ -29,7 +30,7 @@ class EXPCL_MILES_AUDIO MilesAudioSequence : public MilesAudioSound {
 private:
   MilesAudioSequence(MilesAudioManager *manager,
                      MilesAudioManager::SoundData *sd,
-                     const string &file_name);
+                     const std::string &file_name);
 
 public:
   virtual ~MilesAudioSequence();

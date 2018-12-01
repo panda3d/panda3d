@@ -16,7 +16,7 @@
 #include "config_egg2pg.h"
 #include "sceneGraphReducer.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCacheRecord.h"
 
 static PT(PandaNode)
@@ -28,10 +28,10 @@ load_from_loader(EggLoader &loader) {
   if (loader._error && !egg_accept_errors) {
     egg2pg_cat.error()
       << "Errors in egg file.\n";
-    return NULL;
+    return nullptr;
   }
 
-  if (loader._root != (PandaNode *)NULL && egg_flatten) {
+  if (loader._root != nullptr && egg_flatten) {
     SceneGraphReducer gr;
 
     int combine_siblings_bits = 0;
@@ -76,7 +76,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   egg_filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(egg_filename);
   }
 
@@ -87,18 +87,18 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   loader._record = record;
 
   PT(VirtualFile) vfile = vfs->get_file(egg_filename);
-  if (vfile == NULL) {
-    return NULL;
+  if (vfile == nullptr) {
+    return nullptr;
   }
 
   loader._data->set_egg_timestamp(vfile->get_timestamp());
 
   bool okflag;
-  istream *istr = vfile->open_read_file(true);
-  if (istr == (istream *)NULL) {
+  std::istream *istr = vfile->open_read_file(true);
+  if (istr == nullptr) {
     egg2pg_cat.error()
       << "Couldn't read " << egg_filename << "\n";
-    return NULL;
+    return nullptr;
   }
 
   egg2pg_cat.info()
@@ -110,7 +110,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   if (!okflag) {
     egg2pg_cat.error()
       << "Error reading " << egg_filename << "\n";
-    return NULL;
+    return nullptr;
   }
 
   return load_from_loader(loader);

@@ -36,7 +36,7 @@ public:
  */
 class CPPType : public CPPDeclaration {
 public:
-  typedef vector<CPPTypedefType *> Typedefs;
+  typedef std::vector<CPPTypedefType *> Typedefs;
   Typedefs _typedefs;
 
   CPPType(const CPPFile &file);
@@ -68,46 +68,46 @@ public:
   CPPType *remove_pointer();
 
   bool has_typedef_name() const;
-  string get_typedef_name(CPPScope *scope = NULL) const;
+  std::string get_typedef_name(CPPScope *scope = nullptr) const;
 
-  virtual string get_simple_name() const;
-  virtual string get_local_name(CPPScope *scope = NULL) const;
-  virtual string get_fully_scoped_name() const;
-  virtual string get_preferred_name() const;
+  virtual std::string get_simple_name() const;
+  virtual std::string get_local_name(CPPScope *scope = nullptr) const;
+  virtual std::string get_fully_scoped_name() const;
+  virtual std::string get_preferred_name() const;
   int get_num_alt_names() const;
-  string get_alt_name(int n) const;
+  std::string get_alt_name(int n) const;
 
   virtual bool is_incomplete() const;
   virtual bool is_convertible_to(const CPPType *other) const;
   virtual bool is_equivalent(const CPPType &other) const;
 
-  void output_instance(ostream &out, const string &name,
+  void output_instance(std::ostream &out, const std::string &name,
                        CPPScope *scope) const;
-  virtual void output_instance(ostream &out, int indent_level,
+  virtual void output_instance(std::ostream &out, int indent_level,
                                CPPScope *scope,
-                               bool complete, const string &prename,
-                               const string &name) const;
+                               bool complete, const std::string &prename,
+                               const std::string &name) const;
 
   virtual CPPType *as_type();
 
 
   static CPPType *new_type(CPPType *type);
 
-  static void record_alt_name_for(const CPPType *type, const string &name);
-  static string get_preferred_name_for(const CPPType *type);
+  static void record_alt_name_for(const CPPType *type, const std::string &name);
+  static std::string get_preferred_name_for(const CPPType *type);
 
   CPPTypeDeclaration *_declaration;
   bool _forcetype;
 
 protected:
-  typedef set<CPPType *, CPPTypeCompare> Types;
+  typedef std::set<CPPType *, CPPTypeCompare> Types;
   static Types _types;
 
-  typedef map<string, string> PreferredNames;
+  typedef std::map<std::string, std::string> PreferredNames;
   static PreferredNames _preferred_names;
 
-  typedef vector<string> Names;
-  typedef map<string, Names> AltNames;
+  typedef std::vector<std::string> Names;
+  typedef std::map<std::string, Names> AltNames;
   static AltNames _alt_names;
 };
 

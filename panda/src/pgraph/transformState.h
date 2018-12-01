@@ -51,17 +51,16 @@ class FactoryParams;
  * directly.  Instead, call one of the make() functions to create one for you.
  * And instead of modifying a TransformState object, create a new one.
  */
-class EXPCL_PANDA_PGRAPH TransformState FINAL : public NodeCachedReferenceCount {
+class EXPCL_PANDA_PGRAPH TransformState final : public NodeCachedReferenceCount {
 protected:
   TransformState();
 
-private:
-  TransformState(const TransformState &copy);
-  void operator = (const TransformState &copy);
-
 public:
+  TransformState(const TransformState &copy) = delete;
   virtual ~TransformState();
   ALLOC_DELETED_CHAIN(TransformState);
+
+  TransformState &operator = (const TransformState &copy) = delete;
 
 PUBLISHED:
   INLINE bool operator != (const TransformState &other) const;
@@ -195,16 +194,16 @@ PUBLISHED:
   EXTENSION(PyObject *get_composition_cache() const);
   EXTENSION(PyObject *get_invert_composition_cache() const);
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level) const;
-  void write_composition_cache(ostream &out, int indent_level) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level) const;
+  void write_composition_cache(std::ostream &out, int indent_level) const;
 
   static int get_num_states();
   static int get_num_unused_states();
   static int clear_cache();
   static int garbage_collect();
-  static void list_cycles(ostream &out);
-  static void list_states(ostream &out);
+  static void list_cycles(std::ostream &out);
+  static void list_states(std::ostream &out);
   static bool validate_states();
   EXTENSION(static PyObject *get_states());
   EXTENSION(static PyObject *get_unused_states());
@@ -253,7 +252,7 @@ private:
   // cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
-  typedef SimpleHashMap<const TransformState *, nullptr_t, indirect_equals_hash<const TransformState *> > States;
+  typedef SimpleHashMap<const TransformState *, std::nullptr_t, indirect_equals_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
   static CPT(TransformState) _invalid_state;
@@ -408,7 +407,7 @@ private:
 template<>
 INLINE void PointerToBase<TransformState>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const TransformState &state) {
+INLINE std::ostream &operator << (std::ostream &out, const TransformState &state) {
   state.output(out);
   return out;
 }

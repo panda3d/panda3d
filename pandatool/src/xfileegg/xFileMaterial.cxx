@@ -18,6 +18,7 @@
 #include "eggTexture.h"
 #include "eggPrimitive.h"
 #include "datagram.h"
+#include "config_xfile.h"
 
 #include <string.h>  // for strcmp, strdup
 
@@ -161,7 +162,7 @@ has_texture() const {
  * Creates a Material object for the material list.
  */
 XFileDataNode *XFileMaterial::
-make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
+make_x_material(XFileNode *x_meshMaterials, const std::string &suffix) {
   XFileDataNode *x_material =
     x_meshMaterials->add_Material("material" + suffix,
                                   _face_color, _power,

@@ -15,7 +15,7 @@
 #include "pnotify.h"
 
 #include "typedWritable.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
@@ -107,12 +107,12 @@ BamWriter::
  */
 void BamWriter::
 set_target(DatagramSink *target) {
-  if (_target != NULL) {
+  if (_target != nullptr) {
     _target->flush();
   }
   _target = target;
 
-  if (_needs_init && _target != NULL) {
+  if (_needs_init && _target != nullptr) {
     init();
   }
 }
@@ -126,7 +126,7 @@ set_target(DatagramSink *target) {
  */
 bool BamWriter::
 init() {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
   nassertr(_needs_init, false);
   _needs_init = false;
 
@@ -183,7 +183,7 @@ init() {
  */
 bool BamWriter::
 write_object(const TypedWritable *object) {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
 
   // Increment the _writing_seq, so we can check for newly stale objects
   // during this operation.
@@ -246,7 +246,7 @@ has_object(const TypedWritable *object) const {
  */
 void BamWriter::
 flush() {
-  nassertv(_target != NULL);
+  nassertv(_target != nullptr);
   _target->flush();
 }
 
@@ -298,7 +298,7 @@ void BamWriter::
 write_pointer(Datagram &packet, const TypedWritable *object) {
   // If the pointer is NULL, we always simply write a zero for an object ID
   // and leave it at that.
-  if (object == (const TypedWritable *)NULL) {
+  if (object == nullptr) {
     write_object_id(packet, 0);
 
   } else {
@@ -436,7 +436,7 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler,
  */
 bool BamWriter::
 register_pta(Datagram &packet, const void *ptr) {
-  if (ptr == (const void *)NULL) {
+  if (ptr == nullptr) {
     // A zero for the PTA ID indicates a NULL pointer.  This is a special
     // case.
     write_pta_id(packet, 0);
@@ -649,7 +649,7 @@ enqueue_object(const TypedWritable *object) {
  */
 bool BamWriter::
 flush_queue() {
-  nassertr(_target != NULL, false);
+  nassertr(_target != nullptr, false);
   // Each object we write may append more to the queue.
   while (!_object_queue.empty()) {
     const TypedWritable *object = _object_queue.front();

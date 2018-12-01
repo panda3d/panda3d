@@ -16,6 +16,8 @@
 #include "physical.h"
 #include "physicsManager.h"
 
+using std::ostream;
+
 TypeHandle Physical::_type_handle;
 
 /**
@@ -39,7 +41,7 @@ Physical(int total_objects, bool pre_alloc) :
     _phys_body = new PhysicsObject;
     add_physics_object(_phys_body);
   } else {
-    _phys_body = (PhysicsObject *) NULL;
+    _phys_body = nullptr;
     // allocate each object.
     if (pre_alloc == true) {
       for (int i = 0; i < total_objects; ++i) {
@@ -87,7 +89,7 @@ Physical(const Physical& copy) :
   if (_physics_objects.size() == 1)
     _phys_body = _physics_objects[0];
   else
-    _phys_body = (PhysicsObject *) NULL;
+    _phys_body = nullptr;
 }
 
 /**
@@ -99,7 +101,7 @@ Physical::
   // because the physics manager doesn't keep PT's to physicals, simply *'s,
   // and also means that we don't have to tell the physics manager ourselves
   // when one of our physicals is dead.
-  if (_physics_manager != (PhysicsManager *) NULL) {
+  if (_physics_manager != nullptr) {
     _physics_manager->remove_physical(this);
   }
 }
@@ -134,7 +136,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_physics_objects(ostream &out, unsigned int indent) const {
+write_physics_objects(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_physics_objects ("<<_physics_objects.size()<<" objects)\n";
@@ -150,7 +152,7 @@ write_physics_objects(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_linear_forces(ostream &out, unsigned int indent) const {
+write_linear_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
@@ -166,7 +168,7 @@ write_linear_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write_angular_forces(ostream &out, unsigned int indent) const {
+write_angular_forces(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
@@ -182,7 +184,7 @@ write_angular_forces(ostream &out, unsigned int indent) const {
  * Write a string representation of this instance to <out>.
  */
 void Physical::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""<<"Physical\n";
   write_physics_objects(out, indent+2);

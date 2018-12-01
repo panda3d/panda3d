@@ -128,7 +128,7 @@ get_num_transforms() const {
  */
 INLINE const VertexTransform *TransformBlend::
 get_transform(size_t n) const {
-  nassertr(n < _entries.size(), NULL);
+  nassertr(n < _entries.size(), nullptr);
   return _entries[n]._transform;
 }
 
@@ -376,8 +376,8 @@ CData(const TransformBlend::CData &copy) :
 {
 }
 
-INLINE ostream &
-operator << (ostream &out, const TransformBlend &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const TransformBlend &obj) {
   obj.output(out);
   return out;
 }

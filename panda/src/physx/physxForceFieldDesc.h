@@ -63,7 +63,7 @@ public:
   NxForceFieldLinearKernelDesc _kernel;
 
 private:
-  string _name;
+  std::string _name;
 };
 
 #include "physxForceFieldDesc.I"

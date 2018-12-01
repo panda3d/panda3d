@@ -63,10 +63,10 @@ get_bin(int n) const {
  * was retrieved by get_bin() or find_bin()).  The bin's name may not be
  * changed during the life of the bin.
  */
-INLINE string CullBinManager::
+INLINE std::string CullBinManager::
 get_bin_name(int bin_index) const {
-  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), string());
-  nassertr(_bin_definitions[bin_index]._in_use, string());
+  nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), std::string());
+  nassertr(_bin_definitions[bin_index]._in_use, std::string());
   return _bin_definitions[bin_index]._name;
 }
 
@@ -85,7 +85,7 @@ get_bin_type(int bin_index) const {
  * Returns the type of the bin with the indicated name.
  */
 INLINE CullBinManager::BinType CullBinManager::
-get_bin_type(const string &name) const {
+get_bin_type(const std::string &name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, BT_invalid);
   return get_bin_type(bin_index);
@@ -112,7 +112,7 @@ set_bin_type(int bin_index, CullBinManager::BinType type) {
  * frame, depending on the bin type.
  */
 INLINE void CullBinManager::
-set_bin_type(const string &name, CullBinManager::BinType type) {
+set_bin_type(const std::string &name, CullBinManager::BinType type) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_type(bin_index, type);
@@ -139,7 +139,7 @@ get_bin_sort(int bin_index) const {
  * may be changed from time to time to reorder the bins.
  */
 INLINE int CullBinManager::
-get_bin_sort(const string &name) const {
+get_bin_sort(const std::string &name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, 0);
   return get_bin_sort(bin_index);
@@ -167,7 +167,7 @@ set_bin_sort(int bin_index, int sort) {
  * may be changed from time to time to reorder the bins.
  */
 INLINE void CullBinManager::
-set_bin_sort(const string &name, int sort) {
+set_bin_sort(const std::string &name, int sort) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_sort(bin_index, sort);
@@ -192,7 +192,7 @@ get_bin_active(int bin_index) const {
  * When a bin is marked inactive, all geometry assigned to it is not rendered.
  */
 INLINE bool CullBinManager::
-get_bin_active(const string &name) const {
+get_bin_active(const std::string &name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, false);
   return get_bin_active(bin_index);
@@ -217,7 +217,7 @@ set_bin_active(int bin_index, bool active) {
  * When a bin is marked inactive, all geometry assigned to it is not rendered.
  */
 INLINE void CullBinManager::
-set_bin_active(const string &name, bool active) {
+set_bin_active(const std::string &name, bool active) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_active(bin_index, active);
@@ -279,7 +279,7 @@ set_bin_flash_color(int bin_index, const LColor &color) {
  */
 INLINE CullBinManager *CullBinManager::
 get_global_ptr() {
-  if (_global_ptr == (CullBinManager *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new CullBinManager;
   }
   return _global_ptr;

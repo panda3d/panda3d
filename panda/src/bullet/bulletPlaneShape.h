@@ -29,18 +29,21 @@
 class EXPCL_PANDABULLET BulletPlaneShape : public BulletShape {
 private:
   // Only used by make_from_bam
-  INLINE BulletPlaneShape() : _shape(NULL) {};
+  INLINE BulletPlaneShape() : _shape(nullptr) {};
 
 PUBLISHED:
+  explicit BulletPlaneShape(LPlane plane);
   explicit BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
   BulletPlaneShape(const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();
 
+  LPlane get_plane() const;
   LVector3 get_plane_normal() const;
   PN_stdfloat get_plane_constant() const;
 
   static BulletPlaneShape *make_from_solid(const CollisionPlane *solid);
 
+  MAKE_PROPERTY(plane, get_plane);
   MAKE_PROPERTY(plane_normal, get_plane_normal);
   MAKE_PROPERTY(plane_constant, get_plane_constant);
 

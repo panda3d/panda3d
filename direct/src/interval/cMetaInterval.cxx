@@ -21,6 +21,8 @@
 #include <math.h>   // for log10()
 #include <stdio.h>  // for sprintf()
 
+using std::string;
+
 TypeHandle CMetaInterval::_type_handle;
 
 /**
@@ -66,7 +68,7 @@ clear_intervals() {
   Defs::iterator di;
   for (di = _defs.begin(); di != _defs.end(); ++di) {
     IntervalDef &def = (*di);
-    if (def._c_interval != (CInterval *)NULL) {
+    if (def._c_interval != nullptr) {
       CInterval::Parents::iterator pi =
         find(def._c_interval->_parents.begin(),
              def._c_interval->_parents.end(),
@@ -122,7 +124,7 @@ int CMetaInterval::
 add_c_interval(CInterval *c_interval,
                double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
-  nassertr(c_interval != (CInterval *)NULL, -1);
+  nassertr(c_interval != nullptr, -1);
 
   c_interval->_parents.push_back(this);
   c_interval->_ival_pcollector = PStatCollector(_ival_pcollector, c_interval->_pname);
@@ -669,7 +671,7 @@ pop_event() {
  *
  */
 void CMetaInterval::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   recompute();
 
   // How many digits of precision should we output for time?
@@ -677,7 +679,7 @@ write(ostream &out, int indent_level) const {
   int total_digits = num_decimals + 4;
   static const int max_digits = 32;  // totally arbitrary
   nassertv(total_digits <= max_digits);
-  char format_str[12];
+  char format_str[16];
   sprintf(format_str, "%%%d.%df", total_digits, num_decimals);
 
   indent(out, indent_level) << get_name() << ":\n";
@@ -698,7 +700,7 @@ write(ostream &out, int indent_level) const {
  * Outputs a list of all events in the order in which they occur.
  */
 void CMetaInterval::
-timeline(ostream &out) const {
+timeline(std::ostream &out) const {
   recompute();
 
   // How many digits of precision should we output for time?
@@ -706,7 +708,7 @@ timeline(ostream &out) const {
   int total_digits = num_decimals + 4;
   static const int max_digits = 32;  // totally arbitrary
   nassertv(total_digits <= max_digits);
-  char format_str[12];
+  char format_str[16];
   sprintf(format_str, "%%%d.%df", total_digits, num_decimals);
 
   int extra_indent_level = 0;
@@ -756,7 +758,7 @@ do_recompute() {
 
   // We do a stable_sort() to guarantee ordering of events that have the same
   // start time.  These must be invoked in the order in which they appear.
-  stable_sort(_events.begin(), _events.end(), IndirectLess<PlaybackEvent>());
+  std::stable_sort(_events.begin(), _events.end(), IndirectLess<PlaybackEvent>());
   _duration = int_to_double_time(_end_time);
 }
 
@@ -1124,7 +1126,7 @@ recompute_level(int n, int level_begin, int &level_end) {
 
     previous_begin = begin_time;
     previous_end = end_time;
-    level_end = max(level_end, end_time);
+    level_end = std::max(level_end, end_time);
     n++;
   }
 
@@ -1169,7 +1171,7 @@ get_begin_time(const CMetaInterval::IntervalDef &def, int level_begin,
  * Formats an event for output, for write() or timeline().
  */
 void CMetaInterval::
-write_event_desc(ostream &out, const CMetaInterval::IntervalDef &def,
+write_event_desc(std::ostream &out, const CMetaInterval::IntervalDef &def,
                  int &extra_indent_level) const {
   switch (def._type) {
   case DT_c_interval:

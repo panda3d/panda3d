@@ -14,17 +14,16 @@
 #ifndef P3DCERT_WX_H
 #define P3DCERT_WX_H
 
-#include "wx/wx.h"
+#include <wx/wx.h>
 
 #define OPENSSL_NO_KRB5
-#include "openssl/x509.h"
-#include "openssl/x509_vfy.h"
-#include "openssl/pem.h"
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
+#include <openssl/pem.h>
 
 #include <string>
 #include <iostream>
 #include <stdio.h>
-using namespace std;
 
 class ViewCertDialog;
 
@@ -48,8 +47,8 @@ public:
   virtual bool OnCmdLineParsed(wxCmdLineParser &parser);
 
 private:
-  string _cert_filename;
-  string _cert_dir;
+  std::string _cert_filename;
+  std::string _cert_dir;
 };
 
 /**
@@ -62,7 +61,7 @@ private:
  */
 class AuthDialog : public wxDialog {
 public:
-  AuthDialog(const string &cert_filename, const string &cert_dir);
+  AuthDialog(const std::string &cert_filename, const std::string &cert_dir);
   virtual ~AuthDialog();
 
   void run_clicked(wxCommandEvent &event);
@@ -72,7 +71,7 @@ public:
   void approve_cert();
 
 private:
-  void read_cert_file(const string &cert_filename);
+  void read_cert_file(const std::string &cert_filename);
   void get_friendly_name();
   void verify_cert();
   int load_certificates_from_der_ram(X509_STORE *store,
@@ -88,7 +87,7 @@ private:
   // any class wishing to process wxWidgets events must use this macro
   DECLARE_EVENT_TABLE()
 
-  string _cert_dir;
+  std::string _cert_dir;
   X509 *_cert;
   STACK_OF(X509) *_stack;
 

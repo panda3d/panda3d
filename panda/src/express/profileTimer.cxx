@@ -13,18 +13,19 @@
 
 #include "pmap.h"
 
-using namespace std;
+using std::ostream;
+using std::string;
 
 // See ProfileTimer.h for documentation.
 
 
-EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
+EXPCL_PANDA_EXPRESS ProfileTimer Skyler_timer_global=ProfileTimer("startup");
 
 ProfileTimer* ProfileTimer::_head;
 
 ProfileTimer::
 ProfileTimer(const char* name, int maxEntries) :
-  _entries(0),
+  _entries(nullptr),
   _autoTimerCount(0) {
   // Keep a list of the ProfileTimers, so we can print them:
   _next=_head;
@@ -120,16 +121,16 @@ consolidateTo(ostream &out) const {
   {
   pmap<string, double>::const_iterator i=entries.begin();
   for (;i!=entries.end(); ++i) {
-    out << "  " << setw(50) << i->first << ": "
-    << setiosflags(ios::fixed) << setprecision(6) << setw(10) << i->second << "\n";
+    out << "  " << std::setw(50) << i->first << ": "
+    << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(10) << i->second << "\n";
     total+=i->second;
   }
   }
   out << "\n                       [Total Time: "
-    << setiosflags(ios::fixed) << setprecision(6) << total
+    << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 void ProfileTimer::
@@ -150,15 +151,15 @@ printTo(ostream &out) const {
   int i;
   for (i=0; i<_entryCount; ++i) {
     TimerEntry& te=_entries[i];
-    out << "  " << setw(50) << te._tag << ": "
-    << setiosflags(ios::fixed) << setprecision(6) << setw(10) << te._time << "\n";
+    out << "  " << std::setw(50) << te._tag << ": "
+    << std::setiosflags(std::ios::fixed) << std::setprecision(6) << std::setw(10) << te._time << "\n";
     total+=te._time;
   }
   out << "\n                       [Total Time: "
-    << setiosflags(ios::fixed) << setprecision(6) << total
+    << std::setiosflags(std::ios::fixed) << std::setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
-  out << endl;
+  out << std::endl;
 }
 
 ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :

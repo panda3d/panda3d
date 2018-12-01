@@ -19,13 +19,19 @@
 #include "shader.h"
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "bamCache.h"
 #include "string_utils.h"
 
 #ifdef HAVE_CG
 #include <Cg/cg.h>
 #endif
+
+using std::istream;
+using std::move;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 TypeHandle Shader::_type_handle;
 Shader::ShaderTable Shader::_load_table;
@@ -338,7 +344,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
   if (fromflag) {
     if (word2 == "") {
       bind._part[0] = from_single;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
     } else {
       if (from_double == SMO_INVALID) {
         cp_report_error(p, "Could not parse coordinate system name");
@@ -350,7 +356,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
   } else {
     if (word2 == "") {
       bind._part[1] = to_single;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else {
       if (to_double == SMO_INVALID) {
         cp_report_error(p, "Could not parse coordinate system name");
@@ -505,7 +511,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   if (spec._func == SMF_first) {
     spec._part[1] = SMO_INVALID;
-    spec._arg[1] = 0;
+    spec._arg[1] = nullptr;
   }
   if (spec._func == SMF_compose) {
     if (spec._part[1] == SMO_identity) {
@@ -613,11 +619,28 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
             p._type       = arg_type;
             p._direction  = arg_dir;
             p._varying    = (vbl == CG_VARYING);
-            p._integer    = (base_type == CG_UINT || base_type == CG_INT ||
-                             base_type == CG_ULONG || base_type == CG_LONG ||
-                             base_type == CG_USHORT || base_type == CG_SHORT ||
-                             base_type == CG_UCHAR || base_type == CG_CHAR);
             p._cat        = shader_cat.get_safe_ptr();
+
+            //NB. Cg does have a CG_DOUBLE type, but at least for the ARB
+            // profiles and GLSL profiles it just maps to float.
+            switch (base_type) {
+            case CG_UINT:
+            case CG_ULONG:
+            case CG_USHORT:
+            case CG_UCHAR:
+            case CG_BOOL:
+              p._numeric_type = SPT_uint;
+              break;
+            case CG_INT:
+            case CG_LONG:
+            case CG_SHORT:
+            case CG_CHAR:
+              p._numeric_type = SPT_int;
+              break;
+            default:
+              p._numeric_type = SPT_float;
+              break;
+            }
 
             success &= compile_parameter(p, arg_dim);
             break;
@@ -675,7 +698,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     ShaderVarSpec bind;
     bind._id = p._id;
     bind._append_uv = -1;
-    bind._integer = p._integer;
+    bind._numeric_type = p._numeric_type;
 
     if (pieces.size() == 2) {
       if (pieces[1] == "position") {
@@ -750,7 +773,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_light_source_i_attrib;
     bind._arg[1] = InternalName::make("shadowViewMatrix");
     bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._index = atoi(pieces[2].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -863,7 +886,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[1] = SMO_light_source_i_attrib;
     bind._arg[1] = InternalName::make("shadowViewMatrix");
     bind._part[0] = SMO_view_to_apiview;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._index = atoi(pieces[2].c_str());
 
     int next = 1;
@@ -931,9 +954,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_transpose;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_material;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "color") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -942,9 +965,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_color;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "colorscale") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -953,9 +976,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_colorscale;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "fog") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -964,9 +987,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fog;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "fogcolor") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -975,9 +998,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_attr_fogcolor;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1] == "ambient") {
       if (!cp_errchk_parameter_float(p,3,4)) {
         return false;
@@ -986,9 +1009,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_light_ambient;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
     } else if (pieces[1].compare(0, 5, "light") == 0) {
       if (!cp_errchk_parameter_float(p,16,16)) {
         return false;
@@ -997,9 +1020,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._piece = SMP_transpose;
       bind._func = SMF_first;
       bind._part[0] = SMO_light_source_i_packed;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
     } else if (pieces[1].compare(0, 5, "lspec") == 0) {
       if (!cp_errchk_parameter_float(p,3,4)) {
@@ -1011,7 +1034,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       bind._part[0] = SMO_light_source_i_attrib;
       bind._arg[0] = InternalName::make("specular");
       bind._part[1] = SMO_identity;
-      bind._arg[1] = NULL;
+      bind._arg[1] = nullptr;
       bind._index = atoi(pieces[1].c_str() + 5);
     } else {
       cp_report_error(p,"Unknown attr parameter.");
@@ -1054,7 +1077,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_alight_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1076,7 +1099,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_satten_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1138,9 +1161,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_whole;
     bind._func = SMF_first;
     bind._part[0] = SMO_texmat_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1161,9 +1184,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texscale_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1184,9 +1207,9 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_texcolor_i;
-    bind._arg[0] = NULL;
+    bind._arg[0] = nullptr;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     bind._index = atoi(pieces[1].c_str());
 
     cp_optimize_mat_spec(bind);
@@ -1209,7 +1232,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_plane_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1231,7 +1254,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_clipplane_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
 
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
@@ -1252,20 +1275,20 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     if (pieces[1] == "pixelsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._part[0] = SMO_pixel_size;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else if (pieces[1] == "windowsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._part[0] = SMO_window_size;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else if (pieces[1] == "time") {
       if (!cp_errchk_parameter_float(p, 1, 1)) {
@@ -1273,7 +1296,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       }
       bind._piece = SMP_row3x1;
       bind._part[0] = SMO_frame_time;
-      bind._arg[0] = NULL;
+      bind._arg[0] = nullptr;
 
     } else {
       cp_report_error(p, "unknown system parameter");
@@ -1299,7 +1322,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     }
     ShaderTexSpec bind;
     bind._id = p._id;
-    bind._name = 0;
+    bind._name = nullptr;
     bind._stage = atoi(pieces[1].c_str());
     bind._part = STO_stage_i;
     switch (p._type) {
@@ -1364,7 +1387,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_texpad_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     _mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1385,7 +1408,7 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
     bind._part[0] = SMO_texpix_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
-    bind._arg[1] = NULL;
+    bind._arg[1] = nullptr;
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     _mat_deps |= bind._dep[0] | bind._dep[1];
@@ -1777,7 +1800,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
         << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
       if (err == CG_COMPILER_ERROR) {
         const char *listing = cgGetLastListing(context);
-        if (listing != NULL) {
+        if (listing != nullptr) {
           shader_cat.debug(false) << listing;
         }
       }
@@ -1792,13 +1815,13 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
 
   // The active profile failed, so recompile it with the ultimate profile.
   prog = cgCreateProgram(context, CG_SOURCE, text.c_str(),
-                         (CGprofile)ultimate, entry, (const char **)NULL);
+                         (CGprofile)ultimate, entry, nullptr);
 
   // Extract the output listing.
   err = cgGetError();
   const char *listing = cgGetLastListing(context);
 
-  if (err == CG_NO_ERROR && listing != NULL && strlen(listing) > 1) {
+  if (err == CG_NO_ERROR && listing != nullptr && strlen(listing) > 1) {
     shader_cat.warning()
       << "Encountered warnings during compilation of " << get_filename(type)
       << ":\n" << listing;
@@ -1806,7 +1829,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps,
   } else if (err == CG_COMPILER_ERROR) {
     shader_cat.error()
       << "Failed to compile Cg shader " << get_filename(type);
-    if (listing != NULL) {
+    if (listing != nullptr) {
       shader_cat.error(false) << ":\n" << listing;
     } else {
       shader_cat.error(false) << "!\n";
@@ -1915,7 +1938,7 @@ cg_compile_shader(const ShaderCaps &caps, CGcontext context) {
       CGprogram new_program;
       new_program = cgCreateProgram(context, CG_OBJECT, result.c_str(),
                                     (CGprofile)_cg_fprofile, "fshader",
-                                    (const char**)NULL);
+                                    nullptr);
       if (new_program) {
         cgDestroyProgram(_cg_fprogram);
         _cg_fprogram = new_program;
@@ -2245,7 +2268,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(map[id._seqno]);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Uniform parameter " << id._name
                            << " is bound to resource " << resource << "\n";
       }
@@ -2258,7 +2281,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(p);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Texture parameter " << id._name
                           << " is bound to resource " << resource << "\n";
       }
@@ -2271,7 +2294,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
     CGparameter p = cgGetNamedParameter(programs_by_type[id._type], id._name.c_str());
 
     const char *resource = cgGetParameterResourceName(p);
-    if (shader_cat.is_debug() && resource != NULL) {
+    if (shader_cat.is_debug() && resource != nullptr) {
       if (cgGetParameterResource(p) == CG_GLSL_ATTRIB) {
         shader_cat.debug()
           << "Varying parameter " << id._name << " is bound to GLSL attribute "
@@ -2293,7 +2316,7 @@ cg_compile_for(const ShaderCaps &caps, CGcontext context,
 
     if (shader_cat.is_debug()) {
       const char *resource = cgGetParameterResourceName(map[id._seqno]);
-      if (resource != NULL) {
+      if (resource != nullptr) {
         shader_cat.debug() << "Uniform ptr parameter " << id._name
                            << " is bound to resource " << resource << "\n";
       }
@@ -2446,6 +2469,96 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 }
 
 /**
+ * Loads the shader from the given string(s). Returns a boolean indicating
+ * success or failure.
+ */
+bool Shader::
+load(const ShaderFile &sbody, BamCacheRecord *record) {
+  _filename = ShaderFile("created-shader");
+  _fullpath = Filename();
+  _text._separate = sbody._separate;
+
+  if (sbody._separate) {
+    if (_language == SL_none) {
+      shader_cat.error()
+        << "No shader language was specified!\n";
+      return false;
+    }
+
+    if (!sbody._vertex.empty() &&
+        !do_load_source(_text._vertex, sbody._vertex, record)) {
+      return false;
+    }
+    if (!sbody._fragment.empty() &&
+        !do_load_source(_text._fragment, sbody._fragment, record)) {
+      return false;
+    }
+    if (!sbody._geometry.empty() &&
+        !do_load_source(_text._geometry, sbody._geometry, record)) {
+      return false;
+    }
+    if (!sbody._tess_control.empty() &&
+        !do_load_source(_text._tess_control, sbody._tess_control, record)) {
+      return false;
+    }
+    if (!sbody._tess_evaluation.empty() &&
+        !do_load_source(_text._tess_evaluation, sbody._tess_evaluation, record)) {
+      return false;
+    }
+    if (!sbody._compute.empty() &&
+        !do_load_source(_text._compute, sbody._compute, record)) {
+      return false;
+    }
+
+  } else {
+    if (!do_load_source(_text._shared, sbody._shared, record)) {
+      return false;
+    }
+
+    // Determine which language the shader is written in.
+    if (_language == SL_none) {
+      string header;
+      parse_init();
+      parse_line(header, true, true);
+      if (header == "//Cg") {
+        _language = SL_Cg;
+      } else {
+        shader_cat.error()
+          << "Unable to determine shader language of " << sbody._shared << "\n";
+        return false;
+      }
+    } else if (_language == SL_GLSL) {
+      shader_cat.error()
+        << "GLSL shaders must have separate shader bodies!\n";
+      return false;
+    }
+
+    // Determine which language the shader is written in.
+    if (_language == SL_Cg) {
+#ifdef HAVE_CG
+      cg_get_profile_from_header(_default_caps);
+
+      if (!cg_analyze_shader(_default_caps)) {
+        shader_cat.error()
+          << "Shader encountered an error.\n";
+        return false;
+      }
+#else
+      shader_cat.error()
+        << "Tried to load Cg shader, but no Cg support is enabled.\n";
+#endif
+    } else {
+      shader_cat.error()
+        << "Shader is not in a supported shader-language.\n";
+      return false;
+    }
+  }
+
+  _loaded = true;
+  return true;
+}
+
+/**
  * Reads the shader file from the given path into the given string.
  *
  * Returns false if there was an error with this shader bad enough to consider
@@ -2453,43 +2566,94 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
+  if (vf == nullptr) {
+    shader_cat.error()
+      << "Could not find shader file: " << fn << "\n";
+    return false;
+  }
+
   if (_language == SL_GLSL && glsl_preprocess) {
-    // Preprocess the GLSL file as we read it.
-    set<Filename> open_files;
-    ostringstream sstr;
-    if (!r_preprocess_source(sstr, fn, Filename(), open_files, record)) {
+    istream *source = vf->open_read_file(true);
+    if (source == nullptr) {
+      shader_cat.error()
+        << "Could not open shader file: " << fn << "\n";
       return false;
     }
+
+    // Preprocess the GLSL file as we read it.
+    shader_cat.info()
+      << "Preprocessing shader file: " << fn << "\n";
+
+    std::set<Filename> open_files;
+    ostringstream sstr;
+    if (!r_preprocess_source(sstr, *source, fn, vf->get_filename(), open_files, record)) {
+      vf->close_read_file(source);
+      return false;
+    }
+    vf->close_read_file(source);
     into = sstr.str();
 
   } else {
     shader_cat.info() << "Reading shader file: " << fn << "\n";
-
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
-    if (vf == NULL) {
-      shader_cat.error()
-        << "Could not find shader file: " << fn << "\n";
-      return false;
-    }
 
     if (!vf->read_file(into, true)) {
       shader_cat.error()
         << "Could not read shader file: " << fn << "\n";
       return false;
     }
+  }
 
-    if (record != (BamCacheRecord *)NULL) {
-      record->add_dependent_file(vf);
+  if (record != nullptr) {
+    record->add_dependent_file(vf);
+  }
+
+  _last_modified = std::max(_last_modified, vf->get_timestamp());
+  _source_files.push_back(vf->get_filename());
+
+  // Strip trailing whitespace.
+  while (!into.empty() && isspace(into[into.size() - 1])) {
+    into.resize(into.size() - 1);
+  }
+
+  // Except add back a newline at the end, which is needed by Intel drivers.
+  into += "\n";
+
+  return true;
+}
+
+/**
+ * Loads the shader file from the given string into the given string,
+ * performing any pre-processing on it that may be necessary.
+ *
+ * Returns false if there was an error with this shader bad enough to consider
+ * it 'invalid'.
+ */
+bool Shader::
+do_load_source(string &into, const std::string &source, BamCacheRecord *record) {
+  if (_language == SL_GLSL && glsl_preprocess) {
+    // Preprocess the GLSL file as we read it.
+    std::set<Filename> open_files;
+    std::ostringstream sstr;
+    std::istringstream in(source);
+    if (!r_preprocess_source(sstr, in, Filename("created-shader"), Filename(),
+                             open_files, record)) {
+      return false;
     }
-    _last_modified = max(_last_modified, vf->get_timestamp());
-    _source_files.push_back(vf->get_filename());
+    into = sstr.str();
+
+  } else {
+    into = source;
   }
 
   // Strip trailing whitespace.
   while (!into.empty() && isspace(into[into.size() - 1])) {
     into.resize(into.size() - 1);
   }
+
+  // Except add back a newline at the end, which is needed by Intel drivers.
+  into += "\n";
 
   return true;
 }
@@ -2502,10 +2666,10 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
  * recursive includes.
  */
 bool Shader::
-r_preprocess_source(ostream &out, const Filename &fn,
-                    const Filename &source_dir,
-                    set<Filename> &once_files,
-                    BamCacheRecord *record, int depth) {
+r_preprocess_include(ostream &out, const Filename &fn,
+                     const Filename &source_dir,
+                     std::set<Filename> &once_files,
+                     BamCacheRecord *record, int depth) {
 
   if (depth > glsl_include_recursion_limit) {
     shader_cat.error()
@@ -2521,9 +2685,9 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, path);
-  if (vf == NULL) {
+  if (vf == nullptr) {
     shader_cat.error()
-      << "Could not find shader file: " << fn << "\n";
+      << "Could not find shader include: " << fn << "\n";
     return false;
   }
 
@@ -2534,16 +2698,16 @@ r_preprocess_source(ostream &out, const Filename &fn,
   }
 
   istream *source = vf->open_read_file(true);
-  if (source == NULL) {
+  if (source == nullptr) {
     shader_cat.error()
-      << "Could not open shader file: " << fn << "\n";
+      << "Could not open shader include: " << fn << "\n";
     return false;
   }
 
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(vf);
   }
-  _last_modified = max(_last_modified, vf->get_timestamp());
+  _last_modified = std::max(_last_modified, vf->get_timestamp());
   _source_files.push_back(full_fn);
 
   // We give each file an unique index.  This is so that we can identify a
@@ -2552,22 +2716,34 @@ r_preprocess_source(ostream &out, const Filename &fn,
   // than that, unfortunately.  Don't do this for the top-level file, though.
   // We don't want anything to get in before a potential #version directive.
   int fileno = 0;
-  if (depth > 0) {
-    fileno = 2048 + _included_files.size();
-    // Write it into the vector so that we can substitute it later when we are
-    // parsing the GLSL error log.  Don't store the full filename because it
-    // would just be too long to display.
-    _included_files.push_back(fn);
+  fileno = 2048 + _included_files.size();
 
-    out << "#line 1 " << fileno << " // " << fn << "\n";
-    if (shader_cat.is_debug()) {
-      shader_cat.debug()
-        << "Preprocessing shader include " << fileno << ": " << fn << "\n";
-    }
-  } else {
-    shader_cat.info()
-      << "Preprocessing shader file: " << fn << "\n";
+  // Write it into the vector so that we can substitute it later when we are
+  // parsing the GLSL error log.  Don't store the full filename because it
+  // would just be too long to display.
+  _included_files.push_back(fn);
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Preprocessing shader include " << fileno << ": " << fn << "\n";
   }
+
+  bool result = r_preprocess_source(out, *source, fn, full_fn, once_files, record, fileno, depth);
+  vf->close_read_file(source);
+  return result;
+}
+
+/**
+ * Loads a given GLSL stream line by line, processing any #pragma include and
+ * once statements, as well as removing any comments.
+ *
+ * The set keeps track of which files we have already included, for checking
+ * recursive includes.
+ */
+bool Shader::
+r_preprocess_source(ostream &out, istream &in, const Filename &fn,
+                    const Filename &full_fn, std::set<Filename> &once_files,
+                    BamCacheRecord *record, int fileno, int depth) {
 
   // Iterate over the lines for things we may need to preprocess.
   string line;
@@ -2575,11 +2751,17 @@ r_preprocess_source(ostream &out, const Filename &fn,
   int ext_google_line = 0;
   bool had_include = false;
   int lineno = 0;
-  while (getline(*source, line)) {
+  bool write_line_directive = (fileno != 0);
+
+  while (std::getline(in, line)) {
     ++lineno;
 
     if (line.empty()) {
-      out.put('\n');
+      // We still write a newline to make sure the line numbering remains
+      // consistent, unless we are about to write a #line directive anyway.
+      if (!write_line_directive) {
+        out.put('\n');
+      }
       continue;
     }
 
@@ -2589,9 +2771,11 @@ r_preprocess_source(ostream &out, const Filename &fn,
       line.resize(line.size() - 1);
       string line2;
 
-      if (getline(*source, line2)) {
+      if (std::getline(in, line2)) {
         line += line2;
-        out.put('\n');
+        if (!write_line_directive) {
+          out.put('\n');
+        }
         ++lineno;
       } else {
         break;
@@ -2618,8 +2802,10 @@ r_preprocess_source(ostream &out, const Filename &fn,
       size_t block_end = line2.find("*/");
       while (block_end == string::npos) {
         // Didn't find it - look in the next line.
-        if (getline(*source, line2)) {
-          out.put('\n');
+        if (std::getline(in, line2)) {
+          if (!write_line_directive) {
+            out.put('\n');
+          }
           ++lineno;
           block_end = line2.find("*/");
         } else {
@@ -2637,16 +2823,27 @@ r_preprocess_source(ostream &out, const Filename &fn,
       line.resize(line.size() - 1);
     }
 
+    if (line.empty()) {
+      if (!write_line_directive) {
+        out.put('\n');
+      }
+      continue;
+    }
+
     // Check if this line contains a #directive.
     char directive[64];
     if (line.size() < 8 || sscanf(line.c_str(), " # %63s", directive) != 1) {
       // Nope.  Just pass the line through unmodified.
+      if (write_line_directive) {
+        out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
+        write_line_directive = false;
+      }
       out << line << "\n";
       continue;
     }
 
     char pragma[64];
-    int nread = 0;
+    size_t nread = 0;
     // What kind of directive is it?
     if (strcmp(directive, "pragma") == 0 &&
         sscanf(line.c_str(), " # pragma %63s", pragma) == 1) {
@@ -2655,13 +2852,13 @@ r_preprocess_source(ostream &out, const Filename &fn,
         Filename incfn, source_dir;
         {
           char incfile[2048];
-          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %n", incfile, &nread) == 1
+          if (sscanf(line.c_str(), " # pragma%*[ \t]include \"%2047[^\"]\" %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // A regular include, with double quotes.  Probably a local file.
             source_dir = full_fn.get_dirname();
             incfn = incfile;
 
-          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %n", incfile, &nread) == 1
+          } else if (sscanf(line.c_str(), " # pragma%*[ \t]include <%2047[^\"]> %zn", incfile, &nread) == 1
               && nread == line.size()) {
             // Angled includes are also OK, but we don't search in the directory
             // of the source file.
@@ -2677,7 +2874,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
         }
 
         // OK, great.  Process the include.
-        if (!r_preprocess_source(out, incfn, source_dir, once_files, record, depth + 1)) {
+        if (!r_preprocess_include(out, incfn, source_dir, once_files, record, depth + 1)) {
           // An error occurred.  Pass on the failure.
           shader_cat.error(false) << "included at line "
             << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -2685,12 +2882,13 @@ r_preprocess_source(ostream &out, const Filename &fn,
         }
 
         // Restore the line counter.
-        out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
+        write_line_directive = true;
         had_include = true;
+        continue;
 
       } else if (strcmp(pragma, "once") == 0) {
         // Do a stricter syntax check, just to be extra safe.
-        if (sscanf(line.c_str(), " # pragma%*[ \t]once %n", &nread) != 0 ||
+        if (sscanf(line.c_str(), " # pragma%*[ \t]once %zn", &nread) != 0 ||
             nread != line.size()) {
           shader_cat.error()
             << "Malformed #pragma once at line " << lineno
@@ -2698,27 +2896,35 @@ r_preprocess_source(ostream &out, const Filename &fn,
           return false;
         }
 
-        once_files.insert(full_fn);
+        if (fileno == 0) {
+          shader_cat.warning()
+            << "#pragma once in main file at line "
+            << lineno << " of file " << fn
+#ifndef NDEBUG
+            << ":\n  " << line
+#endif
+            << "\n";
+        }
 
-      } else {
-        // Forward it, the driver will ignore it if it doesn't know it.
-        out << line << "\n";
+        if (!full_fn.empty()) {
+          once_files.insert(full_fn);
+        }
+        continue;
       }
+      // Otherwise, just pass it through to the driver.
 
     } else if (strcmp(directive, "endif") == 0) {
       // Check for an #endif after an include.  We have to restore the line
       // number in case the include happened under an #if block.
-      out << line << "\n";
-      int nread = 0;
       if (had_include) {
-        out << "#line " << (lineno + 1) << " " << fileno << "\n";
+        write_line_directive = true;
       }
 
     } else if (strcmp(directive, "extension") == 0) {
       // Check for special preprocessing extensions.
       char extension[256];
       char behavior[9];
-      if (sscanf(line.c_str(), " # extension%*[ \t]%255s%*[ \t]:%*[ \t]%8s", extension, behavior) == 2) {
+      if (sscanf(line.c_str(), " # extension%*[ \t]%255[^: \t] : %8s", extension, behavior) == 2) {
         // Parse the behavior string.
         int mode;
         if (strcmp(behavior, "require") == 0 || strcmp(behavior, "enable") == 0) {
@@ -2744,7 +2950,8 @@ r_preprocess_source(ostream &out, const Filename &fn,
           }
           ext_google_include = mode;
           ext_google_line = mode;
-          out << line << "\n";
+          // Still pass it through to the driver, so it can enable other
+          // extensions.
 
         } else if (strcmp(extension, "GL_GOOGLE_include_directive") == 0) {
           // Enable the Google extension support for #include statements.
@@ -2752,14 +2959,12 @@ r_preprocess_source(ostream &out, const Filename &fn,
           // This matches the behavior of Khronos' glslang reference compiler.
           ext_google_include = mode;
           ext_google_line = mode;
+          continue;
 
         } else if (strcmp(extension, "GL_GOOGLE_cpp_style_line_directive") == 0) {
           // Enables strings in #line statements.
           ext_google_line = mode;
-
-        } else {
-          // It's an extension the driver should worry about.
-          out << line << "\n";
+          continue;
         }
       } else {
         shader_cat.error()
@@ -2767,6 +2972,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
           << lineno << " of file " << fn << ":\n  " << line << "\n";
         return false;
       }
+
     } else if (ext_google_include > 0 && strcmp(directive, "include") == 0) {
       // Warn about extension use if requested.
       if (ext_google_include == 1) {
@@ -2783,7 +2989,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
       Filename incfn;
       {
         char incfile[2048];
-        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %n", incfile, &nread) != 1
+        if (sscanf(line.c_str(), " # include%*[ \t]\"%2047[^\"]\" %zn", incfile, &nread) != 1
             || nread != line.size()) {
           // Couldn't parse it.
           shader_cat.error()
@@ -2796,7 +3002,7 @@ r_preprocess_source(ostream &out, const Filename &fn,
 
       // OK, great.  Process the include.
       Filename source_dir = full_fn.get_dirname();
-      if (!r_preprocess_source(out, incfn, source_dir, once_files, record, depth + 1)) {
+      if (!r_preprocess_include(out, incfn, source_dir, once_files, record, depth + 1)) {
         // An error occurred.  Pass on the failure.
         shader_cat.error(false) << "included at line "
           << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -2804,13 +3010,14 @@ r_preprocess_source(ostream &out, const Filename &fn,
       }
 
       // Restore the line counter.
-      out << "#line " << (lineno + 1) << " " << fileno << " // " << fn << "\n";
+      write_line_directive = true;
       had_include = true;
+      continue;
 
     } else if (ext_google_line > 0 && strcmp(directive, "line") == 0) {
       // It's a #line directive.  See if it uses a string instead of number.
       char filestr[2048];
-      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %n", &lineno, filestr, &nread) == 2
+      if (sscanf(line.c_str(), " # line%*[ \t]%d%*[ \t]\"%2047[^\"]\" %zn", &lineno, filestr, &nread) == 2
           && nread == line.size()) {
         // Warn about extension use if requested.
         if (ext_google_line == 1) {
@@ -2829,18 +3036,17 @@ r_preprocess_source(ostream &out, const Filename &fn,
         _included_files.push_back(Filename(filestr));
 
         out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
-
-      } else {
-        // We couldn't parse the #line directive.  Pass it through unmodified.
-        out << line << "\n";
+        continue;
       }
-    } else {
-      // Different directive (eg. #version).  Leave it untouched.
-      out << line << "\n";
     }
+
+    if (write_line_directive) {
+      out << "#line " << lineno << " " << fileno << " // " << fn << "\n";
+      write_line_directive = false;
+    }
+    out << line << "\n";
   }
 
-  vf->close_read_file(source);
   return true;
 }
 
@@ -2857,7 +3063,7 @@ check_modified() const {
     const Filename &fn = (*it);
 
     PT(VirtualFile) vfile = vfs->get_file(fn, true);
-    if (vfile == (VirtualFile *)NULL || vfile->get_timestamp() > _last_modified) {
+    if (vfile == nullptr || vfile->get_timestamp() > _last_modified) {
       return true;
     }
   }
@@ -3052,7 +3258,7 @@ load(const Filename &file, ShaderLanguage lang) {
 
   PT(Shader) shader = new Shader(lang);
   if (!shader->read(sfile)) {
-    return NULL;
+    return nullptr;
   }
 
   _load_table[sfile] = shader;
@@ -3090,7 +3296,7 @@ load(ShaderLanguage lang, const Filename &vertex,
 
   PT(Shader) shader = new Shader(lang);
   if (!shader->read(sfile)) {
-    return NULL;
+    return nullptr;
   }
 
   _load_table[sfile] = shader;
@@ -3113,7 +3319,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
-    return NULL;
+    return nullptr;
   }
 
   Filename fullpath(fn);
@@ -3121,7 +3327,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (!vfs->resolve_filename(fullpath, get_model_path())) {
     shader_cat.error()
       << "Could not find compute shader file: " << fn << "\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sfile;
@@ -3143,7 +3349,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record = cache->lookup(fullpath, "sho");
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     if (record->has_data()) {
       shader_cat.info()
         << "Compute shader " << fn << " was found in disk cache.\n";
@@ -3155,7 +3361,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   PT(Shader) shader = new Shader(lang);
 
   if (!shader->read(sfile, record)) {
-    return NULL;
+    return nullptr;
   }
   _load_table[sfile] = shader;
 
@@ -3169,7 +3375,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
-  swap(shader->_record, record);
+  std::swap(shader->_record, record);
   shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
   shader->_fullpath = shader->_source_files[0];
   return shader;
@@ -3183,7 +3389,7 @@ make(string body, ShaderLanguage lang) {
   if (lang == SL_GLSL) {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
-    return NULL;
+    return nullptr;
 
   } else if (lang == SL_none) {
     shader_cat.warning()
@@ -3193,7 +3399,7 @@ make(string body, ShaderLanguage lang) {
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
     shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return NULL;
+    return nullptr;
   }
 #endif
 
@@ -3202,28 +3408,26 @@ make(string body, ShaderLanguage lang) {
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
+      // But check that someone hasn't modified its includes in the meantime.
+      if (!i->second->check_modified()) {
+        return i->second;
+      }
     }
   }
 
   PT(Shader) shader = new Shader(lang);
-  shader->_filename = ShaderFile("created-shader");
-  shader->_text = move(sbody);
-
-#ifdef HAVE_CG
-  if (lang == SL_Cg) {
-    shader->cg_get_profile_from_header(_default_caps);
-
-    if (!shader->cg_analyze_shader(_default_caps)) {
-      shader_cat.error()
-        << "Shader encountered an error.\n";
-      return NULL;
-    }
+  if (!shader->load(sbody)) {
+    return nullptr;
   }
-#endif
 
   if (cache_generated_shaders) {
-    _make_table[shader->_text] = shader;
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      shader = i->second;
+    } else {
+      _make_table[shader->_text] = shader;
+    }
+    _make_table[std::move(sbody)] = shader;
   }
 
   if (dump_generated_shaders) {
@@ -3234,7 +3438,7 @@ make(string body, ShaderLanguage lang) {
     shader_cat.warning() << "Dumping shader: " << fn << "\n";
 
     pofstream s;
-    s.open(fn.c_str(), ios::out | ios::trunc);
+    s.open(fn.c_str(), std::ios::out | std::ios::trunc);
     s << shader->get_text();
     s.close();
   }
@@ -3250,13 +3454,13 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
 #ifndef HAVE_CG
   if (lang == SL_Cg) {
     shader_cat.error() << "Support for Cg shaders is not enabled.\n";
-    return NULL;
+    return nullptr;
   }
 #endif
   if (lang == SL_none) {
     shader_cat.error()
       << "Shader::make() requires an explicit shader language.\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sbody(move(vertex), move(fragment), move(geometry),
@@ -3265,26 +3469,27 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
+      // But check that someone hasn't modified its includes in the meantime.
+      if (!i->second->check_modified()) {
+        return i->second;
+      }
     }
   }
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  shader->_text = move(sbody);
-
-#ifdef HAVE_CG
-  if (lang == SL_Cg) {
-    if (!shader->cg_analyze_shader(_default_caps)) {
-      shader_cat.error()
-        << "Shader encountered an error.\n";
-      return NULL;
-    }
+  if (!shader->load(sbody)) {
+    return nullptr;
   }
-#endif
 
   if (cache_generated_shaders) {
-    _make_table[shader->_text] = shader;
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      shader = i->second;
+    } else {
+      _make_table[shader->_text] = shader;
+    }
+    _make_table[std::move(sbody)] = shader;
   }
 
   return shader;
@@ -3298,7 +3503,7 @@ make_compute(ShaderLanguage lang, string body) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
-    return NULL;
+    return nullptr;
   }
 
   ShaderFile sbody;
@@ -3308,16 +3513,27 @@ make_compute(ShaderLanguage lang, string body) {
   if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(sbody);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
+      // But check that someone hasn't modified its includes in the meantime.
+      if (!i->second->check_modified()) {
+        return i->second;
+      }
     }
   }
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  shader->_text = move(sbody);
+  if (!shader->load(sbody)) {
+    return nullptr;
+  }
 
   if (cache_generated_shaders) {
-    _make_table[shader->_text] = shader;
+    ShaderTable::const_iterator i = _make_table.find(shader->_text);
+    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+      shader = i->second;
+    } else {
+      _make_table[shader->_text] = shader;
+    }
+    _make_table[std::move(sbody)] = shader;
   }
 
   return shader;
@@ -3409,8 +3625,7 @@ parse_eof() {
  */
 PT(AsyncFuture) Shader::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  PT(PreparedGraphicsObjects::EnqueuedObject) obj = prepared_objects->enqueue_shader_future(this);
-  return obj.p();
+  return prepared_objects->enqueue_shader_future(this);
 }
 
 /**
@@ -3437,7 +3652,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)NULL) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     } else {
       _contexts.erase(ci);
@@ -3490,7 +3705,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // which the texture didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -3511,7 +3726,7 @@ release_all() {
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
     PreparedGraphicsObjects *prepared_objects = (*ci).first;
     ShaderContext *sc = (*ci).second;
-    if (sc != (ShaderContext *)NULL) {
+    if (sc != nullptr) {
       prepared_objects->release_shader(sc);
     }
   }

@@ -21,7 +21,7 @@
  */
 class MaxNodeDesc : public ReferenceCount, public Namable {
  public:
-  MaxNodeDesc(MaxNodeDesc *parent = NULL, INode *max_node = NULL);
+  MaxNodeDesc(MaxNodeDesc *parent = nullptr, INode *max_node = nullptr);
   ~MaxNodeDesc();
 
   void from_INode(INode *max_node);

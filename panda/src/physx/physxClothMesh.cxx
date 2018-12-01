@@ -49,7 +49,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseClothMesh(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 
   PhysxMeshPool::release_cloth_mesh(this);
 }

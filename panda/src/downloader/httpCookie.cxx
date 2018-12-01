@@ -15,8 +15,11 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "ctype.h"
 #include "httpChannel.h"
+
+#include <ctype.h>
+
+using std::string;
 
 /**
  * The sorting operator allows the cookies to be stored in a single
@@ -139,7 +142,7 @@ matches_url(const URLSpec &url) const {
  *
  */
 void HTTPCookie::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name << "=" << _value
       << "; path=" << _path << "; domain=" << _domain;
 

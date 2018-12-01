@@ -17,8 +17,14 @@
 
 #ifdef HAVE_OPENSSL
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 #endif  // HAVE_OPENSSL
+
+using std::istream;
+using std::istringstream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
 
 
 /**
@@ -39,7 +45,7 @@ output_hex(ostream &out) const {
  */
 void HashVal::
 input_hex(istream &in) {
-  in >> ws;
+  in >> std::ws;
   char buffer[32];
   size_t i = 0;
   int ch = in.get();
@@ -53,7 +59,7 @@ input_hex(istream &in) {
   }
 
   if (i != 32) {
-    in.clear(ios::failbit|in.rdstate());
+    in.clear(std::ios::failbit|in.rdstate());
     return;
   }
 
@@ -174,7 +180,7 @@ hash_file(const Filename &filename) {
   Filename bin_filename = Filename::binary_filename(filename);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *istr = vfs->open_read_file(bin_filename, false);
-  if (istr == (istream *)NULL) {
+  if (istr == nullptr) {
     (*this) = HashVal();
     return false;
   }
@@ -203,7 +209,7 @@ hash_stream(istream &stream) {
   char buffer[buffer_size];
 
   // Seek the stream to the beginning in case it wasn't there already.
-  stream.seekg(0, ios::beg);
+  stream.seekg(0, std::ios::beg);
 
   stream.read(buffer, buffer_size);
   size_t count = stream.gcount();

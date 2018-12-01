@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   Py_SetProgramName(Py_DecodeLocale("ppython", nullptr));
 
   // Set PYTHONHOME to the location of the .apk file.
-  string apk_path = ExecutionEnvironment::get_binary_name();
+  std::string apk_path = ExecutionEnvironment::get_binary_name();
   Py_SetPythonHome(Py_DecodeLocale(apk_path.c_str(), nullptr));
 
   // We need to make zlib available to zipimport, but I don't know how
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
   // This is used by the import hook to locate the module libraries.
   Filename dtool_name = ExecutionEnvironment::get_dtool_name();
-  string native_dir = dtool_name.get_dirname();
+  std::string native_dir = dtool_name.get_dirname();
   PyObject *py_native_dir = PyUnicode_FromStringAndSize(native_dir.c_str(), native_dir.size());
   PySys_SetObject("_native_library_dir", py_native_dir);
   Py_DECREF(py_native_dir);

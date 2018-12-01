@@ -23,7 +23,7 @@ OdeHashSpace(dSpaceID id) :
 
 OdeHashSpace::
 OdeHashSpace() :
-  OdeSpace(dHashSpaceCreate(0)) {
+  OdeSpace(dHashSpaceCreate(nullptr)) {
 }
 
 OdeHashSpace::

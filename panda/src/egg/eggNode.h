@@ -32,9 +32,9 @@ class EggTextureCollection;
  * This includes groups, joints, polygons, vertex pools, etc., but does not
  * include things like vertices.
  */
-class EXPCL_PANDAEGG EggNode : public EggNamedObject {
+class EXPCL_PANDA_EGG EggNode : public EggNamedObject {
 PUBLISHED:
-  INLINE explicit EggNode(const string &name = "");
+  INLINE explicit EggNode(const std::string &name = "");
   INLINE EggNode(const EggNode &copy);
   INLINE EggNode &operator = (const EggNode &copy);
 
@@ -44,6 +44,9 @@ PUBLISHED:
   INLINE bool is_under_transform() const;
   INLINE bool is_local_coord() const;
 
+  MAKE_PROPERTY(parent, get_parent);
+  MAKE_PROPERTY(depth, get_depth);
+
   INLINE const LMatrix4d &get_vertex_frame() const;
   INLINE const LMatrix4d &get_node_frame() const;
   INLINE const LMatrix4d &get_vertex_frame_inv() const;
@@ -51,12 +54,12 @@ PUBLISHED:
   INLINE const LMatrix4d &get_vertex_to_node() const;
   INLINE const LMatrix4d &get_node_to_vertex() const;
 
-  INLINE const LMatrix4d *get_vertex_frame_ptr()const;
-  INLINE const LMatrix4d *get_node_frame_ptr()const;
-  INLINE const LMatrix4d *get_vertex_frame_inv_ptr()const;
-  INLINE const LMatrix4d *get_node_frame_inv_ptr()const;
-  INLINE const LMatrix4d *get_vertex_to_node_ptr()const;
-  INLINE const LMatrix4d *get_node_to_vertex_ptr()const;
+  INLINE const LMatrix4d *get_vertex_frame_ptr() const;
+  INLINE const LMatrix4d *get_node_frame_ptr() const;
+  INLINE const LMatrix4d *get_vertex_frame_inv_ptr() const;
+  INLINE const LMatrix4d *get_node_frame_inv_ptr() const;
+  INLINE const LMatrix4d *get_vertex_to_node_ptr() const;
+  INLINE const LMatrix4d *get_node_to_vertex_ptr() const;
 
   INLINE void transform(const LMatrix4d &mat);
   INLINE void transform_vertices_only(const LMatrix4d &mat);
@@ -78,8 +81,8 @@ PUBLISHED:
   virtual bool determine_indexed();
   virtual bool determine_decal();
 
-  virtual void write(ostream &out, int indent_level) const=0;
-  bool parse_egg(const string &egg_syntax);
+  virtual void write(std::ostream &out, int indent_level) const=0;
+  bool parse_egg(const std::string &egg_syntax);
 
 #ifdef _DEBUG
   void test_under_integrity() const;

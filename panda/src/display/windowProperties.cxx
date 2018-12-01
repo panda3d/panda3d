@@ -15,7 +15,11 @@
 #include "config_display.h"
 #include "nativeWindowHandle.h"
 
-WindowProperties *WindowProperties::_default_properties = NULL;
+using std::istream;
+using std::ostream;
+using std::string;
+
+WindowProperties *WindowProperties::_default_properties = nullptr;
 
 /**
  *
@@ -93,7 +97,7 @@ get_config_properties() {
  */
 WindowProperties WindowProperties::
 get_default() {
-  if (_default_properties != NULL) {
+  if (_default_properties != nullptr) {
     return *_default_properties;
   } else {
     return get_config_properties();
@@ -110,7 +114,7 @@ get_default() {
  */
 void WindowProperties::
 set_default(const WindowProperties &default_properties) {
-  if (_default_properties == NULL) {
+  if (_default_properties == nullptr) {
     _default_properties = new WindowProperties;
   }
   (*_default_properties) = default_properties;
@@ -122,15 +126,17 @@ set_default(const WindowProperties &default_properties) {
  */
 void WindowProperties::
 clear_default() {
-  if (_default_properties != NULL) {
+  if (_default_properties != nullptr) {
     delete _default_properties;
-    _default_properties = NULL;
+    _default_properties = nullptr;
   }
 }
 
 /**
  * Returns a WindowProperties structure with only the size specified.  The
  * size is the only property that matters to buffers.
+ *
+ * @deprecated in the Python API, use WindowProperties(size=(x, y)) instead.
  */
 WindowProperties WindowProperties::
 size(const LVecBase2i &size) {
@@ -177,7 +183,7 @@ clear() {
   _z_order = Z_normal;
   _flags = 0;
   _mouse_mode = M_absolute;
-  _parent_window = NULL;
+  _parent_window = nullptr;
 }
 
 /**
@@ -197,7 +203,7 @@ clear() {
 void WindowProperties::
 set_parent_window(size_t parent) {
   if (parent == 0) {
-    set_parent_window((WindowHandle *)NULL);
+    set_parent_window(nullptr);
   } else {
     PT(WindowHandle) handle = NativeWindowHandle::make_int(parent);
     set_parent_window(handle);
@@ -312,7 +318,7 @@ output(ostream &out) const {
     out << get_mouse_mode() << " ";
   }
   if (has_parent_window()) {
-    if (get_parent_window() == NULL) {
+    if (get_parent_window() == nullptr) {
       out << "parent:none ";
     } else {
       out << "parent:" << *get_parent_window() << " ";

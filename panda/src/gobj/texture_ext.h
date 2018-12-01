@@ -31,7 +31,7 @@ class Extension<Texture> : public ExtensionBase<Texture> {
 public:
   void set_ram_image(PyObject *image, Texture::CompressionMode compression = Texture::CM_off,
                      size_t page_size = 0);
-  void set_ram_image_as(PyObject *image, const string &provided_format);
+  void set_ram_image_as(PyObject *image, const std::string &provided_format);
 };
 
 #endif  // HAVE_PYTHON

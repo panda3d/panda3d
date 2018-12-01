@@ -17,7 +17,7 @@
  */
 INLINE bool DialNode::
 is_valid() const {
-  return (_dial != (ClientDialDevice *)NULL) && _dial->is_connected();
+  return (_dial != nullptr) && _dial->is_connected();
 }
 
 /**
@@ -26,10 +26,7 @@ is_valid() const {
  */
 INLINE int DialNode::
 get_num_dials() const {
-  _dial->acquire();
-  int result = _dial->get_num_dials();
-  _dial->unlock();
-  return result;
+  return _dial->get_num_dials();
 }
 
 /**
@@ -39,10 +36,7 @@ get_num_dials() const {
  */
 INLINE double DialNode::
 read_dial(int index) {
-  _dial->acquire();
-  double result = _dial->read_dial(index);
-  _dial->unlock();
-  return result;
+  return _dial->read_dial(index);
 }
 
 /**
@@ -51,8 +45,5 @@ read_dial(int index) {
  */
 INLINE bool DialNode::
 is_dial_known(int index) const {
-  _dial->acquire();
-  bool result = _dial->is_dial_known(index);
-  _dial->unlock();
-  return result;
+  return _dial->is_dial_known(index);
 }

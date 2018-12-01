@@ -17,26 +17,26 @@
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
-    cout << "test_pfstream command-line\n";
+    std::cout << "test_pfstream command-line\n";
     return (1);
   }
 
   // Build one command out of the arguments.
-  string cmd;
+  std::string cmd;
   cmd = argv[1];
   for (int i = 2; i < argc; i++) {
     cmd += " ";
     cmd += argv[i];
   }
 
-  cout << "Executing command:\n" << cmd << "\n";
+  std::cout << "Executing command:\n" << cmd << "\n";
 
   IPipeStream in(cmd);
 
   char c;
   c = in.get();
   while (in && !in.fail() && !in.eof()) {
-    cout.put(toupper(c));
+    std::cout.put(toupper(c));
     c = in.get();
   }
 

@@ -15,7 +15,7 @@
  * Disambiguates the get_name() method between that inherited from TextFont
  * and that inherited from FreetypeFont.
  */
-INLINE const string &DynamicTextFont::
+INLINE const std::string &DynamicTextFont::
 get_name() const {
   return TextFont::get_name();
 }
@@ -441,7 +441,7 @@ get_tex_format() const {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const DynamicTextFont &dtf) {
+INLINE std::ostream &
+operator << (std::ostream &out, const DynamicTextFont &dtf) {
   return out << dtf.get_name();
 }

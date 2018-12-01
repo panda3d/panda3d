@@ -78,9 +78,9 @@ class TypedObject;
  * that ancestry of a particular type may be queried, and the type name may be
  * retrieved for run-time display.
  */
-class EXPCL_DTOOL_DTOOLBASE TypeHandle FINAL {
+class EXPCL_DTOOL_DTOOLBASE TypeHandle final {
 PUBLISHED:
-  TypeHandle() NOEXCEPT DEFAULT_CTOR;
+  TypeHandle() noexcept = default;
 
   enum MemoryClass {
     MC_singleton,
@@ -108,18 +108,18 @@ PUBLISHED:
   INLINE int compare_to(const TypeHandle &other) const;
   INLINE size_t get_hash() const;
 
-  INLINE string get_name(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE std::string get_name(TypedObject *object = nullptr) const;
   INLINE bool is_derived_from(TypeHandle parent,
-                              TypedObject *object = (TypedObject *)NULL) const;
+                              TypedObject *object = nullptr) const;
 
-  INLINE int get_num_parent_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_parent_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_parent_class(int index) const;
 
-  INLINE int get_num_child_classes(TypedObject *object = (TypedObject *)NULL) const;
+  INLINE int get_num_child_classes(TypedObject *object = nullptr) const;
   INLINE TypeHandle get_child_class(int index) const;
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
-                                       TypedObject *object = (TypedObject *)NULL) const;
+                                       TypedObject *object = nullptr) const;
 
   int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
@@ -128,8 +128,8 @@ PUBLISHED:
   void dec_memory_usage(MemoryClass memory_class, size_t size);
 
   INLINE int get_index() const;
-  INLINE void output(ostream &out) const;
-  CONSTEXPR static TypeHandle none();
+  INLINE void output(std::ostream &out) const;
+  constexpr static TypeHandle none() { return TypeHandle(0); }
   INLINE operator bool () const;
 
   MAKE_PROPERTY(index, get_index);
@@ -138,17 +138,18 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(child_classes, get_num_child_classes, get_child_class);
 
 public:
+#ifdef HAVE_PYTHON
+  PyObject *get_python_type() const;
+#endif
+
   void *allocate_array(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void *reallocate_array(void *ptr, size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT);
   void deallocate_array(void *ptr);
 
-  CONSTEXPR static TypeHandle from_index(int index);
+  constexpr static TypeHandle from_index(int index) { return TypeHandle(index); }
 
 private:
-  CONSTEXPR TypeHandle(int index);
-
-  // Only kept temporarily for ABI compatibility.
-  static TypeHandle _none;
+  constexpr TypeHandle(int index);
 
   int _index;
   friend class TypeRegistry;
@@ -157,12 +158,12 @@ private:
 
 // It's handy to be able to output a TypeHandle directly, and see the type
 // name.
-INLINE ostream &operator << (ostream &out, TypeHandle type) {
+INLINE std::ostream &operator << (std::ostream &out, TypeHandle type) {
   type.output(out);
   return out;
 }
 
-EXPCL_DTOOL_DTOOLBASE ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_class);
+EXPCL_DTOOL_DTOOLBASE std::ostream &operator << (std::ostream &out, TypeHandle::MemoryClass mem_class);
 
 // We must include typeRegistry at this point so we can call it from our
 // inline functions.  This is a circular include that is strategically placed

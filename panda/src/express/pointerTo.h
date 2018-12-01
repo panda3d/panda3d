@@ -68,22 +68,34 @@
 template <class T>
 class PointerTo : public PointerToBase<T> {
 public:
-  typedef TYPENAME PointerToBase<T>::To To;
+  typedef typename PointerToBase<T>::To To;
 PUBLISHED:
-  ALWAYS_INLINE_CONSTEXPR PointerTo() NOEXCEPT DEFAULT_CTOR;
-  ALWAYS_INLINE PointerTo(To *ptr) NOEXCEPT;
+  ALWAYS_INLINE constexpr PointerTo() noexcept = default;
+  ALWAYS_INLINE explicit constexpr PointerTo(std::nullptr_t) noexcept {}
+  ALWAYS_INLINE PointerTo(To *ptr) noexcept;
   INLINE PointerTo(const PointerTo<T> &copy);
 
 public:
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerTo(PointerTo<T> &&from) NOEXCEPT;
-  INLINE PointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
-#endif
+  INLINE PointerTo(PointerTo<T> &&from) noexcept;
 
-  CONSTEXPR To &operator *() const NOEXCEPT;
-  CONSTEXPR To *operator -> () const NOEXCEPT;
+  template<class Y>
+  ALWAYS_INLINE explicit PointerTo(Y *ptr) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo(const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo(PointerTo<Y> &&r) noexcept;
+
+  INLINE PointerTo<T> &operator = (PointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE PointerTo<T> &operator = (const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE PointerTo<T> &operator = (PointerTo<Y> &&r) noexcept;
+
+  constexpr To &operator *() const noexcept;
+  constexpr To *operator -> () const noexcept;
   // MSVC.NET 2005 insists that we use T *, and not To *, here.
-  CONSTEXPR operator T *() const NOEXCEPT;
+  constexpr operator T *() const noexcept;
 
   INLINE T *&cheat();
 
@@ -100,7 +112,7 @@ PUBLISHED:
   // the DCAST macro defined in typedObject.h instead, e.g.  DCAST(MyType,
   // ptr).  This provides a clean downcast that doesn't require .p() or any
   // double-casting, and it can be run-time checked for correctness.
-  CONSTEXPR To *p() const NOEXCEPT;
+  constexpr To *p() const noexcept;
 
   INLINE PointerTo<T> &operator = (To *ptr);
   INLINE PointerTo<T> &operator = (const PointerTo<T> &copy);
@@ -131,29 +143,49 @@ PUBLISHED:
 template <class T>
 class ConstPointerTo : public PointerToBase<T> {
 public:
-  typedef TYPENAME PointerToBase<T>::To To;
+  typedef typename PointerToBase<T>::To To;
 PUBLISHED:
-  ALWAYS_INLINE_CONSTEXPR ConstPointerTo() NOEXCEPT DEFAULT_CTOR;
-  ALWAYS_INLINE ConstPointerTo(const To *ptr) NOEXCEPT;
+  ALWAYS_INLINE constexpr ConstPointerTo() noexcept = default;
+  ALWAYS_INLINE explicit constexpr ConstPointerTo(std::nullptr_t) noexcept {}
+  ALWAYS_INLINE ConstPointerTo(const To *ptr) noexcept;
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
 
 public:
-#ifdef USE_MOVE_SEMANTICS
-  INLINE ConstPointerTo(PointerTo<T> &&from) NOEXCEPT;
-  INLINE ConstPointerTo(ConstPointerTo<T> &&from) NOEXCEPT;
-  INLINE ConstPointerTo<T> &operator = (PointerTo<T> &&from) NOEXCEPT;
-  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) NOEXCEPT;
-#endif
+  INLINE ConstPointerTo(PointerTo<T> &&from) noexcept;
+  INLINE ConstPointerTo(ConstPointerTo<T> &&from) noexcept;
 
-  CONSTEXPR const To &operator *() const NOEXCEPT;
-  CONSTEXPR const To *operator -> () const NOEXCEPT;
-  CONSTEXPR operator const T *() const NOEXCEPT;
+  template<class Y>
+  ALWAYS_INLINE explicit ConstPointerTo(const Y *ptr) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(const ConstPointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(PointerTo<Y> &&r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo(ConstPointerTo<Y> &&r) noexcept;
+
+  INLINE ConstPointerTo<T> &operator = (PointerTo<T> &&from) noexcept;
+  INLINE ConstPointerTo<T> &operator = (ConstPointerTo<T> &&from) noexcept;
+
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (const PointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (const ConstPointerTo<Y> &r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (PointerTo<Y> &&r) noexcept;
+  template<class Y>
+  ALWAYS_INLINE ConstPointerTo<T> &operator = (ConstPointerTo<Y> &&r) noexcept;
+
+  constexpr const To &operator *() const noexcept;
+  constexpr const To *operator -> () const noexcept;
+  constexpr operator const T *() const noexcept;
 
   INLINE const T *&cheat();
 
 PUBLISHED:
-  CONSTEXPR const To *p() const NOEXCEPT;
+  constexpr const To *p() const noexcept;
 
   INLINE ConstPointerTo<T> &operator = (const To *ptr);
   INLINE ConstPointerTo<T> &operator = (const PointerTo<T> &copy);
@@ -173,13 +205,33 @@ PUBLISHED:
 // PointerTo objects without incurring the cost of unnecessary reference count
 // changes.  The performance difference is dramatic!
 template <class T>
-void swap(PointerTo<T> &one, PointerTo<T> &two) NOEXCEPT {
+void swap(PointerTo<T> &one, PointerTo<T> &two) noexcept {
   one.swap(two);
 }
 
 template <class T>
-void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) NOEXCEPT {
+void swap(ConstPointerTo<T> &one, ConstPointerTo<T> &two) noexcept {
   one.swap(two);
+}
+
+
+// Define owner_less specializations, for completeness' sake.
+namespace std {
+  template<class T>
+  struct owner_less<PointerTo<T> > {
+    bool operator () (const PointerTo<T> &lhs,
+                      const PointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
+
+  template<class T>
+  struct owner_less<ConstPointerTo<T> > {
+    bool operator () (const ConstPointerTo<T> &lhs,
+                      const ConstPointerTo<T> &rhs) const noexcept {
+      return lhs < rhs;
+    }
+  };
 }
 
 

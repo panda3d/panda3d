@@ -12,10 +12,14 @@
  */
 
 #include "clockObject.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "configVariableEnum.h"
 #include "string_utils.h"
 #include "thread.h"
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
@@ -351,7 +355,7 @@ tick(Thread *current_thread) {
     // In case someone munged the clock last frame and sent us backward in
     // time, clamp the previous time to the current time to make sure we don't
     // report anything strange (or wait interminably).
-    old_time = min(old_time, _actual_frame_time);
+    old_time = std::min(old_time, _actual_frame_time);
 
     ++cdata->_frame_count;
 
@@ -375,7 +379,7 @@ tick(Thread *current_thread) {
         double wait_until_time = old_time + 1.0 / _user_frame_rate;
         wait_until(wait_until_time);
         cdata->_dt = _actual_frame_time - old_time;
-        cdata->_reported_frame_time = max(_actual_frame_time, wait_until_time);
+        cdata->_reported_frame_time = std::max(_actual_frame_time, wait_until_time);
       }
       break;
 

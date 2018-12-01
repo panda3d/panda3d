@@ -12,7 +12,9 @@
  */
 
 #include "bulletHingeConstraint.h"
+
 #include "bulletRigidBodyNode.h"
+#include "bulletWorld.h"
 
 #include "deg_2_rad.h"
 

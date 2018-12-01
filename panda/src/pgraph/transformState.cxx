@@ -24,8 +24,10 @@
 #include "lightMutexHolder.h"
 #include "thread.h"
 
-LightReMutex *TransformState::_states_lock = NULL;
-TransformState::States *TransformState::_states = NULL;
+using std::ostream;
+
+LightReMutex *TransformState::_states_lock = nullptr;
+TransformState::States *TransformState::_states = nullptr;
 CPT(TransformState) TransformState::_identity_state;
 CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
@@ -55,33 +57,17 @@ TypeHandle TransformState::_type_handle;
  */
 TransformState::
 TransformState() : _lock("TransformState") {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     init_states();
   }
   _saved_entry = -1;
   _flags = F_is_identity | F_singular_known | F_is_2d;
-  _inv_mat = (LMatrix4 *)NULL;
+  _inv_mat = nullptr;
   _cache_stats.add_num_states(1);
 
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
-}
-
-/**
- * TransformStates are not meant to be copied.
- */
-TransformState::
-TransformState(const TransformState &) {
-  nassertv(false);
-}
-
-/**
- * TransformStates are not meant to be copied.
- */
-void TransformState::
-operator = (const TransformState &) {
-  nassertv(false);
 }
 
 /**
@@ -95,9 +81,9 @@ TransformState::
   set_destructing();
 
   // Free the inverse matrix computation, if it has been stored.
-  if (_inv_mat != (LMatrix4 *)NULL) {
+  if (_inv_mat != nullptr) {
     delete _inv_mat;
-    _inv_mat = (LMatrix4 *)NULL;
+    _inv_mat = nullptr;
   }
 
   LightReMutexHolder holder(*_states_lock);
@@ -251,7 +237,7 @@ CPT(TransformState) TransformState::
 make_identity() {
   // The identity state is asked for so often, we make it a special case and
   // store a pointer forever once we find it the first time.
-  if (_identity_state == (TransformState *)NULL) {
+  if (_identity_state == nullptr) {
     TransformState *state = new TransformState;
     _identity_state = return_unique(state);
   }
@@ -265,7 +251,7 @@ make_identity() {
  */
 CPT(TransformState) TransformState::
 make_invalid() {
-  if (_invalid_state == (TransformState *)NULL) {
+  if (_invalid_state == nullptr) {
     TransformState *state = new TransformState;
     state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
     _invalid_state = return_unique(state);
@@ -663,7 +649,7 @@ compose(const TransformState *other) const {
   if (other != this) {
     _cache_stats.add_total_size(1);
     _cache_stats.inc_adds(other->_composition_cache.is_empty());
-    other->_composition_cache[this]._result = NULL;
+    other->_composition_cache[this]._result = nullptr;
   }
 
   if (result != (TransformState *)this) {
@@ -769,7 +755,7 @@ invert_compose(const TransformState *other) const {
   if (other != this) {
     _cache_stats.add_total_size(1);
     _cache_stats.inc_adds(other->_invert_composition_cache.is_empty());
-    other->_invert_composition_cache[this]._result = NULL;
+    other->_invert_composition_cache[this]._result = nullptr;
   }
 
   if (result != (TransformState *)this) {
@@ -845,7 +831,7 @@ validate_composition_cache() const {
   size_t size = _composition_cache.get_num_entries();
   for (size_t i = 0; i < size; ++i) {
     const TransformState *source = _composition_cache.get_key(i);
-    if (source != (TransformState *)NULL) {
+    if (source != nullptr) {
       // Check that the source also has a pointer back to this one.  We always
       // add entries to the composition cache in pairs.
       int ri = source->_composition_cache.find(this);
@@ -865,7 +851,7 @@ validate_composition_cache() const {
   size = _invert_composition_cache.get_num_entries();
   for (size_t i = 0; i < size; ++i) {
     const TransformState *source = _invert_composition_cache.get_key(i);
-    if (source != (TransformState *)NULL) {
+    if (source != nullptr) {
       // Check that the source also has a pointer back to this one.  We always
       // add entries to the composition cache in pairs.
       int ri = source->_invert_composition_cache.find(this);
@@ -998,7 +984,7 @@ write_composition_cache(ostream &out, int indent_level) const {
  */
 int TransformState::
 get_num_states() {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -1020,7 +1006,7 @@ get_num_states() {
  */
 int TransformState::
 get_num_unused_states() {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -1039,9 +1025,9 @@ get_num_unused_states() {
     size_t cache_size = state->_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
       const TransformState *result = state->_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL && result != state) {
+      if (result != nullptr && result != state) {
         // Here's a TransformState that's recorded in the cache.  Count it.
-        pair<StateCount::iterator, bool> ir =
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           // If the above insert operation fails, then it's already in the
@@ -1053,8 +1039,8 @@ get_num_unused_states() {
     cache_size = state->_invert_composition_cache.get_num_entries();
     for (i = 0; i < cache_size; ++i) {
       const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-      if (result != (const TransformState *)NULL && result != state) {
-        pair<StateCount::iterator, bool> ir =
+      if (result != nullptr && result != state) {
+        std::pair<StateCount::iterator, bool> ir =
           state_count.insert(StateCount::value_type(result, 1));
         if (!ir.second) {
           (*(ir.first)).second++;
@@ -1105,7 +1091,7 @@ get_num_unused_states() {
  */
 int TransformState::
 clear_cache() {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     return 0;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -1138,7 +1124,7 @@ clear_cache() {
       size_t cache_size = state->_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
         const TransformState *result = state->_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
+        if (result != nullptr && result != state) {
           result->cache_unref();
           nassertr(result->get_ref_count() > 0, 0);
         }
@@ -1149,7 +1135,7 @@ clear_cache() {
       cache_size = state->_invert_composition_cache.get_num_entries();
       for (i = 0; i < cache_size; ++i) {
         const TransformState *result = state->_invert_composition_cache.get_data(i)._result;
-        if (result != (const TransformState *)NULL && result != state) {
+        if (result != nullptr && result != state) {
           result->cache_unref();
           nassertr(result->get_ref_count() > 0, 0);
         }
@@ -1175,7 +1161,7 @@ clear_cache() {
  */
 int TransformState::
 garbage_collect() {
-  if (_states == (States *)NULL || !garbage_collect_states) {
+  if (_states == nullptr || !garbage_collect_states) {
     return 0;
   }
 
@@ -1186,7 +1172,7 @@ garbage_collect() {
 
   // How many elements to process this pass?
   size_t size = orig_size;
-  size_t num_this_pass = max(0, int(size * garbage_collect_states_rate));
+  size_t num_this_pass = std::max(0, int(size * garbage_collect_states_rate));
   if (num_this_pass <= 0) {
     return 0;
   }
@@ -1198,7 +1184,7 @@ garbage_collect() {
     si = 0;
   }
 
-  num_this_pass = min(num_this_pass, size);
+  num_this_pass = std::min(num_this_pass, size);
   size_t stop_at_element = (si + num_this_pass) % size;
 
   do {
@@ -1230,6 +1216,9 @@ garbage_collect() {
       // still need to visit.
       --size;
       --si;
+      if (stop_at_element > 0) {
+        --stop_at_element;
+      }
     }
 
     si = (si + 1) % size;
@@ -1264,7 +1253,7 @@ garbage_collect() {
  */
 void TransformState::
 list_cycles(ostream &out) {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     return;
   }
   LightReMutexHolder holder(*_states_lock);
@@ -1341,7 +1330,7 @@ list_cycles(ostream &out) {
  */
 void TransformState::
 list_states(ostream &out) {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     out << "0 states:\n";
     return;
   }
@@ -1363,7 +1352,7 @@ list_states(ostream &out) {
  */
 bool TransformState::
 validate_states() {
-  if (_states == (States *)NULL) {
+  if (_states == nullptr) {
     return true;
   }
 
@@ -1454,7 +1443,7 @@ init_states() {
  */
 CPT(TransformState) TransformState::
 return_new(TransformState *state) {
-  nassertr(state != (TransformState *)NULL, state);
+  nassertr(state != nullptr, state);
   if (!uniquify_transforms && !state->is_identity()) {
     return state;
   }
@@ -1473,7 +1462,7 @@ return_new(TransformState *state) {
  */
 CPT(TransformState) TransformState::
 return_unique(TransformState *state) {
-  nassertr(state != (TransformState *)NULL, state);
+  nassertr(state != nullptr, state);
 
   if (!transform_cache) {
     return state;
@@ -1679,7 +1668,7 @@ do_invert_compose(const TransformState *other) const {
         pgraph_cat.warning()
           << "Unexpected singular matrix found for " << *this << "\n";
       } else {
-        nassertr(_inv_mat != (LMatrix4 *)NULL, make_invalid());
+        nassertr(_inv_mat != nullptr, make_invalid());
         LMatrix4 new_mat;
         new_mat.multiply(other->get_mat(), *_inv_mat);
         if (!new_mat.almost_equal(result->get_mat(), 0.1)) {
@@ -1703,7 +1692,7 @@ do_invert_compose(const TransformState *other) const {
 
   // Now that is_singular() has returned false, we can assume that _inv_mat
   // has been allocated and filled in.
-  nassertr(_inv_mat != (LMatrix4 *)NULL, make_invalid());
+  nassertr(_inv_mat != nullptr, make_invalid());
 
   if (is_2d() && other->is_2d()) {
     const LMatrix4 &i = *_inv_mat;
@@ -1733,7 +1722,7 @@ detect_and_break_cycles() {
   PStatTimer timer(_transform_break_cycles_pcollector);
 
   ++_last_cycle_detect;
-  if (r_detect_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+  if (r_detect_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
     // Ok, we have a cycle.  This will be a leak unless we break the cycle by
     // freeing the cache on this object.
     if (pgraph_cat.is_debug()) {
@@ -1744,7 +1733,7 @@ detect_and_break_cycles() {
     remove_cache_pointers();
   } else {
     ++_last_cycle_detect;
-    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+    if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, nullptr)) {
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << "Breaking cycle involving " << (*this) << "\n";
@@ -1781,11 +1770,11 @@ r_detect_cycles(const TransformState *start_state,
   size_t cache_size = current_state->_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
     const TransformState *result = current_state->_composition_cache.get_data(i)._result;
-    if (result != (const TransformState *)NULL) {
+    if (result != nullptr) {
       if (r_detect_cycles(start_state, result, length + 1,
                           this_seq, cycle_desc)) {
         // Cycle detected.
-        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+        if (cycle_desc != nullptr) {
           const TransformState *other = current_state->_composition_cache.get_key(i);
           CompositionCycleDescEntry entry(other, result, false);
           cycle_desc->push_back(entry);
@@ -1798,11 +1787,11 @@ r_detect_cycles(const TransformState *start_state,
   cache_size = current_state->_invert_composition_cache.get_num_entries();
   for (i = 0; i < cache_size; ++i) {
     const TransformState *result = current_state->_invert_composition_cache.get_data(i)._result;
-    if (result != (const TransformState *)NULL) {
+    if (result != nullptr) {
       if (r_detect_cycles(start_state, result, length + 1,
                           this_seq, cycle_desc)) {
         // Cycle detected.
-        if (cycle_desc != (CompositionCycleDesc *)NULL) {
+        if (cycle_desc != nullptr) {
           const TransformState *other = current_state->_invert_composition_cache.get_key(i);
           CompositionCycleDescEntry entry(other, result, true);
           cycle_desc->push_back(entry);
@@ -1845,11 +1834,11 @@ r_detect_reverse_cycles(const TransformState *start_state,
       nassertr(oi != -1, false);
 
       const TransformState *result = other->_composition_cache.get_data(oi)._result;
-      if (result != (const TransformState *)NULL) {
+      if (result != nullptr) {
         if (r_detect_reverse_cycles(start_state, result, length + 1,
                                     this_seq, cycle_desc)) {
           // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          if (cycle_desc != nullptr) {
             const TransformState *other = current_state->_composition_cache.get_key(i);
             CompositionCycleDescEntry entry(other, result, false);
             cycle_desc->push_back(entry);
@@ -1868,11 +1857,11 @@ r_detect_reverse_cycles(const TransformState *start_state,
       nassertr(oi != -1, false);
 
       const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
-      if (result != (const TransformState *)NULL) {
+      if (result != nullptr) {
         if (r_detect_reverse_cycles(start_state, result, length + 1,
                                     this_seq, cycle_desc)) {
           // Cycle detected.
-          if (cycle_desc != (CompositionCycleDesc *)NULL) {
+          if (cycle_desc != nullptr) {
             const TransformState *other = current_state->_invert_composition_cache.get_key(i);
             CompositionCycleDescEntry entry(other, result, false);
             cycle_desc->push_back(entry);
@@ -1977,7 +1966,7 @@ remove_cache_pointers() {
         // It's finally safe to let our held pointers go away.  This may have
         // cascading effects as other TransformState objects are destructed,
         // but there will be no harm done if they destruct now.
-        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
@@ -1985,7 +1974,7 @@ remove_cache_pointers() {
 
     // It's finally safe to let our held pointers go away.  (See comment
     // above.)
-    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -2006,12 +1995,12 @@ remove_cache_pointers() {
         other->_invert_composition_cache.remove_element(oi);
         _cache_stats.add_total_size(-1);
         _cache_stats.inc_dels();
-        if (ocomp._result != (const TransformState *)NULL && ocomp._result != other) {
+        if (ocomp._result != nullptr && ocomp._result != other) {
           cache_unref_delete(ocomp._result);
         }
       }
     }
-    if (comp._result != (const TransformState *)NULL && comp._result != this) {
+    if (comp._result != nullptr && comp._result != this) {
       cache_unref_delete(comp._result);
     }
   }
@@ -2093,7 +2082,7 @@ calc_singular() {
   // is asking whether we're singular).
 
   // This should be NULL if no one has called calc_singular() yet.
-  nassertv(_inv_mat == (LMatrix4 *)NULL);
+  nassertv(_inv_mat == nullptr);
   _inv_mat = new LMatrix4;
 
   if ((_flags & F_mat_known) == 0) {
@@ -2104,7 +2093,7 @@ calc_singular() {
   if (!inverted) {
     _flags |= F_is_singular;
     delete _inv_mat;
-    _inv_mat = (LMatrix4 *)NULL;
+    _inv_mat = nullptr;
   }
   _flags |= F_singular_known;
 }

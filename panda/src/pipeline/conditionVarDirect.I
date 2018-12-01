@@ -25,32 +25,6 @@ ConditionVarDirect(MutexDirect &mutex) :
 }
 
 /**
- *
- */
-INLINE ConditionVarDirect::
-~ConditionVarDirect() {
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVarDirect::
-ConditionVarDirect(const ConditionVarDirect &copy) :
-  _mutex(copy._mutex),
-  _impl(_mutex._impl)
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVarDirect::
-operator = (const ConditionVarDirect &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE MutexDirect &ConditionVarDirect::

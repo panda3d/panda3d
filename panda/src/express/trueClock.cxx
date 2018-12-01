@@ -17,7 +17,10 @@
 
 #include <math.h>  // for fabs()
 
-TrueClock *TrueClock::_global_ptr = NULL;
+using std::max;
+using std::min;
+
+TrueClock *TrueClock::_global_ptr = nullptr;
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 
@@ -169,7 +172,7 @@ TrueClock() {
     if (_has_high_res) {
       if (int_frequency <= 0) {
         clock_cat.error()
-          << "TrueClock::get_real_time() - frequency is negative!" << endl;
+          << "TrueClock::get_real_time() - frequency is negative!" << std::endl;
         _has_high_res = false;
 
       } else {
@@ -198,7 +201,7 @@ TrueClock() {
 
   if (!_has_high_res) {
     clock_cat.warning()
-      << "No high resolution clock available." << endl;
+      << "No high resolution clock available." << std::endl;
   }
 }
 
@@ -501,7 +504,7 @@ get_long_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -527,7 +530,7 @@ get_short_raw_time() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {
@@ -561,7 +564,7 @@ TrueClock() {
 #ifdef GETTIMEOFDAY_ONE_PARAM
   result = gettimeofday(&tv);
 #else
-  result = gettimeofday(&tv, (struct timezone *)NULL);
+  result = gettimeofday(&tv, nullptr);
 #endif
 
   if (result < 0) {

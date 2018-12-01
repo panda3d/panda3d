@@ -65,7 +65,7 @@ public:
 public:
   ALLOC_DELETED_CHAIN(CullableObject);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   CPT(Geom) _geom;
@@ -127,7 +127,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const CullableObject &object) {
+INLINE std::ostream &operator << (std::ostream &out, const CullableObject &object) {
   object.output(out);
   return out;
 }

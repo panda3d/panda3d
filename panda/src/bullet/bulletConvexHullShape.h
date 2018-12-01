@@ -22,6 +22,7 @@
 #include "luse.h"
 #include "geom.h"
 #include "pta_LVecBase3.h"
+#include "transformState.h"
 
 /**
  *

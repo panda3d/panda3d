@@ -36,18 +36,17 @@
  */
 class EXPCL_PANDA_PIPELINE MutexSimpleImpl : public BlockerSimple {
 public:
-  INLINE MutexSimpleImpl();
-  INLINE ~MutexSimpleImpl();
+  constexpr MutexSimpleImpl() = default;
 
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
-  INLINE void release_quietly();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
+  INLINE void unlock_quietly();
 
 private:
-  void do_acquire();
-  void do_release();
-  void do_release_quietly();
+  void do_lock();
+  void do_unlock();
+  void do_unlock_quietly();
 
   friend class ThreadSimpleManager;
 };

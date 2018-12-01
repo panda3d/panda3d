@@ -63,7 +63,7 @@ garbage_collect() {
  * Lists the contents of the material pool to the indicated output stream.
  */
 INLINE void MaterialPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
 

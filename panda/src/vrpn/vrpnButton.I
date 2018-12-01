@@ -15,7 +15,7 @@
  * Returns the name of the button device that was used to create this
  * VrpnButton.
  */
-INLINE const string &VrpnButton::
+INLINE const std::string &VrpnButton::
 get_button_name() const {
   return _button_name;
 }

@@ -16,6 +16,9 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::max;
+using std::min;
+
 /**
  *
  */
@@ -97,7 +100,7 @@ set_column_alignment(int column_alignment) {
  *
  */
 void GeomVertexColumn::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << *get_name() << "(" << get_num_components();
   switch (get_numeric_type()) {
   case NT_uint8:
@@ -225,7 +228,7 @@ setup() {
   }
   _total_bytes = _element_stride * _num_elements;
 
-  if (_packer != NULL) {
+  if (_packer != nullptr) {
     delete _packer;
   }
 
@@ -3869,9 +3872,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
       {
         LVecBase3f scaled = data * 4294967295.0f;
         uint32_t *pi = (uint32_t *)pointer;
-        pi[0] = (unsigned int)data[0];
-        pi[1] = (unsigned int)data[1];
-        pi[2] = (unsigned int)data[2];
+        pi[0] = (unsigned int)scaled[0];
+        pi[1] = (unsigned int)scaled[1];
+        pi[2] = (unsigned int)scaled[2];
       }
       break;
 
@@ -3960,10 +3963,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       {
         LVecBase4f scaled = data * 4294967295.0f;
         uint32_t *pi = (uint32_t *)pointer;
-        pi[0] = (unsigned int)data[0];
-        pi[1] = (unsigned int)data[1];
-        pi[2] = (unsigned int)data[2];
-        pi[3] = (unsigned int)data[3];
+        pi[0] = (unsigned int)scaled[0];
+        pi[1] = (unsigned int)scaled[1];
+        pi[2] = (unsigned int)scaled[2];
+        pi[3] = (unsigned int)scaled[3];
       }
       break;
 
@@ -4072,9 +4075,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
       {
         LVecBase3d scaled = data * 4294967295.0;
         uint32_t *pi = (uint32_t *)pointer;
-        pi[0] = (unsigned int)data[0];
-        pi[1] = (unsigned int)data[1];
-        pi[2] = (unsigned int)data[2];
+        pi[0] = (unsigned int)scaled[0];
+        pi[1] = (unsigned int)scaled[1];
+        pi[2] = (unsigned int)scaled[2];
       }
       break;
 
@@ -4163,10 +4166,10 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       {
         LVecBase4d scaled = data * 4294967295.0;
         uint32_t *pi = (uint32_t *)pointer;
-        pi[0] = (unsigned int)data[0];
-        pi[1] = (unsigned int)data[1];
-        pi[2] = (unsigned int)data[2];
-        pi[3] = (unsigned int)data[3];
+        pi[0] = (unsigned int)scaled[0];
+        pi[1] = (unsigned int)scaled[1];
+        pi[2] = (unsigned int)scaled[2];
+        pi[3] = (unsigned int)scaled[3];
       }
       break;
 

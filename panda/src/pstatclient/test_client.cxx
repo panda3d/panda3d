@@ -11,7 +11,7 @@
  * @date 2000-07-09
  */
 
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 #include "pStatClient.h"
 #include "pStatCollector.h"
 #include "thread.h"
@@ -45,13 +45,13 @@ SampleData dataset_zero[] = {
   { "Cull", 5, 6, false },
   { "App", 0, 5, false },
   { "Texture memory", 8000000, 100000, true },
-  { NULL },
+  { nullptr },
 };
 
 SampleData dataset_one[] = {
   { "Draw", 10, 12, false },
   { "Squeak", 25, 30, false },
-  { NULL },
+  { nullptr },
 };
 
 SampleData dataset_two[] = {
@@ -63,7 +63,7 @@ SampleData dataset_two[] = {
   { "Animation:donald", 5, 6, false },
   { "Animation:goofy", 5, 6, false },
   { "Animation:pluto", 5, 6, false },
-  { NULL },
+  { nullptr },
 };
 
 #define NUM_DATASETS 3
@@ -85,7 +85,7 @@ public:
 
 int
 main(int argc, char *argv[]) {
-  string hostname = "localhost";
+  std::string hostname = "localhost";
   int port = pstats_port;
 
   if (argc > 1) {
@@ -113,7 +113,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  srand(time(NULL));
+  srand(time(nullptr));
 
   int ds_index;
   if (argc > 3) {
@@ -132,7 +132,7 @@ main(int argc, char *argv[]) {
 
   pvector<PStatCollector> _collectors;
   int i = 0;
-  while (ds[i].category != (const char *)NULL) {
+  while (ds[i].category != nullptr) {
     _collectors.push_back(PStatCollector(ds[i].category));
     if (ds[i].is_level) {
       _collectors[i].set_level(ds[i].min_ms);

@@ -28,6 +28,11 @@ PT(Material) Material::_default;
 void Material::
 operator = (const Material &copy) {
   Namable::operator = (copy);
+
+  if (is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
+  }
+
   _base_color = copy._base_color;
   _ambient = copy._ambient;
   _diffuse = copy._diffuse;
@@ -37,7 +42,7 @@ operator = (const Material &copy) {
   _roughness = copy._roughness;
   _metallic = copy._metallic;
   _refractive_index = copy._refractive_index;
-  _flags = copy._flags & (~F_attrib_lock);
+  _flags = (copy._flags & ~(F_attrib_lock | F_used_by_auto_shader)) | (_flags & (F_attrib_lock | F_used_by_auto_shader));
 }
 
 /**
@@ -53,10 +58,8 @@ operator = (const Material &copy) {
  */
 void Material::
 set_base_color(const LColor &color) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_base_color) == 0) {
-      nassertv(!is_attrib_locked());
-    }
+  if (!has_base_color() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _base_color = color;
   _flags |= F_base_color | F_metallic;
@@ -81,8 +84,8 @@ set_base_color(const LColor &color) {
  */
 void Material::
 clear_base_color() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (has_base_color() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _flags &= ~F_base_color;
   _base_color.set(0.0f, 0.0f, 0.0f, 0.0f);
@@ -116,10 +119,8 @@ clear_base_color() {
  */
 void Material::
 set_ambient(const LColor &color) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_ambient)==0) {
-      nassertv(!is_attrib_locked());
-    }
+  if (!has_ambient() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _ambient = color;
   _flags |= F_ambient;
@@ -137,10 +138,8 @@ set_ambient(const LColor &color) {
  */
 void Material::
 set_diffuse(const LColor &color) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_diffuse)==0) {
-      nassertv(!is_attrib_locked());
-    }
+  if (!has_diffuse() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _diffuse = color;
   _flags |= F_diffuse;
@@ -160,10 +159,8 @@ set_diffuse(const LColor &color) {
  */
 void Material::
 set_specular(const LColor &color) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_specular)==0) {
-      nassertv(!is_attrib_locked());
-    }
+  if (!has_specular() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _specular = color;
   _flags |= F_specular;
@@ -174,8 +171,8 @@ set_specular(const LColor &color) {
  */
 void Material::
 clear_specular() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
+  if (has_specular() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _flags &= ~F_specular;
 
@@ -201,10 +198,8 @@ clear_specular() {
  */
 void Material::
 set_emission(const LColor &color) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_emission)==0) {
-      nassertv(!is_attrib_locked());
-    }
+  if (!has_emission() && is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
   _emission = color;
   _flags |= F_emission;
@@ -275,11 +270,6 @@ set_roughness(PN_stdfloat roughness) {
  */
 void Material::
 set_metallic(PN_stdfloat metallic) {
-  if (enforce_attrib_lock) {
-    if ((_flags & F_metallic) == 0) {
-      nassertv(!is_attrib_locked());
-    }
-  }
   _metallic = metallic;
   _flags |= F_metallic;
 
@@ -305,9 +295,6 @@ set_metallic(PN_stdfloat metallic) {
  */
 void Material::
 clear_metallic() {
-  if (enforce_attrib_lock) {
-    nassertv(!is_attrib_locked());
-  }
   _flags &= ~F_metallic;
   _metallic = 0;
 
@@ -395,7 +382,7 @@ compare_to(const Material &other) const {
  *
  */
 void Material::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "Material " << get_name();
   if (has_base_color()) {
     out << " c(" << get_base_color() << ")";
@@ -432,10 +419,10 @@ output(ostream &out) const {
  *
  */
 void Material::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "Material " << get_name() << "\n";
   if (has_base_color()) {
-    indent(out, indent_level + 2) << "base_color = " << get_ambient() << "\n";
+    indent(out, indent_level + 2) << "base_color = " << get_base_color() << "\n";
   }
   if (has_ambient()) {
     indent(out, indent_level + 2) << "ambient = " << get_ambient() << "\n";
@@ -482,7 +469,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(get_name());
 
   if (manager->get_file_minor_ver() >= 39) {
-    me.add_int32(_flags);
+    me.add_int32(_flags & ~F_used_by_auto_shader);
 
     if (_flags & F_metallic) {
       // Metalness workflow.
@@ -569,5 +556,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       // The shininess we read is actually a roughness value.
       set_roughness(_shininess);
     }
+  }
+
+  if (is_used_by_auto_shader()) {
+    GraphicsStateGuardianBase::mark_rehash_generated_shaders();
   }
 }

@@ -51,10 +51,10 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const string&,     bool positional = false, int mode=SM_heuristic);
+  virtual PT(AudioSound) get_sound(const Filename &, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *sound, bool positional = false, int mode=SM_heuristic);
 
-  virtual void uncache_sound(const string&);
+  virtual void uncache_sound(const Filename &);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
@@ -114,7 +114,7 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
   virtual void update();
 
 private:
-  string select_audio_device();
+  std::string select_audio_device();
 
   void make_current() const;
 
@@ -175,7 +175,7 @@ private:
   };
 
 
-  typedef phash_map<string, SoundData *> SampleCache;
+  typedef phash_map<std::string, SoundData *> SampleCache;
   SampleCache _sample_cache;
 
   typedef phash_set<PT(OpenALAudioSound)> SoundsPlaying;

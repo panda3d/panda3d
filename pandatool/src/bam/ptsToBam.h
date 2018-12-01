@@ -37,7 +37,7 @@ protected:
   virtual bool handle_args(Args &args);
 
 private:
-  void process_line(const string &line);
+  void process_line(const std::string &line);
   void add_point(const vector_string &words);
 
   void open_vertex_data();

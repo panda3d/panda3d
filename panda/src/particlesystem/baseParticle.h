@@ -20,7 +20,7 @@
 /**
  * An individual, physically-modelable particle abstract base class.
  */
-class EXPCL_PANDAPHYSICS BaseParticle : public PhysicsObject {
+class EXPCL_PANDA_PARTICLESYSTEM BaseParticle : public PhysicsObject {
 public:
   // local methods
   INLINE void set_age(PN_stdfloat age);
@@ -48,8 +48,8 @@ public:
   // from PhysicsObject
   virtual PhysicsObject *make_copy() const = 0;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   BaseParticle(PN_stdfloat lifespan = 1.0f, bool alive = false);
@@ -62,8 +62,6 @@ private:
   PN_stdfloat _lifespan;
   bool _alive;
   int _index;
-
-  LPoint3 _last_position;
 };
 
 #include "baseParticle.I"

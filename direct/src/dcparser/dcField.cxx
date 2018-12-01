@@ -26,12 +26,14 @@
 #include "pStatTimer.h"
 #endif
 
+using std::string;
+
 /**
  *
  */
 DCField::
 DCField() :
-  _dclass(NULL)
+  _dclass(nullptr)
 #ifdef WITHIN_PANDA
   ,
   _field_update_pcollector("DCField")
@@ -108,7 +110,7 @@ as_field() const {
  */
 DCAtomicField *DCField::
 as_atomic_field() {
-  return (DCAtomicField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -117,7 +119,7 @@ as_atomic_field() {
  */
 const DCAtomicField *DCField::
 as_atomic_field() const {
-  return (DCAtomicField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -126,7 +128,7 @@ as_atomic_field() const {
  */
 DCMolecularField *DCField::
 as_molecular_field() {
-  return (DCMolecularField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -135,7 +137,7 @@ as_molecular_field() {
  */
 const DCMolecularField *DCField::
 as_molecular_field() const {
-  return (DCMolecularField *)NULL;
+  return nullptr;
 }
 
 /**
@@ -143,7 +145,7 @@ as_molecular_field() const {
  */
 DCParameter *DCField::
 as_parameter() {
-  return (DCParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -151,7 +153,7 @@ as_parameter() {
  */
 const DCParameter *DCField::
 as_parameter() const {
-  return (DCParameter *)NULL;
+  return nullptr;
 }
 
 /**
@@ -232,10 +234,10 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
   }
 
   if (!Notify::ptr()->has_assert_failed()) {
-    ostringstream strm;
+    std::ostringstream strm;
     PyObject *exc_type = PyExc_Exception;
 
-    if (as_parameter() != (DCParameter *)NULL) {
+    if (as_parameter() != nullptr) {
       // If it's a parameter-type field, the value may or may not be a
       // sequence.
       if (packer.had_pack_error()) {
@@ -251,7 +253,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
     } else {
       // If it's a molecular or atomic field, the value should be a sequence.
       PyObject *tuple = PySequence_Tuple(sequence);
-      if (tuple == (PyObject *)NULL) {
+      if (tuple == nullptr) {
         strm << "Value for " << get_name() << " not a sequence: " \
              << get_pystr(sequence);
         exc_type = PyExc_TypeError;
@@ -287,8 +289,8 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
  */
 PyObject *DCField::
 unpack_args(DCPacker &packer) const {
-  nassertr(!packer.had_error(), NULL);
-  nassertr(packer.get_current_field() == this, NULL);
+  nassertr(!packer.had_error(), nullptr);
+  nassertr(packer.get_current_field() == this, nullptr);
 
   size_t start_byte = packer.get_num_unpacked_bytes();
   PyObject *object = packer.unpack_object();
@@ -303,7 +305,7 @@ unpack_args(DCPacker &packer) const {
   }
 
   if (!Notify::ptr()->has_assert_failed()) {
-    ostringstream strm;
+    std::ostringstream strm;
     PyObject *exc_type = PyExc_Exception;
 
     if (packer.had_pack_error()) {
@@ -315,7 +317,7 @@ unpack_args(DCPacker &packer) const {
       dg.dump_hex(strm);
       size_t error_byte = packer.get_num_unpacked_bytes() - start_byte;
       strm << "Error detected on byte " << error_byte
-           << " (" << hex << error_byte << dec << " hex)";
+           << " (" << std::hex << error_byte << std::dec << " hex)";
 
       exc_type = PyExc_RuntimeError;
     } else {
@@ -329,7 +331,7 @@ unpack_args(DCPacker &packer) const {
   }
 
   Py_XDECREF(object);
-  return NULL;
+  return nullptr;
 }
 #endif  // HAVE_PYTHON
 
@@ -340,10 +342,10 @@ unpack_args(DCPacker &packer) const {
  */
 void DCField::
 receive_update(DCPacker &packer, PyObject *distobj) const {
-  if (as_parameter() != (DCParameter *)NULL) {
+  if (as_parameter() != nullptr) {
     // If it's a parameter-type field, just store a new value on the object.
     PyObject *value = unpack_args(packer);
-    if (value != (PyObject *)NULL) {
+    if (value != nullptr) {
       PyObject_SetAttrString(distobj, (char *)_name.c_str(), value);
     }
     Py_DECREF(value);
@@ -362,9 +364,9 @@ receive_update(DCPacker &packer, PyObject *distobj) const {
       // method.
       PyObject *args = unpack_args(packer);
 
-      if (args != (PyObject *)NULL) {
+      if (args != nullptr) {
         PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
-        nassertv(func != (PyObject *)NULL);
+        nassertv(func != nullptr);
 
         PyObject *result;
         {
@@ -499,7 +501,7 @@ pack_default_value(DCPackData &pack_data, bool &) const {
 void DCField::
 set_name(const string &name) {
   DCPackerInterface::set_name(name);
-  if (_dclass != (DCClass *)NULL) {
+  if (_dclass != nullptr) {
     _dclass->_dc_file->mark_inherited_fields_stale();
   }
 }
@@ -510,12 +512,12 @@ set_name(const string &name) {
  */
 string DCField::
 get_pystr(PyObject *value) {
-  if (value == NULL) {
+  if (value == nullptr) {
     return "(null)";
   }
 
   PyObject *str = PyObject_Str(value);
-  if (str != NULL) {
+  if (str != nullptr) {
 #if PY_MAJOR_VERSION >= 3
     string result = PyUnicode_AsUTF8(str);
 #else
@@ -526,7 +528,7 @@ get_pystr(PyObject *value) {
   }
 
   PyObject *repr = PyObject_Repr(value);
-  if (repr != NULL) {
+  if (repr != nullptr) {
 #if PY_MAJOR_VERSION >= 3
     string result = PyUnicode_AsUTF8(repr);
 #else
@@ -536,9 +538,9 @@ get_pystr(PyObject *value) {
     return result;
   }
 
-  if (value->ob_type != NULL) {
+  if (value->ob_type != nullptr) {
     PyObject *typestr = PyObject_Str((PyObject *)(value->ob_type));
-    if (typestr != NULL) {
+    if (typestr != nullptr) {
 #if PY_MAJOR_VERSION >= 3
       string result = PyUnicode_AsUTF8(typestr);
 #else
@@ -562,7 +564,7 @@ refresh_default_value() {
   packer.begin_pack(this);
   packer.pack_default_value();
   if (!packer.end_pack()) {
-    cerr << "Error while packing default value for " << get_name() << "\n";
+    std::cerr << "Error while packing default value for " << get_name() << "\n";
   } else {
     _default_value.assign(packer.get_data(), packer.get_length());
   }

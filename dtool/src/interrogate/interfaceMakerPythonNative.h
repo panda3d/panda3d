@@ -11,8 +11,8 @@
 
 #ifndef INTERFACEMAKERPYTHONNATIVE_H
 #define INTERFACEMAKERPYTHONNATIVE_H
-#include "map"
-#include "set"
+#include <map>
+#include <set>
 #include "dtoolbase.h"
 
 #include "interfaceMakerPython.h"
@@ -31,17 +31,17 @@ public:
   virtual ~InterfaceMakerPythonNative();
 
 
-  virtual void write_prototypes(ostream &out, ostream *out_h);
-  void write_prototypes_class(ostream &out, ostream *out_h, Object *obj) ;
-  void write_prototypes_class_external(ostream &out, Object *obj);
+  virtual void write_prototypes(std::ostream &out, std::ostream *out_h);
+  void write_prototypes_class(std::ostream &out, std::ostream *out_h, Object *obj) ;
+  void write_prototypes_class_external(std::ostream &out, Object *obj);
 
-  virtual void write_functions(ostream &out);
+  virtual void write_functions(std::ostream &out);
 
-  virtual void write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def);
-  virtual void write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def);
+  virtual void write_module(std::ostream &out, std::ostream *out_h, InterrogateModuleDef *def);
+  virtual void write_module_support(std::ostream &out, std::ostream *out_h, InterrogateModuleDef *def);
 
-  void write_module_class(ostream &out, Object *cls);
-  virtual void write_sub_module(ostream &out, Object *obj);
+  void write_module_class(std::ostream &out, Object *cls);
+  virtual void write_sub_module(std::ostream &out, Object *obj);
 
   virtual bool synthesize_this_parameter();
   virtual bool separate_overloading();
@@ -50,8 +50,8 @@ public:
   Property *record_property(const InterrogateType &itype, ElementIndex element_index);
 
 protected:
-  virtual string get_wrapper_prefix();
-  virtual string get_unique_prefix();
+  virtual std::string get_wrapper_prefix();
+  virtual std::string get_unique_prefix();
   virtual void record_function_wrapper(InterrogateFunction &ifunc,
                                        FunctionWrapperIndex wrapper_index);
 
@@ -119,67 +119,67 @@ private:
 
   class SlottedFunctionDef {
   public:
-    string _answer_location;
+    std::string _answer_location;
     WrapperType _wrapper_type;
     int _min_version;
-    string _wrapper_name;
-    set<FunctionRemap*> _remaps;
+    std::string _wrapper_name;
+    std::set<FunctionRemap*> _remaps;
     bool _keep_method;
   };
 
-  typedef std::map<string, SlottedFunctionDef> SlottedFunctions;
+  typedef std::map<std::string, SlottedFunctionDef> SlottedFunctions;
 
   static bool get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap, SlottedFunctionDef &def);
-  static void write_function_slot(ostream &out, int indent_level,
+  static void write_function_slot(std::ostream &out, int indent_level,
                                   const SlottedFunctions &slots,
-                                  const string &slot, const string &def = "0");
+                                  const std::string &slot, const std::string &def = "nullptr");
 
-  void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
-  void write_prototype_for(ostream &out, Function *func);
-  void write_function_for_top(ostream &out, Object *obj, Function *func);
+  void write_prototype_for_name(std::ostream &out, Function *func, const std::string &name);
+  void write_prototype_for(std::ostream &out, Function *func);
+  void write_function_for_top(std::ostream &out, Object *obj, Function *func);
 
-  void write_function_for_name(ostream &out, Object *obj,
+  void write_function_for_name(std::ostream &out, Object *obj,
                                const Function::Remaps &remaps,
-                               const std::string &name, string &expected_params,
+                               const std::string &name, std::string &expected_params,
                                bool coercion_allowed,
                                ArgsType args_type, int return_flags);
-  void write_coerce_constructor(ostream &out, Object *obj, bool is_const);
+  void write_coerce_constructor(std::ostream &out, Object *obj, bool is_const);
 
   int collapse_default_remaps(std::map<int, std::set<FunctionRemap *> > &map_sets,
                               int max_required_args);
 
-  void write_function_forset(ostream &out,
+  void write_function_forset(std::ostream &out,
                              const std::set<FunctionRemap*> &remaps,
                              int min_num_args, int max_num_args,
-                             string &expected_params, int indent_level,
+                             std::string &expected_params, int indent_level,
                              bool coercion_allowed, bool report_errors,
                              ArgsType args_type, int return_flags,
                              bool check_exceptions = true,
                              bool verify_const = true,
-                             const string &first_expr = string());
+                             const std::string &first_expr = std::string());
 
-  void write_function_instance(ostream &out, FunctionRemap *remap,
+  void write_function_instance(std::ostream &out, FunctionRemap *remap,
                                int min_num_args, int max_num_args,
-                               string &expected_params, int indent_level,
+                               std::string &expected_params, int indent_level,
                                bool coercion_allowed, bool report_errors,
                                ArgsType args_type, int return_flags,
                                bool check_exceptions = true,
-                               const string &first_pexpr = string());
+                               const std::string &first_pexpr = std::string());
 
-  void error_return(ostream &out, int indent_level, int return_flags);
-  void error_raise_return(ostream &out, int indent_level, int return_flags,
-                          const string &exc_type, const string &message,
-                          const string &format_args = "");
-  void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
+  void error_return(std::ostream &out, int indent_level, int return_flags);
+  void error_raise_return(std::ostream &out, int indent_level, int return_flags,
+                          const std::string &exc_type, const std::string &message,
+                          const std::string &format_args = "");
+  void pack_return_value(std::ostream &out, int indent_level, FunctionRemap *remap,
                          std::string return_expr, int return_flags);
 
-  void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
+  void write_make_seq(std::ostream &out, Object *obj, const std::string &ClassName,
                       const std::string &cClassName, MakeSeq *make_seq);
-  void write_getset(ostream &out, Object *obj, Property *property);
+  void write_getset(std::ostream &out, Object *obj, Property *property);
 
-  void write_class_prototypes(ostream &out) ;
-  void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
-  void write_class_details(ostream &out, Object *obj);
+  void write_class_prototypes(std::ostream &out) ;
+  void write_class_declarations(std::ostream &out, std::ostream *out_h, Object *obj);
+  void write_class_details(std::ostream &out, Object *obj);
 
 public:
   bool is_remap_legal(FunctionRemap *remap);
@@ -204,14 +204,14 @@ public:
   void get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructType *inclass, const std::string &upcast_seed = "", bool can_downcast = true);
   bool DoesInheritFromIsClass(const CPPStructType * inclass, const std::string &name);
   bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
-  void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const InterrogateType &itype, bool is_const);
+  void write_python_instance(std::ostream &out, int indent_level, const std::string &return_expr, bool owns_memory, const InterrogateType &itype, bool is_const);
   bool has_get_class_type_function(CPPType *type);
   bool has_init_type_function(CPPType *type);
   int NeedsAStrFunction(const InterrogateType &itype_class);
   int NeedsAReprFunction(const InterrogateType &itype_class);
   bool NeedsARichCompareFunction(const InterrogateType &itype_class);
 
-  void output_quoted(ostream &out, int indent_level, const std::string &str,
+  void output_quoted(std::ostream &out, int indent_level, const std::string &str,
                      bool first_line=true);
 
   // stash the forward declarations for this compile pass..

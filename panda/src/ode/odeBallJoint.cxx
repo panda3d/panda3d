@@ -23,7 +23,7 @@ OdeBallJoint(dJointID id) :
 
 OdeBallJoint::
 OdeBallJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateBall(world.get_id(), 0)) {
+  OdeJoint(dJointCreateBall(world.get_id(), nullptr)) {
 }
 
 OdeBallJoint::

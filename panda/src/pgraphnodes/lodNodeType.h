@@ -25,7 +25,7 @@ enum LODNodeType {
 
 END_PUBLISH
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, LODNodeType lnt);
-EXPCL_PANDA_PGRAPH istream &operator >> (istream &in, LODNodeType &cs);
+EXPCL_PANDA_PGRAPHNODES std::ostream &operator << (std::ostream &out, LODNodeType lnt);
+EXPCL_PANDA_PGRAPHNODES std::istream &operator >> (std::istream &in, LODNodeType &cs);
 
 #endif

@@ -37,21 +37,21 @@ public:
   virtual void clear();
 
   bool read(Filename filename);
-  bool read(istream &in, const string &filename = string());
+  bool read(std::istream &in, const std::string &filename = std::string());
 
   bool write(Filename filename) const;
-  bool write(ostream &out) const;
+  bool write(std::ostream &out) const;
 
-  XFileTemplate *find_template(const string &name) const;
+  XFileTemplate *find_template(const std::string &name) const;
   XFileTemplate *find_template(const WindowsGuid &guid) const;
 
-  static XFileTemplate *find_standard_template(const string &name);
+  static XFileTemplate *find_standard_template(const std::string &name);
   static XFileTemplate *find_standard_template(const WindowsGuid &guid);
 
-  XFileDataNodeTemplate *find_data_object(const string &name) const;
+  XFileDataNodeTemplate *find_data_object(const std::string &name) const;
   XFileDataNodeTemplate *find_data_object(const WindowsGuid &guid) const;
 
-  virtual void write_text(ostream &out, int indent_level) const;
+  virtual void write_text(std::ostream &out, int indent_level) const;
 
   enum FormatType {
     FT_text,
@@ -64,8 +64,8 @@ public:
   };
 
 private:
-  bool read_header(istream &in);
-  bool write_header(ostream &out) const;
+  bool read_header(std::istream &in);
+  bool write_header(std::ostream &out) const;
 
   static const XFile *get_standard_templates();
 

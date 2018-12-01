@@ -132,7 +132,7 @@ get_info(const Filename &filename) {
   Objects objects;
   TypedWritable *object = bam_file.read_object();
 
-  if (object != (TypedWritable *)NULL &&
+  if (object != nullptr &&
       object->is_exact_type(BamCacheRecord::get_class_type())) {
     // Here's a special case: if the first object in the file is a
     // BamCacheRecord, it's a cache data file; in this case, we output the
@@ -142,8 +142,8 @@ get_info(const Filename &filename) {
     object = bam_file.read_object();
   }
 
-  while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {
-    if (object != (TypedWritable *)NULL) {
+  while (object != nullptr || !bam_file.is_eof()) {
+    if (object != nullptr) {
       objects.push_back(object);
     }
     object = bam_file.read_object();
@@ -234,7 +234,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
   strftime(time_buffer, 1024, "%c",
            localtime(&header->_start_time));
 
-  pset<string> recorders;
+  pset<std::string> recorders;
   double last_timestamp = 0.0;
 
   for (size_t i = 1; i < objects.size(); i++) {
@@ -256,7 +256,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
        << " secs, " << objects.size() - 1 << " frames, "
        << time_buffer << ".\n"
        << "Recorders:";
-  for (pset<string>::iterator ni = recorders.begin();
+  for (pset<std::string>::iterator ni = recorders.begin();
        ni != recorders.end();
        ++ni) {
     nout << " " << (*ni);
@@ -271,7 +271,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
  */
 void BamInfo::
 describe_general_object(TypedWritable *object) {
-  nassertv(object != (TypedWritable *)NULL);
+  nassertv(object != nullptr);
   nout << "  " << object->get_type() << "\n";
 }
 

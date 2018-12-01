@@ -33,7 +33,7 @@
  *
  * @return Amount of shadow sources
  */
-inline int RPLight::get_num_shadow_sources() const {
+inline size_t RPLight::get_num_shadow_sources() const {
   return _shadow_sources.size();
 }
 
@@ -278,7 +278,7 @@ inline RPLight::LightType RPLight::get_light_type() const {
  */
 inline void RPLight::set_casts_shadows(bool flag) {
   if (has_slot()) {
-    cerr << "Light is already attached, can not call set_casts_shadows!" << endl;
+    std::cerr << "Light is already attached, can not call set_casts_shadows!" << std::endl;
     return;
   }
   _casts_shadows = flag;

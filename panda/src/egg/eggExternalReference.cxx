@@ -24,7 +24,7 @@ TypeHandle EggExternalReference::_type_handle;
  *
  */
 EggExternalReference::
-EggExternalReference(const string &node_name, const string &filename)
+EggExternalReference(const std::string &node_name, const std::string &filename)
   : EggFilenameNode(node_name, filename) {
 }
 
@@ -49,7 +49,7 @@ operator = (const EggExternalReference &copy) {
  * Writes the reference to the indicated output stream in Egg format.
  */
 void EggExternalReference::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<File>");
   enquote_string(out, get_filename(), indent_level + 2) << "\n";
   indent(out, indent_level) << "}\n";
@@ -58,7 +58,7 @@ write(ostream &out, int indent_level) const {
 /**
  * Returns the default extension for this filename type.
  */
-string EggExternalReference::
+std::string EggExternalReference::
 get_default_extension() const {
-  return string("egg");
+  return std::string("egg");
 }

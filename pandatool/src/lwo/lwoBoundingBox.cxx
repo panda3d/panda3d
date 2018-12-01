@@ -39,7 +39,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoBoundingBox::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { min = " << _min << ", max = " << _max << " }\n";
 }

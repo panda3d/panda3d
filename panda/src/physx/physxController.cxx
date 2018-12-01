@@ -55,7 +55,7 @@ factory(NxControllerType controllerType) {
   }
 
   physx_cat.error() << "Unknown controller type.\n";
-  return NULL;
+  return nullptr;
 }
 
 
@@ -65,7 +65,7 @@ factory(NxControllerType controllerType) {
 PhysxActor *PhysxController::
 get_actor() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxActor *)(ptr()->getActor()->userData);
 }
 

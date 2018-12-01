@@ -21,12 +21,10 @@
 #include "pmap.h"
 #include "pvector.h"
 
-class MObject;
-class MPlug;
 class MayaShader;
 class MayaShaderColorDef;
 typedef pvector<MayaShaderColorDef *> MayaShaderColorList;
-typedef pmap<string, string> MayaFileToUVSetMap;
+typedef pmap<std::string, std::string> MayaFileToUVSetMap;
 
 /**
  * This defines the various attributes that Maya may associate with the
@@ -39,14 +37,14 @@ public:
   MayaShaderColorDef (MayaShaderColorDef&);
   ~MayaShaderColorDef();
 
-  string strip_prefix(string full_name);
+  std::string strip_prefix(std::string full_name);
 
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
   LTexCoordd project_uv(const LPoint3d &pos, const LPoint3d &ref_point) const;
   bool reset_maya_texture(const Filename &texture);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   enum BlendType {
     BT_unspecified,
@@ -85,7 +83,7 @@ public:
   double _v_angle;
 
   Filename _texture_filename;
-  string _texture_name;
+  std::string _texture_name;
   LColor _color_gain;
 
   LVector2 _coverage;
@@ -103,19 +101,19 @@ public:
 
   bool _is_alpha;
 
-  string _uvset_name;
+  std::string _uvset_name;
   MayaShaderColorDef *_opposite;
 
-  string get_panda_uvset_name();
+  std::string get_panda_uvset_name();
 
 private:
   MObject *_color_object;
 
 private:
-  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha);
+  static void find_textures_modern(const std::string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha);
   void find_textures_legacy(MayaShader *shader, MObject color, bool trans=false);
 
-  void set_projection_type(const string &type);
+  void set_projection_type(const std::string &type);
 
   LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;
   LPoint2d map_spherical(const LPoint3d &pos, const LPoint3d &centroid) const;

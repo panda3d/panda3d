@@ -30,18 +30,18 @@ class CPPType;
  */
 class CPPManifest {
 public:
-  CPPManifest(const string &args, const cppyyltype &loc);
-  CPPManifest(const string &macro, const string &definition);
+  CPPManifest(const std::string &args, const cppyyltype &loc);
+  CPPManifest(const std::string &macro, const std::string &definition);
   ~CPPManifest();
 
-  static string stringify(const string &source);
-  string expand(const vector_string &args = vector_string()) const;
+  static std::string stringify(const std::string &source);
+  std::string expand(const vector_string &args = vector_string()) const;
 
   CPPType *determine_type() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
-  string _name;
+  std::string _name;
   bool _has_parameters;
   int _num_parameters;
   int _variadic_param;
@@ -54,25 +54,25 @@ public:
   CPPVisibility _vis;
 
 private:
-  void parse_parameters(const string &args, size_t &p,
+  void parse_parameters(const std::string &args, size_t &p,
                         vector_string &parameter_names);
-  void save_expansion(const string &exp,
+  void save_expansion(const std::string &exp,
                       const vector_string &parameter_names);
 
   class ExpansionNode {
   public:
     ExpansionNode(int parm_number, bool stringify, bool paste);
-    ExpansionNode(const string &str, bool paste = false);
+    ExpansionNode(const std::string &str, bool paste = false);
     int _parm_number;
     bool _stringify;
     bool _paste;
-    string _str;
+    std::string _str;
   };
-  typedef vector<ExpansionNode> Expansion;
+  typedef std::vector<ExpansionNode> Expansion;
   Expansion _expansion;
 };
 
-inline ostream &operator << (ostream &out, const CPPManifest &manifest) {
+inline std::ostream &operator << (std::ostream &out, const CPPManifest &manifest) {
   manifest.output(out);
   return out;
 }

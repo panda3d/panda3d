@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableFilename::
-ConfigVariableFilename(const string &name) :
+ConfigVariableFilename(const std::string &name) :
   ConfigVariable(name, VT_filename),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableFilename(const string &name) :
  *
  */
 INLINE ConfigVariableFilename::
-ConfigVariableFilename(const string &name, const Filename &default_value,
-                       const string &description, int flags) :
+ConfigVariableFilename(const std::string &name, const Filename &default_value,
+                       const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_filename, description, flags),
 #else
-  ConfigVariable(name, VT_filename, string(), flags),
+  ConfigVariable(name, VT_filename, std::string(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -93,7 +93,7 @@ operator [] (size_t n) const {
  * same thing returned by the string typecast operator, so this function is a
  * little redundant.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_fullpath() const {
   return get_ref_value().get_fullpath();
 }
@@ -102,7 +102,7 @@ get_fullpath() const {
  * Returns the directory part of the filename.  This is everything in the
  * filename up to, but not including the rightmost slash.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_dirname() const {
   return get_ref_value().get_dirname();
 }
@@ -111,7 +111,7 @@ get_dirname() const {
  * Returns the basename part of the filename.  This is everything in the
  * filename after the rightmost slash, including any extensions.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_basename() const {
   return get_ref_value().get_basename();
 }
@@ -121,7 +121,7 @@ get_basename() const {
  * Returns the full filename--directory and basename parts--except for the
  * extension.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_fullpath_wo_extension() const {
   return get_ref_value().get_fullpath_wo_extension();
 }
@@ -130,7 +130,7 @@ get_fullpath_wo_extension() const {
 /**
  * Returns the basename part of the filename, without the file extension.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_basename_wo_extension() const {
   return get_ref_value().get_basename_wo_extension();
 }
@@ -140,7 +140,7 @@ get_basename_wo_extension() const {
  * Returns the file extension.  This is everything after the rightmost dot, if
  * there is one, or the empty string if there is not.
  */
-INLINE string ConfigVariableFilename::
+INLINE std::string ConfigVariableFilename::
 get_extension() const {
   return get_ref_value().get_extension();
 }
@@ -195,7 +195,7 @@ get_value() const {
 INLINE Filename ConfigVariableFilename::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return Filename::expand_from(decl->get_string_value());
   }
   return Filename();

@@ -64,8 +64,8 @@ private:
   bool _tex_txopz;
   bool _tex_ctex;
   bool _tex_mipmap;
-  string _ctex_quality;
-  string _load_display;
+  std::string _ctex_quality;
+  std::string _load_display;
 
   // The rest of this is required to support -ctex.
   PT(GraphicsPipe) _pipe;

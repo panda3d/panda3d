@@ -127,11 +127,11 @@ get_auto_hide() const {
 INLINE void PGScrollFrame::
 set_horizontal_slider(PGSliderBar *horizontal_slider) {
   LightReMutexHolder holder(_lock);
-  if (_horizontal_slider != (PGSliderBar *)NULL) {
-    _horizontal_slider->set_notify(NULL);
+  if (_horizontal_slider != nullptr) {
+    _horizontal_slider->set_notify(nullptr);
   }
   _horizontal_slider = horizontal_slider;
-  if (_horizontal_slider != (PGSliderBar *)NULL) {
+  if (_horizontal_slider != nullptr) {
     _horizontal_slider->set_notify(this);
   }
   _needs_recompute_clip = true;
@@ -143,7 +143,7 @@ set_horizontal_slider(PGSliderBar *horizontal_slider) {
  */
 INLINE void PGScrollFrame::
 clear_horizontal_slider() {
-  set_horizontal_slider(NULL);
+  set_horizontal_slider(nullptr);
 }
 
 /**
@@ -164,11 +164,11 @@ get_horizontal_slider() const {
 INLINE void PGScrollFrame::
 set_vertical_slider(PGSliderBar *vertical_slider) {
   LightReMutexHolder holder(_lock);
-  if (_vertical_slider != (PGSliderBar *)NULL) {
-    _vertical_slider->set_notify(NULL);
+  if (_vertical_slider != nullptr) {
+    _vertical_slider->set_notify(nullptr);
   }
   _vertical_slider = vertical_slider;
-  if (_vertical_slider != (PGSliderBar *)NULL) {
+  if (_vertical_slider != nullptr) {
     _vertical_slider->set_notify(this);
   }
   _needs_recompute_clip = true;
@@ -180,7 +180,7 @@ set_vertical_slider(PGSliderBar *vertical_slider) {
  */
 INLINE void PGScrollFrame::
 clear_vertical_slider() {
-  set_vertical_slider(NULL);
+  set_vertical_slider(nullptr);
 }
 
 /**

@@ -31,16 +31,16 @@ BEGIN_PUBLISH
  * Also see the EggLoader class, which can exercise a bit more manual control
  * over the loading process.
  */
-EXPCL_PANDAEGG PT(PandaNode)
+EXPCL_PANDA_EGG2PG PT(PandaNode)
 load_egg_file(const Filename &filename, CoordinateSystem cs = CS_default,
-              BamCacheRecord *record = NULL);
+              BamCacheRecord *record = nullptr);
 
 /**
  * Another convenience function; works like load_egg_file() but starts from an
  * already-filled EggData structure.  The structure is destroyed in the
  * loading.
  */
-EXPCL_PANDAEGG PT(PandaNode)
+EXPCL_PANDA_EGG2PG PT(PandaNode)
 load_egg_data(EggData *data, CoordinateSystem cs = CS_default);
 END_PUBLISH
 

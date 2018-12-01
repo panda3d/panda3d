@@ -27,7 +27,7 @@
 class glxGraphicsWindow : public x11GraphicsWindow {
 public:
   glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -36,6 +36,7 @@ public:
   virtual ~glxGraphicsWindow() {};
 
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void end_flip();
 
 protected:

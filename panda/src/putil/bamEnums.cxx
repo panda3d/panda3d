@@ -13,7 +13,11 @@
 
 #include "bamEnums.h"
 #include "string_utils.h"
-#include "config_util.h"
+#include "config_putil.h"
+
+using std::istream;
+using std::ostream;
+using std::string;
 
 ostream &
 operator << (ostream &out, BamEnums::BamEndian be) {

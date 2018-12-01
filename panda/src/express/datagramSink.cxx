@@ -56,7 +56,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
 const Filename &DatagramSink::
 get_filename() {
   const FileReference *file = get_file();
-  if (file != (FileReference *)NULL) {
+  if (file != nullptr) {
     return file->get_filename();
   }
   static const Filename empty_filename;
@@ -69,7 +69,7 @@ get_filename() {
  */
 const FileReference *DatagramSink::
 get_file() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -80,7 +80,7 @@ get_file() {
  * pointing to the first byte following the datagram returned after a call to
  * put_datagram().
  */
-streampos DatagramSink::
+std::streampos DatagramSink::
 get_file_pos() {
   return 0;
 }

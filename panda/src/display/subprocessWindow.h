@@ -45,7 +45,7 @@
 class SubprocessWindow : public GraphicsWindow {
 public:
   SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const string &name,
+                   const std::string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
@@ -75,6 +75,7 @@ private:
 private:
   PT(GraphicsBuffer) _buffer;
   PT(Texture) _texture;
+  PT(GraphicsWindowInputDevice) _input;
 
   int _fd;
   size_t _mmap_size;

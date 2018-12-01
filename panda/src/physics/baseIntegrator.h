@@ -31,7 +31,7 @@ class Physical;
  * pure virtual integrator class that holds cached matrix information that
  * really should be common to any possible child implementation.
  */
-class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
+class EXPCL_PANDA_PHYSICS BaseIntegrator : public ReferenceCount {
 public:
   typedef epvector<LMatrix4> MatrixVector;
   typedef pvector<PT(LinearForce)> LinearForceVector;
@@ -40,12 +40,12 @@ public:
   virtual ~BaseIntegrator();
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write_precomputed_linear_matrices(ostream &out,
-                                                 unsigned int indent=0) const;
-  virtual void write_precomputed_angular_matrices(ostream &out,
-                                                  unsigned int indent=0) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_precomputed_linear_matrices(std::ostream &out,
+                                                 int indent=0) const;
+  virtual void write_precomputed_angular_matrices(std::ostream &out,
+                                                  int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   BaseIntegrator();

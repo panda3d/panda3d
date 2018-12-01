@@ -26,7 +26,7 @@ TypeHandle CallbackNode::_type_handle;
  *
  */
 CallbackNode::
-CallbackNode(const string &name) :
+CallbackNode(const std::string &name) :
   PandaNode(name)
 {
   PandaNode::set_cull_callback();
@@ -90,7 +90,7 @@ safe_to_combine() const {
 bool CallbackNode::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CallbackObject *cbobj = get_cull_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     NodeCullCallbackData cbdata(trav, data);
     cbobj->do_callback(&cbdata);
 
@@ -130,9 +130,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // CullableObject for the draw_callback, if any.  We don't need to pass any
   // Geoms, however.
   CallbackObject *cbobj = get_draw_callback();
-  if (cbobj != (CallbackObject *)NULL) {
+  if (cbobj != nullptr) {
     CullableObject *object =
-      new CullableObject(NULL, data._state,
+      new CullableObject(nullptr, data._state,
                          data.get_internal_transform(trav));
     object->set_draw_callback(cbobj);
     trav->get_cull_handler()->record_object(object, trav);
@@ -145,7 +145,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
  * classes to include some information relevant to the class.
  */
 void CallbackNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 

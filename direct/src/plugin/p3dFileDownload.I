@@ -14,7 +14,7 @@
 /**
  * Returns the filename that we are downloading into.
  */
-const string &P3DFileDownload::
+const std::string &P3DFileDownload::
 get_filename() const {
   return _filename;
 }

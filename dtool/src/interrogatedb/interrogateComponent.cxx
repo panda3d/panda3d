@@ -16,13 +16,13 @@
 
 // This static string is just kept around as a handy bogus return value for
 // functions that must return a const string reference.
-string InterrogateComponent::_empty_string;
+std::string InterrogateComponent::_empty_string;
 
 /**
  * Formats the component for output to a data file.
  */
 void InterrogateComponent::
-output(ostream &out) const {
+output(std::ostream &out) const {
   idf_output_string(out, _name);
   out << _alt_names.size() << " ";
 
@@ -36,14 +36,14 @@ output(ostream &out) const {
  * Reads the data file as previously formatted by output().
  */
 void InterrogateComponent::
-input(istream &in) {
+input(std::istream &in) {
   idf_input_string(in, _name);
 
   int num_alt_names;
   in >> num_alt_names;
   _alt_names.reserve(num_alt_names);
   for (int i = 0; i < num_alt_names; ++i) {
-    string alt_name;
+    std::string alt_name;
     idf_input_string(in, alt_name);
     _alt_names.push_back(alt_name);
   }

@@ -123,7 +123,7 @@ get_monitor() {
 /**
  * Returns the current machine's hostname.
  */
-string PStatReader::
+std::string PStatReader::
 get_hostname() {
   if (_hostname.empty()) {
     _hostname = ConnectionManager::get_host_name();
@@ -217,7 +217,7 @@ handle_client_control_message(const PStatClientControlMessage &message) {
     {
       for (int i = 0; i < (int)message._names.size(); i++) {
         int thread_index = message._first_thread_index + i;
-        string name = message._names[i];
+        std::string name = message._names[i];
         _client_data->define_thread(thread_index, name);
         _monitor->new_thread(thread_index);
       }
@@ -272,7 +272,7 @@ void PStatReader::
 dequeue_frame_data() {
   while (!_queued_frame_data.empty()) {
     const FrameData &data = _queued_frame_data.front();
-    nassertv(_client_data != (PStatClientData *)NULL);
+    nassertv(_client_data != nullptr);
 
     // Check to see if any new collectors have level data.
     int num_levels = data._frame_data->get_num_levels();

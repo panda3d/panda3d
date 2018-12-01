@@ -22,7 +22,7 @@ CPPTypeParser(CPPScope *current_scope, CPPScope *global_scope) :
   _current_scope(current_scope),
   _global_scope(global_scope)
 {
-  _type = NULL;
+  _type = nullptr;
 }
 
 /**
@@ -36,9 +36,9 @@ CPPTypeParser::
  *
  */
 bool CPPTypeParser::
-parse_type(const string &type) {
+parse_type(const std::string &type) {
   if (!init_type(type)) {
-    cerr << "Unable to parse type\n";
+    std::cerr << "Unable to parse type\n";
     return false;
   }
 
@@ -51,9 +51,9 @@ parse_type(const string &type) {
  *
  */
 bool CPPTypeParser::
-parse_type(const string &type, const CPPPreprocessor &filepos) {
+parse_type(const std::string &type, const CPPPreprocessor &filepos) {
   if (!init_type(type)) {
-    cerr << "Unable to parse type\n";
+    std::cerr << "Unable to parse type\n";
     return false;
   }
 
@@ -68,8 +68,8 @@ parse_type(const string &type, const CPPPreprocessor &filepos) {
  *
  */
 void CPPTypeParser::
-output(ostream &out) const {
-  if (_type == NULL) {
+output(std::ostream &out) const {
+  if (_type == nullptr) {
     out << "(null type)";
   } else {
     out << *_type;

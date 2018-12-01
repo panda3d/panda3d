@@ -48,7 +48,7 @@ read_uint32() {
  */
 inline size_t P3DMultifileReader::Subfile::
 get_last_byte_pos() const {
-  return max(_index_start + _index_length, _data_start + _data_length) - 1;
+  return std::max(_index_start + _index_length, _data_start + _data_length) - 1;
 }
 
 /**

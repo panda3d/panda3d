@@ -19,7 +19,9 @@
 
 #ifdef MUTEX_SPINLOCK
 
-#include "atomicAdjust.h"
+#ifdef PHAVE_ATOMIC
+#include <atomic>
+#endif
 
 /**
  * Uses a simple user-space spinlock to implement a mutex.  It is usually not
@@ -29,21 +31,20 @@
  */
 class EXPCL_DTOOL_DTOOLBASE MutexSpinlockImpl {
 public:
-  CONSTEXPR MutexSpinlockImpl();
+  constexpr MutexSpinlockImpl() noexcept = default;
+  MutexSpinlockImpl(const MutexSpinlockImpl &copy) = delete;
 
-private:
-  MutexSpinlockImpl(const MutexSpinlockImpl &copy) DELETED;
-  MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) DELETED_ASSIGN;
+  MutexSpinlockImpl &operator = (const MutexSpinlockImpl &copy) = delete;
 
 public:
-  INLINE void acquire();
-  INLINE bool try_acquire();
-  INLINE void release();
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 private:
   void do_lock();
 
-  TVOLATILE AtomicAdjust::Integer _lock;
+  std::atomic_flag _flag = ATOMIC_FLAG_INIT;
 };
 
 #include "mutexSpinlockImpl.I"

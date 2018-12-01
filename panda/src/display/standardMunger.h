@@ -51,11 +51,13 @@ private:
   NumericType _numeric_type;
   Contents _contents;
 
-  bool _munge_color;
-  bool _munge_color_scale;
   bool _auto_shader;
   bool _shader_skinning;
+  bool _remove_material;
 
+protected:
+  bool _munge_color;
+  bool _munge_color_scale;
   LColor _color;
   LVecBase4 _color_scale;
 

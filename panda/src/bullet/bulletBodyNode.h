@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#include "bulletShape.h"
+
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
@@ -24,8 +26,6 @@
 #include "collisionNode.h"
 #include "transformState.h"
 #include "boundingSphere.h"
-
-class BulletShape;
 
 /**
  *
@@ -150,8 +150,8 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  virtual void output(ostream &out) const;
-  virtual void do_output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
+  virtual void do_output(std::ostream &out) const;
 
 protected:
   void set_collision_flag(int flag, bool value);

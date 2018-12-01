@@ -16,6 +16,7 @@
 
 #include "dtoolbase.h"
 #include "mutexImpl.h"
+#include "atomicAdjust.h"
 
 /**
  * The base class for both IStreamWrapper and OStreamWrapper, this provides
@@ -24,16 +25,23 @@
 class EXPCL_DTOOL_PRC StreamWrapperBase {
 protected:
   INLINE StreamWrapperBase();
-
-private:
-  INLINE StreamWrapperBase(const StreamWrapperBase &copy) DELETED;
+  INLINE StreamWrapperBase(const StreamWrapperBase &copy) = delete;
 
 PUBLISHED:
   INLINE void acquire();
   INLINE void release();
 
+public:
+  INLINE void ref() const;
+  INLINE bool unref() const;
+
 private:
   MutexImpl _lock;
+
+  // This isn't really designed as a reference counted class, but it is useful
+  // to treat it as one when dealing with substreams created by Multifile.
+  mutable AtomicAdjust::Integer _ref_count = 1;
+
 #ifdef SIMPLE_THREADS
   // In the SIMPLE_THREADS case, we need to use a bool flag, because MutexImpl
   // defines to nothing in this case--but we still need to achieve a form of
@@ -50,24 +58,24 @@ private:
  */
 class EXPCL_DTOOL_PRC IStreamWrapper : virtual public StreamWrapperBase {
 public:
-  INLINE IStreamWrapper(istream *stream, bool owns_pointer);
+  INLINE IStreamWrapper(std::istream *stream, bool owns_pointer);
 PUBLISHED:
-  INLINE explicit IStreamWrapper(istream &stream);
+  INLINE explicit IStreamWrapper(std::istream &stream);
   ~IStreamWrapper();
 
-  INLINE istream *get_istream() const;
-  MAKE_PROPERTY(istream, get_istream);
+  INLINE std::istream *get_istream() const;
+  MAKE_PROPERTY(std::istream, get_istream);
 
 public:
-  void read(char *buffer, streamsize num_bytes);
-  void read(char *buffer, streamsize num_bytes, streamsize &read_bytes);
-  void read(char *buffer, streamsize num_bytes, streamsize &read_bytes, bool &eof);
-  void seek_read(streamsize pos, char *buffer, streamsize num_bytes, streamsize &read_bytes, bool &eof);
+  void read(char *buffer, std::streamsize num_bytes);
+  void read(char *buffer, std::streamsize num_bytes, std::streamsize &read_bytes);
+  void read(char *buffer, std::streamsize num_bytes, std::streamsize &read_bytes, bool &eof);
+  void seek_read(std::streamsize pos, char *buffer, std::streamsize num_bytes, std::streamsize &read_bytes, bool &eof);
   INLINE int get();
-  streamsize seek_gpos_eof();
+  std::streamsize seek_gpos_eof();
 
 private:
-  istream *_istream;
+  std::istream *_istream;
   bool _owns_pointer;
 };
 
@@ -77,24 +85,24 @@ private:
  */
 class EXPCL_DTOOL_PRC OStreamWrapper : virtual public StreamWrapperBase {
 public:
-  INLINE OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack = false);
+  INLINE OStreamWrapper(std::ostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
-  INLINE explicit OStreamWrapper(ostream &stream);
+  INLINE explicit OStreamWrapper(std::ostream &stream);
   ~OStreamWrapper();
 
-  INLINE ostream *get_ostream() const;
-  MAKE_PROPERTY(ostream, get_ostream);
+  INLINE std::ostream *get_ostream() const;
+  MAKE_PROPERTY(std::ostream, get_ostream);
 
 public:
-  void write(const char *buffer, streamsize num_bytes);
-  void write(const char *buffer, streamsize num_bytes, bool &fail);
-  void seek_write(streamsize pos, const char *buffer, streamsize num_bytes, bool &fail);
-  void seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail);
+  void write(const char *buffer, std::streamsize num_bytes);
+  void write(const char *buffer, std::streamsize num_bytes, bool &fail);
+  void seek_write(std::streamsize pos, const char *buffer, std::streamsize num_bytes, bool &fail);
+  void seek_eof_write(const char *buffer, std::streamsize num_bytes, bool &fail);
   INLINE bool put(char c);
-  streamsize seek_ppos_eof();
+  std::streamsize seek_ppos_eof();
 
 private:
-  ostream *_ostream;
+  std::ostream *_ostream;
   bool _owns_pointer;
 
   // This flag is necessary to work around a weird quirk in the MSVS C++
@@ -113,16 +121,16 @@ private:
  */
 class EXPCL_DTOOL_PRC StreamWrapper : public IStreamWrapper, public OStreamWrapper {
 public:
-  INLINE StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack = false);
+  INLINE StreamWrapper(std::iostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
-  INLINE explicit StreamWrapper(iostream &stream);
+  INLINE explicit StreamWrapper(std::iostream &stream);
   ~StreamWrapper();
 
-  INLINE iostream *get_iostream() const;
-  MAKE_PROPERTY(iostream, get_iostream);
+  INLINE std::iostream *get_iostream() const;
+  MAKE_PROPERTY(std::iostream, get_iostream);
 
 private:
-  iostream *_iostream;
+  std::iostream *_iostream;
   bool _owns_pointer;
 };
 

@@ -46,6 +46,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+using std::cerr;
+using std::string;
+using std::wstring;
+
 static LanguageIndex li = LI_default;
 
 #if defined(_WIN32)
@@ -55,10 +59,10 @@ static LanguageIndex detect_language() {
   typedef BOOL (*GUPL)(DWORD, PULONG, PZZWSTR, PULONG);
   GUPL pGetUserPreferredUILanguages = (GUPL)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")),
                                                            TEXT("GetUserPreferredUILanguages"));
-  if (pGetUserPreferredUILanguages != NULL) {
+  if (pGetUserPreferredUILanguages != nullptr) {
     ULONG num_langs = 0;
     ULONG buffer_size = 0;
-    pGetUserPreferredUILanguages(8, &num_langs, NULL, &buffer_size);
+    pGetUserPreferredUILanguages(8, &num_langs, nullptr, &buffer_size);
     PZZWSTR buffer = (PZZWSTR)_alloca(buffer_size);
     if (pGetUserPreferredUILanguages(8, &num_langs, buffer, &buffer_size)) {
       for (ULONG i = 0; i < num_langs; ++i) {
@@ -67,7 +71,7 @@ static LanguageIndex detect_language() {
           // It may be a two-letter code; match it in our list.
           for (int j = 0; j < LI_COUNT; ++j) {
             const char *lang_code = language_codes[j];
-            if (lang_code != NULL && lang_code[0] == buffer[0] &&
+            if (lang_code != nullptr && lang_code[0] == buffer[0] &&
                                      lang_code[1] == buffer[1]) {
               return (LanguageIndex)j;
             }
@@ -120,7 +124,7 @@ static LanguageIndex detect_language() {
     // See if we support this language.
     for (int j = 0; j < LI_COUNT; ++j) {
       const char *lang_code = language_codes[j];
-      if (lang_code != NULL && strncasecmp(buffer, lang_code, 2) == 0) {
+      if (lang_code != nullptr && strncasecmp(buffer, lang_code, 2) == 0) {
         CFRelease(langs);
         return (LanguageIndex)j;
       }
@@ -136,10 +140,10 @@ static LanguageIndex detect_language() {
   // First consult the LANGUAGE variable, which is a GNU extension that can
   // contain multiple languages in order of preference.
   const char *lang = getenv("LANGUAGE");
-  while (lang != NULL && lang[0] != 0) {
+  while (lang != nullptr && lang[0] != 0) {
     size_t len;
     const char *next = strchr(lang, ':');
-    if (next == NULL) {
+    if (next == nullptr) {
       len = strlen(lang);
     } else {
       len = (next - lang);
@@ -150,7 +154,7 @@ static LanguageIndex detect_language() {
       // It may be a two-letter language code; match it in our list.
       for (int i = 0; i < LI_COUNT; ++i) {
         const char *lang_code = language_codes[i];
-        if (lang_code != NULL && strncasecmp(lang, lang_code, 2) == 0) {
+        if (lang_code != nullptr && strncasecmp(lang, lang_code, 2) == 0) {
           return (LanguageIndex)i;
         }
       }
@@ -161,14 +165,14 @@ static LanguageIndex detect_language() {
 
   // Fall back to the C locale functions.
   setlocale(LC_ALL, "");
-  lang = setlocale(LC_MESSAGES, NULL);
+  lang = setlocale(LC_MESSAGES, nullptr);
 
-  if (lang == NULL || lang[0] == 0 || strcmp(lang, "C") == 0) {
+  if (lang == nullptr || lang[0] == 0 || strcmp(lang, "C") == 0) {
     // Try the LANG variable.
     lang = getenv("LANG");
   }
 
-  if (lang == NULL || strlen(lang) < 2 || isalnum(lang[2])) {
+  if (lang == nullptr || strlen(lang) < 2 || isalnum(lang[2])) {
     // Couldn't extract a meaningful two-letter code.
     return LI_default;
   }
@@ -176,7 +180,7 @@ static LanguageIndex detect_language() {
   // It may be a two-letter language code; match it in our list.
   for (int i = 0; i < LI_COUNT; ++i) {
     const char *lang_code = language_codes[i];
-    if (lang_code != NULL && strncasecmp(lang, lang_code, 2) == 0) {
+    if (lang_code != nullptr && strncasecmp(lang, lang_code, 2) == 0) {
       return (LanguageIndex)i;
     }
   }
@@ -192,7 +196,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
   LPWSTR *argv;
   int argc;
   argv = CommandLineToArgvW(pCmdLine, &argc);
-  if (argv == NULL || argc != 2) {
+  if (argv == nullptr || argc != 2) {
     cerr << "usage: p3dcert cert_filename cert_dir\n";
     return 1;
   }
@@ -243,10 +247,10 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
   Fl_Window(435, 242, new_application_title[li]),
   _cert_dir(cert_dir)
 {
-  _view_cert_dialog = NULL;
+  _view_cert_dialog = nullptr;
 
-  _cert = NULL;
-  _stack = NULL;
+  _cert = nullptr;
+  _stack = nullptr;
   _verify_result = -1;
 
   // Center the window on the screen.
@@ -264,17 +268,17 @@ AuthDialog(const string &cert_filename, const string &cert_dir) :
  */
 AuthDialog::
 ~AuthDialog() {
-  if (_view_cert_dialog != NULL) {
+  if (_view_cert_dialog != nullptr) {
     _view_cert_dialog->hide();
   }
 
-  if (_cert != NULL) {
+  if (_cert != nullptr) {
     X509_free(_cert);
-    _cert = NULL;
+    _cert = nullptr;
   }
-  if (_stack != NULL) {
+  if (_stack != nullptr) {
     sk_X509_free(_stack);
-    _stack = NULL;
+    _stack = nullptr;
   }
 }
 
@@ -294,7 +298,7 @@ void AuthDialog::
 view_cert_clicked(Fl_Widget *w, void *data) {
   AuthDialog *dlg = (AuthDialog *) data;
 
-  if (dlg->_view_cert_dialog != NULL) {
+  if (dlg->_view_cert_dialog != nullptr) {
     dlg->_view_cert_dialog->hide();
   }
   dlg->hide();
@@ -317,7 +321,7 @@ cancel_clicked(Fl_Widget *w, void *data) {
  */
 void AuthDialog::
 approve_cert() {
-  assert(_cert != NULL);
+  assert(_cert != nullptr);
 
   // Make sure the directory exists.
 #ifdef _WIN32
@@ -332,7 +336,7 @@ approve_cert() {
 
   // Sure, there's a slight race condition right now: another process might
   // attempt to create the same filename.  So what.
-  FILE *fp = NULL;
+  FILE *fp = nullptr;
 
 #ifdef _WIN32
   wchar_t *buf = new wchar_t[buf_length];
@@ -366,7 +370,7 @@ approve_cert() {
   fp = fopen(buf, "w");
 #endif // _WIN32
 
-  if (fp != NULL) {
+  if (fp != nullptr) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
   }
@@ -386,14 +390,14 @@ void AuthDialog::
 read_cert_file(const string &cert_filename) {
 #endif
 
-  FILE *fp = NULL;
+  FILE *fp = nullptr;
 #ifdef _WIN32
   fp = _wfopen(cert_filename.c_str(), L"r");
 #else // _WIN32
   fp = fopen(cert_filename.c_str(), "r");
 #endif  // _WIN32
 
-  if (fp == NULL) {
+  if (fp == nullptr) {
 #ifdef _WIN32
     wcerr << L"Couldn't read " << cert_filename.c_str() << L"\n";
 #else
@@ -401,8 +405,8 @@ read_cert_file(const string &cert_filename) {
 #endif
     return;
   }
-  _cert = PEM_read_X509(fp, NULL, NULL, (void *)"");
-  if (_cert == NULL) {
+  _cert = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
+  if (_cert == nullptr) {
 #ifdef _WIN32
     wcerr << L"Could not read certificate in " << cert_filename.c_str() << L".\n";
 #else
@@ -413,11 +417,11 @@ read_cert_file(const string &cert_filename) {
   }
 
   // Build up a STACK of the remaining certificates in the file.
-  _stack = sk_X509_new(NULL);
-  X509 *c = PEM_read_X509(fp, NULL, NULL, (void *)"");
-  while (c != NULL) {
+  _stack = sk_X509_new(nullptr);
+  X509 *c = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
+  while (c != nullptr) {
     sk_X509_push(_stack, c);
-    c = PEM_read_X509(fp, NULL, NULL, (void *)"");
+    c = PEM_read_X509(fp, nullptr, nullptr, (void *)"");
   }
 
   fclose(fp);
@@ -429,7 +433,7 @@ read_cert_file(const string &cert_filename) {
  */
 void AuthDialog::
 get_friendly_name() {
-  if (_cert == NULL) {
+  if (_cert == nullptr) {
     _friendly_name.clear();
     return;
   }
@@ -447,15 +451,15 @@ get_friendly_name() {
 
     // A complex OpenSSL interface to extract out the name in utf-8.
     X509_NAME *xname = X509_get_subject_name(_cert);
-    if (xname != NULL) {
+    if (xname != nullptr) {
       int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
       if (pos != -1) {
         // We just get the first common name.  I guess it's possible to have
         // more than one; not sure what that means in this context.
         X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
-        if (xentry != NULL) {
+        if (xentry != nullptr) {
           ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
-          if (data != NULL) {
+          if (data != nullptr) {
             // We use "print" to dump the output to a memory BIO.  Is there an
             // easier way to decode the ASN1_STRING?  Curse these incomplete
             // docs.
@@ -480,7 +484,7 @@ get_friendly_name() {
  */
 void AuthDialog::
 verify_cert() {
-  if (_cert == NULL) {
+  if (_cert == nullptr) {
     _verify_result = -1;
     return;
   }
@@ -535,11 +539,11 @@ load_certificates_from_der_ram(X509_STORE *store,
 
   bp = (unsigned char *)data;
   bp_end = bp + data_size;
-  X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
-  while (x509 != NULL) {
+  X509 *x509 = d2i_X509(nullptr, &bp, bp_end - bp);
+  while (x509 != nullptr) {
     X509_STORE_add_cert(store, x509);
     ++count;
-    x509 = d2i_X509(NULL, &bp, bp_end - bp);
+    x509 = d2i_X509(nullptr, &bp, bp_end - bp);
   }
 
   return count;
@@ -578,7 +582,7 @@ layout() {
   next_y += 180;
 
   short nbuttons = 1;
-  if (_cert != NULL) {
+  if (_cert != nullptr) {
     nbuttons++;
     if (_verify_result == 0) {
       nbuttons++;
@@ -586,13 +590,13 @@ layout() {
   }
   short bx = (w() - nbuttons * BUTTON_WIDTH - (nbuttons - 1) * BUTTON_SPACE) / 2;
 
-  if (_verify_result == 0 && _cert != NULL) {
+  if (_verify_result == 0 && _cert != nullptr) {
     Fl_Return_Button *run_button = new Fl_Return_Button(bx, next_y, BUTTON_WIDTH, 25, run_title[li]);
     run_button->callback(this->run_clicked, this);
     bx += BUTTON_WIDTH + BUTTON_SPACE;
   }
 
-  if (_cert != NULL) {
+  if (_cert != nullptr) {
     Fl_Button *view_button = new Fl_Button(bx, next_y, BUTTON_WIDTH, 25, show_cert_title[li]);
     view_button->callback(this->view_cert_clicked, this);
     bx += BUTTON_WIDTH + BUTTON_SPACE;
@@ -672,8 +676,8 @@ ViewCertDialog(AuthDialog *auth_dialog, X509 *cert) :
  */
 ViewCertDialog::
 ~ViewCertDialog() {
-  if (_auth_dialog != NULL) {
-    _auth_dialog->_view_cert_dialog = NULL;
+  if (_auth_dialog != nullptr) {
+    _auth_dialog->_view_cert_dialog = nullptr;
   }
 }
 
@@ -683,7 +687,7 @@ ViewCertDialog::
 void ViewCertDialog::
 run_clicked(Fl_Widget *w, void *data) {
   ViewCertDialog *dlg = (ViewCertDialog *) data;
-  if (dlg->_auth_dialog != NULL){
+  if (dlg->_auth_dialog != nullptr){
     dlg->_auth_dialog->approve_cert();
   }
   dlg->hide();
@@ -695,7 +699,7 @@ run_clicked(Fl_Widget *w, void *data) {
 void ViewCertDialog::
 cancel_clicked(Fl_Widget *w, void *data) {
   ViewCertDialog *dlg = (ViewCertDialog *) data;
-  if (dlg->_auth_dialog != NULL){
+  if (dlg->_auth_dialog != nullptr){
     dlg->_auth_dialog->hide();
   }
   dlg->hide();
@@ -707,7 +711,7 @@ cancel_clicked(Fl_Widget *w, void *data) {
 void ViewCertDialog::
 layout() {
   // Format the certificate text for display in the dialog.
-  assert(_cert != NULL);
+  assert(_cert != nullptr);
 
   BIO *mbio = BIO_new(BIO_s_mem());
   X509_print(mbio, _cert);

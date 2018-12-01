@@ -32,7 +32,7 @@ protected:
   int _button_events_output;
 
 PUBLISHED:
-  AwMouseAndKeyboard(const string &name);
+  AwMouseAndKeyboard(const std::string &name);
 
 protected:
   // Inherited from DataNode

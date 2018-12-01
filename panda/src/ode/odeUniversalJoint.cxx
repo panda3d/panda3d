@@ -23,7 +23,7 @@ OdeUniversalJoint(dJointID id) :
 
 OdeUniversalJoint::
 OdeUniversalJoint(OdeWorld &world) :
-  OdeJoint(dJointCreateUniversal(world.get_id(), 0)) {
+  OdeJoint(dJointCreateUniversal(world.get_id(), nullptr)) {
 }
 
 OdeUniversalJoint::

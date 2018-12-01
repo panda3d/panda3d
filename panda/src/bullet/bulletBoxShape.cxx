@@ -12,6 +12,9 @@
  */
 
 #include "bulletBoxShape.h"
+
+#include "bulletWorld.h"
+
 #include "bullet_utils.h"
 
 TypeHandle BulletBoxShape::_type_handle;

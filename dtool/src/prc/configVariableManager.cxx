@@ -17,7 +17,9 @@
 #include "configPage.h"
 #include "config_prc.h"
 
-ConfigVariableManager *ConfigVariableManager::_global_ptr = NULL;
+using std::string;
+
+ConfigVariableManager *ConfigVariableManager::_global_ptr = nullptr;
 
 /**
  * The constructor is private (actually, just protected, but only to avoid a
@@ -52,12 +54,12 @@ make_variable(const string &name) {
     return (*ni).second;
   }
 
-  ConfigVariableCore *variable = NULL;
+  ConfigVariableCore *variable = nullptr;
 
   // See if there's a template that matches this name.
   VariableTemplates::const_iterator ti;
   for (ti = _variable_templates.begin();
-       ti != _variable_templates.end() && variable == (ConfigVariableCore *)NULL;
+       ti != _variable_templates.end() && variable == nullptr;
        ++ti) {
     const GlobPattern &pattern = (*ti).first;
     ConfigVariableCore *templ = (*ti).second;
@@ -66,7 +68,7 @@ make_variable(const string &name) {
     }
   }
 
-  if (variable == (ConfigVariableCore *)NULL) {
+  if (variable == nullptr) {
     variable = new ConfigVariableCore(name);
   }
 
@@ -116,7 +118,7 @@ make_variable_template(const string &pattern,
     core->set_value_type(value_type);
   }
   if (!default_value.empty() ||
-      core->get_default_value() == (ConfigDeclaration *)NULL) {
+      core->get_default_value() == nullptr) {
     core->set_default_value(default_value);
   }
   if (!description.empty()) {
@@ -137,7 +139,7 @@ make_variable_template(const string &pattern,
         variable->set_value_type(value_type);
       }
       if (!default_value.empty() ||
-          variable->get_default_value() == (ConfigDeclaration *)NULL) {
+          variable->get_default_value() == nullptr) {
         variable->set_default_value(default_value);
       }
       if (!description.empty()) {
@@ -180,7 +182,7 @@ is_variable_used(size_t n) const {
  *
  */
 void ConfigVariableManager::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "ConfigVariableManager, " << _variables.size() << " variables.";
 }
 
@@ -188,7 +190,7 @@ output(ostream &out) const {
  *
  */
 void ConfigVariableManager::
-write(ostream &out) const {
+write(std::ostream &out) const {
   VariablesByName::const_iterator ni;
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();
@@ -211,7 +213,7 @@ write(ostream &out) const {
  * state.
  */
 void ConfigVariableManager::
-write_prc_variables(ostream &out) const {
+write_prc_variables(std::ostream &out) const {
   VariablesByName::const_iterator ni;
   for (ni = _variables_by_name.begin();
        ni != _variables_by_name.end();
@@ -300,7 +302,7 @@ list_dynamic_variables() const {
  */
 ConfigVariableManager *ConfigVariableManager::
 get_global_ptr() {
-  if (_global_ptr == (ConfigVariableManager *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new ConfigVariableManager;
   }
   return _global_ptr;
@@ -357,7 +359,7 @@ list_variable(const ConfigVariableCore *variable,
       }
 
       decl = variable->get_default_value();
-      if (decl != (ConfigDeclaration *)NULL) {
+      if (decl != nullptr) {
         nout << "  default value = " << decl->get_string_value() << "\n";
       }
     }

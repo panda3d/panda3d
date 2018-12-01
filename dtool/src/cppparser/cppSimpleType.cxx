@@ -74,7 +74,7 @@ is_constructible(const CPPType *given_type) const {
   given_type = ((CPPType *)given_type)->remove_reference()->remove_cv();
 
   const CPPSimpleType *simple_type = given_type->as_simple_type();
-  if (simple_type == NULL) {
+  if (simple_type == nullptr) {
     return given_type->is_enum() && is_arithmetic();
   } else if (_type == T_nullptr) {
     return simple_type->_type == T_nullptr;
@@ -133,7 +133,7 @@ is_parameter_expr() const {
 /**
  *
  */
-string CPPSimpleType::
+std::string CPPSimpleType::
 get_preferred_name() const {
   // Simple types always prefer to use their native types.
   return get_local_name();
@@ -143,7 +143,7 @@ get_preferred_name() const {
  *
  */
 void CPPSimpleType::
-output(ostream &out, int, CPPScope *, bool) const {
+output(std::ostream &out, int, CPPScope *, bool) const {
   if (_flags & F_unsigned) {
     out << "unsigned ";
   }
@@ -250,7 +250,7 @@ as_simple_type() {
 bool CPPSimpleType::
 is_equal(const CPPDeclaration *other) const {
   const CPPSimpleType *ot = ((CPPDeclaration *)other)->as_simple_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return _type == ot->_type && _flags == ot->_flags;
 }
@@ -263,7 +263,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPSimpleType::
 is_less(const CPPDeclaration *other) const {
   const CPPSimpleType *ot = ((CPPDeclaration *)other)->as_simple_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_type != ot->_type) {
     return _type < ot->_type;

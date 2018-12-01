@@ -31,7 +31,7 @@ protected:
   AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy);
 
 public:
-  AnimChannelScalarTable(AnimGroup *parent, const string &name);
+  AnimChannelScalarTable(AnimGroup *parent, const std::string &name);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
@@ -44,8 +44,10 @@ PUBLISHED:
   INLINE bool has_table() const;
   INLINE void clear_table();
 
+  MAKE_PROPERTY2(table, has_table, get_table, set_table, clear_table);
+
 public:
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;

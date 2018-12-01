@@ -16,7 +16,7 @@
  */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex() : MutexDebug(string(), false, false)
+Mutex() : MutexDebug(std::string(), false, false)
 #else
 Mutex()
 #endif  // DEBUG_THREADS
@@ -28,7 +28,7 @@ Mutex()
  */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const char *name) : MutexDebug(string(name), false, false)
+Mutex(const char *name) : MutexDebug(std::string(name), false, false)
 #else
 Mutex(const char *)
 #endif  // DEBUG_THREADS
@@ -40,37 +40,9 @@ Mutex(const char *)
  */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const string &name) : MutexDebug(name, false, false)
+Mutex(const std::string &name) : MutexDebug(name, false, false)
 #else
-Mutex(const string &)
+Mutex(const std::string &)
 #endif  // DEBUG_THREADS
 {
-}
-
-/**
- *
- */
-INLINE Mutex::
-~Mutex() {
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE Mutex::
-#ifdef DEBUG_THREADS
-Mutex(const Mutex &copy) : MutexDebug(string(), false, false)
-#else
-  Mutex(const Mutex &copy)
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy mutexes.
- */
-INLINE void Mutex::
-operator = (const Mutex &copy) {
-  nassertv(false);
 }

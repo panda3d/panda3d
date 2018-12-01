@@ -55,7 +55,7 @@ PUBLISHED:
                          bool dr_incomplete_render);
   INLINE SceneSetup *get_scene() const;
   INLINE bool has_tag_state_key() const;
-  INLINE const string &get_tag_state_key() const;
+  INLINE const std::string &get_tag_state_key() const;
 
   INLINE void set_camera_mask(const DrawMask &camera_mask);
   INLINE const DrawMask &get_camera_mask() const;
@@ -115,7 +115,7 @@ private:
   PT(SceneSetup) _scene_setup;
   DrawMask _camera_mask;
   bool _has_tag_state_key;
-  string _tag_state_key;
+  std::string _tag_state_key;
   CPT(RenderState) _initial_state;
   PT(GeometricBoundingVolume) _view_frustum;
   CullHandler *_cull_handler;

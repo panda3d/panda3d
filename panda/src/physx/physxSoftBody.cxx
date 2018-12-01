@@ -45,13 +45,13 @@ void PhysxSoftBody::
 unlink() {
 
   // Unlink self
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxScene *scene = (PhysxScene *)_ptr->getScene().userData;
   scene->_softbodies.remove(this);
 
-  _node = NULL;
+  _node = nullptr;
 }
 
 /**
@@ -64,7 +64,7 @@ release() {
 
   unlink();
   _ptr->getScene().releaseSoftBody(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 }
 
 /**
@@ -94,7 +94,7 @@ update() {
 PhysxScene *PhysxSoftBody::
 get_scene() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return (PhysxScene *)_ptr->getScene().userData;
 }
 
@@ -104,7 +104,7 @@ get_scene() const {
 PhysxSoftBodyNode *PhysxSoftBody::
 get_soft_body_node() const {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
   return _node;
 }
 
@@ -114,7 +114,7 @@ get_soft_body_node() const {
 PhysxSoftBodyNode *PhysxSoftBody::
 create_soft_body_node(const char *name) {
 
-  nassertr(_error_type == ET_ok, NULL);
+  nassertr(_error_type == ET_ok, nullptr);
 
   _node = new PhysxSoftBodyNode(name);
   _node->allocate(this);

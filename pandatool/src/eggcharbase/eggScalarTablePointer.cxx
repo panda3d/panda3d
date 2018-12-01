@@ -31,7 +31,7 @@ EggScalarTablePointer(EggObject *object) {
  */
 double EggScalarTablePointer::
 get_frame_rate() const {
-  if (_data == (EggSAnimData *)NULL || !_data->has_fps()) {
+  if (_data == nullptr || !_data->has_fps()) {
     return 0.0;
   } else {
     return _data->get_fps();
@@ -43,7 +43,7 @@ get_frame_rate() const {
  */
 int EggScalarTablePointer::
 get_num_frames() const {
-  if (_data == (EggSAnimData *)NULL) {
+  if (_data == nullptr) {
     return 0;
   } else {
     return _data->get_num_rows();
@@ -55,7 +55,7 @@ get_num_frames() const {
  */
 void EggScalarTablePointer::
 extend_to(int num_frames) {
-  nassertv(_data != (EggSAnimData *)NULL);
+  nassertv(_data != nullptr);
   int num_rows = _data->get_num_rows();
   double last_value;
   if (num_rows == 0) {
@@ -89,7 +89,7 @@ get_frame(int n) const {
  * Applies the indicated name change to the egg file.
  */
 void EggScalarTablePointer::
-set_name(const string &name) {
+set_name(const std::string &name) {
   // Actually, let's not rename the slider table (yet), because we haven't
   // written the code to rename all of the morph targets.
 

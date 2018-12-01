@@ -13,4 +13,4 @@
 
 #include "pointerToArrayBase.h"
 
-EXPCL_PANDAEXPRESS PTASetLevelFunc *pta_set_level = NULL;
+EXPCL_PANDA_EXPRESS PTASetLevelFunc *pta_set_level = nullptr;

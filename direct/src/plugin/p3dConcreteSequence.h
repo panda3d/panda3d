@@ -34,10 +34,10 @@ public:
   virtual P3D_object_type get_type();
   virtual bool get_bool();
 
-  virtual void make_string(string &value);
+  virtual void make_string(std::string &value);
 
-  virtual P3D_object *get_property(const string &property);
-  virtual bool set_property(const string &property, P3D_object *value);
+  virtual P3D_object *get_property(const std::string &property);
+  virtual bool set_property(const std::string &property, P3D_object *value);
 
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
   virtual P3D_object **get_object_array();
@@ -49,7 +49,7 @@ public:
   void append(P3D_object *value);
 
 private:
-  typedef vector<P3D_object *> Elements;
+  typedef std::vector<P3D_object *> Elements;
   Elements _elements;
 };
 

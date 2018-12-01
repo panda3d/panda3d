@@ -75,7 +75,7 @@ PUBLISHED:
 
   INLINE OdeSpace get_space() const;
 
-  virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  virtual void write(std::ostream &out = std::cout, unsigned int indent=0) const;
   operator bool () const;
 
   OdeSimpleSpace convert_to_simple_space() const;
@@ -97,8 +97,8 @@ PUBLISHED:
   int get_collide_id(dGeomID o1);
   int get_collide_id(OdeGeom& geom);
 
-  INLINE void set_collision_event(const string &event_name);
-  INLINE string get_collision_event();
+  INLINE void set_collision_event(const std::string &event_name);
+  INLINE std::string get_collision_event();
 
 public:
   static void auto_callback(void*, dGeomID, dGeomID);
@@ -108,7 +108,7 @@ public:
   static OdeSpace* _static_auto_collide_space;
   static dJointGroupID _static_auto_collide_joint_group;
   static int contactCount;
-  string _collision_event;
+  std::string _collision_event;
 
 protected:
   dSpaceID _id;

@@ -23,7 +23,7 @@ TypeHandle VideoTexture::_type_handle;
  *
  */
 VideoTexture::
-VideoTexture(const string &name) :
+VideoTexture(const std::string &name) :
   Texture(name)
 {
   // We don't want to try to compress each frame as it's loaded.
@@ -104,8 +104,8 @@ set_video_size(int video_width, int video_height) {
 
   Texture::CDWriter cdata(Texture::_cycler, true);
   do_set_pad_size(cdata,
-                  max(cdata->_x_size - _video_width, 0),
-                  max(cdata->_y_size - _video_height, 0),
+                  std::max(cdata->_x_size - _video_width, 0),
+                  std::max(cdata->_y_size - _video_height, 0),
                   0);
 }
 
@@ -181,7 +181,7 @@ do_can_reload(const Texture::CData *cdata) const {
  */
 bool VideoTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
-                    int &x_size, int &y_size, const string &name,
+                    int &x_size, int &y_size, const std::string &name,
                     bool for_padding) const {
   AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
   if (ats != ATS_none) {

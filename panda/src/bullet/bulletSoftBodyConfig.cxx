@@ -13,6 +13,10 @@
 
 #include "bulletSoftBodyConfig.h"
 
+#include "bulletWorld.h"
+
+#include "lightMutexHolder.h"
+
 /**
  *
  */

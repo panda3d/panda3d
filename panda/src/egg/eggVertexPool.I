@@ -17,7 +17,7 @@
  */
 INLINE bool EggVertexPool::
 has_vertex(int index) const {
-  return get_vertex(index) != (EggVertex *)NULL;
+  return get_vertex(index) != nullptr;
 }
 
 /**

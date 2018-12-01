@@ -331,13 +331,24 @@ SectionGroup "Python support"
         SetOutPath $INSTDIR\panda3d
         File /r "${BUILT}\panda3d\*.py"
 
-        File /r /x bullet.pyd /x ode.pyd /x physx.pyd /x rocket.pyd "${BUILT}\panda3d\*.pyd"
+        File /nonfatal /r "${BUILT}\panda3d\core${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\ai${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\awesomium${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\direct${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\egg${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\fx${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\interrogatedb${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\physics${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\_rplight${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\skel${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\vision${EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\vrpn${EXT_SUFFIX}"
 
         !ifdef HAVE_BULLET
             SectionGetFlags ${SecBullet} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipBulletPyd
-            File /nonfatal /r "${BUILT}\panda3d\bullet.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\bullet${EXT_SUFFIX}"
             SkipBulletPyd:
         !endif
 
@@ -345,7 +356,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecODE} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipODEPyd
-            File /nonfatal /r "${BUILT}\panda3d\ode.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\ode${EXT_SUFFIX}"
             SkipODEPyd:
         !endif
 
@@ -353,7 +364,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecPhysX} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipPhysXPyd
-            File /nonfatal /r "${BUILT}\panda3d\physx.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\physx${EXT_SUFFIX}"
             SkipPhysXPyd:
         !endif
 
@@ -361,7 +372,7 @@ SectionGroup "Python support"
             SectionGetFlags ${SecRocket} $R0
             IntOp $R0 $R0 & ${SF_SELECTED}
             StrCmp $R0 ${SF_SELECTED} 0 SkipRocketPyd
-            File /nonfatal /r "${BUILT}\panda3d\rocket.pyd"
+            File /nonfatal /r "${BUILT}\panda3d\rocket${EXT_SUFFIX}"
             SkipRocketPyd:
         !endif
 
@@ -374,26 +385,36 @@ SectionGroup "Python support"
         SetRegView ${REGVIEW}
         !endif
 
-        ; Check for a system-wide Python installation.
-        ; We could check for a user installation of Python as well, but there
-        ; is no distinction between 64-bit and 32-bit regviews in HKCU, so we
-        ; can't guess whether it might be a compatible version.
+        ; Check for a non-Panda3D system-wide Python installation.
         ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+        StrCmp $0 "$INSTDIR\python" UserExternalPthCheck 0
+        StrCmp $0 "" UserExternalPthCheck 0
+        IfFileExists "$0\ppython.exe" UserExternalPthCheck 0
+        IfFileExists "$0\python.exe" AskExternalPth UserExternalPthCheck
+
+        ; Check for a non-Panda3D user installation of Python.
+        UserExternalPthCheck:
+        ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" SkipExternalPth 0
         StrCmp $0 "" SkipExternalPth 0
         IfFileExists "$0\ppython.exe" SkipExternalPth 0
-        IfFileExists "$0\python.exe" 0 SkipExternalPth
+        IfFileExists "$0\python.exe" AskExternalPth SkipExternalPth
 
         ; We're pretty sure this Python build is of the right architecture.
+        AskExternalPth:
         MessageBox MB_YESNO|MB_ICONQUESTION \
             "Your system already has a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\nWould you like to configure it to be able to use the Panda3D libraries?$\r$\nIf you choose no, you will only be able to use Panda3D's own copy of Python." \
             IDYES WriteExternalPth IDNO SkipExternalPth
 
         WriteExternalPth:
-        FileOpen $1 "$0\Lib\site-packages\panda.pth" w
-        FileWrite $1 "$INSTDIR$\r$\n"
-        FileWrite $1 "$INSTDIR\bin$\r$\n"
-        FileClose $1
+        ;FileOpen $1 "$0\Lib\site-packages\panda.pth" w
+        ;FileWrite $1 "$INSTDIR$\r$\n"
+        ;FileWrite $1 "$INSTDIR\bin$\r$\n"
+        ;FileClose $1
+
+        ; Actually, it looks like we can just do this instead:
+        WriteRegStr HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" "" "$INSTDIR"
+
         SkipExternalPth:
     SectionEnd
 
@@ -589,7 +610,6 @@ Section "3ds Max plug-ins" SecMaxPlugins
     File /nonfatal /r "${BUILT}\plugins\*.dle"
     File /nonfatal /r "${BUILT}\plugins\*.dlo"
     File /nonfatal /r "${BUILT}\plugins\*.ms"
-    File "${SOURCE}\doc\INSTALLING-PLUGINS.TXT"
 SectionEnd
 !endif
 
@@ -604,7 +624,6 @@ Section "Maya plug-ins" SecMayaPlugins
     SetOutPath $INSTDIR\plugins
     File /nonfatal /r "${BUILT}\plugins\*.mll"
     File /nonfatal /r "${BUILT}\plugins\*.mel"
-    File "${SOURCE}\doc\INSTALLING-PLUGINS.TXT"
 SectionEnd
 !endif
 
@@ -726,6 +745,10 @@ Section Uninstall
     ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
     StrCmp $0 "$INSTDIR\python" 0 +2
     DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}"
+
+    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" ""
+    StrCmp $0 "$INSTDIR" 0 +2
+    DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D"
 
     SetDetailsPrint both
     DetailPrint "Deleting files..."
@@ -1239,8 +1262,13 @@ done:
 
 FunctionEnd
 
+!ifndef LVM_GETITEMCOUNT
 !define LVM_GETITEMCOUNT 0x1004
+!endif
+
+!ifndef LVM_GETITEMTEXT
 !define LVM_GETITEMTEXT 0x102D
+!endif
 
 Function DumpLog
   Exch $5

@@ -22,7 +22,7 @@ CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope) :
   _current_scope(current_scope),
   _global_scope(global_scope)
 {
-  _expr = NULL;
+  _expr = nullptr;
 }
 
 /**
@@ -36,9 +36,9 @@ CPPExpressionParser::
  *
  */
 bool CPPExpressionParser::
-parse_expr(const string &expr) {
+parse_expr(const std::string &expr) {
   if (!init_const_expr(expr)) {
-    cerr << "Unable to parse expression\n";
+    std::cerr << "Unable to parse expression\n";
     return false;
   }
 
@@ -51,9 +51,9 @@ parse_expr(const string &expr) {
  *
  */
 bool CPPExpressionParser::
-parse_expr(const string &expr, const CPPPreprocessor &filepos) {
+parse_expr(const std::string &expr, const CPPPreprocessor &filepos) {
   if (!init_const_expr(expr)) {
-    cerr << "Unable to parse expression\n";
+    std::cerr << "Unable to parse expression\n";
     return false;
   }
 
@@ -68,8 +68,8 @@ parse_expr(const string &expr, const CPPPreprocessor &filepos) {
  *
  */
 void CPPExpressionParser::
-output(ostream &out) const {
-  if (_expr == NULL) {
+output(std::ostream &out) const {
+  if (_expr == nullptr) {
     out << "(null expr)";
   } else {
     out << *_expr;

@@ -28,35 +28,6 @@ ConditionVarFull(Mutex &mutex) :
 }
 
 /**
- *
- */
-INLINE ConditionVarFull::
-~ConditionVarFull() {
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE ConditionVarFull::
-ConditionVarFull(const ConditionVarFull &copy) :
-#ifdef DEBUG_THREADS
-  ConditionVarFullDebug(copy.get_mutex())
-#else
-  ConditionVarFullDirect(copy.get_mutex())
-#endif  // DEBUG_THREADS
-{
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy condition variables.
- */
-INLINE void ConditionVarFull::
-operator = (const ConditionVarFull &copy) {
-  nassertv(false);
-}
-
-/**
  * Returns the mutex associated with this condition variable.
  */
 INLINE Mutex &ConditionVarFull::

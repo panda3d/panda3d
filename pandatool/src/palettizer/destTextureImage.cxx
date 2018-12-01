@@ -48,8 +48,8 @@ DestTextureImage(TexturePlacement *placement) {
       _x_size = to_power_2(_x_size);
       _y_size = to_power_2(_y_size);
     } else {
-      _x_size = max(_x_size, 1);
-      _y_size = max(_y_size, 1);
+      _x_size = std::max(_x_size, 1);
+      _y_size = std::max(_y_size, 1);
     }
   }
 
@@ -98,7 +98,7 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
     // Also check the timestamps.
     SourceTextureImage *source = texture->get_preferred_source();
 
-    if (source != (SourceTextureImage *)NULL &&
+    if (source != nullptr &&
         source->get_filename().compare_timestamps(get_filename()) > 0) {
       copy(texture);
     }

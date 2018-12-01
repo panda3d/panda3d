@@ -26,7 +26,7 @@ DatagramBuffer() :
  */
 INLINE DatagramBuffer::
 DatagramBuffer(vector_uchar data) :
-  _data(move(data)),
+  _data(std::move(data)),
   _read_offset(0),
   _wrote_first_datagram(false),
   _read_first_datagram(false) {
@@ -56,7 +56,7 @@ get_data() const {
  */
 INLINE void DatagramBuffer::
 set_data(vector_uchar data) {
-  _data = move(data);
+  _data = std::move(data);
 }
 
 /**

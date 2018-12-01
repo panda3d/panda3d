@@ -83,9 +83,9 @@ make_next() const {
 
   for (size_t i = 0; i < _bins.size(); ++i) {
     CullBin *old_bin = _bins[i];
-    if (old_bin == (CullBin *)NULL ||
+    if (old_bin == nullptr ||
         old_bin->get_bin_type() != bin_manager->get_bin_type(i)) {
-      new_result->_bins.push_back((CullBin *)NULL);
+      new_result->_bins.push_back(nullptr);
     } else {
       new_result->_bins.push_back(old_bin->make_next());
     }
@@ -140,7 +140,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
            traverser, force)) {
         int wireframe_bin_index = bin_manager->find_bin("fixed");
         CullBin *bin = get_bin(wireframe_bin_index);
-        nassertv(bin != (CullBin *)NULL);
+        nassertv(bin != nullptr);
         check_flash_bin(wireframe_part->_state, bin_manager, wireframe_bin_index);
         bin->add_object(wireframe_part, current_thread);
       } else {
@@ -211,7 +211,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
                    traverser, force)) {
                 int transparent_bin_index = transparent_part->_state->get_bin_index();
                 CullBin *bin = get_bin(transparent_bin_index);
-                nassertv(bin != (CullBin *)NULL);
+                nassertv(bin != nullptr);
                 check_flash_bin(transparent_part->_state, bin_manager, transparent_bin_index);
                 bin->add_object(transparent_part, current_thread);
               } else {
@@ -241,7 +241,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
   int bin_index = object->_state->get_bin_index();
   CullBin *bin = get_bin(bin_index);
-  nassertv(bin != (CullBin *)NULL);
+  nassertv(bin != nullptr);
   check_flash_bin(object->_state, bin_manager, bin_index);
 
   // Munge vertices as needed for the GSG's requirements, and the object's
@@ -269,11 +269,11 @@ finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
     if (!bin_manager->get_bin_active(i)) {
       // If the bin isn't active, don't sort it, and don't draw it.  In fact,
       // clear it.
-      _bins[i] = NULL;
+      _bins[i] = nullptr;
 
     } else {
       CullBin *bin = _bins[i];
-      if (bin != (CullBin *)NULL) {
+      if (bin != nullptr) {
         bin->finish_cull(scene_setup, current_thread);
       }
     }
@@ -294,8 +294,11 @@ draw(Thread *current_thread) {
     int bin_index = bin_manager->get_bin(i);
     nassertv(bin_index >= 0);
 
-    if (bin_index < (int)_bins.size() && _bins[bin_index] != (CullBin *)NULL) {
+    if (bin_index < (int)_bins.size() && _bins[bin_index] != nullptr) {
+
+      _gsg->push_group_marker(_bins[bin_index]->get_name());
       _bins[bin_index]->draw(force, current_thread);
+      _gsg->pop_group_marker();
     }
   }
 }
@@ -319,9 +322,9 @@ make_result_graph() {
   int num_bins = bin_manager->get_num_bins();
   for (int i = 0; i < num_bins; i++) {
     int bin_index = bin_manager->get_bin(i);
-    nassertr(bin_index >= 0, NULL);
+    nassertr(bin_index >= 0, nullptr);
 
-    if (bin_index < (int)_bins.size() && _bins[bin_index] != (CullBin *)NULL) {
+    if (bin_index < (int)_bins.size() && _bins[bin_index] != nullptr) {
       root_node->add_child(_bins[bin_index]->make_result_graph());
     }
   }
@@ -351,15 +354,15 @@ make_new_bin(int bin_index) {
                                               _draw_region_pcollector);
   CullBin *bin_ptr = bin.p();
 
-  if (bin_ptr != (CullBin *)NULL) {
+  if (bin_ptr != nullptr) {
     // Now store it in the vector.
     while (bin_index >= (int)_bins.size()) {
-      _bins.push_back((CullBin *)NULL);
+      _bins.push_back(nullptr);
     }
-    nassertr(bin_index >= 0 && bin_index < (int)_bins.size(), NULL);
+    nassertr(bin_index >= 0 && bin_index < (int)_bins.size(), nullptr);
 
     // Prevent unnecessary refunref by swapping the PointerTos.
-    swap(_bins[bin_index], bin);
+    std::swap(_bins[bin_index], bin);
   }
 
   return bin_ptr;
@@ -384,8 +387,8 @@ get_rescale_normal_state(RescaleNormalAttrib::Mode mode) {
  */
 const RenderState *CullResult::
 get_alpha_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     // We don't monkey with the priority, since we want to allow the user to
     // override this if he desires.
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater, 0.0f));
@@ -398,8 +401,8 @@ get_alpha_state() {
  */
 const RenderState *CullResult::
 get_binary_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, 0.5f),
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
@@ -431,8 +434,8 @@ apply_flash_color(CPT(RenderState) &state, const LColor &flash_color) {
  */
 const RenderState *CullResult::
 get_dual_transparent_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     // The alpha test for > 0 prevents us from drawing empty pixels, and hence
     // filling up the depth buffer with large empty spaces that may obscure
     // other things.  However, this does mean we draw pixels twice where the
@@ -448,8 +451,8 @@ get_dual_transparent_state() {
   if (m_dual_flash) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
-      static CPT(RenderState) flash_state = NULL;
-      if (flash_state == (const RenderState *)NULL) {
+      static CPT(RenderState) flash_state = nullptr;
+      if (flash_state == nullptr) {
         flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.8f, 0.2, 0.2, 1.0f)),
                                         RenderState::get_max_priority());
 
@@ -473,8 +476,8 @@ get_dual_transparent_state() {
  */
 const RenderState *CullResult::
 get_dual_opaque_state() {
-  static CPT(RenderState) state = NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, dual_opaque_level),
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
@@ -484,8 +487,8 @@ get_dual_opaque_state() {
   if (m_dual_flash) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
-      static CPT(RenderState) flash_state = NULL;
-      if (flash_state == (const RenderState *)NULL) {
+      static CPT(RenderState) flash_state = nullptr;
+      if (flash_state == nullptr) {
         flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.2, 0.2, 0.8f, 1.0f)),
                                         RenderState::get_max_priority());
         flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)),

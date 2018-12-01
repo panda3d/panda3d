@@ -27,10 +27,10 @@
 CPPInstanceIdentifier::Modifier::
 Modifier(CPPInstanceIdentifierType type) :
   _type(type),
-  _func_params(NULL),
+  _func_params(nullptr),
   _func_flags(0),
-  _scoping(NULL),
-  _expr(NULL) {
+  _scoping(nullptr),
+  _expr(nullptr) {
 }
 
 /**
@@ -116,11 +116,11 @@ add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_
   // check if the parameter list is empty.  If it is, this is really a unary
   // operator, so set the unary_op flag.  Operators () and [] are never
   // considered unary operators.
-  if (_ident != NULL &&
+  if (_ident != nullptr &&
       _ident->get_simple_name().substr(0, 9) == "operator ") {
 
-    if (_ident->get_simple_name() != string("operator ()") &&
-        _ident->get_simple_name() != string("operator []")) {
+    if (_ident->get_simple_name() != std::string("operator ()") &&
+        _ident->get_simple_name() != std::string("operator []")) {
       if (params->_parameters.empty()) {
         flags |= CPPFunctionType::F_unary_op;
       }
@@ -129,7 +129,7 @@ add_func_modifier(CPPParameterList *params, int flags, CPPType *trailing_return_
     flags |= CPPFunctionType::F_operator;
   }
 
-  if (trailing_return_type != NULL) {
+  if (trailing_return_type != nullptr) {
     // Remember whether trailing return type notation was used.
     flags |= CPPFunctionType::F_trailing_return_type;
   }
@@ -153,7 +153,7 @@ add_array_modifier(CPPExpression *expr) {
   // Special case for operator new[] and delete[].  We're not really adding an
   // array modifier to them, but appending [] to the identifier.  This is to
   // work around a parser ambiguity.
-  if (_ident != NULL && (_ident->get_simple_name() == "operator delete" ||
+  if (_ident != nullptr && (_ident->get_simple_name() == "operator delete" ||
                          _ident->get_simple_name() == "operator new")) {
 
     _ident->_names.back().append_name("[]");
@@ -184,7 +184,7 @@ add_trailing_return_type(CPPType *type) {
       return;
     }
   }
-  cerr << "trailing return type can only be added to a function\n";
+  std::cerr << "trailing return type can only be added to a function\n";
 }
 
 /**
@@ -206,7 +206,7 @@ get_initializer() const {
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -215,7 +215,7 @@ get_initializer() const {
 CPPScope *CPPInstanceIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
           CPPPreprocessor *error_sink) const {
-  if (_ident == NULL) {
+  if (_ident == nullptr) {
     return current_scope;
   } else {
     return _ident->get_scope(current_scope, global_scope, error_sink);
@@ -228,7 +228,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 CPPType *CPPInstanceIdentifier::
 r_unroll_type(CPPType *start_type,
               CPPInstanceIdentifier::Modifiers::const_iterator mi) {
-  assert(start_type != NULL);
+  assert(start_type != nullptr);
 
   start_type = CPPType::new_type(start_type);
 
@@ -239,7 +239,7 @@ r_unroll_type(CPPType *start_type,
   const Modifier &mod = (*mi);
   ++mi;
 
-  CPPType *result = NULL;
+  CPPType *result = nullptr;
 
   switch (mod._type) {
   case IIT_pointer:
@@ -260,7 +260,7 @@ r_unroll_type(CPPType *start_type,
     {
       CPPType *type = r_unroll_type(start_type, mi);
       CPPFunctionType *ftype = type->as_function_type();
-      if (ftype != NULL) {
+      if (ftype != nullptr) {
         ftype = new CPPFunctionType(*ftype);
         ftype->_class_owner = mod._scoping;
         ftype->_flags |= CPPFunctionType::F_method_pointer;
@@ -291,12 +291,12 @@ r_unroll_type(CPPType *start_type,
   case IIT_func:
     {
       CPPType *return_type = r_unroll_type(start_type, mi);
-      if (mod._trailing_return_type != (CPPType *)NULL) {
+      if (mod._trailing_return_type != nullptr) {
         CPPSimpleType *simple_type = return_type->as_simple_type();
-        if (simple_type != NULL && simple_type->_type == CPPSimpleType::T_auto) {
+        if (simple_type != nullptr && simple_type->_type == CPPSimpleType::T_auto) {
           return_type = mod._trailing_return_type;
         } else {
-          cerr << "function with trailing return type needs auto\n";
+          std::cerr << "function with trailing return type needs auto\n";
         }
       }
       result = new CPPFunctionType(return_type, mod._func_params,
@@ -312,7 +312,7 @@ r_unroll_type(CPPType *start_type,
     break;
 
   default:
-    cerr << "Internal error--invalid CPPInstanceIdentifier\n";
+    std::cerr << "Internal error--invalid CPPInstanceIdentifier\n";
     abort();
   }
 

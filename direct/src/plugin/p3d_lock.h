@@ -44,15 +44,15 @@ public:
 
 // Threads.
 #define THREAD HANDLE
-#define INIT_THREAD(thread) (thread) = NULL;
+#define INIT_THREAD(thread) (thread) = nullptr;
 #define SPAWN_THREAD(thread, callback_function, this)                   \
-  (thread) = CreateThread(NULL, 0, &win_ ## callback_function, (this), 0, NULL)
+  (thread) = CreateThread(nullptr, 0, &win_ ## callback_function, (this), 0, nullptr)
 #define JOIN_THREAD(thread)                     \
   {                                             \
-    assert((thread) != NULL);                   \
+    assert((thread) != nullptr);                   \
     WaitForSingleObject((thread), INFINITE);    \
     CloseHandle((thread));                      \
-    (thread) = NULL;                            \
+    (thread) = nullptr;                            \
   }
 
 // Declare this macro within your class declaration.  This implements the
@@ -115,7 +115,7 @@ public:
   static void *                                               \
   posix_ ## callback_function(void *data) {                   \
     ((class *)data)->callback_function();                     \
-    return NULL;                                              \
+    return nullptr;                                              \
   }
 
 #endif  // _WIN32

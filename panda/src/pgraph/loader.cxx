@@ -19,7 +19,7 @@
 #include "modelLoadRequest.h"
 #include "modelSaveRequest.h"
 #include "config_express.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "virtualFileSystem.h"
 #include "filename.h"
 #include "load_dso.h"
@@ -31,6 +31,8 @@
 #include "bamFile.h"
 #include "configVariableInt.h"
 #include "configVariableEnum.h"
+
+using std::string;
 
 bool Loader::_file_types_loaded = false;
 PT(Loader) Loader::_global_ptr;
@@ -46,7 +48,7 @@ Loader(const string &name) :
   _task_manager = AsyncTaskManager::get_global_ptr();
   _task_chain = name;
 
-  if (_task_manager->find_task_chain(_task_chain) == NULL) {
+  if (_task_manager->find_task_chain(_task_chain) == nullptr) {
     PT(AsyncTaskChain) chain = _task_manager->make_task_chain(_task_chain);
 
     ConfigVariableInt loader_num_threads
@@ -96,10 +98,10 @@ make_async_save_request(const Filename &filename, const LoaderOptions &options,
  * graph defined there.
  */
 PT(PandaNode) Loader::
-load_bam_stream(istream &in) {
+load_bam_stream(std::istream &in) {
   BamFile bam_file;
   if (!bam_file.open_read(in)) {
-    return NULL;
+    return nullptr;
   }
 
   return bam_file.read_node();
@@ -109,7 +111,7 @@ load_bam_stream(istream &in) {
  *
  */
 void Loader::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 
   int num_tasks = _task_manager->make_task_chain(_task_chain)->get_num_tasks();
@@ -159,13 +161,13 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
         "in your Config.prc to globally assume a particular model "
         "filename extension.\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
-  if (requested_type == (LoaderFileType *)NULL) {
+  if (requested_type == nullptr) {
     if (report_errors) {
       loader_cat.error()
         << "Extension of file " << this_filename
@@ -174,21 +176,21 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
         << "Currently known scene file types are:\n";
       reg->write(loader_cat.error(false), 2);
     }
-    return NULL;
+    return nullptr;
   } else if (!requested_type->supports_load()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."
         << extension << ") does not support loading.\n";
     }
-    return NULL;
+    return nullptr;
   } else if (compressed && !requested_type->supports_compressed()) {
     if (report_errors) {
       loader_cat.error()
         << requested_type->get_name() << " file type (."
         << extension << ") does not support in-line compression.\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   bool search = (this_options.get_flags() & LoaderOptions::LF_search) != 0;
@@ -205,13 +207,13 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
 
   if (search) {
     // Look for the file along the model path.
-    const ConfigVariableSearchPath &model_path = get_model_path();
+    DSearchPath model_path(get_model_path());
     int num_dirs = model_path.get_num_directories();
     for (int i = 0; i < num_dirs; ++i) {
       Filename pathname(model_path.get_directory(i), this_filename);
       PT(PandaNode) result = try_load_file(pathname, this_options,
                                            requested_type);
-      if (result != (PandaNode *)NULL) {
+      if (result != nullptr) {
         return result;
       }
     }
@@ -243,7 +245,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     // Look for the file only where it is.
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     PT(PandaNode) result = try_load_file(this_filename, this_options, requested_type);
-    if (result != (PandaNode *)NULL) {
+    if (result != nullptr) {
       return result;
     }
     if (report_errors) {
@@ -256,7 +258,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -273,7 +275,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the file.
     PT(PandaNode) node = ModelPool::get_model(pathname, true);
-    if (node != (PandaNode *)NULL) {
+    if (node != nullptr) {
       if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
         if (loader_cat.is_debug()) {
           loader_cat.debug()
@@ -292,7 +294,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
-    if (record != (BamCacheRecord *)NULL) {
+    if (record != nullptr) {
       if (record->has_data()) {
         if (report_errors) {
           loader_cat.info()
@@ -334,8 +336,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   if (!cache_only) {
     // Load the model from disk.
     PT(PandaNode) result = requested_type->load_file(pathname, options, record);
-    if (result != (PandaNode *)NULL) {
-      if (record != (BamCacheRecord *)NULL) {
+    if (result != nullptr) {
+      if (record != nullptr) {
         // Store the loaded model in the model cache.
         record->set_data(result);
         cache->store(record);
@@ -359,7 +361,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -403,7 +405,7 @@ save_file(const Filename &filename, const LoaderOptions &options,
   LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
 
-  if (requested_type == (LoaderFileType *)NULL) {
+  if (requested_type == nullptr) {
     if (report_errors) {
       loader_cat.error()
         << "Extension of file " << this_filename
@@ -473,15 +475,15 @@ load_file_types() {
         string name = words[0];
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         loader_cat.info()
-          << "loading file type module: " << name << endl;
+          << "loading file type module: " << name << std::endl;
         void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-        if (tmp == (void *)NULL) {
+        if (tmp == nullptr) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
-            << ": " << load_dso_error() << endl;
+            << ": " << load_dso_error() << std::endl;
         } else if (loader_cat.is_debug()) {
           loader_cat.debug()
-            << "done loading file type module: " << name << endl;
+            << "done loading file type module: " << name << std::endl;
         }
 
       } else if (words.size() > 1) {
@@ -512,7 +514,7 @@ load_file_types() {
  */
 void Loader::
 make_global_ptr() {
-  nassertv(_global_ptr == (Loader *)NULL);
+  nassertv(_global_ptr == nullptr);
 
   _global_ptr = new Loader("loader");
 }

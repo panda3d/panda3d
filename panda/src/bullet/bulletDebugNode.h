@@ -16,7 +16,12 @@
 
 #include "pandabase.h"
 
+#include "pandaNode.h"
+
 #include "bullet_includes.h"
+
+class CullTraverser;
+class CullTraverserData;
 
 /**
  *

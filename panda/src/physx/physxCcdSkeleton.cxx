@@ -49,7 +49,7 @@ release() {
 
   unlink();
   NxGetPhysicsSDK()->releaseCCDSkeleton(*_ptr);
-  _ptr = NULL;
+  _ptr = nullptr;
 
   // TODO PhysxMeshPool::release_ccd_skeleton(this);
 }

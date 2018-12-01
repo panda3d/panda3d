@@ -2147,7 +2147,7 @@ rescale_texture() {
  * power-2.
  */
 INLINE bool Texture::
-adjust_this_size(int &x_size, int &y_size, const string &name,
+adjust_this_size(int &x_size, int &y_size, const std::string &name,
                  bool for_padding) const {
   CDReader cdata(_cycler);
   return do_adjust_this_size(cdata, x_size, y_size, name, for_padding);
@@ -2345,6 +2345,24 @@ get_unsigned_int(const unsigned char *&p) {
 /**
  * This is used by store() to retrieve the next consecutive component value
  * from the indicated element of the array, which is taken to be an array of
+ * unsigned ints with the value packed in the 24 least significant bits.
+ */
+INLINE double Texture::
+get_unsigned_int_24(const unsigned char *&p) {
+  union {
+    uint32_t ui;
+    uint8_t uc[4];
+  } v;
+  v.uc[0] = (*p++);
+  v.uc[1] = (*p++);
+  v.uc[2] = (*p++);
+  v.uc[3] = (*p++);
+  return (double)(v.ui & 0xffffff) / (double)0xffffff;
+}
+
+/**
+ * This is used by store() to retrieve the next consecutive component value
+ * from the indicated element of the array, which is taken to be an array of
  * floats.
  */
 INLINE double Texture::
@@ -2372,8 +2390,13 @@ get_half_float(const unsigned char *&p) {
   uint32_t t3 = in & 0x7c00; // Exponent
   t1 <<= 13; // Align mantissa on MSB
   t2 <<= 16; // Shift sign bit into position
-  t1 += 0x38000000; // Adjust bias
-  t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  if (t3 != 0x7c00) {
+    t1 += 0x38000000; // Adjust bias
+    t1 = (t3 == 0 ? 0 : t1); // Denormals-as-zero
+  } else {
+    // Infinity / NaN
+    t1 |= 0x7f800000;
+  }
   t1 |= t2; // Re-insert sign bit
   v.ui = t1;
   return v.uf;
@@ -2385,7 +2408,7 @@ get_half_float(const unsigned char *&p) {
  */
 INLINE bool Texture::
 is_txo_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2400,7 +2423,7 @@ is_txo_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_dds_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2415,7 +2438,7 @@ is_dds_filename(const Filename &fullpath) {
  */
 INLINE bool Texture::
 is_ktx_filename(const Filename &fullpath) {
-  string extension = fullpath.get_extension();
+  std::string extension = fullpath.get_extension();
 #ifdef HAVE_ZLIB
   if (extension == "pz" || extension == "gz") {
     extension = Filename(fullpath.get_basename_wo_extension()).get_extension();
@@ -2454,6 +2477,6 @@ inc_simple_image_modified() {
 INLINE Texture::RamImage::
 RamImage() :
   _page_size(0),
-  _pointer_image(NULL)
+  _pointer_image(nullptr)
 {
 }

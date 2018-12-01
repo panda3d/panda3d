@@ -30,7 +30,7 @@ namespace Rocket {
  */
 class EXPCL_ROCKET RocketInputHandler : public DataNode {
 PUBLISHED:
-  RocketInputHandler(const string &name = string());
+  RocketInputHandler(const std::string &name = std::string());
   virtual ~RocketInputHandler();
 
   static int get_rocket_key(const ButtonHandle handle);

@@ -23,7 +23,7 @@
  * Pure virtual base class for physical modeling.  Takes physically modelable
  * objects and applies forces to them.
  */
-class EXPCL_PANDAPHYSICS LinearIntegrator : public BaseIntegrator {
+class EXPCL_PANDA_PHYSICS LinearIntegrator : public BaseIntegrator {
 PUBLISHED:
   virtual ~LinearIntegrator();
 public:
@@ -32,8 +32,8 @@ public:
                  PN_stdfloat dt);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   LinearIntegrator();

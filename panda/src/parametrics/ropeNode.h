@@ -33,13 +33,13 @@ class GeomVertexData;
  */
 class EXPCL_PANDA_PARAMETRICS RopeNode : public PandaNode {
 PUBLISHED:
-  explicit RopeNode(const string &name);
+  explicit RopeNode(const std::string &name);
 
 protected:
   RopeNode(const RopeNode &copy);
 public:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   virtual PandaNode *make_copy() const;
 

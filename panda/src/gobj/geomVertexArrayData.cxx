@@ -25,6 +25,9 @@
 #include "vertexDataBuffer.h"
 #include "texture.h"
 
+using std::max;
+using std::min;
+
 ConfigVariableInt max_independent_vertex_data
 ("max-independent-vertex-data", -1,
  PRC_DESC("Specifies the maximum number of bytes of all vertex data "
@@ -57,7 +60,7 @@ ALLOC_DELETED_CHAIN_DEF(GeomVertexArrayDataHandle);
  */
 GeomVertexArrayData::
 GeomVertexArrayData() : SimpleLruPage(0) {
-  _contexts = NULL;
+  _contexts = nullptr;
 
   // Can't put it in the LRU until it has been read in and made valid.
 }
@@ -176,7 +179,7 @@ set_usage_hint(GeomVertexArrayData::UsageHint usage_hint) {
  *
  */
 void GeomVertexArrayData::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_num_rows() << " rows: " << *get_array_format();
 }
 
@@ -184,7 +187,7 @@ output(ostream &out) const {
  *
  */
 void GeomVertexArrayData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   _array_format->write_with_data(out, indent_level, this);
 }
 
@@ -207,7 +210,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
  */
 bool GeomVertexArrayData::
 is_prepared(PreparedGraphicsObjects *prepared_objects) const {
-  if (_contexts == (Contexts *)NULL) {
+  if (_contexts == nullptr) {
     return false;
   }
   Contexts::const_iterator ci;
@@ -232,7 +235,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 VertexBufferContext *GeomVertexArrayData::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
-  if (_contexts == (Contexts *)NULL) {
+  if (_contexts == nullptr) {
     _contexts = new Contexts;
   }
   Contexts::const_iterator ci;
@@ -242,7 +245,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   VertexBufferContext *vbc = prepared_objects->prepare_vertex_buffer_now(this, gsg);
-  if (vbc != (VertexBufferContext *)NULL) {
+  if (vbc != nullptr) {
     (*_contexts)[prepared_objects] = vbc;
   }
   return vbc;
@@ -254,7 +257,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  */
 bool GeomVertexArrayData::
 release(PreparedGraphicsObjects *prepared_objects) {
-  if (_contexts != (Contexts *)NULL) {
+  if (_contexts != nullptr) {
     Contexts::iterator ci;
     ci = _contexts->find(prepared_objects);
     if (ci != _contexts->end()) {
@@ -276,7 +279,7 @@ int GeomVertexArrayData::
 release_all() {
   int num_freed = 0;
 
-  if (_contexts != (Contexts *)NULL) {
+  if (_contexts != nullptr) {
     // We have to traverse a copy of the _contexts list, because the
     // PreparedGraphicsObjects object will call clear_prepared() in response
     // to each release_vertex_buffer(), and we don't want to be modifying the
@@ -293,7 +296,7 @@ release_all() {
 
     // Now that we've called release_vertex_buffer() on every known context,
     // the _contexts list should have completely emptied itself.
-    nassertr(_contexts == NULL, num_freed);
+    nassertr(_contexts == nullptr, num_freed);
   }
 
   return num_freed;
@@ -335,7 +338,7 @@ evict_lru() {
  */
 void GeomVertexArrayData::
 clear_prepared(PreparedGraphicsObjects *prepared_objects) {
-  nassertv(_contexts != (Contexts *)NULL);
+  nassertv(_contexts != nullptr);
 
   Contexts::iterator ci;
   ci = _contexts->find(prepared_objects);
@@ -343,12 +346,12 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
     _contexts->erase(ci);
     if (_contexts->empty()) {
       delete _contexts;
-      _contexts = NULL;
+      _contexts = nullptr;
     }
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // which the data array didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -457,7 +460,7 @@ finalize(BamReader *manager) {
   _array_format = new_array_format;
 
   PT(BamAuxData) aux_data = (BamAuxData *)manager->get_aux_data(this, "");
-  if (aux_data != (BamAuxData *)NULL) {
+  if (aux_data != nullptr) {
     if (aux_data->_endian_reversed) {
       // Now is the time to endian-reverse the data.
       VertexDataBuffer new_buffer(cdata->_buffer.get_size());
@@ -571,7 +574,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   if (manager->get_file_endian() != BamReader::BE_native) {
     // For non-native endian files, we have to convert the data.
 
-    if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {
+    if (array_data->_array_format == nullptr) {
       // But we can't do that until we've completed the _array_format pointer,
       // which tells us how to convert it.
       endian_reversed = true;
@@ -600,7 +603,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
  */
 unsigned char *GeomVertexArrayDataHandle::
 get_write_pointer() {
-  nassertr(_writable, NULL);
+  nassertr(_writable, nullptr);
   mark_used();
   _cdata->_modified = Geom::get_next_modified();
   return _cdata->_buffer.get_write_pointer();
@@ -842,7 +845,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
  * Python.
  */
 void GeomVertexArrayDataHandle::
-set_data(const string &data) {
+set_data(const vector_uchar &data) {
   nassertv(_writable);
   mark_used();
 
@@ -864,7 +867,7 @@ set_data(const string &data) {
  * This is primarily for the benefit of high-level languages like Python.
  */
 void GeomVertexArrayDataHandle::
-set_subdata(size_t start, size_t size, const string &data) {
+set_subdata(size_t start, size_t size, const vector_uchar &data) {
   nassertv(_writable);
   mark_used();
 

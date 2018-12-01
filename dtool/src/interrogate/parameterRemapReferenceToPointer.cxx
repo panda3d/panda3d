@@ -35,14 +35,14 @@ ParameterRemapReferenceToPointer(CPPType *orig_type) :
  * type to the original type, for passing into the actual C++ function.
  */
 void ParameterRemapReferenceToPointer::
-pass_parameter(ostream &out, const string &variable_name) {
+pass_parameter(std::ostream &out, const std::string &variable_name) {
   if (variable_name.size() > 1 && variable_name[0] == '&') {
     // Prevent generating something like *&param Also, if this is really some
     // local type, we can presumably just move it?  This is only relevant if
     // this parameter is an rvalue reference, but CPPParser can't know that,
     // and it might have an overload that takes an rvalue reference.  It
     // shouldn't hurt either way.
-    out << "MOVE(" << variable_name.substr(1) << ")";
+    out << "std::move(" << variable_name.substr(1) << ")";
   } else {
     out << "*" << variable_name;
   }
@@ -52,7 +52,7 @@ pass_parameter(ostream &out, const string &variable_name) {
  * Returns an expression that evalutes to the appropriate value type for
  * returning from the function, given an expression of the original type.
  */
-string ParameterRemapReferenceToPointer::
-get_return_expr(const string &expression) {
+std::string ParameterRemapReferenceToPointer::
+get_return_expr(const std::string &expression) {
   return "&(" + expression + ")";
 }

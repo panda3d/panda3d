@@ -18,7 +18,7 @@
 
 #include "bullet_includes.h"
 
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "boundingSphere.h"
 
 /**

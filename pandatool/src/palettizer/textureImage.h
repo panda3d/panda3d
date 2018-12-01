@@ -88,14 +88,14 @@ public:
   void read_header();
   bool is_newer_than(const Filename &reference_filename);
 
-  void write_source_pathnames(ostream &out, int indent_level = 0) const;
-  void write_scale_info(ostream &out, int indent_level = 0);
+  void write_source_pathnames(std::ostream &out, int indent_level = 0) const;
+  void write_scale_info(std::ostream &out, int indent_level = 0);
 
 private:
   typedef pset<EggFile *> EggFiles;
   typedef pvector<EggFile *> WorkingEggs;
-  typedef pmap<string, SourceTextureImage *> Sources;
-  typedef pmap<string, DestTextureImage *> Dests;
+  typedef pmap<std::string, SourceTextureImage *> Sources;
+  typedef pmap<std::string, DestTextureImage *> Dests;
 
   static int compute_egg_count(PaletteGroup *group,
                                const WorkingEggs &egg_files);
@@ -107,7 +107,7 @@ private:
   void remove_old_dests(const Dests &a, const Dests &b);
   void copy_new_dests(const Dests &a, const Dests &b);
 
-  string get_source_key(const Filename &filename,
+  std::string get_source_key(const Filename &filename,
                         const Filename &alpha_filename,
                         int alpha_file_channel);
 

@@ -21,7 +21,7 @@
  * Windows' HANDLE objects, or Posix file descriptors.  This is necessary to
  * map low-level pipes into an iostream for tinyxml.
  */
-class HandleStream : public iostream {
+class HandleStream : public std::iostream {
 public:
   inline HandleStream();
   inline ~HandleStream();

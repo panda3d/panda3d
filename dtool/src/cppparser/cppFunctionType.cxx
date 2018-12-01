@@ -16,6 +16,10 @@
 #include "cppSimpleType.h"
 #include "cppInstance.h"
 
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 /**
  *
  */
@@ -27,16 +31,16 @@ CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
   _parameters(parameters),
   _flags(flags)
 {
-  _class_owner = NULL;
+  _class_owner = nullptr;
 
   // If the parameter list contains just the token "void", it means no
   // parameters.
-  if (_parameters != NULL &&
+  if (_parameters != nullptr &&
       _parameters->_parameters.size() == 1 &&
-      _parameters->_parameters.front()->_type->as_simple_type() != NULL &&
+      _parameters->_parameters.front()->_type->as_simple_type() != nullptr &&
       _parameters->_parameters.front()->_type->as_simple_type()->_type ==
       CPPSimpleType::T_void &&
-      _parameters->_parameters.front()->_ident == NULL) {
+      _parameters->_parameters.front()->_ident == nullptr) {
     _parameters->_parameters.clear();
   }
 }
@@ -71,19 +75,21 @@ operator = (const CPPFunctionType &copy) {
  */
 bool CPPFunctionType::
 accepts_num_parameters(int num_parameters) {
-  if (_parameters == NULL) {
+  assert(num_parameters >= 0);
+  if (_parameters == nullptr) {
     return (num_parameters == 0);
   }
+
   size_t actual_num_parameters = _parameters->_parameters.size();
   // If we passed too many parameters, it must have an ellipsis.
-  if (num_parameters > actual_num_parameters) {
+  if ((size_t)num_parameters > actual_num_parameters) {
     return _parameters->_includes_ellipsis;
   }
 
   // Make sure all superfluous parameters have a default value.
-  for (size_t i = num_parameters; i < actual_num_parameters; ++i) {
+  for (size_t i = (size_t)num_parameters; i < actual_num_parameters; ++i) {
     CPPInstance *param = _parameters->_parameters[i];
-    if (param->_initializer == NULL) {
+    if (param->_initializer == nullptr) {
       return false;
     }
   }
@@ -115,13 +121,13 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPFunctionType *rep = new CPPFunctionType(*this);
-  if (_return_type != NULL) {
+  if (_return_type != nullptr) {
     rep->_return_type =
       _return_type->substitute_decl(subst, current_scope, global_scope)
       ->as_type();
   }
 
-  if (_parameters != NULL) {
+  if (_parameters != nullptr) {
     rep->_parameters =
       _parameters->substitute_decl(subst, current_scope, global_scope);
   }
@@ -146,8 +152,8 @@ CPPType *CPPFunctionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *rtype = _return_type->resolve_type(current_scope, global_scope);
   CPPParameterList *params;
-  if (_parameters == NULL) {
-    params = NULL;
+  if (_parameters == nullptr) {
+    params = nullptr;
   } else {
     params = _parameters->resolve_type(current_scope, global_scope);
   }
@@ -171,7 +177,7 @@ is_tbd() const {
   if (_return_type->is_tbd()) {
     return true;
   }
-  return _parameters == NULL || _parameters->is_tbd();
+  return _parameters == nullptr || _parameters->is_tbd();
 }
 
 /**
@@ -286,6 +292,10 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
 
     out << str;
 
+  } else if (_flags & F_operator_typecast) {
+    out << "operator ";
+    _return_type->output_instance(out, indent_level, scope, complete, "", prename + str);
+
   } else {
     if (prename.empty()) {
       _return_type->output_instance(out, indent_level, scope, complete,
@@ -326,7 +336,7 @@ get_num_default_parameters() const {
   // The trick is just to count, beginning from the end and working towards
   // the front, the number of parameters that have some initializer.
 
-  if (_parameters == NULL) {
+  if (_parameters == nullptr) {
     return 0;
   }
 
@@ -334,7 +344,7 @@ get_num_default_parameters() const {
   CPPParameterList::Parameters::const_reverse_iterator pi;
   int count = 0;
   for (pi = params.rbegin();
-       pi != params.rend() && (*pi)->_initializer != (CPPExpression *)NULL;
+       pi != params.rend() && (*pi)->_initializer != nullptr;
        ++pi) {
     count++;
   }
@@ -390,7 +400,7 @@ match_virtual_override(const CPPFunctionType &other) const {
 bool CPPFunctionType::
 is_equal(const CPPDeclaration *other) const {
   const CPPFunctionType *ot = ((CPPDeclaration *)other)->as_function_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_return_type != ot->_return_type) {
     return false;
@@ -401,7 +411,7 @@ is_equal(const CPPDeclaration *other) const {
   if (_parameters == ot->_parameters) {
     return true;
   }
-  if (_parameters == NULL || ot->_parameters == NULL ||
+  if (_parameters == nullptr || ot->_parameters == nullptr ||
       *_parameters != *ot->_parameters) {
     return false;
   }
@@ -416,7 +426,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPFunctionType::
 is_less(const CPPDeclaration *other) const {
   const CPPFunctionType *ot = ((CPPDeclaration *)other)->as_function_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   if (_return_type != ot->_return_type) {
     return _return_type < ot->_return_type;
@@ -427,7 +437,7 @@ is_less(const CPPDeclaration *other) const {
   if (_parameters == ot->_parameters) {
     return 0;
   }
-  if (_parameters == NULL || ot->_parameters == NULL) {
+  if (_parameters == nullptr || ot->_parameters == nullptr) {
     return _parameters < ot->_parameters;
   }
   return *_parameters < *ot->_parameters;

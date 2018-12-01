@@ -42,8 +42,8 @@ set_plane(const LPlane &plane) {
   CDWriter cdata(_cycler);
   if (cdata->_plane != plane) {
     cdata->_plane = plane;
-    cdata->_front_viz = NULL;
-    cdata->_back_viz = NULL;
+    cdata->_front_viz = nullptr;
+    cdata->_back_viz = nullptr;
   }
 }
 
@@ -65,8 +65,8 @@ set_viz_scale(PN_stdfloat viz_scale) {
   CDWriter cdata(_cycler);
   if (cdata->_viz_scale != viz_scale) {
     cdata->_viz_scale = viz_scale;
-    cdata->_front_viz = NULL;
-    cdata->_back_viz = NULL;
+    cdata->_front_viz = nullptr;
+    cdata->_back_viz = nullptr;
   }
 }
 

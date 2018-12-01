@@ -112,9 +112,9 @@ collapse_group(const EggGroup *, int) {
  * May be overridden in derived classes to define a name for each new bin,
  * based on its bin number, and a sample child.
  */
-string EggBinMaker::
+std::string EggBinMaker::
 get_bin_name(int, const EggNode *) {
-  return string();
+  return std::string();
 }
 
 /**
@@ -128,7 +128,7 @@ get_bin_name(int, const EggNode *) {
  */
 PT(EggBin) EggBinMaker::
 make_bin(int, const EggNode *, EggGroup *collapse_from) {
-  if (collapse_from == (EggGroup *)NULL) {
+  if (collapse_from == nullptr) {
     return new EggBin;
   } else {
     return new EggBin(*collapse_from);
@@ -162,7 +162,7 @@ collect_nodes(EggGroupNode *group) {
         // If this is the first time this group has been encountered, we need
         // to create a new entry in _group_nodes for it.
 
-        pair<GroupNodes::iterator, bool> result;
+        std::pair<GroupNodes::iterator, bool> result;
         result = _group_nodes.insert
           (GroupNodes::value_type
            (group, SortedNodes(EggBinMakerCompareNodes(this))));
@@ -243,7 +243,7 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
 
   if (group->empty() &&
       bins.size() == 1 &&
-      group->get_parent() != NULL &&
+      group->get_parent() != nullptr &&
       group->is_of_type(EggGroup::get_class_type())) {
     const Nodes &nodes = bins.front();
     nassertv(!nodes.empty());
@@ -268,7 +268,7 @@ make_bins_for_group(EggGroupNode *group, const Bins &bins) {
       const Nodes &nodes = (*bi);
       nassertv(!nodes.empty());
       int bin_number = get_bin_number(nodes.front());
-      PT(EggBin) bin = make_bin(bin_number, nodes.front(), NULL);
+      PT(EggBin) bin = make_bin(bin_number, nodes.front(), nullptr);
       setup_bin(bin, nodes);
 
       group->add_child(bin);
@@ -286,7 +286,7 @@ setup_bin(EggBin *bin, const Nodes &nodes) {
   int bin_number = get_bin_number(nodes.front());
   bin->set_bin_number(bin_number);
 
-  string bin_name = get_bin_name(bin_number, nodes.front());
+  std::string bin_name = get_bin_name(bin_number, nodes.front());
   if (!bin_name.empty()) {
     bin->set_name(bin_name);
   }

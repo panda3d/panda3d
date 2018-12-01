@@ -20,11 +20,11 @@
  */
 bool WorkingNodePath::
 is_valid() const {
-  if (_node == (PandaNode *)NULL) {
+  if (_node == nullptr) {
     return false;
   }
-  if (_next == (WorkingNodePath *)NULL) {
-    return (_start != (NodePathComponent *)NULL);
+  if (_next == nullptr) {
+    return (_start != nullptr);
   }
 
   nassertr(_node != _next->_node, false);
@@ -39,7 +39,7 @@ is_valid() const {
  */
 int WorkingNodePath::
 get_num_nodes() const {
-  if (_next == (WorkingNodePath *)NULL) {
+  if (_next == nullptr) {
     Thread *current_thread = Thread::get_current_thread();
     int pipeline_stage = current_thread->get_pipeline_stage();
     return _start->get_length(pipeline_stage, current_thread);
@@ -55,12 +55,12 @@ get_num_nodes() const {
  */
 PandaNode *WorkingNodePath::
 get_node(int index) const {
-  nassertr(index >= 0, NULL);
+  nassertr(index >= 0, nullptr);
   if (index == 0) {
     return _node;
   }
 
-  if (_next == (WorkingNodePath *)NULL) {
+  if (_next == nullptr) {
     return get_node_path().get_node(index - 1);
   }
 
@@ -71,7 +71,7 @@ get_node(int index) const {
  *
  */
 void WorkingNodePath::
-output(ostream &out) const {
+output(std::ostream &out) const {
   // Cheesy and slow, but when you're outputting the thing, presumably you're
   // not in a hurry.
   get_node_path().output(out);
@@ -83,22 +83,22 @@ output(ostream &out) const {
  */
 PT(NodePathComponent) WorkingNodePath::
 r_get_node_path() const {
-  if (_next == (WorkingNodePath *)NULL) {
-    nassertr(_start != (NodePathComponent *)NULL, NULL);
+  if (_next == nullptr) {
+    nassertr(_start != nullptr, nullptr);
     return _start;
   }
 
-  nassertr(_start == (NodePathComponent *)NULL, NULL);
-  nassertr(_node != (PandaNode *)NULL, NULL);
+  nassertr(_start == nullptr, nullptr);
+  nassertr(_node != nullptr, nullptr);
 
   PT(NodePathComponent) comp = _next->r_get_node_path();
-  nassertr(comp != (NodePathComponent *)NULL, NULL);
+  nassertr(comp != nullptr, nullptr);
 
   Thread *current_thread = Thread::get_current_thread();
   int pipeline_stage = current_thread->get_pipeline_stage();
   PT(NodePathComponent) result =
     PandaNode::get_component(comp, _node, pipeline_stage, current_thread);
-  if (result == (NodePathComponent *)NULL) {
+  if (result == nullptr) {
     // This means we found a disconnected chain in the WorkingNodePath's
     // ancestry: the node above this node isn't connected.  In this case,
     // don't attempt to go higher; just truncate the NodePath at the bottom of

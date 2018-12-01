@@ -21,6 +21,8 @@
   #include <winsock2.h>
 #endif
 
+using std::string;
+
 /**
  *
  */
@@ -191,7 +193,7 @@ string handle_socket_error() {
   return string(strerror(errno));
 #else
   int err = WSAGetLastError();
-  char *errmsg;
+  const char *errmsg;
   switch (err) {
     case 10022:
       errmsg =  "An invalid argument was supplied";
@@ -229,7 +231,7 @@ string handle_socket_error() {
       errmsg = strerror(errno);
     default:
       if (express_cat.is_debug())
-        express_cat.debug() << "handle_socket_error - unknown error: " << err << endl;
+        express_cat.debug() << "handle_socket_error - unknown error: " << err << std::endl;
       errmsg = "Unknown WSA error";
   }
 
@@ -282,12 +284,12 @@ get_network_error() {
       if (express_cat.is_debug())
         express_cat.debug()
           << "get_network_error() - WSA error = 0 - error : "
-          << strerror(errno) << endl;
+          << strerror(errno) << std::endl;
       return EU_error_abort;
     default:
       if (express_cat.is_debug())
         express_cat.debug()
-          << "get_network_error() - unknown error: " << err << endl;
+          << "get_network_error() - unknown error: " << err << std::endl;
       return EU_error_abort;
   }
 #endif

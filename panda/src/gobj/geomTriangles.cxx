@@ -19,6 +19,8 @@
 #include "graphicsStateGuardianBase.h"
 #include "geomTrianglesAdjacency.h"
 
+using std::map;
+
 TypeHandle GeomTriangles::_type_handle;
 
 /**
@@ -73,6 +75,8 @@ get_primitive_type() const {
  */
 CPT(GeomPrimitive) GeomTriangles::
 make_adjacency() const {
+  using std::make_pair;
+
   Thread *current_thread = Thread::get_current_thread();
   PT(GeomTrianglesAdjacency) adj = new GeomTrianglesAdjacency(get_usage_hint());
 
@@ -83,7 +87,7 @@ make_adjacency() const {
   new_vertices->set_num_rows(num_vertices * 2);
 
   // First, build a map of each triangle's halfedges to its opposing vertices.
-  map<pair<int, int>, int> edge_map;
+  map<std::pair<int, int>, int> edge_map;
   for (int i = 0; i < num_vertices; i += 3) {
     int v0 = from.get_vertex(i);
     int v1 = from.get_vertex(i + 1);
@@ -133,8 +137,8 @@ make_adjacency() const {
     nassertr(to.is_at_end(), nullptr);
   }
 
-  adj->set_vertices(move(new_vertices));
-  return adj.p();
+  adj->set_vertices(std::move(new_vertices));
+  return adj;
 }
 
 /**
@@ -195,7 +199,7 @@ doubleside_impl() const {
     reversed = (GeomTriangles *)DCAST(GeomTriangles, reversed->rotate());
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**
@@ -228,7 +232,7 @@ reverse_impl() const {
     break;
   }
 
-  return reversed.p();
+  return reversed;
 }
 
 /**
@@ -281,7 +285,7 @@ rotate_impl() const {
       nassertr(false, vertices);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
 
   } else {
     // Nonindexed case.
@@ -313,10 +317,10 @@ rotate_impl() const {
 
     default:
       // This shouldn't get called with any other shade model.
-      nassertr(false, NULL);
+      nassertr(false, nullptr);
     }
 
-    nassertr(to.is_at_end(), NULL);
+    nassertr(to.is_at_end(), nullptr);
   }
 
   return new_vertices;

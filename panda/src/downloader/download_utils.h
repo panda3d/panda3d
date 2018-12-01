@@ -21,8 +21,8 @@
 
 BEGIN_PUBLISH
 
-EXPCL_PANDAEXPRESS unsigned long check_crc(Filename name);
-EXPCL_PANDAEXPRESS unsigned long check_adler(Filename name);
+EXPCL_PANDA_DOWNLOADER unsigned long check_crc(Filename name);
+EXPCL_PANDA_DOWNLOADER unsigned long check_adler(Filename name);
 
 END_PUBLISH
 

@@ -68,7 +68,7 @@ PUBLISHED:
   INLINE const SparseArray &get_rows() const;
   INLINE SparseArray &modify_rows();
 
-  void write(ostream &out, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
 
   MAKE_SEQ_PROPERTY(blends, get_num_blends, get_blend, set_blend, remove_blend);
   MAKE_PROPERTY(modified, get_modified);
@@ -156,7 +156,7 @@ private:
   friend class VertexTransform;
 };
 
-INLINE ostream &operator << (ostream &out, const TransformBlendTable &obj);
+INLINE std::ostream &operator << (std::ostream &out, const TransformBlendTable &obj);
 
 #include "transformBlendTable.I"
 

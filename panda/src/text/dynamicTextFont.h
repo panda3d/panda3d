@@ -47,7 +47,7 @@ PUBLISHED:
 
   virtual PT(TextFont) make_copy() const;
 
-  INLINE const string &get_name() const;
+  INLINE const std::string &get_name() const;
 
   INLINE bool set_point_size(PN_stdfloat point_size);
   INLINE PN_stdfloat get_point_size() const;
@@ -121,7 +121,7 @@ PUBLISHED:
   int garbage_collect();
   void clear();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
@@ -198,7 +198,7 @@ private:
   friend class TextNode;
 };
 
-INLINE ostream &operator << (ostream &out, const DynamicTextFont &dtf);
+INLINE std::ostream &operator << (std::ostream &out, const DynamicTextFont &dtf);
 
 #include "dynamicTextFont.I"
 

@@ -48,7 +48,7 @@ INLINE double normalize_angle(double angle) {
  *
  */
 void PointerEventList::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_events.empty()) {
     out << "(no pointers)";
   } else {
@@ -68,12 +68,48 @@ output(ostream &out) const {
  *
  */
 void PointerEventList::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << _events.size() << " events:\n";
   Events::const_iterator ei;
   for (ei = _events.begin(); ei != _events.end(); ++ei) {
     indent(out, indent_level + 2) << (*ei) << "\n";
   }
+}
+
+/**
+ * Adds a new event from the given PointerData object.
+ */
+void PointerEventList::
+add_event(const PointerData &data, int seq, double time) {
+  PointerEvent pe;
+  pe._in_window = data._in_window;
+  pe._type = data._type;
+  pe._id = data._id;
+  pe._xpos = data._xpos;
+  pe._ypos = data._ypos;
+  pe._pressure = data._pressure;
+  pe._sequence = seq;
+  pe._time = time;
+  if (_events.size() > 0) {
+    pe._dx = data._xpos - _events.back()._xpos;
+    pe._dy = data._ypos - _events.back()._ypos;
+    double ddx = pe._dx;
+    double ddy = pe._dy;
+    pe._length = csqrt(ddx*ddx + ddy*ddy);
+    if (pe._length > 0.0) {
+      pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
+    } else {
+      pe._direction = _events.back()._direction;
+    }
+    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+  } else {
+    pe._dx = 0;
+    pe._dy = 0;
+    pe._length = 0.0;
+    pe._direction = 0.0;
+    pe._rotation = 0.0;
+  }
+  _events.push_back(pe);
 }
 
 /**
@@ -105,6 +141,35 @@ add_event(bool in_win, int xpos, int ypos, int seq, double time) {
     pe._dy = 0;
     pe._length = 0.0;
     pe._direction = 0.0;
+    pe._rotation = 0.0;
+  }
+  _events.push_back(pe);
+}
+
+/**
+ * Adds a new event to the end of the list based on the given mouse movement.
+ */
+void PointerEventList::
+add_event(bool in_win, int xpos, int ypos, double xdelta, double ydelta, int seq, double time) {
+  PointerEvent pe;
+  pe._in_window = in_win;
+  pe._xpos = xpos;
+  pe._ypos = ypos;
+  pe._dx = xdelta;
+  pe._dy = ydelta;
+  pe._sequence = seq;
+  pe._time = time;
+  pe._length = csqrt(xdelta*xdelta + ydelta*ydelta);
+  if (pe._length > 0.0) {
+    pe._direction = normalize_angle(rad_2_deg(catan2(-ydelta,xdelta)));
+  } else if (!_events.empty()) {
+    pe._direction = _events.back()._direction;
+  } else {
+    pe._direction = 0.0;
+  }
+  if (!_events.empty()) {
+    pe._rotation = delta_angle(_events.back()._direction, pe._direction);
+  } else {
     pe._rotation = 0.0;
   }
   _events.push_back(pe);
@@ -172,7 +237,7 @@ total_turns(double sec) const {
  * to be in order to be considered significant.
  */
 double PointerEventList::
-match_pattern(const string &ascpat, double rot, double seglen) {
+match_pattern(const std::string &ascpat, double rot, double seglen) {
   // Convert the pattern from ascii to a more usable form.
   vector_double pattern;
   parse_pattern(ascpat, pattern);
@@ -189,7 +254,7 @@ match_pattern(const string &ascpat, double rot, double seglen) {
  * Parses a pattern as used by match_pattern.
  */
 void PointerEventList::
-parse_pattern(const string &ascpat, vector_double &pattern) {
+parse_pattern(const std::string &ascpat, vector_double &pattern) {
   int chars = 0;
   double dir = 180.0;
   for (size_t i=0; i<ascpat.size(); i++) {
@@ -222,9 +287,9 @@ parse_pattern(const string &ascpat, vector_double &pattern) {
     pattern.push_back(dir);
   }
 
-  cerr << "Pattern: ";
+  std::cerr << "Pattern: ";
   for (int i=0; i<(int)pattern.size(); i++) {
-    cerr << pattern[i] << " ";
+    std::cerr << pattern[i] << " ";
   }
-  cerr << "\n";
+  std::cerr << "\n";
 }

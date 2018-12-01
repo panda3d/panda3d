@@ -166,8 +166,9 @@ public:
   static void atexit_function(void);
 
   static void set_cg_device(LPDIRECT3DDEVICE9 cg_device);
-  virtual bool get_supports_cg_profile(const string &name) const;
+  virtual bool get_supports_cg_profile(const std::string &name) const;
 
+  LPDIRECT3DVERTEXBUFFER9 get_white_vbuffer();
 
 protected:
   void do_issue_transform();
@@ -227,7 +228,7 @@ protected:
 
   void dx_cleanup();
   HRESULT reset_d3d_device(D3DPRESENT_PARAMETERS *p_presentation_params,
-                           DXScreenData **screen = NULL);
+                           DXScreenData **screen = nullptr);
 
   bool check_cooperative_level();
 
@@ -274,12 +275,6 @@ protected:
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
 
-  PN_stdfloat _material_ambient;
-  PN_stdfloat _material_diffuse;
-  PN_stdfloat _material_specular;
-  PN_stdfloat _material_shininess;
-  PN_stdfloat _material_emission;
-
   enum DxgsgFogType {
     None,
     PerVertexFog=D3DRS_FOGVERTEXMODE,
@@ -320,6 +315,7 @@ protected:
 
   DWORD _last_fvf;
   int _num_bound_streams;
+  LPDIRECT3DVERTEXBUFFER9 _white_vbuffer;
 
   // Cache the data necessary to bind each particular light each frame, so if
   // we bind a given light multiple times, we only have to compute its data
@@ -366,7 +362,7 @@ protected:
 
   bool _supports_stream_offset;
 
-  list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
+  std::list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
   int _supports_gamma_calibration;
 

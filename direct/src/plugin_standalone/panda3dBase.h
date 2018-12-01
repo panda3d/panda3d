@@ -45,17 +45,17 @@ protected:
   void make_parent_window();
 
   P3D_instance *
-  create_instance(const string &p3d, bool start_instance,
+  create_instance(const std::string &p3d, bool start_instance,
                   char **args, int num_args, int p3d_offset = 0);
   void delete_instance(P3D_instance *instance);
 
   bool read_p3d_info(const Filename &p3d_filename, int p3d_offset = 0);
   bool parse_token(const char *arg);
   bool parse_int_pair(const char *arg, int &x, int &y);
-  string lookup_token(const string &keyword) const;
-  static int compare_seq(const string &seq_a, const string &seq_b);
+  std::string lookup_token(const std::string &keyword) const;
+  static int compare_seq(const std::string &seq_a, const std::string &seq_b);
   static int compare_seq_int(const char *&num_a, const char *&num_b);
-  static bool is_url(const string &param);
+  static bool is_url(const std::string &param);
 
   void report_downloading_package(P3D_instance *instance);
   void report_download_complete(P3D_instance *instance);
@@ -68,14 +68,14 @@ protected:
 #endif
 
 protected:
-  string _host_url;
-  string _root_dir;
-  string _host_dir;
-  string _start_dir;
-  string _log_dirname;
-  string _log_basename;
-  string _this_platform;
-  string _coreapi_platform;
+  std::string _host_url;
+  std::string _root_dir;
+  std::string _host_dir;
+  std::string _start_dir;
+  std::string _log_dirname;
+  std::string _log_basename;
+  std::string _this_platform;
+  std::string _coreapi_platform;
   P3D_verify_contents _verify_contents;
   time_t _contents_expiration;
 
@@ -101,7 +101,7 @@ protected:
   class URLGetter {
   public:
     URLGetter(P3D_instance *instance, int unique_id,
-              const URLSpec &url, const string &post_data);
+              const URLSpec &url, const std::string &post_data);
 
     bool run();
     inline P3D_instance *get_instance();
@@ -110,7 +110,7 @@ protected:
     P3D_instance *_instance;
     int _unique_id;
     URLSpec _url;
-    string _post_data;
+    std::string _post_data;
 
     PT(HTTPChannel) _channel;
     Ramfile _rf;

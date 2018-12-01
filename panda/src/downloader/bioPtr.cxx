@@ -19,7 +19,7 @@
 #include "config_downloader.h"
 
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/ssl.h"
+#include <openssl/ssl.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -31,12 +31,14 @@
 #include <fcntl.h>
 #endif
 
+using std::string;
+
 #ifdef _WIN32
 static string format_error() {
   PVOID buffer;
   DWORD len;
   len = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                      NULL, WSAGetLastError(), 0, (LPTSTR)&buffer, 0, NULL);
+                      nullptr, WSAGetLastError(), 0, (LPTSTR)&buffer, 0, nullptr);
   if (len == 0) {
     return string("Unknown error message");
   }
@@ -88,17 +90,17 @@ BioPtr(const URLSpec &url) : _connecting(false) {
     // doesn't handle IPv6 properly.
     _server_name = url.get_server();
     _port = url.get_port();
-    _bio = NULL;
+    _bio = nullptr;
 
     // These hints tell getaddrinfo what kind of address to return.
-    struct addrinfo hints, *res = NULL;
+    struct addrinfo hints, *res = nullptr;
     memset(&hints, 0, sizeof(hints));
     hints.ai_flags = AI_V4MAPPED | AI_ADDRCONFIG;
     hints.ai_family = support_ipv6 ? AF_UNSPEC : AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
     // Resolve the hostname or address string.
-    int result = getaddrinfo(_server_name.c_str(), NULL, &hints, &res);
+    int result = getaddrinfo(_server_name.c_str(), nullptr, &hints, &res);
     if (result != 0) {
       const char *errmsg;
 #ifndef _WIN32
@@ -113,14 +115,14 @@ BioPtr(const URLSpec &url) : _connecting(false) {
         << "Failed to resolve " << url.get_server() << ": " << errmsg << "\n";
       return;
     }
-    nassertv(res != NULL && res->ai_addr != NULL);
+    nassertv(res != nullptr && res->ai_addr != nullptr);
 
     // Store the real resolved address.
     char buf[48];
     buf[0] = 0;
 #ifdef _WIN32
     DWORD bufsize = sizeof(buf);
-    WSAAddressToStringA(res->ai_addr, res->ai_addrlen, NULL, buf, &bufsize);
+    WSAAddressToStringA(res->ai_addr, res->ai_addrlen, nullptr, buf, &bufsize);
 #else
     if (res->ai_addr->sa_family == AF_INET) {
       inet_ntop(AF_INET, (char *)&((sockaddr_in *)res->ai_addr)->sin_addr, buf, sizeof(buf));
@@ -143,7 +145,7 @@ BioPtr(const URLSpec &url) : _connecting(false) {
     if (fd < 0) {
       downloader_cat.error()
         << "Failed to create socket: " << format_error() << "\n";
-      _bio = NULL;
+      _bio = nullptr;
       freeaddrinfo(res);
       return;
     }
@@ -170,7 +172,7 @@ BioPtr(const URLSpec &url) : _connecting(false) {
  */
 void BioPtr::
 set_nbio(bool nbio) {
-  if (_bio == NULL) {
+  if (_bio == nullptr) {
     return;
   }
 
@@ -186,7 +188,7 @@ set_nbio(bool nbio) {
  */
 bool BioPtr::
 connect() {
-  if (_bio == NULL) {
+  if (_bio == nullptr) {
     return false;
   }
 
@@ -226,7 +228,7 @@ connect() {
  */
 bool BioPtr::
 should_retry() const {
-  return (_bio != NULL) && BIO_should_retry(_bio);
+  return (_bio != nullptr) && BIO_should_retry(_bio);
 }
 
 /**
@@ -234,14 +236,14 @@ should_retry() const {
  */
 BioPtr::
 ~BioPtr() {
-  if (_bio != (BIO *)NULL) {
+  if (_bio != nullptr) {
     if (downloader_cat.is_debug() && !_server_name.empty()) {
       downloader_cat.debug()
         << "Dropping connection to " << _server_name << " port " << _port << "\n";
     }
 
     BIO_free_all(_bio);
-    _bio = (BIO *)NULL;
+    _bio = nullptr;
   }
 }
 

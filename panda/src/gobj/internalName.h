@@ -35,12 +35,12 @@ class FactoryParams;
  * composition of one or more other names, or by giving it a source string
  * directly.
  */
-class EXPCL_PANDA_GOBJ InternalName FINAL : public TypedWritableReferenceCount {
+class EXPCL_PANDA_GOBJ InternalName final : public TypedWritableReferenceCount {
 private:
-  InternalName(InternalName *parent, const string &basename);
+  InternalName(InternalName *parent, const std::string &basename);
 
 public:
-  INLINE static PT(InternalName) make(const string &name);
+  INLINE static PT(InternalName) make(const std::string &name);
 
   template<int N>
   INLINE static PT(InternalName) make(const char (&literal)[N]);
@@ -49,24 +49,24 @@ PUBLISHED:
   virtual ~InternalName();
   virtual bool unref() const;
 
-  static PT(InternalName) make(const string &name, int index);
-  PT(InternalName) append(const string &basename);
+  static PT(InternalName) make(const std::string &name, int index);
+  PT(InternalName) append(const std::string &basename);
 
   INLINE InternalName *get_parent() const;
-  string get_name() const;
-  string join(const string &sep) const;
-  INLINE const string &get_basename() const;
+  std::string get_name() const;
+  std::string join(const std::string &sep) const;
+  INLINE const std::string &get_basename() const;
 
   MAKE_PROPERTY(parent, get_parent);
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(basename, get_basename);
 
-  int find_ancestor(const string &basename) const;
+  int find_ancestor(const std::string &basename) const;
   const InternalName *get_ancestor(int n) const;
   const InternalName *get_top() const;
-  string get_net_basename(int n) const;
+  std::string get_net_basename(int n) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   // Some predefined built-in names.
   INLINE static PT(InternalName) get_root();
@@ -74,11 +74,11 @@ PUBLISHED:
   INLINE static PT(InternalName) get_vertex();
   INLINE static PT(InternalName) get_normal();
   INLINE static PT(InternalName) get_tangent();
-  INLINE static PT(InternalName) get_tangent_name(const string &name);
+  INLINE static PT(InternalName) get_tangent_name(const std::string &name);
   INLINE static PT(InternalName) get_binormal();
-  INLINE static PT(InternalName) get_binormal_name(const string &name);
+  INLINE static PT(InternalName) get_binormal_name(const std::string &name);
   INLINE static PT(InternalName) get_texcoord();
-  INLINE static PT(InternalName) get_texcoord_name(const string &name);
+  INLINE static PT(InternalName) get_texcoord_name(const std::string &name);
   INLINE static PT(InternalName) get_color();
   INLINE static PT(InternalName) get_rotate();
   INLINE static PT(InternalName) get_size();
@@ -86,7 +86,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_transform_blend();
   INLINE static PT(InternalName) get_transform_weight();
   INLINE static PT(InternalName) get_transform_index();
-  INLINE static PT(InternalName) get_morph(InternalName *column, const string &slider);
+  INLINE static PT(InternalName) get_morph(InternalName *column, const std::string &slider);
   INLINE static PT(InternalName) get_index();
   INLINE static PT(InternalName) get_world();
   INLINE static PT(InternalName) get_camera();
@@ -96,11 +96,7 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   // These versions are exposed to Python, which have additional logic to map
   // from Python interned strings.
-#if PY_MAJOR_VERSION >= 3
-  EXTENSION(static PT(InternalName) make(PyUnicodeObject *str));
-#else
-  EXTENSION(static PT(InternalName) make(PyStringObject *str));
-#endif
+  EXTENSION(static PT(InternalName) make(PyObject *str));
 #endif
 
 public:
@@ -113,9 +109,9 @@ public:
 
 private:
   PT(InternalName) _parent;
-  string _basename;
+  std::string _basename;
 
-  typedef phash_map<string, InternalName *, string_hash> NameTable;
+  typedef phash_map<std::string, InternalName *, string_hash> NameTable;
   NameTable _name_table;
   LightMutex _name_table_lock;
 
@@ -182,7 +178,7 @@ private:
 template<>
 INLINE void PointerToBase<InternalName>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const InternalName &tcn);
+INLINE std::ostream &operator << (std::ostream &out, const InternalName &tcn);
 
 /**
  * This is a const pointer to an InternalName, and should be used in lieu of a
@@ -196,27 +192,24 @@ typedef ConstPointerTo<InternalName> CPT_InternalName;
 #else
 class CPT_InternalName : public ConstPointerTo<InternalName> {
 public:
-  INLINE CPT_InternalName(const To *ptr = (const To *)NULL);
+  INLINE CPT_InternalName(const To *ptr = nullptr);
   INLINE CPT_InternalName(const PointerTo<InternalName> &copy);
+  INLINE CPT_InternalName(PointerTo<InternalName> &&from) noexcept;
   INLINE CPT_InternalName(const ConstPointerTo<InternalName> &copy);
-  INLINE CPT_InternalName(const string &name);
+  INLINE CPT_InternalName(ConstPointerTo<InternalName> &&from) noexcept;
+  INLINE CPT_InternalName(const std::string &name);
 
   template<int N>
   INLINE CPT_InternalName(const char (&literal)[N]);
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE CPT_InternalName(PointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName(ConstPointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName &operator = (PointerTo<InternalName> &&from) NOEXCEPT;
-  INLINE CPT_InternalName &operator = (ConstPointerTo<InternalName> &&from) NOEXCEPT;
-#endif  // USE_MOVE_SEMANTICS
-
   INLINE CPT_InternalName &operator = (const To *ptr);
   INLINE CPT_InternalName &operator = (const PointerTo<InternalName> &copy);
   INLINE CPT_InternalName &operator = (const ConstPointerTo<InternalName> &copy);
+  INLINE CPT_InternalName &operator = (PointerTo<InternalName> &&from) noexcept;
+  INLINE CPT_InternalName &operator = (ConstPointerTo<InternalName> &&from) noexcept;
 };
 
-INLINE void swap(CPT_InternalName &one, CPT_InternalName &two) NOEXCEPT {
+INLINE void swap(CPT_InternalName &one, CPT_InternalName &two) noexcept {
   one.swap(two);
 }
 #endif  // CPPPARSER

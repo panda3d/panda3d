@@ -19,7 +19,7 @@
 
 int main(int argc, char* argv[])
 {
-   string test_file("bamTest.out");
+   std::string test_file("bamTest.out");
    DatagramOutputFile stream;
    bool success = stream.open(test_file);
    nassertr(success, 1);

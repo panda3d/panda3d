@@ -85,7 +85,7 @@ PUBLISHED:
   MAKE_PROPERTY(winding_order, get_winding_order, set_winding_order);
 
 public:
-  static WindingOrder string_winding_order(const string &string);
+  static WindingOrder string_winding_order(const std::string &string);
 
 protected:
   INLINE FT_Face acquire_face() const;
@@ -163,8 +163,8 @@ protected:
 
 #include "freetypeFont.I"
 
-EXPCL_PANDA_PNMTEXT ostream &operator << (ostream &out, FreetypeFont::WindingOrder wo);
-EXPCL_PANDA_PNMTEXT istream &operator >> (istream &in, FreetypeFont::WindingOrder &wo);
+EXPCL_PANDA_PNMTEXT std::ostream &operator << (std::ostream &out, FreetypeFont::WindingOrder wo);
+EXPCL_PANDA_PNMTEXT std::istream &operator >> (std::istream &in, FreetypeFont::WindingOrder &wo);
 
 #endif  // HAVE_FREETYPE
 

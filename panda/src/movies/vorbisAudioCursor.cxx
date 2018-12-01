@@ -16,6 +16,8 @@
 
 #ifdef HAVE_VORBIS
 
+using std::istream;
+
 TypeHandle VorbisAudioCursor::_type_handle;
 
 /**
@@ -28,7 +30,7 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
   _is_valid(false),
   _bitstream(0)
 {
-  nassertv(stream != NULL);
+  nassertv(stream != nullptr);
   nassertv(stream->good());
 
   // Set up the callbacks to read via the VFS.
@@ -40,10 +42,10 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
   if (vorbis_enable_seek) {
     callbacks.seek_func = &cb_seek_func;
   } else {
-    callbacks.seek_func = NULL;
+    callbacks.seek_func = nullptr;
   }
 
-  if (ov_open_callbacks((void*) stream, &_ov, NULL, 0, callbacks) != 0) {
+  if (ov_open_callbacks((void*) stream, &_ov, nullptr, 0, callbacks) != 0) {
     movies_cat.error()
       << "Failed to read Ogg Vorbis file.\n";
     return;
@@ -82,7 +84,7 @@ seek(double t) {
     return;
   }
 
-  t = max(t, 0.0);
+  t = std::max(t, 0.0);
 
   // Use ov_time_seek_lap if cross-lapping is enabled.
   if (vorbis_seek_lap) {
@@ -162,7 +164,7 @@ read_samples(int n, int16_t *data) {
 size_t VorbisAudioCursor::
 cb_read_func(void *ptr, size_t size, size_t nmemb, void *datasource) {
   istream *stream = (istream*) datasource;
-  nassertr(stream != NULL, -1);
+  nassertr(stream != nullptr, -1);
 
   stream->read((char *)ptr, size * nmemb);
 
@@ -185,19 +187,19 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
   }
 
   istream *stream = (istream*) datasource;
-  nassertr(stream != NULL, -1);
+  nassertr(stream != nullptr, -1);
 
   switch (whence) {
   case SEEK_SET:
-    stream->seekg(offset, ios::beg);
+    stream->seekg(offset, std::ios::beg);
     break;
 
   case SEEK_CUR:
-    stream->seekg(offset, ios::cur);
+    stream->seekg(offset, std::ios::cur);
     break;
 
   case SEEK_END:
-    stream->seekg(offset, ios::end);
+    stream->seekg(offset, std::ios::end);
     break;
 
   default:
@@ -239,7 +241,7 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
 int VorbisAudioCursor::
 cb_close_func(void *datasource) {
   istream *stream = (istream*) datasource;
-  nassertr(stream != NULL, -1);
+  nassertr(stream != nullptr, -1);
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->close_read_file(stream);
@@ -255,7 +257,7 @@ cb_close_func(void *datasource) {
 long VorbisAudioCursor::
 cb_tell_func(void *datasource) {
   istream *stream = (istream*) datasource;
-  nassertr(stream != NULL, -1);
+  nassertr(stream != nullptr, -1);
 
   return stream->tellg();
 }

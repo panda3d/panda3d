@@ -31,6 +31,9 @@
 #include "indent.h"
 #include "pStatTimer.h"
 
+using std::max;
+using std::min;
+
 TypeHandle GeomPrimitive::_type_handle;
 TypeHandle GeomPrimitive::CData::_type_handle;
 TypeHandle GeomPrimitivePipelineReader::_type_handle;
@@ -52,7 +55,7 @@ GeomPrimitive() {
  */
 PT(CopyOnWriteObject) GeomPrimitive::
 make_cow_copy() {
-  return make_copy().p();
+  return make_copy();
 }
 
 /**
@@ -218,7 +221,7 @@ add_vertex(int vertex) {
       ((uint32_t *)ptr)[num_rows] = vertex;
       break;
     default:
-      nassertv(false);
+      nassert_raise("unsupported index type");
       break;
     }
   }
@@ -581,7 +584,7 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
 
       // Try to add the relation { v : size() }.  If that succeeds, great; if
       // it doesn't, look up whatever we previously added for v.
-      pair<CopiedIndices::iterator, bool> result =
+      std::pair<CopiedIndices::iterator, bool> result =
         copied_indices.insert(CopiedIndices::value_type(v, (int)copied_indices.size()));
       int v2 = (*result.first).second + dest_start;
       index.add_data1i(v2);
@@ -789,7 +792,7 @@ rotate() const {
   PStatTimer timer(_rotate_pcollector);
   CPT(GeomVertexArrayData) rotated_vertices = rotate_impl();
 
-  if (rotated_vertices == (GeomVertexArrayData *)NULL) {
+  if (rotated_vertices == nullptr) {
     // This primitive type can't be rotated.
     return this;
   }
@@ -882,13 +885,13 @@ match_shade_model(GeomPrimitive::ShadeModel shade_model) const {
     CPT(GeomPrimitive) rotated = rotate();
     if (rotated.p() == this) {
       // Oops, can't be rotated, sorry.
-      return NULL;
+      return nullptr;
     }
     return rotated;
   }
 
   // Not compatible, sorry.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1079,7 +1082,7 @@ request_resident(Thread *current_thread) const {
  *
  */
 void GeomPrimitive::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ", " << get_num_primitives()
       << ", " << get_num_vertices();
 }
@@ -1088,7 +1091,7 @@ output(ostream &out) const {
  *
  */
 void GeomPrimitive::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type();
   if (is_indexed()) {
@@ -1195,7 +1198,7 @@ void GeomPrimitive::
 set_nonindexed_vertices(int first_vertex, int num_vertices) {
   nassertv(num_vertices != -1);
   CDWriter cdata(_cycler, true);
-  cdata->_vertices = (GeomVertexArrayData *)NULL;
+  cdata->_vertices = nullptr;
   cdata->_first_vertex = first_vertex;
   cdata->_num_vertices = num_vertices;
 
@@ -1391,7 +1394,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 IndexBufferContext *GeomPrimitive::
 prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
-  nassertr(is_indexed(), NULL);
+  nassertr(is_indexed(), nullptr);
 
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -1400,7 +1403,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   IndexBufferContext *ibc = prepared_objects->prepare_index_buffer_now(this, gsg);
-  if (ibc != (IndexBufferContext *)NULL) {
+  if (ibc != nullptr) {
     _contexts[prepared_objects] = ibc;
   }
   return ibc;
@@ -1460,24 +1463,24 @@ get_index_format(NumericType index_type) {
   switch (index_type) {
   case NT_uint8:
     {
-      static CPT(GeomVertexArrayFormat) cformat = NULL;
-      if (cformat == NULL) {
+      static CPT(GeomVertexArrayFormat) cformat = nullptr;
+      if (cformat == nullptr) {
         cformat = make_index_format(NT_uint8);
       }
       return cformat;
     }
   case NT_uint16:
     {
-      static CPT(GeomVertexArrayFormat) cformat = NULL;
-      if (cformat == NULL) {
+      static CPT(GeomVertexArrayFormat) cformat = nullptr;
+      if (cformat == nullptr) {
         cformat = make_index_format(NT_uint16);
       }
       return cformat;
     }
   case NT_uint32:
     {
-      static CPT(GeomVertexArrayFormat) cformat = NULL;
-      if (cformat == NULL) {
+      static CPT(GeomVertexArrayFormat) cformat = nullptr;
+      if (cformat == nullptr) {
         cformat = make_index_format(NT_uint32);
       }
       return cformat;
@@ -1486,10 +1489,10 @@ get_index_format(NumericType index_type) {
   default:
     gobj_cat.error()
       << "Not a valid index type: " << index_type << "\n";
-    return NULL;
+    return nullptr;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -1507,7 +1510,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // which the data array didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -1791,8 +1794,8 @@ decompose_impl() const {
 CPT(GeomVertexArrayData) GeomPrimitive::
 rotate_impl() const {
   // The default implementation doesn't even try to do anything.
-  nassertr(false, NULL);
-  return NULL;
+  nassertr(false, nullptr);
+  return nullptr;
 }
 
 /**
@@ -2074,7 +2077,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void GeomPrimitive::
 finalize(BamReader *manager) {
   const GeomVertexArrayData *vertices = get_vertices();
-  if (vertices != (GeomVertexArrayData *)NULL) {
+  if (vertices != nullptr) {
     set_usage_hint(vertices->get_usage_hint());
   }
 }
@@ -2227,7 +2230,7 @@ get_vertex(int i) const {
       return ((uint32_t *)ptr)[i];
       break;
     default:
-      nassertr(false, -1);
+      nassert_raise("unsupported index type");
       return -1;
     }
 
@@ -2293,7 +2296,7 @@ get_referenced_vertices(BitArray &bits) const {
       }
       break;
     default:
-      nassertv(false);
+      nassert_raise("unsupported index type");
       break;
     }
   } else {

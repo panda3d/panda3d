@@ -16,7 +16,7 @@
  */
 INLINE SocketStreamRecorder::
 SocketStreamRecorder() :
-  _stream(NULL),
+  _stream(nullptr),
   _owns_stream(false),
   _closed(true)
 {
@@ -48,7 +48,7 @@ INLINE SocketStreamRecorder::
  */
 bool SocketStreamRecorder::
 send_datagram(const Datagram &dg) {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->send_datagram(dg);
   }
   return true;
@@ -59,7 +59,7 @@ send_datagram(const Datagram &dg) {
  */
 INLINE bool SocketStreamRecorder::
 is_closed() {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->is_closed();
   }
   return is_playing() && _closed;
@@ -70,7 +70,7 @@ is_closed() {
  */
 INLINE void SocketStreamRecorder::
 close() {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     _stream->close();
   }
   _closed = true;
@@ -81,7 +81,7 @@ close() {
  */
 INLINE void SocketStreamRecorder::
 set_collect_tcp(bool collect_tcp) {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     _stream->set_collect_tcp(collect_tcp);
   }
 }
@@ -91,7 +91,7 @@ set_collect_tcp(bool collect_tcp) {
  */
 INLINE bool SocketStreamRecorder::
 get_collect_tcp() const {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->get_collect_tcp();
   }
   return false;
@@ -102,7 +102,7 @@ get_collect_tcp() const {
  */
 INLINE void SocketStreamRecorder::
 set_collect_tcp_interval(double interval) {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     _stream->set_collect_tcp_interval(interval);
   }
 }
@@ -112,7 +112,7 @@ set_collect_tcp_interval(double interval) {
  */
 INLINE double SocketStreamRecorder::
 get_collect_tcp_interval() const {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->get_collect_tcp_interval();
   }
   return 0.0;
@@ -123,7 +123,7 @@ get_collect_tcp_interval() const {
  */
 INLINE bool SocketStreamRecorder::
 consider_flush() {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->consider_flush();
   }
   return true;
@@ -134,7 +134,7 @@ consider_flush() {
  */
 INLINE bool SocketStreamRecorder::
 flush() {
-  if (_stream != (SocketStream *)NULL) {
+  if (_stream != nullptr) {
     return _stream->flush();
   }
   return true;

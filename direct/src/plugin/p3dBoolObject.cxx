@@ -59,7 +59,7 @@ get_int() {
  * to a string.
  */
 void P3DBoolObject::
-make_string(string &value) {
+make_string(std::string &value) {
   if (_value) {
     value = "True";
   } else {

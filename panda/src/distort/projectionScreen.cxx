@@ -30,7 +30,7 @@ TypeHandle ProjectionScreen::_type_handle;
  *
  */
 ProjectionScreen::
-ProjectionScreen(const string &name) : PandaNode(name)
+ProjectionScreen(const std::string &name) : PandaNode(name)
 {
   set_cull_callback();
 
@@ -118,7 +118,7 @@ cull_callback(CullTraverser *, CullTraverserData &data) {
  */
 void ProjectionScreen::
 set_projector(const NodePath &projector) {
-  _projector_node = (LensNode *)NULL;
+  _projector_node = nullptr;
   _projector = projector;
   if (!projector.is_empty()) {
     nassertv(projector.node()->is_of_type(LensNode::get_class_type()));
@@ -151,14 +151,14 @@ set_projector(const NodePath &projector) {
  * fraction, and make the screen smaller by the inverse fraction.
  */
 PT(GeomNode) ProjectionScreen::
-generate_screen(const NodePath &projector, const string &screen_name,
+generate_screen(const NodePath &projector, const std::string &screen_name,
                 int num_x_verts, int num_y_verts, PN_stdfloat distance,
                 PN_stdfloat fill_ratio) {
   nassertr(!projector.is_empty() &&
            projector.node()->is_of_type(LensNode::get_class_type()),
-           NULL);
+           nullptr);
   LensNode *projector_node = DCAST(LensNode, projector.node());
-  nassertr(projector_node->get_lens() != NULL, NULL);
+  nassertr(projector_node->get_lens() != nullptr, nullptr);
 
   // First, get the relative coordinate space of the projector.
   LMatrix4 rel_mat;
@@ -204,7 +204,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
       normal.add_data3(-normalize(norm * rel_mat));
     }
   }
-  nassertr(vdata->get_num_rows() == num_verts, NULL);
+  nassertr(vdata->get_num_rows() == num_verts, nullptr);
 
   // Now synthesize a triangle mesh.  We run triangle strips horizontally
   // across the grid.
@@ -237,7 +237,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
  * generated child returned by generate_screen().
  */
 void ProjectionScreen::
-regenerate_screen(const NodePath &projector, const string &screen_name,
+regenerate_screen(const NodePath &projector, const std::string &screen_name,
                   int num_x_verts, int num_y_verts, PN_stdfloat distance,
                   PN_stdfloat fill_ratio) {
   // First, remove all existing children.
@@ -265,12 +265,12 @@ regenerate_screen(const NodePath &projector, const string &screen_name,
  */
 PT(PandaNode) ProjectionScreen::
 make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
-  nassertr(!this_np.is_empty() && this_np.node() == this, NULL);
+  nassertr(!this_np.is_empty() && this_np.node() == this, nullptr);
   nassertr(!camera.is_empty() &&
            camera.node()->is_of_type(LensNode::get_class_type()),
-           NULL);
+           nullptr);
   LensNode *camera_node = DCAST(LensNode, camera.node());
-  nassertr(camera_node->get_lens() != (Lens *)NULL, NULL);
+  nassertr(camera_node->get_lens() != nullptr, nullptr);
 
   // First, ensure the UV's are up-to-date.
   recompute_if_stale(this_np);
@@ -318,8 +318,8 @@ bool ProjectionScreen::
 recompute_if_stale(const NodePath &this_np) {
   nassertr(!this_np.is_empty() && this_np.node() == this, false);
 
-  if (_projector_node != (LensNode *)NULL &&
-      _projector_node->get_lens() != (Lens *)NULL) {
+  if (_projector_node != nullptr &&
+      _projector_node->get_lens() != nullptr) {
     UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
     if (_stale || lens_change != _projector_lens_change) {
       recompute();
@@ -346,8 +346,8 @@ recompute_if_stale(const NodePath &this_np) {
  */
 void ProjectionScreen::
 do_recompute(const NodePath &this_np) {
-  if (_projector_node != (LensNode *)NULL &&
-      _projector_node->get_lens() != (Lens *)NULL) {
+  if (_projector_node != nullptr &&
+      _projector_node->get_lens() != nullptr) {
 
     recompute_node(this_np, _rel_top_mat, _computed_rel_top_mat);
     // Make sure this flag is set to false for next time.
@@ -479,13 +479,12 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   Thread *current_thread = Thread::get_current_thread();
 
   Lens *lens = _projector_node->get_lens();
-  nassertv(lens != (Lens *)NULL);
+  nassertv(lens != nullptr);
 
   const LMatrix4 &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
   // Iterate through all the vertices in the Geom.
-  CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
-  vdata = vdata->animate_vertices(true, current_thread);
+  CPT(GeomVertexData) vdata = geom->get_animated_vertex_data(true, current_thread);
 
   CPT(GeomVertexFormat) vformat = vdata->get_format();
   if (!vformat->has_column(_texcoord_name) || (_texcoord_3d && vformat->get_column(_texcoord_name)->get_num_components() < 3)) {
@@ -507,7 +506,7 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   PT(GeomVertexData) modify_vdata = geom->modify_vertex_data();
 
   // Maybe the vdata has animation that we should consider.
-  CPT(GeomVertexData) animated_vdata = geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread);
+  CPT(GeomVertexData) animated_vdata = geom->get_animated_vertex_data(true, current_thread);
 
   GeomVertexWriter texcoord(modify_vdata, _texcoord_name, current_thread);
   GeomVertexWriter color(modify_vdata, current_thread);
@@ -620,7 +619,7 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                                  rel_mat, computed_rel_mat);
     }
 
-    if (new_child != NULL) {
+    if (new_child != nullptr) {
       // Copy all of the render state (except TransformState) to the new arc.
       new_child->set_state(child->get_state());
     }
@@ -650,7 +649,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
     const Geom *geom = node->get_geom(i);
     PT(Geom) new_geom =
       make_mesh_geom(geom, lens_node->get_lens(), rel_mat);
-    if (new_geom != (Geom *)NULL) {
+    if (new_geom != nullptr) {
       new_node->add_geom(new_geom, node->get_geom_state(i));
     }
   }
@@ -674,9 +673,8 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
 
   Thread *current_thread = Thread::get_current_thread();
   PT(Geom) new_geom = geom->make_copy();
+  new_geom->set_vertex_data(new_geom->get_animated_vertex_data(false, current_thread));
   PT(GeomVertexData) vdata = new_geom->modify_vertex_data();
-  new_geom->set_vertex_data(vdata->animate_vertices(false, current_thread));
-  vdata = new_geom->modify_vertex_data();
   GeomVertexRewriter vertex(vdata, InternalName::get_vertex());
   while (!vertex.is_at_end()) {
     LVertex vert = vertex.get_data3();

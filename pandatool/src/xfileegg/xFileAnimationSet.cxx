@@ -59,11 +59,11 @@ create_hierarchy(XFileToEggConverter *converter) {
   // Now populate those empty tables with the frame data.
   JointData::const_iterator ji;
   for (ji = _joint_data.begin(); ji != _joint_data.end(); ++ji) {
-    const string &joint_name = (*ji).first;
+    const std::string &joint_name = (*ji).first;
     const FrameData &table = (*ji).second;
 
     EggXfmSAnim *anim_table = get_table(joint_name);
-    if (anim_table == (EggXfmSAnim *)NULL) {
+    if (anim_table == nullptr) {
       xfile_cat.warning()
         << "Frame " << joint_name << ", named by animation data, not defined.\n";
     } else {
@@ -81,7 +81,7 @@ create_hierarchy(XFileToEggConverter *converter) {
   for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
     EggXfmSAnim *anim_table = (*ti).second._table;
     EggGroup *joint = (*ti).second._joint;
-    if (anim_table->empty() && joint != (EggGroup *)NULL) {
+    if (anim_table->empty() && joint != nullptr) {
       // If there's no animation data, assign the rest transform.
       anim_table->add_data(joint->get_transform3d());
     }
@@ -98,13 +98,13 @@ create_hierarchy(XFileToEggConverter *converter) {
  * Returns the table associated with the indicated joint name.
  */
 EggXfmSAnim *XFileAnimationSet::
-get_table(const string &joint_name) const {
+get_table(const std::string &joint_name) const {
   Tables::const_iterator ti;
   ti = _tables.find(joint_name);
   if (ti != _tables.end()) {
     return (*ti).second._table;
   }
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -112,7 +112,7 @@ get_table(const string &joint_name) const {
  * joint.
  */
 XFileAnimationSet::FrameData &XFileAnimationSet::
-create_frame_data(const string &joint_name) {
+create_frame_data(const std::string &joint_name) {
   return _joint_data[joint_name];
 }
 

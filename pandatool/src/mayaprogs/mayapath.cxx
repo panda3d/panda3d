@@ -43,11 +43,17 @@
 #include <stdlib.h>
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #else
 #include <sys/stat.h>
 #endif
+
+using std::cerr;
+using std::endl;
+using std::string;
 
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
@@ -99,6 +105,7 @@ struct MayaVerInfo maya_versions[] = {
   { "MAYA2016", "2016"},
   { "MAYA20165", "2016.5"},
   { "MAYA2017", "2017"},
+  { "MAYA2018", "2018"},
   { 0, 0 },
 };
 
@@ -133,7 +140,7 @@ get_maya_location(const char *ver, string &loc) {
         DWORD dtype;
         DWORD size = 4096;
         char result[4096 + 1];
-        res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", NULL, &dtype, (LPBYTE)result, &size);
+        res = RegQueryValueEx(hkey, "MAYA_INSTALL_LOCATION", nullptr, &dtype, (LPBYTE)result, &size);
         if ((res == ERROR_SUCCESS)&&(dtype == REG_SZ)) {
           result[size] = 0;
           loc = result;
@@ -222,7 +229,7 @@ main(int argc, char *argv[]) {
     Filename standard_maya_location;
 #ifdef MAYAVERSION
     const char *key = get_version_number(TOSTRING(MAYAVERSION));
-    if (key == NULL) {
+    if (key == nullptr) {
       cerr << "Unknown Maya version: " << TOSTRING(MAYAVERSION) << "\n";
     } else {
       string loc;
@@ -386,7 +393,7 @@ main(int argc, char *argv[]) {
 #endif
   if (bin.is_directory()) {
     const char *path = getenv("PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string putenv_str = "PATH=" + bin.to_os_specific() + sep + path;
@@ -398,7 +405,7 @@ main(int argc, char *argv[]) {
   // And on DYLD_LIBRARY_PATH.
   if (bin.is_directory()) {
     const char *path = getenv("DYLD_LIBRARY_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -411,7 +418,7 @@ main(int argc, char *argv[]) {
   Filename fw_dir = Filename(maya_location, "Frameworks");
   if (fw_dir.is_directory()) {
     const char *path = getenv("DYLD_FALLBACK_FRAMEWORK_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -424,7 +431,7 @@ main(int argc, char *argv[]) {
   // Linux (or other non-Windows OS) gets it added to LD_LIBRARY_PATH.
   if (bin.is_directory()) {
     const char *path = getenv("LD_LIBRARY_PATH");
-    if (path == NULL) {
+    if (path == nullptr) {
       path = "";
     }
     string sep = ":";
@@ -451,8 +458,8 @@ main(int argc, char *argv[]) {
   GetStartupInfo(&startup_info);
   BOOL result = CreateProcess(os_command.c_str(),
                               command_line,
-                              NULL, NULL, true, 0,
-                              NULL, NULL,
+                              nullptr, nullptr, true, 0,
+                              nullptr, nullptr,
                               &startup_info,
                               &process_info);
   if (result) {

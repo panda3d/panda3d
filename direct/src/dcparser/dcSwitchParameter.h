@@ -23,7 +23,7 @@ class DCSwitch;
  * This represents a switch object used as a parameter itself, which packs the
  * appropriate fields of the switch into the message.
  */
-class DCSwitchParameter : public DCParameter {
+class EXPCL_DIRECT_DCPARSER DCSwitchParameter : public DCParameter {
 public:
   DCSwitchParameter(const DCSwitch *dswitch);
   DCSwitchParameter(const DCSwitchParameter &copy);
@@ -41,11 +41,11 @@ public:
 
   const DCPackerInterface *apply_switch(const char *value_data, size_t length) const;
 
-  virtual void output_instance(ostream &out, bool brief, const string &prename,
-                               const string &name, const string &postname) const;
-  virtual void write_instance(ostream &out, bool brief, int indent_level,
-                              const string &prename, const string &name,
-                              const string &postname) const;
+  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
+                               const std::string &name, const std::string &postname) const;
+  virtual void write_instance(std::ostream &out, bool brief, int indent_level,
+                              const std::string &prename, const std::string &name,
+                              const std::string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 

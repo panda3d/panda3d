@@ -15,7 +15,7 @@
  *
  */
 INLINE EggTriangleFan::
-EggTriangleFan(const string &name) : EggCompositePrimitive(name) {
+EggTriangleFan(const std::string &name) : EggCompositePrimitive(name) {
 }
 
 /**

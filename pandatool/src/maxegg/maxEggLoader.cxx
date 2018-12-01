@@ -26,18 +26,23 @@
 #include "eggPolysetMaker.h"
 #include "eggBin.h"
 
+using std::min;
+using std::max;
+
 #include <stdio.h>
-#include "Max.h"
-#include "istdplug.h"
-#include "stdmat.h"
-#include "decomp.h"
-#include "shape.h"
-#include "simpobj.h"
-#include "iparamb2.h"
-#include "iskin.h"
-#include "modstack.h"
+#include <Max.h>
+#include <istdplug.h>
+#include <stdmat.h>
+#include <decomp.h>
+#include <shape.h>
+#include <simpobj.h>
+#include <iparamb2.h>
+#include <iskin.h>
+#include <modstack.h>
 
 #include "maxEggLoader.h"
+
+using std::vector;
 
 class MaxEggMesh;
 class MaxEggJoint;
@@ -64,7 +69,7 @@ public:
   typedef second_of_pair_iterator<MeshTable::const_iterator> MeshIterator;
   typedef phash_map<EggGroup *, MaxEggJoint *> JointTable;
   typedef second_of_pair_iterator<JointTable::const_iterator> JointIterator;
-  typedef phash_map<string, MaxEggTex *> TexTable;
+  typedef phash_map<std::string, MaxEggTex *> TexTable;
   typedef second_of_pair_iterator<TexTable::const_iterator> TexIterator;
 
   MeshTable        _mesh_tab;
@@ -296,7 +301,7 @@ void MaxEggJoint::CreateMaxBone(void)
 
 // MaxEggMesh
 
-typedef pair<double, EggGroup *> MaxEggWeight;
+typedef std::pair<double, EggGroup *> MaxEggWeight;
 
 struct MaxEggVertex
 {
@@ -344,7 +349,7 @@ class MaxEggMesh
 {
 public:
 
-  string           _name;
+  std::string           _name;
   TriObject       *_obj;
   Mesh            *_mesh;
   INode           *_node;
@@ -434,7 +439,7 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
 {
   MaxEggMesh *result = _mesh_tab[pool];
   if (result == 0) {
-    string name = pool->get_name();
+    std::string name = pool->get_name();
     int nsize = name.size();
     if ((nsize > 6) && (name.rfind(".verts")==(nsize-6)))
       name.resize(nsize-6);
@@ -637,7 +642,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   AnimateOff();
   _next_tex = 0;
 
-  TraverseEggNode(data, NULL);
+  TraverseEggNode(data, nullptr);
 
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MaxEggMesh *mesh = (*ci);

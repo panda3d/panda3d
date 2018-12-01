@@ -26,10 +26,10 @@ enum CoordinateSystem {
   // turn is loaded from the config variable "coordinate-system".
   CS_default,
 
-  CS_zup_right,
-  CS_yup_right,
-  CS_zup_left,
-  CS_yup_left,
+  CS_zup_right, // Z-Up, Right-handed
+  CS_yup_right, // Y-Up, Right-handed
+  CS_zup_left,  // Z-Up, Left-handed
+  CS_yup_left,  // Y-Up, Left-handed
 
   // CS_invalid is not a coordinate system at all.  It can be used in user-
   // input processing code to indicate a contradictory coordinate system
@@ -38,16 +38,16 @@ enum CoordinateSystem {
 };
 
 EXPCL_PANDA_LINMATH CoordinateSystem get_default_coordinate_system();
-EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const string &str);
-EXPCL_PANDA_LINMATH string format_coordinate_system(CoordinateSystem cs);
+EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const std::string &str);
+EXPCL_PANDA_LINMATH std::string format_coordinate_system(CoordinateSystem cs);
 EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 
 END_PUBLISH
 
 #define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
 
-EXPCL_PANDA_LINMATH ostream &operator << (ostream &out, CoordinateSystem cs);
-EXPCL_PANDA_LINMATH istream &operator >> (istream &in, CoordinateSystem &cs);
+EXPCL_PANDA_LINMATH std::ostream &operator << (std::ostream &out, CoordinateSystem cs);
+EXPCL_PANDA_LINMATH std::istream &operator >> (std::istream &in, CoordinateSystem &cs);
 
 
 #endif

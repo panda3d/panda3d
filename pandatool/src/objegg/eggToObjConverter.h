@@ -31,8 +31,8 @@ public:
 
   virtual EggToSomethingConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool write_file(const Filename &filename);
@@ -53,9 +53,9 @@ private:
   bool process(const Filename &filename);
 
   void collect_vertices(EggNode *egg_node);
-  void write_faces(ostream &out, EggNode *egg_node);
-  void write_group_reference(ostream &out, EggNode *egg_node);
-  void get_group_name(string &group_name, EggGroupNode *egg_group);
+  void write_faces(std::ostream &out, EggNode *egg_node);
+  void write_group_reference(std::ostream &out, EggNode *egg_node);
+  void get_group_name(std::string &group_name, EggGroupNode *egg_group);
 
   void record_vertex(EggVertex *vertex);
   int record_unique(UniqueVertices &unique, const LVecBase4d &vec);
@@ -63,12 +63,10 @@ private:
   int record_unique(UniqueVertices &unique, const LVecBase2d &vec);
   int record_unique(UniqueVertices &unique, double pos);
 
-  void write_vertices(ostream &out, const string &prefix, int num_components,
+  void write_vertices(std::ostream &out, const std::string &prefix, int num_components,
                       const UniqueVertices &unique);
 
 private:
-  bool _triangulate_polygons;
-
   UniqueVertices _unique_vert3, _unique_vert4, _unique_uv2, _unique_uv3, _unique_norm;
   VertexMap _vmap;
   EggGroupNode *_current_group;

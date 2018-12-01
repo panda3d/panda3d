@@ -24,12 +24,12 @@
 #include "pt_EggMaterial.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDGeometryInstance.h"
-#include "FCDocument/FCDMaterialInstance.h"
-#include "FCDocument/FCDEffectStandard.h"
-#include "FCDocument/FCDEffectParameterSampler.h"
-#include "FCDocument/FCDExtra.h"
+#include <FCollada.h>
+#include <FCDocument/FCDGeometryInstance.h>
+#include <FCDocument/FCDMaterialInstance.h>
+#include <FCDocument/FCDEffectStandard.h>
+#include <FCDocument/FCDEffectParameterSampler.h>
+#include <FCDocument/FCDExtra.h>
 
 /**
  * This class is seperated from the converter file because otherwise it would
@@ -41,9 +41,9 @@ public:
   virtual ~DaeMaterials() {};
 
   void add_material_instance(const FCDMaterialInstance* instance);
-  void apply_to_primitive(const string semantic, const PT(EggPrimitive) to);
-  void apply_to_group(const string semantic, const PT(EggGroup) to, bool invert_transparency=false);
-  const string get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semantic, int32 input_set);
+  void apply_to_primitive(const std::string semantic, const PT(EggPrimitive) to);
+  void apply_to_group(const std::string semantic, const PT(EggGroup) to, bool invert_transparency=false);
+  const std::string get_uvset_name(const std::string semantic, FUDaeGeometryInput::Semantic input_semantic, int32 input_set);
 
   static EggTexture::TextureType convert_texture_type(const FCDEffectParameterSampler::SamplerType orig_type);
   static EggTexture::WrapMode convert_wrap_mode(const FUDaeTextureWrapMode::WrapMode orig_mode);
@@ -62,7 +62,7 @@ private:
   struct DaeVertexInputBinding : public ReferenceCount {
     int32 _input_set;
     FUDaeGeometryInput::Semantic _input_semantic;
-    string _semantic;
+    std::string _semantic;
   };
 
   // Holds stuff for an individual material.
@@ -74,11 +74,11 @@ private:
     PT(DaeBlendSettings) _blend;
   };
 
-  void process_texture_bucket(const string semantic, const FCDEffectStandard* effect_common, FUDaeTextureChannel::Channel bucket, EggTexture::EnvType envtype = EggTexture::ET_unspecified, EggTexture::Format format = EggTexture::F_unspecified);
-  void process_extra(const string semantic, const FCDExtra* extra);
+  void process_texture_bucket(const std::string semantic, const FCDEffectStandard* effect_common, FUDaeTextureChannel::Channel bucket, EggTexture::EnvType envtype = EggTexture::ET_unspecified, EggTexture::Format format = EggTexture::F_unspecified);
+  void process_extra(const std::string semantic, const FCDExtra* extra);
   static PT(DaeBlendSettings) convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparent, double transparency);
 
-  pmap<const string, PT(DaeMaterial)> _materials;
+  pmap<const std::string, PT(DaeMaterial)> _materials;
 
 public:
   virtual TypeHandle get_type() const {

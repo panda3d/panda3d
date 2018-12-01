@@ -31,32 +31,38 @@ public:
   typedef T To;
 
 protected:
-  ALWAYS_INLINE_CONSTEXPR PointerToBase() NOEXCEPT DEFAULT_CTOR;
+  ALWAYS_INLINE constexpr PointerToBase() noexcept = default;
   INLINE PointerToBase(To *ptr);
   INLINE PointerToBase(const PointerToBase<T> &copy);
-  INLINE ~PointerToBase();
+  INLINE PointerToBase(PointerToBase<T> &&from) noexcept;
+  template<class Y>
+  INLINE PointerToBase(PointerToBase<Y> &&r) noexcept;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE PointerToBase(PointerToBase<T> &&from) NOEXCEPT;
-  INLINE void reassign(PointerToBase<To> &&from) NOEXCEPT;
-#endif
+  INLINE ~PointerToBase();
 
   INLINE void reassign(To *ptr);
   INLINE void reassign(const PointerToBase<To> &copy);
+  INLINE void reassign(PointerToBase<To> &&from) noexcept;
+  template<class Y>
+  INLINE void reassign(PointerToBase<Y> &&from) noexcept;
 
   INLINE void update_type(To *ptr);
 
   // No assignment or retrieval functions are declared in PointerToBase,
   // because we will have to specialize on const vs.  non-const later.
 
+  // This is needed to be able to access the privates of other instantiations.
+  template<typename Y> friend class PointerToBase;
+  template<typename Y> friend class WeakPointerToBase;
+
 PUBLISHED:
   ALWAYS_INLINE void clear();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 };
 
 template<class T>
-INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
+INLINE std::ostream &operator <<(std::ostream &out, const PointerToBase<T> &pointer) {
   pointer.output(out);
   return out;
 }

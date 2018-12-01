@@ -26,7 +26,7 @@
  * A wrapper around an BioStream object to make a reference-counting pointer
  * to it.
  */
-class EXPCL_PANDAEXPRESS BioStreamPtr : public ReferenceCount {
+class EXPCL_PANDA_DOWNLOADER BioStreamPtr : public ReferenceCount {
 public:
   INLINE BioStreamPtr(BioStream *stream);
   virtual ~BioStreamPtr();

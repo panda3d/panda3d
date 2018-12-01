@@ -25,7 +25,7 @@
 class eglGraphicsWindow : public x11GraphicsWindow {
 public:
   eglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -33,7 +33,6 @@ public:
                     GraphicsOutput *host);
   virtual ~eglGraphicsWindow();
 
-  virtual bool move_pointer(int device, int x, int y);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void end_flip();

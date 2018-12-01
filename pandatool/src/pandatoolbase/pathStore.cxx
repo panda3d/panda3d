@@ -19,7 +19,7 @@
 /**
  * Returns the string corresponding to this method.
  */
-string
+std::string
 format_path_store(PathStore store) {
   switch (store) {
   case PS_invalid:
@@ -47,8 +47,8 @@ format_path_store(PathStore store) {
 /**
  *
  */
-ostream &
-operator << (ostream &out, PathStore store) {
+std::ostream &
+operator << (std::ostream &out, PathStore store) {
   return out << format_path_store(store);
 }
 
@@ -57,7 +57,7 @@ operator << (ostream &out, PathStore store) {
  * PathStore types.  Returns PS_invalid if the string is unknown.
  */
 PathStore
-string_path_store(const string &str) {
+string_path_store(const std::string &str) {
   if (cmp_nocase(str, "relative") == 0 ||
       cmp_nocase(str, "rel") == 0) {
     return PS_relative;

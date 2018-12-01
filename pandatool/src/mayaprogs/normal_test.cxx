@@ -23,7 +23,8 @@
 #include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 
-using namespace std;
+using std::cerr;
+using std::endl;
 
 void
 scan_nodes() {
@@ -179,7 +180,7 @@ output_vertices(const char *filename, MFnMesh &mesh) {
     exit(1);
   }
 
-  ofstream file(filename, ios::out | ios::trunc);
+  std::ofstream file(filename, std::ios::out | std::ios::trunc);
   if (!file) {
     cerr << "Couldn't open " << filename << " for output.\n";
     exit(1);

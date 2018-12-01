@@ -20,8 +20,8 @@
 #include "texture.h"
 #include "pmap.h"
 
-#include "scene.h"
-#include "Importer.hpp"
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
 
 class Character;
 class CharacterJointBundle;
@@ -46,7 +46,7 @@ public:
   AssimpLoader();
   virtual ~AssimpLoader();
 
-  void get_extensions(string &ext) const;
+  void get_extensions(std::string &ext) const;
 
   bool read(const Filename &filename);
   void build_graph();

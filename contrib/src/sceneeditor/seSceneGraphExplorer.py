@@ -9,9 +9,16 @@
 #
 #################################################################
 from direct.showbase.DirectObject import DirectObject
-from Tkinter import IntVar, Frame, Label
 from seTree import TreeNode, TreeItem
-import Pmw, Tkinter
+
+import Pmw, sys
+
+if sys.version_info >= (3, 0):
+    from tkinter import IntVar, Frame, Label
+    import tkinter
+else:
+    from Tkinter import IntVar, Frame, Label
+    import Tkinter as tkinter
 
 # changing these strings requires changing sceneEditor.py SGE_ strs too!
 # This list of items will be showed on the pop out window when user right click on
@@ -57,7 +64,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
 
         # Setup up container
         interior = self.interior()
-        interior.configure(relief = Tkinter.GROOVE, borderwidth = 2)
+        interior.configure(relief = tkinter.GROOVE, borderwidth = 2)
 
         # Create a label and an entry
         self._scrolledCanvas = self.createcomponent(
@@ -69,7 +76,7 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._canvas = self._scrolledCanvas.component('canvas')
         self._canvas['scrollregion'] = ('0i', '0i', '2i', '4i')
         self._scrolledCanvas.resizescrollregion()
-        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = Tkinter.BOTH)
+        self._scrolledCanvas.pack(padx = 3, pady = 3, expand=1, fill = tkinter.BOTH)
 
         self._canvas.bind('<ButtonPress-2>', self.mouse2Down)
         self._canvas.bind('<B2-Motion>', self.mouse2Motion)
@@ -91,8 +98,8 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
             (), None,
             Label, (interior,),
             text = 'Active Reparent Target: ',
-            anchor = Tkinter.W, justify = Tkinter.LEFT)
-        self._label.pack(fill = Tkinter.X)
+            anchor = tkinter.W, justify = tkinter.LEFT)
+        self._label.pack(fill = tkinter.X)
 
         # Add update parent label
         def updateLabel(nodePath = None, s = self):
@@ -141,11 +148,11 @@ class seSceneGraphExplorer(Pmw.MegaWidget, DirectObject):
         self._node.deselecttree()
 
     def selectNodePath(self,nodePath, callBack=True):
-        item = self._node.find(nodePath.id())
+        item = self._node.find(nodePath.get_key())
         if item!= None:
             item.select(callBack)
         else:
-            print '----SGE: Error Selection'
+            print('----SGE: Error Selection')
 
 class SceneGraphExplorerItem(TreeItem):
 
@@ -164,7 +171,7 @@ class SceneGraphExplorerItem(TreeItem):
         return name
 
     def GetKey(self):
-        return self.nodePath.id()
+        return self.nodePath.get_key()
 
     def IsEditable(self):
         # All nodes' names can be edited nowadays.

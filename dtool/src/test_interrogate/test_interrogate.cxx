@@ -17,11 +17,15 @@
 #include "interrogate_request.h"
 #include "load_dso.h"
 #include "filename.h"
-#include "pystub.h"
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
 #include <stdlib.h>
+
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::string;
 
 static ostream &
 indent(ostream &out, int indent_level) {
@@ -521,8 +525,6 @@ main(int argc, char **argv) {
   extern int optind;
   const char *optstr = "p:ftqh";
 
-  pystub();
-
   bool all_functions = false;
   bool all_types = false;
   bool quick_load = false;
@@ -586,7 +588,7 @@ main(int argc, char **argv) {
 #endif
 
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         cerr << "Unable to load: " << load_dso_error() << "\n";
         return_status++;
       }

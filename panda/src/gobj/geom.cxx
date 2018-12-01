@@ -25,6 +25,9 @@
 #include "lightMutexHolder.h"
 #include "config_mathutil.h"
 
+using std::max;
+using std::min;
+
 UpdateSeq Geom::_next_modified;
 PStatCollector Geom::_draw_primitive_setup_pcollector("Draw:Primitive:Setup");
 
@@ -192,6 +195,9 @@ offset_vertices(const GeomVertexData *data, int offset) {
   cdata->_data = (GeomVertexData *)data;
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(data, current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -200,7 +206,7 @@ offset_vertices(const GeomVertexData *data, int offset) {
     prim->offset_vertices(offset);
 
 #ifndef NDEBUG
-    if (!prim->check_valid(data)) {
+    if (!prim->check_valid(&data_reader)) {
       gobj_cat.warning()
         << *prim << " is invalid for " << *data << ":\n";
       prim->write(gobj_cat.warning(false), 4);
@@ -281,6 +287,28 @@ make_nonindexed(bool composite_only) {
 }
 
 /**
+ * Returns a GeomVertexData that represents the results of computing the
+ * vertex animation on the CPU for this Geom's vertex data.
+ *
+ * If there is no CPU-defined vertex animation on this object, this just
+ * returns the original object.
+ *
+ * If there is vertex animation, but the VertexTransform values have not
+ * changed since last time, this may return the same pointer it returned
+ * previously.  Even if the VertexTransform values have changed, it may still
+ * return the same pointer, but with its contents modified (this is preferred,
+ * since it allows the graphics backend to update vertex buffers optimally).
+ *
+ * If force is false, this method may return immediately with stale data, if
+ * the vertex data is not completely resident.  If force is true, this method
+ * will never return stale data, but may block until the data is available.
+ */
+CPT(GeomVertexData) Geom::
+get_animated_vertex_data(bool force, Thread *current_thread) const {
+  return get_vertex_data()->animate_vertices(force, current_thread);
+}
+
+/**
  * Replaces the ith GeomPrimitive object stored within the Geom with the new
  * object.
  *
@@ -301,7 +329,7 @@ set_primitive(size_t i, const GeomPrimitive *primitive) {
 
   // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
-  nassertv_always(compat != (GeomPrimitive *)NULL);
+  nassertv_always(compat != nullptr);
 
   cdata->_primitives[i] = (GeomPrimitive *)compat.p();
   PrimitiveType new_primitive_type = compat->get_primitive_type();
@@ -420,6 +448,9 @@ decompose_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -428,7 +459,7 @@ decompose_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -454,6 +485,9 @@ doubleside_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -462,7 +496,7 @@ doubleside_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -488,6 +522,9 @@ reverse_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -496,7 +533,7 @@ reverse_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -522,6 +559,9 @@ rotate_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -530,7 +570,7 @@ rotate_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -625,7 +665,7 @@ unify_in_place(int max_indices, bool preserve_order) {
     } else {
       // We have already encountered another primitive of this type.  Combine
       // them.
-      combine_primitives((*npi).second, move(primitive), current_thread);
+      combine_primitives((*npi).second, std::move(primitive), current_thread);
     }
   }
 
@@ -637,6 +677,9 @@ unify_in_place(int max_indices, bool preserve_order) {
     // primitives.)
     nassertv(false);
   }
+
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
 #endif
 
   // Finally, iterate through the remaining primitives, and copy them to the
@@ -646,7 +689,7 @@ unify_in_place(int max_indices, bool preserve_order) {
   for (npi = new_prims.begin(); npi != new_prims.end(); ++npi) {
     GeomPrimitive *prim = (*npi).second;
 
-    nassertv(prim->check_valid(cdata->_data.get_read_pointer(current_thread)));
+    nassertv(prim->check_valid(&data_reader));
 
     // Each new primitive, naturally, inherits the Geom's overall shade model.
     prim->set_shade_model(cdata->_shade_model);
@@ -745,6 +788,9 @@ make_lines_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -753,7 +799,7 @@ make_lines_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -779,6 +825,9 @@ make_points_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -787,7 +836,7 @@ make_points_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -813,6 +862,9 @@ make_patches_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -821,7 +873,7 @@ make_patches_in_place() {
     (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-    if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+    if (!new_prim->check_valid(&data_reader)) {
       all_is_valid = false;
     }
 #endif
@@ -847,6 +899,9 @@ make_adjacency_in_place() {
   CDWriter cdata(_cycler, true, current_thread);
 
 #ifndef NDEBUG
+  GeomVertexDataPipelineReader data_reader(cdata->_data.get_read_pointer(current_thread), current_thread);
+  data_reader.check_array_readers();
+
   bool all_is_valid = true;
 #endif
   Primitives::iterator pi;
@@ -856,7 +911,7 @@ make_adjacency_in_place() {
       (*pi) = (GeomPrimitive *)new_prim.p();
 
 #ifndef NDEBUG
-      if (!new_prim->check_valid(cdata->_data.get_read_pointer(current_thread))) {
+      if (!new_prim->check_valid(&data_reader)) {
         all_is_valid = false;
       }
 #endif
@@ -1030,7 +1085,7 @@ check_valid(const GeomVertexData *vertex_data) const {
 CPT(BoundingVolume) Geom::
 get_bounds(Thread *current_thread) const {
   CDLockedReader cdata(_cycler, current_thread);
-  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+  if (cdata->_user_bounds != nullptr) {
     return cdata->_user_bounds;
   }
 
@@ -1060,7 +1115,7 @@ get_nested_vertices(Thread *current_thread) const {
  *
  */
 void Geom::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1087,7 +1142,7 @@ output(ostream &out) const {
  *
  */
 void Geom::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   CDReader cdata(_cycler);
 
   // Get a list of the primitive types contained within this object.
@@ -1133,7 +1188,7 @@ clear_cache_stage(Thread *current_thread) {
        ++ci) {
     CacheEntry *entry = (*ci).second;
     CDCacheWriter cdata(entry->_cycler, current_thread);
-    cdata->set_result(NULL, NULL);
+    cdata->set_result(nullptr, nullptr);
   }
 }
 
@@ -1231,7 +1286,7 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   }
 
   GeomContext *gc = prepared_objects->prepare_geom_now(this, gsg);
-  if (gc != (GeomContext *)NULL) {
+  if (gc != nullptr) {
     _contexts[prepared_objects] = gc;
   }
   return gc;
@@ -1278,8 +1333,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
   int num_vertices = 0;
 
   // Get the vertex data, after animation.
-  CPT(GeomVertexData) vertex_data = cdata->_data.get_read_pointer(current_thread);
-  vertex_data = vertex_data->animate_vertices(true, current_thread);
+  CPT(GeomVertexData) vertex_data = get_animated_vertex_data(true, current_thread);
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
@@ -1450,7 +1504,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
   } else {
     // If this assertion fails, clear_prepared() was given a prepared_objects
     // that the geom didn't know about.
-    nassertv(false);
+    nassert_raise("unknown PreparedGraphicsObjects");
   }
 }
 
@@ -1462,13 +1516,20 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
  */
 bool Geom::
 check_will_be_valid(const GeomVertexData *vertex_data) const {
-  CDReader cdata(_cycler);
+  Thread *current_thread = Thread::get_current_thread();
+
+  CDReader cdata(_cycler, current_thread);
+
+  GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
+  data_reader.check_array_readers();
 
   Primitives::const_iterator pi;
   for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    if (!(*pi).get_read_pointer()->check_valid(vertex_data)) {
+    GeomPrimitivePipelineReader reader((*pi).get_read_pointer(), current_thread);
+    reader.check_minmax();
+    if (!reader.check_valid(&data_reader)) {
       return false;
     }
   }
@@ -1552,9 +1613,9 @@ combine_primitives(GeomPrimitive *a_prim, CPT(GeomPrimitive) b_prim,
   }
 
   PT(GeomVertexArrayDataHandle) a_handle =
-    new GeomVertexArrayDataHandle(move(a_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(a_vertices), current_thread);
   CPT(GeomVertexArrayDataHandle) b_handle =
-    new GeomVertexArrayDataHandle(move(b_vertices), current_thread);
+    new GeomVertexArrayDataHandle(std::move(b_vertices), current_thread);
 
   size_t orig_a_vertices = a_handle->get_num_rows();
 
@@ -1597,7 +1658,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 TypedWritable *Geom::
 make_from_bam(const FactoryParams &params) {
-  Geom *object = new Geom(NULL);
+  Geom *object = new Geom(nullptr);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -1644,7 +1705,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 Geom::CDataCache::
 ~CDataCache() {
-  set_result(NULL, NULL);
+  set_result(nullptr, nullptr);
 }
 
 /**
@@ -1672,7 +1733,7 @@ evict_callback() {
  *
  */
 void Geom::CacheEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "geom " << (void *)_source << ", "
       << (const void *)_key._modifier;
 }
@@ -1740,7 +1801,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _primitives.reserve(num_primitives);
   for (int i = 0; i < num_primitives; ++i) {
     manager->read_pointer(scan);
-    _primitives.push_back(NULL);
+    _primitives.push_back(nullptr);
   }
 
   _primitive_type = (PrimitiveType)scan.get_uint8();
@@ -1783,8 +1844,11 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg,
      const GeomVertexDataPipelineReader *data_reader, bool force) const {
-  PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-  bool all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  bool all_ok;
+  {
+    PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
+    all_ok = gsg->begin_draw_primitives(this, data_reader, force);
+  }
   if (all_ok) {
     Geom::Primitives::const_iterator pi;
     for (pi = _cdata->_primitives.begin();

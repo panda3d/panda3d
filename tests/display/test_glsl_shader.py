@@ -1,4 +1,5 @@
 from panda3d import core
+import struct
 import pytest
 from _pytest.outcomes import Failed
 
@@ -9,6 +10,7 @@ from _pytest.outcomes import Failed
 # The reset() function serves to prevent the _triggered variable from being
 # optimized out in the case that the assertions are being optimized out.
 GLSL_COMPUTE_TEMPLATE = """#version {version}
+{extensions}
 
 layout(local_size_x = 1, local_size_y = 1) in;
 
@@ -18,6 +20,7 @@ layout(r8ui) uniform writeonly uimageBuffer _triggered;
 
 void _reset() {{
     imageStore(_triggered, 0, uvec4(0, 0, 0, 0));
+    memoryBarrier();
 }}
 
 void _assert(bool cond, int line) {{
@@ -35,7 +38,7 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=430):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=130, exts=set()):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
@@ -43,11 +46,23 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=430):
     if not gsg.supports_compute_shaders or not gsg.supports_glsl:
         pytest.skip("compute shaders not supported")
 
+    if not gsg.supports_buffer_texture:
+        pytest.skip("buffer textures not supported")
+
+    exts = exts | {'GL_ARB_compute_shader', 'GL_ARB_shader_image_load_store'}
+    missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext))
+    if missing_exts:
+        pytest.skip("missing extensions: " + ' '.join(missing_exts))
+
+    extensions = ''
+    for ext in exts:
+        extensions += '#extension {ext} : require\n'.format(ext=ext)
+
     __tracebackhide__ = True
 
     preamble = preamble.strip()
     body = body.rstrip().lstrip('\n')
-    code = GLSL_COMPUTE_TEMPLATE.format(version=version, preamble=preamble, body=body)
+    code = GLSL_COMPUTE_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
     line_offset = code[:code.find(body)].count('\n') + 1
     shader = core.Shader.make_compute(core.Shader.SL_GLSL, code)
     assert shader, code
@@ -117,7 +132,7 @@ def test_glsl_sampler(gsg):
     assert(texelFetch(tex1, 0, 0) == vec4(0, 2 / 255.0, 1, 1));
     assert(texelFetch(tex2, ivec2(0, 0), 0) == vec4(1.0, 2.0, -3.14, 0.0));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2}), code
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
 
 
 def test_glsl_image(gsg):
@@ -137,7 +152,7 @@ def test_glsl_image(gsg):
     assert(imageLoad(tex1, 0) == vec4(0, 2 / 255.0, 1, 1));
     assert(imageLoad(tex2, ivec2(0, 0)) == vec4(1.0, 2.0, -3.14, 0.0));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2}), code
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
 
 
 def test_glsl_ssbo(gsg):
@@ -159,14 +174,17 @@ def test_glsl_ssbo(gsg):
     assert(value1 == 1234567);
     assert(value2 == -1234567);
     """
-    run_glsl_test(gsg, code, preamble, {'buffer1': buffer1, 'buffer2': buffer2}), code
+    run_glsl_test(gsg, code, preamble, {'buffer1': buffer1, 'buffer2': buffer2},
+                  exts={'GL_ARB_shader_storage_buffer_object',
+                        'GL_ARB_uniform_buffer_object',
+                        'GL_ARB_shading_language_420pack'})
 
 
 def test_glsl_int(gsg):
     inputs = dict(
         zero=0,
         intmax=0x7fffffff,
-        intmin=-0x80000000,
+        intmin=-0x7fffffff,
     )
     preamble = """
     uniform int zero;
@@ -176,12 +194,11 @@ def test_glsl_int(gsg):
     code = """
     assert(zero == 0);
     assert(intmax == 0x7fffffff);
-    assert(intmin == -0x80000000);
+    assert(intmin == -0x7fffffff);
     """
     run_glsl_test(gsg, code, preamble, inputs)
 
 
-@pytest.mark.xfail
 def test_glsl_uint(gsg):
     #TODO: fix passing uints greater than intmax
     inputs = dict(
@@ -189,12 +206,12 @@ def test_glsl_uint(gsg):
         intmax=0x7fffffff,
     )
     preamble = """
-    uniform unsigned int zero;
-    uniform unsigned int intmax;
+    uniform uint zero;
+    uniform uint intmax;
     """
     code = """
-    assert(zero == 0);
-    assert(intmax == 0x7fffffff);
+    assert(zero == 0u);
+    assert(intmax == 0x7fffffffu);
     """
     run_glsl_test(gsg, code, preamble, inputs)
 
@@ -239,7 +256,7 @@ def test_glsl_pta_int(gsg):
     assert(pta[2] == 2);
     assert(pta[3] == 3);
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta}), code
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
 def test_glsl_pta_ivec4(gsg):
@@ -252,7 +269,7 @@ def test_glsl_pta_ivec4(gsg):
     assert(pta[0] == ivec4(0, 1, 2, 3));
     assert(pta[1] == ivec4(4, 5, 6, 7));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta}), code
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
 
 
 def test_glsl_pta_mat4(gsg):
@@ -274,4 +291,41 @@ def test_glsl_pta_mat4(gsg):
     assert(pta[1][2] == vec4(24, 25, 26, 27));
     assert(pta[1][3] == vec4(28, 29, 30, 31));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta}), code
+    run_glsl_test(gsg, code, preamble, {'pta': pta})
+
+
+def test_glsl_write_extract_image_buffer(gsg):
+    # Tests that we can write to a buffer texture on the GPU, and then extract
+    # the data on the CPU.  We test two textures since there was in the past a
+    # where it would only work correctly for one texture.
+    tex1 = core.Texture("tex1")
+    tex1.set_clear_color(0)
+    tex1.setup_buffer_texture(1, core.Texture.T_unsigned_int, core.Texture.F_r32i,
+                              core.GeomEnums.UH_static)
+    tex2 = core.Texture("tex2")
+    tex2.set_clear_color(0)
+    tex2.setup_buffer_texture(1, core.Texture.T_int, core.Texture.F_r32i,
+                              core.GeomEnums.UH_static)
+
+    preamble = """
+    layout(r32ui) uniform uimageBuffer tex1;
+    layout(r32i) uniform iimageBuffer tex2;
+    """
+    code = """
+    assert(imageLoad(tex1, 0).r == 0u);
+    assert(imageLoad(tex2, 0).r == 0);
+    imageStore(tex1, 0, uvec4(123));
+    imageStore(tex2, 0, ivec4(-456));
+    memoryBarrier();
+    assert(imageLoad(tex1, 0).r == 123u);
+    assert(imageLoad(tex2, 0).r == -456);
+    """
+
+    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+
+    engine = core.GraphicsEngine.get_global_ptr()
+    assert engine.extract_texture_data(tex1, gsg)
+    assert engine.extract_texture_data(tex2, gsg)
+
+    assert struct.unpack('I', tex1.get_ram_image()) == (123,)
+    assert struct.unpack('i', tex2.get_ram_image()) == (-456,)

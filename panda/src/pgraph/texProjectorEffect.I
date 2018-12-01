@@ -34,7 +34,7 @@ TexProjectorEffect(const TexProjectorEffect &copy) :
  */
 INLINE TexProjectorEffect::StageDef::
 StageDef() :
-  _to_lens_node(NULL)
+  _to_lens_node(nullptr)
 {
 }
 

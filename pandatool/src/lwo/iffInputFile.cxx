@@ -24,7 +24,7 @@ TypeHandle IffInputFile::_type_handle;
  */
 IffInputFile::
 IffInputFile() {
-  _input = (istream *)NULL;
+  _input = nullptr;
   _owns_istream = false;
   _eof = true;
   _unexpected_eof = false;
@@ -51,8 +51,8 @@ open_read(Filename filename) {
   filename.set_binary();
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  std::istream *in = vfs->open_read_file(filename, true);
+  if (in == nullptr) {
     return false;
   }
 
@@ -68,7 +68,7 @@ open_read(Filename filename) {
  * IffInputFile destructs.
  */
 void IffInputFile::
-set_input(istream *input, bool owns_istream) {
+set_input(std::istream *input, bool owns_istream) {
   if (_owns_istream) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     vfs->close_read_file(_input);
@@ -174,9 +174,9 @@ get_be_float32() {
 /**
  * Extracts a null-terminated string.
  */
-string IffInputFile::
+std::string IffInputFile::
 get_string() {
-  string result;
+  std::string result;
   char byte;
   while (read_byte(byte)) {
     if (byte == 0) {
@@ -211,7 +211,7 @@ get_id() {
 PT(IffChunk) IffInputFile::
 get_chunk() {
   if (is_eof()) {
-    return (IffChunk *)NULL;
+    return nullptr;
   }
 
   IffId id = get_id();
@@ -230,14 +230,14 @@ get_chunk() {
           nout << "Unexpected EOF on file reading " << *chunk << "\n";
           _unexpected_eof = true;
         }
-        return (IffChunk *)NULL;
+        return nullptr;
       }
 
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
         nout << *chunk << " read " << num_bytes_read
              << " instead of " << length << " bytes.\n";
-        return (IffChunk *)NULL;
+        return nullptr;
 
       } else if (num_bytes_read < length) {
         size_t skip_count = length - num_bytes_read;
@@ -249,7 +249,7 @@ get_chunk() {
     }
   }
 
-  return (IffChunk *)NULL;
+  return nullptr;
 }
 
 /**
@@ -261,7 +261,7 @@ get_chunk() {
 PT(IffChunk) IffInputFile::
 get_subchunk(IffChunk *context) {
   if (is_eof()) {
-    return (IffChunk *)NULL;
+    return nullptr;
   }
 
   IffId id = get_id();
@@ -280,14 +280,14 @@ get_subchunk(IffChunk *context) {
           nout << "Unexpected EOF on file reading " << *chunk << "\n";
           _unexpected_eof = true;
         }
-        return (IffChunk *)NULL;
+        return nullptr;
       }
 
       size_t num_bytes_read = get_bytes_read() - start_point;
       if (num_bytes_read > length) {
         nout << *chunk << " read " << num_bytes_read
              << " instead of " << length << " bytes.\n";
-        return (IffChunk *)NULL;
+        return nullptr;
 
       } else if (num_bytes_read < length) {
         size_t skip_count = length - num_bytes_read;
@@ -299,7 +299,7 @@ get_subchunk(IffChunk *context) {
     }
   }
 
-  return (IffChunk *)NULL;
+  return nullptr;
 }
 
 /**

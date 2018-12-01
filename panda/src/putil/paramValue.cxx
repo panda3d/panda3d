@@ -56,8 +56,8 @@ ParamTypedRefCount::
  *
  */
 void ParamTypedRefCount::
-output(ostream &out) const {
-  if (_value == (TypedReferenceCount *)NULL) {
+output(std::ostream &out) const {
+  if (_value == nullptr) {
     out << "(empty)";
 
   } else {

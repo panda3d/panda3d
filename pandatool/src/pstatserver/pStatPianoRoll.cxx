@@ -16,7 +16,7 @@
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
 #include "string_utils.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <algorithm>
 

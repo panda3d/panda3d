@@ -23,6 +23,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 
 /**
  * Use the ConfigVariableManager::make_variable() interface to create a new
@@ -34,8 +36,8 @@ ConfigVariableCore(const string &name) :
   _is_used(false),
   _value_type(VT_undefined),
   _flags(0),
-  _default_value(NULL),
-  _local_value(NULL),
+  _default_value(nullptr),
+  _local_value(nullptr),
   _declarations_sorted(true),
   _value_queried(false)
 {
@@ -56,12 +58,12 @@ ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
   _value_type(templ._value_type),
   _description(templ._description),
   _flags(templ._flags),
-  _default_value(NULL),
-  _local_value(NULL),
+  _default_value(nullptr),
+  _local_value(nullptr),
   _declarations_sorted(false),
   _value_queried(false)
 {
-  if (templ._default_value != (ConfigDeclaration *)NULL) {
+  if (templ._default_value != nullptr) {
     set_default_value(templ._default_value->get_string_value());
   }
 }
@@ -126,9 +128,9 @@ set_flags(int flags) {
     if ((bits_changed & ~(F_trust_level_mask | F_dconfig)) != 0) {
       prc_cat->warning()
         << "changing flags for ConfigVariable "
-        << get_name() << " from " << hex
+        << get_name() << " from " << std::hex
         << (_flags & ~F_trust_level_mask) << " to "
-        << (flags & ~F_trust_level_mask) << dec << ".\n";
+        << (flags & ~F_trust_level_mask) << std::dec << ".\n";
     }
   }
 
@@ -187,7 +189,7 @@ set_description(const string &description) {
  */
 void ConfigVariableCore::
 set_default_value(const string &default_value) {
-  if (_default_value == (ConfigDeclaration *)NULL) {
+  if (_default_value == nullptr) {
     // Defining the default value for the first time.
     ConfigPage *default_page = ConfigPage::get_default_page();
     _default_value = default_page->make_declaration(this, default_value);
@@ -228,7 +230,7 @@ set_default_value(const string &default_value) {
  */
 ConfigDeclaration *ConfigVariableCore::
 make_local_value() {
-  if (_local_value == (ConfigDeclaration *)NULL) {
+  if (_local_value == nullptr) {
     ConfigPage *local_page = ConfigPage::get_local_page();
     string string_value = get_declaration(0)->get_string_value();
     _local_value = local_page->make_declaration(this, string_value);
@@ -253,9 +255,9 @@ make_local_value() {
  */
 bool ConfigVariableCore::
 clear_local_value() {
-  if (_local_value != (ConfigDeclaration *)NULL) {
+  if (_local_value != nullptr) {
     ConfigPage::get_local_page()->delete_declaration(_local_value);
-    _local_value = (ConfigDeclaration *)NULL;
+    _local_value = nullptr;
     invalidate_cache();
     return true;
   }
@@ -304,7 +306,7 @@ get_num_declarations() const {
 const ConfigDeclaration *ConfigVariableCore::
 get_declaration(size_t n) const {
   ((ConfigVariableCore *)this)->_value_queried = true;
-  if (_default_value == (ConfigDeclaration *)NULL) {
+  if (_default_value == nullptr) {
     prc_cat->warning()
       << "value queried before default value set for "
       << get_name() << ".\n";
@@ -325,7 +327,7 @@ get_declaration(size_t n) const {
  *
  */
 void ConfigVariableCore::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_declaration(0)->get_string_value();
 }
 
@@ -333,7 +335,7 @@ output(ostream &out) const {
  *
  */
 void ConfigVariableCore::
-write(ostream &out) const {
+write(std::ostream &out) const {
   out << "ConfigVariable " << get_name() << ":\n";
 
   check_sort_declarations();
@@ -350,7 +352,7 @@ write(ostream &out) const {
         << "  (from " << (*di)->get_page()->get_name() << ")\n";
   }
 
-  if (_default_value != (ConfigDeclaration *)NULL) {
+  if (_default_value != nullptr) {
     out << "  " << *_default_value << "  (default value)\n";
   }
 

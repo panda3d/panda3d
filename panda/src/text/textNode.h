@@ -24,6 +24,8 @@
 #include "pandaNode.h"
 #include "luse.h"
 #include "geom.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 /**
  * The primary interface to this module.  This class does basic text assembly;
@@ -45,8 +47,8 @@
  */
 class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
-  explicit TextNode(const string &name);
-  explicit TextNode(const string &name, const TextProperties &copy);
+  explicit TextNode(const std::string &name);
+  explicit TextNode(const std::string &name, const TextProperties &copy);
 protected:
   TextNode(const TextNode &copy);
   virtual PandaNode *make_copy() const;
@@ -165,7 +167,7 @@ PUBLISHED:
   INLINE void set_shadow(const LVecBase2 &shadow_offset);
   INLINE void clear_shadow();
 
-  INLINE void set_bin(const string &bin);
+  INLINE void set_bin(const std::string &bin);
   INLINE void clear_bin();
 
   INLINE int set_draw_order(int draw_order);
@@ -180,36 +182,24 @@ PUBLISHED:
   INLINE void set_glyph_shift(PN_stdfloat glyph_shift);
   INLINE void clear_glyph_shift();
 
-  // These methods are inherited from TextEncoder, but we override here so we
-  // can flag the TextNode as dirty when they have been changed.
-  INLINE void set_text(const string &text);
-  INLINE void set_text(const string &text, Encoding encoding);
-  INLINE void clear_text();
-  INLINE void append_text(const string &text);
-  INLINE void append_unicode_char(wchar_t character);
-
   // After the text has been set, you can query this to determine how it will
   // be wordwrapped.
-  INLINE string get_wordwrapped_text() const;
+  INLINE std::string get_wordwrapped_text() const;
 
   // These methods calculate the width of a single character or a line of text
   // in the current font.
   PN_stdfloat calc_width(wchar_t character) const;
-  INLINE PN_stdfloat calc_width(const string &line) const;
+  INLINE PN_stdfloat calc_width(const std::string &line) const;
 
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
   bool is_whitespace(wchar_t character) const;
 
-  // Direct support for wide-character strings.
-  INLINE void set_wtext(const wstring &wtext);
-  INLINE void append_wtext(const wstring &text);
+  INLINE std::wstring get_wordwrapped_wtext() const;
+  PN_stdfloat calc_width(const std::wstring &line) const;
 
-  INLINE wstring get_wordwrapped_wtext() const;
-  PN_stdfloat calc_width(const wstring &line) const;
-
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
   // The following functions return information about the text that was last
   // built (and is currently visible).
@@ -225,11 +215,11 @@ PUBLISHED:
 
   INLINE int get_num_rows() const;
 
-  PT(PandaNode) generate();
+  INLINE PT(PandaNode) generate();
   INLINE void update();
   INLINE void force_update();
 
-  PandaNode *get_internal_geom() const;
+  PT(PandaNode) get_internal_geom() const;
 
 PUBLISHED:
   MAKE_PROPERTY(max_rows, get_max_rows, set_max_rows);
@@ -242,8 +232,6 @@ PUBLISHED:
   MAKE_PROPERTY(coordinate_system, get_coordinate_system, set_coordinate_system);
   MAKE_PROPERTY(usage_hint, get_usage_hint, set_usage_hint);
   MAKE_PROPERTY(flatten_flags, get_flatten_flags, set_flatten_flags);
-
-  MAKE_PROPERTY(text, get_text, set_text);
 
   MAKE_PROPERTY2(font, has_font, get_font, set_font, clear_font);
   MAKE_PROPERTY2(small_caps, has_small_caps, get_small_caps,
@@ -279,6 +267,9 @@ PUBLISHED:
                              set_text_scale, clear_text_scale);
 
 public:
+  // From parent class TextEncoder;
+  virtual void text_changed() final;
+
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
@@ -312,12 +303,16 @@ private:
   void do_rebuild();
   void do_measure();
 
+  PT(PandaNode) do_generate();
+  PT(PandaNode) do_get_internal_geom() const;
+
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
 
   static int count_geoms(PandaNode *node);
 
+  Mutex _lock;
   PT(PandaNode) _internal_geom;
 
   PT(Texture) _card_texture;
@@ -343,7 +338,6 @@ private:
   int _max_rows;
   GeomEnums::UsageHint _usage_hint;
   int _flatten_flags;
-  bool _dynamic_merge;
   PN_stdfloat _frame_width;
   PN_stdfloat _card_border_size;
   PN_stdfloat _card_border_uv_portion;
@@ -359,7 +353,7 @@ private:
   // Returned from TextAssembler:
   LVector2 _text_ul, _text_lr;
   int _num_rows;
-  wstring _wordwrapped_wtext;
+  std::wstring _wordwrapped_wtext;
 
   static PStatCollector _text_generate_pcollector;
 

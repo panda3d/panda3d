@@ -20,9 +20,9 @@
 #include "P3DActiveXPropPage.h"
 #include "PPBrowserObject.h"
 
-#include "Mshtml.h"
-#include "atlconv.h"
-#include "comutil.h"
+#include <Mshtml.h>
+#include <atlconv.h>
+#include <comutil.h>
 
 #include <strstream>
 

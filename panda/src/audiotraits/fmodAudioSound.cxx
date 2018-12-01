@@ -26,6 +26,10 @@
 #include "subfileInfo.h"
 #include "reMutexHolder.h"
 #include "virtualFileSystem.h"
+#include "vector_uchar.h"
+
+using std::istream;
+using std::string;
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -35,9 +39,10 @@ TypeHandle FmodAudioSound::_type_handle;
  */
 
 FmodAudioSound::
-FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
+FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional) {
   ReMutexHolder holder(FmodAudioManager::_lock);
-  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
+  audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: "
+              << file->get_original_filename());
 
   _active = manager->get_active();
   _paused = false;
@@ -73,20 +78,14 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
   _manager = fmanager;
 
   _channel = 0;
-  _file_name = file_name;
+  _file_name = file->get_original_filename();
   _file_name.set_binary();
 
   // Get the Speaker Mode [Important for later on.]
   result = _manager->_system->getSpeakerMode( &_speakermode );
   fmod_audio_errcheck("_system->getSpeakerMode()", result);
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  PT(VirtualFile) file = vfs->get_file(_file_name);
-  if (file == (VirtualFile *)NULL) {
-    // File not found.  We will display the appropriate error message below.
-    result = FMOD_ERR_FILE_NOTFOUND;
-
-  } else {
+  {
     bool preload = (fmod_audio_preload_threshold < 0) || (file->get_file_size() < fmod_audio_preload_threshold);
     int flags = FMOD_SOFTWARE;
     flags |= positional ? FMOD_3D : FMOD_2D;
@@ -99,7 +98,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     if (ext == "mid") {
       // Get the MIDI parameters.
       memcpy(&sound_info, &_manager->_midi_info, sizeof(sound_info));
-      if (sound_info.dlsname != NULL) {
+      if (sound_info.dlsname != nullptr) {
         audio_debug("Using DLS file " << sound_info.dlsname);
       }
     }
@@ -107,7 +106,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
     const char *name_or_data = _file_name.c_str();
     string os_filename;
 
-    pvector<unsigned char> mem_buffer;
+    vector_uchar mem_buffer;
     SubfileInfo info;
     if (preload) {
       // Pre-read the file right now, and pass it in as a memory buffer.  This
@@ -145,7 +144,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
       // Otherwise, if the Panda threading system is compiled in, we can
       // assign callbacks to read the file through the VFS.
-      name_or_data = (const char *)file.p();
+      name_or_data = (const char *)file;
       sound_info.length = (unsigned int)info.get_size();
       sound_info.useropen = open_callback;
       sound_info.userclose = close_callback;
@@ -652,7 +651,7 @@ get_3d_max_distance() const {
  * a balance [pan] function what is the point?
  */
 PN_stdfloat FmodAudioSound::
-get_speaker_mix(AudioManager::SpeakerId speaker) {
+get_speaker_mix(int speaker) {
   ReMutexHolder holder(FmodAudioManager::_lock);
   if (_channel == 0) {
     return 0.0;
@@ -880,7 +879,7 @@ sound_end_callback(FMOD_CHANNEL *  channel,
   // have to worry about thread-related issues here.
   if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
     FMOD::Channel *fc = (FMOD::Channel *)channel;
-    void *userdata = NULL;
+    void *userdata = nullptr;
     FMOD_RESULT result = fc->getUserData(&userdata);
     fmod_audio_errcheck("channel->getUserData()", result);
     FmodAudioSound *fsound = (FmodAudioSound*)userdata;
@@ -897,7 +896,7 @@ open_callback(const char *name, int, unsigned int *file_size,
               void **handle, void **user_data) {
   // We actually pass in the VirtualFile pointer as the "name".
   VirtualFile *file = (VirtualFile *)name;
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     return FMOD_ERR_FILE_NOTFOUND;
   }
   if (fmodAudio_cat.is_spam()) {

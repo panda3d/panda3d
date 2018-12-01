@@ -53,7 +53,7 @@ add_array_def(const XFileArrayDef &array_def) {
  * Writes a suitable representation of this node to an .x file in text mode.
  */
 void XFileDataDef::
-write_text(ostream &out, int indent_level) const {
+write_text(std::ostream &out, int indent_level) const {
   indent(out, indent_level);
 
   if (!_array_def.empty()) {
@@ -175,7 +175,7 @@ repack_data(XFileDataObject *object,
     break;
   }
 
-  if (data_value != (XFileDataObject *)NULL) {
+  if (data_value != nullptr) {
     object->add_element(data_value);
     prev_data[this] = data_value;
   }
@@ -219,7 +219,7 @@ fill_zero_data(XFileDataObject *object) const {
     break;
   }
 
-  if (data_value != (XFileDataObject *)NULL) {
+  if (data_value != nullptr) {
     object->add_element(data_value);
   }
 
@@ -270,13 +270,13 @@ PT(XFileDataObject) XFileDataDef::
 unpack_integer_value(const XFileParseDataList &parse_data_list,
                      const XFileDataDef::PrevData &prev_data,
                      size_t &index, size_t &sub_index) const {
-  nassertr(index < parse_data_list._list.size(), NULL);
+  nassertr(index < parse_data_list._list.size(), nullptr);
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
 
   if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
-    nassertr(sub_index < parse_data._int_list.size(), NULL);
+    nassertr(sub_index < parse_data._int_list.size(), nullptr);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectInteger(this, value);
 
@@ -301,13 +301,13 @@ PT(XFileDataObject) XFileDataDef::
 unpack_double_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
                     size_t &index, size_t &sub_index) const {
-  nassertr(index < parse_data_list._list.size(), NULL);
+  nassertr(index < parse_data_list._list.size(), nullptr);
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
 
   if ((parse_data._parse_flags & XFileParseData::PF_double) != 0) {
-    nassertr(sub_index < parse_data._double_list.size(), NULL);
+    nassertr(sub_index < parse_data._double_list.size(), nullptr);
     double value = parse_data._double_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
 
@@ -318,7 +318,7 @@ unpack_double_value(const XFileParseDataList &parse_data_list,
     }
 
   } else if ((parse_data._parse_flags & XFileParseData::PF_int) != 0) {
-    nassertr(sub_index < parse_data._int_list.size(), NULL);
+    nassertr(sub_index < parse_data._int_list.size(), nullptr);
     int value = parse_data._int_list[sub_index];
     data_value = new XFileDataObjectDouble(this, value);
 
@@ -343,7 +343,7 @@ PT(XFileDataObject) XFileDataDef::
 unpack_string_value(const XFileParseDataList &parse_data_list,
                     const XFileDataDef::PrevData &prev_data,
                     size_t &index, size_t &sub_index) const {
-  nassertr(index < parse_data_list._list.size(), NULL);
+  nassertr(index < parse_data_list._list.size(), nullptr);
   const XFileParseData &parse_data = parse_data_list._list[index];
 
   PT(XFileDataObject) data_value;
@@ -373,10 +373,10 @@ unpack_template_value(const XFileParseDataList &parse_data_list,
   PrevData nested_prev_data(prev_data);
   if (!_template->repack_data(data_value, parse_data_list,
                               nested_prev_data, index, sub_index)) {
-    return NULL;
+    return nullptr;
   }
 
-  return data_value.p();
+  return data_value;
 }
 
 /**
@@ -394,7 +394,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
   if (array_index == (int)_array_def.size()) {
     if (index >= parse_data_list._list.size()) {
       xyyerror("Not enough data elements in structure at " + get_name());
-      return NULL;
+      return nullptr;
     }
     data_value = (this->*unpack_method)(parse_data_list, prev_data,
                                         index, sub_index);
@@ -405,7 +405,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
 
     for (int i = 0; i < array_size; i++) {
       if (index >= parse_data_list._list.size()) {
-        xyyerror(string("Expected ") + format_string(array_size)
+        xyyerror(std::string("Expected ") + format_string(array_size)
                  + " array elements, found " + format_string(i));
         return data_value;
       }
@@ -414,7 +414,7 @@ unpack_value(const XFileParseDataList &parse_data_list, int array_index,
         unpack_value(parse_data_list, array_index + 1,
                      prev_data, index, sub_index,
                      unpack_method);
-      if (array_element == (XFileDataObject *)NULL) {
+      if (array_element == nullptr) {
         return data_value;
       }
       data_value->add_element(array_element);
@@ -456,7 +456,7 @@ zero_fill_template_value() const {
   PT(XFileDataObject) data_value =
     new XFileDataNodeTemplate(get_x_file(), get_name(), _template);
   if (!_template->fill_zero_data(data_value)) {
-    return NULL;
+    return nullptr;
   }
 
   return data_value;
@@ -485,8 +485,8 @@ zero_fill_value(int array_index,
     for (int i = 0; i < array_size; i++) {
       PT(XFileDataObject) array_element =
         zero_fill_value(array_index + 1, zero_fill_method);
-      if (array_element == (XFileDataObject *)NULL) {
-        return NULL;
+      if (array_element == nullptr) {
+        return nullptr;
       }
       data_value->add_element(array_element);
     }

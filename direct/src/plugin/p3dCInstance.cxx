@@ -19,7 +19,7 @@
  */
 P3DCInstance::
 P3DCInstance(TiXmlElement *xinstance) :
-  _func(NULL)
+  _func(nullptr)
 {
   xinstance->Attribute("instance_id", &_instance_id);
 }

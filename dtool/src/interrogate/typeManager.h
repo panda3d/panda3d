@@ -39,11 +39,12 @@ class CPPManifest;
 class TypeManager {
 public:
 
-  static CPPType *resolve_type(CPPType *type, CPPScope *scope = (CPPScope *)NULL);
+  static CPPType *resolve_type(CPPType *type, CPPScope *scope = nullptr);
 
   static bool is_assignable(CPPType *type);
 
   static bool is_reference(CPPType *type);
+  static bool is_rvalue_reference(CPPType *type);
   static bool is_ref_to_anything(CPPType *type);
   static bool is_const_ref_to_anything(CPPType *type);
   static bool is_const_pointer_to_anything(CPPType *type);
@@ -52,6 +53,7 @@ public:
   static bool is_pointer(CPPType *type);
   static bool is_const(CPPType *type);
   static bool is_struct(CPPType *type);
+  static bool is_scoped_enum(CPPType *type);
   static bool is_enum(CPPType *type);
   static bool is_const_enum(CPPType *type);
   static bool is_const_ref_to_enum(CPPType *type);
@@ -139,10 +141,10 @@ public:
   static CPPType *get_void_type();
   static CPPType *get_int_type();
 
-  static string get_function_signature(CPPInstance *function,
+  static std::string get_function_signature(CPPInstance *function,
                                        int num_default_parameters = 0);
 
-  static string get_function_name(CPPInstance *function);
+  static std::string get_function_name(CPPInstance *function);
 
   static bool has_protected_destructor(CPPType *type);
 

@@ -47,7 +47,7 @@ PUBLISHED:
   MAKE_PROPERTY(color, get_color);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -88,7 +88,7 @@ public:
     register_type(_type_handle, "ColorAttrib",
                   RenderAttrib::get_class_type());
     _attrib_slot = register_slot(_type_handle, 100,
-      new ColorAttrib(T_off, LColor(1, 1, 1, 1)));
+      new ColorAttrib(T_vertex, LColor::zero()));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -19,7 +19,7 @@
 /**
  * pure virtual parent of all quat-based forces.
  */
-class EXPCL_PANDAPHYSICS AngularForce : public BaseForce {
+class EXPCL_PANDA_PHYSICS AngularForce : public BaseForce {
 PUBLISHED:
   virtual ~AngularForce();
 
@@ -27,8 +27,8 @@ PUBLISHED:
   LRotation get_quat(const PhysicsObject *po);
   virtual bool is_linear() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 protected:
   AngularForce();

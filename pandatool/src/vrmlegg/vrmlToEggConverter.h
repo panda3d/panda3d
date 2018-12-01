@@ -37,14 +37,14 @@ public:
 
   virtual SomethingToEggConverter *make_copy();
 
-  virtual string get_name() const;
-  virtual string get_extension() const;
+  virtual std::string get_name() const;
+  virtual std::string get_extension() const;
   virtual bool supports_compressed() const;
 
   virtual bool convert_file(const Filename &filename);
 
 private:
-  typedef pmap<string, VrmlNode *> Nodes;
+  typedef pmap<std::string, VrmlNode *> Nodes;
 
   void get_all_defs(SFNodeRef &vrml, Nodes &nodes);
   void vrml_node(const SFNodeRef &vrml, EggGroupNode *egg,

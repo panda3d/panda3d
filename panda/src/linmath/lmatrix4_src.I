@@ -45,6 +45,14 @@ size() {
 }
 
 /**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LMatrix4)::Row::
+operator const FLOATNAME(LVecBase4) &() const {
+  return *(const FLOATNAME(LVecBase4) *)_row;
+}
+
+/**
  * Defines a row-level constant accessor to the matrix.
  */
 INLINE_LINMATH FLOATNAME(LMatrix4)::CRow::
@@ -66,6 +74,14 @@ operator [](int i) const {
 INLINE_LINMATH int FLOATNAME(LMatrix4)::CRow::
 size() {
   return 4;
+}
+
+/**
+ *
+ */
+INLINE_LINMATH FLOATNAME(LMatrix4)::CRow::
+operator const FLOATNAME(LVecBase4) &() const {
+  return *(const FLOATNAME(LVecBase4) *)_row;
 }
 
 /**
@@ -176,6 +192,41 @@ FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
   _m(3, 1) = e31;
   _m(3, 2) = e32;
   _m(3, 3) = e33;
+}
+
+/**
+ * Constructs the matrix from four individual rows.
+ */
+INLINE_LINMATH FLOATNAME(LMatrix4)::
+FLOATNAME(LMatrix4)(const FLOATNAME(LVecBase4) &row0,
+                    const FLOATNAME(LVecBase4) &row1,
+                    const FLOATNAME(LVecBase4) &row2,
+                    const FLOATNAME(LVecBase4) &row3) {
+  TAU_PROFILE("LMatrix4::LMatrix4(const LVecBase4 &, ...)", " ", TAU_USER);
+
+#ifdef HAVE_EIGEN
+  _m.row(0) = row0._v;
+  _m.row(1) = row1._v;
+  _m.row(2) = row2._v;
+  _m.row(3) = row3._v;
+#else
+  _m(0, 0) = row0._v(0);
+  _m(0, 1) = row0._v(1);
+  _m(0, 2) = row0._v(2);
+  _m(0, 3) = row0._v(3);
+  _m(1, 0) = row1._v(0);
+  _m(1, 1) = row1._v(1);
+  _m(1, 2) = row1._v(2);
+  _m(1, 3) = row1._v(3);
+  _m(2, 0) = row2._v(0);
+  _m(2, 1) = row2._v(1);
+  _m(2, 2) = row2._v(2);
+  _m(2, 3) = row2._v(3);
+  _m(3, 0) = row3._v(0);
+  _m(3, 1) = row3._v(1);
+  _m(3, 2) = row3._v(2);
+  _m(3, 3) = row3._v(3);
+#endif  // HAVE_EIGEN
 }
 
 /**

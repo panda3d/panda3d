@@ -22,7 +22,7 @@
  * not make sense for a physics simulation, but it's very handy for a game.
  * I.e.  this is the force applied by user on the selected object.
  */
-class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
+class EXPCL_PANDA_PHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
   explicit LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
                               bool mass = false);
@@ -38,8 +38,8 @@ PUBLISHED:
 
   INLINE LVector3 get_local_vector() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 private:
   CPT(PhysicsObject) _physics_object;

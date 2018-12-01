@@ -17,7 +17,6 @@
 #include "pandabase.h"
 #include "winGraphicsWindow.h"
 #include "dxGraphicsStateGuardian9.h"
-#include "dxInput9.h"
 #include "wdxGraphicsPipe9.h"
 
 class wdxGraphicsPipe9;
@@ -28,7 +27,7 @@ class wdxGraphicsPipe9;
 class EXPCL_PANDADX wdxGraphicsWindow9 : public WinGraphicsWindow {
 public:
   wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                     const string &name,
+                     const std::string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,

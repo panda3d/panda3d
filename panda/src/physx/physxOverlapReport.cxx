@@ -58,7 +58,7 @@ get_next_overlap() {
   }
 
   // No more items.  Return empty overlap.
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -67,6 +67,6 @@ get_next_overlap() {
 PhysxShape *PhysxOverlapReport::
 get_overlap(unsigned int idx) {
 
-  nassertr(idx < get_num_overlaps(), NULL);
+  nassertr(idx < get_num_overlaps(), nullptr);
   return _overlaps[idx];
 }

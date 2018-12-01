@@ -40,7 +40,7 @@ get_mapped_button(size_t i) const {
  * Returns the label associated with the nth mapped button, meaning the button
  * that the nth raw button is mapped to.
  */
-INLINE const string &ButtonMap::
+INLINE const std::string &ButtonMap::
 get_mapped_button_label(size_t i) const {
   return _buttons[i]->_label;
 }
@@ -67,7 +67,7 @@ get_mapped_button(ButtonHandle raw) const {
  * given raw button.
  */
 INLINE ButtonHandle ButtonMap::
-get_mapped_button(const string &raw_name) const {
+get_mapped_button(const std::string &raw_name) const {
   ButtonHandle raw_button = ButtonRegistry::ptr()->find_button(raw_name);
   if (raw_button == ButtonHandle::none()) {
     return ButtonHandle::none();
@@ -84,12 +84,12 @@ get_mapped_button(const string &raw_name) const {
  * Note that this is not the same as get_mapped_button().get_name(), which
  * returns the name of the Panda event associated with the button.
  */
-INLINE const string &ButtonMap::
+INLINE const std::string &ButtonMap::
 get_mapped_button_label(ButtonHandle raw) const {
   pmap<int, ButtonNode>::const_iterator it;
   it = _button_map.find(raw.get_index());
   if (it == _button_map.end()) {
-    static const string empty = "";
+    static const std::string empty = "";
     return empty;
   } else {
     return it->second._label;
@@ -104,11 +104,11 @@ get_mapped_button_label(ButtonHandle raw) const {
  * Note that this is not the same as get_mapped_button().get_name(), which
  * returns the name of the Panda event associated with the button.
  */
-INLINE const string &ButtonMap::
-get_mapped_button_label(const string &raw_name) const {
+INLINE const std::string &ButtonMap::
+get_mapped_button_label(const std::string &raw_name) const {
   ButtonHandle raw_button = ButtonRegistry::ptr()->find_button(raw_name);
   if (raw_button == ButtonHandle::none()) {
-    static const string empty = "";
+    static const std::string empty = "";
     return empty;
   } else {
     return get_mapped_button_label(raw_button);

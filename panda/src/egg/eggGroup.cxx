@@ -22,6 +22,9 @@
 #include "lmatrix.h"
 #include "dcast.h"
 
+using std::ostream;
+using std::string;
+
 
 TypeHandle EggGroup::_type_handle;
 
@@ -189,7 +192,8 @@ write(ostream &out, int indent_level) const {
 
   default:
     // invalid group type
-    nassertv(false);
+    nassert_raise("invalid EggGroup type");
+    return;
   }
 
   if (is_of_type(EggBin::get_class_type())) {
@@ -772,7 +776,7 @@ get_num_group_refs() const {
  */
 EggGroup *EggGroup::
 get_group_ref(int n) const {
-  nassertr(n >= 0 && n < (int)_group_refs.size(), NULL);
+  nassertr(n >= 0 && n < (int)_group_refs.size(), nullptr);
   return _group_refs[n];
 }
 
@@ -1069,7 +1073,7 @@ write_vertex_ref(ostream &out, int indent_level) const {
         indent(out, indent_level + 2)
           << "<Scalar> membership { " << membership << " }\n";
       }
-      if (pool == (EggVertexPool *)NULL) {
+      if (pool == nullptr) {
         indent(out, indent_level + 2)
           << "// Invalid NULL vertex pool.\n";
       } else {
@@ -1121,7 +1125,7 @@ adjust_under() {
       _node_frame_inv =
         new MatrixFrame(mat);
     } else {
-      _node_frame_inv = NULL;
+      _node_frame_inv = nullptr;
     }
 
     _vertex_to_node =
@@ -1144,8 +1148,8 @@ adjust_under() {
     // frame.
     _vertex_frame = _node_frame;
     _vertex_frame_inv = _node_frame_inv;
-    _vertex_to_node = NULL;
-    _node_to_vertex = NULL;
+    _vertex_to_node = nullptr;
+    _node_to_vertex = nullptr;
   }
 }
 

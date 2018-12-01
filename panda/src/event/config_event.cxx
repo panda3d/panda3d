@@ -27,7 +27,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_EVENT)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_EVENT)
   #error Buildsystem error: BUILDING_PANDA_EVENT not defined
 #endif
 

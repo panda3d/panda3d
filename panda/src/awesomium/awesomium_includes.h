@@ -14,8 +14,8 @@
 #ifndef _AWESOMIUM_INCLUDES_H_
 #define _AWESOMIUM_INCLUDES_H_
 
-#include "WebCore.h"
-#include "WebView.h"
-#include "WebViewListener.h"
+#include <WebCore.h>
+#include <WebView.h>
+#include <WebViewListener.h>
 
 #endif

@@ -26,7 +26,7 @@ DCDeclaration::
  */
 DCClass *DCDeclaration::
 as_class() {
-  return (DCClass *)NULL;
+  return nullptr;
 }
 
 /**
@@ -34,7 +34,7 @@ as_class() {
  */
 const DCClass *DCDeclaration::
 as_class() const {
-  return (DCClass *)NULL;
+  return nullptr;
 }
 
 /**
@@ -42,7 +42,7 @@ as_class() const {
  */
 DCSwitch *DCDeclaration::
 as_switch() {
-  return (DCSwitch *)NULL;
+  return nullptr;
 }
 
 /**
@@ -50,14 +50,14 @@ as_switch() {
  */
 const DCSwitch *DCDeclaration::
 as_switch() const {
-  return (DCSwitch *)NULL;
+  return nullptr;
 }
 
 /**
  * Write a string representation of this instance to <out>.
  */
 void DCDeclaration::
-output(ostream &out) const {
+output(std::ostream &out) const {
   output(out, true);
 }
 
@@ -65,6 +65,6 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void DCDeclaration::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write(out, false, indent_level);
 }

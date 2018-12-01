@@ -47,7 +47,7 @@ MutexHolder(const Mutex &mutex, Thread *current_thread) {
 INLINE MutexHolder::
 MutexHolder(Mutex *&mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
-  if (mutex == (Mutex *)NULL) {
+  if (mutex == nullptr) {
     mutex = new Mutex;
   }
   _mutex = mutex;
@@ -63,20 +63,4 @@ INLINE MutexHolder::
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex->release();
 #endif
-}
-
-/**
- * Do not attempt to copy MutexHolders.
- */
-INLINE MutexHolder::
-MutexHolder(const MutexHolder &copy) {
-  nassertv(false);
-}
-
-/**
- * Do not attempt to copy MutexHolders.
- */
-INLINE void MutexHolder::
-operator = (const MutexHolder &copy) {
-  nassertv(false);
 }

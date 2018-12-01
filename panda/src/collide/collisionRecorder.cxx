@@ -25,7 +25,7 @@ CollisionRecorder::
 CollisionRecorder() {
   _num_missed = 0;
   _num_detected = 0;
-  _trav = (CollisionTraverser *)NULL;
+  _trav = nullptr;
 }
 
 /**
@@ -33,7 +33,7 @@ CollisionRecorder() {
  */
 CollisionRecorder::
 ~CollisionRecorder() {
-  if (_trav != (CollisionTraverser *)NULL) {
+  if (_trav != nullptr) {
     _trav->clear_recorder();
   }
 }
@@ -42,7 +42,7 @@ CollisionRecorder::
  *
  */
 void CollisionRecorder::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "tested " << _num_missed + _num_detected << ", detected "
       << _num_detected << "\n";
 }

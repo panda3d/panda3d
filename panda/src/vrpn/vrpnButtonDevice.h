@@ -29,7 +29,7 @@ class VrpnButton;
  */
 class VrpnButtonDevice : public ClientButtonDevice {
 public:
-  VrpnButtonDevice(VrpnClient *client, const string &device_name,
+  VrpnButtonDevice(VrpnClient *client, const std::string &device_name,
                    VrpnButton *vrpn_button);
   virtual ~VrpnButtonDevice();
 

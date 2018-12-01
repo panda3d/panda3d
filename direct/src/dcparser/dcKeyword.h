@@ -25,24 +25,24 @@ class HashGenerator;
  * define a communication property associated with a field, for instance
  * "broadcast" or "airecv".
  */
-class DCKeyword : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCKeyword : public DCDeclaration {
 public:
-  DCKeyword(const string &name, int historical_flag = ~0);
+  DCKeyword(const std::string &name, int historical_flag = ~0);
   virtual ~DCKeyword();
 
 PUBLISHED:
-  const string &get_name() const;
+  const std::string &get_name() const;
 
 public:
   int get_historical_flag() const;
   void clear_historical_flag();
 
-  virtual void output(ostream &out, bool brief) const;
-  virtual void write(ostream &out, bool brief, int indent_level) const;
+  virtual void output(std::ostream &out, bool brief) const;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const;
   void generate_hash(HashGenerator &hashgen) const;
 
 private:
-  const string _name;
+  const std::string _name;
 
   // This flag is only kept for historical reasons, so we can preserve the
   // file's hash code if no new flags are in use.

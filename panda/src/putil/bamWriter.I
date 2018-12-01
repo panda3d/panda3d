@@ -27,7 +27,7 @@ get_target() {
  */
 INLINE const Filename &BamWriter::
 get_filename() const {
-  if (_target != (DatagramSink *)NULL) {
+  if (_target != nullptr) {
     return _target->get_filename();
   }
   static const Filename empty_filename;

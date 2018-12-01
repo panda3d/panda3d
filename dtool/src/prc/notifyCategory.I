@@ -14,7 +14,7 @@
 /**
  *
  */
-INLINE string NotifyCategory::
+INLINE std::string NotifyCategory::
 get_fullname() const {
   return _fullname;
 }
@@ -22,7 +22,7 @@ get_fullname() const {
 /**
  *
  */
-INLINE string NotifyCategory::
+INLINE std::string NotifyCategory::
 get_basename() const {
   return _basename;
 }
@@ -49,7 +49,7 @@ set_severity(NotifySeverity severity) {
   _severity = severity;
 #else
   // enforce the no-debug, no-spam rule.
-  _severity = max(severity, NS_info);
+  _severity = std::max(severity, NS_info);
 #endif
   invalidate_cache();
 }
@@ -81,26 +81,6 @@ INLINE bool NotifyCategory::
 is_debug() const {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(is_on(NS_debug));
-}
-#else
-/**
- * When NOTIFY_DEBUG is not defined, the categories are never set to "spam" or
- * "debug" severities, and these methods are redefined to be static to make it
- * more obvious to the compiler.
- */
-CONSTEXPR bool NotifyCategory::
-is_spam() {
-  return false;
-}
-
-/**
- * When NOTIFY_DEBUG is not defined, the categories are never set to "spam" or
- * "debug" severities, and these methods are redefined to be static to make it
- * more obvious to the compiler.
- */
-CONSTEXPR bool NotifyCategory::
-is_debug() {
-  return false;
 }
 #endif
 
@@ -139,7 +119,7 @@ is_fatal() const {
 /**
  * A shorthand way to write out(NS_spam).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 spam(bool prefix) const {
 #if defined(NOTIFY_DEBUG)
   return out(NS_spam, prefix);
@@ -151,7 +131,7 @@ spam(bool prefix) const {
 /**
  * A shorthand way to write out(NS_debug).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 debug(bool prefix) const {
 #if defined(NOTIFY_DEBUG)
   return out(NS_debug, prefix);
@@ -163,7 +143,7 @@ debug(bool prefix) const {
 /**
  * A shorthand way to write out(NS_info).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 info(bool prefix) const {
   return out(NS_info, prefix);
 }
@@ -171,7 +151,7 @@ info(bool prefix) const {
 /**
  * A shorthand way to write out(NS_warning).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 warning(bool prefix) const {
   return out(NS_warning, prefix);
 }
@@ -179,7 +159,7 @@ warning(bool prefix) const {
 /**
  * A shorthand way to write out(NS_error).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 error(bool prefix) const {
   return out(NS_error, prefix);
 }
@@ -187,12 +167,12 @@ error(bool prefix) const {
 /**
  * A shorthand way to write out(NS_fatal).
  */
-INLINE ostream &NotifyCategory::
+INLINE std::ostream &NotifyCategory::
 fatal(bool prefix) const {
   return out(NS_fatal, prefix);
 }
 
-INLINE ostream &
-operator << (ostream &out, const NotifyCategory &cat) {
+INLINE std::ostream &
+operator << (std::ostream &out, const NotifyCategory &cat) {
   return out << cat.get_fullname();
 }

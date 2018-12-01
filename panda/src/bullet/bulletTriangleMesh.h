@@ -32,7 +32,7 @@
 class EXPCL_PANDABULLET BulletTriangleMesh : public TypedWritableReferenceCount {
 PUBLISHED:
   BulletTriangleMesh();
-  ~BulletTriangleMesh() DEFAULT_DTOR;
+  ~BulletTriangleMesh() = default;
 
   void add_triangle(const LPoint3 &p0,
                     const LPoint3 &p1,
@@ -51,8 +51,8 @@ PUBLISHED:
   size_t get_num_triangles() const;
   PN_stdfloat get_welding_distance() const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 public:
   size_t get_num_vertices() const;
@@ -112,7 +112,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const BulletTriangleMesh &obj);
+INLINE std::ostream &operator << (std::ostream &out, const BulletTriangleMesh &obj);
 
 #include "bulletTriangleMesh.I"
 

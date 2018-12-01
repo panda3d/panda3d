@@ -24,7 +24,7 @@ EggMesherFanMaker(int vertex, EggMesherStrip *tri,
                   EggMesher *mesher) {
   _vertex = vertex;
   const EggMesherEdge *edge = tri->find_opposite_edge(vertex);
-  if (edge != (const EggMesherEdge *)NULL) {
+  if (edge != nullptr) {
     _edges.push_back(edge);
   }
   _strips.push_back(tri);
@@ -73,8 +73,8 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_back = _edges.back();
   const EggMesherEdge *other_front = other._edges.front();
-  nassertr(my_back != (EggMesherEdge *)NULL &&
-           other_front != (EggMesherEdge *)NULL, false);
+  nassertr(my_back != nullptr &&
+           other_front != nullptr, false);
 
   int my_back_b = my_back->_vi_b;
   int other_front_a = other_front->_vi_a;
@@ -88,8 +88,8 @@ join(EggMesherFanMaker &other) {
 
   const EggMesherEdge *my_front = _edges.front();
   const EggMesherEdge *other_back = other._edges.back();
-  nassertr(my_front != (EggMesherEdge *)NULL &&
-           other_back != (EggMesherEdge *)NULL, false);
+  nassertr(my_front != nullptr &&
+           other_back != nullptr, false);
 
   int my_front_a = my_front->_vi_a;
   int other_back_b = other_back->_vi_b;
@@ -326,7 +326,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
  *
  */
 void EggMesherFanMaker::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _vertex << ":[";
   if (!_edges.empty()) {
     Edges::const_iterator ei;

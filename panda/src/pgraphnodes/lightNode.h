@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES LightNode : public Light, public PandaNode {
 PUBLISHED:
-  explicit LightNode(const string &name);
+  explicit LightNode(const std::string &name);
 
 protected:
   LightNode(const LightNode &copy);
@@ -38,8 +38,8 @@ public:
 PUBLISHED:
   // We have to explicitly publish these because they resolve the multiple
   // inheritance.
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -67,7 +67,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const LightNode &light) {
+INLINE std::ostream &operator << (std::ostream &out, const LightNode &light) {
   light.output(out);
   return out;
 }

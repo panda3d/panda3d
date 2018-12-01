@@ -30,7 +30,7 @@ get_server_num_multifiles() const {
 /**
  *
  */
-INLINE string DownloadDb::
+INLINE std::string DownloadDb::
 get_client_multifile_name(int index) const {
   return _client_db.get_multifile_name(index);
 }
@@ -38,7 +38,7 @@ get_client_multifile_name(int index) const {
 /**
  *
  */
-INLINE string DownloadDb::
+INLINE std::string DownloadDb::
 get_server_multifile_name(int index) const {
   return _server_db.get_multifile_name(index);
 }
@@ -48,7 +48,7 @@ get_server_multifile_name(int index) const {
  *
  */
 INLINE Phase DownloadDb::
-get_client_multifile_phase(string mfname) const {
+get_client_multifile_phase(std::string mfname) const {
   return (_client_db.get_multifile_record_named(mfname))->_phase;
 }
 
@@ -56,7 +56,7 @@ get_client_multifile_phase(string mfname) const {
  *
  */
 INLINE Phase DownloadDb::
-get_server_multifile_phase(string mfname) const {
+get_server_multifile_phase(std::string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->_phase;
 }
 
@@ -66,7 +66,7 @@ get_server_multifile_phase(string mfname) const {
  *
  */
 INLINE int DownloadDb::
-get_client_multifile_size(string mfname) const {
+get_client_multifile_size(std::string mfname) const {
   return (_client_db.get_multifile_record_named(mfname))->_size;
 }
 
@@ -74,7 +74,7 @@ get_client_multifile_size(string mfname) const {
  *
  */
 INLINE void DownloadDb::
-set_client_multifile_size(string mfname, int size) {
+set_client_multifile_size(std::string mfname, int size) {
   (_client_db.get_multifile_record_named(mfname))->_size = size;
   write_client_db(_client_db._filename);
 }
@@ -84,7 +84,7 @@ set_client_multifile_size(string mfname, int size) {
  *
  */
 INLINE int DownloadDb::
-set_client_multifile_delta_size(string mfname, int size) {
+set_client_multifile_delta_size(std::string mfname, int size) {
   (_client_db.get_multifile_record_named(mfname))->_size += size;
   write_client_db(_client_db._filename);
   // Return the new total
@@ -97,7 +97,7 @@ set_client_multifile_delta_size(string mfname, int size) {
  *
  */
 INLINE int DownloadDb::
-get_server_multifile_size(string mfname) const {
+get_server_multifile_size(std::string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->_size;
 }
 
@@ -106,7 +106,7 @@ get_server_multifile_size(string mfname) const {
  *
  */
 INLINE void DownloadDb::
-set_server_multifile_size(string mfname, int size) {
+set_server_multifile_size(std::string mfname, int size) {
   (_server_db.get_multifile_record_named(mfname))->_size = size;
 }
 
@@ -115,7 +115,7 @@ set_server_multifile_size(string mfname, int size) {
  *
  */
 INLINE void DownloadDb::
-set_client_multifile_incomplete(string mfname) {
+set_client_multifile_incomplete(std::string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_incomplete;
   write_client_db(_client_db._filename);
 }
@@ -124,7 +124,7 @@ set_client_multifile_incomplete(string mfname) {
  *
  */
 INLINE void DownloadDb::
-set_client_multifile_complete(string mfname) {
+set_client_multifile_complete(std::string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_complete;
   write_client_db(_client_db._filename);
 }
@@ -133,7 +133,7 @@ set_client_multifile_complete(string mfname) {
  *
  */
 INLINE void DownloadDb::
-set_client_multifile_decompressed(string mfname) {
+set_client_multifile_decompressed(std::string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_decompressed;
   write_client_db(_client_db._filename);
 }
@@ -142,7 +142,7 @@ set_client_multifile_decompressed(string mfname) {
  *
  */
 INLINE void DownloadDb::
-set_client_multifile_extracted(string mfname) {
+set_client_multifile_extracted(std::string mfname) {
   (_client_db.get_multifile_record_named(mfname))->_status = Status_extracted;
   write_client_db(_client_db._filename);
 }
@@ -151,14 +151,14 @@ set_client_multifile_extracted(string mfname) {
  *
  */
 INLINE int DownloadDb::
-get_server_num_files(string mfname) const {
+get_server_num_files(std::string mfname) const {
   return (_server_db.get_multifile_record_named(mfname))->get_num_files();
 }
 
 /**
  *
  */
-INLINE string DownloadDb::
-get_server_file_name(string mfname, int index) const {
+INLINE std::string DownloadDb::
+get_server_file_name(std::string mfname, int index) const {
   return (_server_db.get_multifile_record_named(mfname))->get_file_name(index);
 }

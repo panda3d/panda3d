@@ -36,7 +36,7 @@ StreamWrapperBase() {
  */
 INLINE void StreamWrapperBase::
 acquire() {
-  _lock.acquire();
+  _lock.lock();
 #ifdef SIMPLE_THREADS
   while (_lock_flag) {
     thread_yield();
@@ -55,14 +55,32 @@ release() {
   assert(_lock_flag);
   _lock_flag = false;
 #endif
-  _lock.release();
+  _lock.unlock();
+}
+
+/**
+ * Increments the reference count.  Only has impact if the class that manages
+ * this StreamWrapper's lifetime (eg. Multifile) respects it.
+ */
+INLINE void StreamWrapperBase::
+ref() const {
+  AtomicAdjust::inc(_ref_count);
+}
+
+/**
+ * Decrements the reference count.  Only has impact if the class that manages
+ * this StreamWrapper's lifetime (eg. Multifile) respects it.
+ */
+INLINE bool StreamWrapperBase::
+unref() const {
+  return AtomicAdjust::dec(_ref_count);
 }
 
 /**
  *
  */
 INLINE IStreamWrapper::
-IStreamWrapper(istream *stream, bool owns_pointer) :
+IStreamWrapper(std::istream *stream, bool owns_pointer) :
   _istream(stream),
   _owns_pointer(owns_pointer)
 {
@@ -72,7 +90,7 @@ IStreamWrapper(istream *stream, bool owns_pointer) :
  *
  */
 INLINE IStreamWrapper::
-IStreamWrapper(istream &stream) :
+IStreamWrapper(std::istream &stream) :
   _istream(&stream),
   _owns_pointer(false)
 {
@@ -81,7 +99,7 @@ IStreamWrapper(istream &stream) :
 /**
  * Returns the istream this object is wrapping.
  */
-INLINE istream *IStreamWrapper::
+INLINE std::istream *IStreamWrapper::
 get_istream() const {
   return _istream;
 }
@@ -103,7 +121,7 @@ get() {
  *
  */
 INLINE OStreamWrapper::
-OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack) :
+OStreamWrapper(std::ostream *stream, bool owns_pointer, bool stringstream_hack) :
   _ostream(stream),
   _owns_pointer(owns_pointer)
 #ifdef WIN32_VC
@@ -116,7 +134,7 @@ OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack) :
  *
  */
 INLINE OStreamWrapper::
-OStreamWrapper(ostream &stream) :
+OStreamWrapper(std::ostream &stream) :
   _ostream(&stream),
   _owns_pointer(false)
 #ifdef WIN32_VC
@@ -128,7 +146,7 @@ OStreamWrapper(ostream &stream) :
 /**
  * Returns the ostream this object is wrapping.
  */
-INLINE ostream *OStreamWrapper::
+INLINE std::ostream *OStreamWrapper::
 get_ostream() const {
   return _ostream;
 }
@@ -151,7 +169,7 @@ put(char c) {
  *
  */
 INLINE StreamWrapper::
-StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack) :
+StreamWrapper(std::iostream *stream, bool owns_pointer, bool stringstream_hack) :
   IStreamWrapper(stream, false),
   OStreamWrapper(stream, false, stringstream_hack),
   _iostream(stream),
@@ -163,7 +181,7 @@ StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack) :
  *
  */
 INLINE StreamWrapper::
-StreamWrapper(iostream &stream) :
+StreamWrapper(std::iostream &stream) :
   IStreamWrapper(&stream, false),
   OStreamWrapper(&stream, false),
   _iostream(&stream),
@@ -174,7 +192,7 @@ StreamWrapper(iostream &stream) :
 /**
  * Returns the iostream this object is wrapping.
  */
-INLINE iostream *StreamWrapper::
+INLINE std::iostream *StreamWrapper::
 get_iostream() const {
   return _iostream;
 }

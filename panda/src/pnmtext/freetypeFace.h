@@ -46,9 +46,9 @@ private:
 
 private:
   // This is provided as a permanent storage for the raw font data, if needed.
-  string _font_data;
+  std::string _font_data;
 
-  string _name;
+  std::string _name;
   FT_Face _face;
   int _char_size;
   int _dpi;

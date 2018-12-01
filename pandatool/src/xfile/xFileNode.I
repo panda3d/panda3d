@@ -34,7 +34,7 @@ get_num_children() const {
  */
 INLINE XFileNode *XFileNode::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -55,6 +55,6 @@ get_num_objects() const {
  */
 INLINE XFileDataNode *XFileNode::
 get_object(int n) const {
-  nassertr(n >= 0 && n < (int)_objects.size(), NULL);
+  nassertr(n >= 0 && n < (int)_objects.size(), nullptr);
   return _objects[n];
 }

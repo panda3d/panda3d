@@ -22,8 +22,8 @@ ptr() const {
 /**
  *
  */
-INLINE ostream &
-operator << (ostream &out, const BulletTriangleMesh &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const BulletTriangleMesh &obj) {
   obj.output(out);
   return out;
 }

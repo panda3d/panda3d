@@ -162,7 +162,7 @@ set_graphics_memory_limit(size_t limit) {
  * vertex buffers are allocated in the LRU.
  */
 void PreparedGraphicsObjects::
-show_graphics_memory_lru(ostream &out) const {
+show_graphics_memory_lru(std::ostream &out) const {
   _graphics_memory_lru.write(out, 0);
 }
 
@@ -171,7 +171,7 @@ show_graphics_memory_lru(ostream &out) const {
  * vertex buffers are allocated in the LRU.
  */
 void PreparedGraphicsObjects::
-show_residency_trackers(ostream &out) const {
+show_residency_trackers(std::ostream &out) const {
   out << "Textures:\n";
   _texture_residency.write(out, 2);
 
@@ -204,7 +204,7 @@ PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
 enqueue_texture_future(Texture *tex) {
   ReMutexHolder holder(_lock);
 
-  pair<EnqueuedTextures::iterator, bool> result =
+  std::pair<EnqueuedTextures::iterator, bool> result =
     _enqueued_textures.insert(EnqueuedTextures::value_type(tex, nullptr));
   if (result.first->second == nullptr) {
     result.first->second = new EnqueuedObject(this, tex);
@@ -274,7 +274,7 @@ release_texture(TextureContext *tc) {
 
   // We have to set the Texture pointer to NULL at this point, since the
   // Texture itself might destruct at any time after it has been released.
-  tc->_texture = (Texture *)NULL;
+  tc->_texture = nullptr;
 
   bool removed = (_prepared_textures.erase(tc) != 0);
   nassertv(removed);
@@ -308,7 +308,7 @@ release_all_textures() {
        ++tci) {
     TextureContext *tc = (*tci);
     tc->_texture->clear_prepared(tc->get_view(), this);
-    tc->_texture = (Texture *)NULL;
+    tc->_texture = nullptr;
 
     _released_textures.insert(tc);
   }
@@ -372,7 +372,7 @@ prepare_texture_now(Texture *tex, int view, GraphicsStateGuardianBase *gsg) {
   // them creates the context (since they're all shared anyway).
   TextureContext *tc = gsg->prepare_texture(tex, view);
 
-  if (tc != (TextureContext *)NULL) {
+  if (tc != nullptr) {
     bool prepared = _prepared_textures.insert(tc).second;
     nassertr(prepared, tc);
   }
@@ -532,7 +532,7 @@ prepare_sampler_now(const SamplerState &sampler, GraphicsStateGuardianBase *gsg)
   // Ask the GSG to create a brand new SamplerContext.
   SamplerContext *sc = gsg->prepare_sampler(sampler);
 
-  if (sc != (SamplerContext *)NULL) {
+  if (sc != nullptr) {
     _prepared_samplers[sampler] = sc;
   }
 
@@ -608,7 +608,7 @@ release_geom(GeomContext *gc) {
 
   // We have to set the Geom pointer to NULL at this point, since the Geom
   // itself might destruct at any time after it has been released.
-  gc->_geom = (Geom *)NULL;
+  gc->_geom = nullptr;
 
   bool removed = (_prepared_geoms.erase(gc) != 0);
   nassertv(removed);
@@ -633,7 +633,7 @@ release_all_geoms() {
        ++gci) {
     GeomContext *gc = (*gci);
     gc->_geom->clear_prepared(this);
-    gc->_geom = (Geom *)NULL;
+    gc->_geom = nullptr;
 
     _released_geoms.insert(gc);
   }
@@ -686,7 +686,7 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
   // them creates the context (since they're all shared anyway).
   GeomContext *gc = gsg->prepare_geom(geom);
 
-  if (gc != (GeomContext *)NULL) {
+  if (gc != nullptr) {
     bool prepared = _prepared_geoms.insert(gc).second;
     nassertr(prepared, gc);
   }
@@ -713,7 +713,7 @@ PT(PreparedGraphicsObjects::EnqueuedObject) PreparedGraphicsObjects::
 enqueue_shader_future(Shader *shader) {
   ReMutexHolder holder(_lock);
 
-  pair<EnqueuedShaders::iterator, bool> result =
+  std::pair<EnqueuedShaders::iterator, bool> result =
     _enqueued_shaders.insert(EnqueuedShaders::value_type(shader, nullptr));
   if (result.first->second == nullptr) {
     result.first->second = new EnqueuedObject(this, shader);
@@ -783,7 +783,7 @@ release_shader(ShaderContext *sc) {
 
   // We have to set the Shader pointer to NULL at this point, since the Shader
   // itself might destruct at any time after it has been released.
-  sc->_shader = (Shader *)NULL;
+  sc->_shader = nullptr;
 
   bool removed = (_prepared_shaders.erase(sc) != 0);
   nassertv(removed);
@@ -808,7 +808,7 @@ release_all_shaders() {
        ++sci) {
     ShaderContext *sc = (*sci);
     sc->_shader->clear_prepared(this);
-    sc->_shader = (Shader *)NULL;
+    sc->_shader = nullptr;
 
     _released_shaders.insert(sc);
   }
@@ -872,7 +872,7 @@ prepare_shader_now(Shader *se, GraphicsStateGuardianBase *gsg) {
   // them creates the context (since they're all shared anyway).
   ShaderContext *sc = gsg->prepare_shader(se);
 
-  if (sc != (ShaderContext *)NULL) {
+  if (sc != nullptr) {
     bool prepared = _prepared_shaders.insert(sc).second;
     nassertr(prepared, sc);
   }
@@ -953,7 +953,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  vbc->_data = (GeomVertexArrayData *)NULL;
+  vbc->_data = nullptr;
 
   bool removed = (_prepared_vertex_buffers.erase(vbc) != 0);
   nassertv(removed);
@@ -986,7 +986,7 @@ release_all_vertex_buffers() {
        ++vbci) {
     VertexBufferContext *vbc = (VertexBufferContext *)(*vbci);
     vbc->_data->clear_prepared(this);
-    vbc->_data = (GeomVertexArrayData *)NULL;
+    vbc->_data = nullptr;
 
     _released_vertex_buffers.insert(vbc);
   }
@@ -1060,7 +1060,7 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
     get_cached_buffer(data_size_bytes, usage_hint,
                       _vertex_buffer_cache, _vertex_buffer_cache_lru,
                       _vertex_buffer_cache_size);
-  if (vbc != (VertexBufferContext *)NULL) {
+  if (vbc != nullptr) {
     vbc->_data = data;
 
   } else {
@@ -1070,7 +1070,7 @@ prepare_vertex_buffer_now(GeomVertexArrayData *data, GraphicsStateGuardianBase *
     vbc = gsg->prepare_vertex_buffer(data);
   }
 
-  if (vbc != (VertexBufferContext *)NULL) {
+  if (vbc != nullptr) {
     bool prepared = _prepared_vertex_buffers.insert(vbc).second;
     nassertr(prepared, vbc);
   }
@@ -1151,7 +1151,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   // We have to set the Data pointer to NULL at this point, since the Data
   // itself might destruct at any time after it has been released.
-  ibc->_data = (GeomPrimitive *)NULL;
+  ibc->_data = nullptr;
 
   bool removed = (_prepared_index_buffers.erase(ibc) != 0);
   nassertv(removed);
@@ -1184,7 +1184,7 @@ release_all_index_buffers() {
        ++ibci) {
     IndexBufferContext *ibc = (IndexBufferContext *)(*ibci);
     ibc->_data->clear_prepared(this);
-    ibc->_data = (GeomPrimitive *)NULL;
+    ibc->_data = nullptr;
 
     _released_index_buffers.insert(ibc);
   }
@@ -1257,7 +1257,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
     get_cached_buffer(data_size_bytes, usage_hint,
                       _index_buffer_cache, _index_buffer_cache_lru,
                       _index_buffer_cache_size);
-  if (ibc != (IndexBufferContext *)NULL) {
+  if (ibc != nullptr) {
     ibc->_data = data;
 
   } else {
@@ -1267,7 +1267,7 @@ prepare_index_buffer_now(GeomPrimitive *data, GraphicsStateGuardianBase *gsg) {
     ibc = gsg->prepare_index_buffer(data);
   }
 
-  if (ibc != (IndexBufferContext *)NULL) {
+  if (ibc != nullptr) {
     bool prepared = _prepared_index_buffers.insert(ibc).second;
     nassertr(prepared, ibc);
   }
@@ -1416,7 +1416,7 @@ prepare_shader_buffer_now(ShaderBuffer *data, GraphicsStateGuardianBase *gsg) {
   // which of them creates the context (since they're all shared anyway).
   BufferContext *bc = gsg->prepare_shader_buffer(data);
 
-  if (bc != (BufferContext *)NULL) {
+  if (bc != nullptr) {
     bool prepared = _prepared_shader_buffers.insert(bc).second;
     nassertr(prepared, bc);
   }
@@ -1580,7 +1580,6 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        qti != _enqueued_textures.end();
        ++qti) {
     Texture *tex = qti->first;
-    TextureContext *first_tc = nullptr;
     for (int view = 0; view < tex->get_num_views(); ++view) {
       TextureContext *tc = tex->prepare_now(view, this, gsg);
       if (tc != nullptr) {
@@ -1620,8 +1619,8 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
        ++qsi) {
     Shader *shader = qsi->first;
     ShaderContext *sc = shader->prepare_now(this, gsg);
-    if (qti->second != nullptr) {
-      qti->second->set_result(sc);
+    if (qsi->second != nullptr) {
+      qsi->second->set_result(sc);
     }
   }
 
@@ -1669,10 +1668,10 @@ end_frame(Thread *current_thread) {
 /**
  * Returns a new, unique name for a newly-constructed object.
  */
-string PreparedGraphicsObjects::
+std::string PreparedGraphicsObjects::
 init_name() {
   ++_name_index;
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "context" << _name_index;
   return strm.str();
 }
@@ -1743,11 +1742,11 @@ get_cached_buffer(size_t data_size_bytes, GeomEnums::UsageHint usage_hint,
 
   BufferCache::iterator bci = buffer_cache.find(key);
   if (bci == buffer_cache.end()) {
-    return NULL;
+    return nullptr;
   }
 
   BufferList &buffer_list = (*bci).second;
-  nassertr(!buffer_list.empty(), NULL);
+  nassertr(!buffer_list.empty(), nullptr);
 
   BufferContext *buffer = buffer_list.back();
   buffer_list.pop_back();

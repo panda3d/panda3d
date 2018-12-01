@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE int get_geom_rendering(int geom_rendering) const;
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -79,7 +79,7 @@ private:
     INLINE ModeDef();
     INLINE int compare_to(const ModeDef &other) const;
     Mode _mode;
-    string _source_name;
+    std::string _source_name;
     NodePath _light;
     LTexCoord3 _constant_value;
   };

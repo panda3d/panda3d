@@ -64,7 +64,7 @@ class CharacterMaker;
  *
  * This class isn't exported from this package.
  */
-class EggLoader {
+class EXPCL_PANDA_EGG2PG EggLoader {
 public:
   EggLoader();
   EggLoader(const EggData *data);
@@ -147,7 +147,7 @@ private:
    CharacterMaker *character_maker);
   void record_morph
   (GeomVertexArrayFormat *array_format,
-   CharacterMaker *character_maker, const string &morph_name,
+   CharacterMaker *character_maker, const std::string &morph_name,
    InternalName *column_name, int num_components);
 
   void make_primitive(const EggRenderState *render_state,
@@ -200,11 +200,11 @@ private:
 
   void apply_deferred_nodes(PandaNode *node, const DeferredNodeProperty &prop);
   bool expand_all_object_types(EggNode *egg_node);
-  bool expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
-                           const pvector<string> &expanded_history);
-  bool do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
-                             const pvector<string> &expanded_history,
-                             const string &object_type);
+  bool expand_object_types(EggGroup *egg_group, const pset<std::string> &expanded,
+                           const pvector<std::string> &expanded_history);
+  bool do_expand_object_type(EggGroup *egg_group, const pset<std::string> &expanded,
+                             const pvector<std::string> &expanded_history,
+                             const std::string &object_type);
 
   static TextureStage::CombineMode
   get_combine_mode(const EggTexture *egg_tex,

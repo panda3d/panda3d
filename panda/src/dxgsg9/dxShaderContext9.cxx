@@ -35,8 +35,8 @@ TypeHandle DXShaderContext9::_type_handle;
  */
 DXShaderContext9::
 DXShaderContext9(Shader *s, GSG *gsg) : ShaderContext(s) {
-  _vertex_element_array = NULL;
-  _vertex_declaration = NULL;
+  _vertex_element_array = nullptr;
+  _vertex_declaration = nullptr;
 
   _num_bound_streams = 0;
 
@@ -83,14 +83,14 @@ DXShaderContext9::
 ~DXShaderContext9() {
   release_resources();
 
-  if (_vertex_declaration != NULL) {
+  if (_vertex_declaration != nullptr) {
     _vertex_declaration->Release();
-    _vertex_declaration = NULL;
+    _vertex_declaration = nullptr;
   }
 
-  if (_vertex_element_array != NULL) {
+  if (_vertex_element_array != nullptr) {
     delete _vertex_element_array;
-    _vertex_element_array = NULL;
+    _vertex_element_array = nullptr;
   }
 }
 
@@ -200,14 +200,14 @@ issue_parameters(GSG *gsg, int altered) {
       if (altered & (spec._dep[0] | spec._dep[1])) {
         const Shader::ShaderPtrData *ptr_data = gsg->fetch_ptr_parameter(spec);
 
-        if (ptr_data == NULL) { //the input is not contained in ShaderPtrData
+        if (ptr_data == nullptr) { //the input is not contained in ShaderPtrData
           release_resources();
           return;
         }
 
         // Calculate how many elements to transfer; no more than it expects,
         // but certainly no more than we have.
-        int input_size = min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), ptr_data->_size);
+        int input_size = std::min(abs(spec._dim[0] * spec._dim[1] * spec._dim[2]), (int)ptr_data->_size);
 
         CGparameter p = _cg_parameter_map[spec._id._seqno];
         switch (ptr_data->_type) {
@@ -237,7 +237,7 @@ issue_parameters(GSG *gsg, int altered) {
 
       if (altered & (spec._dep[0] | spec._dep[1])) {
         CGparameter p = _cg_parameter_map[spec._id._seqno];
-        if (p == NULL) {
+        if (p == nullptr) {
           continue;
         }
         const LMatrix4 *val = gsg->fetch_specified_value(spec, altered);
@@ -313,7 +313,7 @@ issue_parameters(GSG *gsg, int altered) {
           }
 
           if (FAILED(hr)) {
-            string name = "unnamed";
+            std::string name = "unnamed";
 
             if (spec._arg[0]) {
               name = spec._arg[0]->get_basename();
@@ -343,7 +343,7 @@ disable_shader_vertex_arrays(GSG *gsg) {
   LPDIRECT3DDEVICE9 device = gsg->_screen->_d3d_device;
 
   for (int array_index = 0; array_index < _num_bound_streams; ++array_index) {
-    device->SetStreamSource(array_index, NULL, 0, 0);
+    device->SetStreamSource(array_index, nullptr, 0, 0);
   }
   _num_bound_streams = 0;
 }
@@ -377,7 +377,7 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
 
     // Discard and recreate the VertexElementArray.  This thrashes pretty
     // bad....
-    if (_vertex_element_array != NULL) {
+    if (_vertex_element_array != nullptr) {
       delete _vertex_element_array;
     }
     _vertex_element_array = new VertexElementArray(nvarying + 2);
@@ -390,18 +390,20 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
     // arrays ("streams"), and we repeatedly iterate the parameters to pull
     // out only those for a single stream.
 
+    bool apply_white_color = false;
+
     int number_of_arrays = gsg->_data_reader->get_num_arrays();
     for (int array_index = 0; array_index < number_of_arrays; ++array_index) {
       const GeomVertexArrayDataHandle* array_reader =
         gsg->_data_reader->get_array_reader(array_index);
-      if (array_reader == NULL) {
+      if (array_reader == nullptr) {
         dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
         continue;
       }
 
       for (int var_index = 0; var_index < nvarying; ++var_index) {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[var_index]._id._seqno];
-        if (p == NULL) {
+        if (p == nullptr) {
           dxgsg9_cat.info() <<
             "No parameter in map for parameter " << var_index <<
             " (probably optimized away)\n";
@@ -423,6 +425,11 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
           }
         }
 
+        if (name == InternalName::get_color() && !gsg->_vertex_colors_enabled) {
+          apply_white_color = true;
+          continue;
+        }
+
         const GeomVertexArrayDataHandle *param_array_reader;
         Geom::NumericType numeric_type;
         int num_values, start, stride;
@@ -435,6 +442,9 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
           // shader parameter, which can cause Bad Things to happen so I'd
           // like to at least get a hint as to what's gone wrong.
           dxgsg9_cat.info() << "Geometry contains no data for shader parameter " << *name << "\n";
+          if (name == InternalName::get_color()) {
+            apply_white_color = true;
+          }
           continue;
         }
 
@@ -444,7 +454,7 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
         }
 
         const char *semantic = cgGetParameterSemantic(p);
-        if (semantic == NULL) {
+        if (semantic == nullptr) {
           dxgsg9_cat.error() << "Unable to retrieve semantic for parameter " << var_index << "\n";
           continue;
         }
@@ -564,7 +574,20 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
 
     _num_bound_streams = number_of_arrays;
 
-    if (_vertex_element_array != NULL &&
+    if (apply_white_color) {
+      // The shader needs a vertex color, but vertex colors are disabled.
+      // Bind a vertex buffer containing only one white colour.
+      int array_index = number_of_arrays;
+      LPDIRECT3DVERTEXBUFFER9 vbuffer = gsg->get_white_vbuffer();
+      hr = device->SetStreamSource(array_index, vbuffer, 0, 0);
+      if (FAILED(hr)) {
+        dxgsg9_cat.error() << "SetStreamSource failed" << D3DERRORSTRING(hr);
+      }
+      vertex_element_array->add_diffuse_color_vertex_element(array_index, 0);
+      ++_num_bound_streams;
+    }
+
+    if (_vertex_element_array != nullptr &&
         _vertex_element_array->add_end_vertex_element()) {
       if (dxgsg9_cat.is_debug()) {
         // Note that the currently generated vertex declaration works but
@@ -580,9 +603,9 @@ update_shader_vertex_arrays(DXShaderContext9 *prev, GSG *gsg, bool force) {
       }
 
       // Discard the old VertexDeclaration.  This thrashes pretty bad....
-      if (_vertex_declaration != NULL) {
+      if (_vertex_declaration != nullptr) {
         _vertex_declaration->Release();
-        _vertex_declaration = NULL;
+        _vertex_declaration = nullptr;
       }
 
       hr = device->CreateVertexDeclaration(_vertex_element_array->_vertex_element_array,
@@ -613,14 +636,14 @@ disable_shader_texture_bindings(GSG *gsg) {
   if (_cg_program) {
     for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-      if (p == NULL) {
+      if (p == nullptr) {
         continue;
       }
       int texunit = cgGetParameterResourceIndex(p);
 
       HRESULT hr;
 
-      hr = gsg->_d3d_device->SetTexture(texunit, NULL);
+      hr = gsg->_d3d_device->SetTexture(texunit, nullptr);
       if (FAILED(hr)) {
         dxgsg9_cat.error()
           << "SetTexture(" << texunit << ", NULL) failed "
@@ -649,7 +672,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
     for (size_t i = 0; i < _shader->_tex_spec.size(); ++i) {
       Shader::ShaderTexSpec &spec = _shader->_tex_spec[i];
       CGparameter p = _cg_parameter_map[spec._id._seqno];
-      if (p == NULL) {
+      if (p == nullptr) {
         continue;
       }
 
@@ -671,7 +694,7 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
       }
 
       TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
-      if (tc == (TextureContext*)NULL) {
+      if (tc == nullptr) {
         continue;
       }
 

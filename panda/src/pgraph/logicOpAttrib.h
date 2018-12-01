@@ -59,7 +59,7 @@ PUBLISHED:
   MAKE_PROPERTY(operation, get_operation);
 
 public:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -105,7 +105,7 @@ private:
   static int _attrib_slot;
 };
 
-EXPCL_PANDA_PGRAPH ostream &operator << (ostream &out, LogicOpAttrib::Operation op);
+EXPCL_PANDA_PGRAPH std::ostream &operator << (std::ostream &out, LogicOpAttrib::Operation op);
 
 #include "logicOpAttrib.I"
 

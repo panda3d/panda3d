@@ -34,6 +34,10 @@
 #include "config_grutil.h"
 #include "typeHandle.h"
 
+using std::endl;
+using std::max;
+using std::min;
+
 ConfigVariableBool stm_use_hexagonal_layout
 ("stm-use-hexagonal-layout", false,
  PRC_DESC("Set this to true to use a hexagonal vertex layout. This approximates "
@@ -94,13 +98,13 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _size(0),
   _chunk_size(32),
   _generate_patches(false),
-  _data_texture(NULL),
-  _chunk_geom(NULL),
+  _data_texture(nullptr),
+  _chunk_geom(nullptr),
   _current_view_index(0),
   _last_frame_count(-1),
   _target_triangle_width(10.0f),
   _update_enabled(true),
-  _heightfield_tex(NULL)
+  _heightfield_tex(nullptr)
 {
   set_final(true);
   set_bounds(new OmniBoundingVolume());
@@ -118,6 +122,7 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
  * @return true if the terrain was initialized, false if an error occured
  */
 bool ShaderTerrainMesh::generate() {
+  MutexHolder holder(_lock);
   if (!do_check_heightfield())
     return false;
 
@@ -261,7 +266,7 @@ void ShaderTerrainMesh::do_init_chunk(Chunk* chunk) {
   } else {
     // Final chunk, initialize all children to zero
     for (size_t i = 0; i < 4; ++i) {
-      chunk->children[i] = NULL;
+      chunk->children[i] = nullptr;
     }
   }
 }
@@ -375,7 +380,7 @@ void ShaderTerrainMesh::do_create_chunk_geom() {
   GeomVertexWriter vertex_writer(gvd, "vertex");
 
   // Create primitive
-  PT(GeomPrimitive) triangles = NULL;
+  PT(GeomPrimitive) triangles = nullptr;
   if (_generate_patches) {
     triangles = new GeomPatches(3, Geom::UH_static);
   } else {
@@ -457,11 +462,12 @@ bool ShaderTerrainMesh::safe_to_combine() const {
  * @copydoc PandaNode::add_for_draw()
  */
 void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &data) {
+  MutexHolder holder(_lock);
 
   // Make sure the terrain was properly initialized, and the geom was created
   // successfully
-  nassertv(_data_texture != NULL);
-  nassertv(_chunk_geom != NULL);
+  nassertv(_data_texture != nullptr);
+  nassertv(_chunk_geom != nullptr);
 
   _basic_collector.start();
 
@@ -524,7 +530,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   // Should never happen
-  nassertv(current_shader_attrib != NULL);
+  nassertv(current_shader_attrib != nullptr);
 
   current_shader_attrib = DCAST(ShaderAttrib, current_shader_attrib)->set_shader_input(
     ShaderInput("ShaderTerrainMesh.terrain_size", LVecBase2i(_size)));
@@ -542,7 +548,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   state = state->set_attrib(current_shader_attrib, 10000);
 
   // Emit chunk
-  CullableObject *object = new CullableObject(_chunk_geom, move(state), move(modelview_transform));
+  CullableObject *object = new CullableObject(_chunk_geom, std::move(state), std::move(modelview_transform));
   trav->get_cull_handler()->record_object(object, trav);
 
   // After rendering, increment the view index
@@ -707,11 +713,12 @@ void ShaderTerrainMesh::do_emit_chunk(Chunk* chunk, TraversalData* data) {
  * @return World-Space point
  */
 LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
-  nassertr(_heightfield_tex != NULL, LPoint3(0)); // Heightfield not set yet
+  MutexHolder holder(_lock);
+  nassertr(_heightfield_tex != nullptr, LPoint3(0)); // Heightfield not set yet
   nassertr(_heightfield_tex->has_ram_image(), LPoint3(0)); // Heightfield not in memory
 
   PT(TexturePeeker) peeker = _heightfield_tex->peek();
-  nassertr(peeker != NULL, LPoint3(0));
+  nassertr(peeker != nullptr, LPoint3(0));
 
   LColor result;
   if (!peeker->lookup_bilinear(result, coord.get_x(), coord.get_y())) {

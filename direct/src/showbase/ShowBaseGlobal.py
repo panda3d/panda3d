@@ -12,9 +12,8 @@ from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from panda3d.core import VirtualFileSystem, Notify, ClockObject, PandaSystem
 from panda3d.core import ConfigPageManager, ConfigVariableManager
 from panda3d.core import NodePath, PGTop
-from panda3d.direct import get_config_showbase
+from . import DConfig as config
 
-config = get_config_showbase()
 __dev__ = config.GetBool('want-dev', __debug__)
 
 vfs = VirtualFileSystem.getGlobalPtr()

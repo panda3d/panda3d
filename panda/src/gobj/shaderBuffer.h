@@ -20,6 +20,7 @@
 #include "geomEnums.h"
 #include "graphicsStateGuardianBase.h"
 #include "factoryParams.h"
+#include "vector_uchar.h"
 
 class BufferContext;
 class PreparedGraphicsObjects;
@@ -29,20 +30,20 @@ class PreparedGraphicsObjects;
  */
 class EXPCL_PANDA_GOBJ ShaderBuffer : public TypedWritableReferenceCount, public Namable, public GeomEnums {
 private:
-  INLINE ShaderBuffer() DEFAULT_CTOR;
+  INLINE ShaderBuffer() = default;
 
 PUBLISHED:
   ~ShaderBuffer();
 
-  INLINE explicit ShaderBuffer(const string &name, uint64_t size, UsageHint usage_hint);
-  INLINE explicit ShaderBuffer(const string &name, pvector<unsigned char> initial_data, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage_hint);
 
 public:
   INLINE uint64_t get_data_size_bytes() const;
   INLINE UsageHint get_usage_hint() const;
   INLINE const unsigned char *get_initial_data() const;
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
@@ -59,10 +60,10 @@ PUBLISHED:
 private:
   uint64_t _data_size_bytes;
   UsageHint _usage_hint;
-  pvector<unsigned char> _initial_data;
+  vector_uchar _initial_data;
 
   typedef pmap<PreparedGraphicsObjects *, BufferContext *> Contexts;
-  Contexts *_contexts;
+  Contexts *_contexts = nullptr;
 
 public:
   static void register_with_read_factory();
@@ -92,7 +93,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const ShaderBuffer &m) {
+INLINE std::ostream &operator << (std::ostream &out, const ShaderBuffer &m) {
   m.output(out);
   return out;
 }

@@ -19,6 +19,7 @@
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "pStatTimer.h"
+#include "omniBoundingVolume.h"
 #include <stdio.h>  // For sprintf/snprintf
 
 PStatCollector SceneGraphAnalyzerMeter::_show_analyzer_pcollector("*:Show scene graph analysis");
@@ -29,8 +30,15 @@ TypeHandle SceneGraphAnalyzerMeter::_type_handle;
  *
  */
 SceneGraphAnalyzerMeter::
-SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
+SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node) :
+  TextNode(name),
+  _last_aspect_ratio(-1) {
+
   set_cull_callback();
+
+  // Don't do frustum culling, as the text will always be in view.
+  set_bounds(new OmniBoundingVolume());
+  set_final(true);
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -41,7 +49,7 @@ SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
 
   set_align(A_left);
   set_transform(LMatrix4::scale_mat(scene_graph_analyzer_meter_scale) *
-                LMatrix4::translate_mat(LVector3::rfu(-1.0f + scene_graph_analyzer_meter_side_margins * scene_graph_analyzer_meter_scale, 0.0f, 1.0f - scene_graph_analyzer_meter_scale)));
+                LMatrix4::translate_mat(LVector3::rfu(scene_graph_analyzer_meter_side_margins * scene_graph_analyzer_meter_scale, 0.0f, -scene_graph_analyzer_meter_scale)));
   set_card_color(0.0f, 0.0f, 0.0f, 0.4);
   set_card_as_margin(scene_graph_analyzer_meter_side_margins, scene_graph_analyzer_meter_side_margins, 0.1f, 0.0f);
   set_usage_hint(Geom::UH_client);
@@ -77,6 +85,11 @@ setup_window(GraphicsOutput *window) {
   _root.set_material_off(1);
   _root.set_two_sided(1, 1);
 
+  // If we don't set this explicitly, Panda will cause it to be rendered
+  // in a back-to-front cull bin, which will cause the bounding volume
+  // to be computed unnecessarily.  Saves a little bit of overhead.
+  _root.set_bin("unsorted", 0);
+
   // Create a display region that covers the entire window.
   _display_region = _window->make_display_region();
   _display_region->set_sort(scene_graph_analyzer_meter_layer_sort);
@@ -87,10 +100,11 @@ setup_window(GraphicsOutput *window) {
 
   PT(Lens) lens = new OrthographicLens;
 
-  static const PN_stdfloat left = -1.0f;
-  static const PN_stdfloat right = 1.0f;
-  static const PN_stdfloat bottom = -1.0f;
-  static const PN_stdfloat top = 1.0f;
+  // We choose these values such that we can place the text against (0, 0).
+  static const PN_stdfloat left = 0.0f;
+  static const PN_stdfloat right = 2.0f;
+  static const PN_stdfloat bottom = -2.0f;
+  static const PN_stdfloat top = 0.0f;
   lens->set_film_size(right - left, top - bottom);
   lens->set_film_offset((right + left) * 0.5, (top + bottom) * 0.5);
   lens->set_near_far(-1000, 1000);
@@ -105,10 +119,10 @@ setup_window(GraphicsOutput *window) {
  */
 void SceneGraphAnalyzerMeter::
 clear_window() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     _window->remove_display_region(_display_region);
-    _window = (GraphicsOutput *)NULL;
-    _display_region = (DisplayRegion *)NULL;
+    _window = nullptr;
+    _display_region = nullptr;
   }
   _root = NodePath();
 }
@@ -137,6 +151,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   // Statistics
   PStatTimer timer(_show_analyzer_pcollector, current_thread);
+
+  // This is probably a good time to check if the aspect ratio on the window
+  // has changed.
+  int width = _display_region->get_pixel_width();
+  int height = _display_region->get_pixel_height();
+  PN_stdfloat aspect_ratio = 1;
+  if (width != 0 && height != 0) {
+    aspect_ratio = (PN_stdfloat)height / (PN_stdfloat)width;
+  }
+
+  // Scale the transform by the calculated aspect ratio.
+  if (aspect_ratio != _last_aspect_ratio) {
+    _aspect_ratio_transform = TransformState::make_scale(LVecBase3(aspect_ratio, 1, 1));
+    _last_aspect_ratio = aspect_ratio;
+  }
+  data._net_transform = data._net_transform->compose(_aspect_ratio_transform);
 
   // Check to see if it's time to update.
   double now = _clock_object->get_frame_time(current_thread);

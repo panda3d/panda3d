@@ -15,19 +15,18 @@
 #define WSTRING_ENCODE_H
 
 #include <string>
-using namespace std;
 
 // Presently, these two functions are implemented only for Windows, which is
 // the only place they are needed.  (Only Windows requires wstrings for
 // filenames.)
 #ifdef _WIN32
-bool wstring_to_string(string &result, const wstring &source);
-bool string_to_wstring(wstring &result, const string &source);
+bool wstring_to_string(std::string &result, const std::wstring &source);
+bool string_to_wstring(std::wstring &result, const std::string &source);
 
 // We declare this inline so it won't conflict with the similar function
 // defined in Panda's textEncoder.h.
-inline ostream &operator << (ostream &out, const wstring &str) {
-  string result;
+inline std::ostream &operator << (std::ostream &out, const std::wstring &str) {
+  std::string result;
   if (wstring_to_string(result, str)) {
     out << result;
   }

@@ -13,6 +13,8 @@
 
 #include "nativeWindowHandle.h"
 
+using std::ostream;
+
 TypeHandle NativeWindowHandle::_type_handle;
 TypeHandle NativeWindowHandle::IntHandle::_type_handle;
 TypeHandle NativeWindowHandle::SubprocessHandle::_type_handle;

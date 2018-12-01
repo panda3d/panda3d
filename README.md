@@ -43,8 +43,9 @@ Building Panda3D
 Windows
 -------
 
-We currently build using the Microsoft Visual C++ 2015 compiler.  You will
-also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
+You can build Panda3D with the Microsoft Visual C++ 2015 or 2017 compiler,
+which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
+You will also need to install the [Windows 10 SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk),
 and if you intend to target Windows XP, you will also need the
 [Windows 7.1 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=8279).
 
@@ -58,11 +59,12 @@ http://rdb.name/thirdparty-vc14-x64.7z
 http://rdb.name/thirdparty-vc14.7z
 
 After acquiring these dependencies, you may simply build Panda3D from the
-command prompt using the following command.  (Add the `--windows-sdk=10`
-option if you don't need to support Windows XP.)
+command prompt using the following command.  (Change `14.1` to `14` if you are
+using Visual C++ 2015 instead of 2017.  Add the `--windows-sdk=10` option if
+you don't need to support Windows XP and did not install the Windows 7.1 SDK.)
 
 ```bash
-makepanda\makepanda.bat --everything --installer --no-eigen --threads=2
+makepanda\makepanda.bat --everything --installer --msvc-version=14.1 --no-eigen --threads=2
 ```
 
 When the build succeeds, it will produce an .exe file that you can use to
@@ -101,7 +103,7 @@ If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev
+sudo apt-get install build-essential pkg-config python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -162,6 +164,36 @@ python3.6 makepanda/makepanda.py --everything --installer --no-egl --no-gles --n
 
 If successful, this will produce a .pkg file in the root of the source
 directory which you can install using `pkg install`.
+
+Android
+-------
+
+Note: building on Android is very experimental and not guaranteed to work.
+
+You can experimentally build the Android Python runner via the [termux](https://termux.com/)
+shell.  You will need to install [Termux](https://play.google.com/store/apps/details?id=com.termux)
+and [Termux API](https://play.google.com/store/apps/details?id=com.termux.api)
+from the Play Store.  Many of the dependencies can be installed by running the
+following command in the Termux shell:
+
+```bash
+pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libopus-dev opusfile-dev openal-soft-dev freetype-dev harfbuzz-dev libpng-dev ecj4.6 dx patchelf aapt apksigner libcrypt-dev
+```
+
+Then, you can build and install the .apk right away using these commands:
+
+```bash
+python makepanda/makepanda.py --everything --target android-21 --installer
+xdg-open panda3d.apk
+```
+
+To launch a Python program from Termux, you can use the `run_python.sh` script
+inside the `panda/src/android` directory.  It will launch Python in a separate
+activity, load it with the Python script you passed as argument, and use a
+socket for returning the command-line output to the Termux shell.  Do note
+that this requires the Python application to reside on the SD card and that
+Termux needs to be set up with access to the SD card (using the
+`termux-setup-storage` command).
 
 Running Tests
 =============

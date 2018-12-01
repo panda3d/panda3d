@@ -47,14 +47,14 @@ TypeHandle CullTraverser::_type_handle;
  */
 CullTraverser::
 CullTraverser() :
-  _gsg(NULL),
+  _gsg(nullptr),
   _current_thread(Thread::get_current_thread())
 {
   _camera_mask = DrawMask::all_on();
   _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
-  _cull_handler = (CullHandler *)NULL;
-  _portal_clipper = (PortalClipper *)NULL;
+  _cull_handler = nullptr;
+  _portal_clipper = nullptr;
   _effective_incomplete_render = true;
 }
 
@@ -104,14 +104,14 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
  */
 void CullTraverser::
 traverse(const NodePath &root) {
-  nassertv(_cull_handler != (CullHandler *)NULL);
-  nassertv(_scene_setup != (SceneSetup *)NULL);
+  nassertv(_cull_handler != nullptr);
+  nassertv(_scene_setup != nullptr);
 
   if (allow_portal_cull) {
     // This _view_frustum is in cull_center space Erik: obsolete?
     // PT(GeometricBoundingVolume) vf = _view_frustum;
 
-    GeometricBoundingVolume *local_frustum = NULL;
+    GeometricBoundingVolume *local_frustum = nullptr;
     PT(BoundingVolume) bv = _scene_setup->get_lens()->make_bounds();
     if (bv != nullptr) {
       local_frustum = bv->as_geometric_bounding_volume();
@@ -229,7 +229,7 @@ draw_bounding_volume(const BoundingVolume *vol,
                      const TransformState *internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
 
-  if (bounds_viz != (Geom *)NULL) {
+  if (bounds_viz != nullptr) {
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz =
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
@@ -237,7 +237,7 @@ draw_bounding_volume(const BoundingVolume *vol,
     _cull_handler->record_object(outer_viz, this);
 
     CullableObject *inner_viz =
-      new CullableObject(move(bounds_viz), get_bounds_inner_viz_state(),
+      new CullableObject(std::move(bounds_viz), get_bounds_inner_viz_state(),
                          internal_transform);
     _cull_handler->record_object(inner_viz, this);
   }
@@ -264,10 +264,10 @@ show_bounds(CullTraverserData &data, bool tight) {
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
 
-    if (bounds_viz != (Geom *)NULL) {
+    if (bounds_viz != nullptr) {
       _geoms_pcollector.add_level(1);
       CullableObject *outer_viz =
-        new CullableObject(move(bounds_viz), get_bounds_outer_viz_state(),
+        new CullableObject(std::move(bounds_viz), get_bounds_outer_viz_state(),
                            internal_transform);
       _cull_handler->record_object(outer_viz, this);
     }
@@ -489,8 +489,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_outer_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.3, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -507,8 +507,8 @@ CPT(RenderState) CullTraverser::
 get_bounds_inner_viz_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (ColorAttrib::make_flat(LColor(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
@@ -524,8 +524,8 @@ CPT(RenderState) CullTraverser::
 get_depth_offset_state() {
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
+  static CPT(RenderState) state = nullptr;
+  if (state == nullptr) {
     state = RenderState::make
       (DepthOffsetAttrib::make(1));
   }

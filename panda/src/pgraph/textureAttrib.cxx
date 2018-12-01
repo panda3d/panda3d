@@ -52,7 +52,7 @@ CPT(RenderAttrib) TextureAttrib::
 make() {
   // We make it a special case and store a pointer to the empty attrib forever
   // once we find it the first time, as an optimization.
-  if (_empty_attrib == (RenderAttrib *)NULL) {
+  if (_empty_attrib == nullptr) {
     _empty_attrib = return_new(new TextureAttrib);
   }
 
@@ -67,7 +67,7 @@ CPT(RenderAttrib) TextureAttrib::
 make_all_off() {
   // We make it a special case and store a pointer to the off attrib forever
   // once we find it the first time, as an optimization.
-  if (_all_off_attrib == (RenderAttrib *)NULL) {
+  if (_all_off_attrib == nullptr) {
     TextureAttrib *attrib = new TextureAttrib;
     attrib->_off_all_stages = true;
     _all_off_attrib = return_new(attrib);
@@ -345,7 +345,7 @@ lower_attrib_can_override() const {
  *
  */
 void TextureAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   check_sorted();
 
   out << get_type() << ":";
@@ -768,7 +768,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
     TextureStage *stage = (*si)._stage;
     Texture *tex = (*si)._texture;
-    nassertv(tex != (Texture *)NULL);
+    nassertv(tex != nullptr);
 
     manager->write_pointer(dg, stage);
     manager->write_pointer(dg, tex);
@@ -811,7 +811,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     // have to do anything special here.
     Texture *tex = DCAST(Texture, p_list[pi++]);
 
-    if (tex != (Texture *)NULL) {
+    if (tex != nullptr) {
       StageNode &sn = _on_stages[sni];
       sn._stage = ts;
       sn._texture = tex;
@@ -867,7 +867,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _off_stages.reserve(num_off_stages);
   for (i = 0; i < num_off_stages; i++) {
     manager->read_pointer(scan);
-    _off_stages.push_back(StageNode(NULL));
+    _off_stages.push_back(StageNode(nullptr));
   }
 
   // Read the _on_stages data.
@@ -891,9 +891,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       override = scan.get_int32();
     }
 
-    _next_implicit_sort = max(_next_implicit_sort, implicit_sort + 1);
+    _next_implicit_sort = std::max(_next_implicit_sort, implicit_sort + 1);
     Stages::iterator si =
-      _on_stages.insert_nonunique(StageNode(NULL, _next_implicit_sort, override));
+      _on_stages.insert_nonunique(StageNode(nullptr, _next_implicit_sort, override));
     ++_next_implicit_sort;
 
     if (manager->get_file_minor_ver() >= 36) {
@@ -923,8 +923,8 @@ sort_on_stages() {
     StageNode &sn = (*si);
     TextureStage *stage = sn._stage;
     Texture *texture = sn._texture;
-    nassertv(stage != NULL);
-    nassertv(texture != NULL);
+    nassertv(stage != nullptr);
+    nassertv(texture != nullptr);
     if (stage->is_fixed_function() && texture->get_texture_type() != Texture::TT_2d_texture_array) {
       const InternalName *name = stage->get_texcoord_name();
 

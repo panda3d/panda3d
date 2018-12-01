@@ -21,9 +21,11 @@
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
-#include "graphicsWindow.h"
 #include "graphicsDevice.h"
+#include "graphicsWindow.h"
+#include "graphicsWindowInputDevice.h"
 #include "graphicsWindowProcCallbackData.h"
+#include "mouseAndKeyboard.h"
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
@@ -31,7 +33,7 @@
 #include "subprocessWindow.h"
 #include "windowHandle.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DISPLAY)
   #error Buildsystem error: BUILDING_PANDA_DISPLAY not defined
 #endif
 
@@ -510,7 +512,9 @@ init_libdisplay() {
   GraphicsPipe::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsWindow::init_type();
+  GraphicsWindowInputDevice::init_type();
   GraphicsWindowProcCallbackData::init_type();
+  MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
   StandardMunger::init_type();

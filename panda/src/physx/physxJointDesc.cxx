@@ -208,11 +208,11 @@ get_joint_flag(const PhysxJointFlag flag) const {
 PhysxActor *PhysxJointDesc::
 get_actor(unsigned int idx) const {
 
-  nassertr_always(idx < 2, NULL);
+  nassertr_always(idx < 2, nullptr);
 
   NxActor *actorPtr = ptr()->actor[idx];
-  if (actorPtr == NULL) {
-    return NULL;
+  if (actorPtr == nullptr) {
+    return nullptr;
   }
   else {
     return (PhysxActor *)(actorPtr->userData);

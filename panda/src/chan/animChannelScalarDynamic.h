@@ -36,15 +36,20 @@ protected:
   AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy);
 
 public:
-  AnimChannelScalarDynamic(const string &name);
+  AnimChannelScalarDynamic(const std::string &name);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);
   virtual void get_value(int frame, PN_stdfloat &value);
+  INLINE PN_stdfloat get_value() const;
+  INLINE PandaNode *get_value_node() const;
 
 PUBLISHED:
   void set_value(PN_stdfloat value);
   void set_value_node(PandaNode *node);
+
+  MAKE_PROPERTY(value, get_value, set_value);
+  MAKE_PROPERTY(value_node, get_value_node, set_value_node);
 
 protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;

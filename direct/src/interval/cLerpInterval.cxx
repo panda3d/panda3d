@@ -21,7 +21,7 @@ TypeHandle CLerpInterval::_type_handle;
  * string, or BT_invalid if the string doesn't match anything.
  */
 CLerpInterval::BlendType CLerpInterval::
-string_blend_type(const string &blend_type) {
+string_blend_type(const std::string &blend_type) {
   if (blend_type == "easeIn") {
     return BT_ease_in;
   } else if (blend_type == "easeOut") {
@@ -49,7 +49,7 @@ compute_delta(double t) const {
     return 1.0;
   }
   t /= duration;
-  t = min(max(t, 0.0), 1.0);
+  t = std::min(std::max(t, 0.0), 1.0);
 
   switch (_blend_type) {
   case BT_ease_in:

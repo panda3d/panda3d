@@ -22,14 +22,14 @@ TypeHandle DialNode::_type_handle;
  *
  */
 DialNode::
-DialNode(ClientBase *client, const string &device_name) :
+DialNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
-  nassertv(client != (ClientBase *)NULL);
+  nassertv(client != nullptr);
   PT(ClientDevice) device =
     client->get_device(ClientDialDevice::get_class_type(), device_name);
 
-  if (device == (ClientDevice *)NULL) {
+  if (device == nullptr) {
     device_cat.warning()
       << "Unable to open dial device " << device_name << "\n";
     return;

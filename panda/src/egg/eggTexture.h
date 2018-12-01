@@ -27,14 +27,14 @@
 /**
  * Defines a texture map that may be applied to geometry.
  */
-class EXPCL_PANDAEGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
+class EXPCL_PANDA_EGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
-  explicit EggTexture(const string &tref_name, const Filename &filename);
+  explicit EggTexture(const std::string &tref_name, const Filename &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);
   virtual ~EggTexture();
 
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   enum Equivalence {
     E_basename             = 0x001,
@@ -219,10 +219,10 @@ PUBLISHED:
   INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
 
-  INLINE void set_stage_name(const string &stage_name);
+  INLINE void set_stage_name(const std::string &stage_name);
   INLINE void clear_stage_name();
   INLINE bool has_stage_name() const;
-  INLINE const string &get_stage_name() const;
+  INLINE const std::string &get_stage_name() const;
 
   INLINE void set_priority(int priority);
   INLINE void clear_priority();
@@ -239,10 +239,10 @@ PUBLISHED:
   INLINE bool has_border_color() const;
   INLINE const LColor &get_border_color() const;
 
-  INLINE void set_uv_name(const string &uv_name);
+  INLINE void set_uv_name(const std::string &uv_name);
   INLINE void clear_uv_name();
   INLINE bool has_uv_name() const;
-  INLINE const string &get_uv_name() const;
+  INLINE const std::string &get_uv_name() const;
 
   INLINE void set_rgb_scale(int rgb_scale);
   INLINE void clear_rgb_scale();
@@ -297,17 +297,17 @@ PUBLISHED:
   bool multitexture_over(EggTexture *other);
   INLINE int get_multitexture_sort() const;
 
-  static TextureType string_texture_type(const string &string);
-  static Format string_format(const string &string);
-  static CompressionMode string_compression_mode(const string &string);
-  static WrapMode string_wrap_mode(const string &string);
-  static FilterType string_filter_type(const string &string);
-  static EnvType string_env_type(const string &string);
-  static CombineMode string_combine_mode(const string &string);
-  static CombineSource string_combine_source(const string &string);
-  static CombineOperand string_combine_operand(const string &string);
-  static TexGen string_tex_gen(const string &string);
-  static QualityLevel string_quality_level(const string &string);
+  static TextureType string_texture_type(const std::string &string);
+  static Format string_format(const std::string &string);
+  static CompressionMode string_compression_mode(const std::string &string);
+  static WrapMode string_wrap_mode(const std::string &string);
+  static FilterType string_filter_type(const std::string &string);
+  static EnvType string_env_type(const std::string &string);
+  static CombineMode string_combine_mode(const std::string &string);
+  static CombineSource string_combine_source(const std::string &string);
+  static CombineOperand string_combine_operand(const std::string &string);
+  static TexGen string_tex_gen(const std::string &string);
+  static QualityLevel string_quality_level(const std::string &string);
 
 PUBLISHED:
   MAKE_PROPERTY(texture_type, get_texture_type, set_texture_type);
@@ -396,11 +396,11 @@ private:
   int _num_views;
   TexGen _tex_gen;
   QualityLevel _quality_level;
-  string _stage_name;
+  std::string _stage_name;
   int _priority;
   LColor _color;
   LColor _border_color;
-  string _uv_name;
+  std::string _uv_name;
   int _rgb_scale;
   int _alpha_scale;
   int _flags;
@@ -458,7 +458,7 @@ private:
  * Returns true if the two referenced EggTexture pointers are in sorted order,
  * false otherwise.
  */
-class EXPCL_PANDAEGG UniqueEggTextures {
+class EXPCL_PANDA_EGG UniqueEggTextures {
 public:
   INLINE UniqueEggTextures(int eq = ~0);
   INLINE bool operator ()(const EggTexture *t1, const EggTexture *t2) const;
@@ -466,22 +466,22 @@ public:
   int _eq;
 };
 
-INLINE ostream &operator << (ostream &out, const EggTexture &n) {
+INLINE std::ostream &operator << (std::ostream &out, const EggTexture &n) {
   return out << n.get_filename();
 }
 
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::TextureType texture_type);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::Format format);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CompressionMode mode);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::WrapMode mode);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::FilterType type);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::EnvType type);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineMode cm);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineChannel cc);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineSource cs);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::CombineOperand co);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::TexGen tex_gen);
-EXPCL_PANDAEGG ostream &operator << (ostream &out, EggTexture::QualityLevel quality_level);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::TextureType texture_type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::Format format);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CompressionMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::WrapMode mode);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::FilterType type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::EnvType type);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineMode cm);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineChannel cc);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineSource cs);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::CombineOperand co);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::TexGen tex_gen);
+EXPCL_PANDA_EGG std::ostream &operator << (std::ostream &out, EggTexture::QualityLevel quality_level);
 
 #include "eggTexture.I"
 

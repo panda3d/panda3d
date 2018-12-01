@@ -41,7 +41,7 @@ PUBLISHED:
   //MAKE_SEQ(get_wheels, get_num_wheels, get_wheel);
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 private:
 

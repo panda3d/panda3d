@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_panda.h
  */
 
@@ -28,7 +21,7 @@
 
 // py_compat.h includes Python.h.
 #include "py_compat.h"
-#include "structmember.h"
+#include <structmember.h>
 
 using namespace std;
 
@@ -43,9 +36,6 @@ using namespace std;
 #endif
 
 struct Dtool_PyTypedObject;
-typedef std::map<int, Dtool_PyTypedObject *> RuntimeTypeMap;
-typedef std::set<int> RuntimeTypeSet;
-typedef std::map<std::string, Dtool_PyTypedObject *> NamedTypeMap;
 
 // used to stamp dtool instance..
 #define PY_PANDA_SIGNATURE 0xbeaf
@@ -78,7 +68,7 @@ struct Dtool_PyInstDef {
 };
 
 // A Offset Dictionary Defining How to read the Above Object..
-extern EXPCL_INTERROGATEDB PyMemberDef standard_type_members[];
+extern PyMemberDef standard_type_members[];
 
 // The Class Definition Structor For a Dtool python type.
 struct Dtool_PyTypedObject {
@@ -130,7 +120,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   if (DtoolInstance_VOID_PTR(self) != nullptr) {\
     if (((Dtool_PyInstDef *)self)->_memory_rules) {\
-      cerr << "Detected leak for " << #CLASS_NAME \
+      std::cerr << "Detected leak for " << #CLASS_NAME \
            << " which interrogate cannot delete.\n"; \
     }\
   }\
@@ -158,6 +148,16 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   Py_TYPE(self)->tp_free(self);\
 }
 
+#define Define_Dtool_FreeInstanceRef_Private(CLASS_NAME,CNAME)\
+static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
+  if (DtoolInstance_VOID_PTR(self) != nullptr) {\
+    if (((Dtool_PyInstDef *)self)->_memory_rules) {\
+      unref_delete((ReferenceCount *)(CNAME *)DtoolInstance_VOID_PTR(self));\
+    }\
+  }\
+  Py_TYPE(self)->tp_free(self);\
+}
+
 #define Define_Dtool_Simple_FreeInstance(CLASS_NAME, CNAME)\
 static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
   ((Dtool_InstDef_##CLASS_NAME *)self)->_value.~##CLASS_NAME();\
@@ -180,33 +180,31 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // forward declared of typed object.  We rely on the fact that typed objects
 // are uniquly defined by an integer.
 
-EXPCL_INTERROGATEDB void RegisterNamedClass(const string &name, Dtool_PyTypedObject &otype);
-EXPCL_INTERROGATEDB void RegisterRuntimeTypedClass(Dtool_PyTypedObject &otype);
+typedef std::map<std::string, Dtool_PyTypedObject *> Dtool_TypeMap;
 
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupNamedClass(const string &name);
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *LookupRuntimeTypedClass(TypeHandle handle);
-
-EXPCL_INTERROGATEDB Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
+Dtool_TypeMap *Dtool_GetGlobalTypeMap();
 
 /**
 
  */
-EXPCL_INTERROGATEDB void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer);
+void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer);
 
-EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, bool report_errors);
+void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const std::string &function_name, bool const_ok, bool report_errors);
 
-EXPCL_INTERROGATEDB void *DTOOL_Call_GetPointerThis(PyObject *self);
+bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer);
 
-EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer(PyObject *self, Dtool_PyTypedObject &classdef, void **answer);
-
-EXPCL_INTERROGATEDB bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
-                                                              void **answer, const char *method_name);
+bool Dtool_Call_ExtractThisPointer_NonConst(PyObject *self, Dtool_PyTypedObject &classdef,
+                                            void **answer, const char *method_name);
 
 template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into);
 template<class T> INLINE bool DtoolInstance_GetPointer(PyObject *self, T *&into, Dtool_PyTypedObject &classdef);
 
+INLINE Py_hash_t DtoolInstance_HashPointer(PyObject *self);
+INLINE int DtoolInstance_ComparePointers(PyObject *v1, PyObject *v2);
+INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, int op);
+
 // Functions related to error reporting.
-EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
+bool _Dtool_CheckErrorOccurred();
 
 #ifdef NDEBUG
 #define Dtool_CheckErrorOccurred() (UNLIKELY(_PyErr_OCCURRED() != nullptr))
@@ -214,12 +212,12 @@ EXPCL_INTERROGATEDB bool _Dtool_CheckErrorOccurred();
 #define Dtool_CheckErrorOccurred() (UNLIKELY(_Dtool_CheckErrorOccurred()))
 #endif
 
-EXPCL_INTERROGATEDB PyObject *Dtool_Raise_AssertionError();
-EXPCL_INTERROGATEDB PyObject *Dtool_Raise_TypeError(const char *message);
-EXPCL_INTERROGATEDB PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
-EXPCL_INTERROGATEDB PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
+PyObject *Dtool_Raise_AssertionError();
+PyObject *Dtool_Raise_TypeError(const char *message);
+PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
+PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
 
-EXPCL_INTERROGATEDB PyObject *_Dtool_Raise_BadArgumentsError();
+PyObject *_Dtool_Raise_BadArgumentsError();
 #ifdef NDEBUG
 // Define it to a function that just prints a generic message.
 #define Dtool_Raise_BadArgumentsError(x) _Dtool_Raise_BadArgumentsError()
@@ -231,9 +229,9 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Raise_BadArgumentsError();
 // These functions are similar to Dtool_WrapValue, except that they also
 // contain code for checking assertions and exceptions when compiling with
 // NDEBUG mode on.
-EXPCL_INTERROGATEDB PyObject *_Dtool_Return_None();
-EXPCL_INTERROGATEDB PyObject *Dtool_Return_Bool(bool value);
-EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
+PyObject *_Dtool_Return_None();
+PyObject *Dtool_Return_Bool(bool value);
+PyObject *_Dtool_Return(PyObject *value);
 
 #ifdef NDEBUG
 #define Dtool_Return_None() (LIKELY(_PyErr_OCCURRED() == nullptr) ? (Py_INCREF(Py_None), Py_None) : nullptr)
@@ -246,17 +244,19 @@ EXPCL_INTERROGATEDB PyObject *_Dtool_Return(PyObject *value);
 /**
  * Wrapper around Python 3.4's enum library, which does not have a C API.
  */
-EXPCL_INTERROGATEDB PyObject *Dtool_EnumType_Create(const char *name, PyObject *names,
-                                                    const char *module = NULL);
+PyTypeObject *Dtool_EnumType_Create(const char *name, PyObject *names,
+                                                        const char *module = nullptr);
+INLINE long Dtool_EnumValue_AsLong(PyObject *value);
+
 
 /**
 
  */
-EXPCL_INTERROGATEDB PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int RunTimeType);
+PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &known_class_type, bool memory_rules, bool is_const, int RunTimeType);
 
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a
 // general dtool py instance..
-EXPCL_INTERROGATEDB PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const);
+PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const);
 
 // These template methods allow use when the Dtool_PyTypedObject is not known.
 // They require a get_class_type() to be defined for the class.
@@ -290,7 +290,7 @@ Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 #define Define_Module_ClassRef_Private(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
 Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
 Define_Dtool_new(CLASS_NAME,CNAME)\
-Define_Dtool_FreeInstance_Private(CLASS_NAME,CNAME)\
+Define_Dtool_FreeInstanceRef_Private(CLASS_NAME,CNAME)\
 Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 #define Define_Module_ClassRef(MODULE_NAME,CLASS_NAME,CNAME,PUBLIC_NAME)\
@@ -300,60 +300,49 @@ Define_Dtool_FreeInstanceRef(CLASS_NAME,CNAME)\
 Define_Dtool_Class(MODULE_NAME,CLASS_NAME,PUBLIC_NAME)
 
 // The finalizer for simple instances.
-EXPCL_INTERROGATEDB int DTool_PyInit_Finalize(PyObject *self, void *This, Dtool_PyTypedObject *type, bool memory_rules, bool is_const);
+INLINE int DTool_PyInit_Finalize(PyObject *self, void *This, Dtool_PyTypedObject *type, bool memory_rules, bool is_const);
 
 // A heler function to glu methed definition together .. that can not be done
 // at code generation time becouse of multiple generation passes in
 // interigate..
 typedef std::map<std::string, PyMethodDef *> MethodDefmap;
 
-EXPCL_INTERROGATEDB void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap);
-
 // We need a way to runtime merge compile units into a python "Module" .. this
 // is done with the fallowing structors and code.. along with the support of
 // interigate_module
+
+struct Dtool_TypeDef {
+  const char *const name;
+  Dtool_PyTypedObject *type;
+};
+
 struct LibraryDef {
-  PyMethodDef *_methods;
+  PyMethodDef *const _methods;
+  const Dtool_TypeDef *const _types;
+  Dtool_TypeDef *const _external_types;
 };
 
 #if PY_MAJOR_VERSION >= 3
-EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def);
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], PyModuleDef *module_def);
 #else
-EXPCL_INTERROGATEDB PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename);
+PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulename);
 #endif
 
 // HACK.... Be carefull Dtool_BorrowThisReference This function can be used to
 // grab the "THIS" pointer from an object and use it Required to support fom
 // historical inharatence in the for of "is this instance of"..
-EXPCL_INTERROGATEDB PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args);
+PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args);
 
-// We do expose a dictionay for dtool classes .. this should be removed at
-// some point..
-EXPCL_INTERROGATEDB PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
+#define DTOOL_PyObject_HashPointer DtoolInstance_HashPointer
+#define DTOOL_PyObject_ComparePointers DtoolInstance_ComparePointers
 
-
-EXPCL_INTERROGATEDB Py_hash_t DTOOL_PyObject_HashPointer(PyObject *obj);
-
-/* Compare v to w.  Return
-   -1 if v <  w or exception (PyErr_Occurred() true in latter case).
-    0 if v == w.
-    1 if v > w.
-   XXX The docs (C API manual) say the return value is undefined in case
-   XXX of error.
-*/
-
-EXPCL_INTERROGATEDB int DTOOL_PyObject_ComparePointers(PyObject *v1, PyObject *v2);
-EXPCL_INTERROGATEDB int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
-
-EXPCL_INTERROGATEDB PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op);
-
-EXPCL_INTERROGATEDB PyObject *
+PyObject *
 copy_from_make_copy(PyObject *self, PyObject *noargs);
 
-EXPCL_INTERROGATEDB PyObject *
+PyObject *
 copy_from_copy_constructor(PyObject *self, PyObject *noargs);
 
-EXPCL_INTERROGATEDB PyObject *
+PyObject *
 map_deepcopy_to_copy(PyObject *self, PyObject *args);
 
 /**
@@ -362,13 +351,13 @@ map_deepcopy_to_copy(PyObject *self, PyObject *args);
  */
 ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args);
 ALWAYS_INLINE bool Dtool_CheckNoArgs(PyObject *args, PyObject *kwds);
-EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+bool Dtool_ExtractArg(PyObject **result, PyObject *args,
                                           PyObject *kwds, const char *keyword);
-EXPCL_INTERROGATEDB bool Dtool_ExtractArg(PyObject **result, PyObject *args,
+bool Dtool_ExtractArg(PyObject **result, PyObject *args,
                                           PyObject *kwds);
-EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
                                                   PyObject *kwds, const char *keyword);
-EXPCL_INTERROGATEDB bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
+bool Dtool_ExtractOptionalArg(PyObject **result, PyObject *args,
                                                   PyObject *kwds);
 
 /**
@@ -393,7 +382,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::string *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::wstring *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(char value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(wchar_t value);
-ALWAYS_INLINE PyObject *Dtool_WrapValue(nullptr_t);
+ALWAYS_INLINE PyObject *Dtool_WrapValue(std::nullptr_t);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(PyObject *value);
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const vector_uchar &value);
 
@@ -404,10 +393,7 @@ ALWAYS_INLINE PyObject *Dtool_WrapValue(Py_buffer *value);
 template<class T1, class T2>
 ALWAYS_INLINE PyObject *Dtool_WrapValue(const std::pair<T1, T2> &value);
 
-EXPCL_INTERROGATEDB extern struct Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE;
-EXPCL_INTERROGATEDB extern void Dtool_PyModuleClassInit_DTOOL_SUPER_BASE(PyObject *module);
-
-#define Dtool_Ptr_DTOOL_SUPER_BASE (&Dtool_DTOOL_SUPER_BASE)
+Dtool_PyTypedObject *Dtool_GetSuperBase();
 
 #include "py_panda.I"
 

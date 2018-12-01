@@ -74,7 +74,7 @@ void PathFinder::generate_path() {
       add_to_clist(nxt_node);
     }
   }
-  cout<<"DESTINATION NOT REACHABLE MATE!"<<endl;
+  std::cout << "DESTINATION NOT REACHABLE MATE!" << std::endl;
   _closed_list.clear();
 }
 
@@ -87,7 +87,7 @@ void PathFinder::identify_neighbors(Node *parent_node) {
   // while adding new nodes to the open list heap.
   remove_from_olist();
   for(int i = 0; i < 8; ++i) {
-    if(parent_node->_neighbours[i] != NULL) {
+    if(parent_node->_neighbours[i] != nullptr) {
       if(parent_node->_neighbours[i]->_status == parent_node->_neighbours[i]->neutral
         && parent_node->_neighbours[i]->_type == true) {
         // Link the neighbor to the parent node.
@@ -340,10 +340,10 @@ Node* find_in_mesh(NavMesh nav_mesh, LVecBase3 pos, int grid_size) {
 
   for(int i = 0; i < size; ++i) {
     for(int j = 0; j < size; ++j) {
-      if(nav_mesh[i][j] != NULL && nav_mesh[i][j]->contains(x, y)) {
+      if(nav_mesh[i][j] != nullptr && nav_mesh[i][j]->contains(x, y)) {
         return(nav_mesh[i][j]);
       }
     }
   }
-  return NULL;
+  return nullptr;
 }

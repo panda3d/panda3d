@@ -34,7 +34,7 @@ class BamCacheRecord;
  * begin() and end() calls.  The children of the EggData class are the
  * toplevel nodes in the egg file.
  */
-class EXPCL_PANDAEGG EggData : public EggGroupNode {
+class EXPCL_PANDA_EGG EggData : public EggGroupNode {
 PUBLISHED:
   INLINE EggData();
   INLINE EggData(const EggData &copy);
@@ -43,8 +43,8 @@ PUBLISHED:
   static bool resolve_egg_filename(Filename &egg_filename,
                                    const DSearchPath &searchpath = DSearchPath());
 
-  bool read(Filename filename, string display_name = string());
-  bool read(istream &in);
+  bool read(Filename filename, std::string display_name = std::string());
+  bool read(std::istream &in);
   void merge(EggData &other);
 
   bool load_externals(const DSearchPath &searchpath = DSearchPath());
@@ -53,7 +53,7 @@ PUBLISHED:
   int collapse_equivalent_materials();
 
   bool write_egg(Filename filename);
-  bool write_egg(ostream &out);
+  bool write_egg(std::ostream &out);
 
   INLINE void set_auto_resolve_externals(bool resolve);
   INLINE bool get_auto_resolve_externals() const;
@@ -68,12 +68,18 @@ PUBLISHED:
   INLINE void set_egg_timestamp(time_t egg_timestamp);
   INLINE time_t get_egg_timestamp() const;
 
+  MAKE_PROPERTY(auto_resolve_externals, get_auto_resolve_externals,
+                                        set_auto_resolve_externals);
+  MAKE_PROPERTY(coordinate_system, get_coordinate_system, set_coordinate_system);
+  MAKE_PROPERTY(egg_filename, get_egg_filename, set_egg_filename);
+  MAKE_PROPERTY(egg_timestamp, get_egg_timestamp, set_egg_timestamp);
+
   INLINE void recompute_vertex_normals(double threshold);
   INLINE void recompute_polygon_normals();
   INLINE void strip_normals();
 
 protected:
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 private:
   void post_read();

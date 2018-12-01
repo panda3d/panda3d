@@ -26,7 +26,7 @@ TypeHandle LightLensNode::_type_handle;
  *
  */
 LightLensNode::
-LightLensNode(const string &name, Lens *lens) :
+LightLensNode(const std::string &name, Lens *lens) :
   Camera(name, lens),
   _has_specular_color(false),
   _attrib_count(0)
@@ -158,7 +158,7 @@ as_light() {
  *
  */
 void LightLensNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   LensNode::output(out);
 }
 
@@ -166,7 +166,7 @@ output(ostream &out) const {
  *
  */
 void LightLensNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   LensNode::write(out, indent_level);
 }
 

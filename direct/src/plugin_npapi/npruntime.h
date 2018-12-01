@@ -137,13 +137,13 @@ void NPN_ReleaseVariantValue(NPVariant *variant);
 #define VOID_TO_NPVARIANT(_v)                                                 \
 NP_BEGIN_MACRO                                                                \
     (_v).type = NPVariantType_Void;                                           \
-    (_v).value.objectValue = NULL;                                            \
+    (_v).value.objectValue = nullptr;                                            \
 NP_END_MACRO
 
 #define NULL_TO_NPVARIANT(_v)                                                 \
 NP_BEGIN_MACRO                                                                \
     (_v).type = NPVariantType_Null;                                           \
-    (_v).value.objectValue = NULL;                                            \
+    (_v).value.objectValue = nullptr;                                            \
 NP_END_MACRO
 
 #define BOOLEAN_TO_NPVARIANT(_val, _v)                                        \

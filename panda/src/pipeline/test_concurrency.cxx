@@ -50,7 +50,7 @@ volatile MemBlock memblock[number_of_threads];
 
 class MyThread : public Thread {
 public:
-  MyThread(const string &name, int index) :
+  MyThread(const std::string &name, int index) :
     Thread(name, name),
     _index(index)
   {
@@ -101,7 +101,7 @@ main(int argc, char *argv[]) {
   for (int i = 1; i < number_of_threads; ++i) {
     char name = 'a' + i;
     Thread::sleep(delay_between_threads);
-    PT(MyThread) thread = new MyThread(string(1, name), i);
+    PT(MyThread) thread = new MyThread(std::string(1, name), i);
     threads.push_back(thread);
     thread->start(TP_normal, true);
   }

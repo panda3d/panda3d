@@ -13,6 +13,8 @@
 
 #include "eggBackPointer.h"
 
+#include "pnotify.h"
+
 
 TypeHandle EggBackPointer::_type_handle;
 
@@ -38,7 +40,7 @@ get_frame_rate() const {
 void EggBackPointer::
 extend_to(int num_frames) {
   // Whoops, can't extend this kind of table!
-  nassertv(false);
+  nassert_raise("can't extend this kind of table");
 }
 
 /**
@@ -55,5 +57,5 @@ has_vertices() const {
  * Applies the indicated name change to the egg file.
  */
 void EggBackPointer::
-set_name(const string &name) {
+set_name(const std::string &name) {
 }

@@ -146,9 +146,10 @@ PUBLISHED:
   bool request_resident(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE bool check_valid(const GeomVertexData *vertex_data) const;
+  INLINE bool check_valid(const GeomVertexDataPipelineReader *data_reader) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
 /*
@@ -351,13 +352,12 @@ private:
 class EXPCL_PANDA_GOBJ GeomPrimitivePipelineReader : public GeomEnums {
 public:
   INLINE GeomPrimitivePipelineReader(CPT(GeomPrimitive) object, Thread *current_thread);
-private:
-  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) DELETED;
-  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) DELETED_ASSIGN;
-
-public:
+  GeomPrimitivePipelineReader(const GeomPrimitivePipelineReader &copy) = delete;
   INLINE ~GeomPrimitivePipelineReader();
+
   ALLOC_DELETED_CHAIN(GeomPrimitivePipelineReader);
+
+  GeomPrimitivePipelineReader &operator = (const GeomPrimitivePipelineReader &copy) = delete;
 
   INLINE const GeomPrimitive *get_object() const;
   INLINE Thread *get_current_thread() const;
@@ -409,7 +409,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomPrimitive &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomPrimitive &obj);
 
 #include "geomPrimitive.I"
 

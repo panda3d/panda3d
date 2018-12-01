@@ -30,7 +30,7 @@ get_controller() const {
     return (PhysxController *)(_hit.controller->getUserData());
   }
   else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -44,7 +44,7 @@ get_shape() const {
     return (PhysxShape *)(_hit.shape->userData);
   }
   else {
-    return NULL;
+    return nullptr;
   }
 }
 

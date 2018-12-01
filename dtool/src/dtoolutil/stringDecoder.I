@@ -15,7 +15,7 @@
  *
  */
 INLINE StringDecoder::
-StringDecoder(const string &input) : _input(input) {
+StringDecoder(const std::string &input) : _input(input) {
   _p = 0;
   _eof = false;
 }
@@ -46,12 +46,12 @@ test_eof() {
  *
  */
 INLINE StringUtf8Decoder::
-StringUtf8Decoder(const string &input) : StringDecoder(input) {
+StringUtf8Decoder(const std::string &input) : StringDecoder(input) {
 }
 
 /**
  *
  */
 INLINE StringUnicodeDecoder::
-StringUnicodeDecoder(const string &input) : StringDecoder(input) {
+StringUtf16Decoder(const std::string &input) : StringDecoder(input) {
 }

@@ -97,7 +97,7 @@ compare_to(const EggMorphList<MorphType> &other, double threshold) const {
  *
  */
 template<class MorphType>
-INLINE TYPENAME EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+INLINE typename EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
 begin() {
   return _morphs.begin();
 }
@@ -106,7 +106,7 @@ begin() {
  *
  */
 template<class MorphType>
-INLINE TYPENAME EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+INLINE typename EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
 begin() const {
   return _morphs.begin();
 }
@@ -115,7 +115,7 @@ begin() const {
  *
  */
 template<class MorphType>
-INLINE TYPENAME EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+INLINE typename EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
 end() {
   return _morphs.end();
 }
@@ -124,7 +124,7 @@ end() {
  *
  */
 template<class MorphType>
-INLINE TYPENAME EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+INLINE typename EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
 end() const {
   return _morphs.end();
 }
@@ -133,7 +133,7 @@ end() const {
  *
  */
 template<class MorphType>
-INLINE TYPENAME EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
+INLINE typename EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
 size() const {
   return _morphs.size();
 }
@@ -155,10 +155,10 @@ empty() const {
  * to *be* a set, but we cannot export STL sets from a Windows DLL.
  */
 template<class MorphType>
-pair<TYPENAME EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
+std::pair<typename EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
 insert(const MorphType &value) {
-  pair<iterator, bool> result;
-  TYPENAME Morphs::iterator mi;
+  std::pair<iterator, bool> result;
+  typename Morphs::iterator mi;
   for (mi = _morphs.begin(); mi != _morphs.end(); ++mi) {
     if ((*mi) == value) {
       // This value is already present.
@@ -189,7 +189,7 @@ clear() {
  */
 template<class MorphType>
 void EggMorphList<MorphType>::
-write(ostream &out, int indent_level, const string &tag,
+write(std::ostream &out, int indent_level, const std::string &tag,
       int num_dimensions) const {
   const_iterator i;
 

@@ -13,14 +13,14 @@
 
 #include "physxFileStream.h"
 
-#include "stdio.h"
+#include <stdio.h>
 
 #include "virtualFileSystem.h"
 
 /**
  *
  */
-PhysxFileStream::PhysxFileStream(const Filename &fn, bool load) : _fp(NULL), _vf(NULL), _in(NULL)
+PhysxFileStream::PhysxFileStream(const Filename &fn, bool load) : _fp(nullptr), _vf(nullptr), _in(nullptr)
 {
   if (load) {
     _vf = VirtualFileSystem::get_global_ptr()->get_file(fn);

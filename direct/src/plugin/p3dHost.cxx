@@ -17,13 +17,18 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 #include "xml_helpers.h"
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 
 #include <algorithm>
 
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+
+using std::ios;
+using std::ostringstream;
+using std::string;
+using std::wstring;
 
 /**
  * Use P3DInstanceManager::get_host() to construct a new P3DHost.
@@ -42,7 +47,7 @@ P3DHost(const string &host_url, const string &host_dir) :
 
   _descriptive_name = _host_url;
 
-  _xcontents = NULL;
+  _xcontents = nullptr;
   _contents_expiration = 0;
   _contents_iseq = 0;
 }
@@ -52,7 +57,7 @@ P3DHost(const string &host_url, const string &host_dir) :
  */
 P3DHost::
 ~P3DHost() {
-  if (_xcontents != NULL) {
+  if (_xcontents != nullptr) {
     delete _xcontents;
   }
 
@@ -94,7 +99,7 @@ P3DHost::
  */
 P3DHost *P3DHost::
 get_alt_host(const string &alt_host) {
-  assert(_xcontents != NULL);
+  assert(_xcontents != nullptr);
 
   AltHosts::iterator hi;
   hi = _alt_hosts.find(alt_host);
@@ -118,8 +123,8 @@ has_current_contents_file(P3DInstanceManager *inst_mgr) const {
     return has_contents_file();
   }
 
-  time_t now = time(NULL);
-  return now < _contents_expiration && (_xcontents != NULL);
+  time_t now = time(nullptr);
+  return now < _contents_expiration && (_xcontents != nullptr);
 }
 
 /**
@@ -153,11 +158,11 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
   }
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
-  if (xcontents == NULL) {
+  if (xcontents == nullptr) {
     return false;
   }
 
-  if (_xcontents != NULL) {
+  if (_xcontents != nullptr) {
     delete _xcontents;
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
@@ -169,7 +174,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
 
   // Get the latest possible expiration time, based on the max_age indication.
   // Any expiration time later than this is in error.
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   _contents_expiration = now + (time_t)max_age;
 
   if (fresh_download) {
@@ -177,7 +182,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
 
     // Update the XML with the new download information.
     TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-    while (xorig != NULL) {
+    while (xorig != nullptr) {
       xcontents->RemoveChild(xorig);
       xorig = xcontents->FirstChildElement("orig");
     }
@@ -192,7 +197,7 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     // Read the download hash and expiration time from the XML.
     int expiration = 0;
     TiXmlElement *xorig = xcontents->FirstChildElement("orig");
-    if (xorig != NULL) {
+    if (xorig != nullptr) {
       _contents_spec.load_xml(xorig);
       xorig->Attribute("expiration", &expiration);
     }
@@ -200,26 +205,26 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
       _contents_spec.read_hash(contents_filename);
     }
 
-    _contents_expiration = min(_contents_expiration, (time_t)expiration);
+    _contents_expiration = std::min(_contents_expiration, (time_t)expiration);
   }
 
   nout << "read contents.xml, max_age = " << max_age
-       << ", expires in " << max(_contents_expiration, now) - now
+       << ", expires in " << std::max(_contents_expiration, now) - now
        << " s\n";
 
   TiXmlElement *xhost = _xcontents->FirstChildElement("host");
-  if (xhost != NULL) {
+  if (xhost != nullptr) {
     const char *url = xhost->Attribute("url");
-    if (url != NULL && _host_url == string(url)) {
+    if (url != nullptr && _host_url == string(url)) {
       // We're the primary host.  This is the normal case.
       read_xhost(xhost);
 
       // Build up the list of alternate hosts.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
-      while (xalthost != NULL) {
+      while (xalthost != nullptr) {
         const char *keyword = xalthost->Attribute("keyword");
         const char *url = xalthost->Attribute("url");
-        if (keyword != NULL && url != NULL) {
+        if (keyword != nullptr && url != nullptr) {
           _alt_hosts[keyword] = url;
         }
         xalthost = xalthost->NextSiblingElement("alt_host");
@@ -228,9 +233,9 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
     } else {
       // We're not the primary host; perhaps we're an alternate host.
       TiXmlElement *xalthost = xhost->FirstChildElement("alt_host");
-      while (xalthost != NULL) {
+      while (xalthost != nullptr) {
         const char *url = xalthost->Attribute("url");
-        if (url != NULL && _host_url == string(url)) {
+        if (url != nullptr && _host_url == string(url)) {
           // Yep, we're this alternate host.
           read_xhost(xalthost);
           break;
@@ -288,12 +293,12 @@ read_contents_file(const string &contents_filename, bool fresh_download) {
 void P3DHost::
 read_xhost(TiXmlElement *xhost) {
   const char *descriptive_name = xhost->Attribute("descriptive_name");
-  if (descriptive_name != NULL && _descriptive_name.empty()) {
+  if (descriptive_name != nullptr && _descriptive_name.empty()) {
     _descriptive_name = descriptive_name;
   }
 
   const char *host_dir_basename = xhost->Attribute("host_dir");
-  if (host_dir_basename == NULL) {
+  if (host_dir_basename == nullptr) {
     host_dir_basename = "";
   }
   if (_host_dir.empty()) {
@@ -303,7 +308,7 @@ read_xhost(TiXmlElement *xhost) {
   // Get the "download" URL, which is the source from which we download
   // everything other than the contents.xml file.
   const char *download_url = xhost->Attribute("download_url");
-  if (download_url != NULL) {
+  if (download_url != nullptr) {
     _download_url_prefix = download_url;
   }
   if (!_download_url_prefix.empty()) {
@@ -315,9 +320,9 @@ read_xhost(TiXmlElement *xhost) {
   }
 
   TiXmlElement *xmirror = xhost->FirstChildElement("mirror");
-  while (xmirror != NULL) {
+  while (xmirror != nullptr) {
     const char *url = xmirror->Attribute("url");
-    if (url != NULL) {
+    if (url != nullptr) {
       add_mirror(url);
     }
     xmirror = xmirror->NextSiblingElement("mirror");
@@ -338,7 +343,7 @@ get_package(const string &package_name, const string &package_version,
             const string &package_platform, const string &package_seq,
             const string &alt_host) {
   if (!alt_host.empty()) {
-    if (_xcontents != NULL) {
+    if (_xcontents != nullptr) {
       // If we're asking for an alt host and we've already read our
       // contents.xml file, then we already know all of our hosts, and we can
       // start the package off with the correct host immediately.
@@ -355,7 +360,7 @@ get_package(const string &package_name, const string &package_version,
   string key = package_name + "_" + package_version;
   PlatformPackages &ppackages = _packages[alt_host][key];
   PlatformPackages::iterator ppi;
-  P3DPackage *package = NULL;
+  P3DPackage *package = nullptr;
 
   // First, look for an exact match of the platform.
   for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
@@ -366,7 +371,7 @@ get_package(const string &package_name, const string &package_version,
   }
 
   // If an exact match isn't found, look for a generic platform.
-  if (package == NULL) {
+  if (package == nullptr) {
     for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
       if ((*ppi)->get_package_platform().empty()) {
         package = *ppi;
@@ -375,18 +380,18 @@ get_package(const string &package_name, const string &package_version,
     }
   }
 
-  if (package != NULL) {
+  if (package != nullptr) {
     if (package->get_failed()) {
       // If the package has previously failed, move it aside and try again
       // (maybe it just failed because the user interrupted it).
       nout << "Package " << key << " has previously failed; trying again.\n";
       _failed_packages.push_back(package);
       ppackages.erase(ppi);
-      package = NULL;
+      package = nullptr;
     }
   }
 
-  if (package == NULL) {
+  if (package == nullptr) {
     package =
       new P3DPackage(this, package_name, package_version, package_platform, alt_host);
     ppackages.push_back(package);
@@ -428,7 +433,7 @@ choose_suitable_platform(string &selected_platform,
                          const string &package_name,
                          const string &package_version,
                          const string &package_platform) {
-  if (_xcontents == NULL) {
+  if (_xcontents == nullptr) {
     return false;
   }
 
@@ -443,17 +448,17 @@ choose_suitable_platform(string &selected_platform,
     for (int pi = 0; pi < num_supported_platforms; ++pi) {
       string supported_platform = inst_mgr->get_supported_platform(pi);
       xpackage = _xcontents->FirstChildElement("package");
-      while (xpackage != NULL) {
+      while (xpackage != nullptr) {
         const char *name = xpackage->Attribute("name");
         const char *platform = xpackage->Attribute("platform");
         const char *version = xpackage->Attribute("version");
-        if (platform == NULL) {
+        if (platform == nullptr) {
           platform = "";
         }
-        if (version == NULL) {
+        if (version == nullptr) {
           version = "";
         }
-        if (name != NULL &&
+        if (name != nullptr &&
             package_name == name &&
             supported_platform == platform &&
             package_version == version) {
@@ -470,17 +475,17 @@ choose_suitable_platform(string &selected_platform,
 
   // Now, we look for an exact match for the expected platform.
   xpackage = _xcontents->FirstChildElement("package");
-  while (xpackage != NULL) {
+  while (xpackage != nullptr) {
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
-    if (platform == NULL) {
+    if (platform == nullptr) {
       platform = "";
     }
-    if (version == NULL) {
+    if (version == nullptr) {
       version = "";
     }
-    if (name != NULL &&
+    if (name != nullptr &&
         package_name == name &&
         package_platform == platform &&
         package_version == version) {
@@ -496,17 +501,17 @@ choose_suitable_platform(string &selected_platform,
   // Look one more time, this time looking for a non-platform-specific
   // version.
   xpackage = _xcontents->FirstChildElement("package");
-  while (xpackage != NULL) {
+  while (xpackage != nullptr) {
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
-    if (platform == NULL) {
+    if (platform == nullptr) {
       platform = "";
     }
-    if (version == NULL) {
+    if (version == nullptr) {
       version = "";
     }
-    if (name != NULL &&
+    if (name != nullptr &&
         package_name == name &&
         *platform == '\0' &&
         package_version == version) {
@@ -535,7 +540,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
                       const string &package_name,       // in
                       const string &package_version,    // in
                       const string &package_platform) { // in
-  if (_xcontents == NULL) {
+  if (_xcontents == nullptr) {
     return false;
   }
 
@@ -545,22 +550,22 @@ get_package_desc_file(FileSpec &desc_file,              // out
   // platform precisely, because we previously called
   // choose_suitable_platform().
   TiXmlElement *xpackage = _xcontents->FirstChildElement("package");
-  while (xpackage != NULL) {
+  while (xpackage != nullptr) {
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
     const char *seq = xpackage->Attribute("seq");
     const char *solo = xpackage->Attribute("solo");
-    if (platform == NULL) {
+    if (platform == nullptr) {
       platform = "";
     }
-    if (version == NULL) {
+    if (version == nullptr) {
       version = "";
     }
-    if (seq == NULL) {
+    if (seq == nullptr) {
       seq = "";
     }
-    if (name != NULL && platform != NULL &&
+    if (name != nullptr && platform != nullptr &&
         package_name == name &&
         package_platform == platform &&
         package_version == version) {
@@ -568,7 +573,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
       desc_file.load_xml(xpackage);
       package_seq = seq;
       package_solo = false;
-      if (solo != NULL) {
+      if (solo != nullptr) {
         package_solo = (atoi(solo) != 0);
       }
       return true;
@@ -631,10 +636,10 @@ migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_h
  * elements in the list, adds only as many mirrors as we can get.
  */
 void P3DHost::
-choose_random_mirrors(vector<string> &result, int num_mirrors) {
-  vector<size_t> selected;
+choose_random_mirrors(std::vector<string> &result, int num_mirrors) {
+  std::vector<size_t> selected;
 
-  size_t num_to_select = min(_mirrors.size(), (size_t)num_mirrors);
+  size_t num_to_select = std::min(_mirrors.size(), (size_t)num_mirrors);
   while (num_to_select > 0) {
     size_t i = (size_t)(((double)rand() / (double)RAND_MAX) * _mirrors.size());
     while (find(selected.begin(), selected.end(), i) != selected.end()) {
@@ -846,7 +851,7 @@ copy_file(const string &from_filename, const string &to_filename) {
   char buffer[buffer_size];
 
   in.read(buffer, buffer_size);
-  streamsize count = in.gcount();
+  std::streamsize count = in.gcount();
   while (count != 0) {
     out.write(buffer, count);
     if (out.fail()) {

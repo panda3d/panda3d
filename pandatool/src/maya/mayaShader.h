@@ -21,7 +21,6 @@
 #include "lmatrix.h"
 #include "namable.h"
 
-class MObject;
 
 /**
  * Corresponds to a single "shader" in Maya.  This extracts out all the
@@ -33,8 +32,8 @@ public:
   MayaShader(MObject engine, bool legacy_shader);
   ~MayaShader();
 
-  void output(ostream &out) const;
-  void write(ostream &out) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   bool find_textures_modern(MObject shader);
@@ -64,7 +63,7 @@ private:
   bool try_pair(MayaShaderColorDef *map1,
                 MayaShaderColorDef *map2,
                 bool perfect);
-  string get_file_prefix(const string &fn);
+  std::string get_file_prefix(const std::string &fn);
   bool _legacy_shader;
 public: // relevant only to legacy mode.
   MayaShaderColorList _color;
@@ -73,7 +72,7 @@ public: // relevant only to legacy mode.
   MayaShaderColorDef *get_color_def(size_t idx=0) const;
 };
 
-INLINE ostream &operator << (ostream &out, const MayaShader &shader) {
+INLINE std::ostream &operator << (std::ostream &out, const MayaShader &shader) {
   shader.output(out);
   return out;
 }

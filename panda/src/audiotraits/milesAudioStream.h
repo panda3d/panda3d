@@ -19,7 +19,8 @@
 
 #include "milesAudioSound.h"
 #include "milesAudioManager.h"
-#include "mss.h"
+
+#include <mss.h>
 
 /**
  * This represents a sound file played by the Miles Sound System, similar to
@@ -28,7 +29,7 @@
  */
 class EXPCL_MILES_AUDIO MilesAudioStream : public MilesAudioSound {
 private:
-  MilesAudioStream(MilesAudioManager *manager, const string &file_name,
+  MilesAudioStream(MilesAudioManager *manager, const std::string &file_name,
                    const Filename &path);
 
 public:

@@ -69,7 +69,7 @@ make_default() {
  *
  */
 void AntialiasAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
 
   int type = get_mode_type();

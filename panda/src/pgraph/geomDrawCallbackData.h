@@ -31,7 +31,7 @@ public:
                               GraphicsStateGuardianBase *gsg, bool force);
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   INLINE CullableObject *get_object() const;
   INLINE GraphicsStateGuardianBase *get_gsg() const;

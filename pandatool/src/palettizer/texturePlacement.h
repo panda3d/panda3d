@@ -46,7 +46,7 @@ public:
   TexturePlacement(TextureImage *texture, PaletteGroup *group);
   ~TexturePlacement();
 
-  const string &get_name() const;
+  const std::string &get_name() const;
   TextureImage *get_texture() const;
   const TextureProperties &get_properties() const;
   PaletteGroup *get_group() const;
@@ -82,7 +82,7 @@ public:
 
   void compute_tex_matrix(LMatrix3d &transform);
 
-  void write_placed(ostream &out, int indent_level = 0);
+  void write_placed(std::ostream &out, int indent_level = 0);
 
   bool is_filled() const;
   void mark_unfilled();
@@ -127,7 +127,6 @@ private:
   // This value is only filled in while reading from the bam file; don't use
   // it otherwise.
   int _num_references;
-  int _margin_override;
   int _num_textureSwaps;
 
 public:

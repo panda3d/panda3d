@@ -21,7 +21,7 @@
  */
 EggCharacterFilter::
 EggCharacterFilter() : EggMultiFilter(false) {
-  _collection = (EggCharacterCollection *)NULL;
+  _collection = nullptr;
 
   _force_initial_rest_frame = false;
 }
@@ -31,7 +31,7 @@ EggCharacterFilter() : EggMultiFilter(false) {
  */
 EggCharacterFilter::
 ~EggCharacterFilter() {
-  if (_collection != (EggCharacterCollection *)NULL) {
+  if (_collection != nullptr) {
     delete _collection;
   }
 }
@@ -57,7 +57,7 @@ add_fixrest_option() {
  */
 bool EggCharacterFilter::
 post_command_line() {
-  if (_collection == (EggCharacterCollection *)NULL) {
+  if (_collection == nullptr) {
     _collection = make_collection();
   }
 

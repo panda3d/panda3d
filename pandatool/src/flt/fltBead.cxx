@@ -100,7 +100,7 @@ get_num_transform_steps() const {
 FltTransformRecord *FltBead::
 get_transform_step(int n) {
   nassertr(n >= 0 && n < (int)_transform_steps.size(),
-           (FltTransformRecord *)NULL);
+           nullptr);
   return _transform_steps[n];
 }
 
@@ -111,7 +111,7 @@ get_transform_step(int n) {
 const FltTransformRecord *FltBead::
 get_transform_step(int n) const {
   nassertr(n >= 0 && n < (int)_transform_steps.size(),
-           (const FltTransformRecord *)NULL);
+           nullptr);
   return _transform_steps[n];
 }
 
@@ -172,7 +172,7 @@ extract_record(FltRecordReader &reader) {
  */
 bool FltBead::
 extract_ancillary(FltRecordReader &reader) {
-  FltTransformRecord *step = (FltTransformRecord *)NULL;
+  FltTransformRecord *step = nullptr;
 
   switch (reader.get_opcode()) {
   case FO_transform_matrix:
@@ -214,7 +214,7 @@ extract_ancillary(FltRecordReader &reader) {
   }
 
   // A transform step.
-  nassertr(step != (FltTransformRecord *)NULL, false);
+  nassertr(step != nullptr, false);
   if (!step->extract_record(reader)) {
     return false;
   }

@@ -20,16 +20,17 @@
 /**
  * The streambuf object that implements ISubStream.
  */
-class EXPCL_PANDAEXPRESS SubStreamBuf : public streambuf {
+class EXPCL_PANDA_EXPRESS SubStreamBuf : public std::streambuf {
 public:
   SubStreamBuf();
+  SubStreamBuf(const SubStreamBuf &copy) = delete;
   virtual ~SubStreamBuf();
 
-  void open(IStreamWrapper *source, OStreamWrapper *dest, streampos start, streampos end, bool append);
+  void open(IStreamWrapper *source, OStreamWrapper *dest, std::streampos start, std::streampos end, bool append);
   void close();
 
-  virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode which);
-  virtual streampos seekpos(streampos pos, ios_openmode which);
+  virtual std::streampos seekoff(std::streamoff off, ios_seekdir dir, ios_openmode which);
+  virtual std::streampos seekpos(std::streampos pos, ios_openmode which);
 
 protected:
   virtual int overflow(int c);
@@ -39,11 +40,11 @@ protected:
 private:
   IStreamWrapper *_source;
   OStreamWrapper *_dest;
-  streampos _start;
-  streampos _end;
+  std::streampos _start;
+  std::streampos _end;
   bool _append;
-  streampos _gpos;
-  streampos _ppos;
+  std::streampos _gpos;
+  std::streampos _ppos;
   char *_buffer;
 };
 

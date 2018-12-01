@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include "afxmt.h"
+#include <afxmt.h>
 
 #include "p3d_plugin.h"
 #include "PPDownloadCallback.h"
@@ -81,7 +81,7 @@ protected:
     bool HandleRequest( P3D_request *request );
     static void HandleRequestGetUrl( void *data );
 
-    static int compare_seq(const string &seq_a, const string &seq_b);
+    static int compare_seq(const std::string &seq_a, const std::string &seq_b);
     static int compare_seq_int(const char *&num_a, const char *&num_b);
 
     void set_failed();
@@ -100,7 +100,7 @@ protected:
     std::string _download_url_prefix;
     typedef std::vector<std::string> Mirrors;
     Mirrors _mirrors;
-    string _coreapi_set_ver;
+    std::string _coreapi_set_ver;
     FileSpec _coreapi_dll;
     time_t _contents_expiration;
     bool _failed;

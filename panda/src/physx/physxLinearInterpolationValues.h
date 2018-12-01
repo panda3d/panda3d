@@ -28,7 +28,7 @@ public:
   INLINE PhysxLinearInterpolationValues();
   INLINE ~PhysxLinearInterpolationValues();
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   void clear();
   void insert(float index, float value);
@@ -45,7 +45,7 @@ private:
   MapType _map;
 };
 
-INLINE ostream &operator << (ostream &out, const PhysxLinearInterpolationValues &values) {
+INLINE std::ostream &operator << (std::ostream &out, const PhysxLinearInterpolationValues &values) {
   values.output(out);
   return out;
 }

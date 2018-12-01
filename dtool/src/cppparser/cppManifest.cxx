@@ -16,6 +16,8 @@
 
 #include <ctype.h>
 
+using std::string;
+
 /**
  *
  */
@@ -41,7 +43,7 @@ CPPManifest::
 CPPManifest(const string &args, const cppyyltype &loc) :
   _variadic_param(-1),
   _loc(loc),
-  _expr((CPPExpression *)NULL),
+  _expr(nullptr),
   _vis(V_public)
 {
   assert(!args.empty());
@@ -84,7 +86,7 @@ CPPManifest(const string &args, const cppyyltype &loc) :
 CPPManifest::
 CPPManifest(const string &macro, const string &definition) :
   _variadic_param(-1),
-  _expr((CPPExpression *)NULL),
+  _expr(nullptr),
   _vis(V_public)
 {
   _loc.first_line = 0;
@@ -125,7 +127,7 @@ CPPManifest(const string &macro, const string &definition) :
  */
 CPPManifest::
 ~CPPManifest() {
-  if (_expr != (CPPExpression *)NULL) {
+  if (_expr != nullptr) {
     delete _expr;
   }
 }
@@ -242,17 +244,17 @@ expand(const vector_string &args) const {
  */
 CPPType *CPPManifest::
 determine_type() const {
-  if (_expr != (CPPExpression *)NULL) {
+  if (_expr != nullptr) {
     return _expr->determine_type();
   }
-  return (CPPType *)NULL;
+  return nullptr;
 }
 
 /**
  *
  */
 void CPPManifest::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _name;
 
   if (_has_parameters) {

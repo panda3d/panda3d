@@ -23,7 +23,7 @@
 class XFile;
 class XFileNode;
 
-void x_init_parser(istream &in, const string &filename, XFile &file);
+void x_init_parser(std::istream &in, const std::string &filename, XFile &file);
 void x_cleanup_parser();
 int xyyparse();
 
@@ -40,7 +40,7 @@ public:
     XFileNode *node;
     XFileDataDef::Type primitive_type;
   } u;
-  string str;
+  std::string str;
   WindowsGuid guid;
   PTA_double double_list;
   PTA_int int_list;

@@ -22,7 +22,7 @@ TypeHandle ModelLoadRequest::_type_handle;
  * to begin an asynchronous load.
  */
 ModelLoadRequest::
-ModelLoadRequest(const string &name,
+ModelLoadRequest(const std::string &name,
                  const Filename &filename, const LoaderOptions &options,
                  Loader *loader) :
   AsyncTask(name),

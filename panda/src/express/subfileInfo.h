@@ -23,11 +23,11 @@
  * disk.  Generally, the filename is understood as a physical file on disk,
  * and not to be looked up via the vfs.
  */
-class EXPCL_PANDAEXPRESS SubfileInfo {
+class EXPCL_PANDA_EXPRESS SubfileInfo {
 PUBLISHED:
   INLINE SubfileInfo();
-  INLINE explicit SubfileInfo(const FileReference *file, streampos start, streamsize size);
-  INLINE explicit SubfileInfo(const Filename &filename, streampos start, streamsize size);
+  INLINE explicit SubfileInfo(const FileReference *file, std::streampos start, std::streamsize size);
+  INLINE explicit SubfileInfo(const Filename &filename, std::streampos start, std::streamsize size);
   INLINE SubfileInfo(const SubfileInfo &copy);
   INLINE void operator = (const SubfileInfo &copy);
 
@@ -35,18 +35,18 @@ PUBLISHED:
 
   INLINE const FileReference *get_file() const;
   INLINE const Filename &get_filename() const;
-  INLINE streampos get_start() const;
-  INLINE streamsize get_size() const;
+  INLINE std::streampos get_start() const;
+  INLINE std::streamsize get_size() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   CPT(FileReference) _file;
-  streampos _start;
-  streamsize _size;
+  std::streampos _start;
+  std::streamsize _size;
 };
 
-INLINE ostream &operator << (ostream &out, const SubfileInfo &info);
+INLINE std::ostream &operator << (std::ostream &out, const SubfileInfo &info);
 
 #include "subfileInfo.I"
 

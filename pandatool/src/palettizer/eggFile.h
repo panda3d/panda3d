@@ -40,7 +40,7 @@ public:
   bool from_command_line(EggData *data,
                          const Filename &source_filename,
                          const Filename &dest_filename,
-                         const string &egg_comment);
+                         const std::string &egg_comment);
 
   const Filename &get_source_filename() const;
 
@@ -73,8 +73,8 @@ public:
   void release_egg_data();
   bool write_egg();
 
-  void write_description(ostream &out, int indent_level = 0) const;
-  void write_texture_refs(ostream &out, int indent_level = 0) const;
+  void write_description(std::ostream &out, int indent_level = 0) const;
+  void write_texture_refs(std::ostream &out, int indent_level = 0) const;
 
 private:
   void remove_backstage(EggGroupNode *node);
@@ -85,12 +85,11 @@ private:
   Filename _current_directory;
   Filename _source_filename;
   Filename _dest_filename;
-  string _egg_comment;
+  std::string _egg_comment;
 
   typedef pvector<TextureReference *> Textures;
   Textures _textures;
 
-  bool _noabs;
   bool _first_txa_match;
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroup *_default_group;

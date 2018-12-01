@@ -77,7 +77,7 @@ get_combine_radius() const {
 INLINE void SceneGraphReducer::
 apply_attribs(PandaNode *node, int attrib_types) {
   nassertv(check_live_flatten(node));
-  nassertv(node != (PandaNode *)NULL);
+  nassertv(node != nullptr);
   PStatTimer timer(_apply_collector);
   AccumulatedAttribs attribs;
   r_apply_attribs(node, attribs, attrib_types, _transformer);
@@ -93,7 +93,7 @@ apply_attribs(PandaNode *node, int attrib_types) {
 INLINE void SceneGraphReducer::
 apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
               int attrib_types, GeomTransformer &transformer) {
-  nassertv(node != (PandaNode *)NULL);
+  nassertv(node != nullptr);
   r_apply_attribs(node, attribs, attrib_types, transformer);
 }
 
@@ -115,7 +115,7 @@ apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
  */
 INLINE int SceneGraphReducer::
 make_compatible_format(PandaNode *root, int collect_bits) {
-  nassertr(root != (PandaNode *)NULL, 0);
+  nassertr(root != nullptr, 0);
   nassertr(check_live_flatten(root), 0);
   PStatTimer timer(_collect_collector);
   int count = 0;
@@ -137,7 +137,7 @@ make_compatible_format(PandaNode *root, int collect_bits) {
  */
 INLINE int SceneGraphReducer::
 collect_vertex_data(PandaNode *root, int collect_bits) {
-  nassertr(root != (PandaNode *)NULL, 0);
+  nassertr(root != nullptr, 0);
   nassertr(check_live_flatten(root), 0);
   PStatTimer timer(_collect_collector);
   int count = 0;
@@ -155,7 +155,7 @@ collect_vertex_data(PandaNode *root, int collect_bits) {
  */
 INLINE int SceneGraphReducer::
 make_nonindexed(PandaNode *root, int nonindexed_bits) {
-  nassertr(root != (PandaNode *)NULL, 0);
+  nassertr(root != nullptr, 0);
   nassertr(check_live_flatten(root), 0);
   PStatTimer timer(_make_nonindexed_collector);
   return r_make_nonindexed(root, nonindexed_bits);
@@ -171,9 +171,9 @@ make_nonindexed(PandaNode *root, int nonindexed_bits) {
  */
 INLINE void SceneGraphReducer::
 premunge(PandaNode *root, const RenderState *initial_state) {
-  nassertv(root != (PandaNode *)NULL);
+  nassertv(root != nullptr);
   nassertv(check_live_flatten(root));
-  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
+  if (_gsg != nullptr) {
     PStatTimer timer(_premunge_collector);
     r_premunge(root, initial_state);
   }

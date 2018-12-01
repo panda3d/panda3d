@@ -66,8 +66,8 @@ is_coplanar_with(const EggMesherFanMaker &other) const {
                                       egg_coplanar_threshold);
 }
 
-INLINE ostream &
-operator << (ostream &out, const EggMesherFanMaker &fm) {
+INLINE std::ostream &
+operator << (std::ostream &out, const EggMesherFanMaker &fm) {
   fm.output(out);
   return out;
 }

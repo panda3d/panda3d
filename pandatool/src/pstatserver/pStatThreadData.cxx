@@ -15,7 +15,7 @@
 
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 
 PStatFrameData PStatThreadData::_null_frame;
@@ -75,7 +75,7 @@ has_frame(int frame_number) const {
   int rel_frame = frame_number - _first_frame_number;
 
   return (rel_frame >= 0 && rel_frame < (int)_frames.size() &&
-          _frames[rel_frame] != (PStatFrameData *)NULL);
+          _frames[rel_frame] != nullptr);
 }
 
 /**
@@ -91,21 +91,21 @@ get_frame(int frame_number) const {
     rel_frame = num_frames - 1;
   }
 
-  while (rel_frame >= 0 && _frames[rel_frame] == (PStatFrameData *)NULL) {
+  while (rel_frame >= 0 && _frames[rel_frame] == nullptr) {
     rel_frame--;
   }
   if (rel_frame < 0) {
     // No frame data that old.  Return the oldest frame we've got.
     rel_frame = 0;
     while (rel_frame < num_frames &&
-           _frames[rel_frame] == (PStatFrameData *)NULL) {
+           _frames[rel_frame] == nullptr) {
       rel_frame++;
     }
   }
 
   if (rel_frame >= 0 && rel_frame < num_frames) {
     PStatFrameData *frame = _frames[rel_frame];
-    nassertr(frame != (PStatFrameData *)NULL, _null_frame);
+    nassertr(frame != nullptr, _null_frame);
     nassertr(frame->get_start() >= 0.0, _null_frame);
     return *frame;
   }
@@ -154,14 +154,14 @@ int PStatThreadData::
 get_frame_number_at_time(double time, int hint) const {
   hint -= _first_frame_number;
   if (hint >= 0 && hint < (int)_frames.size()) {
-    if (_frames[hint] != (PStatFrameData *)NULL &&
+    if (_frames[hint] != nullptr &&
         _frames[hint]->get_start() <= time) {
       // The hint might be right.  Scan forward from there.
       int i = hint + 1;
       while (i < (int)_frames.size() &&
-             (_frames[i] == (PStatFrameData *)NULL ||
+             (_frames[i] == nullptr ||
               _frames[i]->get_start() <= time)) {
-        if (_frames[i] != (PStatFrameData *)NULL) {
+        if (_frames[i] != nullptr) {
           hint = i;
         }
         ++i;
@@ -175,7 +175,7 @@ get_frame_number_at_time(double time, int hint) const {
   int i = _frames.size() - 1;
   while (i >= 0) {
     const PStatFrameData *frame = _frames[i];
-    if (frame != (PStatFrameData *)NULL && frame->get_start() <= time) {
+    if (frame != nullptr && frame->get_start() <= time) {
       break;
     }
     --i;
@@ -259,17 +259,17 @@ get_history() const {
  */
 void PStatThreadData::
 record_new_frame(int frame_number, PStatFrameData *frame_data) {
-  nassertv(frame_data != (PStatFrameData *)NULL);
+  nassertv(frame_data != nullptr);
   nassertv(!frame_data->is_empty());
   double time = frame_data->get_start();
 
   // First, remove all the old frames that fall outside of our history window.
   double oldest_allowable_time = time - _history;
   while (!_frames.empty() &&
-         (_frames.front() == (PStatFrameData *)NULL ||
+         (_frames.front() == nullptr ||
           _frames.front()->is_empty() ||
           _frames.front()->get_start() < oldest_allowable_time)) {
-    if (_frames.front() != (PStatFrameData *)NULL) {
+    if (_frames.front() != nullptr) {
       delete _frames.front();
     }
     _frames.pop_front();
@@ -281,18 +281,18 @@ record_new_frame(int frame_number, PStatFrameData *frame_data) {
   // get all the frames in order or even at all.
   if (_frames.empty()) {
     _first_frame_number = frame_number;
-    _frames.push_back(NULL);
+    _frames.push_back(nullptr);
 
   } else {
     while (_first_frame_number + (int)_frames.size() <= frame_number) {
-      _frames.push_back(NULL);
+      _frames.push_back(nullptr);
     }
   }
 
   int index = frame_number - _first_frame_number;
   nassertv(index >= 0 && index < (int)_frames.size());
 
-  if (_frames[index] != (PStatFrameData *)NULL) {
+  if (_frames[index] != nullptr) {
     nout << "Got repeated frame data for frame " << frame_number << "\n";
     delete _frames[index];
   }
@@ -314,7 +314,7 @@ compute_elapsed_frames() {
 
   } else {
     _now_i = _frames.size() - 1;
-    while (_now_i > 0 && _frames[_now_i] == (PStatFrameData *)NULL) {
+    while (_now_i > 0 && _frames[_now_i] == nullptr) {
       _now_i--;
     }
     if (_now_i < 0) {
@@ -322,7 +322,7 @@ compute_elapsed_frames() {
       _got_elapsed_frames = false;
 
     } else {
-      nassertv(_frames[_now_i] != (PStatFrameData *)NULL);
+      nassertv(_frames[_now_i] != nullptr);
 
       double now = _frames[_now_i]->get_end();
       double then = now - pstats_average_time;
@@ -332,7 +332,7 @@ compute_elapsed_frames() {
 
       while (old_i >= 0) {
         const PStatFrameData *frame = _frames[old_i];
-        if (frame != (PStatFrameData *)NULL) {
+        if (frame != nullptr) {
           if (frame->get_start() > then) {
             _then_i = old_i;
           } else {
@@ -343,7 +343,7 @@ compute_elapsed_frames() {
       }
 
       nassertv(_then_i >= 0);
-      nassertv(_frames[_then_i] != (PStatFrameData *)NULL);
+      nassertv(_frames[_then_i] != nullptr);
       _got_elapsed_frames = true;
 
       _now_i += _first_frame_number;

@@ -29,7 +29,7 @@ extern Dtool_PyTypedObject Dtool_OdeSpace;
 extern Dtool_PyTypedObject Dtool_OdeQuadTreeSpace;
 #endif
 
-PyObject *Extension<OdeSpace>::_python_callback = NULL;
+PyObject *Extension<OdeSpace>::_python_callback = nullptr;
 
 /**
  * Do a sort of pseudo-downcast on this space in order to expose its
@@ -69,13 +69,13 @@ convert() const {
 
 int Extension<OdeSpace>::
 collide(PyObject* arg, PyObject* callback) {
-  nassertr(callback != NULL, -1);
+  nassertr(callback != nullptr, -1);
 
   if (!PyCallable_Check(callback)) {
     PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
     return -1;
 
-  } else if (_this->get_id() == NULL) {
+  } else if (_this->get_id() == nullptr) {
     // Well, while we're in the mood of python exceptions, let's make this one
     // too.
     PyErr_Format(PyExc_TypeError, "OdeSpace is not valid!");
@@ -96,7 +96,7 @@ near_callback(void *data, dGeomID o1, dGeomID o2) {
   OdeGeom g2 (o2);
   PyObject* p1 = invoke_extension(&g1).convert();
   PyObject* p2 = invoke_extension(&g2).convert();
-  PyObject *result = PyObject_CallFunctionObjArgs(_python_callback, (PyObject*) data, p1, p2, NULL);
+  PyObject *result = PyObject_CallFunctionObjArgs(_python_callback, (PyObject*) data, p1, p2, nullptr);
   if (!result) {
     odespace_cat.error() << "An error occurred while calling python function!\n";
     PyErr_Print();

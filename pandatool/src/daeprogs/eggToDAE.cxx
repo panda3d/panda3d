@@ -15,9 +15,9 @@
 #include "dcast.h"
 #include "pandaVersion.h"
 
-#include "FCDocument/FCDocument.h"
-#include "FCDocument/FCDAsset.h"
-#include "FCDocument/FCDTransform.h"
+#include <FCDocument/FCDocument.h>
+#include <FCDocument/FCDAsset.h>
+#include <FCDocument/FCDTransform.h>
 
 // Useful conversion stuff
 #define TO_VEC3(v) (LVecBase3d(v[0], v[1], v[2]))
@@ -27,6 +27,8 @@
 #define FROM_VEC4(v) (FMVector4(v[0], v[1], v[2], v[3]))
 #define FROM_MAT4(v) (FMMatrix44(v.get_data()))
 #define FROM_FSTRING(fs) (fs.c_str())
+
+using std::cerr;
 
 /**
  *
@@ -41,7 +43,7 @@ EggToDAE() :
     ("This program converts files from the egg format to the COLLADA "
      ".dae (Digital Asset Exchange) format.");
 
-  _document = NULL;
+  _document = nullptr;
 }
 
 /**
@@ -50,7 +52,7 @@ EggToDAE() :
 void EggToDAE::
 run() {
   nassertv(has_output_filename());
-  nassertv(_data != NULL);
+  nassertv(_data != nullptr);
 
   FCollada::Initialize();
   _document = FCollada::NewTopDocument();
@@ -58,8 +60,8 @@ run() {
   // Add the contributor part to the asset
   FCDAssetContributor* contributor = _document->GetAsset()->AddContributor();
   const char* user_name = getenv("USER");
-  if (user_name == NULL) user_name = getenv("USERNAME");
-  if (user_name != NULL) contributor->SetAuthor(TO_FSTRING(user_name));
+  if (user_name == nullptr) user_name = getenv("USERNAME");
+  if (user_name != nullptr) contributor->SetAuthor(TO_FSTRING(user_name));
   // contributor->SetSourceData();
   char authoring_tool[1024];
   snprintf(authoring_tool, 1024, "Panda3D %s eggToDAE converter | FCollada v%d.%02d", PANDA_VERSION_STR, FCOLLADA_VERSION >> 16, FCOLLADA_VERSION & 0xFFFF);
@@ -93,7 +95,7 @@ run() {
 }
 
 void EggToDAE::process_node(FCDSceneNode* parent, const PT(EggGroup) node) {
-  assert(node != NULL);
+  assert(node != nullptr);
   FCDSceneNode* scene_node = parent->AddChildNode();
   // Set the parameters
   scene_node->SetDaeId(node->get_name().c_str());
@@ -109,8 +111,8 @@ void EggToDAE::process_node(FCDSceneNode* parent, const PT(EggGroup) node) {
 }
 
 void EggToDAE::apply_transform(FCDSceneNode* to, const PT(EggGroup) from) {
-  assert(to != NULL);
-  assert(from != NULL);
+  assert(to != nullptr);
+  assert(from != nullptr);
   for (int co = 0; co < from->get_num_components(); ++co) {
     switch (from->get_component_type(co)) {
       case EggTransform::CT_translate2d:
