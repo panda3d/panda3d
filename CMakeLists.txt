@@ -166,29 +166,3 @@ if(INTERROGATE_PYTHON_INTERFACE)
 
   add_test(pytest "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests")
 endif()
-
-# This bit is to generate the 'pandac' compatibility shim. It's deprecated now,
-# but in older versions of Panda3D, one would use
-# from pandac.PandaModules import *
-# instead of
-# from panda3d.FOO import *
-if(HAVE_PYTHON)
-  # Generate PandaModules:
-  file(WRITE "${PROJECT_BINARY_DIR}/pandac/PandaModules.py"
-    "\"This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead.\"
-
-print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
-
-  foreach(module ${ALL_INTERROGATE_MODULES})
-    file(APPEND "${PROJECT_BINARY_DIR}/pandac/PandaModules.py" "
-try:
-    from panda3d.${module} import *
-except ImportError as err:
-    if \"No module named %s\" not in str(err):
-        raise
-")
-  endforeach()
-
-  # Now install ourselves:
-  install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB)
-endif()
