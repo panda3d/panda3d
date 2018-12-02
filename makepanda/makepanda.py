@@ -710,10 +710,17 @@ if (COMPILER == "MSVC"):
         suffix = ""
         if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_2.lib"):
             suffix = "-2_2"
+        elif os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf-2_3.lib"):
+            suffix = "-2_3"
+        if os.path.isfile(GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + "_s.lib"):
+            suffix += "_s"
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmImf" + suffix + ".lib")
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/IlmThread" + suffix + ".lib")
         LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Iex" + suffix + ".lib")
-        LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+        if suffix == "-2_2":
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half.lib")
+        else:
+            LibName("OPENEXR", GetThirdpartyDir() + "openexr/lib/Half" + suffix + ".lib")
         IncDirectory("OPENEXR", GetThirdpartyDir() + "openexr/include/OpenEXR")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
@@ -744,8 +751,7 @@ if (COMPILER == "MSVC"):
         IncDirectory("FCOLLADA", GetThirdpartyDir() + "fcollada/include/FCollada")
     if (PkgSkip("ASSIMP")==0):
         LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/assimp.lib")
-        path = GetThirdpartyDir() + "assimp/lib/IrrXML.lib"
-        if os.path.isfile(path):
+        if os.path.isfile(GetThirdpartyDir() + "assimp/lib/IrrXML.lib"):
             LibName("ASSIMP", GetThirdpartyDir() + "assimp/lib/IrrXML.lib")
         IncDirectory("ASSIMP", GetThirdpartyDir() + "assimp/include")
     if (PkgSkip("SQUISH")==0):

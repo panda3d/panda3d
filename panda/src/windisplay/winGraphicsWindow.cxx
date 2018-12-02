@@ -138,7 +138,7 @@ get_pointer(int device) const {
       double time = ClockObject::get_global_clock()->get_real_time();
       result._xpos = cpos.x;
       result._ypos = cpos.y;
-      ((GraphicsWindowInputDevice &)_input_devices[0]).set_pointer_in_window(result._xpos, result._ypos, time);
+      ((GraphicsWindowInputDevice *)_input_devices[0].p())->set_pointer_in_window(result._xpos, result._ypos, time);
     }
   }
   return result;
