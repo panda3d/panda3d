@@ -6647,31 +6647,31 @@ if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON") and not RUNTIME:
 # DIRECTORY: pandatool/src/deploy-stub
 #
 if PkgSkip("PYTHON") == 0:
-    OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB', 'PYTHON']
-    TargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
+    OPTS=['DIR:pandatool/src/deploy-stub', 'BUILDING:DEPLOYSTUB']
+    PyTargetAdd('deploy-stub.obj', opts=OPTS, input='deploy-stub.c')
     if GetTarget() == 'windows':
-        TargetAdd('frozen_dllmain.obj', opts=OPTS, input='frozen_dllmain.c')
+        PyTargetAdd('frozen_dllmain.obj', opts=OPTS, input='frozen_dllmain.c')
 
     if GetTarget() == 'linux' or GetTarget() == 'freebsd':
         # Setup rpath so libs can be found in the same directory as the deployed game
         LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
-    TargetAdd('deploy-stub.exe', input='deploy-stub.obj')
+    PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
     if GetTarget() == 'windows':
-        TargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
-    TargetAdd('deploy-stub.exe', opts=['WINSHELL', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
+        PyTargetAdd('deploy-stub.exe', input='frozen_dllmain.obj')
+    PyTargetAdd('deploy-stub.exe', opts=['WINSHELL', 'DEPLOYSTUB', 'NOICON'])
 
     if GetTarget() == 'windows':
-        TargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
-        TargetAdd('deploy-stubw.exe', input='frozen_dllmain.obj')
-        TargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSHELL', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
+        PyTargetAdd('deploy-stubw.exe', input='deploy-stub.obj')
+        PyTargetAdd('deploy-stubw.exe', input='frozen_dllmain.obj')
+        PyTargetAdd('deploy-stubw.exe', opts=['SUBSYSTEM:WINDOWS', 'WINSHELL', 'DEPLOYSTUB', 'NOICON'])
     elif GetTarget() == 'darwin':
         DefSymbol('MACOS_APP_BUNDLE', 'MACOS_APP_BUNDLE')
         OPTS = OPTS + ['MACOS_APP_BUNDLE']
-        TargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
-        TargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
-        TargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'PYTHON', 'DEPLOYSTUB', 'NOICON'])
+        PyTargetAdd('deploy-stubw.obj', opts=OPTS, input='deploy-stub.c')
+        PyTargetAdd('deploy-stubw.exe', input='deploy-stubw.obj')
+        PyTargetAdd('deploy-stubw.exe', opts=['MACOS_APP_BUNDLE', 'DEPLOYSTUB', 'NOICON'])
 
 #
 # Generate the models directory and samples directory
