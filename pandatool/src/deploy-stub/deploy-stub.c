@@ -264,17 +264,29 @@ static int setup_logging(const char *path, int append) {
     SetFilePointer(handle, 0, NULL, FILE_END);
   }
 
-  fflush(stdout);
-  fflush(stderr);
-
-  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | (append ? _O_APPEND : 0));
   SetStdHandle(STD_OUTPUT_HANDLE, handle);
-  _dup2(fd, 1);
-
   SetStdHandle(STD_ERROR_HANDLE, handle);
-  _dup2(fd, 2);
 
+  // If we are running under the UCRT in a GUI application, we can't be sure
+  // that we have valid fds for stdout and stderr, so we have to set them up.
+  // One way to do this is to reopen them to something silly (like NUL).
+  if (_fileno(stdout) < 0) {
+    _close(1);
+    _wfreopen(L"\\\\.\\NUL", L"w", stdout);
+  }
+
+  if (_fileno(stderr) < 0) {
+    _close(2);
+    _wfreopen(L"\\\\.\\NUL", L"w", stderr);
+  }
+
+  // Now replace the stdout and stderr file descriptors with one pointing to
+  // our desired handle.
+  int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT | (append ? _O_APPEND : 0));
+  _dup2(fd, _fileno(stdout));
+  _dup2(fd, _fileno(stderr));
   _close(fd);
+
   return 1;
 #else
   // Does it start with a tilde?  Perform tilde expansion if so.
