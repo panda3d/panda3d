@@ -975,7 +975,9 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
   MayaEggMesh *result = _mesh_tab[parent];
   if (result == 0) {
     result = new MayaEggMesh;
-    result->_name = parent->get_name();
+    if (parent != nullptr) {
+      result->_name = parent->get_name();
+    }
     result->_pool = pool;
     result->_parent = parent;
     result->_vert_count = 0;
