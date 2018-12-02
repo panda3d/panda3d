@@ -2306,6 +2306,31 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         self.msgout(2, "load_module ->", m)
         return m
 
+    # This function is provided here since the Python library version has a bug
+    # (see bpo-35376)
+    def _safe_import_hook(self, name, caller, fromlist, level=-1):
+        # wrapper for self.import_hook() that won't raise ImportError
+        if name in self.badmodules:
+            self._add_badmodule(name, caller)
+            return
+        try:
+            self.import_hook(name, caller, level=level)
+        except ImportError as msg:
+            self.msg(2, "ImportError:", str(msg))
+            self._add_badmodule(name, caller)
+        else:
+            if fromlist:
+                for sub in fromlist:
+                    fullname = name + "." + sub
+                    if fullname in self.badmodules:
+                        self._add_badmodule(fullname, caller)
+                        continue
+                    try:
+                        self.import_hook(name, caller, [sub], level=level)
+                    except ImportError as msg:
+                        self.msg(2, "ImportError:", str(msg))
+                        self._add_badmodule(fullname, caller)
+
     def find_module(self, name, path=None, parent=None):
         """ Finds a module with the indicated name on the given search path
         (or self.path if None).  Returns a tuple like (fp, path, stuff), where
