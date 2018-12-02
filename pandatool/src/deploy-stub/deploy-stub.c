@@ -141,8 +141,8 @@ static int mkdir_parent(const wchar_t *path) {
       break;
     }
   }
-  if (buflen == 0) {
-    // There was no path separator.
+  if (buflen == (size_t)-1 || buflen == 0) {
+    // There was no path separator, or this was the root directory.
     return 0;
   }
 
@@ -187,8 +187,8 @@ static int mkdir_parent(const char *path) {
       break;
     }
   }
-  if (buflen == 0) {
-    // There was no path separator.
+  if (buflen == (size_t)-1 || buflen == 0) {
+    // There was no path separator, or this was the root directory.
     return 0;
   }
   if (mkdir(buffer, 0755) == 0) {
