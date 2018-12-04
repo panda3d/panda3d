@@ -7374,7 +7374,7 @@ do_issue_render_mode() {
       GLCAT.spam() << "setting thickness to " << thickness << "\n";
     }
 
-    glLineWidth(std::min(thickness, _max_line_width));
+    glLineWidth(std::min((GLfloat)thickness, _max_line_width));
 #ifndef OPENGLES_2
     glPointSize(thickness);
 #endif
