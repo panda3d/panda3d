@@ -538,15 +538,26 @@ offset_vertices(int offset, int begin_row, int end_row) {
 void GeomPrimitive::
 make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
   Thread *current_thread = Thread::get_current_thread();
-  int num_vertices = get_num_vertices();
-  int dest_start = dest->get_num_rows();
-  int strip_cut_index = get_strip_cut_index();
 
-  dest->set_num_rows(dest_start + num_vertices);
-  for (int i = 0; i < num_vertices; ++i) {
-    int v = get_vertex(i);
-    nassertd(v != strip_cut_index) continue;
-    dest->copy_row_from(dest_start + i, source, v, current_thread);
+  int num_vertices, dest_start;
+  {
+    GeomPrimitivePipelineReader reader(this, current_thread);
+    num_vertices = reader.get_num_vertices();
+    int strip_cut_index = reader.get_strip_cut_index();
+
+    GeomVertexDataPipelineWriter data_writer(dest, false, current_thread);
+    data_writer.check_array_writers();
+    dest_start = data_writer.get_num_rows();
+    data_writer.set_num_rows(dest_start + num_vertices);
+
+    GeomVertexDataPipelineReader data_reader(source, current_thread);
+    data_reader.check_array_readers();
+
+    for (int i = 0; i < num_vertices; ++i) {
+      int v = reader.get_vertex(i);
+      nassertd(v != strip_cut_index) continue;
+      data_writer.copy_row_from(dest_start + i, data_reader, v);
+    }
   }
 
   set_nonindexed_vertices(dest_start, num_vertices);
