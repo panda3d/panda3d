@@ -771,6 +771,28 @@ reset() {
     _supported_geom_rendering |= Geom::GR_point_sprite;
   }
 
+  // Determine whether we support wide lines (and how wide they can be).
+  {
+    GLfloat aliased_range[2] = {1.0f, 1.0f};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, aliased_range);
+
+    _max_line_width = aliased_range[1];
+
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (has_fixed_function_pipeline()) {
+#ifndef OPENGLES
+      GLfloat range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_LINE_WIDTH_RANGE, range);
+      _max_line_width = std::max(_max_line_width, range[1]);
+#endif
+
+      GLfloat smooth_range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, smooth_range);
+      _max_line_width = std::max(_max_line_width, smooth_range[1]);
+    }
+#endif
+  }
+
 #ifdef OPENGLES_1
   // OpenGL ES 1.0 does not support primitive restart indices.
 
@@ -7352,7 +7374,7 @@ do_issue_render_mode() {
       GLCAT.spam() << "setting thickness to " << thickness << "\n";
     }
 
-    glLineWidth(thickness);
+    glLineWidth(std::min(thickness, _max_line_width));
 #ifndef OPENGLES_2
     glPointSize(thickness);
 #endif
