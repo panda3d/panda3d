@@ -26,6 +26,10 @@
   [self setCanDrawConcurrently:YES];
 #endif
 
+  // If a layer ends up becoming attached to the view, tell AppKit we'll manage
+  // the redrawing since we're doing things our own way.
+  self.layerContentsRedrawPolicy = NSViewLayerContentsRedrawNever;
+
   cocoadisplay_cat.debug()
     << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";
   _graphicsWindow = window;
@@ -166,5 +170,16 @@
 
 - (BOOL) isOpaque {
   return YES;
+}
+
+-(void)setLayer:(CALayer*)layer
+{
+    [super setLayer:layer];
+
+    // Starting in macOS 10.14, a CALayer will still be attached to a view even
+    // if `wantsLayer` is false. If we don't update the context now, only a
+    // black screen will be rendered until the context is updated some other
+    // way (like through a window resize event).
+    [_context update];
 }
 @end
