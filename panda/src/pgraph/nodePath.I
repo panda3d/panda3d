@@ -1753,7 +1753,7 @@ set_billboard_axis(PN_stdfloat offset) {
  */
 INLINE void NodePath::
 set_billboard_point_eye(PN_stdfloat offset, bool fixed_depth) {
-  set_billboard_point_eye(NodePath(), offset);
+  set_billboard_point_eye(NodePath(), offset, fixed_depth);
 }
 
 /**
