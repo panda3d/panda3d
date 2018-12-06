@@ -4744,11 +4744,11 @@ set_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
  * the camera, towards a specified "camera" instead of to the viewing camera.
  */
 void NodePath::
-set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
+set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset, bool fixed_depth) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3::up(), true, false,
-     offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
+     offset, camera, LPoint3(0.0f, 0.0f, 0.0f), fixed_depth);
   node()->set_effect(billboard);
 }
 

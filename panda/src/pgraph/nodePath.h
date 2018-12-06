@@ -815,10 +815,10 @@ PUBLISHED:
   void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
   void do_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   INLINE void set_billboard_axis(PN_stdfloat offset = 0.0);
-  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0);
+  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0, bool fixed_depth = false);
   INLINE void set_billboard_point_world(PN_stdfloat offset = 0.0);
   void set_billboard_axis(const NodePath &camera, PN_stdfloat offset);
-  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
+  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset, bool fixed_depth = false);
   void set_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   void clear_billboard();
   bool has_billboard() const;
