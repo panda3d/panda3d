@@ -334,5 +334,5 @@ endfunction(add_python_module)
 if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
-  install_python_package("${PROJECT_BINARY_DIR}/panda3d")
+  install_python_package("${PROJECT_BINARY_DIR}/panda3d" ARCH)
 endif()
