@@ -10,12 +10,14 @@
 #
 
 #
-# Function: add_python_target(target [source1 [source2 ...]])
+# Function: add_python_target(target [EXPORT exp] [COMPONENT comp]
+#                                    [source1 [source2 ...]])
 # Build the provided source(s) as a Python extension module, linked against the
 # Python runtime library.
 #
 # Note that this also takes care of installation, unlike other target creation
-# commands in CMake.
+# commands in CMake.  The EXPORT and COMPONENT keywords allow passing the
+# corresponding options to install(), but default to "Python" otherwise.
 #
 function(add_python_target target)
   if(NOT HAVE_PYTHON)
@@ -23,7 +25,21 @@ function(add_python_target target)
   endif()
 
   string(REGEX REPLACE "^.*\\." "" basename "${target}")
-  set(sources ${ARGN})
+  set(sources)
+  set(component "Python")
+  set(export "Python")
+  foreach(arg ${ARGN})
+    if(arg STREQUAL "COMPONENT")
+      set(keyword "component")
+    elseif(arg STREQUAL "EXPORT")
+      set(keyword "export")
+    elseif(keyword)
+      set(${keyword} "${arg}")
+      unset(keyword)
+    else()
+      list(APPEND sources "${arg}")
+    endif()
+  endforeach(arg)
 
   string(REGEX REPLACE "\\.[^.]+$" "" namespace "${target}")
   string(REPLACE "." "_" underscore_namespace "${namespace}")
@@ -40,14 +56,14 @@ function(add_python_target target)
       SUFFIX "${PYTHON_EXTENSION_SUFFIX}")
 
     if(PYTHON_ARCH_INSTALL_DIR)
-      install(TARGETS ${target} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
+      install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
     endif()
   else()
     set_target_properties(${target} PROPERTIES
       OUTPUT_NAME "${basename}"
       PREFIX "libpython_${underscore_namespace}_")
 
-    install(TARGETS ${target} DESTINATION lib)
+    install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION lib)
   endif()
 
   set(keywords OVERWRITE ARCH)
@@ -59,7 +75,7 @@ function(add_python_target target)
 endfunction(add_python_target)
 
 #
-# Function: install_python_package(path [ARCH/LIB])
+# Function: install_python_package(path [ARCH/LIB] [COMPONENT component])
 #
 # Installs the Python package which was built at `path`.
 #
@@ -71,16 +87,28 @@ endfunction(add_python_target)
 # installed into Python's architecture-dependent or architecture-independent
 # package path.  The default, if unspecified, is LIB.
 #
+# The COMPONENT keyword overrides the install component (see CMake's
+# documentation for more information on what this does).  The default is
+# "Python".
+#
 function(install_python_package path)
-  if(ARGN STREQUAL "ARCH")
-    set(type "ARCH")
-  elseif(ARGN STREQUAL "LIB")
-    set(type "LIB")
-  elseif(ARGN STREQUAL "")
-    set(type "LIB")
-  else()
-    message(FATAL_ERROR "install_python_package got unexpected argument: ${ARGN}")
-  endif()
+  set(type "LIB")
+  set(component "Python")
+  set(component_keyword OFF)
+  foreach(arg ${ARGN})
+    if(arg STREQUAL "ARCH")
+      set(type "ARCH")
+    elseif(arg STREQUAL "LIB")
+      set(type "LIB")
+    elseif(arg STREQUAL "COMPONENT")
+      set(component_keyword ON)
+    elseif(component_keyword)
+      set(component "${arg}")
+      set(component_keyword OFF)
+    else()
+      message(FATAL_ERROR "install_python_package got unexpected argument: ${ARGN}")
+    endif()
+  endforeach(arg)
 
   get_filename_component(package_name "${path}" NAME)
   set(custom_target "bytecompile_${package_name}")
@@ -104,6 +132,7 @@ function(install_python_package path)
   set(dir ${PYTHON_${type}_INSTALL_DIR})
   if(dir)
     install(DIRECTORY "${path}" DESTINATION "${dir}"
+      COMPONENT "${component}"
       FILES_MATCHING REGEX "\\.py[co]?$")
   endif()
 
