@@ -43,6 +43,10 @@ target_link_libraries(p3dxgsg9 p3windisplay panda
 target_compile_definitions(p3dxgsg9 PUBLIC USE_GENERIC_DXERR_LIBRARY) # FIXME
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3dxgsg9 DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3dxgsg9
+    EXPORT DX9 COMPONENT DX9
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT DX9Devel)
 endif()
-install(FILES ${P3DXGSG9_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3DXGSG9_HEADERS} COMPONENT DX9Devel DESTINATION include/panda3d)

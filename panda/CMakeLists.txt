@@ -98,24 +98,24 @@ if(HAVE_PYTHON)
   add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
 
   if(HAVE_BULLET)
-    add_python_module(bullet p3bullet IMPORT panda3d.core)
+    add_python_module(bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
   endif()
 
   if(HAVE_EGG)
-    add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core)
+    add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
   endif()
 
   add_python_module(physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
-    add_python_module(ode p3ode IMPORT panda3d.core)
+    add_python_module(ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
   endif()
 
   if(HAVE_OPENCV OR HAVE_ARTOOLKIT)
-    add_python_module(vision p3vision IMPORT panda3d.core)
+    add_python_module(vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
   endif()
 
   if(HAVE_VRPN)
-    add_python_module(vrpn p3vrpn IMPORT panda3d.core)
+    add_python_module(vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
   endif()
 endif()

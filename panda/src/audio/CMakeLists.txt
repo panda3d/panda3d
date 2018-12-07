@@ -27,6 +27,10 @@ target_link_libraries(p3audio p3putil p3event p3movies p3linmath)
 target_interrogate(p3audio ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3audio DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3audio
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3AUDIO_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3AUDIO_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

@@ -42,6 +42,10 @@ target_link_libraries(p3interval p3directbase panda)
 target_interrogate(p3interval ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3interval DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3interval
+    EXPORT Direct COMPONENT Direct
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT DirectDevel)
 endif()
-install(FILES ${P3INTERVAL_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3INTERVAL_HEADERS} COMPONENT DirectDevel DESTINATION include/panda3d)

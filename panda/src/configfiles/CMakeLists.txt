@@ -28,4 +28,4 @@ endif()
 
 configure_file(panda.prc.in "${CMAKE_BINARY_DIR}/etc/20_panda.prc")
 
-install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" DESTINATION etc)
+install(FILES "${CMAKE_BINARY_DIR}/etc/20_panda.prc" COMPONENT Core DESTINATION etc)

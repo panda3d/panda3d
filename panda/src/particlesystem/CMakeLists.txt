@@ -51,6 +51,10 @@ target_link_libraries(p3particlesystem p3physics panda)
 target_interrogate(p3particlesystem ${P3PARTICLESYSTEM_IGATE_SOURCES})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3particlesystem DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3particlesystem
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PARTICLESYSTEM_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3PARTICLESYSTEM_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

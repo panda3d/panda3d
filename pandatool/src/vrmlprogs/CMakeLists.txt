@@ -1,7 +1,7 @@
 add_executable(vrml-trans vrmlTrans.cxx vrmlTrans.h)
 target_link_libraries(vrml-trans p3progbase p3vrml)
-install(TARGETS vrml-trans DESTINATION bin)
+install(TARGETS vrml-trans EXPORT Tools COMPONENT Tools DESTINATION bin)
 
 add_executable(vrml2egg vrmlToEgg.cxx vrmlToEgg.h)
 target_link_libraries(vrml2egg p3vrmlegg p3eggbase p3progbase)
-install(TARGETS vrml2egg DESTINATION bin)
+install(TARGETS vrml2egg EXPORT Tools COMPONENT Tools DESTINATION bin)

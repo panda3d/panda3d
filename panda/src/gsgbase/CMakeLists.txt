@@ -17,9 +17,13 @@ target_link_libraries(p3gsgbase p3putil p3linmath)
 target_interrogate(p3gsgbase ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3gsgbase DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3gsgbase
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3GSGBASE_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GSGBASE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_gsgbase

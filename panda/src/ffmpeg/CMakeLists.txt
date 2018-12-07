@@ -25,5 +25,9 @@ set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
 target_link_libraries(p3ffmpeg panda
   PKG::FFMPEG PKG::SWSCALE PKG::SWRESAMPLE)
 
-install(TARGETS p3ffmpeg DESTINATION lib RUNTIME DESTINATION bin)
-install(FILES ${P3FFMPEG_HEADERS} DESTINATION include/panda3d)
+install(TARGETS p3ffmpeg
+  EXPORT FFmpeg COMPONENT FFmpeg
+  DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE COMPONENT FFmpegDevel)
+install(FILES ${P3FFMPEG_HEADERS} COMPONENT FFmpegDevel DESTINATION include/panda3d)

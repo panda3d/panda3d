@@ -27,7 +27,11 @@ target_link_libraries(p3pstatclient p3net p3putil pandaexpress)
 target_interrogate(p3pstatclient ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3pstatclient DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3pstatclient
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PSTATCLIENT_HEADERS} DESTINATION include/panda3d)
-install(FILES config_pstats.h DESTINATION include/panda3d)
+install(FILES ${P3PSTATCLIENT_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES config_pstats.h COMPONENT CoreDevel DESTINATION include/panda3d)

@@ -38,6 +38,10 @@ add_component_library(p3glstuff NOINIT ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES}
 target_link_libraries(p3glstuff panda)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3glstuff DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3glstuff
+    EXPORT OpenGL COMPONENT OpenGL
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT OpenGLDevel)
 endif()
-install(FILES ${P3GLSTUFF_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GLSTUFF_HEADERS} COMPONENT OpenGLDevel DESTINATION include/panda3d)

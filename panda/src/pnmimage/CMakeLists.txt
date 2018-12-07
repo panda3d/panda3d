@@ -42,6 +42,10 @@ target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL EXTENSIONS ${P3PNMIMAGE_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3pnmimage DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3pnmimage
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PNMIMAGE_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3PNMIMAGE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

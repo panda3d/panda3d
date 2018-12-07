@@ -224,9 +224,13 @@ target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath pandae
 target_interrogate(p3pgraph ALL EXTENSIONS ${P3PGRAPH_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3pgraph DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3pgraph
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PGRAPH_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3PGRAPH_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 
 #begin test_bin_target

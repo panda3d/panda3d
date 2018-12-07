@@ -70,9 +70,13 @@ target_link_libraries(p3collide p3tform)
 target_interrogate(p3collide ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3collide DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3collide
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3COLLIDE_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3COLLIDE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_collide

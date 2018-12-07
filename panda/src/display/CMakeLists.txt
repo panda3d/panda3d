@@ -96,9 +96,13 @@ target_link_libraries(p3display p3cull p3pgraphnodes
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3display DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3display
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3DISPLAY_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3DISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)
   # We build a static library of just these files, so the plugin can

@@ -17,6 +17,10 @@ target_link_libraries(p3gles2gsg p3glstuff panda
   PKG::GLES2)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3gles2gsg DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3gles2gsg
+    EXPORT GLES COMPONENT GLES
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT GLESDevel)
 endif()
-install(FILES ${P3GLES2GSG_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GLES2GSG_HEADERS} COMPONENT GLESDevel DESTINATION include/panda3d)

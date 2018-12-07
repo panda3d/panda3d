@@ -20,18 +20,24 @@ set(P3DIRECT_COMPONENTS
 if(HAVE_PYTHON)
   list(APPEND P3DIRECT_COMPONENTS p3distributed)
 endif()
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "DirectDevel")
 add_metalib(p3direct INIT init_libdirect direct.h COMPONENTS ${P3DIRECT_COMPONENTS})
+unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 set_property(TARGET p3direct PROPERTY LINKER_LANGUAGE "CXX")
 
 # Installation:
-install(TARGETS p3direct DESTINATION lib RUNTIME DESTINATION bin)
+install(TARGETS p3direct
+  EXPORT Direct COMPONENT Direct
+  DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE COMPONENT DirectDevel)
 
 if(HAVE_PYTHON)
   # Now for the Python side of everything
 
   add_python_module(direct
     p3dcparser p3deadrec p3distributed p3interval
-    p3motiontrail p3showbase LINK p3direct IMPORT panda3d.core)
+    p3motiontrail p3showbase LINK p3direct IMPORT panda3d.core COMPONENT Direct)
 
   # Copy Python source files into the build directory
   set(DIRECT_INSTALL_DIRECTORIES
@@ -48,7 +54,7 @@ if(HAVE_PYTHON)
   endforeach()
 
   # Install all files
-  install_python_package("${PROJECT_BINARY_DIR}/direct" LIB)
+  install_python_package("${PROJECT_BINARY_DIR}/direct" LIB COMPONENT Direct)
 
   # This bit is to generate the 'pandac' compatibility shim. It's deprecated now,
   # but in older versions of Panda3D, one would use
@@ -72,5 +78,5 @@ except ImportError as err:
   endforeach()
 
   # Now install ourselves:
-  install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB)
+  install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB COMPONENT Direct)
 endif()

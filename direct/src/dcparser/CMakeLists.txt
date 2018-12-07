@@ -55,6 +55,10 @@ target_link_libraries(p3dcparser p3directbase panda PKG::PYTHON)
 target_interrogate(p3dcparser ${P3DCPARSER_HEADERS} ${P3DCPARSER_SOURCES})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3dcparser DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3dcparser
+    EXPORT Direct COMPONENT Direct
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT DirectDevel)
 endif()
-install(FILES ${P3DCPARSER_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3DCPARSER_HEADERS} COMPONENT DirectDevel DESTINATION include/panda3d)

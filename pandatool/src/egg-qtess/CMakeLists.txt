@@ -24,4 +24,4 @@ composite_sources(egg-qtess P3EGG_QTESS_SOURCES)
 add_executable(egg-qtess ${P3EGG_QTESS_HEADERS} ${P3EGG_QTESS_SOURCES})
 target_link_libraries(egg-qtess p3eggbase)
 
-install(TARGETS egg-qtess DESTINATION bin)
+install(TARGETS egg-qtess EXPORT Tools COMPONENT Tools DESTINATION bin)

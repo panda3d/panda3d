@@ -112,5 +112,9 @@ set_target_properties(p3bullet PROPERTIES DEFINE_SYMBOL BUILDING_PANDABULLET)
 target_link_libraries(p3bullet panda PKG::BULLET)
 target_interrogate(p3bullet ALL)
 
-install(TARGETS p3bullet DESTINATION lib RUNTIME DESTINATION bin)
-install(FILES ${P3BULLET_HEADERS} DESTINATION include/panda3d)
+install(TARGETS p3bullet
+  EXPORT Bullet COMPONENT Bullet
+  DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE COMPONENT BulletDevel)
+install(FILES ${P3BULLET_HEADERS} COMPONENT BulletDevel DESTINATION include/panda3d)

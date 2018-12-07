@@ -35,5 +35,9 @@ set_target_properties(p3vrpn PROPERTIES DEFINE_SYMBOL BUILDING_VRPN)
 target_link_libraries(p3vrpn panda PKG::VRPN)
 target_interrogate(p3vrpn ALL)
 
-install(TARGETS p3vrpn DESTINATION lib RUNTIME DESTINATION bin)
-install(FILES ${P3VRPN_HEADERS} DESTINATION include/panda3d)
+install(TARGETS p3vrpn
+  EXPORT VRPN COMPONENT VRPN
+  DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE COMPONENT VRPNDevel)
+install(FILES ${P3VRPN_HEADERS} COMPONENT VRPNDevel DESTINATION include/panda3d)

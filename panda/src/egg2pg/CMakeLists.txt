@@ -39,6 +39,10 @@ target_link_libraries(p3egg2pg panda p3egg)
 target_interrogate(p3egg2pg ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3egg2pg DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3egg2pg
+    EXPORT Egg COMPONENT Egg
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT EggDevel)
 endif()
-install(FILES ${P3EGG2PG_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3EGG2PG_HEADERS} COMPONENT EggDevel DESTINATION include/panda3d)

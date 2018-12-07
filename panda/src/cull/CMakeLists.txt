@@ -27,6 +27,10 @@ target_link_libraries(p3cull p3pgraph)
 target_interrogate(p3cull ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3cull DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3cull
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3CULL_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3CULL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

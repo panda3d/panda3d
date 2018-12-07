@@ -34,6 +34,10 @@ target_link_libraries(p3tform p3device p3grutil)
 target_interrogate(p3tform ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3tform DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3tform
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3TFORM_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3TFORM_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

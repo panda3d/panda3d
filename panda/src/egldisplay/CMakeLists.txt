@@ -36,7 +36,11 @@ if(HAVE_GLES1)
     PKG::EGL PKG::GLES1)
 
   if(NOT BUILD_METALIBS)
-    install(TARGETS p3egldisplay_gles1 DESTINATION lib)
+    install(TARGETS p3egldisplay_gles1
+      EXPORT GLES COMPONENT GLES
+      DESTINATION lib
+      RUNTIME DESTINATION bin
+      ARCHIVE COMPONENT GLESDevel)
   endif()
 endif()
 
@@ -49,8 +53,12 @@ if(HAVE_GLES2)
     PKG::EGL PKG::GLES2)
 
   if(NOT BUILD_METALIBS)
-    install(TARGETS p3egldisplay_gles2 DESTINATION lib)
+    install(TARGETS p3egldisplay_gles2
+      EXPORT GLES COMPONENT GLES
+      DESTINATION lib
+      RUNTIME DESTINATION bin
+      ARCHIVE COMPONENT GLESDevel)
   endif()
 endif()
 
-install(FILES ${P3EGLDISPLAY_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3EGLDISPLAY_HEADERS} COMPONENT GLESDevel DESTINATION include/panda3d)

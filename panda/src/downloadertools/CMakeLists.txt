@@ -13,6 +13,7 @@ if(HAVE_OPENSSL)
   target_link_libraries(pdecrypt panda)
 
   install(TARGETS apply_patch build_patch show_ddb check_md5 pencrypt pdecrypt
+          EXPORT Tools COMPONENT Tools
           DESTINATION bin)
 endif()
 
@@ -27,9 +28,10 @@ if(HAVE_ZLIB)
   target_link_libraries(punzip panda)
 
   install(TARGETS check_adler check_crc pzip punzip
+          EXPORT Tools COMPONENT Tools
           DESTINATION bin)
 endif()
 
 add_executable(multify multify.cxx)
 target_link_libraries(multify panda)
-install(TARGETS multify DESTINATION bin)
+install(TARGETS multify EXPORT Tools COMPONENT Tools DESTINATION bin)

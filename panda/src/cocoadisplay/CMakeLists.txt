@@ -40,5 +40,5 @@ target_link_libraries(p3cocoadisplay
   ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY} ${CARBON_LIBRARY})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3cocoadisplay DESTINATION lib)
+  install(TARGETS p3cocoadisplay EXPORT Panda COMPONENT Panda DESTINATION lib)
 endif()

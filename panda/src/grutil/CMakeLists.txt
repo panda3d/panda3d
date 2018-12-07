@@ -47,6 +47,10 @@ endif()
 target_interrogate(p3grutil ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3grutil DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3grutil
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3GRUTIL_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GRUTIL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

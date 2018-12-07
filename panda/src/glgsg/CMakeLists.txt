@@ -18,6 +18,10 @@ target_link_libraries(p3glgsg p3glstuff panda
   PKG::CG PKG::GL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3glgsg DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3glgsg
+    EXPORT OpenGL COMPONENT OpenGL
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT OpenGLDevel)
 endif()
-install(FILES ${P3GLGSG_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GLGSG_HEADERS} COMPONENT OpenGLDevel DESTINATION include/panda3d)

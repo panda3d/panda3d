@@ -132,6 +132,10 @@ target_link_libraries(p3pipeline pandaexpress
 target_interrogate(p3pipeline ALL EXTENSIONS ${P3PIPELINE_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3pipeline DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3pipeline
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PIPELINE_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3PIPELINE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

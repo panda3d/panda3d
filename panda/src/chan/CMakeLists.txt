@@ -59,6 +59,10 @@ target_link_libraries(p3chan p3pgraph)
 target_interrogate(p3chan ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3chan DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3chan
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3CHAN_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3CHAN_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

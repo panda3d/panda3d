@@ -177,9 +177,13 @@ target_link_libraries(p3gobj p3gsgbase p3pnmimage
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3gobj DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3gobj
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3GOBJ_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3GOBJ_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_gobj

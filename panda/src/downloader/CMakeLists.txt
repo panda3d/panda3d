@@ -74,6 +74,10 @@ target_link_libraries(p3downloader p3express)
 target_interrogate(p3downloader ALL EXTENSIONS ${P3DOWNLOADER_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3downloader DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3downloader
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3DOWNLOADER_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3DOWNLOADER_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

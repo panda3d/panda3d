@@ -146,9 +146,13 @@ if(WIN32)
 endif()
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3express DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3express
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3EXPRESS_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3EXPRESS_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #add_executable(p3expressTestTypes test_types.cxx)
 #target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)

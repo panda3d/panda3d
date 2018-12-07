@@ -12,6 +12,10 @@ target_link_libraries(p3motiontrail p3directbase panda)
 target_interrogate(p3motiontrail ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3motiontrail DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3motiontrail
+    EXPORT Direct COMPONENT Direct
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT DirectDevel)
 endif()
-install(FILES ${P3MOTIONTRAIL_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3MOTIONTRAIL_HEADERS} COMPONENT DirectDevel DESTINATION include/panda3d)

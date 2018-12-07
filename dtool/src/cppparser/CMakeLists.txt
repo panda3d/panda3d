@@ -42,4 +42,4 @@ composite_sources(p3cppParser P3CPPPARSER_SOURCES)
 add_library(p3cppParser STATIC ${P3CPPPARSER_HEADERS} ${P3CPPPARSER_SOURCES})
 target_link_libraries(p3cppParser p3dtool)
 
-install(TARGETS p3cppParser DESTINATION lib)
+install(TARGETS p3cppParser EXPORT Core COMPONENT CoreDevel DESTINATION lib)

@@ -38,4 +38,4 @@ else()
   set_target_properties(gtkstats PROPERTIES OUTPUT_NAME "pstats")
 endif()
 
-install(TARGETS gtkstats DESTINATION bin)
+install(TARGETS gtkstats EXPORT Tools COMPONENT Tools DESTINATION bin)

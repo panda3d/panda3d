@@ -81,6 +81,10 @@ if(APPLE)
 endif()
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3dtoolutil DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3dtoolutil
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3DTOOLUTIL_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3DTOOLUTIL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

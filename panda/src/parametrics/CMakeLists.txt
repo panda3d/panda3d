@@ -40,9 +40,13 @@ target_link_libraries(p3parametrics p3pgraph)
 target_interrogate(p3parametrics ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3parametrics DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3parametrics
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PARAMETRICS_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3PARAMETRICS_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_parametrics

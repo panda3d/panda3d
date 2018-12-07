@@ -23,6 +23,10 @@ target_link_libraries(p3recorder p3dgraph pandaexpress)
 target_interrogate(p3recorder ALL)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3recorder DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3recorder
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3RECORDER_HEADERS} DESTINATION include/panda3d)
+install(FILES ${P3RECORDER_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)

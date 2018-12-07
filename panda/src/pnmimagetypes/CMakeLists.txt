@@ -40,5 +40,9 @@ target_link_libraries(p3pnmimagetypes p3pnmimage
 set_target_properties(p3pnmimagetypes PROPERTIES CXX_EXCEPTIONS ON)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3pnmimagetypes DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3pnmimagetypes
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()

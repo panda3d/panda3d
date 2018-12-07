@@ -15,4 +15,4 @@ target_link_libraries(p3ptloader PRIVATE
   p3dxfegg p3fltegg p3lwoegg p3objegg p3vrmlegg p3xfileegg
   p3converter)
 
-install(TARGETS p3ptloader DESTINATION ${MODULE_DESTINATION})
+install(TARGETS p3ptloader EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})

@@ -25,7 +25,11 @@ if(HAVE_RAD_MSS)
   set_target_properties(p3miles_audio PROPERTIES DEFINE_SYMBOL BUILDING_MILES_AUDIO)
   target_link_libraries(p3miles_audio panda PKG::MILES)
 
-  install(TARGETS p3miles_audio DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3miles_audio
+    EXPORT Miles COMPONENT Miles
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT MilesDevel)
 endif()
 
 if(HAVE_FMODEX)
@@ -42,7 +46,11 @@ if(HAVE_FMODEX)
   set_target_properties(p3fmod_audio PROPERTIES DEFINE_SYMBOL BUILDING_FMOD_AUDIO)
   target_link_libraries(p3fmod_audio panda PKG::FMODEX)
 
-  install(TARGETS p3fmod_audio DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3fmod_audio
+    EXPORT FMOD COMPONENT FMOD
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT FMODDevel)
 endif()
 
 if(HAVE_OPENAL)
@@ -60,5 +68,9 @@ if(HAVE_OPENAL)
   set_target_properties(p3openal_audio PROPERTIES DEFINE_SYMBOL BUILDING_OPENAL_AUDIO)
   target_link_libraries(p3openal_audio panda PKG::OPENAL)
 
-  install(TARGETS p3openal_audio DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3openal_audio
+    EXPORT OpenAL COMPONENT OpenAL
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT OpenALDevel)
 endif()

@@ -135,10 +135,14 @@ target_link_libraries(p3putil p3linmath p3pipeline)
 target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3putil DESTINATION lib RUNTIME DESTINATION bin)
+  install(TARGETS p3putil
+    EXPORT Core COMPONENT Core
+    DESTINATION lib
+    RUNTIME DESTINATION bin
+    ARCHIVE COMPONENT CoreDevel)
 endif()
-install(FILES ${P3PUTIL_HEADERS} DESTINATION include/panda3d)
-install(FILES config_util.h DESTINATION include/panda3d)
+install(FILES ${P3PUTIL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+install(FILES config_util.h COMPONENT CoreDevel DESTINATION include/panda3d)
 
 #begin test_bin_target
   #define TARGET test_bamRead

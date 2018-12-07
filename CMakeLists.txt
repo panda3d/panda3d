@@ -156,7 +156,7 @@ if(BUILD_MODELS)
     *.egg
   )
   install(DIRECTORY "${PROJECT_BINARY_DIR}/models"
-    DESTINATION share/panda3d)
+    COMPONENT Models DESTINATION share/panda3d)
 endif()
 
 if(INTERROGATE_PYTHON_INTERFACE)
