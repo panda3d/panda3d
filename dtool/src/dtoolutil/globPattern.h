@@ -52,6 +52,7 @@ PUBLISHED:
   MAKE_PROPERTY(nomatch_chars, get_nomatch_chars, set_nomatch_chars);
 
   INLINE bool matches(const std::string &candidate) const;
+  bool matches_file(Filename candidate) const;
 
   INLINE void output(std::ostream &out) const;
 
@@ -74,6 +75,7 @@ private:
 
   int r_match_files(const Filename &prefix, const std::string &suffix,
                     vector_string &results, const Filename &cwd);
+  bool r_matches_file(const std::string &suffix, const Filename &candidate) const;
 
   std::string _pattern;
   bool _case_sensitive;
