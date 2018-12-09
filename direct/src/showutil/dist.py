@@ -248,11 +248,13 @@ class build_apps(setuptools.Command):
             'libbz2.so.*', 'libz.so.*', 'liblzma.so.*', 'librt.so.*', 'libutil.so.*',
 
             # macOS
-            '*foundation.framework*', '*appkit.framework*', '*libstdc++.*.dylib',
-            '*libobjc.*.dylib', '*trustevaluationagent.framework*', '*libz.*.dylib',
-            '*coreservices.framework*', '*applicationservices.framework*',
-            '*opengl.framework*', '*carbon.framework*', '*cocoa.framework*',
-            '*libsystem.*.dylib', '*libedit.*.dylib'
+            '/usr/lib/libstdc++.*.dylib',
+            '/usr/lib/libz.*.dylib',
+            '/usr/lib/libobjc.*.dylib',
+            '/usr/lib/libSystem.*.dylib',
+            '/usr/lib/libbz2.*.dylib',
+            '/usr/lib/libedit.*.dylib',
+            '/System/Library/**',
         ]
         self.package_data_dirs = {}
 
@@ -325,6 +327,8 @@ class build_apps(setuptools.Command):
         assert num_gui_apps + num_console_apps != 0, 'Must specify at least one app in either gui_apps or console_apps'
 
         self.exclude_dependencies = [p3d.GlobPattern(i) for i in self.exclude_dependencies]
+        for glob in self.exclude_dependencies:
+            glob.case_sensitive = False
 
         tmp = self.default_file_handlers.copy()
         tmp.update(self.file_handlers)
@@ -768,9 +772,9 @@ class build_apps(setuptools.Command):
         # Copy Game Files
         self.announce('Copying game files for platform: {}'.format(platform), distutils.log.INFO)
         ignore_copy_list = [
-            '__pycache__',
-            '*.pyc',
-            '{}/*'.format(self.build_base),
+            '**/__pycache__/**',
+            '**/*.pyc',
+            '{}/**'.format(self.build_base),
         ]
         ignore_copy_list += self.exclude_patterns
         ignore_copy_list += freezer_modpaths
@@ -789,12 +793,12 @@ class build_apps(setuptools.Command):
             for pattern in pattern_list:
                 # If the pattern is absolute, match against the absolute filename.
                 if pattern.pattern[0] == '/':
-                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(abspath)))
-                    if pattern.matches(abspath):
+                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches_file(abspath)))
+                    if pattern.matches_file(abspath):
                         return True
                 else:
-                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches(path)))
-                    if pattern.matches(path):
+                    #print('check ignore: {} {} {}'.format(pattern, src, pattern.matches_file(path)))
+                    if pattern.matches_file(path):
                         return True
             return False
 
@@ -858,7 +862,7 @@ class build_apps(setuptools.Command):
             return
 
         for dep in self.exclude_dependencies:
-            if  dep.matches(name.lower()):
+            if  dep.matches_file(name):
                 return
 
         for dir in search_path:

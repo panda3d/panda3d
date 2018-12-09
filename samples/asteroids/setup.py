@@ -5,9 +5,9 @@ setup(
     options = {
         'build_apps': {
             'include_patterns': [
-                '*.png',
-                '*.jpg',
-                '*.egg',
+                '**/*.png',
+                '**/*.jpg',
+                '**/*.egg',
             ],
             'gui_apps': {
                 'asteroids': 'main.py',
