@@ -771,6 +771,7 @@ PUBLISHED:
   void clear_material();
   bool has_material() const;
   PT(Material) get_material() const;
+  void replace_material(Material *mat, Material *new_mat);
 
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
@@ -1016,6 +1017,8 @@ private:
                           const GlobPattern &glob) const;
   void r_find_all_materials(PandaNode *node, const RenderState *state,
                            Materials &materials) const;
+  void r_replace_material(PandaNode *node, const RenderState *state,
+                          Material *mat, Material *new_mat);
 
   PT(NodePathComponent) _head;
   int _backup_key;

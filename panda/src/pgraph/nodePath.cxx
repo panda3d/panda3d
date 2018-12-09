@@ -4164,6 +4164,17 @@ get_material() const {
 }
 
 /**
+ * Recursively replaces a material.
+ */
+void NodePath::
+replace_material(Material *mat, Material *new_mat) {
+  nassertv_always(!is_empty());
+  nassertv(mat != nullptr);
+  nassertv(new_mat != nullptr);
+  r_replace_material(node(), get_net_state(), mat, new_mat);
+}
+
+/**
  * Sets the geometry at this level and below to render using the indicated
  * fog.
  */
@@ -6629,6 +6640,49 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
     PandaNode *child = cr.get_child(i);
     CPT(RenderState) next_state = state->compose(child->get_state());
     r_find_all_materials(child, next_state, materials);
+  }
+}
+
+/**
+ *
+ */
+void NodePath::r_replace_material(PandaNode *node, const RenderState *state,
+                                  Material *mat, Material *new_mat)
+{
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state =
+        state->compose(gnode->get_geom_state(i));
+
+      // Look for a MaterialAttrib on the state.
+      const MaterialAttrib* ma;
+      if (!geom_state->get_attrib(ma))
+        continue;
+
+      if (!ma->is_off()) {
+        Material *material = ma->get_material();
+        if (material == mat) {
+          // Replace it
+          CPT(RenderState) new_state =
+            geom_state->set_attrib(MaterialAttrib::make(new_mat));
+          gnode->clear_state();
+          gnode->set_geom_state(i, new_state);
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+    r_replace_material(child, next_state, mat, new_mat);
   }
 }
 
