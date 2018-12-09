@@ -171,14 +171,22 @@ def parseopts(args):
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
+
+    # Options for which to display a deprecation warning.
+    removedopts = [
+        "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
+        ]
+
+    # All recognized options.
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=","tests",
         "optimize=","everything","nothing","installer","wheel","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit=", "no-directscripts",
-        "use-touchinput", "no-touchinput"]
+        "universal", "target=", "arch=", "git-commit=",
+        ] + removedopts
+
     anything = 0
     optimize = ""
     target = None
@@ -190,6 +198,7 @@ def parseopts(args):
         longopts.append("no-" + pkg.lower())
         longopts.append(pkg.lower() + "-incdir=")
         longopts.append(pkg.lower() + "-libdir=")
+
     try:
         opts, extras = getopt.getopt(args, "", longopts)
         for option, value in opts:
@@ -230,7 +239,6 @@ def parseopts(args):
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
-            elif (option=="--no-directscripts"): pass
             elif (option=="--directx-sdk"):
                 STRDXSDKVERSION = value.strip().lower()
                 if STRDXSDKVERSION == '':
@@ -242,6 +250,8 @@ def parseopts(args):
                 MSVC_VERSION = value.strip().lower()
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             elif (option=="--clean"): clean_build = True
+            elif (option[2:] in removedopts):
+                Warn("Ignoring removed option %s" % (option))
             else:
                 for pkg in PkgListGet():
                     if option == "--use-" + pkg.lower():
