@@ -91,7 +91,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK2",                                              # GTK2 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
-  "ROCKET", "AWESOMIUM",                               # GUI libraries
+  "ROCKET",                                            # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
@@ -677,7 +677,6 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cvaux.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/ml.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   GetThirdpartyDir() + "opencv/lib/cxcore.lib")
-    if (PkgSkip("AWESOMIUM")==0):LibName("AWESOMIUM",GetThirdpartyDir() + "awesomium/lib/Awesomium.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avcodec.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil.lib")
@@ -797,7 +796,6 @@ if (COMPILER == "MSVC"):
         LibName("BULLET", GetThirdpartyDir() + "bullet/lib/BulletSoftBody" + suffix)
 
 if (COMPILER=="GCC"):
-    PkgDisable("AWESOMIUM")
     if GetTarget() != "darwin":
         PkgDisable("CARBON")
         PkgDisable("COCOA")
@@ -2850,8 +2848,6 @@ if not PkgSkip("SKEL"):
     panda_modules.append('skel')
 if not PkgSkip("EGG"):
     panda_modules.append('egg')
-if not PkgSkip("AWESOMIUM"):
-    panda_modules.append('awesomium')
 if not PkgSkip("ODE"):
     panda_modules.append('ode')
 if not PkgSkip("VRPN"):
@@ -3197,7 +3193,6 @@ CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
 if (PkgSkip("VISION")==0):
     CopyAllHeaders('panda/src/vision')
-CopyAllHeaders('panda/src/awesomium')
 if (PkgSkip("FFMPEG")==0):
     CopyAllHeaders('panda/src/ffmpeg')
 CopyAllHeaders('panda/src/tform')
@@ -4371,32 +4366,6 @@ if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   PyTargetAdd('rocket.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
   PyTargetAdd('rocket.pyd', opts=['ROCKET'])
-
-#
-# DIRECTORY: panda/src/p3awesomium
-#
-if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
-  OPTS=['DIR:panda/src/awesomium', 'BUILDING:PANDAAWESOMIUM',  'AWESOMIUM']
-  TargetAdd('pandaawesomium_composite1.obj', opts=OPTS, input='pandaawesomium_composite1.cxx')
-  TargetAdd('libp3awesomium.dll', input='pandaawesomium_composite1.obj')
-  TargetAdd('libp3awesomium.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3awesomium.dll', opts=OPTS)
-
-  OPTS=['DIR:panda/src/awesomium', 'AWESOMIUM']
-  IGATEFILES=GetDirectoryContents('panda/src/awesomium', ["*.h", "*_composite1.cxx"])
-  TargetAdd('libp3awesomium.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3awesomium.in', opts=['IMOD:panda3d.awesomium', 'ILIB:libp3awesomium', 'SRCDIR:panda/src/awesomium'])
-
-
-  PyTargetAdd('awesomium_module.obj', input='libp3awesomium.in')
-  PyTargetAdd('awesomium_module.obj', opts=OPTS)
-  PyTargetAdd('awesomium_module.obj', opts=['IMOD:panda3d.awesomium', 'ILIB:awesomium', 'IMPORT:panda3d.core'])
-
-  PyTargetAdd('awesomium.pyd', input='awesomium_module.obj')
-  PyTargetAdd('awesomium.pyd', input='libp3awesomium_igate.obj')
-  PyTargetAdd('awesomium.pyd', input='libp3awesomium.dll')
-  PyTargetAdd('awesomium.pyd', input='libp3interrogatedb.dll')
-  PyTargetAdd('awesomium.pyd', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: panda/src/p3skel
