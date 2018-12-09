@@ -4164,6 +4164,20 @@ get_material() const {
 }
 
 /**
+ * Recursively searches the scene graph for references to the given material,
+ * and replaces them with the new material.
+ */
+void NodePath::
+replace_material(Material *mat, Material *new_mat) {
+  nassertv_always(!is_empty());
+  nassertv(mat != nullptr);
+  nassertv(new_mat != nullptr);
+
+  CPT(RenderAttrib) new_attrib = MaterialAttrib::make(new_mat);
+  r_replace_material(node(), mat, (const MaterialAttrib *)new_attrib.p());
+}
+
+/**
  * Sets the geometry at this level and below to render using the indicated
  * fog.
  */
@@ -6629,6 +6643,52 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
     PandaNode *child = cr.get_child(i);
     CPT(RenderState) next_state = state->compose(child->get_state());
     r_find_all_materials(child, next_state, materials);
+  }
+}
+
+/**
+ *
+ */
+void NodePath::
+r_replace_material(PandaNode *node, Material *mat,
+                   const MaterialAttrib *new_attrib) {
+  // Consider the state of the node itself.
+  {
+    CPT(RenderState) node_state = node->get_state();
+    const MaterialAttrib *ma;
+    if (node_state->get_attrib(ma)) {
+      if (mat == ma->get_material()) {
+        node->set_state(node_state->set_attrib(new_attrib));
+      }
+    }
+  }
+
+  // If this is a GeomNode, consider the state of any of its Geoms.
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = gnode->get_geom_state(i);
+
+      // Look for a MaterialAttrib on the state.
+      const MaterialAttrib *ma;
+      if (geom_state->get_attrib(ma)) {
+        if (mat == ma->get_material()) {
+          // Replace it
+          gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  size_t num_children = cr.get_num_children();
+  for (size_t i = 0; i < num_children; ++i) {
+    PandaNode *child = cr.get_child(i);
+    r_replace_material(child, mat, new_attrib);
   }
 }
 
