@@ -96,6 +96,14 @@ PACKAGE_DATA_DIRS = {
     ],
 }
 
+# Some dependencies have extra directories that need to be scanned for DLLs.
+# This dictionary maps wheel basenames (ie. the part of the .whl basename
+# before the first hyphen) to a list of directories inside the .whl.
+
+PACKAGE_LIB_DIRS = {
+    'scipy':  ['scipy/extra-dll'],
+}
+
 # site.py for Python 2.
 SITE_PY2 = u"""
 import sys
@@ -696,6 +704,13 @@ class build_apps(setuptools.Command):
                     whl += '.whl'
                     rootdir = wf.split(os.path.sep, 1)[0]
                     search_path.append(os.path.join(whl, rootdir, '.libs'))
+
+                    # Also look for more specific per-package cases, defined in
+                    # PACKAGE_LIB_DIRS at the top of this file.
+                    whl_name = os.path.basename(whl).split('-', 1)[0]
+                    extra_dirs = PACKAGE_LIB_DIRS.get(whl_name, [])
+                    for extra_dir in extra_dirs:
+                        search_path.append(os.path.join(whl, extra_dir.replace('/', os.path.sep)))
 
             target_path = os.path.join(builddir, basename)
             self.copy_with_dependencies(source_path, target_path, search_path)
