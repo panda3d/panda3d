@@ -206,7 +206,11 @@ class build_apps(setuptools.Command):
         self.exclude_patterns = []
         self.include_modules = {}
         self.exclude_modules = {}
-        self.platforms = []
+        self.platforms = [
+            'manylinux1_x86_64',
+            'macosx_10_6_x86_64',
+            'win_amd64',
+        ]
         self.plugins = []
         self.embed_prc_data = True
         self.extra_prc_files = []
@@ -323,19 +327,10 @@ class build_apps(setuptools.Command):
         self.package_data_dirs = tmp
 
     def run(self):
-        if not self.platforms:
-            platforms = [p3d.PandaSystem.get_platform()]
-            use_wheels = False
-        elif isinstance(self.platforms, basestring):
-            platforms = [self.platforms]
-            use_wheels = True
-        else:
-            platforms = self.platforms
-            use_wheels = True
-        self.announce('Building platforms: {0}'.format(','.join(platforms)), distutils.log.INFO)
+        self.announce('Building platforms: {0}'.format(','.join(self.platforms)), distutils.log.INFO)
 
-        for platform in platforms:
-            self.build_runtimes(platform, use_wheels)
+        for platform in self.platforms:
+            self.build_runtimes(platform, True)
 
     def download_wheels(self, platform):
         """ Downloads wheels for the given platform using pip. This includes panda3d
