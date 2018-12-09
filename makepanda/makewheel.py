@@ -304,17 +304,23 @@ class WheelFile(object):
             # Temporary hack for 1.9, which had link deps on modules.
             return
 
-        source_path = None
+        if sys.platform == "darwin" and dep.startswith("/System/"):
+            return
 
-        if search_path is None:
-            search_path = self.lib_path
+        if dep.startswith('/'):
+            source_path = dep
+        else:
+            source_path = None
 
-        for lib_dir in search_path:
-            # Ignore static stuff.
-            path = os.path.join(lib_dir, dep)
-            if os.path.isfile(path):
-                source_path = os.path.normpath(path)
-                break
+            if search_path is None:
+                search_path = self.lib_path
+
+            for lib_dir in search_path:
+                # Ignore static stuff.
+                path = os.path.join(lib_dir, dep)
+                if os.path.isfile(path):
+                    source_path = os.path.normpath(path)
+                    break
 
         if not source_path:
             # Couldn't find library in the panda3d lib dir.
