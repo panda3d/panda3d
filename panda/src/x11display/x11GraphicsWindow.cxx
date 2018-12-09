@@ -508,6 +508,26 @@ process_events() {
     changed_properties = true;
   }
 
+  if (properties.has_foreground() && _properties.get_mouse_mode() == WindowProperties::M_confined) {
+      // Focus has changed, let's let go of the pointer if we've grabbed or re-grab it if needed
+      if (properties.get_foreground()) {
+        // Window is going to the foreground, re-grab the pointer
+        X11_Cursor cursor = None;
+        if (_properties.get_cursor_hidden()) {
+            x11GraphicsPipe *x11_pipe;
+            DCAST_INTO_V(x11_pipe, _pipe);
+            cursor = x11_pipe->get_hidden_cursor();
+        }
+
+        XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync, GrabModeAsync,
+                    _xwindow, cursor, CurrentTime);
+      }
+      else {
+        // window is leaving the foreground, ungrab the pointer
+        XUngrabPointer(_display, CurrentTime);
+      }
+  }
+
   if (changed_properties) {
     system_changed_properties(properties);
   }

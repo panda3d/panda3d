@@ -685,6 +685,8 @@ protected:
 #endif
 #endif
 
+  GLfloat _max_line_width;
+
 #ifdef HAVE_CG
   CGcontext _cg_context;
 #endif

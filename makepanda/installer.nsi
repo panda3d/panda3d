@@ -331,7 +331,6 @@ SectionGroup "Python support"
 
         File /nonfatal /r "${BUILT}\panda3d\core${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\ai${EXT_SUFFIX}"
-        File /nonfatal /r "${BUILT}\panda3d\awesomium${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\direct${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\egg${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\fx${EXT_SUFFIX}"
