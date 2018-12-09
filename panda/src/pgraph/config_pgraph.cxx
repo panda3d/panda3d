@@ -492,6 +492,7 @@ init_libpgraph() {
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
+  ParamNodePath::register_with_read_factory();
   PlaneNode::register_with_read_factory();
   PolylightNode::register_with_read_factory();
   PortalNode::register_with_read_factory();

@@ -5691,7 +5691,9 @@ encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
 
   // Tell the BamWriter which node is the root node, for making NodePaths
   // relative to when writing them out to the file.
-  writer->set_root_node(node());
+  if (!is_empty()) {
+    writer->set_root_node(node());
+  }
 
   // Write an initial Datagram to represent the error type and number of
   // nodes.
@@ -6698,6 +6700,11 @@ r_replace_material(PandaNode *node, Material *mat,
  */
 void NodePath::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  if (is_empty()) {
+    manager->write_pointer(dg, nullptr);
+    return;
+  }
+
   PandaNode *root = DCAST(PandaNode, manager->get_root_node());
 
   // We have no root node to measure from.
