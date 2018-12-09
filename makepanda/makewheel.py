@@ -343,19 +343,11 @@ class WheelFile(object):
         if ext in ('.so', '.dylib') or '.so.' in os.path.basename(source_path) or \
             (not ext and is_executable(source_path)):
 
-            # Scan and add Unix dependencies.
+            # Scan Unix dependencies.
             if target_path not in IGNORE_UNIX_DEPS_OF:
                 deps = scan_dependencies(source_path)
             else:
                 deps = []
-
-            for dep in deps:
-                # Only include dependencies with relative path.  Otherwise we
-                # end up overwriting system files like /lib/ld-linux.so.2!
-                # Yes, it happened to me.
-                if '/' not in dep:
-                    target_dep = os.path.dirname(target_path) + '/' + dep
-                    self.consider_add_dependency(target_dep, dep)
 
             suffix = ''
             if '.so' in os.path.basename(source_path):
@@ -382,7 +374,7 @@ class WheelFile(object):
             os.fchmod(temp.fileno(), os.fstat(temp.fileno()).st_mode | 0o111)
             temp.close()
 
-            # Fix things like @loader_path/../lib references
+            # Now add dependencies.  On macOS, fix @loader_path references.
             if sys.platform == "darwin":
                 if source_path.endswith('deploy-stubw'):
                     deps_path = '@executable_path/../Frameworks'
@@ -394,10 +386,8 @@ class WheelFile(object):
                         # If this references the Python framework, change it
                         # to reference libpython instead.
                         new_dep = deps_path + '/libpython{0}.{1}.dylib'.format(*sys.version_info)
-                    else:
-                        if '@loader_path' not in dep:
-                            continue
 
+                    elif '@loader_path' in dep:
                         dep_path = dep.replace('@loader_path', '.')
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
                         target_dep = self.consider_add_dependency(target_dep, dep_path, loader_path)
@@ -406,8 +396,30 @@ class WheelFile(object):
                             continue
                         new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
 
+                    elif dep.startswith('/Library/Frameworks/Python.framework/'):
+                        # Add this dependency if it's in the Python directory.
+                        target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
+                        target_dep = self.consider_add_dependency(target_dep, dep, loader_path)
+                        if not target_dep:
+                            # It won't be included, so no use adjusting the path.
+                            continue
+                        new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
+
+                    else:
+                        if '/' in dep:
+                            if GetVerbose():
+                                print("Ignoring dependency %s" % (dep))
+                        continue
+
                     subprocess.call(["install_name_tool", "-change", dep, new_dep, temp.name])
             else:
+                # On other unixes, we just add dependencies normally.
+                for dep in deps:
+                    # Only include dependencies with relative path, for now.
+                    if '/' not in dep:
+                        target_dep = os.path.dirname(target_path) + '/' + dep
+                        self.consider_add_dependency(target_dep, dep)
+
                 subprocess.call(["strip", "-s", temp.name])
                 subprocess.call(["patchelf", "--set-rpath", "$ORIGIN", temp.name])
 
