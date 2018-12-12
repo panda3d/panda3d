@@ -31,5 +31,5 @@ target_link_libraries(p3osxdisplay
   ${CORESERVICES_LIBRARY} ${COCOA_LIBRARY})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3osxdisplay EXPORT Panda COMPONENT Panda DESTINATION lib)
+  install(TARGETS p3osxdisplay EXPORT Core COMPONENT Core DESTINATION lib)
 endif()

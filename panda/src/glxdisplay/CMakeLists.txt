@@ -29,5 +29,5 @@ add_component_library(p3glxdisplay SYMBOL BUILDING_PANDA_GLXDISPLAY
 target_link_libraries(p3glxdisplay p3glgsg p3x11display)
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3glxdisplay EXPORT Panda COMPONENT Panda DESTINATION lib)
+  install(TARGETS p3glxdisplay EXPORT Core COMPONENT Core DESTINATION lib)
 endif()
