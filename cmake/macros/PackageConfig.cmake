@@ -51,6 +51,8 @@
 #   calls to package_status above.
 #
 
+set(_ALL_PACKAGE_OPTIONS CACHE INTERNAL "Internal variable")
+
 #
 # package_option
 #
@@ -146,11 +148,12 @@ function(package_option name)
 
   # Prevent the function from being called twice.
   #   This would indicate a cmake error.
-  if(PANDA_DID_SET_OPTION_${name})
+  if(";${_ALL_PACKAGE_OPTIONS};" MATCHES ";${name};")
     message(SEND_ERROR "package_option(${name}) was called twice.
                         This is a bug in the cmake build scripts.")
   else()
-    set(PANDA_DID_SET_OPTION_${name} TRUE PARENT_SCOPE)
+    list(APPEND _ALL_PACKAGE_OPTIONS "${name}")
+    set(_ALL_PACKAGE_OPTIONS "${_ALL_PACKAGE_OPTIONS}" CACHE INTERNAL "Internal variable")
   endif()
 
   set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
@@ -176,15 +179,23 @@ function(package_option name)
   if(HAVE_${name})
     set(use_variables ON)
 
+    # This is gross, but we actually want to hide package include directories
+    # from Interrogate to make sure it relies on parser-inc instead, so we'll
+    # use some generator expressions to do that.
+    set(_is_not_interface_lib
+      "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:TYPE>,INTERFACE_LIBRARY>>")
+    set(_is_not_interrogate
+      "$<NOT:$<BOOL:$<${_is_not_interface_lib}:$<TARGET_PROPERTY:IS_INTERROGATE>>>>")
+
     foreach(implib ${imported_as})
       if(TARGET ${implib})
         # We found one of the implibs, so we don't need to use variables
         # (below) anymore
         set(use_variables OFF)
 
-        # Yes, this is ugly.  See below for an explanation.
+        # Hide it from Interrogate
         target_link_libraries(PKG::${name} INTERFACE
-          "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${implib}>")
+          "$<${_is_not_interrogate}:$<TARGET_NAME:${implib}>>")
       endif()
     endforeach(implib)
 
@@ -202,11 +213,9 @@ function(package_option name)
 
       target_link_libraries(PKG::${name} INTERFACE ${libs})
 
-      # This is gross, but we actually want to hide package include directories
-      # from Interrogate to make sure it relies on parser-inc instead, so we'll
-      # use some generator expressions to do that.
-      set_target_properties(PKG::${name} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES
-        "$<$<NOT:$<BOOL:$<TARGET_PROPERTY:IS_INTERROGATE>>>:${includes}>")
+      # Hide it from Interrogate
+      set_target_properties(PKG::${name} PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "$<${_is_not_interrogate}:${includes}>")
     endif()
   endif()
 endfunction(package_option)
@@ -222,13 +231,13 @@ function(package_status name desc)
     set(note "${arg}")
   endforeach()
 
-  if(NOT PANDA_DID_SET_OPTION_${name})
+  if(NOT ";${_ALL_PACKAGE_OPTIONS};" MATCHES ";${name};")
     message(SEND_ERROR "package_status(${name}) was called before package_option(${name}).
                         This is a bug in the cmake build scripts.")
+    return()
   endif()
 
-  list(FIND _ALL_CONFIG_PACKAGES "${name}" called_twice)
-  if(called_twice GREATER -1)
+  if(";${_ALL_CONFIG_PACKAGES};" MATCHES ";${name};")
     message(SEND_ERROR "package_status(${name}) was called twice.
                         This is a bug in the cmake build scripts.")
   else()
@@ -268,6 +277,98 @@ function(show_packages)
     endif()
   endforeach()
 endfunction()
+
+#
+# export_packages(filename)
+#
+# Generates an includable CMake file that contains definitions for every PKG::
+# package defined.
+#
+function(export_packages filename)
+  set(exports "# Exports for Panda3D PKG:: packages\n")
+
+  foreach(pkg ${_ALL_PACKAGE_OPTIONS})
+    set(exports "${exports}\n# Create imported target PKG::${pkg}\n")
+    set(exports "${exports}add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")
+
+    set(exports "${exports}set_target_properties(PKG::${pkg} PROPERTIES\n")
+    foreach(prop
+        INTERFACE_COMPILE_DEFINITIONS
+        INTERFACE_COMPILE_FEATURES
+        INTERFACE_COMPILE_OPTIONS
+        INTERFACE_INCLUDE_DIRECTORIES
+        INTERFACE_LINK_DEPENDS
+        INTERFACE_LINK_DIRECTORIES
+        INTERFACE_LINK_OPTIONS
+        INTERFACE_POSITION_INDEPENDENT_CODE
+       #INTERFACE_SYSTEM_INCLUDE_DIRECTORIES  # Let the consumer dictate this
+        INTERFACE_SOURCES)
+      set(prop_ex "$<TARGET_PROPERTY:PKG::${pkg},${prop}>")
+      set(exports "${exports}$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
+    endforeach(prop)
+
+    # Ugh, INTERFACE_LINK_LIBRARIES isn't transitive.  Fine.  Take care of it
+    # by hand:
+    set(libraries)
+    set(stack "PKG::${pkg}")
+    set(history)
+    while(stack)
+      # Remove head item from stack
+      list(GET stack 0 head)
+      list(REMOVE_AT stack 0)
+
+      # Don't visit anything twice
+      list(FIND history "${head}" _index)
+      if(_index GREATER -1)
+        continue()
+      else()
+        list(APPEND history "${head}")
+      endif()
+
+      # If head isn't a target, add it to `libraries`, else recurse
+      if(TARGET "${head}")
+        get_target_property(link_libs "${head}" INTERFACE_LINK_LIBRARIES)
+        if(link_libs)
+          list(APPEND stack ${link_libs})
+        endif()
+
+        get_target_property(type "${head}" TYPE)
+        if(NOT type STREQUAL "INTERFACE_LIBRARY")
+          get_target_property(imported_location "${head}" IMPORTED_LOCATION)
+          if(imported_location)
+            list(APPEND libraries ${imported_location})
+          endif()
+
+          get_target_property(configs "${head}" IMPORTED_CONFIGURATIONS)
+          if(configs AND NOT imported_location)
+            foreach(config ${configs})
+              get_target_property(imported_location "${head}" IMPORTED_LOCATION_${config})
+              if(imported_location)
+                if(configs MATCHES ".*;.*")
+                  set(_bling "$<1:$>") # genex-escaped $
+                  list(APPEND libraries "${_bling}<${_bling}<CONFIG:${config}>:${imported_location}>")
+                else()
+                  list(APPEND libraries ${imported_location})
+                endif()
+              endif()
+            endforeach(config)
+          endif()
+        endif()
+      elseif("${head}" MATCHES "\\$<TARGET_NAME:\([^>]+\)>")
+        string(REGEX REPLACE ".*\\$<TARGET_NAME:\([^>]+\)>.*" "\\1" match "${head}")
+        list(APPEND stack "${match}")
+      else()
+        list(APPEND libraries "${head}")
+      endif()
+    endwhile(stack)
+
+    set(exports "${exports}  INTERFACE_LINK_LIBRARIES \"${libraries}\"\n")
+
+    set(exports "${exports})\n")
+  endforeach(pkg)
+
+  file(GENERATE OUTPUT "${filename}" CONTENT "${exports}")
+endfunction(export_packages)
 
 #
 # find_package
