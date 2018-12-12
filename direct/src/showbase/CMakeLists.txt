@@ -7,7 +7,7 @@ set(P3SHOWBASE_SOURCES
 )
 
 if(APPLE)
-  list(APPEND P3SHOWBASE_FILES showBase_assist.mm)
+  list(APPEND P3SHOWBASE_SOURCES showBase_assist.mm)
 endif()
 
 add_component_library(p3showbase NOINIT SYMBOL BUILDING_DIRECT_SHOWBASE
