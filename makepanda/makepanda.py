@@ -2199,6 +2199,9 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (origsuffix==".exe"):
             ProgressOutput(progress, "Linking executable", target)
         else:
+            if GetLinkAllStatic(): # If we're building statically, dynamic libraries are un-needed and may cause issues.
+                ProgressOutput(progress, "Linking static library", target)
+                return CompileLib(target, inputs, opts)
             ProgressOutput(progress, "Linking dynamic library", target)
 
         # Add version number to the dynamic library, on unix
