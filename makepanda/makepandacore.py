@@ -3265,8 +3265,12 @@ def GetExtensionSuffix():
 
     target = GetTarget()
     if target == 'windows':
+        if GetLinkAllStatic():
+            return '.lib'
         return '.pyd'
     else:
+        if GetLinkAllStatic():
+            return '.a'
         return '.so'
 
 def GetPythonABI():
