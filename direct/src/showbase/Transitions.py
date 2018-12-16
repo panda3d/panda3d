@@ -89,6 +89,8 @@ class Transitions:
             self.fade.setBin('unsorted', 0)
             self.fade.setColor(0,0,0,0)
 
+        self.fade.setScale(max(base.a2dRight, base.a2dTop))
+
     def getFadeInIval(self, t=0.5, finishIval=None, blendType='noBlend'):
         """
         Returns an interval without starting it.  This is particularly useful in
@@ -97,8 +99,7 @@ class Transitions:
         #self.noTransitions() masad: this creates a one frame pop, is it necessary?
         self.loadFade()
 
-        parent = aspect2d if self.fadeModel else render2d
-        transitionIval = Sequence(Func(self.fade.reparentTo, parent, DGG.FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOff,
@@ -120,8 +121,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        parent = aspect2d if self.fadeModel else render2d
-        transitionIval = Sequence(Func(self.fade.reparentTo, parent, DGG.FADE_SORT_INDEX),
+        transitionIval = Sequence(Func(self.fade.reparentTo, aspect2d, DGG.FADE_SORT_INDEX),
                                   Func(self.fade.showThrough),  # in case aspect2d is hidden for some reason
                                   self.lerpFunc(self.fade, t,
                                                 self.alphaOn,
@@ -181,8 +181,7 @@ class Transitions:
             self.noTransitions()
             self.loadFade()
 
-            parent = aspect2d if self.fadeModel else render2d
-            self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
+            self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif ConfigVariableBool('no-loading-screen', False):
             if finishIval:
@@ -215,8 +214,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        parent = aspect2d if self.fadeModel else render2d
-        self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(self.alphaOn[0],
                            self.alphaOn[1],
                            self.alphaOn[2],
@@ -232,8 +230,7 @@ class Transitions:
         self.noTransitions()
         self.loadFade()
 
-        parent = aspect2d if self.fadeModel else render2d
-        self.fade.reparentTo(parent, DGG.FADE_SORT_INDEX)
+        self.fade.reparentTo(aspect2d, DGG.FADE_SORT_INDEX)
         self.fade.setColor(color)
 
     def noFade(self):
