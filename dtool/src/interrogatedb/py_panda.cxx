@@ -12,16 +12,6 @@
 
 using std::string;
 
-PyMemberDef standard_type_members[] = {
-  {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
-  {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
-  {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
-// {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
-// READONLY, (char *)"A type check signature"},
-  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
-  {nullptr}  /* Sentinel */
-};
-
 /**
 
  */
