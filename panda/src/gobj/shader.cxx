@@ -2750,6 +2750,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
   int ext_google_include = 0; // 1 = warn, 2 = enable
   int ext_google_line = 0;
   bool had_include = false;
+  bool had_version = false;
   int lineno = 0;
   bool write_line_directive = (fileno != 0);
 
@@ -2920,6 +2921,9 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
         write_line_directive = true;
       }
 
+    } else if (strcmp(directive, "version") == 0) {
+      had_version = true;
+
     } else if (strcmp(directive, "extension") == 0) {
       // Check for special preprocessing extensions.
       char extension[256];
@@ -3045,6 +3049,11 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
       write_line_directive = false;
     }
     out << line << "\n";
+  }
+
+  if (fileno == 0 && !had_version) {
+    shader_cat.warning()
+      << "GLSL shader " << fn << " does not contain a #version line!\n";
   }
 
   return true;

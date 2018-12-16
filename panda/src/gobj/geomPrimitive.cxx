@@ -1607,13 +1607,16 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
     }
 
     if (got_mat) {
-      if (!found_any) {
-        reader.set_row_unsafe(cdata->_first_vertex);
+      // Find the first non-NaN vertex.
+      while (!found_any && i < cdata->_num_vertices) {
+        reader.set_row(cdata->_first_vertex + i);
         LPoint3 first_vertex = mat.xform_point(reader.get_data3());
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+        if (!first_vertex.is_nan()) {
+          min_point = first_vertex;
+          max_point = first_vertex;
+          sq_center_dist = first_vertex.length_squared();
+          found_any = true;
+        }
         ++i;
       }
 
@@ -1630,13 +1633,16 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
-      if (!found_any) {
-        reader.set_row_unsafe(cdata->_first_vertex);
-        const LVecBase3 &first_vertex = reader.get_data3();
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && i < cdata->_num_vertices) {
+        reader.set_row(cdata->_first_vertex + i);
+        LPoint3 first_vertex = reader.get_data3();
+        if (!first_vertex.is_nan()) {
+          min_point = first_vertex;
+          max_point = first_vertex;
+          sq_center_dist = first_vertex.length_squared();
+          found_any = true;
+        }
         ++i;
       }
 
@@ -1664,15 +1670,19 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
     int strip_cut_index = get_strip_cut_index(cdata->_index_type);
 
     if (got_mat) {
-      if (!found_any) {
-        int first_index = index.get_data1i();
-        nassertv(first_index != strip_cut_index);
-        reader.set_row_unsafe(first_index);
-        LPoint3 first_vertex = mat.xform_point(reader.get_data3());
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && !index.is_at_end()) {
+        int ii = index.get_data1i();
+        if (ii != strip_cut_index) {
+          reader.set_row(ii);
+          LPoint3 first_vertex = mat.xform_point(reader.get_data3());
+          if (!first_vertex.is_nan()) {
+            min_point = first_vertex;
+            max_point = first_vertex;
+            sq_center_dist = first_vertex.length_squared();
+            found_any = true;
+          }
+        }
       }
 
       while (!index.is_at_end()) {
@@ -1692,15 +1702,19 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
         sq_center_dist = max(sq_center_dist, vertex.length_squared());
       }
     } else {
-      if (!found_any) {
-        int first_index = index.get_data1i();
-        nassertv(first_index != strip_cut_index);
-        reader.set_row_unsafe(first_index);
-        const LVecBase3 &first_vertex = reader.get_data3();
-        min_point = first_vertex;
-        max_point = first_vertex;
-        sq_center_dist = first_vertex.length_squared();
-        found_any = true;
+      // Find the first non-NaN vertex.
+      while (!found_any && !index.is_at_end()) {
+        int ii = index.get_data1i();
+        if (ii != strip_cut_index) {
+          reader.set_row(ii);
+          LVecBase3 first_vertex = reader.get_data3();
+          if (!first_vertex.is_nan()) {
+            min_point = first_vertex;
+            max_point = first_vertex;
+            sq_center_dist = first_vertex.length_squared();
+            found_any = true;
+          }
+        }
       }
 
       while (!index.is_at_end()) {

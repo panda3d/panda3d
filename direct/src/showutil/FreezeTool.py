@@ -52,10 +52,11 @@ builtinInitFuncs = {
     '__builtin__': None,
     'sys': None,
     'exceptions': None,
-    '_imp': 'PyInit_imp',
     '_warnings': '_PyWarnings_Init',
     'marshal': 'PyMarshal_Init',
 }
+if sys.version_info < (3, 7):
+    builtinInitFuncs['_imp'] = 'PyInit_imp'
 
 # These are modules that are not found normally for these modules. Add them
 # to an include list so users do not have to do this manually.
@@ -325,7 +326,7 @@ frozenMainCode = """
 extern void PyWinFreeze_ExeInit(void);
 extern void PyWinFreeze_ExeTerm(void);
 
-extern DL_IMPORT(int) PyImport_ExtendInittab(struct _inittab *newtab);
+extern PyAPI_FUNC(int) PyImport_ExtendInittab(struct _inittab *newtab);
 #endif
 
 /* Main program */
@@ -1522,7 +1523,7 @@ class Freezer:
                     libName = module.split('.')[-1]
                     initFunc = builtinInitFuncs.get(module, 'PyInit_' + libName)
                     if initFunc:
-                        text += 'extern DL_IMPORT(PyObject) *%s(void);\n' % (initFunc)
+                        text += 'extern PyAPI_FUNC(PyObject) *%s(void);\n' % (initFunc)
             text += '\n'
 
             if sys.platform == "win32":
@@ -1545,7 +1546,7 @@ class Freezer:
                     libName = module.split('.')[-1]
                     initFunc = builtinInitFuncs.get(module, 'init' + libName)
                     if initFunc:
-                        text += 'extern DL_IMPORT(void) %s(void);\n' % (initFunc)
+                        text += 'extern PyAPI_FUNC(void) %s(void);\n' % (initFunc)
             text += '\n'
 
             if sys.platform == "win32":
