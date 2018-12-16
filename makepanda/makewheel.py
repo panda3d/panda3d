@@ -371,8 +371,8 @@ class WheelFile(object):
                 # Otherwise, just copy it over.
                 temp.write(open(source_path, 'rb').read())
 
-            os.fchmod(temp.fileno(), os.fstat(temp.fileno()).st_mode | 0o111)
             temp.close()
+            os.chmod(temp.name, os.stat(temp.name).st_mode | 0o711)
 
             # Now add dependencies.  On macOS, fix @loader_path references.
             if sys.platform == "darwin":
