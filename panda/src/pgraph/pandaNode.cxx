@@ -3514,12 +3514,12 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             const BoundingVolume **child_begin = &child_volumes[0];
             const BoundingVolume **child_end = child_begin + child_volumes_i;
             ((BoundingVolume *)gbv)->around(child_begin, child_end);
-          }
 
-          // If we have a transform, apply it to the bounding volume we just
-          // computed.
-          if (!transform->is_identity()) {
-            gbv->xform(transform->get_mat());
+            // If we have a transform, apply it to the bounding volume we just
+            // computed.
+            if (!transform->is_identity()) {
+              gbv->xform(transform->get_mat());
+            }
           }
 
           cdataw->_external_bounds = gbv;
