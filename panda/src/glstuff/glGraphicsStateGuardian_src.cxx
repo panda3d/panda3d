@@ -7049,6 +7049,16 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       } else {
         format = Texture::F_srgb;
       }
+    } else if (_current_properties->get_float_color()) {
+      if (_current_properties->get_alpha_bits()) {
+        format = Texture::F_rgba32;
+      } else if (_current_properties->get_blue_bits()) {
+        format = Texture::F_rgb32;
+      } else if (_current_properties->get_green_bits()) {
+        format = Texture::F_rg32;
+      } else {
+        format = Texture::F_r32;
+      }
     } else {
       if (_current_properties->get_alpha_bits()) {
         format = Texture::F_rgba;
@@ -7058,7 +7068,11 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
-    } else if (_current_properties->get_color_bits() <= 24) {
+    } else if (_current_properties->get_color_bits() <= 24
+            && _current_properties->get_red_bits() <= 8
+            && _current_properties->get_green_bits() <= 8
+            && _current_properties->get_blue_bits() <= 8
+            && _current_properties->get_alpha_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
