@@ -75,6 +75,7 @@ hiddenImports = {
     'datetime': ['_strptime'],
     'keyring.backends': ['keyring.backends.*'],
     'matplotlib.font_manager': ['encodings.mac_roman'],
+    'direct.particles': ['direct.particles.ParticleManagerGlobal'],
 }
 
 if sys.version_info >= (3,):
