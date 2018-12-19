@@ -1084,6 +1084,8 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
  */
 void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
+  nassertv(!transform->is_invalid());
+
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
@@ -1120,6 +1122,8 @@ set_transform(const TransformState *transform, Thread *current_thread) {
  */
 void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
+  nassertv(!transform->is_invalid());
+
   // Need to have this held before we grab any other locks.
   LightMutexHolder holder(_dirty_prev_transforms._lock);
 
@@ -3848,6 +3852,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Mark the bounds stale.
   ++_next_update;
+
+  nassertr(!_transform->is_invalid(), pi);
+  nassertr(!_prev_transform->is_invalid(), pi);
 
   return pi;
 }
