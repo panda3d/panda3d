@@ -375,5 +375,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() >= 43) {
     _look_at.fillin(scan, manager);
     _fixed_depth = scan.get_bool();
+  } else {
+    _fixed_depth = false;
   }
 }
