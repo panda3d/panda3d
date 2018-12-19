@@ -249,6 +249,14 @@ pack_string(DCPackData &, const string &, bool &pack_error, bool &) const {
 }
 
 /**
+ * Packs the indicated numeric or string value into the stream.
+ */
+void DCPackerInterface::
+pack_blob(DCPackData &, const vector_uchar &, bool &pack_error, bool &) const {
+  pack_error = true;
+}
+
+/**
  * Packs the field's specified default value (or a sensible default if no
  * value is specified) into the stream.  Returns true if the default value is
  * packed, false if the field doesn't know how to pack its default value.
@@ -303,6 +311,14 @@ unpack_uint64(const char *, size_t, size_t &, uint64_t &, bool &pack_error, bool
  */
 void DCPackerInterface::
 unpack_string(const char *, size_t, size_t &, string &, bool &pack_error, bool &) const {
+  pack_error = true;
+}
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+void DCPackerInterface::
+unpack_blob(const char *, size_t, size_t &, vector_uchar &, bool &pack_error, bool &) const {
   pack_error = true;
 }
 

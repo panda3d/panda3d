@@ -16,6 +16,7 @@
 
 #include "dcbase.h"
 #include "primeNumberGenerator.h"
+#include "vector_uchar.h"
 
 /**
  * This class generates an arbitrary hash number from a sequence of ints.
@@ -26,6 +27,7 @@ public:
 
   void add_int(int num);
   void add_string(const std::string &str);
+  void add_blob(const vector_uchar &bytes);
 
   unsigned long get_hash() const;
 
