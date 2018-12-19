@@ -59,7 +59,7 @@ Options::
 import getopt
 import sys
 import os
-from direct.showutil import FreezeTool
+from . import FreezeTool
 
 def usage(code, msg = ''):
     if __doc__:

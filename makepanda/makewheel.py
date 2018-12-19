@@ -643,7 +643,7 @@ __version__ = '{0}'
     # Add a panda3d-tools directory containing the executables.
     entry_points = '[console_scripts]\n'
     entry_points += 'eggcacher = direct.directscripts.eggcacher:main\n'
-    entry_points += 'pfreeze = direct.showutil.pfreeze:main\n'
+    entry_points += 'pfreeze = direct.dist.pfreeze:main\n'
     tools_init = ''
     for file in os.listdir(bin_dir):
         basename = os.path.splitext(file)[0]
@@ -661,8 +661,8 @@ __version__ = '{0}'
             entry_points += '{0} = panda3d_tools:{1}\n'.format(basename, funcname)
             tools_init += '{0} = lambda: _exec_tool({1!r})\n'.format(funcname, file)
     entry_points += '[distutils.commands]\n'
-    entry_points += 'build_apps = direct.showutil.dist:build_apps\n'
-    entry_points += 'bdist_apps = direct.showutil.dist:bdist_apps\n'
+    entry_points += 'build_apps = direct.dist.commands:build_apps\n'
+    entry_points += 'bdist_apps = direct.dist.commands:bdist_apps\n'
 
     whl.write_file_data('panda3d_tools/__init__.py', PANDA3D_TOOLS_INIT.format(tools_init))
 

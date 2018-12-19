@@ -2061,7 +2061,7 @@ def FreezePy(target, inputs, opts):
     if sys.version_info >= (2, 6):
         cmdstr += "-B "
 
-    cmdstr += os.path.join(GetOutputDir(), "direct", "showutil", "pfreeze.py")
+    cmdstr += os.path.join(GetOutputDir(), "direct", "dist", "pfreeze.py")
 
     if 'FREEZE_STARTUP' in opts:
         cmdstr += " -s"
@@ -2992,8 +2992,8 @@ Author-email: etc-panda3d@lists.andrew.cmu.edu
 """
 
 ENTRY_POINTS = """[distutils.commands]
-build_apps = direct.showutil.dist:build_apps
-bdist_apps = direct.showutil.dist:bdist_apps
+build_apps = direct.dist.commands:build_apps
+bdist_apps = direct.dist.commands:bdist_apps
 """
 
 if not PkgSkip("DIRECT"):
