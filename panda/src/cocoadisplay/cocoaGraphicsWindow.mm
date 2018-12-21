@@ -66,6 +66,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _context_needs_update = true;
   _fullscreen_mode = NULL;
   _windowed_mode = NULL;
+  _can_sync_video = false;
 
   // Now that we know for sure we want a window, we can create the Cocoa app.
   // This will cause the application icon to appear and start bouncing.
@@ -114,6 +115,51 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 CocoaGraphicsWindow::
 ~CocoaGraphicsWindow() {
+}
+
+/**
+ * Called whenever a display wants a frame. displayLinkContext contains the
+ * applicable CocoaGraphicsWindow.
+ */
+static CVReturn
+DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext) {
+  printf("Received DisplayLinkCallback\n");
+  CocoaGraphicsWindow *graphics_window = (CocoaGraphicsWindow *)displayLinkContext;
+  graphics_window->display_ready();
+  return kCVReturnSuccess;
+}
+
+void CocoaGraphicsWindow::
+display_ready() {
+  if (has_frame) {
+    trigger_flip();
+  }
+}
+
+/**
+ * Creates a CVDisplayLink, which tells us when the display the window is on
+ * will want a frame.
+ */
+bool CocoaGraphicsWindow::
+setup_vsync() {
+  CVReturn result = CVDisplayLinkCreateWithCGDisplay(_display, &_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.";
+    return false;
+  }
+  
+  result = CVDisplayLinkSetOutputCallback(_display_link, &DisplayLinkCallback, this);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.";
+    return false;
+  }
+  
+  result = CVDisplayLinkStart(_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.";
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -169,10 +215,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == (GraphicsStateGuardian *)NULL || (_can_sync_video && has_frame)) {
     return false;
   }
-
   CocoaGraphicsStateGuardian *cocoagsg;
   DCAST_INTO_R(cocoagsg, _gsg, false);
   nassertr(cocoagsg->_context != nil, false);
@@ -254,7 +299,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   _gsg->end_frame(current_thread);
 
-  if (mode == FM_render) {
+  has_frame = true;
+  
+  if (mode == FM_render && !_can_sync_video) {
     trigger_flip();
     clear_cube_map_selection();
   }
@@ -285,6 +332,7 @@ end_flip() {
     cocoagsg->unlock_context();
   }
   GraphicsWindow::end_flip();
+  has_frame = false;
 }
 
 /**
@@ -668,6 +716,10 @@ open_window() {
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
     mouse_mode_relative();
   }
+  
+  if (sync_video) {
+    _can_sync_video = setup_vsync();
+  }
 
   return true;
 }
@@ -708,6 +760,11 @@ close_window() {
   if (_view != nil) {
     [_view release];
     _view = nil;
+  }
+  
+  if (_can_sync_video) {
+    CVDisplayLinkStop(_display_link);
+    CVDisplayLinkRelease(_display_link);
   }
 
   GraphicsWindow::close_window();

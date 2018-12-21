@@ -269,10 +269,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
     return;
   }
 
-  // Set vsync setting on the context
-  GLint swap = sync_video ? 1 : 0;
-  [_context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
-
   cocoadisplay_cat.debug()
     << "Created context " << _context << ": " << _fbprops << "\n";
 }

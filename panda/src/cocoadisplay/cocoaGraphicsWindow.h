@@ -23,6 +23,8 @@
 #import <AppKit/NSView.h>
 #import <AppKit/NSWindow.h>
 
+#import <CoreVideo/CoreVideo.h>
+
 /**
  * An interface to the Cocoa system for managing OpenGL windows under Mac OS
  * X.
@@ -82,6 +84,8 @@ private:
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
   ButtonHandle map_key(unsigned short c) const;
   ButtonHandle map_raw_key(unsigned short keycode) const;
+  
+  bool setup_vsync();
 
 private:
   NSWindow *_window;
@@ -92,6 +96,9 @@ private:
   PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
+  
+  bool _can_sync_video;
+  CVDisplayLinkRef _display_link;
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CGDisplayModeRef _fullscreen_mode;
@@ -107,6 +114,9 @@ private:
 public:
   // Just so CocoaPandaView can access it.
   NSCursor *_cursor;
+  
+  bool has_frame;
+  void display_ready();
 
 public:
   static TypeHandle get_class_type() {
