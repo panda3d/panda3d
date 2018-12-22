@@ -84,8 +84,6 @@ private:
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
   ButtonHandle map_key(unsigned short c) const;
   ButtonHandle map_raw_key(unsigned short keycode) const;
-  
-  bool setup_vsync();
 
 private:
   NSWindow *_window;
@@ -96,9 +94,6 @@ private:
   PT(GraphicsWindowInputDevice) _input;
   bool _mouse_hidden;
   bool _context_needs_update;
-  
-  bool _can_sync_video;
-  CVDisplayLinkRef _display_link;
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CGDisplayModeRef _fullscreen_mode;

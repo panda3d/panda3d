@@ -17,9 +17,11 @@
 #include "pandabase.h"
 #include "cocoaGraphicsPipe.h"
 #include "glgsg.h"
+#include <atomic>
 
 #import <AppKit/NSOpenGL.h>
 #import <OpenGL/OpenGL.h>
+#import <CoreVideo/CoreVideo.h>
 
 /**
  * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
@@ -45,6 +47,13 @@ public:
   NSOpenGLContext *_share_context;
   NSOpenGLContext *_context;
   FrameBufferProperties _fbprops;
+  
+  CVDisplayLinkRef _display_link;
+  Mutex swap_lock;
+  ConditionVar swap_condition;
+  std::atomic_bool should_wait;
+  bool setup_vsync();
+  bool will_vsync;
 
 protected:
   virtual void query_gl_version();

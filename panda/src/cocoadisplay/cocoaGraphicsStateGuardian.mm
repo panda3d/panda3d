@@ -36,7 +36,8 @@ TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(engine, pipe)
+  GLGraphicsStateGuardian(engine, pipe),
+  swap_condition(swap_lock)
 {
   _share_context = nil;
   _context = nil;
@@ -52,10 +53,60 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
+  CVDisplayLinkRelease(_display_link);
+  swap_lock.lock();
+  swap_condition.notify();
+  swap_lock.unlock();
   if (_context != nil) {
     [_context clearDrawable];
     [_context release];
   }
+}
+
+/**
+ * Called whenever a display wants a frame. displayLinkContext contains the
+ * applicable CocoaGraphicsWindow.
+ */
+static CVReturn
+DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext) {
+  CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)displayLinkContext;
+  gsg->swap_lock.lock();
+  gsg->swap_condition.notify();
+  gsg->swap_lock.unlock();
+  gsg->should_wait = false;
+  return kCVReturnSuccess;
+}
+
+/**
+ * Creates a CVDisplayLink, which tells us when the display the window is on
+ * will want a frame.
+ */
+bool CocoaGraphicsStateGuardian::
+setup_vsync() {
+  CVReturn result = CVDisplayLinkCreateWithActiveCGDisplays(&_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.\n";
+    return false;
+  }
+  
+  result = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(_display_link, [_context CGLContextObj], [_context.pixelFormat CGLPixelFormatObj]);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink's current display.\n";
+    return false;
+  }
+  
+  result = CVDisplayLinkSetOutputCallback(_display_link, &DisplayLinkCallback, this);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.\n";
+    return false;
+  }
+  
+  result = CVDisplayLinkStart(_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.\n";
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -271,6 +322,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   cocoadisplay_cat.debug()
     << "Created context " << _context << ": " << _fbprops << "\n";
+  
+  if (sync_video) {
+    will_vsync = setup_vsync();
+  }
 }
 
 /**
