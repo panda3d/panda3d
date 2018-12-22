@@ -226,7 +226,7 @@ class build_apps(setuptools.Command):
         self.default_prc_dir = None
         self.log_filename = None
         self.log_append = False
-        self.requirements_path = './requirements.txt'
+        self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
         self.pypi_extra_indexes = []
@@ -1149,6 +1149,8 @@ class bdist_apps(setuptools.Command):
 
     description = 'bundle built Panda3D applications into distributable forms'
     user_options = build_apps.user_options + [
+        ('dist-dir=', 'd', 'directory to put final built distributions in'),
+        ('skip-build', None, 'skip rebuilding everything (for testing/debugging)'),
     ]
 
     def _build_apps_options(self):
@@ -1156,6 +1158,8 @@ class bdist_apps(setuptools.Command):
 
     def initialize_options(self):
         self.installers = {}
+        self.dist_dir = os.path.join(os.getcwd(), 'dist')
+        self.skip_build = False
         for opt in self._build_apps_options():
             setattr(self, opt, None)
 
@@ -1310,11 +1314,13 @@ class bdist_apps(setuptools.Command):
             if optval is not None:
                 setattr(build_cmd, opt, optval)
         build_cmd.finalize_options()
-        self.run_command('build_apps')
+        if not self.skip_build:
+            self.run_command('build_apps')
 
         platforms = build_cmd.platforms
         build_base = build_cmd.build_base
-        os.chdir(build_base)
+        os.makedirs(self.dist_dir, exist_ok=True)
+        os.chdir(self.dist_dir)
 
         for platform in platforms:
             build_dir = os.path.join(build_base, platform)
