@@ -2024,6 +2024,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type, CP
     if (iproperty._type != 0 && iproperty._type != return_index) {
       cerr << "Property " << property_name << " has inconsistent element type!\n";
     }
+    iproperty._type = return_index;
   } else {
     iproperty._type = 0;
   }
