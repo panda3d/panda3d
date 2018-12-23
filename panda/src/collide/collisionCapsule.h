@@ -156,13 +156,6 @@ private:
   friend class CollisionBox;
 };
 
-BEGIN_PUBLISH
-/**
- * Alias for backward compatibility.
- */
-typedef CollisionCapsule CollisionTube;
-END_PUBLISH
-
 #include "collisionCapsule.I"
 
 #endif
