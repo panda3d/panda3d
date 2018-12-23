@@ -38,7 +38,7 @@ void main() {{
 """
 
 
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=130, exts=set()):
+def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
     """ Runs a GLSL test on the given GSG.  The given body is executed in the
     main function and should call assert().  The preamble should contain all
     of the shader inputs. """
