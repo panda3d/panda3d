@@ -41,6 +41,7 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   _share_context = nil;
   _context = nil;
+  _will_vsync = false;
 
   if (share_with != (CocoaGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();
