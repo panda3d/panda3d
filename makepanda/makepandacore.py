@@ -3383,6 +3383,71 @@ def FindLocation(fn, ipath, pyabi=None):
     ORIG_EXT[loc] = ext
     return loc
 
+
+########################################################################
+##
+## These files maintain a python_versions.json file in the built/tmp
+## directory that can be used by the other scripts in this directory.
+##
+########################################################################
+
+
+def GetCurrentPythonVersionInfo():
+    if PkgSkip("PYTHON"):
+        return
+
+    from distutils.sysconfig import get_python_lib
+    return {
+        "version": SDK["PYTHONVERSION"][6:9],
+        "soabi": GetPythonABI(),
+        "ext_suffix": GetExtensionSuffix(),
+        "executable": sys.executable,
+        "purelib": get_python_lib(False),
+        "platlib": get_python_lib(True),
+    }
+
+
+def UpdatePythonVersionInfoFile(new_info):
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    json_data = []
+    if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
+        try:
+            json_data = json.load(open(json_file, 'r'))
+        except:
+            json_data = []
+
+        # Prune the list by removing the entries that conflict with our build,
+        # plus the entries that no longer exist
+        for version_info in json_data[:]:
+            core_pyd = os.path.join(GetOutputDir(), "panda3d", "core" + version_info["ext_suffix"])
+            if version_info["ext_suffix"] == new_info["ext_suffix"] or \
+               version_info["soabi"] == new_info["soabi"] or \
+               not os.path.isfile(core_pyd):
+                json_data.remove(version_info)
+
+    if not PkgSkip("PYTHON"):
+        json_data.append(new_info)
+
+    if VERBOSE:
+        print("Writing %s" % (json_file))
+    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+
+def ReadPythonVersionInfoFile():
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    if os.path.isfile(json_file):
+        try:
+            return json.load(open(json_file, 'r'))
+        except:
+            pass
+
+    return []
+
+
 ########################################################################
 ##
 ## TargetAdd

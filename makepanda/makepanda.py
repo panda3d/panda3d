@@ -6742,6 +6742,10 @@ if RUNTESTS:
         cmdstr += " --verbose"
     oscmd(cmdstr)
 
+# Write out information about the Python versions in the built dir.
+python_version_info = GetCurrentPythonVersionInfo()
+UpdatePythonVersionInfoFile(python_version_info)
+
 ##########################################################################################
 #
 # The Installers
@@ -6755,10 +6759,16 @@ if RUNTESTS:
 if INSTALLER:
     ProgressOutput(100.0, "Building installer")
     from makepackage import MakeInstaller
+
+    # When using the --installer flag, only install for the current version.
+    python_versions = []
+    if python_version_info:
+        python_versions.append(python_version_info)
+
     MakeInstaller(version=VERSION, outputdir=GetOutputDir(),
                   optimize=GetOptimize(), compressor=COMPRESSOR,
                   debversion=DEBVERSION, rpmrelease=RPMRELEASE,
-                  runtime=RUNTIME)
+                  runtime=RUNTIME, python_versions=python_versions)
 
 if WHEEL:
     ProgressOutput(100.0, "Building wheel")
