@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file collisionTube.I
+ * @file collisionCapsule.I
  * @author drose
  * @date 2003-09-25
  */
@@ -14,8 +14,8 @@
 /**
  *
  */
-INLINE CollisionTube::
-CollisionTube(const LPoint3 &a, const LPoint3 &b, PN_stdfloat radius) :
+INLINE CollisionCapsule::
+CollisionCapsule(const LPoint3 &a, const LPoint3 &b, PN_stdfloat radius) :
   _a(a), _b(b), _radius(radius)
 {
   recalc_internals();
@@ -25,8 +25,8 @@ CollisionTube(const LPoint3 &a, const LPoint3 &b, PN_stdfloat radius) :
 /**
  *
  */
-INLINE CollisionTube::
-CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+INLINE CollisionCapsule::
+CollisionCapsule(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
               PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
               PN_stdfloat radius) :
   _a(ax, ay, az), _b(bx, by, bz), _radius(radius)
@@ -36,17 +36,17 @@ CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
 }
 
 /**
- * Creates an invalid tube.  Only used when reading from a bam file.
+ * Creates an invalid capsule.  Only used when reading from a bam file.
  */
-INLINE CollisionTube::
-CollisionTube() {
+INLINE CollisionCapsule::
+CollisionCapsule() {
 }
 
 /**
  *
  */
-INLINE CollisionTube::
-CollisionTube(const CollisionTube &copy) :
+INLINE CollisionCapsule::
+CollisionCapsule(const CollisionCapsule &copy) :
   CollisionSolid(copy),
   _a(copy._a),
   _b(copy._b),
@@ -58,7 +58,7 @@ CollisionTube(const CollisionTube &copy) :
 /**
  * Flushes the PStatCollectors used during traversal.
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 flush_level() {
   _volume_pcollector.flush_level();
   _test_pcollector.flush_level();
@@ -67,7 +67,7 @@ flush_level() {
 /**
  *
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 set_point_a(const LPoint3 &a) {
   _a = a;
   recalc_internals();
@@ -76,7 +76,7 @@ set_point_a(const LPoint3 &a) {
 /**
  *
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   set_point_a(LPoint3(x, y, z));
 }
@@ -84,7 +84,7 @@ set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 /**
  *
  */
-INLINE const LPoint3 &CollisionTube::
+INLINE const LPoint3 &CollisionCapsule::
 get_point_a() const {
   return _a;
 }
@@ -92,7 +92,7 @@ get_point_a() const {
 /**
  *
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 set_point_b(const LPoint3 &b) {
   _b = b;
   recalc_internals();
@@ -101,7 +101,7 @@ set_point_b(const LPoint3 &b) {
 /**
  *
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   set_point_b(LPoint3(x, y, z));
 }
@@ -109,7 +109,7 @@ set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 /**
  *
  */
-INLINE const LPoint3 &CollisionTube::
+INLINE const LPoint3 &CollisionCapsule::
 get_point_b() const {
   return _b;
 }
@@ -117,7 +117,7 @@ get_point_b() const {
 /**
  *
  */
-INLINE void CollisionTube::
+INLINE void CollisionCapsule::
 set_radius(PN_stdfloat radius) {
   nassertv(radius >= 0.0f);
   _radius = radius;
@@ -131,7 +131,7 @@ set_radius(PN_stdfloat radius) {
 /**
  *
  */
-INLINE PN_stdfloat CollisionTube::
+INLINE PN_stdfloat CollisionCapsule::
 get_radius() const {
   return _radius;
 }

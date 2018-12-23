@@ -6,38 +6,39 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file collisionTube.h
+ * @file collisionCapsule.h
  * @author drose
  * @date 2003-09-25
  */
 
-#ifndef COLLISIONTUBE_H
-#define COLLISIONTUBE_H
+#ifndef COLLISIONCAPSULE_H
+#define COLLISIONCAPSULE_H
 
 #include "pandabase.h"
 #include "collisionSolid.h"
 #include "parabola.h"
 
 /**
- * This implements a solid roughly in cylindrical shape.  It's not called a
- * CollisionCylinder because it's not a true cylinder; specifically, it has
- * rounded ends instead of flat ends.  It looks more like a Contac pill.
+ * This implements a solid consisting of a cylinder with hemispherical endcaps,
+ * also known as a capsule or a spherocylinder.
+ *
+ * This shape was previously erroneously called CollisionTube.
  */
-class EXPCL_PANDA_COLLIDE CollisionTube : public CollisionSolid {
+class EXPCL_PANDA_COLLIDE CollisionCapsule : public CollisionSolid {
 PUBLISHED:
-  INLINE explicit CollisionTube(const LPoint3 &a, const LPoint3 &db,
-                                PN_stdfloat radius);
-  INLINE explicit CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
-                                PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
-                                PN_stdfloat radius);
+  INLINE explicit CollisionCapsule(const LPoint3 &a, const LPoint3 &db,
+                                   PN_stdfloat radius);
+  INLINE explicit CollisionCapsule(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                                   PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
+                                   PN_stdfloat radius);
 
   virtual LPoint3 get_collision_origin() const;
 
 private:
-  INLINE CollisionTube();
+  INLINE CollisionCapsule();
 
 public:
-  INLINE CollisionTube(const CollisionTube &copy);
+  INLINE CollisionCapsule(const CollisionCapsule &copy);
   virtual CollisionSolid *make_copy();
 
   virtual PT(CollisionEntry)
@@ -82,7 +83,7 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_tube(const CollisionEntry &entry) const;
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
 
@@ -141,7 +142,7 @@ public:
   }
   static void init_type() {
     CollisionSolid::init_type();
-    register_type(_type_handle, "CollisionTube",
+    register_type(_type_handle, "CollisionCapsule",
                   CollisionSolid::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -155,6 +156,13 @@ private:
   friend class CollisionBox;
 };
 
-#include "collisionTube.I"
+BEGIN_PUBLISH
+/**
+ * Alias for backward compatibility.
+ */
+typedef CollisionCapsule CollisionTube;
+END_PUBLISH
+
+#include "collisionCapsule.I"
 
 #endif

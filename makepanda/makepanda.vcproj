@@ -1043,7 +1043,7 @@
 				<File RelativePath="..\panda\src\collide\collisionLine.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerFluidPusher.h"></File>
 				<File RelativePath="..\panda\src\collide\config_collide.h"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.h"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionBox.h"></File>
 				<File RelativePath="..\panda\src\collide\collide_composite1.cxx"></File>
@@ -1054,7 +1054,7 @@
 				<File RelativePath="..\panda\src\collide\collisionNode.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionGeom.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.cxx"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerQueue.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionParabola.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.cxx"></File>
@@ -1089,7 +1089,7 @@
 				<File RelativePath="..\panda\src\collide\collisionInvSphere.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionLine.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionEntry.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.I"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSolid.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerGravity.cxx"></File>

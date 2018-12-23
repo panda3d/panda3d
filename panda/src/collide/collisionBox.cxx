@@ -16,7 +16,7 @@
 #include "collisionRay.h"
 #include "collisionSphere.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
@@ -547,19 +547,19 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 }
 
 /**
- * Double dispatch point for tube as a FROM object
+ * Double dispatch point for capsule as a FROM object
  */
 PT(CollisionEntry) CollisionBox::
-test_intersection_from_tube(const CollisionEntry &entry) const {
-  const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3 from_a = tube->get_point_a() * wrt_mat;
-  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
   LVector3 from_direction = from_b - from_a;
-  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, tube->get_radius())).length_squared();
+  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, capsule->get_radius())).length_squared();
   PN_stdfloat radius = csqrt(radius_sq);
 
   LPoint3 box_min = get_min();
@@ -620,7 +620,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
       LVector3 delta(0);
       delta[edges[i].axis] = dimensions[edges[i].axis];
       double u1, u2;
-      CollisionTube::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
+      CollisionCapsule::calc_closest_segment_points(u1, u2, from_a, from_direction, vertex, delta);
       PN_stdfloat dist_sq = ((from_a + from_direction * u1) - (vertex + delta * u2)).length_squared();
       if (dist_sq < best_dist_sq) {
         best_dist_sq = dist_sq;
@@ -682,7 +682,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   new_entry->set_interior_point(point - interior_vec * radius);
   new_entry->set_surface_point(surface_point);
 
-  if (has_effective_normal() && tube->get_respect_effective_normal()) {
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
     new_entry->set_surface_normal(normal);
