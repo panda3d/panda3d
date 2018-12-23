@@ -797,7 +797,15 @@ EXCLUDE                = dtool/src/parser-inc \
                          panda/src/linmath/fltnames.h \
                          panda/src/linmath/dblnames.h \
                          panda/src/linmath/dbl2fltnames.h \
-                         panda/src/linmath/flt2dblnames.h
+                         panda/src/linmath/flt2dblnames.h \
+                         panda/src/android \
+                         panda/src/iphone \
+                         panda/src/tinydisplay \
+                         panda/src/movies/dr_flac.h \
+                         dtool/src/dtoolbase/pdtoa.cxx \
+                         dtool/src/dtoolutil/panda_getopt_long.h \
+                         dtool/src/dtoolutil/panda_getopt_impl.h \
+                         dtool/src/dtoolutil/panda_getopt_impl.cxx
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1972,7 +1980,13 @@ PREDEFINED             = TVOLATILE= \
                          EXTEND= \
                          ALLOC_DELETED_CHAIN(x)= \
                          BLOCKING= \
-                         TYPENAME=typename
+                         TYPENAME=typename \
+                         MAKE_PROPERTY(x)= \
+                         MAKE_PROPERTY2(x)= \
+                         MAKE_SEQ(x)= \
+                         MAKE_SEQ_PROPERTY(x)= \
+                         MAKE_MAP_PROPERTY(x)= \
+                         MAKE_MAP_KEYS_SEQ(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
