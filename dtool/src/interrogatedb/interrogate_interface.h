@@ -153,6 +153,9 @@ EXPCL_INTERROGATEDB FunctionIndex interrogate_element_getter(ElementIndex elemen
 EXPCL_INTERROGATEDB bool interrogate_element_has_setter(ElementIndex element);
 EXPCL_INTERROGATEDB FunctionIndex interrogate_element_setter(ElementIndex element);
 
+EXPCL_INTERROGATEDB bool interrogate_element_is_sequence(ElementIndex element);
+EXPCL_INTERROGATEDB bool interrogate_element_is_mapping(ElementIndex element);
+
 // Global Data
 
 // This is the list of global data elements.
