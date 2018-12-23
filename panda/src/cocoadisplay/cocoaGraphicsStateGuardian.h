@@ -49,11 +49,11 @@ public:
   FrameBufferProperties _fbprops;
   
   CVDisplayLinkRef _display_link;
-  Mutex swap_lock;
-  ConditionVar swap_condition;
-  std::atomic_bool should_wait;
+  Mutex _swap_lock;
+  ConditionVar _swap_condition;
+  AtomicAdjust::Integer _last_wait_frame;
+  bool _will_vsync;
   bool setup_vsync();
-  bool will_vsync;
 
 protected:
   virtual void query_gl_version();

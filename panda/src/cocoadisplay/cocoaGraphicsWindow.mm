@@ -273,13 +273,12 @@ end_flip() {
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
     
-    if (cocoagsg->will_vsync) {
-      if (cocoagsg->should_wait) {
-        cocoagsg->swap_lock.lock();
-        cocoagsg->swap_condition.wait();
-        cocoagsg->swap_lock.unlock();
+    if (cocoagsg->_will_vsync) {
+      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
+      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
+        MutexHolder swap_holder(cocoagsg->_swap_lock);
+        cocoagsg->_swap_condition.wait();
       }
-      cocoagsg->should_wait = true;
     }
     
     cocoagsg->lock_context();

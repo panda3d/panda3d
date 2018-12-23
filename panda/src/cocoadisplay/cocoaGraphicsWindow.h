@@ -109,9 +109,6 @@ private:
 public:
   // Just so CocoaPandaView can access it.
   NSCursor *_cursor;
-  
-  bool has_frame;
-  void display_ready();
 
 public:
   static TypeHandle get_class_type() {

@@ -37,7 +37,7 @@ CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(engine, pipe),
-  swap_condition(swap_lock)
+  _swap_condition(_swap_lock)
 {
   _share_context = nil;
   _context = nil;
@@ -54,13 +54,12 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
   CVDisplayLinkRelease(_display_link);
-  swap_lock.lock();
-  swap_condition.notify();
-  swap_lock.unlock();
   if (_context != nil) {
     [_context clearDrawable];
     [_context release];
   }
+  MutexHolder swap_holder(_swap_lock);
+  _swap_condition.notify();
 }
 
 /**
@@ -70,10 +69,8 @@ CocoaGraphicsStateGuardian::
 static CVReturn
 DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext) {
   CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)displayLinkContext;
-  gsg->swap_lock.lock();
-  gsg->swap_condition.notify();
-  gsg->swap_lock.unlock();
-  gsg->should_wait = false;
+  MutexHolder swap_holder(gsg->_swap_lock);
+  gsg->_swap_condition.notify();
   return kCVReturnSuccess;
 }
 
@@ -324,7 +321,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
     << "Created context " << _context << ": " << _fbprops << "\n";
   
   if (sync_video) {
-    will_vsync = setup_vsync();
+    _will_vsync = setup_vsync();
   }
 }
 
