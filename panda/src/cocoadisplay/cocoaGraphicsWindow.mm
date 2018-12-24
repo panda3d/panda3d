@@ -274,6 +274,14 @@ end_flip() {
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
 
+    if (_vsync_enabled) {
+      AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
+      if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
+        MutexHolder swap_holder(cocoagsg->_swap_lock);
+        cocoagsg->_swap_condition.wait();
+      }
+    }
+
     cocoagsg->lock_context();
 
     // Swap the front and back buffer.
@@ -669,6 +677,8 @@ open_window() {
     mouse_mode_relative();
   }
 
+  _vsync_enabled = sync_video && cocoagsg->setup_vsync();
+
   return true;
 }
 
@@ -709,6 +719,8 @@ close_window() {
     [_view release];
     _view = nil;
   }
+
+  _vsync_enabled = false;
 
   GraphicsWindow::close_window();
 }
@@ -1491,6 +1503,7 @@ handle_close_event() {
       cocoagsg->unlock_context();
     }
     _gsg.clear();
+    _vsync_enabled = false;
   }
 
   // Dump the view, too
