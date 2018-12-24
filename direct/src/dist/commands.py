@@ -315,11 +315,18 @@ class build_apps(setuptools.Command):
         if self.use_optimized_wheels:
             if not self.optimized_wheel_index:
                 # Try to find an appropriate wheel index
+
+                # Start with the release index
+                self.optimized_wheel_index = 'https://archive.panda3d.org/simple/opt'
+
+                # See if a buildbot build is being used
                 with open(self.requirements_path) as reqsfile:
                     reqsdata = reqsfile.read()
                 matches = re.search(r'--extra-index-url (https*://archive.panda3d.org/.*\b)', reqsdata)
                 if matches and matches.group(1):
-                    self.optimized_wheel_index = matches.group(1) + '/opt'
+                    self.optimized_wheel_index = matches.group(1)
+                    if not matches.group(1).endswith('opt'):
+                        self.optimized_wheel_index += '/opt'
 
             assert self.optimized_wheel_index, 'An index for optimized wheels must be defined if use_optimized_wheels is set'
 
