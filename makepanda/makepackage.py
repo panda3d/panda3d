@@ -168,17 +168,10 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
     elif os.path.isdir(file):
         shutil.rmtree(file)
 
-    if "PYTHONVERSION" in SDK:
-        pyver = SDK["PYTHONVERSION"][6:9]
-    else:
-        pyver = "%d.%d" % (sys.version_info[:2])
-
     if GetTargetArch() == 'x64':
         regview = '64'
     else:
         regview = '32'
-        if int(pyver[0]) == 3 and int(pyver[2]) >= 5:
-            pyver += '-32'
 
     if runtime:
         # Invoke the make_installer script.
@@ -211,10 +204,21 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
         'OUTFILE'   : '..\\' + file,
         'BUILT'     : '..\\' + outputdir,
         'SOURCE'    : '..',
-        'PYVER'     : pyver,
         'REGVIEW'   : regview,
-        'EXT_SUFFIX': GetExtensionSuffix(),
     }
+
+    # Are we shipping a version of Python?
+    if os.path.isfile(os.path.join(outputdir, "python", "python.exe")):
+        py_dlls = glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll"))
+        assert py_dlls
+        py_dll = os.path.basename(py_dlls[0])
+        pyver = py_dll[6] + "." + py_dll[7]
+
+        if GetTargetArch() != 'x64':
+            pyver += '-32'
+
+        nsis_defs['INCLUDE_PYVER'] = pyver
 
     if GetHost() == 'windows':
         cmd = os.path.join(GetThirdpartyBase(), 'win-nsis', 'makensis') + ' /V2'
@@ -651,7 +655,7 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     dist.write('        <line choice="base"/>\n')
     if python_versions:
         dist.write('        <line choice="pythoncode">\n')
-        for version_info in python_versions:
+        for version_info in sorted(python_versions, key=lambda info:info["version"], reverse=True):
             dist.write('            <line choice="pybindings%s"/>\n' % (version_info["version"]))
         dist.write('        </line>\n')
     dist.write('        <line choice="tools"/>\n')
@@ -978,13 +982,9 @@ def MakeInstaller(version, **kwargs):
 
         fn += version
 
-        if "PYTHONVERSION" in SDK:
-            pyver = SDK["PYTHONVERSION"][6:9]
-        else:
-            pyver = "%d.%d" % (sys.version_info[:2])
-
-        if not runtime and pyver != "2.7":
-            fn += '-py' + pyver
+        python_versions = kwargs.get('python_versions', [])
+        if not runtime and len(python_versions) == 1 and python_versions[0]["version"] != "2.7":
+            fn += '-py' + python_versions[0]["version"]
 
         if GetOptimize() <= 2:
             fn += "-dbg"
