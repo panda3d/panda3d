@@ -453,7 +453,7 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
 
-def MakeInstallerOSX(version, runtime=False, **kwargs):
+def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
     if runtime:
@@ -467,17 +467,11 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         oscmd(cmdstr)
         return
 
-    if "PYTHONVERSION" in SDK:
-        pyver = SDK["PYTHONVERSION"][6:9]
-    else:
-        pyver = "%d.%d" % (sys.version_info[:2])
-
     dmg_name = "Panda3D-" + version
-    if not pyver.startswith("2."):
+    if len(python_versions) == 1 and not python_versions[0]["version"].startswith("2."):
         dmg_name += "-py" + pyver
     dmg_name += ".dmg"
 
-    import compileall
     if (os.path.isfile(dmg_name)): oscmd("rm -f %s" % dmg_name)
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
@@ -518,32 +512,42 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
         oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
 
-    if not PkgSkip("PYTHON"):
-        pyexec = SDK.get("PYTHONEXEC", sys.executable)
-        oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
+    if python_versions:
+        # Let's only write a ppython link if there is only one Python version.
+        if len(python_versions) == 1:
+            oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
+            oscmd("ln -s %s dstroot/pythoncode/usr/local/bin/ppython" % (python_versions[0]["executable"]))
+
         oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/panda3d")
-        oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % pyver)
-        WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % pyver, "/Developer/Panda3D")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % outputdir)
         oscmd("cp -R %s/direct                dstroot/pythoncode/Developer/Panda3D/direct" % outputdir)
-        oscmd("ln -s %s                       dstroot/pythoncode/usr/local/bin/ppython" % pyexec)
         oscmd("cp -R %s/*.so                  dstroot/pythoncode/Developer/Panda3D/" % outputdir, True)
         oscmd("cp -R %s/*.py                  dstroot/pythoncode/Developer/Panda3D/" % outputdir, True)
         if os.path.isdir(outputdir+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % outputdir)
-            compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/Pmw")
-        WriteFile("dstroot/pythoncode/Developer/Panda3D/direct/__init__.py", "")
-        for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/direct"):
-            if ((base != "extensions") and (base != "extensions_native")):
-                compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/direct/"+base)
 
-        suffix = GetExtensionSuffix()
         for base in os.listdir(outputdir+"/panda3d"):
-            if base.endswith('.py') or (base.endswith(suffix) and '.' not in base[:-len(suffix)]):
+            if base.endswith('.py'):
                 libname = "dstroot/pythoncode/Developer/Panda3D/panda3d/" + base
+                oscmd("cp -R " + outputdir + "/panda3d/" + base + " " + libname)
+
+    for version_info in python_versions:
+        pyver = version_info["version"]
+        oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
+        oscmd("mkdir -p dstroot/pybindings%s/Developer/Panda3D/panda3d" % (pyver))
+
+        # Copy over extension modules.
+        suffix = version_info["ext_suffix"]
+        for base in os.listdir(outputdir+"/panda3d"):
+            if base.endswith(suffix) and '.' not in base[:-len(suffix)]:
+                libname = "dstroot/pybindings%s/Developer/Panda3D/panda3d/%s" % (pyver, base)
                 # We really need to specify -R in order not to follow symlinks
                 # On OSX, just specifying -P is not enough to do that.
                 oscmd("cp -R -P " + outputdir + "/panda3d/" + base + " " + libname)
+
+        # Write a .pth file.
+        oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
+        WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
@@ -567,9 +571,19 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
         oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
 
-    oscmd("chmod -R 0775 dstroot/*")
     DeleteVCS("dstroot")
     DeleteBuildFiles("dstroot")
+
+    # Compile Python files.  Do this *after* the DeleteVCS step, above, which
+    # deletes __pycache__ directories.
+    for version_info in python_versions:
+        if os.path.isdir("dstroot/pythoncode/Developer/Panda3D/Pmw"):
+            oscmd("%s -m compileall -q -f -d /Developer/Panda3D/Pmw dstroot/pythoncode/Developer/Panda3D/Pmw" % (version_info["executable"]), True)
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/direct dstroot/pythoncode/Developer/Panda3D/direct" % (version_info["executable"]))
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/pandac dstroot/pythoncode/Developer/Panda3D/pandac" % (version_info["executable"]))
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/panda3d dstroot/pythoncode/Developer/Panda3D/panda3d" % (version_info["executable"]))
+
+    oscmd("chmod -R 0775 dstroot/*")
     # We need to be root to perform a chown. Bleh.
     # Fortunately PackageMaker does it for us, on 10.5 and above.
     #oscmd("chown -R root:admin dstroot/*", True)
@@ -578,7 +592,10 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
 
     pkgs = ["base", "tools", "headers"]
-    if not PkgSkip("PYTHON"):    pkgs.append("pythoncode")
+    if python_versions:
+        pkgs.append("pythoncode")
+    for version_info in python_versions:
+        pkgs.append("pybindings" + version_info["version"])
     if not PkgSkip("FFMPEG"):    pkgs.append("ffmpeg")
     #if not PkgSkip("OPENAL"):    pkgs.append("openal")
     if not PkgSkip("FMODEX"):    pkgs.append("fmodex")
@@ -620,20 +637,53 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
     dist.write('    <title>Panda3D SDK %s</title>\n' % (version))
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
+    dist.write('    <script>\n')
+    dist.write('    function isPythonVersionInstalled(version) {\n')
+    dist.write('        return system.files.fileExistsAtPath("/usr/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/usr/local/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/opt/local/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/sw/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/System/Library/Frameworks/Python.framework/Versions/" + version + "/bin/python")\n')
+    dist.write('            || system.files.fileExistsAtPath("/Library/Frameworks/Python.framework/Versions/" + version + "/bin/python");\n')
+    dist.write('    }\n')
+    dist.write('    </script>\n')
     dist.write('    <choices-outline>\n')
-    for pkg in pkgs:
-        dist.write('        <line choice="%s"/>\n' % (pkg))
+    dist.write('        <line choice="base"/>\n')
+    if python_versions:
+        dist.write('        <line choice="pythoncode">\n')
+        for version_info in python_versions:
+            dist.write('            <line choice="pybindings%s"/>\n' % (version_info["version"]))
+        dist.write('        </line>\n')
+    dist.write('        <line choice="tools"/>\n')
+    if os.path.isdir("samples"):
+        dist.write('        <line choice="samples"/>\n')
+    if not PkgSkip("FFMPEG"):
+        dist.write('        <line choice="ffmpeg"/>\n')
+    if not PkgSkip("FMODEX"):
+        dist.write('        <line choice="fmodex"/>\n')
+    dist.write('        <line choice="headers"/>\n')
     dist.write('    </choices-outline>\n')
-    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
+    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D.&#10;&#10;Location: /Developer/Panda3D/" start_enabled="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Panda3D/bin/">\n')
+    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more.&#10;&#10;Location: /Developer/Panda3D/bin/">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
     dist.write('    </choice>\n')
 
-    if not PkgSkip("PYTHON"):
-        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">\n')
+    if python_versions:
+        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D.&#10;&#10;Location: /Developer/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>\n')
+        dist.write('    </choice>\n')
+
+    for version_info in python_versions:
+        pyver = version_info["version"]
+        if pyver == "2.7":
+            # Always install Python 2.7 by default; it's included on macOS.
+            cond = "true"
+        else:
+            cond = "isPythonVersionInstalled('%s')" % (pyver)
+        dist.write('    <choice id="pybindings%s" start_selected="%s" title="Python %s Bindings" tooltip="Python bindings for the Panda3D libraries" description="Support for Python %s.">\n' % (pyver, cond, pyver, pyver))
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.pybindings%s.pkg"/>\n' % (pyver))
         dist.write('    </choice>\n')
 
     if not PkgSkip("FFMPEG"):
@@ -660,11 +710,11 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         dist.write('    </choice>\n')
 
     if os.path.isdir("samples"):
-        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">\n')
+        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D.&#10;&#10;Location: /Developer/Examples/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>\n')
         dist.write('    </choice>\n')
 
-    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">\n')
+    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python.&#10;&#10;Location: /Developer/Panda3D/include/" start_selected="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
     dist.write('    </choice>\n')
     for pkg in pkgs:
