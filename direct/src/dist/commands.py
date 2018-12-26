@@ -65,7 +65,7 @@ def egg2bam(_build_cmd, srcpath, dstpath):
         ])
     except FileNotFoundError:
         raise RuntimeError('egg2bam failed: egg2bam was not found in the PATH')
-    except subprocess.CalledProcessError as err:
+    except (subprocess.CalledProcessError, OSError) as err:
         raise RuntimeError('egg2bam failed: {}'.format(err))
     return dstpath
 
