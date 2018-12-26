@@ -25,6 +25,7 @@
 #include "cppFunctionGroup.h"
 #include "cppFunctionType.h"
 #include "cppClosureType.h"
+#include "cppReferenceType.h"
 #include "cppStructType.h"
 #include "cppBison.h"
 #include "pdtoa.h"
@@ -260,12 +261,12 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
       _u._variable = inst;
       return;
     }
-    CPPFunctionGroup *fgroup = decl->as_function_group();
+    /*CPPFunctionGroup *fgroup = decl->as_function_group();
     if (fgroup != nullptr) {
       _type = T_function;
       _u._fgroup = fgroup;
       return;
-    }
+    }*/
   }
 
   _type = T_unknown_ident;
@@ -1230,6 +1231,61 @@ determine_type() const {
   }
 
   return nullptr;  // Compiler kludge; can't get here.
+}
+
+/**
+ * Returns true if this is an lvalue expression.
+ */
+bool CPPExpression::
+is_lvalue() const {
+  switch (_type) {
+  case T_variable:
+  case T_function:
+  case T_unknown_ident:
+    return true;
+
+  case T_typecast:
+  case T_static_cast:
+  case T_dynamic_cast:
+  case T_const_cast:
+  case T_reinterpret_cast:
+    {
+      CPPReferenceType *ref_type = _u._typecast._to->as_reference_type();
+      return ref_type != nullptr && ref_type->_value_category == CPPReferenceType::VC_lvalue;
+    }
+
+  case T_unary_operation:
+    if (_u._op._operator == 'f') {
+      // A function returning an lvalue reference.
+      CPPType *return_type = determine_type();
+      if (return_type != nullptr) {
+        CPPReferenceType *ref_type = return_type->as_reference_type();
+        return ref_type != nullptr && ref_type->_value_category == CPPReferenceType::VC_lvalue;
+      }
+    }
+    return _u._op._operator == PLUSPLUS
+        || _u._op._operator == MINUSMINUS
+        || _u._op._operator == '*';
+
+  case T_binary_operation:
+    if (_u._op._operator == ',') {
+      CPPReferenceType *ref_type = _u._op._op2->as_reference_type();
+      return ref_type != nullptr && ref_type->_value_category == CPPReferenceType::VC_lvalue;
+    }
+    return (_u._op._operator == POINTSAT || _u._op._operator == ',');
+
+  case T_trinary_operation:
+    return _u._op._op2->is_lvalue() && _u._op._op3->is_lvalue();
+
+  case T_literal:
+  case T_raw_literal:
+    return true;
+
+  default:
+    break;
+  }
+
+  return false;
 }
 
 /**
