@@ -512,9 +512,10 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     oscmd("install -m 0644 doc/man/*.1 dstroot/tools/usr/local/share/man/man1/")
 
     for base in os.listdir(outputdir+"/bin"):
-        binname = "dstroot/tools/Developer/Panda3D/bin/" + base
-        # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
-        oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
+        if not base.startswith("deploy-stub"):
+            binname = "dstroot/tools/Developer/Panda3D/bin/" + base
+            # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
+            oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
 
     if python_versions:
         # Let's only write a ppython link if there is only one Python version.

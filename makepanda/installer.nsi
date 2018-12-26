@@ -367,7 +367,7 @@ Section "Tools and utilities" SecTools
     SetDetailsPrint listonly
 
     SetOutPath "$INSTDIR\bin"
-    File /r "${BUILT}\bin\*.exe"
+    File /r /x deploy-stub.exe /x deploy-stubw.exe "${BUILT}\bin\*.exe"
     File /nonfatal /r "${BUILT}\bin\*.p3d"
     SetOutPath "$INSTDIR\NSIS"
     File /r /x CVS "${NSISDIR}\*"
