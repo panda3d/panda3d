@@ -76,6 +76,11 @@ hiddenImports = {
     'keyring.backends': ['keyring.backends.*'],
     'matplotlib.font_manager': ['encodings.mac_roman'],
     'direct.particles': ['direct.particles.ParticleManagerGlobal'],
+    'numpy.core._multiarray_umath': [
+        'numpy.core._internal',
+        'numpy.core._dtype_ctypes',
+        'numpy.core._methods',
+    ],
 }
 
 if sys.version_info >= (3,):
