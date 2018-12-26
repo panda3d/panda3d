@@ -50,4 +50,17 @@ typedef ConditionVarPosixImpl ConditionVarFullImpl;
 
 #endif
 
+#if defined(WIN32_VC)
+#include "conditionVarWin32Impl.h"
+typedef ConditionVarWin32Impl TrueConditionVarImpl;
+
+#elif defined(HAVE_POSIX_THREADS)
+#include "conditionVarPosixImpl.h"
+typedef ConditionVarPosixImpl TrueConditionVarImpl;
+
+#else
+// No true threads, sorry.  Better not try to use 'em.
+
+#endif
+
 #endif
