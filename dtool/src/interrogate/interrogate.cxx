@@ -312,7 +312,10 @@ main(int argc, char **argv) {
   string command_line;
   int i;
   for (i = 0; i < argc; i++) {
-    command_line += string(argv[i]) + " ";
+    if (i > 0) {
+      command_line += ' ';
+    }
+    command_line += string(argv[i]);
   }
 
   Filename fn;

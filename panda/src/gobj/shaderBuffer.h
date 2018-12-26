@@ -58,6 +58,9 @@ PUBLISHED:
   int release_all();
 
 private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+
+private:
   uint64_t _data_size_bytes;
   UsageHint _usage_hint;
   vector_uchar _initial_data;
@@ -91,6 +94,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class PreparedGraphicsObjects;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const ShaderBuffer &m) {

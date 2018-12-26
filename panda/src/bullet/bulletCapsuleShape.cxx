@@ -87,16 +87,16 @@ ptr() const {
 
 /**
  * Constructs a new BulletCapsuleShape using the information from a
- * CollisionTube from the builtin collision system.
+ * CollisionCapsule from the builtin collision system.
  */
 BulletCapsuleShape *BulletCapsuleShape::
-make_from_solid(const CollisionTube *solid) {
-  
+make_from_solid(const CollisionCapsule *solid) {
+
   PN_stdfloat radius = solid->get_radius();
-  // Get tube's cylinder height: length from point A to point B
+  // Get capsule's cylinder height: length from point A to point B
   PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length();
 
-  // CollisionTubes are always Z-Up.
+  // CollisionCapsules are always Z-Up.
   return new BulletCapsuleShape(radius, height, Z_up);
 }
 

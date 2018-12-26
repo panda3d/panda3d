@@ -1413,7 +1413,7 @@ open_buffer() {
   }
 
   if (_rb_context == nullptr) {
-    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
+    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency), nullptr);
   }
 
 /*

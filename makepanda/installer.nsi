@@ -14,7 +14,7 @@
 ;
 ;   BUILT         - location of panda install tree.
 ;   SOURCE        - location of the panda source-tree if available, OR location of panda install tree.
-;   PYVER         - version of Python that Panda was built with (ie, "2.7")
+;   INCLUDE_PYVER - version of Python that Panda was built with (eg. "2.7", "3.5-32")
 ;   REGVIEW       - either 32 or 64, depending on the build architecture.
 ;
 
@@ -46,7 +46,9 @@ SetCompressor ${COMPRESSOR}
 !insertmacro MUI_PAGE_LICENSE "${SOURCE}/doc/LICENSE"
 !insertmacro MUI_PAGE_DIRECTORY
 
+!ifdef INCLUDE_PYVER
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE ConfirmPythonSelection
+!endif
 !insertmacro MUI_PAGE_COMPONENTS
 
 !insertmacro MUI_PAGE_INSTFILES
@@ -64,8 +66,9 @@ ShowUninstDetails hide
 
 LicenseData "${SOURCE}/doc/LICENSE"
 
-InstType "Full (Recommended)"
-InstType "Minimal"
+InstType "Auto (Recommended)"
+InstType "Full"
+InstType "Light"
 
 LangString DESC_SecCore ${LANG_ENGLISH} "The Panda3D core libraries, configuration files and models/textures that are needed to use Panda3D."
 LangString DESC_SecOpenGL ${LANG_ENGLISH} "The OpenGL graphics back-end is the most well-supported renderer."
@@ -78,8 +81,9 @@ LangString DESC_SecODE ${LANG_ENGLISH} "Support for the Open Dynamics Engine to 
 LangString DESC_SecPhysX ${LANG_ENGLISH} "Support for NVIDIA PhysX to implement physics."
 LangString DESC_SecRocket ${LANG_ENGLISH} "Support for the libRocket GUI library.  This is an optional library that offers an HTML/CSS-like approach to creating user interfaces."
 LangString DESC_SecTools ${LANG_ENGLISH} "Useful tools and model converters to help with Panda3D development.  Recommended."
-LangString DESC_SecPyBindings ${LANG_ENGLISH} "Contains the Python modules that allow use of Panda3D using Python.  These will only work with a ${REGVIEW}-bit version of Python ${PYVER}."
-LangString DESC_SecPython ${LANG_ENGLISH} "Contains a ${REGVIEW}-bit copy of Python ${PYVER} preconfigured to make use of Panda3D."
+LangString DESC_SecGroupPython ${LANG_ENGLISH} "Contains modules that provide Python support for Panda3D."
+LangString DESC_SecPyShared ${LANG_ENGLISH} "Contains the common Python code used by the Panda3D Python bindings."
+LangString DESC_SecPython ${LANG_ENGLISH} "Contains a ${REGVIEW}-bit copy of Python ${INCLUDE_PYVER} preconfigured to make use of Panda3D."
 LangString DESC_SecHeadersLibs ${LANG_ENGLISH} "Headers and libraries needed for C++ development with Panda3D."
 LangString DESC_SecSamples ${LANG_ENGLISH} "The sample programs demonstrate how to make Python applications with Panda3D."
 LangString DESC_SecMaxPlugins ${LANG_ENGLISH} "Plug-ins for Autodesk 3ds Max (${REGVIEW}-bit) that can be used to export models to Panda3D."
@@ -112,222 +116,38 @@ var MANPAGE
 !insertmacro !defineifexist HAVE_ODE "${BUILT}\bin\libpandaode.dll"
 !insertmacro !defineifexist HAVE_PHYSX "${BUILT}\bin\libpandaphysx.dll"
 !insertmacro !defineifexist HAVE_ROCKET "${BUILT}\bin\libp3rocket.dll"
-!insertmacro !defineifexist HAVE_PYTHON "${BUILT}\python"
 !insertmacro !defineifexist HAVE_SAMPLES "${SOURCE}\samples"
 !insertmacro !defineifexist HAVE_MAX_PLUGINS "${BUILT}\plugins\*.dlo"
 !insertmacro !defineifexist HAVE_MAYA_PLUGINS "${BUILT}\plugins\*.mll"
 
-Function runFunction
-    ExecShell "open" "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk"
-FunctionEnd
+!macro RemovePythonPath PYVER
+    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" ""
+    StrCmp $0 "$INSTDIR" 0 +2
+    DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D"
+!macroend
 
-Function .onInit
-    ${If} ${REGVIEW} = 64
-    ${AndIfNot} ${RunningX64}
-        MessageBox MB_OK|MB_ICONEXCLAMATION "You are attempting to install the 64-bit version of Panda3D on a 32-bit version of Windows.  Please download and install the 32-bit version of Panda3D instead."
-        Abort
-    ${EndIf}
-FunctionEnd
+!macro PyBindingSection PYVER EXT_SUFFIX
+    LangString DESC_SecPyBindings${PYVER} ${LANG_ENGLISH} "Contains the Python modules that allow use of Panda3D using a ${REGVIEW}-bit version of Python ${PYVER}."
 
-SectionGroup "Panda3D Libraries"
-    Section "Core Libraries" SecCore
-        SectionIn 1 2 RO
-
-        SetShellVarContext current
-        SetOverwrite try
-
-        SetDetailsPrint both
-        DetailPrint "Installing Panda3D libraries..."
-        SetDetailsPrint listonly
-
-        SetOutPath "$INSTDIR"
-        File /nonfatal "${BUILT}\LICENSE"
-        File /nonfatal "${BUILT}\ReleaseNotes"
-        File /nonfatal "${BUILT}\pandaIcon.ico"
-
-        SetOutPath $INSTDIR\etc
-        File /r "${BUILT}\etc\*"
-
-        SetOutPath $INSTDIR\bin
-        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
-        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
-
-        ; Before Windows 10, we need these stubs for the UCRT as well.
-        ReadRegDWORD $0 HKLM "Software\Microsoft\Windows NT\CurrentVersion" "CurrentMajorVersionNumber"
-        ${If} $0 < 10
-            ClearErrors
-            File /nonfatal /r "${BUILT}\bin\api-ms-win-*.dll"
-            File /nonfatal "${BUILT}\bin\ucrtbase.dll"
-        ${Endif}
+    !insertmacro !defineifexist _present "${BUILT}\panda3d\core${EXT_SUFFIX}"
+    !ifdef _present
+    Section "${PYVER} bindings" SecPyBindings${PYVER}
+        !if "${PYVER}" == "${INCLUDE_PYVER}"
+            SectionIn 1 2 3
+        !else
+            !if "${PYVER}" == "2.7"
+                SectionIn 1 2
+            !else
+                ; See .onInit function where this is dynamically enabled.
+                SectionIn 2
+            !endif
+        !endif
 
         SetDetailsPrint both
-        DetailPrint "Installing models..."
+        DetailPrint "Installing Panda3D bindings for Python ${PYVER}..."
         SetDetailsPrint listonly
 
-        SetOutPath $INSTDIR\models
-        File /r /x CVS "${BUILT}\models\*"
-
-        SetDetailsPrint both
-        DetailPrint "Installing optional components..."
-        SetDetailsPrint listonly
-
-        RMDir /r "$SMPROGRAMS\${TITLE}"
-        CreateDirectory "$SMPROGRAMS\${TITLE}"
-    SectionEnd
-
-    !ifdef HAVE_GL
-    Section "OpenGL" SecOpenGL
-        SectionIn 1 2 RO
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libpandagl.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_DX9
-    Section "Direct3D 9" SecDirect3D9
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libpandadx9.dll"
-        File /nonfatal /r "${BUILT}\bin\cgD3D9.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_OPENAL
-    Section "OpenAL Audio" SecOpenAL
-        SectionIn 1 2
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libp3openal_audio.dll"
-        File /nonfatal /r "${BUILT}\bin\OpenAL32.dll"
-        File /nonfatal /r "${BUILT}\bin\*_oal.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_FMOD
-    Section "FMOD Audio" SecFMOD
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libp3fmod_audio.dll"
-        File /r "${BUILT}\bin\fmodex*.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_FFMPEG
-    Section "FFMpeg" SecFFMpeg
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libp3ffmpeg.dll"
-        File /nonfatal /r "${BUILT}\bin\av*.dll"
-        File /nonfatal /r "${BUILT}\bin\swscale*.dll"
-        File /nonfatal /r "${BUILT}\bin\swresample*.dll"
-        File /nonfatal /r "${BUILT}\bin\postproc*.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_BULLET
-    Section "Bullet Physics" SecBullet
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libpandabullet.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_ODE
-    Section "ODE Physics" SecODE
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libpandaode.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_PHYSX
-    Section "NVIDIA PhysX" SecPhysX
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libpandaphysx.dll"
-        File /nonfatal /r "${BUILT}\bin\PhysX*.dll"
-        File /nonfatal /r "${BUILT}\bin\NxCharacter*.dll"
-        File /nonfatal /r "${BUILT}\bin\cudart*.dll"
-    SectionEnd
-    !endif
-
-    !ifdef HAVE_ROCKET
-    Section "libRocket GUI" SecRocket
-        SectionIn 1
-
-        SetOutPath "$INSTDIR\bin"
-        File "${BUILT}\bin\libp3rocket.dll"
-        File /nonfatal /r "${BUILT}\bin\Rocket*.dll"
-        File /nonfatal /r "${BUILT}\bin\_rocket*.pyd"
-        File /nonfatal /r "${BUILT}\bin\boost_python*.dll"
-    SectionEnd
-    !endif
-SectionGroupEnd
-
-Section "Tools and utilities" SecTools
-    SectionIn 1 2
-
-    SetDetailsPrint both
-    DetailPrint "Installing utilities..."
-    SetDetailsPrint listonly
-
-    SetOutPath "$INSTDIR\bin"
-    File /r "${BUILT}\bin\*.exe"
-    File /nonfatal /r "${BUILT}\bin\*.p3d"
-    SetOutPath "$INSTDIR\NSIS"
-    File /r /x CVS "${NSISDIR}\*"
-
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model" "" "Panda3D model/animation"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model\DefaultIcon" "" "$INSTDIR\bin\pview.exe"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell" "" "open"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress" "" "Compress to .pz"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress\command" "" '"$INSTDIR\bin\pzip.exe" "%1"'
-
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed" "" "Compressed file"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\DefaultIcon" "" "$INSTDIR\bin\pzip.exe"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell" "" "open"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress" "" "Decompress"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress\command" "" '"$INSTDIR\bin\punzip.exe" "%1"'
-
-    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile" "" "Panda3D Multifile"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon" "" "$INSTDIR\bin\multify.exe"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell" "" "open"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract" "" "Extract here"
-    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract\command" "" '"$INSTDIR\bin\multify.exe" -xf "%1"'
-SectionEnd
-
-SectionGroup "Python support"
-    Section "Python bindings" SecPyBindings
-        SectionIn 1 2
-
-        SetDetailsPrint both
-        DetailPrint "Installing Panda3D Python modules..."
-        SetDetailsPrint listonly
-
-        SetOutPath "$INSTDIR\bin"
-        File /nonfatal /r "${BUILT}\bin\*.pyd"
-
-        SetOutPath $INSTDIR\direct\directscripts
-        File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\directscripts\*"
-        SetOutPath $INSTDIR\direct
-        File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\*.py"
-
-        Delete "$INSTDIR\panda3d.py"
-        Delete "$INSTDIR\panda3d.pyc"
-        Delete "$INSTDIR\panda3d.pyo"
-        SetOutPath $INSTDIR\pandac
-        File /r "${BUILT}\pandac\*.py"
         SetOutPath $INSTDIR\panda3d
-        File /r "${BUILT}\panda3d\*.py"
 
         File /nonfatal /r "${BUILT}\panda3d\core${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\ai${EXT_SUFFIX}"
@@ -384,87 +204,342 @@ SectionGroup "Python support"
         SetRegView ${REGVIEW}
         !endif
 
-        ; Check for a non-Panda3D system-wide Python installation.
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-        StrCmp $0 "$INSTDIR\python" UserExternalPthCheck 0
-        StrCmp $0 "" UserExternalPthCheck 0
-        IfFileExists "$0\ppython.exe" UserExternalPthCheck 0
-        IfFileExists "$0\python.exe" AskExternalPth UserExternalPthCheck
-
-        ; Check for a non-Panda3D user installation of Python.
-        UserExternalPthCheck:
-        ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-        StrCmp $0 "$INSTDIR\python" SkipExternalPth 0
-        StrCmp $0 "" SkipExternalPth 0
-        IfFileExists "$0\ppython.exe" SkipExternalPth 0
-        IfFileExists "$0\python.exe" AskExternalPth SkipExternalPth
-
-        ; We're pretty sure this Python build is of the right architecture.
-        AskExternalPth:
-        MessageBox MB_YESNO|MB_ICONQUESTION \
-            "Your system already has a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\nWould you like to configure it to be able to use the Panda3D libraries?$\r$\nIf you choose no, you will only be able to use Panda3D's own copy of Python." \
-            IDYES WriteExternalPth IDNO SkipExternalPth
-
-        WriteExternalPth:
-        ;FileOpen $1 "$0\Lib\site-packages\panda.pth" w
-        ;FileWrite $1 "$INSTDIR$\r$\n"
-        ;FileWrite $1 "$INSTDIR\bin$\r$\n"
-        ;FileClose $1
-
-        ; Actually, it looks like we can just do this instead:
+        ; Install a Panda3D path into the global PythonPath for this version
+        ; of Python.
         WriteRegStr HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" "" "$INSTDIR"
+    SectionEnd
+    !undef _present
+    !endif
+!macroend
 
-        SkipExternalPth:
+Function runFunction
+    ExecShell "open" "$SMPROGRAMS\${TITLE}\Panda3D Manual.lnk"
+FunctionEnd
+
+SectionGroup "Panda3D Libraries"
+    Section "Core Libraries" SecCore
+        SectionIn 1 2 3 RO
+
+        SetShellVarContext current
+        SetOverwrite try
+
+        SetDetailsPrint both
+        DetailPrint "Installing Panda3D libraries..."
+        SetDetailsPrint listonly
+
+        SetOutPath "$INSTDIR"
+        File /nonfatal "${BUILT}\LICENSE"
+        File /nonfatal "${BUILT}\ReleaseNotes"
+        File /nonfatal "${BUILT}\pandaIcon.ico"
+
+        SetOutPath $INSTDIR\etc
+        File /r "${BUILT}\etc\*"
+
+        SetOutPath $INSTDIR\bin
+        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
+        File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
+
+        ; Before Windows 10, we need these stubs for the UCRT as well.
+        ReadRegDWORD $0 HKLM "Software\Microsoft\Windows NT\CurrentVersion" "CurrentMajorVersionNumber"
+        ${If} $0 < 10
+            ClearErrors
+            File /nonfatal /r "${BUILT}\bin\api-ms-win-*.dll"
+            File /nonfatal "${BUILT}\bin\ucrtbase.dll"
+        ${Endif}
+
+        SetDetailsPrint both
+        DetailPrint "Installing models..."
+        SetDetailsPrint listonly
+
+        SetOutPath $INSTDIR\models
+        File /r /x CVS "${BUILT}\models\*"
+
+        SetDetailsPrint both
+        DetailPrint "Installing optional components..."
+        SetDetailsPrint listonly
+
+        RMDir /r "$SMPROGRAMS\${TITLE}"
+        CreateDirectory "$SMPROGRAMS\${TITLE}"
     SectionEnd
 
-    !ifdef HAVE_PYTHON
-    Section "Python ${PYVER}" SecPython
-        SectionIn 1 2
-
-        !ifdef REGVIEW
-        SetRegView ${REGVIEW}
-        !endif
-
-        SetDetailsPrint both
-        DetailPrint "Installing Python ${PYVER} (${REGVIEW}-bit)..."
-        SetDetailsPrint listonly
+    !ifdef HAVE_GL
+    Section "OpenGL" SecOpenGL
+        SectionIn 1 2 3 RO
 
         SetOutPath "$INSTDIR\bin"
-        File /nonfatal "${BUILT}\bin\python*.dll"
+        File "${BUILT}\bin\libpandagl.dll"
+    SectionEnd
+    !endif
 
-        SetOutPath "$INSTDIR\python"
-        File /r /x *.pdb "${BUILT}\python\*"
+    !ifdef HAVE_DX9
+    Section "Direct3D 9" SecDirect3D9
+        SectionIn 1 2
 
-        SetDetailsPrint both
-        DetailPrint "Adding registry keys for Python..."
-        SetDetailsPrint listonly
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libpandadx9.dll"
+        File /nonfatal /r "${BUILT}\bin\cgD3D9.dll"
+    SectionEnd
+    !endif
 
-        ; Check if a copy of Python is installed for this user.
-        ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-        StrCmp "$0" "$INSTDIR\python" RegPath 0
-        StrCmp "$0" "" SkipFileCheck 0
-        IfFileExists "$0\python.exe" AskRegPath 0
-        SkipFileCheck:
+    !ifdef HAVE_OPENAL
+    Section "OpenAL Audio" SecOpenAL
+        SectionIn 1 2 3
 
-        ; Check if a system-wide copy of Python is installed.
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-        StrCmp "$0" "$INSTDIR\python" RegPath 0
-        StrCmp "$0" "" RegPath 0
-        IfFileExists "$0\python.exe" AskRegPath RegPath
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libp3openal_audio.dll"
+        File /nonfatal /r "${BUILT}\bin\OpenAL32.dll"
+        File /nonfatal /r "${BUILT}\bin\*_oal.dll"
+    SectionEnd
+    !endif
 
-        AskRegPath:
-        MessageBox MB_YESNO|MB_ICONQUESTION \
-            "You already have a copy of Python ${PYVER} installed in:$\r$\n$0$\r$\n$\r$\nPanda3D installs its own copy of Python ${PYVER}, which will install alongside your existing copy.  Would you like to make Panda's copy the default Python for your user account?" \
-            IDNO SkipRegPath
+    !ifdef HAVE_FMOD
+    Section "FMOD Audio" SecFMOD
+        SectionIn 1 2
 
-        RegPath:
-        WriteRegStr HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" "" "$INSTDIR\python"
-        SkipRegPath:
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libp3fmod_audio.dll"
+        File /r "${BUILT}\bin\fmodex*.dll"
+    SectionEnd
+    !endif
 
+    !ifdef HAVE_FFMPEG
+    Section "FFMpeg" SecFFMpeg
+        SectionIn 1 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libp3ffmpeg.dll"
+        File /nonfatal /r "${BUILT}\bin\av*.dll"
+        File /nonfatal /r "${BUILT}\bin\swscale*.dll"
+        File /nonfatal /r "${BUILT}\bin\swresample*.dll"
+        File /nonfatal /r "${BUILT}\bin\postproc*.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_BULLET
+    Section "Bullet Physics" SecBullet
+        SectionIn 1 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libpandabullet.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_ODE
+    Section "ODE Physics" SecODE
+        SectionIn 1 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libpandaode.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_PHYSX
+    Section "NVIDIA PhysX" SecPhysX
+        ; Only enable in "Full"
+        SectionIn 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libpandaphysx.dll"
+        File /nonfatal /r "${BUILT}\bin\PhysX*.dll"
+        File /nonfatal /r "${BUILT}\bin\NxCharacter*.dll"
+        File /nonfatal /r "${BUILT}\bin\cudart*.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_ROCKET
+    Section "libRocket GUI" SecRocket
+        SectionIn 1 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libp3rocket.dll"
+        File /nonfatal /r "${BUILT}\bin\Rocket*.dll"
+        File /nonfatal /r "${BUILT}\bin\_rocket*.pyd"
+        File /nonfatal /r "${BUILT}\bin\boost_python*.dll"
     SectionEnd
     !endif
 SectionGroupEnd
 
+Section "Tools and utilities" SecTools
+    SectionIn 1 2 3
+
+    SetDetailsPrint both
+    DetailPrint "Installing utilities..."
+    SetDetailsPrint listonly
+
+    SetOutPath "$INSTDIR\bin"
+    File /r "${BUILT}\bin\*.exe"
+    File /nonfatal /r "${BUILT}\bin\*.p3d"
+    SetOutPath "$INSTDIR\NSIS"
+    File /r /x CVS "${NSISDIR}\*"
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model" "" "Panda3D model/animation"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\DefaultIcon" "" "$INSTDIR\bin\pview.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress" "" "Compress to .pz"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Model\shell\compress\command" "" '"$INSTDIR\bin\pzip.exe" "%1"'
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed" "" "Compressed file"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\DefaultIcon" "" "$INSTDIR\bin\pzip.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\open\command" "" '"$INSTDIR\bin\pview.exe" -l "%1"'
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress" "" "Decompress"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Compressed\shell\decompress\command" "" '"$INSTDIR\bin\punzip.exe" "%1"'
+
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile" "" "Panda3D Multifile"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon" "" "$INSTDIR\bin\multify.exe"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell" "" "open"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract" "" "Extract here"
+    WriteRegStr HKCU "Software\Classes\Panda3D.Multifile\shell\extract\command" "" '"$INSTDIR\bin\multify.exe" -xf "%1"'
+SectionEnd
+
+SectionGroup "Python modules" SecGroupPython
+    Section "Shared code" SecPyShared
+        SectionIn 1 2 3
+
+        SetDetailsPrint both
+        DetailPrint "Installing Panda3D shared Python modules..."
+        SetDetailsPrint listonly
+
+        SetOutPath $INSTDIR\direct\directscripts
+        File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\directscripts\*"
+        SetOutPath $INSTDIR\direct
+        File /r /x CVS /x Opt?-Win32 "${BUILT}\direct\*.py"
+
+        Delete "$INSTDIR\panda3d.py"
+        Delete "$INSTDIR\panda3d.pyc"
+        Delete "$INSTDIR\panda3d.pyo"
+        SetOutPath $INSTDIR\pandac
+        File /r "${BUILT}\pandac\*.py"
+        SetOutPath $INSTDIR\panda3d
+        File /r "${BUILT}\panda3d\*.py"
+    SectionEnd
+
+    !insertmacro PyBindingSection 2.7 .pyd
+    !if "${REGVIEW}" == "32"
+        !insertmacro PyBindingSection 3.5-32 .cp35-win32.pyd
+        !insertmacro PyBindingSection 3.6-32 .cp36-win32.pyd
+        !insertmacro PyBindingSection 3.7-32 .cp37-win32.pyd
+        !insertmacro PyBindingSection 3.8-32 .cp38-win32.pyd
+        !insertmacro PyBindingSection 3.9-32 .cp39-win32.pyd
+    !else
+        !insertmacro PyBindingSection 3.5 .cp35-win_amd64.pyd
+        !insertmacro PyBindingSection 3.6 .cp36-win_amd64.pyd
+        !insertmacro PyBindingSection 3.7 .cp37-win_amd64.pyd
+        !insertmacro PyBindingSection 3.8 .cp38-win_amd64.pyd
+        !insertmacro PyBindingSection 3.9 .cp39-win_amd64.pyd
+    !endif
+SectionGroupEnd
+
+!ifdef INCLUDE_PYVER
+Section "Python ${INCLUDE_PYVER}" SecPython
+    SectionIn 1 2 3
+
+    !ifdef REGVIEW
+    SetRegView ${REGVIEW}
+    !endif
+
+    SetDetailsPrint both
+    DetailPrint "Installing Python ${INCLUDE_PYVER} interpreter (${REGVIEW}-bit)..."
+    SetDetailsPrint listonly
+
+    SetOutPath "$INSTDIR\bin"
+    File /nonfatal "${BUILT}\bin\python*.dll"
+
+    SetOutPath "$INSTDIR\python"
+    File /r /x *.pdb "${BUILT}\python\*"
+
+    SetDetailsPrint both
+    DetailPrint "Adding registry keys for Python..."
+    SetDetailsPrint listonly
+
+    ; Check if a copy of Python is installed for this user.
+    ReadRegStr $0 HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
+    StrCmp "$0" "$INSTDIR\python" RegPath 0
+    StrCmp "$0" "" SkipFileCheck 0
+    IfFileExists "$0\python.exe" AskRegPath 0
+    SkipFileCheck:
+
+    ; Check if a system-wide copy of Python is installed.
+    ReadRegStr $0 HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
+    StrCmp "$0" "$INSTDIR\python" RegPath 0
+    StrCmp "$0" "" RegPath 0
+    IfFileExists "$0\python.exe" AskRegPath RegPath
+
+    AskRegPath:
+    MessageBox MB_YESNO|MB_ICONQUESTION \
+        "You already have a copy of Python ${INCLUDE_PYVER} installed in:$\r$\n$0$\r$\n$\r$\nPanda3D installs its own copy of Python ${INCLUDE_PYVER}, which will install alongside your existing copy.  Would you like to make Panda's copy the default Python for your user account?" \
+        IDNO SkipRegPath
+
+    RegPath:
+    WriteRegStr HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" "" "$INSTDIR\python"
+    WriteRegStr HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" "ExecutablePath" "$INSTDIR\python\python.exe"
+    SkipRegPath:
+
+SectionEnd
+!endif
+
+!macro MaybeEnablePyBindingSection PYVER
+    !if "${INCLUDE_PYVER}" != "${PYVER}"
+        !ifdef SecPyBindings${PYVER}
+            ; Check if a copy of Python is installed for this user.
+            Push $0
+            ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+            StrCmp "$0" "" +2 0
+            IfFileExists "$0\python.exe" Py${PYVER}Exists 0
+
+            ; Check if a system-wide copy of Python is installed.
+            ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+            StrCmp "$0" "" Py${PYVER}ExistsNot 0
+            IfFileExists "$0\python.exe" Py${PYVER}Exists Py${PYVER}ExistsNot
+
+            Py${PYVER}Exists:
+            SectionSetFlags ${SecPyBindings${PYVER}} ${SF_SELECTED}
+            SectionSetInstTypes ${SecPyBindings${PYVER}} 3
+
+            Py${PYVER}ExistsNot:
+            Pop $0
+        !endif
+    !endif
+!macroend
+
+Function .onInit
+    ${If} ${REGVIEW} = 64
+    ${AndIfNot} ${RunningX64}
+        MessageBox MB_OK|MB_ICONEXCLAMATION "You are attempting to install the 64-bit version of Panda3D on a 32-bit version of Windows.  Please download and install the 32-bit version of Panda3D instead."
+        Abort
+    ${EndIf}
+
+    !ifdef REGVIEW
+    SetRegView ${REGVIEW}
+    !endif
+
+    ; We never check for 2.7; it is always enabled in Auto mode
+    !if "${REGVIEW}" == "32"
+        !insertmacro MaybeEnablePyBindingSection 3.5-32
+        !insertmacro MaybeEnablePyBindingSection 3.6-32
+        !insertmacro MaybeEnablePyBindingSection 3.7-32
+        !insertmacro MaybeEnablePyBindingSection 3.8-32
+        !insertmacro MaybeEnablePyBindingSection 3.9-32
+    !else
+        !insertmacro MaybeEnablePyBindingSection 3.5
+        !insertmacro MaybeEnablePyBindingSection 3.6
+        !insertmacro MaybeEnablePyBindingSection 3.7
+        !insertmacro MaybeEnablePyBindingSection 3.8
+        !insertmacro MaybeEnablePyBindingSection 3.9
+    !endif
+FunctionEnd
+
+Function .onSelChange
+    ; If someone selects any Python version, the "shared modules" must be on.
+    ${If} ${SectionIsPartiallySelected} ${SecGroupPython}
+        SectionGetFlags ${SecPyShared} $R0
+        IntOp $R0 $R0 | ${SF_SELECTED}
+        SectionSetFlags ${SecPyShared} $R0
+    ${EndIf}
+FunctionEnd
+
+!ifdef INCLUDE_PYVER
 Function ConfirmPythonSelection
     ; Check the current state of the "Python" section selection.
     SectionGetFlags ${SecPython} $R0
@@ -474,16 +549,14 @@ Function ConfirmPythonSelection
     StrCmp $R1 ${SF_SELECTED} SkipCheck 0
 
     ; Maybe the user just doesn't want Python support at all?
-    SectionGetFlags ${SecPyBindings} $R1
-    IntOp $R1 $R1 & ${SF_SELECTED}
-    StrCmp $R1 ${SF_SELECTED} 0 SkipCheck
+    !insertmacro SectionFlagIsSet ${SecGroupPython} ${SF_PSELECTED} 0 SkipCheck
 
     !ifdef REGVIEW
     SetRegView ${REGVIEW}
     !endif
 
     ; Check for a user installation of Python.
-    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+    ReadRegStr $0 HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
     StrCmp $0 "$INSTDIR\python" CheckSystemWidePython 0
     StrCmp $0 "" CheckSystemWidePython 0
     IfFileExists "$0\ppython.exe" CheckSystemWidePython 0
@@ -491,7 +564,7 @@ Function ConfirmPythonSelection
 
     ; Check for a system-wide Python installation.
     CheckSystemWidePython:
-    ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
+    ReadRegStr $0 HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
     StrCmp $0 "$INSTDIR\python" AskConfirmation 0
     StrCmp $0 "" AskConfirmation 0
     IfFileExists "$0\ppython.exe" AskConfirmation 0
@@ -501,7 +574,7 @@ Function ConfirmPythonSelection
     ; of a different Panda3D build.)  Ask the user if he's sure about this.
     AskConfirmation:
     MessageBox MB_YESNO|MB_ICONQUESTION \
-        "You do not appear to have a ${REGVIEW}-bit version of Python ${PYVER} installed.  Are you sure you don't want Panda to install a compatible copy of Python?$\r$\n$\r$\nIf you choose Yes, you will not be able to do Python development with Panda3D until you install a ${REGVIEW}-bit version of Python ${PYVER} and manually configure it to be able to use Panda3D." \
+        "You do not appear to have a ${REGVIEW}-bit version of Python ${INCLUDE_PYVER} installed.  Are you sure you don't want Panda to install a compatible copy of Python?$\r$\n$\r$\nIf you choose Yes, you will not be able to do Python development with Panda3D until you install a ${REGVIEW}-bit version of Python and install the bindings for this version." \
         IDYES SkipCheck
 
     ; User clicked no, so re-enable the select box and abort.
@@ -511,9 +584,10 @@ Function ConfirmPythonSelection
 
     SkipCheck:
 FunctionEnd
+!endif
 
 Section "C++ support" SecHeadersLibs
-    SectionIn 1
+    SectionIn 1 2
 
     SetDetailsPrint both
     DetailPrint "Installing header files..."
@@ -532,7 +606,7 @@ SectionEnd
 
 !ifdef HAVE_SAMPLES
 Section "Sample programs" SecSamples
-    SectionIn 1
+    SectionIn 1 2
 
     ; Necessary for proper start menu shortcut installation
     SetShellVarContext current
@@ -599,7 +673,7 @@ SectionEnd
 
 !ifdef HAVE_MAX_PLUGINS
 Section "3ds Max plug-ins" SecMaxPlugins
-    SectionIn 1 3
+    SectionIn 1 2
 
     SetDetailsPrint both
     DetailPrint "Installing Autodesk 3ds Max plug-ins..."
@@ -614,7 +688,7 @@ SectionEnd
 
 !ifdef HAVE_MAYA_PLUGINS
 Section "Maya plug-ins" SecMayaPlugins
-    SectionIn 1 3
+    SectionIn 1 2
 
     SetDetailsPrint both
     DetailPrint "Installing Autodesk Maya plug-ins..."
@@ -737,17 +811,30 @@ Section Uninstall
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\DefaultIcon"
     DeleteRegKey HKCU "Software\Classes\Panda3D.Multifile\shell"
 
-    ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-    StrCmp $0 "$INSTDIR\python" 0 +2
-    DeleteRegKey HKLM "Software\Python\PythonCore\${PYVER}"
+    !ifdef INCLUDE_PYVER
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
+        StrCmp $0 "$INSTDIR\python" 0 +2
+        DeleteRegKey HKLM "Software\Python\PythonCore\${INCLUDE_PYVER}"
 
-    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\InstallPath" ""
-    StrCmp $0 "$INSTDIR\python" 0 +2
-    DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}"
+        ReadRegStr $0 HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}\InstallPath" ""
+        StrCmp $0 "$INSTDIR\python" 0 +2
+        DeleteRegKey HKCU "Software\Python\PythonCore\${INCLUDE_PYVER}"
+    !endif
 
-    ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" ""
-    StrCmp $0 "$INSTDIR" 0 +2
-    DeleteRegKey HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D"
+    !insertmacro RemovePythonPath 2.7
+    !if "${REGVIEW}" == "32"
+        !insertmacro RemovePythonPath 3.5-32
+        !insertmacro RemovePythonPath 3.6-32
+        !insertmacro RemovePythonPath 3.7-32
+        !insertmacro RemovePythonPath 3.8-32
+        !insertmacro RemovePythonPath 3.9-32
+    !else
+        !insertmacro RemovePythonPath 3.5
+        !insertmacro RemovePythonPath 3.6
+        !insertmacro RemovePythonPath 3.7
+        !insertmacro RemovePythonPath 3.8
+        !insertmacro RemovePythonPath 3.9
+    !endif
 
     SetDetailsPrint both
     DetailPrint "Deleting files..."
@@ -812,8 +899,23 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${SecRocket} $(DESC_SecRocket)
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings} $(DESC_SecPyBindings)
-  !ifdef HAVE_PYTHON
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecGroupPython} $(DESC_SecGroupPython)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecPyShared} $(DESC_SecPyShared)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings2.7} $(DESC_SecPyBindings2.7)
+  !if "${REGVIEW}" == "32"
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.5-32} $(DESC_SecPyBindings3.5-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.6-32} $(DESC_SecPyBindings3.6-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.7-32} $(DESC_SecPyBindings3.7-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.8-32} $(DESC_SecPyBindings3.8-32)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9-32} $(DESC_SecPyBindings3.9-32)
+  !else
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.5} $(DESC_SecPyBindings3.5)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.6} $(DESC_SecPyBindings3.6)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.7} $(DESC_SecPyBindings3.7)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.8} $(DESC_SecPyBindings3.8)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPyBindings3.9} $(DESC_SecPyBindings3.9)
+  !endif
+  !ifdef INCLUDE_PYVER
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPython} $(DESC_SecPython)
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecHeadersLibs} $(DESC_SecHeadersLibs)

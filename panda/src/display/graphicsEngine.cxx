@@ -110,8 +110,8 @@ PStatCollector GraphicsEngine::_volume_sphere_pcollector("Collision Volumes:Coll
 PStatCollector GraphicsEngine::_test_sphere_pcollector("Collision Tests:CollisionSphere");
 PStatCollector GraphicsEngine::_volume_box_pcollector("Collision Volumes:CollisionBox");
 PStatCollector GraphicsEngine::_test_box_pcollector("Collision Tests:CollisionBox");
-PStatCollector GraphicsEngine::_volume_tube_pcollector("Collision Volumes:CollisionTube");
-PStatCollector GraphicsEngine::_test_tube_pcollector("Collision Tests:CollisionTube");
+PStatCollector GraphicsEngine::_volume_capsule_pcollector("Collision Volumes:CollisionCapsule");
+PStatCollector GraphicsEngine::_test_capsule_pcollector("Collision Tests:CollisionCapsule");
 PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:CollisionInvSphere");
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
@@ -875,8 +875,8 @@ render_frame() {
     _test_sphere_pcollector.clear_level();
     _volume_box_pcollector.clear_level();
     _test_box_pcollector.clear_level();
-    _volume_tube_pcollector.clear_level();
-    _test_tube_pcollector.clear_level();
+    _volume_capsule_pcollector.clear_level();
+    _test_capsule_pcollector.clear_level();
     _volume_inv_sphere_pcollector.clear_level();
     _test_inv_sphere_pcollector.clear_level();
     _volume_geom_pcollector.clear_level();

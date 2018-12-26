@@ -39,7 +39,7 @@
 #include "collisionSphere.h"
 #include "collisionBox.h"
 #include "collisionInvSphere.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "textureStage.h"
 #include "geomNode.h"
 #include "geom.h"
@@ -620,13 +620,13 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));
 
-      } else if (child->is_of_type(CollisionTube::get_class_type())) {
-        CPT(CollisionTube) tube = DCAST(CollisionTube, child);
-        LPoint3 point_a = tube->get_point_a();
-        LPoint3 point_b = tube->get_point_b();
+      } else if (child->is_of_type(CollisionCapsule::get_class_type())) {
+        CPT(CollisionCapsule) capsule = DCAST(CollisionCapsule, child);
+        LPoint3 point_a = capsule->get_point_a();
+        LPoint3 point_b = capsule->get_point_b();
         LPoint3 centroid = (point_a + point_b) * 0.5f;
 
-        // Also get an arbitrary vector perpendicular to the tube.
+        // Also get an arbitrary vector perpendicular to the capsule.
         LVector3 axis = point_b - point_a;
         LVector3 sideways;
         if (std::fabs(axis[2]) > std::fabs(axis[1])) {
@@ -635,18 +635,18 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
           sideways = axis.cross(LVector3(0, 0, 1));
         }
         sideways.normalize();
-        sideways *= tube->get_radius();
-        LVector3 extend = axis.normalized() * tube->get_radius();
+        sideways *= capsule->get_radius();
+        LVector3 extend = axis.normalized() * capsule->get_radius();
 
-        EggGroup *egg_tube;
+        EggGroup *egg_capsule;
         if (num_solids == 1) {
-          egg_tube = egg_group;
+          egg_capsule = egg_group;
         } else {
-          egg_tube = new EggGroup;
-          egg_group->add_child(egg_tube);
+          egg_capsule = new EggGroup;
+          egg_group->add_child(egg_capsule);
         }
-        egg_tube->set_cs_type(EggGroup::CST_tube);
-        egg_tube->set_collide_flags(flags);
+        egg_capsule->set_cs_type(EggGroup::CST_tube);
+        egg_capsule->set_collide_flags(flags);
 
         // Add two points for the endcaps, and then two points around the
         // centroid to indicate the radius.
@@ -657,7 +657,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         ev3.set_pos(LCAST(double, (centroid - sideways) * net_mat));
 
         EggPolygon *egg_poly = new EggPolygon;
-        egg_tube->add_child(egg_poly);
+        egg_capsule->add_child(egg_poly);
 
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev0));
         egg_poly->add_vertex(cvpool->create_unique_vertex(ev1));

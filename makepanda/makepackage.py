@@ -16,9 +16,9 @@ Architecture: ARCH
 Essential: no
 Depends: DEPENDS
 Recommends: RECOMMENDS
-Provides: panda3d, pythonPV-panda3d
-Conflicts: panda3d, pythonPV-panda3d
-Replaces: panda3d, pythonPV-panda3d
+Provides: PROVIDES
+Conflicts: PROVIDES
+Replaces: PROVIDES
 Maintainer: rdb <me@rdb.name>
 Installed-Size: INSTSIZE
 Description: Panda3D free 3D engine SDK
@@ -73,7 +73,6 @@ This package contains the SDK for development with Panda3D, install panda3d-runt
 /usr/share/panda3d
 /etc/ld.so.conf.d/panda3d.conf
 /usr/%_lib/panda3d
-""" + PYTHON_SITEPACKAGES + """
 /usr/include/panda3d
 """
 INSTALLER_SPEC_FILE_PVIEW = \
@@ -169,17 +168,10 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
     elif os.path.isdir(file):
         shutil.rmtree(file)
 
-    if "PYTHONVERSION" in SDK:
-        pyver = SDK["PYTHONVERSION"][6:9]
-    else:
-        pyver = "%d.%d" % (sys.version_info[:2])
-
     if GetTargetArch() == 'x64':
         regview = '64'
     else:
         regview = '32'
-        if int(pyver[0]) == 3 and int(pyver[2]) >= 5:
-            pyver += '-32'
 
     if runtime:
         # Invoke the make_installer script.
@@ -212,10 +204,21 @@ def MakeInstallerNSIS(version, file, title, installdir, runtime=False, compresso
         'OUTFILE'   : '..\\' + file,
         'BUILT'     : '..\\' + outputdir,
         'SOURCE'    : '..',
-        'PYVER'     : pyver,
         'REGVIEW'   : regview,
-        'EXT_SUFFIX': GetExtensionSuffix(),
     }
+
+    # Are we shipping a version of Python?
+    if os.path.isfile(os.path.join(outputdir, "python", "python.exe")):
+        py_dlls = glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9].dll")) \
+                + glob.glob(os.path.join(outputdir, "python", "python[0-9][0-9]_d.dll"))
+        assert py_dlls
+        py_dll = os.path.basename(py_dlls[0])
+        pyver = py_dll[6] + "." + py_dll[7]
+
+        if GetTargetArch() != 'x64':
+            pyver += '-32'
+
+        nsis_defs['INCLUDE_PYVER'] = pyver
 
     if GetHost() == 'windows':
         cmd = os.path.join(GetThirdpartyBase(), 'win-nsis', 'makensis') + ' /V2'
@@ -254,17 +257,28 @@ def MakeDebugSymbolArchive(zipname, dirname):
     zip.close()
 
 
-def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
+def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
+                       python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
-    if not runtime and not PkgSkip("PYTHON"):
-        if "PYTHONVERSION" in SDK:
-            PYTHONV = SDK["PYTHONVERSION"].rstrip('dmu')
-        else:
-            PYTHONV = "python%d.%d" % (sys.version_info[:2])
-    else:
-        PYTHONV = "python"
-    PV = PYTHONV.replace("python", "")
+    # We pack Python 2 and Python 3, if we built with support for it.
+    python2_ver = None
+    python3_ver = None
+    install_python_versions = []
+
+    if not runtime:
+        # What's the system version of Python 3?
+        oscmd('python3 -V > "%s/tmp/python3_version.txt"' % (outputdir))
+        sys_python3_ver = '.'.join(ReadFile(outputdir + "/tmp/python3_version.txt").strip().split(' ')[1].split('.')[:2])
+
+        # Check that we built with support for these.
+        for version_info in python_versions:
+            if version_info["version"] == "2.7":
+                python2_ver = "2.7"
+                install_python_versions.append(version_info)
+            elif version_info["version"] == sys_python3_ver:
+                python3_ver = sys_python3_ver
+                install_python_versions.append(version_info)
 
     major_version = '.'.join(version.split('.')[:2])
     if not debversion:
@@ -272,7 +286,7 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
 
     # Clean and set up a directory to install Panda3D into
     oscmd("rm -rf targetroot data.tar.gz control.tar.gz panda3d.spec")
-    oscmd("mkdir --mode=0755 targetroot")
+    oscmd("mkdir -m 0755 targetroot")
 
     dpkg_present = False
     if os.path.exists("/usr/bin/dpkg-architecture") and os.path.exists("/usr/bin/dpkg-deb"):
@@ -288,9 +302,12 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
         # Invoke installpanda.py to install it into a temporary dir
         lib_dir = GetDebLibDir()
         if runtime:
-            InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=outputdir, libdir=lib_dir)
+            InstallRuntime(destdir="targetroot", prefix="/usr",
+                           outputdir=outputdir, libdir=lib_dir)
         else:
-            InstallPanda(destdir="targetroot", prefix="/usr", outputdir=outputdir, libdir=lib_dir)
+            InstallPanda(destdir="targetroot", prefix="/usr",
+                         outputdir=outputdir, libdir=lib_dir,
+                         python_versions=install_python_versions)
             oscmd("chmod -R 755 targetroot/usr/share/panda3d")
             oscmd("mkdir -m 0755 -p targetroot/usr/share/man/man1")
             oscmd("install -m 0644 doc/man/*.1 targetroot/usr/share/man/man1/")
@@ -301,9 +318,10 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
             txt = RUNTIME_INSTALLER_DEB_FILE[1:]
         else:
             txt = INSTALLER_DEB_FILE[1:]
-        txt = txt.replace("VERSION", debversion).replace("ARCH", pkg_arch).replace("PV", PV).replace("MAJOR", major_version)
-        txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024))
-        oscmd("mkdir --mode=0755 -p targetroot/DEBIAN")
+        txt = txt.replace("VERSION", debversion).replace("ARCH", pkg_arch).replace("MAJOR", major_version)
+        txt = txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024))
+
+        oscmd("mkdir -m 0755 -p targetroot/DEBIAN")
         oscmd("cd targetroot && (find usr -type f -exec md5sum {} ;) > DEBIAN/md5sums")
         if not runtime:
             oscmd("cd targetroot && (find etc -type f -exec md5sum {} ;) >> DEBIAN/md5sums")
@@ -337,6 +355,7 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
             oscmd("cd targetroot && %(dpkg_shlibdeps)s -x%(pkg_name)s %(lib_pattern)s %(bin_pattern)s*" % locals())
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             recommends = ""
+            provides = "panda3d-runtime"
         else:
             pkg_name = "panda3d" + major_version
             pkg_dir = "debian/panda3d" + major_version
@@ -352,15 +371,29 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
             # Parse the substvars files generated by dpkg-shlibdeps.
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
-            if PkgSkip("PYTHON")==0:
-                depends += ", " + PYTHONV
-                recommends += ", python-wxversion, python-profiler (>= " + PV + "), python-pmw, python-tk (>= " + PV + ")"
-            if PkgSkip("NVIDIACG")==0:
+            provides = "panda3d"
+
+            if python2_ver or python3_ver:
+                recommends += ", python-pmw"
+
+            if python2_ver:
+                depends += ", python%s" % (python2_ver)
+                recommends += ", python-wxversion"
+                recommends += ", python-tk (>= %s)" % (python2_ver)
+                provides += ", python2-panda3d"
+
+            if python3_ver:
+                depends += ", python%s" % (python3_ver)
+                recommends += ", python3-tk (>= %s)" % (python3_ver)
+                provides += ", python3-panda3d"
+
+            if not PkgSkip("NVIDIACG"):
                 depends += ", nvidia-cg-toolkit"
 
         # Write back the dependencies, and delete the dummy set-up.
         txt = txt.replace("DEPENDS", depends.strip(', '))
         txt = txt.replace("RECOMMENDS", recommends.strip(', '))
+        txt = txt.replace("PROVIDES", provides.strip(', '))
         WriteFile("targetroot/DEBIAN/control", txt)
         oscmd("rm -rf targetroot/debian")
 
@@ -376,7 +409,9 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
         if runtime:
             InstallRuntime(destdir="targetroot", prefix="/usr", outputdir=outputdir, libdir=GetRPMLibDir())
         else:
-            InstallPanda(destdir="targetroot", prefix="/usr", outputdir=outputdir, libdir=GetRPMLibDir())
+            InstallPanda(destdir="targetroot", prefix="/usr",
+                         outputdir=outputdir, libdir=GetRPMLibDir(),
+                         python_versions=install_python_versions)
             oscmd("chmod -R 755 targetroot/usr/share/panda3d")
 
         oscmd("rpm -E '%_target_cpu' > "+outputdir+"/tmp/architecture.txt")
@@ -392,15 +427,23 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
             if not PkgSkip("PVIEW"):
                 txt += INSTALLER_SPEC_FILE_PVIEW
 
+            # Add the platform-specific Python directories.
+            dirs = set()
+            for version_info in install_python_versions:
+                dirs.add(version_info["platlib"])
+                dirs.add(version_info["purelib"])
+
+            for dir in dirs:
+                txt += dir + "\n"
+
             # Add the binaries in /usr/bin explicitly to the spec file
             for base in os.listdir(outputdir + "/bin"):
                 txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
         txt = txt.replace("VERSION", version)
-        txt = txt.replace("RPMRELEASE", rpmrelease)
+        txt = txt.replace("RPMRELEASE", str(rpmrelease))
         txt = txt.replace("PANDASOURCE", pandasource)
-        txt = txt.replace("PV", PV)
         WriteFile("panda3d.spec", txt)
 
         oscmd("fakeroot rpmbuild --define '_rpmdir "+pandasource+"' --buildroot '"+os.path.abspath("targetroot")+"' -bb panda3d.spec")
@@ -414,7 +457,7 @@ def MakeInstallerLinux(version, debversion=None, runtime=False, **kwargs):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
 
 
-def MakeInstallerOSX(version, runtime=False, **kwargs):
+def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
     if runtime:
@@ -428,17 +471,11 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         oscmd(cmdstr)
         return
 
-    if "PYTHONVERSION" in SDK:
-        pyver = SDK["PYTHONVERSION"][6:9]
-    else:
-        pyver = "%d.%d" % (sys.version_info[:2])
-
     dmg_name = "Panda3D-" + version
-    if not pyver.startswith("2."):
+    if len(python_versions) == 1 and not python_versions[0]["version"].startswith("2."):
         dmg_name += "-py" + pyver
     dmg_name += ".dmg"
 
-    import compileall
     if (os.path.isfile(dmg_name)): oscmd("rm -f %s" % dmg_name)
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
@@ -479,32 +516,42 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
         oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
 
-    if not PkgSkip("PYTHON"):
-        pyexec = SDK.get("PYTHONEXEC", sys.executable)
-        oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
+    if python_versions:
+        # Let's only write a ppython link if there is only one Python version.
+        if len(python_versions) == 1:
+            oscmd("mkdir -p dstroot/pythoncode/usr/local/bin")
+            oscmd("ln -s %s dstroot/pythoncode/usr/local/bin/ppython" % (python_versions[0]["executable"]))
+
         oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/panda3d")
-        oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % pyver)
-        WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % pyver, "/Developer/Panda3D")
         oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % outputdir)
         oscmd("cp -R %s/direct                dstroot/pythoncode/Developer/Panda3D/direct" % outputdir)
-        oscmd("ln -s %s                       dstroot/pythoncode/usr/local/bin/ppython" % pyexec)
         oscmd("cp -R %s/*.so                  dstroot/pythoncode/Developer/Panda3D/" % outputdir, True)
         oscmd("cp -R %s/*.py                  dstroot/pythoncode/Developer/Panda3D/" % outputdir, True)
         if os.path.isdir(outputdir+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % outputdir)
-            compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/Pmw")
-        WriteFile("dstroot/pythoncode/Developer/Panda3D/direct/__init__.py", "")
-        for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/direct"):
-            if ((base != "extensions") and (base != "extensions_native")):
-                compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/direct/"+base)
 
-        suffix = GetExtensionSuffix()
         for base in os.listdir(outputdir+"/panda3d"):
-            if base.endswith('.py') or (base.endswith(suffix) and '.' not in base[:-len(suffix)]):
+            if base.endswith('.py'):
                 libname = "dstroot/pythoncode/Developer/Panda3D/panda3d/" + base
+                oscmd("cp -R " + outputdir + "/panda3d/" + base + " " + libname)
+
+    for version_info in python_versions:
+        pyver = version_info["version"]
+        oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
+        oscmd("mkdir -p dstroot/pybindings%s/Developer/Panda3D/panda3d" % (pyver))
+
+        # Copy over extension modules.
+        suffix = version_info["ext_suffix"]
+        for base in os.listdir(outputdir+"/panda3d"):
+            if base.endswith(suffix) and '.' not in base[:-len(suffix)]:
+                libname = "dstroot/pybindings%s/Developer/Panda3D/panda3d/%s" % (pyver, base)
                 # We really need to specify -R in order not to follow symlinks
                 # On OSX, just specifying -P is not enough to do that.
                 oscmd("cp -R -P " + outputdir + "/panda3d/" + base + " " + libname)
+
+        # Write a .pth file.
+        oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
+        WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
@@ -528,9 +575,19 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
         oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
 
-    oscmd("chmod -R 0775 dstroot/*")
     DeleteVCS("dstroot")
     DeleteBuildFiles("dstroot")
+
+    # Compile Python files.  Do this *after* the DeleteVCS step, above, which
+    # deletes __pycache__ directories.
+    for version_info in python_versions:
+        if os.path.isdir("dstroot/pythoncode/Developer/Panda3D/Pmw"):
+            oscmd("%s -m compileall -q -f -d /Developer/Panda3D/Pmw dstroot/pythoncode/Developer/Panda3D/Pmw" % (version_info["executable"]), True)
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/direct dstroot/pythoncode/Developer/Panda3D/direct" % (version_info["executable"]))
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/pandac dstroot/pythoncode/Developer/Panda3D/pandac" % (version_info["executable"]))
+        oscmd("%s -m compileall -q -f -d /Developer/Panda3D/panda3d dstroot/pythoncode/Developer/Panda3D/panda3d" % (version_info["executable"]))
+
+    oscmd("chmod -R 0775 dstroot/*")
     # We need to be root to perform a chown. Bleh.
     # Fortunately PackageMaker does it for us, on 10.5 and above.
     #oscmd("chown -R root:admin dstroot/*", True)
@@ -539,7 +596,10 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
 
     pkgs = ["base", "tools", "headers"]
-    if not PkgSkip("PYTHON"):    pkgs.append("pythoncode")
+    if python_versions:
+        pkgs.append("pythoncode")
+    for version_info in python_versions:
+        pkgs.append("pybindings" + version_info["version"])
     if not PkgSkip("FFMPEG"):    pkgs.append("ffmpeg")
     #if not PkgSkip("OPENAL"):    pkgs.append("openal")
     if not PkgSkip("FMODEX"):    pkgs.append("fmodex")
@@ -581,20 +641,53 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
     dist.write('    <title>Panda3D SDK %s</title>\n' % (version))
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
+    dist.write('    <script>\n')
+    dist.write('    function isPythonVersionInstalled(version) {\n')
+    dist.write('        return system.files.fileExistsAtPath("/usr/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/usr/local/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/opt/local/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/sw/bin/python" + version)\n')
+    dist.write('            || system.files.fileExistsAtPath("/System/Library/Frameworks/Python.framework/Versions/" + version + "/bin/python")\n')
+    dist.write('            || system.files.fileExistsAtPath("/Library/Frameworks/Python.framework/Versions/" + version + "/bin/python");\n')
+    dist.write('    }\n')
+    dist.write('    </script>\n')
     dist.write('    <choices-outline>\n')
-    for pkg in pkgs:
-        dist.write('        <line choice="%s"/>\n' % (pkg))
+    dist.write('        <line choice="base"/>\n')
+    if python_versions:
+        dist.write('        <line choice="pythoncode">\n')
+        for version_info in sorted(python_versions, key=lambda info:info["version"], reverse=True):
+            dist.write('            <line choice="pybindings%s"/>\n' % (version_info["version"]))
+        dist.write('        </line>\n')
+    dist.write('        <line choice="tools"/>\n')
+    if os.path.isdir("samples"):
+        dist.write('        <line choice="samples"/>\n')
+    if not PkgSkip("FFMPEG"):
+        dist.write('        <line choice="ffmpeg"/>\n')
+    if not PkgSkip("FMODEX"):
+        dist.write('        <line choice="fmodex"/>\n')
+    dist.write('        <line choice="headers"/>\n')
     dist.write('    </choices-outline>\n')
-    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
+    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D.&#10;&#10;Location: /Developer/Panda3D/" start_enabled="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Panda3D/bin/">\n')
+    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more.&#10;&#10;Location: /Developer/Panda3D/bin/">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
     dist.write('    </choice>\n')
 
-    if not PkgSkip("PYTHON"):
-        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">\n')
+    if python_versions:
+        dist.write('    <choice id="pythoncode" title="Python Support" tooltip="Python bindings for the Panda3D libraries" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D.&#10;&#10;Location: /Developer/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>\n')
+        dist.write('    </choice>\n')
+
+    for version_info in python_versions:
+        pyver = version_info["version"]
+        if pyver == "2.7":
+            # Always install Python 2.7 by default; it's included on macOS.
+            cond = "true"
+        else:
+            cond = "isPythonVersionInstalled('%s')" % (pyver)
+        dist.write('    <choice id="pybindings%s" start_selected="%s" title="Python %s Bindings" tooltip="Python bindings for the Panda3D libraries" description="Support for Python %s.">\n' % (pyver, cond, pyver, pyver))
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.pybindings%s.pkg"/>\n' % (pyver))
         dist.write('    </choice>\n')
 
     if not PkgSkip("FFMPEG"):
@@ -621,11 +714,11 @@ def MakeInstallerOSX(version, runtime=False, **kwargs):
         dist.write('    </choice>\n')
 
     if os.path.isdir("samples"):
-        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">\n')
+        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D.&#10;&#10;Location: /Developer/Examples/Panda3D/">\n')
         dist.write('        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>\n')
         dist.write('    </choice>\n')
 
-    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">\n')
+    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python.&#10;&#10;Location: /Developer/Panda3D/include/" start_selected="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
     dist.write('    </choice>\n')
     for pkg in pkgs:
@@ -693,7 +786,7 @@ def MakeInstallerFreeBSD(version, runtime=False, **kwargs):
     manifest_txt = manifest_txt.replace("ARCH", pkg_arch)
     manifest_txt = manifest_txt.replace("ORIGIN", 'devel/panda3d' if not runtime else 'graphics/panda3d-runtime')
     manifest_txt = manifest_txt.replace("DEPENDS", dependencies)
-    manifest_txt = manifest_txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") / 1024 / 1024))
+    manifest_txt = manifest_txt.replace("INSTSIZE", str(GetDirectorySize("targetroot") // 1024 // 1024))
 
     WriteFile("pkg-plist", plist_txt)
     WriteFile("+DESC", INSTALLER_PKG_DESCR_FILE[1:] if not runtime else RUNTIME_INSTALLER_PKG_DESCR_FILE[1:])
@@ -889,13 +982,9 @@ def MakeInstaller(version, **kwargs):
 
         fn += version
 
-        if "PYTHONVERSION" in SDK:
-            pyver = SDK["PYTHONVERSION"][6:9]
-        else:
-            pyver = "%d.%d" % (sys.version_info[:2])
-
-        if not runtime and pyver != "2.7":
-            fn += '-py' + pyver
+        python_versions = kwargs.get('python_versions', [])
+        if not runtime and len(python_versions) == 1 and python_versions[0]["version"] != "2.7":
+            fn += '-py' + python_versions[0]["version"]
 
         if GetOptimize() <= 2:
             fn += "-dbg"
@@ -961,4 +1050,5 @@ if __name__ == "__main__":
                   compressor=options.compressor,
                   debversion=options.debversion,
                   rpmrelease=options.rpmrelease,
-                  runtime=options.runtime)
+                  runtime=options.runtime,
+                  python_versions=ReadPythonVersionInfoFile())

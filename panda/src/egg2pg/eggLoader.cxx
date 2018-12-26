@@ -74,7 +74,7 @@
 #include "collisionNode.h"
 #include "collisionSphere.h"
 #include "collisionInvSphere.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionFloorMesh.h"
@@ -2865,7 +2865,7 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
     break;
 
   case EggGroup::CST_tube:
-    make_collision_tube(egg_group, cnode, start_group->get_collide_flags());
+    make_collision_capsule(egg_group, cnode, start_group->get_collide_flags());
     break;
 
   case EggGroup::CST_floor_mesh:
@@ -3045,12 +3045,12 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
 }
 
 /**
- * Creates a single CollisionTube corresponding to the polygons associated
+ * Creates a single CollisionCapsule corresponding to the polygons associated
  * with this group.
  */
 void EggLoader::
-make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
-                    EggGroup::CollideFlags flags) {
+make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
+                       EggGroup::CollideFlags flags) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != nullptr) {
     // Collect all of the vertices.
@@ -3175,7 +3175,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
 
         // Transform all of the points so that the major axis is along the Y
         // axis, and the origin is the center.  This is very similar to the
-        // CollisionTube's idea of its canonical orientation (although not
+        // CollisionCapsule's idea of its canonical orientation (although not
         // exactly the same, since it is centered on the origin instead of
         // having point_a on the origin).  It makes it easier to determine the
         // length and radius of the cylinder.
@@ -3230,11 +3230,11 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
         LPoint3d point_a = center - half;
         LPoint3d point_b = center + half;
 
-        CollisionTube *cstube =
-          new CollisionTube(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
+        CollisionCapsule *cscapsule =
+          new CollisionCapsule(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
                             radius);
-        apply_collision_flags(cstube, flags);
-        cnode->add_solid(cstube);
+        apply_collision_flags(cscapsule, flags);
+        cnode->add_solid(cscapsule);
       }
     }
   }

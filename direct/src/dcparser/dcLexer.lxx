@@ -1,7 +1,7 @@
 /*
 // Filename: dcLexer.lxx
 // Created by:  drose (05Oct00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 */
 
@@ -103,12 +103,12 @@ dcyyerror(const std::string &msg) {
   if (!dc_filename.empty()) {
     cerr << " in " << dc_filename;
   }
-  cerr 
+  cerr
     << " at line " << line_number << ", column " << col_number << ":\n"
     << current_line << "\n";
-  indent(cerr, col_number-1) 
+  indent(cerr, col_number-1)
     << "^\n" << msg << "\n\n";
-  
+
   error_count++;
 }
 
@@ -120,10 +120,10 @@ dcyywarning(const std::string &msg) {
   if (!dc_filename.empty()) {
     cerr << " in " << dc_filename;
   }
-  cerr 
+  cerr
     << " at line " << line_number << ", column " << col_number << ":\n"
     << current_line << "\n";
-  indent(cerr, col_number-1) 
+  indent(cerr, col_number-1)
     << "^\n" << msg << "\n\n";
 
   warning_count++;
@@ -313,9 +313,9 @@ scan_quoted_string(char quote_mark) {
 
 // scan_hex_string reads a string of hexadecimal digits delimited by
 // angle brackets and returns the representative string.
-static std::string
+static vector_uchar
 scan_hex_string() {
-  std::string result;
+  vector_uchar result;
 
   // We don't touch the current line number and column number during
   // scanning, so that if we detect an error while scanning the string
@@ -345,24 +345,24 @@ scan_hex_string() {
       line_number = line;
       col_number = col;
       dcyyerror("Invalid hex digit.");
-      return std::string();
+      return vector_uchar();
     }
 
     odd = !odd;
     if (odd) {
       last = value;
     } else {
-      result += (char)((last << 4) | value);
+      result.push_back((unsigned char)((last << 4) | value));
     }
     c = read_char(line, col);
   }
 
   if (c == EOF) {
     dcyyerror("This hex string is unterminated.");
-    return std::string();
+    return vector_uchar();
   } else if (odd) {
     dcyyerror("Odd number of hex digits.");
-    return std::string();
+    return vector_uchar();
   }
 
   line_number = line;
@@ -382,7 +382,7 @@ eat_c_comment() {
   int col = col_number;
 
   int c, last_c;
-  
+
   last_c = '\0';
   c = read_char(line, col);
   while (c != EOF && !(last_c == '*' && c == '/')) {
@@ -440,12 +440,12 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   yyless(1);
 }
 
-[ \t\r] { 
+[ \t\r] {
   // Eat whitespace.
   accept();
 }
 
-"//".* { 
+"//".* {
   // Eat C++-style comments.
   accept();
 }
@@ -453,7 +453,7 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "/*" {
   // Eat C-style comments.
   accept();
-  eat_c_comment(); 
+  eat_c_comment();
 }
 
 
@@ -607,7 +607,7 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_CHAR;
 }
 
-{UNSIGNED_INTEGERNUM} { 
+{UNSIGNED_INTEGERNUM} {
   // An unsigned integer number.
   accept();
 
@@ -626,11 +626,11 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     dcyylval.u.uint64 = next_value + (*p - '0');
     ++p;
   }
-  
+
   return UNSIGNED_INTEGER;
 }
 
-{SIGNED_INTEGERNUM} { 
+{SIGNED_INTEGERNUM} {
   // A signed integer number.
   accept();
 
@@ -671,14 +671,14 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
       dcyyerror("Number out of range.");
       dcyylval.u.int64 = 1;
     }
-  }    
-  
+  }
+
   return SIGNED_INTEGER;
 }
 
 {UNSIGNED_HEXNUM} {
   // A hexadecimal integer number.
-  accept(); 
+  accept();
 
   // As above, we'll decode the hex string by hand.
   dcyylval.str = dcyytext;
@@ -700,15 +700,15 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
     ++p;
   }
 
-  return UNSIGNED_INTEGER; 
+  return UNSIGNED_INTEGER;
 }
 
-{REALNUM} { 
+{REALNUM} {
   // A floating-point number.
-  accept(); 
-  dcyylval.u.real = patof(dcyytext); 
+  accept();
+  dcyylval.u.real = patof(dcyytext);
   dcyylval.str = dcyytext;
-  return REAL; 
+  return REAL;
 }
 
 ["] {
@@ -728,11 +728,11 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 [<] {
   // Long hex string.
   accept();
-  dcyylval.str = scan_hex_string();
+  dcyylval.bytes = scan_hex_string();
   return HEX_STRING;
 }
 
-[A-Za-z_][A-Za-z_0-9]* { 
+[A-Za-z_][A-Za-z_0-9]* {
   // Identifier or keyword.
   accept();
   dcyylval.str = dcyytext;
@@ -750,7 +750,7 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 
 . {
   // Send any other printable character as itself.
-  accept(); 
+  accept();
   return dcyytext[0];
 }
-  
+

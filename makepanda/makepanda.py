@@ -72,6 +72,7 @@ MSVC_VERSION = None
 BOOUSEINTELCOMPILER = False
 OPENCV_VER_23 = False
 PLATFORM = None
+COPY_PYTHON = True
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -172,6 +173,7 @@ def parseopts(args):
     global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
+    global COPY_PYTHON
 
     # Options for which to display a deprecation warning.
     removedopts = [
@@ -185,7 +187,7 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit=",
+        "universal", "target=", "arch=", "git-commit=", "no-copy-python",
         ] + removedopts
 
     anything = 0
@@ -251,6 +253,7 @@ def parseopts(args):
                 MSVC_VERSION = value.strip().lower()
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             elif (option=="--clean"): clean_build = True
+            elif (option=="--no-copy-python"): COPY_PYTHON = False
             elif (option[2:] in removedopts):
                 Warn("Ignoring removed option %s" % (option))
             else:
@@ -3031,7 +3034,7 @@ else:
     configprc = configprc.replace("aux-display pandadx9", "")
 
 if (GetTarget() == 'darwin'):
-    configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "Library/Caches/Panda3D-%s" % MAJOR_VERSION)
+    configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$HOME/Library/Caches/Panda3D-%s" % MAJOR_VERSION)
 
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
@@ -3155,7 +3158,8 @@ if tp_dir is not None:
                 CopyFile(GetOutputDir() + "/bin/", fn)
 
             # Copy the whole Python directory.
-            CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
+            if COPY_PYTHON:
+                CopyTree(GetOutputDir() + "/python", SDK["PYTHON"])
 
             # NB: Python does not always ship with the correct manifest/dll.
             # Figure out the correct one to ship, and grab it from WinSxS dir.
@@ -3164,7 +3168,7 @@ if tp_dir is not None:
                 os.unlink(manifest)
             oscmd('mt -inputresource:"%s\\python.exe";#1 -out:"%s" -nologo' % (SDK["PYTHON"], manifest), True)
 
-            if os.path.isfile(manifest):
+            if COPY_PYTHON and os.path.isfile(manifest):
                 import xml.etree.ElementTree as ET
                 tree = ET.parse(manifest)
                 idents = tree.findall('./{urn:schemas-microsoft-com:asm.v1}dependency/{urn:schemas-microsoft-com:asm.v1}dependentAssembly/{urn:schemas-microsoft-com:asm.v1}assemblyIdentity')
@@ -3194,11 +3198,12 @@ if tp_dir is not None:
                     CopyFile(GetOutputDir() + "/python/", file)
 
             # Copy python.exe to ppython.exe.
-            if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
-                CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
-            if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
-                CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
-            ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
+            if COPY_PYTHON:
+                if not os.path.isfile(SDK["PYTHON"] + "/ppython.exe") and os.path.isfile(SDK["PYTHON"] + "/python.exe"):
+                    CopyFile(GetOutputDir() + "/python/ppython.exe", SDK["PYTHON"] + "/python.exe")
+                if not os.path.isfile(SDK["PYTHON"] + "/ppythonw.exe") and os.path.isfile(SDK["PYTHON"] + "/pythonw.exe"):
+                    CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
+                ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
 
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
@@ -6869,6 +6874,10 @@ if RUNTESTS:
         cmdstr += " --verbose"
     oscmd(cmdstr)
 
+# Write out information about the Python versions in the built dir.
+python_version_info = GetCurrentPythonVersionInfo()
+UpdatePythonVersionInfoFile(python_version_info)
+
 ##########################################################################################
 #
 # The Installers
@@ -6882,10 +6891,16 @@ if RUNTESTS:
 if INSTALLER:
     ProgressOutput(100.0, "Building installer")
     from makepackage import MakeInstaller
+
+    # When using the --installer flag, only install for the current version.
+    python_versions = []
+    if python_version_info:
+        python_versions.append(python_version_info)
+
     MakeInstaller(version=VERSION, outputdir=GetOutputDir(),
                   optimize=GetOptimize(), compressor=COMPRESSOR,
                   debversion=DEBVERSION, rpmrelease=RPMRELEASE,
-                  runtime=RUNTIME)
+                  runtime=RUNTIME, python_versions=python_versions)
 
 if WHEEL:
     ProgressOutput(100.0, "Building wheel")

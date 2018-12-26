@@ -79,8 +79,6 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  ReMutexHolder av_holder(_av_lock);
-
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
   _frame = av_frame_alloc();
   _frame_out = av_frame_alloc();
@@ -108,6 +106,8 @@ init_from(FfmpegVideo *source) {
   _current_frame = -1;
   _eof_known = false;
   _eof_frame = 0;
+
+  ReMutexHolder av_holder(_av_lock);
 
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is

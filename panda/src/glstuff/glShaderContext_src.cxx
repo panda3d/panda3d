@@ -2797,14 +2797,24 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     if (tex->get_texture_type() != spec._desired_type) {
-      if (id != nullptr) {
+      switch (spec._part) {
+      case Shader::STO_named_input:
         GLCAT.error()
           << "Sampler type of GLSL shader input '" << *id << "' does not "
              "match type of texture " << *tex << ".\n";
-      } else {
+        break;
+
+      case Shader::STO_stage_i:
         GLCAT.error()
           << "Sampler type of GLSL shader input p3d_Texture" << spec._stage
           << " does not match type of texture " << *tex << ".\n";
+        break;
+
+      case Shader::STO_light_i_shadow_map:
+        GLCAT.error()
+          << "Sampler type of GLSL shader input p3d_LightSource[" << spec._stage
+          << "].shadowMap does not match type of texture " << *tex << ".\n";
+        break;
       }
       // TODO: also check whether shadow sampler textures have shadow filter
       // enabled.

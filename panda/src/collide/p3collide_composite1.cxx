@@ -1,5 +1,6 @@
 #include "config_collide.cxx"
 #include "collisionBox.cxx"
+#include "collisionCapsule.cxx"
 #include "collisionEntry.cxx"
 #include "collisionGeom.cxx"
 #include "collisionHandler.cxx"
@@ -12,5 +13,3 @@
 #include "collisionHandlerFluidPusher.cxx"
 #include "collisionHandlerQueue.cxx"
 #include "collisionInvSphere.cxx"
-#include "collisionLevelStateBase.cxx"
-#include "collisionLevelState.cxx"

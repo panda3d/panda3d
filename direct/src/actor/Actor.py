@@ -653,15 +653,11 @@ class Actor(DirectObject, NodePath):
         """
         # make sure we don't call this twice in a row
         # and pollute the the switches dictionary
-##         sortedKeys = list(self.switches.keys())
-##         sortedKeys.sort()
         child = self.__LODNode.find(str(lodName))
         index = self.__LODNode.node().findChild(child.node())
         self.__LODNode.node().forceSwitch(index)
 
     def printLOD(self):
-##         sortedKeys = list(self.switches.keys())
-##         sortedKeys.sort()
         sortedKeys = self.__sortedLODNames
         for eachLod in sortedKeys:
             print("python switches for %s: in: %d, out %d" % (eachLod,
@@ -679,12 +675,6 @@ class Actor(DirectObject, NodePath):
         """
         Restore all switch distance info (usually after a useLOD call)"""
         self.__LODNode.node().clearForceSwitch()
-##         sortedKeys = list(self.switches.keys())
-##         sortedKeys.sort()
-##         for eachLod in sortedKeys:
-##             index = sortedKeys.index(eachLod)
-##             self.__LODNode.node().setSwitch(index, self.switches[eachLod][0],
-##                                      self.switches[eachLod][1])
 
     def addLOD(self, lodName, inDist=0, outDist=0, center=None):
         """addLOD(self, string)
@@ -706,8 +696,6 @@ class Actor(DirectObject, NodePath):
         # save the switch distance info
         self.switches[lodName] = [inDist, outDist]
         # add the switch distance info
-##         sortedKeys = list(self.switches.keys())
-##         sortedKeys.sort()
         self.__LODNode.node().setSwitch(self.getLODIndex(lodName), inDist, outDist)
 
     def getLODIndex(self, lodName):

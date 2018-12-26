@@ -108,7 +108,7 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_tube(const CollisionEntry &entry) const;
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -177,7 +177,7 @@ private:
   friend class CollisionLine;
   friend class CollisionRay;
   friend class CollisionSegment;
-  friend class CollisionTube;
+  friend class CollisionCapsule;
   friend class CollisionParabola;
   friend class CollisionHandlerFluidPusher;
   friend class CollisionBox;
