@@ -624,7 +624,7 @@ class build_apps(setuptools.Command):
             search_path = [builddir]
             if use_wheels:
                 search_path.append(os.path.join(p3dwhlfn, 'deploy_libs'))
-            self.copy_dependencies(open(target_path, 'rb'), builddir, search_path, stub_name)
+            self.copy_dependencies(target_path, builddir, search_path, stub_name)
 
             freezer_extras.update(freezer.extras)
             freezer_modules.update(freezer.getAllModuleNames())
@@ -869,7 +869,7 @@ class build_apps(setuptools.Command):
             return
 
         for dep in self.exclude_dependencies:
-            if  dep.matches_file(name):
+            if dep.matches_file(name):
                 return
 
         for dir in search_path:
@@ -957,14 +957,15 @@ class build_apps(setuptools.Command):
 
         self.copy(source_path, target_path)
 
-        fp = open(target_path, 'rb')
         source_dir = os.path.dirname(source_path)
         target_dir = os.path.dirname(target_path)
         base = os.path.basename(target_path)
-        self.copy_dependencies(fp, target_dir, search_path + [source_dir], base)
+        self.copy_dependencies(target_path, target_dir, search_path + [source_dir], base)
 
-    def copy_dependencies(self, fp, target_dir, search_path, referenced_by):
-        """ Copies the dependencies of the given open file. """
+    def copy_dependencies(self, target_path, target_dir, search_path, referenced_by):
+        """ Copies the dependencies of target_path into target_dir. """
+
+        fp = open(target_path, 'rb+')
 
         # What kind of magic does the file contain?
         deps = []
@@ -983,20 +984,21 @@ class build_apps(setuptools.Command):
 
         elif magic in (b'\xCE\xFA\xED\xFE', b'\xCF\xFA\xED\xFE'):
             # A Mach-O file, as used on macOS.
-            deps = self._read_dependencies_macho(fp, '<')
+            deps = self._read_dependencies_macho(fp, '<', flatten=True)
 
         elif magic in (b'\xFE\xED\xFA\xCE', b'\xFE\xED\xFA\xCF'):
-            deps = self._read_dependencies_macho(fp, '>')
+            rel_dir = os.path.relpath(target_dir, os.path.dirname(target_path))
+            deps = self._read_dependencies_macho(fp, '>', flatten=True)
 
         elif magic in (b'\xCA\xFE\xBA\xBE', b'\xBE\xBA\xFE\xCA'):
             # A fat file, containing multiple Mach-O binaries.  In the future,
             # we may want to extract the one containing the architecture we
             # are building for.
-            deps = self._read_dependencies_fat(fp, False)
+            deps = self._read_dependencies_fat(fp, False, flatten=True)
 
         elif magic in (b'\xCA\xFE\xBA\xBF', b'\xBF\xBA\xFE\xCA'):
             # A 64-bit fat file.
-            deps = self._read_dependencies_fat(fp, True)
+            deps = self._read_dependencies_fat(fp, True, flatten=True)
 
         # If we discovered any dependencies, recursively add those.
         for dep in deps:
@@ -1065,9 +1067,14 @@ class build_apps(setuptools.Command):
         search_path += rpath
         return needed
 
-    def _read_dependencies_macho(self, fp, endian):
+    def _read_dependencies_macho(self, fp, endian, flatten=False):
         """ Having read the first 4 bytes of the Mach-O file, fetches the
-        dependent libraries and returns those as a list. """
+        dependent libraries and returns those as a list.
+
+        If flatten is True, if the dependencies contain paths like
+        @loader_path/../.dylibs/libsomething.dylib, it will rewrite them to
+        instead contain @loader_path/libsomething.dylib if possible.
+        This requires the file pointer to be opened in rb+ mode. """
 
         cputype, cpusubtype, filetype, ncmds, sizeofcmds, flags = \
             struct.unpack(endian + 'IIIIII', fp.read(24))
@@ -1086,17 +1093,30 @@ class build_apps(setuptools.Command):
 
             if cmd == 0x0c: # LC_LOAD_DYLIB
                 dylib = cmd_data[16:].decode('ascii').split('\x00', 1)[0]
+                orig = dylib
+
                 if dylib.startswith('@loader_path/../Frameworks/'):
                     dylib = dylib.replace('@loader_path/../Frameworks/', '')
-                if dylib.startswith('@executable_path/../Frameworks/'):
+                elif dylib.startswith('@executable_path/../Frameworks/'):
                     dylib = dylib.replace('@executable_path/../Frameworks/', '')
-                if dylib.startswith('@loader_path/'):
+                elif dylib.startswith('@loader_path/'):
                     dylib = dylib.replace('@loader_path/', '')
+
+                    # Do we need to flatten the relative reference?
+                    if '/' in dylib and flatten:
+                        new_dylib = '@loader_path/' + os.path.basename(dylib)
+                        str_size = len(cmd_data) - 16
+                        if len(new_dylib) < str_size:
+                            fp.seek(-str_size, os.SEEK_CUR)
+                            fp.write(new_dylib.encode('ascii').ljust(str_size, b'\0'))
+                        else:
+                            self.warn('Unable to rewrite dependency {}'.format(orig))
+
                 load_dylibs.append(dylib)
 
         return load_dylibs
 
-    def _read_dependencies_fat(self, fp, is_64bit):
+    def _read_dependencies_fat(self, fp, is_64bit, flatten=False):
         num_fat, = struct.unpack('>I', fp.read(4))
 
         # After the header we get a table of executables in this fat file,
@@ -1126,7 +1146,7 @@ class build_apps(setuptools.Command):
                 # Not a Mach-O file we can read.
                 continue
 
-            for dep in self._read_dependencies_macho(fp, endian):
+            for dep in self._read_dependencies_macho(fp, endian, flatten=flatten):
                 if dep not in deps:
                     deps.append(dep)
 
