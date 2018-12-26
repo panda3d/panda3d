@@ -554,6 +554,10 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
+        # Copy over panda3d.dist-info directory.
+        if os.path.isdir(outputdir + "/panda3d.dist-info"):
+            oscmd("cp -R %s/panda3d.dist-info dstroot/pybindings%s/Library/Python/%s/site-packages/" % (outputdir, pyver, pyver))
+
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")
         oscmd("cp -R %s/lib/libp3ffmpeg.* dstroot/ffmpeg/Developer/Panda3D/lib/" % outputdir)
