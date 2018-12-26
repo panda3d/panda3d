@@ -6519,7 +6519,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
   if (_supports_shader_buffers) {
     PStatGPUTimer timer(this, _prepare_shader_buffer_pcollector);
 
-    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects);
+    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gbc->_index);
 
     if (GLCAT.is_debug() && gl_debug_buffers) {
