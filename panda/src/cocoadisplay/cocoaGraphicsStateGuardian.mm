@@ -37,12 +37,8 @@ display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
                 const CVTimeStamp* output_time, CVOptionFlags flags_in,
                 CVOptionFlags *flags_out, void *context) {
   CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)context;
-#ifdef SIMPLE_THREADS
-  gsg->_vsync_wait_flag.clear();
-#else
   MutexHolder swap_holder(gsg->_swap_lock);
   gsg->_swap_condition.notify();
-#endif
   return kCVReturnSuccess;
 }
 
