@@ -277,8 +277,14 @@ end_flip() {
     if (_vsync_enabled) {
       AtomicAdjust::Integer cur_frame = ClockObject::get_global_clock()->get_frame_count();
       if (AtomicAdjust::set(cocoagsg->_last_wait_frame, cur_frame) != cur_frame) {
+#ifdef SIMPLE_THREADS
+        while (cocoagsg->_vsync_wait_flag.test_and_set()) {
+          ThreadSimpleManager::get_global_ptr()->get_current_thread()->yield();
+        }
+#else
         MutexHolder swap_holder(cocoagsg->_swap_lock);
         cocoagsg->_swap_condition.wait();
+#endif
       }
     }
 

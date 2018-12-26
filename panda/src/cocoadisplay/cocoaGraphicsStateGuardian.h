@@ -53,6 +53,9 @@ public:
   Mutex _swap_lock;
   ConditionVar _swap_condition;
   AtomicAdjust::Integer _last_wait_frame = 0;
+#ifdef SIMPLE_THREADS
+  std::atomic_flag _vsync_wait_flag = ATOMIC_FLAG_INIT;
+#endif
 
 protected:
   virtual void query_gl_version();
