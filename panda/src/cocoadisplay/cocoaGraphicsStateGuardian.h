@@ -50,8 +50,8 @@ public:
   FrameBufferProperties _fbprops;
 
   CVDisplayLinkRef _display_link = nullptr;
-  Mutex _swap_lock;
-  ConditionVar _swap_condition;
+  TrueMutexImpl _swap_lock;
+  TrueConditionVarImpl _swap_condition;
   AtomicAdjust::Integer _last_wait_frame = 0;
 
 protected:

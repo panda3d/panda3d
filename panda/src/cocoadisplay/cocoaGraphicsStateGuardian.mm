@@ -37,8 +37,9 @@ display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
                 const CVTimeStamp* output_time, CVOptionFlags flags_in,
                 CVOptionFlags *flags_out, void *context) {
   CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)context;
-  MutexHolder swap_holder(gsg->_swap_lock);
+  gsg->_swap_lock.lock();
   gsg->_swap_condition.notify();
+  gsg->_swap_lock.unlock();
   return kCVReturnSuccess;
 }
 
@@ -73,8 +74,9 @@ CocoaGraphicsStateGuardian::
   if (_display_link != nil) {
     CVDisplayLinkRelease(_display_link);
     _display_link = nil;
-    MutexHolder swap_holder(_swap_lock);
+    _swap_lock.lock();
     _swap_condition.notify();
+    _swap_lock.unlock();
   }
   if (_context != nil) {
     [_context clearDrawable];
