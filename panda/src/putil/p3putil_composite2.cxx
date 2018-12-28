@@ -25,7 +25,6 @@
 #include "vector_typedWritable.cxx"
 #include "vector_ushort.cxx"
 #include "vector_writable.cxx"
-#include "weakKeyHashMap.cxx"
 #include "writableConfigurable.cxx"
 #include "writableParam.cxx"
 
