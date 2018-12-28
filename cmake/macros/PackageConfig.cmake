@@ -371,6 +371,47 @@ function(export_packages filename)
 endfunction(export_packages)
 
 #
+# export_targets(set [NAMESPACE namespace] [COMPONENT component])
+#
+# Export targets in the export set named by "set"
+#
+# NAMESPACE overrides the namespace prefixed to the exported targets; it
+# defaults to "Panda3D::[set]::" if no explicit override is given.
+#
+# COMPONENT overrides the install component for the generated .cmake file; it
+# defaults to "[set]" if no explicit override is given.
+#
+function(export_targets set)
+  set(namespace "Panda3D::${set}::")
+  set(component "${set}")
+  set(keyword)
+  foreach(arg ${ARGN})
+    if(arg STREQUAL "NAMESPACE" OR
+       arg STREQUAL "COMPONENT")
+
+      set(keyword "${arg}")
+
+    elseif(keyword STREQUAL "NAMESPACE")
+      set(namespace "${arg}")
+
+    elseif(keyword STREQUAL "COMPONENT")
+      set(component "${arg}")
+
+    else()
+      message(FATAL_ERROR "export_targets() given unexpected arg: ${arg}")
+
+    endif()
+  endforeach(arg)
+
+  export(EXPORT "${set}" NAMESPACE "${namespace}"
+    FILE "${PROJECT_BINARY_DIR}/Panda3D${set}Targets.cmake")
+  install(EXPORT "${set}" NAMESPACE "${namespace}"
+    FILE "Panda3D${set}Targets.cmake"
+    COMPONENT "${component}" DESTINATION lib/cmake/Panda3D)
+
+endfunction(export_targets)
+
+#
 # find_package
 #
 # This override is necessary because CMake's default behavior is to run

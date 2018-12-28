@@ -14,3 +14,5 @@ install(TARGETS pandaegg
   DESTINATION lib
   RUNTIME DESTINATION bin
   ARCHIVE COMPONENT EggDevel)
+
+export_targets(Egg COMPONENT EggDevel)

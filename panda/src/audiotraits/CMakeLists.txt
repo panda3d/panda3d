@@ -30,6 +30,8 @@ if(HAVE_RAD_MSS)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT MilesDevel)
+
+  export_targets(Miles NAMESPACE "Panda3D::Miles::" COMPONENT MilesDevel)
 endif()
 
 if(HAVE_FMODEX)
@@ -51,6 +53,8 @@ if(HAVE_FMODEX)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT FMODDevel)
+
+  export_targets(FMOD NAMESPACE "Panda3D::FMOD::" COMPONENT FMODDevel)
 endif()
 
 if(HAVE_OPENAL)
@@ -73,4 +77,6 @@ if(HAVE_OPENAL)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT OpenALDevel)
+
+  export_targets(OpenAL NAMESPACE "Panda3D::OpenAL::" COMPONENT OpenALDevel)
 endif()

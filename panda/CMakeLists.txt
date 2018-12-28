@@ -99,23 +99,37 @@ if(HAVE_PYTHON)
 
   if(HAVE_BULLET)
     add_python_module(bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
+
+    export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
   endif()
 
   if(HAVE_EGG)
     add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
+
+    export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
   endif()
 
   add_python_module(physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
     add_python_module(ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
+
+    export_targets(ODEPython NAMESPACE "Panda3D::Python::" COMPONENT ODEDevel)
   endif()
 
   if(HAVE_OPENCV OR HAVE_ARTOOLKIT)
     add_python_module(vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
+
+    export_targets(VisionPython NAMESPACE "Panda3D::Python::" COMPONENT VisionDevel)
   endif()
 
   if(HAVE_VRPN)
     add_python_module(vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
+
+    export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
   endif()
+
+  export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)
 endif()
+
+export_targets(Core COMPONENT CoreDevel)

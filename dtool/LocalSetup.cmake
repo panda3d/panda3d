@@ -192,3 +192,9 @@ configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_
 install(FILES "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_config.h"
   COMPONENT CoreDevel
   DESTINATION include/panda3d)
+
+# Generate the package configuration file
+export_packages("${PROJECT_BINARY_DIR}/Panda3DPackages.cmake")
+install(FILES "${PROJECT_BINARY_DIR}/Panda3DPackages.cmake"
+  COMPONENT CoreDevel
+  DESTINATION "lib/cmake/Panda3D")

@@ -39,3 +39,5 @@ install(TARGETS p3vision
   RUNTIME DESTINATION bin
   ARCHIVE COMPONENT VisionDevel)
 install(FILES ${P3VISION_HEADERS} COMPONENT VisionDevel DESTINATION include/panda3d)
+
+export_targets(Vision COMPONENT VisionDevel)

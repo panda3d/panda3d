@@ -98,3 +98,5 @@ install(TARGETS p3ode
   RUNTIME DESTINATION bin
   ARCHIVE COMPONENT ODEDevel)
 install(FILES ${P3ODE_HEADERS} COMPONENT ODEDevel DESTINATION include/panda3d)
+
+export_targets(ODE COMPONENT ODEDevel)

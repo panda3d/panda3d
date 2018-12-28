@@ -166,3 +166,13 @@ if(INTERROGATE_PYTHON_INTERFACE)
 
   add_test(pytest "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests")
 endif()
+
+# Generate the Panda3DConfig.cmake file so find_package(Panda3D) works, and
+# also register the build directory with CMake's package registry.
+
+file(COPY "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
+  DESTINATION "${PROJECT_BINARY_DIR}")
+install(FILES "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
+  DESTINATION "lib/cmake/Panda3D")
+
+export(PACKAGE Panda3D)

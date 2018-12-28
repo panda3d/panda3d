@@ -80,3 +80,7 @@ except ImportError as err:
   # Now install ourselves:
   install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB COMPONENT Direct)
 endif()
+
+# "Direct" component contains both the Python stuff and the non-Python stuff,
+# because direct has a pretty solid dependency on Python.
+export_targets(Direct NAMESPACE "Panda3D::Direct::" COMPONENT DirectDevel)
