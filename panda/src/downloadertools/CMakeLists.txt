@@ -1,3 +1,9 @@
+if(NOT BUILD_PANDATOOL)
+  # It's safe to say, if the user doesn't want pandatool, they don't want these
+  # tools either.
+  return()
+endif()
+
 if(HAVE_OPENSSL)
   add_executable(apply_patch apply_patch.cxx)
   target_link_libraries(apply_patch panda)
