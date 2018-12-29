@@ -771,6 +771,28 @@ reset() {
     _supported_geom_rendering |= Geom::GR_point_sprite;
   }
 
+  // Determine whether we support wide lines (and how wide they can be).
+  {
+    GLfloat aliased_range[2] = {1.0f, 1.0f};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, aliased_range);
+
+    _max_line_width = aliased_range[1];
+
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (has_fixed_function_pipeline()) {
+#ifndef OPENGLES
+      GLfloat range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_LINE_WIDTH_RANGE, range);
+      _max_line_width = std::max(_max_line_width, range[1]);
+#endif
+
+      GLfloat smooth_range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, smooth_range);
+      _max_line_width = std::max(_max_line_width, smooth_range[1]);
+    }
+#endif
+  }
+
 #ifdef OPENGLES_1
   // OpenGL ES 1.0 does not support primitive restart indices.
 
@@ -6497,7 +6519,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
   if (_supports_shader_buffers) {
     PStatGPUTimer timer(this, _prepare_shader_buffer_pcollector);
 
-    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects);
+    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gbc->_index);
 
     if (GLCAT.is_debug() && gl_debug_buffers) {
@@ -7027,6 +7049,16 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       } else {
         format = Texture::F_srgb;
       }
+    } else if (_current_properties->get_float_color()) {
+      if (_current_properties->get_alpha_bits()) {
+        format = Texture::F_rgba32;
+      } else if (_current_properties->get_blue_bits()) {
+        format = Texture::F_rgb32;
+      } else if (_current_properties->get_green_bits()) {
+        format = Texture::F_rg32;
+      } else {
+        format = Texture::F_r32;
+      }
     } else {
       if (_current_properties->get_alpha_bits()) {
         format = Texture::F_rgba;
@@ -7036,7 +7068,11 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
-    } else if (_current_properties->get_color_bits() <= 24) {
+    } else if (_current_properties->get_color_bits() <= 24
+            && _current_properties->get_red_bits() <= 8
+            && _current_properties->get_green_bits() <= 8
+            && _current_properties->get_blue_bits() <= 8
+            && _current_properties->get_alpha_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -7352,7 +7388,7 @@ do_issue_render_mode() {
       GLCAT.spam() << "setting thickness to " << thickness << "\n";
     }
 
-    glLineWidth(thickness);
+    glLineWidth(std::min((GLfloat)thickness, _max_line_width));
 #ifndef OPENGLES_2
     glPointSize(thickness);
 #endif

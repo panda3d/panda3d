@@ -28,6 +28,21 @@
 #define NSAppKitVersionNumber10_7 1138
 #endif
 
+/**
+ * Called whenever a display wants a frame.  The context argument contains the
+ * applicable CocoaGraphicsStateGuardian.
+ */
+static CVReturn
+display_link_cb(CVDisplayLinkRef link, const CVTimeStamp *now,
+                const CVTimeStamp* output_time, CVOptionFlags flags_in,
+                CVOptionFlags *flags_out, void *context) {
+  CocoaGraphicsStateGuardian *gsg = (CocoaGraphicsStateGuardian *)context;
+  gsg->_swap_lock.lock();
+  gsg->_swap_condition.notify();
+  gsg->_swap_lock.unlock();
+  return kCVReturnSuccess;
+}
+
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
 /**
@@ -36,7 +51,8 @@ TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 CocoaGraphicsStateGuardian::
 CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            CocoaGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(engine, pipe)
+  GLGraphicsStateGuardian(engine, pipe),
+  _swap_condition(_swap_lock)
 {
   _share_context = nil;
   _context = nil;
@@ -52,10 +68,58 @@ CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 CocoaGraphicsStateGuardian::
 ~CocoaGraphicsStateGuardian() {
+  if (_format != nil) {
+    [_format release];
+  }
+  if (_display_link != nil) {
+    CVDisplayLinkRelease(_display_link);
+    _display_link = nil;
+    _swap_lock.lock();
+    _swap_condition.notify();
+    _swap_lock.unlock();
+  }
   if (_context != nil) {
     [_context clearDrawable];
     [_context release];
   }
+}
+
+/**
+ * Creates a CVDisplayLink, which tells us when the display the window is on
+ * will want a frame.
+ */
+bool CocoaGraphicsStateGuardian::
+setup_vsync() {
+  if (_display_link != nil) {
+    // Already set up.
+    return true;
+  }
+
+  CVReturn result = CVDisplayLinkCreateWithActiveCGDisplays(&_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to create CVDisplayLink.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(_display_link, (CGLContextObj)[_context CGLContextObj], (CGLPixelFormatObj)[_format CGLPixelFormatObj]);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink's current display.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkSetOutputCallback(_display_link, &display_link_cb, this);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to set CVDisplayLink output callback.\n";
+    return false;
+  }
+
+  result = CVDisplayLinkStart(_display_link);
+  if (result != kCVReturnSuccess) {
+    cocoadisplay_cat.error() << "Failed to start the CVDisplayLink.\n";
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -262,15 +326,15 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // TODO: print out renderer
 
   _context = [[NSOpenGLContext alloc] initWithFormat:format shareContext:_share_context];
-  [format release];
+  _format = format;
   if (_context == nil) {
     cocoadisplay_cat.error() <<
       "Failed to create OpenGL context!\n";
     return;
   }
 
-  // Set vsync setting on the context
-  GLint swap = sync_video ? 1 : 0;
+  // Disable vsync via the built-in mechanism, which doesn't work on Mojave
+  GLint swap = 0;
   [_context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
 
   cocoadisplay_cat.debug()

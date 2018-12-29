@@ -526,6 +526,9 @@ public:
   bool unclean_set_num_rows(int n);
   bool reserve_num_rows(int n);
 
+  void copy_row_from(int dest_row, const GeomVertexDataPipelineReader &source,
+                     int source_row);
+
 private:
   void make_array_writers();
   void delete_array_writers();

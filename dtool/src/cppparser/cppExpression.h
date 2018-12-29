@@ -133,6 +133,7 @@ public:
 
   Result evaluate() const;
   CPPType *determine_type() const;
+  bool is_lvalue() const;
   bool is_tbd() const;
 
   virtual bool is_fully_specified() const;

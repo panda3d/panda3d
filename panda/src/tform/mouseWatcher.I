@@ -542,7 +542,7 @@ get_trail_log() const {
  * frame.  The trail log is updated once per frame, during the process_events
  * operation.
  */
-INLINE int MouseWatcher::
+INLINE size_t MouseWatcher::
 num_trail_recent() const {
   return _num_trail_recent;
 }

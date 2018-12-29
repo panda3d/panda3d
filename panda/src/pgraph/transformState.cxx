@@ -96,6 +96,10 @@ TransformState::
   // true now, probably we've been double-deleted.
   nassertv(get_ref_count() == 0);
   _cache_stats.add_num_states(-1);
+
+#ifndef NDEBUG
+  _flags = F_is_invalid | F_is_destructing;
+#endif
 }
 
 /**

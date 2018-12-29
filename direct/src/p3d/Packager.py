@@ -19,7 +19,7 @@ from direct.p3d.SeqValue import SeqValue
 from direct.p3d.HostInfo import HostInfo
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
-from direct.showutil import FreezeTool
+from direct.dist import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
 
 vfs = VirtualFileSystem.getGlobalPtr()

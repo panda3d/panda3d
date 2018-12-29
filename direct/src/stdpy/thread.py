@@ -277,13 +277,6 @@ class _local(object):
         d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
         d[key] = value
 
-##     def __getattr__(self, key):
-##         d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
-##         try:
-##             return d[key]
-##         except KeyError:
-##             raise AttributeError
-
     def __getattribute__(self, key):
         d = _get_thread_locals(core.Thread.getCurrentThread(), id(self))
         if key == '__dict__':
@@ -292,6 +285,3 @@ class _local(object):
             return d[key]
         except KeyError:
             return object.__getattribute__(self, key)
-
-
-

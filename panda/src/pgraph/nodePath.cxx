@@ -4164,6 +4164,20 @@ get_material() const {
 }
 
 /**
+ * Recursively searches the scene graph for references to the given material,
+ * and replaces them with the new material.
+ */
+void NodePath::
+replace_material(Material *mat, Material *new_mat) {
+  nassertv_always(!is_empty());
+  nassertv(mat != nullptr);
+  nassertv(new_mat != nullptr);
+
+  CPT(RenderAttrib) new_attrib = MaterialAttrib::make(new_mat);
+  r_replace_material(node(), mat, (const MaterialAttrib *)new_attrib.p());
+}
+
+/**
  * Sets the geometry at this level and below to render using the indicated
  * fog.
  */
@@ -4744,11 +4758,11 @@ set_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
  * the camera, towards a specified "camera" instead of to the viewing camera.
  */
 void NodePath::
-set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
+set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset, bool fixed_depth) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
     (LVector3::up(), true, false,
-     offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
+     offset, camera, LPoint3(0.0f, 0.0f, 0.0f), fixed_depth);
   node()->set_effect(billboard);
 }
 
@@ -5677,7 +5691,9 @@ encode_to_bam_stream(vector_uchar &data, BamWriter *writer) const {
 
   // Tell the BamWriter which node is the root node, for making NodePaths
   // relative to when writing them out to the file.
-  writer->set_root_node(node());
+  if (!is_empty()) {
+    writer->set_root_node(node());
+  }
 
   // Write an initial Datagram to represent the error type and number of
   // nodes.
@@ -6633,11 +6649,62 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
 }
 
 /**
+ *
+ */
+void NodePath::
+r_replace_material(PandaNode *node, Material *mat,
+                   const MaterialAttrib *new_attrib) {
+  // Consider the state of the node itself.
+  {
+    CPT(RenderState) node_state = node->get_state();
+    const MaterialAttrib *ma;
+    if (node_state->get_attrib(ma)) {
+      if (mat == ma->get_material()) {
+        node->set_state(node_state->set_attrib(new_attrib));
+      }
+    }
+  }
+
+  // If this is a GeomNode, consider the state of any of its Geoms.
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = gnode->get_geom_state(i);
+
+      // Look for a MaterialAttrib on the state.
+      const MaterialAttrib *ma;
+      if (geom_state->get_attrib(ma)) {
+        if (mat == ma->get_material()) {
+          // Replace it
+          gnode->set_geom_state(i, geom_state->set_attrib(new_attrib));
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  size_t num_children = cr.get_num_children();
+  for (size_t i = 0; i < num_children; ++i) {
+    PandaNode *child = cr.get_child(i);
+    r_replace_material(child, mat, new_attrib);
+  }
+}
+
+/**
  * Writes the contents of this object to the datagram for shipping out to a
  * Bam file.
  */
 void NodePath::
 write_datagram(BamWriter *manager, Datagram &dg) const {
+  if (is_empty()) {
+    manager->write_pointer(dg, nullptr);
+    return;
+  }
+
   PandaNode *root = DCAST(PandaNode, manager->get_root_node());
 
   // We have no root node to measure from.

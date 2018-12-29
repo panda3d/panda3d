@@ -665,7 +665,9 @@ EXCLUDE_SYMLINKS       = NO
 # for example use the pattern */test/*
 
 EXCLUDE_PATTERNS       = */Opt*-*/* \
-                         */CVS/*
+                         */CVS/* \
+                         */.git/* \
+                         */__pycache__/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 

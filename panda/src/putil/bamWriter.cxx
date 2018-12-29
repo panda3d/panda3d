@@ -20,8 +20,27 @@
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "lightMutexHolder.h"
+#include "simpleHashMap.h"
 
 #include <algorithm>
+
+// Keeps track of older type names in case we want to write out older .bam
+// files.
+struct ObsoleteName {
+  std::string _name;
+  int _before_major;
+  int _before_minor;
+
+  bool operator < (const ObsoleteName &other) const {
+    if (_before_major != other._before_major) {
+      return _before_major < other._before_major;
+    }
+    return _before_minor < other._before_minor;
+  }
+};
+
+// This is a SimpleHashMap to avoid static init ordering issues.
+static SimpleHashMap<TypeHandle, std::set<ObsoleteName> > obsolete_type_names;
 
 /**
  *
@@ -504,7 +523,14 @@ write_handle(Datagram &packet, TypeHandle type) {
     if (inserted) {
       // This is the first time this TypeHandle has been written, so also
       // write out its definition.
-      packet.add_string(type.get_name());
+
+      if (_file_major == _bam_major_ver && _file_minor == _bam_minor_ver) {
+        packet.add_string(type.get_name());
+      } else {
+        // We are writing an older .bam format, so we need to look up whether
+        // we may need to write an older type name.
+        packet.add_string(get_obsolete_type_name(type, _file_major, _file_minor));
+      }
 
       // We also need to write the derivation of the TypeHandle, in case the
       // program reading this file later has never heard of this type before.
@@ -518,6 +544,45 @@ write_handle(Datagram &packet, TypeHandle type) {
   }
 }
 
+/**
+ * Returns the name that the given type had in an older .bam version.
+ */
+std::string BamWriter::
+get_obsolete_type_name(TypeHandle type, int major, int minor) {
+  int index = obsolete_type_names.find(type);
+  if (index >= 0) {
+    // Iterate over the names.  It is sorted such that the lower versions are
+    // listed first.
+    for (const ObsoleteName &name : obsolete_type_names.get_data((size_t)index)) {
+      if (major < name._before_major ||
+          (major == name._before_major && minor < name._before_minor)) {
+        // We have a hit.
+        return name._name;
+      }
+    }
+  }
+
+  return TypeRegistry::ptr()->get_name(type, nullptr);
+}
+
+/**
+ * Registers the given type as having an older name in .bam files *before* the
+ * indicated version.  You can call this multiple times for the same type in
+ * order to establish a history of renames for this type.
+ */
+void BamWriter::
+record_obsolete_type_name(TypeHandle type, std::string name,
+                          int before_major, int before_minor) {
+  // Make sure it is registered as alternate name for reading.
+  TypeRegistry *reg = TypeRegistry::ptr();
+  reg->record_alternate_name(type, name);
+
+  ObsoleteName obsolete_name;
+  obsolete_name._name = std::move(name);
+  obsolete_name._before_major = before_major;
+  obsolete_name._before_minor = before_minor;
+  obsolete_type_names[type].insert(std::move(obsolete_name));
+}
 
 /**
  * This is called by the TypedWritable destructor.  It should remove the

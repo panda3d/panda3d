@@ -20,7 +20,7 @@
 #include "collisionVisualizer.h"
 #include "collisionSphere.h"
 #include "collisionBox.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionPolygon.h"
 #include "collisionPlane.h"
 #include "config_collide.h"
@@ -345,7 +345,7 @@ traverse(const NodePath &root) {
   _geom_volume_pcollector.flush_level();
 
   CollisionSphere::flush_level();
-  CollisionTube::flush_level();
+  CollisionCapsule::flush_level();
   CollisionPolygon::flush_level();
   CollisionPlane::flush_level();
   CollisionBox::flush_level();

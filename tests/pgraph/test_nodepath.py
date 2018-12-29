@@ -2,13 +2,39 @@ import pytest, sys
 
 def test_nodepath_empty():
     """Tests NodePath behavior for empty NodePaths."""
+    from panda3d.core import NodePath, ParamNodePath
+    import pickle
+
+    empty = NodePath()
+    assert empty.is_empty()
+    assert not empty
+
+    # Try pickling, which uses __reduce__
+    dumped = pickle.dumps(empty)
+    empty2 = pickle.loads(dumped)
+    assert empty2.is_empty()
+    assert not empty2
+    assert empty == empty2
+
+    # Test write_datagram/fillin, which are invoked when the NodePath is being
+    # serialized indirectly, such as via ParamNodePath
+    dumped = pickle.dumps(ParamNodePath(empty))
+    empty2 = pickle.loads(dumped).get_value()
+    assert empty2.is_empty()
+    assert not empty2
+    assert empty == empty2
+
+def test_nodepath_single():
+    """Tests NodePath behavior for single-node NodePaths."""
     from panda3d.core import NodePath
 
-    empty = NodePath('np')
+    np = NodePath('np')
+    assert not np.is_empty()
+    assert np
 
-    assert empty.get_pos() == (0, 0, 0)
-    assert empty.get_hpr() == (0, 0, 0)
-    assert empty.get_scale() == (1, 1, 1)
+    assert np.get_pos() == (0, 0, 0)
+    assert np.get_hpr() == (0, 0, 0)
+    assert np.get_scale() == (1, 1, 1)
 
 def test_nodepath_parent():
     """Tests NodePath.reparentTo()."""

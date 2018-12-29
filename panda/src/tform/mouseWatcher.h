@@ -138,7 +138,7 @@ PUBLISHED:
   INLINE const std::string &get_inactivity_timeout_event() const;
 
   INLINE CPT(PointerEventList) get_trail_log() const;
-  INLINE int   num_trail_recent() const;
+  INLINE size_t num_trail_recent() const;
   void         set_trail_log_duration(double duration);
   PT(GeomNode) get_trail_node();
   void         clear_trail_node();
@@ -220,7 +220,7 @@ private:
   LVecBase4 _frame;
 
   PT(PointerEventList) _trail_log;
-  int _num_trail_recent;
+  size_t _num_trail_recent;
   double _trail_log_duration;
   PT(GeomNode) _trail_node;
 

@@ -3383,6 +3383,71 @@ def FindLocation(fn, ipath, pyabi=None):
     ORIG_EXT[loc] = ext
     return loc
 
+
+########################################################################
+##
+## These files maintain a python_versions.json file in the built/tmp
+## directory that can be used by the other scripts in this directory.
+##
+########################################################################
+
+
+def GetCurrentPythonVersionInfo():
+    if PkgSkip("PYTHON"):
+        return
+
+    from distutils.sysconfig import get_python_lib
+    return {
+        "version": SDK["PYTHONVERSION"][6:9],
+        "soabi": GetPythonABI(),
+        "ext_suffix": GetExtensionSuffix(),
+        "executable": sys.executable,
+        "purelib": get_python_lib(False),
+        "platlib": get_python_lib(True),
+    }
+
+
+def UpdatePythonVersionInfoFile(new_info):
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    json_data = []
+    if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
+        try:
+            json_data = json.load(open(json_file, 'r'))
+        except:
+            json_data = []
+
+        # Prune the list by removing the entries that conflict with our build,
+        # plus the entries that no longer exist
+        for version_info in json_data[:]:
+            core_pyd = os.path.join(GetOutputDir(), "panda3d", "core" + version_info["ext_suffix"])
+            if version_info["ext_suffix"] == new_info["ext_suffix"] or \
+               version_info["soabi"] == new_info["soabi"] or \
+               not os.path.isfile(core_pyd):
+                json_data.remove(version_info)
+
+    if not PkgSkip("PYTHON"):
+        json_data.append(new_info)
+
+    if VERBOSE:
+        print("Writing %s" % (json_file))
+    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+
+def ReadPythonVersionInfoFile():
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    if os.path.isfile(json_file):
+        try:
+            return json.load(open(json_file, 'r'))
+        except:
+            pass
+
+    return []
+
+
 ########################################################################
 ##
 ## TargetAdd
@@ -3513,10 +3578,14 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
     if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
-    if target.endswith(".in"):
+    ext = os.path.splitext(target)[1]
+    if ext == ".in":
         if not CrossCompiling():
             t.deps[FindLocation("interrogate.exe", [])] = 1
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
+
+    if ext in (".obj", ".tlb", ".res", ".plugin", ".app") or ext in SUFFIX_DLL or ext in SUFFIX_LIB:
+        t.deps[FindLocation("platform.dat", [])] = 1
 
     if target.endswith(".obj") and any(x.endswith(".in") for x in input):
         if not CrossCompiling():

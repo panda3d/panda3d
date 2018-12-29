@@ -16,8 +16,9 @@
  */
 INLINE CLP(BufferContext)::
 CLP(BufferContext)(CLP(GraphicsStateGuardian) *glgsg,
-                   PreparedGraphicsObjects *pgo) :
-  BufferContext(&pgo->_sbuffer_residency),
+                   PreparedGraphicsObjects *pgo,
+                   TypedWritableReferenceCount *object) :
+  BufferContext(&pgo->_sbuffer_residency, object),
   AdaptiveLruPage(0),
   _glgsg(glgsg)
 {

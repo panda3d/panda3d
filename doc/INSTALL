@@ -194,7 +194,6 @@ it will show you the available command-line options:
   --use-wx          --no-wx        (enable/disable use of WX)
   --use-fltk        --no-fltk      (enable/disable use of FLTK)
   --use-rocket      --no-rocket    (enable/disable use of ROCKET)
-  --use-awesomium   --no-awesomium (enable/disable use of AWESOMIUM)
   --use-carbon      --no-carbon    (enable/disable use of CARBON)
   --use-cocoa       --no-cocoa     (enable/disable use of COCOA)
   --use-x11         --no-x11       (enable/disable use of X11)

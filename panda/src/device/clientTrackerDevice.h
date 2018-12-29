@@ -28,12 +28,6 @@ protected:
   INLINE ClientTrackerDevice(ClientBase *client, const std::string &device_name);
 
 public:
-  INLINE const TrackerData &get_data() const;
-
-protected:
-  TrackerData _data;
-
-public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

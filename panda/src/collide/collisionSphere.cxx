@@ -17,7 +17,7 @@
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionParabola.h"
 #include "collisionBox.h"
 #include "config_collide.h"
@@ -444,18 +444,18 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
  *
  */
 PT(CollisionEntry) CollisionSphere::
-test_intersection_from_tube(const CollisionEntry &entry) const {
-  const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3 from_a = tube->get_point_a() * wrt_mat;
-  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
   LVector3 from_direction = from_b - from_a;
 
   LVector3 from_radius_v =
-    LVector3(tube->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
   PN_stdfloat from_radius = length(from_radius_v);
 
   double t1, t2;
@@ -465,8 +465,8 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the tube or after
-    // the end of the tube.
+    // Both intersection points are before the start of the capsule or after
+    // the end of the capsule.
     return nullptr;
   }
 
@@ -487,7 +487,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   new_entry->set_surface_point(get_center() + normal * get_radius());
   new_entry->set_interior_point(inner_point - normal * from_radius);
 
-  if (has_effective_normal() && tube->get_respect_effective_normal()) {
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
     new_entry->set_surface_normal(normal);

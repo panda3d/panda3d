@@ -67,9 +67,6 @@ struct Dtool_PyInstDef {
   bool _is_const;
 };
 
-// A Offset Dictionary Defining How to read the Above Object..
-extern PyMemberDef standard_type_members[];
-
 // The Class Definition Structor For a Dtool python type.
 struct Dtool_PyTypedObject {
   // Standard Python Features..

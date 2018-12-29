@@ -12,16 +12,6 @@
 
 using std::string;
 
-PyMemberDef standard_type_members[] = {
-  {(char *)"this", (sizeof(void*) == sizeof(int)) ? T_UINT : T_ULONGLONG, offsetof(Dtool_PyInstDef, _ptr_to_object), READONLY, (char *)"C++ 'this' pointer, if any"},
-  {(char *)"this_ownership", T_BOOL, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
-  {(char *)"this_const", T_BOOL, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
-// {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature),
-// READONLY, (char *)"A type check signature"},
-  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
-  {nullptr}  /* Sentinel */
-};
-
 /**
 
  */
@@ -588,46 +578,48 @@ PyObject *Dtool_PyModuleInitHelper(const LibraryDef *defs[], const char *modulen
         << "Python " << version << "\n";
     }
 
-    // Grab the __main__ module.
-    PyObject *main_module = PyImport_ImportModule("__main__");
-    if (main_module == nullptr) {
-      interrogatedb_cat.warning() << "Unable to import __main__\n";
-    }
-
-    // Extract the __file__ attribute, if present.
-    Filename main_dir;
-    PyObject *file_attr = nullptr;
-    if (main_module != nullptr) {
-      file_attr = PyObject_GetAttrString(main_module, "__file__");
-    }
-    if (file_attr == nullptr) {
-      // Must be running in the interactive interpreter.  Use the CWD.
-      main_dir = ExecutionEnvironment::get_cwd();
-    } else {
+    if (!ExecutionEnvironment::has_environment_variable("MAIN_DIR")) {
+      // Grab the __main__ module.
+      PyObject *main_module = PyImport_ImportModule("__main__");
+      if (main_module == NULL) {
+        interrogatedb_cat.warning() << "Unable to import __main__\n";
+      }
+      
+      // Extract the __file__ attribute, if present.
+      Filename main_dir;
+      PyObject *file_attr = nullptr;
+      if (main_module != nullptr) {
+        file_attr = PyObject_GetAttrString(main_module, "__file__");
+      }
+      if (file_attr == nullptr) {
+        // Must be running in the interactive interpreter.  Use the CWD.
+        main_dir = ExecutionEnvironment::get_cwd();
+      } else {
 #if PY_MAJOR_VERSION >= 3
-      Py_ssize_t length;
-      wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
-      if (buffer != nullptr) {
-        main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
-        main_dir.make_absolute();
-        main_dir = main_dir.get_dirname();
-        PyMem_Free(buffer);
-      }
+        Py_ssize_t length;
+        wchar_t *buffer = PyUnicode_AsWideCharString(file_attr, &length);
+        if (buffer != nullptr) {
+          main_dir = Filename::from_os_specific_w(std::wstring(buffer, length));
+          main_dir.make_absolute();
+          main_dir = main_dir.get_dirname();
+          PyMem_Free(buffer);
+        }
 #else
-      char *buffer;
-      Py_ssize_t length;
-      if (PyString_AsStringAndSize(file_attr, &buffer, &length) != -1) {
-        main_dir = Filename::from_os_specific(std::string(buffer, length));
-        main_dir.make_absolute();
-        main_dir = main_dir.get_dirname();
-      }
+        char *buffer;
+        Py_ssize_t length;
+        if (PyString_AsStringAndSize(file_attr, &buffer, &length) != -1) {
+          main_dir = Filename::from_os_specific(std::string(buffer, length));
+          main_dir.make_absolute();
+          main_dir = main_dir.get_dirname();
+        }
 #endif
-      else {
-        interrogatedb_cat.warning() << "Invalid string for __main__.__file__\n";
+        else {
+          interrogatedb_cat.warning() << "Invalid string for __main__.__file__\n";
+        }
       }
+      ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
+      PyErr_Clear();
     }
-    ExecutionEnvironment::shadow_environment_variable("MAIN_DIR", main_dir.to_os_specific());
-    PyErr_Clear();
     initialized_main_dir = true;
 
     // Also, while we are at it, initialize the thread swap hook.

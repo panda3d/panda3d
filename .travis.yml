@@ -108,7 +108,7 @@ script:
 notifications:
   irc:
     channels:
-    - "chat.freenode.net#panda3d"
+      - secure: "jfwHT9RHAVOGRGTMY8TpYKJI6rq8nFoIj41Y0soZdJQNWtSSFEK9AyzZeMY+2dHga7cR/X+/0NWZ2ehhedTnd9FvlzOnMWWC3K0I/b3XWbEdVEqIZnggFkKGqs82Gy3omguRC63yWupeJCcSCckIhoWbLzWy6xV8lF5WC80iXi8="
     on_success: change
     on_failure: always
     use_notice: true

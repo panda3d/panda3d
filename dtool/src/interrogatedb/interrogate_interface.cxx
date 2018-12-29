@@ -176,6 +176,18 @@ interrogate_element_setter(ElementIndex element) {
   return InterrogateDatabase::get_ptr()->get_element(element).get_setter();
 }
 
+bool
+interrogate_element_is_sequence(ElementIndex element) {
+  // cerr << "interrogate_element_is_sequence(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).is_sequence();
+}
+
+bool
+interrogate_element_is_mapping(ElementIndex element) {
+  // cerr << "interrogate_element_is_mapping(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).is_mapping();
+}
+
 int
 interrogate_number_of_globals() {
   // cerr << "interrogate_number_of_globals()\n";

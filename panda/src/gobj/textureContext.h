@@ -60,9 +60,6 @@ public:
   virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(Texture), because the texture and the GSG both own
-  // their TextureContexts!  That would create a circular reference count.
-  Texture *_texture;
   int _view;
   UpdateSeq _properties_modified;
   UpdateSeq _image_modified;
