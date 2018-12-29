@@ -1,5 +1,3 @@
-forcetype DConfig
-
 forcetype PTA_uchar
 forcetype CPTA_uchar
 forcetype PTA_float
