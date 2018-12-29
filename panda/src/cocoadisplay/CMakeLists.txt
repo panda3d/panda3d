@@ -30,7 +30,7 @@ composite_sources(p3cocoadisplay P3COCOADISPLAY_SOURCES)
 add_component_library(p3cocoadisplay SYMBOL BUILDING_PANDA_COCOADISPLAY
   ${P3COCOADISPLAY_HEADERS} ${P3COCOADISPLAY_SOURCES})
 set_target_properties(p3cocoadisplay PROPERTIES COMPILE_FLAGS "-ObjC++")
-target_link_libraries(p3cocoadisplay p3display p3putil p3glgsg)
+target_link_libraries(p3cocoadisplay p3glgsg panda)
 
 # Frameworks:
 find_library(APPLICATIONSERVICES_LIBRARY ApplicationServices)

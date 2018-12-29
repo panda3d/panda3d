@@ -18,7 +18,7 @@ composite_sources(p3osxdisplay P3OSXDISPLAY_SOURCES)
 add_component_library(p3osxdisplay SYMBOL BUILDING_PANDA_OSXDISPLAY
   ${P3OSXDISPLAY_HEADERS} ${P3OSXDISPLAY_SOURCES})
 set_target_properties(p3osxdisplay PROPERTIES COMPILE_FLAGS "-ObjC++")
-target_link_libraries(p3osxdisplay p3display p3putil p3glgsg)
+target_link_libraries(p3osxdisplay p3glgsg panda)
 
 # Frameworks:
 find_library(APPLICATIONSERVICES_LIBRARY ApplicationServices)
