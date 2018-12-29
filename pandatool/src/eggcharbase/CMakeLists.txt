@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3EGGCHARBASE_HEADERS
   config_eggcharbase.h
   eggBackPointer.h

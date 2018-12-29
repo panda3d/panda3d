@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3VRMLEGG_HEADERS
   indexedFaceSet.h
   vrmlAppearance.h

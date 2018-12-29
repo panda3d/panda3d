@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3LWOEGG_HEADERS
   cLwoClip.h cLwoClip.I
   cLwoLayer.h cLwoLayer.I

@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3FLTEGG_HEADERS
   fltToEggConverter.h fltToEggConverter.I
   fltToEggLevelState.h fltToEggLevelState.I

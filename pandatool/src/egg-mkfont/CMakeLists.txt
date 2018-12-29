@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3EGG_MKFONT_HEADERS
   eggMakeFont.h
   rangeDescription.h rangeDescription.I

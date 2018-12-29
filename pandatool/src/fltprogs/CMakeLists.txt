@@ -10,10 +10,14 @@ add_executable(fltcopy fltCopy.cxx fltCopy.h)
 target_link_libraries(fltcopy p3progbase p3cvscopy p3flt)
 install(TARGETS fltcopy EXPORT Tools COMPONENT Tools DESTINATION bin)
 
-add_executable(egg2flt eggToFlt.cxx eggToFlt.h)
-target_link_libraries(egg2flt p3fltegg p3eggbase p3progbase)
-install(TARGETS egg2flt EXPORT Tools COMPONENT Tools DESTINATION bin)
+if(HAVE_EGG)
 
-add_executable(flt2egg fltToEgg.cxx fltToEgg.h)
-target_link_libraries(flt2egg p3fltegg p3eggbase p3progbase)
-install(TARGETS flt2egg EXPORT Tools COMPONENT Tools DESTINATION bin)
+  add_executable(egg2flt eggToFlt.cxx eggToFlt.h)
+  target_link_libraries(egg2flt p3fltegg p3eggbase p3progbase)
+  install(TARGETS egg2flt EXPORT Tools COMPONENT Tools DESTINATION bin)
+
+  add_executable(flt2egg fltToEgg.cxx fltToEgg.h)
+  target_link_libraries(flt2egg p3fltegg p3eggbase p3progbase)
+  install(TARGETS flt2egg EXPORT Tools COMPONENT Tools DESTINATION bin)
+
+endif()

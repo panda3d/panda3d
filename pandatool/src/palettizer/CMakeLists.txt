@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3PALETTIZER_HEADERS
   config_palettizer.h
   destTextureImage.h

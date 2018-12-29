@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3OBJEGG_HEADERS
   config_objegg.h
   eggToObjConverter.h

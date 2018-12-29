@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3XFILEEGG_HEADERS
   xFileAnimationSet.h xFileAnimationSet.I
   xFileFace.h xFileMaker.h

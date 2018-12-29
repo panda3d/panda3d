@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3DXFEGG_HEADERS
   dxfToEggConverter.h
   dxfToEggLayer.h

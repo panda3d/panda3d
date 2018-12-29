@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3CONVERTER_HEADERS
   somethingToEggConverter.h somethingToEggConverter.I
   eggToSomethingConverter.h eggToSomethingConverter.I

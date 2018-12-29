@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 add_executable(egg-crop eggCrop.cxx eggCrop.h)
 target_link_libraries(egg-crop p3eggbase)
 install(TARGETS egg-crop EXPORT Tools COMPONENT Tools DESTINATION bin)

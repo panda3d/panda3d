@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 add_executable(egg2obj eggToObj.cxx eggToObj.h)
 target_link_libraries(egg2obj p3objegg p3eggbase)
 install(TARGETS egg2obj EXPORT Tools COMPONENT Tools DESTINATION bin)

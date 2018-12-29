@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3EGGBASE_HEADERS
   eggBase.h eggConverter.h eggFilter.h
   eggMakeSomething.h

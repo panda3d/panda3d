@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3EGG_QTESS_HEADERS
   config_egg_qtess.h
   eggQtess.h

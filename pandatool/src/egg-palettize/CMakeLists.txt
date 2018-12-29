@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 add_executable(egg-palettize eggPalettize.cxx eggPalettize.h)
 target_link_libraries(egg-palettize p3palettizer p3eggbase p3progbase)
 install(TARGETS egg-palettize EXPORT Tools COMPONENT Tools DESTINATION bin)

@@ -1,3 +1,7 @@
+if(NOT HAVE_EGG)
+  return()
+endif()
+
 set(P3EGG_OPTCHAR_HEADERS
   config_egg_optchar.h
   eggOptchar.h
