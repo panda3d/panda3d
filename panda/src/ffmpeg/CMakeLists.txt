@@ -31,3 +31,5 @@ install(TARGETS p3ffmpeg
   RUNTIME DESTINATION bin
   ARCHIVE COMPONENT FFmpegDevel)
 install(FILES ${P3FFMPEG_HEADERS} COMPONENT FFmpegDevel DESTINATION include/panda3d)
+
+export_targets(FFmpeg COMPONENT FFmpegDevel)

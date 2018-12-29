@@ -22,3 +22,8 @@ install(TARGETS pandagles
   EXPORT GLES COMPONENT GLES
   DESTINATION ${MODULE_DESTINATION}
   ARCHIVE COMPONENT GLESDevel)
+
+if(NOT HAVE_GLES2)
+  # If GLES2 won't export this, we should do so here.
+  export_targets(GLES COMPONENT GLESDevel)
+endif()
