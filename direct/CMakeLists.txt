@@ -42,9 +42,9 @@ if(HAVE_PYTHON)
   # Copy Python source files into the build directory
   set(DIRECT_INSTALL_DIRECTORIES
       actor cluster controls directbase directdevices directnotify directscripts
-      directtools directutil distributed extensions extensions_native ffi filter
-      fsm gui http interval leveleditor motiontrail p3d particles physics pyinst
-      showbase showutil stdpy task test tkpanels tkwidgets wxwidgets)
+      directtools directutil dist distributed extensions_native filter
+      fsm gui interval leveleditor motiontrail p3d particles physics
+      showbase showutil stdpy task tkpanels tkwidgets wxwidgets)
 
   foreach(dir ${DIRECT_INSTALL_DIRECTORIES})
     file(COPY
