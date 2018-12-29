@@ -36,8 +36,10 @@ target_link_libraries(p3cocoadisplay p3glgsg panda)
 find_library(APPLICATIONSERVICES_LIBRARY ApplicationServices)
 find_library(APPKIT_LIBRARY AppKit)
 find_library(CARBON_LIBRARY Carbon)
+find_library(CORE_VIDEO_LIBRARY CoreVideo)
 target_link_libraries(p3cocoadisplay
-  ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY} ${CARBON_LIBRARY})
+  ${APPLICATIONSERVICES_LIBRARY} ${APPKIT_LIBRARY} ${CARBON_LIBRARY}
+  ${CORE_VIDEO_LIBRARY})
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3cocoadisplay EXPORT Core COMPONENT Core DESTINATION lib)
