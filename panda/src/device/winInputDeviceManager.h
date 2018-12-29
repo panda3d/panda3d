@@ -18,7 +18,7 @@
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
-#include "xinputDevice.h"
+#include "xInputDevice.h"
 
 #include <CfgMgr32.h>
 #include <devpkey.h>

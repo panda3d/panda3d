@@ -11,7 +11,7 @@
  * @date 2018-01-25
  */
 
-#include "inputDeviceManager.h"
+#include "linuxInputDeviceManager.h"
 #include "throw_event.h"
 
 #ifdef PHAVE_LINUX_INPUT_H
