@@ -36,6 +36,7 @@ set(P3PUTIL_HEADERS
   factoryParams.h
   firstOfPairCompare.I firstOfPairCompare.h
   firstOfPairLess.I firstOfPairLess.h
+  gamepadButton.h
   globalPointerRegistry.I globalPointerRegistry.h
   indirectCompareNames.I indirectCompareNames.h
   indirectCompareSort.I indirectCompareSort.h
@@ -46,11 +47,13 @@ set(P3PUTIL_HEADERS
   linkedListNode.I linkedListNode.h
   load_prc_file.h
   loaderOptions.I loaderOptions.h
-  modifierButtons.I modifierButtons.h mouseButton.h
-  mouseData.I mouseData.h nameUniquifier.I nameUniquifier.h
+  modifierButtons.I modifierButtons.h
+  mouseButton.h mouseData.h
+  nameUniquifier.I nameUniquifier.h
   nodeCachedReferenceCount.h nodeCachedReferenceCount.I
   paramValue.I paramValue.h
   pbitops.I pbitops.h
+  pointerData.h pointerData.I
   portalMask.h
   pta_ushort.h
   simpleHashMap.I simpleHashMap.h
@@ -62,7 +65,6 @@ set(P3PUTIL_HEADERS
   vector_typedWritable.h
   vector_ulong.h
   vector_ushort.h vector_writable.h
-  weakKeyHashMap.h weakKeyHashMap.I
   writableConfigurable.h
   writableParam.I writableParam.h
 )
@@ -93,6 +95,7 @@ set(P3PUTIL_SOURCES
   doubleBitMask.cxx
   factoryBase.cxx
   factoryParam.cxx factoryParams.cxx
+  gamepadButton.cxx
   globalPointerRegistry.cxx
   ioPtaDatagramFloat.cxx
   ioPtaDatagramInt.cxx ioPtaDatagramShort.cxx
@@ -100,11 +103,13 @@ set(P3PUTIL_SOURCES
   linkedListNode.cxx
   load_prc_file.cxx
   loaderOptions.cxx
-  modifierButtons.cxx mouseButton.cxx mouseData.cxx
+  modifierButtons.cxx
+  mouseButton.cxx
   nameUniquifier.cxx
   nodeCachedReferenceCount.cxx
   paramValue.cxx
   pbitops.cxx
+  pointerData.cxx
   pta_ushort.cxx
   simpleHashMap.cxx
   sparseArray.cxx
@@ -114,7 +119,6 @@ set(P3PUTIL_SOURCES
   vector_typedWritable.cxx
   vector_ulong.cxx
   vector_ushort.cxx vector_writable.cxx
-  weakKeyHashMap.cxx
   writableConfigurable.cxx writableParam.cxx
 )
 

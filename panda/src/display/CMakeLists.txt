@@ -20,6 +20,7 @@ set(P3DISPLAY_HEADERS
   graphicsWindowInputDevice.I graphicsWindowInputDevice.h
   graphicsWindowProc.h
   graphicsWindowProcCallbackData.I graphicsWindowProcCallbackData.h
+  mouseAndKeyboard.h
   nativeWindowHandle.I nativeWindowHandle.h
   parasiteBuffer.I parasiteBuffer.h
   pStatGPUTimer.I pStatGPUTimer.h
@@ -55,6 +56,7 @@ set(P3DISPLAY_SOURCES
   graphicsWindowProc.cxx
   graphicsWindowProcCallbackData.cxx
   graphicsDevice.cxx
+  mouseAndKeyboard.cxx
   nativeWindowHandle.cxx
   parasiteBuffer.cxx
   windowHandle.cxx
@@ -91,7 +93,7 @@ endif()
 composite_sources(p3display P3DISPLAY_SOURCES)
 add_component_library(p3display SYMBOL BUILDING_PANDA_DISPLAY
   ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES})
-target_link_libraries(p3display p3cull p3pgraphnodes
+target_link_libraries(p3display p3cull p3device p3pgraphnodes
   PKG::X11)
 target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 

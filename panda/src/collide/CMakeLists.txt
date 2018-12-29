@@ -1,5 +1,6 @@
 set(P3COLLIDE_HEADERS
   collisionBox.I collisionBox.h
+  collisionCapsule.I collisionCapsule.h
   collisionEntry.I collisionEntry.h
   collisionGeom.I collisionGeom.h
   collisionHandler.I collisionHandler.h
@@ -26,12 +27,13 @@ set(P3COLLIDE_HEADERS
   collisionSolid.I collisionSolid.h
   collisionSphere.I collisionSphere.h
   collisionTraverser.I collisionTraverser.h
-  collisionTube.I collisionTube.h
+  collisionTube.h
   collisionVisualizer.I collisionVisualizer.h
   config_collide.h
 )
 set(P3COLLIDE_SOURCES
   collisionBox.cxx
+  collisionCapsule.cxx
   collisionEntry.cxx
   collisionGeom.cxx
   collisionHandler.cxx
@@ -58,7 +60,6 @@ set(P3COLLIDE_SOURCES
   collisionSolid.cxx
   collisionSphere.cxx
   collisionTraverser.cxx
-  collisionTube.cxx
   collisionVisualizer.cxx
   config_collide.cxx
 )
