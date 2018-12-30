@@ -31,6 +31,14 @@
 
 #include <Python.h>
 
+#ifndef LINK_ALL_STATIC
+#  define EXPCL_PYPANDA
+#elif defined(__GNUC__)
+#  define EXPCL_PYPANDA __attribute__((weak))
+#else
+#  define EXPCL_PYPANDA extern inline
+#endif
+
 /* Python 2.4 */
 
 // 2.4 macros which aren't available in 2.3
@@ -99,7 +107,7 @@ typedef int Py_ssize_t;
 // PyInt_FromSize_t automatically picks the right type.
 #  define PyLongOrInt_AS_LONG PyInt_AsLong
 
-size_t PyLongOrInt_AsSize_t(PyObject *);
+EXPCL_PYPANDA size_t PyLongOrInt_AsSize_t(PyObject *);
 #endif
 
 // Which character to use in PyArg_ParseTuple et al for a byte string.
