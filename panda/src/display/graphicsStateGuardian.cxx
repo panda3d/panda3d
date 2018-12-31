@@ -1255,7 +1255,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return &(_scene_setup->get_camera_transform()->get_mat());
   }
   case Shader::SMO_model_to_view: {
-    return &(_inv_cs_transform->compose(_internal_transform)->get_mat());
+    t = _inv_cs_transform->compose(_internal_transform)->get_mat();
+    return &t;
   }
   case Shader::SMO_model_to_apiview: {
     return &(_internal_transform->get_mat());
