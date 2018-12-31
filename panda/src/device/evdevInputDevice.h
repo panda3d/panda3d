@@ -64,7 +64,9 @@ private:
   int _rtrigger_code;
 
 public:
-  static ButtonHandle map_button(int code, DeviceClass device_class = DeviceClass::unknown);
+  static ButtonHandle map_button(int code,
+                                 DeviceClass device_class = DeviceClass::unknown,
+                                 int quirks = 0);
 
 public:
   static TypeHandle get_class_type() {

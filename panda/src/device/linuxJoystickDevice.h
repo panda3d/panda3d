@@ -50,7 +50,7 @@ private:
   int _dpad_up_button;
 
   // This is used for axis emulation.
-  int _ltrigger_control;
+  int _ltrigger_axis;
   int _ltrigger_button;
   int _rtrigger_button;
 

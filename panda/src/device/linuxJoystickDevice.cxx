@@ -113,6 +113,7 @@ open_device() {
   ioctl(_fd, JSIOCGNAME(sizeof(name)), name);
   _name = name;
 
+  bool emulate_dpad = true;
   bool have_analog_triggers = false;
 
   // Get the number of axes.
@@ -138,6 +139,8 @@ open_device() {
         _device_class = DeviceClass::gamepad;
       } else if (handle == GamepadButton::trigger()) {
         _device_class = DeviceClass::flight_stick;
+      } else if (handle == GamepadButton::dpad_left()) {
+        emulate_dpad = false;
       } else if (handle == GamepadButton::ltrigger()) {
         _ltrigger_button = i;
       } else if (handle == GamepadButton::rtrigger()) {
@@ -220,7 +223,7 @@ open_device() {
         break;
 
       case ABS_HAT0X:
-        if (_dpad_left_button == -1) {
+        if (emulate_dpad) {
           // Emulate D-Pad or hat switch.
           _dpad_x_axis = i;
           _dpad_left_button = (int)_buttons.size();
@@ -236,7 +239,7 @@ open_device() {
         break;
 
       case ABS_HAT0Y:
-        if (_dpad_up_button == -1) {
+        if (emulate_dpad) {
           // Emulate D-Pad.
           _dpad_y_axis = i;
           _dpad_up_button = (int)_buttons.size();
@@ -248,6 +251,18 @@ open_device() {
             add_button(GamepadButton::hat_down());
           }
           axis = Axis::none;
+        }
+        break;
+
+      case ABS_HAT2X:
+        if (_device_class == DeviceClass::gamepad) {
+          axis = InputDevice::Axis::right_trigger;
+        }
+        break;
+
+      case ABS_HAT2Y:
+        if (_device_class == DeviceClass::gamepad) {
+          axis = InputDevice::Axis::left_trigger;
         }
         break;
 
@@ -278,7 +293,7 @@ open_device() {
 
   if (_ltrigger_button >= 0 && _rtrigger_button >= 0 && !have_analog_triggers) {
     // Emulate analog triggers.
-    _ltrigger_control = (int)_axes.size();
+    _ltrigger_axis = (int)_axes.size();
     add_axis(Axis::left_trigger, 0, 1, false);
     add_axis(Axis::right_trigger, 0, 1, false);
   } else {
@@ -398,9 +413,9 @@ process_events() {
 
     if (events[i].type & JS_EVENT_BUTTON) {
       if (index == _ltrigger_button) {
-        axis_changed(_ltrigger_control, events[i].value);
+        axis_changed(_ltrigger_axis, events[i].value);
       } else if (index == _rtrigger_button) {
-        axis_changed(_ltrigger_control + 1, events[i].value);
+        axis_changed(_ltrigger_axis + 1, events[i].value);
       }
       button_changed(index, (events[i].value != 0));
 

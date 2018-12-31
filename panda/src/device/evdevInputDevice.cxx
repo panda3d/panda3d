@@ -57,6 +57,9 @@ enum QuirkBits {
 
   // ABS_THROTTLE maps to rudder
   QB_rudder_from_throttle = 16,
+
+  // Special handling for Steam Controller, which has many peculiarities.
+  QB_steam_controller = 32,
 };
 
 static const struct DeviceMapping {
@@ -71,6 +74,10 @@ static const struct DeviceMapping {
   {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
   // Xbox 360 Wireless Controller
   {0x045e, 0x0719, InputDevice::DeviceClass::gamepad, QB_connect_if_nonzero},
+  // Steam Controller (wired)
+  {0x28de, 0x1102, InputDevice::DeviceClass::unknown, QB_steam_controller},
+  // Steam Controller (wireless)
+  {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
   // Trust GXT 24
@@ -299,6 +306,13 @@ init_device() {
     ++mapping;
   }
 
+  // The Steam Controller reports as multiple devices, one of which a gamepad.
+  if (quirks & QB_steam_controller) {
+    if (test_bit(BTN_GAMEPAD, keys)) {
+      _device_class = DeviceClass::gamepad;
+    }
+  }
+
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {
     int device_scores[(size_t)DeviceClass::spatial_mouse] = {0};
@@ -378,7 +392,7 @@ init_device() {
     for (int i = 0; i <= KEY_MAX; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
-        button.handle = map_button(i, _device_class);
+        button.handle = map_button(i, _device_class, quirks);
 
         int button_index = (int)_buttons.size();
         if (button.handle == ButtonHandle::none()) {
@@ -525,6 +539,18 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_up()));
               _buttons.push_back(ButtonState(GamepadButton::hat_down()));
             }
+          }
+          break;
+        case ABS_HAT2X:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::right_trigger;
+            have_analog_triggers = true;
+          }
+          break;
+        case ABS_HAT2Y:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::left_trigger;
+            have_analog_triggers = true;
           }
           break;
         }
@@ -740,7 +766,7 @@ process_events() {
  * Static function to map an evdev code to a ButtonHandle.
  */
 ButtonHandle EvdevInputDevice::
-map_button(int code, DeviceClass device_class) {
+map_button(int code, DeviceClass device_class, int quirks) {
   if (code >= 0 && code < 0x80) {
     // See linux/input.h for the source of this mapping.
     static const ButtonHandle keyboard_map[] = {
@@ -897,7 +923,11 @@ map_button(int code, DeviceClass device_class) {
     }
 
   } else if ((code & 0xfff0) == BTN_JOYSTICK) {
-    if (device_class == DeviceClass::gamepad) {
+    if (quirks & QB_steam_controller) {
+      // BTN_THUMB and BTN_THUMB2 detect touching the touchpads.
+      return ButtonHandle::none();
+
+    } else if (device_class == DeviceClass::gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
         GamepadButton::face_x(),
@@ -990,6 +1020,13 @@ map_button(int code, DeviceClass device_class) {
   case BTN_DPAD_DOWN:
   case BTN_TRIGGER_HAPPY4:
     return GamepadButton::dpad_down();
+
+  // The next two are for the Steam Controller's grip buttons.
+  case BTN_GEAR_DOWN:
+    return GamepadButton::lgrip();
+
+  case BTN_GEAR_UP:
+    return GamepadButton::rgrip();
 
   default:
     return ButtonHandle::none();
