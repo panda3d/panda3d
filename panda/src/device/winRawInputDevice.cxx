@@ -273,6 +273,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         // Well, it claims to be a gamepad...
         _device_class = DeviceClass::gamepad;
       }
+      //TODO: better solution for this
+      if (_vendor_id == 0x0079 && _product_id == 0x0006) {
+        // Trust GXT 24
+        _device_class = DeviceClass::gamepad;
+      }
 
     // Mice
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&

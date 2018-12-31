@@ -73,6 +73,8 @@ static const struct DeviceMapping {
   {0x045e, 0x0719, InputDevice::DeviceClass::gamepad, QB_connect_if_nonzero},
   // Jess Tech Colour Rumble Pad
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
+  // Trust GXT 24
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
