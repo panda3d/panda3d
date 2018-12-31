@@ -294,8 +294,14 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
       if (node->is_of_type(LightLensNode::get_class_type())) {
         const LightLensNode *llnode = (const LightLensNode *)node;
-        if (shader_attrib->auto_shadow_on() && llnode->is_shadow_caster()) {
-          info._flags |= ShaderKey::LF_has_shadows;
+        if (shader_attrib->auto_shadow_on()) {
+          if (llnode->is_shadow_caster()) {
+            info._flags |= ShaderKey::LF_has_shadows;
+          }
+
+          // Make sure that the next time the shadows are toggled on this
+          // light, it triggers a state rehash.
+          llnode->mark_used_by_auto_shader();
         }
         if (llnode->has_specular_color()) {
           info._flags |= ShaderKey::LF_has_specular_color;
