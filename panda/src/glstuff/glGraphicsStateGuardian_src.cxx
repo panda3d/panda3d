@@ -1684,6 +1684,8 @@ reset() {
       }
     }
 
+    Shader::set_default_caps(_shader_caps);
+
   } else if (_supports_glsl) {
     // No, but we do support GLSL...
     _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;

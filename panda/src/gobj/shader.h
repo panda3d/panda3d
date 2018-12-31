@@ -527,6 +527,8 @@ public:
   void set_compiled(unsigned int format, const char *data, size_t length);
   bool get_compiled(unsigned int &format, std::string &binary) const;
 
+  static void set_default_caps(const ShaderCaps &caps);
+
 private:
 #ifdef HAVE_CG
   ShaderArgClass cg_parameter_class(CGparameter p);
