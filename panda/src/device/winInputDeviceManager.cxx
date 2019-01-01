@@ -82,6 +82,47 @@ WinInputDeviceManager() :
     device_cat.warning()
       << "Failed to register raw input devices.\n";
   }
+
+  // Do we have any XInput devices plugged in now?
+  int num_xinput = 0;
+  HANDLE xinput_handle;
+  RAWINPUTDEVICELIST devices[64];
+  UINT num_devices = 64;
+  num_devices = GetRawInputDeviceList(devices, &num_devices, sizeof(RAWINPUTDEVICELIST));
+  if (num_devices == (UINT)-1) {
+    return;
+  }
+  for (UINT i = 0; i < num_devices; ++i) {
+    if (devices[i].dwType != RIM_TYPEHID) {
+      continue;
+    }
+    HANDLE handle = devices[i].hDevice;
+    UINT size;
+    if (GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, nullptr, &size) != 0) {
+      continue;
+    }
+
+    char *path = (char *)alloca(size);
+    if (path == nullptr ||
+        GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, (void *)path, &size) < 0) {
+      continue;
+    }
+
+    if (strstr(path, "&IG_") != nullptr) {
+      xinput_handle = handle;
+      ++num_xinput;
+    }
+  }
+  if (num_xinput == 1) {
+    // There's only one XInput device, so we know which one it is.
+    on_input_device_arrival(xinput_handle);
+  } else if (num_xinput > 0) {
+    // Just poll all the XInput devices.
+    _xinput_device0.detect(this);
+    _xinput_device1.detect(this);
+    _xinput_device2.detect(this);
+    _xinput_device3.detect(this);
+  }
 }
 
 /**
