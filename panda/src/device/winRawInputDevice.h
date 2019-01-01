@@ -34,6 +34,7 @@ public:
   bool on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name);
   void on_removal();
   void on_input(PRAWINPUT input);
+  void process_report(PCHAR ptr, size_t size);
 
 private:
   virtual void do_poll();

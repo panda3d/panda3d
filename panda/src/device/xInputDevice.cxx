@@ -161,6 +161,10 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
     return false;
   }
 
+  if (get_state(_index, &state) != ERROR_SUCCESS) {
+    return false;
+  }
+
   // Extra check for VID/PID if we have it, just to be sure.
   if ((caps.VendorID != 0 && caps.VendorID != info.hid.dwVendorId) ||
       (caps.ProductID != 0 && caps.ProductID != info.hid.dwProductId)) {
@@ -205,6 +209,10 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
  */
 void XInputDevice::
 detect(InputDeviceManager *mgr) {
+  if (!_initialized) {
+    nassertv_always(init_xinput());
+  }
+
   bool connected = false;
 
   XINPUT_CAPABILITIES_EX caps = {0};
@@ -225,6 +233,10 @@ detect(InputDeviceManager *mgr) {
   _is_connected = connected;
 
   if (connected) {
+    _name = "XInput Device #";
+    _name += format_string(_index + 1);
+    _vendor_id = caps.VendorID;
+    _product_id = caps.ProductID;
     init_device(caps, state);
     mgr->add_device(this);
   } else {

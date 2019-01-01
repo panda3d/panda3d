@@ -277,7 +277,6 @@ on_input_device_arrival(HANDLE handle) {
   if (info.dwType == RIM_TYPEHID && strstr(path, "&IG_") != nullptr) {
     // This is a device we should handle via the XInput API.  Check which of
     // the four players was the lucky one.
-    WinRawInputDevice idev(this, path);
     if (_xinput_device0.check_arrival(info, inst, name, manufacturer)) {
       add_device(&_xinput_device0);
     }

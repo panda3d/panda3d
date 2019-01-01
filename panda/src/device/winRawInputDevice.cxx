@@ -604,13 +604,16 @@ on_removal() {
   _is_connected = false;
   _handle = nullptr;
   if (_preparsed != nullptr) {
-    delete _preparsed;
+    free(_preparsed);
     _preparsed = nullptr;
   }
   _indices.clear();
   _report_buttons.clear();
 }
 
+/**
+ * Called by InputDeviceManager when raw input is received for this device.
+ */
 void WinRawInputDevice::
 on_input(PRAWINPUT input) {
   nassertv(input != nullptr);
@@ -621,59 +624,68 @@ on_input(PRAWINPUT input) {
     return;
   }
 
-  PHIDP_DATA data = (PHIDP_DATA)alloca(sizeof(HIDP_DATA) * _max_data_count);
-  nassertv(data != nullptr);
-  ULONG count;
-
   LightMutexHolder holder(_lock);
 
   for (DWORD i = 0; i < input->data.hid.dwCount; ++i) {
-    // The first byte is the report identifier.  We need it to figure out
-    // which buttons are off, since each report only contains the buttons that
-    // are "on".
-    UCHAR report_id = ptr[0];
-    BitArray unset_buttons = _report_buttons[report_id];
+    process_report((PCHAR)ptr, input->data.hid.dwSizeHid);
+    ptr += input->data.hid.dwSizeHid;
+  }
+}
 
-    count = _max_data_count;
-    NTSTATUS status = _HidP_GetData(HidP_Input, data, &count, (PHIDP_PREPARSED_DATA)_preparsed, (PCHAR)ptr, input->data.hid.dwSizeHid);
-    if (status == HIDP_STATUS_SUCCESS) {
-      for (ULONG di = 0; di < count; ++di) {
-        if (data[di].DataIndex != _hat_data_index) {
-          const Index &idx = _indices[data[di].DataIndex];
-          if (idx._axis >= 0) {
-            if (idx._signed) {
-              axis_changed(idx._axis, (SHORT)data[di].RawValue);
-            } else {
-              axis_changed(idx._axis, data[di].RawValue);
-            }
+/**
+ * Processes a single HID report.  Assumes the lock is held.
+ */
+void WinRawInputDevice::
+process_report(PCHAR ptr, size_t size) {
+  // The first byte is the report identifier.  We need it to figure out which
+  // buttons are off, since each report only contains the "on" buttons.
+  UCHAR report_id = ptr[0];
+  BitArray unset_buttons;
+
+  if (report_id < _report_buttons.size()) {
+    unset_buttons = _report_buttons[report_id];
+  }
+
+  PHIDP_DATA data = (PHIDP_DATA)alloca(sizeof(HIDP_DATA) * _max_data_count);
+  nassertv(data != nullptr);
+
+  ULONG count = _max_data_count;
+  NTSTATUS status = _HidP_GetData(HidP_Input, data, &count, (PHIDP_PREPARSED_DATA)_preparsed, ptr, size);
+  if (status == HIDP_STATUS_SUCCESS) {
+    for (ULONG di = 0; di < count; ++di) {
+      if (data[di].DataIndex != _hat_data_index) {
+        const Index &idx = _indices[data[di].DataIndex];
+        if (idx._axis >= 0) {
+          if (idx._signed) {
+            axis_changed(idx._axis, (SHORT)data[di].RawValue);
+          } else {
+            axis_changed(idx._axis, data[di].RawValue);
           }
-          if (idx._button >= 0) {
-            unset_buttons.clear_bit(idx._button);
-            button_changed(idx._button, (data[di].On != FALSE));
-          }
-        } else {
-          int value = (int)data[di].RawValue - _hat_data_minimum;
-          button_changed(_hat_left_button + 0, value >= 5 && value <= 7); // left
-          button_changed(_hat_left_button + 1, value >= 1 && value <= 3); // right
-          button_changed(_hat_left_button + 2, value >= 3 && value <= 5); // down
-          button_changed(_hat_left_button + 3, value == 7 || value == 0 || value == 1); // up
         }
+        if (idx._button >= 0) {
+          unset_buttons.clear_bit(idx._button);
+          button_changed(idx._button, (data[di].On != FALSE));
+        }
+      } else {
+        int value = (int)data[di].RawValue - _hat_data_minimum;
+        button_changed(_hat_left_button + 0, value >= 5 && value <= 7); // left
+        button_changed(_hat_left_button + 1, value >= 1 && value <= 3); // right
+        button_changed(_hat_left_button + 2, value >= 3 && value <= 5); // down
+        button_changed(_hat_left_button + 3, value == 7 || value == 0 || value == 1); // up
       }
-
-      // Now unset the buttons in this report that aren't pressed.
-      int button_index = unset_buttons.get_lowest_on_bit();
-      while (button_index >= 0) {
-        button_changed(button_index, false);
-        unset_buttons.clear_bit(button_index);
-        button_index = unset_buttons.get_lowest_on_bit();
-      }
-    } else if (device_cat.is_spam()) {
-      device_cat.spam()
-        << "Failed to get data from raw device " << _path
-        << " (error 0x" << std::hex << (status & 0xffffffffu) << std::dec << ")\n";
     }
 
-    ptr += input->data.hid.dwSizeHid;
+    // Now unset the buttons in this report that aren't pressed.
+    int button_index = unset_buttons.get_lowest_on_bit();
+    while (button_index >= 0) {
+      button_changed(button_index, false);
+      unset_buttons.clear_bit(button_index);
+      button_index = unset_buttons.get_lowest_on_bit();
+    }
+  } else if (device_cat.is_spam()) {
+    device_cat.spam()
+      << "Failed to get data from raw device " << _path
+      << " (error 0x" << std::hex << (status & 0xffffffffu) << std::dec << ")\n";
   }
 }
 
