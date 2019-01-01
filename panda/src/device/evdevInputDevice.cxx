@@ -59,6 +59,8 @@ enum QuirkBits {
   QB_rudder_from_throttle = 16,
 
   // Special handling for Steam Controller, which has many peculiarities.
+  // We only connect it if it is reporting any events, because when Steam is
+  // running, the Steam controller is muted in favour of a dummy Xbox device.
   QB_steam_controller = 32,
 };
 
@@ -119,7 +121,8 @@ EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _dpad_left_button(-1),
   _dpad_up_button(-1),
   _ltrigger_code(-1),
-  _rtrigger_code(-1) {
+  _rtrigger_code(-1),
+  _quirks(0) {
 
   char path[64];
   sprintf(path, "/dev/input/event%zd", index);
@@ -218,6 +221,26 @@ do_set_vibration(double strong, double weak) {
 }
 
 /**
+ * Special case for Steam controllers; called if a Steam virtual device has
+ * just been disconnected, and this is currently an inactive Steam Controller
+ * previously blocked by Steam, waiting to be reactivated.
+ * Returns true if the device has just been reconnected.
+ */
+bool EvdevInputDevice::
+reactivate_steam_controller() {
+  LightMutexHolder holder(_lock);
+  if (!_is_connected && (_quirks & QB_steam_controller) != 0) {
+    // Just check to make sure the device is still readable.
+    process_events();
+    if (_fd != -1) {
+      _is_connected = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Polls the input device for new activity, to ensure it contains the latest
  * events.  This will only have any effect for some types of input devices;
  * others may be updated automatically, and this method will be a no-op.
@@ -228,7 +251,7 @@ do_poll() {
     while (process_events()) {}
 
     // If we got events, we are obviously connected.  Mark us so.
-    if (!_is_connected) {
+    if (!_is_connected && _fd != -1) {
       _is_connected = true;
       if (_manager != nullptr) {
         _manager->add_device(this);
@@ -310,8 +333,19 @@ init_device() {
   if (quirks & QB_steam_controller) {
     if (test_bit(BTN_GAMEPAD, keys)) {
       _device_class = DeviceClass::gamepad;
+
+      // If we have a virtual gamepad on the system, then careful: if Steam is
+      // running, it may disable its own gamepad in favour of the virtual
+      // device it registers.  If the virtual device is present, we will only
+      // register this gamepad as connected when it registers input.
+      if (_manager->has_virtual_device(0x28de, 0x11ff)) {
+        device_cat.debug()
+          << "Detected Steam virtual gamepad, disabling Steam Controller\n";
+        quirks |= QB_connect_if_nonzero;
+      }
     }
   }
+  _quirks = quirks;
 
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {

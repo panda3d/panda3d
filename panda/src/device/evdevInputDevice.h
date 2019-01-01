@@ -30,6 +30,8 @@ public:
   EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index);
   virtual ~EvdevInputDevice();
 
+  bool reactivate_steam_controller();
+
 private:
   virtual void do_set_vibration(double strong, double weak);
   virtual void do_poll();
@@ -41,6 +43,7 @@ private:
   LinuxInputDeviceManager *_manager;
 
   int _fd;
+  int _quirks;
   size_t _index;
 
   bool _can_write;
@@ -77,6 +80,10 @@ public:
     register_type(_type_handle, "EvdevInputDevice",
                   InputDevice::get_class_type());
   }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;
