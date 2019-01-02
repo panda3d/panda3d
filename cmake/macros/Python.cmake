@@ -42,7 +42,6 @@ function(add_python_target target)
   endforeach(arg)
 
   string(REGEX REPLACE "\\.[^.]+$" "" namespace "${target}")
-  string(REPLACE "." "_" underscore_namespace "${namespace}")
   string(REPLACE "." "/" slash_namespace "${namespace}")
 
   add_library(${target} ${MODULE_TYPE} ${sources})
@@ -61,13 +60,13 @@ function(add_python_target target)
   else()
     set_target_properties(${target} PROPERTIES
       OUTPUT_NAME "${basename}"
-      PREFIX "libpython_${underscore_namespace}_")
+      PREFIX "libpy.${namespace}.")
 
     install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION lib)
   endif()
 
   set(keywords OVERWRITE ARCH)
-  if(NOT underscore_namespace MATCHES ".*_.*")
+  if(NOT slash_namespace MATCHES ".*/.*")
     list(APPEND keywords ROOT)
   endif()
   ensure_python_init("${PROJECT_BINARY_DIR}/${slash_namespace}" ${keywords})
