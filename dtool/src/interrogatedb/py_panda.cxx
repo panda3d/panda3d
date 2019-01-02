@@ -289,7 +289,7 @@ PyObject *_Dtool_Return(PyObject *value) {
 /**
  * This function converts an int value to the appropriate enum instance.
  */
-PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObject *kwds) {
   PyObject *arg;
   if (!Dtool_ExtractArg(&arg, args, kwds, "value")) {
     return PyErr_Format(PyExc_TypeError,
