@@ -77,6 +77,13 @@ if(WIN32)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+# CMake will often pass -rdynamic when linking executables as a convenience for
+# projects that might forget when to use ENABLE_EXPORTS.  This is preposterous,
+# since it prevents the linker from removing symbols unneeded by the executable
+# and stops us from identifying cases where ENABLE_EXPORTS is needed.
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
 # As long as we're figuring out compiler flags, figure out the flags for
 # turning C++ exception support on and off
 if(MSVC)
