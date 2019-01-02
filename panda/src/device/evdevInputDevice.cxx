@@ -57,6 +57,11 @@ enum QuirkBits {
 
   // ABS_THROTTLE maps to rudder
   QB_rudder_from_throttle = 16,
+
+  // Special handling for Steam Controller, which has many peculiarities.
+  // We only connect it if it is reporting any events, because when Steam is
+  // running, the Steam controller is muted in favour of a dummy Xbox device.
+  QB_steam_controller = 32,
 };
 
 static const struct DeviceMapping {
@@ -71,8 +76,14 @@ static const struct DeviceMapping {
   {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle | QB_rudder_from_throttle},
   // Xbox 360 Wireless Controller
   {0x045e, 0x0719, InputDevice::DeviceClass::gamepad, QB_connect_if_nonzero},
+  // Steam Controller (wired)
+  {0x28de, 0x1102, InputDevice::DeviceClass::unknown, QB_steam_controller},
+  // Steam Controller (wireless)
+  {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
+  // Trust GXT 24
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
@@ -110,7 +121,8 @@ EvdevInputDevice(LinuxInputDeviceManager *manager, size_t index) :
   _dpad_left_button(-1),
   _dpad_up_button(-1),
   _ltrigger_code(-1),
-  _rtrigger_code(-1) {
+  _rtrigger_code(-1),
+  _quirks(0) {
 
   char path[64];
   sprintf(path, "/dev/input/event%zd", index);
@@ -209,6 +221,26 @@ do_set_vibration(double strong, double weak) {
 }
 
 /**
+ * Special case for Steam controllers; called if a Steam virtual device has
+ * just been disconnected, and this is currently an inactive Steam Controller
+ * previously blocked by Steam, waiting to be reactivated.
+ * Returns true if the device has just been reconnected.
+ */
+bool EvdevInputDevice::
+reactivate_steam_controller() {
+  LightMutexHolder holder(_lock);
+  if (!_is_connected && (_quirks & QB_steam_controller) != 0) {
+    // Just check to make sure the device is still readable.
+    process_events();
+    if (_fd != -1) {
+      _is_connected = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Polls the input device for new activity, to ensure it contains the latest
  * events.  This will only have any effect for some types of input devices;
  * others may be updated automatically, and this method will be a no-op.
@@ -219,7 +251,7 @@ do_poll() {
     while (process_events()) {}
 
     // If we got events, we are obviously connected.  Mark us so.
-    if (!_is_connected) {
+    if (!_is_connected && _fd != -1) {
       _is_connected = true;
       if (_manager != nullptr) {
         _manager->add_device(this);
@@ -296,6 +328,24 @@ init_device() {
     }
     ++mapping;
   }
+
+  // The Steam Controller reports as multiple devices, one of which a gamepad.
+  if (quirks & QB_steam_controller) {
+    if (test_bit(BTN_GAMEPAD, keys)) {
+      _device_class = DeviceClass::gamepad;
+
+      // If we have a virtual gamepad on the system, then careful: if Steam is
+      // running, it may disable its own gamepad in favour of the virtual
+      // device it registers.  If the virtual device is present, we will only
+      // register this gamepad as connected when it registers input.
+      if (_manager->has_virtual_device(0x28de, 0x11ff)) {
+        device_cat.debug()
+          << "Detected Steam virtual gamepad, disabling Steam Controller\n";
+        quirks |= QB_connect_if_nonzero;
+      }
+    }
+  }
+  _quirks = quirks;
 
   // Try to detect which type of device we have here
   if (_device_class == DeviceClass::unknown) {
@@ -376,7 +426,7 @@ init_device() {
     for (int i = 0; i <= KEY_MAX; ++i) {
       if (test_bit(i, keys)) {
         ButtonState button;
-        button.handle = map_button(i, _device_class);
+        button.handle = map_button(i, _device_class, quirks);
 
         int button_index = (int)_buttons.size();
         if (button.handle == ButtonHandle::none()) {
@@ -523,6 +573,18 @@ init_device() {
               _buttons.push_back(ButtonState(GamepadButton::hat_up()));
               _buttons.push_back(ButtonState(GamepadButton::hat_down()));
             }
+          }
+          break;
+        case ABS_HAT2X:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::right_trigger;
+            have_analog_triggers = true;
+          }
+          break;
+        case ABS_HAT2Y:
+          if (quirks & QB_steam_controller) {
+            axis = InputDevice::Axis::left_trigger;
+            have_analog_triggers = true;
           }
           break;
         }
@@ -738,7 +800,7 @@ process_events() {
  * Static function to map an evdev code to a ButtonHandle.
  */
 ButtonHandle EvdevInputDevice::
-map_button(int code, DeviceClass device_class) {
+map_button(int code, DeviceClass device_class, int quirks) {
   if (code >= 0 && code < 0x80) {
     // See linux/input.h for the source of this mapping.
     static const ButtonHandle keyboard_map[] = {
@@ -895,7 +957,11 @@ map_button(int code, DeviceClass device_class) {
     }
 
   } else if ((code & 0xfff0) == BTN_JOYSTICK) {
-    if (device_class == DeviceClass::gamepad) {
+    if (quirks & QB_steam_controller) {
+      // BTN_THUMB and BTN_THUMB2 detect touching the touchpads.
+      return ButtonHandle::none();
+
+    } else if (device_class == DeviceClass::gamepad) {
       // Based on "Jess Tech Colour Rumble Pad"
       static const ButtonHandle mapping[] = {
         GamepadButton::face_x(),
@@ -988,6 +1054,13 @@ map_button(int code, DeviceClass device_class) {
   case BTN_DPAD_DOWN:
   case BTN_TRIGGER_HAPPY4:
     return GamepadButton::dpad_down();
+
+  // The next two are for the Steam Controller's grip buttons.
+  case BTN_GEAR_DOWN:
+    return GamepadButton::lgrip();
+
+  case BTN_GEAR_UP:
+    return GamepadButton::rgrip();
 
   default:
     return ButtonHandle::none();

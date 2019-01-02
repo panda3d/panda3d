@@ -808,9 +808,12 @@ if (COMPILER == "MSVC"):
                 path = GetThirdpartyDir() + "vorbis/lib/{0}.lib".format(lib)
             LibName("VORBIS", path)
     if (PkgSkip("OPUS")==0):
-        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libogg_static.lib")
-        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libopus_static.lib")
-        LibName("OPUS", GetThirdpartyDir() + "opus/lib/libopusfile_static.lib")
+        IncDirectory("OPUS", GetThirdpartyDir() + "opus/include/opus")
+        for lib in ('ogg', 'opus', 'opusfile'):
+            path = GetThirdpartyDir() + "opus/lib/lib{0}_static.lib".format(lib)
+            if not os.path.isfile(path):
+                path = GetThirdpartyDir() + "opus/lib/{0}.lib".format(lib)
+            LibName("OPUS", path)
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')

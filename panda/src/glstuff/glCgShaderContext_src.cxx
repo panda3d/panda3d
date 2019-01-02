@@ -157,6 +157,16 @@ CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderConte
           break;
         case 2:  // gl_Normal
           loc = CA_normal;
+          if (cgGetParameterColumns(p) == 4) {
+            // Don't declare vtx_normal with 4 coordinates; it results in it
+            // reading the w coordinate from random memory.
+            GLCAT.error()
+              << "Cg varying " << cgGetParameterName(p);
+            if (cgGetParameterSemantic(p)) {
+              GLCAT.error(false) << " : " << cgGetParameterSemantic(p);
+            }
+            GLCAT.error(false) << " should be declared as float4, not float3!\n";
+          }
           break;
         case 3:  // gl_Color
           loc = CA_color;

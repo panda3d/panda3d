@@ -1272,6 +1272,14 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
                   XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char *)&pid, 1);
 
+  // Disable compositing effects in fullscreen mode.
+  if (properties.has_fullscreen()) {
+    int32_t compositor = properties.get_fullscreen() ? 1 : 0;
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_bypass_compositor,
+                    XA_CARDINAL, 32, PropModeReplace,
+                    (unsigned char *)&compositor, 1);
+  }
+
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_window_type,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)type_data, next_type_data);

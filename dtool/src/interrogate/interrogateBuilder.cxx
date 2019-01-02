@@ -656,13 +656,13 @@ get_preferred_name(CPPType *type) {
  */
 string InterrogateBuilder::
 hash_string(const string &name, int shift_offset) {
-  int hash = 0;
+  unsigned int hash = 0;
 
-  int shift = 0;
+  unsigned int shift = 0;
   string::const_iterator ni;
   for (ni = name.begin(); ni != name.end(); ++ni) {
-    int c = (int)(unsigned char)(*ni);
-    int shifted_c = (c << shift) & 0xffffff;
+    unsigned int c = (unsigned char)*ni;
+    unsigned int shifted_c = (c << shift) & 0xffffff;
     if (shift > 16) {
       // We actually want a circular shift, not an arithmetic shift.
       shifted_c |= ((c >> (24 - shift)) & 0xff) ;
@@ -675,10 +675,9 @@ hash_string(const string &name, int shift_offset) {
   // bits back at the bottom, to scramble up the bits a bit.  This helps
   // reduce hash conflicts from names that are similar to each other, by
   // separating adjacent hash codes.
-  int prime = 4999;
-  int low_order = (hash * prime) & 0xffffff;
-  int high_order = (int)((double)hash * (double)prime / (double)(1 << 24));
-  hash = low_order ^ high_order;
+  const unsigned int prime = 4999;
+  unsigned long long product = (unsigned long long)hash * prime;
+  hash = (product ^ (product >> 24)) & 0xffffff;
 
   // Also add in the additional_number, times some prime factor.  hash = (hash
   // + additional_number * 1657) & 0xffffff;
@@ -690,10 +689,9 @@ hash_string(const string &name, int shift_offset) {
   // deal, since we have to resolve hash conflicts anyway.
 
   string result;
-  int extract_h = hash;
   for (int i = 0; i < 4; i++) {
-    int value = (extract_h & 0x3f);
-    extract_h >>= 6;
+    unsigned int value = (hash & 0x3f);
+    hash >>= 6;
     if (value < 26) {
       result += (char)('A' + value);
 

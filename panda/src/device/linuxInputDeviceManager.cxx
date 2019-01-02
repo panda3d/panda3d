@@ -201,6 +201,55 @@ consider_add_js_device(size_t js_index) {
 }
 
 /**
+ * Scans the "virtual" input devices on the system to check whether one with
+ * the given vendor and product ID exists.
+ */
+bool LinuxInputDeviceManager::
+has_virtual_device(unsigned short vendor_id, unsigned short product_id) const {
+  char path[294];
+  sprintf(path, "/sys/devices/virtual/input");
+
+  DIR *dir = opendir(path);
+  if (dir != nullptr) {
+    dirent *entry = readdir(dir);
+    while (entry != nullptr) {
+      if (entry->d_name[0] != 'i') {
+        entry = readdir(dir);
+        continue;
+      }
+      FILE *f;
+
+      char vendor[5] = {0};
+      sprintf(path, "/sys/devices/virtual/input/%s/id/vendor", entry->d_name);
+      f = fopen(path, "r");
+      if (f) {
+        fgets(vendor, sizeof(vendor), f);
+        fclose(f);
+      }
+
+      char product[5] = {0};
+      sprintf(path, "/sys/devices/virtual/input/%s/id/product", entry->d_name);
+      f = fopen(path, "r");
+      if (f) {
+        fgets(product, sizeof(product), f);
+        fclose(f);
+      }
+
+      if (vendor[0] && std::stoi(std::string(vendor), nullptr, 16) == (int)vendor_id &&
+          product[0] && std::stoi(std::string(product), nullptr, 16) == (int)product_id) {
+        closedir(dir);
+        return true;
+      }
+
+      entry = readdir(dir);
+    }
+    closedir(dir);
+  }
+
+  return false;
+}
+
+/**
  * Polls the system to see if there are any new devices.  In some
  * implementations this is a no-op.
  */
@@ -243,6 +292,7 @@ update() {
   LightMutexHolder holder(_lock);
 
   // Iterate over the events in the buffer.
+  bool removed_steam_virtual_device = false;
   char *ptr = buffer;
   char *end = buffer + avail;
   while (ptr < end) {
@@ -270,6 +320,12 @@ update() {
               device_cat.debug()
                 << "Removed input device " << *device << "\n";
             }
+
+            // Check for Steam virtual device; see comment below.
+            if (device->get_vendor_id() == 0x28de &&
+                device->get_product_id() == 0x11ff) {
+              removed_steam_virtual_device = true;
+            }
           }
         }
       }
@@ -289,6 +345,25 @@ update() {
     }
 
     ptr += sizeof(inotify_event) + event->len;
+  }
+
+  // If the Steam virtual device was just disconnected, the user may have just
+  // shut down Steam, and we need to reactivate the real Steam Controller
+  // device that was previously suppressed by Steam.
+  if (removed_steam_virtual_device) {
+    inactive_devices = _inactive_devices;
+
+    for (size_t i = 0; i < inactive_devices.size(); ++i) {
+      InputDevice *device = inactive_devices[i];
+      if (device != nullptr && device->is_of_type(EvdevInputDevice::get_class_type())) {
+        PT(EvdevInputDevice) evdev_device = (EvdevInputDevice *)device;
+        if (evdev_device->reactivate_steam_controller()) {
+          _inactive_devices.remove_device(device);
+          _connected_devices.add_device(device);
+          throw_event("connect-device", device);
+        }
+      }
+    }
   }
 }
 

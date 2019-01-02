@@ -49,12 +49,12 @@ struct Dtool_GeneratorWrapper {
   iternextfunc _iternext_func;
 };
 
-Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name);
-Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, const char *name);
-Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name);
-Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char *name);
-PyObject *Dtool_NewGenerator(PyObject *self, iternextfunc func);
-PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
+EXPCL_PYPANDA Dtool_SequenceWrapper *Dtool_NewSequenceWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MutableSequenceWrapper *Dtool_NewMutableSequenceWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MappingWrapper *Dtool_NewMappingWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA Dtool_MappingWrapper *Dtool_NewMutableMappingWrapper(PyObject *self, const char *name);
+EXPCL_PYPANDA PyObject *Dtool_NewGenerator(PyObject *self, iternextfunc func);
+EXPCL_PYPANDA PyObject *Dtool_NewStaticProperty(PyTypeObject *obj, const PyGetSetDef *getset);
 
 #endif  // HAVE_PYTHON
 
