@@ -540,6 +540,7 @@ class build_apps(setuptools.Command):
             'pandaegg',
             'p3ffmpeg',
             'p3ptloader',
+            'p3assimp',
         ]
         def parse_prc(prcstr, warn_on_missing_plugin):
             out = []
