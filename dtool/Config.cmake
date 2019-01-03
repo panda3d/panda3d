@@ -342,10 +342,6 @@ if 16-byte alignment must be performed on top of it, wasting up to
 is required and not provided by the system malloc library, then an
 alternative malloc system (above) will be used instead." OFF)
 
-option(ALTERNATIVE_MALLOC
-  "Do you want to use one of the alternative malloc implementations?"
-  OFF)
-
 option(USE_DELETED_CHAIN
   "Define this true to use the DELETED_CHAIN macros, which support
 fast re-use of existing allocated blocks, minimizing the low-level
@@ -355,7 +351,7 @@ suspect a bug in Panda's memory management code." ON)
 
 mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
   SUPPORT_IMMEDIATE_MODE USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
-  MEMORY_HOOK_DO_ALIGN ALTERNATIVE_MALLOC USE_DELETED_CHAIN)
+  MEMORY_HOOK_DO_ALIGN USE_DELETED_CHAIN)
 
 
 #
