@@ -335,7 +335,10 @@ function(export_packages filename)
         get_target_property(type "${head}" TYPE)
         if(NOT type STREQUAL "INTERFACE_LIBRARY")
           get_target_property(imported_location "${head}" IMPORTED_LOCATION)
-          if(imported_location)
+          get_target_property(imported_implib "${head}" IMPORTED_IMPLIB)
+          if(imported_implib)
+            list(APPEND libraries ${imported_implib})
+          elseif(imported_location)
             list(APPEND libraries ${imported_location})
           endif()
 
@@ -343,6 +346,13 @@ function(export_packages filename)
           if(configs AND NOT imported_location)
             foreach(config ${configs})
               get_target_property(imported_location "${head}" IMPORTED_LOCATION_${config})
+
+              # Prefer IMPORTED_IMPLIB where present
+              get_target_property(imported_implib "${head}" IMPORTED_IMPLIB_${config})
+              if(imported_implib)
+                set(imported_location "${imported_implib}")
+              endif()
+
               if(imported_location)
                 if(configs MATCHES ".*;.*")
                   set(_bling "$<1:$>") # genex-escaped $
@@ -353,7 +363,16 @@ function(export_packages filename)
               endif()
             endforeach(config)
           endif()
+
+        else()
+          # This is an INTERFACE_LIBRARY
+          get_target_property(imported_libname "${head}" IMPORTED_LIBNAME)
+          if(imported_libname)
+            list(APPEND libraries ${imported_libname})
+          endif()
+
         endif()
+
       elseif("${head}" MATCHES "\\$<TARGET_NAME:\([^>]+\)>")
         string(REGEX REPLACE ".*\\$<TARGET_NAME:\([^>]+\)>.*" "\\1" match "${head}")
         list(APPEND stack "${match}")
