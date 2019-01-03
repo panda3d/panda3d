@@ -364,8 +364,9 @@ function(export_packages filename)
             endforeach(config)
           endif()
 
-        else()
-          # This is an INTERFACE_LIBRARY
+        elseif(CMAKE_VERSION VERSION_GREATER "3.8")
+          # This is an INTERFACE_LIBRARY, and CMake is new enough to support
+          # IMPORTED_IMPLIB
           get_target_property(imported_libname "${head}" IMPORTED_LIBNAME)
           if(imported_libname)
             list(APPEND libraries ${imported_libname})
