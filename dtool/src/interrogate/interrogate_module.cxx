@@ -296,11 +296,9 @@ int write_python_table_native(std::ostream &out) {
   out.put('\n');
 
   out << "#if PY_MAJOR_VERSION >= 3\n"
-      << "PyMODINIT_FUNC PyInit_" << library_name << "();\n"
-      << "#endif\n";
-
-  out << "#if PY_MAJOR_VERSION < 3\n"
-      << "PyMODINIT_FUNC init" << library_name << "();\n"
+      << "EXPORT_CLASS PyObject *PyInit_" << library_name << "();\n"
+      << "#else\n"
+      << "EXPORT_CLASS void init" << library_name << "();\n"
       << "#endif\n";
 
   out << "\n"
