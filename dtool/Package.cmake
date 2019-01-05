@@ -474,13 +474,20 @@ package_status(EGL "EGL")
 #
 
 # OpenCV
-find_package(OpenCV QUIET COMPONENTS core highgui)
+find_package(OpenCV QUIET COMPONENTS core highgui OPTIONAL_COMPONENTS videoio)
 
 package_option(OPENCV
   "Enable support for OpenCV.  This will be built into the 'vision' package."
   FOUND_AS OpenCV)
 
 package_status(OPENCV "OpenCV")
+
+if(OpenCV_VERSION_MAJOR GREATER_EQUAL 3)
+  set(OPENCV_VER_3 ON)
+elseif(OpenCV_VERSION_MAJOR GREATER_EQUAL 2 AND
+       OpenCV_VERSION_MINOR GREATER_EQUAL 3)
+  set(OPENCV_VER_23 ON)
+endif()
 
 # ARToolKit
 find_package(ARToolKit QUIET)

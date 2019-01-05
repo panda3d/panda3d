@@ -33,6 +33,12 @@ target_link_libraries(p3vision panda
 set_target_properties(p3vision PROPERTIES CXX_EXCEPTIONS ON)
 target_interrogate(p3vision ALL)
 
+if(OPENCV_VER_3)
+  set_target_properties(p3vision PROPERTIES COMPILE_DEFINITIONS "OPENCV_VER_3")
+elseif(OPENCV_VER_23)
+  set_target_properties(p3vision PROPERTIES COMPILE_DEFINITIONS "OPENCV_VER_23")
+endif()
+
 install(TARGETS p3vision
   EXPORT Vision COMPONENT Vision
   DESTINATION lib

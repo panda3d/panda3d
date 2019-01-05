@@ -108,7 +108,6 @@
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 #cmakedefine HAVE_OPENCV
-#cmakedefine OPENCV_VER_23
 
 /* Define if we have FFMPEG installed and want to build for FFMPEG.  */
 #cmakedefine HAVE_FFMPEG
