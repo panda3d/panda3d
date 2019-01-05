@@ -13,10 +13,11 @@
 
 #include "stdafx.h"
 
-#include "windows.h"
 #include "PPLogger.h"
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
+
+#include <windows.h>
 
 std::ofstream PPLogger::m_logfile;
 bool PPLogger::m_isOpen = false;

@@ -368,7 +368,8 @@ get_value(int row, LMatrix4d &mat) const {
 
       default:
         // One of the child tables had an invalid name.
-        nassertv(false);
+        nassert_raise("invalid name in child table");
+        return;
       }
     }
   }

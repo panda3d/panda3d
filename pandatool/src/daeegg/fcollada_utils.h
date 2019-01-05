@@ -18,7 +18,7 @@
 #define FCOLLADA_UTILS_H
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
+#include <FCollada.h>
 
 // Useful conversion stuff
 inline LVecBase3d TO_VEC3(FMVector3 v) {

@@ -20,11 +20,11 @@
 #include "ffmpegVideo.h"
 #include "bamReader.h"
 extern "C" {
-  #include "libavcodec/avcodec.h"
-  #include "libavformat/avformat.h"
-  #include "libavutil/pixdesc.h"
+  #include <libavcodec/avcodec.h>
+  #include <libavformat/avformat.h>
+  #include <libavutil/pixdesc.h>
 #ifdef HAVE_SWSCALE
-  #include "libswscale/swscale.h"
+  #include <libswscale/swscale.h>
 #endif
 }
 
@@ -79,8 +79,6 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  ReMutexHolder av_holder(_av_lock);
-
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 45, 101)
   _frame = av_frame_alloc();
   _frame_out = av_frame_alloc();
@@ -108,6 +106,8 @@ init_from(FfmpegVideo *source) {
   _current_frame = -1;
   _eof_known = false;
   _eof_frame = 0;
+
+  ReMutexHolder av_holder(_av_lock);
 
   // Check if we got an alpha format.  Please note that some video codecs
   // (eg. libvpx) change the pix_fmt after decoding the first frame, which is
@@ -595,7 +595,14 @@ close_stream() {
   // Hold the global lock while we free avcodec objects.
   ReMutexHolder av_holder(_av_lock);
 
-  if ((_video_ctx)&&(_video_ctx->codec)) {
+  if (_video_ctx && _video_ctx->codec) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+    // We need to drain the codec to prevent a memory leak.
+    avcodec_send_packet(_video_ctx, nullptr);
+    while (avcodec_receive_frame(_video_ctx, _frame) == 0) {}
+    avcodec_flush_buffers(_video_ctx);
+#endif
+
     avcodec_close(_video_ctx);
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55, 52, 0)
     avcodec_free_context(&_video_ctx);

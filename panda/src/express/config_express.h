@@ -48,16 +48,11 @@ extern ConfigVariableInt patchfile_increment_size;
 extern ConfigVariableInt patchfile_buffer_size;
 extern ConfigVariableInt patchfile_zone_size;
 
-extern ConfigVariableBool keep_temporary_files;
+extern EXPCL_PANDA_EXPRESS ConfigVariableBool keep_temporary_files;
 extern ConfigVariableBool multifile_always_binary;
 
 extern EXPCL_PANDA_EXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDA_EXPRESS ConfigVariableDouble collect_tcp_interval;
-
-// Expose the Config variable for Python access.
-BEGIN_PUBLISH
-EXPCL_PANDA_EXPRESS DConfig &get_config_express();
-END_PUBLISH
 
 extern EXPCL_PANDA_EXPRESS void init_libexpress();
 

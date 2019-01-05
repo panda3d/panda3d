@@ -84,16 +84,12 @@ has_changed(int, double, int, double) {
  */
 void AnimChannelScalarDynamic::
 get_value(int, PN_stdfloat &value) {
-  if (_value_node != nullptr) {
-    value = _value->get_pos()[0];
-
-  } else {
-    value = _float_value;
-  }
+  value = get_value();
 }
 
 /**
- * Explicitly sets the value.
+ * Explicitly sets the value.  This will remove any node assigned via
+ * set_value_node().
  */
 void AnimChannelScalarDynamic::
 set_value(PN_stdfloat value) {
@@ -104,7 +100,8 @@ set_value(PN_stdfloat value) {
 
 /**
  * Specifies a node whose transform will be queried each frame to implicitly
- * specify the transform of this joint.
+ * specify the transform of this joint.  This will override the values set by
+ * set_value().
  */
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {

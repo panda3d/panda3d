@@ -25,11 +25,13 @@
 using std::min;
 using std::max;
 
-// MAX includes
+// local includes
 #include "maxEggLoader.h"
-#include "Max.h"
 #include "maxImportRes.h"
-#include "istdplug.h"
+
+// MAX includes
+#include <Max.h>
+#include <istdplug.h>
 
 // panda includes.
 #include "notifyCategoryProxy.h"

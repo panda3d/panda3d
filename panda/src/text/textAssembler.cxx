@@ -2536,7 +2536,7 @@ get_primitive(TypeHandle prim_type) {
     return _points;
   }
 
-  nassertr(false, nullptr);
+  nassert_raise("unexpected primitive type");
   return nullptr;
 }
 

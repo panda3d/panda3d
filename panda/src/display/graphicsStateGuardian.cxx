@@ -92,7 +92,6 @@ PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive:Draw");
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
-PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
 
@@ -753,7 +752,7 @@ issue_timer_query(int pstats_index) {
  */
 void GraphicsStateGuardian::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
-  nassertv(false /* Compute shaders not supported by GSG */);
+  nassert_raise("Compute shaders not supported by GSG");
 }
 
 /**
@@ -1265,7 +1264,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return &(_scene_setup->get_camera_transform()->get_mat());
   }
   case Shader::SMO_model_to_view: {
-    return &(_inv_cs_transform->compose(_internal_transform)->get_mat());
+    t = _inv_cs_transform->compose(_internal_transform)->get_mat();
+    return &t;
   }
   case Shader::SMO_model_to_apiview: {
     return &(_internal_transform->get_mat());

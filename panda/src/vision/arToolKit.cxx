@@ -22,7 +22,7 @@
 #include "compose_matrix.h"
 #include "config_vision.h"
 extern "C" {
-  #include "AR/ar.h"
+  #include <AR/ar.h>
 };
 
 ARToolKit::PatternTable ARToolKit::_pattern_table;

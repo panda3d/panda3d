@@ -31,6 +31,7 @@
 #include "datagram.h"
 #include "doubleBitMask.h"
 #include "factoryParam.h"
+#include "gamepadButton.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
 #include "paramValue.h"
@@ -238,6 +239,7 @@ init_libputil() {
   WritableConfigurable::init_type();
   WritableParam::init_type();
 
+  GamepadButton::init_gamepad_buttons();
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
 

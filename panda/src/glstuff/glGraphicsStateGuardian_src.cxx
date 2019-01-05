@@ -68,7 +68,7 @@
 #include "displayInformation.h"
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
-#include "Cg/cgGL.h"
+#include <Cg/cgGL.h>
 #endif
 
 #include <algorithm>
@@ -91,6 +91,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_vertex_array_update_pcollector("Draw
 PStatCollector CLP(GraphicsStateGuardian)::_texture_update_pcollector("Draw:Update texture");
 PStatCollector CLP(GraphicsStateGuardian)::_fbo_bind_pcollector("Draw:Bind FBO");
 PStatCollector CLP(GraphicsStateGuardian)::_check_error_pcollector("Draw:Check errors");
+PStatCollector CLP(GraphicsStateGuardian)::_check_residency_pcollector("*:PStats:Check residency");
 
 // The following noop functions are assigned to the corresponding glext
 // function pointers in the class, in case the functions are not defined by
@@ -616,6 +617,22 @@ reset() {
   // Print out a list of all extensions.
   report_extensions();
 
+  // Check if we are running under a profiling tool such as apitrace.
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (has_extension("GL_EXT_debug_marker")) {
+    _glPushGroupMarker = (PFNGLPUSHGROUPMARKEREXTPROC)
+      get_extension_func("glPushGroupMarkerEXT");
+    _glPopGroupMarker = (PFNGLPOPGROUPMARKEREXTPROC)
+      get_extension_func("glPopGroupMarkerEXT");
+
+    // Start a group right away.
+    push_group_marker("reset");
+  } else {
+    _glPushGroupMarker = nullptr;
+    _glPopGroupMarker = nullptr;
+  }
+#endif
+
   // Initialize OpenGL debugging output first, if enabled and supported.
   _supports_debug = false;
   _use_object_labels = false;
@@ -752,6 +769,28 @@ reset() {
     // transforms on the generated texture coordinates.  How inconsistent.
     // Because of this, we don't advertise GR_point_sprite_tex_matrix.
     _supported_geom_rendering |= Geom::GR_point_sprite;
+  }
+
+  // Determine whether we support wide lines (and how wide they can be).
+  {
+    GLfloat aliased_range[2] = {1.0f, 1.0f};
+    glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, aliased_range);
+
+    _max_line_width = aliased_range[1];
+
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (has_fixed_function_pipeline()) {
+#ifndef OPENGLES
+      GLfloat range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_LINE_WIDTH_RANGE, range);
+      _max_line_width = std::max(_max_line_width, range[1]);
+#endif
+
+      GLfloat smooth_range[2] = {1.0f, 1.0f};
+      glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, smooth_range);
+      _max_line_width = std::max(_max_line_width, smooth_range[1]);
+    }
+#endif
   }
 
 #ifdef OPENGLES_1
@@ -1645,6 +1684,8 @@ reset() {
       }
     }
 
+    Shader::set_default_caps(_shader_caps);
+
   } else if (_supports_glsl) {
     // No, but we do support GLSL...
     _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
@@ -1737,14 +1778,6 @@ reset() {
        get_extension_func("glUniform3iv");
     _glUniform4iv = (PFNGLUNIFORM4IVPROC)
        get_extension_func("glUniform4iv");
-    _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
-       get_extension_func("glUniform1uiv");
-    _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
-       get_extension_func("glUniform2uiv");
-    _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
-       get_extension_func("glUniform3uiv");
-    _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
-       get_extension_func("glUniform4uiv");
     _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
        get_extension_func("glUniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
@@ -1759,9 +1792,35 @@ reset() {
        get_extension_func("glVertexAttribPointer");
 
     if (is_at_least_gl_version(3, 0)) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocation");
       _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
          get_extension_func("glVertexAttribIPointer");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uiv");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uiv");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uiv");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uiv");
+
+    } else if (has_extension("GL_EXT_gpu_shader4")) {
+      _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+         get_extension_func("glBindFragDataLocationEXT");
+      _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
+         get_extension_func("glVertexAttribIPointerEXT");
+      _glUniform1uiv = (PFNGLUNIFORM1UIVPROC)
+         get_extension_func("glUniform1uivEXT");
+      _glUniform2uiv = (PFNGLUNIFORM2UIVPROC)
+         get_extension_func("glUniform2uivEXT");
+      _glUniform3uiv = (PFNGLUNIFORM3UIVPROC)
+         get_extension_func("glUniform3uivEXT");
+      _glUniform4uiv = (PFNGLUNIFORM4UIVPROC)
+         get_extension_func("glUniform4uivEXT");
+
     } else {
+      _glBindFragDataLocation = nullptr;
       _glVertexAttribIPointer = nullptr;
     }
     if (is_at_least_gl_version(4, 1) ||
@@ -1790,6 +1849,7 @@ reset() {
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointerARB");
 
+    _glBindFragDataLocation = nullptr;
     _glVertexAttribIPointer = nullptr;
     _glVertexAttribLPointer = nullptr;
   }
@@ -1840,6 +1900,13 @@ reset() {
       get_extension_func("glVertexAttribIPointer");
   } else {
     _glVertexAttribIPointer = nullptr;
+  }
+
+  if (has_extension("GL_EXT_blend_func_extended")) {
+    _glBindFragDataLocation = (PFNGLBINDFRAGDATALOCATIONPROC)
+       get_extension_func("glBindFragDataLocationEXT");
+  } else {
+    _glBindFragDataLocation = nullptr;
   }
 #endif
 
@@ -3373,6 +3440,8 @@ reset() {
   }
 #endif
 
+  pop_group_marker();
+
   // Now that the GSG has been initialized, make it available for
   // optimizations.
   add_gsg(this);
@@ -3405,7 +3474,6 @@ finish() {
  */
 void CLP(GraphicsStateGuardian)::
 clear(DrawableRegion *clearable) {
-  PStatGPUTimer timer(this, _clear_pcollector);
   report_my_gl_errors();
 
   if (!clearable->is_any_clear_active()) {
@@ -3710,6 +3778,10 @@ clear_before_callback() {
   _glClientActiveTexture(GL_TEXTURE0);
 #endif
 
+  // It's also quite reasonable to presume there aren't any funny color write
+  // mask settings active.
+  clear_color_write_mask();
+
   // Clear the bound sampler object, so that we do not inadvertently override
   // the callback's desired sampler settings.
 #ifndef OPENGLES_1
@@ -3932,6 +4004,7 @@ end_frame(Thread *current_thread) {
   // connects PStats, at which point it will then correct the assessment.  No
   // harm done.
   if (has_fixed_function_pipeline() && PStatClient::is_connected()) {
+    PStatTimer timer(_check_residency_pcollector);
     check_nonresident_texture(_prepared_objects->_texture_residency.get_inactive_resident());
     check_nonresident_texture(_prepared_objects->_texture_residency.get_active_resident());
 
@@ -6448,7 +6521,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
   if (_supports_shader_buffers) {
     PStatGPUTimer timer(this, _prepare_shader_buffer_pcollector);
 
-    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects);
+    CLP(BufferContext) *gbc = new CLP(BufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gbc->_index);
 
     if (GLCAT.is_debug() && gl_debug_buffers) {
@@ -6978,6 +7051,16 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       } else {
         format = Texture::F_srgb;
       }
+    } else if (_current_properties->get_float_color()) {
+      if (_current_properties->get_alpha_bits()) {
+        format = Texture::F_rgba32;
+      } else if (_current_properties->get_blue_bits()) {
+        format = Texture::F_rgb32;
+      } else if (_current_properties->get_green_bits()) {
+        format = Texture::F_rg32;
+      } else {
+        format = Texture::F_r32;
+      }
     } else {
       if (_current_properties->get_alpha_bits()) {
         format = Texture::F_rgba;
@@ -6987,7 +7070,11 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
     if (_current_properties->get_float_color()) {
       component_type = Texture::T_float;
-    } else if (_current_properties->get_color_bits() <= 24) {
+    } else if (_current_properties->get_color_bits() <= 24
+            && _current_properties->get_red_bits() <= 8
+            && _current_properties->get_green_bits() <= 8
+            && _current_properties->get_blue_bits() <= 8
+            && _current_properties->get_alpha_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -7191,6 +7278,8 @@ do_issue_shade_model() {
  */
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
+  PStatTimer timer(_draw_set_state_shader_pcollector);
+
   ShaderContext *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
@@ -7301,7 +7390,7 @@ do_issue_render_mode() {
       GLCAT.spam() << "setting thickness to " << thickness << "\n";
     }
 
-    glLineWidth(thickness);
+    glLineWidth(std::min((GLfloat)thickness, _max_line_width));
 #ifndef OPENGLES_2
     glPointSize(thickness);
 #endif
@@ -10640,6 +10729,85 @@ reissue_transforms() {
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
 #endif
+
+  // Some libraries (Kivy) leave their buffers bound.  How clumsy of them.
+  if (_supports_buffers) {
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    _current_vbuffer_index = 0;
+    _current_ibuffer_index = 0;
+  }
+#ifndef OPENGLES
+  if (_supports_glsl) {
+    _glDisableVertexAttribArray(0);
+    _glDisableVertexAttribArray(1);
+  }
+#endif
+
+  // Since this is called by clear_state_and_transform(), we also should reset
+  // the states that won't automatically be respecified when clearing the
+  // state mask.
+  _active_color_write_mask = ColorWriteAttrib::C_all;
+  glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+  if (_dithering_enabled) {
+    glEnable(GL_DITHER);
+  } else {
+    glDisable(GL_DITHER);
+  }
+  if (_depth_test_enabled) {
+    glEnable(GL_DEPTH_TEST);
+  } else {
+    glDisable(GL_DEPTH_TEST);
+  }
+  if (_stencil_test_enabled) {
+    glEnable(GL_STENCIL_TEST);
+  } else {
+    glDisable(GL_STENCIL_TEST);
+  }
+  if (_blend_enabled) {
+    glEnable(GL_BLEND);
+  } else {
+    glDisable(GL_BLEND);
+  }
+
+#ifndef OPENGLES_2
+  if (_multisample_mode != 0) {
+    glEnable(GL_MULTISAMPLE);
+  } else {
+    glDisable(GL_MULTISAMPLE);
+    glDisable(GL_SAMPLE_ALPHA_TO_ONE);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+  }
+  if (_line_smooth_enabled) {
+    glEnable(GL_LINE_SMOOTH);
+  } else {
+    glDisable(GL_LINE_SMOOTH);
+  }
+#endif
+
+#ifndef OPENGLES
+  if (_polygon_smooth_enabled) {
+    glEnable(GL_POLYGON_SMOOTH);
+  } else {
+    glDisable(GL_POLYGON_SMOOTH);
+  }
+#endif
+
+#ifdef SUPPORT_FIXED_FUNCTION
+  if (has_fixed_function_pipeline()) {
+    if (_alpha_test_enabled) {
+      glEnable(GL_ALPHA_TEST);
+    } else {
+      glDisable(GL_ALPHA_TEST);
+    }
+    if (_point_smooth_enabled) {
+      glEnable(GL_POINT_SMOOTH);
+    } else {
+      glDisable(GL_POINT_SMOOTH);
+    }
+  }
+#endif
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -10902,7 +11070,6 @@ set_state_and_transform(const RenderState *target,
   _instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
-    // PStatGPUTimer timer(this, _draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
@@ -11058,7 +11225,7 @@ set_state_and_transform(const RenderState *target,
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
       !_state_mask.get_bit(texture_slot)) {
-    // PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
+    PStatGPUTimer timer(this, _draw_set_state_texture_pcollector);
     determine_target_texture();
     do_issue_texture();
 
@@ -11759,8 +11926,6 @@ do_issue_tex_gen() {
 
   _tex_gen_modifies_mat = false;
 
-  bool got_point_sprites = false;
-
   for (int i = 0; i < _num_active_texture_stages; i++) {
     set_active_texture_stage(i);
     if (_supports_point_sprite) {
@@ -11953,7 +12118,6 @@ do_issue_tex_gen() {
 #else
         glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
 #endif
-        got_point_sprites = true;
       }
       break;
 
@@ -11990,6 +12154,9 @@ do_issue_tex_gen() {
     }
 #endif  // OPENGLES
   }
+
+  bool got_point_sprites = _supports_point_sprite &&
+    (_target_tex_gen->get_geom_rendering(Geom::GR_point) & GeomEnums::GR_point_sprite) != 0;
 
   if (got_point_sprites != _tex_gen_point_sprite) {
     _tex_gen_point_sprite = got_point_sprites;
@@ -14015,8 +14182,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
-    nassertr(false, false);
-    return false;
+  nassert_raise("OpenGL ES does not support extracting texture data");
+  return false;
 #else
 
   // Make sure the GL driver does not align textures, otherwise we get corrupt

@@ -80,6 +80,7 @@ public:
   Atom _net_wm_state_below;
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
+  Atom _net_wm_bypass_compositor;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);

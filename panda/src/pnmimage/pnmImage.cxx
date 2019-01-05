@@ -596,8 +596,8 @@ set_color_space(ColorSpace color_space) {
       break;
 
     default:
-      nassertv(false);
-      break;
+      nassert_raise("invalid color space");
+      return;
     }
 
     // Initialize the new encoding settings.
@@ -852,7 +852,7 @@ get_channel_val(int x, int y, int channel) const {
     pnmimage_cat.error()
       << "Invalid request for channel " << channel << " in "
       << get_num_channels() << "-channel image.\n";
-    nassertr(false, 0);
+    nassert_raise("unexpected channel count");
     return 0;
   }
 }
@@ -888,7 +888,8 @@ set_channel_val(int x, int y, int channel, xelval value) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -918,7 +919,7 @@ get_channel(int x, int y, int channel) const {
     pnmimage_cat.error()
       << "Invalid request for channel " << channel << " in "
       << get_num_channels() << "-channel image.\n";
-    nassertr(false, 0);
+    nassert_raise("unexpected channel count");
     return 0;
   }
 }
@@ -954,7 +955,8 @@ set_channel(int x, int y, int channel, float value) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -2126,7 +2128,7 @@ setup_encoding() {
       break;
 
     default:
-      nassertv(false);
+      nassert_raise("invalid color space");
       break;
     }
   } else {
@@ -2153,7 +2155,7 @@ setup_encoding() {
       break;
 
     default:
-      nassertv(false);
+      nassert_raise("invalid color space");
       break;
     }
   }

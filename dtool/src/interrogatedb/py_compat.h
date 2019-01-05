@@ -1,11 +1,4 @@
 /**
- * PANDA 3D SOFTWARE
- * Copyright (c) Carnegie Mellon University.  All rights reserved.
- *
- * All use of this software is subject to the terms of the revised BSD
- * license.  You should have received a copy of this license along
- * with this source code in a file named "LICENSE."
- *
  * @file py_compat.h
  * @author rdb
  * @date 2017-12-02
@@ -36,7 +29,15 @@
 // See PEP 353
 #define PY_SSIZE_T_CLEAN 1
 
-#include "Python.h"
+#include <Python.h>
+
+#ifndef LINK_ALL_STATIC
+#  define EXPCL_PYPANDA
+#elif defined(__GNUC__)
+#  define EXPCL_PYPANDA __attribute__((weak))
+#else
+#  define EXPCL_PYPANDA extern inline
+#endif
 
 /* Python 2.4 */
 
@@ -106,7 +107,7 @@ typedef int Py_ssize_t;
 // PyInt_FromSize_t automatically picks the right type.
 #  define PyLongOrInt_AS_LONG PyInt_AsLong
 
-EXPCL_INTERROGATEDB size_t PyLongOrInt_AsSize_t(PyObject *);
+EXPCL_PYPANDA size_t PyLongOrInt_AsSize_t(PyObject *);
 #endif
 
 // Which character to use in PyArg_ParseTuple et al for a byte string.

@@ -24,12 +24,12 @@
 #include "pt_EggMaterial.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDGeometryInstance.h"
-#include "FCDocument/FCDMaterialInstance.h"
-#include "FCDocument/FCDEffectStandard.h"
-#include "FCDocument/FCDEffectParameterSampler.h"
-#include "FCDocument/FCDExtra.h"
+#include <FCollada.h>
+#include <FCDocument/FCDGeometryInstance.h>
+#include <FCDocument/FCDMaterialInstance.h>
+#include <FCDocument/FCDEffectStandard.h>
+#include <FCDocument/FCDEffectParameterSampler.h>
+#include <FCDocument/FCDExtra.h>
 
 /**
  * This class is seperated from the converter file because otherwise it would

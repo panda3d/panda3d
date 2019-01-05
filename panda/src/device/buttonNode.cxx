@@ -27,7 +27,6 @@ ButtonNode(ClientBase *client, const std::string &device_name) :
   DataNode(device_name)
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
-  _button_events = new ButtonEventList;
 
   nassertv(client != nullptr);
   PT(ClientDevice) device =
@@ -46,7 +45,19 @@ ButtonNode(ClientBase *client, const std::string &device_name) :
     return;
   }
 
-  _button = DCAST(ClientButtonDevice, device);
+  _device = device;
+}
+
+/**
+ *
+ */
+ButtonNode::
+ButtonNode(InputDevice *device) :
+  DataNode(device->get_name()),
+  _device(device)
+{
+  _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
+  _device = device;
 }
 
 /**
@@ -66,11 +77,9 @@ void ButtonNode::
 output(std::ostream &out) const {
   DataNode::output(out);
 
-  if (_button != nullptr) {
+  if (_device != nullptr) {
     out << " (";
-    _button->acquire();
-    _button->output_buttons(out);
-    _button->unlock();
+    _device->output_buttons(out);
     out << ")";
   }
 }
@@ -82,10 +91,8 @@ void ButtonNode::
 write(std::ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
-  if (_button != nullptr) {
-    _button->acquire();
-    _button->write_buttons(out, indent_level + 2);
-    _button->unlock();
+  if (_device != nullptr) {
+    _device->write_buttons(out, indent_level + 2);
   }
 }
 
@@ -101,14 +108,7 @@ void ButtonNode::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
   if (is_valid()) {
-    _button->poll();
-    _button->acquire();
-
-    (*_button_events) = (*_button->get_button_events());
-
-    _button->get_button_events()->clear();
-    _button->unlock();
-
-    output.set_data(_button_events_output, EventParameter(_button_events));
+    PT(ButtonEventList) bel = _device->get_button_events();
+    output.set_data(_button_events_output, EventParameter(bel));
   }
 }

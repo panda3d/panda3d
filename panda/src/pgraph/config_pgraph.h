@@ -21,6 +21,7 @@
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
 #include "configVariableList.h"
+#include "configVariableString.h"
 
 class DSearchPath;
 
@@ -47,7 +48,7 @@ extern ConfigVariableDouble garbage_collect_states_rate;
 extern ConfigVariableBool transform_cache;
 extern ConfigVariableBool state_cache;
 extern ConfigVariableBool uniquify_transforms;
-extern ConfigVariableBool uniquify_states;
+extern EXPCL_PANDA_PGRAPH ConfigVariableBool uniquify_states;
 extern ConfigVariableBool uniquify_attribs;
 extern ConfigVariableBool retransform_sprites;
 extern ConfigVariableBool depth_offset_decals;

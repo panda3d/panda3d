@@ -178,7 +178,6 @@ PUBLISHED:
   INLINE void clear_render_callback();
   INLINE CallbackObject *get_render_callback() const;
 
-  GraphicsWindowInputDevice &get_input_device(int device);
   int create_input_device(const std::string &name);
 
 public:

@@ -346,7 +346,8 @@ load(const PNMImage &pnmimage) {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
   return true;
 }
@@ -410,7 +411,8 @@ store(PNMImage &pnmimage) const {
     break;
 
   default:
-    nassertr(false, false);
+    nassert_raise("unexpected channel count");
+    return false;
   }
   return true;
 }
@@ -877,7 +879,8 @@ set_no_data_nan(int num_channels) {
       _has_point = has_point_nan_4;
       break;
     default:
-      nassertv(false);
+      nassert_raise("unexpected channel count");
+      break;
     }
   } else {
     clear_no_data_value();
@@ -909,7 +912,8 @@ set_no_data_value(const LPoint4f &no_data_value) {
     _has_point = has_point_4;
     break;
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -938,7 +942,8 @@ set_no_data_threshold(const LPoint4f &no_data_value) {
     _has_point = has_point_threshold_4;
     break;
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 
@@ -1121,7 +1126,8 @@ quick_filter_from(const PfmFile &from) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    return;
   }
 
   new_data.push_back(0.0);
@@ -1826,7 +1832,8 @@ compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 
     break;
 
   default:
-    nassertr(false, nullptr);
+    nassert_raise("invalid coordinate system");
+    return nullptr;
   }
 
   // Rotate the bounding volume back into the original space of the screen.
@@ -1879,7 +1886,8 @@ compute_sample_point(LPoint3f &result,
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("unexpected channel count");
+    break;
   }
 }
 

@@ -18,12 +18,5 @@ INLINE ClientTrackerDevice::
 ClientTrackerDevice(ClientBase *client, const std::string &device_name):
   ClientDevice(client, get_class_type(), device_name)
 {
-}
-
-/**
- * Returns the TrackerData that this device is reporting.
- */
-INLINE const TrackerData &ClientTrackerDevice::
-get_data() const {
-  return _data;
+  enable_feature(Feature::tracker);
 }

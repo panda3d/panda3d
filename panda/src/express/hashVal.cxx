@@ -17,7 +17,7 @@
 
 #ifdef HAVE_OPENSSL
 #include "openSSLWrapper.h"  // must be included before any other openssl.
-#include "openssl/md5.h"
+#include <openssl/md5.h>
 #endif  // HAVE_OPENSSL
 
 using std::istream;

@@ -184,6 +184,8 @@ public:
   INLINE PStatCollector &get_cull_region_pcollector();
   INLINE PStatCollector &get_draw_region_pcollector();
 
+  INLINE const std::string &get_debug_name() const;
+
   struct Region {
     INLINE Region();
 
@@ -277,6 +279,7 @@ private:
 
   PStatCollector _cull_region_pcollector;
   PStatCollector _draw_region_pcollector;
+  std::string _debug_name;
 
 public:
   static TypeHandle get_class_type() {

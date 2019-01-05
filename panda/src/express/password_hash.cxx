@@ -18,7 +18,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "pnotify.h"
-#include "openssl/evp.h"
+#include <openssl/evp.h>
 #include "memoryHook.h"
 
 using std::string;

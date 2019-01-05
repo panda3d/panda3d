@@ -82,7 +82,9 @@ PUBLISHED:
 
   // Mouse and keyboard routines
   int get_num_input_devices() const;
+  InputDevice *get_input_device(int i) const;
   std::string get_input_device_name(int device) const;
+  MAKE_SEQ(get_input_devices, get_num_input_devices, get_input_device);
   MAKE_SEQ(get_input_device_names, get_num_input_devices, get_input_device_name);
   bool has_pointer(int device) const;
   bool has_keyboard(int device) const;
@@ -90,20 +92,14 @@ PUBLISHED:
 
   void enable_pointer_events(int device);
   void disable_pointer_events(int device);
-  void enable_pointer_mode(int device, double speed);
-  void disable_pointer_mode(int device);
+  /*void enable_pointer_mode(int device, double speed);
+  void disable_pointer_mode(int device);*/
 
   virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
   virtual void close_ime();
 
 public:
-  // No need to publish these.
-  bool has_button_event(int device) const;
-  ButtonEvent get_button_event(int device);
-  bool has_pointer_event(int device) const;
-  PT(PointerEventList) get_pointer_events(int device);
-
   virtual void add_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
   virtual void remove_window_proc( const GraphicsWindowProc* wnd_proc_object ){};
   virtual void clear_window_procs(){};
@@ -143,8 +139,8 @@ protected:
   void system_changed_size(int x_size, int y_size);
 
 protected:
-  int add_input_device(const GraphicsWindowInputDevice &device);
-  typedef vector_GraphicsWindowInputDevice InputDevices;
+  int add_input_device(InputDevice *device);
+  typedef pvector<PT(InputDevice)> InputDevices;
   InputDevices _input_devices;
   LightMutex _input_lock;
 

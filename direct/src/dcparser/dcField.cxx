@@ -162,7 +162,7 @@ as_parameter() const {
  * is an error.
  */
 string DCField::
-format_data(const string &packed_data, bool show_field_names) {
+format_data(const vector_uchar &packed_data, bool show_field_names) {
   DCPacker packer;
   packer.set_unpack_data(packed_data);
   packer.begin_unpack(this);
@@ -178,20 +178,20 @@ format_data(const string &packed_data, bool show_field_names) {
  * above) that represents the value of this field, parse the string and return
  * the corresponding packed data.  Returns empty string if there is an error.
  */
-string DCField::
+vector_uchar DCField::
 parse_string(const string &formatted_string) {
   DCPacker packer;
   packer.begin_pack(this);
   if (!packer.parse_and_pack(formatted_string)) {
     // Parse error.
-    return string();
+    return vector_uchar();
   }
   if (!packer.end_pack()) {
     // Data type mismatch.
-    return string();
+    return vector_uchar();
   }
 
-  return packer.get_string();
+  return packer.get_bytes();
 }
 
 /**
@@ -200,7 +200,7 @@ parse_string(const string &formatted_string) {
  * record.  Returns true if all fields are valid, false otherwise.
  */
 bool DCField::
-validate_ranges(const string &packed_data) const {
+validate_ranges(const vector_uchar &packed_data) const {
   DCPacker packer;
   packer.set_unpack_data(packed_data);
   packer.begin_unpack(this);
@@ -209,7 +209,7 @@ validate_ranges(const string &packed_data) const {
     return false;
   }
 
-  return (packer.get_num_unpacked_bytes() == packed_data.length());
+  return (packer.get_num_unpacked_bytes() == packed_data.size());
 }
 
 #ifdef HAVE_PYTHON
@@ -488,7 +488,7 @@ pack_default_value(DCPackData &pack_data, bool &) const {
   // The default behavior is to pack the default value if we got it;
   // otherwise, to return false and let the packer visit our nested elements.
   if (!_default_value_stale) {
-    pack_data.append_data(_default_value.data(), _default_value.length());
+    pack_data.append_data((const char *)_default_value.data(), _default_value.size());
     return true;
   }
 
@@ -566,7 +566,8 @@ refresh_default_value() {
   if (!packer.end_pack()) {
     std::cerr << "Error while packing default value for " << get_name() << "\n";
   } else {
-    _default_value.assign(packer.get_data(), packer.get_length());
+    const unsigned char *data = (const unsigned char *)packer.get_data();
+    _default_value = vector_uchar(data, data + packer.get_length());
   }
   _default_value_stale = false;
 }

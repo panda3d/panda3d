@@ -704,6 +704,15 @@ get_draw_window_pcollector() {
 }
 
 /**
+ * Returns a PStatCollector for timing the clear operation for just this
+ * GraphicsOutput.
+ */
+INLINE PStatCollector &GraphicsOutput::
+get_clear_window_pcollector() {
+  return _clear_window_pcollector;
+}
+
+/**
  * Display the spam message associated with begin_frame
  */
 INLINE void GraphicsOutput::

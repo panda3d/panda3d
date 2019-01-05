@@ -401,8 +401,8 @@ private:
   static PStatCollector _test_sphere_pcollector;
   static PStatCollector _volume_box_pcollector;
   static PStatCollector _test_box_pcollector;
-  static PStatCollector _volume_tube_pcollector;
-  static PStatCollector _test_tube_pcollector;
+  static PStatCollector _volume_capsule_pcollector;
+  static PStatCollector _test_capsule_pcollector;
   static PStatCollector _volume_inv_sphere_pcollector;
   static PStatCollector _test_inv_sphere_pcollector;
   static PStatCollector _volume_geom_pcollector;

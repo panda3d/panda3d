@@ -27,12 +27,12 @@
 #include <string.h>  // for strstr
 
 #ifdef HAVE_TAR
-#include "libtar.h"
+#include <libtar.h>
 #include <fcntl.h>  // for O_RDONLY
 #endif  // HAVE_TAR
 
 #ifdef HAVE_TAR
-istream *Patchfile::_tar_istream = nullptr;
+std::istream *Patchfile::_tar_istream = nullptr;
 #endif  // HAVE_TAR
 
 using std::endl;

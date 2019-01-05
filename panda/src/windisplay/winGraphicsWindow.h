@@ -189,6 +189,8 @@ private:
   bool _lalt_down;
   bool _ralt_down;
 
+  GraphicsWindowInputDevice *_input;
+
   // following adds support platform specfic window processing functions.
   typedef pset<GraphicsWindowProc*> WinProcClasses;
   WinProcClasses _window_proc_classes;

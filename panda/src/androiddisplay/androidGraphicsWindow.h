@@ -73,7 +73,7 @@ private:
 
   int32_t _mouse_button_state;
 
-  const ARect *rect;
+  GraphicsWindowInputDevice *_input;
 
 public:
   static TypeHandle get_class_type() {

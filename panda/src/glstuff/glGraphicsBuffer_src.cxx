@@ -113,8 +113,6 @@ clear(Thread *current_thread) {
       << get_name() << " " << (void *)this << "\n";
   }
 
-  PStatGPUTimer timer(glgsg, glgsg->_clear_pcollector);
-
   // Disable the scissor test, so we can clear the whole buffer.
   glDisable(GL_SCISSOR_TEST);
   glgsg->_scissor_enabled = false;
@@ -232,6 +230,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
   }
 
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
+  glgsg->push_group_marker(std::string(CLASSPREFIX_QUOTED "GraphicsBuffer ") + get_name());
+
   // Figure out the desired size of the  buffer.
   if (mode == FM_render) {
     clear_cube_map_selection();
@@ -257,6 +258,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     if (_needs_rebuild) {
       // If we still need rebuild, something went wrong with
       // rebuild_bitplanes().
+      glgsg->pop_group_marker();
       return false;
     }
 
@@ -919,20 +921,37 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         if (_fb_properties.get_alpha_bits() == 0) {
           if (_fb_properties.get_srgb_color()) {
             gl_format = GL_SRGB8;
+          } else if (_fb_properties.get_color_bits() > 16 * 3 ||
+                     _fb_properties.get_red_bits() > 16 ||
+                     _fb_properties.get_green_bits() > 16 ||
+                     _fb_properties.get_blue_bits() > 16) {
+            // 32-bit, which is always floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32 * 2) {
+              gl_format = GL_RGB32F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RG32F;
+            } else {
+              gl_format = GL_R32F;
+            }
           } else if (_fb_properties.get_float_color()) {
-            if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGB32F_ARB;
+            // 16-bit floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16F;
             } else {
-              gl_format = GL_RGB16F_ARB;
+              gl_format = GL_R16F;
             }
+          } else if (_fb_properties.get_color_bits() > 8 * 3) {
+            gl_format = GL_RGB16_EXT;
           } else {
-            if (_fb_properties.get_color_bits() > 16 * 3) {
-              gl_format = GL_RGB32F_ARB;
-            } else if (_fb_properties.get_color_bits() > 8 * 3) {
-              gl_format = GL_RGB16_EXT;
-            } else {
-              gl_format = GL_RGB;
-            }
+            gl_format = GL_RGB;
           }
         } else {
           if (_fb_properties.get_srgb_color()) {
@@ -1316,6 +1335,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
     clear_cube_map_selection();
   }
   report_my_gl_errors();
+
+  glgsg->pop_group_marker();
 }
 
 /**
@@ -1392,7 +1413,7 @@ open_buffer() {
   }
 
   if (_rb_context == nullptr) {
-    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency));
+    _rb_context = new BufferContext(&(glgsg->_renderbuffer_residency), nullptr);
   }
 
 /*

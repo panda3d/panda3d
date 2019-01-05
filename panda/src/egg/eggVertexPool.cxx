@@ -445,7 +445,8 @@ add_vertex(EggVertex *vertex, int index) {
     }
 
     // Oops, you duplicated a vertex index.
-    nassertr(false, nullptr);
+    nassert_raise("duplicate vertex index");
+    return nullptr;
   }
 
   _unique_vertices.insert(vertex);

@@ -17,10 +17,11 @@
 #include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
-#include "mss.h"
 #include "pset.h"
 #include "lightMutex.h"
 #include "lightMutexHolder.h"
+
+#include <mss.h>
 
 #ifndef UINTa
 #define UINTa U32

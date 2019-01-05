@@ -128,7 +128,6 @@ get_device(TypeHandle device_type, const std::string &device_name) {
 
   if (device != nullptr) {
     dbn.insert(DevicesByName::value_type(device_name, device));
-    device->_is_connected = true;
   }
 
   return device;

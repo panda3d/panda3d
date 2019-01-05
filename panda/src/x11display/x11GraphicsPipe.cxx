@@ -66,6 +66,12 @@ x11GraphicsPipe(const std::string &display) :
   _im = (XIM)nullptr;
   _hidden_cursor = None;
 
+  // According to the documentation, we should call this before making any
+  // other Xlib calls if we wish to use the Xlib locking system.
+  if (x_init_threads) {
+    XInitThreads();
+  }
+
   install_error_handlers();
 
   _display = XOpenDisplay(display_spec.c_str());
@@ -235,6 +241,7 @@ x11GraphicsPipe(const std::string &display) :
   _net_wm_state_below = XInternAtom(_display, "_NET_WM_STATE_BELOW", false);
   _net_wm_state_add = XInternAtom(_display, "_NET_WM_STATE_ADD", false);
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
+  _net_wm_bypass_compositor = XInternAtom(_display, "_NET_WM_BYPASS_COMPOSITOR", false);
 }
 
 /**

@@ -146,6 +146,7 @@ typedef void (APIENTRYP PFNGLBLENDFUNCSEPARATEPROC) (GLenum sfactorRGB, GLenum d
 // GLSL shader functions
 typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
 typedef void (APIENTRYP PFNGLBINDATTRIBLOCATIONPROC) (GLuint program, GLuint index, const GLchar *name);
+typedef void (APIENTRYP PFNGLBINDFRAGDATALOCATIONPROC) (GLuint program, GLuint color, const GLchar *name);
 typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
 typedef GLuint (APIENTRYP PFNGLCREATEPROGRAMPROC) (void);
 typedef GLuint (APIENTRYP PFNGLCREATESHADERPROC) (GLenum type);
@@ -274,6 +275,9 @@ public:
   virtual int get_driver_shader_version_minor();
 
   static void APIENTRY debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
+
+  INLINE virtual void push_group_marker(const std::string &marker) final;
+  INLINE virtual void pop_group_marker() final;
 
   virtual void reset();
 
@@ -681,6 +685,8 @@ protected:
 #endif
 #endif
 
+  GLfloat _max_line_width;
+
 #ifdef HAVE_CG
   CGcontext _cg_context;
 #endif
@@ -960,6 +966,7 @@ public:
   // GLSL functions
   PFNGLATTACHSHADERPROC _glAttachShader;
   PFNGLBINDATTRIBLOCATIONPROC _glBindAttribLocation;
+  PFNGLBINDFRAGDATALOCATIONPROC _glBindFragDataLocation;
   PFNGLCOMPILESHADERPROC _glCompileShader;
   PFNGLCREATEPROGRAMPROC _glCreateProgram;
   PFNGLCREATESHADERPROC _glCreateShader;
@@ -1091,6 +1098,11 @@ public:
   GLuint _white_texture;
 
 #ifndef NDEBUG
+#ifndef OPENGLES_1
+  PFNGLPUSHGROUPMARKEREXTPROC _glPushGroupMarker;
+  PFNGLPOPGROUPMARKEREXTPROC _glPopGroupMarker;
+#endif
+
   bool _show_texture_usage;
   int _show_texture_usage_max_size;
   int _show_texture_usage_index;
@@ -1118,6 +1130,7 @@ public:
   static PStatCollector _texture_update_pcollector;
   static PStatCollector _fbo_bind_pcollector;
   static PStatCollector _check_error_pcollector;
+  static PStatCollector _check_residency_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

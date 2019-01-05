@@ -47,6 +47,7 @@
 #include "displayRegionCullCallbackData.h"
 #include "displayRegionDrawCallbackData.h"
 #include "callbackGraphicsWindow.h"
+#include "depthTestAttrib.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -109,8 +110,8 @@ PStatCollector GraphicsEngine::_volume_sphere_pcollector("Collision Volumes:Coll
 PStatCollector GraphicsEngine::_test_sphere_pcollector("Collision Tests:CollisionSphere");
 PStatCollector GraphicsEngine::_volume_box_pcollector("Collision Volumes:CollisionBox");
 PStatCollector GraphicsEngine::_test_box_pcollector("Collision Tests:CollisionBox");
-PStatCollector GraphicsEngine::_volume_tube_pcollector("Collision Volumes:CollisionTube");
-PStatCollector GraphicsEngine::_test_tube_pcollector("Collision Tests:CollisionTube");
+PStatCollector GraphicsEngine::_volume_capsule_pcollector("Collision Volumes:CollisionCapsule");
+PStatCollector GraphicsEngine::_test_capsule_pcollector("Collision Tests:CollisionCapsule");
 PStatCollector GraphicsEngine::_volume_inv_sphere_pcollector("Collision Volumes:CollisionInvSphere");
 PStatCollector GraphicsEngine::_test_inv_sphere_pcollector("Collision Tests:CollisionInvSphere");
 PStatCollector GraphicsEngine::_volume_geom_pcollector("Collision Volumes:CollisionGeom");
@@ -874,8 +875,8 @@ render_frame() {
     _test_sphere_pcollector.clear_level();
     _volume_box_pcollector.clear_level();
     _test_box_pcollector.clear_level();
-    _volume_tube_pcollector.clear_level();
-    _test_tube_pcollector.clear_level();
+    _volume_capsule_pcollector.clear_level();
+    _test_capsule_pcollector.clear_level();
     _volume_inv_sphere_pcollector.clear_level();
     _test_inv_sphere_pcollector.clear_level();
     _volume_geom_pcollector.clear_level();
@@ -1174,7 +1175,8 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
  */
 void GraphicsEngine::
 dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
-  nassertv(sattr->get_shader() != nullptr);
+  const Shader *shader = sattr->get_shader();
+  nassertv(shader != nullptr);
   nassertv(gsg != nullptr);
 
   ReMutexHolder holder(_lock);
@@ -1184,8 +1186,10 @@ dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, Graph
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
+    gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
     gsg->set_state_and_transform(state, TransformState::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
+    gsg->pop_group_marker();
 
   } else {
     // A multi-threaded environment.  We have to wait until the draw thread
@@ -1431,7 +1435,13 @@ cull_and_draw_together(GraphicsEngine::Windows wlist,
       }
 
       if (win->begin_frame(GraphicsOutput::FM_render, current_thread)) {
-        win->clear(current_thread);
+        if (win->is_any_clear_active()) {
+          GraphicsStateGuardian *gsg = win->get_gsg();
+          PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+          gsg->push_group_marker("Clear");
+          win->clear(current_thread);
+          gsg->pop_group_marker();
+        }
 
         int num_display_regions = win->get_num_active_display_regions();
         for (int i = 0; i < num_display_regions; i++) {
@@ -1468,6 +1478,8 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
   GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != nullptr);
 
+  gsg->push_group_marker(dr->get_debug_name());
+
   PT(SceneSetup) scene_setup;
 
   {
@@ -1476,6 +1488,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     gsg->prepare_display_region(&dr_reader);
 
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr);
     }
 
@@ -1512,6 +1525,8 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
       gsg->end_scene();
     }
   }
+
+  gsg->pop_group_marker();
 }
 
 /**
@@ -1651,7 +1666,12 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
         // a current context for PStatGPUTimer to work.
         {
           PStatGPUTimer timer(gsg, win->get_draw_window_pcollector(), current_thread);
-          win->clear(current_thread);
+          if (win->is_any_clear_active()) {
+            PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
+            win->get_gsg()->push_group_marker("Clear");
+            win->clear(current_thread);
+            win->get_gsg()->pop_group_marker();
+          }
 
           if (display_cat.is_spam()) {
             display_cat.spam()
@@ -2000,6 +2020,8 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
   // Statistics
   PStatGPUTimer timer(gsg, dr->get_draw_region_pcollector(), current_thread);
 
+  gsg->push_group_marker(dr->get_debug_name());
+
   PT(CullResult) cull_result;
   PT(SceneSetup) scene_setup;
   {
@@ -2015,6 +2037,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     win->change_scenes(&dr_reader);
     gsg->prepare_display_region(&dr_reader);
     if (dr_reader.is_any_clear_active()) {
+      PStatGPUTimer timer(gsg, win->get_clear_window_pcollector(), current_thread);
       gsg->clear(dr_reader.get_object());
     }
 
@@ -2024,9 +2047,12 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
   if (cbobj != nullptr) {
     // Issue the draw callback on this DisplayRegion.
 
-    // Set the GSG to the initial state.
+    // Set the GSG to the initial state.  We disable depth testing since that
+    // is the default OpenGL state, and some libraries (eg. Kivy) expect that.
+    static CPT(RenderState) state = RenderState::make(
+      DepthTestAttrib::make(DepthTestAttrib::M_none));
     gsg->clear_before_callback();
-    gsg->set_state_and_transform(RenderState::make_empty(), TransformState::make_identity());
+    gsg->set_state_and_transform(state, TransformState::make_identity());
 
     DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);
     cbobj->do_callback(&cbdata);
@@ -2034,11 +2060,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     // We don't trust the state the callback may have left us in.
     gsg->clear_state_and_transform();
 
-    // The callback has taken care of the drawing.
-    return;
-  }
-
-  if (cull_result == nullptr || scene_setup == nullptr) {
+  } else if (cull_result == nullptr || scene_setup == nullptr) {
     // Nothing to see here.
 
   } else if (dr->is_stereo()) {
@@ -2059,6 +2081,8 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
       gsg->end_scene();
     }
   }
+
+  gsg->pop_group_marker();
 }
 
 /**
@@ -2668,8 +2692,14 @@ thread_main() {
 
     case TS_do_compute:
       nassertd(_gsg != nullptr && _state != nullptr) break;
-      _gsg->set_state_and_transform(_state, TransformState::make_identity());
-      _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+      {
+        const ShaderAttrib *sattr;
+        _state->get_attrib(sattr);
+        _gsg->push_group_marker(std::string("Compute ") + sattr->get_shader()->get_filename(Shader::ST_compute).get_basename());
+        _gsg->set_state_and_transform(_state, TransformState::make_identity());
+        _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
+        _gsg->pop_group_marker();
+      }
       break;
 
     case TS_do_extract:

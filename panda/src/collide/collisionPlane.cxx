@@ -18,7 +18,7 @@
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
-#include "collisionTube.h"
+#include "collisionCapsule.h"
 #include "collisionParabola.h"
 #include "config_collide.h"
 #include "pointerToArray.h"
@@ -298,16 +298,16 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
  *
  */
 PT(CollisionEntry) CollisionPlane::
-test_intersection_from_tube(const CollisionEntry &entry) const {
-  const CollisionTube *tube;
-  DCAST_INTO_R(tube, entry.get_from(), nullptr);
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
   const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3 from_a = tube->get_point_a() * wrt_mat;
-  LPoint3 from_b = tube->get_point_b() * wrt_mat;
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
   LVector3 from_radius_v =
-    LVector3(tube->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
   PN_stdfloat from_radius = length(from_radius_v);
 
   PN_stdfloat dist_a = _plane.dist_to_plane(from_a);
@@ -325,7 +325,7 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3 normal = (has_effective_normal() && tube->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
   new_entry->set_surface_normal(normal);
 
   PN_stdfloat t;
@@ -339,17 +339,17 @@ test_intersection_from_tube(const CollisionEntry &entry) const {
       new_entry->set_surface_point(from_a - get_normal() * dist_a);
 
     } else {
-      // Within the tube!  Yay, that means we have a surface point.
+      // Within the capsule!  Yay, that means we have a surface point.
       new_entry->set_surface_point(from_a + t * from_direction);
     }
   } else {
     // If it's completely parallel, pretend it's colliding in the center of
-    // the tube.
+    // the capsule.
     new_entry->set_surface_point(from_a + 0.5f * from_direction - get_normal() * dist_a);
   }
 
   if (IS_NEARLY_EQUAL(dist_a, dist_b)) {
-    // Let's be fair and choose the center of the tube.
+    // Let's be fair and choose the center of the capsule.
     new_entry->set_interior_point(from_a + 0.5f * from_direction - get_normal() * from_radius);
 
   } else if (dist_a < dist_b) {

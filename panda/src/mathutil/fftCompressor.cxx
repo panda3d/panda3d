@@ -29,7 +29,7 @@
 #undef howmany
 #endif
 
-#include "fftw3.h"
+#include <fftw3.h>
 
 // These FFTW support objects can only be defined if we actually have the FFTW
 // library available.

@@ -47,7 +47,7 @@ GeomCacheManager() :
 GeomCacheManager::
 ~GeomCacheManager() {
   // Shouldn't be deleting this global object.
-  nassertv(false);
+  nassert_raise("attempt to delete GeomCacheManager");
 }
 
 /**

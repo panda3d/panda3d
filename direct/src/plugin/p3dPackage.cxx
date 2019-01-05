@@ -20,7 +20,7 @@
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
 
-#include "zlib.h"
+#include <zlib.h>
 
 #include <algorithm>
 #include <fstream>

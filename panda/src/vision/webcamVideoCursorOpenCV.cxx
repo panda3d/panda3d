@@ -11,11 +11,16 @@
  * @date 2010-10-20
  */
 
-#include "webcamVideoOpenCV.h"
+#include "webcamVideoCursorOpenCV.h"
 
 #ifdef HAVE_OPENCV
 
+#include "webcamVideoOpenCV.h"
+#include "movieVideoCursor.h"
+
 #include "pStatTimer.h"
+
+#include <opencv2/highgui/highgui.hpp>
 
 TypeHandle WebcamVideoCursorOpenCV::_type_handle;
 

@@ -144,6 +144,31 @@ release_all() {
 }
 
 /**
+ * Removes the indicated PreparedGraphicsObjects table from the buffer's
+ * table, without actually releasing the texture.  This is intended to be
+ * called only from PreparedGraphicsObjects::release_shader_buffer(); it
+ * should never be called by user code.
+ */
+void ShaderBuffer::
+clear_prepared(PreparedGraphicsObjects *prepared_objects) {
+  nassertv(_contexts != nullptr);
+
+  Contexts::iterator ci;
+  ci = _contexts->find(prepared_objects);
+  if (ci != _contexts->end()) {
+    _contexts->erase(ci);
+    if (_contexts->empty()) {
+      delete _contexts;
+      _contexts = nullptr;
+    }
+  } else {
+    // If this assertion fails, clear_prepared() was given a prepared_objects
+    // which the data array didn't know about.
+    nassert_raise("unknown PreparedGraphicsObjects");
+  }
+}
+
+/**
  * Tells the BamReader how to create objects of type ParamValue.
  */
 void ShaderBuffer::

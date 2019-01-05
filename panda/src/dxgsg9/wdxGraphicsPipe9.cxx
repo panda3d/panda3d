@@ -341,11 +341,13 @@ find_all_card_memavails() {
       if (!ISPOW2(dwVidMemTotal)) {
         // assume they wont return a proper max value, so round up to next pow
         // of 2
-        UINT count = 0;
-        while ((dwVidMemTotal >> count) != 0x0) {
-          count++;
+        int count = get_next_higher_bit((uint32_t)(dwVidMemTotal - 1u));
+        if (count >= 32u) {
+          // Maximum value that fits in a UINT.
+          dwVidMemTotal = 0xffffffffu;
+        } else {
+          dwVidMemTotal = (1u << count);
         }
-        dwVidMemTotal = (1 << count);
       }
     }
 

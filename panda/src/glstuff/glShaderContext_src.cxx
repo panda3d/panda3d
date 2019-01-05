@@ -1145,6 +1145,78 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
       }
       return;
     }
+    if (size > 4 && noprefix.substr(0, 4) == "Fog.") {
+      Shader::ShaderMatSpec bind;
+      bind._id = arg_id;
+      bind._func = Shader::SMF_first;
+      bind._arg[0] = nullptr;
+      bind._dep[0] = Shader::SSD_general | Shader::SSD_fog;
+      bind._part[1] = Shader::SMO_identity;
+      bind._arg[1] = nullptr;
+      bind._dep[1] = Shader::SSD_NONE;
+
+      if (noprefix == "Fog.color") {
+        bind._part[0] = Shader::SMO_attr_fogcolor;
+
+        if (param_type == GL_FLOAT_VEC3) {
+          bind._piece = Shader::SMP_row3x3;
+        } else if (param_type == GL_FLOAT_VEC4) {
+          bind._piece = Shader::SMP_row3;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.color should be vec3 or vec4\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.density") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_row3x1;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.density should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.start") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell13;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.start should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.end") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell14;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.end should be float\n";
+          return;
+        }
+
+      } else if (noprefix == "Fog.scale") {
+        bind._part[0] = Shader::SMO_attr_fog;
+
+        if (param_type == GL_FLOAT) {
+          bind._piece = Shader::SMP_cell15;
+        } else {
+          GLCAT.error()
+            << "p3d_Fog.scale should be float\n";
+          return;
+        }
+      }
+
+      _shader->_mat_spec.push_back(bind);
+      _shader->_mat_deps |= bind._dep[0];
+      return;
+    }
     if (noprefix == "LightModel.ambient") {
       Shader::ShaderMatSpec bind;
       bind._id = arg_id;
@@ -2725,14 +2797,24 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     if (tex->get_texture_type() != spec._desired_type) {
-      if (id != nullptr) {
+      switch (spec._part) {
+      case Shader::STO_named_input:
         GLCAT.error()
           << "Sampler type of GLSL shader input '" << *id << "' does not "
              "match type of texture " << *tex << ".\n";
-      } else {
+        break;
+
+      case Shader::STO_stage_i:
         GLCAT.error()
           << "Sampler type of GLSL shader input p3d_Texture" << spec._stage
           << " does not match type of texture " << *tex << ".\n";
+        break;
+
+      case Shader::STO_light_i_shadow_map:
+        GLCAT.error()
+          << "Sampler type of GLSL shader input p3d_LightSource[" << spec._stage
+          << "].shadowMap does not match type of texture " << *tex << ".\n";
+        break;
       }
       // TODO: also check whether shadow sampler textures have shadow filter
       // enabled.
@@ -3145,6 +3227,11 @@ glsl_compile_and_link() {
     _glgsg->_glBindAttribLocation(_glsl_program, 7, "transform_index");
     _glgsg->_glBindAttribLocation(_glsl_program, 8, "p3d_MultiTexCoord0");
     _glgsg->_glBindAttribLocation(_glsl_program, 8, "texcoord");
+  }
+
+  // Also bind the p3d_FragData array to the first index always.
+  if (_glgsg->_glBindFragDataLocation != nullptr) {
+    _glgsg->_glBindFragDataLocation(_glsl_program, 0, "p3d_FragData");
   }
 
   // If we requested to retrieve the shader, we should indicate that before

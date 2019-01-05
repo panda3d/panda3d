@@ -16,7 +16,7 @@
 #include "is_pathsep.h"
 #include "wstring_encode.h"
 
-#include "assert.h"
+#include <assert.h>
 
 #include <iostream>
 

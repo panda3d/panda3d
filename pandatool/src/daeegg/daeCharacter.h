@@ -21,11 +21,11 @@
 #include "epvector.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDSceneNode.h"
-#include "FCDocument/FCDControllerInstance.h"
-#include "FCDocument/FCDSkinController.h"
-#include "FCDocument/FCDGeometryMesh.h"
+#include <FCollada.h>
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDSkinController.h>
+#include <FCDocument/FCDGeometryMesh.h>
 
 class DAEToEggConverter;
 

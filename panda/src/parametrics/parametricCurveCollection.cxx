@@ -276,7 +276,7 @@ get_timewarp_curve(int n) const {
       n--;
     }
   }
-  nassertr(false, nullptr);
+  nassert_raise("index out of range");
   return nullptr;
 }
 

@@ -29,4 +29,3 @@
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"
-#include "globalPointerRegistry.cxx"

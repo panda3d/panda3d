@@ -156,7 +156,9 @@ bool ShaderTerrainMesh::generate() {
  *   the chunks, and the PNMImage is destroyed afterwards.
  */
 void ShaderTerrainMesh::do_extract_heightfield() {
-  nassertv(_heightfield_tex->has_ram_image()); // Heightfield not in RAM, extract ram image first
+  if (!_heightfield_tex->has_ram_image()) {
+    _heightfield_tex->reload();
+  }
 
   _heightfield_tex->store(_heightfield);
 

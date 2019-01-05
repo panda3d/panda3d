@@ -61,6 +61,15 @@ PUBLISHED:
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
+PUBLISHED:
+  MAKE_PROPERTY(frame, get_frame, set_frame);
+  MAKE_PROPERTY(area, get_area);
+
+  MAKE_PROPERTY(sort, get_sort, set_sort);
+  MAKE_PROPERTY(active, get_active, set_active);
+  MAKE_PROPERTY(keyboard, get_keyboard, set_keyboard);
+  MAKE_PROPERTY(suppress_flags, get_suppress_flags, set_suppress_flags);
+
 public:
   INLINE bool operator < (const MouseWatcherRegion &other) const;
 

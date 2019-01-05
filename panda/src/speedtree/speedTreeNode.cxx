@@ -35,7 +35,7 @@
 #include "pStatTimer.h"
 
 #ifdef SPEEDTREE_OPENGL
-#include "glew/glew.h"
+#include <glew/glew.h>
 #endif  // SPEEDTREE_OPENGL
 
 #ifdef SPEEDTREE_DIRECTX9

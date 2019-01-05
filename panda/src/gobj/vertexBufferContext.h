@@ -51,10 +51,6 @@ public:
   virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(GeomVertexArrayData), because the data and the GSG
-  // both own their VertexBufferContexts!  That would create a circular
-  // reference count.
-  GeomVertexArrayData *_data;
   GeomEnums::UsageHint _usage_hint;
 
 public:

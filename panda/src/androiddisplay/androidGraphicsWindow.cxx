@@ -55,9 +55,9 @@ AndroidGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _app = panda_android_app;
 
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
+  PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
+  _input = device;
 }
 
 /**
@@ -486,22 +486,22 @@ handle_key_event(const AInputEvent *event) {
   /*
   int32_t meta = AKeyEvent_getMetaState(event);
   if (meta | AMETA_ALT_ON) {
-    _input_devices[0].button_down(KeyboardButton.alt());
+    _input->button_down(KeyboardButton.alt());
   }
   if (meta | AMETA_ALT_LEFT_ON) {
-    _input_devices[0].button_down(KeyboardButton.lalt());
+    _input->button_down(KeyboardButton.lalt());
   }
   if (meta | AMETA_ALT_RIGHT_ON) {
-    _input_devices[0].button_down(KeyboardButton.ralt());
+    _input->button_down(KeyboardButton.ralt());
   }
   if (meta | AMETA_SHIFT_ON) {
-    _input_devices[0].button_down(KeyboardButton.shift());
+    _input->button_down(KeyboardButton.shift());
   }
   if (meta | AMETA_SHIFT_LEFT_ON) {
-    _input_devices[0].button_down(KeyboardButton.lshift());
+    _input->button_down(KeyboardButton.lshift());
   }
   if (meta | AMETA_SHIFT_RIGHT_ON) {
-    _input_devices[0].button_down(KeyboardButton.rshift());
+    _input->button_down(KeyboardButton.rshift());
   }*/
 
   int32_t keycode = AKeyEvent_getKeyCode(event);
@@ -517,12 +517,12 @@ handle_key_event(const AInputEvent *event) {
   int32_t action = AKeyEvent_getAction(event);
   if (action == AKEY_EVENT_ACTION_DOWN) {
     if (AKeyEvent_getRepeatCount(event) > 0) {
-      _input_devices[0].button_resume_down(button);
+      _input->button_resume_down(button);
     } else {
-      _input_devices[0].button_down(button);
+      _input->button_down(button);
     }
   } else if (action == AKEY_EVENT_ACTION_UP) {
-    _input_devices[0].button_up(button);
+    _input->button_up(button);
   }
   // TODO AKEY_EVENT_ACTION_MULTIPLE
 
@@ -549,16 +549,16 @@ handle_motion_event(const AInputEvent *event) {
     if (changed != 0) {
       if (changed & AMOTION_EVENT_BUTTON_PRIMARY) {
         if (button_state & AMOTION_EVENT_BUTTON_PRIMARY) {
-          _input_devices[0].button_down(MouseButton::one());
+          _input->button_down(MouseButton::one());
         } else {
-          _input_devices[0].button_up(MouseButton::one());
+          _input->button_up(MouseButton::one());
         }
       }
       if (changed & AMOTION_EVENT_BUTTON_SECONDARY) {
         if (button_state & AMOTION_EVENT_BUTTON_SECONDARY) {
-          _input_devices[0].button_down(MouseButton::three());
+          _input->button_down(MouseButton::three());
         } else {
-          _input_devices[0].button_up(MouseButton::three());
+          _input->button_up(MouseButton::three());
         }
       }
       _mouse_button_state = button_state;
@@ -568,7 +568,7 @@ handle_motion_event(const AInputEvent *event) {
   float x = AMotionEvent_getX(event, 0) - _app->contentRect.left;
   float y = AMotionEvent_getY(event, 0) - _app->contentRect.top;
 
-  _input_devices[0].set_pointer_in_window(x, y);
+  _input->set_pointer_in_window(x, y);
 
   return 1;
 }

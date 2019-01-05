@@ -165,32 +165,25 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
-  LoaderFileType *requested_type =
-    reg->get_type_from_extension(extension);
-  if (requested_type == nullptr) {
-    if (report_errors) {
-      loader_cat.error()
-        << "Extension of file " << this_filename
-        << " is unrecognized; cannot load.\n";
-      loader_cat.error(false)
-        << "Currently known scene file types are:\n";
-      reg->write(loader_cat.error(false), 2);
+  LoaderFileType *requested_type = reg->get_type_from_extension(extension);
+  // requested_type may be nullptr at this point, because there's still a
+  // chance we can load it via the model-cache or by adding .bam to the end.
+  if (requested_type != nullptr) {
+    if (!requested_type->supports_load()) {
+      if (report_errors) {
+        loader_cat.error()
+          << requested_type->get_name() << " file type (."
+          << extension << ") does not support loading.\n";
+      }
+      return nullptr;
+    } else if (compressed && !requested_type->supports_compressed()) {
+      if (report_errors) {
+        loader_cat.error()
+          << requested_type->get_name() << " file type (."
+          << extension << ") does not support in-line compression.\n";
+      }
+      return nullptr;
     }
-    return nullptr;
-  } else if (!requested_type->supports_load()) {
-    if (report_errors) {
-      loader_cat.error()
-        << requested_type->get_name() << " file type (."
-        << extension << ") does not support loading.\n";
-    }
-    return nullptr;
-  } else if (compressed && !requested_type->supports_compressed()) {
-    if (report_errors) {
-      loader_cat.error()
-        << requested_type->get_name() << " file type (."
-        << extension << ") does not support in-line compression.\n";
-    }
-    return nullptr;
   }
 
   bool search = (this_options.get_flags() & LoaderOptions::LF_search) != 0;
@@ -229,6 +222,14 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       }
 
       if (any_exist) {
+        if (requested_type == nullptr) {
+          loader_cat.error()
+            << "Extension of file " << this_filename
+            << " is unrecognized; cannot load.\n";
+          loader_cat.error(false)
+            << "Currently known scene file types are:\n";
+          reg->write(loader_cat.error(false), 2);
+        }
         loader_cat.error()
           << "Couldn't load file " << this_filename
           << ": all matching files on model path invalid "
@@ -250,6 +251,14 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
     }
     if (report_errors) {
       if (vfs->exists(this_filename)) {
+        if (requested_type == nullptr) {
+          loader_cat.error()
+            << "Extension of file " << this_filename
+            << " is unrecognized; cannot load.\n";
+          loader_cat.error(false)
+            << "Currently known scene file types are:\n";
+          reg->write(loader_cat.error(false), 2);
+        }
         loader_cat.error()
           << "Couldn't load file " << this_filename << ": invalid.\n";
       } else {
@@ -270,7 +279,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
               LoaderFileType *requested_type) const {
   BamCache *cache = BamCache::get_global_ptr();
 
-  bool allow_ram_cache = requested_type->get_allow_ram_cache(options);
+  bool allow_ram_cache =
+    ((options.get_flags() & LoaderOptions::LF_no_ram_cache) == 0);
 
   if (allow_ram_cache) {
     // If we're allowing a RAM cache, use the ModelPool to load the file.
@@ -291,7 +301,8 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
 
   PT(BamCacheRecord) record;
-  if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
+  if (cache->get_cache_models() &&
+      (options.get_flags() & LoaderOptions::LF_no_disk_cache) == 0) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
     if (record != nullptr) {
@@ -332,36 +343,66 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     }
   }
 
-  bool cache_only = (options.get_flags() & LoaderOptions::LF_cache_only) != 0;
-  if (!cache_only) {
-    // Load the model from disk.
-    PT(PandaNode) result = requested_type->load_file(pathname, options, record);
-    if (result != nullptr) {
-      if (record != nullptr) {
-        // Store the loaded model in the model cache.
-        record->set_data(result);
-        cache->store(record);
-      }
+  if (options.get_flags() & LoaderOptions::LF_cache_only) {
+    // We're not allowed to read from disk.
+    return nullptr;
+  }
 
-      if (premunge_data) {
-        SceneGraphReducer sgr;
-        sgr.premunge(result, RenderState::make_empty());
-      }
+  // Load the model from disk.
+  PT(PandaNode) result;
+  if (requested_type != nullptr) {
+    result = requested_type->load_file(pathname, options, record);
+  }
+  if (result != nullptr) {
+    if (record != nullptr) {
+      // Store the loaded model in the model cache.
+      record->set_data(result);
+      cache->store(record);
+    }
+  } else {
+    // Do we have the same filename, but with .bam appended to the end?
+    string extension = pathname.get_extension();
+    Filename pathname_bam = pathname;
+    if (extension == "pz" || extension == "gz") {
+      // Strip .pz/.gz, so that model.egg.pz -> model.egg.bam
+      extension = pathname_bam.get_extension();
+      pathname_bam = pathname_bam.get_fullpath_wo_extension();
+    }
+    if (extension == "bam") {
+      // Don't try to load .bam.bam files, that is just silly.
+      return nullptr;
+    }
+    pathname_bam += ".bam";
 
-      if (allow_ram_cache && result->is_of_type(ModelRoot::get_class_type())) {
-        // Store the loaded model in the RAM cache, and make sure we return a
-        // copy so that this node can be modified independently from the RAM
-        // cached version.
-        ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
-        if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
-          result = result->copy_subgraph();
-        }
-      }
-      return result;
+    BamFile bam_file;
+    if (!bam_file.open_read(pathname_bam, report_errors)) {
+      return nullptr;
+    }
+
+    bam_file.get_reader()->set_loader_options(options);
+    result = bam_file.read_node(report_errors);
+
+    nassertr_always(result != nullptr && result->is_of_type(ModelRoot::get_class_type()), nullptr);
+    // We don't bother with the model-cache here, since this .bam file is
+    // already effectively a cached version of the original model.
+  }
+
+  if (premunge_data) {
+    SceneGraphReducer sgr;
+    sgr.premunge(result, RenderState::make_empty());
+  }
+
+  if (allow_ram_cache && result->is_of_type(ModelRoot::get_class_type())) {
+    // Store the loaded model in the RAM cache, and make sure we return a
+    // copy so that this node can be modified independently from the RAM
+    // cached version.
+    ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
+    if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+      result = result->copy_subgraph();
     }
   }
 
-  return nullptr;
+  return result;
 }
 
 /**

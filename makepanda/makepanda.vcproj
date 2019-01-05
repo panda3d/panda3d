@@ -1043,7 +1043,7 @@
 				<File RelativePath="..\panda\src\collide\collisionLine.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerFluidPusher.h"></File>
 				<File RelativePath="..\panda\src\collide\config_collide.h"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.h"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionBox.h"></File>
 				<File RelativePath="..\panda\src\collide\collide_composite1.cxx"></File>
@@ -1054,7 +1054,7 @@
 				<File RelativePath="..\panda\src\collide\collisionNode.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionGeom.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSegment.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.cxx"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerQueue.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionParabola.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.cxx"></File>
@@ -1089,7 +1089,7 @@
 				<File RelativePath="..\panda\src\collide\collisionInvSphere.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionLine.cxx"></File>
 				<File RelativePath="..\panda\src\collide\collisionEntry.I"></File>
-				<File RelativePath="..\panda\src\collide\collisionTube.I"></File>
+				<File RelativePath="..\panda\src\collide\collisionCapsule.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionSolid.h"></File>
 				<File RelativePath="..\panda\src\collide\collisionPlane.I"></File>
 				<File RelativePath="..\panda\src\collide\collisionHandlerGravity.cxx"></File>
@@ -3577,25 +3577,6 @@
 				<File RelativePath="..\panda\src\net\recentConnectionReader.h"></File>
 				<File RelativePath="..\panda\src\net\datagram_ui.cxx"></File>
 				<File RelativePath="..\panda\src\net\netAddress.cxx"></File>
-			</Filter>
-			<Filter Name="awesomium">
-				<File RelativePath="..\panda\src\awesomium\WebBrowserTexture.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awesomium_includes.h"></File>
-				<File RelativePath="..\panda\src\awesomium\pandaawesomium_composite1.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.h"></File>
-				<File RelativePath="..\panda\src\awesomium\WebBrowserTexture.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\AwMouseAndKeyboard.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebViewListener.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.h"></File>
-				<File RelativePath="..\panda\src\awesomium\config_awesomium.h"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebCore.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.I"></File>
-				<File RelativePath="..\panda\src\awesomium\awWebView.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\AwMouseAndKeyboard.cxx"></File>
-				<File RelativePath="..\panda\src\awesomium\config_awesomium.cxx"></File>
 			</Filter>
 			<Filter Name="movies">
 				<File RelativePath="..\panda\src\movies\ffmpegVideoCursor.h"></File>

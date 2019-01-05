@@ -338,11 +338,12 @@ read_data(xel *array, xelval *alpha_data) {
   // format, mainly because we keep array and alpha data separately, and there
   // doesn't appear to be good support to get this stuff out row-at-a-time for
   // interlaced files.
-  png_bytep *rows = (png_bytep *)PANDA_MALLOC_ARRAY(num_rows * sizeof(png_bytep));
+  png_bytep *rows = (png_bytep *)alloca(num_rows * sizeof(png_bytep));
   int yi;
 
+  png_byte *alloc = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte) * num_rows);
   for (yi = 0; yi < num_rows; yi++) {
-    rows[yi] = (png_byte *)PANDA_MALLOC_ARRAY(row_byte_length * sizeof(png_byte));
+    rows[yi] = alloc + (row_byte_length * sizeof(png_byte)) * yi;
   }
 
   png_read_image(_png, rows);
@@ -402,12 +403,10 @@ read_data(xel *array, xelval *alpha_data) {
     }
 
     nassertr(source <= rows[yi] + row_byte_length, yi);
-    PANDA_FREE_ARRAY(rows[yi]);
   }
 
-  PANDA_FREE_ARRAY(rows);
-
   png_read_end(_png, nullptr);
+  PANDA_FREE_ARRAY(alloc);
 
   return _y_size;
 }

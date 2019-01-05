@@ -142,7 +142,8 @@ get_value(int row, LMatrix4d &mat) const {
 
     default:
       // The contents string contained an invalid letter.
-      nassertv(false);
+      nassert_raise("invalid letter in contents string");
+      return;
     }
   }
 

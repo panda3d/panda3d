@@ -16,9 +16,8 @@
  */
 INLINE VertexBufferContext::
 VertexBufferContext(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
-  BufferContext(&pgo->_vbuffer_residency),
-  AdaptiveLruPage(0),
-  _data(data)
+  BufferContext(&pgo->_vbuffer_residency, data),
+  AdaptiveLruPage(0)
 {
 }
 
@@ -27,7 +26,7 @@ VertexBufferContext(PreparedGraphicsObjects *pgo, GeomVertexArrayData *data) :
  */
 INLINE GeomVertexArrayData *VertexBufferContext::
 get_data() const {
-  return _data;
+  return (GeomVertexArrayData *)_object;
 }
 
 /**
@@ -36,7 +35,7 @@ get_data() const {
  */
 INLINE bool VertexBufferContext::
 changed_size(const GeomVertexArrayDataHandle *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return get_data_size_bytes() != (size_t)reader->get_data_size_bytes();
 }
 
@@ -46,7 +45,7 @@ changed_size(const GeomVertexArrayDataHandle *reader) const {
  */
 INLINE bool VertexBufferContext::
 changed_usage_hint(const GeomVertexArrayDataHandle *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return _usage_hint != reader->get_usage_hint();
 }
 
@@ -56,7 +55,7 @@ changed_usage_hint(const GeomVertexArrayDataHandle *reader) const {
  */
 INLINE bool VertexBufferContext::
 was_modified(const GeomVertexArrayDataHandle *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return get_modified() != reader->get_modified();
 }
 
@@ -77,7 +76,7 @@ update_data_size_bytes(size_t new_data_size_bytes) {
  */
 INLINE void VertexBufferContext::
 mark_loaded(const GeomVertexArrayDataHandle *reader) {
-  nassertv(reader->get_object() == _data);
+  nassertv(reader->get_object() == get_data());
   update_data_size_bytes(reader->get_data_size_bytes());
   update_modified(reader->get_modified());
   _usage_hint = reader->get_usage_hint();

@@ -116,7 +116,7 @@ make(LightAttrib::Operation op, Light *light) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -154,7 +154,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2) {
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -196,7 +196,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 
@@ -241,7 +241,7 @@ make(LightAttrib::Operation op, Light *light1, Light *light2,
     return attrib;
   }
 
-  nassertr(false, make());
+  nassert_raise("invalid operation");
   return make();
 }
 

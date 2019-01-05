@@ -71,7 +71,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  }
 
   // Now that we have made the context current to a window, we can reset the
   // GSG state if this is the first time it has been used.  (We can't just
@@ -125,6 +128,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 void glxGraphicsBuffer::
 close_buffer() {
   if (_gsg != nullptr) {
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXMakeCurrent(_display, None, nullptr);
 
     if (_pbuffer != None) {
@@ -178,6 +182,8 @@ open_buffer() {
   }
 
   nassertr(glxgsg->_supports_pbuffer, false);
+
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];

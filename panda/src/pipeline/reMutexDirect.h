@@ -17,8 +17,7 @@
 #include "pandabase.h"
 #include "mutexTrueImpl.h"
 #include "conditionVarImpl.h"
-
-class Thread;
+#include "thread.h"
 
 #ifndef DEBUG_THREADS
 

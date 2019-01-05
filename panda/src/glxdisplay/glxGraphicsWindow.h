@@ -36,6 +36,7 @@ public:
   virtual ~glxGraphicsWindow() {};
 
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
+  virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void end_flip();
 
 protected:

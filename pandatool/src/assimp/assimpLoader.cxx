@@ -39,7 +39,7 @@
 #include "pandaIOSystem.h"
 #include "pandaLogger.h"
 
-#include "postprocess.h"
+#include <assimp/postprocess.h>
 
 using std::ostringstream;
 using std::stringstream;
