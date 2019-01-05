@@ -334,6 +334,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
     return false;
   }
 
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Found " << _device_class << " device \"" << _name << "\" with "
+      << caps.NumberInputDataIndices << " data indices, "
+      << caps.NumberInputButtonCaps << " button caps, "
+      << caps.NumberInputValueCaps << " value caps\n";
+  }
+
   // Do we have a button mapping?
   static const ButtonHandle gamepad_buttons_common[] = {
     ButtonHandle::none(),
@@ -374,8 +382,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   _axes.clear();
 
   USHORT num_button_caps = caps.NumberInputButtonCaps;
-  PHIDP_BUTTON_CAPS button_caps = (PHIDP_BUTTON_CAPS)alloca(num_button_caps * sizeof(HIDP_BUTTON_CAPS));
-  _HidP_GetButtonCaps(HidP_Input, button_caps, &num_button_caps, buffer);
+  PHIDP_BUTTON_CAPS button_caps;
+  if (num_button_caps > 0u) {
+    button_caps = (PHIDP_BUTTON_CAPS)alloca(num_button_caps * sizeof(HIDP_BUTTON_CAPS));
+    _HidP_GetButtonCaps(HidP_Input, button_caps, &num_button_caps, buffer);
+  }
 
   for (USHORT i = 0; i < num_button_caps; ++i) {
     HIDP_BUTTON_CAPS &cap = button_caps[i];
@@ -396,12 +407,14 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       if (device_cat.is_debug()) {
         device_cat.debug()
           << "Found button: DataIndex=" << dec << cap.NotRange.DataIndex
-          << ", ReportID=" << dec << (int)cap.ReportID
-          << ", UsagePage=0x" << cap.UsagePage
+          << ", ReportID=" << (int)cap.ReportID
+          << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << "\n";
       }
     }
+
+    nassertd(cap.Range.DataIndexMin + upper < _indices.size()) continue;
 
     // Windows will only tell us which buttons in a report are "on", so we
     // need to keep track of which buttons exist in which report so that we
@@ -429,6 +442,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           handle = MouseButton::button(button);
         }
         break;
+
+      default:
+        continue;
       }
 
       int button_index = _buttons.size();
@@ -439,8 +455,11 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
   }
 
   USHORT num_value_caps = caps.NumberInputValueCaps;
-  PHIDP_VALUE_CAPS value_caps = (PHIDP_VALUE_CAPS)alloca(num_value_caps * sizeof(HIDP_VALUE_CAPS));
-  _HidP_GetValueCaps(HidP_Input, value_caps, &num_value_caps, buffer);
+  PHIDP_VALUE_CAPS value_caps;
+  if (num_value_caps > 0u) {
+    value_caps = (PHIDP_VALUE_CAPS)alloca(num_value_caps * sizeof(HIDP_VALUE_CAPS));
+    _HidP_GetValueCaps(HidP_Input, value_caps, &num_value_caps, buffer);
+  }
 
   _hat_data_index = -1;
 
@@ -464,13 +483,15 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       if (device_cat.is_debug()) {
         device_cat.debug()
           << "Found value: DataIndex=" << dec << cap.NotRange.DataIndex
-          << ", ReportID=" << dec << (int)cap.ReportID
+          << ", ReportID=" << (int)cap.ReportID
           << ", UsagePage=0x" << hex << cap.UsagePage
           << ", Usage=0x" << cap.NotRange.Usage
           << dec << ", LogicalMin=" << cap.LogicalMin
           << ", LogicalMax=" << cap.LogicalMax << "\n";
       }
     }
+
+    nassertd(cap.Range.DataIndexMin + upper < _indices.size()) continue;
 
     for (int j = 0; j <= upper; ++j) {
       USAGE usage = j + cap.Range.UsageMin;
@@ -590,6 +611,8 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   _max_data_count = _HidP_MaxDataListLength(HidP_Input, buffer);
 
+  nassertr_always(_max_data_count >= 0, false);
+
   _handle = handle;
   _is_connected = true;
   return true;
@@ -619,12 +642,22 @@ on_input(PRAWINPUT input) {
   nassertv(input != nullptr);
   nassertv(_preparsed != nullptr);
 
+  if (_max_data_count == 0) {
+    return;
+  }
+
   BYTE *ptr = input->data.hid.bRawData;
   if (input->data.hid.dwSizeHid == 0) {
     return;
   }
 
   LightMutexHolder holder(_lock);
+
+  if (device_cat.is_spam()) {
+    device_cat.spam()
+      << _name << " received " << input->data.hid.dwCount << " reports of size "
+      << input->data.hid.dwSizeHid << "\n";
+  }
 
   for (DWORD i = 0; i < input->data.hid.dwCount; ++i) {
     process_report((PCHAR)ptr, input->data.hid.dwSizeHid);
@@ -654,6 +687,7 @@ process_report(PCHAR ptr, size_t size) {
   if (status == HIDP_STATUS_SUCCESS) {
     for (ULONG di = 0; di < count; ++di) {
       if (data[di].DataIndex != _hat_data_index) {
+        nassertd(data[di].DataIndex < _indices.size()) continue;
         const Index &idx = _indices[data[di].DataIndex];
         if (idx._axis >= 0) {
           if (idx._signed) {
