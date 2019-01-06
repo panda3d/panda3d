@@ -406,6 +406,11 @@ reload_implicit_pages() {
 
     if ((file._file_flags & FF_execute) != 0 &&
         filename.is_executable()) {
+
+#ifdef __EMSCRIPTEN__
+      prc_cat.error()
+        << "Executable config files are not supported with Emscripten.\n";
+#else
       // Attempt to execute the file as a command.
       string command = filename.to_os_specific();
 
@@ -428,6 +433,7 @@ reload_implicit_pages() {
       _pages_sorted = false;
 
       page->read_prc(ifs);
+#endif  // __EMSCRIPTEN__
 
     } else if ((file._file_flags & FF_decrypt) != 0) {
       // Read and decrypt the file.
