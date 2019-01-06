@@ -2,7 +2,7 @@
 
 __all__ = ['Audio3DManager']
 
-from panda3d.core import Vec3, VBase3, WeakNodePath
+from panda3d.core import Vec3, VBase3, WeakNodePath, ClockObject
 from direct.task.TaskManagerGlobal import Task, taskMgr
 #
 class Audio3DManager:
@@ -141,14 +141,22 @@ class Audio3DManager:
         """
         Get the velocity of the sound.
         """
-        if (sound in self.vel_dict):
+        if sound in self.vel_dict:
             vel = self.vel_dict[sound]
-            if (vel!=None):
+            if vel is not None:
                 return vel
-            else:
-                for known_object in list(self.sound_dict.keys()):
-                    if self.sound_dict[known_object].count(sound):
-                        return known_object.getPosDelta(self.root)/globalClock.getDt()
+
+            for known_object in list(self.sound_dict.keys()):
+                if self.sound_dict[known_object].count(sound):
+                    node_path = known_object.getNodePath()
+                    if not node_path:
+                        # The node has been deleted.
+                        del self.sound_dict[known_object]
+                        continue
+
+                    clock = ClockObject.getGlobalClock()
+                    return node_path.getPosDelta(self.root) / clock.getDt()
+
         return VBase3(0, 0, 0)
 
     def setListenerVelocity(self, velocity):
@@ -176,10 +184,11 @@ class Audio3DManager:
         """
         Get the velocity of the listener.
         """
-        if (self.listener_vel!=None):
+        if self.listener_vel is not None:
             return self.listener_vel
-        elif (self.listener_target!=None):
-            return self.listener_target.getPosDelta(self.root)/globalClock.getDt()
+        elif self.listener_target is not None:
+            clock = ClockObject.getGlobalClock()
+            return self.listener_target.getPosDelta(self.root) / clock.getDt()
         else:
             return VBase3(0, 0, 0)
 
