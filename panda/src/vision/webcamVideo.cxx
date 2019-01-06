@@ -75,6 +75,6 @@ get_num_options() {
 PT(WebcamVideo) WebcamVideo::
 get_option(int n) {
   find_all_webcams();
-  nassertr((n >= 0) && (n < (int)_all_webcams.size()), NULL);
+  nassertr((n >= 0) && (n < (int)_all_webcams.size()), nullptr);
   return _all_webcams[n];
 }

@@ -44,15 +44,13 @@ public:
                          CycleDataType *locked_cdata,
                          Thread *current_thread = Thread::get_current_thread());
   INLINE CycleDataWriter(const CycleDataWriter<CycleDataType> &copy);
-  INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
+  INLINE CycleDataWriter(CycleDataWriter<CycleDataType> &&from) noexcept;
 
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataLockedReader<CycleDataType> &take_from);
   INLINE CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataLockedReader<CycleDataType> &take_from, bool force_to_0);
 
-#if defined(USE_MOVE_SEMANTICS) && defined(DO_PIPELINING)
-  INLINE CycleDataWriter(CycleDataWriter<CycleDataType> &&from) NOEXCEPT;
-  INLINE void operator = (CycleDataWriter<CycleDataType> &&from) NOEXCEPT;
-#endif
+  INLINE void operator = (CycleDataWriter<CycleDataType> &&from) noexcept;
+  INLINE void operator = (const CycleDataWriter<CycleDataType> &copy);
 
   INLINE ~CycleDataWriter();
 

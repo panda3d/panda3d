@@ -32,31 +32,12 @@ DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
 INLINE DynamicTextGlyph::
 DynamicTextGlyph(int character, PN_stdfloat advance) :
   TextGlyph(character, advance),
-  _page((DynamicTextPage *)NULL),
+  _page(nullptr),
   _x(0), _y(0),
   _x_size(0), _y_size(0),
   _margin(0)
 {
 }
-
-/**
- * Copying DynamicTextGlyph objects is not allowed.
- */
-INLINE DynamicTextGlyph::
-DynamicTextGlyph(const DynamicTextGlyph &) :
-  TextGlyph(0)
-{
-  nassertv(false);
-}
-
-/**
- * Copying DynamicTextGlyph objects is not allowed.
- */
-INLINE void DynamicTextGlyph::
-operator = (const DynamicTextGlyph &) {
-  nassertv(false);
-}
-
 
 /**
  * Returns the DynamicTextPage that this glyph is on.

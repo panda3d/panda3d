@@ -61,14 +61,14 @@ PUBLISHED:
   MAKE_SEQ(get_cvs, get_num_cvs, get_cv);
   MAKE_SEQ(get_knots, get_num_knots, get_knot);
 
-  void write_cv(ostream &out, int n) const;
+  void write_cv(std::ostream &out, int n) const;
 
 protected:
   virtual int append_cv_impl(const LVecBase4 &v)=0;
 
-  void write(ostream &out, int indent_level) const;
-  bool format_egg(ostream &out, const string &name,
-                  const string &curve_type, int indent_level) const;
+  void write(std::ostream &out, int indent_level) const;
+  bool format_egg(std::ostream &out, const std::string &name,
+                  const std::string &curve_type, int indent_level) const;
 
   bool convert_to_nurbs(ParametricCurve *nc) const;
 

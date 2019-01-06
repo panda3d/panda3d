@@ -22,10 +22,15 @@ class CollisionEntrySorter {
 public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
-    LVector3 vec =
-      entry->get_surface_point(entry->get_from_node_path()) -
-      entry->get_from()->get_collision_origin();
-    _dist2 = vec.length_squared();
+    if (entry->has_surface_point()) {
+      LVector3 vec =
+        entry->get_surface_point(entry->get_from_node_path()) -
+        entry->get_from()->get_collision_origin();
+      _dist2 = vec.length_squared();
+    }
+    else {
+      _dist2 = make_inf((PN_stdfloat)0);
+    }
   }
   bool operator < (const CollisionEntrySorter &other) const {
     return _dist2 < other._dist2;
@@ -58,7 +63,7 @@ begin_group() {
  */
 void CollisionHandlerQueue::
 add_entry(CollisionEntry *entry) {
-  nassertv(entry != (CollisionEntry *)NULL);
+  nassertv(entry != nullptr);
   _entries.push_back(entry);
 }
 
@@ -118,7 +123,7 @@ get_num_entries() const {
  */
 CollisionEntry *CollisionHandlerQueue::
 get_entry(int n) const {
-  nassertr(n >= 0 && n < (int)_entries.size(), NULL);
+  nassertr(n >= 0 && n < (int)_entries.size(), nullptr);
   return _entries[n];
 }
 
@@ -126,7 +131,7 @@ get_entry(int n) const {
  *
  */
 void CollisionHandlerQueue::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "CollisionHandlerQueue, " << _entries.size() << " entries";
 }
 
@@ -134,7 +139,7 @@ output(ostream &out) const {
  *
  */
 void CollisionHandlerQueue::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionHandlerQueue, " << _entries.size() << " entries:\n";
 

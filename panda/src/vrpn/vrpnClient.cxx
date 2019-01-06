@@ -26,6 +26,8 @@
 #include "string_utils.h"
 #include "indent.h"
 
+using std::string;
+
 TypeHandle VrpnClient::_type_handle;
 
 /**
@@ -41,7 +43,7 @@ VrpnClient(const string &server_name) :
       << "\n";
   }
   _connection = vrpn_get_connection_by_name(_server_name.c_str());
-  nassertv(_connection != (vrpn_Connection *)NULL);
+  nassertv(_connection != nullptr);
 
   if (!is_valid()) {
     vrpn_cat.warning()
@@ -63,7 +65,7 @@ VrpnClient::
  * polling each frame.
  */
 void VrpnClient::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "VrpnClient, server " << _server_name << "\n";
 
@@ -140,7 +142,7 @@ make_device(TypeHandle device_type, const string &device_name) {
     return make_dial_device(device_name);
 
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -625,7 +627,7 @@ bool VrpnClient::
 add_remote_tracker(const string &tracker, int sensor) {
 
   vrpn_Tracker_Remote *vrpn_tracker = new vrpn_Tracker_Remote(tracker.c_str(), _connection);
-  if (vrpn_tracker == (vrpn_Tracker_Remote *)NULL) {
+  if (vrpn_tracker == nullptr) {
     return false;
   }
 
@@ -654,7 +656,7 @@ bool VrpnClient::
 add_remote_analog(const string &analog) {
 
   vrpn_Analog_Remote *vrpn_analog = new vrpn_Analog_Remote(analog.c_str(), _connection);
-  if (vrpn_analog == (vrpn_Analog_Remote *)NULL) {
+  if (vrpn_analog == nullptr) {
     return false;
   }
 
@@ -680,7 +682,7 @@ bool VrpnClient::
 add_remote_button(const string &button) {
 
   vrpn_Button_Remote *vrpn_button = new vrpn_Button_Remote(button.c_str(), _connection);
-  if (vrpn_button == (vrpn_Button_Remote *)NULL) {
+  if (vrpn_button == nullptr) {
     return false;
   }
 
@@ -706,7 +708,7 @@ bool VrpnClient::
 add_remote_dial(const string &dial) {
 
   vrpn_Dial_Remote *vrpn_dial = new vrpn_Dial_Remote(dial.c_str(), _connection);
-  if (vrpn_dial == (vrpn_Dial_Remote *)NULL) {
+  if (vrpn_dial == nullptr) {
     return false;
   }
 

@@ -29,25 +29,25 @@
  * A cookie sent from an HTTP server to be stored on the client and returned
  * when the path and/or domain matches.
  */
-class EXPCL_PANDAEXPRESS HTTPCookie {
+class EXPCL_PANDA_DOWNLOADER HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie();
-  INLINE explicit HTTPCookie(const string &format, const URLSpec &url);
-  INLINE explicit HTTPCookie(const string &name, const string &path,
-                             const string &domain);
+  INLINE explicit HTTPCookie(const std::string &format, const URLSpec &url);
+  INLINE explicit HTTPCookie(const std::string &name, const std::string &path,
+                             const std::string &domain);
   INLINE ~HTTPCookie();
 
-  INLINE void set_name(const string &name);
-  INLINE const string &get_name() const;
+  INLINE void set_name(const std::string &name);
+  INLINE const std::string &get_name() const;
 
-  INLINE void set_value(const string &value);
-  INLINE const string &get_value() const;
+  INLINE void set_value(const std::string &value);
+  INLINE const std::string &get_value() const;
 
-  INLINE void set_domain(const string &domain);
-  INLINE const string &get_domain() const;
+  INLINE void set_domain(const std::string &domain);
+  INLINE const std::string &get_domain() const;
 
-  INLINE void set_path(const string &path);
-  INLINE const string &get_path() const;
+  INLINE void set_path(const std::string &path);
+  INLINE const std::string &get_path() const;
 
   INLINE void set_expires(const HTTPDate &expires);
   INLINE void clear_expires();
@@ -60,24 +60,24 @@ PUBLISHED:
   bool operator < (const HTTPCookie &other) const;
   void update_from(const HTTPCookie &other);
 
-  bool parse_set_cookie(const string &format, const URLSpec &url);
+  bool parse_set_cookie(const std::string &format, const URLSpec &url);
   INLINE bool is_expired(const HTTPDate &now = HTTPDate::now()) const;
   bool matches_url(const URLSpec &url) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
-  bool parse_cookie_param(const string &param, bool first_param);
+  bool parse_cookie_param(const std::string &param, bool first_param);
 
-  string _name;
-  string _value;
-  string _path;
-  string _domain;
+  std::string _name;
+  std::string _value;
+  std::string _path;
+  std::string _domain;
   HTTPDate _expires;
   bool _secure;
 };
 
-INLINE ostream &operator << (ostream &out, const HTTPCookie &cookie);
+INLINE std::ostream &operator << (std::ostream &out, const HTTPCookie &cookie);
 
 #include "httpCookie.I"
 

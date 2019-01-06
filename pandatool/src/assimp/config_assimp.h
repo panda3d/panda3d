@@ -15,11 +15,20 @@
 #define CONFIG_ASSIMP_H
 
 #include "pandatoolbase.h"
-
+#include "configVariableBool.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_assimp, EXPCL_ASSIMP, EXPTP_ASSIMP);
 NotifyCategoryDecl(assimp, EXPCL_ASSIMP, EXPTP_ASSIMP);
+
+extern ConfigVariableBool assimp_calc_tangent_space;
+extern ConfigVariableBool assimp_join_identical_vertices;
+extern ConfigVariableBool assimp_improve_cache_locality;
+extern ConfigVariableBool assimp_remove_redundant_materials;
+extern ConfigVariableBool assimp_fix_infacing_normals;
+extern ConfigVariableBool assimp_optimize_meshes;
+extern ConfigVariableBool assimp_optimize_graph;
+extern ConfigVariableBool assimp_flip_winding_order;
 
 extern EXPCL_ASSIMP void init_libassimp();
 

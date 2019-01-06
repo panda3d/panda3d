@@ -36,7 +36,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(LVecBase4)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(LVecBase4)() = default;
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(UnalignedLVecBase4) &copy);
@@ -57,12 +57,12 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVecBase4) &unit_w();
 
   EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const string &attr_name) const);
-  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(PyObject *self, const std::string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 4; }
+  constexpr static int size() { return 4; }
 
   INLINE_LINMATH bool is_nan() const;
 
@@ -100,7 +100,7 @@ PUBLISHED:
   INLINE_LINMATH void add_w(FLOATTYPE value);
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 4; }
+  constexpr static int get_num_components() { return 4; }
   INLINE_LINMATH void extract_data(float*){};
 
 public:
@@ -170,8 +170,8 @@ PUBLISHED:
                                    FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LVecBase4) &other) const;
 
-  INLINE_LINMATH void output(ostream &out) const;
-  EXTENSION(INLINE_LINMATH string __repr__() const);
+  INLINE_LINMATH void output(std::ostream &out) const;
+  EXTENSION(INLINE_LINMATH std::string __repr__() const);
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
@@ -228,7 +228,7 @@ PUBLISHED:
 #endif
   };
 
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() DEFAULT_CTOR;
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)() = default;
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(const FLOATNAME(LVecBase4) &copy);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(UnalignedLVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
@@ -238,10 +238,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
-  CONSTEXPR static int size() { return 4; }
+  constexpr static int size() { return 4; }
 
   INLINE_LINMATH const FLOATTYPE *get_data() const;
-  CONSTEXPR static int get_num_components() { return 4; }
+  constexpr static int get_num_components() { return 4; }
 
   INLINE_LINMATH bool operator == (const FLOATNAME(UnalignedLVecBase4) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(UnalignedLVecBase4) &other) const;
@@ -261,7 +261,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase4) &vec) {
+INLINE std::ostream &operator << (std::ostream &out, const FLOATNAME(LVecBase4) &vec) {
   vec.output(out);
   return out;
 }

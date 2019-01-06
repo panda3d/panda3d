@@ -24,6 +24,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 TypeHandle AnimGroup::_type_handle;
 
 
@@ -36,7 +38,7 @@ AnimGroup::
 AnimGroup(const string &name) :
   Namable(name),
   _children(get_class_type()),
-  _root(NULL)
+  _root(nullptr)
 {
 }
 
@@ -50,11 +52,11 @@ AnimGroup(AnimGroup *parent, const AnimGroup &copy) :
   Namable(copy),
   _children(get_class_type())
 {
-  if (parent != (AnimGroup *)NULL) {
+  if (parent != nullptr) {
     parent->_children.push_back(this);
     _root = parent->_root;
   } else {
-    _root = NULL;
+    _root = nullptr;
   }
 }
 
@@ -67,7 +69,7 @@ AnimGroup(AnimGroup *parent, const string &name) :
   Namable(name),
   _children(get_class_type())
  {
-  nassertv(parent != NULL);
+  nassertv(parent != nullptr);
 
   parent->_children.push_back(this);
   _root = parent->_root;
@@ -95,7 +97,7 @@ get_num_children() const {
  */
 AnimGroup *AnimGroup::
 get_child(int n) const {
-  nassertr(n >= 0 && n < (int)_children.size(), NULL);
+  nassertr(n >= 0 && n < (int)_children.size(), nullptr);
   return _children[n];
 }
 
@@ -115,7 +117,7 @@ get_child_named(const string &name) const {
     }
   }
 
-  return (AnimGroup *)NULL;
+  return nullptr;
 }
 
 /**
@@ -132,12 +134,12 @@ find_child(const string &name) const {
       return child;
     }
     AnimGroup *result = child->find_child(name);
-    if (result != (AnimGroup *)NULL) {
+    if (result != nullptr) {
       return result;
     }
   }
 
-  return (AnimGroup *)NULL;
+  return nullptr;
 }
 
 // An STL object to sort a list of children into alphabetical order.
@@ -179,7 +181,7 @@ get_value_type() const {
  * Writes a one-line description of the group.
  */
 void AnimGroup::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << " " << get_name();
 }
 
@@ -187,7 +189,7 @@ output(ostream &out) const {
  * Writes a brief description of the group and all of its descendants.
  */
 void AnimGroup::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
   if (!_children.empty()) {
     out << " {\n";
@@ -201,7 +203,7 @@ write(ostream &out, int indent_level) const {
  * Writes a brief description of all of the group's descendants.
  */
 void AnimGroup::
-write_descendants(ostream &out, int indent_level) const {
+write_descendants(std::ostream &out, int indent_level) const {
   Children::const_iterator ci;
 
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -277,7 +279,7 @@ complete_pointers(TypedWritable **p_list, BamReader *) {
   for (int i = 1; i < _num_children+1; i++) {
     if (p_list[i] == TypedWritable::Null) {
       chan_cat->warning() << get_type().get_name()
-                          << " Ignoring null child" << endl;
+                          << " Ignoring null child" << std::endl;
     } else {
       _children.push_back(DCAST(AnimGroup, p_list[i]));
     }

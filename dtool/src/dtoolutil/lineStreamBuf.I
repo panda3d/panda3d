@@ -34,6 +34,6 @@ has_newline() const {
 INLINE void LineStreamBuf::
 write_chars(const char *start, size_t length) {
   if (length > 0) {
-    _data += string(start, length);
+    _data += std::string(start, length);
   }
 }

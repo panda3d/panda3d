@@ -31,12 +31,12 @@ TypeHandle RocketRegion::_type_handle;
  */
 RocketRegion::
 RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
-             const string &context_name) :
+             const std::string &context_name) :
   DisplayRegion(window, dr_dimensions) {
 
   // A hack I don't like.  libRocket's decorator system has a bug somewhere,
   // and this seems to be a workaround.
-  if (Rocket::Core::GetRenderInterface() == NULL) {
+  if (Rocket::Core::GetRenderInterface() == nullptr) {
     Rocket::Core::SetRenderInterface(&_interface);
   }
 
@@ -50,7 +50,7 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
 
   _context = Rocket::Core::CreateContext(context_name.c_str(),
                                          dimensions, &_interface);
-  nassertv(_context != NULL);
+  nassertv(_context != nullptr);
 
   _lens = new OrthographicLens;
   _lens->set_film_size(dimensions.x, -dimensions.y);
@@ -67,10 +67,10 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
 RocketRegion::
 ~RocketRegion() {
   if (Rocket::Core::GetRenderInterface() == &_interface) {
-    Rocket::Core::SetRenderInterface(NULL);
+    Rocket::Core::SetRenderInterface(nullptr);
   }
 
-  if (_context != NULL) {
+  if (_context != nullptr) {
     if (_context->GetReferenceCount() > 1) {
       _context->RemoveReference();
       return;
@@ -121,7 +121,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
     _lens->set_film_offset(dimensions.x * 0.5, dimensions.y * 0.5);
   }
 
-  if (_input_handler != NULL) {
+  if (_input_handler != nullptr) {
     _input_handler->update_context(_context, pl, pb);
   } else {
     _context->Update();
@@ -130,7 +130,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   CullTraverser *trav = get_cull_traverser();
   trav->set_cull_handler(cull_handler);
   trav->set_scene(scene_setup, gsg, get_incomplete_render());
-  trav->set_view_frustum(NULL);
+  trav->set_view_frustum(nullptr);
 
   _interface.render(_context, trav);
 

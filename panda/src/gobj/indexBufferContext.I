@@ -16,9 +16,8 @@
  */
 INLINE IndexBufferContext::
 IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
-  BufferContext(&pgo->_ibuffer_residency),
-  AdaptiveLruPage(0),
-  _data(data)
+  BufferContext(&pgo->_ibuffer_residency, data),
+  AdaptiveLruPage(0)
 {
 }
 
@@ -27,7 +26,7 @@ IndexBufferContext(PreparedGraphicsObjects *pgo, GeomPrimitive *data) :
  */
 INLINE GeomPrimitive *IndexBufferContext::
 get_data() const {
-  return _data;
+  return (GeomPrimitive *)_object;
 }
 
 /**
@@ -36,7 +35,7 @@ get_data() const {
  */
 INLINE bool IndexBufferContext::
 changed_size(const GeomPrimitivePipelineReader *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return get_data_size_bytes() != (size_t)reader->get_data_size_bytes();
 }
 
@@ -46,7 +45,7 @@ changed_size(const GeomPrimitivePipelineReader *reader) const {
  */
 INLINE bool IndexBufferContext::
 changed_usage_hint(const GeomPrimitivePipelineReader *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return _usage_hint != reader->get_usage_hint();
 }
 
@@ -56,7 +55,7 @@ changed_usage_hint(const GeomPrimitivePipelineReader *reader) const {
  */
 INLINE bool IndexBufferContext::
 was_modified(const GeomPrimitivePipelineReader *reader) const {
-  nassertr(reader->get_object() == _data, false);
+  nassertr(reader->get_object() == get_data(), false);
   return get_modified() != reader->get_modified();
 }
 
@@ -76,7 +75,7 @@ update_data_size_bytes(size_t new_data_size_bytes) {
  */
 INLINE void IndexBufferContext::
 mark_loaded(const GeomPrimitivePipelineReader *reader) {
-  nassertv(reader->get_object() == _data);
+  nassertv(reader->get_object() == get_data());
   update_data_size_bytes(reader->get_data_size_bytes());
   update_modified(reader->get_modified());
   _usage_hint = reader->get_usage_hint();

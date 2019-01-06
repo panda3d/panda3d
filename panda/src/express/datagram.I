@@ -12,29 +12,10 @@
  */
 
 /**
- * Constructs an empty datagram.
- */
-INLINE Datagram::
-Datagram() :
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
-}
-
-/**
  * Constructs a datagram from an existing block of data.
  */
 INLINE Datagram::
-Datagram(const void *data, size_t size) :
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
+Datagram(const void *data, size_t size) {
   append_data(data, size);
 }
 
@@ -43,13 +24,7 @@ Datagram(const void *data, size_t size) :
  */
 INLINE Datagram::
 Datagram(vector_uchar data) :
-  _data(move(data)),
-#ifdef STDFLOAT_DOUBLE
-  _stdfloat_double(true)
-#else
-  _stdfloat_double(false)
-#endif
-{
+  _data(std::move(data)) {
 }
 
 /**
@@ -157,9 +132,9 @@ add_float64(PN_float64 value) {
 INLINE void Datagram::
 add_stdfloat(PN_stdfloat value) {
   if (_stdfloat_double) {
-    add_float64(value);
+    add_float64((double)value);
   } else {
-    add_float32(value);
+    add_float32((float)value);
   }
 }
 
@@ -241,7 +216,7 @@ add_be_float64(PN_float64 value) {
  * followed by n bytes.
  */
 INLINE void Datagram::
-add_string(const string &str) {
+add_string(const std::string &str) {
   // The max sendable length for a string is 2^16.
   nassertv(str.length() <= (uint16_t)0xffff);
 
@@ -257,7 +232,7 @@ add_string(const string &str) {
  * to allow very long strings.
  */
 INLINE void Datagram::
-add_string32(const string &str) {
+add_string32(const std::string &str) {
   // Strings always are preceded by their length
   add_uint32((uint32_t)str.length());
 
@@ -269,7 +244,7 @@ add_string32(const string &str) {
  * Adds a variable-length string to the datagram, as a NULL-terminated string.
  */
 INLINE void Datagram::
-add_z_string(const string &str) {
+add_z_string(const std::string &str) {
   // We must not have any nested null characters in the string.
   size_t null_pos = str.find('\0');
   // Add the string (sans the null character).
@@ -285,7 +260,7 @@ add_z_string(const string &str) {
  * greater than the requested size, this will silently truncate the string.
  */
 INLINE void Datagram::
-add_fixed_string(const string &str, size_t size) {
+add_fixed_string(const std::string &str, size_t size) {
   if (str.length() < size) {
     append_data(str.data(), str.length());
     pad_bytes(size - str.length());
@@ -293,6 +268,35 @@ add_fixed_string(const string &str, size_t size) {
   } else { // str.length() >= size
     append_data(str.data(), size);
   }
+}
+
+/**
+ * Adds a variable-length binary blob to the datagram.  This actually adds a
+ * count followed by n bytes.
+ */
+INLINE void Datagram::
+add_blob(const vector_uchar &data) {
+  // The max sendable size for a blob is 2^16.
+  nassertv(data.size() <= (uint16_t)0xffff);
+
+  // Blobs always are preceded by their size
+  add_uint16((uint16_t)data.size());
+
+  // Add the blob
+  append_data(data.data(), data.size());
+}
+
+/**
+ * Adds a variable-length binary blob to the datagram, using a 32-bit length
+ * field to allow very long blobs.
+ */
+INLINE void Datagram::
+add_blob32(const vector_uchar &data) {
+  // Blobs always are preceded by their size
+  add_uint32((uint32_t)data.size());
+
+  // Add the blob
+  append_data(data.data(), data.size());
 }
 
 /**
@@ -306,25 +310,13 @@ append_data(const vector_uchar &data) {
 /**
  * Returns the datagram's data as a string.
  */
-INLINE string Datagram::
+INLINE std::string Datagram::
 get_message() const {
   // Silly special case for gcc 3.2, which can't tolerate string(NULL, 0).
   if (_data.size() == 0) {
-    return string();
+    return std::string();
   } else {
-    return string((const char *)_data.p(), _data.size());
-  }
-}
-
-/**
- * Returns the datagram's data as a bytes object.
- */
-INLINE vector_uchar Datagram::
-__bytes__() const {
-  if (!_data.empty()) {
-    return vector_uchar(_data.v());
-  } else {
-    return vector_uchar();
+    return std::string((const char *)_data.p(), _data.size());
   }
 }
 
@@ -378,7 +370,7 @@ get_array() const {
  */
 INLINE PTA_uchar Datagram::
 modify_array() {
-  if (_data == (uchar *)NULL) {
+  if (_data == nullptr) {
     // Create a new array.
     _data = PTA_uchar::empty_array(0);
 
@@ -420,7 +412,7 @@ operator == (const Datagram &other) const {
   if (_data == other._data) {
     return true;
   }
-  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+  if (_data != nullptr && other._data != nullptr) {
     return _data.v() == other._data.v();
   }
   return false;
@@ -444,7 +436,7 @@ operator < (const Datagram &other) const {
     return false;
   }
 
-  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+  if (_data != nullptr && other._data != nullptr) {
     // Different pointers, neither NULL.
     return _data.v() < other._data.v();
   }
@@ -474,11 +466,16 @@ generic_write_datagram(Datagram &dest, double value) {
 }
 
 INLINE void
-generic_write_datagram(Datagram &dest, const string &value) {
+generic_write_datagram(Datagram &dest, const std::string &value) {
   dest.add_string(value);
 }
 
 INLINE void
-generic_write_datagram(Datagram &dest, const wstring &value) {
+generic_write_datagram(Datagram &dest, const std::wstring &value) {
   dest.add_wstring(value);
+}
+
+INLINE void
+generic_write_datagram(Datagram &dest, const vector_uchar &value) {
+  dest.add_blob(value);
 }

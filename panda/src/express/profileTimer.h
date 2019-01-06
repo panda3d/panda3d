@@ -37,7 +37,7 @@
       seconds of each other, I don't think you'll get very good
       results.
 */
-class EXPCL_PANDAEXPRESS ProfileTimer {
+class EXPCL_PANDA_EXPRESS ProfileTimer {
   enum { MaxEntriesDefault=4096 };
 PUBLISHED:
   explicit ProfileTimer(const char* name=0, int maxEntries=MaxEntriesDefault);
@@ -54,10 +54,10 @@ PUBLISHED:
   // Don't call any of the following during timing: (Because they are slow,
   // not because anything will break).
   double getTotalTime() const;
-  static void consolidateAllTo(ostream &out=cout);
-  void consolidateTo(ostream &out=cout) const;
-  static void printAllTo(ostream &out=cout);
-  void printTo(ostream &out=cout) const;
+  static void consolidateAllTo(std::ostream &out=std::cout);
+  void consolidateTo(std::ostream &out=std::cout) const;
+  static void printAllTo(std::ostream &out=std::cout);
+  void printTo(std::ostream &out=std::cout) const;
 
 public:
   /*
@@ -67,7 +67,7 @@ public:
         ...
       }
   */
-  class EXPCL_PANDAEXPRESS AutoTimer {
+  class EXPCL_PANDA_EXPRESS AutoTimer {
   public:
     AutoTimer(ProfileTimer& profile, const char* tag);
     ~AutoTimer();

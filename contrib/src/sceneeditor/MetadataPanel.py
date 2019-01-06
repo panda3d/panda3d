@@ -36,7 +36,7 @@ class MetadataPanel(AppShell,Pmw.MegaWidget):
 
 
     def appInit(self):
-        print "Metadata Panel"
+        print("Metadata Panel")
 
     def createInterface(self):
         interior = self.interior()

@@ -587,12 +587,12 @@ setup_sub_image(const PfmFile &copy, int &xto, int &yto,
     yto = 0;
   }
 
-  x_size = min(x_size, copy.get_x_size() - xfrom);
-  y_size = min(y_size, copy.get_y_size() - yfrom);
+  x_size = std::min(x_size, copy.get_x_size() - xfrom);
+  y_size = std::min(y_size, copy.get_y_size() - yfrom);
 
   xmin = xto;
   ymin = yto;
 
-  xmax = min(xmin + x_size, get_x_size());
-  ymax = min(ymin + y_size, get_y_size());
+  xmax = std::min(xmin + x_size, get_x_size());
+  ymax = std::min(ymin + y_size, get_y_size());
 }

@@ -13,7 +13,21 @@
 
 #include "bulletPlaneShape.h"
 
+#include "bulletWorld.h"
+
 TypeHandle BulletPlaneShape::_type_handle;
+
+/**
+ * Creates a plane shape from a plane definition.
+ */
+BulletPlaneShape::
+BulletPlaneShape(LPlane plane) {
+
+  btVector3 btNormal = LVecBase3_to_btVector3(plane.get_normal());
+
+  _shape = new btStaticPlaneShape(btNormal, plane.get_w());
+  _shape->setUserPointer(this);
+}
 
 /**
  *
@@ -48,6 +62,17 @@ btCollisionShape *BulletPlaneShape::
 ptr() const {
 
   return _shape;
+}
+
+/**
+ *
+ */
+LPlane BulletPlaneShape::
+get_plane() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  btVector3 normal = _shape->getPlaneNormal();
+  return LPlane(normal[0], normal[1], normal[2], (PN_stdfloat)_shape->getPlaneConstant());
 }
 
 /**

@@ -55,12 +55,12 @@ protected:
   // The default constructor is protected: don't try to create a PartGroup
   // without a parent.  To create a PartGroup hierarchy, you must first create
   // a PartBundle, and use that as the parent of any subsequent children.
-  INLINE PartGroup(const string &name = "");
+  INLINE PartGroup(const std::string &name = "");
   INLINE PartGroup(const PartGroup &copy);
 
 PUBLISHED:
   // This is the normal PartGroup constructor.
-  explicit PartGroup(PartGroup *parent, const string &name);
+  explicit PartGroup(PartGroup *parent, const std::string &name);
   virtual ~PartGroup();
   virtual bool is_character_joint() const;
 
@@ -71,8 +71,8 @@ PUBLISHED:
   PartGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
 
-  PartGroup *get_child_named(const string &name) const;
-  PartGroup *find_child(const string &name) const;
+  PartGroup *get_child_named(const std::string &name) const;
+  PartGroup *find_child(const std::string &name) const;
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
@@ -84,8 +84,8 @@ PUBLISHED:
   virtual bool clear_forced_channel();
   virtual AnimChannelBase *get_forced_channel() const;
 
-  virtual void write(ostream &out, int indent_level) const;
-  virtual void write_with_value(ostream &out, int indent_level) const;
+  virtual void write(std::ostream &out, int indent_level) const;
+  virtual void write_with_value(std::ostream &out, int indent_level) const;
 
 public:
   virtual TypeHandle get_value_type() const;
@@ -101,8 +101,8 @@ public:
   virtual void determine_effective_channels(const CycleData *root_cdata);
 
 protected:
-  void write_descendants(ostream &out, int indent_level) const;
-  void write_descendants_with_value(ostream &out, int indent_level) const;
+  void write_descendants(std::ostream &out, int indent_level) const;
+  void write_descendants_with_value(std::ostream &out, int indent_level) const;
 
   virtual void pick_channel_index(plist<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index,

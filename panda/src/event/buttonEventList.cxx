@@ -45,7 +45,7 @@ update_mods(ModifierButtons &mods) const {
  *
  */
 void ButtonEventList::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_events.empty()) {
     out << "(no buttons)";
   } else {
@@ -65,7 +65,7 @@ output(ostream &out) const {
  *
  */
 void ButtonEventList::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << _events.size() << " events:\n";
   Events::const_iterator ei;
   for (ei = _events.begin(); ei != _events.end(); ++ei) {

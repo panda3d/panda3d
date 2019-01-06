@@ -23,6 +23,8 @@
 
 #include <time.h>
 
+using std::string;
+
 TypeHandle DisplayRegion::_type_handle;
 TypeHandle DisplayRegionPipelineReader::_type_handle;
 
@@ -50,32 +52,13 @@ DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
  *
  */
 DisplayRegion::
-DisplayRegion(const DisplayRegion &copy) :
-  _window(NULL),
-  _cull_region_pcollector("Cull:Invalid"),
-  _draw_region_pcollector("Draw:Invalid")
-{
-}
-
-/**
- *
- */
-void DisplayRegion::
-operator = (const DisplayRegion&) {
-  nassertv(false);
-}
-
-/**
- *
- */
-DisplayRegion::
 ~DisplayRegion() {
   cleanup();
 
   // The window pointer should already have been cleared by the time the
   // DisplayRegion destructs (since the GraphicsOutput class keeps a reference
   // count on the DisplayRegion).
-  nassertv(_window == (GraphicsOutput *)NULL);
+  nassertv(_window == nullptr);
 }
 
 /**
@@ -126,7 +109,7 @@ set_dimensions(int i, const LVecBase4 &dimensions) {
 
   cdata->_regions[i]._dimensions = dimensions;
 
-  if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
+  if (_window != nullptr && _window->has_size()) {
     do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), cdata);
   }
 }
@@ -137,7 +120,7 @@ set_dimensions(int i, const LVecBase4 &dimensions) {
  */
 GraphicsPipe *DisplayRegion::
 get_pipe() const {
-  return (_window != (GraphicsOutput *)NULL) ? _window->get_pipe() : NULL;
+  return (_window != nullptr) ? _window->get_pipe() : nullptr;
 }
 
 /**
@@ -163,7 +146,7 @@ void DisplayRegion::
 set_camera(const NodePath &camera) {
   CDWriter cdata(_cycler, true);
 
-  Camera *camera_node = (Camera *)NULL;
+  Camera *camera_node = nullptr;
   if (!camera.is_empty()) {
     DCAST_INTO_V(camera_node, camera.node());
   }
@@ -172,12 +155,12 @@ set_camera(const NodePath &camera) {
     // Note that these operations on the DisplayRegion are not pipelined: they
     // operate across all pipeline stages.  Since we have already asserted we
     // are running in pipeline stage 0, no problem.
-    if (cdata->_camera_node != (Camera *)NULL) {
+    if (cdata->_camera_node != nullptr) {
       // We need to tell the old camera we're not using him anymore.
       cdata->_camera_node->remove_display_region(this);
     }
     cdata->_camera_node = camera_node;
-    if (cdata->_camera_node != (Camera *)NULL) {
+    if (cdata->_camera_node != nullptr) {
       // Now tell the new camera we are using him.
       cdata->_camera_node->add_display_region(this);
     }
@@ -326,7 +309,7 @@ set_cull_traverser(CullTraverser *trav) {
  */
 CullTraverser *DisplayRegion::
 get_cull_traverser() {
-  if (_trav == (CullTraverser *)NULL) {
+  if (_trav == nullptr) {
     _trav = new CullTraverser;
   }
   return _trav;
@@ -358,7 +341,7 @@ set_target_tex_page(int page) {
  *
  */
 void DisplayRegion::
-output(ostream &out) const {
+output(std::ostream &out) const {
   CDReader cdata(_cycler);
   out << "DisplayRegion(" << cdata->_regions[0]._dimensions
       << ")=pixels(" << cdata->_regions[0]._pixels << ")";
@@ -375,14 +358,14 @@ output(ostream &out) const {
  */
 Filename DisplayRegion::
 make_screenshot_filename(const string &prefix) {
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
   struct tm *ttm = localtime(&now);
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
 
   static const int buffer_size = 1024;
   char buffer[buffer_size];
 
-  ostringstream filename_strm;
+  std::ostringstream filename_strm;
 
   size_t i = 0;
   while (i < screenshot_filename.length()) {
@@ -475,7 +458,7 @@ bool DisplayRegion::
 get_screenshot(PNMImage &image) {
   PT(Texture) tex = get_screenshot();
 
-  if (tex == NULL) {
+  if (tex == nullptr) {
     return false;
   }
 
@@ -495,13 +478,21 @@ get_screenshot() {
   Thread *current_thread = Thread::get_current_thread();
 
   GraphicsOutput *window = get_window();
-  nassertr(window != (GraphicsOutput *)NULL, NULL);
+  nassertr(window != nullptr, nullptr);
 
   GraphicsStateGuardian *gsg = window->get_gsg();
-  nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
+  nassertr(gsg != nullptr, nullptr);
 
+  // Are we on the draw thread?
+  if (gsg->get_threading_model().get_draw_stage() != current_thread->get_pipeline_stage()) {
+    // Ask the engine to do on the draw thread.
+    GraphicsEngine *engine = window->get_engine();
+    return engine->do_get_screenshot(this, gsg);
+  }
+
+  // We are on the draw thread.
   if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
-    return NULL;
+    return nullptr;
   }
 
   {
@@ -515,7 +506,7 @@ get_screenshot() {
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
                                                _window->get_fb_properties());
   if (!gsg->framebuffer_copy_to_ram(tex, 0, -1, this, buffer)) {
-    return NULL;
+    return nullptr;
   }
 
   window->end_frame(GraphicsOutput::FM_refresh, current_thread);
@@ -541,8 +532,8 @@ get_screenshot() {
 PT(PandaNode) DisplayRegion::
 make_cull_result_graph() {
   CullResult *cull_result = get_cull_result(Thread::get_current_thread());
-  if (cull_result == (CullResult *)NULL) {
-    return NULL;
+  if (cull_result == nullptr) {
+    return nullptr;
   }
   return cull_result->make_result_graph();
 }
@@ -553,7 +544,7 @@ make_cull_result_graph() {
  */
 void DisplayRegion::
 compute_pixels() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     CDWriter cdata(_cycler, false);
     for (size_t i = 0; i < cdata->_regions.size(); ++i) {
       do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(),
@@ -568,7 +559,7 @@ compute_pixels() {
  */
 void DisplayRegion::
 compute_pixels_all_stages() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);
       for (size_t i = 0; i < cdata->_regions.size(); ++i) {
@@ -621,7 +612,7 @@ compute_pixels_all_stages(int x_size, int y_size) {
  */
 bool DisplayRegion::
 supports_pixel_zoom() const {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     if (_window->supports_pixel_zoom()) {
       return get_clear_color_active() && get_clear_depth_active();
     }
@@ -636,7 +627,7 @@ supports_pixel_zoom() const {
  */
 void DisplayRegion::
 win_display_regions_changed() {
-  if (_window != (GraphicsOutput *)NULL) {
+  if (_window != nullptr) {
     _window->win_display_regions_changed();
   }
 }
@@ -659,7 +650,7 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
   region._pixels_i[0] = region._pixels[0];
   region._pixels_i[1] = region._pixels[1];
 
-  nassertv(_window != (GraphicsOutput *)NULL);
+  nassertv(_window != nullptr);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
     region._pixels[2] = int(((1.0f - region._dimensions[3]) * y_size) + 0.5);
@@ -686,13 +677,32 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
  */
 void DisplayRegion::
 set_active_index(int index) {
-#ifdef DO_PSTATS
-  ostringstream strm;
-  strm << "dr_" << index;
-  string name = strm.str();
+#if defined(DO_PSTATS) || !defined(NDEBUG)
+  std::ostringstream strm;
 
-  _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), name);
-  _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), name);
+  // To make a more useful name for PStats and debug output, we add the scene
+  // graph name and camera name.
+  NodePath camera = get_camera();
+  if (!camera.is_empty()) {
+    Camera *camera_node = DCAST(Camera, camera.node());
+    if (camera_node != nullptr) {
+      NodePath scene_root = camera_node->get_scene();
+      if (scene_root.is_empty()) {
+        scene_root = camera.get_top();
+      }
+      strm << scene_root.get_name();
+    }
+  }
+
+  // And add the index in case we have two scene graphs with the same name.
+  strm << "#" << index;
+
+  _debug_name = strm.str();
+#endif
+
+#ifdef DO_PSTATS
+  _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), _debug_name);
+  _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), _debug_name);
 #endif  // DO_PSTATS
 }
 
@@ -713,7 +723,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 DisplayRegion::CData::
 CData() :
   _lens_index(0),
-  _camera_node((Camera *)NULL),
+  _camera_node(nullptr),
   _active(true),
   _sort(0),
   _stereo_channel(Lens::SC_mono),
@@ -764,5 +774,5 @@ make_copy() const {
  */
 GraphicsPipe *DisplayRegionPipelineReader::
 get_pipe() const {
-  return (_object->_window != (GraphicsOutput *)NULL) ? _object->_window->get_pipe() : NULL;
+  return (_object->_window != nullptr) ? _object->_window->get_pipe() : nullptr;
 }

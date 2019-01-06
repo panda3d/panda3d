@@ -20,6 +20,13 @@
 
 #include <algorithm>
 
+using std::endl;
+using std::istream;
+using std::istringstream;
+using std::move;
+using std::ostream;
+using std::string;
+
 // Defines
 
 // Written at the top of the file so we know this is a downloadDb
@@ -253,7 +260,7 @@ read_db(Filename &file, bool want_server_info) {
   file.set_binary();
   istream *read_stream = vfs->open_read_file(file, true);
 
-  if (read_stream == (istream *)NULL) {
+  if (read_stream == nullptr) {
     downloader_cat.error()
       << "failed to open input file: "
       << file << endl;

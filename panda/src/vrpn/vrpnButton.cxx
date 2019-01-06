@@ -24,7 +24,7 @@
  *
  */
 VrpnButton::
-VrpnButton(const string &button_name, vrpn_Connection *connection) :
+VrpnButton(const std::string &button_name, vrpn_Connection *connection) :
   _button_name(button_name)
 {
   _button = new vrpn_Button_Remote(_button_name.c_str(), connection);
@@ -74,7 +74,7 @@ unmark(VrpnButtonDevice *device) {
  *
  */
 void VrpnButton::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _button_name;
 }
 
@@ -82,7 +82,7 @@ output(ostream &out) const {
  *
  */
 void VrpnButton::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_button_name() << " ("
     << _devices.size() << " devices)\n";
@@ -103,8 +103,6 @@ vrpn_button_callback(void *userdata, const vrpn_BUTTONCB info) {
   Devices::iterator di;
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnButtonDevice *device = (*di);
-    device->acquire();
-    device->set_button_state(info.button, info.state != 0);
-    device->unlock();
+    device->button_changed(info.button, info.state != 0);
   }
 }

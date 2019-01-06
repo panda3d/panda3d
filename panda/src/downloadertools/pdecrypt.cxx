@@ -17,7 +17,10 @@
 #include "panda_getopt.h"
 #include "preprocess_argv.h"
 
-string password;
+using std::cerr;
+using std::endl;
+
+std::string password;
 bool got_password = false;
 
 void
@@ -122,7 +125,7 @@ main(int argc, char **argv) {
           // Prompt for password.
           if (!got_password) {
             cerr << "Enter password: ";
-            getline(cin, password);
+            std::getline(std::cin, password);
             got_password = true;
           }
 

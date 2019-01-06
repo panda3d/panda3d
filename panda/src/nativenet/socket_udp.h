@@ -31,11 +31,11 @@ PUBLISHED:
 public:
   inline bool Send(const char *data, int len);
 PUBLISHED:
-  inline bool Send(const string &data);
+  inline bool Send(const std::string &data);
 public:
   inline bool SendTo(const char *data, int len, const Socket_Address &address);
 PUBLISHED:
-  inline bool SendTo(const string &data, const Socket_Address &address);
+  inline bool SendTo(const std::string &data, const Socket_Address &address);
   inline bool SetToBroadCast();
 
 public:
@@ -96,7 +96,7 @@ Send(const char *data, int len) {
  * Send data to connected address
  */
 inline bool Socket_UDP::
-Send(const string &data) {
+Send(const std::string &data) {
   return Send(data.data(), data.size());
 }
 
@@ -112,7 +112,7 @@ SendTo(const char *data, int len, const Socket_Address &address) {
  * Send data to specified address
  */
 inline bool Socket_UDP::
-SendTo(const string &data, const Socket_Address &address) {
+SendTo(const std::string &data, const Socket_Address &address) {
   return SendTo(data.data(), data.size(), address);
 }
 

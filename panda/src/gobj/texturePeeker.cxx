@@ -94,6 +94,10 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _get_component = Texture::get_half_float;
     break;
 
+  case Texture::T_unsigned_int_24_8:
+    _get_component = Texture::get_unsigned_int_24;
+    break;
+
   default:
     // Not supported.
     _image.clear();
@@ -108,6 +112,8 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_depth_component32:
   case Texture::F_red:
   case Texture::F_r16:
+  case Texture::F_r32:
+  case Texture::F_r32i:
     _get_texel = get_texel_r;
     break;
 
@@ -134,6 +140,12 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
     _get_texel = get_texel_la;
     break;
 
+  case Texture::F_rg16:
+  case Texture::F_rg32:
+  case Texture::F_rg:
+    _get_texel = get_texel_rg;
+    break;
+
   case Texture::F_rgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
@@ -142,6 +154,7 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   case Texture::F_rgb332:
   case Texture::F_r11_g11_b10:
   case Texture::F_rgb9_e5:
+  case Texture::F_rgb32:
     _get_texel = get_texel_rgb;
     break;
 
@@ -178,7 +191,7 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
   default:
     // Not supported.
     gobj_cat.error() << "Unsupported texture peeker format: "
-      << Texture::format_format(_format) << endl;
+      << Texture::format_format(_format) << std::endl;
     _image.clear();
     return;
   }
@@ -574,6 +587,18 @@ get_texel_la(LColor &color, const unsigned char *&p, GetComponentFunc *get_compo
   color[1] = color[0];
   color[2] = color[0];
   color[3] = (*get_component)(p);
+}
+
+/**
+ * Gets the color of the texel at byte p, given that the texture is in format
+ * F_rg or similar.
+ */
+void TexturePeeker::
+get_texel_rg(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
+  color[0] = (*get_component)(p);
+  color[1] = (*get_component)(p);
+  color[2] = 0.0f;
+  color[3] = 1.0f;
 }
 
 /**

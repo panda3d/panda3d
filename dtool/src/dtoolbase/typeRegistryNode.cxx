@@ -22,7 +22,7 @@ bool TypeRegistryNode::_paranoid_inheritance = false;
  *
  */
 TypeRegistryNode::
-TypeRegistryNode(TypeHandle handle, const string &name, TypeHandle &ref) :
+TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref) :
   _handle(handle), _name(name), _ref(ref)
 {
   clear_subtree();
@@ -45,7 +45,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   // additional work.  (See r_build_subtrees()).
 
   if (child->_inherit._top == base->_inherit._top) {
-    assert(child->_inherit._top != (TypeRegistryNode *)NULL);
+    assert(child->_inherit._top != nullptr);
 
     bool derives =
       Inherit::is_derived_from(child->_inherit, base->_inherit);
@@ -54,19 +54,19 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
     if (_paranoid_inheritance) {
       bool paranoid_derives = check_derived_from(child, base);
       if (derives != paranoid_derives) {
-        cerr
+        std::cerr
           << "Inheritance test for " << child->_name
           << " from " << base->_name << " failed!\n"
           << "Result: " << derives << " should have been: "
           << paranoid_derives << "\n"
           << "Classes are in the same single inheritance subtree, children of "
           << child->_inherit._top->_name << "\n"
-          << hex
+          << std::hex
           << child->_name << " has mask " << child->_inherit._mask
           << " and bits " << child->_inherit._bits << "\n"
           << base->_name << " has mask " << base->_inherit._mask
           << " and bits " << base->_inherit._bits << "\n"
-          << dec;
+          << std::dec;
         return paranoid_derives;
       }
     }
@@ -118,7 +118,7 @@ is_derived_from(const TypeRegistryNode *child, const TypeRegistryNode *base) {
   if (_paranoid_inheritance) {
     bool paranoid_derives = check_derived_from(child, base);
     if (derives != paranoid_derives) {
-      cerr
+      std::cerr
         << "Inheritance test for " << child->_name
         << " from " << base->_name << " failed!\n"
         << "Result: " << derives << " should have been: "
@@ -255,7 +255,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
     if (_visit_count == (int)_parent_classes.size()) {
       // This is the last time we'll visit this node, so continue the
       // recursion now.
-      assert(_inherit._top == (TypeRegistryNode *)NULL);
+      assert(_inherit._top == nullptr);
       sort(_top_inheritance.begin(), _top_inheritance.end());
       define_subtree();
     }
@@ -263,7 +263,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
   } else {
     // This class singly inherits, so this had better be the only time this
     // function is called on it since clear_subtree().
-    assert(_inherit._top == (TypeRegistryNode *)NULL);
+    assert(_inherit._top == nullptr);
 
     assert(bit_count < (int)(sizeof(SubtreeMaskType) * 8));
 
@@ -280,7 +280,7 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
 
     // We need at least one bit, even if there is only one child, so we can
     // differentiate parent from child.
-    more_bits = max(more_bits, 1);
+    more_bits = std::max(more_bits, 1);
 
     assert(more_bits < (int)(sizeof(SubtreeMaskType) * 8));
 
@@ -306,6 +306,29 @@ r_build_subtrees(TypeRegistryNode *top, int bit_count,
       }
     }
   }
+}
+
+/**
+ * Recurses through the parent nodes to find the best Python type object to
+ * represent objects of this type.
+ */
+PyObject *TypeRegistryNode::
+r_get_python_type() const {
+  Classes::const_iterator ni;
+  for (ni = _parent_classes.begin(); ni != _parent_classes.end(); ++ni) {
+    const TypeRegistryNode *parent = *ni;
+    if (parent->_python_type != nullptr) {
+      return parent->_python_type;
+
+    } else if (!parent->_parent_classes.empty()) {
+      PyObject *py_type = parent->r_get_python_type();
+      if (py_type != nullptr) {
+        return py_type;
+      }
+    }
+  }
+
+  return nullptr;
 }
 
 /**

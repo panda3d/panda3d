@@ -18,8 +18,8 @@
 INLINE PipelineCyclerLinks::
 PipelineCyclerLinks() {
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 #endif  // THREADED_PIPELINE
@@ -30,7 +30,7 @@ PipelineCyclerLinks() {
  */
 INLINE PipelineCyclerLinks::
 ~PipelineCyclerLinks() {
-  nassertv(_next == NULL && _prev == NULL);
+  nassertv(_next == nullptr && _prev == nullptr);
 }
 #endif  // THREADED_PIPELINE
 
@@ -40,7 +40,7 @@ INLINE PipelineCyclerLinks::
  */
 INLINE void PipelineCyclerLinks::
 make_head() {
-  nassertv(_next == NULL && _prev == NULL);
+  nassertv(_next == nullptr && _prev == nullptr);
   _next = this;
   _prev = this;
 }
@@ -55,8 +55,8 @@ INLINE void PipelineCyclerLinks::
 clear_head() {
   nassertv(_next == this && _prev == this);
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 #endif  // THREADED_PIPELINE
@@ -71,8 +71,8 @@ remove_from_list() {
   _prev->_next = _next;
   _next->_prev = _prev;
 #ifndef NDEBUG
-  _next = NULL;
-  _prev = NULL;
+  _next = nullptr;
+  _prev = nullptr;
 #endif
 }
 #endif  // THREADED_PIPELINE
@@ -85,8 +85,8 @@ remove_from_list() {
 INLINE void PipelineCyclerLinks::
 insert_before(PipelineCyclerLinks *node) {
   nassertv(node->_prev->_next == node && node->_next->_prev == node);
-  nassertv(_prev == (PipelineCyclerLinks *)NULL &&
-           _next == (PipelineCyclerLinks *)NULL);
+  nassertv(_prev == nullptr &&
+           _next == nullptr);
   _prev = node->_prev;
   _next = node;
   _prev->_next = this;

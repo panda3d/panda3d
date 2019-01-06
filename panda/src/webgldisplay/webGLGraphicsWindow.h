@@ -28,7 +28,7 @@
 class WebGLGraphicsWindow : public GraphicsWindow {
 public:
   WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -60,7 +60,9 @@ private:
   static ButtonHandle map_key(int which);
   static ButtonHandle map_raw_key(const char *code);
 
-  string _canvas_id;
+  std::string _canvas_id;
+
+  GraphicsWindowInputDevice *_input;
 
 public:
   static TypeHandle get_class_type() {

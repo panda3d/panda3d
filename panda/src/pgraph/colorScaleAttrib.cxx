@@ -45,7 +45,7 @@ CPT(RenderAttrib) ColorScaleAttrib::
 make_identity() {
   // We make identity a special case and store a pointer forever once we find
   // it the first time.
-  if (_identity_attrib == (ColorScaleAttrib *)NULL) {
+  if (_identity_attrib == nullptr) {
     ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));;
     _identity_attrib = return_new(attrib);
   }
@@ -129,7 +129,7 @@ lower_attrib_can_override() const {
  *
  */
 void ColorScaleAttrib::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "off";
@@ -230,15 +230,15 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 /**
- * Quantizes the color scale to the nearest multiple of 1000, just to prevent
+ * Quantizes the color scale to the nearest multiple of 1024, just to prevent
  * runaway accumulation of only slightly-different ColorScaleAttribs.
  */
 void ColorScaleAttrib::
 quantize_scale() {
-  _scale[0] = cfloor(_scale[0] * 1000.0f + 0.5f) * 0.001f;
-  _scale[1] = cfloor(_scale[1] * 1000.0f + 0.5f) * 0.001f;
-  _scale[2] = cfloor(_scale[2] * 1000.0f + 0.5f) * 0.001f;
-  _scale[3] = cfloor(_scale[3] * 1000.0f + 0.5f) * 0.001f;
+  _scale[0] = cfloor(_scale[0] * 1024.0f + 0.5f) / 1024.0f;
+  _scale[1] = cfloor(_scale[1] * 1024.0f + 0.5f) / 1024.0f;
+  _scale[2] = cfloor(_scale[2] * 1024.0f + 0.5f) / 1024.0f;
+  _scale[3] = cfloor(_scale[3] * 1024.0f + 0.5f) / 1024.0f;
 }
 
 /**

@@ -16,7 +16,12 @@
 #include "unicodeLatinMap.h"
 #include "config_dtoolutil.h"
 
-TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_iso8859;
+using std::istream;
+using std::ostream;
+using std::string;
+using std::wstring;
+
+TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_utf8;
 
 /**
  * Adjusts the text stored within the encoder to all uppercase letters
@@ -30,6 +35,7 @@ make_upper() {
     (*si) = unicode_toupper(*si);
   }
   _flags &= ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -44,6 +50,7 @@ make_lower() {
     (*si) = unicode_tolower(*si);
   }
   _flags &= ~F_got_text;
+  text_changed();
 }
 
 /**
@@ -69,7 +76,7 @@ get_wtext_as_ascii() const {
 
     const UnicodeLatinMap::Entry *map_entry =
       UnicodeLatinMap::look_up(character);
-    if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+    if (map_entry != nullptr && map_entry->_ascii_equiv != 0) {
       result += (wchar_t)map_entry->_ascii_equiv;
       if (map_entry->_ascii_additional != 0) {
         result += (wchar_t)map_entry->_ascii_additional;
@@ -102,11 +109,11 @@ is_wtext() const {
 }
 
 /**
- * Encodes a single wide char into a one-, two-, or three-byte string,
- * according to the given encoding system.
+ * Encodes a single Unicode character into a one-, two-, three-, or four-byte
+ * string, according to the given encoding system.
  */
 string TextEncoder::
-encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
+encode_wchar(char32_t ch, TextEncoder::Encoding encoding) {
   switch (encoding) {
   case E_iso8859:
     if ((ch & ~0xff) == 0) {
@@ -117,7 +124,7 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
       // an unusual accent mark).
       const UnicodeLatinMap::Entry *map_entry =
         UnicodeLatinMap::look_up(ch);
-      if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+      if (map_entry != nullptr && map_entry->_ascii_equiv != 0) {
         // Yes, it has an ascii equivalent.
         if (map_entry->_ascii_additional != 0) {
           // In fact, it has two of them.
@@ -138,17 +145,38 @@ encode_wchar(wchar_t ch, TextEncoder::Encoding encoding) {
       return
         string(1, (char)((ch >> 6) | 0xc0)) +
         string(1, (char)((ch & 0x3f) | 0x80));
-    } else {
+    } else if ((ch & ~0xffff) == 0) {
       return
         string(1, (char)((ch >> 12) | 0xe0)) +
         string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
         string(1, (char)((ch & 0x3f) | 0x80));
+    } else {
+      return
+        string(1, (char)((ch >> 18) | 0xf0)) +
+        string(1, (char)(((ch >> 12) & 0x3f) | 0x80)) +
+        string(1, (char)(((ch >> 6) & 0x3f) | 0x80)) +
+        string(1, (char)((ch & 0x3f) | 0x80));
     }
 
-  case E_unicode:
-    return
-      string(1, (char)(ch >> 8)) +
-      string(1, (char)(ch & 0xff));
+  case E_utf16be:
+    if ((ch & ~0xffff) == 0) {
+      // Note that this passes through surrogates and BOMs unharmed.
+      return
+        string(1, (char)(ch >> 8)) +
+        string(1, (char)(ch & 0xff));
+    } else {
+      // Use a surrogate pair.
+      uint32_t v = (uint32_t)ch - 0x10000u;
+      uint16_t hi = (v >> 10u) | 0xd800u;
+      uint16_t lo = (v & 0x3ffu) | 0xdc00u;
+      char encoded[4] = {
+        (char)(hi >> 8),
+        (char)(hi & 0xff),
+        (char)(lo >> 8),
+        (char)(lo & 0xff),
+      };
+      return string(encoded, 4);
+    }
   }
 
   return "";
@@ -162,8 +190,25 @@ string TextEncoder::
 encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
   string result;
 
-  for (wstring::const_iterator pi = wtext.begin(); pi != wtext.end(); ++pi) {
-    result += encode_wchar(*pi, encoding);
+  for (size_t i = 0; i < wtext.size(); ++i) {
+    wchar_t ch = wtext[i];
+
+    // On some systems, wstring may be UTF-16, and contain surrogate pairs.
+#if WCHAR_MAX < 0x10FFFF
+    if (ch >= 0xd800 && ch < 0xdc00 && (i + 1) < wtext.size()) {
+      // This is a high surrogate.  Look for a subsequent low surrogate.
+      wchar_t ch2 = wtext[i + 1];
+      if (ch2 >= 0xdc00 && ch2 < 0xe000) {
+        // Yes, this is a low surrogate.
+        char32_t code_point = 0x10000 + ((ch - 0xd800) << 10) + (ch2 - 0xdc00);
+        result += encode_wchar(code_point, encoding);
+        i++;
+        continue;
+      }
+    }
+#endif
+
+    result += encode_wchar(ch, encoding);
   }
 
   return result;
@@ -182,9 +227,9 @@ decode_text(const string &text, TextEncoder::Encoding encoding) {
       return decode_text_impl(decoder);
     }
 
-  case E_unicode:
+  case E_utf16be:
     {
-      StringUnicodeDecoder decoder(text);
+      StringUtf16Decoder decoder(text);
       return decode_text_impl(decoder);
     }
 
@@ -206,7 +251,7 @@ decode_text_impl(StringDecoder &decoder) {
   wstring result;
   // bool expand_amp = get_expand_amp();
 
-  wchar_t character = decoder.get_next_character();
+  char32_t character = decoder.get_next_character();
   while (!decoder.is_eof()) {
     /*
     if (character == '&' && expand_amp) {
@@ -214,7 +259,14 @@ decode_text_impl(StringDecoder &decoder) {
       character = expand_amp_sequence(decoder);
     }
     */
-    result += character;
+    if (character <= WCHAR_MAX) {
+      result += character;
+    } else {
+      // We need to encode this as a surrogate pair.
+      uint32_t v = (uint32_t)character - 0x10000u;
+      result += (wchar_t)((v >> 10u) | 0xd800u);
+      result += (wchar_t)((v & 0x3ffu) | 0xdc00u);
+    }
     character = decoder.get_next_character();
   }
 
@@ -309,6 +361,12 @@ expand_amp_sequence(StringDecoder &decoder) const {
 }
 */
 
+/**
+ * Called whenever the text has been changed.
+ */
+void TextEncoder::
+text_changed() {
+}
 
 /**
  *
@@ -322,8 +380,8 @@ operator << (ostream &out, TextEncoder::Encoding encoding) {
   case TextEncoder::E_utf8:
     return out << "utf8";
 
-  case TextEncoder::E_unicode:
-    return out << "unicode";
+  case TextEncoder::E_utf16be:
+    return out << "utf16be";
   };
 
   return out << "**invalid TextEncoder::Encoding(" << (int)encoding << ")**";
@@ -341,11 +399,12 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
     encoding = TextEncoder::E_iso8859;
   } else if (word == "utf8" || word == "utf-8") {
     encoding = TextEncoder::E_utf8;
-  } else if (word == "unicode") {
-    encoding = TextEncoder::E_unicode;
+  } else if (word == "unicode" || word == "utf16be" || word == "utf-16be" ||
+                                  word == "utf16-be" || word == "utf-16-be") {
+    encoding = TextEncoder::E_utf16be;
   } else {
     ostream *notify_ptr = StringDecoder::get_notify_ptr();
-    if (notify_ptr != (ostream *)NULL) {
+    if (notify_ptr != nullptr) {
       (*notify_ptr)
         << "Invalid TextEncoder::Encoding: " << word << "\n";
     }

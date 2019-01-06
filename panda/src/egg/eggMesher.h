@@ -30,13 +30,13 @@
  * connectivity, and generates a set of EggTriangleStrips that represent the
  * same geometry.
  */
-class EggMesher {
+class EXPCL_PANDA_EGG EggMesher {
 public:
   EggMesher();
 
   void mesh(EggGroupNode *group, bool flat_shaded);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   bool _consider_fans;
   bool _retesselate_coplanar;

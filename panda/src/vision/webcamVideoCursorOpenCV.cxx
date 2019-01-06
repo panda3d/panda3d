@@ -11,11 +11,16 @@
  * @date 2010-10-20
  */
 
-#include "webcamVideoOpenCV.h"
+#include "webcamVideoCursorOpenCV.h"
 
 #ifdef HAVE_OPENCV
 
+#include "webcamVideoOpenCV.h"
+#include "movieVideoCursor.h"
+
 #include "pStatTimer.h"
+
+#include <opencv2/highgui/highgui.hpp>
 
 TypeHandle WebcamVideoCursorOpenCV::_type_handle;
 
@@ -35,7 +40,7 @@ WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src) : MovieVideoCursor(src) {
   _ready = false;
 
   _capture = cvCaptureFromCAM(src->_camera_index);
-  if (_capture != NULL) {
+  if (_capture != nullptr) {
     _size_x = (int)cvGetCaptureProperty(_capture, CV_CAP_PROP_FRAME_WIDTH);
     _size_y = (int)cvGetCaptureProperty(_capture, CV_CAP_PROP_FRAME_HEIGHT);
     _ready = true;
@@ -47,9 +52,9 @@ WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src) : MovieVideoCursor(src) {
  */
 WebcamVideoCursorOpenCV::
 ~WebcamVideoCursorOpenCV() {
-  if (_capture != NULL) {
+  if (_capture != nullptr) {
     cvReleaseCapture(&_capture);
-    _capture = NULL;
+    _capture = nullptr;
   }
 }
 
@@ -59,13 +64,13 @@ WebcamVideoCursorOpenCV::
 PT(MovieVideoCursor::Buffer) WebcamVideoCursorOpenCV::
 fetch_buffer() {
   if (!_ready) {
-    return NULL;
+    return nullptr;
   }
 
   PT(Buffer) buffer = get_standard_buffer();
   unsigned char *dest = buffer->_block;
   int num_components = get_num_components();
-  nassertr(num_components == 3, NULL);
+  nassertr(num_components == 3, nullptr);
   int dest_x_pitch = num_components;  // Assume component_width == 1
   int dest_y_pitch = _size_x * dest_x_pitch;
 
@@ -75,7 +80,7 @@ fetch_buffer() {
     if (num_components == 3 && x_pitch == 3) {
       // The easy case--copy the whole thing in, row by row.
       int copy_bytes = _size_x * dest_x_pitch;
-      nassertr(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch), NULL);
+      nassertr(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch), nullptr);
 
       for (int y = 0; y < _size_y; ++y) {
         memcpy(dest, r, copy_bytes);
@@ -129,7 +134,7 @@ get_frame_data(const unsigned char *&r,
   nassertr(ready(), false);
 
   IplImage *image = cvQueryFrame(_capture);
-  if (image == NULL) {
+  if (image == nullptr) {
     return false;
   }
 

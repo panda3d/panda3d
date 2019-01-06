@@ -59,3 +59,4 @@ __pycache__/
 # Test tool cache directories
 .tox/
 .cache/
+.pytest_cache/

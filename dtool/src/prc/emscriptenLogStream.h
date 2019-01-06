@@ -26,9 +26,9 @@
  * This is a type of ostream that writes each line to the JavaScript log
  * window.
  */
-class EmscriptenLogStream : public ostream {
+class EmscriptenLogStream : public std::ostream {
 private:
-  class EmscriptenLogStreamBuf : public streambuf {
+  class EmscriptenLogStreamBuf : public std::streambuf {
   public:
     EmscriptenLogStreamBuf(int flags);
     virtual ~EmscriptenLogStreamBuf();

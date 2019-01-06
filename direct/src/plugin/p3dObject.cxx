@@ -19,6 +19,8 @@
 #include "p3dInstanceManager.h"
 #include <string.h>  // strncpy
 
+using std::string;
+
 // The following functions are C-style wrappers around the below P3DObject
 // virtual methods; they are defined to allow us to create the C-style
 // P3D_class_definition method table to store in the P3D_object structure.
@@ -77,7 +79,7 @@ static P3D_object *
 object_call(P3D_object *object, const char *method_name,
             bool needs_response,
             P3D_object *params[], int num_params) {
-  if (method_name == NULL) {
+  if (method_name == nullptr) {
     method_name = "";
   }
   return ((P3DObject *)object)->call(method_name, needs_response, params, num_params);
@@ -147,7 +149,7 @@ generic_get_repr(P3D_object *object, char *buffer, int buffer_length) {
 
 static P3D_object *
 generic_get_property(P3D_object *object, const char *property) {
-  return NULL;
+  return nullptr;
 }
 
 static bool
@@ -164,12 +166,12 @@ generic_has_method(P3D_object *object, const char *method_name) {
 static P3D_object *
 generic_call(P3D_object *object, const char *method_name,
              bool needs_response, P3D_object *params[], int num_params) {
-  return NULL;
+  return nullptr;
 }
 
 static P3D_object *
 generic_eval(P3D_object *object, const char *expression) {
-  return NULL;
+  return nullptr;
 }
 
 P3D_class_definition P3DObject::_generic_class = {
@@ -231,7 +233,7 @@ get_string(char *buffer, int buffer_length) {
  */
 int P3DObject::
 get_repr(char *buffer, int buffer_length) {
-  ostringstream strm;
+  std::ostringstream strm;
   output(strm);
   string result = strm.str();
   strncpy(buffer, result.c_str(), buffer_length);
@@ -244,7 +246,7 @@ get_repr(char *buffer, int buffer_length) {
  */
 P3D_object *P3DObject::
 get_property(const string &property) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -275,7 +277,7 @@ has_method(const string &method_name) {
 P3D_object *P3DObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -284,7 +286,7 @@ call(const string &method_name, bool needs_response,
  */
 P3D_object *P3DObject::
 eval(const string &expression) {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -292,7 +294,7 @@ eval(const string &expression) {
  * This is intended for developer assistance.
  */
 void P3DObject::
-output(ostream &out) {
+output(std::ostream &out) {
   string value;
   make_string(value);
   out << value;
@@ -317,7 +319,7 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
  */
 P3D_object **P3DObject::
 get_object_array() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -335,7 +337,7 @@ get_object_array_size() {
  */
 P3DPythonObject *P3DObject::
 as_python_object() {
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -345,7 +347,7 @@ as_python_object() {
 bool P3DObject::
 get_bool_property(const string &property) {
   P3D_object *result = get_property(property);
-  if (result == NULL) {
+  if (result == nullptr) {
     return 0;
   }
   bool bresult = P3D_OBJECT_GET_BOOL(result);
@@ -370,7 +372,7 @@ set_bool_property(const string &property, bool value) {
 int P3DObject::
 get_int_property(const string &property) {
   P3D_object *result = get_property(property);
-  if (result == NULL) {
+  if (result == nullptr) {
     return 0;
   }
   int iresult = P3D_OBJECT_GET_INT(result);
@@ -395,7 +397,7 @@ set_int_property(const string &property, int value) {
 double P3DObject::
 get_float_property(const string &property) {
   P3D_object *result = get_property(property);
-  if (result == NULL) {
+  if (result == nullptr) {
     return 0.0;
   }
   double fresult = P3D_OBJECT_GET_FLOAT(result);
@@ -421,11 +423,11 @@ set_float_property(const string &property, double value) {
 string P3DObject::
 get_string_property(const string &property) {
   P3D_object *result = get_property(property);
-  if (result == NULL) {
+  if (result == nullptr) {
     return string();
   }
 
-  int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
+  int size = P3D_OBJECT_GET_STRING(result, nullptr, 0);
   char *buffer = new char[size];
   P3D_OBJECT_GET_STRING(result, buffer, size);
   string sresult(buffer, size);

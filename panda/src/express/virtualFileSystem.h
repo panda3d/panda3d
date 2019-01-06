@@ -37,7 +37,7 @@ class VirtualFileComposite;
  * For instance, a VirtualFileSystem can transparently mount one or more
  * Multifiles as their own subdirectory hierarchies.
  */
-class EXPCL_PANDAEXPRESS VirtualFileSystem {
+class EXPCL_PANDA_EXPRESS VirtualFileSystem {
 PUBLISHED:
   VirtualFileSystem();
   ~VirtualFileSystem();
@@ -48,9 +48,9 @@ PUBLISHED:
 
   BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
   BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point,
-                      int flags, const string &password = "");
+                      int flags, const std::string &password = "");
   BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point,
-                      int flags, const string &password = "");
+                      int flags, const std::string &password = "");
   bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
   BLOCKING int unmount(const Filename &physical_filename);
@@ -78,7 +78,7 @@ PUBLISHED:
   BLOCKING bool copy_file(const Filename &orig_filename, const Filename &new_filename);
 
   BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
-                                 const string &default_extension = string()) const;
+                                 const std::string &default_extension = std::string()) const;
   BLOCKING int find_all_files(const Filename &filename, const DSearchPath &searchpath,
                               DSearchPath::Results &results) const;
 
@@ -91,42 +91,42 @@ PUBLISHED:
   INLINE void ls(const Filename &filename) const;
   INLINE void ls_all(const Filename &filename) const;
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
   static VirtualFileSystem *get_global_ptr();
 
   EXTENSION(PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
-  BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
-  BLOCKING static void close_read_file(istream *stream);
+  BLOCKING std::istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING static void close_read_file(std::istream *stream);
 
   EXTENSION(PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
-  BLOCKING ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
-  BLOCKING ostream *open_append_file(const Filename &filename);
-  BLOCKING static void close_write_file(ostream *stream);
+  BLOCKING std::ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
+  BLOCKING std::ostream *open_append_file(const Filename &filename);
+  BLOCKING static void close_write_file(std::ostream *stream);
 
-  BLOCKING iostream *open_read_write_file(const Filename &filename, bool truncate);
-  BLOCKING iostream *open_read_append_file(const Filename &filename);
-  BLOCKING static void close_read_write_file(iostream *stream);
+  BLOCKING std::iostream *open_read_write_file(const Filename &filename, bool truncate);
+  BLOCKING std::iostream *open_read_append_file(const Filename &filename);
+  BLOCKING static void close_read_write_file(std::iostream *stream);
 
 public:
   // We provide Python versions of these as efficient extension methods,
   // above.
-  BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
-  BLOCKING INLINE bool write_file(const Filename &filename, const string &data, bool auto_wrap);
+  BLOCKING INLINE std::string read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING INLINE bool write_file(const Filename &filename, const std::string &data, bool auto_wrap);
 
-  bool atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents, const string &old_contents, const string &new_contents);
-  bool atomic_read_contents(const Filename &filename, string &contents) const;
+  bool atomic_compare_and_exchange_contents(const Filename &filename, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  bool atomic_read_contents(const Filename &filename, std::string &contents) const;
 
-  INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
-  INLINE bool read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const;
+  INLINE bool read_file(const Filename &filename, std::string &result, bool auto_unwrap) const;
+  INLINE bool read_file(const Filename &filename, vector_uchar &result, bool auto_unwrap) const;
   INLINE bool write_file(const Filename &filename, const unsigned char *data, size_t data_size, bool auto_wrap);
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
-  static void parse_options(const string &options,
-                            int &flags, string &password);
-  static void parse_option(const string &option,
-                          int &flags, string &password);
+  static void parse_options(const std::string &options,
+                            int &flags, std::string &password);
+  static void parse_option(const std::string &option,
+                          int &flags, std::string &password);
 
 public:
   // These flags are passed to do_get_file() and
@@ -157,7 +157,7 @@ private:
                       int open_flags) const;
   bool consider_mount_mf(const Filename &filename);
 
-  MutexImpl _lock;
+  mutable MutexImpl _lock;
   typedef pvector<PT(VirtualFileMount) > Mounts;
   Mounts _mounts;
   unsigned int _mount_seq;

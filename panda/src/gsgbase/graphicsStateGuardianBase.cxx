@@ -30,9 +30,9 @@ TypeHandle GraphicsStateGuardianBase::_type_handle;
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_default_gsg() {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  if (gsg_list == NULL) {
+  if (gsg_list == nullptr) {
     // Nobody created a GSG list, so we won't have any GSGs either.
-    return NULL;
+    return nullptr;
   }
   LightMutexHolder holder(gsg_list->_lock);
   return gsg_list->_default_gsg;
@@ -45,7 +45,7 @@ get_default_gsg() {
 void GraphicsStateGuardianBase::
 set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  if (gsg_list == NULL) {
+  if (gsg_list == nullptr) {
     // Nobody ever created a GSG list.  How could we have a GSG?
     nassertv(false);
     return;
@@ -54,7 +54,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
   LightMutexHolder holder(gsg_list->_lock);
   if (find(gsg_list->_gsgs.begin(), gsg_list->_gsgs.end(), default_gsg) == gsg_list->_gsgs.end()) {
     // The specified GSG doesn't exist or it has already destructed.
-    nassertv(false);
+    nassert_raise("GSG not found or already destructed");
     return;
   }
 
@@ -67,7 +67,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
 size_t GraphicsStateGuardianBase::
 get_num_gsgs() {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  if (gsg_list == NULL) {
+  if (gsg_list == nullptr) {
     // Nobody created a GSG list, so we won't have any GSGs either.
     return 0;
   }
@@ -82,10 +82,10 @@ get_num_gsgs() {
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_gsg(size_t n) {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  nassertr(gsg_list != NULL, NULL);
+  nassertr(gsg_list != nullptr, nullptr);
 
   LightMutexHolder holder(gsg_list->_lock);
-  nassertr(n < gsg_list->_gsgs.size(), NULL);
+  nassertr(n < gsg_list->_gsgs.size(), nullptr);
   return gsg_list->_gsgs[n];
 }
 
@@ -96,14 +96,14 @@ get_gsg(size_t n) {
 void GraphicsStateGuardianBase::
 add_gsg(GraphicsStateGuardianBase *gsg) {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  if (gsg_list == NULL) {
+  if (gsg_list == nullptr) {
     gsg_list = new GSGList;
-    gsg_list->_default_gsg = NULL;
+    gsg_list->_default_gsg = nullptr;
 
     GSGList *orig_gsg_list = (GSGList *)
-      AtomicAdjust::compare_and_exchange_ptr(_gsg_list, NULL, gsg_list);
+      AtomicAdjust::compare_and_exchange_ptr(_gsg_list, nullptr, gsg_list);
 
-    if (orig_gsg_list != NULL) {
+    if (orig_gsg_list != nullptr) {
       // Another thread beat us to it.  No problem, we'll use that.
       delete gsg_list;
       gsg_list = orig_gsg_list;
@@ -119,7 +119,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 
   gsg_list->_gsgs.push_back(gsg);
 
-  if (gsg_list->_default_gsg == (GraphicsStateGuardianBase *)NULL) {
+  if (gsg_list->_default_gsg == nullptr) {
     gsg_list->_default_gsg = gsg;
   }
 }
@@ -130,7 +130,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 void GraphicsStateGuardianBase::
 remove_gsg(GraphicsStateGuardianBase *gsg) {
   GSGList *gsg_list = (GSGList *)AtomicAdjust::get_ptr(_gsg_list);
-  if (gsg_list == NULL) {
+  if (gsg_list == nullptr) {
     // No GSGs were added yet, or the program is destructing anyway.
     return;
   }
@@ -150,7 +150,7 @@ remove_gsg(GraphicsStateGuardianBase *gsg) {
     if (!gsg_list->_gsgs.empty()) {
       gsg_list->_default_gsg = *gsg_list->_gsgs.begin();
     } else {
-      gsg_list->_default_gsg = NULL;
+      gsg_list->_default_gsg = nullptr;
     }
   }
 }

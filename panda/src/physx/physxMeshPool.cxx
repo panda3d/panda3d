@@ -32,12 +32,12 @@ bool PhysxMeshPool::
 check_filename(const Filename &fn) {
 
   if (!(VirtualFileSystem::get_global_ptr()->exists(fn))) {
-    physx_cat.error() << "File does not exists: " << fn << endl;
+    physx_cat.error() << "File does not exists: " << fn << std::endl;
     return false;
   }
 
   if (!(VirtualFileSystem::get_global_ptr()->is_regular_file(fn))) {
-    physx_cat.error() << "Not a regular file: " << fn << endl;
+    physx_cat.error() << "Not a regular file: " << fn << std::endl;
     return false;
   }
 
@@ -50,7 +50,7 @@ check_filename(const Filename &fn) {
 PhysxConvexMesh *PhysxMeshPool::
 load_convex_mesh(const Filename &fn) {
 
-  if (!check_filename(fn)) return NULL;
+  if (!check_filename(fn)) return nullptr;
 
   PhysxConvexMesh *mesh;
 
@@ -61,13 +61,13 @@ load_convex_mesh(const Filename &fn) {
     PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxConvexMesh();
-    nassertr_always(mesh, NULL);
+    nassertr_always(mesh, nullptr);
 
     NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-    nassertr_always(sdk, NULL);
+    nassertr_always(sdk, nullptr);
 
     meshPtr = sdk->createConvexMesh(stream);
-    nassertr_always(meshPtr, NULL);
+    nassertr_always(meshPtr, nullptr);
 
     mesh->link(meshPtr);
 
@@ -87,7 +87,7 @@ load_convex_mesh(const Filename &fn) {
 PhysxTriangleMesh *PhysxMeshPool::
 load_triangle_mesh(const Filename &fn) {
 
-  if (!check_filename(fn)) return NULL;
+  if (!check_filename(fn)) return nullptr;
 
   PhysxTriangleMesh *mesh;
 
@@ -98,13 +98,13 @@ load_triangle_mesh(const Filename &fn) {
     PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxTriangleMesh();
-    nassertr_always(mesh, NULL);
+    nassertr_always(mesh, nullptr);
 
     NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-    nassertr_always(sdk, NULL);
+    nassertr_always(sdk, nullptr);
 
     meshPtr = sdk->createTriangleMesh(stream);
-    nassertr_always(meshPtr, NULL);
+    nassertr_always(meshPtr, nullptr);
 
     mesh->link(meshPtr);
 
@@ -124,7 +124,7 @@ load_triangle_mesh(const Filename &fn) {
 PhysxClothMesh *PhysxMeshPool::
 load_cloth_mesh(const Filename &fn) {
 
-  if (!check_filename(fn)) return NULL;
+  if (!check_filename(fn)) return nullptr;
 
   PhysxClothMesh *mesh;
 
@@ -135,13 +135,13 @@ load_cloth_mesh(const Filename &fn) {
     PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxClothMesh();
-    nassertr_always(mesh, NULL);
+    nassertr_always(mesh, nullptr);
 
     NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-    nassertr_always(sdk, NULL);
+    nassertr_always(sdk, nullptr);
 
     meshPtr = sdk->createClothMesh(stream);
-    nassertr_always(meshPtr, NULL);
+    nassertr_always(meshPtr, nullptr);
 
     mesh->link(meshPtr);
 
@@ -161,7 +161,7 @@ load_cloth_mesh(const Filename &fn) {
 PhysxSoftBodyMesh *PhysxMeshPool::
 load_soft_body_mesh(const Filename &fn) {
 
-  if (!check_filename(fn)) return NULL;
+  if (!check_filename(fn)) return nullptr;
 
   PhysxSoftBodyMesh *mesh;
 
@@ -172,13 +172,13 @@ load_soft_body_mesh(const Filename &fn) {
     PhysxFileStream stream = PhysxFileStream(fn, true);
 
     mesh = new PhysxSoftBodyMesh();
-    nassertr_always(mesh, NULL);
+    nassertr_always(mesh, nullptr);
 
     NxPhysicsSDK *sdk = NxGetPhysicsSDK();
-    nassertr_always(sdk, NULL);
+    nassertr_always(sdk, nullptr);
 
     meshPtr = sdk->createSoftBodyMesh(stream);
-    nassertr_always(meshPtr, NULL);
+    nassertr_always(meshPtr, nullptr);
 
     mesh->link(meshPtr);
 
@@ -272,7 +272,7 @@ list_contents() {
  *
  */
 void PhysxMeshPool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
 
   out << "PhysX mesh pool contents:\n";
 
@@ -285,7 +285,7 @@ list_contents(ostream &out) {
 
       out << "  " << fn.get_fullpath()
           << " (convex mesh, " << mesh->ptr()->getReferenceCount()
-          << " references)" << endl;
+          << " references)" << std::endl;
     }
   }
 

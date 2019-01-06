@@ -27,7 +27,7 @@ class EXPCL_PANDA_DISPLAY CallbackGraphicsWindow : public GraphicsWindow {
 protected:
   CallbackGraphicsWindow(GraphicsEngine *engine,
                          GraphicsPipe *pipe,
-                         const string &name,
+                         const std::string &name,
                          const FrameBufferProperties &fb_prop,
                          const WindowProperties &win_prop,
                          int flags,
@@ -178,8 +178,7 @@ PUBLISHED:
   INLINE void clear_render_callback();
   INLINE CallbackObject *get_render_callback() const;
 
-  GraphicsWindowInputDevice &get_input_device(int device);
-  int create_input_device(const string &name);
+  int create_input_device(const std::string &name);
 
 public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);

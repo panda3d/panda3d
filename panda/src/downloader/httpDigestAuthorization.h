@@ -35,11 +35,11 @@ public:
                           bool is_proxy);
   virtual ~HTTPDigestAuthorization();
 
-  virtual const string &get_mechanism() const;
+  virtual const std::string &get_mechanism() const;
   virtual bool is_valid();
 
-  virtual string generate(HTTPEnum::Method method, const string &request_path,
-                          const string &username, const string &body);
+  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
+                          const std::string &username, const std::string &body);
 
 public:
   enum Algorithm {
@@ -55,37 +55,37 @@ public:
   };
 
 private:
-  static int match_qop_token(const string &token);
+  static int match_qop_token(const std::string &token);
 
-  string calc_request_digest(const string &username, const string &password,
+  std::string calc_request_digest(const std::string &username, const std::string &password,
                              HTTPEnum::Method method,
-                             const string &request_path, const string &body);
-  string calc_h(const string &data) const;
-  string calc_kd(const string &secret, const string &data) const;
-  string get_a1(const string &username, const string &password);
-  string get_a2(HTTPEnum::Method method, const string &request_path,
-                const string &body);
-  string get_hex_nonce_count() const;
+                             const std::string &request_path, const std::string &body);
+  std::string calc_h(const std::string &data) const;
+  std::string calc_kd(const std::string &secret, const std::string &data) const;
+  std::string get_a1(const std::string &username, const std::string &password);
+  std::string get_a2(HTTPEnum::Method method, const std::string &request_path,
+                const std::string &body);
+  std::string get_hex_nonce_count() const;
 
-  static string calc_md5(const string &source);
+  static std::string calc_md5(const std::string &source);
   INLINE static char hexdigit(int value);
 
-  string _cnonce;
-  string _nonce;
+  std::string _cnonce;
+  std::string _nonce;
   int _nonce_count;
-  string _opaque;
+  std::string _opaque;
 
   Algorithm _algorithm;
-  string _a1;
+  std::string _a1;
 
   int _qop;
   Qop _chosen_qop;
 
-  static const string _mechanism;
+  static const std::string _mechanism;
 };
 
-ostream &operator << (ostream &out, HTTPDigestAuthorization::Algorithm algorithm);
-ostream &operator << (ostream &out, HTTPDigestAuthorization::Qop qop);
+std::ostream &operator << (std::ostream &out, HTTPDigestAuthorization::Algorithm algorithm);
+std::ostream &operator << (std::ostream &out, HTTPDigestAuthorization::Qop qop);
 
 #include "httpDigestAuthorization.I"
 

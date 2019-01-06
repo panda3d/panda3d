@@ -24,8 +24,8 @@
 #include "configVariableFilename.h"
 #include "configVariableList.h"
 
-ConfigureDecl(config_downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
-NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
+ConfigureDecl(config_downloader, EXPCL_PANDA_DOWNLOADER, EXPTP_PANDA_DOWNLOADER);
+NotifyCategoryDecl(downloader, EXPCL_PANDA_DOWNLOADER, EXPTP_PANDA_DOWNLOADER);
 
 extern ConfigVariableInt downloader_byte_rate;
 extern ConfigVariableBool download_throttle;
@@ -44,9 +44,9 @@ extern ConfigVariableInt http_skip_body_size;
 extern ConfigVariableDouble http_idle_timeout;
 extern ConfigVariableInt http_max_connect_count;
 
-extern EXPCL_PANDAEXPRESS ConfigVariableInt tcp_header_size;
-extern EXPCL_PANDAEXPRESS ConfigVariableBool support_ipv6;
+extern EXPCL_PANDA_DOWNLOADER ConfigVariableInt tcp_header_size;
+extern EXPCL_PANDA_DOWNLOADER ConfigVariableBool support_ipv6;
 
-extern EXPCL_PANDAEXPRESS void init_libdownloader();
+extern EXPCL_PANDA_DOWNLOADER void init_libdownloader();
 
 #endif

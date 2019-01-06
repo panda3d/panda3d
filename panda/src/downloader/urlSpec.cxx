@@ -17,6 +17,13 @@
 
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::setfill;
+using std::setw;
+using std::string;
+
 /**
  *
  */
@@ -711,7 +718,7 @@ output(ostream &out) const {
 string URLSpec::
 quote(const string &source, const string &safe) {
   ostringstream result;
-  result << hex << setfill('0');
+  result << std::hex << setfill('0');
 
   for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
     char ch = (*si);
@@ -750,7 +757,7 @@ quote(const string &source, const string &safe) {
 string URLSpec::
 quote_plus(const string &source, const string &safe) {
   ostringstream result;
-  result << hex << setfill('0');
+  result << std::hex << setfill('0');
 
   for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
     char ch = (*si);

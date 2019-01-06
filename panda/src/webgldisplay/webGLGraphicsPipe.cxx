@@ -39,7 +39,7 @@ WebGLGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string WebGLGraphicsPipe::
+std::string WebGLGraphicsPipe::
 get_interface_name() const {
   return "WebGL";
 }
@@ -68,7 +68,7 @@ get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) WebGLGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

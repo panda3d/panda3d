@@ -12,6 +12,7 @@
  */
 
 #include "xFileMesh.h"
+#include "xFileToEggConverter.h"
 #include "xFileFace.h"
 #include "xFileVertex.h"
 #include "xFileNormal.h"
@@ -22,7 +23,11 @@
 #include "eggVertexPool.h"
 #include "eggVertex.h"
 #include "eggPolygon.h"
+#include "eggGroup.h"
 #include "eggGroupNode.h"
+
+using std::min;
+using std::string;
 
 /**
  *
@@ -33,7 +38,7 @@ XFileMesh(CoordinateSystem cs) : _cs(cs) {
   _has_colors = false;
   _has_uvs = false;
   _has_materials = false;
-  _egg_parent = NULL;
+  _egg_parent = nullptr;
 }
 
 /**
@@ -111,7 +116,7 @@ add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
     _has_uvs = true;
   }
 
-  pair<UniqueVertices::iterator, bool> result =
+  std::pair<UniqueVertices::iterator, bool> result =
     _unique_vertices.insert(UniqueVertices::value_type(vertex, next_index));
 
   if (result.second) {
@@ -140,7 +145,7 @@ add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
     _has_normals = true;
   }
 
-  pair<UniqueNormals::iterator, bool> result =
+  std::pair<UniqueNormals::iterator, bool> result =
     _unique_normals.insert(UniqueNormals::value_type(normal, next_index));
 
   if (result.second) {
@@ -168,7 +173,7 @@ add_material(EggPrimitive *egg_prim) {
     _has_materials = true;
   }
 
-  pair<UniqueMaterials::iterator, bool> result =
+  std::pair<UniqueMaterials::iterator, bool> result =
     _unique_materials.insert(UniqueMaterials::value_type(material, next_index));
 
   if (result.second) {
@@ -257,7 +262,7 @@ set_egg_parent(EggGroupNode *egg_parent) {
  */
 bool XFileMesh::
 create_polygons(XFileToEggConverter *converter) {
-  nassertr(_egg_parent != (EggGroupNode *)NULL, false);
+  nassertr(_egg_parent != nullptr, false);
 
   EggVertexPool *vpool = new EggVertexPool(get_name());
   _egg_parent->add_child(vpool);
@@ -279,7 +284,7 @@ create_polygons(XFileToEggConverter *converter) {
         continue;
       }
       XFileVertex *vertex = _vertices[vertex_index];
-      XFileNormal *normal = (XFileNormal *)NULL;
+      XFileNormal *normal = nullptr;
 
       if (normal_index >= 0 && normal_index < (int)_normals.size()) {
         normal = _normals[normal_index];
@@ -299,7 +304,7 @@ create_polygons(XFileToEggConverter *converter) {
         temp_vtx.set_uv(uv);
       }
 
-      if (normal != (XFileNormal *)NULL && normal->_has_normal) {
+      if (normal != nullptr && normal->_has_normal) {
         temp_vtx.set_normal(normal->_normal);
       }
 
@@ -318,7 +323,7 @@ create_polygons(XFileToEggConverter *converter) {
         WeightMap::const_iterator wmi = data._weight_map.find(vertex_index);
         if (wmi != data._weight_map.end()) {
           EggGroup *joint = converter->find_joint(data._joint_name);
-          if (joint != (EggGroup *)NULL) {
+          if (joint != nullptr) {
             double weight = (*wmi).second;
             LMatrix4d mat = data._matrix_offset;
             mat *= joint->get_node_to_vertex();
@@ -366,7 +371,7 @@ create_polygons(XFileToEggConverter *converter) {
       WeightMap::const_iterator wmi = data._weight_map.find(vertex_index);
       if (wmi != data._weight_map.end()) {
         EggGroup *joint = converter->find_joint(data._joint_name);
-        if (joint != (EggGroup *)NULL) {
+        if (joint != nullptr) {
           double weight = (*wmi).second;
           joint->ref_vertex(egg_vtx, weight);
         }
@@ -433,7 +438,7 @@ get_num_materials() const {
  */
 XFileMaterial *XFileMesh::
 get_material(int n) const {
-  nassertr(n >= 0 && n < (int)_materials.size(), (XFileMaterial *)NULL);
+  nassertr(n >= 0 && n < (int)_materials.size(), nullptr);
   return _materials[n];
 }
 

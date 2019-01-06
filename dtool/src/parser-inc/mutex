@@ -1,0 +1,28 @@
+#pragma once
+
+namespace std {
+  class mutex;
+  class recursive_mutex;
+  class timed_mutex;
+  class recursive_timed_mutex;
+
+  struct defer_lock_t {
+    explicit defer_lock_t() = default;
+  };
+  inline constexpr defer_lock_t defer_lock {};
+
+  struct try_to_lock_t {
+    explicit try_to_lock_t() = default;
+  };
+  inline constexpr try_to_lock_t try_to_lock {};
+
+  struct adopt_lock_t {
+    explicit adopt_lock_t() = default;
+  };
+  inline constexpr adopt_lock_t adopt_lock {};
+
+  template<class Mutex> class lock_guard;
+  template<class Mutex> class unique_lock;
+
+  struct once_flag;
+}

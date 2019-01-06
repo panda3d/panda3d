@@ -31,7 +31,7 @@ CullTraverserData(const NodePath &start,
   _portal_depth(0)
 {
   // Only update the bounding volume if we're going to end up needing it.
-  bool check_bounds = (view_frustum != (GeometricBoundingVolume *)NULL);
+  bool check_bounds = (view_frustum != nullptr);
   _node_reader.check_cached(check_bounds);
 }
 
@@ -55,7 +55,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
 {
   // Only update the bounding volume if we're going to end up needing it.
   bool check_bounds = !_cull_planes->is_empty() ||
-                    (_view_frustum != (GeometricBoundingVolume *)NULL);
+                    (_view_frustum != nullptr);
   _node_reader.check_cached(check_bounds);
 }
 
@@ -140,7 +140,7 @@ is_in_view(const DrawMask &camera_mask) {
     return false;
   }
 
-  if (_view_frustum == (GeometricBoundingVolume *)NULL &&
+  if (_view_frustum == nullptr &&
       _cull_planes->is_empty()) {
     // If the transform is valid, but we don't have a frustum or any clip
     // planes or occluders, it's always in.

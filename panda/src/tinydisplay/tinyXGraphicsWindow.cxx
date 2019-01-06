@@ -37,7 +37,7 @@ TypeHandle TinyXGraphicsWindow::_type_handle;
  */
 TinyXGraphicsWindow::
 TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -45,11 +45,11 @@ TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     GraphicsOutput *host) :
   x11GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  _gc = (GC)NULL;
+  _gc = (GC)nullptr;
 
-  _reduced_frame_buffer = NULL;
-  _full_frame_buffer = NULL;
-  _ximage = NULL;
+  _reduced_frame_buffer = nullptr;
+  _full_frame_buffer = nullptr;
+  _ximage = nullptr;
   update_pixel_factor();
 }
 
@@ -58,12 +58,12 @@ TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 TinyXGraphicsWindow::
 ~TinyXGraphicsWindow() {
-  if (_gc != NULL && _display != NULL) {
+  if (_gc != nullptr && _display != nullptr) {
     XFreeGC(_display, _gc);
   }
-  if (_ximage != NULL) {
+  if (_ximage != nullptr) {
     PANDA_FREE_ARRAY(_ximage->data);
-    _ximage->data = NULL;
+    _ximage->data = nullptr;
     XDestroyImage(_ximage);
   }
 }
@@ -78,12 +78,12 @@ bool TinyXGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
-  if (_xwindow == (X11_Window)NULL) {
+  if (_xwindow == (X11_Window)nullptr) {
     return false;
   }
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
   if (_awaiting_configure) {
@@ -95,7 +95,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   TinyGraphicsStateGuardian *tinygsg;
   DCAST_INTO_R(tinygsg, _gsg, false);
 
-  if (_reduced_frame_buffer != (ZBuffer *)NULL) {
+  if (_reduced_frame_buffer != nullptr) {
     tinygsg->_current_frame_buffer = _reduced_frame_buffer;
   } else {
     tinygsg->_current_frame_buffer = _full_frame_buffer;
@@ -114,7 +114,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinyXGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -138,12 +138,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
  */
 void TinyXGraphicsWindow::
 end_flip() {
-  if (_xwindow == (X11_Window)NULL || !_flip_ready) {
+  if (_xwindow == (X11_Window)nullptr || !_flip_ready) {
     GraphicsWindow::end_flip();
     return;
   }
 
-  if (_reduced_frame_buffer != (ZBuffer *)NULL) {
+  if (_reduced_frame_buffer != nullptr) {
     // Zoom the reduced buffer onto the full buffer.
     ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0,
                        _full_frame_buffer->xsize, _full_frame_buffer->ysize,
@@ -194,8 +194,6 @@ process_events() {
   if (_xwindow == (X11_Window)0) {
     return;
   }
-
-  poll_raw_mice();
 
   XEvent event;
   XKeyEvent keyrelease_event;
@@ -261,7 +259,7 @@ process_events() {
         // A normal window may be resized by the user at will.
         properties.set_size(event.xconfigure.width, event.xconfigure.height);
         system_changed_properties(properties);
-        ZB_resize(_full_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+        ZB_resize(_full_frame_buffer, nullptr, _properties.get_x_size(), _properties.get_y_size());
         _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
         create_reduced_frame_buffer();
         create_ximage();
@@ -271,18 +269,18 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input_devices[0].button_down(button);
+      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input->button_down(button);
       break;
 
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
-      _input_devices[0].button_up(button);
+      _input->set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      _input->button_up(button);
       break;
 
     case MotionNotify:
-      _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      _input->set_pointer_in_window(event.xmotion.x, event.xmotion.y);
       break;
 
     case KeyPress:
@@ -299,11 +297,11 @@ process_events() {
       break;
 
     case EnterNotify:
-      _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+      _input->set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
       break;
 
     case LeaveNotify:
-      _input_devices[0].set_pointer_out_of_window();
+      _input->set_pointer_out_of_window();
       break;
 
     case FocusIn:
@@ -312,7 +310,7 @@ process_events() {
       break;
 
     case FocusOut:
-      _input_devices[0].focus_lost();
+      _input->focus_lost();
       properties.set_foreground(false);
       system_changed_properties(properties);
       break;
@@ -334,7 +332,7 @@ process_events() {
       if ((Atom)(event.xclient.data.l[0]) == _wm_delete_window) {
         // This is a message from the window manager indicating that the user
         // has requested to close the window.
-        string close_request_event = get_close_request_event();
+        std::string close_request_event = get_close_request_event();
         if (!close_request_event.empty()) {
           // In this case, the app has indicated a desire to intercept the
           // request and process it directly.
@@ -377,10 +375,10 @@ process_events() {
  */
 void TinyXGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     TinyGraphicsStateGuardian *tinygsg;
     DCAST_INTO_V(tinygsg, _gsg);
-    tinygsg->_current_frame_buffer = NULL;
+    tinygsg->_current_frame_buffer = nullptr;
     _gsg.clear();
   }
 
@@ -400,7 +398,7 @@ open_window() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, nullptr);
     _gsg = tinygsg;
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);
@@ -478,17 +476,17 @@ open_window() {
     return false;
   }
 
-  _gc = XCreateGC(_display, _xwindow, 0, NULL);
+  _gc = XCreateGC(_display, _xwindow, 0, nullptr);
 
   create_full_frame_buffer();
-  if (_full_frame_buffer == NULL) {
+  if (_full_frame_buffer == nullptr) {
     tinydisplay_cat.error()
       << "Could not create frame buffer.\n";
     return false;
   }
   create_reduced_frame_buffer();
   create_ximage();
-  nassertr(_ximage != NULL, false);
+  nassertr(_ximage != nullptr, false);
 
   tinygsg->_current_frame_buffer = _full_frame_buffer;
 
@@ -513,7 +511,7 @@ open_window() {
   _window_handle = NativeWindowHandle::make_x11(_xwindow);
 
   // And tell our parent window that we're now its child.
-  if (_parent_window_handle != (WindowHandle *)NULL) {
+  if (_parent_window_handle != nullptr) {
     _parent_window_handle->attach_child(_window_handle);
   }
 
@@ -534,9 +532,9 @@ pixel_factor_changed() {
  */
 void TinyXGraphicsWindow::
 create_full_frame_buffer() {
-  if (_full_frame_buffer != NULL) {
+  if (_full_frame_buffer != nullptr) {
     ZB_close(_full_frame_buffer);
-    _full_frame_buffer = NULL;
+    _full_frame_buffer = nullptr;
   }
 
   int mode;
@@ -570,9 +568,9 @@ create_reduced_frame_buffer() {
      return;
   }
 
-  if (_reduced_frame_buffer != NULL) {
+  if (_reduced_frame_buffer != nullptr) {
     ZB_close(_reduced_frame_buffer);
-    _reduced_frame_buffer = NULL;
+    _reduced_frame_buffer = nullptr;
   }
 
   int x_size = get_fb_x_size();
@@ -594,11 +592,11 @@ create_reduced_frame_buffer() {
  */
 void TinyXGraphicsWindow::
 create_ximage() {
-  if (_ximage != NULL) {
+  if (_ximage != nullptr) {
     PANDA_FREE_ARRAY(_ximage->data);
-    _ximage->data = NULL;
+    _ximage->data = nullptr;
     XDestroyImage(_ximage);
-    _ximage = NULL;
+    _ximage = nullptr;
   }
 
   int image_size = _full_frame_buffer->ysize * _pitch;

@@ -23,6 +23,9 @@
 #include "interrogateFunction.h"
 #include "cppFunctionType.h"
 
+using std::ostream;
+using std::string;
+
 /**
  *
  */
@@ -89,17 +92,17 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
           << remap->_wrapper_name << ", METH_VARARGS },\n";
     }
   }
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_simple_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << def->library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_simple_funcs,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << def->library_name << "\n"
@@ -285,7 +288,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      extra_param_check += "|| (" + param_name + "_long == nullptr)";
       pexpr_string = "PyLong_AsUnsignedLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
 
@@ -294,7 +297,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_long == NULL)";
+      extra_param_check += "|| (" + param_name + "_long == nullptr)";
       pexpr_string = "PyLong_AsLongLong(" + param_name + "_long)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_long);";
 
@@ -303,7 +306,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
-      extra_param_check += "|| (" + param_name + "_uint == NULL)";
+      extra_param_check += "|| (" + param_name + "_uint == nullptr)";
       pexpr_string = "(unsigned int)PyLong_AsUnsignedLong(" + param_name + "_uint)";
       extra_cleanup += " Py_XDECREF(" + param_name + "_uint);";
 
@@ -361,7 +364,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
       out << "     " << extra_cleanup << "\n";
     }
     out << "      PyErr_SetString(PyExc_TypeError, \"Invalid parameters.\");\n"
-        << "      return (PyObject *)NULL;\n"
+        << "      return nullptr;\n"
         << "    }\n";
   }
 
@@ -422,7 +425,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
 
   out << "  }\n";
 
-  out << "  return (PyObject *)NULL;\n";
+  out << "  return nullptr;\n";
   out << "}\n\n";
 }
 

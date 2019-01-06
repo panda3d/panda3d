@@ -22,8 +22,9 @@
 // If the system does lack one or the other of these functions, then we'll go
 // ahead and provide it instead.
 
+using std::string;
 
-char *optarg = NULL;
+char *optarg = nullptr;
 int optind = 0;
 int opterr = 1;
 int optopt = 0;
@@ -72,7 +73,7 @@ private:
   class Param {
   public:
     Param(size_t opt_index, size_t argv_index,
-          char short_option, char *argument = NULL);
+          char short_option, char *argument = nullptr);
 
     size_t _opt_index;
     size_t _argv_index;
@@ -121,7 +122,7 @@ private:
 
 // This global pointer is used to differentiate between getopt() being called
 // the first time, vs.  subsequent times.
-static PandaGetopt *pgetopt = NULL;
+static PandaGetopt *pgetopt = nullptr;
 
 /**
  *
@@ -129,7 +130,7 @@ static PandaGetopt *pgetopt = NULL;
 PandaGetopt::
 PandaGetopt(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, bool allow_one_hyphen_long) {
-  assert(optstring != NULL);
+  assert(optstring != nullptr);
 
   _return_in_order = false;
   _require_order = false;
@@ -154,7 +155,7 @@ PandaGetopt(int argc, char *const argv[], const char *optstring,
     ++optstring;
     _require_order = true;
 
-  } else if (getenv("POSIXLY_CORRECT") != NULL) {
+  } else if (getenv("POSIXLY_CORRECT") != nullptr) {
     // REQUIRE_ORDER.
     _require_order = true;
 
@@ -210,13 +211,13 @@ process(int opterr, int *longindex, char *&optarg, int &optind, int &optopt) {
 
   optarg = param._argument;
   optind = (int)param._argv_index;
-  if (longindex != NULL) {
+  if (longindex != nullptr) {
     *longindex = option._longopts_index;
   }
 
-  if (option._option != NULL) {
+  if (option._option != nullptr) {
     // This was a long option.  Check the special longopt handling parameters.
-    if (option._option->flag == NULL) {
+    if (option._option->flag == nullptr) {
       return option._option->val;
     }
     *(option._option->flag) = option._option->val;
@@ -226,7 +227,7 @@ process(int opterr, int *longindex, char *&optarg, int &optind, int &optopt) {
   if (param._opt_index == 0 && opterr) {
     // This was an invalid character.
     optopt = param._short_option;
-    cerr << "Illegal option: -" << param._short_option << "\n";
+    std::cerr << "Illegal option: -" << param._short_option << "\n";
     return '?';
   }
 
@@ -298,9 +299,9 @@ scan_options(const char *optstring, const struct option *longopts) {
     _options.push_back(Option(short_option, has_arg));
   }
 
-  if (longopts != NULL) {
+  if (longopts != nullptr) {
     int longopts_index = 0;
-    while (longopts[longopts_index].name != NULL) {
+    while (longopts[longopts_index].name != nullptr) {
       _options.push_back(Option(longopts, longopts_index));
       ++longopts_index;
     }
@@ -317,7 +318,7 @@ scan_args(int argc, char *const argv[]) {
   bool end_of_processing = false;
 
   while ((int)ai < argc) {
-    assert(argv[ai] != NULL);
+    assert(argv[ai] != nullptr);
 
     if (argv[ai][0] != '-' || end_of_processing) {
       // This is a non-option argument.
@@ -342,8 +343,8 @@ scan_args(int argc, char *const argv[]) {
     } else {
       // An option argument.
 
-      char *option = NULL;
-      char *argument = NULL;
+      char *option = nullptr;
+      char *argument = nullptr;
       size_t opt_index = 0;
       bool is_long_option = false;
       bool has_argument = false;
@@ -387,7 +388,7 @@ scan_args(int argc, char *const argv[]) {
 
       if (is_long_option) {
         char *equals = strchr(option, '=');
-        if (equals != NULL) {
+        if (equals != nullptr) {
           argument = equals + 1;
           has_argument = true;
         }
@@ -416,7 +417,7 @@ scan_args(int argc, char *const argv[]) {
 
   // Now record the non-option arguments that followed the option arguments.
   while ((int)ai < argc) {
-    assert(argv[ai] != NULL);
+    assert(argv[ai] != nullptr);
     _arguments.push_back(argv[ai]);
     ++ai;
   }
@@ -430,7 +431,7 @@ PandaGetopt::Option::
 Option(char short_option, int has_arg) :
   _short_option(short_option),
   _has_arg(has_arg),
-  _option(NULL),
+  _option(nullptr),
   _longopts_index(-1)
 {
 }
@@ -463,17 +464,17 @@ Param(size_t opt_index, size_t argv_index, char short_option, char *argument) :
 
 int
 getopt(int argc, char *const argv[], const char *optstring) {
-  if (pgetopt == NULL) {
-    pgetopt = new PandaGetopt(argc, argv, optstring, NULL, false);
+  if (pgetopt == nullptr) {
+    pgetopt = new PandaGetopt(argc, argv, optstring, nullptr, false);
     pgetopt->permute(argc, (char **)argv);
   }
-  return pgetopt->process(opterr, NULL, optarg, optind, optopt);
+  return pgetopt->process(opterr, nullptr, optarg, optind, optopt);
 }
 
 int
 getopt_long(int argc, char *const argv[], const char *optstring,
             const struct option *longopts, int *longindex) {
-  if (pgetopt == NULL) {
+  if (pgetopt == nullptr) {
     pgetopt = new PandaGetopt(argc, argv, optstring, longopts, false);
     pgetopt->permute(argc, (char **)argv);
   }
@@ -483,7 +484,7 @@ getopt_long(int argc, char *const argv[], const char *optstring,
 int
 getopt_long_only(int argc, char *const argv[], const char *optstring,
                  const struct option *longopts, int *longindex) {
-  if (pgetopt == NULL) {
+  if (pgetopt == nullptr) {
     pgetopt = new PandaGetopt(argc, argv, optstring, longopts, true);
     pgetopt->permute(argc, (char **)argv);
   }

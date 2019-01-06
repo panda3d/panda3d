@@ -82,14 +82,14 @@ get_animation_convert() const {
  * its associated animations.
  */
 INLINE void SomethingToEggConverter::
-set_character_name(const string &character_name) {
+set_character_name(const std::string &character_name) {
   _character_name = character_name;
 }
 
 /**
  * Returns the name of the character generated.  See set_character_name().
  */
-INLINE const string &SomethingToEggConverter::
+INLINE const std::string &SomethingToEggConverter::
 get_character_name() const {
   return _character_name;
 }
@@ -370,7 +370,7 @@ get_merge_externals() const {
  */
 INLINE void SomethingToEggConverter::
 clear_egg_data() {
-  set_egg_data((EggData *)NULL);
+  set_egg_data(nullptr);
 }
 
 /**

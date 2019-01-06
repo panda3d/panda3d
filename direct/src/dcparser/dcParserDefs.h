@@ -16,6 +16,7 @@
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
+#include "vector_uchar.h"
 
 class DCFile;
 class DCClass;
@@ -26,10 +27,10 @@ class DCParameter;
 class DCKeyword;
 class DCPacker;
 
-void dc_init_parser(istream &in, const string &filename, DCFile &file);
-void dc_init_parser_parameter_value(istream &in, const string &filename,
+void dc_init_parser(std::istream &in, const std::string &filename, DCFile &file);
+void dc_init_parser_parameter_value(std::istream &in, const std::string &filename,
                                     DCPacker &packer);
-void dc_init_parser_parameter_description(istream &in, const string &filename,
+void dc_init_parser_parameter_description(std::istream &in, const std::string &filename,
                                           DCFile *file);
 DCField *dc_get_parameter_description();
 void dc_cleanup_parser();
@@ -43,7 +44,7 @@ extern DCFile *dc_file;
 // that has member functions in a union), so we'll use a class instead.  That
 // means we need to declare it externally, here.
 
-class DCTokenType {
+class EXPCL_DIRECT_DCPARSER DCTokenType {
 public:
   union U {
     int s_int;
@@ -60,7 +61,8 @@ public:
     DCParameter *parameter;
     const DCKeyword *keyword;
   } u;
-  string str;
+  std::string str;
+  vector_uchar bytes;
 };
 
 // The yacc-generated code expects to use the symbol 'YYSTYPE' to refer to the

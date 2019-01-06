@@ -16,6 +16,8 @@
 #include "lens.h"
 #include "throw_event.h"
 
+using std::string;
+
 TypeHandle Camera::_type_handle;
 
 /**
@@ -153,7 +155,7 @@ get_tag_state(const string &tag_state) const {
  */
 void Camera::
 set_aux_scene_data(const NodePath &node_path, AuxSceneData *data) {
-  if (data == (AuxSceneData *)NULL) {
+  if (data == nullptr) {
     clear_aux_scene_data(node_path);
   } else {
     _aux_data[node_path] = data;
@@ -188,14 +190,14 @@ get_aux_scene_data(const NodePath &node_path) const {
     return (*ai).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
  * Outputs all of the NodePaths and AuxSceneDatas in use.
  */
 void Camera::
-list_aux_scene_data(ostream &out) const {
+list_aux_scene_data(std::ostream &out) const {
   out << _aux_data.size() << " data objects held:\n";
   AuxData::const_iterator ai;
   for (ai = _aux_data.begin(); ai != _aux_data.end(); ++ai) {
@@ -278,13 +280,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Camera::complete_pointers
-//       Access: Public, Virtual
-//  Description: Receives an array of pointers, one for each time
-//               manager->read_pointer() was called in fillin().
-//               Returns the number of pointers processed.
-////////////////////////////////////////////////////////////////////
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
 int Camera::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = LensNode::complete_pointers(p_list, manager);

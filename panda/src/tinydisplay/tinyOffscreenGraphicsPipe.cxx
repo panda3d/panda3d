@@ -43,7 +43,7 @@ TinyOffscreenGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string TinyOffscreenGraphicsPipe::
+std::string TinyOffscreenGraphicsPipe::
 get_interface_name() const {
   return "TinyPanda";
 }
@@ -61,7 +61,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) TinyOffscreenGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -75,11 +75,11 @@ make_output(const string &name,
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }

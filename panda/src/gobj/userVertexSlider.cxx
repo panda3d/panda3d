@@ -21,7 +21,7 @@ TypeHandle UserVertexSlider::_type_handle;
  *
  */
 UserVertexSlider::
-UserVertexSlider(const string &name) :
+UserVertexSlider(const std::string &name) :
   VertexSlider(InternalName::make(name))
 {
 }

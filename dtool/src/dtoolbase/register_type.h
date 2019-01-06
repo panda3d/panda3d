@@ -27,23 +27,23 @@
  * Register() and record_derivation() yourself.
  */
 INLINE void
-register_type(TypeHandle &type_handle, const string &name);
+register_type(TypeHandle &type_handle, const std::string &name);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3);
 
 INLINE void
-register_type(TypeHandle &type_handle, const string &name,
+register_type(TypeHandle &type_handle, const std::string &name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3, TypeHandle parent4);
 
@@ -55,22 +55,22 @@ register_type(TypeHandle &type_handle, const string &name,
  * reference.
  */
 INLINE TypeHandle
-register_dynamic_type(const string &name);
+register_dynamic_type(const std::string &name);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name, TypeHandle parent1);
+register_dynamic_type(const std::string &name, TypeHandle parent1);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3);
 
 INLINE TypeHandle
-register_dynamic_type(const string &name,
+register_dynamic_type(const std::string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4);
 
@@ -166,12 +166,12 @@ INLINE TypeHandle _get_type_handle(const float *) {
 }
 
 template<>
-INLINE TypeHandle _get_type_handle(const string *) {
+INLINE TypeHandle _get_type_handle(const std::string *) {
   return string_type_handle;
 }
 
 template<>
-INLINE TypeHandle _get_type_handle(const wstring *) {
+INLINE TypeHandle _get_type_handle(const std::wstring *) {
   return wstring_type_handle;
 }
 

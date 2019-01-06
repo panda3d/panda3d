@@ -178,5 +178,5 @@ apply_dampening(float dt, OdeBody& body) {
 
 OdeWorld::
 operator bool () const {
-  return (_id != NULL);
+  return (_id != nullptr);
 }

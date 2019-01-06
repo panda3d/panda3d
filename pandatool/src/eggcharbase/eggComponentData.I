@@ -29,7 +29,7 @@ get_num_models() const {
 INLINE bool EggComponentData::
 has_model(int model_index) const {
   if (model_index >= 0 && model_index < (int)_back_pointers.size()) {
-    return _back_pointers[model_index] != (EggBackPointer *)NULL;
+    return _back_pointers[model_index] != nullptr;
   }
   return false;
 }
@@ -43,5 +43,5 @@ get_model(int model_index) const {
   if (model_index >= 0 && model_index < (int)_back_pointers.size()) {
     return _back_pointers[model_index];
   }
-  return (EggBackPointer *)NULL;
+  return nullptr;
 }

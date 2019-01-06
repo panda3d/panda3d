@@ -46,7 +46,7 @@ operator != (const DisplayMode &other) const {
  *
  */
 void DisplayMode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << width << 'x' << height;
   if (bits_per_pixel > 0) {
     out << ' ' << bits_per_pixel << "bpp";
@@ -64,7 +64,7 @@ output(ostream &out) const {
  */
 DisplayInformation::
 ~DisplayInformation() {
-  if (_display_mode_array != NULL) {
+  if (_display_mode_array != nullptr) {
     delete[] _display_mode_array;
   }
 }
@@ -94,7 +94,7 @@ DisplayInformation() {
   window_height = 0;
   window_bits_per_pixel = 0;
   total_display_modes = 0;
-  display_mode_array = NULL;
+  display_mode_array = nullptr;
   video_memory = 0;
   texture_memory = 0;
   physical_memory = 0;
@@ -148,8 +148,8 @@ DisplayInformation() {
   _num_cpu_cores = 0;
   _num_logical_cpus = 0;
 
-  _get_memory_information_function = 0;
-  _update_cpu_frequency_function = 0;
+  _get_memory_information_function = nullptr;
+  _update_cpu_frequency_function = nullptr;
 
   _os_version_major = -1;
   _os_version_minor = -1;
@@ -489,7 +489,7 @@ get_driver_date_year() {
 /**
  *
  */
-const string &DisplayInformation::
+const std::string &DisplayInformation::
 get_cpu_vendor_string() const {
   return _cpu_vendor_string;
 }
@@ -497,7 +497,7 @@ get_cpu_vendor_string() const {
 /**
  *
  */
-const string &DisplayInformation::
+const std::string &DisplayInformation::
 get_cpu_brand_string() const {
   return _cpu_brand_string;
 }

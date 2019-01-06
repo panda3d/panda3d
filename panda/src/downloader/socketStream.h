@@ -36,9 +36,9 @@ class HTTPChannel;
  * class for both ISocketStream and SocketStream; its purpose is to minimize
  * redundant code between them.  Do not use it directly.
  */
-class EXPCL_PANDAEXPRESS SSReader {
+class EXPCL_PANDA_DOWNLOADER SSReader {
 public:
-  SSReader(istream *stream);
+  SSReader(std::istream *stream);
   virtual ~SSReader();
 
 PUBLISHED:
@@ -53,7 +53,7 @@ PUBLISHED:
 private:
   bool do_receive_datagram(Datagram &dg);
 
-  istream *_istream;
+  std::istream *_istream;
   size_t _data_expected;
   vector_uchar _data_so_far;
   int _tcp_header_size;
@@ -86,9 +86,9 @@ private:
  * class for both OSocketStream and SocketStream; its purpose is to minimize
  * redundant code between them.  Do not use it directly.
  */
-class EXPCL_PANDAEXPRESS SSWriter {
+class EXPCL_PANDA_DOWNLOADER SSWriter {
 public:
-  SSWriter(ostream *stream);
+  SSWriter(std::ostream *stream);
   virtual ~SSWriter();
 
 PUBLISHED:
@@ -109,7 +109,7 @@ PUBLISHED:
   INLINE bool flush();
 
 private:
-  ostream *_ostream;
+  std::ostream *_ostream;
   bool _collect_tcp;
   double _collect_tcp_interval;
   double _queued_data_start;
@@ -122,9 +122,9 @@ private:
  * after an eof condition to check whether the socket has been closed, or
  * whether more data may be available later.
  */
-class EXPCL_PANDAEXPRESS ISocketStream : public istream, public SSReader {
+class EXPCL_PANDA_DOWNLOADER ISocketStream : public std::istream, public SSReader {
 public:
-  INLINE ISocketStream(streambuf *buf);
+  INLINE ISocketStream(std::streambuf *buf);
   virtual ~ISocketStream();
 
 #if _MSC_VER >= 1800
@@ -156,9 +156,9 @@ private:
  * check whether the socket has been closed, or whether more data may be sent
  * later.
  */
-class EXPCL_PANDAEXPRESS OSocketStream : public ostream, public SSWriter {
+class EXPCL_PANDA_DOWNLOADER OSocketStream : public std::ostream, public SSWriter {
 public:
-  INLINE OSocketStream(streambuf *buf);
+  INLINE OSocketStream(std::streambuf *buf);
 
 #if _MSC_VER >= 1800
   INLINE OSocketStream(const OSocketStream &copy) = delete;
@@ -175,9 +175,9 @@ PUBLISHED:
  * A base class for iostreams that read and write to a (possibly non-blocking)
  * socket.
  */
-class EXPCL_PANDAEXPRESS SocketStream : public iostream, public SSReader, public SSWriter {
+class EXPCL_PANDA_DOWNLOADER SocketStream : public std::iostream, public SSReader, public SSWriter {
 public:
-  INLINE SocketStream(streambuf *buf);
+  INLINE SocketStream(std::streambuf *buf);
 
 #if _MSC_VER >= 1800
   INLINE SocketStream(const SocketStream &copy) = delete;

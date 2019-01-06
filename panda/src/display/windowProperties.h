@@ -27,6 +27,10 @@
  * properties for a window after it has been opened.
  */
 class EXPCL_PANDA_DISPLAY WindowProperties {
+public:
+  WindowProperties();
+  INLINE WindowProperties(const WindowProperties &copy);
+
 PUBLISHED:
   enum ZOrder {
     Z_bottom,
@@ -40,8 +44,9 @@ PUBLISHED:
     M_confined,
   };
 
-  WindowProperties();
-  INLINE WindowProperties(const WindowProperties &copy);
+  EXTENSION(WindowProperties(PyObject *self, PyObject *args, PyObject *kwds));
+
+PUBLISHED:
   void operator = (const WindowProperties &copy);
   INLINE ~WindowProperties();
 
@@ -86,8 +91,8 @@ PUBLISHED:
   MAKE_PROPERTY2(mouse_mode, has_mouse_mode, get_mouse_mode,
                              set_mouse_mode, clear_mouse_mode);
 
-  INLINE void set_title(const string &title);
-  INLINE const string &get_title() const;
+  INLINE void set_title(const std::string &title);
+  INLINE const std::string &get_title() const;
   INLINE bool has_title() const;
   INLINE void clear_title();
   MAKE_PROPERTY2(title, has_title, get_title, set_title, clear_title);
@@ -166,7 +171,7 @@ PUBLISHED:
   MAKE_PROPERTY2(z_order, has_z_order, get_z_order, set_z_order, clear_z_order);
 
   void set_parent_window(size_t parent);
-  INLINE void set_parent_window(WindowHandle *parent_window = NULL);
+  INLINE void set_parent_window(WindowHandle *parent_window = nullptr);
   INLINE WindowHandle *get_parent_window() const;
   INLINE bool has_parent_window() const;
   INLINE void clear_parent_window();
@@ -175,7 +180,7 @@ PUBLISHED:
 
   void add_properties(const WindowProperties &other);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   // This bitmask indicates which of the parameters in the properties
@@ -216,7 +221,7 @@ private:
   LPoint2i _origin;
   LVector2i _size;
   MouseMode _mouse_mode;
-  string _title;
+  std::string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
   ZOrder _z_order;
@@ -226,18 +231,18 @@ private:
   static WindowProperties *_default_properties;
 };
 
-EXPCL_PANDA_DISPLAY ostream &
-operator << (ostream &out, WindowProperties::ZOrder z_order);
-EXPCL_PANDA_DISPLAY istream &
-operator >> (istream &in, WindowProperties::ZOrder &z_order);
+EXPCL_PANDA_DISPLAY std::ostream &
+operator << (std::ostream &out, WindowProperties::ZOrder z_order);
+EXPCL_PANDA_DISPLAY std::istream &
+operator >> (std::istream &in, WindowProperties::ZOrder &z_order);
 
-EXPCL_PANDA_DISPLAY ostream &
-operator << (ostream &out, WindowProperties::MouseMode mode);
-EXPCL_PANDA_DISPLAY istream &
-operator >> (istream &in, WindowProperties::MouseMode &mode);
+EXPCL_PANDA_DISPLAY std::ostream &
+operator << (std::ostream &out, WindowProperties::MouseMode mode);
+EXPCL_PANDA_DISPLAY std::istream &
+operator >> (std::istream &in, WindowProperties::MouseMode &mode);
 
 
-INLINE ostream &operator << (ostream &out, const WindowProperties &properties);
+INLINE std::ostream &operator << (std::ostream &out, const WindowProperties &properties);
 
 #include "windowProperties.I"
 

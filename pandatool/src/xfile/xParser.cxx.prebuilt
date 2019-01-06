@@ -105,7 +105,7 @@ static PT(XFileDataDef) current_data_def;
 ////////////////////////////////////////////////////////////////////
 
 void
-x_init_parser(istream &in, const string &filename, XFile &file) {
+x_init_parser(std::istream &in, const std::string &filename, XFile &file) {
   x_file = &file;
   current_node = &file;
   x_init_lexer(in, filename);
@@ -1803,7 +1803,7 @@ yyreduce:
 /* Line 1464 of yacc.c  */
 #line 325 "xParser.yxx"
     {
-  (yyval.str) = string();
+  (yyval.str) = std::string();
 }
     break;
 

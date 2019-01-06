@@ -24,7 +24,7 @@
  *
  */
 VrpnDial::
-VrpnDial(const string &dial_name, vrpn_Connection *connection) :
+VrpnDial(const std::string &dial_name, vrpn_Connection *connection) :
   _dial_name(dial_name)
 {
   _dial = new vrpn_Dial_Remote(_dial_name.c_str(), connection);
@@ -74,7 +74,7 @@ unmark(VrpnDialDevice *device) {
  *
  */
 void VrpnDial::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << _dial_name;
 }
 
@@ -82,7 +82,7 @@ output(ostream &out) const {
  *
  */
 void VrpnDial::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_dial_name() << " ("
     << _devices.size() << " devices)\n";
@@ -104,8 +104,6 @@ vrpn_dial_callback(void *userdata, const vrpn_DIALCB info) {
   Devices::iterator di;
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnDialDevice *device = (*di);
-    device->acquire();
     device->push_dial(info.dial, info.change);
-    device->unlock();
   }
 }

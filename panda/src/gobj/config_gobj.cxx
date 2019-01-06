@@ -13,7 +13,7 @@
 
 #include "animateVerticesRequest.h"
 #include "bufferContext.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_gobj.h"
 #include "geom.h"
 #include "geomCacheEntry.h"
@@ -70,7 +70,7 @@
 #include "dconfig.h"
 #include "string_utils.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_GOBJ)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_GOBJ)
   #error Buildsystem error: BUILDING_PANDA_GOBJ not defined
 #endif
 
@@ -259,18 +259,6 @@ ConfigVariableBool cache_generated_shaders
 ("cache-generated-shaders", true,
  PRC_DESC("Set this true to cause all generated shaders to be cached in "
           "memory.  This is useful to prevent unnecessary recompilation."));
-
-ConfigVariableBool enforce_attrib_lock
-("enforce-attrib-lock", true,
- PRC_DESC("When a MaterialAttrib, TextureAttrib, or LightAttrib is "
-          "constructed, the corresponding Material, Texture, or Light "
-          "is 'attrib locked.'  The attrib lock prevents qualitative "
-          "changes to the object.  This makes it possible to hardwire "
-          "information about material, light, and texture properties "
-          "into generated shaders.  This config variable can disable "
-          "the attrib lock.  Disabling the lock will break the shader "
-          "generator, but doing so may be necessary for backward "
-          "compatibility with old code."));
 
 ConfigVariableBool vertices_float64
 ("vertices-float64", false,
@@ -522,6 +510,15 @@ ConfigVariableBool stereo_lens_old_convergence
           "since been corrected, but if your application relies on the "
           "old, incorrect behavior, this may be set to 'true' to switch "
           "back to the old calculation."));
+
+ConfigVariableBool basic_shaders_only
+("basic-shaders-only", false,
+ PRC_DESC("Set this to true if you aren't interested in shader model three "
+          "and beyond.  Setting this flag will cause panda to disable "
+          "bleeding-edge shader functionality which tends to be unreliable "
+          "or broken.  At some point, when functionality that is currently "
+          "flaky becomes reliable, we may expand the definition of what "
+          "constitutes 'basic' shaders."));
 
 ConfigVariableString cg_glsl_version
 ("cg-glsl-version", "",

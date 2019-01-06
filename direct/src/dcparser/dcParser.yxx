@@ -29,18 +29,22 @@
 #define YYINITDEPTH 1000
 #define YYMAXDEPTH 1000
 
-DCFile *dc_file = (DCFile *)NULL;
-static DCClass *current_class = (DCClass *)NULL;
-static DCSwitch *current_switch = (DCSwitch *)NULL;
-static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
-static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCParameter *current_parameter = (DCParameter *)NULL;
+using std::istream;
+using std::ostringstream;
+using std::string;
+
+DCFile *dc_file = nullptr;
+static DCClass *current_class = nullptr;
+static DCSwitch *current_switch = nullptr;
+static DCAtomicField *current_atomic = nullptr;
+static DCMolecularField *current_molecular = nullptr;
+static DCParameter *current_parameter = nullptr;
 static DCKeywordList current_keyword_list;
 static DCPacker default_packer;
 static DCPacker *current_packer;
 static DCDoubleRange double_range;
 static DCUnsignedIntRange uint_range;
-static DCField *parameter_description = (DCField *)NULL;
+static DCField *parameter_description = nullptr;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -53,9 +57,9 @@ dc_init_parser(istream &in, const string &filename, DCFile &file) {
 }
 
 void
-dc_init_parser_parameter_value(istream &in, const string &filename, 
+dc_init_parser_parameter_value(istream &in, const string &filename,
                                DCPacker &packer) {
-  dc_file = NULL;
+  dc_file = nullptr;
   current_packer = &packer;
   dc_init_lexer(in, filename);
   dc_start_parameter_value();
@@ -66,7 +70,7 @@ dc_init_parser_parameter_description(istream &in, const string &filename,
                                      DCFile *file) {
   dc_file = file;
   dc_init_lexer(in, filename);
-  parameter_description = NULL;
+  parameter_description = nullptr;
   dc_start_parameter_description();
 }
 
@@ -77,7 +81,7 @@ dc_get_parameter_description() {
 
 void
 dc_cleanup_parser() {
-  dc_file = (DCFile *)NULL;
+  dc_file = nullptr;
 }
 
 %}
@@ -85,15 +89,16 @@ dc_cleanup_parser() {
 %token <u.uint64> UNSIGNED_INTEGER
 %token <u.int64> SIGNED_INTEGER
 %token <u.real> REAL
-%token <str> STRING HEX_STRING IDENTIFIER
+%token <str> STRING IDENTIFIER
+%token <bytes> HEX_STRING
 %token <u.keyword> KEYWORD
 
-%token KW_DCLASS 
-%token KW_STRUCT 
-%token KW_FROM 
-%token KW_IMPORT 
-%token KW_TYPEDEF 
-%token KW_KEYWORD 
+%token KW_DCLASS
+%token KW_STRUCT
+%token KW_FROM
+%token KW_IMPORT
+%token KW_TYPEDEF
+%token KW_KEYWORD
 %token KW_SWITCH
 %token KW_CASE
 %token KW_DEFAULT
@@ -181,7 +186,7 @@ dc:
 {
   if (!dc_file->add_class($2)) {
     DCClass *old_class = dc_file->get_class_by_name($2->get_name());
-    if (old_class != (DCClass *)NULL && old_class->is_bogus_class()) {
+    if (old_class != nullptr && old_class->is_bogus_class()) {
       yyerror("Base class defined after its first reference: " + $2->get_name());
     } else {
       yyerror("Duplicate class name: " + $2->get_name());
@@ -220,7 +225,7 @@ import:
 {
   dc_file->add_import_module($2);
 }
-        | KW_FROM import_identifier KW_IMPORT 
+        | KW_FROM import_identifier KW_IMPORT
 {
   dc_file->add_import_module($2);
 }
@@ -249,9 +254,9 @@ import_symbol_list:
 typedef_decl:
         KW_TYPEDEF parameter_with_default
 {
-  if ($2 != (DCParameter *)NULL) {
+  if ($2 != nullptr) {
     DCTypedef *dtypedef = new DCTypedef($2);
-    
+
     if (!dc_file->add_typedef(dtypedef)) {
       DCTypedef *old_typedef = dc_file->get_typedef_by_name(dtypedef->get_name());
       if (old_typedef->is_bogus_typedef()) {
@@ -290,7 +295,7 @@ dclass_or_struct:
         ;
 
 dclass:
-        KW_DCLASS optional_name 
+        KW_DCLASS optional_name
 {
   current_class = new DCClass(dc_file, $2, false, false);
 }
@@ -304,13 +309,13 @@ dclass:
 dclass_name:
         IDENTIFIER
 {
-  if (dc_file == (DCFile *)NULL) {
+  if (dc_file == nullptr) {
     yyerror("No DCFile available, so no class names are predefined.");
-    $$ = NULL;
+    $$ = nullptr;
 
   } else {
     DCClass *dclass = dc_file->get_class_by_name($1);
-    if (dclass == (DCClass *)NULL) {
+    if (dclass == nullptr) {
       // Create a bogus class as a forward reference.
       dclass = new DCClass(dc_file, $1, false, true);
       dc_file->add_class(dclass);
@@ -318,7 +323,7 @@ dclass_name:
     if (dclass->is_struct()) {
       yyerror("struct name not allowed");
     }
-  
+
     $$ = dclass;
   }
 }
@@ -332,7 +337,7 @@ dclass_derivation:
 dclass_base_list:
         dclass_name
 {
-  if ($1 != (DCClass *)NULL) {
+  if ($1 != nullptr) {
     current_class->add_parent($1);
   }
 }
@@ -342,7 +347,7 @@ dclass_base_list:
     yyerror("Multiple inheritance is not supported without \"dc-multiple-inheritance 1\" in your Config.prc file.");
 
   } else {
-    if ($3 != (DCClass *)NULL) {
+    if ($3 != nullptr) {
       current_class->add_parent($3);
     }
   }
@@ -354,7 +359,7 @@ dclass_fields:
         | dclass_fields ';'
         | dclass_fields dclass_field ';'
 {
-  if ($2 == (DCField *)NULL) {
+  if ($2 == nullptr) {
     // Pass this error up.
   } else if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
@@ -367,7 +372,7 @@ dclass_fields:
 dclass_field:
         atomic_field keyword_list
 {
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     if ($1->get_name().empty()) {
       yyerror("Field name required.");
     }
@@ -379,14 +384,14 @@ dclass_field:
         | unnamed_parameter_with_default keyword_list
 {
   yyerror("Unnamed parameters are not allowed on a dclass");
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
 }
         | named_parameter_with_default keyword_list
 {
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     $1->copy_keywords(current_keyword_list);
   }
   $$ = $1;
@@ -394,7 +399,7 @@ dclass_field:
         ;
 
 struct:
-        KW_STRUCT optional_name 
+        KW_STRUCT optional_name
 {
   current_class = new DCClass(dc_file, $2, true, false);
 }
@@ -408,13 +413,13 @@ struct:
 struct_name:
         IDENTIFIER
 {
-  if (dc_file == (DCFile *)NULL) {
+  if (dc_file == nullptr) {
     yyerror("No DCFile available, so no struct names are predefined.");
-    $$ = NULL;
+    $$ = nullptr;
 
   } else {
     DCClass *dstruct = dc_file->get_class_by_name($1);
-    if (dstruct == (DCClass *)NULL) {
+    if (dstruct == nullptr) {
       // Create a bogus class as a forward reference.
       dstruct = new DCClass(dc_file, $1, false, true);
       dc_file->add_class(dstruct);
@@ -422,7 +427,7 @@ struct_name:
     if (!dstruct->is_struct()) {
       yyerror("struct name required");
     }
-  
+
     $$ = dstruct;
   }
 }
@@ -436,13 +441,13 @@ struct_derivation:
 struct_base_list:
         struct_name
 {
-  if ($1 != (DCClass *)NULL) {
+  if ($1 != nullptr) {
     current_class->add_parent($1);
   }
 }
         | struct_base_list ',' struct_name
 {
-  if ($3 != (DCClass *)NULL) {
+  if ($3 != nullptr) {
     current_class->add_parent($3);
   }
 }
@@ -453,7 +458,7 @@ struct_fields:
         | struct_fields ';'
         | struct_fields struct_field ';'
 {
-  if ($2 == (DCField *)NULL) {
+  if ($2 == nullptr) {
     // Pass this error up.
   } else if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
@@ -483,7 +488,7 @@ struct_field:
 atomic_field:
         optional_name '('
 {
-  if (current_class == (DCClass *)NULL) {
+  if (current_class == nullptr) {
     yyerror("Cannot define a method outside of a struct or class.");
     DCClass *temp_class = new DCClass(dc_file, "temp", false, false);  // memory leak.
     current_atomic = new DCAtomicField($1, temp_class, false);
@@ -511,7 +516,7 @@ nonempty_parameter_list:
 atomic_element:
         parameter_with_default
 {
-  if ($1 != (DCParameter *)NULL) {
+  if ($1 != nullptr) {
     current_atomic->add_element($1);
   }
 }
@@ -534,22 +539,22 @@ unnamed_parameter:
 
 named_parameter_with_default:
         named_parameter
-        | named_parameter '=' 
+        | named_parameter '='
 {
   current_packer = &default_packer;
   current_packer->clear_data();
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     current_packer->begin_pack($1);
   }
 }
         parameter_value
 {
   bool is_valid = false;
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     is_valid = $1->is_valid();
   }
   if (current_packer->end_pack()) {
-    $1->set_default_value(current_packer->get_string());
+    $1->set_default_value(current_packer->get_bytes());
 
   } else {
     if (is_valid) {
@@ -564,22 +569,22 @@ named_parameter_with_default:
 
 unnamed_parameter_with_default:
         unnamed_parameter
-        | unnamed_parameter '=' 
+        | unnamed_parameter '='
 {
   current_packer = &default_packer;
   current_packer->clear_data();
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     current_packer->begin_pack($1);
   }
 }
         parameter_value
 {
   bool is_valid = false;
-  if ($1 != (DCField *)NULL) {
+  if ($1 != nullptr) {
     is_valid = $1->is_valid();
   }
   if (current_packer->end_pack()) {
-    $1->set_default_value(current_packer->get_string());
+    $1->set_default_value(current_packer->get_bytes());
 
   } else {
     if (is_valid) {
@@ -636,7 +641,7 @@ simple_type_name:
         | simple_type_name '(' double_range ')'
 {
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
-  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
+  nassertr(simple_param != nullptr, 0);
   if (!simple_param->set_range(double_range)) {
     yyerror("Inappropriate range for type");
   }
@@ -645,7 +650,7 @@ simple_type_name:
         | simple_type_name '/' small_unsigned_integer
 {
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
-  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
+  nassertr(simple_param != nullptr, 0);
   if (!simple_param->is_numeric_type()) {
     yyerror("A divisor is only valid on a numeric type.");
 
@@ -659,9 +664,9 @@ simple_type_name:
   $$ = simple_param;
 }
         | simple_type_name '%' number
-{ 
+{
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
-  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
+  nassertr(simple_param != nullptr, 0);
   if (!simple_param->is_numeric_type()) {
     yyerror("A divisor is only valid on a numeric type.");
 
@@ -676,22 +681,22 @@ type_name:
         simple_type_name
         | IDENTIFIER
 {
-  if (dc_file == (DCFile *)NULL) {
+  if (dc_file == nullptr) {
     yyerror("Invalid type.");
-    $$ = NULL;
+    $$ = nullptr;
 
   } else {
     DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
-    if (dtypedef == (DCTypedef *)NULL) {
+    if (dtypedef == nullptr) {
       // Maybe it's a class name.
       DCClass *dclass = dc_file->get_class_by_name($1);
-      if (dclass != (DCClass *)NULL) {
+      if (dclass != nullptr) {
         // Create an implicit typedef for this.
         dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
       } else {
         // Maybe it's a switch name.
         DCSwitch *dswitch = dc_file->get_switch_by_name($1);
-        if (dswitch != (DCSwitch *)NULL) {
+        if (dswitch != nullptr) {
           // This also gets an implicit typedef.
           dtypedef = new DCTypedef(new DCSwitchParameter(dswitch), true);
         } else {
@@ -699,20 +704,20 @@ type_name:
           dtypedef = new DCTypedef($1);
         }
       }
-      
+
       dc_file->add_typedef(dtypedef);
     }
-    
+
     $$ = dtypedef->make_new_parameter();
   }
 }
         | struct
 {
   // This is an inline struct definition.
-  if ($1 == (DCClass *)NULL) {
-    $$ = NULL;
+  if ($1 == nullptr) {
+    $$ = nullptr;
   } else {
-    if (dc_file != (DCFile *)NULL) {
+    if (dc_file != nullptr) {
       dc_file->add_thing_to_delete($1);
     } else {
       // This is a memory leak--this happens when we put an anonymous
@@ -725,10 +730,10 @@ type_name:
         | switch
 {
   // This is an inline switch definition.
-  if ($1 == (DCSwitch *)NULL) {
-    $$ = NULL;
+  if ($1 == nullptr) {
+    $$ = nullptr;
   } else {
-    if (dc_file != (DCFile *)NULL) {
+    if (dc_file != nullptr) {
       dc_file->add_thing_to_delete($1);
     } else {
       // This is a memory leak--this happens when we put an anonymous
@@ -840,8 +845,8 @@ type_definition:
         type_name
         | type_definition '[' uint_range ']'
 {
-  if ($1 == (DCParameter *)NULL) {
-    $$ = NULL;
+  if ($1 == nullptr) {
+    $$ = nullptr;
   } else {
     $$ = $1->append_array_specification(uint_range);
   }
@@ -857,7 +862,7 @@ parameter_definition:
         | parameter_definition '/' small_unsigned_integer
 {
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
-  if (simple_param == NULL || simple_param->get_typedef() != (DCTypedef *)NULL) {
+  if (simple_param == nullptr || simple_param->get_typedef() != nullptr) {
     yyerror("A divisor is only allowed on a primitive type.");
 
   } else if (!simple_param->is_numeric_type()) {
@@ -872,7 +877,7 @@ parameter_definition:
         | parameter_definition '%' number
 {
   DCSimpleParameter *simple_param = $1->as_simple_parameter();
-  if (simple_param == NULL || simple_param->get_typedef() != (DCTypedef *)NULL) {
+  if (simple_param == nullptr || simple_param->get_typedef() != nullptr) {
     yyerror("A modulus is only allowed on a primitive type.");
 
   } else if (!simple_param->is_numeric_type()) {
@@ -970,7 +975,7 @@ parameter_value:
 {
   if ($1 != current_packer->get_current_field_name()) {
     ostringstream strm;
-    strm << "Got '" << $1 << "', expected '" 
+    strm << "Got '" << $1 << "', expected '"
          << current_packer->get_current_field_name() << "'";
     yyerror(strm.str());
   }
@@ -1001,7 +1006,7 @@ parameter_actual_value:
 {
   current_packer->pack_literal_value($1);
 }
-        | '{' 
+        | '{'
 {
   current_packer->push();
 }
@@ -1009,7 +1014,7 @@ parameter_actual_value:
 {
   current_packer->pop();
 }
-        | '[' 
+        | '['
 {
   current_packer->push();
 }
@@ -1017,7 +1022,7 @@ parameter_actual_value:
 {
   current_packer->pop();
 }
-        | '(' 
+        | '('
 {
   current_packer->push();
 }
@@ -1184,8 +1189,8 @@ atomic_name:
         IDENTIFIER
 {
   DCField *field = current_class->get_field_by_name($1);
-  $$ = (DCAtomicField *)NULL;
-  if (field == (DCField *)NULL) {
+  $$ = nullptr;
+  if (field == nullptr) {
     // Maybe the field is unknown because the class is partially
     // bogus.  In that case, allow it for now; create a bogus field as
     // a placeholder.
@@ -1200,7 +1205,7 @@ atomic_name:
 
   } else {
     $$ = field->as_atomic_field();
-    if ($$ == (DCAtomicField *)NULL) {
+    if ($$ == nullptr) {
       yyerror("Not an atomic field: " + $1);
     }
   }
@@ -1210,16 +1215,16 @@ atomic_name:
 molecular_atom_list:
         atomic_name
 {
-  if ($1 != (DCAtomicField *)NULL) {
+  if ($1 != nullptr) {
     current_molecular->add_atomic($1);
   }
 }
         | molecular_atom_list ',' atomic_name
 {
-  if ($3 != (DCAtomicField *)NULL) {
+  if ($3 != nullptr) {
     current_molecular->add_atomic($3);
     if (!$3->is_bogus_field() && !current_molecular->compare_keywords(*$3)) {
-      yyerror("Mismatched keywords in molecule between " + 
+      yyerror("Mismatched keywords in molecule between " +
               current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());
     }
@@ -1258,7 +1263,7 @@ switch_fields:
 {
   if (!current_switch->is_field_valid()) {
     yyerror("case declaration required before first element");
-  } else if ($2 != (DCField *)NULL) {
+  } else if ($2 != nullptr) {
     if (!current_switch->add_field($2)) {
       yyerror("Duplicate field name: " + $2->get_name());
     }
@@ -1279,7 +1284,7 @@ switch_case:
     yyerror("Invalid value for switch parameter");
     current_switch->add_invalid_case();
   } else {
-    int case_index = current_switch->add_case(current_packer->get_string());
+    int case_index = current_switch->add_case(current_packer->get_bytes());
     if (case_index == -1) {
       yyerror("Duplicate case value");
     }

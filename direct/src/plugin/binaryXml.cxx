@@ -15,6 +15,11 @@
 #include "p3d_lock.h"
 #include <sstream>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 static const bool debug_xml_output = false;
 
 static LOCK xml_lock;
@@ -69,11 +74,11 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 
   // Now write out the node type.
   NodeType type = NT_element;
-  if (xnode->ToDocument() != NULL) {
+  if (xnode->ToDocument() != nullptr) {
     type = NT_document;
-  } else if (xnode->ToElement() != NULL) {
+  } else if (xnode->ToElement() != nullptr) {
     type = NT_element;
-  } else if (xnode->ToText() != NULL) {
+  } else if (xnode->ToText() != nullptr) {
     type = NT_text;
   } else {
     type = NT_unknown;
@@ -88,10 +93,10 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
   if (type == NT_element) {
     // Write the element attributes.
     TiXmlElement *xelement = xnode->ToElement();
-    assert(xelement != NULL);
+    assert(xelement != nullptr);
     const TiXmlAttribute *xattrib = xelement->FirstAttribute();
 
-    while (xattrib != NULL) {
+    while (xattrib != nullptr) {
       // We have an attribute.
       out.put((char)true);
 
@@ -114,7 +119,7 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 
   // Now write all of the children.
   TiXmlNode *xchild = xnode->FirstChild();
-  while (xchild != NULL) {
+  while (xchild != nullptr) {
     // We have a child.
     out.put((char)true);
     write_xml_node(out, xchild);
@@ -136,13 +141,13 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
   xml_uint32 value_length;
   in.read((char *)&value_length, sizeof(value_length));
   if (in.gcount() != sizeof(value_length)) {
-    return NULL;
+    return nullptr;
   }
   xml_uint32 value_proof_expect = (value_length + length_nonce1) * length_nonce2;
   xml_uint32 value_proof;
   in.read((char *)&value_proof, sizeof(value_proof));
   if (in.gcount() != sizeof(value_proof)) {
-    return NULL;
+    return nullptr;
   }
   if (value_proof != value_proof_expect) {
     // Hey, we ran into garbage: the proof value didn't match our expected
@@ -164,7 +169,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
     }
     logfile << "\n";
     logfile << "End garbage.\n";
-    return NULL;
+    return nullptr;
   }
 
   if (value_length > buffer_length) {
@@ -179,10 +184,10 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
   // Read the node type.
   NodeType type = (NodeType)in.get();
   if (type == NT_unknown) {
-    return NULL;
+    return nullptr;
   }
 
-  TiXmlNode *xnode = NULL;
+  TiXmlNode *xnode = nullptr;
   if (type == NT_element) {
     xnode = new TiXmlElement(value);
   } else if (type == NT_document) {
@@ -196,7 +201,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
   if (type == NT_element) {
     // Read the element attributes.
     TiXmlElement *xelement = xnode->ToElement();
-    assert(xelement != NULL);
+    assert(xelement != nullptr);
     bool got_attrib = (bool)(in.get() != 0);
 
     while (got_attrib && in && !in.eof()) {
@@ -205,7 +210,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
       in.read((char *)&name_length, sizeof(name_length));
       if (in.gcount() != sizeof(name_length)) {
         delete xnode;
-        return NULL;
+        return nullptr;
       }
 
       if (name_length > buffer_length) {
@@ -221,7 +226,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
       in.read((char *)&value_length, sizeof(value_length));
       if (in.gcount() != sizeof(value_length)) {
         delete xnode;
-        return NULL;
+        return nullptr;
       }
 
       if (value_length > buffer_length) {
@@ -245,7 +250,7 @@ read_xml_node(istream &in, char *&buffer, xml_uint32 &buffer_length,
   while (got_child && in && !in.eof()) {
     // We have a child.
     TiXmlNode *xchild = read_xml_node(in, buffer, buffer_length, logfile);
-    if (xchild != NULL) {
+    if (xchild != nullptr) {
       xnode->LinkEndChild(xchild);
     }
 
@@ -317,12 +322,12 @@ read_xml(istream &in, ostream &logfile) {
   char *buffer = new char[buffer_length];
   TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length, logfile);
   delete[] buffer;
-  if (xnode == NULL) {
-    return NULL;
+  if (xnode == nullptr) {
+    return nullptr;
   }
 
   TiXmlDocument *doc = xnode->ToDocument();
-  assert(doc != NULL);
+  assert(doc != nullptr);
 
 #else
   // standard ASCII read.
@@ -330,7 +335,7 @@ read_xml(istream &in, ostream &logfile) {
   in >> *doc;
   if (in.fail() || in.eof()) {
     delete doc;
-    return NULL;
+    return nullptr;
   }
 #endif
 

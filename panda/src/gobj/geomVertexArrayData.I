@@ -45,7 +45,9 @@ has_column(const InternalName *name) const {
  */
 INLINE int GeomVertexArrayData::
 get_num_rows() const {
-  return get_handle()->get_num_rows();
+  CDReader cdata(_cycler);
+  nassertr(_array_format->get_stride() != 0, 0);
+  return cdata->_buffer.get_size() / _array_format->get_stride();
 }
 
 /**
@@ -239,10 +241,10 @@ CData(UsageHint usage_hint) :
  *
  */
 INLINE GeomVertexArrayData::CData::
-CData(GeomVertexArrayData::CData &&from) NOEXCEPT :
-  _usage_hint(move(from._usage_hint)),
-  _buffer(move(from._buffer)),
-  _modified(move(from._modified)),
+CData(GeomVertexArrayData::CData &&from) noexcept :
+  _usage_hint(std::move(from._usage_hint)),
+  _buffer(std::move(from._buffer)),
+  _modified(std::move(from._modified)),
   _rw_lock("GeomVertexArrayData::CData::_rw_lock")
 {
 }
@@ -372,23 +374,6 @@ GeomVertexArrayDataHandle(GeomVertexArrayData *object,
 }
 
 /**
- * Don't attempt to copy these objects.
- */
-INLINE GeomVertexArrayDataHandle::
-GeomVertexArrayDataHandle(const GeomVertexArrayDataHandle &copy)
-  : _current_thread(copy._current_thread) {
-  nassertv(false);
-}
-
-/**
- * Don't attempt to copy these objects.
- */
-INLINE void GeomVertexArrayDataHandle::
-operator = (const GeomVertexArrayDataHandle &) {
-  nassertv(false);
-}
-
-/**
  *
  */
 INLINE GeomVertexArrayDataHandle::
@@ -410,8 +395,8 @@ INLINE GeomVertexArrayDataHandle::
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -510,7 +495,7 @@ get_modified() const {
  */
 INLINE bool GeomVertexArrayDataHandle::
 request_resident() const {
-  return (get_read_pointer(false) != (const unsigned char *)NULL);
+  return (get_read_pointer(false) != nullptr);
 }
 
 /**
@@ -535,10 +520,11 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
  * a string.  This is primarily for the benefit of high-level languages such
  * as Python.
  */
-INLINE string GeomVertexArrayDataHandle::
+INLINE vector_uchar GeomVertexArrayDataHandle::
 get_data() const {
   mark_used();
-  return string((const char *)_cdata->_buffer.get_read_pointer(true), _cdata->_buffer.get_size());
+  const unsigned char *ptr = _cdata->_buffer.get_read_pointer(true);
+  return vector_uchar(ptr, ptr + _cdata->_buffer.get_size());
 }
 
 /**
@@ -546,12 +532,13 @@ get_data() const {
  * formatted as a string.  This is primarily for the benefit of high-level
  * languages such as Python.
  */
-INLINE string GeomVertexArrayDataHandle::
+INLINE vector_uchar GeomVertexArrayDataHandle::
 get_subdata(size_t start, size_t size) const {
   mark_used();
-  start = min(start, _cdata->_buffer.get_size());
-  size = min(size, _cdata->_buffer.get_size() - start);
-  return string((const char *)_cdata->_buffer.get_read_pointer(true) + start, size);
+  start = std::min(start, _cdata->_buffer.get_size());
+  size = std::min(size, _cdata->_buffer.get_size() - start);
+  const unsigned char *ptr = _cdata->_buffer.get_read_pointer(true) + start;
+  return vector_uchar(ptr, ptr + size);
 }
 
 /**
@@ -562,8 +549,8 @@ mark_used() const {
   _object->mark_used();
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomVertexArrayData &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomVertexArrayData &obj) {
   obj.output(out);
   return out;
 }

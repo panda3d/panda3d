@@ -5,9 +5,16 @@ from direct.directtools.DirectGlobals import *
 from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets.Dial import AngleDial
 from direct.tkwidgets.Floater import Floater
-from Tkinter import Button, Menubutton, Menu, StringVar
-from pandac.PandaModules import *
-import Tkinter, Pmw
+from panda3d.core import *
+import sys, Pmw
+
+if sys.version_info >= (3, 0):
+    from tkinter import Button, Menubutton, Menu, StringVar
+    import tkinter
+else:
+    from Tkinter import Button, Menubutton, Menu, StringVar
+    import Tkinter as tkinter
+
 """
 TODO:
 Task to monitor pose
@@ -84,7 +91,7 @@ class Placer(AppShell):
     def createInterface(self):
         # The interior of the toplevel panel
         interior = self.interior()
-        interior['relief'] = Tkinter.FLAT
+        interior['relief'] = tkinter.FLAT
         # Add placer commands to menubar
         self.menuBar.addmenu('Placer', 'Placer Panel Operations')
         self.menuBar.addmenuitem('Placer', 'command',
@@ -113,7 +120,7 @@ class Placer(AppShell):
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
         self.nodePathMenu = Pmw.ComboBox(
-            menuFrame, labelpos = Tkinter.W, label_text = 'Node Path:',
+            menuFrame, labelpos = tkinter.W, label_text = 'Node Path:',
             entry_width = 20,
             selectioncommand = self.selectNodePathNamed,
             scrolledlist_items = self.nodePathNames)
@@ -168,7 +175,7 @@ class Placer(AppShell):
                              tag_text = 'Position',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = Tkinter.RIDGE)
+                             ring_relief = tkinter.RIDGE)
         posMenubutton = posGroup.component('tag')
         self.bind(posMenubutton, 'Position menu operations')
         posMenu = Menu(posMenubutton, tearoff = 0)
@@ -182,7 +189,7 @@ class Placer(AppShell):
         # Create the dials
         self.posX = self.createcomponent('posX', (), None,
                                          Floater, (posInterior,),
-                                         text = 'X', relief = Tkinter.FLAT,
+                                         text = 'X', relief = tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Red')
         self.posX['commandData'] = ['x']
@@ -193,7 +200,7 @@ class Placer(AppShell):
 
         self.posY = self.createcomponent('posY', (), None,
                                          Floater, (posInterior,),
-                                         text = 'Y', relief = Tkinter.FLAT,
+                                         text = 'Y', relief = tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = '#00A000')
         self.posY['commandData'] = ['y']
@@ -204,7 +211,7 @@ class Placer(AppShell):
 
         self.posZ = self.createcomponent('posZ', (), None,
                                          Floater, (posInterior,),
-                                         text = 'Z', relief = Tkinter.FLAT,
+                                         text = 'Z', relief = tkinter.FLAT,
                                          value = 0.0,
                                          label_foreground = 'Blue')
         self.posZ['commandData'] = ['z']
@@ -219,7 +226,7 @@ class Placer(AppShell):
                              tag_text = 'Orientation',
                              tag_font=('MSSansSerif', 14),
                              tag_activebackground = '#909090',
-                             ring_relief = Tkinter.RIDGE)
+                             ring_relief = tkinter.RIDGE)
         hprMenubutton = hprGroup.component('tag')
         self.bind(hprMenubutton, 'Orientation menu operations')
         hprMenu = Menu(hprMenubutton, tearoff = 0)
@@ -234,7 +241,7 @@ class Placer(AppShell):
                                          AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'H', value = 0.0,
-                                         relief = Tkinter.FLAT,
+                                         relief = tkinter.FLAT,
                                          label_foreground = 'blue')
         self.hprH['commandData'] = ['h']
         self.hprH['preCallback'] = self.xformStart
@@ -246,7 +253,7 @@ class Placer(AppShell):
                                          AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'P', value = 0.0,
-                                         relief = Tkinter.FLAT,
+                                         relief = tkinter.FLAT,
                                          label_foreground = 'red')
         self.hprP['commandData'] = ['p']
         self.hprP['preCallback'] = self.xformStart
@@ -258,7 +265,7 @@ class Placer(AppShell):
                                          AngleDial, (hprInterior,),
                                          style = 'mini',
                                          text = 'R', value = 0.0,
-                                         relief = Tkinter.FLAT,
+                                         relief = tkinter.FLAT,
                                          label_foreground = '#00A000')
         self.hprR['commandData'] = ['r']
         self.hprR['preCallback'] = self.xformStart
@@ -276,7 +283,7 @@ class Placer(AppShell):
                                tag_pyclass = Menubutton,
                                tag_font=('MSSansSerif', 14),
                                tag_activebackground = '#909090',
-                               ring_relief = Tkinter.RIDGE)
+                               ring_relief = tkinter.RIDGE)
         self.scaleMenubutton = scaleGroup.component('tag')
         self.bind(self.scaleMenubutton, 'Scale menu operations')
         self.scaleMenubutton['textvariable'] = self.scalingMode
@@ -302,7 +309,7 @@ class Placer(AppShell):
         self.scaleX = self.createcomponent('scaleX', (), None,
                                            Floater, (scaleInterior,),
                                            text = 'X Scale',
-                                           relief = Tkinter.FLAT,
+                                           relief = tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Red')
@@ -315,7 +322,7 @@ class Placer(AppShell):
         self.scaleY = self.createcomponent('scaleY', (), None,
                                            Floater, (scaleInterior,),
                                            text = 'Y Scale',
-                                           relief = Tkinter.FLAT,
+                                           relief = tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = '#00A000')
@@ -328,7 +335,7 @@ class Placer(AppShell):
         self.scaleZ = self.createcomponent('scaleZ', (), None,
                                            Floater, (scaleInterior,),
                                            text = 'Z Scale',
-                                           relief = Tkinter.FLAT,
+                                           relief = tkinter.FLAT,
                                            min = 0.0001, value = 1.0,
                                            resetValue = 1.0,
                                            label_foreground = 'Blue')
@@ -428,7 +435,7 @@ class Placer(AppShell):
                 background = self.nodePathMenuBG)
             # Check to see if node path and ref node path are the same
             if ((self.refCS != None) and
-                (self.refCS.id() == self['nodePath'].id())):
+                (self.refCS.get_key() == self['nodePath'].get_key())):
                 # Yes they are, use temp CS as ref
                 # This calls updatePlacer
                 self.setReferenceNodePath(self.tempCS)
@@ -473,7 +480,7 @@ class Placer(AppShell):
                     listbox = self.refNodePathMenu.component('scrolledlist')
                     listbox.setlist(self.refNodePathNames)
         # Check to see if node path and ref node path are the same
-        if (nodePath != None) and (nodePath.id() == self['nodePath'].id()):
+        if (nodePath != None) and (nodePath.get_key() == self['nodePath'].get_key()):
             # Yes they are, use temp CS and update listbox accordingly
             nodePath = self.tempCS
             self.refNodePathMenu.selectitem('parent')
@@ -508,8 +515,8 @@ class Placer(AppShell):
             dictName = name
         else:
             # Generate a unique name for the dict
-            dictName = name + '-' + `nodePath.id()`
-        if not dict.has_key(dictName):
+            dictName = name + '-' + repr(nodePath.get_key())
+        if dictName not in dict:
             # Update combo box to include new item
             names.append(dictName)
             listbox = menu.component('scrolledlist')
@@ -769,12 +776,12 @@ class Placer(AppShell):
             posString = '%.2f, %.2f, %.2f' % (pos[0], pos[1], pos[2])
             hprString = '%.2f, %.2f, %.2f' % (hpr[0], hpr[1], hpr[2])
             scaleString = '%.2f, %.2f, %.2f' % (scale[0], scale[1], scale[2])
-            print 'NodePath: %s' % name
-            print 'Pos: %s' % posString
-            print 'Hpr: %s' % hprString
-            print 'Scale: %s' % scaleString
-            print ('%s.setPosHprScale(%s, %s, %s)' %
-                   (name, posString, hprString, scaleString))
+            print('NodePath: %s' % name)
+            print('Pos: %s' % posString)
+            print('Hpr: %s' % hprString)
+            print('Scale: %s' % scaleString)
+            print(('%s.setPosHprScale(%s, %s, %s)' %
+                   (name, posString, hprString, scaleString)))
 
     def onDestroy(self, event):
         # Remove hooks

@@ -192,7 +192,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         if (_alpha_mode == PR_ALPHA_OUT)
           alpha = 1.0f - alpha;
         else if (_alpha_mode == PR_ALPHA_IN_OUT)
-          alpha = 2.0f * min(alpha, 1.0f - alpha);
+          alpha = 2.0f * std::min(alpha, 1.0f - alpha);
 
         alpha *= get_user_alpha();
       }
@@ -262,7 +262,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
  * Write a string representation of this instance to <out>.
  */
 void SparkleParticleRenderer::
-output(ostream &out) const {
+output(std::ostream &out) const {
   #ifndef NDEBUG //[
   out<<"SparkleParticleRenderer";
   #endif //] NDEBUG
@@ -272,7 +272,7 @@ output(ostream &out) const {
  * Write a string representation of this instance to <out>.
  */
 void SparkleParticleRenderer::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "SparkleParticleRenderer:\n";
   indent(out, indent_level + 2) << "_center_color "<<_center_color<<"\n";
   indent(out, indent_level + 2) << "_edge_color "<<_edge_color<<"\n";

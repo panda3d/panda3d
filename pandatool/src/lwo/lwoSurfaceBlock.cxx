@@ -36,7 +36,7 @@ TypeHandle LwoSurfaceBlock::_type_handle;
 bool LwoSurfaceBlock::
 read_iff(IffInputFile *in, size_t stop_at) {
   PT(IffChunk) chunk = in->get_subchunk(this);
-  if (chunk == (IffChunk *)NULL) {
+  if (chunk == nullptr) {
     return false;
   }
   if (!chunk->is_of_type(LwoSurfaceBlockHeader::get_class_type())) {
@@ -54,7 +54,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoSurfaceBlock::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " {\n";
   _header->write(out, indent_level + 2);

@@ -22,7 +22,7 @@ TypeHandle FindApproxLevelEntry::_type_handle;
  * Formats the entry for meaningful output.  For debugging only.
  */
 void FindApproxLevelEntry::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "(" << _node_path << "):";
   if (is_solution(0)) {
     out << " solution!";
@@ -38,9 +38,9 @@ output(ostream &out) const {
  * For debugging only.
  */
 void FindApproxLevelEntry::
-write_level(ostream &out, int indent_level) const {
+write_level(std::ostream &out, int indent_level) const {
   for (const FindApproxLevelEntry *entry = this;
-       entry != (const FindApproxLevelEntry *)NULL;
+       entry != nullptr;
        entry = entry->_next) {
     indent(out, indent_level);
     out << *entry << "\n";
@@ -92,7 +92,7 @@ consider_node(NodePathCollection &result, FindApproxLevelEntry *&next_level,
   }
 
   PandaNode *this_node = _node_path.node();
-  nassertr(this_node != (PandaNode *)NULL, false);
+  nassertr(this_node != nullptr, false);
 
   bool stashed_only = next_is_stashed(increment);
 

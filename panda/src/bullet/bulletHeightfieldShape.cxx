@@ -13,6 +13,10 @@
 
 #include "bulletHeightfieldShape.h"
 
+#include "config_bullet.h"
+
+#include "bulletWorld.h"
+
 TypeHandle BulletHeightfieldShape::_type_handle;
 
 /**
@@ -89,7 +93,7 @@ BulletHeightfieldShape(Texture *tex, PN_stdfloat max_height, BulletUpAxis up) :
   for (int row=0; row < _num_rows; row++) {
     for (int column=0; column < _num_cols; column++) {
       if (!peeker->lookup_bilinear(sample, row * step_x, column * step_y)) {
-        bullet_cat.error() << "Could not sample texture." << endl;
+        bullet_cat.error() << "Could not sample texture." << std::endl;
       }
       // Transpose
       _data[_num_rows * column + row] = max_height * sample.get_x();

@@ -21,6 +21,11 @@
 
 load-file-type egg pandaegg
 
+# If we built with Assimp support, we can enable the Assimp loader,
+# which allows us to load many model formats natively.
+
+load-file-type p3assimp
+
 # These entries work very similar to load-file-type, except they are
 # used by the MovieVideo and MovieAudio code to determine which module
 # should be loaded in order to decode files of the given extension.

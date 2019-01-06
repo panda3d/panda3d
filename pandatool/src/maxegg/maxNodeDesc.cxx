@@ -23,7 +23,7 @@ MaxNodeDesc::
 MaxNodeDesc(MaxNodeDesc *parent, INode *max_node) :
   _parent(parent) {
 
-  if (max_node != NULL) {
+  if (max_node != nullptr) {
     const TCHAR *max_name = max_node->GetName();
 #ifdef _UNICODE
     char name_mb [1024];
@@ -35,15 +35,15 @@ MaxNodeDesc(MaxNodeDesc *parent, INode *max_node) :
 #endif
   }
 
-  _max_node = (INode *)NULL;
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _max_node = nullptr;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
   _joint_type = JT_none;
-  _joint_entry = NULL;
+  _joint_entry = nullptr;
 
   // Add ourselves to our parent.
-  if (_parent != (MaxNodeDesc *)NULL) {
+  if (_parent != nullptr) {
     _parent->_children.push_back(this);
   }
 }
@@ -59,7 +59,7 @@ MaxNodeDesc::
  */
 void MaxNodeDesc::
 from_INode(INode *max_node) {
-  if (_max_node == (INode *)NULL) {
+  if (_max_node == nullptr) {
     _max_node = max_node;
 
     // This is how I decided to check to see if this max node is a joint.  It
@@ -78,7 +78,7 @@ from_INode(INode *max_node) {
 
       // This node is a joint.
       _joint_type = JT_node_joint;
-      if (_parent != (MaxNodeDesc *)NULL) {
+      if (_parent != nullptr) {
         _parent->mark_joint_parent();
       }
     }
@@ -91,7 +91,7 @@ from_INode(INode *max_node) {
  */
 bool MaxNodeDesc::
 has_max_node() const {
-  return (_max_node != (INode *)NULL);
+  return (_max_node != nullptr);
 }
 
 /**
@@ -100,7 +100,7 @@ has_max_node() const {
  */
 INode *MaxNodeDesc::
 get_max_node() const {
-  nassertr(_max_node != (INode *)NULL, _max_node);
+  nassertr(_max_node != nullptr, _max_node);
   return _max_node;
 }
 
@@ -142,9 +142,9 @@ is_node_joint() const {
  */
 void MaxNodeDesc::
 clear_egg() {
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
+  _egg_group = nullptr;
+  _egg_table = nullptr;
+  _anim = nullptr;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -161,7 +161,7 @@ void MaxNodeDesc::
 mark_joint_parent() {
   if (_joint_type == JT_none) {
     _joint_type = JT_joint_parent;
-    if (_parent != (MaxNodeDesc *)NULL) {
+    if (_parent != nullptr) {
       _parent->mark_joint_parent();
     }
   }

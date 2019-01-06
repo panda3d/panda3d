@@ -19,7 +19,7 @@
  *
  */
 void FltPackedColor::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << "(" << _r << " " << _g << " " << _b << " " << _a << ")";
 }
 

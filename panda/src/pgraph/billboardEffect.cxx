@@ -29,7 +29,7 @@ TypeHandle BillboardEffect::_type_handle;
 CPT(RenderEffect) BillboardEffect::
 make(const LVector3 &up_vector, bool eye_relative,
      bool axial_rotate, PN_stdfloat offset, const NodePath &look_at,
-     const LPoint3 &look_at_point) {
+     const LPoint3 &look_at_point, bool fixed_depth) {
   BillboardEffect *effect = new BillboardEffect;
   effect->_up_vector = up_vector;
   effect->_eye_relative = eye_relative;
@@ -37,6 +37,7 @@ make(const LVector3 &up_vector, bool eye_relative,
   effect->_offset = offset;
   effect->_look_at = look_at;
   effect->_look_at_point = look_at_point;
+  effect->_fixed_depth = fixed_depth;
   effect->_off = false;
   return return_new(effect);
 }
@@ -66,7 +67,7 @@ prepare_flatten_transform(const TransformState *net_transform) const {
  *
  */
 void BillboardEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (is_off()) {
     out << "(off)";
@@ -82,7 +83,9 @@ output(ostream &out) const {
     if (_eye_relative) {
       out << " eye";
     }
-    if (_offset != 0.0f) {
+    if (_fixed_depth) {
+      out << " depth " << -_offset;
+    } else if (_offset != 0.0f) {
       out << " offset " << _offset;
     }
     if (!_look_at.is_empty()) {
@@ -201,6 +204,9 @@ compare_to_impl(const RenderEffect *other) const {
   if (_eye_relative != ta->_eye_relative) {
     return (int)_eye_relative - (int)ta->_eye_relative;
   }
+  if (_fixed_depth != ta->_fixed_depth) {
+    return (int)_fixed_depth - (int)ta->_fixed_depth;
+  }
   if (_offset != ta->_offset) {
     return _offset < ta->_offset ? -1 : 1;
   }
@@ -274,11 +280,17 @@ compute_billboard(CPT(TransformState) &node_transform,
 
   // Also slide the billboard geometry towards the camera according to the
   // offset factor.
-  if (_offset != 0.0f) {
+  if (_offset != 0.0f || _fixed_depth) {
     LVector3 translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
+    LPoint3 pos;
+    if (_fixed_depth) {
+      pos = translate / rel_mat(3, 3);
+    } else {
+      pos.fill(0.0f);
+    }
     translate.normalize();
     translate *= _offset;
-    rotate.set_row(3, translate);
+    rotate.set_row(3, pos + translate);
   }
 
   node_transform = translate->compose(TransformState::make_mat(rotate))->compose(node_transform);
@@ -307,7 +319,25 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_stdfloat(_offset);
   _look_at_point.write_datagram(dg);
 
-  // *** We don't write out the _look_at NodePath right now.  Maybe we should.
+  if (manager->get_file_minor_ver() >= 43) {
+    _look_at.write_datagram(manager, dg);
+    dg.add_bool(_fixed_depth);
+  }
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int BillboardEffect::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = RenderEffect::complete_pointers(p_list, manager);
+
+  if (manager->get_file_minor_ver() >= 43) {
+    pi += _look_at.complete_pointers(p_list + pi, manager);
+  }
+
+  return pi;
 }
 
 /**
@@ -341,4 +371,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _axial_rotate = scan.get_bool();
   _offset = scan.get_stdfloat();
   _look_at_point.read_datagram(scan);
+
+  if (manager->get_file_minor_ver() >= 43) {
+    _look_at.fillin(scan, manager);
+    _fixed_depth = scan.get_bool();
+  } else {
+    _fixed_depth = false;
+  }
 }

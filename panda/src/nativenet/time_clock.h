@@ -134,7 +134,7 @@ GetCurrentTime() {
  */
 inline Time_Clock::
 Time_Clock() {
-  gettimeofday(&_my_time, NULL);
+  gettimeofday(&_my_time, nullptr);
 }
 
 /**
@@ -142,7 +142,7 @@ Time_Clock() {
  */
 inline void Time_Clock::
 ToCurrentTime() {
-  gettimeofday(&_my_time, NULL);
+  gettimeofday(&_my_time, nullptr);
 }
 
 /**
@@ -152,9 +152,9 @@ ToCurrentTime() {
  */
 inline struct tm *Time_Clock::
 GetGmtTm(struct tm *ptm) const {
-  nassertr(ptm != NULL, NULL);
+  nassertr(ptm != nullptr, nullptr);
 #ifdef _WIN32
-  return (gmtime_s(ptm, (const time_t *)&_my_time.tv_sec) == 0) ? ptm : NULL;
+  return (gmtime_s(ptm, (const time_t *)&_my_time.tv_sec) == 0) ? ptm : nullptr;
 #else
   return gmtime_r((const time_t *)&_my_time.tv_sec, ptm);
 #endif
@@ -165,9 +165,9 @@ GetGmtTm(struct tm *ptm) const {
  */
 inline struct tm *Time_Clock::
 GetLocalTm(struct tm *ptm) const {
-  nassertr(ptm != NULL, NULL);
+  nassertr(ptm != nullptr, nullptr);
 #ifdef _WIN32
-  return (localtime_s(ptm, (const time_t *)&_my_time.tv_sec) == 0) ? ptm : NULL;
+  return (localtime_s(ptm, (const time_t *)&_my_time.tv_sec) == 0) ? ptm : nullptr;
 #else
   return localtime_r((const time_t *)&_my_time.tv_sec, ptm);
 #endif
@@ -210,7 +210,7 @@ Format(const char *pFormat) const {
   char szBuffer1[maxTimeBufferSize];
 
   struct tm tmTemp;
-  if (GetLocalTm(&tmTemp) == NULL ||
+  if (GetLocalTm(&tmTemp) == nullptr ||
       !strftime(szBuffer1, sizeof(szBuffer1), szBuffer, &tmTemp)) {
     szBuffer1[0] = '\0';
   }
@@ -253,7 +253,7 @@ FormatGmt(const char *pFormat) const {
   char szBuffer1[maxTimeBufferSize];
 
   struct tm tmTemp;
-  if (GetGmtTm(&tmTemp) == NULL ||
+  if (GetGmtTm(&tmTemp) == nullptr ||
       !strftime(szBuffer1, sizeof(szBuffer1), szBuffer, &tmTemp)) {
     szBuffer1[0] = '\0';
   }

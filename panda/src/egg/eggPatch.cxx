@@ -33,7 +33,7 @@ make_copy() const {
  * Writes the patch to the indicated output stream in Egg format.
  */
 void EggPatch::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Patch>");
   write_body(out, indent_level+2);
   indent(out, indent_level) << "}\n";

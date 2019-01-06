@@ -30,6 +30,10 @@
 #include "geomLinestrips.h"
 #include "geomPoints.h"
 
+using std::endl;
+using std::max;
+using std::min;
+
 TypeHandle PortalClipper::_type_handle;
 
 /**
@@ -39,7 +43,7 @@ PortalClipper::
 PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup):
 _reduced_viewport_min(-1,-1),
 _reduced_viewport_max(1,1),
-_clip_state(NULL)
+_clip_state(nullptr)
 {
   _previous = new GeomNode("my_frustum");
 
@@ -140,7 +144,7 @@ draw_current_portal()
 void PortalClipper::
 draw_lines() {
   if (!_list.empty()) {
-    _created_data = NULL;
+    _created_data = nullptr;
 
     PT(GeomVertexData) vdata = new GeomVertexData
       ("portal", GeomVertexFormat::get_v3cp(), Geom::UH_static);
@@ -200,7 +204,7 @@ prepare_portal(const NodePath &node_path)
 {
   // Get the Portal Node from this node_path
   PandaNode *node = node_path.node();
-  _portal_node = NULL;
+  _portal_node = nullptr;
   if (node->is_of_type(PortalNode::get_class_type())) {
     _portal_node = DCAST(PortalNode, node);
   }

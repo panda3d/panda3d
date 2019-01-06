@@ -21,11 +21,11 @@
 #include "epvector.h"
 
 #include "pre_fcollada_include.h"
-#include "FCollada.h"
-#include "FCDocument/FCDSceneNode.h"
-#include "FCDocument/FCDControllerInstance.h"
-#include "FCDocument/FCDSkinController.h"
-#include "FCDocument/FCDGeometryMesh.h"
+#include <FCollada.h>
+#include <FCDocument/FCDSceneNode.h>
+#include <FCDocument/FCDControllerInstance.h>
+#include <FCDocument/FCDSkinController.h>
+#include <FCDocument/FCDGeometryMesh.h>
 
 class DAEToEggConverter;
 
@@ -40,7 +40,7 @@ public:
     INLINE Joint(EggGroup *group, const FCDSceneNode *scene_node) :
       _group(group),
       _scene_node(scene_node),
-      _character(NULL),
+      _character(nullptr),
       _bind_pose(LMatrix4d::ident_mat()) {}
 
     LMatrix4d _bind_pose;
@@ -49,7 +49,7 @@ public:
     DaeCharacter *_character;
   };
   typedef epvector<Joint> Joints;
-  typedef pmap<string, Joint> JointMap;
+  typedef pmap<std::string, Joint> JointMap;
 
   void bind_joints(JointMap &joint_map);
   void adjust_joints(FCDSceneNode *node, const JointMap &joint_map,
@@ -69,7 +69,7 @@ public:
   LMatrix4d _bind_shape_mat;
 
 private:
-  string _name;
+  std::string _name;
   const FCDSkinController *_skin_controller;
   Joints _joints;
   JointMap _bound_joints;

@@ -1,3 +1,156 @@
+------------------------  RELEASE 1.10.1  -----------------------
+
+* Fix regression with Audio3DManager.setSoundVelocityAuto()
+* Audio3DManager accepts tuple in setSoundVelocity/setListenerVelocity
+
+------------------------  RELEASE 1.10.0  -----------------------
+
+This is a major release with significant changes.  Please review the
+changes when upgrading.  The list below is by no means exhaustive, but
+should contain the most important changes.
+
+General
+* Experimental ability to build for Android
+* New input framework to natively support gamepads, joysticks, etc.
+* Multi-threaded render pipeline is a lot more stable now
+* New setuptools-based deployment pipeline
+* Improvements to mouselook smoothness
+* Cache is now at $XDG_CACHE_HOME/panda3d (~/.cache/panda3d), not ~/.panda3d
+* Addition of unit test suite
+* Many improvements to thread safety
+* Many performance improvements
+* Tons of bugfixes
+* Big style cleanup of C++ source code
+
+Python API
+* Complete support for Python 3
+* Support for coroutines and async/await
+* Property interfaces have been added for many settings
+* More flexible handling for keyboard arguments in C++ APIs
+* Python bindings are completely separated out of the C++ libraries.
+* Interrogate binding generator has many improvements.
+* Use of pandac.PandaModules is discouraged, use panda3d.core et al
+* Use of libRocket is discouraged due to lack of Python 3 support
+* Tasks are now sorted in addition order when lacking a sort value
+* Fixes iris/fade transitions for extreme aspect ratios
+* WeakNodePath is now exposed to Python
+* WindowProperties.size(x, y) deprecated; use WindowProperties(size=(x, y))
+* Calling bare run() is deprecated, use base.run() instead
+* downcastTo*() methods have been removed, they were already no-ops
+
+Rendering
+* Add new shader-based terrain rendering method (ShaderTerrainMesh)
+* The default ColorAttrib mode is now T_vertex
+* The ColorAttrib T_off mode now properly disables vertex colors entirely
+* Make handling of color attributes more consistent between renderers
+* Ability to create an OpenGL core profile context; set "gl-version 3 2"
+* Experimental support for reverse-Z rendering for best depth precision
+* sRGB framebuffers supported more widely
+* Support for infinite near/far clip in lens
+* Add some PBR material parameters to material class
+* Addition of more built-in GLSL shader inputs; see manual.
+* Add p3d_FragData[] GLSL output for MRT in GLSL 1.30
+* Add flag enabling vertex shader control over point size
+* Support signed ints and double-precision floats in vertex data with GLSL
+* Support unsigned 11/10/10-bit floating-point textures and vertex data
+* Support for SSBOs via ShaderBuffer class
+* Support OpenGL FBO buffers without any attachments
+* Support passing uint variables to GLSL shader
+* Allow rendering objects with empty vertex data (for vertex pulling)
+* Add LogicOpAttrib, for supporting logical operator blending
+* Improvements to OpenGL ES support
+* Support for geometry with adjacency information
+* Change default alpha blending to improve blending rendered result
+* New method for obtaining native OpenGL texture object
+* Support windowless offscreen rendering on macOS
+* Panda resets OpenGL state better before and after draw callbacks
+* OpenGL renderer better supports debugging tools like apitrace
+* Support fixed-depth billboards, useful for 2D tags that don't change size
+
+Shader generator
+* Significant performance improvements
+* Support for point light shadows
+* Hardware skinning support
+* Changes to match fixed-function pipeline better
+* Fixes for normal vector normalization
+* Support multiple normal maps (uses Reoriented Normal Mapping)
+* Tracks modifications to materials and texture stages automatically
+
+Lighting
+* Allow specifying light color based on color temperature
+* Setting specular color of a light separately is deprecated
+* New GLSL inputs to make implementing lighting in shaders much easier
+* Add representation for sphere light and rectangle light
+* Efficiency improvements for passing light information to shader
+* Interocular distance for shadow cameras now always defaults to 0
+* Add low-level lighting module from RenderPipeline
+
+Textures
+* Support cube map arrays
+* Support buffer textures
+* Many more texture formats supported
+* BC4 and BC5 compression modes supported
+* Proper depth textures supported in DirectX 9 renderer
+* set_ram_image(_as) directly supports buffer protocol
+* TexturePeeker supports more formats and component types
+
+Text
+* Dramatic improvements to text rendering performance
+* Support for HarfBuzz for higher-quality text shaping and kerning
+* Support for right-to-left text
+* Support for signed-distance-field rendering in egg-mkfont
+
+Audio/video
+* The default unit for audio is now 1 meter for each Panda unit.
+* Native .flac loader
+* Support videos with alpha channel in ffmpeg
+* OpenAL stability improvements, especially on macOS
+* Support loading .opus files with libopusfile
+* Fix various memory leaks
+
+Physics / collisions
+* CollisionTube is renamed to CollisionCapsule.
+* Box-box collision test is improved to work well with the Pusher
+* More box tests for collision system: box-into-plane, box-into-poly
+* Capsule (tube) can be used as "from" shape into plane, sphere, capsule, box
+* Bullet objects are serializable to .bam files.
+* Bullet bindings are now thread safe.
+* Bullet debug drawer is more efficient; no longer inherits GeomNode.
+* Various fixes to bullet vehicle wheel synchronization
+* PhysX bindings are deprecated.
+
+Pipeline / loading
+* Support for Assimp library to load a broad variety of model formats
+* Ability to specify min-lod, max-lod, lod-bias in .egg file
+* Egg file materials support PBR-style material parameterization
+* Support loading more DDS files, including DX10-style ones
+* Add support for OpenEXR and HDR textures
+* Support line/point thickness in bam2egg
+* bam2egg no longer inserts a vestigial ModelNode at the top
+* bam2egg supports depth test, offset, cull bin attributes
+* Accept a .gz file wherever a .pz file is accepted
+* egg-palettize supports mirror and border-color wrap modes
+* More robust checks against memory corruptions when loading bad .bam files
+* Support for Maya 2017 and 2018
+* Support preprocessing GLSL shaders created with Shader.make
+
+Build
+* We now require using MSVC 2015 or 2017 to compile on Windows.
+* At least GCC 4.8 is now required.
+* With GCC/clang, enabling C++11 is now required.
+* Allow building with more recent ffmpeg versions
+* Support for old FFMpeg versions (before 1.1) dropped.
+* The ppremake build system has been removed.
+* Support for OpenSSL versions before 0.9.7 has been dropped.
+
+C++
+* Use of NULL is replaced with nullptr
+* WeakPointerTo now requires use of lock() method for thread safety
+* Mutex et al now satisfy C++11 Lockable constraints
+* Panda headers no longer contain `using namespace std;`
+* PN_int32 et al have been removed, use stdint.h types instead
+* The need to link with pystub and add Python include dirs is removed.
+
 ------------------------  RELEASE 1.9.4  ------------------------
 
 One of the bugfixes in the last 1.9.3 release introduced a regression,

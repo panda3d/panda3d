@@ -19,12 +19,12 @@
 #include "configVariableInt.h"
 #include "configVariableBool.h"
 
-NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
+NotifyCategoryDecl(wgldisplay, EXPCL_PANDA_WGLDISPLAY, EXPTP_PANDA_WGLDISPLAY);
 
 extern ConfigVariableInt gl_force_pixfmt;
 extern ConfigVariableBool gl_force_invalid;
 extern ConfigVariableBool gl_do_vidmemsize_check;
 
-extern EXPCL_PANDAGL void init_libwgldisplay();
+extern EXPCL_PANDA_WGLDISPLAY void init_libwgldisplay();
 
 #endif

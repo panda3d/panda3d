@@ -47,7 +47,7 @@ PGMouseWatcherRegion::
  */
 void PGMouseWatcherRegion::
 enter_region(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->enter_region(param);
   }
 }
@@ -60,7 +60,7 @@ enter_region(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 exit_region(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->exit_region(param);
   }
 }
@@ -73,7 +73,7 @@ exit_region(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 within_region(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->within_region(param);
   }
 }
@@ -84,7 +84,7 @@ within_region(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 without_region(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->without_region(param);
   }
 }
@@ -95,7 +95,7 @@ without_region(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 press(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->press(param, false);
   }
 }
@@ -106,7 +106,7 @@ press(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 release(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->release(param, false);
   }
 }
@@ -116,7 +116,7 @@ release(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 keystroke(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->keystroke(param, false);
   }
 }
@@ -127,7 +127,7 @@ keystroke(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 candidate(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->candidate(param, false);
   }
 }
@@ -138,7 +138,7 @@ candidate(const MouseWatcherParameter &param) {
  */
 void PGMouseWatcherRegion::
 move(const MouseWatcherParameter &param) {
-  if (_item != (PGItem *)NULL) {
+  if (_item != nullptr) {
     _item->move(param);
   }
 }

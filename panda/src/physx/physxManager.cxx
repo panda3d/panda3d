@@ -15,6 +15,8 @@
 #include "physxScene.h"
 #include "physxSceneDesc.h"
 
+using std::endl;
+
 PhysxManager *PhysxManager::_global_ptr;
 PhysxManager::PhysxOutputStream PhysxManager::_outputStream;
 
@@ -28,7 +30,7 @@ PhysxManager() {
   NxSDKCreateError error;
   NxPhysicsSDKDesc desc = NxPhysicsSDKDesc();
 
-  _sdk = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, NULL, &_outputStream, desc, &error);
+  _sdk = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, nullptr, &_outputStream, desc, &error);
 
   if (error == NXCE_NO_ERROR) {
     physx_cat.info() << "PhysX subsystem initialized. Number of PPUs="
@@ -37,7 +39,7 @@ PhysxManager() {
   else {
     physx_cat.error() << "Error when setting up the PhysX subsystem: "
                       << get_sdk_error_string(error) << endl;
-    _sdk = NULL;
+    _sdk = nullptr;
   }
 
   nassertv_always(error == NXCE_NO_ERROR);
@@ -95,12 +97,12 @@ PhysxManager::
 PhysxManager *PhysxManager::
 get_global_ptr() {
 
-  if (_global_ptr == (PhysxManager *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PhysxManager;
   }
 
-  if (_global_ptr->_sdk == NULL) {
-    return NULL;
+  if (_global_ptr->_sdk == nullptr) {
+    return nullptr;
   }
   else {
     return _global_ptr;
@@ -122,7 +124,7 @@ get_num_scenes() const {
 PhysxScene *PhysxManager::
 create_scene(PhysxSceneDesc &sceneDesc) {
 
-  nassertr(sceneDesc.is_valid(),NULL);
+  nassertr(sceneDesc.is_valid(),nullptr);
 
   // _desc.timeStepMethod = NX_TIMESTEP_FIXED; _desc.maxTimestep = 1.0f
   // 240.0f; _desc.maxIter = 8;
@@ -139,10 +141,10 @@ create_scene(PhysxSceneDesc &sceneDesc) {
   }
 
   PhysxScene *scene = new PhysxScene();
-  nassertr(scene, NULL);
+  nassertr(scene, nullptr);
 
   NxScene *scenePtr = _sdk->createScene(sceneDesc._desc);
-  nassertr(scenePtr, NULL);
+  nassertr(scenePtr, nullptr);
 
   scene->link(scenePtr);
 
@@ -155,7 +157,7 @@ create_scene(PhysxSceneDesc &sceneDesc) {
 PhysxScene *PhysxManager::
 get_scene(unsigned int idx) const {
 
-  nassertr_always(idx < _sdk->getNbScenes(), NULL);
+  nassertr_always(idx < _sdk->getNbScenes(), nullptr);
 
   NxScene *scenePtr = _sdk->getScene(idx);
   PhysxScene *scene = (PhysxScene *)(scenePtr->userData);
@@ -178,13 +180,13 @@ get_num_height_fields() {
 PhysxHeightField *PhysxManager::
 create_height_field(PhysxHeightFieldDesc &desc) {
 
-  nassertr(desc.is_valid(),NULL);
+  nassertr(desc.is_valid(),nullptr);
 
   PhysxHeightField *hf = new PhysxHeightField();
-  nassertr(hf, NULL);
+  nassertr(hf, nullptr);
 
   NxHeightField *hfPtr = _sdk->createHeightField(desc._desc);
-  nassertr(hfPtr, NULL);
+  nassertr(hfPtr, nullptr);
 
   hf->link(hfPtr);
 
@@ -197,7 +199,7 @@ create_height_field(PhysxHeightFieldDesc &desc) {
 PhysxHeightField *PhysxManager::
 get_height_field(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbHeightFields(), NULL);
+  nassertr_always(idx < _sdk->getNbHeightFields(), nullptr);
 
   return (PhysxHeightField *)_heightfields[idx];
 }
@@ -217,7 +219,7 @@ get_num_convex_meshes() {
 PhysxConvexMesh *PhysxManager::
 get_convex_mesh(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbConvexMeshes(), NULL);
+  nassertr_always(idx < _sdk->getNbConvexMeshes(), nullptr);
 
   return (PhysxConvexMesh *)_convex_meshes[idx];
 }
@@ -237,7 +239,7 @@ get_num_triangle_meshes() {
 PhysxTriangleMesh *PhysxManager::
 get_triangle_mesh(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbTriangleMeshes(), NULL);
+  nassertr_always(idx < _sdk->getNbTriangleMeshes(), nullptr);
 
   return (PhysxTriangleMesh *)_triangle_meshes[idx];
 }
@@ -257,7 +259,7 @@ get_num_cloth_meshes() {
 PhysxClothMesh *PhysxManager::
 get_cloth_mesh(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbClothMeshes(), NULL);
+  nassertr_always(idx < _sdk->getNbClothMeshes(), nullptr);
 
   return (PhysxClothMesh *)_cloth_meshes[idx];
 }
@@ -277,7 +279,7 @@ get_num_soft_body_meshes() {
 PhysxSoftBodyMesh *PhysxManager::
 get_soft_body_mesh(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbSoftBodyMeshes(), NULL);
+  nassertr_always(idx < _sdk->getNbSoftBodyMeshes(), nullptr);
 
   return (PhysxSoftBodyMesh *)_softbody_meshes[idx];
 }
@@ -297,14 +299,14 @@ get_num_ccd_skeletons() {
 PhysxCcdSkeleton *PhysxManager::
 create_ccd_skeleton(PhysxCcdSkeletonDesc &desc) {
 
-  nassertr(desc.is_valid(), NULL);
-  nassertr(desc.get_desc().numVertices < 64, NULL);
+  nassertr(desc.is_valid(), nullptr);
+  nassertr(desc.get_desc().numVertices < 64, nullptr);
 
   PhysxCcdSkeleton *skel = new PhysxCcdSkeleton();
-  nassertr(skel, NULL);
+  nassertr(skel, nullptr);
 
   NxCCDSkeleton *skelPtr = _sdk->createCCDSkeleton(desc.get_desc());
-  nassertr(skelPtr, NULL);
+  nassertr(skelPtr, nullptr);
 
   skel->link(skelPtr);
 
@@ -317,7 +319,7 @@ create_ccd_skeleton(PhysxCcdSkeletonDesc &desc) {
 PhysxCcdSkeleton *PhysxManager::
 get_ccd_skeleton(unsigned int idx) {
 
-  nassertr_always(idx < _sdk->getNbCCDSkeletons(), NULL);
+  nassertr_always(idx < _sdk->getNbCCDSkeletons(), nullptr);
 
   return (PhysxCcdSkeleton *)_ccd_skeletons[idx];
 }
@@ -364,7 +366,7 @@ get_internal_version() {
 
   v = _sdk->getInternalVersion(apiRev, descRev, branchId);
 
-  stringstream version;
+  std::stringstream version;
   version << "version:" << (unsigned int)v
           << " apiRef:" << (unsigned int)apiRev
           << " descRev:" << (unsigned int)descRev

@@ -16,6 +16,8 @@
 #include <sstream>
 #include <string.h>  // strncpy
 
+using std::string;
+
 // The following functions are C-style wrappers around the above
 // PPBrowserObject methods; they are defined to allow us to create the C-style
 // P3D_class_definition method table to store in the P3D_object structure.
@@ -44,7 +46,7 @@ static P3D_object *
 object_call(P3D_object *object, const char *method_name,
             bool needs_response,
             P3D_object *params[], int num_params) {
-  if (method_name == NULL) {
+  if (method_name == nullptr) {
     method_name = "";
   }
   P3D_object *response = ((const PPBrowserObject *)object)->call(method_name, params, num_params);
@@ -52,7 +54,7 @@ object_call(P3D_object *object, const char *method_name,
     // No response was expected.  Throw away the response we received, so we
     // can be consistent with defined semantics.
     P3D_OBJECT_XDECREF(response);
-    response = NULL;
+    response = nullptr;
   }
   return response;
 }
@@ -105,7 +107,7 @@ PPBrowserObject::
  */
 int PPBrowserObject::
 get_repr(char *buffer, int buffer_length) const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << "NPObject " << _npobj;
   string result = strm.str();
   strncpy(buffer, result.c_str(), buffer_length);
@@ -123,14 +125,14 @@ get_property(const string &property) const {
   if (!browser->hasproperty(_instance->get_npp_instance(), _npobj,
                             property_name)) {
     // No such property.
-    return NULL;
+    return nullptr;
   }
 
   NPVariant result;
   if (!browser->getproperty(_instance->get_npp_instance(), _npobj,
                             property_name, &result)) {
     // Failed to retrieve property.
-    return NULL;
+    return nullptr;
   }
 
   P3D_object *object = _instance->variant_to_p3dobj(&result);
@@ -146,7 +148,7 @@ bool PPBrowserObject::
 set_property(const string &property, bool needs_response, P3D_object *value) {
   NPIdentifier property_name = browser->getstringidentifier(property.c_str());
   bool result;
-  if (value != NULL) {
+  if (value != nullptr) {
     // Set the property.
     NPVariant npvalue;
     _instance->p3dobj_to_variant(&npvalue, value);
@@ -183,7 +185,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
                                 npparams, num_params, &result)) {
       // Failed to invoke.
       delete[] npparams;
-      return NULL;
+      return nullptr;
     }
   } else {
     // Call the named method.
@@ -193,7 +195,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
                          npparams, num_params, &result)) {
       // Failed to invoke.
       delete[] npparams;
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -215,7 +217,7 @@ eval(const string &expression) const {
   if (!browser->evaluate(_instance->get_npp_instance(), _npobj,
                          &npexpr, &result)) {
     // Failed to eval.
-    return NULL;
+    return nullptr;
   }
 
   P3D_object *object = _instance->variant_to_p3dobj(&result);
@@ -229,7 +231,7 @@ eval(const string &expression) const {
  */
 void PPBrowserObject::
 clear_class_definition() {
-  _browser_object_class = NULL;
+  _browser_object_class = nullptr;
 }
 
 /**
@@ -238,7 +240,7 @@ clear_class_definition() {
  */
 P3D_class_definition *PPBrowserObject::
 get_class_definition() {
-  if (_browser_object_class == NULL) {
+  if (_browser_object_class == nullptr) {
     // Create a default class_definition object, and fill in the appropriate
     // pointers.
     _browser_object_class = P3D_make_class_definition_ptr();

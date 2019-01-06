@@ -24,9 +24,9 @@
  * coordinate systems.  An example of this would be simulating gravity in a
  * rotating space station.  or something.
  */
-class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
+class EXPCL_PANDA_PHYSICS ForceNode : public PandaNode {
 PUBLISHED:
-  explicit ForceNode(const string &name);
+  explicit ForceNode(const std::string &name);
   INLINE void clear();
   INLINE BaseForce *get_force(size_t index) const;
   INLINE size_t get_num_forces() const;
@@ -41,9 +41,9 @@ PUBLISHED:
 
   MAKE_SEQ_PROPERTY(forces, get_num_forces, get_force, set_force, remove_force, insert_force);
 
-  virtual void output(ostream &out) const;
-  virtual void write_forces(ostream &out, unsigned int indent=0) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write_forces(std::ostream &out, int indent=0) const;
+  virtual void write(std::ostream &out, int indent=0) const;
 
 public:
   virtual ~ForceNode();

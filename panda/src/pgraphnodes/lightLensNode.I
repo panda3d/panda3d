@@ -29,51 +29,6 @@ is_shadow_caster() const {
 }
 
 /**
- * Sets the flag indicating whether this light should cast shadows or not.
- * This is the variant without buffer size, meaning that the current buffer
- * size will be kept (512x512 is the default). Note that enabling shadows will
- * require the shader generator to be enabled on the scene.
- */
-INLINE void LightLensNode::
-set_shadow_caster(bool caster) {
-  if (_shadow_caster && !caster) {
-    clear_shadow_buffers();
-  }
-  _shadow_caster = caster;
-  set_active(caster);
-  if (caster) {
-    setup_shadow_map();
-  }
-}
-
-/**
- * Sets the flag indicating whether this light should cast shadows or not.
- * The xsize and ysize parameters specify the size of the shadow buffer that
- * will be set up, the sort parameter specifies the sort.  Note that enabling
- * shadows will require the shader generator to be enabled on the scene.
- */
-INLINE void LightLensNode::
-set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_sort) {
-  if ((_shadow_caster && !caster) || buffer_xsize != _sb_size[0] || buffer_ysize != _sb_size[1]) {
-    clear_shadow_buffers();
-  }
-  _shadow_caster = caster;
-  _sb_size.set(buffer_xsize, buffer_ysize);
-
-  if (buffer_sort != _sb_sort) {
-    ShadowBuffers::iterator it;
-    for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
-      (*it).second->set_sort(buffer_sort);
-    }
-    _sb_sort = buffer_sort;
-  }
-  set_active(caster);
-  if (caster) {
-    setup_shadow_map();
-  }
-}
-
-/**
  * Returns the sort of the shadow buffer to be created for this light source.
  */
 INLINE int LightLensNode::
@@ -110,8 +65,16 @@ INLINE GraphicsOutputBase *LightLensNode::
 get_shadow_buffer(GraphicsStateGuardianBase *gsg) {
   ShadowBuffers::iterator it = _sbuffers.find(gsg);
   if (it == _sbuffers.end()) {
-    return NULL;
+    return nullptr;
   } else {
     return (*it).second;
   }
+}
+
+/**
+ * Marks this light as having been used by the auto shader.
+ */
+INLINE void LightLensNode::
+mark_used_by_auto_shader() const {
+  _used_by_auto_shader = true;
 }

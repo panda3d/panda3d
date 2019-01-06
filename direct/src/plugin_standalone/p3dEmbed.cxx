@@ -17,6 +17,9 @@
 #include "load_plugin.h"
 #include "find_root_dir.h"
 
+using std::cerr;
+using std::string;
+
 /**
  *
  */
@@ -36,7 +39,7 @@ P3DEmbed(bool console_environment) : Panda3DBase(console_environment) {
  * offset.
  */
 int P3DEmbed::
-run_embedded(streampos read_offset, int argc, char *argv[]) {
+run_embedded(std::streampos read_offset, int argc, char *argv[]) {
   // Check to see if we've actually got an application embedded.  If we do,
   // read_offset will have been modified to contain a different value than the
   // one we compiled in, above.  We test against read_offset + 1, because any
@@ -46,8 +49,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   // We also have to store this computation in a member variable, to work
   // around a compiler optimization that might otherwise remove the + 1 from
   // the test.
-  _read_offset_check = read_offset + (streampos)1;
-  if (_read_offset_check == (streampos)0xFF3D3D01) {
+  _read_offset_check = read_offset + (std::streampos)1;
+  if (_read_offset_check == (std::streampos)0xFF3D3D01) {
     cerr << "This program is not intended to be run directly.\nIt is used "
             "by pdeploy to construct an embedded Panda3D application.\n";
     return 1;
@@ -76,8 +79,8 @@ run_embedded(streampos read_offset, int argc, char *argv[]) {
   string curstr;
   bool havenull = false;
   P3D_token token;
-  token._keyword = NULL;
-  token._value = NULL;
+  token._keyword = nullptr;
+  token._value = nullptr;
   string keyword;
   string value;
   string root_dir;

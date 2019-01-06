@@ -32,9 +32,9 @@ SimpleAllocator(size_t max_size, Mutex &lock) :
  * pointer.
  */
 SimpleAllocatorBlock *SimpleAllocator::
-alloc(size_t size) {
+alloc(size_t size, size_t alignment) {
   MutexHolder holder(_lock);
-  return do_alloc(size);
+  return do_alloc(size, alignment);
 }
 
 /**
@@ -95,7 +95,7 @@ get_contiguous() const {
 INLINE SimpleAllocatorBlock *SimpleAllocator::
 get_first_block() const {
   MutexHolder holder(_lock);
-  return (_next == this) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
+  return (_next == this) ? nullptr : (SimpleAllocatorBlock *)_next;
 }
 
 /**
@@ -149,6 +149,24 @@ SimpleAllocatorBlock(SimpleAllocator *alloc,
 }
 
 /**
+ * Transfers ownership from the given SimpleAllocatorBlock to this one.
+ */
+INLINE SimpleAllocatorBlock::
+SimpleAllocatorBlock(SimpleAllocatorBlock &&from) :
+  _allocator(from._allocator)
+{
+  if (_allocator == nullptr) {
+    return;
+  }
+
+  MutexHolder holder(_allocator->_lock);
+  _start = from._start;
+  _size = from._size;
+  LinkedListNode::operator = (std::move(from));
+  from._allocator = nullptr;
+}
+
+/**
  * The block automatically frees itself when it destructs.
  */
 INLINE SimpleAllocatorBlock::
@@ -157,11 +175,33 @@ INLINE SimpleAllocatorBlock::
 }
 
 /**
+ * Frees this block and instead takes ownership of the given other block.
+ */
+INLINE SimpleAllocatorBlock &SimpleAllocatorBlock::
+operator = (SimpleAllocatorBlock &&from) {
+  free();
+
+  _allocator = from._allocator;
+  if (_allocator == nullptr) {
+    _start = 0;
+    _size = 0;
+    return *this;
+  }
+
+  MutexHolder holder(_allocator->_lock);
+  _start = from._start;
+  _size = from._size;
+  LinkedListNode::operator = (std::move(from));
+  from._allocator = nullptr;
+  return *this;
+}
+
+/**
  * Releases the allocated space.
  */
 INLINE void SimpleAllocatorBlock::
 free() {
-  if (_allocator != (SimpleAllocator *)NULL) {
+  if (_allocator != nullptr) {
     MutexHolder holder(_allocator->_lock);
     do_free();
   }
@@ -182,7 +222,7 @@ get_allocator() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_start() const {
-  nassertr(_allocator != (SimpleAllocator *)NULL, 0);
+  nassertr(_allocator != nullptr, 0);
   return _start;
 }
 
@@ -192,7 +232,7 @@ get_start() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_size() const {
-  nassertr(_allocator != (SimpleAllocator *)NULL, 0);
+  nassertr(_allocator != nullptr, 0);
   return _size;
 }
 
@@ -201,7 +241,7 @@ get_size() const {
  */
 INLINE bool SimpleAllocatorBlock::
 is_free() const {
-  return (_allocator != (SimpleAllocator *)NULL);
+  return (_allocator != nullptr);
 }
 
 /**
@@ -210,7 +250,7 @@ is_free() const {
  */
 INLINE size_t SimpleAllocatorBlock::
 get_max_size() const {
-  nassertr(_allocator != (SimpleAllocator *)NULL, 0);
+  nassertr(_allocator != nullptr, 0);
   MutexHolder holder(_allocator->_lock);
   return do_get_max_size();
 }
@@ -221,7 +261,7 @@ get_max_size() const {
  */
 INLINE bool SimpleAllocatorBlock::
 realloc(size_t size) {
-  nassertr(_allocator != (SimpleAllocator *)NULL, false);
+  nassertr(_allocator != nullptr, false);
   MutexHolder holder(_allocator->_lock);
   return do_realloc(size);
 }
@@ -232,9 +272,9 @@ realloc(size_t size) {
  */
 INLINE SimpleAllocatorBlock *SimpleAllocatorBlock::
 get_next_block() const {
-  nassertr(_allocator != (SimpleAllocator *)NULL, NULL);
+  nassertr(_allocator != nullptr, nullptr);
   MutexHolder holder(_allocator->_lock);
-  return (_next == _allocator) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
+  return (_next == _allocator) ? nullptr : (SimpleAllocatorBlock *)_next;
 }
 
 /**
@@ -244,13 +284,13 @@ get_next_block() const {
  */
 INLINE void SimpleAllocatorBlock::
 do_free() {
-  nassertv(_allocator != (SimpleAllocator *)NULL);
+  nassertv(_allocator != nullptr);
 
   _allocator->_total_size -= _size;
   LinkedListNode *prev = _prev;
   remove_from_list();
   _allocator->mark_contiguous(prev);
-  _allocator = NULL;
+  _allocator = nullptr;
 }
 
 /**

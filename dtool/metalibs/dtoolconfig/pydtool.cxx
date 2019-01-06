@@ -45,6 +45,8 @@ static PyObject *_inP07ytDId0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytHuAm(PyObject *self, PyObject *args);
 static PyObject *_inP07yt_xr0(PyObject *self, PyObject *args);
 static PyObject *_inP07ytH5qp(PyObject *self, PyObject *args);
+static PyObject *_inP07ytq45U(PyObject *self, PyObject *args);
+static PyObject *_inP07yt6IPa(PyObject *self, PyObject *args);
 static PyObject *_inP07ytU2_B(PyObject *self, PyObject *args);
 static PyObject *_inP07ytHFO2(PyObject *self, PyObject *args);
 static PyObject *_inP07ytcfjm(PyObject *self, PyObject *args);
@@ -166,10 +168,10 @@ static PyObject *
 _inP07yttbRf(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    interrogate_add_search_directory((char const *)param0);
+    ::interrogate_add_search_directory((char const *)param0);
     return Py_BuildValue("");
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -180,10 +182,10 @@ static PyObject *
 _inP07ytda_g(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    interrogate_add_search_path((char const *)param0);
+    ::interrogate_add_search_path((char const *)param0);
     return Py_BuildValue("");
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -193,10 +195,10 @@ _inP07ytda_g(PyObject *, PyObject *args) {
 static PyObject *
 _inP07yt4RgX(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    bool return_value = interrogate_error_flag();
+    bool return_value = ::interrogate_error_flag();
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -206,14 +208,14 @@ _inP07yt4RgX(PyObject *, PyObject *args) {
 static PyObject *
 _inP07yt3Gip(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_manifests();
+    int return_value = ::interrogate_number_of_manifests();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -224,14 +226,14 @@ static PyObject *
 _inP07ytRKDz(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    ManifestIndex return_value = interrogate_get_manifest((int)param0);
+    ManifestIndex return_value = ::interrogate_get_manifest((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -242,14 +244,14 @@ static PyObject *
 _inP07ytgZ9N(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    ManifestIndex return_value = interrogate_get_manifest_by_name((char const *)param0);
+    ManifestIndex return_value = ::interrogate_get_manifest_by_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -260,14 +262,14 @@ static PyObject *
 _inP07ytFnRZ(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_manifest_name((ManifestIndex)param0);
+    char const *return_value = ::interrogate_manifest_name((ManifestIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -278,14 +280,14 @@ static PyObject *
 _inP07ytg0Qv(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_manifest_definition((ManifestIndex)param0);
+    char const *return_value = ::interrogate_manifest_definition((ManifestIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -296,10 +298,10 @@ static PyObject *
 _inP07yttrqw(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_manifest_has_type((ManifestIndex)param0);
+    bool return_value = ::interrogate_manifest_has_type((ManifestIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -310,14 +312,14 @@ static PyObject *
 _inP07ytdmpW(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_manifest_get_type((ManifestIndex)param0);
+    TypeIndex return_value = ::interrogate_manifest_get_type((ManifestIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -328,10 +330,10 @@ static PyObject *
 _inP07ytUYgQ(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_manifest_has_getter((ManifestIndex)param0);
+    bool return_value = ::interrogate_manifest_has_getter((ManifestIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -342,14 +344,14 @@ static PyObject *
 _inP07yt0k7F(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_manifest_getter((ManifestIndex)param0);
+    FunctionIndex return_value = ::interrogate_manifest_getter((ManifestIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -360,10 +362,10 @@ static PyObject *
 _inP07ytfIsr(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_manifest_has_int_value((ManifestIndex)param0);
+    bool return_value = ::interrogate_manifest_has_int_value((ManifestIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -374,14 +376,14 @@ static PyObject *
 _inP07ytvysR(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_manifest_get_int_value((ManifestIndex)param0);
+    int return_value = ::interrogate_manifest_get_int_value((ManifestIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -392,14 +394,14 @@ static PyObject *
 _inP07ytYQ_2(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_element_name((ElementIndex)param0);
+    char const *return_value = ::interrogate_element_name((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -410,14 +412,14 @@ static PyObject *
 _inP07yt3kdv(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_element_scoped_name((ElementIndex)param0);
+    char const *return_value = ::interrogate_element_scoped_name((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -428,10 +430,10 @@ static PyObject *
 _inP07ytew01(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_element_has_comment((ElementIndex)param0);
+    bool return_value = ::interrogate_element_has_comment((ElementIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -442,14 +444,14 @@ static PyObject *
 _inP07ytQna7(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_element_comment((ElementIndex)param0);
+    char const *return_value = ::interrogate_element_comment((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -460,14 +462,14 @@ static PyObject *
 _inP07ytkg95(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    ElementIndex return_value = interrogate_get_element_by_name((char const *)param0);
+    ElementIndex return_value = ::interrogate_get_element_by_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -478,14 +480,14 @@ static PyObject *
 _inP07ytluRc(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    ElementIndex return_value = interrogate_get_element_by_scoped_name((char const *)param0);
+    ElementIndex return_value = ::interrogate_get_element_by_scoped_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -496,14 +498,14 @@ static PyObject *
 _inP07yttHdM(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_element_type((ElementIndex)param0);
+    TypeIndex return_value = ::interrogate_element_type((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -514,10 +516,10 @@ static PyObject *
 _inP07ytDId0(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_element_has_getter((ElementIndex)param0);
+    bool return_value = ::interrogate_element_has_getter((ElementIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -528,14 +530,14 @@ static PyObject *
 _inP07ytHuAm(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_element_getter((ElementIndex)param0);
+    FunctionIndex return_value = ::interrogate_element_getter((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -546,10 +548,10 @@ static PyObject *
 _inP07yt_xr0(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_element_has_setter((ElementIndex)param0);
+    bool return_value = ::interrogate_element_has_setter((ElementIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -560,14 +562,42 @@ static PyObject *
 _inP07ytH5qp(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_element_setter((ElementIndex)param0);
+    FunctionIndex return_value = ::interrogate_element_setter((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_is_sequence(ElementIndex element)
+ */
+static PyObject *
+_inP07ytq45U(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = ::interrogate_element_is_sequence((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
+}
+
+/*
+ * Python simple wrapper for
+ * bool interrogate_element_is_mapping(ElementIndex element)
+ */
+static PyObject *
+_inP07yt6IPa(PyObject *, PyObject *args) {
+  int param0;
+  if (PyArg_ParseTuple(args, "i", &param0)) {
+    bool return_value = ::interrogate_element_is_mapping((ElementIndex)param0);
+    return PyBool_FromLong(return_value);
+  }
+  return nullptr;
 }
 
 /*
@@ -577,14 +607,14 @@ _inP07ytH5qp(PyObject *, PyObject *args) {
 static PyObject *
 _inP07ytU2_B(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_globals();
+    int return_value = ::interrogate_number_of_globals();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -595,14 +625,14 @@ static PyObject *
 _inP07ytHFO2(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    ElementIndex return_value = interrogate_get_global((int)param0);
+    ElementIndex return_value = ::interrogate_get_global((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -612,14 +642,14 @@ _inP07ytHFO2(PyObject *, PyObject *args) {
 static PyObject *
 _inP07ytcfjm(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_global_functions();
+    int return_value = ::interrogate_number_of_global_functions();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -630,14 +660,14 @@ static PyObject *
 _inP07yt3Sjw(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_get_global_function((int)param0);
+    FunctionIndex return_value = ::interrogate_get_global_function((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -647,14 +677,14 @@ _inP07yt3Sjw(PyObject *, PyObject *args) {
 static PyObject *
 _inP07ytgJcX(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_functions();
+    int return_value = ::interrogate_number_of_functions();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -665,14 +695,14 @@ static PyObject *
 _inP07ytYlw6(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_get_function((int)param0);
+    FunctionIndex return_value = ::interrogate_get_function((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -683,14 +713,14 @@ static PyObject *
 _inP07ytsmnz(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_name((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_name((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -701,14 +731,14 @@ static PyObject *
 _inP07ytxQ10(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_scoped_name((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_scoped_name((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -719,10 +749,10 @@ static PyObject *
 _inP07yt6gPB(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_function_has_comment((FunctionIndex)param0);
+    bool return_value = ::interrogate_function_has_comment((FunctionIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -733,14 +763,14 @@ static PyObject *
 _inP07ytISgV(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_comment((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_comment((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -751,14 +781,14 @@ static PyObject *
 _inP07ytH3bx(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_prototype((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_prototype((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -769,10 +799,10 @@ static PyObject *
 _inP07ytzeUk(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_function_is_method((FunctionIndex)param0);
+    bool return_value = ::interrogate_function_is_method((FunctionIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -783,14 +813,14 @@ static PyObject *
 _inP07ytUeI5(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_function_class((FunctionIndex)param0);
+    TypeIndex return_value = ::interrogate_function_class((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -801,10 +831,10 @@ static PyObject *
 _inP07ytuSvx(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_function_has_module_name((FunctionIndex)param0);
+    bool return_value = ::interrogate_function_has_module_name((FunctionIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -815,14 +845,14 @@ static PyObject *
 _inP07ytwpYd(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_module_name((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_module_name((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -833,10 +863,10 @@ static PyObject *
 _inP07ytOfNh(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_function_has_library_name((FunctionIndex)param0);
+    bool return_value = ::interrogate_function_has_library_name((FunctionIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -847,14 +877,14 @@ static PyObject *
 _inP07ytf5_U(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_function_library_name((FunctionIndex)param0);
+    char const *return_value = ::interrogate_function_library_name((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -865,10 +895,10 @@ static PyObject *
 _inP07ytL3ZB(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_function_is_virtual((FunctionIndex)param0);
+    bool return_value = ::interrogate_function_is_virtual((FunctionIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -879,14 +909,14 @@ static PyObject *
 _inP07ytXw0I(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_function_number_of_c_wrappers((FunctionIndex)param0);
+    int return_value = ::interrogate_function_number_of_c_wrappers((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -898,14 +928,14 @@ _inP07yt3zru(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionWrapperIndex return_value = interrogate_function_c_wrapper((FunctionIndex)param0, (int)param1);
+    FunctionWrapperIndex return_value = ::interrogate_function_c_wrapper((FunctionIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -916,14 +946,14 @@ static PyObject *
 _inP07ytRrg2(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_function_number_of_python_wrappers((FunctionIndex)param0);
+    int return_value = ::interrogate_function_number_of_python_wrappers((FunctionIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -935,14 +965,14 @@ _inP07ytEJCx(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionWrapperIndex return_value = interrogate_function_python_wrapper((FunctionIndex)param0, (int)param1);
+    FunctionWrapperIndex return_value = ::interrogate_function_python_wrapper((FunctionIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -953,14 +983,14 @@ static PyObject *
 _inP07ytWAZr(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_wrapper_name((FunctionWrapperIndex)param0);
+    char const *return_value = ::interrogate_wrapper_name((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -971,10 +1001,10 @@ static PyObject *
 _inP07ytrD_M(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_wrapper_is_callable_by_name((FunctionWrapperIndex)param0);
+    bool return_value = ::interrogate_wrapper_is_callable_by_name((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -985,10 +1015,10 @@ static PyObject *
 _inP07ytjolz(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_wrapper_has_comment((FunctionWrapperIndex)param0);
+    bool return_value = ::interrogate_wrapper_has_comment((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -999,14 +1029,14 @@ static PyObject *
 _inP07ytt_JD(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_wrapper_comment((FunctionWrapperIndex)param0);
+    char const *return_value = ::interrogate_wrapper_comment((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1017,10 +1047,10 @@ static PyObject *
 _inP07ytwEts(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_wrapper_has_return_value((FunctionWrapperIndex)param0);
+    bool return_value = ::interrogate_wrapper_has_return_value((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1031,14 +1061,14 @@ static PyObject *
 _inP07ytrJWs(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_wrapper_return_type((FunctionWrapperIndex)param0);
+    TypeIndex return_value = ::interrogate_wrapper_return_type((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1049,10 +1079,10 @@ static PyObject *
 _inP07ytpmFD(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_wrapper_caller_manages_return_value((FunctionWrapperIndex)param0);
+    bool return_value = ::interrogate_wrapper_caller_manages_return_value((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1063,14 +1093,14 @@ static PyObject *
 _inP07ytyYUX(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_wrapper_return_value_destructor((FunctionWrapperIndex)param0);
+    FunctionIndex return_value = ::interrogate_wrapper_return_value_destructor((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1081,14 +1111,14 @@ static PyObject *
 _inP07yt54dn(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_wrapper_number_of_parameters((FunctionWrapperIndex)param0);
+    int return_value = ::interrogate_wrapper_number_of_parameters((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1100,14 +1130,14 @@ _inP07ytGMpW(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    TypeIndex return_value = interrogate_wrapper_parameter_type((FunctionWrapperIndex)param0, (int)param1);
+    TypeIndex return_value = ::interrogate_wrapper_parameter_type((FunctionWrapperIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1119,10 +1149,10 @@ _inP07ytNuBV(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    bool return_value = interrogate_wrapper_parameter_has_name((FunctionWrapperIndex)param0, (int)param1);
+    bool return_value = ::interrogate_wrapper_parameter_has_name((FunctionWrapperIndex)param0, (int)param1);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1134,14 +1164,14 @@ _inP07yt9UwA(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    char const *return_value = interrogate_wrapper_parameter_name((FunctionWrapperIndex)param0, (int)param1);
+    char const *return_value = ::interrogate_wrapper_parameter_name((FunctionWrapperIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1153,10 +1183,10 @@ _inP07yt3FDt(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    bool return_value = interrogate_wrapper_parameter_is_this((FunctionWrapperIndex)param0, (int)param1);
+    bool return_value = ::interrogate_wrapper_parameter_is_this((FunctionWrapperIndex)param0, (int)param1);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1167,10 +1197,10 @@ static PyObject *
 _inP07ytf513(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_wrapper_has_pointer((FunctionWrapperIndex)param0);
+    bool return_value = ::interrogate_wrapper_has_pointer((FunctionWrapperIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1181,10 +1211,10 @@ static PyObject *
 _inP07ytsqGH(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    interrogate_wrapper_pointer((FunctionWrapperIndex)param0);
+    ::interrogate_wrapper_pointer((FunctionWrapperIndex)param0);
     return Py_BuildValue("");
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1195,14 +1225,14 @@ static PyObject *
 _inP07yt7shV(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_wrapper_unique_name((FunctionWrapperIndex)param0);
+    char const *return_value = ::interrogate_wrapper_unique_name((FunctionWrapperIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1213,14 +1243,14 @@ static PyObject *
 _inP07ytA1eF(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    FunctionWrapperIndex return_value = interrogate_get_wrapper_by_unique_name((char const *)param0);
+    FunctionWrapperIndex return_value = ::interrogate_get_wrapper_by_unique_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1231,14 +1261,14 @@ static PyObject *
 _inP07yt776V(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_make_seq_seq_name((MakeSeqIndex)param0);
+    char const *return_value = ::interrogate_make_seq_seq_name((MakeSeqIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1249,14 +1279,14 @@ static PyObject *
 _inP07ytryup(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_make_seq_scoped_name((MakeSeqIndex)param0);
+    char const *return_value = ::interrogate_make_seq_scoped_name((MakeSeqIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1267,10 +1297,10 @@ static PyObject *
 _inP07ytiytI(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_make_seq_has_comment((ElementIndex)param0);
+    bool return_value = ::interrogate_make_seq_has_comment((ElementIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1281,14 +1311,14 @@ static PyObject *
 _inP07ytZc07(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_make_seq_comment((ElementIndex)param0);
+    char const *return_value = ::interrogate_make_seq_comment((ElementIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1299,14 +1329,14 @@ static PyObject *
 _inP07ytfaH0(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_make_seq_num_name((MakeSeqIndex)param0);
+    char const *return_value = ::interrogate_make_seq_num_name((MakeSeqIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1317,14 +1347,14 @@ static PyObject *
 _inP07ytGB9D(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_make_seq_element_name((MakeSeqIndex)param0);
+    char const *return_value = ::interrogate_make_seq_element_name((MakeSeqIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1334,14 +1364,14 @@ _inP07ytGB9D(PyObject *, PyObject *args) {
 static PyObject *
 _inP07ytsxxs(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_global_types();
+    int return_value = ::interrogate_number_of_global_types();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1352,14 +1382,14 @@ static PyObject *
 _inP07ytMT0z(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_get_global_type((int)param0);
+    TypeIndex return_value = ::interrogate_get_global_type((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1369,14 +1399,14 @@ _inP07ytMT0z(PyObject *, PyObject *args) {
 static PyObject *
 _inP07ytiW3v(PyObject *, PyObject *args) {
   if (PyArg_ParseTuple(args, "")) {
-    int return_value = interrogate_number_of_types();
+    int return_value = ::interrogate_number_of_types();
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1387,14 +1417,14 @@ static PyObject *
 _inP07yt4Px8(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_get_type((int)param0);
+    TypeIndex return_value = ::interrogate_get_type((int)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1405,14 +1435,14 @@ static PyObject *
 _inP07ytNHcs(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    TypeIndex return_value = interrogate_get_type_by_name((char const *)param0);
+    TypeIndex return_value = ::interrogate_get_type_by_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1423,14 +1453,14 @@ static PyObject *
 _inP07ytqHrb(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    TypeIndex return_value = interrogate_get_type_by_scoped_name((char const *)param0);
+    TypeIndex return_value = ::interrogate_get_type_by_scoped_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1441,14 +1471,14 @@ static PyObject *
 _inP07ytaOqq(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    TypeIndex return_value = interrogate_get_type_by_true_name((char const *)param0);
+    TypeIndex return_value = ::interrogate_get_type_by_true_name((char const *)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1459,10 +1489,10 @@ static PyObject *
 _inP07ytpTBb(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_global((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_global((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1473,14 +1503,14 @@ static PyObject *
 _inP07ytqWOw(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_name((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_name((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1491,14 +1521,14 @@ static PyObject *
 _inP07ytHu7x(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_scoped_name((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_scoped_name((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1509,14 +1539,14 @@ static PyObject *
 _inP07ytwGnA(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_true_name((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_true_name((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1527,10 +1557,10 @@ static PyObject *
 _inP07ytXGxx(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_nested((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_nested((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1541,14 +1571,14 @@ static PyObject *
 _inP07ytj04Z(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_type_outer_class((TypeIndex)param0);
+    TypeIndex return_value = ::interrogate_type_outer_class((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1559,10 +1589,10 @@ static PyObject *
 _inP07ytEOv4(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_has_comment((TypeIndex)param0);
+    bool return_value = ::interrogate_type_has_comment((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1573,14 +1603,14 @@ static PyObject *
 _inP07ytpCqJ(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_comment((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_comment((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1591,10 +1621,10 @@ static PyObject *
 _inP07yt_Pz3(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_has_module_name((TypeIndex)param0);
+    bool return_value = ::interrogate_type_has_module_name((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1605,14 +1635,14 @@ static PyObject *
 _inP07ytt_06(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_module_name((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_module_name((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1623,10 +1653,10 @@ static PyObject *
 _inP07ytmuPs(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_has_library_name((TypeIndex)param0);
+    bool return_value = ::interrogate_type_has_library_name((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1637,14 +1667,14 @@ static PyObject *
 _inP07ytvM8B(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    char const *return_value = interrogate_type_library_name((TypeIndex)param0);
+    char const *return_value = ::interrogate_type_library_name((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1655,10 +1685,10 @@ static PyObject *
 _inP07ytap97(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_atomic((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_atomic((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1669,14 +1699,14 @@ static PyObject *
 _inP07yt0o8D(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    AtomicToken return_value = interrogate_type_atomic_token((TypeIndex)param0);
+    AtomicToken return_value = ::interrogate_type_atomic_token((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1687,10 +1717,10 @@ static PyObject *
 _inP07ytOoQ2(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_unsigned((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_unsigned((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1701,10 +1731,10 @@ static PyObject *
 _inP07ytKuFh(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_signed((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_signed((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1715,10 +1745,10 @@ static PyObject *
 _inP07yto5L6(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_long((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_long((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1729,10 +1759,10 @@ static PyObject *
 _inP07ytzgKK(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_longlong((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_longlong((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1743,10 +1773,10 @@ static PyObject *
 _inP07yt0FIF(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_short((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_short((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1757,10 +1787,10 @@ static PyObject *
 _inP07ytZqvD(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_wrapped((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_wrapped((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1771,10 +1801,10 @@ static PyObject *
 _inP07ytDyRd(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_pointer((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_pointer((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1785,10 +1815,10 @@ static PyObject *
 _inP07ytMnKa(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_const((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_const((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1799,10 +1829,10 @@ static PyObject *
 _inP07ytRtji(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_typedef((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_typedef((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1813,14 +1843,14 @@ static PyObject *
 _inP07ytCnbQ(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    TypeIndex return_value = interrogate_type_wrapped_type((TypeIndex)param0);
+    TypeIndex return_value = ::interrogate_type_wrapped_type((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1831,10 +1861,10 @@ static PyObject *
 _inP07ytdUVN(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_enum((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_enum((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1845,14 +1875,14 @@ static PyObject *
 _inP07ytihbt(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_enum_values((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_enum_values((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1864,14 +1894,14 @@ _inP07ytbyPY(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    char const *return_value = interrogate_type_enum_value_name((TypeIndex)param0, (int)param1);
+    char const *return_value = ::interrogate_type_enum_value_name((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1883,14 +1913,14 @@ _inP07ytAaT6(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    char const *return_value = interrogate_type_enum_value_scoped_name((TypeIndex)param0, (int)param1);
+    char const *return_value = ::interrogate_type_enum_value_scoped_name((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1902,14 +1932,14 @@ _inP07ytgL9q(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    char const *return_value = interrogate_type_enum_value_comment((TypeIndex)param0, (int)param1);
+    char const *return_value = ::interrogate_type_enum_value_comment((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString(return_value);
 #else
     return PyString_FromString(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1921,14 +1951,14 @@ _inP07ytWB97(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    int return_value = interrogate_type_enum_value((TypeIndex)param0, (int)param1);
+    int return_value = ::interrogate_type_enum_value((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1939,10 +1969,10 @@ static PyObject *
 _inP07ytDUAl(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_struct((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_struct((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1953,10 +1983,10 @@ static PyObject *
 _inP07yt1_Kf(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_class((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_class((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1967,10 +1997,10 @@ static PyObject *
 _inP07yt98lD(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_union((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_union((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1981,10 +2011,10 @@ static PyObject *
 _inP07yt9SHr(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_fully_defined((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_fully_defined((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -1995,10 +2025,10 @@ static PyObject *
 _inP07ytdiZP(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_is_unpublished((TypeIndex)param0);
+    bool return_value = ::interrogate_type_is_unpublished((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2009,14 +2039,14 @@ static PyObject *
 _inP07ytTdER(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_constructors((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_constructors((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2028,14 +2058,14 @@ _inP07ytYO56(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionIndex return_value = interrogate_type_get_constructor((TypeIndex)param0, (int)param1);
+    FunctionIndex return_value = ::interrogate_type_get_constructor((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2046,10 +2076,10 @@ static PyObject *
 _inP07ytxtCG(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_has_destructor((TypeIndex)param0);
+    bool return_value = ::interrogate_type_has_destructor((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2060,10 +2090,10 @@ static PyObject *
 _inP07yt_EB2(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    bool return_value = interrogate_type_destructor_is_inherited((TypeIndex)param0);
+    bool return_value = ::interrogate_type_destructor_is_inherited((TypeIndex)param0);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2074,14 +2104,14 @@ static PyObject *
 _inP07ytEG1l(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    FunctionIndex return_value = interrogate_type_get_destructor((TypeIndex)param0);
+    FunctionIndex return_value = ::interrogate_type_get_destructor((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2092,14 +2122,14 @@ static PyObject *
 _inP07yt7tUq(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_elements((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_elements((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2111,14 +2141,14 @@ _inP07ytyStU(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    ElementIndex return_value = interrogate_type_get_element((TypeIndex)param0, (int)param1);
+    ElementIndex return_value = ::interrogate_type_get_element((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2129,14 +2159,14 @@ static PyObject *
 _inP07ytdM85(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_methods((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_methods((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2148,14 +2178,14 @@ _inP07ytk_GN(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionIndex return_value = interrogate_type_get_method((TypeIndex)param0, (int)param1);
+    FunctionIndex return_value = ::interrogate_type_get_method((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2166,14 +2196,14 @@ static PyObject *
 _inP07yt8QjG(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_make_seqs((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_make_seqs((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2185,14 +2215,14 @@ _inP07ytyMtj(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    MakeSeqIndex return_value = interrogate_type_get_make_seq((TypeIndex)param0, (int)param1);
+    MakeSeqIndex return_value = ::interrogate_type_get_make_seq((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2203,14 +2233,14 @@ static PyObject *
 _inP07ytHDtN(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_casts((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_casts((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2222,14 +2252,14 @@ _inP07ytHFjA(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionIndex return_value = interrogate_type_get_cast((TypeIndex)param0, (int)param1);
+    FunctionIndex return_value = ::interrogate_type_get_cast((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2240,14 +2270,14 @@ static PyObject *
 _inP07yt_NPR(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_derivations((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_derivations((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2259,14 +2289,14 @@ _inP07ytcTOH(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    TypeIndex return_value = interrogate_type_get_derivation((TypeIndex)param0, (int)param1);
+    TypeIndex return_value = ::interrogate_type_get_derivation((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2278,10 +2308,10 @@ _inP07ythdU7(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    bool return_value = interrogate_type_derivation_has_upcast((TypeIndex)param0, (int)param1);
+    bool return_value = ::interrogate_type_derivation_has_upcast((TypeIndex)param0, (int)param1);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2293,14 +2323,14 @@ _inP07ytQPxU(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionIndex return_value = interrogate_type_get_upcast((TypeIndex)param0, (int)param1);
+    FunctionIndex return_value = ::interrogate_type_get_upcast((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2312,10 +2342,10 @@ _inP07ytO7Pz(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    bool return_value = interrogate_type_derivation_downcast_is_impossible((TypeIndex)param0, (int)param1);
+    bool return_value = ::interrogate_type_derivation_downcast_is_impossible((TypeIndex)param0, (int)param1);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2327,10 +2357,10 @@ _inP07ytvu_E(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    bool return_value = interrogate_type_derivation_has_downcast((TypeIndex)param0, (int)param1);
+    bool return_value = ::interrogate_type_derivation_has_downcast((TypeIndex)param0, (int)param1);
     return PyBool_FromLong(return_value);
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2342,14 +2372,14 @@ _inP07ytxGUt(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    FunctionIndex return_value = interrogate_type_get_downcast((TypeIndex)param0, (int)param1);
+    FunctionIndex return_value = ::interrogate_type_get_downcast((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2360,14 +2390,14 @@ static PyObject *
 _inP07ytzM1P(PyObject *, PyObject *args) {
   int param0;
   if (PyArg_ParseTuple(args, "i", &param0)) {
-    int return_value = interrogate_type_number_of_nested_types((TypeIndex)param0);
+    int return_value = ::interrogate_type_number_of_nested_types((TypeIndex)param0);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2379,14 +2409,14 @@ _inP07ytoY5L(PyObject *, PyObject *args) {
   int param0;
   int param1;
   if (PyArg_ParseTuple(args, "ii", &param0, &param1)) {
-    TypeIndex return_value = interrogate_type_get_nested_type((TypeIndex)param0, (int)param1);
+    TypeIndex return_value = ::interrogate_type_get_nested_type((TypeIndex)param0, (int)param1);
 #if PY_MAJOR_VERSION >= 3
     return PyLong_FromLong(return_value);
 #else
     return PyInt_FromLong(return_value);
 #endif
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2397,10 +2427,10 @@ static PyObject *
 _inP07yte_7S(PyObject *, PyObject *args) {
   char *param0;
   if (PyArg_ParseTuple(args, "s", &param0)) {
-    interrogate_request_database((char const *)param0);
+    ::interrogate_request_database((char const *)param0);
     return Py_BuildValue("");
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 /*
@@ -2411,10 +2441,10 @@ static PyObject *
 _inP07ytw_15(PyObject *, PyObject *args) {
   Py_ssize_t param0;
   if (PyArg_ParseTuple(args, "n", &param0)) {
-    interrogate_request_module((InterrogateModuleDef *)param0);
+    ::interrogate_request_module((InterrogateModuleDef *)param0);
     return Py_BuildValue("");
   }
-  return (PyObject *)NULL;
+  return nullptr;
 }
 
 
@@ -2444,6 +2474,8 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_element_getter", &_inP07ytHuAm, METH_VARARGS },
   { "interrogate_element_has_setter", &_inP07yt_xr0, METH_VARARGS },
   { "interrogate_element_setter", &_inP07ytH5qp, METH_VARARGS },
+  { "interrogate_element_is_sequence", &_inP07ytq45U, METH_VARARGS },
+  { "interrogate_element_is_mapping", &_inP07yt6IPa, METH_VARARGS },
   { "interrogate_number_of_globals", &_inP07ytU2_B, METH_VARARGS },
   { "interrogate_get_global", &_inP07ytHFO2, METH_VARARGS },
   { "interrogate_number_of_global_functions", &_inP07ytcfjm, METH_VARARGS },
@@ -2555,17 +2587,17 @@ static PyMethodDef python_simple_funcs[] = {
   { "interrogate_type_get_nested_type", &_inP07ytoY5L, METH_VARARGS },
   { "interrogate_request_database", &_inP07yte_7S, METH_VARARGS },
   { "interrogate_request_module", &_inP07ytw_15, METH_VARARGS },
-  { NULL, NULL }
+  { nullptr, nullptr }
 };
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef python_simple_module = {
   PyModuleDef_HEAD_INIT,
   "interrogatedb",
-  NULL,
+  nullptr,
   -1,
   python_simple_funcs,
-  NULL, NULL, NULL, NULL
+  nullptr, nullptr, nullptr, nullptr
 };
 
 #define INIT_FUNC PyObject *PyInit_interrogatedb

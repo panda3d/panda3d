@@ -39,16 +39,18 @@
  * graph, and the NodePathComponents are stored in the nodes themselves to
  * allow the nodes to keep these up to date as the scene graph is manipulated.
  */
-class EXPCL_PANDA_PGRAPH NodePathComponent FINAL : public ReferenceCount {
+class EXPCL_PANDA_PGRAPH NodePathComponent final : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
                     int pipeline_stage, Thread *current_thread);
-  INLINE NodePathComponent(const NodePathComponent &copy);
-  INLINE void operator = (const NodePathComponent &copy);
 
 public:
+  NodePathComponent(const NodePathComponent &copy) = delete;
   INLINE ~NodePathComponent();
+
   ALLOC_DELETED_CHAIN(NodePathComponent);
+
+  NodePathComponent &operator = (const NodePathComponent &copy) = delete;
 
   INLINE PandaNode *get_node() const;
   INLINE bool has_key() const;
@@ -60,7 +62,7 @@ public:
 
   bool fix_length(int pipeline_stage, Thread *current_thread);
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
   void set_next(NodePathComponent *next, int pipeline_stage, Thread *current_thread);
@@ -129,7 +131,7 @@ private:
 template<>
 INLINE void PointerToBase<NodePathComponent>::update_type(To *ptr) {}
 
-INLINE ostream &operator << (ostream &out, const NodePathComponent &comp);
+INLINE std::ostream &operator << (std::ostream &out, const NodePathComponent &comp);
 
 #include "nodePathComponent.I"
 

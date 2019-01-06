@@ -14,6 +14,13 @@
 #include "virtualFileMountSystem.h"
 #include "virtualFileSystem.h"
 
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::streampos;
+using std::streamsize;
+using std::string;
+
 TypeHandle VirtualFileMountSystem::_type_handle;
 
 
@@ -49,7 +56,7 @@ bool VirtualFileMountSystem::
 create_file(const Filename &file) {
   Filename pathname(_physical_filename, file);
   pathname.set_binary();
-  ofstream stream;
+  std::ofstream stream;
   return pathname.open_write(stream, false);
 }
 
@@ -167,7 +174,7 @@ open_read_file(const Filename &file) const {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -176,7 +183,7 @@ open_read_file(const Filename &file) const {
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
     close_read_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -193,7 +200,7 @@ open_write_file(const Filename &file, bool truncate) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -202,7 +209,7 @@ open_write_file(const Filename &file, bool truncate) {
   if (!pathname.open_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
     close_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -219,7 +226,7 @@ open_append_file(const Filename &file) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -228,7 +235,7 @@ open_append_file(const Filename &file) {
   if (!pathname.open_append(*stream)) {
     // Couldn't open the file for some reason.
     close_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -245,7 +252,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -254,7 +261,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   if (!pathname.open_read_write(*stream, truncate)) {
     // Couldn't open the file for some reason.
     close_read_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -271,7 +278,7 @@ open_read_append_file(const Filename &file) {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return nullptr;
     }
   }
 #endif  // WIN32
@@ -280,7 +287,7 @@ open_read_append_file(const Filename &file) {
   if (!pathname.open_read_append(*stream)) {
     // Couldn't open the file for some reason.
     close_read_write_file(stream);
-    return NULL;
+    return nullptr;
   }
 
   return stream;
@@ -297,7 +304,7 @@ get_file_size(const Filename &file, istream *stream) const {
   streampos orig = stream->tellg();
 
   // Seek to the end and get the stream position there.
-  stream->seekg(0, ios::end);
+  stream->seekg(0, std::ios::end);
   if (stream->fail()) {
     // Seeking not supported.
     stream->clear();
@@ -306,7 +313,7 @@ get_file_size(const Filename &file, istream *stream) const {
   streampos size = stream->tellg();
 
   // Then return to the original point.
-  stream->seekg(orig, ios::beg);
+  stream->seekg(orig, std::ios::beg);
 
   // Make sure there are no error flags set as a result of the seek.
   stream->clear();
@@ -385,7 +392,7 @@ atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return false;
     }
   }
 #endif  // WIN32
@@ -402,7 +409,7 @@ atomic_read_contents(const Filename &file, string &contents) const {
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
-      return NULL;
+      return false;
     }
   }
 #endif  // WIN32

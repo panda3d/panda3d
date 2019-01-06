@@ -32,7 +32,7 @@ class HashGenerator;
  * This may also be a typedef reference to another type, which has the same
  * properties as the referenced type, but a different name.
  */
-class DCParameter : public DCField {
+class EXPCL_DIRECT_DCPARSER DCParameter : public DCField {
 protected:
   DCParameter();
   DCParameter(const DCParameter &copy);
@@ -60,18 +60,18 @@ public:
   void set_typedef(const DCTypedef *dtypedef);
   virtual DCParameter *append_array_specification(const DCUnsignedIntRange &size);
 
-  virtual void output(ostream &out, bool brief) const;
-  virtual void write(ostream &out, bool brief, int indent_level) const;
-  virtual void output_instance(ostream &out, bool brief, const string &prename,
-                               const string &name, const string &postname) const=0;
-  virtual void write_instance(ostream &out, bool brief, int indent_level,
-                              const string &prename, const string &name,
-                              const string &postname) const;
-  void output_typedef_name(ostream &out, bool brief, const string &prename,
-                           const string &name, const string &postname) const;
-  void write_typedef_name(ostream &out, bool brief, int indent_level,
-                          const string &prename, const string &name,
-                          const string &postname) const;
+  virtual void output(std::ostream &out, bool brief) const;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const;
+  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
+                               const std::string &name, const std::string &postname) const=0;
+  virtual void write_instance(std::ostream &out, bool brief, int indent_level,
+                              const std::string &prename, const std::string &name,
+                              const std::string &postname) const;
+  void output_typedef_name(std::ostream &out, bool brief, const std::string &prename,
+                           const std::string &name, const std::string &postname) const;
+  void write_typedef_name(std::ostream &out, bool brief, int indent_level,
+                          const std::string &prename, const std::string &name,
+                          const std::string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:

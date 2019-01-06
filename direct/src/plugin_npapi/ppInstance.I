@@ -27,5 +27,5 @@ get_window() const {
   if (_got_window) {
     return &_window;
   }
-  return NULL;
+  return nullptr;
 }

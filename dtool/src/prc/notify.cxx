@@ -34,18 +34,24 @@
 #include "emscriptenLogStream.h"
 #endif
 
-Notify *Notify::_global_ptr = (Notify *)NULL;
+using std::cerr;
+using std::cout;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
+Notify *Notify::_global_ptr = nullptr;
 
 /**
  *
  */
 Notify::
 Notify() {
-  _ostream_ptr = &cerr;
+  _ostream_ptr = &std::cerr;
   _owns_ostream_ptr = false;
-  _null_ostream_ptr = new fstream;
+  _null_ostream_ptr = new std::fstream;
 
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = nullptr;
   _assert_failed = false;
 }
 
@@ -72,7 +78,7 @@ set_ostream_ptr(ostream *ostream_ptr, bool delete_later) {
     delete _ostream_ptr;
   }
 
-  if (ostream_ptr == (ostream *)NULL) {
+  if (ostream_ptr == nullptr) {
     _ostream_ptr = &cerr;
     _owns_ostream_ptr = false;
   } else {
@@ -106,7 +112,7 @@ get_literal_flag() {
 
   if (!got_flag) {
 #ifndef PHAVE_IOSTREAM
-    flag = ios::bitalloc();
+    flag = std::ios::bitalloc();
 #else
     // We lost bitalloc in the new iostream?  Ok, this feature will just be
     // disabled for now.  No big deal.
@@ -140,7 +146,7 @@ set_assert_handler(Notify::AssertHandler *assert_handler) {
  */
 void Notify::
 clear_assert_handler() {
-  _assert_handler = (AssertHandler *)NULL;
+  _assert_handler = nullptr;
 }
 
 /**
@@ -148,7 +154,7 @@ clear_assert_handler() {
  */
 bool Notify::
 has_assert_handler() const {
-  return (_assert_handler != (AssertHandler *)NULL);
+  return (_assert_handler != nullptr);
 }
 
 /**
@@ -177,10 +183,10 @@ get_top_category() {
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
   // The string should not contain colons.
-  nassertr(basename.find(':') == string::npos, (NotifyCategory *)NULL);
+  nassertr(basename.find(':') == string::npos, nullptr);
 
   string fullname;
-  if (parent_category != (NotifyCategory *)NULL) {
+  if (parent_category != nullptr) {
     fullname = parent_category->get_fullname() + ":" + basename;
   } else {
     // The parent_category is NULL.  If basename is empty, that means we refer
@@ -192,8 +198,8 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  pair<Categories::iterator, bool> result =
-    _categories.insert(Categories::value_type(fullname, (NotifyCategory *)NULL));
+  std::pair<Categories::iterator, bool> result =
+    _categories.insert(Categories::value_type(fullname, nullptr));
 
   bool inserted = result.second;
   NotifyCategory *&category = (*result.first).second;
@@ -235,7 +241,7 @@ get_category(const string &fullname) {
 
   // No such Category; create one.  First identify the parent name, based on
   // the rightmost colon.
-  NotifyCategory *parent_category = (NotifyCategory *)NULL;
+  NotifyCategory *parent_category = nullptr;
   string basename = fullname;
 
   size_t colon = fullname.rfind(':');
@@ -301,7 +307,7 @@ write_string(const string &str) {
  */
 Notify *Notify::
 ptr() {
-  if (_global_ptr == (Notify *)NULL) {
+  if (_global_ptr == nullptr) {
     init_memory_hook();
     _global_ptr = new Notify;
   }
@@ -389,7 +395,7 @@ assert_failure(const char *expression, int line,
     // debugger otherwise.
 
     // So we'll force a segfault, which works every time.
-    int *ptr = (int *)NULL;
+    int *ptr = nullptr;
     *ptr = 1;
 
 #elif defined(__EMSCRIPTEN__)
@@ -494,7 +500,7 @@ config_initialized() {
 
     if (!notify_output.empty()) {
       if (notify_output == "stdout") {
-        cout.setf(ios::unitbuf);
+        cout.setf(std::ios::unitbuf);
         set_ostream_ptr(&cout, false);
 
       } else if (notify_output == "stderr") {
@@ -523,7 +529,7 @@ config_initialized() {
           nout << "Unable to open file " << filename << " for output.\n";
           delete out;
         } else {
-          out->setf(ios::unitbuf);
+          out->setf(std::ios::unitbuf);
           set_ostream_ptr(out, true);
         }
 #endif  // BUILD_IPHONE

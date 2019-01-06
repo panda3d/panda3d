@@ -56,9 +56,9 @@
 
 #ifndef D3DERRORSTRING
 #ifdef NDEBUG
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << endl  // leave out descriptions to shrink release build
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << std::endl  // leave out descriptions to shrink release build
 #else
-#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << endl
+#define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DX_GET_ERROR_STRING_FUNC(HRESULT) << ": " << DX_GET_ERROR_DESCRIPTION_FUNC(HRESULT) << std::endl
 #endif
 #endif
 
@@ -82,14 +82,14 @@ typedef DWORD DXShaderHandle;
     var.dwSize = sizeof(type);
 
 #define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
-  if((HANDLE!=NULL)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL; }
+  if((HANDLE!=nullptr)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=nullptr; }
 
-#define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
-#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete [] (p);   (p)=NULL; } }
+#define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=nullptr; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete [] (p);   (p)=nullptr; } }
 
 // for stuff outside a panda class
-#define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=NULL; } }
-#define SAFE_FREELIB(hDLL)   { if(hDLL!=NULL) {  FreeLibrary(hDLL);hDLL = NULL; } }
+#define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=nullptr; } }
+#define SAFE_FREELIB(hDLL)   { if(hDLL!=nullptr) {  FreeLibrary(hDLL);hDLL = nullptr; } }
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
@@ -103,20 +103,20 @@ typedef DWORD DXShaderHandle;
    ULONG refcnt;                                                \
    if(IS_VALID_PTR(OBJECT)) {                                   \
         refcnt = (OBJECT)->Release();                           \
-        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; \
+        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
         if((bDoDownToZero) && (refcnt>0)) {                     \
               MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
               do {                                \
                 refcnt = (OBJECT)->Release();     \
               } while(refcnt>0);                  \
         }                                         \
-        (OBJECT) = NULL;                          \
+        (OBJECT) = nullptr;                          \
       } else {                                    \
-        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
+        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << std::endl;  \
       }}
 
 #define PRINT_REFCNT(MODULE,p) { ULONG refcnt;  (p)->AddRef();  refcnt=(p)->Release(); \
-                                 MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << endl; }
+                                 MODULE##_cat.debug() << #p << " has refcnt = " << refcnt << " at " << __FILE__ << ":" << __LINE__ << std::endl; }
 
 #else
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)   { \
@@ -129,7 +129,7 @@ typedef DWORD DXShaderHandle;
                 refcnt = (OBJECT)->Release();     \
               } while(refcnt>0);                  \
         }                                         \
-        (OBJECT) = NULL;                          \
+        (OBJECT) = nullptr;                          \
    }}
 
 #define PRINT_REFCNT(MODULE,p)
@@ -211,7 +211,6 @@ struct DXScreenData {
   bool _is_tnl_device;
   bool _can_use_hw_vertex_shaders;
   bool _can_use_pixel_shaders;
-  bool _is_dx9_1;
   UINT _supported_screen_depths_mask;
   UINT _supported_tex_formats_mask;
   bool _supports_rgba16f_texture_format;

@@ -44,7 +44,7 @@ class EggVertexPool;
  * can.  However, it is necessary that all vertices belong to the same vertex
  * pool.
  */
-class EXPCL_PANDAEGG EggPrimitive : public EggNode, public EggAttributes,
+class EXPCL_PANDA_EGG EggPrimitive : public EggNode, public EggAttributes,
                      public EggRenderMode
 {
 
@@ -67,7 +67,7 @@ PUBLISHED:
     S_per_vertex
   };
 
-  INLINE explicit EggPrimitive(const string &name = "");
+  INLINE explicit EggPrimitive(const std::string &name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();
@@ -82,7 +82,7 @@ PUBLISHED:
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
 
-  INLINE string get_sort_name() const;
+  INLINE std::string get_sort_name() const;
 
   virtual Shading get_shading() const;
   INLINE void clear_connected_shading();
@@ -191,7 +191,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(vertices, get_num_vertices, get_vertex, set_vertex, remove_vertex, insert_vertex);
   MAKE_PROPERTY(pool, get_pool);
 
-  virtual void write(ostream &out, int indent_level) const=0;
+  virtual void write(std::ostream &out, int indent_level) const=0;
 
 #ifdef _DEBUG
   void test_vref_integrity() const;
@@ -209,7 +209,7 @@ protected:
   virtual void prepare_remove_vertex(EggVertex *vertex, int i, int n);
 
 protected:
-  void write_body(ostream &out, int indent_level) const;
+  void write_body(std::ostream &out, int indent_level) const;
 
   virtual bool egg_start_parse_body();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,

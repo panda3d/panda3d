@@ -27,7 +27,9 @@
 
 #include "iesDataset.h"
 
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
 #include <math.h>
 
 NotifyCategoryDef(iesdataset, "")
@@ -139,7 +141,7 @@ float IESDataset::get_candela_value(float vertical_angle, float horizontal_angle
         iesdataset_cat.error() << "Invalid horizontal lerp: " << lerp
                      << ", requested angle was " << horizontal_angle
                      << ", prev = " << prev_angle << ", cur = " << curr_angle
-                     << endl;
+                     << std::endl;
       }
 
       return curr_value * lerp + prev_value * (1-lerp);
@@ -190,7 +192,7 @@ float IESDataset::get_vertical_candela_value(size_t horizontal_angle_idx, float 
         iesdataset_cat.error() << "ERROR: Invalid vertical lerp: " << lerp
                      << ", requested angle was " << vertical_angle
                      << ", prev = " << prev_angle << ", cur = " << curr_angle
-                     << endl;
+                     << std::endl;
       }
 
       return curr_value * lerp + prev_value * (1-lerp);

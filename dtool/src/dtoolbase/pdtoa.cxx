@@ -259,7 +259,7 @@ inline static void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, cha
   *len = 0;
 
   while (kappa > 0) {
-    uint32_t d;
+    uint32_t d = 0;
     switch (kappa) {
       case 10: d = p1 / 1000000000; p1 %= 1000000000; break;
       case  9: d = p1 /  100000000; p1 %=  100000000; break;
@@ -271,14 +271,7 @@ inline static void DigitGen(const DiyFp& W, const DiyFp& Mp, uint64_t delta, cha
       case  3: d = p1 /        100; p1 %=        100; break;
       case  2: d = p1 /         10; p1 %=         10; break;
       case  1: d = p1;              p1 =           0; break;
-      default:
-#if defined(_MSC_VER)
-        __assume(0);
-#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
-        __builtin_unreachable();
-#else
-        d = 0;
-#endif
+      NODEFAULT
     }
     if (d || *len)
       buffer[(*len)++] = '0' + static_cast<char>(d);
@@ -404,7 +397,7 @@ void pdtoa(double value, char *buffer) {
 #ifdef _MSC_VER
   if (copysign(1.0, value) < 0) {
 #else
-  if (signbit(value)) {
+  if (std::signbit(value)) {
 #endif
     *buffer++ = '-';
     value = -value;

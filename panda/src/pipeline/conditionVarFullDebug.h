@@ -32,10 +32,10 @@
 class EXPCL_PANDA_PIPELINE ConditionVarFullDebug {
 public:
   explicit ConditionVarFullDebug(MutexDebug &mutex);
+  ConditionVarFullDebug(const ConditionVarFullDebug &copy) = delete;
   virtual ~ConditionVarFullDebug();
-private:
-  INLINE ConditionVarFullDebug(const ConditionVarFullDebug &copy);
-  INLINE void operator = (const ConditionVarFullDebug &copy);
+
+  ConditionVarFullDebug &operator = (const ConditionVarFullDebug &copy) = delete;
 
 PUBLISHED:
   INLINE MutexDebug &get_mutex() const;
@@ -44,15 +44,15 @@ PUBLISHED:
   BLOCKING void wait(double timeout);
   void notify();
   void notify_all();
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 private:
   MutexDebug &_mutex;
   ConditionVarFullImpl _impl;
 };
 
-INLINE ostream &
-operator << (ostream &out, const ConditionVarFullDebug &cv) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConditionVarFullDebug &cv) {
   cv.output(out);
   return out;
 }

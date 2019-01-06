@@ -19,6 +19,8 @@
 #include "eggPolygon.h"
 #include "dcast.h"
 
+using std::ostream;
+
 /**
  *
  */

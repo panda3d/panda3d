@@ -15,7 +15,7 @@
 #include "textMonitor.h"
 
 #include "pStatServer.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <signal.h>
 
@@ -42,20 +42,20 @@ TextStats() {
     ("p", "port", 0,
      "Specify the TCP port to listen for connections on.  By default, this "
      "is taken from the pstats-host Config variable.",
-     &TextStats::dispatch_int, NULL, &_port);
+     &TextStats::dispatch_int, nullptr, &_port);
 
   add_option
     ("r", "", 0,
      "Show the raw frame data, in addition to boiling it down to a total "
      "time per collector.",
-     &TextStats::dispatch_none, &_show_raw_data, NULL);
+     &TextStats::dispatch_none, &_show_raw_data, nullptr);
 
   add_option
     ("o", "filename", 0,
      "Filename where to print. If not given then stderr is being used.",
      &TextStats::dispatch_string, &_got_outputFileName, &_outputFileName);
 
-  _outFile = NULL;
+  _outFile = nullptr;
   _port = pstats_port;
 }
 
@@ -87,7 +87,7 @@ run() {
   nout << "Listening for connections.\n";
 
   if (_got_outputFileName) {
-    _outFile = new ofstream(_outputFileName.c_str(), ios::out);
+    _outFile = new std::ofstream(_outputFileName.c_str(), std::ios::out);
   } else {
     _outFile = &(nout);
   }

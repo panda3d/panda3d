@@ -19,8 +19,8 @@
  * just used in printing error messages and such.
  */
 EggToSomething::
-EggToSomething(const string &format_name,
-               const string &preferred_extension,
+EggToSomething(const std::string &format_name,
+               const std::string &preferred_extension,
                bool allow_last_param, bool allow_stdout) :
   EggConverter(format_name, preferred_extension, allow_last_param,
                allow_stdout)
@@ -34,7 +34,7 @@ EggToSomething(const string &format_name,
     add_runline("[opts] input.egg >output" + _preferred_extension);
   }
 
-  string o_description;
+  std::string o_description;
 
   if (_allow_stdout) {
     if (_allow_last_param) {
@@ -93,13 +93,13 @@ add_units_options() {
      "specified, the vertices in the egg file will be scaled as "
      "necessary to make the appropriate units conversion; otherwise, "
      "the vertices will be left as they are.",
-     &EggToSomething::dispatch_units, NULL, &_input_units);
+     &EggToSomething::dispatch_units, nullptr, &_input_units);
 
   add_option
     ("uo", "units", 40,
      "Specify the units of the resulting " + _format_name +
      " file.  Normally, the default units for the format are used.",
-     &EggToSomething::dispatch_units, NULL, &_output_units);
+     &EggToSomething::dispatch_units, nullptr, &_output_units);
 }
 
 /**

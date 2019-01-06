@@ -21,7 +21,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_VRPN)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_VRPN)
   #error Buildsystem error: BUILDING_VRPN not defined
 #endif
 

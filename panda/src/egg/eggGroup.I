@@ -127,7 +127,7 @@ get_cs_type() const {
  *
  */
 INLINE void EggGroup::
-set_collision_name(const string &collision_name) {
+set_collision_name(const std::string &collision_name) {
   _collision_name = collision_name;
 }
 
@@ -150,7 +150,7 @@ has_collision_name() const {
 /**
  *
  */
-INLINE const string &EggGroup::
+INLINE const std::string &EggGroup::
 get_collision_name() const {
   return _collision_name;
 }
@@ -259,7 +259,7 @@ get_switch_fps() const {
  *
  */
 INLINE void EggGroup::
-add_object_type(const string &object_type) {
+add_object_type(const std::string &object_type) {
   _object_types.push_back(object_type);
 }
 
@@ -282,9 +282,9 @@ get_num_object_types() const {
 /**
  *
  */
-INLINE string EggGroup::
+INLINE std::string EggGroup::
 get_object_type(int index) const {
-  nassertr(index >= 0 && index < (int)_object_types.size(), string());
+  nassertr(index >= 0 && index < (int)_object_types.size(), std::string());
   return _object_types[index];
 }
 
@@ -686,7 +686,7 @@ set_lod(const EggSwitchCondition &lod) {
  */
 INLINE void EggGroup::
 clear_lod() {
-  _lod = NULL;
+  _lod = nullptr;
 }
 
 /**
@@ -694,7 +694,7 @@ clear_lod() {
  */
 INLINE bool EggGroup::
 has_lod() const {
-  return (_lod != (EggSwitchCondition *)NULL);
+  return (_lod != nullptr);
 }
 
 /**
@@ -717,7 +717,7 @@ get_lod() const {
  * of any one key's value.
  */
 INLINE void EggGroup::
-set_tag(const string &key, const string &value) {
+set_tag(const std::string &key, const std::string &value) {
   _tag_data[key] = value;
 }
 
@@ -726,14 +726,14 @@ set_tag(const string &key, const string &value) {
  * the particular key, if any.  If no value has been previously set, returns
  * the empty string.
  */
-INLINE string EggGroup::
-get_tag(const string &key) const {
+INLINE std::string EggGroup::
+get_tag(const std::string &key) const {
   TagData::const_iterator ti;
   ti = _tag_data.find(key);
   if (ti != _tag_data.end()) {
     return (*ti).second;
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -742,7 +742,7 @@ get_tag(const string &key) const {
  * set.
  */
 INLINE bool EggGroup::
-has_tag(const string &key) const {
+has_tag(const std::string &key) const {
   TagData::const_iterator ti;
   ti = _tag_data.find(key);
   return (ti != _tag_data.end());
@@ -753,7 +753,7 @@ has_tag(const string &key) const {
  * call to clear_tag(), has_tag() will return false for the indicated key.
  */
 INLINE void EggGroup::
-clear_tag(const string &key) {
+clear_tag(const std::string &key) {
   _tag_data.erase(key);
 }
 

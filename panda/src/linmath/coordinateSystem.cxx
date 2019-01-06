@@ -21,6 +21,11 @@
 
 #include <ctype.h>
 
+using std::istream;
+using std::ostream;
+using std::ostringstream;
+using std::string;
+
 static ConfigVariableEnum<CoordinateSystem> default_cs
 ("coordinate-system", CS_zup_right,
  PRC_DESC("The default coordinate system to use throughout Panda for "

@@ -37,7 +37,7 @@ CocoaGraphicsPipe(CGDirectDisplayID display) : _display(display) {
   _supported_types = OT_window | OT_buffer | OT_texture_buffer;
   _is_valid = true;
 
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+  [[NSAutoreleasePool alloc] init];
 
   // Put Cocoa into thread-safe mode by spawning a thread which immediately
   // exits.
@@ -169,7 +169,7 @@ CocoaGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string CocoaGraphicsPipe::
+std::string CocoaGraphicsPipe::
 get_interface_name() const {
   return "OpenGL";
 }
@@ -199,7 +199,7 @@ CocoaGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) CocoaGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

@@ -26,7 +26,7 @@ TypeHandle CConstrainHprInterval::_type_handle;
  * node's local orientation will be copied unaltered.
  */
 CConstrainHprInterval::
-CConstrainHprInterval(const string &name, double duration,
+CConstrainHprInterval(const std::string &name, double duration,
                       const NodePath &node, const NodePath &target,
                       bool wrt, const LVecBase3 hprOffset) :
   CConstraintInterval(name, duration),
@@ -69,7 +69,7 @@ priv_step(double t) {
  *
  */
 void CConstrainHprInterval::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_name() << ":";
   out << " dur " << get_duration();
 }

@@ -30,23 +30,28 @@ class Thread;
  */
 class EXPCL_PANDA_PIPELINE LightMutexDirect {
 protected:
-  INLINE LightMutexDirect();
-  INLINE ~LightMutexDirect();
-private:
-  INLINE LightMutexDirect(const LightMutexDirect &copy);
-  INLINE void operator = (const LightMutexDirect &copy);
+  LightMutexDirect() = default;
+  LightMutexDirect(const LightMutexDirect &copy) = delete;
+  ~LightMutexDirect() = default;
+
+  void operator = (const LightMutexDirect &copy) = delete;
+
+public:
+  INLINE void lock();
+  INLINE bool try_lock();
+  INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 
-  INLINE void set_name(const string &name);
+  INLINE void set_name(const std::string &name);
   INLINE void clear_name();
   INLINE bool has_name() const;
-  INLINE string get_name() const;
+  INLINE std::string get_name() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 private:
 #ifdef DO_PSTATS
@@ -54,14 +59,14 @@ private:
   // even in the SIMPLE_THREADS case.  We have to do this since any PStatTimer
   // call may trigger a context switch, and any low-level context switch
   // requires all containing mutexes to be true mutexes.
-  MutexTrueImpl _impl;
+  mutable MutexTrueImpl _impl;
 #else
-  MutexImpl _impl;
+  mutable MutexImpl _impl;
 #endif  // DO_PSTATS
 };
 
-INLINE ostream &
-operator << (ostream &out, const LightMutexDirect &m) {
+INLINE std::ostream &
+operator << (std::ostream &out, const LightMutexDirect &m) {
   m.output(out);
   return out;
 }

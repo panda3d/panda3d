@@ -16,7 +16,7 @@
  */
 INLINE VertexDataBuffer::
 VertexDataBuffer() :
-  _resident_data(NULL),
+  _resident_data(nullptr),
   _size(0),
   _reserved_size(0)
 {
@@ -27,7 +27,7 @@ VertexDataBuffer() :
  */
 INLINE VertexDataBuffer::
 VertexDataBuffer(size_t size) :
-  _resident_data(NULL),
+  _resident_data(nullptr),
   _size(0),
   _reserved_size(0)
 {
@@ -40,7 +40,7 @@ VertexDataBuffer(size_t size) :
  */
 INLINE VertexDataBuffer::
 VertexDataBuffer(const VertexDataBuffer &copy) :
-  _resident_data(NULL),
+  _resident_data(nullptr),
   _size(0),
   _reserved_size(0)
 {
@@ -68,11 +68,11 @@ get_read_pointer(bool force) const {
   LightMutexHolder holder(_lock);
 
   const unsigned char *ptr;
-  if (_resident_data != (unsigned char *)NULL || _size == 0) {
+  if (_resident_data != nullptr || _size == 0) {
     ptr = _resident_data;
   } else {
-    nassertr(_block != (VertexDataBlock *)NULL, NULL);
-    nassertr(_reserved_size >= _size, NULL);
+    nassertr(_block != nullptr, nullptr);
+    nassertr(_reserved_size >= _size, nullptr);
 
     // We don't necessarily need to page the buffer all the way into independent
     // status; it's sufficient just to return the block's pointer, which will
@@ -92,10 +92,10 @@ INLINE unsigned char *VertexDataBuffer::
 get_write_pointer() {
   LightMutexHolder holder(_lock);
 
-  if (_resident_data == (unsigned char *)NULL && _reserved_size != 0) {
+  if (_resident_data == nullptr && _reserved_size != 0) {
     do_page_in();
   }
-  nassertr(_reserved_size >= _size, NULL);
+  nassertr(_reserved_size >= _size, nullptr);
 #ifdef _DEBUG
   assert(((uintptr_t)_resident_data % MEMORY_HOOK_ALIGNMENT) == 0);
 #endif
@@ -133,7 +133,7 @@ set_size(size_t size) {
   nassertv(size <= _reserved_size);
 
   if (size != _size) {
-    if (_resident_data == (unsigned char *)NULL && _reserved_size != 0) {
+    if (_resident_data == nullptr && _reserved_size != 0) {
       do_page_in();
     }
 

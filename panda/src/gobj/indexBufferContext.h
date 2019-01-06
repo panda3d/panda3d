@@ -46,13 +46,10 @@ public:
   INLINE void mark_loaded(const GeomPrimitivePipelineReader *reader);
   INLINE void mark_unloaded();
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
 private:
-  // This cannot be a PT(GeomPrimitive), because the data and the GSG both own
-  // their IndexBufferContexts!  That would create a circular reference count.
-  GeomPrimitive *_data;
   GeomEnums::UsageHint _usage_hint;
 
 public:
@@ -75,7 +72,7 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-inline ostream &operator << (ostream &out, const IndexBufferContext &context) {
+inline std::ostream &operator << (std::ostream &out, const IndexBufferContext &context) {
   context.output(out);
   return out;
 }

@@ -16,6 +16,7 @@
 
 #include "dcbase.h"
 #include "dcSubatomicType.h"
+#include "vector_uchar.h"
 
 class DCFile;
 class DCField;
@@ -37,8 +38,8 @@ enum DCPackType {
 
   // These PackTypes are all fundamental types, and should be packed (or
   // unpacked) with the corresponding call to pack_double(), pack_int(), etc.
-  // PT_blob is the same as PT_string, but implies that the string contains
-  // binary data.
+  // PT_blob is similar to PT_string, except that it contains arbitrary binary
+  // data instead of just UTF-8 text.
   PT_double,
   PT_int,
   PT_uint,
@@ -64,15 +65,15 @@ END_PUBLISH
  * Normally these methods are called only by the DCPacker object; the user
  * wouldn't normally call these directly.
  */
-class DCPackerInterface {
+class EXPCL_DIRECT_DCPARSER DCPackerInterface {
 public:
-  DCPackerInterface(const string &name = string());
+  DCPackerInterface(const std::string &name = std::string());
   DCPackerInterface(const DCPackerInterface &copy);
   virtual ~DCPackerInterface();
 
 PUBLISHED:
-  INLINE const string &get_name() const;
-  int find_seek_index(const string &name) const;
+  INLINE const std::string &get_name() const;
+  int find_seek_index(const std::string &name) const;
 
   virtual DCField *as_field();
   virtual const DCField *as_field() const;
@@ -82,10 +83,10 @@ PUBLISHED:
   virtual const DCClassParameter *as_class_parameter() const;
 
   INLINE bool check_match(const DCPackerInterface *other) const;
-  bool check_match(const string &description, DCFile *dcfile = NULL) const;
+  bool check_match(const std::string &description, DCFile *dcfile = nullptr) const;
 
 public:
-  virtual void set_name(const string &name);
+  virtual void set_name(const std::string &name);
   INLINE bool has_fixed_byte_size() const;
   INLINE size_t get_fixed_byte_size() const;
   INLINE bool has_fixed_structure() const;
@@ -111,8 +112,10 @@ public:
                           bool &pack_error, bool &range_error) const;
   virtual void pack_uint64(DCPackData &pack_data, uint64_t value,
                            bool &pack_error, bool &range_error) const;
-  virtual void pack_string(DCPackData &pack_data, const string &value,
+  virtual void pack_string(DCPackData &pack_data, const std::string &value,
                            bool &pack_error, bool &range_error) const;
+  virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
+                         bool &pack_error, bool &range_error) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   virtual void unpack_double(const char *data, size_t length, size_t &p,
@@ -126,7 +129,9 @@ public:
   virtual void unpack_uint64(const char *data, size_t length, size_t &p,
                              uint64_t &value, bool &pack_error, bool &range_error) const;
   virtual void unpack_string(const char *data, size_t length, size_t &p,
-                             string &value, bool &pack_error, bool &range_error) const;
+                             std::string &value, bool &pack_error, bool &range_error) const;
+  virtual void unpack_blob(const char *data, size_t length, size_t &p,
+                           vector_uchar &value, bool &pack_error, bool &range_error) const;
   virtual bool unpack_validate(const char *data, size_t length, size_t &p,
                                bool &pack_error, bool &range_error) const;
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,
@@ -184,7 +189,7 @@ private:
   void make_catalog();
 
 protected:
-  string _name;
+  std::string _name;
   bool _has_fixed_byte_size;
   size_t _fixed_byte_size;
   bool _has_fixed_structure;

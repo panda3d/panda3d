@@ -46,7 +46,8 @@ DatagramTCPHeader(const NetDatagram &datagram, int header_size) {
     break;
 
   default:
-    nassertv(false);
+    nassert_raise("invalid header size");
+    return;
   }
 
   nassertv((int)_header.get_length() == header_size);
@@ -107,7 +108,7 @@ verify_datagram(const NetDatagram &datagram, int header_size) const {
     // We write the hex dump into a ostringstream first, to guarantee an
     // atomic write to the output stream in case we're threaded.
 
-    ostringstream hex;
+    std::ostringstream hex;
     datagram.dump_hex(hex);
     hex << "\n";
     net_cat.debug() << hex.str();

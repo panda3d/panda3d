@@ -20,7 +20,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDAFX)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDAFX)
   #error Buildsystem error: BUILDING_PANDAFX not defined
 #endif
 

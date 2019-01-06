@@ -22,7 +22,7 @@ PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");
  *
  */
 BufferResidencyTracker::
-BufferResidencyTracker(const string &pgo_name, const string &type_name) :
+BufferResidencyTracker(const std::string &pgo_name, const std::string &type_name) :
   _pgo_collector(_gmem_collector, pgo_name),
   _active_resident_collector(PStatCollector(_pgo_collector, "Active"), type_name),
   _active_nonresident_collector(PStatCollector(_pgo_collector, "Thrashing"), type_name),
@@ -90,7 +90,7 @@ set_levels() {
  *
  */
 void BufferResidencyTracker::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (_chains[S_inactive_nonresident].get_count() != 0) {
     indent(out, indent_level) << "Inactive nonresident:\n";
     _chains[S_inactive_nonresident].write(out, indent_level + 2);
@@ -118,7 +118,7 @@ write(ostream &out, int indent_level) const {
 void BufferResidencyTracker::
 move_inactive(BufferContextChain &inactive, BufferContextChain &active) {
   BufferContext *node = active.get_first();
-  while (node != (BufferContext *)NULL) {
+  while (node != nullptr) {
     nassertv((node->_residency_state & S_active) != 0);
     node->_residency_state &= ~S_active;
     node = node->get_next();

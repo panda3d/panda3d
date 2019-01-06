@@ -26,7 +26,7 @@ LoaderFileTypeStf() {
 /**
  *
  */
-string LoaderFileTypeStf::
+std::string LoaderFileTypeStf::
 get_name() const {
   return "SpeedTree compiled tree";
 }
@@ -34,7 +34,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeStf::
+std::string LoaderFileTypeStf::
 get_extension() const {
   return "stf";
 }
@@ -56,11 +56,11 @@ load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   if (!path.is_regular_file()) {
     // Quietly fail if the file doesn't exist.  The Loader expects this.
-    return NULL;
+    return nullptr;
   }
 
   PT(SpeedTreeNode) st = new SpeedTreeNode(path.get_basename());
   st->add_from_stf(path, options);
 
-  return st.p();
+  return st;
 }

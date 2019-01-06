@@ -46,7 +46,9 @@ struct timeval;
 #else
 #define NULL ((void *)0)
 #endif
-typedef decltype(nullptr) nullptr_t;
+namespace std {
+  typedef decltype(nullptr) nullptr_t;
+}
 
 // One day, we might extend interrogate to be able to parse this,
 // but we currently don't need it.

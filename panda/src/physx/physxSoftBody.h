@@ -168,7 +168,7 @@ virtual void  setForceFieldMaterial (NxForceFieldMaterial)=0
 */
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   void update();
@@ -185,7 +185,7 @@ public:
 private:
   NxSoftBody *_ptr;
   PT(PhysxSoftBodyNode) _node;
-  string _name;
+  std::string _name;
 
 public:
   static TypeHandle get_class_type() {

@@ -19,13 +19,13 @@
 
 #ifdef HAVE_OPENSSL
 
-#include "openssl/evp.h"
-#include "openssl/pem.h"
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 // Some versions of OpenSSL appear to define this as a macro.  Yucky.
 #undef set_key
 
-PrcKeyRegistry *PrcKeyRegistry::_global_ptr = NULL;
+PrcKeyRegistry *PrcKeyRegistry::_global_ptr = nullptr;
 
 /**
  * There is only one PrcKeyRegistry in the world; use get_global_ptr() to get
@@ -56,19 +56,19 @@ void PrcKeyRegistry::
 record_keys(const KeyDef *key_def, size_t num_keys) {
   for (size_t i = 0; i < num_keys; i++) {
     const KeyDef *def = &key_def[i];
-    if (def->_data != (char *)NULL) {
+    if (def->_data != nullptr) {
       // Clear the ith key.
       while (_keys.size() <= i) {
         Key key;
-        key._def = NULL;
-        key._pkey = NULL;
+        key._def = nullptr;
+        key._pkey = nullptr;
         key._generated_time = 0;
         _keys.push_back(key);
       }
       if (_keys[i]._def != def) {
-        if (_keys[i]._pkey != (EVP_PKEY *)NULL) {
+        if (_keys[i]._pkey != nullptr) {
           EVP_PKEY_free(_keys[i]._pkey);
-          _keys[i]._pkey = NULL;
+          _keys[i]._pkey = nullptr;
         }
         _keys[i]._def = def;
         _keys[i]._generated_time = def->_generated_time;
@@ -88,15 +88,15 @@ set_key(size_t n, EVP_PKEY *pkey, time_t generated_time) {
   // Clear the nth key.
   while (_keys.size() <= n) {
     Key key;
-    key._def = NULL;
-    key._pkey = NULL;
+    key._def = nullptr;
+    key._pkey = nullptr;
     key._generated_time = 0;
     _keys.push_back(key);
   }
-  _keys[n]._def = NULL;
-  if (_keys[n]._pkey != (EVP_PKEY *)NULL) {
+  _keys[n]._def = nullptr;
+  if (_keys[n]._pkey != nullptr) {
     EVP_PKEY_free(_keys[n]._pkey);
-    _keys[n]._pkey = NULL;
+    _keys[n]._pkey = nullptr;
   }
   _keys[n]._pkey = pkey;
   _keys[n]._generated_time = generated_time;
@@ -117,20 +117,20 @@ get_num_keys() const {
  */
 EVP_PKEY *PrcKeyRegistry::
 get_key(size_t n) const {
-  nassertr(n < _keys.size(), (EVP_PKEY *)NULL);
+  nassertr(n < _keys.size(), nullptr);
 
-  if (_keys[n]._def != (KeyDef *)NULL) {
-    if (_keys[n]._pkey == (EVP_PKEY *)NULL) {
+  if (_keys[n]._def != nullptr) {
+    if (_keys[n]._pkey == nullptr) {
       // Convert the def to a EVP_PKEY structure.
       const KeyDef *def = _keys[n]._def;
       BIO *mbio = BIO_new_mem_buf((void *)def->_data, def->_length);
-      EVP_PKEY *pkey = PEM_read_bio_PUBKEY(mbio, NULL, NULL, NULL);
+      EVP_PKEY *pkey = PEM_read_bio_PUBKEY(mbio, nullptr, nullptr, nullptr);
       ((PrcKeyRegistry *)this)->_keys[n]._pkey = pkey;
       BIO_free(mbio);
 
-      if (pkey == (EVP_PKEY *)NULL) {
+      if (pkey == nullptr) {
         // Couldn't read the bio for some reason.
-        ((PrcKeyRegistry *)this)->_keys[n]._def = NULL;
+        ((PrcKeyRegistry *)this)->_keys[n]._def = nullptr;
       }
     }
   }
@@ -154,7 +154,7 @@ get_generated_time(size_t n) const {
  */
 PrcKeyRegistry *PrcKeyRegistry::
 get_global_ptr() {
-  if (_global_ptr == (PrcKeyRegistry *)NULL) {
+  if (_global_ptr == nullptr) {
     _global_ptr = new PrcKeyRegistry;
   }
   return _global_ptr;

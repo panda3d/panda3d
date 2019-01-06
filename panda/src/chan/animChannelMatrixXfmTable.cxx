@@ -54,7 +54,7 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &co
  *
  */
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
+AnimChannelMatrixXfmTable(AnimGroup *parent, const std::string &name)
   : AnimChannelMatrix(parent, name)
 {
   for (int i = 0; i < num_matrix_components; i++) {
@@ -239,7 +239,7 @@ set_table(char table_id, const CPTA_stdfloat &table) {
   if (table.size() > 1 && (int)table.size() < num_frames) {
     // The new table has an invalid number of frames--it doesn't match the
     // bundle's requirement.
-    nassertv(false);
+    nassert_raise("mismatched number of frames");
     return;
   }
 
@@ -267,7 +267,7 @@ clear_all_tables() {
  * Writes a brief description of the table and all of its descendants.
  */
 void AnimChannelMatrixXfmTable::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_type() << " " << get_name() << " ";
 
@@ -369,7 +369,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     // Now, write out the joint angles.  For these we need to build up a HPR
     // array.
     pvector<LVecBase3> hprs;
-    int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
+    int hprs_length = std::max(std::max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
       PN_stdfloat h = _tables[6].empty() ? 0.0f : _tables[6][i % _tables[6].size()];
@@ -377,7 +377,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
       PN_stdfloat r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3(h, p, r));
     }
-    const LVecBase3 *hprs_array = NULL;
+    const LVecBase3 *hprs_array = nullptr;
     if (hprs_length != 0) {
       hprs_array = &hprs[0];
     }
@@ -419,7 +419,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     if (!new_hpr) {
       // Convert between the old HPR form and the new HPR form.
-      size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
+      size_t num_hprs = std::max(std::max(_tables[6].size(), _tables[7].size()),
                             _tables[8].size());
 
       LVecBase3 default_hpr(0.0, 0.0, 0.0);

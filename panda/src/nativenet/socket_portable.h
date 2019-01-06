@@ -12,7 +12,9 @@ const int BASIC_ERROR = -1;
 // Interrogate doesn't need to parse any of this.
 
 typedef unsigned long SOCKET;
-typedef unsigned short sa_family_t;
+
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 /************************************************************************
 * HP SOCKET LIBRARY STUFF

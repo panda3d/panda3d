@@ -22,7 +22,7 @@
 #include "vector_int.h"
 
 #else
-typedef vector<int> vector_int;
+typedef std::vector<int> vector_int;
 #endif
 
 /**
@@ -30,7 +30,7 @@ typedef vector<int> vector_int;
  * For a given integer n, it will return the nth prime number.  This will
  * involve a recompute step only if n is greater than any previous n.
  */
-class PrimeNumberGenerator {
+class EXPCL_DIRECT_DCPARSER PrimeNumberGenerator {
 public:
   PrimeNumberGenerator();
 

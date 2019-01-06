@@ -27,7 +27,7 @@ class EggMesherEdge;
  * mesher.  It might also represent a single polygon such as a triangle or
  * quad, since that's how strips generally start out.
  */
-class EggMesherStrip {
+class EXPCL_PANDA_EGG EggMesherStrip {
 public:
   enum PrimType {
     PT_poly,
@@ -76,7 +76,7 @@ public:
                           EggMesherStrip &back, const EggVertexPool *vertex_pool);
 
   int count_neighbors() const;
-  void output_neighbors(ostream &out) const;
+  void output_neighbors(std::ostream &out) const;
 
   INLINE bool is_coplanar_with(const EggMesherStrip &other, PN_stdfloat threshold) const;
   INLINE PN_stdfloat coplanarity(const EggMesherStrip &other) const;
@@ -115,7 +115,7 @@ public:
   bool pick_sheet_mate(const EggMesherStrip &a_strip,
                        const EggMesherStrip &b_strip) const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
   typedef plist<CPT(EggPrimitive) > Prims;
   typedef plist<EggMesherEdge *> Edges;
@@ -144,8 +144,8 @@ public:
   bool _flat_shaded;
 };
 
-INLINE ostream &
-operator << (ostream &out, const EggMesherStrip &strip) {
+INLINE std::ostream &
+operator << (std::ostream &out, const EggMesherStrip &strip) {
   strip.output(out);
   return out;
 }

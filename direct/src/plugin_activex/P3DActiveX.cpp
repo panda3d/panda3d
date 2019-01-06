@@ -16,9 +16,9 @@
 #include "stdafx.h"
 #include "P3DActiveX.h"
 
-#include "comcat.h"
-#include "strsafe.h"
-#include "objsafe.h"
+#include <comcat.h>
+#include <strsafe.h>
+#include <objsafe.h>
 
 
 #ifdef _DEBUG

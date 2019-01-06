@@ -21,9 +21,11 @@
 #include "graphicsPipe.h"
 #include "graphicsOutput.h"
 #include "graphicsBuffer.h"
-#include "graphicsWindow.h"
 #include "graphicsDevice.h"
+#include "graphicsWindow.h"
+#include "graphicsWindowInputDevice.h"
 #include "graphicsWindowProcCallbackData.h"
+#include "mouseAndKeyboard.h"
 #include "nativeWindowHandle.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
@@ -31,7 +33,7 @@
 #include "subprocessWindow.h"
 #include "windowHandle.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_DISPLAY)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_DISPLAY)
   #error Buildsystem error: BUILDING_PANDA_DISPLAY not defined
 #endif
 
@@ -476,15 +478,6 @@ ConfigVariableBool sync_video
           "cheesy estimate of scene complexity.  Some drivers may ignore "
           "this request."));
 
-ConfigVariableBool basic_shaders_only
-("basic-shaders-only", false,
- PRC_DESC("Set this to true if you aren't interested in shader model three "
-          "and beyond.  Setting this flag will cause panda to disable "
-          "bleeding-edge shader functionality which tends to be unreliable "
-          "or broken.  At some point, when functionality that is currently "
-          "flaky becomes reliable, we may expand the definition of what "
-          "constitutes 'basic' shaders."));
-
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
@@ -510,7 +503,9 @@ init_libdisplay() {
   GraphicsPipe::init_type();
   GraphicsStateGuardian::init_type();
   GraphicsWindow::init_type();
+  GraphicsWindowInputDevice::init_type();
   GraphicsWindowProcCallbackData::init_type();
+  MouseAndKeyboard::init_type();
   NativeWindowHandle::init_type();
   ParasiteBuffer::init_type();
   StandardMunger::init_type();

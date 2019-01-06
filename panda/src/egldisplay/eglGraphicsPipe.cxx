@@ -25,9 +25,9 @@ TypeHandle eglGraphicsPipe::_type_handle;
  *
  */
 eglGraphicsPipe::
-eglGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
+eglGraphicsPipe(const std::string &display) : x11GraphicsPipe(display) {
   _egl_display = eglGetDisplay((NativeDisplayType) _display);
-  if (!eglInitialize(_egl_display, NULL, NULL)) {
+  if (!eglInitialize(_egl_display, nullptr, nullptr)) {
     egldisplay_cat.error()
       << "Couldn't initialize the EGL display: "
       << get_egl_error_string(eglGetError()) << "\n";
@@ -59,7 +59,7 @@ eglGraphicsPipe::
  * choose between several possible GraphicsPipes available on a particular
  * platform, so the name should be meaningful and unique for a given platform.
  */
-string eglGraphicsPipe::
+std::string eglGraphicsPipe::
 get_interface_name() const {
   return "OpenGL ES";
 }
@@ -77,7 +77,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) eglGraphicsPipe::
-make_output(const string &name,
+make_output(const std::string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -88,12 +88,12 @@ make_output(const string &name,
             bool &precertify) {
 
   if (!_is_valid) {
-    return NULL;
+    return nullptr;
   }
 
   eglGraphicsStateGuardian *eglgsg = 0;
   if (gsg != 0) {
-    DCAST_INTO_R(eglgsg, gsg, NULL);
+    DCAST_INTO_R(eglgsg, gsg, nullptr);
   }
 
   bool support_rtt;
@@ -117,7 +117,7 @@ make_output(const string &name,
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
     return new eglGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
@@ -129,7 +129,7 @@ make_output(const string &name,
   // (!gl_support_fbo)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
-      return NULL;
+      return nullptr;
     }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
@@ -138,7 +138,7 @@ make_output(const string &name,
           (fb_prop.get_back_buffers() > 0)||
           (fb_prop.get_accum_bits() > 0)||
           (fb_prop.get_multisamples() > 0)) {
-        return NULL;
+        return nullptr;
       }
     }
     // Early success - if we are sure that this buffer WILL meet specs, we can
@@ -166,7 +166,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)) {
-      return NULL;
+      return nullptr;
     }
 
     if (!support_rtt) {
@@ -174,7 +174,7 @@ make_output(const string &name,
           ((flags&BF_can_bind_every)!=0)) {
         // If we require Render-to-Texture, but can't be sure we support it,
         // bail.
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -188,12 +188,12 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)) {
-      return NULL;
+      return nullptr;
     }
 
     if (((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_every)!=0)) {
-      return NULL;
+      return nullptr;
     }
 
     return new eglGraphicsPixmap(engine, this, name, fb_prop, win_prop,
@@ -201,5 +201,5 @@ make_output(const string &name,
   }
 
   // Nothing else left to try.
-  return NULL;
+  return nullptr;
 }

@@ -35,8 +35,8 @@ extern EXPCL_PANDA_DXML void init_libdxml();
 class TiXmlDocument;
 class TiXmlNode;
 BEGIN_PUBLISH
-EXPCL_PANDA_DXML TiXmlDocument *read_xml_stream(istream &in);
-EXPCL_PANDA_DXML void write_xml_stream(ostream &out, TiXmlDocument *doc);
+EXPCL_PANDA_DXML TiXmlDocument *read_xml_stream(std::istream &in);
+EXPCL_PANDA_DXML void write_xml_stream(std::ostream &out, TiXmlDocument *doc);
 EXPCL_PANDA_DXML void print_xml(TiXmlNode *xnode);
 EXPCL_PANDA_DXML void print_xml_to_file(const Filename &filename, TiXmlNode *xnode);
 END_PUBLISH

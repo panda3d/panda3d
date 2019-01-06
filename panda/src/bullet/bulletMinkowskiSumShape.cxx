@@ -13,6 +13,8 @@
 
 #include "bulletMinkowskiSumShape.h"
 
+#include "bulletWorld.h"
+
 TypeHandle BulletMinkowskiSumShape::_type_handle;
 
 /**

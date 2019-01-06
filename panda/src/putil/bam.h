@@ -22,7 +22,7 @@
 // The magic number for a BAM file.  It includes a carriage return and newline
 // character to help detect files damaged due to faulty ASCIIBinary
 // conversion.
-static const string _bam_header = string("pbj\0\n\r", 6);
+static const std::string _bam_header = std::string("pbj\0\n\r", 6);
 
 static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 2 on 2000-07-06 due to major changes in Character.
@@ -32,7 +32,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2006-02-11 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_minor_ver = 42;
+static const unsigned short _bam_minor_ver = 44;
 // Bumped to minor version 14 on 2007-12-19 to change default ColorAttrib.
 // Bumped to minor version 15 on 2008-04-09 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 2008-05-13 to add Texture::_quality_level.
@@ -62,5 +62,7 @@ static const unsigned short _bam_minor_ver = 42;
 // Bumped to minor version 40 on 2016-01-11 to make NodePaths writable.
 // Bumped to minor version 41 on 2016-03-02 to change LensNode, Lens, and Camera.
 // Bumped to minor version 42 on 2016-04-08 to expand ColorBlendAttrib.
+// Bumped to minor version 43 on 2018-12-06 to expand BillboardEffect and CompassEffect.
+// Bumped to minor version 44 on 2018-12-23 to rename CollisionTube to CollisionCapsule.
 
 #endif

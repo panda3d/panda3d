@@ -92,7 +92,7 @@
 
 #include "dconfig.h"
 
-#if !defined(CPPPARSER) && !defined(BUILDING_PANDA_PGRAPH)
+#if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_PANDA_PGRAPH)
   #error Buildsystem error: BUILDING_PANDA_PGRAPH not defined
 #endif
 
@@ -492,6 +492,7 @@ init_libpgraph() {
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
+  ParamNodePath::register_with_read_factory();
   PlaneNode::register_with_read_factory();
   PolylightNode::register_with_read_factory();
   PortalNode::register_with_read_factory();

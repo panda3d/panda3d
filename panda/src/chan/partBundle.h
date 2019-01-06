@@ -55,7 +55,7 @@ protected:
   PartBundle(const PartBundle &copy);
 
 PUBLISHED:
-  explicit PartBundle(const string &name = "");
+  explicit PartBundle(const std::string &name = "");
   virtual PartGroup *make_copy() const;
 
   INLINE CPT(AnimPreloadTable) get_anim_preload() const;
@@ -123,8 +123,8 @@ PUBLISHED:
   INLINE void set_control_effect(AnimControl *control, PN_stdfloat effect);
   INLINE PN_stdfloat get_control_effect(AnimControl *control) const;
 
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level) const;
 
   PT(AnimControl) bind_anim(AnimBundle *anim,
                             int hierarchy_match_flags = 0,
@@ -136,11 +136,11 @@ PUBLISHED:
                                  bool allow_async);
   void wait_pending();
 
-  bool freeze_joint(const string &joint_name, const TransformState *transform);
-  bool freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
-  bool freeze_joint(const string &joint_name, PN_stdfloat value);
-  bool control_joint(const string &joint_name, PandaNode *node);
-  bool release_joint(const string &joint_name);
+  bool freeze_joint(const std::string &joint_name, const TransformState *transform);
+  bool freeze_joint(const std::string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  bool freeze_joint(const std::string &joint_name, PN_stdfloat value);
+  bool control_joint(const std::string &joint_name, PandaNode *node);
+  bool release_joint(const std::string &joint_name);
 
   bool update();
   bool force_update();
@@ -172,7 +172,7 @@ private:
   typedef pvector<PartBundleNode *> Nodes;
   Nodes _nodes;
 
-  typedef pmap<WCPT(TransformState), WPT(PartBundle) > AppliedTransforms;
+  typedef pmap<WCPT(TransformState), WPT(PartBundle), std::owner_less<WCPT(TransformState)> > AppliedTransforms;
   AppliedTransforms _applied_transforms;
 
   double _update_delay;
@@ -243,13 +243,13 @@ private:
   friend class MovingPartScalar;
 };
 
-inline ostream &operator <<(ostream &out, const PartBundle &bundle) {
+inline std::ostream &operator <<(std::ostream &out, const PartBundle &bundle) {
   bundle.output(out);
   return out;
 }
 
-ostream &operator <<(ostream &out, PartBundle::BlendType blend_type);
-istream &operator >>(istream &in, PartBundle::BlendType &blend_type);
+EXPCL_PANDA_CHAN std::ostream &operator <<(std::ostream &out, PartBundle::BlendType blend_type);
+EXPCL_PANDA_CHAN std::istream &operator >>(std::istream &in, PartBundle::BlendType &blend_type);
 
 #include "partBundle.I"
 

@@ -73,10 +73,10 @@ public:
   CPPExpression(bool value);
   CPPExpression(unsigned long long value);
   CPPExpression(int value);
-  CPPExpression(const string &value);
+  CPPExpression(const std::string &value);
   CPPExpression(long double value);
   CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
-                CPPScope *global_scope, CPPPreprocessor *error_sink = NULL);
+                CPPScope *global_scope, CPPPreprocessor *error_sink = nullptr);
   CPPExpression(int unary_operator, CPPExpression *op1);
   CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2);
   CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, CPPExpression *op3);
@@ -84,10 +84,10 @@ public:
   static CPPExpression typecast_op(CPPType *type, CPPExpression *op1, Type cast_type = T_typecast);
   static CPPExpression construct_op(CPPType *type, CPPExpression *op1);
   static CPPExpression aggregate_init_op(CPPType *type, CPPExpression *op1);
-  static CPPExpression new_op(CPPType *type, CPPExpression *op1 = NULL);
+  static CPPExpression new_op(CPPType *type, CPPExpression *op1 = nullptr);
   static CPPExpression typeid_op(CPPType *type, CPPType *std_type_info);
   static CPPExpression typeid_op(CPPExpression *op1, CPPType *std_type_info);
-  static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = NULL);
+  static CPPExpression type_trait(int trait, CPPType *type, CPPType *arg = nullptr);
   static CPPExpression sizeof_func(CPPType *type);
   static CPPExpression sizeof_ellipsis_func(CPPIdentifier *ident);
   static CPPExpression alignof_func(CPPType *type);
@@ -96,7 +96,7 @@ public:
   static CPPExpression literal(unsigned long long value, CPPInstance *lit_op);
   static CPPExpression literal(long double value, CPPInstance *lit_op);
   static CPPExpression literal(CPPExpression *value, CPPInstance *lit_op);
-  static CPPExpression raw_literal(const string &raw, CPPInstance *lit_op);
+  static CPPExpression raw_literal(const std::string &raw, CPPInstance *lit_op);
 
   static const CPPExpression &get_nullptr();
   static const CPPExpression &get_default();
@@ -120,7 +120,7 @@ public:
     double as_real() const;
     void *as_pointer() const;
     bool as_boolean() const;
-    void output(ostream &out) const;
+    void output(std::ostream &out) const;
 
     ResultType _type;
     union {
@@ -133,6 +133,7 @@ public:
 
   Result evaluate() const;
   CPPType *determine_type() const;
+  bool is_lvalue() const;
   bool is_tbd() const;
 
   virtual bool is_fully_specified() const;
@@ -140,14 +141,14 @@ public:
                                           CPPScope *current_scope,
                                           CPPScope *global_scope);
 
-  virtual void output(ostream &out, int indent_level, CPPScope *scope,
+  virtual void output(std::ostream &out, int indent_level, CPPScope *scope,
                       bool complete) const;
   virtual SubType get_subtype() const;
 
   virtual CPPExpression *as_expression();
 
   Type _type;
-  string _str;
+  std::string _str;
   union {
     bool _boolean;
     unsigned long long _integer;
@@ -191,8 +192,8 @@ protected:
   virtual bool is_less(const CPPDeclaration *other) const;
 };
 
-inline ostream &
-operator << (ostream &out, const CPPExpression::Result &result) {
+inline std::ostream &
+operator << (std::ostream &out, const CPPExpression::Result &result) {
   result.output(out);
   return out;
 }

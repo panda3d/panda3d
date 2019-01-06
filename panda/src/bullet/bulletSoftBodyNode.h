@@ -29,6 +29,7 @@
 #include "nurbsSurfaceEvaluator.h"
 #include "pta_LVecBase3.h"
 
+class BulletRigidBodyNode;
 class BulletSoftBodyConfig;
 class BulletSoftBodyControl;
 class BulletSoftBodyMaterial;
@@ -78,7 +79,7 @@ PUBLISHED:
   BulletSoftBodyConfig get_cfg();
   BulletSoftBodyWorldInfo get_world_info();
 
-  void generate_bending_constraints(int distance, BulletSoftBodyMaterial *material=NULL);
+  void generate_bending_constraints(int distance, BulletSoftBodyMaterial *material=nullptr);
   void randomize_constraints();
 
   // Mass, volume, density
@@ -146,7 +147,7 @@ PUBLISHED:
     PN_stdfloat erp=1.0,
     PN_stdfloat cfm=1.0,
     PN_stdfloat split=1.0,
-    BulletSoftBodyControl *control=NULL);
+    BulletSoftBodyControl *control=nullptr);
 
   // Materials
   int get_num_materials() const;

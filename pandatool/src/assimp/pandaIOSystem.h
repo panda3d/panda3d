@@ -17,7 +17,7 @@
 #include "config_assimp.h"
 #include "virtualFileSystem.h"
 
-#include "IOSystem.hpp"
+#include <assimp/IOSystem.hpp>
 
 /**
  * Custom implementation of Assimp::IOSystem.

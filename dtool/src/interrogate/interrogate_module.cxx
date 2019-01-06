@@ -19,13 +19,18 @@
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
 #include "load_dso.h"
-#include "pystub.h"
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
 #include "vector_string.h"
 
 #include <algorithm>
+
+using std::cerr;
+using std::string;
+
+// This contains a big source string determined at compile time.
+extern const char interrogate_preamble_python_native[];
 
 Filename output_code_filename;
 string module_name;
@@ -52,15 +57,15 @@ enum CommandOptions {
 };
 
 static struct option long_options[] = {
-  { "oc", required_argument, NULL, CO_oc },
-  { "module", required_argument, NULL, CO_module },
-  { "library", required_argument, NULL, CO_library },
-  { "c", no_argument, NULL, CO_c },
-  { "python", no_argument, NULL, CO_python },
-  { "python-native", no_argument, NULL, CO_python_native },
-  { "track-interpreter", no_argument, NULL, CO_track_interpreter },
-  { "import", required_argument, NULL, CO_import },
-  { NULL }
+  { "oc", required_argument, nullptr, CO_oc },
+  { "module", required_argument, nullptr, CO_module },
+  { "library", required_argument, nullptr, CO_library },
+  { "c", no_argument, nullptr, CO_c },
+  { "python", no_argument, nullptr, CO_python },
+  { "python-native", no_argument, nullptr, CO_python_native },
+  { "track-interpreter", no_argument, nullptr, CO_track_interpreter },
+  { "import", required_argument, nullptr, CO_import },
+  { nullptr }
 };
 
 /*
@@ -80,10 +85,10 @@ upcase_string(const string &str) {
  * Finds a dependency cycle between the given dependency mapping, starting at
  * the node that is already placed in the given cycle vector.
  */
-static bool find_dependency_cycle(vector_string &cycle, map<string, set<string> > &dependencies) {
+static bool find_dependency_cycle(vector_string &cycle, std::map<string, std::set<string> > &dependencies) {
   assert(!cycle.empty());
 
-  const set<string> &deps = dependencies[cycle.back()];
+  const std::set<string> &deps = dependencies[cycle.back()];
   for (auto it = deps.begin(); it != deps.end(); ++it) {
     auto it2 = std::find(cycle.begin(), cycle.end(), *it);
     if (it2 != cycle.end()) {
@@ -149,14 +154,14 @@ static bool print_dependent_types(const string &lib1, const string &lib2) {
   return false;
 }
 
-int write_python_table_native(ostream &out) {
+int write_python_table_native(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#include \"py_panda.h\"\n\n";
 
   int count = 0;
 
-  map<string, set<string> > dependencies;
+  std::map<string, std::set<string> > dependencies;
 
 // out << "extern \"C\" {\n";
 
@@ -182,7 +187,7 @@ int write_python_table_native(ostream &out) {
     if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
       if (interrogate_type_has_library_name(thetype)) {
         string library_name = interrogate_type_library_name(thetype);
-        set<string> &deps = dependencies[library_name];
+        std::set<string> &deps = dependencies[library_name];
 
         // Get the dependencies for this library.
         int num_derivations = interrogate_type_number_of_derivations(thetype);
@@ -192,7 +197,7 @@ int write_python_table_native(ostream &out) {
               interrogate_type_has_library_name(basetype)) {
             string baselib = interrogate_type_library_name(basetype);
             if (baselib != library_name) {
-              deps.insert(move(baselib));
+              deps.insert(std::move(baselib));
             }
           }
         }
@@ -203,7 +208,7 @@ int write_python_table_native(ostream &out) {
               interrogate_type_has_library_name(wrapped)) {
             string wrappedlib = interrogate_type_library_name(wrapped);
             if (wrappedlib != library_name) {
-              deps.insert(move(wrappedlib));
+              deps.insert(std::move(wrappedlib));
             }
           }
         }
@@ -219,7 +224,7 @@ int write_python_table_native(ostream &out) {
 
     for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
       const string &library_name = it->first;
-      set<string> &deps = dependencies[library_name];
+      std::set<string> &deps = dependencies[library_name];
 
       // Remove the dependencies that have already been added from the deps.
       if (!deps.empty()) {
@@ -243,7 +248,7 @@ int write_python_table_native(ostream &out) {
       cerr << "Circular dependency between libraries detected:\n";
       for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
         const string &library_name = it->first;
-        set<string> &deps = dependencies[library_name];
+        std::set<string> &deps = dependencies[library_name];
         if (deps.empty()) {
           continue;
         }
@@ -283,32 +288,17 @@ int write_python_table_native(ostream &out) {
   vector_string::const_iterator ii;
   for (ii = libraries.begin(); ii != libraries.end(); ++ii) {
     printf("Referencing Library %s\n", (*ii).c_str());
-    out << "extern LibraryDef " << *ii << "_moddef;\n";
+    out << "extern const struct LibraryDef " << *ii << "_moddef;\n";
     out << "extern void Dtool_" << *ii << "_RegisterTypes();\n";
-    out << "extern void Dtool_" << *ii << "_ResolveExternals();\n";
     out << "extern void Dtool_" << *ii << "_BuildInstants(PyObject *module);\n";
   }
 
   out.put('\n');
 
-  out << "#if PY_MAJOR_VERSION >= 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
+  out << "#if PY_MAJOR_VERSION >= 3\n"
+      << "extern \"C\" EXPORT_CLASS PyObject *PyInit_" << library_name << "();\n"
       << "#else\n"
-      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
-      << "#endif\n"
-      << "#endif\n";
-
-  out << "#if PY_MAJOR_VERSION < 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
-      << "#else\n"
-      << "extern \"C\" void init" << library_name << "();\n"
-      << "#endif\n"
+      << "extern \"C\" EXPORT_CLASS void init" << library_name << "();\n"
       << "#endif\n";
 
   out << "\n"
@@ -316,10 +306,10 @@ int write_python_table_native(ostream &out) {
       << "static struct PyModuleDef py_" << library_name << "_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
-      << "  NULL,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr,\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n"
       << "\n"
       << "PyObject *PyInit_" << library_name << "() {\n";
@@ -336,20 +326,17 @@ int write_python_table_native(ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -359,14 +346,6 @@ int write_python_table_native(ostream &out) {
       << "  return module;\n"
       << "}\n"
       << "\n"
-
-      << "#ifndef NDEBUG\n"
-      << "void init" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 2\");\n"
-      << "}\n"
-      << "#endif\n"
 
       << "#else  // Python 2 case\n"
       << "\n"
@@ -383,20 +362,17 @@ int write_python_table_native(ostream &out) {
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "  Dtool_" << *ii << "_RegisterTypes();\n";
   }
-  for (ii = libraries.begin(); ii != libraries.end(); ii++) {
-    out << "  Dtool_" << *ii << "_ResolveExternals();\n";
-  }
   out << "\n";
 
-  out << "  LibraryDef *defs[] = {";
+  out << "  const LibraryDef *defs[] = {";
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n"
+  out << "nullptr};\n"
       << "\n"
       << "  PyObject *module = Dtool_PyModuleInitHelper(defs, \"" << module_name << "\");\n"
-      << "  if (module != NULL) {\n";
+      << "  if (module != nullptr) {\n";
 
   for (ii = libraries.begin(); ii != libraries.end(); ii++) {
     out << "    Dtool_" << *ii << "_BuildInstants(module);\n";
@@ -404,15 +380,6 @@ int write_python_table_native(ostream &out) {
 
   out << "  }\n"
       << "}\n"
-      << "\n"
-      << "#ifndef NDEBUG\n"
-      << "PyObject *PyInit_" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 3\");\n"
-      << "  return (PyObject *)NULL;\n"
-      << "}\n"
-      << "#endif\n"
       << "#endif\n"
       << "\n";
 
@@ -420,7 +387,7 @@ int write_python_table_native(ostream &out) {
   return count;
 }
 
-int write_python_table(ostream &out) {
+int write_python_table(std::ostream &out) {
   out << "\n#include \"dtoolbase.h\"\n"
       << "#include \"interrogate_request.h\"\n\n"
       << "#undef _POSIX_C_SOURCE\n"
@@ -497,17 +464,17 @@ int write_python_table(ostream &out) {
     library_name = module_name;
   }
 
-  out << "  { NULL, NULL }\n"
+  out << "  { nullptr, nullptr }\n"
       << "};\n\n"
 
       << "#if PY_MAJOR_VERSION >= 3\n"
       << "static struct PyModuleDef python_module = {\n"
       << "  PyModuleDef_HEAD_INIT,\n"
       << "  \"" << library_name << "\",\n"
-      << "  NULL,\n"
+      << "  nullptr,\n"
       << "  -1,\n"
       << "  python_methods,\n"
-      << "  NULL, NULL, NULL, NULL\n"
+      << "  nullptr, nullptr, nullptr, nullptr\n"
       << "};\n\n"
 
       << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"
@@ -542,10 +509,8 @@ int main(int argc, char *argv[]) {
   extern int optind;
   int flag;
 
-  pystub();
-
   preprocess_argv(argc, argv);
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+  flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   while (flag != EOF) {
     switch (flag) {
     case CO_oc:
@@ -583,7 +548,7 @@ int main(int argc, char *argv[]) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
+    flag = getopt_long_only(argc, argv, short_options, long_options, nullptr);
   }
 
   argc -= (optind-1);
@@ -617,7 +582,7 @@ int main(int argc, char *argv[]) {
       pathname.set_type(Filename::T_dso);
       nout << "Loading " << pathname << "\n";
       void *dl = load_dso(DSearchPath(), pathname);
-      if (dl == NULL) {
+      if (dl == nullptr) {
         nout << "Unable to load: " << load_dso_error() << "\n";
         exit(1);
       }
@@ -639,8 +604,10 @@ int main(int argc, char *argv[]) {
 
       if (build_python_native_wrappers) {
         write_python_table_native(output_code);
-      }
 
+        // Output the support code.
+        output_code << interrogate_preamble_python_native << "\n";
+      }
     }
   }
 

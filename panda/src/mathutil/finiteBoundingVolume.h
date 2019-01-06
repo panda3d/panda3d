@@ -30,6 +30,10 @@ PUBLISHED:
   virtual LPoint3 get_max() const=0;
   virtual PN_stdfloat get_volume() const;
 
+  MAKE_PROPERTY(min, get_min);
+  MAKE_PROPERTY(max, get_max);
+  MAKE_PROPERTY(volume, get_volume);
+
 public:
   virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;
 

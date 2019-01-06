@@ -27,9 +27,9 @@
  */
 class EXPCL_PANDA_PGRAPHNODES LODNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit LODNode(const string &name);
+  INLINE explicit LODNode(const std::string &name);
 
-  static PT(LODNode) make_default_lod(const string &name);
+  static PT(LODNode) make_default_lod(const std::string &name);
 
 protected:
   INLINE LODNode(const LODNode &copy);
@@ -40,7 +40,7 @@ public:
   virtual void xform(const LMatrix4 &mat);
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual bool is_lod_node() const;
 
@@ -161,7 +161,7 @@ protected:
   typedef pvector<Switch> SwitchVector;
 
 private:
-  class EXPCL_PANDA_PGRAPH CData : public CycleData {
+  class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

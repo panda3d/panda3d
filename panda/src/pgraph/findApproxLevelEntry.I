@@ -20,7 +20,7 @@ FindApproxLevelEntry(const WorkingNodePath &node_path, FindApproxPath &approx_pa
   _approx_path(approx_path)
 {
   _i = 0;
-  _next = NULL;
+  _next = nullptr;
   nassertv(_node_path.is_valid());
 }
 
@@ -50,7 +50,7 @@ FindApproxLevelEntry(const FindApproxLevelEntry &copy) :
   _i(copy._i),
   _approx_path(copy._approx_path)
 {
-  _next = NULL;
+  _next = nullptr;
   nassertv(_node_path.is_valid());
 }
 

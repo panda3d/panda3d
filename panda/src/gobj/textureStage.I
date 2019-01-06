@@ -22,7 +22,7 @@ TextureStage(const TextureStage &copy) {
 /**
  * Returns the name of this texture stage
  */
-INLINE const string &TextureStage::
+INLINE const std::string &TextureStage::
 get_name() const {
   return _name;
 }
@@ -31,7 +31,7 @@ get_name() const {
  * Changes the name of this texture stage
  */
 INLINE void TextureStage::
-set_name(const string &name) {
+set_name(const std::string &name) {
   _name = name;
 }
 
@@ -121,7 +121,7 @@ set_texcoord_name(InternalName *name) {
  * any number of associated UV sets, each of which must have a unique name.
  */
 INLINE void TextureStage::
-set_texcoord_name(const string &name) {
+set_texcoord_name(const std::string &name) {
   set_texcoord_name(InternalName::get_texcoord_name(name));
 }
 
@@ -139,7 +139,7 @@ get_texcoord_name() const {
  */
 INLINE InternalName *TextureStage::
 get_tangent_name() const {
-  if (_texcoord_name->get_parent() == NULL) {
+  if (_texcoord_name->get_parent() == nullptr) {
     return InternalName::get_tangent();
   } else {
     return InternalName::get_tangent_name(_texcoord_name->get_basename());
@@ -152,7 +152,7 @@ get_tangent_name() const {
  */
 INLINE InternalName *TextureStage::
 get_binormal_name() const {
-  if (_texcoord_name->get_parent() == NULL) {
+  if (_texcoord_name->get_parent() == nullptr) {
     return InternalName::get_binormal();
   } else {
     return InternalName::get_binormal_name(_texcoord_name->get_basename());
@@ -659,7 +659,7 @@ operator < (const TextureStage &other) const {
  */
 INLINE TextureStage *TextureStage::
 get_default() {
-  if (_default_stage == (TextureStage *)NULL) {
+  if (_default_stage == nullptr) {
     _default_stage = new TextureStage("default");
   }
   return _default_stage;
@@ -733,8 +733,8 @@ update_color_flags() {
   }
 }
 
-INLINE ostream &
-operator << (ostream &out, const TextureStage &ts) {
+INLINE std::ostream &
+operator << (std::ostream &out, const TextureStage &ts) {
   ts.output(out);
   return out;
 }

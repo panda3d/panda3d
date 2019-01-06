@@ -50,7 +50,7 @@ void RopeNode::CData::
 write_datagram(BamWriter *writer, Datagram &dg) const {
   // For now, we write a NULL pointer.  Eventually we will write out the
   // NurbsCurveEvaluator pointer.
-  writer->write_pointer(dg, (TypedWritable *)NULL);
+  writer->write_pointer(dg, nullptr);
 }
 
 /**
@@ -67,7 +67,7 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 RopeNode::
-RopeNode(const string &name) :
+RopeNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -129,7 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Create some geometry on-the-fly to render the rope.
   if (get_num_subdiv() > 0) {
     NurbsCurveEvaluator *curve = get_curve();
-    if (curve != (NurbsCurveEvaluator *)NULL) {
+    if (curve != nullptr) {
       PT(NurbsCurveResult) result;
       if (has_matrix()) {
         result = curve->evaluate(data.get_node_path(), get_matrix());
@@ -177,10 +177,10 @@ is_renderable() const {
  *
  */
 void RopeNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
   NurbsCurveEvaluator *curve = get_curve();
-  if (curve != (NurbsCurveEvaluator *)NULL) {
+  if (curve != nullptr) {
     out << " " << *curve;
   } else {
     out << " (no curve)";
@@ -191,7 +191,7 @@ output(ostream &out) const {
  *
  */
 void RopeNode::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
   indent(out, indent_level) << *get_curve() << "\n";
 }
@@ -270,7 +270,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   PT(BoundingVolume) bound = new BoundingSphere;
 
   NurbsCurveEvaluator *curve = get_curve();
-  if (curve != (NurbsCurveEvaluator *)NULL) {
+  if (curve != nullptr) {
     NurbsCurveEvaluator::Vert3Array verts;
     get_curve()->get_vertices(verts, rel_to);
 
@@ -519,14 +519,14 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   bool use_vertex_color = get_use_vertex_color();
   bool use_vertex_thickness = get_use_vertex_thickness();
 
-  CurveSegment *curve_segment = NULL;
+  CurveSegment *curve_segment = nullptr;
   LPoint3 last_point;
 
   for (int segment = 0; segment < num_segments; ++segment) {
     LPoint3 point;
     result->eval_segment_point(segment, 0.0f, point);
 
-    if (curve_segment == (CurveSegment *)NULL ||
+    if (curve_segment == nullptr ||
         !point.almost_equal(last_point)) {
       // If the first point of this segment is different from the last point
       // of the previous segment, end the previous segment and begin a new

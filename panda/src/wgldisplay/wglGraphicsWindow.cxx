@@ -28,7 +28,7 @@ TypeHandle wglGraphicsWindow::_type_handle;
  */
 wglGraphicsWindow::
 wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -56,7 +56,7 @@ bool wglGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -79,10 +79,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   HGLRC context = wglgsg->get_context(_hdc);
   nassertr(context, false);
 
-  wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
+  if (!wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector)) {
+    wgldisplay_cat.error()
+      << "Failed to make WGL context current.\n";
+    return false;
+  }
   wglgsg->reset_if_new();
 
   if (mode == FM_render) {
+    wglgsg->push_group_marker(std::string("wglGraphicsWindow ") + get_name());
     clear_cube_map_selection();
   }
 
@@ -99,7 +104,7 @@ void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
 
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -110,6 +115,10 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     trigger_flip();
     clear_cube_map_selection();
+
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+    wglgsg->pop_group_marker();
   }
 }
 
@@ -164,7 +173,7 @@ ready_flip() {
  */
 void wglGraphicsWindow::
 end_flip() {
-  if (_hdc != NULL && _flip_ready) {
+  if (_hdc != nullptr && _flip_ready) {
     // The documentation on SwapBuffers() is not at all clear on whether the
     // GL context needs to be current before it can be called.  Empirically,
     // it appears that it is not necessary in many cases, but it definitely is
@@ -184,8 +193,8 @@ end_flip() {
  */
 void wglGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglGraphicsPipe::wgl_make_current(_hdc, NULL, &_make_current_pcollector);
+  if (_gsg != nullptr) {
+    wglGraphicsPipe::wgl_make_current(_hdc, nullptr, &_make_current_pcollector);
     _gsg.clear();
   }
   ReleaseDC(_hWnd, _hdc);
@@ -208,7 +217,7 @@ open_window() {
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, NULL);
+    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, false);
     _gsg = wglgsg;
   } else {
@@ -357,8 +366,8 @@ setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
 
 #ifdef NOTIFY_DEBUG
 
-// typedef enum {Software, MCD, ICD} OGLDriverType;
-static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
+typedef enum {Software, MCD, ICD} OGLDriverType;
+static const char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 
 /**
  * Reports information about the selected pixel format descriptor, along with
@@ -386,7 +395,7 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
 
   wgldisplay_cat.debug()
     << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
-    << "PFD flags: 0x" << hex << pfd->dwFlags << dec << " ("
+    << "PFD flags: 0x" << std::hex << pfd->dwFlags << std::dec << " ("
     << PRINT_FLAG(GENERIC_ACCELERATED)
     << PRINT_FLAG(GENERIC_FORMAT)
     << PRINT_FLAG(DOUBLEBUFFER)
@@ -403,15 +412,15 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
     << PRINT_FLAG(SUPPORT_DIRECTDRAW) << ")\n"
     << "PFD iPixelType: "
     << ((pfd->iPixelType==PFD_TYPE_RGBA) ? "PFD_TYPE_RGBA":"PFD_TYPE_COLORINDEX")
-    << endl
+    << std::endl
     << "PFD cColorBits: " << (DWORD)pfd->cColorBits
     << "  R: " << (DWORD)pfd->cRedBits
     <<" G: " << (DWORD)pfd->cGreenBits
-    <<" B: " << (DWORD)pfd->cBlueBits << endl
+    <<" B: " << (DWORD)pfd->cBlueBits << std::endl
     << "PFD cAlphaBits: " << (DWORD)pfd->cAlphaBits
     << "  DepthBits: " << (DWORD)pfd->cDepthBits
     <<" StencilBits: " << (DWORD)pfd->cStencilBits
     <<" AccumBits: " << (DWORD)pfd->cAccumBits
-    << endl;
+    << std::endl;
 }
 #endif

@@ -20,6 +20,9 @@
 
 #include "datagram_ui.h"
 
+using std::cin;
+using std::cout;
+
 int
 main(int argc, char *argv[]) {
   if (argc != 3) {
@@ -27,7 +30,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  string hostname = argv[1];
+  std::string hostname = argv[1];
   int port = atoi(argv[2]);
 
   NetAddress host;

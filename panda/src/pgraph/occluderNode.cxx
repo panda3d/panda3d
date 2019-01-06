@@ -51,7 +51,7 @@ PT(Texture) OccluderNode::_viz_tex;
  * vertices with set_vertices().
  */
 OccluderNode::
-OccluderNode(const string &name) :
+OccluderNode(const std::string &name) :
   PandaNode(name)
 {
   set_cull_callback();
@@ -146,7 +146,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   trav->get_cull_handler()->record_object(occluder_viz, trav);
 
   // Also get the frame.
-  nassertr(_frame_viz != (Geom *)NULL, false);
+  nassertr(_frame_viz != nullptr, false);
   CullableObject *frame_viz =
     new CullableObject(_frame_viz, get_frame_viz_state(trav, data),
                        data.get_internal_transform(trav));
@@ -174,7 +174,7 @@ is_renderable() const {
  * classes to include some information relevant to the class.
  */
 void OccluderNode::
-output(ostream &out) const {
+output(std::ostream &out) const {
   PandaNode::output(out);
 }
 
@@ -210,8 +210,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
  */
 PT(Geom) OccluderNode::
 get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
-  if (_occluder_viz == (Geom *)NULL) {
-    nassertr(_vertices.size() == 4, NULL);
+  if (_occluder_viz == nullptr) {
+    nassertr(_vertices.size() == 4, nullptr);
 
     if (pgraph_cat.is_debug()) {
       pgraph_cat.debug()
@@ -270,7 +270,7 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
  */
 CPT(RenderState) OccluderNode::
 get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
-  if (_viz_tex == NULL) {
+  if (_viz_tex == nullptr) {
     // Create a default texture.  We set it up as a 2x2 graytone checkerboard,
     // since that's real easy, and it doesn't look like a CollisionPolygon.
     _viz_tex = new Texture("occluder_viz");
@@ -283,7 +283,7 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
   }
 
   static CPT(RenderState) viz_state;
-  if (viz_state == NULL) {
+  if (viz_state == nullptr) {
     viz_state = RenderState::make
       (ColorAttrib::make_flat(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha),
@@ -308,7 +308,7 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
 CPT(RenderState) OccluderNode::
 get_frame_viz_state(CullTraverser *trav, CullTraverserData &data) {
   static CPT(RenderState) viz_state;
-  if (viz_state == NULL) {
+  if (viz_state == nullptr) {
     viz_state = RenderState::make
       (ColorAttrib::make_flat(LVecBase4(0.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_off());

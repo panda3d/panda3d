@@ -17,7 +17,7 @@
  *
  */
 void MouseWatcherParameter::
-output(ostream &out) const {
+output(std::ostream &out) const {
   bool output_anything = false;
 
   if (has_button()) {

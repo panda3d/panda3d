@@ -213,7 +213,7 @@ end() const {
  *
  */
 void PaletteGroups::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (!_groups.empty()) {
     // Sort the group names into order by name for output.
     pvector<PaletteGroup *> group_vector;
@@ -239,7 +239,7 @@ output(ostream &out) const {
  *
  */
 void PaletteGroups::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   // Sort the group names into order by name for output.
   pvector<PaletteGroup *> group_vector;
   group_vector.reserve(_groups.size());

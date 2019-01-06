@@ -18,7 +18,7 @@
 template<class GetCategory>
 NotifyCategory *NotifyCategoryProxy<GetCategory>::
 init() {
-  if (_ptr == (NotifyCategory *)NULL) {
+  if (_ptr == nullptr) {
     _ptr = GetCategory::get_category();
   }
   return _ptr;
@@ -33,7 +33,7 @@ init() {
 template<class GetCategory>
 INLINE NotifyCategory *NotifyCategoryProxy<GetCategory>::
 get_unsafe_ptr() {
-  nassertd(_ptr != (NotifyCategory *)NULL) {
+  nassertd(_ptr != nullptr) {
     init();
     nout << "Uninitialized notify proxy: " << _ptr->get_fullname() << "\n";
   }
@@ -72,12 +72,6 @@ is_spam() {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_spam());
 }
-#else
-template<class GetCategory>
-CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
-is_spam() {
-  return false;
-}
 #endif
 
 /**
@@ -89,12 +83,6 @@ INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
   // Instruct the compiler to optimize for the usual case.
   return UNLIKELY(get_unsafe_ptr()->is_debug());
-}
-#else
-template<class GetCategory>
-CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
-is_debug() {
-  return false;
 }
 #endif
 
@@ -138,7 +126,7 @@ is_fatal() {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 out(NotifySeverity severity, bool prefix) {
   return get_unsafe_ptr()->out(severity, prefix);
 }
@@ -147,7 +135,7 @@ out(NotifySeverity severity, bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 spam(bool prefix) {
   return get_unsafe_ptr()->spam(prefix);
 }
@@ -156,7 +144,7 @@ spam(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 debug(bool prefix) {
   return get_unsafe_ptr()->debug(prefix);
 }
@@ -165,7 +153,7 @@ debug(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 info(bool prefix) {
   return get_unsafe_ptr()->info(prefix);
 }
@@ -174,7 +162,7 @@ info(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 warning(bool prefix) {
   return get_unsafe_ptr()->warning(prefix);
 }
@@ -183,7 +171,7 @@ warning(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 error(bool prefix) {
   return get_unsafe_ptr()->error(prefix);
 }
@@ -192,7 +180,7 @@ error(bool prefix) {
  *
  */
 template<class GetCategory>
-INLINE ostream &NotifyCategoryProxy<GetCategory>::
+INLINE std::ostream &NotifyCategoryProxy<GetCategory>::
 fatal(bool prefix) {
   return get_unsafe_ptr()->fatal(prefix);
 }

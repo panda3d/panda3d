@@ -48,13 +48,13 @@ EggRetargetAnim() {
     ("r", "file.egg", 0,
      "Read the reference model from the indicated egg file.  All of the "
      "animations will be retargeted to match the indicated file.",
-     &EggRetargetAnim::dispatch_filename, NULL, &_reference_filename);
+     &EggRetargetAnim::dispatch_filename, nullptr, &_reference_filename);
 
   add_option
     ("keep", "joint[,joint...]", 0,
      "Preserve the full animation on the named joint(s).  This is especially "
      "appropriate for the root joint.",
-     &EggRetargetAnim::dispatch_vector_string_comma, NULL, &_keep_joints);
+     &EggRetargetAnim::dispatch_vector_string_comma, nullptr, &_keep_joints);
 }
 
 /**
@@ -62,7 +62,7 @@ EggRetargetAnim() {
  */
 void EggRetargetAnim::
 run() {
-  nassertv(_collection != (EggCharacterCollection *)NULL);
+  nassertv(_collection != nullptr);
   nassertv(_collection->get_num_eggs() > 0);
 
   if (_reference_filename.empty()) {
@@ -78,7 +78,7 @@ run() {
 
   // Read in the extra egg file that we use for extracting the references out.
   PT(EggData) reference_egg = read_egg(_reference_filename);
-  if (reference_egg == (EggData *)NULL) {
+  if (reference_egg == nullptr) {
     nout << "Cannot read " << _reference_filename << "\n";
     exit(1);
   }
@@ -97,7 +97,7 @@ run() {
     exit(1);
   }
 
-  string ref_name = col.get_character(0)->get_name();
+  std::string ref_name = col.get_character(0)->get_name();
 
   // Now rename all of the animations to the same name as the reference model,
   // and add the reference animation in to the same collection to match it up
@@ -111,7 +111,7 @@ run() {
   EggCharacterData *char_data = _collection->get_character(0);
   nout << "Processing " << char_data->get_name() << "\n";
 
-  typedef pset<string> Names;
+  typedef pset<std::string> Names;
   Names keep_names;
 
   vector_string::const_iterator si;
@@ -133,7 +133,7 @@ run() {
  */
 void EggRetargetAnim::
 retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
-              int reference_model, const pset<string> &keep_names,
+              int reference_model, const pset<std::string> &keep_names,
               EggCharacterDb &db) {
   if (keep_names.find(joint_data->get_name()) != keep_names.end()) {
     // Don't retarget this joint; keep the translation and scale and whatever.
@@ -146,7 +146,7 @@ retarget_anim(EggCharacterData *char_data, EggJointData *joint_data,
         int num_frames = char_data->get_num_frames(i);
 
         EggBackPointer *back = joint_data->get_model(i);
-        nassertv(back != (EggBackPointer *)NULL);
+        nassertv(back != nullptr);
         EggJointPointer *joint;
         DCAST_INTO_V(joint, back);
 

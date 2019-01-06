@@ -27,7 +27,7 @@ TypeHandle WebGLGraphicsWindow::_type_handle;
  */
 WebGLGraphicsWindow::
 WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -35,9 +35,10 @@ WebGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  GraphicsWindowInputDevice device =
+  PT(GraphicsWindowInputDevice) device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
+  _input = device.p();
 }
 
 /**
@@ -60,7 +61,7 @@ move_pointer(int device, int x, int y) {
   if (device == 0 && _properties.get_mouse_mode() == WindowProperties::M_relative) {
     // The pointer position is meaningless in relative mode, so we silently
     // pretend that this worked.
-    _input_devices[0].set_pointer_in_window(x, y);
+    _input->set_pointer_in_window(x, y);
     return true;
   }
   return false;
@@ -77,7 +78,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -112,7 +113,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void WebGLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -179,7 +180,7 @@ set_properties_now(WindowProperties &properties) {
       properties.get_fullscreen() != _properties.get_fullscreen()) {
 
     if (properties.get_fullscreen()) {
-      EMSCRIPTEN_RESULT result = emscripten_request_fullscreen(NULL, true);
+      EMSCRIPTEN_RESULT result = emscripten_request_fullscreen(nullptr, true);
 
       if (result == EMSCRIPTEN_RESULT_SUCCESS) {
         _properties.set_fullscreen(true);
@@ -203,7 +204,7 @@ set_properties_now(WindowProperties &properties) {
       properties.get_mouse_mode() != _properties.get_mouse_mode()) {
 
     if (properties.get_mouse_mode() == WindowProperties::M_relative) {
-      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(NULL, true);
+      EMSCRIPTEN_RESULT result = emscripten_request_pointerlock(nullptr, true);
 
       if (result == EMSCRIPTEN_RESULT_SUCCESS) {
         // Great, we're in pointerlock mode.
@@ -242,32 +243,32 @@ set_properties_now(WindowProperties &properties) {
  */
 void WebGLGraphicsWindow::
 close_window() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     emscripten_webgl_make_context_current(0);
     _gsg.clear();
   }
 
   // Clear the assigned callbacks.
-  const char *target = NULL;
-  emscripten_set_fullscreenchange_callback(target, NULL, false, NULL);
-  emscripten_set_pointerlockchange_callback(target, NULL, false, NULL);
-  emscripten_set_visibilitychange_callback(NULL, false, NULL);
+  const char *target = nullptr;
+  emscripten_set_fullscreenchange_callback(target, nullptr, false, nullptr);
+  emscripten_set_pointerlockchange_callback(target, nullptr, false, nullptr);
+  emscripten_set_visibilitychange_callback(nullptr, false, nullptr);
 
-  emscripten_set_focus_callback(target, NULL, false, NULL);
-  emscripten_set_blur_callback(target, NULL, false, NULL);
+  emscripten_set_focus_callback(target, nullptr, false, nullptr);
+  emscripten_set_blur_callback(target, nullptr, false, nullptr);
 
-  emscripten_set_keypress_callback(target, NULL, false, NULL);
-  emscripten_set_keydown_callback(target, NULL, false, NULL);
-  emscripten_set_keyup_callback(target, NULL, false, NULL);
+  emscripten_set_keypress_callback(target, nullptr, false, nullptr);
+  emscripten_set_keydown_callback(target, nullptr, false, nullptr);
+  emscripten_set_keyup_callback(target, nullptr, false, nullptr);
 
-  //emscripten_set_click_callback(target, NULL, false, NULL);
-  emscripten_set_mousedown_callback(target, NULL, false, NULL);
-  emscripten_set_mouseup_callback(target, NULL, false, NULL);
-  emscripten_set_mousemove_callback(target, NULL, false, NULL);
-  emscripten_set_mouseenter_callback(target, NULL, false, NULL);
-  emscripten_set_mouseleave_callback(target, NULL, false, NULL);
+  //emscripten_set_click_callback(target, nullptr, false, nullptr);
+  emscripten_set_mousedown_callback(target, nullptr, false, nullptr);
+  emscripten_set_mouseup_callback(target, nullptr, false, nullptr);
+  emscripten_set_mousemove_callback(target, nullptr, false, nullptr);
+  emscripten_set_mouseenter_callback(target, nullptr, false, nullptr);
+  emscripten_set_mouseleave_callback(target, nullptr, false, nullptr);
 
-  emscripten_set_wheel_callback(target, NULL, false, NULL);
+  emscripten_set_wheel_callback(target, nullptr, false, nullptr);
 
   GraphicsWindow::close_window();
 }
@@ -281,11 +282,11 @@ open_window() {
   //WebGLGraphicsPipe *webgl_pipe;
   //DCAST_INTO_R(webgl_pipe, _pipe, false);
 
-  const char *target = NULL;
+  const char *target = nullptr;
 
   // GSG Creation/Initialization
   WebGLGraphicsStateGuardian *webgl_gsg;
-  if (_gsg == NULL) {
+  if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     webgl_gsg = new WebGLGraphicsStateGuardian(_engine, _pipe);
     webgl_gsg->choose_pixel_format(_fb_properties, target);
@@ -369,7 +370,7 @@ open_window() {
 EM_BOOL WebGLGraphicsWindow::
 on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
 
   if (type == EMSCRIPTEN_EVENT_FULLSCREENCHANGE) {
     WindowProperties props;
@@ -387,16 +388,16 @@ on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void
 EM_BOOL WebGLGraphicsWindow::
 on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
 
   if (type == EMSCRIPTEN_EVENT_POINTERLOCKCHANGE) {
     WindowProperties props;
     if (event->isActive) {
-      cout << "pointerlock engaged\n";
+      std::cout << "pointerlock engaged\n";
       props.set_mouse_mode(WindowProperties::M_relative);
       props.set_cursor_hidden(true);
     } else {
-      cout << "pointerlock disabled\n";
+      std::cout << "pointerlock disabled\n";
       props.set_mouse_mode(WindowProperties::M_absolute);
       props.set_cursor_hidden(false);
     }
@@ -413,7 +414,7 @@ on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, vo
 EM_BOOL WebGLGraphicsWindow::
 on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
 
   if (type == EMSCRIPTEN_EVENT_VISIBILITYCHANGE) {
     WindowProperties props;
@@ -431,7 +432,7 @@ on_visibility_event(int type, const EmscriptenVisibilityChangeEvent *event, void
 EM_BOOL WebGLGraphicsWindow::
 on_focus_event(int type, const EmscriptenFocusEvent *event, void *user_data) {
   WebGLGraphicsWindow *window = (WebGLGraphicsWindow *)user_data;
-  nassertr(window != NULL, false);
+  nassertr(window != nullptr, false);
 
   if (type == EMSCRIPTEN_EVENT_FOCUS) {
     WindowProperties props;
@@ -455,7 +456,7 @@ EM_BOOL WebGLGraphicsWindow::
 on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
   device = (GraphicsWindowInputDevice *)user_data;
-  nassertr(device != NULL, false);
+  nassertr(device != nullptr, false);
 
   if (type == EMSCRIPTEN_EVENT_KEYPRESS) {
     // We have to use String.fromCharCode to turn this into a text character.
@@ -532,7 +533,7 @@ EM_BOOL WebGLGraphicsWindow::
 on_mouse_event(int type, const EmscriptenMouseEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
   device = (GraphicsWindowInputDevice *)user_data;
-  nassertr(device != NULL, false);
+  nassertr(device != nullptr, false);
 
   double time = event->timestamp * 0.001;
 
@@ -589,7 +590,7 @@ EM_BOOL WebGLGraphicsWindow::
 on_wheel_event(int type, const EmscriptenWheelEvent *event, void *user_data) {
   GraphicsWindowInputDevice *device;
   device = (GraphicsWindowInputDevice *)user_data;
-  nassertr(device != NULL, false);
+  nassertr(device != nullptr, false);
 
   double time = event->mouse.timestamp * 0.001;
 
@@ -947,7 +948,7 @@ map_raw_key(const char *code) {
     //{"VolumeMute", KeyboardButton::()},
     //{"VolumeUp", KeyboardButton::()},
     //{"WakeUp", KeyboardButton::()},
-    {NULL, ButtonHandle::none()}
+    {nullptr, ButtonHandle::none()}
   };
 
   for (int i = 0; mappings[i].code; ++i) {

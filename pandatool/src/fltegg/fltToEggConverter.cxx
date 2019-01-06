@@ -35,6 +35,8 @@
 #include "eggExternalReference.h"
 #include "string_utils.h"
 
+using std::string;
+
 
 /**
  *
@@ -353,16 +355,16 @@ convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   // Collect the vertices for this primitive.
   pvector< PT_EggVertex > vertices;
 
-  const FltVertexList *vlist = (FltVertexList *)NULL;
+  const FltVertexList *vlist = nullptr;
   int num_children = flt_face->get_num_children();
-  for (int i = 0; i < num_children && vlist == (FltVertexList *)NULL; i++) {
+  for (int i = 0; i < num_children && vlist == nullptr; i++) {
     const FltRecord *child = flt_face->get_child(i);
     if (child->is_of_type(FltVertexList::get_class_type())) {
       vlist = DCAST(FltVertexList, child);
     }
   }
 
-  if (vlist != (FltVertexList *)NULL) {
+  if (vlist != nullptr) {
     int num_vertices = vlist->get_num_vertices();
     for (int i = 0; i < num_vertices; i++) {
       FltVertex *flt_vertex = vlist->get_vertex(i);
@@ -440,7 +442,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 
   LColor face_color = flt_geom->get_color();
 
-  if (state._flt_object != (FltObject *)NULL) {
+  if (state._flt_object != nullptr) {
     // If we have a FltObject above us, it might also specify a transparency.
     // This combines with our existing transparency.
     PN_stdfloat alpha = 1.0 - (state._flt_object->_transparency / 65535.0);

@@ -21,6 +21,7 @@
 #include "luse.h"
 #include "numeric_types.h"
 #include "config_gobj.h"
+#include "graphicsStateGuardianBase.h"
 
 class FactoryParams;
 
@@ -41,7 +42,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ Material : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE explicit Material(const string &name = "");
+  INLINE explicit Material(const std::string &name = "");
   INLINE Material(const Material &copy);
   void operator = (const Material &copy);
   INLINE ~Material();
@@ -100,8 +101,8 @@ PUBLISHED:
 
   int compare_to(const Material &other) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent) const;
 
   INLINE bool is_attrib_locked() const;
   INLINE void set_attrib_lock();
@@ -127,7 +128,11 @@ PUBLISHED:
   MAKE_PROPERTY(local, get_local, set_local);
   MAKE_PROPERTY(twoside, get_twoside, set_twoside);
 
+protected:
+  INLINE bool is_used_by_auto_shader() const;
+
 public:
+  INLINE void mark_used_by_auto_shader();
   INLINE int get_flags() const;
 
   enum Flags {
@@ -142,6 +147,7 @@ public:
     F_metallic    = 0x100,
     F_base_color  = 0x200,
     F_refractive_index = 0x400,
+    F_used_by_auto_shader = 0x800,
   };
 
 private:
@@ -186,7 +192,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const Material &m) {
+INLINE std::ostream &operator << (std::ostream &out, const Material &m) {
   m.output(out);
   return out;
 }

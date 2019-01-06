@@ -62,8 +62,8 @@ get_bool() {
  * to a string.
  */
 void P3DConcreteSequence::
-make_string(string &value) {
-  ostringstream strm;
+make_string(std::string &value) {
+  std::ostringstream strm;
   strm << "[";
   if (!_elements.empty()) {
     strm << *_elements[0];
@@ -81,12 +81,12 @@ make_string(string &value) {
  * new-reference P3D_object, or NULL on error.
  */
 P3D_object *P3DConcreteSequence::
-get_property(const string &property) {
+get_property(const std::string &property) {
   // We only understand integer "property" names.
   char *endptr;
   int index = strtoul(property.c_str(), &endptr, 10);
   if (*endptr != '\0') {
-    return NULL;
+    return nullptr;
   }
 
   return get_element(index);
@@ -97,7 +97,7 @@ get_property(const string &property) {
  * object.  Returns true on success, false on failure.
  */
 bool P3DConcreteSequence::
-set_property(const string &property, P3D_object *value) {
+set_property(const std::string &property, P3D_object *value) {
   // We only understand integer "property" names.
   char *endptr;
   int index = strtoul(property.c_str(), &endptr, 10);
@@ -133,7 +133,7 @@ fill_xml(TiXmlElement *xvalue, P3DSession *session) {
 P3D_object **P3DConcreteSequence::
 get_object_array() {
   if (_elements.empty()) {
-    return NULL;
+    return nullptr;
   }
   return &_elements[0];
 }
@@ -165,7 +165,7 @@ get_element(int n) const {
     return _elements[n];
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -174,7 +174,7 @@ get_element(int n) const {
  */
 bool P3DConcreteSequence::
 set_element(int n, P3D_object *value) {
-  if (value == NULL) {
+  if (value == nullptr) {
     // Delete an element.
     if (n < 0 || n >= (int)_elements.size()) {
       // Invalid index.

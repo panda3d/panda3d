@@ -797,7 +797,15 @@ EXCLUDE                = dtool/src/parser-inc \
                          panda/src/linmath/fltnames.h \
                          panda/src/linmath/dblnames.h \
                          panda/src/linmath/dbl2fltnames.h \
-                         panda/src/linmath/flt2dblnames.h
+                         panda/src/linmath/flt2dblnames.h \
+                         panda/src/android \
+                         panda/src/iphone \
+                         panda/src/tinydisplay \
+                         panda/src/movies/dr_flac.h \
+                         dtool/src/dtoolbase/pdtoa.cxx \
+                         dtool/src/dtoolutil/panda_getopt_long.h \
+                         dtool/src/dtoolutil/panda_getopt_impl.h \
+                         dtool/src/dtoolutil/panda_getopt_impl.cxx
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -1116,7 +1124,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 228
+HTML_COLORSTYLE_HUE    = 251
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
@@ -1124,7 +1132,7 @@ HTML_COLORSTYLE_HUE    = 228
 # Minimum value: 0, maximum value: 255, default value: 100.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_SAT    = 99
+HTML_COLORSTYLE_SAT    = 150
 
 # The HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to the
 # luminance component of the colors in the HTML output. Values below 100
@@ -1135,7 +1143,7 @@ HTML_COLORSTYLE_SAT    = 99
 # Minimum value: 40, maximum value: 240, default value: 80.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_GAMMA  = 56
+HTML_COLORSTYLE_GAMMA  = 39
 
 # If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
 # page will contain the date and time when the page was generated. Setting this
@@ -1972,7 +1980,13 @@ PREDEFINED             = TVOLATILE= \
                          EXTEND= \
                          ALLOC_DELETED_CHAIN(x)= \
                          BLOCKING= \
-                         TYPENAME=typename
+                         TYPENAME=typename \
+                         MAKE_PROPERTY(x)= \
+                         MAKE_PROPERTY2(x)= \
+                         MAKE_SEQ(x)= \
+                         MAKE_SEQ_PROPERTY(x)= \
+                         MAKE_MAP_PROPERTY(x)= \
+                         MAKE_MAP_KEYS_SEQ(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

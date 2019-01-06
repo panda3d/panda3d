@@ -15,7 +15,7 @@
  *
  */
 INLINE EggNamedObject::
-EggNamedObject(const string &name) : Namable(name) {
+EggNamedObject(const std::string &name) : Namable(name) {
 }
 
 
@@ -37,7 +37,7 @@ operator = (const EggNamedObject &copy) {
   return *this;
 }
 
-INLINE ostream &operator << (ostream &out, const EggNamedObject &n) {
+INLINE std::ostream &operator << (std::ostream &out, const EggNamedObject &n) {
   n.output(out);
   return out;
 }

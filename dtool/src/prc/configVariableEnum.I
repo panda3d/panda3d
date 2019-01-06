@@ -16,12 +16,12 @@
  */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, EnumType default_value,
-                   const string &description, int flags) :
+ConfigVariableEnum(const std::string &name, EnumType default_value,
+                   const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_enum, string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string(), flags),
 #endif
   _got_default_value(true),
   _default_value(default_value),
@@ -36,12 +36,12 @@ ConfigVariableEnum(const string &name, EnumType default_value,
  */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, const string &default_value,
-                   const string &description, int flags) :
+ConfigVariableEnum(const std::string &name, const std::string &default_value,
+                   const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_enum, string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string(), flags),
 #endif
   _got_default_value(true),
   _default_value(parse_string(default_value)),
@@ -126,7 +126,7 @@ INLINE EnumType ConfigVariableEnum<EnumType>::
 get_default_value() const {
   if (!_got_default_value) {
     const ConfigDeclaration *decl = ConfigVariable::get_default_value();
-    if (decl != (ConfigDeclaration *)NULL) {
+    if (decl != nullptr) {
       ((ConfigVariableEnum<EnumType> *)this)->_default_value = (EnumType)parse_string(decl->get_string_value());
       ((ConfigVariableEnum<EnumType> *)this)->_got_default_value = true;
     }
@@ -159,8 +159,8 @@ set_word(size_t n, EnumType value) {
  */
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
-parse_string(const string &value) const {
-  istringstream strm(value);
+parse_string(const std::string &value) const {
+  std::istringstream strm(value);
   EnumType result;
   strm >> result;
   return result;
@@ -172,9 +172,9 @@ parse_string(const string &value) const {
  * operator.
  */
 template<class EnumType>
-INLINE string ConfigVariableEnum<EnumType>::
+INLINE std::string ConfigVariableEnum<EnumType>::
 format_enum(EnumType value) const {
-  ostringstream strm;
+  std::ostringstream strm;
   strm << value;
   return strm.str();
 }

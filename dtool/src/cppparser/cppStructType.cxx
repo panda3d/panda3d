@@ -28,7 +28,7 @@
  *
  */
 void CPPStructType::Base::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (_is_virtual) {
     out << "virtual ";
   }
@@ -82,15 +82,15 @@ operator = (const CPPStructType &copy) {
  */
 void CPPStructType::
 append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
-  if (base != NULL) {
+  if (base != nullptr) {
     // Unwrap any typedefs, since we can't inherit from a typedef.
     CPPTypedefType *def = base->as_typedef_type();
-    while (def != NULL) {
+    while (def != nullptr) {
       base = def->_type;
       def = base->as_typedef_type();
     }
 
-    if (vis == V_unknown && base->as_extension_type() != NULL) {
+    if (vis == V_unknown && base->as_extension_type() != nullptr) {
       // Default visibility.
       if (base->as_extension_type()->_type == T_class) {
         vis = V_private;
@@ -139,7 +139,7 @@ is_base_of(const CPPStructType *other) const {
   Derivation::const_iterator di;
   for (di = other->_derivation.begin(); di != other->_derivation.end(); ++di) {
     const CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL && is_base_of(base)) {
+    if (base != nullptr && is_base_of(base)) {
       return true;
     }
   }
@@ -165,7 +165,7 @@ is_empty() const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if ((*di)._is_virtual || (base != NULL && !base->is_empty())) {
+    if ((*di)._is_virtual || (base != nullptr && !base->is_empty())) {
       return false;
     }
   }
@@ -174,7 +174,7 @@ is_empty() const {
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
@@ -206,7 +206,7 @@ is_polymorphic() const {
  */
 bool CPPStructType::
 is_standard_layout() const {
-  assert(_scope != NULL);
+  assert(_scope != nullptr);
 
   CPPVisibility member_vis = V_unknown;
 
@@ -214,7 +214,7 @@ is_standard_layout() const {
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
@@ -222,7 +222,7 @@ is_standard_layout() const {
     }
 
     // Finally, check if the data member itself is standard layout.
-    assert(instance->_type != NULL);
+    assert(instance->_type != nullptr);
     if (!instance->_type->is_standard_layout()) {
       return false;
     }
@@ -230,7 +230,7 @@ is_standard_layout() const {
     if (member_vis == V_unknown) {
       // The first non-static data member may not be a base class.
       CPPStructType *struct_type = instance->_type->remove_cv()->as_struct_type();
-      if (struct_type != NULL && struct_type->is_base_of(this)) {
+      if (struct_type != nullptr && struct_type->is_base_of(this)) {
         return false;
       }
       member_vis = instance->_vis;
@@ -274,39 +274,38 @@ is_trivial() const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if ((*di)._is_virtual || (base != NULL && !base->is_trivial())) {
+    if ((*di)._is_virtual || (base != nullptr && !base->is_trivial())) {
       return false;
     }
   }
 
-  assert(_scope != NULL);
+  assert(_scope != nullptr);
 
   // Make sure all members are trivial.
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
       continue;
     }
 
-    if (instance->_initializer != NULL) {
+    if (instance->_initializer != nullptr) {
       // A member with an initializer means the default constructor would
       // assign a value.  This means the type can't be trivial.
       return false;
     }
 
     // Finally, check if the data member itself is non-trivial.
-    assert(instance->_type != NULL);
+    assert(instance->_type != nullptr);
     if (!instance->_type->is_trivial()) {
       return false;
     }
   }
 
   // Now look for functions that are virtual or con/destructors.
-  bool is_default_constructible = true;
   CPPScope::Functions::const_iterator fi;
   for (fi = _scope->_functions.begin(); fi != _scope->_functions.end(); ++fi) {
     CPPFunctionGroup *fgroup = (*fi).second;
@@ -325,9 +324,9 @@ is_trivial() const {
         continue;
       }
 
-      assert(inst->_type != (CPPType *)NULL);
+      assert(inst->_type != nullptr);
       CPPFunctionType *ftype = inst->_type->as_function_type();
-      assert(ftype != (CPPFunctionType *)NULL);
+      assert(ftype != nullptr);
 
       if (ftype->_flags & (CPPFunctionType::F_destructor |
                            CPPFunctionType::F_move_constructor |
@@ -343,9 +342,6 @@ is_trivial() const {
           // Same for the default constructor.
           return false;
         }
-        // The presence of a non-default constructor makes the class not
-        // default-constructible.
-        is_default_constructible = false;
       }
 
       if (fgroup->_name == "operator =") {
@@ -356,7 +352,7 @@ is_trivial() const {
   }
 
   // Finally, the class must be default-constructible.
-  return is_default_constructible;
+  return is_default_constructible(V_public);
 }
 
 /**
@@ -370,7 +366,7 @@ is_constructible(const CPPType *given_type) const {
   CPPType *base_type = ((CPPType *)given_type)->remove_reference();
   if (is_equivalent(*base_type->remove_cv())) {
     const CPPReferenceType *ref_type = given_type->as_reference_type();
-    if (ref_type == NULL ||
+    if (ref_type == nullptr ||
         ref_type->_value_category == CPPReferenceType::VC_rvalue) {
       return is_move_constructible(V_public);
     } else {
@@ -384,16 +380,16 @@ is_constructible(const CPPType *given_type) const {
 
   // Check for a different constructor.
   CPPFunctionGroup *fgroup = get_constructor();
-  if (fgroup != (CPPFunctionGroup *)NULL) {
+  if (fgroup != nullptr) {
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin();
         ii != fgroup->_instances.end();
         ++ii) {
       CPPInstance *inst = (*ii);
-      assert(inst->_type != (CPPType *)NULL);
+      assert(inst->_type != nullptr);
 
       CPPFunctionType *ftype = inst->_type->as_function_type();
-      assert(ftype != (CPPFunctionType *)NULL);
+      assert(ftype != nullptr);
 
       CPPParameterList *params = ftype->_parameters;
       if (params->_parameters.size() == 1 && !params->_includes_ellipsis) {
@@ -464,7 +460,7 @@ is_default_constructible(CPPVisibility min_vis) const {
   }
 
   CPPInstance *constructor = get_default_constructor();
-  if (constructor != (CPPInstance *)NULL) {
+  if (constructor != nullptr) {
     // It has a default constructor.
     if (constructor->_vis > min_vis) {
       // Inaccessible default constructor.
@@ -480,7 +476,7 @@ is_default_constructible(CPPVisibility min_vis) const {
   }
 
   // Does it have constructors at all?  If so, no implicit one is generated.
-  if (get_constructor() != (CPPFunctionGroup *)NULL) {
+  if (get_constructor() != nullptr) {
     return false;
   }
 
@@ -489,7 +485,7 @@ is_default_constructible(CPPVisibility min_vis) const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL) {
+    if (base != nullptr) {
       if (!base->is_default_constructible(V_protected)) {
         return false;
       }
@@ -500,14 +496,14 @@ is_default_constructible(CPPVisibility min_vis) const {
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
       continue;
     }
 
-    if (instance->_initializer != (CPPExpression *)NULL) {
+    if (instance->_initializer != nullptr) {
       // It has a default value.
       continue;
     }
@@ -530,7 +526,7 @@ is_copy_constructible(CPPVisibility min_vis) const {
   }
 
   CPPInstance *constructor = get_copy_constructor();
-  if (constructor != (CPPInstance *)NULL) {
+  if (constructor != nullptr) {
     // It has a copy constructor.
     if (constructor->_vis > min_vis) {
       // Inaccessible copy constructor.
@@ -545,8 +541,15 @@ is_copy_constructible(CPPVisibility min_vis) const {
     return true;
   }
 
+  if (get_move_constructor() != nullptr ||
+      get_move_assignment_operator() != nullptr) {
+    // A user-declared move constructor or move assignment operator means that
+    // the implicitly-declared copy constructor is deleted.
+    return false;
+  }
+
   CPPInstance *destructor = get_destructor();
-  if (destructor != (CPPInstance *)NULL) {
+  if (destructor != nullptr) {
     if (destructor->_vis > min_vis) {
       // Inaccessible destructor.
       return false;
@@ -563,7 +566,7 @@ is_copy_constructible(CPPVisibility min_vis) const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL) {
+    if (base != nullptr) {
       if (!base->is_copy_constructible(V_protected)) {
         return false;
       }
@@ -574,7 +577,7 @@ is_copy_constructible(CPPVisibility min_vis) const {
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
@@ -595,7 +598,7 @@ is_copy_constructible(CPPVisibility min_vis) const {
 bool CPPStructType::
 is_move_constructible(CPPVisibility min_vis) const {
   CPPInstance *constructor = get_move_constructor();
-  if (constructor != (CPPInstance *)NULL) {
+  if (constructor != nullptr) {
     // It has a user-declared move constructor.
     if (constructor->_vis > min_vis) {
       // Inaccessible move constructor.
@@ -624,7 +627,7 @@ is_move_constructible(CPPVisibility min_vis) const {
 bool CPPStructType::
 is_copy_assignable(CPPVisibility min_vis) const {
   CPPInstance *assignment_operator = get_copy_assignment_operator();
-  if (assignment_operator != (CPPInstance *)NULL) {
+  if (assignment_operator != nullptr) {
     // It has a copy assignment operator.
     if (assignment_operator->_vis > min_vis) {
       // Inaccessible copy assignment operator.
@@ -653,7 +656,7 @@ is_copy_assignable(CPPVisibility min_vis) const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL) {
+    if (base != nullptr) {
       if (!base->is_copy_assignable(V_protected)) {
         return false;
       }
@@ -664,7 +667,7 @@ is_copy_assignable(CPPVisibility min_vis) const {
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
@@ -686,7 +689,7 @@ is_copy_assignable(CPPVisibility min_vis) const {
 bool CPPStructType::
 is_move_assignable(CPPVisibility min_vis) const {
   CPPInstance *assignment_operator = get_move_assignment_operator();
-  if (assignment_operator != (CPPInstance *)NULL) {
+  if (assignment_operator != nullptr) {
     // It has a user-declared move assignment_operator.
     if (assignment_operator->_vis > min_vis) {
       // Inaccessible move assignment_operator.
@@ -715,7 +718,7 @@ bool CPPStructType::
 is_destructible(CPPVisibility min_vis) const {
   // Do we have an explicit destructor?
   CPPInstance *destructor = get_destructor();
-  if (destructor != (CPPInstance *)NULL) {
+  if (destructor != nullptr) {
     if (destructor->_vis > min_vis) {
       // Yes, but it's inaccessible.
       return false;
@@ -733,18 +736,18 @@ is_destructible(CPPVisibility min_vis) const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL && !base->is_destructible(V_protected)) {
+    if (base != nullptr && !base->is_destructible(V_protected)) {
       return false;
     }
   }
 
-  assert(_scope != NULL);
+  assert(_scope != nullptr);
 
   // Make sure all members are destructible.
   CPPScope::Variables::const_iterator vi;
   for (vi = _scope->_variables.begin(); vi != _scope->_variables.end(); ++vi) {
     CPPInstance *instance = (*vi).second;
-    assert(instance != NULL);
+    assert(instance != nullptr);
 
     if (instance->_storage_class & CPPInstance::SC_static) {
       // Static members don't count.
@@ -752,7 +755,7 @@ is_destructible(CPPVisibility min_vis) const {
     }
 
     // If the data member is not destructible, no go.
-    assert(instance->_type != NULL);
+    assert(instance->_type != nullptr);
     if (!instance->_type->is_destructible()) {
       return false;
     }
@@ -791,11 +794,11 @@ is_convertible_to(const CPPType *other) const {
         continue;
       }
 
-      assert(inst->_type != (CPPType *)NULL);
+      assert(inst->_type != nullptr);
       CPPFunctionType *ftype = inst->_type->as_function_type();
-      assert(ftype != (CPPFunctionType *)NULL);
+      assert(ftype != nullptr);
 
-      if (ftype->_return_type != NULL &&
+      if (ftype->_return_type != nullptr &&
           (ftype->_flags & CPPFunctionType::F_operator_typecast) != 0) {
         // Yes, this is a typecast operator.  Test using the return type.
         if (ftype->_return_type->is_convertible_to(other)) {
@@ -809,7 +812,7 @@ is_convertible_to(const CPPType *other) const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL && (*di)._vis <= V_public && !base->is_convertible_to(other)) {
+    if (base != nullptr && (*di)._vis <= V_public && !base->is_convertible_to(other)) {
       return true;
     }
   }
@@ -845,7 +848,7 @@ check_virtual() const {
 bool CPPStructType::
 has_virtual_destructor() const {
   CPPInstance *destructor = get_destructor();
-  if (destructor != NULL) {
+  if (destructor != nullptr) {
     if (destructor->_storage_class & CPPInstance::SC_virtual) {
       return true;
     }
@@ -854,7 +857,7 @@ has_virtual_destructor() const {
   Derivation::const_iterator di;
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL && base->has_virtual_destructor()) {
+    if (base != nullptr && base->has_virtual_destructor()) {
       return true;
     }
   }
@@ -869,7 +872,7 @@ has_virtual_destructor() const {
  */
 bool CPPStructType::
 is_fully_specified() const {
-  if (_scope != NULL && !_scope->is_fully_specified()) {
+  if (_scope != nullptr && !_scope->is_fully_specified()) {
     return false;
   }
   return CPPType::is_fully_specified();
@@ -895,7 +898,7 @@ get_constructor() const {
   if (fi != _scope->_functions.end()) {
     return fi->second;
   } else {
-    return (CPPFunctionGroup *)NULL;
+    return nullptr;
   }
 }
 
@@ -906,8 +909,8 @@ get_constructor() const {
 CPPInstance *CPPStructType::
 get_default_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
-    return (CPPInstance *)NULL;
+  if (fgroup == nullptr) {
+    return nullptr;
   }
 
   CPPFunctionGroup::Instances::const_iterator ii;
@@ -915,19 +918,19 @@ get_default_constructor() const {
        ii != fgroup->_instances.end();
        ++ii) {
     CPPInstance *inst = (*ii);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
 
     CPPFunctionType *ftype = inst->_type->as_function_type();
-    assert(ftype != (CPPFunctionType *)NULL);
+    assert(ftype != nullptr);
 
     if (ftype->_parameters->_parameters.size() == 0 ||
-        ftype->_parameters->_parameters.front()->_initializer != NULL) {
+        ftype->_parameters->_parameters.front()->_initializer != nullptr) {
       // It takes 0 parameters (or all parameters have default values).
       return inst;
     }
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -937,8 +940,8 @@ get_default_constructor() const {
 CPPInstance *CPPStructType::
 get_copy_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
-    return (CPPInstance *)NULL;
+  if (fgroup == nullptr) {
+    return nullptr;
   }
 
   CPPFunctionGroup::Instances::const_iterator ii;
@@ -946,17 +949,17 @@ get_copy_constructor() const {
        ii != fgroup->_instances.end();
        ++ii) {
     CPPInstance *inst = (*ii);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
 
     CPPFunctionType *ftype = inst->_type->as_function_type();
-    assert(ftype != (CPPFunctionType *)NULL);
+    assert(ftype != nullptr);
 
     if ((ftype->_flags & CPPFunctionType::F_copy_constructor) != 0) {
       return inst;
     }
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -966,8 +969,8 @@ get_copy_constructor() const {
 CPPInstance *CPPStructType::
 get_move_constructor() const {
   CPPFunctionGroup *fgroup = get_constructor();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
-    return (CPPInstance *)NULL;
+  if (fgroup == nullptr) {
+    return nullptr;
   }
 
   CPPFunctionGroup::Instances::const_iterator ii;
@@ -975,17 +978,17 @@ get_move_constructor() const {
        ii != fgroup->_instances.end();
        ++ii) {
     CPPInstance *inst = (*ii);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
 
     CPPFunctionType *ftype = inst->_type->as_function_type();
-    assert(ftype != (CPPFunctionType *)NULL);
+    assert(ftype != nullptr);
 
     if ((ftype->_flags & CPPFunctionType::F_move_constructor) != 0) {
       return inst;
     }
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1000,7 +1003,7 @@ get_assignment_operator() const {
   if (fi != _scope->_functions.end()) {
     return fi->second;
   } else {
-    return (CPPFunctionGroup *)NULL;
+    return nullptr;
   }
 }
 
@@ -1011,8 +1014,8 @@ get_assignment_operator() const {
 CPPInstance *CPPStructType::
 get_copy_assignment_operator() const {
   CPPFunctionGroup *fgroup = get_assignment_operator();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
-    return (CPPInstance *)NULL;
+  if (fgroup == nullptr) {
+    return nullptr;
   }
 
   CPPFunctionGroup::Instances::const_iterator ii;
@@ -1020,17 +1023,17 @@ get_copy_assignment_operator() const {
        ii != fgroup->_instances.end();
        ++ii) {
     CPPInstance *inst = (*ii);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
 
     CPPFunctionType *ftype = inst->_type->as_function_type();
-    assert(ftype != (CPPFunctionType *)NULL);
+    assert(ftype != nullptr);
 
     if ((ftype->_flags & CPPFunctionType::F_copy_assignment_operator) != 0) {
       return inst;
     }
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1040,8 +1043,8 @@ get_copy_assignment_operator() const {
 CPPInstance *CPPStructType::
 get_move_assignment_operator() const {
   CPPFunctionGroup *fgroup = get_assignment_operator();
-  if (fgroup == (CPPFunctionGroup *)NULL) {
-    return (CPPInstance *)NULL;
+  if (fgroup == nullptr) {
+    return nullptr;
   }
 
   CPPFunctionGroup::Instances::const_iterator ii;
@@ -1049,17 +1052,17 @@ get_move_assignment_operator() const {
        ii != fgroup->_instances.end();
        ++ii) {
     CPPInstance *inst = (*ii);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
 
     CPPFunctionType *ftype = inst->_type->as_function_type();
-    assert(ftype != (CPPFunctionType *)NULL);
+    assert(ftype != nullptr);
 
     if ((ftype->_flags & CPPFunctionType::F_move_assignment_operator) != 0) {
       return inst;
     }
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1082,10 +1085,10 @@ get_destructor() const {
          ii != fgroup->_instances.end();
          ++ii) {
       CPPInstance *inst = (*ii);
-      assert(inst->_type != (CPPType *)NULL);
+      assert(inst->_type != nullptr);
 
       CPPFunctionType *ftype = inst->_type->as_function_type();
-      assert(ftype != (CPPFunctionType *)NULL);
+      assert(ftype != nullptr);
 
       if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
         return inst;
@@ -1094,7 +1097,7 @@ get_destructor() const {
     ++fi;
   }
 
-  return (CPPInstance *)NULL;
+  return nullptr;
 }
 
 /**
@@ -1108,8 +1111,8 @@ instantiate(const CPPTemplateParameterList *actual_params,
   // I *think* this assertion is no longer valid.  Who knows.
   // assert(!_incomplete);
 
-  if (_scope == NULL) {
-    if (error_sink != NULL) {
+  if (_scope == nullptr) {
+    if (error_sink != nullptr) {
       error_sink->warning("Ignoring template parameters for class " +
                           get_local_name());
     }
@@ -1149,7 +1152,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
-    assert((*si).second != NULL);
+    assert((*si).second != nullptr);
     return (*si).second;
   }
 
@@ -1163,19 +1166,19 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     // type which we'll define later.
     CPPTypeProxy *proxy = new CPPTypeProxy;
     _proxies.push_back(proxy);
-    assert(proxy != NULL);
+    assert(proxy != nullptr);
     return proxy;
   }
   _subst_decl_recursive_protect = true;
 
   CPPStructType *rep = new CPPStructType(*this);
 
-  if (_ident != NULL) {
+  if (_ident != nullptr) {
     rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
-  if (_scope != NULL) {
+  if (_scope != nullptr) {
     rep->_scope =
       _scope->substitute_decl(subst, current_scope, global_scope);
     if (rep->_scope != _scope) {
@@ -1185,14 +1188,14 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       // parameters into our identifier.
       CPPScope *pscope = rep->_scope->get_parent_scope();
 
-      if (pscope != (CPPScope *)NULL &&
+      if (pscope != nullptr &&
           pscope->_name.has_templ()) {
 
         // If the struct name didn't have an explicit template reference
         // before, now it does.
-        if (_ident != NULL && !_ident->_names.empty() && !_ident->_names.back().has_templ()) {
+        if (_ident != nullptr && !_ident->_names.empty() && !_ident->_names.back().has_templ()) {
           if (rep->is_template()) {
-            rep->_template_scope = (CPPTemplateScope *)NULL;
+            rep->_template_scope = nullptr;
             CPPNameComponent nc(get_simple_name());
             nc.set_templ(pscope->_name.get_templ());
             rep->_ident = new CPPIdentifier(nc, _file);
@@ -1227,9 +1230,9 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     (*pi)->_actual_type = rep;
   }
 
-  assert(rep != NULL);
+  assert(rep != nullptr);
   rep = CPPType::new_type(rep)->as_struct_type();
-  assert(rep != NULL);
+  assert(rep != nullptr);
   if (rep != this) {
     _instantiations.insert(rep);
   }
@@ -1240,8 +1243,8 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPStructType::
-output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
-  if (!complete && _ident != NULL) {
+output(std::ostream &out, int indent_level, CPPScope *scope, bool complete) const {
+  if (!complete && _ident != nullptr) {
     // If we have a name, use it.
     if (cppparser_output_class_keyword) {
       out << _type << " ";
@@ -1258,7 +1261,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
       get_template_scope()->_parameters.write_formal(out, scope);
       indent(out, indent_level);
     }
-    if (_ident != NULL) {
+    if (_ident != nullptr) {
       out << _type << " " << _ident->get_local_name(scope);
     } else {
       out << _type;
@@ -1316,7 +1319,7 @@ get_virtual_funcs(VFunctions &funcs) const {
   for (di = _derivation.begin(); di != _derivation.end(); ++di) {
     VFunctions vf;
     CPPStructType *base = (*di)._base->as_struct_type();
-    if (base != NULL) {
+    if (base != nullptr) {
       base->get_virtual_funcs(vf);
       funcs.splice(funcs.end(), vf);
     }
@@ -1331,9 +1334,9 @@ get_virtual_funcs(VFunctions &funcs) const {
     ++vfnext;
 
     CPPInstance *inst = (*vfi);
-    assert(inst->_type != (CPPType *)NULL);
+    assert(inst->_type != nullptr);
     CPPFunctionType *base_ftype = inst->_type->as_function_type();
-    assert(base_ftype != (CPPFunctionType *)NULL);
+    assert(base_ftype != nullptr);
 
     if (inst->_storage_class & CPPInstance::SC_deleted) {
       // Ignore deleted functions.
@@ -1342,7 +1345,7 @@ get_virtual_funcs(VFunctions &funcs) const {
       // Match destructor-for-destructor; don't try to match destructors up by
       // name.
       CPPInstance *destructor = get_destructor();
-      if (destructor != (CPPInstance *)NULL) {
+      if (destructor != nullptr) {
         // It's a match!  This destructor is virtual.
         funcs.erase(vfi);
         destructor->_storage_class |=
@@ -1351,7 +1354,7 @@ get_virtual_funcs(VFunctions &funcs) const {
 
     } else {
       // Non-destructors we can try to match up by name.
-      string fname = inst->get_local_name();
+      std::string fname = inst->get_local_name();
       CPPScope::Functions::const_iterator fi;
       fi = _scope->_functions.find(fname);
 
@@ -1365,10 +1368,10 @@ get_virtual_funcs(VFunctions &funcs) const {
              ii != fgroup->_instances.end() && !match_found;
              ++ii) {
           CPPInstance *new_inst = (*ii);
-          assert(new_inst->_type != (CPPType *)NULL);
+          assert(new_inst->_type != nullptr);
 
           CPPFunctionType *new_ftype = new_inst->_type->as_function_type();
-          assert(new_ftype != (CPPFunctionType *)NULL);
+          assert(new_ftype != nullptr);
 
           if (new_ftype->match_virtual_override(*base_ftype)) {
             // It's a match!  We now know it's virtual.  Erase this function

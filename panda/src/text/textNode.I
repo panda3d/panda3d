@@ -19,7 +19,7 @@
 INLINE PN_stdfloat TextNode::
 get_line_height() const {
   TextFont *font = get_font();
-  if (font == (TextFont *)NULL) {
+  if (font == nullptr) {
     return 0.0f;
   }
 
@@ -33,6 +33,7 @@ get_line_height() const {
  */
 INLINE void TextNode::
 set_max_rows(int max_rows) {
+  MutexHolder holder(_lock);
   _max_rows = max_rows;
   invalidate_with_measure();
 }
@@ -43,6 +44,7 @@ set_max_rows(int max_rows) {
  */
 INLINE void TextNode::
 clear_max_rows() {
+  MutexHolder holder(_lock);
   _max_rows = 0;
   invalidate_with_measure();
 }
@@ -53,6 +55,7 @@ clear_max_rows() {
  */
 INLINE bool TextNode::
 has_max_rows() const {
+  MutexHolder holder(_lock);
   return _max_rows > 0;
 }
 
@@ -62,6 +65,7 @@ has_max_rows() const {
  */
 INLINE int TextNode::
 get_max_rows() const {
+  MutexHolder holder(_lock);
   return _max_rows;
 }
 
@@ -71,6 +75,7 @@ get_max_rows() const {
  */
 INLINE bool TextNode::
 has_overflow() const {
+  MutexHolder holder(_lock);
   check_measure();
   return (_flags & F_has_overflow) != 0;
 }
@@ -88,6 +93,7 @@ set_frame_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
  */
 INLINE void TextNode::
 set_frame_color(const LColor &frame_color) {
+  MutexHolder holder(_lock);
   if (_frame_color != frame_color) {
     _frame_color = frame_color;
     invalidate_no_measure();
@@ -99,6 +105,7 @@ set_frame_color(const LColor &frame_color) {
  */
 INLINE LColor TextNode::
 get_frame_color() const {
+  MutexHolder holder(_lock);
   return _frame_color;
 }
 
@@ -107,7 +114,8 @@ get_frame_color() const {
  */
 INLINE void TextNode::
 set_card_border(PN_stdfloat size, PN_stdfloat uv_portion) {
-  if (!has_card_border() || _card_border_size != size || _card_border_uv_portion != uv_portion) {
+  MutexHolder holder(_lock);
+  if ((_flags & F_has_card_border) == 0 || _card_border_size != size || _card_border_uv_portion != uv_portion) {
     _flags |= F_has_card_border;
     _card_border_size = size;
     _card_border_uv_portion = uv_portion;
@@ -120,7 +128,8 @@ set_card_border(PN_stdfloat size, PN_stdfloat uv_portion) {
  */
 INLINE void TextNode::
 clear_card_border() {
-  if (has_card_border()) {
+  MutexHolder holder(_lock);
+  if (_flags & F_has_card_border) {
     _flags &= ~F_has_card_border;
     invalidate_no_measure();
   }
@@ -131,6 +140,7 @@ clear_card_border() {
  */
 INLINE PN_stdfloat TextNode::
 get_card_border_size() const {
+  MutexHolder holder(_lock);
   return _card_border_size;
 }
 
@@ -139,6 +149,7 @@ get_card_border_size() const {
  */
 INLINE PN_stdfloat TextNode::
 get_card_border_uv_portion() const {
+  MutexHolder holder(_lock);
   return _card_border_uv_portion;
 }
 
@@ -147,6 +158,7 @@ get_card_border_uv_portion() const {
  */
 INLINE bool TextNode::
 has_card_border() const {
+  MutexHolder holder(_lock);
   return (_flags & F_has_card_border) != 0;
 }
 
@@ -163,6 +175,7 @@ set_card_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
  */
 INLINE void TextNode::
 set_card_color(const LColor &card_color) {
+  MutexHolder holder(_lock);
   if (_card_color != card_color) {
     _card_color = card_color;
     invalidate_no_measure();
@@ -174,6 +187,7 @@ set_card_color(const LColor &card_color) {
  */
 INLINE LColor TextNode::
 get_card_color() const {
+  MutexHolder holder(_lock);
   return _card_color;
 }
 
@@ -182,10 +196,11 @@ get_card_color() const {
  */
 INLINE void TextNode::
 set_card_texture(Texture *card_texture) {
-  if (card_texture == (Texture *)NULL) {
+  if (card_texture == nullptr) {
     clear_card_texture();
   } else {
-    if (!has_card_texture() || _card_texture != card_texture) {
+    MutexHolder holder(_lock);
+    if ((_flags & F_has_card_texture) == 0 || _card_texture != card_texture) {
       _flags |= F_has_card_texture;
       _card_texture = card_texture;
       invalidate_no_measure();
@@ -198,9 +213,10 @@ set_card_texture(Texture *card_texture) {
  */
 INLINE void TextNode::
 clear_card_texture() {
-  if (has_card_texture()) {
+  MutexHolder holder(_lock);
+  if (_flags & F_has_card_texture) {
     _flags &= ~F_has_card_texture;
-    _card_texture = NULL;
+    _card_texture = nullptr;
     invalidate_no_measure();
   }
 }
@@ -210,6 +226,7 @@ clear_card_texture() {
  */
 INLINE bool TextNode::
 has_card_texture() const {
+  MutexHolder holder(_lock);
   return (_flags & F_has_card_texture) != 0;
 }
 
@@ -218,6 +235,7 @@ has_card_texture() const {
  */
 INLINE Texture *TextNode::
 get_card_texture() const {
+  MutexHolder holder(_lock);
   return _card_texture;
 }
 
@@ -229,6 +247,7 @@ get_card_texture() const {
  */
 INLINE void TextNode::
 set_frame_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  MutexHolder holder(_lock);
   _flags |= (F_has_frame | F_frame_as_margin);
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
@@ -243,6 +262,7 @@ set_frame_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_
  */
 INLINE void TextNode::
 set_frame_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  MutexHolder holder(_lock);
   _flags |= F_has_frame;
   _flags &= ~F_frame_as_margin;
   _frame_ul.set(left, top);
@@ -255,6 +275,7 @@ set_frame_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_std
  */
 INLINE void TextNode::
 clear_frame() {
+  MutexHolder holder(_lock);
   _flags &= ~F_has_frame;
   invalidate_no_measure();
 }
@@ -264,6 +285,7 @@ clear_frame() {
  */
 INLINE bool TextNode::
 has_frame() const {
+  MutexHolder holder(_lock);
   return (_flags & F_has_frame) != 0;
 }
 
@@ -276,7 +298,8 @@ has_frame() const {
  */
 INLINE bool TextNode::
 is_frame_as_margin() const {
-  nassertr(has_frame(), false);
+  MutexHolder holder(_lock);
+  nassertr((_flags & F_has_frame) != 0, false);
   return (_flags & F_frame_as_margin) != 0;
 }
 
@@ -288,7 +311,8 @@ is_frame_as_margin() const {
  */
 INLINE LVecBase4 TextNode::
 get_frame_as_set() const {
-  nassertr(has_frame(), LVecBase4(0.0, 0.0, 0.0, 0.0));
+  MutexHolder holder(_lock);
+  nassertr((_flags & F_has_frame) != 0, LVecBase4(0.0, 0.0, 0.0, 0.0));
   return LVecBase4(_frame_ul[0], _frame_lr[0], _frame_lr[1], _frame_ul[1]);
 }
 
@@ -303,18 +327,20 @@ get_frame_as_set() const {
  */
 INLINE LVecBase4 TextNode::
 get_frame_actual() const {
-  if (!has_frame()) {
+  MutexHolder holder(_lock);
+  if (_flags & F_has_frame) {
+    if (_flags & F_frame_as_margin) {
+      check_measure();
+      return LVecBase4(_text_ul[0] - _frame_ul[0],
+                       _text_lr[0] + _frame_lr[0],
+                       _text_lr[1] - _frame_lr[1],
+                       _text_ul[1] + _frame_ul[1]);
+    } else {
+      return LVecBase4(_frame_ul[0], _frame_lr[0], _frame_lr[1], _frame_ul[1]);
+    }
+  } else {
     check_measure();
     return LVecBase4(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
-
-  } else if (is_frame_as_margin()) {
-    check_measure();
-    return LVecBase4(_text_ul[0] - _frame_ul[0],
-                      _text_lr[0] + _frame_lr[0],
-                      _text_lr[1] - _frame_lr[1],
-                      _text_ul[1] + _frame_ul[1]);
-  } else {
-    return get_frame_as_set();
   }
 }
 
@@ -323,6 +349,7 @@ get_frame_actual() const {
  */
 INLINE void TextNode::
 set_frame_line_width(PN_stdfloat frame_width) {
+  MutexHolder holder(_lock);
   _frame_width = frame_width;
   invalidate_no_measure();
 }
@@ -332,6 +359,7 @@ set_frame_line_width(PN_stdfloat frame_width) {
  */
 INLINE PN_stdfloat TextNode::
 get_frame_line_width() const {
+  MutexHolder holder(_lock);
   return _frame_width;
 }
 
@@ -342,6 +370,7 @@ get_frame_line_width() const {
  */
 INLINE void TextNode::
 set_frame_corners(bool corners) {
+  MutexHolder holder(_lock);
   if (corners) {
     _flags |= F_frame_corners;
   } else {
@@ -355,6 +384,7 @@ set_frame_corners(bool corners) {
  */
 INLINE bool TextNode::
 get_frame_corners() const {
+  MutexHolder holder(_lock);
   return (_flags & F_frame_corners) != 0;
 }
 
@@ -366,6 +396,7 @@ get_frame_corners() const {
  */
 INLINE void TextNode::
 set_card_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  MutexHolder holder(_lock);
   _flags |= (F_has_card | F_card_as_margin);
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
@@ -380,6 +411,7 @@ set_card_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_s
  */
 INLINE void TextNode::
 set_card_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  MutexHolder holder(_lock);
   _flags |= F_has_card;
   _flags &= ~F_card_as_margin;
   _card_ul.set(left, top);
@@ -394,6 +426,7 @@ set_card_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdf
  */
 INLINE void TextNode::
 set_card_decal(bool card_decal) {
+  MutexHolder holder(_lock);
   if (card_decal) {
     _flags |= F_card_decal;
   } else {
@@ -407,6 +440,7 @@ set_card_decal(bool card_decal) {
  */
 INLINE void TextNode::
 clear_card() {
+  MutexHolder holder(_lock);
   _flags &= ~F_has_card;
   invalidate_no_measure();
 }
@@ -416,6 +450,7 @@ clear_card() {
  */
 INLINE bool TextNode::
 has_card() const {
+  MutexHolder holder(_lock);
   return (_flags & F_has_card) != 0;
 }
 
@@ -424,6 +459,7 @@ has_card() const {
  */
 INLINE bool TextNode::
 get_card_decal() const {
+  MutexHolder holder(_lock);
   return (_flags & F_card_decal) != 0;
 }
 
@@ -436,7 +472,8 @@ get_card_decal() const {
  */
 INLINE bool TextNode::
 is_card_as_margin() const {
-  nassertr(has_card(), false);
+  MutexHolder holder(_lock);
+  nassertr((_flags & F_has_card) != 0, false);
   return (_flags & F_card_as_margin) != 0;
 }
 
@@ -448,7 +485,8 @@ is_card_as_margin() const {
  */
 INLINE LVecBase4 TextNode::
 get_card_as_set() const {
-  nassertr(has_card(), LVecBase4(0.0, 0.0, 0.0, 0.0));
+  MutexHolder holder(_lock);
+  nassertr((_flags & F_has_card) != 0, LVecBase4(0.0, 0.0, 0.0, 0.0));
   return LVecBase4(_card_ul[0], _card_lr[0], _card_lr[1], _card_ul[1]);
 }
 
@@ -463,18 +501,20 @@ get_card_as_set() const {
  */
 INLINE LVecBase4 TextNode::
 get_card_actual() const {
-  if (!has_card()) {
+  MutexHolder holder(_lock);
+  if (_flags & F_has_card) {
+    if (_flags & F_card_as_margin) {
+      check_measure();
+      return LVecBase4(_text_ul[0] - _card_ul[0],
+                       _text_lr[0] + _card_lr[0],
+                       _text_lr[1] - _card_lr[1],
+                       _text_ul[1] + _card_ul[1]);
+    } else {
+      return LVecBase4(_card_ul[0], _card_lr[0], _card_lr[1], _card_ul[1]);
+    }
+  } else {
     check_measure();
     return LVecBase4(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
-
-  } else if (is_card_as_margin()) {
-    check_measure();
-    return LVecBase4(_text_ul[0] - _card_ul[0],
-                      _text_lr[0] + _card_lr[0],
-                      _text_lr[1] - _card_lr[1],
-                      _text_ul[1] + _card_ul[1]);
-  } else {
-    return get_card_as_set();
   }
 }
 
@@ -487,6 +527,8 @@ get_card_actual() const {
 INLINE LVecBase4 TextNode::
 get_card_transformed() const {
   LVecBase4 card = get_card_actual();
+
+  MutexHolder holder(_lock);
   LPoint3 ul = LPoint3(card[0], 0.0, card[3]) * _transform;
   LPoint3 lr = LPoint3(card[1], 0.0, card[2]) * _transform;
 
@@ -498,6 +540,7 @@ get_card_transformed() const {
  */
 INLINE void TextNode::
 set_transform(const LMatrix4 &transform) {
+  MutexHolder holder(_lock);
   _transform = transform;
   invalidate_with_measure();
 }
@@ -507,6 +550,7 @@ set_transform(const LMatrix4 &transform) {
  */
 INLINE LMatrix4 TextNode::
 get_transform() const {
+  MutexHolder holder(_lock);
   return _transform;
 }
 
@@ -515,6 +559,7 @@ get_transform() const {
  */
 INLINE void TextNode::
 set_coordinate_system(CoordinateSystem coordinate_system) {
+  MutexHolder holder(_lock);
   _coordinate_system = coordinate_system;
   invalidate_with_measure();
 }
@@ -524,6 +569,7 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
  */
 INLINE CoordinateSystem TextNode::
 get_coordinate_system() const {
+  MutexHolder holder(_lock);
   return _coordinate_system;
 }
 
@@ -535,6 +581,7 @@ get_coordinate_system() const {
  */
 INLINE void TextNode::
 set_usage_hint(Geom::UsageHint usage_hint) {
+  MutexHolder holder(_lock);
   _usage_hint = usage_hint;
   invalidate_no_measure();
 }
@@ -545,6 +592,7 @@ set_usage_hint(Geom::UsageHint usage_hint) {
  */
 INLINE Geom::UsageHint TextNode::
 get_usage_hint() const {
+  MutexHolder holder(_lock);
   return _usage_hint;
 }
 
@@ -585,6 +633,7 @@ get_usage_hint() const {
  */
 INLINE void TextNode::
 set_flatten_flags(int flatten_flags) {
+  MutexHolder holder(_lock);
   _flatten_flags = flatten_flags;
 }
 
@@ -593,6 +642,7 @@ set_flatten_flags(int flatten_flags) {
  */
 INLINE int TextNode::
 get_flatten_flags() const {
+  MutexHolder holder(_lock);
   return _flatten_flags;
 }
 
@@ -602,6 +652,7 @@ get_flatten_flags() const {
  */
 INLINE void TextNode::
 set_font(TextFont *font) {
+  MutexHolder holder(_lock);
   TextProperties::set_font(font);
   invalidate_with_measure();
 }
@@ -611,6 +662,7 @@ set_font(TextFont *font) {
  */
 INLINE void TextNode::
 clear_font() {
+  MutexHolder holder(_lock);
   TextProperties::clear_font();
   invalidate_with_measure();
 }
@@ -631,6 +683,7 @@ clear_font() {
  */
 INLINE void TextNode::
 set_small_caps(bool small_caps) {
+  MutexHolder holder(_lock);
   TextProperties::set_small_caps(small_caps);
   invalidate_with_measure();
 }
@@ -640,6 +693,7 @@ set_small_caps(bool small_caps) {
  */
 INLINE void TextNode::
 clear_small_caps() {
+  MutexHolder holder(_lock);
   TextProperties::clear_small_caps();
   invalidate_with_measure();
 }
@@ -651,6 +705,7 @@ clear_small_caps() {
  */
 INLINE void TextNode::
 set_small_caps_scale(PN_stdfloat small_caps_scale) {
+  MutexHolder holder(_lock);
   TextProperties::set_small_caps_scale(small_caps_scale);
   invalidate_with_measure();
 }
@@ -660,6 +715,7 @@ set_small_caps_scale(PN_stdfloat small_caps_scale) {
  */
 INLINE void TextNode::
 clear_small_caps_scale() {
+  MutexHolder holder(_lock);
   TextProperties::clear_small_caps_scale();
   invalidate_with_measure();
 }
@@ -669,6 +725,7 @@ clear_small_caps_scale() {
  */
 INLINE void TextNode::
 set_slant(PN_stdfloat slant) {
+  MutexHolder holder(_lock);
   TextProperties::set_slant(slant);
   invalidate_with_measure();
 }
@@ -678,6 +735,7 @@ set_slant(PN_stdfloat slant) {
  */
 INLINE void TextNode::
 clear_slant() {
+  MutexHolder holder(_lock);
   TextProperties::clear_slant();
   invalidate_with_measure();
 }
@@ -687,6 +745,7 @@ clear_slant() {
  */
 INLINE void TextNode::
 set_align(TextNode::Alignment align_type) {
+  MutexHolder holder(_lock);
   TextProperties::set_align(align_type);
   invalidate_with_measure();
 }
@@ -696,6 +755,7 @@ set_align(TextNode::Alignment align_type) {
  */
 INLINE void TextNode::
 clear_align() {
+  MutexHolder holder(_lock);
   TextProperties::clear_align();
   invalidate_with_measure();
 }
@@ -706,6 +766,7 @@ clear_align() {
  */
 INLINE void TextNode::
 set_indent(PN_stdfloat indent) {
+  MutexHolder holder(_lock);
   TextProperties::set_indent(indent);
   invalidate_with_measure();
 }
@@ -715,6 +776,7 @@ set_indent(PN_stdfloat indent) {
  */
 INLINE void TextNode::
 clear_indent() {
+  MutexHolder holder(_lock);
   TextProperties::clear_indent();
   invalidate_with_measure();
 }
@@ -725,6 +787,7 @@ clear_indent() {
  */
 INLINE void TextNode::
 set_wordwrap(PN_stdfloat wordwrap) {
+  MutexHolder holder(_lock);
   TextProperties::set_wordwrap(wordwrap);
   invalidate_with_measure();
 }
@@ -735,6 +798,7 @@ set_wordwrap(PN_stdfloat wordwrap) {
  */
 INLINE void TextNode::
 clear_wordwrap() {
+  MutexHolder holder(_lock);
   TextProperties::clear_wordwrap();
   invalidate_with_measure();
 }
@@ -744,6 +808,7 @@ clear_wordwrap() {
  */
 INLINE void TextNode::
 set_text_color(const LColor &text_color) {
+  MutexHolder holder(_lock);
   TextProperties::set_text_color(text_color);
   invalidate_no_measure();
 }
@@ -762,6 +827,7 @@ set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
  */
 INLINE void TextNode::
 clear_text_color() {
+  MutexHolder holder(_lock);
   TextProperties::clear_text_color();
   invalidate_no_measure();
 }
@@ -779,6 +845,7 @@ set_shadow_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
  */
 INLINE void TextNode::
 set_shadow_color(const LColor &shadow_color) {
+  MutexHolder holder(_lock);
   TextProperties::set_shadow_color(shadow_color);
   invalidate_no_measure();
 }
@@ -788,6 +855,7 @@ set_shadow_color(const LColor &shadow_color) {
  */
 INLINE void TextNode::
 clear_shadow_color() {
+  MutexHolder holder(_lock);
   TextProperties::clear_shadow_color();
   invalidate_with_measure();
 }
@@ -807,6 +875,7 @@ set_shadow(PN_stdfloat xoffset, PN_stdfloat yoffset) {
  */
 INLINE void TextNode::
 set_shadow(const LVecBase2 &shadow_offset) {
+  MutexHolder holder(_lock);
   TextProperties::set_shadow(shadow_offset);
   invalidate_no_measure();
 }
@@ -816,6 +885,7 @@ set_shadow(const LVecBase2 &shadow_offset) {
  */
 INLINE void TextNode::
 clear_shadow() {
+  MutexHolder holder(_lock);
   TextProperties::clear_shadow();
   invalidate_no_measure();
 }
@@ -830,7 +900,8 @@ clear_shadow() {
  * "fixed".
  */
 INLINE void TextNode::
-set_bin(const string &bin) {
+set_bin(const std::string &bin) {
+  MutexHolder holder(_lock);
   TextProperties::set_bin(bin);
   invalidate_no_measure();
 }
@@ -841,6 +912,7 @@ set_bin(const string &bin) {
  */
 INLINE void TextNode::
 clear_bin() {
+  MutexHolder holder(_lock);
   TextProperties::clear_bin();
   invalidate_no_measure();
 }
@@ -858,6 +930,7 @@ clear_bin() {
  */
 INLINE int TextNode::
 set_draw_order(int draw_order) {
+  MutexHolder holder(_lock);
   invalidate_no_measure();
   return TextProperties::set_draw_order(draw_order);
 }
@@ -867,6 +940,7 @@ set_draw_order(int draw_order) {
  */
 INLINE void TextNode::
 clear_draw_order() {
+  MutexHolder holder(_lock);
   TextProperties::clear_draw_order();
   invalidate_with_measure();
 }
@@ -877,6 +951,7 @@ clear_draw_order() {
  */
 INLINE void TextNode::
 set_tab_width(PN_stdfloat tab_width) {
+  MutexHolder holder(_lock);
   TextProperties::set_tab_width(tab_width);
   invalidate_with_measure();
 }
@@ -886,6 +961,7 @@ set_tab_width(PN_stdfloat tab_width) {
  */
 INLINE void TextNode::
 clear_tab_width() {
+  MutexHolder holder(_lock);
   TextProperties::clear_tab_width();
   invalidate_with_measure();
 }
@@ -897,6 +973,7 @@ clear_tab_width() {
  */
 INLINE void TextNode::
 set_glyph_scale(PN_stdfloat glyph_scale) {
+  MutexHolder holder(_lock);
   TextProperties::set_glyph_scale(glyph_scale);
   invalidate_with_measure();
 }
@@ -906,6 +983,7 @@ set_glyph_scale(PN_stdfloat glyph_scale) {
  */
 INLINE void TextNode::
 clear_glyph_scale() {
+  MutexHolder holder(_lock);
   TextProperties::clear_glyph_scale();
   invalidate_with_measure();
 }
@@ -917,6 +995,7 @@ clear_glyph_scale() {
  */
 INLINE void TextNode::
 set_glyph_shift(PN_stdfloat glyph_shift) {
+  MutexHolder holder(_lock);
   TextProperties::set_glyph_shift(glyph_shift);
   invalidate_with_measure();
 }
@@ -926,57 +1005,8 @@ set_glyph_shift(PN_stdfloat glyph_shift) {
  */
 INLINE void TextNode::
 clear_glyph_shift() {
+  MutexHolder holder(_lock);
   TextProperties::clear_glyph_shift();
-  invalidate_with_measure();
-}
-
-
-/**
- * Changes the text that is displayed under the TextNode.
- */
-INLINE void TextNode::
-set_text(const string &text) {
-  TextEncoder::set_text(text);
-  invalidate_with_measure();
-}
-
-/**
- * The two-parameter version of set_text() accepts an explicit encoding; the
- * text is immediately decoded and stored as a wide-character string.
- * Subsequent calls to get_text() will return the same text re-encoded using
- * whichever encoding is specified by set_encoding().
- */
-INLINE void TextNode::
-set_text(const string &text, TextNode::Encoding encoding) {
-  TextEncoder::set_text(text, encoding);
-  invalidate_with_measure();
-}
-
-/**
- * Removes the text from the TextNode.
- */
-INLINE void TextNode::
-clear_text() {
-  TextEncoder::clear_text();
-  invalidate_with_measure();
-}
-
-/**
- * Appends the indicates string to the end of the stored text.
- */
-INLINE void TextNode::
-append_text(const string &text) {
-  TextEncoder::append_text(text);
-  invalidate_with_measure();
-}
-
-/**
- * Appends a single character to the end of the stored text.  This may be a
- * wide character, up to 16 bits in Unicode.
- */
-INLINE void TextNode::
-append_unicode_char(wchar_t character) {
-  TextEncoder::append_unicode_char(character);
   invalidate_with_measure();
 }
 
@@ -987,7 +1017,7 @@ append_unicode_char(wchar_t character) {
  * In earlier versions, this did not contain any embedded special characters
  * like \1 or \3; now it does.
  */
-INLINE string TextNode::
+INLINE std::string TextNode::
 get_wordwrapped_text() const {
   return encode_wtext(get_wordwrapped_wtext());
 }
@@ -997,28 +1027,8 @@ get_wordwrapped_text() const {
  * should not include the newline character.
  */
 INLINE PN_stdfloat TextNode::
-calc_width(const string &line) const {
+calc_width(const std::string &line) const {
   return calc_width(decode_text(line));
-}
-
-/**
- * Changes the text that is displayed under the TextNode, with a wide text.
- * This automatically sets the string reported by get_text() to the 8-bit
- * encoded version of the same string.
- */
-INLINE void TextNode::
-set_wtext(const wstring &wtext) {
-  TextEncoder::set_wtext(wtext);
-  invalidate_with_measure();
-}
-
-/**
- * Appends the indicates string to the end of the stored wide-character text.
- */
-INLINE void TextNode::
-append_wtext(const wstring &wtext) {
-  TextEncoder::append_wtext(wtext);
-  invalidate_with_measure();
 }
 
 /**
@@ -1028,8 +1038,9 @@ append_wtext(const wstring &wtext) {
  * In earlier versions, this did not contain any embedded special characters
  * like \1 or \3; now it does.
  */
-INLINE wstring TextNode::
+INLINE std::wstring TextNode::
 get_wordwrapped_wtext() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _wordwrapped_wtext;
 }
@@ -1040,6 +1051,7 @@ get_wordwrapped_wtext() const {
  */
 INLINE PN_stdfloat TextNode::
 get_left() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_ul[0];
 }
@@ -1050,6 +1062,7 @@ get_left() const {
  */
 INLINE PN_stdfloat TextNode::
 get_right() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_lr[0];
 }
@@ -1060,6 +1073,7 @@ get_right() const {
  */
 INLINE PN_stdfloat TextNode::
 get_bottom() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_lr[1];
 }
@@ -1070,6 +1084,7 @@ get_bottom() const {
  */
 INLINE PN_stdfloat TextNode::
 get_top() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_ul[1];
 }
@@ -1079,6 +1094,7 @@ get_top() const {
  */
 INLINE PN_stdfloat TextNode::
 get_height() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_ul[1] - _text_lr[1];
 }
@@ -1088,6 +1104,7 @@ get_height() const {
  */
 INLINE PN_stdfloat TextNode::
 get_width() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _text_lr[0] - _text_ul[0];
 }
@@ -1098,6 +1115,7 @@ get_width() const {
  */
 INLINE LPoint3 TextNode::
 get_upper_left_3d() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _ul3d;
 }
@@ -1108,6 +1126,7 @@ get_upper_left_3d() const {
  */
 INLINE LPoint3 TextNode::
 get_lower_right_3d() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _lr3d;
 }
@@ -1118,8 +1137,20 @@ get_lower_right_3d() const {
  */
 INLINE int TextNode::
 get_num_rows() const {
+  MutexHolder holder(_lock);
   check_measure();
   return _num_rows;
+}
+
+/**
+ * Generates the text, according to the parameters indicated within the
+ * TextNode, and returns a Node that may be parented within the tree to
+ * represent it.
+ */
+PT(PandaNode) TextNode::
+generate() {
+  MutexHolder holder(_lock);
+  return do_generate();
 }
 
 /**
@@ -1129,6 +1160,7 @@ get_num_rows() const {
  */
 INLINE void TextNode::
 update() {
+  MutexHolder holder(_lock);
   check_rebuild();
 }
 
@@ -1140,8 +1172,9 @@ update() {
  */
 INLINE void TextNode::
 force_update() {
-  invalidate_with_measure();
-  check_rebuild();
+  MutexHolder holder(_lock);
+  mark_internal_bounds_stale();
+  do_rebuild();
 }
 
 /**

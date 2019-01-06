@@ -22,6 +22,8 @@
 
 #include <algorithm>
 
+using std::string;
+
 /**
  *
  */
@@ -49,7 +51,7 @@ EggTextureCards() : EggWriter(true, true) {
      "centered on the origin: -0.5,0.5,-0.5,0.5.  Polygons are always created "
      "on the X-Y plane.  If -p is not also specified, all polygons will be "
      "the same size and shape.",
-     &EggTextureCards::dispatch_double_quad, NULL, &_polygon_geometry[0]);
+     &EggTextureCards::dispatch_double_quad, nullptr, &_polygon_geometry[0]);
 
   add_option
     ("p", "xpixels,ypixels", 0,
@@ -70,44 +72,44 @@ EggTextureCards() : EggWriter(true, true) {
      "This option specifies an ignorable suffix in the texture filename(s); "
      "if this suffix is present, it is not included in the polygon's name.  "
      "This option may be repeated multiple times.",
-     &EggTextureCards::dispatch_vector_string, NULL, &_suffixes);
+     &EggTextureCards::dispatch_vector_string, nullptr, &_suffixes);
 
   add_option
     ("c", "r,g,b[,a]", 0,
      "Specifies the color of each polygon.  The default is white: 1,1,1,1.",
-     &EggTextureCards::dispatch_color, NULL, &_polygon_color[0]);
+     &EggTextureCards::dispatch_color, nullptr, &_polygon_color[0]);
 
   add_option
     ("wm", "wrap", 0,
      "Indicates the wrap mode of the texture: \"repeat\", \"clamp\", "
      "or any of the other modes supported by egg syntax.  "
      "The default is to leave this unspecified.",
-     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_mode);
+     &EggTextureCards::dispatch_wrap_mode, nullptr, &_wrap_mode);
 
   add_option
     ("wmu", "wrap_u", 0,
      "Indicates the wrap mode of the texture in the U direction.  This "
      "overrides -wm, if specified.",
-     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_u);
+     &EggTextureCards::dispatch_wrap_mode, nullptr, &_wrap_u);
 
   add_option
     ("wmv", "wrap_v", 0,
      "Indicates the wrap mode of the texture in the V direction.  This "
      "overrides -wm, if specified.",
-     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_v);
+     &EggTextureCards::dispatch_wrap_mode, nullptr, &_wrap_v);
 
   add_option
     ("minf", "filter", 0,
      "Indicates the minfilter mode of the texture: \"linear\", \"mipmap\", "
      "or any of the other modes supported by egg syntax.  "
      "The default is to leave this unspecified.",
-     &EggTextureCards::dispatch_filter_type, NULL, &_minfilter);
+     &EggTextureCards::dispatch_filter_type, nullptr, &_minfilter);
 
   add_option
     ("magf", "filter", 0,
      "Indicates the magfilter mode of the texture: \"linear\" or \"nearest\".  "
      "The default is to leave this unspecified.",
-     &EggTextureCards::dispatch_filter_type, NULL, &_magfilter);
+     &EggTextureCards::dispatch_filter_type, nullptr, &_magfilter);
 
   add_option
     ("aniso", "degree", 0,
@@ -119,37 +121,37 @@ EggTextureCards() : EggWriter(true, true) {
     ("ql", "[default | fastest | normal | best]", 0,
      "Specifies the quality level of the texture.  This mainly affects "
      "the tinydisplay software renderer.",
-     &EggTextureCards::dispatch_quality_level, NULL, &_quality_level);
+     &EggTextureCards::dispatch_quality_level, nullptr, &_quality_level);
 
   add_option
     ("f", "format", 0,
      "Indicates the format for all textures: typical choices are \"rgba12\" "
      "or \"rgb5\" or \"alpha\".  The default is to leave this unspecified.",
-     &EggTextureCards::dispatch_format, NULL, &_format);
+     &EggTextureCards::dispatch_format, nullptr, &_format);
 
   add_option
     ("f1", "format", 0,
      "Indicates the format for one-channel textures only.  If specified, this "
      "overrides the format specified by -f.",
-     &EggTextureCards::dispatch_format, NULL, &_format_1);
+     &EggTextureCards::dispatch_format, nullptr, &_format_1);
 
   add_option
     ("f2", "format", 0,
      "Indicates the format for two-channel textures only.  If specified, this "
      "overrides the format specified by -f.",
-     &EggTextureCards::dispatch_format, NULL, &_format_2);
+     &EggTextureCards::dispatch_format, nullptr, &_format_2);
 
   add_option
     ("f3", "format", 0,
      "Indicates the format for three-channel textures only.  If specified, this "
      "overrides the format specified by -f.",
-     &EggTextureCards::dispatch_format, NULL, &_format_3);
+     &EggTextureCards::dispatch_format, nullptr, &_format_3);
 
   add_option
     ("f4", "format", 0,
      "Indicates the format for four-channel textures only.  If specified, this "
      "overrides the format specified by -f.",
-     &EggTextureCards::dispatch_format, NULL, &_format_4);
+     &EggTextureCards::dispatch_format, nullptr, &_format_4);
 
   add_option
     ("b", "", 0,
@@ -164,7 +166,7 @@ EggTextureCards() : EggWriter(true, true) {
      "nice side-effect of creating an automatic texture flip that can be "
      "used directly by applications; use this parameter to specify the "
      "frame rate of that texture flip.",
-     &EggTextureCards::dispatch_double, NULL, &_frame_rate);
+     &EggTextureCards::dispatch_double, nullptr, &_frame_rate);
 
   add_option
     ("noexist", "", 0,

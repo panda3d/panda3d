@@ -35,10 +35,10 @@ class CVSSourceTree;
 class CVSSourceDirectory {
 public:
   CVSSourceDirectory(CVSSourceTree *tree, CVSSourceDirectory *parent,
-                     const string &dirname);
+                     const std::string &dirname);
   ~CVSSourceDirectory();
 
-  string get_dirname() const;
+  std::string get_dirname() const;
   Filename get_fullpath() const;
   Filename get_path() const;
   Filename get_rel_to(const CVSSourceDirectory *other) const;
@@ -46,16 +46,16 @@ public:
   int get_num_children() const;
   CVSSourceDirectory *get_child(int n) const;
 
-  CVSSourceDirectory *find_relpath(const string &relpath);
-  CVSSourceDirectory *find_dirname(const string &dirname);
+  CVSSourceDirectory *find_relpath(const std::string &relpath);
+  CVSSourceDirectory *find_dirname(const std::string &dirname);
 
 public:
-  bool scan(const Filename &directory, const string &key_filename);
+  bool scan(const Filename &directory, const std::string &key_filename);
 
 private:
   CVSSourceTree *_tree;
   CVSSourceDirectory *_parent;
-  string _dirname;
+  std::string _dirname;
   int _depth;
 
   typedef pvector<CVSSourceDirectory *> Children;

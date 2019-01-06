@@ -12,7 +12,7 @@
  */
 
 #include "pfmTrans.h"
-#include "config_pfm.h"
+#include "config_pfmprogs.h"
 #include "pfmFile.h"
 #include "pfmVizzer.h"
 #include "texture.h"
@@ -20,6 +20,8 @@
 #include "pointerTo.h"
 #include "string_utils.h"
 #include "pandaFileStream.h"
+
+using std::string;
 
 /**
  *
@@ -72,7 +74,7 @@ PfmTrans() {
     ("rotate", "degrees", 0,
      "Rotates the pfm file the specified number of degrees counterclockwise, "
      "which must be a multiple of 90.",
-     &PfmTrans::dispatch_int, NULL, &_rotate);
+     &PfmTrans::dispatch_int, nullptr, &_rotate);
 
   add_option
     ("mirror_x", "", 0,
@@ -231,7 +233,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     NodePath mesh = vizzer.generate_vis_mesh(PfmVizzer::MF_both);
     if (_got_vistex_filename) {
       PT(Texture) tex = TexturePool::load_texture(_vistex_filename);
-      if (tex == NULL) {
+      if (tex == nullptr) {
         nout << "Couldn't find " << _vistex_filename << "\n";
       } else {
         tex->set_minfilter(SamplerState::FT_linear_mipmap_linear);

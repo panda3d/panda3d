@@ -223,11 +223,19 @@ get_modified() const {
 INLINE bool GeomPrimitive::
 check_valid(const GeomVertexData *vertex_data) const {
   Thread *current_thread = Thread::get_current_thread();
-  GeomPrimitivePipelineReader reader(this, current_thread);
-  reader.check_minmax();
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
-  return reader.check_valid(&data_reader);
+  return check_valid(&data_reader);
+}
+
+/**
+ *
+ */
+INLINE bool GeomPrimitive::
+check_valid(const GeomVertexDataPipelineReader *data_reader) const {
+  GeomPrimitivePipelineReader reader(this, data_reader->get_current_thread());
+  reader.check_minmax();
+  return reader.check_valid(data_reader);
 }
 
 /**
@@ -445,12 +453,12 @@ CData(const GeomPrimitive::CData &copy) :
 INLINE GeomPrimitivePipelineReader::
 GeomPrimitivePipelineReader(CPT(GeomPrimitive) object,
                             Thread *current_thread) :
-  _object(move(object)),
+  _object(std::move(object)),
   _current_thread(current_thread),
 #ifndef CPPPARSER
   _cdata(_object->_cycler.read_unlocked(current_thread)),
 #endif
-  _vertices_cdata(NULL)
+  _vertices_cdata(nullptr)
 {
   nassertv(_object->test_ref_count_nonzero());
 #ifdef DO_PIPELINING
@@ -494,8 +502,8 @@ INLINE GeomPrimitivePipelineReader::
   }
 
 #ifdef _DEBUG
-  _object = NULL;
-  _cdata = NULL;
+  _object = nullptr;
+  _cdata = nullptr;
 #endif  // _DEBUG
 }
 
@@ -635,8 +643,8 @@ get_ends() const {
  */
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_mins() const {
-  nassertr(is_indexed(), NULL);
-  nassertr(_cdata->_got_minmax, NULL);
+  nassertr(is_indexed(), nullptr);
+  nassertr(_cdata->_got_minmax, nullptr);
   return _cdata->_mins.get_read_pointer();
 }
 
@@ -645,8 +653,8 @@ get_mins() const {
  */
 INLINE CPT(GeomVertexArrayData) GeomPrimitivePipelineReader::
 get_maxs() const {
-  nassertr(is_indexed(), NULL);
-  nassertr(_cdata->_got_minmax, NULL);
+  nassertr(is_indexed(), nullptr);
+  nassertr(_cdata->_got_minmax, nullptr);
   return _cdata->_maxs.get_read_pointer();
 }
 
@@ -667,8 +675,8 @@ draw(GraphicsStateGuardianBase *gsg, bool force) const {
   return _object->draw(gsg, this, force);
 }
 
-INLINE ostream &
-operator << (ostream &out, const GeomPrimitive &obj) {
+INLINE std::ostream &
+operator << (std::ostream &out, const GeomPrimitive &obj) {
   obj.output(out);
   return out;
 }

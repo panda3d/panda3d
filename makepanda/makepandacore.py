@@ -106,7 +106,8 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2015","2015"),
                    ("MAYA2016","2016"),
                    ("MAYA20165","2016.5"),
-                   ("MAYA2017","2017")
+                   ("MAYA2017","2017"),
+                   ("MAYA2018","2018"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -153,7 +154,7 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
 def WarnConflictingFiles(delete = False):
     for cfile in CONFLICTING_FILES:
         if os.path.exists(cfile):
-            print("%sWARNING:%s file may conflict with build: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), cfile, GetColor()))
+            Warn("file may conflict with build:", cfile)
             if delete:
                 os.unlink(cfile)
                 print("Deleted.")
@@ -287,6 +288,20 @@ def exit(msg = ""):
         print(msg)
         raise "initiate-exit"
 
+def Warn(msg, extra=None):
+    if extra is not None:
+        print("%sWARNING:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sWARNING:%s %s" % (GetColor("red"), GetColor(), msg))
+    sys.stdout.flush()
+
+def Error(msg, extra=None):
+    if extra is not None:
+        print("%sERROR:%s %s %s%s%s" % (GetColor("red"), GetColor(), msg, GetColor("green"), extra, GetColor()))
+    else:
+        print("%sERROR:%s %s" % (GetColor("red"), GetColor(), msg))
+    exit()
+
 ########################################################################
 ##
 ## SetTarget, GetTarget, GetHost
@@ -325,8 +340,12 @@ def GetHostArch():
     target = GetTarget()
     if target == 'windows':
         return 'x64' if host_64 else 'x86'
-    else: #TODO
-        return platform.machine()
+
+    machine = platform.machine()
+    if machine.startswith('armv7'):
+        return 'armv7a'
+    else:
+        return machine
 
 def SetTarget(target, arch=None):
     """Sets the target platform; the one we're compiling for.  Also
@@ -732,7 +751,7 @@ def NeedsBuild(files, others):
                     print("    dependency changed: %s" % (key))
 
         if VERBOSE and frozenset(cached) != frozenset(dates):
-            print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
+            Warn("file dependencies changed:", files)
 
     return True
 
@@ -1310,7 +1329,7 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = base + "/emscripten-libs/"
 
     else:
-        print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
+        Warn("Unsupported platform:", target)
         return
 
     if (GetVerbose()):
@@ -1756,11 +1775,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     if not custom_loc and pkgconfig is not None and not libs:
         # pkg-config is all we can do, abort if it wasn't found.
         if pkg in PkgListGet():
-            print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
+            Warn("Could not locate pkg-config package %s, excluding from build" % (pkgconfig))
             PkgDisable(pkg)
         else:
-            print("%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig))
-            exit()
+            Error("Could not locate pkg-config package %s, aborting build" % (pkgconfig))
 
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
@@ -1824,14 +1842,12 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
         if not have_pkg:
             if custom_loc:
-                print("%sERROR:%s Could not locate thirdparty package %s in specified directory, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s in specified directory, aborting build" % (pkg.lower()))
             elif pkg in PkgListGet():
-                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower()))
+                Warn("Could not locate thirdparty package %s, excluding from build" % (pkg.lower()))
                 PkgDisable(pkg)
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (pkg.lower()))
 
 ########################################################################
 ##
@@ -2112,7 +2128,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         if sys.version[:3] != ver:
-            print("Warning: running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
+            Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (sys.version[:3], ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
         tp_python = os.path.join(GetThirdpartyDir(), "python")
@@ -2755,12 +2771,11 @@ def LibName(opt, name):
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
             if (opt in PkgListGet()):
                 if not PkgSkip(opt):
-                    print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+                    Warn("Could not locate thirdparty package %s, excluding from build" % (opt.lower()))
                     PkgDisable(opt)
                 return
             else:
-                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower()))
-                exit()
+                Error("Could not locate thirdparty package %s, aborting build" % (opt.lower()))
     LIBNAMES.append((opt, name))
 
 def DefSymbol(opt, sym, val=""):
@@ -2845,7 +2860,7 @@ def SetupBuildEnvironment(compiler):
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
-            print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed" % (cmd))
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
         # Now extract the preprocessor's include directories.
@@ -2874,7 +2889,7 @@ def SetupBuildEnvironment(compiler):
                 print("Ignoring non-existent include directory %s" % (line))
 
         if handle.returncode != 0 or not SYS_INC_DIRS:
-            print("%sWARNING:%s %s failed or did not produce the expected result" % (GetColor("red"), GetColor(), cmd))
+            Warn("%s failed or did not produce the expected result" % (cmd))
             sysroot = SDK.get("SYSROOT", "")
             # Add some sensible directories as a fallback.
             SYS_INC_DIRS = [
@@ -3204,6 +3219,48 @@ def WriteResourceFile(basename, **kwargs):
     ConditionalWriteFile(basename, GenerateResourceFile(**kwargs))
     return basename
 
+
+def WriteEmbeddedStringFile(basename, inputs, string_name=None):
+    if os.path.splitext(basename)[1] not in SUFFIX_INC:
+        basename += '.cxx'
+    target = GetOutputDir() + "/tmp/" + basename
+
+    if string_name is None:
+        string_name = os.path.basename(os.path.splitext(target)[0])
+        string_name = string_name.replace('-', '_')
+
+    data = bytearray()
+    for input in inputs:
+        fp = open(input, 'rb')
+
+        # Insert a #line so that we get meaningful compile/assert errors when
+        # the result is inserted by interrogate_module into generated code.
+        if os.path.splitext(input)[1] in SUFFIX_INC:
+            line = '#line 1 "%s"\n' % (input)
+            data += bytearray(line.encode('ascii', 'replace'))
+
+        data += bytearray(fp.read())
+        fp.close()
+
+    data.append(0)
+
+    output = 'extern const char %s[] = {\n' % (string_name)
+
+    i = 0
+    for byte in data:
+        if i == 0:
+            output += ' '
+
+        output += ' 0x%02x,' % (byte)
+        i += 1
+        if i >= 12:
+            output += '\n'
+            i = 0
+
+    output += '\n};\n'
+    ConditionalWriteFile(target, output)
+    return target
+
 ########################################################################
 ##
 ## FindLocation
@@ -3211,6 +3268,8 @@ def WriteResourceFile(basename, **kwargs):
 ########################################################################
 
 ORIG_EXT = {}
+PYABI_SPECIFIC = set()
+WARNED_FILES = set()
 
 def GetOrigExt(x):
     return ORIG_EXT[x]
@@ -3220,9 +3279,9 @@ def SetOrigExt(x, v):
 
 def GetExtensionSuffix():
     if sys.version_info >= (3, 0):
-        suffix = sysconfig.get_config_var('EXT_SUFFIX')
-        if suffix:
-            return suffix
+        import _imp
+        return _imp.extension_suffixes()[0]
+
     target = GetTarget()
     if target == 'windows':
         return '.pyd'
@@ -3230,6 +3289,28 @@ def GetExtensionSuffix():
         return '.bc'
     else:
         return '.so'
+
+def GetPythonABI():
+    soabi = sysconfig.get_config_var('SOABI')
+    if soabi:
+        return soabi
+
+    soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    debug_flag = sysconfig.get_config_var('Py_DEBUG')
+    if (debug_flag is None and hasattr(sys, 'gettotalrefcount')) or debug_flag:
+        soabi += 'd'
+
+    malloc_flag = sysconfig.get_config_var('WITH_PYMALLOC')
+    if malloc_flag is None or malloc_flag:
+        soabi += 'm'
+
+    if sys.version_info < (3, 3):
+        usize = sysconfig.get_config_var('Py_UNICODE_SIZE')
+        if (usize is None and sys.maxunicode == 0x10ffff) or usize == 4:
+            soabi += 'u'
+
+    return soabi
 
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):
@@ -3310,13 +3391,97 @@ def CalcLocation(fn, ipath):
     return fn
 
 
-def FindLocation(fn, ipath):
-    if (GetLinkAllStatic() and fn.endswith(".dll")):
-        fn = fn[:-4] + ".lib"
+def FindLocation(fn, ipath, pyabi=None):
+    if GetLinkAllStatic():
+        if fn.endswith(".dll"):
+            fn = fn[:-4] + ".lib"
+        elif fn.endswith(".pyd"):
+            fn = "libpy.panda3d." \
+               + os.path.splitext(fn[:-4] + GetExtensionSuffix())[0] + ".lib"
+
     loc = CalcLocation(fn, ipath)
     base, ext = os.path.splitext(fn)
+
+    # If this is a target created with PyTargetAdd, we need to make sure it
+    # it put in a Python-version-specific directory.
+    if loc in PYABI_SPECIFIC:
+        if loc.startswith(OUTPUTDIR + "/tmp"):
+            if pyabi is not None:
+                loc = OUTPUTDIR + "/tmp/" + pyabi + loc[len(OUTPUTDIR) + 4:]
+            else:
+                raise RuntimeError("%s is a Python-specific target, use PyTargetAdd instead of TargetAdd" % (fn))
+
+        elif ext != ".pyd" and loc not in WARNED_FILES:
+            WARNED_FILES.add(loc)
+            Warn("file depends on Python but is not in an ABI-specific directory:", loc)
+
     ORIG_EXT[loc] = ext
     return loc
+
+
+########################################################################
+##
+## These files maintain a python_versions.json file in the built/tmp
+## directory that can be used by the other scripts in this directory.
+##
+########################################################################
+
+
+def GetCurrentPythonVersionInfo():
+    if PkgSkip("PYTHON"):
+        return
+
+    from distutils.sysconfig import get_python_lib
+    return {
+        "version": SDK["PYTHONVERSION"][6:9],
+        "soabi": GetPythonABI(),
+        "ext_suffix": GetExtensionSuffix(),
+        "executable": sys.executable,
+        "purelib": get_python_lib(False),
+        "platlib": get_python_lib(True),
+    }
+
+
+def UpdatePythonVersionInfoFile(new_info):
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    json_data = []
+    if os.path.isfile(json_file) and not PkgSkip("PYTHON"):
+        try:
+            json_data = json.load(open(json_file, 'r'))
+        except:
+            json_data = []
+
+        # Prune the list by removing the entries that conflict with our build,
+        # plus the entries that no longer exist
+        for version_info in json_data[:]:
+            core_pyd = os.path.join(GetOutputDir(), "panda3d", "core" + version_info["ext_suffix"])
+            if version_info["ext_suffix"] == new_info["ext_suffix"] or \
+               version_info["soabi"] == new_info["soabi"] or \
+               not os.path.isfile(core_pyd):
+                json_data.remove(version_info)
+
+    if not PkgSkip("PYTHON"):
+        json_data.append(new_info)
+
+    if VERBOSE:
+        print("Writing %s" % (json_file))
+    json.dump(json_data, open(json_file, 'w'), indent=4)
+
+
+def ReadPythonVersionInfoFile():
+    import json
+
+    json_file = os.path.join(GetOutputDir(), "tmp", "python_versions.json")
+    if os.path.isfile(json_file):
+        try:
+            return json.load(open(json_file, 'r'))
+        except:
+            pass
+
+    return []
+
 
 ########################################################################
 ##
@@ -3360,6 +3525,11 @@ def FindLocation(fn, ipath):
 ## be inserted: bison generates an OBJ and a secondary header
 ## file, interrogate generates an IN and a secondary IGATE.OBJ.
 ##
+## PyTargetAdd is a special version for targets that depend on Python.
+## It will create a target for each Python version we are building with,
+## ensuring that builds with different Python versions won't conflict
+## when we build for multiple Python ABIs side-by-side.
+##
 ########################################################################
 
 class Target:
@@ -3368,7 +3538,7 @@ class Target:
 TARGET_LIST = []
 TARGET_TABLE = {}
 
-def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None):
+def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None, pyabi=None):
     if (dummy != 0):
         exit("Syntax error in TargetAdd "+target)
     if ipath is None: ipath = opts
@@ -3376,11 +3546,10 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
 
-    if os.path.splitext(target)[1] == '.pyd' and PkgSkip("PYTHON"):
-        # It makes no sense to build Python modules with python disabled.
-        return
+    if target.endswith(".pyd") and not pyabi:
+        raise RuntimeError("Use PyTargetAdd to build .pyd targets")
 
-    full = FindLocation(target, [OUTPUTDIR + "/include"])
+    full = FindLocation(target, [OUTPUTDIR + "/include"], pyabi=pyabi)
 
     if (full not in TARGET_TABLE):
         t = Target()
@@ -3399,7 +3568,7 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     ipath = [OUTPUTDIR + "/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
     for x in input:
-        fullinput = FindLocation(x, ipath)
+        fullinput = FindLocation(x, ipath, pyabi=pyabi)
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
@@ -3438,16 +3607,20 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
                 t.deps[fulln] = 1
 
     for x in dep:
-        fulldep = FindLocation(x, ipath)
+        fulldep = FindLocation(x, ipath, pyabi=pyabi)
         t.deps[fulldep] = 1
 
     if winrc and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 
-    if target.endswith(".in"):
+    ext = os.path.splitext(target)[1]
+    if ext == ".in":
         if not CrossCompiling():
             t.deps[FindLocation("interrogate.exe", [])] = 1
         t.deps[FindLocation("dtool_have_python.dat", [])] = 1
+
+    if ext in (".obj", ".tlb", ".res", ".plugin", ".app") or ext in SUFFIX_DLL or ext in SUFFIX_LIB:
+        t.deps[FindLocation("platform.dat", [])] = 1
 
     if target.endswith(".obj") and any(x.endswith(".in") for x in input):
         if not CrossCompiling():
@@ -3455,3 +3628,32 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
 
     if target.endswith(".pz") and not CrossCompiling():
         t.deps[FindLocation("pzip.exe", [])] = 1
+
+    if target.endswith(".in"):
+        # Also add a target to compile the _igate.cxx file into an _igate.obj.
+        outbase = os.path.basename(target)[:-3]
+        woutc = OUTPUTDIR + "/tmp/" + outbase + "_igate.cxx"
+        CxxDependencyCache[woutc] = []
+        PyTargetAdd(outbase + "_igate.obj", opts=opts+['PYTHON','BIGOBJ'], input=woutc, dep=target)
+
+
+def PyTargetAdd(target, opts=[], **kwargs):
+    if PkgSkip("PYTHON"):
+        return
+
+    if 'PYTHON' not in opts:
+        opts = opts + ['PYTHON']
+
+    abi = GetPythonABI()
+
+    MakeDirectory(OUTPUTDIR + "/tmp/" + abi)
+
+    # Mark this target as being a Python-specific target.
+    orig = CalcLocation(target, [OUTPUTDIR + "/include"])
+    PYABI_SPECIFIC.add(orig)
+
+    if orig.startswith(OUTPUTDIR + "/tmp/") and os.path.exists(orig):
+        print("Removing file %s" % (orig))
+        os.unlink(orig)
+
+    TargetAdd(target, opts=opts, pyabi=abi, **kwargs)

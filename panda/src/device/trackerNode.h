@@ -18,21 +18,22 @@
 
 #include "clientBase.h"
 #include "trackerData.h"
-#include "clientTrackerDevice.h"
+#include "inputDevice.h"
 #include "dataNode.h"
 #include "luse.h"
 #include "linmath_events.h"
 #include "pointerTo.h"
 
 /**
- * This is the primary interface to a Tracker object associated with a
- * ClientBase.  It reads the position and orientation information from the
- * tracker and makes it available as a transformation on the data graph.
+ * This class reads the position and orientation information from a tracker
+ * device and makes it available as a transformation on the data graph.
+ * It is also the primary interface to a Tracker object associated with a
+ * ClientBase.
  */
 class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
-  explicit TrackerNode(ClientBase *client, const string &device_name);
-  explicit TrackerNode(ClientTrackerDevice *device);
+  explicit TrackerNode(ClientBase *client, const std::string &device_name);
+  explicit TrackerNode(InputDevice *device);
   virtual ~TrackerNode();
 
   INLINE bool is_valid() const;
@@ -62,7 +63,7 @@ private:
   CPT(TransformState) _transform;
 
 private:
-  PT(ClientTrackerDevice) _tracker;
+  PT(InputDevice) _tracker;
   TrackerData _data;
   LMatrix4 _mat;
   CoordinateSystem _tracker_cs, _graph_cs;

@@ -46,7 +46,7 @@ class FrameBufferProperties;
  */
 class x11GraphicsPipe : public GraphicsPipe {
 public:
-  x11GraphicsPipe(const string &display = string());
+  x11GraphicsPipe(const std::string &display = std::string());
   virtual ~x11GraphicsPipe();
 
   INLINE X11_Display *get_display() const;
@@ -80,6 +80,7 @@ public:
   Atom _net_wm_state_below;
   Atom _net_wm_state_add;
   Atom _net_wm_state_remove;
+  Atom _net_wm_bypass_compositor;
 
   // Extension functions.
   typedef int (*pfn_XcursorGetDefaultSize)(X11_Display *);

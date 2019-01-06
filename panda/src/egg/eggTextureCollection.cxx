@@ -99,7 +99,7 @@ get_num_textures() const {
  */
 EggTexture *EggTextureCollection::
 get_texture(int index) const {
-  nassertr(index >= 0 && index < (int)_ordered_textures.size(), NULL);
+  nassertr(index >= 0 && index < (int)_ordered_textures.size(), nullptr);
 
   return _ordered_textures[index];
 }
@@ -271,7 +271,7 @@ collapse_equivalent_textures(int eq, EggTextureCollection::TextureReplacement &r
        ++oti) {
     EggTexture *tex = (*oti);
 
-    pair<Collapser::const_iterator, bool> result = collapser.insert(tex);
+    std::pair<Collapser::const_iterator, bool> result = collapser.insert(tex);
     if (!result.second) {
       // This texture is non-unique; another one was already there.
       EggTexture *first = *(result.first);
@@ -453,7 +453,7 @@ create_unique_texture(const EggTexture &copy, int eq) {
  * matches.
  */
 EggTexture *EggTextureCollection::
-find_tref(const string &tref_name) const {
+find_tref(const std::string &tref_name) const {
   // This requires a complete linear traversal, not terribly efficient.
   OrderedTextures::const_iterator oti;
   for (oti = _ordered_textures.begin();
@@ -465,7 +465,7 @@ find_tref(const string &tref_name) const {
     }
   }
 
-  return (EggTexture *)NULL;
+  return nullptr;
 }
 
 /**
@@ -485,5 +485,5 @@ find_filename(const Filename &filename) const {
     }
   }
 
-  return (EggTexture *)NULL;
+  return nullptr;
 }

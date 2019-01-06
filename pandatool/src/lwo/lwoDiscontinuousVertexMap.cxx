@@ -82,7 +82,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
     }
 
     VMap &vmap = _vmad[polygon_index];
-    pair<VMap::iterator, bool> ir =
+    std::pair<VMap::iterator, bool> ir =
       vmap.insert(VMap::value_type(vertex_index, value));
     if (!ir.second) {
       // This polygonvertex pair was repeated in the vmad.  Is it simply
@@ -115,7 +115,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
  *
  */
 void LwoDiscontinuousVertexMap::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << get_id() << " { map_type = " << _map_type
     << ", dimension = " << _dimension

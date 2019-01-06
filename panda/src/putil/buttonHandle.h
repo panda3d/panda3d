@@ -23,15 +23,15 @@
  * keyboard buttons and mouse buttons (but see KeyboardButton and
  * MouseButton).
  */
-class EXPCL_PANDA_PUTIL ButtonHandle FINAL {
+class EXPCL_PANDA_PUTIL ButtonHandle final {
 PUBLISHED:
   // The default constructor must do nothing, because we can't guarantee
   // ordering of static initializers.  If the constructor tried to initialize
   // its value, it  might happen after the value had already been set
   // previously by another static initializer!
-  INLINE ButtonHandle() DEFAULT_CTOR;
-  CONSTEXPR ButtonHandle(int index);
-  ButtonHandle(const string &name);
+  INLINE ButtonHandle() = default;
+  constexpr ButtonHandle(int index);
+  ButtonHandle(const std::string &name);
 
 PUBLISHED:
   INLINE bool operator == (const ButtonHandle &other) const;
@@ -43,7 +43,7 @@ PUBLISHED:
   INLINE int compare_to(const ButtonHandle &other) const;
   INLINE size_t get_hash() const;
 
-  string get_name() const;
+  std::string get_name() const;
   INLINE bool has_ascii_equivalent() const;
   INLINE char get_ascii_equivalent() const;
 
@@ -51,9 +51,9 @@ PUBLISHED:
 
   INLINE bool matches(const ButtonHandle &other) const;
 
-  CONSTEXPR int get_index() const;
-  INLINE void output(ostream &out) const;
-  INLINE static ButtonHandle none();
+  constexpr int get_index() const;
+  INLINE void output(std::ostream &out) const;
+  constexpr static ButtonHandle none() { return ButtonHandle(0); }
 
   INLINE operator bool () const;
 
@@ -65,7 +65,6 @@ PUBLISHED:
 
 private:
   int _index;
-  static ButtonHandle _none;
 
 public:
   static TypeHandle get_class_type() {
@@ -83,7 +82,7 @@ friend class ButtonRegistry;
 
 // It's handy to be able to output a ButtonHandle directly, and see the button
 // name.
-INLINE ostream &operator << (ostream &out, ButtonHandle button) {
+INLINE std::ostream &operator << (std::ostream &out, ButtonHandle button) {
   button.output(out);
   return out;
 }

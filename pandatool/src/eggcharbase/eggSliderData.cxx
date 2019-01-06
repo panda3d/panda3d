@@ -40,7 +40,7 @@ EggSliderData(EggCharacterCollection *collection,
 double EggSliderData::
 get_frame(int model_index, int n) const {
   EggBackPointer *back = get_model(model_index);
-  if (back == (EggBackPointer *)NULL) {
+  if (back == nullptr) {
     return 0.0;
   }
 
@@ -58,7 +58,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
   if (egg_object->is_of_type(EggPrimitive::get_class_type())) {
     // A primitive!
     EggBackPointer *back = get_model(model_index);
-    if (back == (EggBackPointer *)NULL) {
+    if (back == nullptr) {
       back = new EggVertexPointer(egg_object);
       set_model(model_index, back);
     }
@@ -66,7 +66,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
   } else if (egg_object->is_of_type(EggVertex::get_class_type())) {
     // A vertex!
     EggBackPointer *back = get_model(model_index);
-    if (back == (EggBackPointer *)NULL) {
+    if (back == nullptr) {
       back = new EggVertexPointer(egg_object);
       set_model(model_index, back);
     }
@@ -74,7 +74,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
   } else if (egg_object->is_of_type(EggSAnimData::get_class_type())) {
     // A slider animation table!  Woo hoo!
     EggBackPointer *back = get_model(model_index);
-    if (back == (EggBackPointer *)NULL) {
+    if (back == nullptr) {
       back = new EggScalarTablePointer(egg_object);
       set_model(model_index, back);
     }
@@ -88,7 +88,7 @@ add_back_pointer(int model_index, EggObject *egg_object) {
  *
  */
 void EggSliderData::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "Slider " << get_name()
     << " (models:";

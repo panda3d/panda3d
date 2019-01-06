@@ -30,7 +30,7 @@ TypeHandle TinySDLGraphicsWindow::_type_handle;
  */
 TinySDLGraphicsWindow::
 TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const string &name,
+                      const std::string &name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
@@ -38,14 +38,12 @@ TinySDLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                       GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
-  _screen = NULL;
-  _frame_buffer = NULL;
+  _screen = nullptr;
+  _frame_buffer = nullptr;
   _pitch = 0;
   update_pixel_factor();
 
-  GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
-  add_input_device(device);
+  add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse"));
 }
 
 /**
@@ -64,7 +62,7 @@ TinySDLGraphicsWindow::
 bool TinySDLGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -86,7 +84,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void TinySDLGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     // end_render_texture();
@@ -137,7 +135,7 @@ end_flip() {
       SDL_CreateRGBSurfaceFrom(_frame_buffer->pbuf, _frame_buffer->xsize, _frame_buffer->ysize,
                                32, _frame_buffer->linesize, 0xff0000, 0x00ff00, 0x0000ff, 0xff000000);
     SDL_SetAlpha(temp, SDL_RLEACCEL, 0);
-    SDL_BlitSurface(temp, NULL, _screen, NULL);
+    SDL_BlitSurface(temp, nullptr, _screen, nullptr);
     SDL_FreeSurface(temp);
   }
 
@@ -156,7 +154,7 @@ void TinySDLGraphicsWindow::
 process_events() {
   GraphicsWindow::process_events();
 
-  if (_screen == NULL) {
+  if (_screen == nullptr) {
     return;
   }
 
@@ -168,42 +166,42 @@ process_events() {
     switch(evt.type) {
     case SDL_KEYDOWN:
       if (evt.key.keysym.unicode) {
-        _input_devices[0].keystroke(evt.key.keysym.unicode);
+        _input_devices[0]->keystroke(evt.key.keysym.unicode);
       }
       button = get_keyboard_button(evt.key.keysym.sym);
       if (button != ButtonHandle::none()) {
-        _input_devices[0].button_down(button);
+        _input_devices[0]->button_down(button);
       }
       break;
 
     case SDL_KEYUP:
       button = get_keyboard_button(evt.key.keysym.sym);
       if (button != ButtonHandle::none()) {
-        _input_devices[0].button_up(button);
+        _input_devices[0]->button_up(button);
       }
       break;
 
     case SDL_MOUSEBUTTONDOWN:
       button = get_mouse_button(evt.button.button);
-      _input_devices[0].set_pointer_in_window(evt.button.x, evt.button.y);
-      _input_devices[0].button_down(button);
+      _input_devices[0]->set_pointer_in_window(evt.button.x, evt.button.y);
+      _input_devices[0]->button_down(button);
       break;
 
     case SDL_MOUSEBUTTONUP:
       button = get_mouse_button(evt.button.button);
-      _input_devices[0].set_pointer_in_window(evt.button.x, evt.button.y);
-      _input_devices[0].button_up(button);
+      _input_devices[0]->set_pointer_in_window(evt.button.x, evt.button.y);
+      _input_devices[0]->button_up(button);
       break;
 
     case SDL_MOUSEMOTION:
-      _input_devices[0].set_pointer_in_window(evt.motion.x, evt.motion.y);
+      _input_devices[0]->set_pointer_in_window(evt.motion.x, evt.motion.y);
       break;
 
     case SDL_VIDEORESIZE:
       properties.set_size(evt.resize.w, evt.resize.h);
       system_changed_properties(properties);
       _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, _flags);
-      ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+      ZB_resize(_frame_buffer, nullptr, _properties.get_x_size(), _properties.get_y_size());
       _pitch = _screen->pitch * 32 / _screen->format->BitsPerPixel;
       break;
 
@@ -272,7 +270,7 @@ open_window() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, nullptr);
     _gsg = tinygsg;
 
   } else {
@@ -291,14 +289,14 @@ open_window() {
   }
   _screen = SDL_SetVideoMode(_properties.get_x_size(), _properties.get_y_size(), 32, _flags);
 
-  if (_screen == NULL) {
+  if (_screen == nullptr) {
     tinydisplay_cat.error()
       << "Video mode set failed.\n";
     return false;
   }
 
   create_frame_buffer();
-  if (_frame_buffer == NULL) {
+  if (_frame_buffer == nullptr) {
     tinydisplay_cat.error()
       << "Could not create frame buffer.\n";
     return false;
@@ -320,9 +318,9 @@ open_window() {
  */
 void TinySDLGraphicsWindow::
 create_frame_buffer() {
-  if (_frame_buffer != NULL) {
+  if (_frame_buffer != nullptr) {
     ZB_close(_frame_buffer);
-    _frame_buffer = NULL;
+    _frame_buffer = nullptr;
   }
 
   int mode;

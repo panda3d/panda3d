@@ -38,7 +38,7 @@ class PandaNode;
  */
 class EXPCL_PANDA_PGRAPH SceneGraphReducer {
 PUBLISHED:
-  INLINE explicit SceneGraphReducer(GraphicsStateGuardianBase *gsg = NULL);
+  INLINE explicit SceneGraphReducer(GraphicsStateGuardianBase *gsg = nullptr);
   INLINE ~SceneGraphReducer();
 
   enum AttribTypes {

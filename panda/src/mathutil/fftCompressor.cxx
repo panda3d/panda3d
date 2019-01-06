@@ -29,7 +29,7 @@
 #undef howmany
 #endif
 
-#include "fftw3.h"
+#include <fftw3.h>
 
 // These FFTW support objects can only be defined if we actually have the FFTW
 // library available.
@@ -386,9 +386,9 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
     }
 
     if (length == 0) {
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
     } else {
       write_reals(datagram, &h[0], length);
       write_reals(datagram, &p[0], length);
@@ -419,15 +419,15 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
     }
 
     if (length == 0) {
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
-      write_reals(datagram, NULL, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
+      write_reals(datagram, nullptr, length);
     } else {
       write_reals(datagram, &m00[0], length);
       write_reals(datagram, &m01[0], length);
@@ -513,16 +513,16 @@ write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
 #ifndef NDEBUG
   if (_quality >= 102) {
     if (length == 0) {
-      write_reals(datagram, NULL, length);
+      write_reals(datagram, nullptr, length);
     } else {
       write_reals(datagram, &qr[0], length);
     }
   }
 #endif
   if (length == 0) {
-    write_reals(datagram, NULL, length);
-    write_reals(datagram, NULL, length);
-    write_reals(datagram, NULL, length);
+    write_reals(datagram, nullptr, length);
+    write_reals(datagram, nullptr, length);
+    write_reals(datagram, nullptr, length);
   } else {
     write_reals(datagram, &qi[0], length);
     write_reals(datagram, &qj[0], length);
@@ -1060,7 +1060,7 @@ get_real_compress_plan(int length) {
   }
 
   fftw_plan plan;
-  plan = fftw_plan_dft_r2c_1d(length, NULL, NULL, FFTW_ESTIMATE);
+  plan = fftw_plan_dft_r2c_1d(length, nullptr, nullptr, FFTW_ESTIMATE);
   _real_compress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;
@@ -1079,7 +1079,7 @@ get_real_decompress_plan(int length) {
   }
 
   fftw_plan plan;
-  plan = fftw_plan_dft_c2r_1d(length, NULL, NULL, FFTW_ESTIMATE);
+  plan = fftw_plan_dft_c2r_1d(length, nullptr, nullptr, FFTW_ESTIMATE);
   _real_decompress_plans.insert(RealPlans::value_type(length, plan));
 
   return plan;

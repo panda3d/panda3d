@@ -12,7 +12,9 @@
  */
 
 #include "bulletGhostNode.h"
+
 #include "bulletShape.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletGhostNode::_type_handle;
 
@@ -97,8 +99,7 @@ do_transform_changed() {
     if (ts->has_scale()) {
       LVecBase3 scale = ts->get_scale();
       if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-        for (int i=0; i < _shapes.size(); i++) {
-          PT(BulletShape) shape = _shapes[i];
+        for (BulletShape *shape : _shapes) {
           shape->do_set_local_scale(scale);
         }
       }
@@ -133,10 +134,10 @@ PandaNode *BulletGhostNode::
 get_overlapping_node(int idx) const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  nassertr(idx >=0 && idx < _ghost->getNumOverlappingObjects(), NULL);
+  nassertr(idx >=0 && idx < _ghost->getNumOverlappingObjects(), nullptr);
 
   btCollisionObject *object = _ghost->getOverlappingObject(idx);
-  return (object) ? (PandaNode *)object->getUserPointer() : NULL;
+  return (object) ? (PandaNode *)object->getUserPointer() : nullptr;
 }
 
 /**

@@ -72,7 +72,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  explicit GeomVertexData(const string &name,
+  explicit GeomVertexData(const std::string &name,
                           const GeomVertexFormat *format,
                           UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
@@ -84,8 +84,8 @@ PUBLISHED:
 
   int compare_to(const GeomVertexData &other) const;
 
-  INLINE const string &get_name() const;
-  void set_name(const string &name);
+  INLINE const std::string &get_name() const;
+  void set_name(const std::string &name);
   MAKE_PROPERTY(name, get_name, set_name);
 
   INLINE UsageHint get_usage_hint() const;
@@ -164,9 +164,9 @@ PUBLISHED:
     replace_column(InternalName *name, int num_components,
                    NumericType numeric_type, Contents contents) const;
 
-  void output(ostream &out) const;
-  void write(ostream &out, int indent_level = 0) const;
-  void describe_vertex(ostream &out, int row) const;
+  void output(std::ostream &out) const;
+  void write(std::ostream &out, int indent_level = 0) const;
+  void describe_vertex(std::ostream &out, int row) const;
 
   void clear_cache();
   void clear_cache_stage();
@@ -206,7 +206,7 @@ private:
                 TransformMap &already_added);
 
 private:
-  string _name;
+  std::string _name;
 
   typedef pvector< COWPT(GeomVertexArrayData) > Arrays;
 
@@ -246,9 +246,7 @@ public:
   public:
     INLINE CacheKey(const GeomVertexFormat *modifier);
     INLINE CacheKey(const CacheKey &copy);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheKey(CacheKey &&from) NOEXCEPT;
-#endif
+    INLINE CacheKey(CacheKey &&from) noexcept;
 
     INLINE bool operator < (const CacheKey &other) const;
 
@@ -260,13 +258,12 @@ public:
     INLINE CacheEntry(GeomVertexData *source,
                       const GeomVertexFormat *modifier);
     INLINE CacheEntry(GeomVertexData *source, const CacheKey &key);
-#ifdef USE_MOVE_SEMANTICS
-    INLINE CacheEntry(GeomVertexData *source, CacheKey &&key) NOEXCEPT;
-#endif
+    INLINE CacheEntry(GeomVertexData *source, CacheKey &&key) noexcept;
+
     ALLOC_DELETED_CHAIN(CacheEntry);
 
     virtual void evict_callback();
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
     GeomVertexData *_source;  // A back pointer to the containing data.
     CacheKey _key;
@@ -410,22 +407,20 @@ protected:
                                     Thread *current_thread,
                                     GeomVertexData::CData *cdata);
 
-private:
-  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) DELETED;
-  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) DELETED_ASSIGN;
-
 public:
+  GeomVertexDataPipelineBase(const GeomVertexDataPipelineBase &copy) = delete;
   INLINE ~GeomVertexDataPipelineBase();
 
-public:
+  GeomVertexDataPipelineBase &operator = (const GeomVertexDataPipelineBase &copy) = delete;
+
   INLINE Thread *get_current_thread() const;
 
   INLINE const GeomVertexFormat *get_format() const;
   INLINE bool has_column(const InternalName *name) const;
 
   INLINE UsageHint get_usage_hint() const;
-  INLINE int get_num_arrays() const;
-  INLINE CPT(GeomVertexArrayData) get_array(int i) const;
+  INLINE size_t get_num_arrays() const;
+  INLINE CPT(GeomVertexArrayData) get_array(size_t i) const;
   INLINE const TransformTable *get_transform_table() const;
   INLINE CPT(TransformBlendTable) get_transform_blend_table() const;
   INLINE const SliderTable *get_slider_table() const;
@@ -531,11 +526,13 @@ public:
   bool unclean_set_num_rows(int n);
   bool reserve_num_rows(int n);
 
+  void copy_row_from(int dest_row, const GeomVertexDataPipelineReader &source,
+                     int source_row);
+
 private:
   void make_array_writers();
   void delete_array_writers();
 
-  bool _force_to_0;
   bool _got_array_writers;
   typedef pvector<PT(GeomVertexArrayDataHandle) > ArrayWriters;
   ArrayWriters _array_writers;
@@ -552,7 +549,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const GeomVertexData &obj);
+INLINE std::ostream &operator << (std::ostream &out, const GeomVertexData &obj);
 
 #include "geomVertexData.I"
 

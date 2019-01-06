@@ -60,7 +60,7 @@ PUBLISHED:
   void remove_slider(size_t n);
   size_t add_slider(const VertexSlider *slider, const SparseArray &rows);
 
-  void write(ostream &out) const;
+  void write(std::ostream &out) const;
 
 private:
   void do_register();
@@ -132,7 +132,7 @@ private:
   friend class VertexSlider;
 };
 
-INLINE ostream &operator << (ostream &out, const SliderTable &obj);
+INLINE std::ostream &operator << (std::ostream &out, const SliderTable &obj);
 
 #include "sliderTable.I"
 

@@ -94,7 +94,7 @@ public:
   CPT(TextureAttrib) filter_to_max(int max_texture_stages) const;
 
   virtual bool lower_attrib_can_override() const;
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;

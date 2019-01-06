@@ -23,16 +23,16 @@ class DCParameter;
  * This represents a single typedef declaration in the dc file.  It assigns a
  * particular type to a new name, just like a C typedef.
  */
-class DCTypedef : public DCDeclaration {
+class EXPCL_DIRECT_DCPARSER DCTypedef : public DCDeclaration {
 public:
   DCTypedef(DCParameter *parameter, bool implicit = false);
-  DCTypedef(const string &name);
+  DCTypedef(const std::string &name);
   virtual ~DCTypedef();
 
 PUBLISHED:
   int get_number() const;
-  const string &get_name() const;
-  string get_description() const;
+  const std::string &get_name() const;
+  std::string get_description() const;
 
   bool is_bogus_typedef() const;
   bool is_implicit_typedef() const;
@@ -41,8 +41,8 @@ public:
   DCParameter *make_new_parameter() const;
 
   void set_number(int number);
-  virtual void output(ostream &out, bool brief) const;
-  virtual void write(ostream &out, bool brief, int indent_level) const;
+  virtual void output(std::ostream &out, bool brief) const;
+  virtual void write(std::ostream &out, bool brief, int indent_level) const;
 
 private:
   DCParameter *_parameter;

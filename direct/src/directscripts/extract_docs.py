@@ -9,15 +9,36 @@ from __future__ import print_function
 
 __all__ = []
 
-import os
+import os, sys
+from distutils import sysconfig
 import panda3d, pandac
-from panda3d.dtoolconfig import *
+from panda3d.interrogatedb import *
+
+
+if 'interrogate_element_is_sequence' not in globals():
+    def interrogate_element_is_sequence(element):
+        return False
+
+if 'interrogate_element_is_mapping' not in globals():
+    def interrogate_element_is_mapping(element):
+        return False
+
 
 LICENSE = """PANDA 3D SOFTWARE
 Copyright (c) Carnegie Mellon University.  All rights reserved.
 All use of this software is subject to the terms of the revised BSD
 license.  You should have received a copy of this license along
 with this source code in a file named \"LICENSE.\"""".split("\n")
+
+MAINPAGE = """@mainpage Panda3D Python API Reference
+Welcome to the Panda3D API reference.
+
+Use the links at the top of this page to browse through the list of modules or
+the list of classes.
+
+This reference is automatically generated from comments in the source code.
+"""
+
 
 def comment(code):
     if not code:
@@ -45,49 +66,16 @@ def comment(code):
         return ''
 
 def block_comment(code):
-    if not code:
+    code = code.strip()
+
+    if not code.startswith('///<') and '@verbatim' not in code:
+        code = code.replace('<', '\\<').replace('>', '\\>')
+
+    if not code or code[0] != '/':
+        # Not really a comment; get rid of it.
         return ""
 
-    lines = code.split("\n")
-    newlines = []
-    indent = 0
-    reading_desc = False
-
-    for line in lines:
-        if line.startswith("////"):
-            continue
-
-        line = line.rstrip()
-        strline = line.lstrip('/ \t')
-
-        if ':' in strline:
-            pre, post = strline.split(':', 1)
-            pre = pre.rstrip()
-            if pre == "Description":
-                strline = post.lstrip()
-            elif pre in ("Class", "Access", "Function", "Created by", "Enum"):
-                continue
-
-        if strline or len(newlines) > 0:
-            newlines.append('/// ' + strline)
-
-        #if reading_desc:
-        #    newlines.append('/// ' + line[min(indent, len(line) - len(strline)):])
-        #else:
-        #    # A "Description:" text starts the description.
-        #    if strline.startswith("Description"):
-        #        strline = strline[11:].lstrip(': \t')
-        #        indent = len(line) - len(strline)
-        #        reading_desc = True
-        #        newlines.append('/// ' + strline)
-        #    else:
-        #        print line
-
-    newcode = '\n'.join(newlines)
-    if len(newcode) > 0:
-        return newcode
-    else:
-        return ""
+    return code
 
 def translateFunctionName(name):
     if name.startswith("__"):
@@ -139,11 +127,17 @@ def translated_type_name(type, scoped=True):
         return "object"
     elif typename == "PN_stdfloat":
         return "float"
+    elif typename == "size_t":
+        return "int"
 
     if interrogate_type_is_atomic(type):
         token = interrogate_type_atomic_token(type)
         if token == 7:
             return 'str'
+        elif token == 8:
+            return 'long'
+        elif token == 9:
+            return 'NoneType'
         else:
             return typename
 
@@ -156,12 +150,25 @@ def translated_type_name(type, scoped=True):
     else:
         return typename
 
+
 def processElement(handle, element):
     if interrogate_element_has_comment(element):
         print(comment(interrogate_element_comment(element)), file=handle)
+    elif interrogate_element_has_getter(element):
+        # If the property has no comment, use the comment of the getter.
+        getter = interrogate_element_getter(element)
+        if interrogate_function_has_comment(getter):
+            print(block_comment(interrogate_function_comment(getter)), file=handle)
+
+    if interrogate_element_is_mapping(element) or \
+       interrogate_element_is_sequence(element):
+        suffix = "[]"
+    else:
+        suffix = ""
 
     print(translated_type_name(interrogate_element_type(element)), end=' ', file=handle)
-    print(interrogate_element_name(element) + ';', file=handle)
+    print(interrogate_element_name(element) + suffix + ';', file=handle)
+
 
 def processFunction(handle, function, isConstructor = False):
     for i_wrapper in range(interrogate_function_number_of_python_wrappers(function)):
@@ -195,6 +202,7 @@ def processFunction(handle, function, isConstructor = False):
 
         print(");", file=handle)
 
+
 def processType(handle, type):
     typename = translated_type_name(type, scoped=False)
     derivations = [ translated_type_name(interrogate_type_get_derivation(type, n)) for n in range(interrogate_type_number_of_derivations(type)) ]
@@ -211,8 +219,10 @@ def processType(handle, type):
             print(interrogate_type_enum_value_name(type, i_value), "=", interrogate_type_enum_value(type, i_value), ",", file=handle)
 
     elif interrogate_type_is_typedef(type):
-        wrapped_type = translated_type_name(interrogate_type_wrapped_type(type))
-        print("typedef %s %s;" % (wrapped_type, typename), file=handle)
+        wrapped_type = interrogate_type_wrapped_type(type)
+        if interrogate_type_is_global(wrapped_type):
+            wrapped_type_name = translated_type_name(wrapped_type)
+            print("typedef %s %s;" % (wrapped_type_name, typename), file=handle)
         return
     else:
         if interrogate_type_is_struct(type):
@@ -249,6 +259,7 @@ def processType(handle, type):
     print("};", file=handle)
 
 def processModule(handle, package):
+    print("Processing module %s" % (package))
     print("namespace %s {" % package, file=handle)
 
     if package != "core":
@@ -280,22 +291,39 @@ def processModule(handle, package):
 if __name__ == "__main__":
     handle = open("pandadoc.hpp", "w")
 
+    mainpage = MAINPAGE.strip()
+    if mainpage:
+        print("/**\n * " + mainpage.replace('\n', '\n * ') + '\n */', file=handle)
+
     print(comment("Panda3D modules that are implemented in C++."), file=handle)
     print("namespace panda3d {", file=handle)
 
     # Determine the path to the interrogatedb files
-    interrogate_add_search_directory(os.path.join(os.path.dirname(pandac.__file__), "..", "..", "etc"))
-    interrogate_add_search_directory(os.path.join(os.path.dirname(pandac.__file__), "input"))
+    pandac = os.path.dirname(pandac.__file__)
+    interrogate_add_search_directory(os.path.join(pandac, "..", "..", "etc"))
+    interrogate_add_search_directory(os.path.join(pandac, "input"))
 
     import panda3d.core
     processModule(handle, "core")
 
+    # Determine the suffix for the extension modules.
+    if sys.version_info >= (3, 0):
+        import _imp
+        ext_suffix = _imp.extension_suffixes()[0]
+    elif sys.platform == "win32":
+        ext_suffix = ".pyd"
+    else:
+        ext_suffix = ".so"
+
     for lib in os.listdir(os.path.dirname(panda3d.__file__)):
-        if lib.endswith(('.pyd', '.so')) and not lib.startswith('core.'):
-            module_name = os.path.splitext(lib)[0]
+        if lib.endswith(ext_suffix) and not lib.startswith('core.'):
+            module_name = lib[:-len(ext_suffix)]
             __import__("panda3d." + module_name)
             processModule(handle, module_name)
 
-
     print("}", file=handle)
     handle.close()
+
+    print("Wrote output to pandadoc.hpp.  You can now run:")
+    print()
+    print("  doxygen built/direct/directscripts/Doxyfile.python")

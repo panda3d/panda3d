@@ -74,7 +74,7 @@ xform(const LMatrix4 &mat) {
  *
  */
 void UnionBoundingVolume::
-output(ostream &out) const {
+output(std::ostream &out) const {
   if (is_empty()) {
     out << "union, empty";
   } else if (is_infinite()) {
@@ -94,7 +94,7 @@ output(ostream &out) const {
  *
  */
 void UnionBoundingVolume::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   if (is_empty()) {
     indent(out, indent_level) << "union, empty\n";
   } else if (is_infinite()) {
@@ -236,7 +236,7 @@ around_geometric(const BoundingVolume **first,
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
       const GeometricBoundingVolume *volume = (*p)->as_geometric_bounding_volume();
-      if (volume != (GeometricBoundingVolume *)NULL) {
+      if (volume != nullptr) {
         add_component(volume);
       } else {
         set_infinite();

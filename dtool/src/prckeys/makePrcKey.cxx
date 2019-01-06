@@ -24,11 +24,14 @@
 #include PRC_PUBLIC_KEYS_INCLUDE
 #endif
 
-#include "openssl/rsa.h"
-#include "openssl/err.h"
-#include "openssl/pem.h"
-#include "openssl/rand.h"
-#include "openssl/bio.h"
+#include <openssl/rsa.h>
+#include <openssl/err.h>
+#include <openssl/pem.h>
+#include <openssl/rand.h>
+#include <openssl/bio.h>
+
+using std::cerr;
+using std::string;
 
 class KeyNumber {
 public:
@@ -69,7 +72,7 @@ output_ssl_errors() {
  * string.
  */
 void
-output_c_string(ostream &out, const string &string_name,
+output_c_string(std::ostream &out, const string &string_name,
                 size_t index, BIO *mbio) {
   char *data_ptr;
   size_t data_size = BIO_get_mem_data(mbio, &data_ptr);
@@ -94,8 +97,8 @@ output_c_string(ostream &out, const string &string_name,
         out << data_ptr[i];
 
       } else {
-        out << "\\x" << hex << setw(2) << setfill('0')
-            << (unsigned int)(unsigned char)data_ptr[i] << dec;
+        out << "\\x" << std::hex << std::setw(2) << std::setfill('0')
+            << (unsigned int)(unsigned char)data_ptr[i] << std::dec;
       }
     }
   }
@@ -163,7 +166,7 @@ write_public_keys(Filename outfile) {
   for (i = 0; i < num_keys; i++) {
     EVP_PKEY *pkey = pkr->get_key(i);
 
-    if (pkey != (EVP_PKEY *)NULL) {
+    if (pkey != nullptr) {
       if (!PEM_write_bio_PUBKEY(mbio, pkey)) {
         output_ssl_errors();
         exit(1);
@@ -184,11 +187,11 @@ write_public_keys(Filename outfile) {
     EVP_PKEY *pkey = pkr->get_key(i);
     time_t generated_time = pkr->get_generated_time(i);
 
-    if (pkey != (EVP_PKEY *)NULL) {
+    if (pkey != nullptr) {
       out << "  { prc_pubkey" << i << "_data, prc_pubkey" << i
           << "_length, " << generated_time << " },\n";
     } else {
-      out << "  { NULL, 0, 0 },\n";
+      out << "  { nullptr, 0, 0 },\n";
     }
   };
 
@@ -220,17 +223,17 @@ write_private_key(EVP_PKEY *pkey, Filename outfile, int n, time_t now,
   BIO *mbio = BIO_new(BIO_s_mem());
 
   int write_result;
-  if (pp != NULL && *pp == '\0') {
+  if (pp != nullptr && *pp == '\0') {
     // The supplied password was the empty string.  This means not to encrypt
     // the private key.
     write_result =
-      PEM_write_bio_PKCS8PrivateKey(mbio, pkey, NULL, NULL, 0, NULL, NULL);
+      PEM_write_bio_PKCS8PrivateKey(mbio, pkey, nullptr, nullptr, 0, nullptr, nullptr);
 
   } else {
     // Otherwise, the default is to encrypt it.
     write_result =
       PEM_write_bio_PKCS8PrivateKey(mbio, pkey, EVP_des_ede3_cbc(),
-                                    NULL, 0, NULL, (void *)pp);
+                                    nullptr, 0, nullptr, (void *)pp);
   }
 
   if (!write_result) {
@@ -427,7 +430,7 @@ main(int argc, char **argv) {
   // Load the OpenSSL algorithms.
   OpenSSL_add_all_algorithms();
 
-  time_t now = time(NULL);
+  time_t now = time(nullptr);
 
   string name = priv_outfile.get_fullpath_wo_extension();
   string prefix, suffix;
@@ -448,7 +451,7 @@ main(int argc, char **argv) {
   KeyNumbers::iterator ki;
   for (ki = key_numbers.begin(); ki != key_numbers.end(); ++ki) {
     int n = (*ki)._number;
-    const char *pp = NULL;
+    const char *pp = nullptr;
     if ((*ki)._got_pass_phrase) {
       pp = (*ki)._pass_phrase.c_str();
     }
@@ -456,7 +459,7 @@ main(int argc, char **argv) {
     EVP_PKEY *pkey = generate_key();
     PrcKeyRegistry::get_global_ptr()->set_key(n, pkey, now);
 
-    ostringstream strm;
+    std::ostringstream strm;
     if (got_hash || n != 1) {
       // If we got an explicit hash mark, we always output the number.  If we
       // did not get an explicit hash mark, we output the number only if it is

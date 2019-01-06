@@ -19,7 +19,7 @@
  * true on success, false on failure.
  */
 bool
-copy_stream(istream &source, ostream &dest) {
+copy_stream(std::istream &source, std::ostream &dest) {
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 

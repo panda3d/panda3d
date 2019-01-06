@@ -32,14 +32,14 @@ class GraphicsStateGuardian;
  */
 class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public Camera {
 PUBLISHED:
-  explicit LightLensNode(const string &name, Lens *lens = new PerspectiveLens());
+  explicit LightLensNode(const std::string &name, Lens *lens = new PerspectiveLens());
   virtual ~LightLensNode();
 
   INLINE bool has_specular_color() const;
 
   INLINE bool is_shadow_caster() const;
-  INLINE void set_shadow_caster(bool caster);
-  INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
+  void set_shadow_caster(bool caster);
+  void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
 
   INLINE int get_shadow_buffer_sort() const;
 
@@ -52,6 +52,9 @@ PUBLISHED:
   MAKE_PROPERTY(shadow_caster, is_shadow_caster);
   MAKE_PROPERTY(shadow_buffer_size, get_shadow_buffer_size, set_shadow_buffer_size);
 
+public:
+  INLINE void mark_used_by_auto_shader() const;
+
 protected:
   LightLensNode(const LightLensNode &copy);
   void clear_shadow_buffers();
@@ -61,6 +64,7 @@ protected:
   bool _shadow_caster;
   bool _has_specular_color;
   int _sb_sort;
+  mutable bool _used_by_auto_shader = false;
 
   PT(Texture) _shadow_map;
 
@@ -82,8 +86,8 @@ public:
 PUBLISHED:
   // We have to explicitly publish these because they resolve the multiple
   // inheritance.
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -113,7 +117,7 @@ private:
   friend class GraphicsStateGuardian;
 };
 
-INLINE ostream &operator << (ostream &out, const LightLensNode &light) {
+INLINE std::ostream &operator << (std::ostream &out, const LightLensNode &light) {
   light.output(out);
   return out;
 }

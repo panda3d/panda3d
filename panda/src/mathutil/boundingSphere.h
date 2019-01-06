@@ -38,7 +38,7 @@ public:
   virtual LPoint3 get_approx_center() const;
   virtual void xform(const LMatrix4 &mat);
 
-  virtual void output(ostream &out) const;
+  virtual void output(std::ostream &out) const;
 
 PUBLISHED:
   INLINE_MATHUTIL LPoint3 get_center() const;
@@ -47,6 +47,8 @@ PUBLISHED:
   INLINE_MATHUTIL void set_center(const LPoint3 &center);
   INLINE_MATHUTIL void set_radius(PN_stdfloat radius);
 
+  MAKE_PROPERTY(center, get_center, set_center);
+  MAKE_PROPERTY(radius, get_radius, set_radius);
 
 public:
   virtual const BoundingSphere *as_bounding_sphere() const;

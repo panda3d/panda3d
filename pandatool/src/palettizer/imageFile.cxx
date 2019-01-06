@@ -24,6 +24,8 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+using std::string;
+
 TypeHandle ImageFile::_type_handle;
 
 /**
@@ -160,7 +162,7 @@ set_filename(PaletteGroup *group, const string &basename) {
         break;
 
       case 'g':
-        if (group != (PaletteGroup *)NULL) {
+        if (group != nullptr) {
           dirname += group->get_dirname();
         }
         break;
@@ -199,12 +201,12 @@ set_filename(const string &dirname, const string &basename) {
   // be truncated at that dot.  It is therefore important that the supplied
   // basename always contains either an extension or a terminating dot.
 
-  if (_properties._color_type != (PNMFileType *)NULL) {
+  if (_properties._color_type != nullptr) {
     _filename.set_extension
       (_properties._color_type->get_suggested_extension());
   }
 
-  if (_properties._alpha_type != (PNMFileType *)NULL) {
+  if (_properties._alpha_type != nullptr) {
     _alpha_filename = _filename.get_fullpath_wo_extension() + "_a.";
     _alpha_filename.set_extension
       (_properties._alpha_type->get_suggested_extension());
@@ -255,7 +257,7 @@ exists() const {
   if (!_filename.exists()) {
     return false;
   }
-  if (_properties._alpha_type != (PNMFileType *)NULL &&
+  if (_properties._alpha_type != nullptr &&
       _properties.uses_alpha() &&
       !_alpha_filename.empty()) {
     if (!_alpha_filename.exists()) {
@@ -338,7 +340,7 @@ write(const PNMImage &image) const {
   nassertr(!_filename.empty(), false);
 
   if (!image.has_alpha() ||
-      _properties._alpha_type == (PNMFileType *)NULL) {
+      _properties._alpha_type == nullptr) {
     if (!_alpha_filename.empty() && _alpha_filename.exists()) {
       nout << "Deleting " << FilenameUnifier::make_user_filename(_alpha_filename) << "\n";
       _alpha_filename.unlink();
@@ -399,7 +401,7 @@ unlink() {
  */
 void ImageFile::
 update_egg_tex(EggTexture *egg_tex) const {
-  nassertv(egg_tex != (EggTexture *)NULL);
+  nassertv(egg_tex != nullptr);
 
   egg_tex->set_filename(FilenameUnifier::make_egg_filename(_filename));
 
@@ -419,7 +421,7 @@ update_egg_tex(EggTexture *egg_tex) const {
  * Writes the filename (or pair of filenames) to the indicated output stream.
  */
 void ImageFile::
-output_filename(ostream &out) const {
+output_filename(std::ostream &out) const {
   out << FilenameUnifier::make_user_filename(_filename);
   if (_properties.uses_alpha() && !_alpha_filename.empty()) {
     out << " " << FilenameUnifier::make_user_filename(_alpha_filename);

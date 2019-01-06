@@ -26,12 +26,12 @@ set_host(const std::string &hostname, unsigned short port) {
     return set_broadcast(port);
   }
 
-  struct addrinfo hints, *res = NULL;
+  struct addrinfo hints, *res = nullptr;
   memset(&hints, 0, sizeof(hints));
   hints.ai_flags = AI_ADDRCONFIG;
   hints.ai_family = support_ipv6 ? AF_UNSPEC : AF_INET;
 
-  if (getaddrinfo(hostname.c_str(), NULL, &hints, &res)) {
+  if (getaddrinfo(hostname.c_str(), nullptr, &hints, &res)) {
     return false;
   }
 
@@ -92,13 +92,13 @@ get_ip() const {
   buf[0] = 0;
 
   if (_storage.ss_family == AF_INET) {
-    getnameinfo(&_addr, sizeof(sockaddr_in), buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+    getnameinfo(&_addr, sizeof(sockaddr_in), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST);
 
   } else if (_storage.ss_family == AF_INET6) {
-    getnameinfo(&_addr, sizeof(sockaddr_in6), buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+    getnameinfo(&_addr, sizeof(sockaddr_in6), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST);
 
   } else {
-    nassertr(false, std::string());
+    nassert_raise("unsupported address family");
   }
 
   return std::string(buf);
@@ -114,17 +114,17 @@ get_ip_port() const {
   buf[0] = 0;
 
   if (_storage.ss_family == AF_INET) {
-    getnameinfo(&_addr, sizeof(sockaddr_in), buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+    getnameinfo(&_addr, sizeof(sockaddr_in), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST);
     sprintf(buf + strlen(buf), ":%hu", get_port());
 
   } else if (_storage.ss_family == AF_INET6) {
     // Protect the IPv6 address within square brackets.
     buf[0] = '[';
-    getnameinfo(&_addr, sizeof(sockaddr_in6), buf + 1, sizeof(buf) - 1, NULL, 0, NI_NUMERICHOST);
+    getnameinfo(&_addr, sizeof(sockaddr_in6), buf + 1, sizeof(buf) - 1, nullptr, 0, NI_NUMERICHOST);
     sprintf(buf + strlen(buf), "]:%hu", get_port());
 
   } else {
-    nassertr(false, std::string());
+    nassert_raise("unsupported address family");
   }
 
   return std::string(buf);

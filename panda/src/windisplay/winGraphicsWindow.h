@@ -64,7 +64,7 @@ typedef struct tagTOUCHINPUT {
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
   WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const string &name,
+                    const std::string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
@@ -72,6 +72,7 @@ public:
                     GraphicsOutput *host);
   virtual ~WinGraphicsWindow();
 
+  virtual MouseData get_pointer(int device) const;
   virtual bool move_pointer(int device, int x, int y);
 
   virtual void close_ime();
@@ -118,7 +119,7 @@ protected:
   virtual bool calculate_metrics(bool fullscreen, DWORD style,
                                  WINDOW_METRICS &metrics, bool &has_origin);
 
-  virtual DWORD make_style(bool fullscreen);
+  DWORD make_style(const WindowProperties &properties);
 
   virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size,
                                           DWORD &bitdepth);
@@ -126,7 +127,7 @@ protected:
   virtual void support_overlay_window(bool flag);
 
 private:
-  bool open_graphic_window(bool fullscreen);
+  bool open_graphic_window();
   void adjust_z_order();
   void adjust_z_order(WindowProperties::ZOrder last_z_order,
                       WindowProperties::ZOrder this_z_order);
@@ -188,6 +189,8 @@ private:
   bool _lalt_down;
   bool _ralt_down;
 
+  GraphicsWindowInputDevice *_input;
+
   // following adds support platform specfic window processing functions.
   typedef pset<GraphicsWindowProc*> WinProcClasses;
   WinProcClasses _window_proc_classes;
@@ -197,7 +200,7 @@ private:
 
 private:
   // We need this map to support per-window calls to window_proc().
-  typedef map<HWND, WinGraphicsWindow *> WindowHandles;
+  typedef std::map<HWND, WinGraphicsWindow *> WindowHandles;
   static WindowHandles _window_handles;
 
   // And we need a static pointer to the current WinGraphicsWindow we are
@@ -242,7 +245,7 @@ private:
     INLINE WindowClass(const WindowProperties &props);
     INLINE bool operator < (const WindowClass &other) const;
 
-    wstring _name;
+    std::wstring _name;
     HICON _icon;
   };
 

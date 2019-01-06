@@ -34,7 +34,7 @@ set_tri_mesh_data(OdeTriMeshData &data) {
 
 INLINE PT(OdeTriMeshData) OdeTriMeshGeom::
 get_tri_mesh_data() const {
-  nassertr(_id != 0, NULL);
+  nassertr(_id != 0, nullptr);
   return OdeTriMeshData::get_data(_id);
 }
 

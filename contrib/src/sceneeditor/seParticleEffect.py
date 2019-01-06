@@ -1,4 +1,4 @@
-from pandac.PandaModules import *
+from panda3d.core import *
 import seParticles
 import seForceGroup
 from direct.directnotify import DirectNotifyGlobal
@@ -209,9 +209,9 @@ class ParticleEffect(NodePath):
         """loadConfig(filename)"""
         #try:
         #    if vfs:
-        print vfs.readFile(filename)
-        exec vfs.readFile(filename)
-        print "Particle Effect Reading using VFS"
+        print(vfs.readFile(filename))
+        exec(vfs.readFile(filename))
+        print("Particle Effect Reading using VFS")
         #    else:
         #       execfile(filename.toOsSpecific())
         #       print "Shouldnt be wrong"

@@ -19,9 +19,9 @@ PhysxConvexMeshDesc() {
 
   _desc.flags = NX_CF_COMPUTE_CONVEX;
   _desc.pointStrideBytes = sizeof(NxVec3);
-  _desc.points = NULL;
+  _desc.points = nullptr;
 
-  _vertices = NULL;
+  _vertices = nullptr;
 }
 
 /**

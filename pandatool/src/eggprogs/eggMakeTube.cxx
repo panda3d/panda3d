@@ -29,14 +29,14 @@ EggMakeTube() {
   set_program_description
     ("egg-make-tube generates an egg file representing a \"tube\" model, "
      "a cylinder capped on both ends by hemispheres.  This is similar "
-     "in shape to the CollisionTube object within Panda.\n\n"
+     "in shape to the CollisionCapsule object within Panda.\n\n"
      "This program can also generate spheres if you omit -b; in this "
      "case, you are generating a degenerate tube of length 0.");
 
   add_option
     ("a", "x,y,z", 0,
      "Specify the first endpoint of the tube.",
-     &EggWriter::dispatch_double_triple, NULL, _point_a);
+     &EggWriter::dispatch_double_triple, nullptr, _point_a);
 
   add_option
     ("b", "x,y,z", 0,
@@ -47,23 +47,23 @@ EggMakeTube() {
     ("r", "radius", 0,
      "Specify the radius of the tube.  The tube will extend beyond "
      "the endpoints in each direction by the amount of radius.",
-     &EggWriter::dispatch_double, NULL, &_radius);
+     &EggWriter::dispatch_double, nullptr, &_radius);
 
   add_option
     ("slices", "count", 0,
      "Specify the number of slices appearing radially around the tube.",
-     &EggWriter::dispatch_int, NULL, &_num_slices);
+     &EggWriter::dispatch_int, nullptr, &_num_slices);
 
   add_option
     ("crings", "count", 0,
      "Specify the number of rings appearing in each endcap of the tube.",
-     &EggWriter::dispatch_int, NULL, &_num_crings);
+     &EggWriter::dispatch_int, nullptr, &_num_crings);
 
   add_option
     ("trings", "count", 0,
      "Specify the number of rings appearing in the cylindrical body "
      "of the tube.",
-     &EggWriter::dispatch_int, NULL, &_num_trings);
+     &EggWriter::dispatch_int, nullptr, &_num_trings);
 
   _point_a[0] = 0.0;
   _point_a[1] = 0.0;
@@ -111,8 +111,8 @@ run() {
   EggVertex *vtx_2;
 
   for (ri = 0; ri < _num_crings; ri++) {
-    vtx_1 = NULL;
-    vtx_2 = NULL;
+    vtx_1 = nullptr;
+    vtx_2 = nullptr;
     for (si = 0; si <= _num_slices; si++) {
       EggVertex *vtx_3 = calc_sphere1_vertex(ri, si);
       EggVertex *vtx_4 = calc_sphere1_vertex(ri + 1, si);
@@ -125,8 +125,8 @@ run() {
   // Now the cylinder sides.
   if (_length != 0.0) {
     for (ri = 0; ri < _num_trings; ri++) {
-      vtx_1 = NULL;
-      vtx_2 = NULL;
+      vtx_1 = nullptr;
+      vtx_2 = nullptr;
       for (si = 0; si <= _num_slices; si++) {
         EggVertex *vtx_3 = calc_tube_vertex(ri, si);
         EggVertex *vtx_4 = calc_tube_vertex(ri + 1, si);
@@ -139,8 +139,8 @@ run() {
 
   // And the second endcap.
   for (ri = _num_crings - 1; ri >= 0; ri--) {
-    vtx_1 = NULL;
-    vtx_2 = NULL;
+    vtx_1 = nullptr;
+    vtx_2 = nullptr;
     for (si = 0; si <= _num_slices; si++) {
       EggVertex *vtx_3 = calc_sphere2_vertex(ri + 1, si);
       EggVertex *vtx_4 = calc_sphere2_vertex(ri, si);
@@ -244,7 +244,7 @@ calc_sphere2_vertex(int ri, int si) {
  */
 void EggMakeTube::
 add_polygon(EggVertex *a, EggVertex *b, EggVertex *c, EggVertex *d) {
-  if (a == (EggVertex *)NULL) {
+  if (a == nullptr) {
     return;
   }
 

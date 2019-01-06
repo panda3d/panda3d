@@ -18,9 +18,12 @@
 #include "pStatFrameData.h"
 #include "pStatCollectorDef.h"
 #include "string_utils.h"
-#include "config_pstats.h"
+#include "config_pstatclient.h"
 
 #include <algorithm>
+
+using std::max;
+using std::min;
 
 /**
  *
@@ -248,9 +251,9 @@ get_collector_under_pixel(int xpoint, int ypoint) {
 /**
  * Returns the text suitable for the title label on the top line.
  */
-string PStatStripChart::
+std::string PStatStripChart::
 get_title_text() {
-  string text;
+  std::string text;
 
   _title_unknown = false;
 

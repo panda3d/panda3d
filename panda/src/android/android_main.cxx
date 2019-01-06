@@ -12,19 +12,22 @@
  */
 
 #include "config_android.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "virtualFileMountAndroidAsset.h"
 #include "virtualFileSystem.h"
 #include "filename.h"
 #include "thread.h"
 #include "urlSpec.h"
 
+#include "android_native_app_glue.h"
+
 #include "config_display.h"
 // #define OPENGLES_1 #include "config_androiddisplay.h"
 
-#include <android_native_app_glue.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+
+using std::string;
 
 // struct android_app* panda_android_app = NULL;
 
@@ -197,7 +200,7 @@ void android_main(struct android_app* app) {
   get_model_path().append_directory(asset_dir);
 
   // Now load the configuration files.
-  vector<ConfigPage *> pages;
+  std::vector<ConfigPage *> pages;
   ConfigPageManager *cp_mgr;
   AAssetDir *etc = AAssetManager_openDir(app->activity->assetManager, "etc");
   if (etc != nullptr) {
@@ -209,7 +212,7 @@ void android_main(struct android_app* app) {
         GlobPattern pattern = cp_mgr->get_prc_pattern(i);
         if (pattern.matches(filename)) {
           Filename prc_fn("etc", filename);
-          istream *in = asset_mount->open_read_file(prc_fn);
+          std::istream *in = asset_mount->open_read_file(prc_fn);
           if (in != nullptr) {
             ConfigPage *page = cp_mgr->make_explicit_page(Filename("/android_asset", prc_fn));
             page->read_prc(*in);

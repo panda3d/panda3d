@@ -16,6 +16,8 @@
 #include "shaderInput_ext.h"
 #include "shaderAttrib.h"
 
+using std::move;
+
 #ifdef HAVE_PYTHON
 
 #ifndef CPPPARSER
@@ -57,7 +59,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
 
   // Borrowed reference.
   PyObject *dupe = PyDict_GetItem(memo, self);
-  if (dupe != NULL) {
+  if (dupe != nullptr) {
     // Already in the memo dictionary.
     Py_INCREF(dupe);
     return dupe;
@@ -74,7 +76,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
                                 true, false);
   if (PyDict_SetItem(memo, self, dupe) != 0) {
     Py_DECREF(dupe);
-    return NULL;
+    return nullptr;
   }
 
   return dupe;
@@ -89,7 +91,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
  */
 PyObject *Extension<NodePath>::
 __reduce__(PyObject *self) const {
-  return __reduce_persist__(self, NULL);
+  return __reduce_persist__(self, nullptr);
 }
 
 /**
@@ -107,10 +109,10 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
 
-  BamWriter *writer = NULL;
-  if (pickler != NULL) {
+  BamWriter *writer = nullptr;
+  if (pickler != nullptr) {
     PyObject *py_writer = PyObject_GetAttrString(pickler, "bamWriter");
-    if (py_writer == NULL) {
+    if (py_writer == nullptr) {
       // It's OK if there's no bamWriter.
       PyErr_Clear();
     } else {
@@ -123,37 +125,37 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
 
   vector_uchar bam_stream;
   if (!_this->encode_to_bam_stream(bam_stream, writer)) {
-    ostringstream stream;
+    std::ostringstream stream;
     stream << "Could not bamify " << _this;
-    string message = stream.str();
+    std::string message = stream.str();
     PyErr_SetString(PyExc_TypeError, message.c_str());
-    return NULL;
+    return nullptr;
   }
 
   // Start by getting this class object.
   PyObject *this_class = (PyObject *)Py_TYPE(self);
-  if (this_class == NULL) {
-    return NULL;
+  if (this_class == nullptr) {
+    return nullptr;
   }
 
   PyObject *func;
-  if (writer != NULL) {
+  if (writer != nullptr) {
     // The modified pickle support: call the "persistent" version of this
     // function, which receives the unpickler itself as an additional
     // parameter.
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
-    if (func == NULL) {
+    if (func == nullptr) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
-      return NULL;
+      return nullptr;
     }
 
   } else {
     // The traditional pickle support: call the non-persistent version of this
     // function.
     func = Extension<TypedWritable>::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
-    if (func == NULL) {
+    if (func == nullptr) {
       PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -221,10 +223,10 @@ py_decode_NodePath_from_bam_stream(vector_uchar data) {
  */
 NodePath
 py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, vector_uchar data) {
-  BamReader *reader = NULL;
-  if (unpickler != NULL) {
+  BamReader *reader = nullptr;
+  if (unpickler != nullptr) {
     PyObject *py_reader = PyObject_GetAttrString(unpickler, "bamReader");
-    if (py_reader == NULL) {
+    if (py_reader == nullptr) {
       // It's OK if there's no bamReader.
       PyErr_Clear();
     } else {
@@ -294,7 +296,7 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
       return;
     }
 
-    CPT_InternalName name(string(buffer, length));
+    CPT_InternalName name(std::string(buffer, length));
     ShaderInput &input = attrib->_inputs[name];
     invoke_extension(&input).__init__(move(name), value);
   }

@@ -28,7 +28,7 @@
  *
  * See also TypedObject for detailed instructions.
  */
-class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
+class EXPCL_PANDA_EXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
 public:
   INLINE TypedReferenceCount();
   INLINE TypedReferenceCount(const TypedReferenceCount &copy);

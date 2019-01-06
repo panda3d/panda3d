@@ -28,6 +28,9 @@
 #include "configVariableList.h"
 #endif
 
+using std::cerr;
+using std::string;
+
 
 /**
  *
@@ -122,8 +125,8 @@ read(Filename filename) {
 #ifdef WITHIN_PANDA
   filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *in = vfs->open_read_file(filename, true);
-  if (in == (istream *)NULL) {
+  std::istream *in = vfs->open_read_file(filename, true);
+  if (in == nullptr) {
     cerr << "Cannot open " << filename << " for reading.\n";
     return false;
   }
@@ -163,7 +166,7 @@ read(Filename filename) {
  * (in which case the file might have been partially read).
  */
 bool DCFile::
-read(istream &in, const string &filename) {
+read(std::istream &in, const string &filename) {
   cerr << "DCFile::read of " << filename << "\n";
   dc_init_parser(in, filename, *this);
   dcyyparse();
@@ -203,7 +206,7 @@ write(Filename filename, bool brief) const {
  * Returns true if the description is successfully written, false otherwise.
  */
 bool DCFile::
-write(ostream &out, bool brief) const {
+write(std::ostream &out, bool brief) const {
   if (!_imports.empty()) {
     Imports::const_iterator ii;
     for (ii = _imports.begin(); ii != _imports.end(); ++ii) {
@@ -247,7 +250,7 @@ get_num_classes() const {
  */
 DCClass *DCFile::
 get_class(int n) const {
-  nassertr(n >= 0 && n < (int)_classes.size(), NULL);
+  nassertr(n >= 0 && n < (int)_classes.size(), nullptr);
   return _classes[n];
 }
 
@@ -263,7 +266,7 @@ get_class_by_name(const string &name) const {
     return (*ni).second->as_class();
   }
 
-  return (DCClass *)NULL;
+  return nullptr;
 }
 
 /**
@@ -278,7 +281,7 @@ get_switch_by_name(const string &name) const {
     return (*ni).second->as_switch();
   }
 
-  return (DCSwitch *)NULL;
+  return nullptr;
 }
 
 /**
@@ -291,13 +294,13 @@ get_switch_by_name(const string &name) const {
  */
 DCField *DCFile::
 get_field_by_index(int index_number) const {
-  nassertr(dc_multiple_inheritance, NULL);
+  nassertr(dc_multiple_inheritance, nullptr);
 
   if (index_number >= 0 && index_number < (int)_fields_by_index.size()) {
     return _fields_by_index[index_number];
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -352,7 +355,7 @@ get_num_typedefs() const {
  */
 DCTypedef *DCFile::
 get_typedef(int n) const {
-  nassertr(n >= 0 && n < (int)_typedefs.size(), NULL);
+  nassertr(n >= 0 && n < (int)_typedefs.size(), nullptr);
   return _typedefs[n];
 }
 
@@ -368,7 +371,7 @@ get_typedef_by_name(const string &name) const {
     return (*ni).second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -394,9 +397,9 @@ get_keyword(int n) const {
 const DCKeyword *DCFile::
 get_keyword_by_name(const string &name) const {
   const DCKeyword *keyword = _keywords.get_keyword_by_name(name);
-  if (keyword == (const DCKeyword *)NULL) {
+  if (keyword == nullptr) {
     keyword = _default_keywords.get_keyword_by_name(name);
-    if (keyword != (const DCKeyword *)NULL) {
+    if (keyword != nullptr) {
       // One of the historical default keywords was used, but wasn't defined.
       // Define it implicitly right now.
       ((DCFile *)this)->_keywords.add_keyword(keyword);
@@ -612,11 +615,11 @@ setup_default_keywords() {
     { "clrecv", 0x0040 },
     { "ownsend", 0x0080 },
     { "airecv", 0x0100 },
-    { NULL, 0 }
+    { nullptr, 0 }
   };
 
   _default_keywords.clear_keywords();
-  for (int i = 0; default_keywords[i].name != NULL; ++i) {
+  for (int i = 0; default_keywords[i].name != nullptr; ++i) {
     DCKeyword *keyword =
       new DCKeyword(default_keywords[i].name,
                     default_keywords[i].flag);

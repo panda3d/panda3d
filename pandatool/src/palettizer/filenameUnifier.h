@@ -44,7 +44,7 @@ private:
   static Filename _txa_dir;
   static Filename _rel_dirname;
 
-  typedef pmap<string, string> CanonicalFilenames;
+  typedef pmap<std::string, std::string> CanonicalFilenames;
   static CanonicalFilenames _canonical_filenames;
 };
 

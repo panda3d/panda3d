@@ -35,14 +35,12 @@
  */
 class EXPCL_PANDA_PUTIL FactoryParams {
 public:
-  INLINE FactoryParams();
-  INLINE FactoryParams(const FactoryParams &copy);
-  INLINE ~FactoryParams();
+  FactoryParams() = default;
+  FactoryParams(const FactoryParams &copy) = default;
+  FactoryParams(FactoryParams &&from) noexcept = default;
+  ~FactoryParams() = default;
 
-#ifdef USE_MOVE_SEMANTICS
-  INLINE FactoryParams(FactoryParams &&from) NOEXCEPT;
-  INLINE void operator = (FactoryParams &&from) NOEXCEPT;
-#endif
+  FactoryParams &operator = (FactoryParams &&from) noexcept = default;
 
   void add_param(FactoryParam *param);
   void clear();
@@ -58,7 +56,7 @@ private:
   typedef pvector< PT(TypedReferenceCount) > Params;
 
   Params _params;
-  void *_user_data;
+  void *_user_data = nullptr;
 
   friend class FactoryBase;
 };

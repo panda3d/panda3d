@@ -19,9 +19,9 @@
  */
 template<class InputIterator>
 void
-write_long_list(ostream &out, int indent_level,
+write_long_list(std::ostream &out, int indent_level,
                 InputIterator first, InputIterator last,
-                string first_prefix, string later_prefix,
+                std::string first_prefix, std::string later_prefix,
                 int max_col) {
   if (later_prefix.empty()) {
     later_prefix = first_prefix;
@@ -30,9 +30,9 @@ write_long_list(ostream &out, int indent_level,
   if (first != last) {
     // We have to use an intermediate strstream object so we can count the
     // number of characters the item will have when it is output.
-    ostringstream item;
+    std::ostringstream item;
     item << *first;
-    string str = item.str();
+    std::string str = item.str();
 
     indent(out, indent_level) << first_prefix << str;
     int col = indent_level + (int)(first_prefix.length() + str.length());
@@ -40,9 +40,9 @@ write_long_list(ostream &out, int indent_level,
     ++first;
 
     while (first != last) {
-      ostringstream item;
+      std::ostringstream item;
       item << *first;
-      string str = item.str();
+      std::string str = item.str();
 
       col += 1 + str.length();
       if (col > max_col) {

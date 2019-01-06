@@ -24,7 +24,7 @@ get_datagram_checksum() const {
  * Returns a pointer to a block of data of length datagram_udp_header_size,
  * which can be written to the network as the header information.
  */
-INLINE string DatagramUDPHeader::
+INLINE std::string DatagramUDPHeader::
 get_header() const {
   return _header.get_message();
 }

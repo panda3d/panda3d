@@ -72,7 +72,7 @@ PUBLISHED:
   PhysxRaycastHit raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const;
 
   INLINE void ls() const;
-  INLINE void ls(ostream &out, int indent_level=0) const;
+  INLINE void ls(std::ostream &out, int indent_level=0) const;
 
 public:
   static PhysxShape *factory(NxShapeType shapeType);
@@ -86,7 +86,7 @@ protected:
   INLINE PhysxShape();
 
 private:
-  string _name;
+  std::string _name;
   PT(PhysxCcdSkeleton) _skel;
 
 public:

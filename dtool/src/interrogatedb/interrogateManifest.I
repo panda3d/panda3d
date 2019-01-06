@@ -49,7 +49,7 @@ operator = (const InterrogateManifest &copy) {
 /**
  *
  */
-INLINE const string &InterrogateManifest::
+INLINE const std::string &InterrogateManifest::
 get_definition() const {
   return _definition;
 }
@@ -103,14 +103,14 @@ get_int_value() const {
 }
 
 
-INLINE ostream &
-operator << (ostream &out, const InterrogateManifest &manifest) {
+INLINE std::ostream &
+operator << (std::ostream &out, const InterrogateManifest &manifest) {
   manifest.output(out);
   return out;
 }
 
-INLINE istream &
-operator >> (istream &in, InterrogateManifest &manifest) {
+INLINE std::istream &
+operator >> (std::istream &in, InterrogateManifest &manifest) {
   manifest.input(in);
   return in;
 }

@@ -30,7 +30,7 @@ has_texture(const Filename &filename) {
  */
 INLINE bool TexturePool::
 verify_texture(const Filename &filename) {
-  return load_texture(filename) != (Texture *)NULL;
+  return load_texture(filename) != nullptr;
 }
 
 /**
@@ -200,7 +200,7 @@ garbage_collect() {
  * Lists the contents of the texture pool to the indicated output stream.
  */
 INLINE void TexturePool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
 
@@ -209,7 +209,7 @@ list_contents(ostream &out) {
  */
 INLINE void TexturePool::
 list_contents() {
-  get_global_ptr()->ns_list_contents(cout);
+  get_global_ptr()->ns_list_contents(std::cout);
 }
 
 /**
@@ -218,7 +218,7 @@ list_contents() {
  * if it is not.
  */
 INLINE Texture *TexturePool::
-find_texture(const string &name) {
+find_texture(const std::string &name) {
   return get_global_ptr()->ns_find_texture(name);
 }
 
@@ -227,7 +227,7 @@ find_texture(const string &name) {
  * name (which may contain wildcards).
  */
 INLINE TextureCollection TexturePool::
-find_all_textures(const string &name) {
+find_all_textures(const std::string &name) {
   return get_global_ptr()->ns_find_all_textures(name);
 }
 
@@ -245,7 +245,7 @@ set_fake_texture_image(const Filename &filename) {
  */
 INLINE void TexturePool::
 clear_fake_texture_image() {
-  set_fake_texture_image(string());
+  set_fake_texture_image(std::string());
 }
 
 /**
@@ -272,6 +272,26 @@ get_fake_texture_image() {
  * register_texture_type().
  */
 PT(Texture) TexturePool::
-make_texture(const string &extension) {
+make_texture(const std::string &extension) {
   return get_global_ptr()->ns_make_texture(extension);
+}
+
+/**
+ * Defines relative ordering between LookupKey instances.
+ */
+INLINE bool TexturePool::LookupKey::
+operator < (const LookupKey &other) const {
+  if (_fullpath != other._fullpath) {
+    return _fullpath < other._fullpath;
+  }
+  if (_alpha_fullpath != other._alpha_fullpath) {
+    return _alpha_fullpath < other._alpha_fullpath;
+  }
+  if (_primary_file_num_channels != other._primary_file_num_channels) {
+    return _primary_file_num_channels < other._primary_file_num_channels;
+  }
+  if (_alpha_file_channel != other._alpha_file_channel) {
+    return _alpha_file_channel < other._alpha_file_channel;
+  }
+  return _texture_type < other._texture_type;
 }

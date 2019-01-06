@@ -50,7 +50,7 @@ safe_to_transform() const {
  *
  */
 void CompassEffect::
-output(ostream &out) const {
+output(std::ostream &out) const {
   out << get_type() << ":";
   if (_properties == 0) {
     out << " none";
@@ -284,8 +284,25 @@ void CompassEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
   dg.add_uint16(_properties);
-  // *** We don't write out the _reference NodePath right now.  Maybe we
-  // should.
+
+  if (manager->get_file_minor_ver() >= 43) {
+    _reference.write_datagram(manager, dg);
+  }
+}
+
+/**
+ * Receives an array of pointers, one for each time manager->read_pointer()
+ * was called in fillin(). Returns the number of pointers processed.
+ */
+int CompassEffect::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = RenderEffect::complete_pointers(p_list, manager);
+
+  if (manager->get_file_minor_ver() >= 43) {
+    pi += _reference.complete_pointers(p_list + pi, manager);
+  }
+
+  return pi;
 }
 
 /**
@@ -313,4 +330,8 @@ void CompassEffect::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderEffect::fillin(scan, manager);
   _properties = scan.get_uint16();
+
+  if (manager->get_file_minor_ver() >= 43) {
+    _reference.fillin(scan, manager);
+  }
 }

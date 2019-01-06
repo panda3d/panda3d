@@ -25,6 +25,8 @@
 #include "configVariableInt.h"
 #include "pStatCollector.h"
 #include "filename.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 #include <stdint.h>
 
 extern ConfigVariableBool stm_use_hexagonal_layout;
@@ -160,6 +162,7 @@ private:
   void do_emit_chunk(Chunk* chunk, TraversalData* data);
   bool do_check_lod_matches(Chunk* chunk, TraversalData* data);
 
+  Mutex _lock;
   Chunk _base_chunk;
   size_t _size;
   size_t _chunk_size;

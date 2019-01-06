@@ -37,7 +37,7 @@ public:
   virtual ~PGMouseWatcherParameter();
 
 PUBLISHED:
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   static TypeHandle get_class_type() {

@@ -38,7 +38,7 @@ link(NxForceFieldShape *shapePtr) {
 void PhysxCapsuleForceFieldShape::
 unlink() {
 
-  _ptr->userData = NULL;
+  _ptr->userData = nullptr;
   _error_type = ET_released;
 
   PhysxForceFieldShapeGroup *group = (PhysxForceFieldShapeGroup *)_ptr->getShapeGroup().userData;

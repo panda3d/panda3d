@@ -21,9 +21,9 @@
 /**
  * A parametric curve of some kind.  See EggNurbsCurve.
  */
-class EXPCL_PANDAEGG EggCurve : public EggPrimitive {
+class EXPCL_PANDA_EGG EggCurve : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggCurve(const string &name = "");
+  INLINE explicit EggCurve(const std::string &name = "");
   INLINE EggCurve(const EggCurve &copy);
   INLINE EggCurve &operator = (const EggCurve &copy);
 
@@ -40,7 +40,7 @@ PUBLISHED:
   INLINE void set_curve_type(CurveType type);
   INLINE CurveType get_curve_type() const;
 
-  static CurveType string_curve_type(const string &string);
+  static CurveType string_curve_type(const std::string &string);
 
 private:
   int _subdiv;
@@ -65,7 +65,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-ostream &operator << (ostream &out, EggCurve::CurveType t);
+std::ostream &operator << (std::ostream &out, EggCurve::CurveType t);
 
 #include "eggCurve.I"
 

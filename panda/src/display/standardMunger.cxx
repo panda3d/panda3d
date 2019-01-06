@@ -12,10 +12,14 @@
  */
 
 #include "standardMunger.h"
-#include "renderState.h"
-#include "graphicsStateGuardian.h"
+
 #include "config_gobj.h"
+
 #include "displayRegion.h"
+#include "graphicsStateGuardian.h"
+#include "lightAttrib.h"
+#include "materialAttrib.h"
+#include "renderState.h"
 
 TypeHandle StandardMunger::_type_handle;
 
@@ -36,7 +40,8 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _munge_color(false),
   _munge_color_scale(false),
   _auto_shader(false),
-  _shader_skinning(false)
+  _shader_skinning(false),
+  _remove_material(false)
 {
   const ShaderAttrib *shader_attrib;
   state->get_attrib_def(shader_attrib);
@@ -54,24 +59,10 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
     const ColorScaleAttrib *color_scale_attrib;
 
     if (state->get_attrib(color_attrib) &&
-        color_attrib->get_color_type() == ColorAttrib::T_flat) {
+        color_attrib->get_color_type() != ColorAttrib::T_vertex) {
 
-      if (!get_gsg()->get_color_scale_via_lighting()) {
-        // We only need to munge the color directly if the GSG says it can't
-        // cheat the color via lighting (presumably, in this case, by applying
-        // a material).
-        _color = color_attrib->get_color();
-        if (state->get_attrib(color_scale_attrib) &&
-            color_scale_attrib->has_scale()) {
-          const LVecBase4 &cs = color_scale_attrib->get_scale();
-          _color.set(_color[0] * cs[0],
-                     _color[1] * cs[1],
-                     _color[2] * cs[2],
-                     _color[3] * cs[3]);
-        }
-        _munge_color = true;
-        _should_munge_state = true;
-      }
+      // In this case, we don't need to munge anything as we can apply the
+      // color and color scale via glColor4f.
 
     } else if (state->get_attrib(color_scale_attrib) &&
                color_scale_attrib->has_scale()) {
@@ -93,6 +84,19 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
       // the effect even if it should be obscured.  It doesn't seem worth the
       // effort to detect this contrived situation and handle it correctly.
     }
+  }
+
+  // If we have no lights but do have a material, we will need to remove it so
+  // that it won't appear when we enable color scale via lighting.
+  const LightAttrib *light_attrib;
+  const MaterialAttrib *material_attrib;
+  if (get_gsg()->get_color_scale_via_lighting() &&
+      (!state->get_attrib(light_attrib) || !light_attrib->has_any_on_light()) &&
+      state->get_attrib(material_attrib) &&
+      material_attrib->get_material() != nullptr &&
+      shader_attrib->get_shader() == nullptr) {
+    _remove_material = true;
+    _should_munge_state = true;
   }
 }
 
@@ -125,10 +129,10 @@ munge_data_impl(const GeomVertexData *data) {
 
   } else if (hardware_animated_vertices &&
              animation.get_animation_type() == AT_panda &&
-             new_data->get_slider_table() == (SliderTable *)NULL) {
+             new_data->get_slider_table() == nullptr) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
-    if (table != (TransformBlendTable *)NULL &&
+    if (table != nullptr &&
         table->get_num_transforms() != 0 &&
         table->get_max_simultaneous_transforms() <=
         get_gsg()->get_max_vertex_transforms()) {
@@ -291,6 +295,9 @@ compare_to_impl(const GeomMunger *other) const {
   if (_auto_shader != om->_auto_shader) {
     return (int)_auto_shader - (int)om->_auto_shader;
   }
+  if (_remove_material != om->_remove_material) {
+    return (int)_remove_material - (int)om->_remove_material;
+  }
 
   return StateMunger::compare_to_impl(other);
 }
@@ -342,6 +349,10 @@ munge_state_impl(const RenderState *state) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   } else if (_munge_color_scale) {
     munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
+  }
+
+  if (_remove_material) {
+    munged_state = munged_state->remove_attrib(MaterialAttrib::get_class_slot());
   }
 
   return munged_state;

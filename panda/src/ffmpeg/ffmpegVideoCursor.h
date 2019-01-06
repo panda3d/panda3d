@@ -100,7 +100,7 @@ private:
   void cleanup();
 
   Filename _filename;
-  string _sync_name;
+  std::string _sync_name;
   int _max_readahead_frames;
   ThreadPriority _thread_priority;
   PT(GenericThread) _thread;

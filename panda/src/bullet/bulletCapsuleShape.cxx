@@ -13,6 +13,8 @@
 
 #include "bulletCapsuleShape.h"
 
+#include "config_bullet.h"
+
 TypeHandle BulletCapsuleShape::_type_handle;
 
 /**
@@ -35,7 +37,7 @@ BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) :
     _shape = new btCapsuleShapeZ(radius, height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << up << endl;
+    bullet_cat.error() << "invalid up-axis:" << up << std::endl;
     break;
   }
 
@@ -65,7 +67,7 @@ BulletCapsuleShape(const BulletCapsuleShape &copy) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 
@@ -80,6 +82,22 @@ btCollisionShape *BulletCapsuleShape::
 ptr() const {
 
   return _shape;
+}
+
+
+/**
+ * Constructs a new BulletCapsuleShape using the information from a
+ * CollisionCapsule from the builtin collision system.
+ */
+BulletCapsuleShape *BulletCapsuleShape::
+make_from_solid(const CollisionCapsule *solid) {
+
+  PN_stdfloat radius = solid->get_radius();
+  // Get capsule's cylinder height: length from point A to point B
+  PN_stdfloat height = (solid->get_point_b() - solid->get_point_a()).length();
+
+  // CollisionCapsules are always Z-Up.
+  return new BulletCapsuleShape(radius, height, Z_up);
 }
 
 /**
@@ -150,7 +168,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shape = new btCapsuleShapeZ(_radius, _height);
     break;
   default:
-    bullet_cat.error() << "invalid up-axis:" << _up << endl;
+    bullet_cat.error() << "invalid up-axis:" << _up << std::endl;
     break;
   }
 

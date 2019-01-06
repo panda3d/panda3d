@@ -142,7 +142,7 @@ get_extra_extensions() {
  * otherwise.  The extension name is case-sensitive.
  */
 bool WebGLGraphicsStateGuardian::
-has_extension(const string &extension) const {
+has_extension(const std::string &extension) const {
   nassertr(_context != 0, false);
 
   // If the GSG asks for it, that is probably a good reason to activate the

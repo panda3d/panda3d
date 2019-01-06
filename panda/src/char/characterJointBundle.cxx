@@ -24,7 +24,7 @@ TypeHandle CharacterJointBundle::_type_handle;
  * Character node will automatically create one for itself.
  */
 CharacterJointBundle::
-CharacterJointBundle(const string &name) : PartBundle(name) {
+CharacterJointBundle(const std::string &name) : PartBundle(name) {
 }
 
 /**
@@ -78,7 +78,7 @@ remove_node(PartBundleNode *node) {
  */
 void CharacterJointBundle::
 r_set_character(PartGroup *group, Character *character) {
-  if (group == (PartGroup *)NULL) {
+  if (group == nullptr) {
     // This might happen if we are in the middle of reading the Character's
     // hierarchy from the bam file.
     return;

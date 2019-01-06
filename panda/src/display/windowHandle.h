@@ -47,7 +47,7 @@ PUBLISHED:
 
   size_t get_int_handle() const;
 
-  void output(ostream &out) const;
+  void output(std::ostream &out) const;
 
 public:
   // Callbacks for communication with the parent window.
@@ -67,7 +67,7 @@ PUBLISHED:
   PUBLISHED:
     virtual ~OSHandle();
     virtual size_t get_int_handle() const;
-    virtual void output(ostream &out) const;
+    virtual void output(std::ostream &out) const;
 
   public:
     static TypeHandle get_class_type() {
@@ -112,12 +112,12 @@ private:
 
 #include "windowHandle.I"
 
-INLINE ostream &operator << (ostream &out, const WindowHandle &handle) {
+INLINE std::ostream &operator << (std::ostream &out, const WindowHandle &handle) {
   handle.output(out);
   return out;
 }
 
-INLINE ostream &operator << (ostream &out, const WindowHandle::OSHandle &handle) {
+INLINE std::ostream &operator << (std::ostream &out, const WindowHandle::OSHandle &handle) {
   handle.output(out);
   return out;
 }

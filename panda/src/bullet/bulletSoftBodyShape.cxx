@@ -12,7 +12,9 @@
  */
 
 #include "bulletSoftBodyShape.h"
+
 #include "bulletSoftBodyNode.h"
+#include "bulletWorld.h"
 
 TypeHandle BulletSoftBodyShape::_type_handle;
 
@@ -47,6 +49,6 @@ get_body() const {
   }
   else
   {
-    return NULL;
+    return nullptr;
   }
 }

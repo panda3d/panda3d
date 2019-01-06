@@ -29,9 +29,9 @@ operator < (const AnimRecord &other) const {
 /**
  * Returns the basename stored for the nth animation record.  See find_anim().
  */
-INLINE string AnimPreloadTable::
+INLINE std::string AnimPreloadTable::
 get_basename(int n) const {
-  nassertr(n >= 0 && n < (int)_anims.size(), string());
+  nassertr(n >= 0 && n < (int)_anims.size(), std::string());
   consider_sort();
   return _anims[n]._basename;
 }

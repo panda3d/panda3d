@@ -23,7 +23,7 @@ void PathFollow::add_to_path(LVecBase3 pos) {
 /**
  * This function initiates the path follow behavior.
  */
-void PathFollow::start(string type) {
+void PathFollow::start(std::string type) {
     _type = type;
   _start = true;
   if(_path.size() > 0) {

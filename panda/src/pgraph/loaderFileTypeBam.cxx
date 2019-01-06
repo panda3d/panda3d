@@ -32,7 +32,7 @@ LoaderFileTypeBam() {
 /**
  *
  */
-string LoaderFileTypeBam::
+std::string LoaderFileTypeBam::
 get_name() const {
   return "Bam";
 }
@@ -40,7 +40,7 @@ get_name() const {
 /**
  *
  */
-string LoaderFileTypeBam::
+std::string LoaderFileTypeBam::
 get_extension() const {
   return "bam";
 }
@@ -80,7 +80,7 @@ supports_save() const {
 PT(PandaNode) LoaderFileTypeBam::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
-  if (record != (BamCacheRecord *)NULL) {
+  if (record != nullptr) {
     record->add_dependent_file(path);
   }
 
@@ -88,13 +88,13 @@ load_file(const Filename &path, const LoaderOptions &options,
 
   BamFile bam_file;
   if (!bam_file.open_read(path, report_errors)) {
-    return NULL;
+    return nullptr;
   }
   bam_file.get_reader()->set_loader_options(options);
   time_t timestamp = bam_file.get_reader()->get_source()->get_timestamp();
 
   PT(PandaNode) node = bam_file.read_node(report_errors);
-  if (node != (PandaNode *)NULL && node->is_of_type(ModelRoot::get_class_type())) {
+  if (node != nullptr && node->is_of_type(ModelRoot::get_class_type())) {
     ModelRoot *model_root = DCAST(ModelRoot, node.p());
     model_root->set_fullpath(path);
     model_root->set_timestamp(timestamp);

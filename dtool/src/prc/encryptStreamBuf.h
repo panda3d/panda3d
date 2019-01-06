@@ -24,19 +24,19 @@ typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
 /**
  * The streambuf object that implements IDecompressStream and OCompressStream.
  */
-class EXPCL_DTOOL_PRC EncryptStreamBuf : public streambuf {
+class EXPCL_DTOOL_PRC EncryptStreamBuf : public std::streambuf {
 public:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();
 
-  void open_read(istream *source, bool owns_source, const string &password);
+  void open_read(std::istream *source, bool owns_source, const std::string &password);
   void close_read();
 
-  void open_write(ostream *dest, bool owns_dest, const string &password);
+  void open_write(std::ostream *dest, bool owns_dest, const std::string &password);
   void close_write();
 
-  INLINE void set_algorithm(const string &algorithm);
-  INLINE const string &get_algorithm() const;
+  INLINE void set_algorithm(const std::string &algorithm);
+  INLINE const std::string &get_algorithm() const;
 
   INLINE void set_key_length(int key_length);
   INLINE int get_key_length() const;
@@ -54,13 +54,13 @@ private:
   void write_chars(const char *start, size_t length);
 
 private:
-  istream *_source;
+  std::istream *_source;
   bool _owns_source;
 
-  ostream *_dest;
+  std::ostream *_dest;
   bool _owns_dest;
 
-  string _algorithm;
+  std::string _algorithm;
   int _key_length;
   int _iteration_count;
 

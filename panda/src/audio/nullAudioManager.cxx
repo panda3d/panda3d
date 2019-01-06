@@ -49,7 +49,7 @@ is_valid() {
  *
  */
 PT(AudioSound) NullAudioManager::
-get_sound(const string&, bool positional, int mode) {
+get_sound(const Filename &, bool positional, int mode) {
   return get_null_sound();
 }
 
@@ -65,7 +65,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
  *
  */
 void NullAudioManager::
-uncache_sound(const string&) {
+uncache_sound(const Filename &) {
   // intentionally blank.
 }
 

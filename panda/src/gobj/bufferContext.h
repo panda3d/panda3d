@@ -23,6 +23,7 @@
 #include "bufferResidencyTracker.h"
 
 class PreparedGraphicsObjects;
+class TypedWritableReferenceCount;
 
 /**
  * This is a base class for those kinds of SavedContexts that occupy an
@@ -36,14 +37,18 @@ class PreparedGraphicsObjects;
  */
 class EXPCL_PANDA_GOBJ BufferContext : public SavedContext, private LinkedListNode {
 public:
-  BufferContext(BufferResidencyTracker *residency);
+  BufferContext(BufferResidencyTracker *residency, TypedWritableReferenceCount *object);
   virtual ~BufferContext();
+
+  INLINE TypedWritableReferenceCount *get_object() const;
 
 PUBLISHED:
   INLINE size_t get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
   INLINE bool get_active() const;
   INLINE bool get_resident() const;
+
+  MAKE_PROPERTY(object, get_object);
 
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(modified, get_modified);
@@ -61,6 +66,11 @@ public:
 
 private:
   void set_owning_chain(BufferContextChain *chain);
+
+protected:
+  // This cannot be a PT(), because the object and the GSG both own their
+  // BufferContexts!  That would create a circular reference count.
+  TypedWritableReferenceCount *_object;
 
 private:
   BufferResidencyTracker *_residency;

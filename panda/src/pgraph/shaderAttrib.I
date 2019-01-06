@@ -18,7 +18,7 @@
  */
 INLINE ShaderAttrib::
 ShaderAttrib() :
-  _shader(NULL),
+  _shader(nullptr),
   _shader_priority(0),
   _auto_shader(false),
   _has_shader(false),
@@ -110,7 +110,7 @@ has_shader_input(CPT_InternalName id) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -118,7 +118,7 @@ set_shader_input(CPT_InternalName id, const PTA_float &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -126,7 +126,7 @@ set_shader_input(CPT_InternalName id, const PTA_double &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -134,7 +134,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase4 &v, int priority) cons
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 
@@ -143,7 +143,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase3 &v, int priority) cons
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -151,7 +151,7 @@ set_shader_input(CPT_InternalName id, const PTA_LVecBase2 &v, int priority) cons
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -159,7 +159,7 @@ set_shader_input(CPT_InternalName id, const LVecBase4 &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -167,7 +167,7 @@ set_shader_input(CPT_InternalName id, const LVecBase3 &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -175,7 +175,7 @@ set_shader_input(CPT_InternalName id, const LVecBase2 &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -183,7 +183,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix4 &v, int priority) const
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -191,7 +191,7 @@ set_shader_input(CPT_InternalName id, const PTA_LMatrix3 &v, int priority) const
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -199,7 +199,7 @@ set_shader_input(CPT_InternalName id, const LMatrix4 &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) const {
-  return set_shader_input(ShaderInput(move(id), v, priority));
+  return set_shader_input(ShaderInput(std::move(id), v, priority));
 }
 
 /**
@@ -207,7 +207,7 @@ set_shader_input(CPT_InternalName id, const LMatrix3 &v, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, Texture *tex, int priority) const {
-  return set_shader_input(ShaderInput(move(id), tex, priority));
+  return set_shader_input(ShaderInput(std::move(id), tex, priority));
 }
 
 /**
@@ -215,7 +215,7 @@ set_shader_input(CPT_InternalName id, Texture *tex, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, const NodePath &np, int priority) const {
-  return set_shader_input(ShaderInput(move(id), np, priority));
+  return set_shader_input(ShaderInput(std::move(id), np, priority));
 }
 
 /**
@@ -223,7 +223,7 @@ set_shader_input(CPT_InternalName id, const NodePath &np, int priority) const {
  */
 INLINE CPT(RenderAttrib) ShaderAttrib::
 set_shader_input(CPT_InternalName id, double n1, double n2, double n3, double n4, int priority) const {
-  return set_shader_input(ShaderInput(move(id), LVecBase4((PN_stdfloat)n1, (PN_stdfloat)n2, (PN_stdfloat)n3, (PN_stdfloat)n4), priority));
+  return set_shader_input(ShaderInput(std::move(id), LVecBase4((PN_stdfloat)n1, (PN_stdfloat)n2, (PN_stdfloat)n3, (PN_stdfloat)n4), priority));
 }
 
 INLINE bool ShaderAttrib::

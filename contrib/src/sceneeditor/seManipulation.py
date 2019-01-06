@@ -520,7 +520,7 @@ class ObjectHandles(NodePath,DirectObject):
         # To avoid recreating a vec every frame
         self.hitPt = Vec3(0)
         # Get a handle on the components
-        self.xHandles = self.find('**/X')
+        self.xHandles = self.find('**/ohScalingNode')
         self.xPostGroup = self.xHandles.find('**/x-post-group')
         self.xPostCollision = self.xHandles.find('**/x-post')
         self.xRingGroup = self.xHandles.find('**/x-ring-group')

@@ -28,7 +28,7 @@ TypeHandle wglGraphicsBuffer::_type_handle;
  */
 wglGraphicsBuffer::
 wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  const std::string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
@@ -62,7 +62,7 @@ bool wglGraphicsBuffer::
 begin_frame(FrameMode mode, Thread *current_thread) {
 
   begin_frame_spam(mode);
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -117,7 +117,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void wglGraphicsBuffer::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
+  nassertv(_gsg != nullptr);
 
   if (mode == FM_render) {
     copy_to_textures();
@@ -171,7 +171,7 @@ bind_texture_to_pbuffer() {
       }
     }
     TextureContext *tc = tex->prepare_now(0, _gsg->get_prepared_objects(), _gsg);
-    nassertv(tc != (TextureContext *)NULL);
+    nassertv(tc != nullptr);
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
     GLenum target = wglgsg->get_texture_target(tex->get_texture_type());
     if (target == GL_NONE) {
@@ -205,7 +205,7 @@ select_target_tex_page(int page) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
-  nassertv(wglgsg->_wglSetPbufferAttribARB != NULL);
+  nassertv(wglgsg->_wglSetPbufferAttribARB != nullptr);
 
   static const int max_attrib_list = 64;
   int iattrib_list[max_attrib_list];
@@ -236,7 +236,7 @@ process_events() {
 
   // Handle all the messages on the queue in a row.  Some of these might be
   // for another window, but they will get dispatched appropriately.
-  while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+  while (PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE)) {
     process_1_event();
   }
 }
@@ -248,7 +248,7 @@ process_events() {
  */
 bool wglGraphicsBuffer::
 get_supports_render_texture() const {
-  if (_gsg == (GraphicsStateGuardian *)NULL) {
+  if (_gsg == nullptr) {
     return false;
   }
 
@@ -262,7 +262,7 @@ get_supports_render_texture() const {
  */
 void wglGraphicsBuffer::
 close_buffer() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+  if (_gsg != nullptr) {
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
 
@@ -294,7 +294,7 @@ open_buffer() {
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, NULL);
+    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, nullptr);
     wglgsg->choose_pixel_format(_fb_properties, true);
     _gsg = wglgsg;
   } else {
@@ -315,12 +315,12 @@ open_buffer() {
   HDC twindow_dc = wglgsg->get_twindow_dc();
   if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.
-    _gsg = NULL;
+    _gsg = nullptr;
     return false;
   }
   HGLRC context = wglgsg->get_context(twindow_dc);
   if (context == 0) {
-    _gsg = NULL;
+    _gsg = nullptr;
     return false;
   }
   wglGraphicsPipe::wgl_make_current(twindow_dc, context,
@@ -329,7 +329,7 @@ open_buffer() {
   wglgsg->report_my_gl_errors();
   if (!wglgsg->get_fb_properties().verify_hardware_software
       (_fb_properties,wglgsg->get_gl_renderer())) {
-    _gsg = NULL;
+    _gsg = nullptr;
     return false;
   }
   _fb_properties = wglgsg->get_fb_properties();
@@ -340,7 +340,7 @@ open_buffer() {
 
   if (!rebuild_bitplanes()) {
     wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
-    _gsg = NULL;
+    _gsg = nullptr;
     return false;
   }
 
@@ -366,7 +366,7 @@ release_pbuffer() {
     _pbuffer_bound->release(wglgsg->get_prepared_objects());
     _pbuffer_bound = 0;
   }
-  wglGraphicsPipe::wgl_make_current(0, 0, NULL);
+  wglGraphicsPipe::wgl_make_current(0, 0, nullptr);
   if (_pbuffer_dc) {
     wglgsg->_wglReleasePbufferDCARB(_pbuffer, _pbuffer_dc);
   }
@@ -398,7 +398,7 @@ rebuild_bitplanes() {
   }
 
   // Find the texture to bind to the color buffer.
-  Texture *bindtexture = NULL;
+  Texture *bindtexture = nullptr;
   for (int i=0; i<count_textures(); i++) {
     if ((get_rtm_mode(i) == RTM_bind_or_copy)&&
         (get_texture(i)->get_format() != Texture::F_depth_stencil)) {
@@ -530,7 +530,7 @@ void wglGraphicsBuffer::
 process_1_event() {
   MSG msg;
 
-  if (!GetMessage(&msg, NULL, 0, 0)) {
+  if (!GetMessage(&msg, nullptr, 0, 0)) {
     // WM_QUIT received.  We need a cleaner way to deal with this.
     // DestroyAllWindows(false);
     exit(msg.wParam);  // this will invoke AtExitFn

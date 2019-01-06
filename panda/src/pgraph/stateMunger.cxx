@@ -32,15 +32,15 @@ munge_state(const RenderState *state) {
   int id = get_gsg()->_id;
   int mi = munged_states.find(id);
   if (mi != -1) {
-    if (!munged_states.get_data(mi).was_deleted()) {
-      return munged_states.get_data(mi).p();
+    if (auto munged_state = munged_states.get_data(mi).lock()) {
+      return munged_state;
     } else {
       munged_states.remove_element(mi);
     }
   }
 
   CPT(RenderState) result = munge_state_impl(state);
-  munged_states.store(id, result.p());
+  munged_states.store(id, result);
 
   return result;
 }

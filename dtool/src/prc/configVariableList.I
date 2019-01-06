@@ -22,18 +22,18 @@ INLINE ConfigVariableList::
  *
  */
 INLINE ConfigVariableList::
-ConfigVariableList(const string &name,
-                   const string &description, int flags) :
+ConfigVariableList(const std::string &name,
+                   const std::string &description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_list, description, flags)
 #else
-  ConfigVariableBase(name, VT_list, string(), flags)
+  ConfigVariableBase(name, VT_list, std::string(), flags)
 #endif
 {
   // A list variable implicitly defines a default value of the empty string.
   // This is just to prevent the core variable from complaining should anyone
   // ask for its solitary value.
-  if (_core->get_default_value() == (ConfigDeclaration *)NULL) {
+  if (_core->get_default_value() == nullptr) {
     _core->set_default_value("");
   }
   _core->set_used();
@@ -44,21 +44,21 @@ ConfigVariableList(const string &name,
  */
 INLINE size_t ConfigVariableList::
 get_num_values() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, 0);
+  nassertr(_core != nullptr, 0);
   return _core->get_num_trusted_references();
 }
 
 /**
  * Returns the nth value of the variable.
  */
-INLINE string ConfigVariableList::
+INLINE std::string ConfigVariableList::
 get_string_value(size_t n) const {
-  nassertr(_core != (ConfigVariableCore *)NULL, string());
+  nassertr(_core != nullptr, std::string());
   const ConfigDeclaration *decl = _core->get_trusted_reference(n);
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_string_value();
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -66,21 +66,21 @@ get_string_value(size_t n) const {
  */
 INLINE size_t ConfigVariableList::
 get_num_unique_values() const {
-  nassertr(_core != (ConfigVariableCore *)NULL, 0);
+  nassertr(_core != nullptr, 0);
   return _core->get_num_unique_references();
 }
 
 /**
  * Returns the nth unique value of the variable.
  */
-INLINE string ConfigVariableList::
+INLINE std::string ConfigVariableList::
 get_unique_value(size_t n) const {
-  nassertr(_core != (ConfigVariableCore *)NULL, string());
+  nassertr(_core != nullptr, std::string());
   const ConfigDeclaration *decl = _core->get_unique_reference(n);
-  if (decl != (ConfigDeclaration *)NULL) {
+  if (decl != nullptr) {
     return decl->get_string_value();
   }
-  return string();
+  return std::string();
 }
 
 /**
@@ -96,13 +96,13 @@ size() const {
  * operator returns the list of unique values, and so the maximum range is
  * get_num_unique_values().
  */
-INLINE string ConfigVariableList::
+INLINE std::string ConfigVariableList::
 operator [] (size_t n) const {
   return get_unique_value(n);
 }
 
-INLINE ostream &
-operator << (ostream &out, const ConfigVariableList &variable) {
+INLINE std::ostream &
+operator << (std::ostream &out, const ConfigVariableList &variable) {
   variable.output(out);
   return out;
 }

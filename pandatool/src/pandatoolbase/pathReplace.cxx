@@ -12,7 +12,7 @@
  */
 
 #include "pathReplace.h"
-#include "config_util.h"
+#include "config_putil.h"
 #include "config_pandatoolbase.h"
 #include "indent.h"
 #include "virtualFileSystem.h"
@@ -354,7 +354,7 @@ full_convert_path(const Filename &orig_filename,
  *
  */
 void PathReplace::
-write(ostream &out, int indent_level) const {
+write(std::ostream &out, int indent_level) const {
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     indent(out, indent_level)
@@ -451,7 +451,7 @@ copy_this_file(Filename &filename) {
  *
  */
 PathReplace::Entry::
-Entry(const string &orig_prefix, const string &replacement_prefix) :
+Entry(const std::string &orig_prefix, const std::string &replacement_prefix) :
   _orig_prefix(orig_prefix),
   _replacement_prefix(replacement_prefix)
 {
@@ -495,7 +495,7 @@ try_match(const Filename &filename, Filename &new_filename) const {
   }
 
   // We found a match.  Construct the replacement string.
-  string result = _replacement_prefix;
+  std::string result = _replacement_prefix;
   while (mi < components.size()) {
     if (!result.empty()) {
       result += '/';

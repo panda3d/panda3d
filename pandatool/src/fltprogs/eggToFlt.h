@@ -42,7 +42,7 @@ public:
   void run();
 
 private:
-  static bool dispatch_attr(const string &opt, const string &arg, void *var);
+  static bool dispatch_attr(const std::string &opt, const std::string &arg, void *var);
 
   void traverse(EggNode *egg_node, FltBead *flt_node,
                 FltGeometry::BillboardType billboard);
@@ -51,7 +51,7 @@ private:
   void convert_group(EggGroup *egg_group, FltBead *flt_node,
                      FltGeometry::BillboardType billboard);
   void apply_transform(EggTransform *egg_transform, FltBead *flt_node);
-  void apply_egg_syntax(const string &egg_syntax, FltRecord *flt_record);
+  void apply_egg_syntax(const std::string &egg_syntax, FltRecord *flt_record);
   FltVertex *get_flt_vertex(EggVertex *egg_vertex, EggNode *context);
   FltTexture *get_flt_texture(EggTexture *egg_texture);
 

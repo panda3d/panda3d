@@ -17,6 +17,8 @@
 #include "interrogateFunction.h"
 #include "config_interrogatedb.h"
 
+using std::string;
+
 // This function adds one more directory to the list of directories search for
 // interrogate (*.in) files.  In the past, this list has been defined the
 // environment variable ETC_PATH, but now it is passed in by the code
@@ -172,6 +174,18 @@ FunctionIndex
 interrogate_element_setter(ElementIndex element) {
   // cerr << "interrogate_element_setter(" << element << ")\n";
   return InterrogateDatabase::get_ptr()->get_element(element).get_setter();
+}
+
+bool
+interrogate_element_is_sequence(ElementIndex element) {
+  // cerr << "interrogate_element_is_sequence(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).is_sequence();
+}
+
+bool
+interrogate_element_is_mapping(ElementIndex element) {
+  // cerr << "interrogate_element_is_mapping(" << element << ")\n";
+  return InterrogateDatabase::get_ptr()->get_element(element).is_mapping();
 }
 
 int
@@ -400,7 +414,7 @@ interrogate_wrapper_parameter_is_this(FunctionWrapperIndex wrapper, int n) {
 bool
 interrogate_wrapper_has_pointer(FunctionWrapperIndex wrapper) {
   // cerr << "interrogate_wrapper_has_pointer(" << wrapper << ")\n";
-  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != (void *)NULL);
+  return (InterrogateDatabase::get_ptr()->get_fptr(wrapper) != nullptr);
 }
 
 void *

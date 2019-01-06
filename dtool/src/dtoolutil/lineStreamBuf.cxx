@@ -13,10 +13,7 @@
 
 #include "lineStreamBuf.h"
 
-#ifndef HAVE_STREAMSIZE
-// Some compilers--notably SGI--don't define this for us.
-typedef int streamsize;
-#endif
+using std::string;
 
 /**
  *
@@ -29,8 +26,8 @@ LineStreamBuf() {
   // characters one at a time, since they're just getting stuffed into a
   // string.  (Although the code is written portably enough to use a buffer
   // correctly, if we had one.)
-  setg(0, 0, 0);
-  setp(0, 0);
+  setg(nullptr, nullptr, nullptr);
+  setp(nullptr, nullptr);
 }
 
 /**
@@ -70,7 +67,7 @@ get_line() {
  */
 int LineStreamBuf::
 sync() {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
   pbump(-(int)n);  // Reset pptr().
   return 0;  // EOF to indicate write full.
@@ -82,7 +79,7 @@ sync() {
  */
 int LineStreamBuf::
 overflow(int ch) {
-  streamsize n = pptr() - pbase();
+  std::streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {
     return EOF;

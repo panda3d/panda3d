@@ -131,13 +131,13 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
 
   // Check for empty region
   if (tile_width < 1 || tile_height < 1) {
-    shadowatlas_cat.error() << "Called find_and_reserve_region with null-region!" << endl;
+    shadowatlas_cat.error() << "Called find_and_reserve_region with null-region!" << std::endl;
     return LVecBase4i(-1);
   }
 
   // Check for region bigger than the shadow atlas
   if (tile_width > _num_tiles || tile_height > _num_tiles) {
-    shadowatlas_cat.error() << "Requested region exceeds shadow atlas size!" << endl;
+    shadowatlas_cat.error() << "Requested region exceeds shadow atlas size!" << std::endl;
     return LVecBase4i(-1);
   }
 
@@ -155,7 +155,7 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
   // When we reached this part, we couldn't find a free region, so the atlas
   // seems to be full.
   shadowatlas_cat.error() << "Failed to find a free region of size " << tile_width
-              << " x " << tile_height << "!"  << endl;
+              << " x " << tile_height << "!"  << std::endl;
   return LVecBase4i(-1);
 }
 
@@ -173,12 +173,12 @@ LVecBase4i ShadowAtlas::find_and_reserve_region(size_t tile_width, size_t tile_h
 void ShadowAtlas::free_region(const LVecBase4i& region) {
   // Out of bounds check, can't hurt
   nassertv(region.get_x() >= 0 && region.get_y() >= 0);
-  nassertv(region.get_x() + region.get_z() <= _num_tiles && region.get_y() + region.get_w() <= _num_tiles);
+  nassertv(region.get_x() + region.get_z() <= (int)_num_tiles && region.get_y() + region.get_w() <= (int)_num_tiles);
 
   _num_used_tiles -= region.get_z() * region.get_w();
 
-  for (size_t x = 0; x < region.get_z(); ++x) {
-    for (size_t y = 0; y < region.get_w(); ++y) {
+  for (int x = 0; x < region.get_z(); ++x) {
+    for (int y = 0; y < region.get_w(); ++y) {
       // Could do an assert here, that the tile should have been used (=true) before
       set_tile(region.get_x() + x, region.get_y() + y, false);
     }

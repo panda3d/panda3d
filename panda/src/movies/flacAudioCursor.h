@@ -30,7 +30,7 @@ class FlacAudio;
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
 PUBLISHED:
-  explicit FlacAudioCursor(FlacAudio *src, istream *stream);
+  explicit FlacAudioCursor(FlacAudio *src, std::istream *stream);
   virtual ~FlacAudioCursor();
   virtual void seek(double offset);
 
@@ -41,6 +41,7 @@ public:
 
 protected:
   drflac *_drflac;
+  std::istream *_stream;
 
 public:
   static TypeHandle get_class_type() {

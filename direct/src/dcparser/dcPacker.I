@@ -24,7 +24,7 @@ clear_data() {
     delete[] _unpack_data;
     _owns_unpack_data = false;
   }
-  _unpack_data = NULL;
+  _unpack_data = nullptr;
 }
 
 /**
@@ -35,7 +35,7 @@ clear_data() {
  */
 INLINE bool DCPacker::
 has_nested_fields() const {
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     return false;
   } else {
     return _current_field->has_nested_fields();
@@ -65,7 +65,7 @@ get_num_nested_fields() const {
  */
 INLINE bool DCPacker::
 more_nested_fields() const {
-  return (_current_field != (DCPackerInterface *)NULL && !_pack_error);
+  return (_current_field != nullptr && !_pack_error);
 }
 
 /**
@@ -112,7 +112,7 @@ get_last_switch() const {
  */
 INLINE DCPackType DCPacker::
 get_pack_type() const {
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     return PT_invalid;
   } else {
     return _current_field->get_pack_type();
@@ -123,10 +123,10 @@ get_pack_type() const {
  * Returns the name of the current field, if it has a name, or the empty
  * string if the field does not have a name or there is no current field.
  */
-INLINE string DCPacker::
+INLINE std::string DCPacker::
 get_current_field_name() const {
-  if (_current_field == NULL) {
-    return string();
+  if (_current_field == nullptr) {
+    return std::string();
   } else {
     return _current_field->get_name();
   }
@@ -138,7 +138,7 @@ get_current_field_name() const {
 INLINE void DCPacker::
 pack_double(double value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_double(_pack_data, value, _pack_error, _range_error);
@@ -152,7 +152,7 @@ pack_double(double value) {
 INLINE void DCPacker::
 pack_int(int value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_int(_pack_data, value, _pack_error, _range_error);
@@ -166,7 +166,7 @@ pack_int(int value) {
 INLINE void DCPacker::
 pack_uint(unsigned int value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_uint(_pack_data, value, _pack_error, _range_error);
@@ -180,7 +180,7 @@ pack_uint(unsigned int value) {
 INLINE void DCPacker::
 pack_int64(int64_t value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_int64(_pack_data, value, _pack_error, _range_error);
@@ -194,7 +194,7 @@ pack_int64(int64_t value) {
 INLINE void DCPacker::
 pack_uint64(uint64_t value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_uint64(_pack_data, value, _pack_error, _range_error);
@@ -206,12 +206,26 @@ pack_uint64(uint64_t value) {
  * Packs the indicated numeric or string value into the stream.
  */
 INLINE void DCPacker::
-pack_string(const string &value) {
+pack_string(const std::string &value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
     _current_field->pack_string(_pack_data, value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+INLINE void DCPacker::
+pack_blob(const vector_uchar &value) {
+  nassertv(_mode == M_pack || _mode == M_repack);
+  if (_current_field == nullptr) {
+    _pack_error = true;
+  } else {
+    _current_field->pack_blob(_pack_data, value, _pack_error, _range_error);
     advance();
   }
 }
@@ -221,12 +235,12 @@ pack_string(const string &value) {
  * packed field element, or a whole group of field elements at once.
  */
 INLINE void DCPacker::
-pack_literal_value(const string &value) {
+pack_literal_value(const vector_uchar &value) {
   nassertv(_mode == M_pack || _mode == M_repack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
   } else {
-    _pack_data.append_data(value.data(), value.length());
+    _pack_data.append_data((const char *)value.data(), value.size());
     advance();
   }
 }
@@ -238,7 +252,7 @@ INLINE double DCPacker::
 unpack_double() {
   double value = 0.0;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -257,7 +271,7 @@ INLINE int DCPacker::
 unpack_int() {
   int value = 0;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -276,7 +290,7 @@ INLINE unsigned int DCPacker::
 unpack_uint() {
   unsigned int value = 0;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -295,7 +309,7 @@ INLINE int64_t DCPacker::
 unpack_int64() {
   int64_t value = 0;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -314,7 +328,7 @@ INLINE uint64_t DCPacker::
 unpack_uint64() {
   uint64_t value = 0;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -329,11 +343,11 @@ unpack_uint64() {
 /**
  * Unpacks the current numeric or string value from the stream.
  */
-INLINE string DCPacker::
+INLINE std::string DCPacker::
 unpack_string() {
-  string value;
+  std::string value;
   nassertr(_mode == M_unpack, value);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -346,15 +360,35 @@ unpack_string() {
 }
 
 /**
+ * Unpacks the current binary data value from the stream.
+ */
+INLINE vector_uchar DCPacker::
+unpack_blob() {
+  vector_uchar value;
+  nassertr(_mode == M_unpack, value);
+  if (_current_field == nullptr) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_blob(_unpack_data, _unpack_length, _unpack_p,
+                                 value, _pack_error, _range_error);
+    advance();
+  }
+
+  return value;
+}
+
+/**
  * Returns the literal string that represents the packed value of the current
  * field, and advances the field pointer.
  */
-INLINE string DCPacker::
+INLINE vector_uchar DCPacker::
 unpack_literal_value() {
   size_t start = _unpack_p;
   unpack_skip();
-  nassertr(_unpack_p >= start, string());
-  return string(_unpack_data + start, _unpack_p - start);
+  nassertr(_unpack_p >= start, vector_uchar());
+  return vector_uchar((const unsigned char *)_unpack_data + start,
+                      (const unsigned char *)_unpack_data + _unpack_p);
 }
 
 /**
@@ -363,7 +397,7 @@ unpack_literal_value() {
 INLINE void DCPacker::
 unpack_double(double &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -379,7 +413,7 @@ unpack_double(double &value) {
 INLINE void DCPacker::
 unpack_int(int &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -395,7 +429,7 @@ unpack_int(int &value) {
 INLINE void DCPacker::
 unpack_uint(unsigned int &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -411,7 +445,7 @@ unpack_uint(unsigned int &value) {
 INLINE void DCPacker::
 unpack_int64(int64_t &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -427,7 +461,7 @@ unpack_int64(int64_t &value) {
 INLINE void DCPacker::
 unpack_uint64(uint64_t &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -441,9 +475,9 @@ unpack_uint64(uint64_t &value) {
  * Unpacks the current numeric or string value from the stream.
  */
 INLINE void DCPacker::
-unpack_string(string &value) {
+unpack_string(std::string &value) {
   nassertv(_mode == M_unpack);
-  if (_current_field == NULL) {
+  if (_current_field == nullptr) {
     _pack_error = true;
 
   } else {
@@ -454,15 +488,32 @@ unpack_string(string &value) {
 }
 
 /**
+ * Unpacks the current numeric or string value from the stream.
+ */
+INLINE void DCPacker::
+unpack_blob(vector_uchar &value) {
+  nassertv(_mode == M_unpack);
+  if (_current_field == nullptr) {
+    _pack_error = true;
+
+  } else {
+    _current_field->unpack_blob(_unpack_data, _unpack_length, _unpack_p,
+                                value, _pack_error, _range_error);
+    advance();
+  }
+}
+
+/**
  * Returns the literal string that represents the packed value of the current
  * field, and advances the field pointer.
  */
 INLINE void DCPacker::
-unpack_literal_value(string &value) {
+unpack_literal_value(vector_uchar &value) {
   size_t start = _unpack_p;
   unpack_skip();
   nassertv(_unpack_p >= start);
-  value.assign(_unpack_data + start, _unpack_p - start);
+  value = vector_uchar((const unsigned char *)_unpack_data + start,
+                       (const unsigned char *)_unpack_data + _unpack_p);
 }
 
 /**
@@ -536,9 +587,18 @@ get_length() const {
 /**
  * Returns the packed data buffer as a string.  Also see get_data().
  */
-INLINE string DCPacker::
+INLINE std::string DCPacker::
 get_string() const {
   return _pack_data.get_string();
+}
+
+/**
+ * Returns the packed data buffer as a bytes object.  Also see get_data().
+ */
+INLINE vector_uchar DCPacker::
+get_bytes() const {
+  const unsigned char *p = (const unsigned char *)_pack_data.get_data();
+  return vector_uchar(p, p + _pack_data.get_length());
 }
 
 /**
@@ -556,16 +616,16 @@ get_unpack_length() const {
  * unpacking; it is separate from the pack data returned by get_string(),
  * which is filled during packing.  Also see get_unpack_data().
  */
-INLINE string DCPacker::
+INLINE std::string DCPacker::
 get_unpack_string() const {
-  return string(_unpack_data, _unpack_length);
+  return std::string(_unpack_data, _unpack_length);
 }
 
 /**
  * Copies the packed data into the indicated string.  Also see get_data().
  */
 INLINE void DCPacker::
-get_string(string &data) const {
+get_string(std::string &data) const {
   data.assign(_pack_data.get_data(), _pack_data.get_length());
 }
 
@@ -601,9 +661,9 @@ take_data() {
  * between packing sessions.
  */
 INLINE void DCPacker::
-append_data(const char *buffer, size_t size) {
+append_data(const unsigned char *buffer, size_t size) {
   nassertv(_mode == M_idle);
-  _pack_data.append_data(buffer, size);
+  _pack_data.append_data((const char *)buffer, size);
 }
 
 /**
@@ -613,7 +673,7 @@ append_data(const char *buffer, size_t size) {
  */
 INLINE char *DCPacker::
 get_write_pointer(size_t size) {
-  nassertr(_mode == M_idle, NULL);
+  nassertr(_mode == M_idle, nullptr);
   return _pack_data.get_write_pointer(size);
 }
 
@@ -722,10 +782,20 @@ raw_pack_float64(double value) {
  * Packs the data into the buffer between packing sessions.
  */
 INLINE void DCPacker::
-raw_pack_string(const string &value) {
+raw_pack_string(const std::string &value) {
   nassertv(_mode == M_idle);
   DCPackerInterface::do_pack_uint16(_pack_data.get_write_pointer(2), value.length());
   _pack_data.append_data(value.data(), value.length());
+}
+
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+INLINE void DCPacker::
+raw_pack_blob(const vector_uchar &value) {
+  nassertv(_mode == M_idle);
+  DCPackerInterface::do_pack_uint16(_pack_data.get_write_pointer(2), value.size());
+  _pack_data.append_data((const char *)value.data(), value.size());
 }
 
 /**
@@ -773,7 +843,7 @@ raw_unpack_int64() {
  */
 INLINE void DCPacker::
 raw_unpack_int8(int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 1 > _unpack_length) {
     _pack_error = true;
     return;
@@ -787,7 +857,7 @@ raw_unpack_int8(int &value) {
  */
 INLINE void DCPacker::
 raw_unpack_int16(int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 2 > _unpack_length) {
     _pack_error = true;
     return;
@@ -801,7 +871,7 @@ raw_unpack_int16(int &value) {
  */
 INLINE void DCPacker::
 raw_unpack_int32(int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 4 > _unpack_length) {
     _pack_error = true;
     return;
@@ -863,10 +933,20 @@ raw_unpack_float64() {
 /**
  * Unpacks the data from the buffer between unpacking sessions.
  */
-INLINE string DCPacker::
+INLINE std::string DCPacker::
 raw_unpack_string() {
-  string value;
+  std::string value;
   raw_unpack_string(value);
+  return value;
+}
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+INLINE vector_uchar DCPacker::
+raw_unpack_blob() {
+  vector_uchar value;
+  raw_unpack_blob(value);
   return value;
 }
 
@@ -875,7 +955,7 @@ raw_unpack_string() {
  */
 INLINE void DCPacker::
 raw_unpack_int64(int64_t &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 8 > _unpack_length) {
     _pack_error = true;
     return;
@@ -889,7 +969,7 @@ raw_unpack_int64(int64_t &value) {
  */
 INLINE void DCPacker::
 raw_unpack_uint8(unsigned int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 1 > _unpack_length) {
     _pack_error = true;
     return;
@@ -903,7 +983,7 @@ raw_unpack_uint8(unsigned int &value) {
  */
 INLINE void DCPacker::
 raw_unpack_uint16(unsigned int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 2 > _unpack_length) {
     _pack_error = true;
     return;
@@ -917,7 +997,7 @@ raw_unpack_uint16(unsigned int &value) {
  */
 INLINE void DCPacker::
 raw_unpack_uint32(unsigned int &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 4 > _unpack_length) {
     _pack_error = true;
     return;
@@ -931,7 +1011,7 @@ raw_unpack_uint32(unsigned int &value) {
  */
 INLINE void DCPacker::
 raw_unpack_uint64(uint64_t &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 8 > _unpack_length) {
     _pack_error = true;
     return;
@@ -945,7 +1025,7 @@ raw_unpack_uint64(uint64_t &value) {
  */
 INLINE void DCPacker::
 raw_unpack_float64(double &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   if (_unpack_p + 8 > _unpack_length) {
     _pack_error = true;
     return;
@@ -958,8 +1038,8 @@ raw_unpack_float64(double &value) {
  * Unpacks the data from the buffer between unpacking sessions.
  */
 INLINE void DCPacker::
-raw_unpack_string(string &value) {
-  nassertv(_mode == M_idle && _unpack_data != NULL);
+raw_unpack_string(std::string &value) {
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
   unsigned int string_length = raw_unpack_uint16();
 
   if (_unpack_p + string_length > _unpack_length) {
@@ -972,6 +1052,24 @@ raw_unpack_string(string &value) {
 }
 
 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+INLINE void DCPacker::
+raw_unpack_blob(vector_uchar &value) {
+  nassertv(_mode == M_idle && _unpack_data != nullptr);
+  unsigned int blob_size = raw_unpack_uint16();
+
+  if (_unpack_p + blob_size > _unpack_length) {
+    _pack_error = true;
+    return;
+  }
+
+  const unsigned char *p = (const unsigned char *)_unpack_data + _unpack_p;
+  value = vector_uchar(p, p + blob_size);
+  _unpack_p += blob_size;
+}
+
+/**
  * Advances to the next field after a call to pack_value() or pop().
  */
 INLINE void DCPacker::
@@ -981,13 +1079,13 @@ advance() {
       _current_field_index >= _num_nested_fields) {
     // Done with all the fields on this parent.  The caller must now call
     // pop().
-    _current_field = NULL;
+    _current_field = nullptr;
 
     // But if the parent is a switch record, we make a special case so we can
     // get the alternate fields.
-    if (_current_parent != (DCPackerInterface *)NULL) {
+    if (_current_parent != nullptr) {
       const DCSwitchParameter *switch_parameter = ((DCPackerInterface *)_current_parent)->as_switch_parameter();
-      if (switch_parameter != (DCSwitchParameter *)NULL) {
+      if (switch_parameter != nullptr) {
         handle_switch(switch_parameter);
       }
     }
@@ -995,7 +1093,7 @@ advance() {
   } else if (_pop_marker != 0 && _unpack_p >= _pop_marker) {
     // Done with all the fields on this parent.  The caller must now call
     // pop().
-    _current_field = NULL;
+    _current_field = nullptr;
 
   } else {
     // We have another field to advance to.
@@ -1009,7 +1107,7 @@ advance() {
  */
 INLINE void *DCPacker::StackElement::
 operator new(size_t size) {
-  if (_deleted_chain != (DCPacker::StackElement *)NULL) {
+  if (_deleted_chain != nullptr) {
     StackElement *obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
     return obj;

@@ -40,6 +40,9 @@
 #include "store_pixel_table.h"
 #include "graphicsEngine.h"
 
+using std::max;
+using std::min;
+
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
 PStatCollector TinyGraphicsStateGuardian::_vertices_immediate_pcollector("Vertices:Immediate mode");
@@ -64,10 +67,10 @@ TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                           TinyGraphicsStateGuardian *share_with) :
   GraphicsStateGuardian(CS_yup_right, engine, pipe)
 {
-  _current_frame_buffer = NULL;
-  _aux_frame_buffer = NULL;
-  _c = NULL;
-  _vertices = NULL;
+  _current_frame_buffer = nullptr;
+  _aux_frame_buffer = nullptr;
+  _c = nullptr;
+  _vertices = nullptr;
   _vertices_size = 0;
 }
 
@@ -99,9 +102,9 @@ reset() {
   _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
 
-  if (_c != (GLContext *)NULL) {
+  if (_c != nullptr) {
     glClose(_c);
-    _c = NULL;
+    _c = nullptr;
   }
 
   _c = (GLContext *)gl_zalloc(sizeof(GLContext));
@@ -142,14 +145,14 @@ reset() {
  */
 void TinyGraphicsStateGuardian::
 free_pointers() {
-  if (_aux_frame_buffer != (ZBuffer *)NULL) {
+  if (_aux_frame_buffer != nullptr) {
     ZB_close(_aux_frame_buffer);
-    _aux_frame_buffer = NULL;
+    _aux_frame_buffer = nullptr;
   }
 
-  if (_vertices != (GLVertex *)NULL) {
+  if (_vertices != nullptr) {
     PANDA_FREE_ARRAY(_vertices);
-    _vertices = NULL;
+    _vertices = nullptr;
   }
   _vertices_size = 0;
 }
@@ -163,9 +166,9 @@ void TinyGraphicsStateGuardian::
 close_gsg() {
   GraphicsStateGuardian::close_gsg();
 
-  if (_c != (GLContext *)NULL) {
+  if (_c != nullptr) {
     glClose(_c);
-    _c = NULL;
+    _c = nullptr;
   }
 }
 
@@ -199,8 +202,6 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
  */
 void TinyGraphicsStateGuardian::
 clear(DrawableRegion *clearable) {
-  PStatTimer timer(_clear_pcollector);
-
   if ((!clearable->get_clear_color_active())&&
       (!clearable->get_clear_depth_active())&&
       (!clearable->get_clear_stencil_active())) {
@@ -245,7 +246,7 @@ clear(DrawableRegion *clearable) {
  */
 void TinyGraphicsStateGuardian::
 prepare_display_region(DisplayRegionPipelineReader *dr) {
-  nassertv(dr != (DisplayRegionPipelineReader *)NULL);
+  nassertv(dr != nullptr);
   GraphicsStateGuardian::prepare_display_region(dr);
 
   int xmin, ymin, xsize, ysize;
@@ -259,10 +260,10 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     ymin = 0;
     xsize = int(xsize * pixel_factor);
     ysize = int(ysize * pixel_factor);
-    if (_aux_frame_buffer == (ZBuffer *)NULL) {
+    if (_aux_frame_buffer == nullptr) {
       _aux_frame_buffer = ZB_open(xsize, ysize, ZB_MODE_RGBA, 0, 0, 0, 0);
     } else if (_aux_frame_buffer->xsize < xsize || _aux_frame_buffer->ysize < ysize) {
-      ZB_resize(_aux_frame_buffer, NULL,
+      ZB_resize(_aux_frame_buffer, nullptr,
                 max(_aux_frame_buffer->xsize, xsize),
                 max(_aux_frame_buffer->ysize, ysize));
     }
@@ -295,12 +296,12 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  */
 CPT(TransformState) TinyGraphicsStateGuardian::
 calc_projection_mat(const Lens *lens) {
-  if (lens == (Lens *)NULL) {
-    return NULL;
+  if (lens == nullptr) {
+    return nullptr;
   }
 
   if (!lens->is_linear()) {
-    return NULL;
+    return nullptr;
   }
 
   // The projection matrix must always be right-handed Y-up, even if our
@@ -481,7 +482,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, force)) {
     return false;
   }
-  nassertr(_data_reader != (GeomVertexDataPipelineReader *)NULL, false);
+  nassertr(_data_reader != nullptr, false);
 
   PStatTimer timer(_draw_transform_pcollector);
 
@@ -557,7 +558,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     while (_vertices_size < num_used_vertices) {
       _vertices_size *= 2;
     }
-    if (_vertices != (GLVertex *)NULL) {
+    if (_vertices != nullptr) {
       PANDA_FREE_ARRAY(_vertices);
     }
     _vertices = (GLVertex *)PANDA_MALLOC_ARRAY(_vertices_size * sizeof(GLVertex));
@@ -697,7 +698,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // Texture coordinates.
     for (int si = 0; si < max_stage_index; ++si) {
-      LTexCoord d;
       (*texgen_func[si])(v->tex_coord[si], tcdata[si]);
     }
 
@@ -961,7 +961,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint8:
       {
         uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 3) {
@@ -976,7 +976,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint16:
       {
         uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 3) {
@@ -991,7 +991,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint32:
       {
         uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 3) {
@@ -1052,7 +1052,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
       case Geom::NT_uint8:
         {
           uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
-          if (index == NULL) {
+          if (index == nullptr) {
             return false;
           }
           GLVertex *v0 = &_vertices[index[start] - _min_vertex];
@@ -1077,7 +1077,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
       case Geom::NT_uint16:
         {
           uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
-          if (index == NULL) {
+          if (index == nullptr) {
             return false;
           }
           GLVertex *v0 = &_vertices[index[start] - _min_vertex];
@@ -1102,7 +1102,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
       case Geom::NT_uint32:
         {
           uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
-          if (index == NULL) {
+          if (index == nullptr) {
             return false;
           }
           GLVertex *v0 = &_vertices[index[start] - _min_vertex];
@@ -1183,7 +1183,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint8:
       {
         uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 2) {
@@ -1197,7 +1197,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint16:
       {
         uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 2) {
@@ -1211,7 +1211,7 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint32:
       {
         uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; i += 2) {
@@ -1260,7 +1260,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint8:
       {
         uint8_t *index = (uint8_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; ++i) {
@@ -1273,7 +1273,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint16:
       {
         uint16_t *index = (uint16_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; ++i) {
@@ -1286,7 +1286,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
     case Geom::NT_uint32:
       {
         uint32_t *index = (uint32_t *)reader->get_read_pointer(force);
-        if (index == NULL) {
+        if (index == nullptr) {
           return false;
         }
         for (int i = 0; i < num_vertices; ++i) {
@@ -1347,7 +1347,7 @@ bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr,
                             const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
 
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
@@ -1355,7 +1355,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
-  nassertr(tc != (TextureContext *)NULL, false);
+  nassertr(tc != nullptr, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
 
   GLTexture *gltex = &gtc->_gltex;
@@ -1395,7 +1395,7 @@ bool TinyGraphicsStateGuardian::
 framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr,
                         const RenderBuffer &rb) {
-  nassertr(tex != NULL && dr != NULL, false);
+  nassertr(tex != nullptr && dr != nullptr, false);
 
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
@@ -1611,7 +1611,7 @@ prepare_texture(Texture *tex, int view) {
     tinydisplay_cat.info()
       << "Not loading texture " << tex->get_name() << ": "
       << tex->get_texture_type() << "\n";
-    return NULL;
+    return nullptr;
   }
 
   // Even though the texture might be compressed now, it might have an
@@ -1764,7 +1764,7 @@ do_issue_light() {
 
       // Handle the diffuse color here, since all lights have this property.
       GLLight *gl_light = _c->first_light;
-      nassertv(gl_light != NULL);
+      nassertv(gl_light != nullptr);
       const LColor &diffuse = light_obj->get_color();
       gl_light->diffuse.v[0] = diffuse[0];
       gl_light->diffuse.v[1] = diffuse[1];
@@ -1791,7 +1791,7 @@ do_issue_light() {
  */
 void TinyGraphicsStateGuardian::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -1829,7 +1829,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
     gl_light->attenuation[2] = att[2];
   }
 
-  nassertv(gl_light->next == NULL);
+  nassertv(gl_light->next == nullptr);
 
   // Add it to the linked list of active lights.
   gl_light->next = _c->first_light;
@@ -1843,7 +1843,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
  */
 void TinyGraphicsStateGuardian::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -1888,7 +1888,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     gl_light->attenuation[2] = 0.0f;
   }
 
-  nassertv(gl_light->next == NULL);
+  nassertv(gl_light->next == nullptr);
 
   // Add it to the linked list of active lights.
   gl_light->next = _c->first_light;
@@ -1902,7 +1902,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
  */
 void TinyGraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
-  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  std::pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
   GLLight *gl_light = &(*lookup.first).second;
   if (lookup.second) {
     // It's a brand new light.  Define it.
@@ -1915,7 +1915,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
     gl_light->specular.v[3] = specular[3];
 
     Lens *lens = light_obj->get_lens();
-    nassertv(lens != (Lens *)NULL);
+    nassertv(lens != nullptr);
 
     // Position needs to specify x, y, z, and w w == 1 implies non-infinite
     // position
@@ -1953,7 +1953,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
     gl_light->attenuation[2] = att[2];
   }
 
-  nassertv(gl_light->next == NULL);
+  nassertv(gl_light->next == nullptr);
 
   // Add it to the linked list of active lights.
   gl_light->next = _c->first_light;
@@ -2011,7 +2011,7 @@ do_issue_render_mode() {
 
   default:
     tinydisplay_cat.error()
-      << "Unknown render mode " << (int)target_render_mode->get_mode() << endl;
+      << "Unknown render mode " << (int)target_render_mode->get_mode() << std::endl;
   }
 }
 
@@ -2044,7 +2044,7 @@ do_issue_rescale_normal() {
 
   default:
     tinydisplay_cat.error()
-      << "Unknown rescale_normal mode " << (int)mode << endl;
+      << "Unknown rescale_normal mode " << (int)mode << std::endl;
   }
 }
 
@@ -2090,7 +2090,7 @@ do_issue_cull_face() {
     break;
   default:
     tinydisplay_cat.error()
-      << "invalid cull face mode " << (int)mode << endl;
+      << "invalid cull face mode " << (int)mode << std::endl;
     break;
   }
 }
@@ -2105,7 +2105,7 @@ do_issue_material() {
   const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
 
   const Material *material;
-  if (target_material == (MaterialAttrib *)NULL ||
+  if (target_material == nullptr ||
       target_material->is_off()) {
     material = &empty;
   } else {
@@ -2149,11 +2149,11 @@ do_issue_texture() {
   for (int si = 0; si < num_stages; ++si) {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
     Texture *texture = _target_texture->get_on_texture(stage);
-    nassertv(texture != (Texture *)NULL);
+    nassertv(texture != nullptr);
 
     int view = get_current_tex_view_offset() + stage->get_tex_view_offset();
     TextureContext *tc = texture->prepare_now(view, _prepared_objects, this);
-    if (tc == (TextureContext *)NULL) {
+    if (tc == nullptr) {
       // Something wrong with this texture; skip it.
       return;
     }
@@ -2249,10 +2249,10 @@ do_issue_texture() {
 
       // The following special cases are handled inline, rather than relying
       // on the above wrap function pointers.
-      if (wrap_u && SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
+      if (wrap_u == SamplerState::WM_border_color && wrap_v == SamplerState::WM_border_color) {
         texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
-      } else if (wrap_u && SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
+      } else if (wrap_u == SamplerState::WM_clamp && wrap_v == SamplerState::WM_clamp) {
         texture_def->tex_minfilter_func = apply_wrap_clamp_minfilter;
         texture_def->tex_magfilter_func = apply_wrap_clamp_magfilter;
       }
@@ -2524,10 +2524,10 @@ bool TinyGraphicsStateGuardian::
 upload_simple_texture(TinyTextureContext *gtc) {
   PStatTimer timer(_load_texture_pcollector);
   Texture *tex = gtc->get_texture();
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != nullptr, false);
 
   const unsigned char *image_ptr = tex->get_simple_ram_image();
-  if (image_ptr == (const unsigned char *)NULL) {
+  if (image_ptr == nullptr) {
     return false;
   }
 
@@ -2616,7 +2616,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   }
 
   if (gltex->total_bytecount != total_bytecount) {
-    if (gltex->allocated_buffer != NULL) {
+    if (gltex->allocated_buffer != nullptr) {
       TinyTextureContext::get_class_type().deallocate_array(gltex->allocated_buffer);
     }
     gltex->allocated_buffer = TinyTextureContext::get_class_type().allocate_array(total_bytecount);
@@ -2627,7 +2627,7 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
   char *end_of_buffer = next_buffer + total_bytecount;
 
   int level = 0;
-  ZTextureLevel *dest = NULL;
+  ZTextureLevel *dest = nullptr;
   while (level < num_levels) {
     dest = &gltex->levels[level];
     int bytecount = x_size * y_size * 4;
@@ -2705,7 +2705,7 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   while (pixel_count-- > 0) {
@@ -2741,7 +2741,7 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   while (pixel_count-- > 0) {
@@ -2777,7 +2777,7 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureCon
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
 
@@ -2842,7 +2842,7 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gtc
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   int inc = 2 * cw;
@@ -2879,7 +2879,7 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *gt
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   int inc = 3 * cw;
@@ -2916,7 +2916,7 @@ copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, TinyTextureContext *g
 #endif
 
   unsigned int *dpix = (unsigned int *)dest->pixmap;
-  nassertv(dpix != NULL);
+  nassertv(dpix != nullptr);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   int inc = 4 * cw;
@@ -2949,7 +2949,7 @@ setup_material(GLMaterial *gl_material, const Material *material) {
 
   _color_material_flags = CMF_ambient | CMF_diffuse;
 
-  if (material->has_ambient()) {
+  if (material->has_ambient() || material->has_base_color()) {
     const LColor &ambient = material->get_ambient();
     gl_material->ambient.v[0] = ambient[0];
     gl_material->ambient.v[1] = ambient[1];
@@ -2959,7 +2959,7 @@ setup_material(GLMaterial *gl_material, const Material *material) {
     _color_material_flags &= ~CMF_ambient;
   }
 
-  if (material->has_diffuse()) {
+  if (material->has_diffuse() || material->has_base_color()) {
     const LColor &diffuse = material->get_diffuse();
     gl_material->diffuse.v[0] = diffuse[0];
     gl_material->diffuse.v[1] = diffuse[1];

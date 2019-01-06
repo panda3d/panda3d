@@ -22,10 +22,17 @@
 #include "dSearchPath.h"
 #include "dcast.h"
 #include "config_express.h"
+#include "configVariableList.h"
+#include "configVariableString.h"
 #include "executionEnvironment.h"
 #include "pset.h"
 
-VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
+using std::iostream;
+using std::istream;
+using std::ostream;
+using std::string;
+
+VirtualFileSystem *VirtualFileSystem::_global_ptr = nullptr;
 
 
 /**
@@ -151,7 +158,7 @@ bool VirtualFileSystem::
 mount_loop(const Filename &virtual_filename, const Filename &mount_point,
            int flags, const string &password) {
   PT(VirtualFile) file = get_file(virtual_filename, false);
-  if (file == NULL) {
+  if (file == nullptr) {
     express_cat->warning()
       << "Attempt to mount " << virtual_filename << ", not found.\n";
     return false;
@@ -190,9 +197,9 @@ mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
       << "mount " << *mount << " under " << mount_point << "\n";
   }
 
-  _lock.acquire();
+  _lock.lock();
   bool result = do_mount(mount, mount_point, flags);
-  _lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -202,7 +209,7 @@ mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
  */
 int VirtualFileSystem::
 unmount(Multifile *multifile) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -218,7 +225,7 @@ unmount(Multifile *multifile) {
           express_cat->debug()
             << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
         }
-        mount->_file_system = NULL;
+        mount->_file_system = nullptr;
 
       } else {
         // Don't remove this one.
@@ -234,7 +241,7 @@ unmount(Multifile *multifile) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -244,7 +251,7 @@ unmount(Multifile *multifile) {
  */
 int VirtualFileSystem::
 unmount(const Filename &physical_filename) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -260,7 +267,7 @@ unmount(const Filename &physical_filename) {
           express_cat->debug()
             << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
         }
-        mount->_file_system = NULL;
+        mount->_file_system = nullptr;
 
       } else {
         // Don't remove this one.
@@ -276,7 +283,7 @@ unmount(const Filename &physical_filename) {
           express_cat->debug()
             << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
         }
-        mount->_file_system = NULL;
+        mount->_file_system = nullptr;
 
       } else {
         // Don't remove this one.
@@ -293,7 +300,7 @@ unmount(const Filename &physical_filename) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -303,7 +310,7 @@ unmount(const Filename &physical_filename) {
  */
 int VirtualFileSystem::
 unmount(VirtualFileMount *mount) {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -314,7 +321,7 @@ unmount(VirtualFileMount *mount) {
         express_cat->debug()
           << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
       }
-      (*ri)->_file_system = NULL;
+      (*ri)->_file_system = nullptr;
 
     } else {
       // Don't remove this one.
@@ -326,7 +333,7 @@ unmount(VirtualFileMount *mount) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -336,7 +343,7 @@ unmount(VirtualFileMount *mount) {
  */
 int VirtualFileSystem::
 unmount_point(const Filename &mount_point) {
-  _lock.acquire();
+  _lock.lock();
   Filename nmp = normalize_mount_point(mount_point);
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
@@ -350,7 +357,7 @@ unmount_point(const Filename &mount_point) {
         express_cat->debug()
           << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
       }
-      mount->_file_system = NULL;
+      mount->_file_system = nullptr;
 
     } else {
       // Don't remove this one.
@@ -362,7 +369,7 @@ unmount_point(const Filename &mount_point) {
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -372,7 +379,7 @@ unmount_point(const Filename &mount_point) {
  */
 int VirtualFileSystem::
 unmount_all() {
-  _lock.acquire();
+  _lock.lock();
   Mounts::iterator ri;
   for (ri = _mounts.begin(); ri != _mounts.end(); ++ri) {
     VirtualFileMount *mount = (*ri);
@@ -380,13 +387,13 @@ unmount_all() {
       express_cat->debug()
         << "unmount " << *mount << " from " << mount->get_mount_point() << "\n";
     }
-    mount->_file_system = NULL;
+    mount->_file_system = nullptr;
   }
 
   int num_removed = _mounts.size();
   _mounts.clear();
   ++_mount_seq;
-  _lock.release();
+  _lock.unlock();
   return num_removed;
 }
 
@@ -395,9 +402,9 @@ unmount_all() {
  */
 int VirtualFileSystem::
 get_num_mounts() const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   int result = _mounts.size();
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -406,13 +413,13 @@ get_num_mounts() const {
  */
 PT(VirtualFileMount) VirtualFileSystem::
 get_mount(int n) const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   nassertd(n >= 0 && n < (int)_mounts.size()) {
-    ((VirtualFileSystem *)this)->_lock.release();
-    return NULL;
+    _lock.unlock();
+    return nullptr;
   }
   PT(VirtualFileMount) result = _mounts[n];
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -423,21 +430,21 @@ get_mount(int n) const {
  */
 bool VirtualFileSystem::
 chdir(const Filename &new_directory) {
-  _lock.acquire();
+  _lock.lock();
   if (new_directory == "/") {
     // We can always return to the root.
     _cwd = new_directory;
-    _lock.release();
+    _lock.unlock();
     return true;
   }
 
   PT(VirtualFile) file = do_get_file(new_directory, OF_status_only);
-  if (file != (VirtualFile *)NULL && file->is_directory()) {
+  if (file != nullptr && file->is_directory()) {
     _cwd = file->get_filename();
-    _lock.release();
+    _lock.unlock();
     return true;
   }
-  _lock.release();
+  _lock.unlock();
   return false;
 }
 
@@ -446,9 +453,9 @@ chdir(const Filename &new_directory) {
  */
 Filename VirtualFileSystem::
 get_cwd() const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   Filename result = _cwd;
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -460,10 +467,10 @@ get_cwd() const {
  */
 bool VirtualFileSystem::
 make_directory(const Filename &filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
-  _lock.release();
-  nassertr_always(result != NULL, false);
+  _lock.unlock();
+  nassertr_always(result != nullptr, false);
   return result->is_directory();
 }
 
@@ -474,7 +481,7 @@ make_directory(const Filename &filename) {
  */
 bool VirtualFileSystem::
 make_directory_full(const Filename &filename) {
-  _lock.acquire();
+  _lock.lock();
 
   // First, make sure everything up to the last path is known.  We don't care
   // too much if any of these fail; maybe they failed because the directory
@@ -489,8 +496,8 @@ make_directory_full(const Filename &filename) {
 
   // Now make the last one, and check the return value.
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
-  _lock.release();
-  nassertr_always(result != NULL, false);
+  _lock.unlock();
+  nassertr_always(result != nullptr, false);
   return result->is_directory();
 }
 
@@ -508,9 +515,9 @@ make_directory_full(const Filename &filename) {
 PT(VirtualFile) VirtualFileSystem::
 get_file(const Filename &filename, bool status_only) const {
   int open_flags = status_only ? OF_status_only : 0;
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, open_flags);
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -522,9 +529,9 @@ get_file(const Filename &filename, bool status_only) const {
  */
 PT(VirtualFile) VirtualFileSystem::
 create_file(const Filename &filename) {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   PT(VirtualFile) result = do_get_file(filename, OF_create_file);
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
   return result;
 }
 
@@ -552,12 +559,12 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
       match = filename;
     }
     PT(VirtualFile) found_file = get_file(match, status_only);
-    if (found_file != (VirtualFile *)NULL) {
+    if (found_file != nullptr) {
       return found_file;
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /**
@@ -568,7 +575,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath,
 bool VirtualFileSystem::
 delete_file(const Filename &filename) {
   PT(VirtualFile) file = get_file(filename, true);
-  if (file == (VirtualFile *)NULL) {
+  if (file == nullptr) {
     return false;
   }
 
@@ -588,20 +595,20 @@ delete_file(const Filename &filename) {
  */
 bool VirtualFileSystem::
 rename_file(const Filename &orig_filename, const Filename &new_filename) {
-  _lock.acquire();
+  _lock.lock();
   PT(VirtualFile) orig_file = do_get_file(orig_filename, OF_status_only);
-  if (orig_file == (VirtualFile *)NULL) {
-    _lock.release();
+  if (orig_file == nullptr) {
+    _lock.unlock();
     return false;
   }
 
   PT(VirtualFile) new_file = do_get_file(new_filename, OF_status_only | OF_allow_nonexist);
-  if (new_file == (VirtualFile *)NULL) {
-    _lock.release();
+  if (new_file == nullptr) {
+    _lock.unlock();
     return false;
   }
 
-  _lock.release();
+  _lock.unlock();
 
   return orig_file->rename_file(new_file);
 }
@@ -613,12 +620,12 @@ rename_file(const Filename &orig_filename, const Filename &new_filename) {
 bool VirtualFileSystem::
 copy_file(const Filename &orig_filename, const Filename &new_filename) {
   PT(VirtualFile) orig_file = get_file(orig_filename, true);
-  if (orig_file == (VirtualFile *)NULL) {
+  if (orig_file == nullptr) {
     return false;
   }
 
   PT(VirtualFile) new_file = create_file(new_filename);
-  if (new_file == (VirtualFile *)NULL) {
+  if (new_file == nullptr) {
     return false;
   }
 
@@ -712,13 +719,13 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
  */
 void VirtualFileSystem::
 write(ostream &out) const {
-  ((VirtualFileSystem *)this)->_lock.acquire();
+  _lock.lock();
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
     mount->write(out);
   }
-  ((VirtualFileSystem *)this)->_lock.release();
+  _lock.unlock();
 }
 
 
@@ -733,7 +740,7 @@ write(ostream &out) const {
  */
 VirtualFileSystem *VirtualFileSystem::
 get_global_ptr() {
-  if (_global_ptr == (VirtualFileSystem *)NULL) {
+  if (_global_ptr == nullptr) {
     // Make sure this is initialized.
     init_libexpress();
 
@@ -839,13 +846,13 @@ get_global_ptr() {
 istream *VirtualFileSystem::
 open_read_file(const Filename &filename, bool auto_unwrap) const {
   PT(VirtualFile) file = get_file(filename, false);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == nullptr) {
+    return nullptr;
   }
   istream *str = file->open_read_file(auto_unwrap);
-  if (str != (istream *)NULL && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_file(str);
-    str = (istream *)NULL;
+    str = nullptr;
   }
   return str;
 }
@@ -858,7 +865,7 @@ open_read_file(const Filename &filename, bool auto_unwrap) const {
  */
 void VirtualFileSystem::
 close_read_file(istream *stream) {
-  if (stream != (istream *)NULL) {
+  if (stream != nullptr) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting the
     // stream pointer does not call the appropriate global delete function;
     // instead apparently calling the system delete function.  So we call the
@@ -883,13 +890,13 @@ close_read_file(istream *stream) {
 ostream *VirtualFileSystem::
 open_write_file(const Filename &filename, bool auto_wrap, bool truncate) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == nullptr) {
+    return nullptr;
   }
   ostream *str = file->open_write_file(auto_wrap, truncate);
-  if (str != (ostream *)NULL && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_write_file(str);
-    str = (ostream *)NULL;
+    str = nullptr;
   }
   return str;
 }
@@ -902,13 +909,13 @@ open_write_file(const Filename &filename, bool auto_wrap, bool truncate) {
 ostream *VirtualFileSystem::
 open_append_file(const Filename &filename) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == nullptr) {
+    return nullptr;
   }
   ostream *str = file->open_append_file();
-  if (str != (ostream *)NULL && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_write_file(str);
-    str = (ostream *)NULL;
+    str = nullptr;
   }
   return str;
 }
@@ -921,7 +928,7 @@ open_append_file(const Filename &filename) {
  */
 void VirtualFileSystem::
 close_write_file(ostream *stream) {
-  if (stream != (ostream *)NULL) {
+  if (stream != nullptr) {
 #if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~ostream();
     (*global_operator_delete)(stream);
@@ -939,13 +946,13 @@ close_write_file(ostream *stream) {
 iostream *VirtualFileSystem::
 open_read_write_file(const Filename &filename, bool truncate) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == nullptr) {
+    return nullptr;
   }
   iostream *str = file->open_read_write_file(truncate);
-  if (str != (iostream *)NULL && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_write_file(str);
-    str = (iostream *)NULL;
+    str = nullptr;
   }
   return str;
 }
@@ -958,13 +965,13 @@ open_read_write_file(const Filename &filename, bool truncate) {
 iostream *VirtualFileSystem::
 open_read_append_file(const Filename &filename) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == (VirtualFile *)NULL) {
-    return NULL;
+  if (file == nullptr) {
+    return nullptr;
   }
   iostream *str = file->open_read_append_file();
-  if (str != (iostream *)NULL && str->fail()) {
+  if (str != nullptr && str->fail()) {
     close_read_write_file(str);
-    str = (iostream *)NULL;
+    str = nullptr;
   }
   return str;
 }
@@ -977,7 +984,7 @@ open_read_append_file(const Filename &filename) {
  */
 void VirtualFileSystem::
 close_read_write_file(iostream *stream) {
-  if (stream != (iostream *)NULL) {
+  if (stream != nullptr) {
 #if (!defined(WIN32_VC) && !defined(WIN64_VC)) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
     stream->~iostream();
     (*global_operator_delete)(stream);
@@ -995,7 +1002,7 @@ atomic_compare_and_exchange_contents(const Filename &filename, string &orig_cont
                                      const string &old_contents,
                                      const string &new_contents) {
   PT(VirtualFile) file = create_file(filename);
-  if (file == NULL) {
+  if (file == nullptr) {
     return false;
   }
 
@@ -1008,7 +1015,7 @@ atomic_compare_and_exchange_contents(const Filename &filename, string &orig_cont
 bool VirtualFileSystem::
 atomic_read_contents(const Filename &filename, string &contents) const {
   PT(VirtualFile) file = get_file(filename, false);
-  if (file == NULL) {
+  if (file == nullptr) {
     return false;
   }
 
@@ -1118,7 +1125,7 @@ normalize_mount_point(const Filename &mount_point) const {
  */
 bool VirtualFileSystem::
 do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
-  nassertr(mount->_file_system == NULL, false);
+  nassertr(mount->_file_system == nullptr, false);
   mount->_file_system = this;
   mount->_mount_point = normalize_mount_point(mount_point);
   mount->_mount_flags = flags;
@@ -1134,7 +1141,7 @@ do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
 PT(VirtualFile) VirtualFileSystem::
 do_get_file(const Filename &filename, int open_flags) const {
   if (filename.empty()) {
-    return NULL;
+    return nullptr;
   }
   Filename pathname(filename);
   if (pathname.is_local()) {
@@ -1151,8 +1158,8 @@ do_get_file(const Filename &filename, int open_flags) const {
 
   // Now scan all the mount points, from the back (since later mounts override
   // more recent ones), until a match is found.
-  PT(VirtualFile) found_file = NULL;
-  VirtualFileComposite *composite_file = NULL;
+  PT(VirtualFile) found_file = nullptr;
+  VirtualFileComposite *composite_file = nullptr;
 
   // We use an index instead of an iterator, since the vector might change if
   // implicit mounts are added during this loop.
@@ -1214,7 +1221,7 @@ do_get_file(const Filename &filename, int open_flags) const {
     }
   }
 
-  if (found_file == (VirtualFile *)NULL && vfs_implicit_mf) {
+  if (found_file == nullptr && vfs_implicit_mf) {
     // The file wasn't found, as-is.  Does it appear to be an implicit .mf
     // file reference?
     ((VirtualFileSystem *)this)->consider_mount_mf(filename);
@@ -1268,7 +1275,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
     return false;
   }
 
-  if (found_file == (VirtualFile *)NULL) {
+  if (found_file == nullptr) {
     // This was our first match.  Save it.
     found_file = vfile;
     if (!found_file->is_directory() || ((open_flags & OF_make_directory) != 0)) {
@@ -1279,7 +1286,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
     // It is a directory, so save it for later.
     if (implicit_pz_file) {
       // Don't look for directories named file.pz.
-      found_file = NULL;
+      found_file = nullptr;
     }
 
   } else {
@@ -1293,7 +1300,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
     if (!implicit_pz_file) {
       // At least two directories matched to the same path.  We need a
       // composite directory.
-      if (composite_file == (VirtualFileComposite *)NULL) {
+      if (composite_file == nullptr) {
         composite_file =
           new VirtualFileComposite((VirtualFileSystem *)this, found_file->get_original_filename());
         composite_file->set_original_filename(original_filename);
@@ -1333,7 +1340,7 @@ consider_mount_mf(const Filename &filename) {
     // Hey, here's a multifile reference!
     dirname.set_binary();
     PT(VirtualFile) file = do_get_file(dirname, false);
-    if (file == (VirtualFile *)NULL || !file->is_regular_file()) {
+    if (file == nullptr || !file->is_regular_file()) {
       // Oh, never mind.  Not a real file.
       return false;
     }
@@ -1341,7 +1348,7 @@ consider_mount_mf(const Filename &filename) {
     PT(Multifile) multifile = new Multifile;
 
     istream *stream = file->open_read_file(false);
-    if (stream == (istream *)NULL) {
+    if (stream == nullptr) {
       // Couldn't read file.
       return false;
     }

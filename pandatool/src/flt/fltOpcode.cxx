@@ -13,8 +13,8 @@
 
 #include "fltOpcode.h"
 
-ostream &
-operator << (ostream &out, FltOpcode opcode) {
+std::ostream &
+operator << (std::ostream &out, FltOpcode opcode) {
   switch (opcode) {
   case FO_none:
     return out << "null opcode";

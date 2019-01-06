@@ -28,7 +28,7 @@ typedef _typeobject PyTypeObject;
 typedef struct {} PyStringObject;
 typedef struct {} PyUnicodeObject;
 
-class PyThreadState;
+typedef struct _ts PyThreadState;
 typedef int Py_ssize_t;
 typedef struct bufferinfo Py_buffer;
 
@@ -46,9 +46,6 @@ PyObject _Py_ZeroStruct;
 PyObject _Py_FalseStruct;
 #define Py_False ((PyObject *) &_Py_FalseStruct)
 #endif
-
-// This file defines PY_VERSION_HEX, which is used in some places.
-#include "patchlevel.h"
 
 typedef void *visitproc;
 

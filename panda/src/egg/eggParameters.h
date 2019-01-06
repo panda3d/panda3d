@@ -29,32 +29,31 @@
  * process it, and write the egg file out again before resetting the
  * parameters again.
  */
-class EXPCL_PANDAEGG EggParameters {
+class EXPCL_PANDA_EGG EggParameters {
 public:
-  EggParameters();
-  EggParameters(const EggParameters &copy);
+  constexpr EggParameters() = default;
 
   // The per-component difference below which two vertices are deemed to be at
   // the same position.
-  double _pos_threshold;
+  double _pos_threshold = 0.0001;
 
   // The per-component difference below which two vertices are deemed to have
   // the same normal.
-  double _normal_threshold;
+  double _normal_threshold = 0.0001;
 
   // The per-component difference below which two vertices are deemed to have
   // the same texture coordinates.
-  double _uv_threshold;
+  double _uv_threshold = 0.0001;
 
   // The per-component difference below which two vertices are deemed to have
   // the same color.
-  PN_stdfloat _color_threshold;
+  PN_stdfloat _color_threshold = 1.0/256.0;
 
   // The per-component difference below which two anim table values are deemed
   // to be equivalent.
-  double _table_threshold;
+  double _table_threshold = 0.0001;
 };
 
-extern EXPCL_PANDAEGG EggParameters *egg_parameters;
+extern EXPCL_PANDA_EGG EggParameters *egg_parameters;
 
 #endif

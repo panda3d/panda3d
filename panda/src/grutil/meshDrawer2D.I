@@ -19,10 +19,10 @@
 INLINE MeshDrawer2D::
 MeshDrawer2D() {
   _root = NodePath("MeshDrawer");
-  _bv = NULL;
-  _vertex = NULL;
-  _uv = NULL;
-  _color = NULL;
+  _bv = nullptr;
+  _vertex = nullptr;
+  _uv = nullptr;
+  _color = nullptr;
   _budget = 5000;
 
   _clip_x = -1000000;
@@ -37,9 +37,9 @@ MeshDrawer2D() {
 INLINE MeshDrawer2D::
 ~MeshDrawer2D() {
   _root.remove_node();
-  if (_vertex != NULL) delete _vertex;
-  if (_uv != NULL)     delete _uv;
-  if (_color != NULL)  delete _color;
+  if (_vertex != nullptr) delete _vertex;
+  if (_uv != nullptr)     delete _uv;
+  if (_color != nullptr)  delete _color;
 }
 
 /**

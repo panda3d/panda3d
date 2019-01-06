@@ -13,6 +13,8 @@
 
 #include "bulletWheel.h"
 
+#include "bulletWorld.h"
+
 /**
  *
  */
@@ -517,7 +519,7 @@ PandaNode *BulletWheel::
 get_node() const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return (_info.m_clientInfo == NULL) ? NULL : (PandaNode *)_info.m_clientInfo;
+  return (_info.m_clientInfo == nullptr) ? nullptr : (PandaNode *)_info.m_clientInfo;
 }
 
 /**
@@ -597,5 +599,5 @@ PandaNode *BulletWheelRaycastInfo::
 get_ground_object() const {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
-  return _info.m_groundObject ? (PandaNode *)_info.m_groundObject : NULL;
+  return _info.m_groundObject ? (PandaNode *)_info.m_groundObject : nullptr;
 }

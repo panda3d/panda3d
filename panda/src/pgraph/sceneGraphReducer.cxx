@@ -42,7 +42,7 @@ PStatCollector SceneGraphReducer::_premunge_collector("*:Premunge");
  */
 void SceneGraphReducer::
 set_gsg(GraphicsStateGuardianBase *gsg) {
-  if (gsg != (GraphicsStateGuardianBase *)NULL) {
+  if (gsg != nullptr) {
     _gsg = gsg;
   } else {
     _gsg = GraphicsStateGuardianBase::get_default_gsg();
@@ -50,8 +50,8 @@ set_gsg(GraphicsStateGuardianBase *gsg) {
 
   int max_vertices = max_collect_vertices;
 
-  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
-    max_vertices = min(max_vertices, _gsg->get_max_vertices_per_array());
+  if (_gsg != nullptr) {
+    max_vertices = std::min(max_vertices, _gsg->get_max_vertices_per_array());
   }
 
   _transformer.set_max_collect_vertices(max_vertices);
@@ -64,7 +64,7 @@ set_gsg(GraphicsStateGuardianBase *gsg) {
  */
 void SceneGraphReducer::
 clear_gsg() {
-  _gsg = NULL;
+  _gsg = nullptr;
   _transformer.set_max_collect_vertices(max_collect_vertices);
 }
 
@@ -180,8 +180,8 @@ unify(PandaNode *root, bool preserve_order) {
   PStatTimer timer(_unify_collector);
 
   int max_indices = max_collect_indices;
-  if (_gsg != (GraphicsStateGuardianBase *)NULL) {
-    max_indices = min(max_indices, _gsg->get_max_vertices_per_primitive());
+  if (_gsg != nullptr) {
+    max_indices = std::min(max_indices, _gsg->get_max_vertices_per_primitive());
   }
   r_unify(root, max_indices, preserve_order);
 }
@@ -333,7 +333,8 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
             << child_node->get_type() << "\n";
 
           if (no_unsupported_copy) {
-            nassertv(false);
+            nassert_raise("unsupported copy");
+            return;
           }
           resist_copy = true;
 
@@ -376,7 +377,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
       << "SceneGraphReducer::r_flatten(" << *grandparent_node << ", "
-      << *parent_node << ", " << hex << combine_siblings_bits << dec
+      << *parent_node << ", " << std::hex << combine_siblings_bits << std::dec
       << ")\n";
   }
 
@@ -578,7 +579,7 @@ flatten_siblings(PandaNode *parent_node, int combine_siblings_bits) {
           if (consider_siblings(parent_node, child1, child2)) {
             PT(PandaNode) new_node =
               do_flatten_siblings(parent_node, child1, child2);
-            if (new_node != (PandaNode *)NULL) {
+            if (new_node != nullptr) {
               // We successfully collapsed a node.
               (*ai1_hold) = new_node;
               nodes.erase(ai2_hold);
@@ -655,7 +656,7 @@ do_flatten_child(PandaNode *grandparent_node, PandaNode *parent_node,
   }
 
   PT(PandaNode) new_parent = collapse_nodes(parent_node, child_node, false);
-  if (new_parent == (PandaNode *)NULL) {
+  if (new_parent == nullptr) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << "Decided not to collapse " << *parent_node
@@ -689,12 +690,12 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
   }
 
   PT(PandaNode) new_child = collapse_nodes(child2, child1, true);
-  if (new_child == (PandaNode *)NULL) {
+  if (new_child == nullptr) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
         << "Decided not to collapse " << *child1 << " and " << *child2 << "\n";
     }
-    return NULL;
+    return nullptr;
   }
 
   choose_name(new_child, child2, child1);
@@ -717,7 +718,7 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 PT(PandaNode) SceneGraphReducer::
 collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
   PT(PandaNode) result = node2->combine_with(node1);
-  if (result == NULL) {
+  if (result == nullptr) {
     result = node1->combine_with(node2);
   }
   return result;
@@ -730,7 +731,7 @@ collapse_nodes(PandaNode *node1, PandaNode *node2, bool siblings) {
  */
 void SceneGraphReducer::
 choose_name(PandaNode *preserve, PandaNode *source1, PandaNode *source2) {
-  string name;
+  std::string name;
   bool got_name = false;
 
   name = source1->get_name();

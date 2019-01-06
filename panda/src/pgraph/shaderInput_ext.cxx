@@ -58,7 +58,7 @@ extern struct Dtool_PyTypedObject Dtool_ParamValueBase;
  */
 void Extension<ShaderInput>::
 __init__(CPT_InternalName name, PyObject *value, int priority) {
-  _this->_name = move(name);
+  _this->_name = std::move(name);
   _this->_priority = priority;
 
   if (PyTuple_CheckExact(value) && PyTuple_GET_SIZE(value) <= 4) {

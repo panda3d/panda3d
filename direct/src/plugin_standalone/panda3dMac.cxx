@@ -16,7 +16,6 @@
 
 #include <iostream>
 #include <fstream>
-using namespace std;
 
 // Having a global Panda3DMac object just makes things easier.
 static Panda3DMac *this_prog;
@@ -48,12 +47,12 @@ open_p3d_file(FSRef *ref) {
   UInt8 filename[buffer_size];
   err = FSRefMakePath(ref, filename, buffer_size);
   if (err) {
-    cerr << "Couldn't get filename\n";
+    std::cerr << "Couldn't get filename\n";
     return;
   }
 
   // Create an instance.
-  create_instance((char *)filename, true, NULL, 0);
+  create_instance((char *)filename, true, nullptr, 0);
 }
 
 static pascal OSErr
@@ -74,7 +73,7 @@ open_documents_handler(const AppleEvent *theAppleEvent, AppleEvent *reply,
 
   for (index = 1; index <= count; index++) {
     err = AEGetNthPtr(&docList, index, typeFSRef,
-                      NULL, NULL, &theFSRef, sizeof(FSRef), NULL);// 5
+                      nullptr, nullptr, &theFSRef, sizeof(FSRef), nullptr);// 5
     require_noerr(err, CantGetDocDescPtr);
 
     // Here's the file, do something with it.

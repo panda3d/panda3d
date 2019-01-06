@@ -35,7 +35,7 @@ CPPTBDType(CPPIdentifier *ident) :
 CPPType *CPPTBDType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *type = _ident->find_type(current_scope, global_scope);
-  if (type != NULL) {
+  if (type != nullptr) {
     return type;
   }
   return this;
@@ -56,7 +56,7 @@ is_tbd() const {
  * include any scoping operators or template parameters, so it may not be a
  * compilable reference to the type.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_simple_name() const {
   return _ident->get_simple_name();
 }
@@ -65,7 +65,7 @@ get_simple_name() const {
  * Returns the compilable, correct name for this type within the indicated
  * scope.  If the scope is NULL, within the scope the type is declared in.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_local_name(CPPScope *scope) const {
   return _ident->get_local_name(scope);
 }
@@ -74,7 +74,7 @@ get_local_name(CPPScope *scope) const {
  * Returns the compilable, correct name for the type, with completely explicit
  * scoping.
  */
-string CPPTBDType::
+std::string CPPTBDType::
 get_fully_scoped_name() const {
   return _ident->get_fully_scoped_name();
 }
@@ -108,13 +108,13 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   rep = CPPType::new_type(rep)->as_tbd_type();
-  assert(rep != NULL);
+  assert(rep != nullptr);
 
   CPPType *result = rep;
 
   // Can we now define it as a real type?
   CPPType *type = rep->_ident->find_type(current_scope, global_scope, subst);
-  if (type != NULL) {
+  if (type != nullptr) {
     result = type;
   }
 
@@ -128,7 +128,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
  *
  */
 void CPPTBDType::
-output(ostream &out, int, CPPScope *, bool) const {
+output(std::ostream &out, int, CPPScope *, bool) const {
   out /* << "typename " */ << *_ident;
 }
 
@@ -156,7 +156,7 @@ as_tbd_type() {
 bool CPPTBDType::
 is_equal(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (*_ident) == (*ot->_ident);
 }
@@ -169,7 +169,7 @@ is_equal(const CPPDeclaration *other) const {
 bool CPPTBDType::
 is_less(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
-  assert(ot != NULL);
+  assert(ot != nullptr);
 
   return (*_ident) < (*ot->_ident);
 }

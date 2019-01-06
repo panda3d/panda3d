@@ -168,14 +168,7 @@ static PyObject *gen_next(PyObject *self) {
  */
 PyObject *Extension<AsyncFuture>::
 __await__(PyObject *self) {
-  Dtool_GeneratorWrapper *gen;
-  gen = (Dtool_GeneratorWrapper *)PyType_GenericAlloc(&Dtool_GeneratorWrapper_Type, 0);
-  if (gen != nullptr) {
-    Py_INCREF(self);
-    gen->_base._self = self;
-    gen->_iternext_func = &gen_next;
-  }
-  return (PyObject *)gen;
+  return Dtool_NewGenerator(self, &gen_next);
 }
 
 /**
@@ -306,7 +299,7 @@ gather(PyObject *args) {
     return Dtool_Raise_ArgTypeError(item, i, "gather", "coroutine, task or future");
   }
 
-  AsyncFuture *future = AsyncFuture::gather(move(futures));
+  AsyncFuture *future = AsyncFuture::gather(std::move(futures));
   if (future != nullptr) {
     future->ref();
     return DTool_CreatePyInstanceTyped((void *)future, Dtool_AsyncFuture, true, false, future->get_type_index());

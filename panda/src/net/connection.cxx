@@ -60,7 +60,7 @@ Connection::
   net_cat.info()
     << "Deleting connection " << (void *)this << "\n";
 
-  if (_socket != (Socket_IP *)NULL) {
+  if (_socket != nullptr) {
     flush();
 
     _socket->Close();
@@ -294,7 +294,7 @@ set_max_segment(int size) {
  */
 bool Connection::
 send_datagram(const NetDatagram &datagram, int tcp_header_size) {
-  nassertr(_socket != (Socket_IP *)NULL, false);
+  nassertr(_socket != nullptr, false);
 
   if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
@@ -303,7 +303,7 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
 
     LightReMutexHolder holder(_write_mutex);
     DatagramUDPHeader header(datagram);
-    string data;
+    std::string data;
     data += header.get_header();
     data += datagram.get_message();
 
@@ -367,14 +367,14 @@ send_datagram(const NetDatagram &datagram, int tcp_header_size) {
  */
 bool Connection::
 send_raw_datagram(const NetDatagram &datagram) {
-  nassertr(_socket != (Socket_IP *)NULL, false);
+  nassertr(_socket != nullptr, false);
 
   if (_socket->is_exact_type(Socket_UDP::get_class_type())) {
     // We have to send UDP right away.
     Socket_UDP *udp;
     DCAST_INTO_R(udp, _socket, false);
 
-    string data = datagram.get_message();
+    std::string data = datagram.get_message();
 
     LightReMutexHolder holder(_write_mutex);
     Socket_Address addr = datagram.get_address().get_addr();
@@ -430,7 +430,7 @@ do_flush() {
   Socket_TCP *tcp;
   DCAST_INTO_R(tcp, _socket, false);
 
-  string sending_data;
+  std::string sending_data;
   _queued_data.swap(sending_data);
 
   _queued_count = 0;
@@ -438,14 +438,14 @@ do_flush() {
 
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   int max_send = net_max_write_per_epoch;
-  int data_sent = tcp->SendData(sending_data.data(), min((size_t)max_send, sending_data.size()));
+  int data_sent = tcp->SendData(sending_data.data(), std::min((size_t)max_send, sending_data.size()));
   bool okflag = (data_sent == (int)sending_data.size());
   if (!okflag) {
     int total_sent = 0;
     if (data_sent > 0) {
       total_sent += data_sent;
     }
-    double last_report = 0;
+
     while (!okflag && tcp->Active() &&
            (data_sent > 0 || tcp->GetLastError() == LOCAL_BLOCKING_ERROR)) {
       if (data_sent == 0) {
@@ -453,7 +453,7 @@ do_flush() {
       } else {
         Thread::consider_yield();
       }
-      data_sent = tcp->SendData(sending_data.data() + total_sent, min((size_t)max_send, sending_data.size() - total_sent));
+      data_sent = tcp->SendData(sending_data.data() + total_sent, std::min((size_t)max_send, sending_data.size() - total_sent));
       if (data_sent > 0) {
         total_sent += data_sent;
       }
@@ -478,12 +478,13 @@ check_send_error(bool okflag) {
   if (!okflag) {
     static ConfigVariableBool abort_send_error("abort-send-error", false);
     if (abort_send_error) {
-      nassertr(false, false);
+      nassert_raise("send error");
+      return false;
     }
 
     // Assume any error means the connection has been reset; tell our manager
     // about it and ignore it.
-    if (_manager != (ConnectionManager *)NULL) {
+    if (_manager != nullptr) {
       _manager->flush_read_connection(this);
       _manager->connection_reset(this, okflag);
     }

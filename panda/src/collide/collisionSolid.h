@@ -89,8 +89,8 @@ public:
   virtual PStatCollector &get_test_pcollector();
 
 PUBLISHED:
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, int indent_level = 0) const;
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out, int indent_level = 0) const;
 
 protected:
   INLINE bool do_is_tangible() const;
@@ -108,7 +108,7 @@ protected:
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
-  test_intersection_from_tube(const CollisionEntry &entry) const;
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_parabola(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -177,13 +177,13 @@ private:
   friend class CollisionLine;
   friend class CollisionRay;
   friend class CollisionSegment;
-  friend class CollisionTube;
+  friend class CollisionCapsule;
   friend class CollisionParabola;
   friend class CollisionHandlerFluidPusher;
   friend class CollisionBox;
 };
 
-INLINE ostream &operator << (ostream &out, const CollisionSolid &cs) {
+INLINE std::ostream &operator << (std::ostream &out, const CollisionSolid &cs) {
   cs.output(out);
   return out;
 }

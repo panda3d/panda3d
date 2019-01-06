@@ -16,9 +16,8 @@
  */
 INLINE TextureContext::
 TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
-  BufferContext(&pgo->_texture_residency),
+  BufferContext(&pgo->_texture_residency, tex),
   AdaptiveLruPage(0),
-  _texture(tex),
   _view(view)
 {
 }
@@ -28,7 +27,7 @@ TextureContext(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
  */
 INLINE Texture *TextureContext::
 get_texture() const {
-  return _texture;
+  return (Texture *)_object;
 }
 
 /**
@@ -56,7 +55,7 @@ was_modified() const {
  */
 INLINE bool TextureContext::
 was_properties_modified() const {
-  return _properties_modified != _texture->get_properties_modified();
+  return _properties_modified != get_texture()->get_properties_modified();
 }
 
 /**
@@ -65,7 +64,7 @@ was_properties_modified() const {
  */
 INLINE bool TextureContext::
 was_image_modified() const {
-  return _image_modified != _texture->get_image_modified();
+  return _image_modified != get_texture()->get_image_modified();
 }
 
 /**
@@ -74,7 +73,7 @@ was_image_modified() const {
  */
 INLINE bool TextureContext::
 was_simple_image_modified() const {
-  return _simple_image_modified != _texture->get_simple_image_modified();
+  return _simple_image_modified != get_texture()->get_simple_image_modified();
 }
 
 /**
@@ -121,9 +120,9 @@ update_data_size_bytes(size_t new_data_size_bytes) {
 INLINE void TextureContext::
 mark_loaded() {
   // _data_size_bytes = _data->get_texture_size_bytes();
-  _properties_modified = _texture->get_properties_modified();
-  _image_modified = _texture->get_image_modified();
-  update_modified(max(_properties_modified, _image_modified));
+  _properties_modified = get_texture()->get_properties_modified();
+  _image_modified = get_texture()->get_image_modified();
+  update_modified(std::max(_properties_modified, _image_modified));
 
   // Assume the texture is now resident.
   set_resident(true);
@@ -135,9 +134,9 @@ mark_loaded() {
  */
 INLINE void TextureContext::
 mark_simple_loaded() {
-  _properties_modified = _texture->get_properties_modified();
-  _simple_image_modified = _texture->get_simple_image_modified();
-  update_modified(max(_properties_modified, _simple_image_modified));
+  _properties_modified = get_texture()->get_properties_modified();
+  _simple_image_modified = get_texture()->get_simple_image_modified();
+  update_modified(std::max(_properties_modified, _simple_image_modified));
 
   // The texture's not exactly resident now, but some part of it is.
   set_resident(true);

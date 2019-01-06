@@ -87,6 +87,6 @@ garbage_collect() {
  * Lists the contents of the TextureStage pool to the indicated output stream.
  */
 INLINE void TextureStagePool::
-list_contents(ostream &out) {
+list_contents(std::ostream &out) {
   get_global_ptr()->ns_list_contents(out);
 }
