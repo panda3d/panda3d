@@ -916,7 +916,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("SWRESAMPLE","libswresample", "libswresample", ("libswresample/swresample.h"), target_pkg = "FFMPEG", thirdparty_dir = "ffmpeg")
         SmartPkgEnable("FFTW",      "",          ("fftw3"), ("fftw.h"))
         SmartPkgEnable("FMODEX",    "",          ("fmodex"), ("fmodex", "fmodex/fmod.h"))
-        SmartPkgEnable("HARFBUZZ",  "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
         SmartPkgEnable("GL",        "gl",        ("GL"), ("GL/gl.h"), framework = "OpenGL")
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
@@ -934,6 +933,7 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
             SmartPkgEnable("BULLET",   "bullet",    ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
             SmartPkgEnable("FREETYPE", "freetype2", ("freetype"), ("freetype2", "freetype2/freetype/freetype.h"))
+            SmartPkgEnable("HARFBUZZ", "harfbuzz",  ("harfbuzz"), ("harfbuzz", "harfbuzz/hb-ft.h"))
             SmartPkgEnable("PNG",      "libpng",    ("png"), "png.h", tool = "libpng-config")
             SmartPkgEnable("GLES",     "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
             SmartPkgEnable("GLES2",    "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
@@ -1431,6 +1431,8 @@ def CompileCxx(obj,src,opts):
                 cmd += " -s USE_ZLIB=1"
             if 'FREETYPE' in opts and not PkgSkip("FREETYPE"):
                 cmd += " -s USE_FREETYPE=1"
+            if 'HARFBUZZ' in opts and not PkgSkip("HARFBUZZ"):
+                cmd += " -s USE_HARFBUZZ=1"
             if 'PNG' in opts and not PkgSkip("PNG"):
                 cmd += " -s USE_LIBPNG=1"
 
