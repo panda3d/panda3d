@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.0.2)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON) # Must go before project() below
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) # Must go before project() below
-project(Panda3D VERSION 1.10.0)
+
+# Figure out the version
+file(STRINGS "setup.cfg" _version REGEX "^version = ")
+string(REGEX REPLACE "^.*= " "" _version "${_version}")
+project(Panda3D VERSION ${_version})
+unset(_version)
+
 enable_testing()
 
 # Panda3D is now a C++11 project. Newer versions of CMake support this out of
