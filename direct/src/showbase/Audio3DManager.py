@@ -122,9 +122,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 1, expected <VBase3>")
-        self.vel_dict[sound]=velocity
+        self.vel_dict[sound] = velocity
 
     def setSoundVelocityAuto(self, sound):
         """
@@ -155,9 +157,11 @@ class Audio3DManager:
         This is relative to the sound root (probably render).
         Default: VBase3(0, 0, 0)
         """
+        if isinstance(velocity, tuple) and len(velocity) == 3:
+            velocity = VBase3(*velocity)
         if not isinstance(velocity, VBase3):
             raise TypeError("Invalid argument 0, expected <VBase3>")
-        self.listener_vel=velocity
+        self.listener_vel = velocity
 
     def setListenerVelocityAuto(self):
         """
