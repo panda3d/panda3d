@@ -315,7 +315,8 @@ on_input_device_arrival(HANDLE handle) {
 
   // Is this an XInput device?  If so, handle it via XInput, which allows us
   // to handle independent left/right triggers as well as vibration output.
-  if (info.dwType == RIM_TYPEHID && strstr(path, "&IG_") != nullptr) {
+  if (info.dwType == RIM_TYPEHID && strstr(path, "&IG_") != nullptr &&
+      XInputDevice::init_xinput()) {
     // This is a device we should handle via the XInput API.  Check which of
     // the four players was the lucky one.
     if (_xinput_device0.check_arrival(info, inst, name, manufacturer)) {

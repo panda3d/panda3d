@@ -249,6 +249,10 @@ detect(InputDeviceManager *mgr) {
  */
 bool XInputDevice::
 init_xinput() {
+  if (_initialized) {
+    return true;
+  }
+
   if (device_cat.is_debug()) {
     device_cat.debug() << "Initializing XInput library.\n";
   }
