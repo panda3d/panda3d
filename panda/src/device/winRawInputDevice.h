@@ -42,10 +42,8 @@ private:
 private:
   const std::string _path;
   HANDLE _handle;
-  DWORD _size;
   void *_preparsed;
   ULONG _max_data_count;
-  ULONG _max_usage_count;
 
   // Indexed by report ID
   pvector<BitArray> _report_buttons;

@@ -20,7 +20,7 @@
 #include "inputDeviceSet.h"
 
 #ifdef _WIN32
-#include "xinputDevice.h"
+#include "xInputDevice.h"
 class WinRawInputDevice;
 #endif
 

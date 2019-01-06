@@ -1,3 +1,8 @@
+------------------------  RELEASE 1.10.1  -----------------------
+
+* Fix regression with Audio3DManager.setSoundVelocityAuto()
+* Audio3DManager accepts tuple in setSoundVelocity/setListenerVelocity
+
 ------------------------  RELEASE 1.10.0  -----------------------
 
 This is a major release with significant changes.  Please review the

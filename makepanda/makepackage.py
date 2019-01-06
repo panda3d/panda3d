@@ -531,6 +531,10 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         if os.path.isdir(outputdir+"/Pmw"):
             oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % outputdir)
 
+        # Copy over panda3d.dist-info directory.
+        if os.path.isdir(outputdir + "/panda3d.dist-info"):
+            oscmd("cp -R %s/panda3d.dist-info dstroot/pythoncode/Developer/Panda3D/panda3d.dist-info" % (outputdir))
+
         for base in os.listdir(outputdir+"/panda3d"):
             if base.endswith('.py'):
                 libname = "dstroot/pythoncode/Developer/Panda3D/panda3d/" + base
@@ -554,9 +558,12 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
         oscmd("mkdir -p dstroot/pybindings%s/Library/Python/%s/site-packages" % (pyver, pyver))
         WriteFile("dstroot/pybindings%s/Library/Python/%s/site-packages/Panda3D.pth" % (pyver, pyver), "/Developer/Panda3D")
 
-        # Copy over panda3d.dist-info directory.
-        if os.path.isdir(outputdir + "/panda3d.dist-info"):
-            oscmd("cp -R %s/panda3d.dist-info dstroot/pybindings%s/Library/Python/%s/site-packages/" % (outputdir, pyver, pyver))
+        # Evidently not all Python 3.7 installations read the above path, so do this for now
+        # See GitHub #502
+        if pyver == "3.7":
+            dir = "dstroot/pybindings%s/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/site-packages" % (pyver, pyver, pyver)
+            oscmd("mkdir -p %s" % (dir))
+            WriteFile("%s/Panda3D.pth" % (dir), "/Developer/Panda3D")
 
     if not PkgSkip("FFMPEG"):
         oscmd("mkdir -p dstroot/ffmpeg/Developer/Panda3D/lib")

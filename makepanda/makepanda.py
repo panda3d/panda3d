@@ -473,7 +473,7 @@ else:
     target_arch = GetTargetArch()
     if target_arch == 'amd64':
         target_arch = 'x86_64'
-    PLATFORM = '{0}-{1}' % (target, target_arch)
+    PLATFORM = '{0}-{1}'.format(target, target_arch)
 
 
 print("Platform: %s" % PLATFORM)

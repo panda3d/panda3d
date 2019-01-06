@@ -295,24 +295,10 @@ int write_python_table_native(std::ostream &out) {
 
   out.put('\n');
 
-  out << "#if PY_MAJOR_VERSION >= 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) PyObject *PyInit_" << library_name << "();\n"
+  out << "#if PY_MAJOR_VERSION >= 3\n"
+      << "extern \"C\" EXPORT_CLASS PyObject *PyInit_" << library_name << "();\n"
       << "#else\n"
-      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
-      << "#endif\n"
-      << "#endif\n";
-
-  out << "#if PY_MAJOR_VERSION < 3 || !defined(NDEBUG)\n"
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
-      << "#elif __GNUC__ >= 4\n"
-      << "extern \"C\" __attribute__((visibility(\"default\"))) void init" << library_name << "();\n"
-      << "#else\n"
-      << "extern \"C\" void init" << library_name << "();\n"
-      << "#endif\n"
+      << "extern \"C\" EXPORT_CLASS void init" << library_name << "();\n"
       << "#endif\n";
 
   out << "\n"
@@ -361,14 +347,6 @@ int write_python_table_native(std::ostream &out) {
       << "}\n"
       << "\n"
 
-      << "#ifndef NDEBUG\n"
-      << "void init" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 2\");\n"
-      << "}\n"
-      << "#endif\n"
-
       << "#else  // Python 2 case\n"
       << "\n"
       << "void init" << library_name << "() {\n";
@@ -402,15 +380,6 @@ int write_python_table_native(std::ostream &out) {
 
   out << "  }\n"
       << "}\n"
-      << "\n"
-      << "#ifndef NDEBUG\n"
-      << "PyObject *PyInit_" << library_name << "() {\n"
-      << "  PyErr_SetString(PyExc_ImportError, \"" << module_name << " was "
-      << "compiled for Python \" PY_VERSION \", which is incompatible "
-      << "with Python 3\");\n"
-      << "  return nullptr;\n"
-      << "}\n"
-      << "#endif\n"
       << "#endif\n"
       << "\n";
 

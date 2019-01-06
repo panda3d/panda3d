@@ -55,8 +55,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-http://rdb.name/thirdparty-vc14-x64.7z
-http://rdb.name/thirdparty-vc14.7z
+https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win32.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command.  (Change `14.1` to `14` if you are
