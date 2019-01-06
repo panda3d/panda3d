@@ -41,7 +41,7 @@ class PaletteTreeCtrl(wx.TreeCtrl):
                roots.append(key)
         for root in roots:
             newItem = self.AppendItem(parentItem, root)
-            self.SetItemPyData(newItem, root)
+            self.SetItemData(newItem, root)
             rootItems.append(newItem)
             itemKeys.remove(root)
         for rootItem in rootItems:
@@ -108,7 +108,7 @@ class PaletteTreeCtrl(wx.TreeCtrl):
         item, cookie = self.GetFirstChild(parent)
         while item:
            itemName = self.GetItemText(item)
-           itemData = self.GetItemPyData(item)
+           itemData = self.GetItemData(item)
 
            newItem = self.AppendItem(newParent, itemName)
            self.SetItemPyData(newItem, itemData)

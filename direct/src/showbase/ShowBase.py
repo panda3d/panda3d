@@ -2926,7 +2926,7 @@ class ShowBase(DirectObject.DirectObject):
 
         if not self.wxApp:
             # Create a new base.wxApp.
-            self.wxApp = wx.PySimpleApp(redirect = False)
+            self.wxApp = wx.App(redirect = False)
 
         if ConfigVariableBool('wx-main-loop', True):
             # Put wxPython in charge of the main loop.  It really
