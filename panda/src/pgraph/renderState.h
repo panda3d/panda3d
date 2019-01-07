@@ -232,7 +232,7 @@ private:
   // _invert_composition_cache.
   static LightReMutex *_states_lock;
   typedef SimpleHashMap<const RenderState *, std::nullptr_t, indirect_compare_to_hash<const RenderState *> > States;
-  static States *_states;
+  static States _states;
   static const RenderState *_empty_state;
 
   // This iterator records the entry corresponding to this RenderState object

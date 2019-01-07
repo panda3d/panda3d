@@ -580,9 +580,9 @@ rehash_generated_shaders() {
 
   // With uniquify-states turned on, we can actually go through all the states
   // and check whether their generated shader is still OK.
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
 
     if (state->_generated_shader != nullptr) {
       ShaderKey key;
@@ -619,9 +619,9 @@ void ShaderGenerator::
 clear_generated_shaders() {
   LightReMutexHolder holder(*RenderState::_states_lock);
 
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->_generated_shader.clear();
   }
 
