@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=200" align="right" />
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
 
 Panda3D
 =======
