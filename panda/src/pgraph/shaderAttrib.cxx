@@ -225,6 +225,29 @@ set_shader_input(ShaderInput &&input) const {
 }
 
 /**
+ * Returns a new ShaderAttrib with the given shader inputs set.  This is a
+ * more efficient way to set multiple shader inputs than calling
+ * set_shader_input multiple times.
+ */
+CPT(RenderAttrib) ShaderAttrib::
+set_shader_inputs(const pvector<ShaderInput> &inputs) const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+
+  size_t num_inputs = inputs.size();
+  for (size_t i = 0; i < num_inputs; i++) {
+    const ShaderInput &input = inputs[i];
+    Inputs::iterator itr = result->_inputs.find(input.get_name());
+    if (itr == result->_inputs.end()) {
+      result->_inputs.insert(Inputs::value_type(input.get_name(), input));
+    } else {
+      itr->second = input;
+    }
+  }
+
+  return return_new(result);
+}
+
+/**
  * Sets the geometry instance count.  Do not confuse this with instanceTo,
  * which is used for animation instancing, and has nothing to do with this.  A
  * value of 0 means not to use instancing at all.
