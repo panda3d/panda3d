@@ -1162,12 +1162,6 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
     GLuint gl_format = GL_RGBA;
 #ifndef OPENGLES
     switch (slot) {
-      case RTP_aux_rgba_0:
-      case RTP_aux_rgba_1:
-      case RTP_aux_rgba_2:
-      case RTP_aux_rgba_3:
-        gl_format = GL_RGBA;
-        break;
       case RTP_aux_hrgba_0:
       case RTP_aux_hrgba_1:
       case RTP_aux_hrgba_2:
@@ -1180,8 +1174,16 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       case RTP_aux_float_3:
         gl_format = GL_RGBA32F_ARB;
         break;
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
       default:
-        gl_format = GL_RGBA;
+        if (_fb_properties.get_srgb_color()) {
+          gl_format = GL_SRGB8_ALPHA8;
+        } else {
+          gl_format = GL_RGBA;
+        }
         break;
     }
 #endif
