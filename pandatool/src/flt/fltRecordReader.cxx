@@ -131,12 +131,13 @@ advance(bool ok_eof) {
 
   // And now read the full record based on the length.
   int length = _next_record_length - header_size;
-  char *buffer = new char[length];
   if (length > 0) {
-    _in.read(buffer, length);
+    vector_uchar data((size_t)length);
+    _in.read((char *)&data[0], length);
+    _datagram = Datagram(std::move(data));
+  } else {
+    _datagram = Datagram();
   }
-  _datagram = Datagram(buffer, length);
-  delete[] buffer;
 
   if (_in.eof()) {
     _state = S_eof;
@@ -162,12 +163,12 @@ advance(bool ok_eof) {
     _record_length += _next_record_length;
     length = _next_record_length - header_size;
 
-    buffer = new char[length];
     if (length > 0) {
+      char *buffer = new char[length];
       _in.read(buffer, length);
+      _datagram.append_data(buffer, length);
+      delete[] buffer;
     }
-    _datagram.append_data(buffer, length);
-    delete[] buffer;
 
     if (_in.eof()) {
       _state = S_eof;
