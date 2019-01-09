@@ -27,6 +27,42 @@ class Loader(DirectObject):
         # This indicates that this class behaves like a Future.
         _asyncio_future_blocking = False
 
+        class ResultAwaiter(object):
+            """Reinvents generators because of PEP 479, sigh.  See #513."""
+
+            __slots__ = 'requestList', 'index'
+
+            def __init__(self, requestList):
+                self.requestList = requestList
+                self.index = 0
+
+            def __await__(self):
+                return self
+
+            def __anext__(self):
+                if self.index >= len(self.requestList):
+                    raise StopAsyncIteration
+                return self
+
+            def __iter__(self):
+                return self
+
+            def __next__(self):
+                i = self.index
+                request = self.requestList[i]
+                if not request.done():
+                    return request
+
+                self.index = i + 1
+
+                result = request.result()
+                if isinstance(result, PandaNode):
+                    result = NodePath(result)
+
+                exc = StopIteration(result)
+                exc.value = result
+                raise exc
+
         def __init__(self, loader, numObjects, gotList, callback, extraArgs):
             self._loader = loader
             self.objects = [None] * numObjects
@@ -81,16 +117,14 @@ class Loader(DirectObject):
         def __await__(self):
             """ Returns a generator that raises StopIteration when the loading
             is complete.  This allows this class to be used with 'await'."""
+
             if self.requests:
                 self._asyncio_future_blocking = True
-                yield self
 
-            # This should be a simple return, but older versions of Python
-            # don't allow return statements with arguments.
-            result = self.result()
-            exc = StopIteration(result)
-            exc.value = result
-            raise exc
+            if self.gotList:
+                return self.ResultAwaiter([self])
+            else:
+                return self.ResultAwaiter(self.requestList)
 
         def __aiter__(self):
             """ This allows using `async for` to iterate asynchronously over
@@ -100,19 +134,7 @@ class Loader(DirectObject):
             requestList = self.requestList
             assert requestList is not None, "Request was cancelled."
 
-            class AsyncIter:
-                index = 0
-                def __anext__(self):
-                    if self.index < len(requestList):
-                        i = self.index
-                        self.index = i + 1
-                        return requestList[i]
-                    else:
-                        raise StopAsyncIteration
-
-            iter = AsyncIter()
-            iter.objects = self.objects
-            return iter
+            return self.ResultAwaiter(requestList)
 
     # special methods
     def __init__(self, base):

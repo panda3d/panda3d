@@ -7,6 +7,7 @@ from direct.showbase.TkGlobal import *
 from . import WidgetPropertiesDialog
 import Pmw
 from direct.directtools.DirectUtil import getTkColorString
+from panda3d.core import Vec4
 
 if sys.version_info >= (3, 0):
     from tkinter.colorchooser import askcolor
