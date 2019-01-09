@@ -625,6 +625,7 @@ def rgbPanel(nodePath, callback = None, style = 'mini'):
     if nodePath.hasColor():
         initColor = nodePath.getColor() * 255.0
     else:
+        from panda3d.core import Vec4
         initColor = Vec4(255)
     # Create entry scale group
     vgp = ValuatorGroupPanel(title = 'RGBA Panel: ' + nodePath.getName(),
