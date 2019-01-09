@@ -598,7 +598,9 @@ do_python_task() {
             // directly instead of having to do:
             //   await taskMgr.add(Task.pause(1.0))
             AsyncTask *task = (AsyncTask *)fut;
-            _manager->add(task);
+            if (!task->is_alive()) {
+              _manager->add(task);
+            }
           }
           if (fut->add_waiting_task(this)) {
             if (task_cat.is_debug()) {
