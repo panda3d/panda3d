@@ -40,6 +40,7 @@ public:
   plist(TypeHandle type_handle = plist_type_handle) : base_class(allocator(type_handle)) { }
   plist(size_type n, TypeHandle type_handle = plist_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   plist(size_type n, const Type &value, TypeHandle type_handle = plist_type_handle) : base_class(n, value, allocator(type_handle)) { }
+  plist(std::initializer_list<Type> init, TypeHandle type_handle = plist_type_handle) : base_class(init, allocator(type_handle)) { }
 
   typedef typename base_class::iterator iterator;
   typedef typename base_class::const_iterator const_iterator;
