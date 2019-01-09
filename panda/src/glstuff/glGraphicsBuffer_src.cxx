@@ -1181,6 +1181,8 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       default:
         if (_fb_properties.get_srgb_color()) {
           gl_format = GL_SRGB8_ALPHA8;
+        } else if (_fb_properties.get_float_color()) {
+          gl_format = GL_RGBA32F_ARB;
         } else {
           gl_format = GL_RGBA;
         }
