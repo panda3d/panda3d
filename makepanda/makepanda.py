@@ -63,7 +63,6 @@ MAJOR_VERSION=None
 COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
-OSX_ARCHS=[]
 HOST_URL=None
 global STRDXSDKVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
@@ -142,7 +141,6 @@ def usage(problem):
     print("  --host URL        (set the host url (runtime build only))")
     print("  --threads N       (use the multithreaded build system. see manual)")
     print("  --osxtarget N     (the OS X version number to build for (OS X only))")
-    print("  --universal       (build universal binaries (OS X only))")
     print("  --override \"O=V\"  (override dtool_config/prc option value)")
     print("  --static          (builds libraries for static linking)")
     print("  --target X        (experimental cross-compilation (android only))")
@@ -170,7 +168,7 @@ def usage(problem):
 
 def parseopts(args):
     global INSTALLER,WHEEL,RUNTESTS,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
-    global COMPRESSOR,THREADCOUNT,OSXTARGET,OSX_ARCHS,HOST_URL
+    global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
     global DEBVERSION,WHLVERSION,RPMRELEASE,GIT_COMMIT,P3DSUFFIX,RTDIST_VERSION
     global STRDXSDKVERSION, WINDOWS_SDK, MSVC_VERSION, BOOUSEINTELCOMPILER
     global COPY_PYTHON
@@ -178,7 +176,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
-        "no-carbon",
+        "no-carbon", "universal",
         ]
 
     # All recognized options.
@@ -188,14 +186,13 @@ def parseopts(args):
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=","rtdist-version=",
         "directx-sdk=", "windows-sdk=", "msvc-version=", "clean", "use-icl",
-        "universal", "target=", "arch=", "git-commit=", "no-copy-python",
+        "target=", "arch=", "git-commit=", "no-copy-python",
         ] + removedopts
 
     anything = 0
     optimize = ""
     target = None
     target_arch = None
-    universal = False
     clean_build = False
     for pkg in PkgListGet():
         longopts.append("use-" + pkg.lower())
@@ -221,7 +218,6 @@ def parseopts(args):
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
-            elif (option=="--universal"): universal = True
             elif (option=="--target"): target = value.strip()
             elif (option=="--arch"): target_arch = value.strip()
             elif (option=="--nocolor"): DisableColors()
@@ -302,25 +298,6 @@ def parseopts(args):
 
     if target is not None or target_arch is not None:
         SetTarget(target, target_arch)
-
-    if universal:
-        if target_arch:
-            exit("--universal is incompatible with --arch")
-
-        OSX_ARCHS.append("i386")
-        if OSXTARGET:
-            osxver = OSXTARGET
-        else:
-            maj, min = platform.mac_ver()[0].split('.')[:2]
-            osxver = int(maj), int(min)
-
-        if osxver[1] < 6:
-            OSX_ARCHS.append("ppc")
-        else:
-            OSX_ARCHS.append("x86_64")
-
-    elif HasTargetArch():
-        OSX_ARCHS.append(GetTargetArch())
 
     try:
         SetOptimize(int(optimize))
@@ -433,22 +410,7 @@ elif target == 'darwin':
         maj, min = platform.mac_ver()[0].split('.')[:2]
         osxver = int(maj), int(min)
 
-    arch_tag = None
-    if not OSX_ARCHS:
-        arch_tag = GetTargetArch()
-    elif len(OSX_ARCHS) == 1:
-        arch_tag = OSX_ARCHS[0]
-    elif frozenset(OSX_ARCHS) == frozenset(('i386', 'ppc')):
-        arch_tag = 'fat'
-    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386')):
-        arch_tag = 'intel'
-    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'ppc64')):
-        arch_tag = 'fat64'
-    elif frozenset(OSX_ARCHS) == frozenset(('x86_64', 'i386', 'ppc')):
-        arch_tag = 'fat32'
-    else:
-        raise RuntimeError('No arch tag for arch combination %s' % OSX_ARCHS)
-
+    arch_tag = GetTargetArch()
     PLATFORM = 'macosx-{0}.{1}-{2}'.format(osxver[0], osxver[1], arch_tag)
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
@@ -934,7 +896,6 @@ if (COMPILER=="GCC"):
 
         if not PkgSkip("FFMPEG"):
             if GetTarget() == "darwin":
-                LibName("FFMPEG", "-Wl,-read_only_relocs,suppress")
                 LibName("FFMPEG", "-framework VideoDecodeAcceleration")
             elif os.path.isfile(GetThirdpartyDir() + "ffmpeg/lib/libavcodec.a"):
                 # Needed when linking ffmpeg statically on Linux.
@@ -1347,9 +1308,11 @@ def CompileCxx(obj,src,opts):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
-            for arch in OSX_ARCHS:
-                if 'NOARCH:' + arch.upper() not in opts:
-                    cmd += " -arch %s" % arch
+            # Use libc++ to enable C++11 features.
+            cmd += " -stdlib=libc++"
+
+            arch = GetTargetArch()
+            cmd += " -arch %s" % arch
 
         if "SYSROOT" in SDK:
             if GetTarget() != "android":
@@ -1867,9 +1830,11 @@ def CompileLink(dll, obj, opts):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=%d.%d" % (OSXTARGET)
 
-            for arch in OSX_ARCHS:
-                if 'NOARCH:' + arch.upper() not in opts:
-                    cmd += " -arch %s" % arch
+            # Use libc++ to enable C++11 features.
+            cmd += " -stdlib=libc++"
+
+            arch = GetTargetArch()
+            cmd += " -arch %s" % arch
 
         elif GetTarget() == 'android':
             arch = GetTargetArch()
@@ -2120,10 +2085,10 @@ def Package(target, inputs, opts):
         if SDK.get("MACOSX"):
             command += " -R \"%s\"" % SDK["MACOSX"]
 
-        for arch in OSX_ARCHS:
-            if arch == "x86_64":
-                arch = "amd64"
-            command += " -P osx_%s" % arch
+        arch = GetTargetArch()
+        if arch == "x86_64":
+            arch = "amd64"
+        command += " -P osx_%s" % arch
 
     command += " -i \"" + GetOutputDir() + "/stage\""
     if (P3DSUFFIX):
@@ -5009,10 +4974,10 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX']
   TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
 
-  OPTS=['DIR:panda/src/physx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/src/physx', 'PHYSX']
   IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaphysx.in', opts=['IMOD:panda3d.physx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
@@ -5022,15 +4987,15 @@ if (PkgSkip("PHYSX")==0):
 #
 
 if (PkgSkip("PHYSX")==0):
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOARCH:PPC', 'PYTHON']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'PYTHON']
   TargetAdd('pandaphysx_pandaphysx.obj', opts=OPTS, input='pandaphysx.cxx')
 
   TargetAdd('libpandaphysx.dll', input='pandaphysx_pandaphysx.obj')
   TargetAdd('libpandaphysx.dll', input='p3physx_composite.obj')
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC', 'PYTHON'])
+  TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'PYTHON'])
 
-  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOARCH:PPC']
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX']
   PyTargetAdd('physx_module.obj', input='libpandaphysx.in')
   PyTargetAdd('physx_module.obj', opts=OPTS)
   PyTargetAdd('physx_module.obj', opts=['IMOD:panda3d.physx', 'ILIB:physx', 'IMPORT:panda3d.core'])
@@ -5040,7 +5005,7 @@ if (PkgSkip("PHYSX")==0):
   PyTargetAdd('physx.pyd', input='libpandaphysx.dll')
   PyTargetAdd('physx.pyd', input='libp3interrogatedb.dll')
   PyTargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX', 'NOARCH:PPC'])
+  PyTargetAdd('physx.pyd', opts=['WINUSER', 'PHYSX'])
 
 #
 # DIRECTORY: panda/src/physics/
@@ -6452,16 +6417,9 @@ if not PkgSkip("PANDATOOL"):
 for VER in MAYAVERSIONS:
   VNUM = VER[4:]
   if not PkgSkip(VER) and not PkgSkip("PANDATOOL") and not PkgSkip("EGG"):
-    if GetTarget() == 'darwin' and int(VNUM) >= 2012:
-      ARCH_OPTS = ['NOARCH:PPC', 'NOARCH:I386']
-      if len(OSX_ARCHS) != 0 and 'x86_64' not in OSX_ARCHS:
-        continue
-    elif GetTarget() == 'darwin' and int(VNUM) >= 2009:
-      ARCH_OPTS = ['NOARCH:PPC']
-    elif GetTarget() == 'darwin':
-      ARCH_OPTS = ['NOARCH:X86_64']
-    else:
-      ARCH_OPTS = []
+    if GetTarget() == 'darwin' and int(VNUM) < 2009:
+      # No x86_64 support.
+      continue
 
     OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/cvscopy', 'BUILDING:MISC', VER] + ARCH_OPTS
     TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')

@@ -135,9 +135,8 @@ you may build Panda3D using a command like the following:
 python makepanda/makepanda.py --everything --installer
 ```
 
-In order to make a universal build, pass the --universal flag.  You may also
-target a specific minimum macOS version using the --osxtarget flag followed
-by the release number, eg. 10.6 or 10.7.
+You may target a specific minimum macOS version using the --osxtarget flag
+followed by the release number, eg. 10.7 or 10.9.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
