@@ -1619,7 +1619,6 @@
 				<File RelativePath="..\panda\src\tinydisplay\zmath.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zdither.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zbuffer.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinydisplay_composite2.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinySDLGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyOffscreenGraphicsPipe.cxx"></File>
@@ -1627,13 +1626,11 @@
 				<File RelativePath="..\panda\src\tinydisplay\tinyOffscreenGraphicsPipe.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\image_util.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGeomMunger.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGeomMunger.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsPipe.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\td_texture.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\config_tinydisplay.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinySDLGraphicsPipe.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_code_3.h"></File>
@@ -1675,12 +1672,10 @@
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_code_1.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyXGraphicsWindow.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_2.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\ztriangle_3.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\init.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\zbuffer.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\vertex.cxx"></File>
-				<File RelativePath="..\panda\src\tinydisplay\tinyOsxGraphicsPipe.h"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyWinGraphicsWindow.I"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyGraphicsStateGuardian.cxx"></File>
 				<File RelativePath="..\panda\src\tinydisplay\tinyXGraphicsPipe.h"></File>
@@ -3505,20 +3500,6 @@
 				<File RelativePath="..\panda\src\physx\physxPlaneShape.cxx"></File>
 				<File RelativePath="..\panda\src\physx\physxConvexShapeDesc.I"></File>
 				<File RelativePath="..\panda\src\physx\physxMaterialDesc.h"></File>
-			</Filter>
-			<Filter Name="osxdisplay">
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsBuffer.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsWindow.I"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsPipe.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsBuffer.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\config_osxdisplay.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\resize_box.rgb.c"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsStateGuardian.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsWindow.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\config_osxdisplay.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsPipe.h"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxdisplay_composite1.cxx"></File>
-				<File RelativePath="..\panda\src\osxdisplay\osxGraphicsStateGuardian.cxx"></File>
 			</Filter>
 			<Filter Name="net">
 				<File RelativePath="..\panda\src\net\queuedConnectionReader.cxx"></File>

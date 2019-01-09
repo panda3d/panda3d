@@ -94,7 +94,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GTK2",                                              # GTK2 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
   "ROCKET",                                            # GUI libraries
-  "CARBON", "COCOA",                                   # Mac OS X toolkits
+  "COCOA",                                             # Mac OS X toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
@@ -178,6 +178,7 @@ def parseopts(args):
     # Options for which to display a deprecation warning.
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
+        "no-carbon",
         ]
 
     # All recognized options.
@@ -622,7 +623,6 @@ if (COMPILER == "MSVC"):
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
-    PkgDisable("CARBON")
     PkgDisable("COCOA")
     DefSymbol("FLEX", "YY_NO_UNISTD_H")
     if (PkgSkip("PYTHON")==0):
@@ -875,14 +875,10 @@ if (COMPILER == "MSVC"):
 
 if (COMPILER=="GCC"):
     if GetTarget() != "darwin":
-        PkgDisable("CARBON")
         PkgDisable("COCOA")
     elif RUNTIME:
         # We don't support Cocoa in the runtime yet.
         PkgDisable("COCOA")
-    if 'x86_64' in OSX_ARCHS:
-        # 64-bits OS X doesn't have Carbon.
-        PkgDisable("CARBON")
 
     #if (PkgSkip("PYTHON")==0):
     #    IncDirectory("PYTHON", SDK["PYTHON"])
@@ -2450,7 +2446,6 @@ DTOOL_CONFIG=[
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
-    ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
@@ -3354,7 +3349,6 @@ if not PkgSkip("EGG"):
 if GetTarget() == 'windows':
     CopyAllHeaders('panda/src/wgldisplay')
 elif GetTarget() == 'darwin':
-    CopyAllHeaders('panda/src/osxdisplay')
     CopyAllHeaders('panda/src/cocoadisplay')
 elif GetTarget() == 'android':
     CopyAllHeaders('panda/src/android')
@@ -4876,26 +4870,6 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not
   TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON'])
 
 #
-# DIRECTORY: panda/src/osxdisplay/
-#
-
-elif (GetTarget() == 'darwin' and PkgSkip("CARBON")==0 and PkgSkip("GL")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
-  TargetAdd('p3osxdisplay_composite1.obj', opts=OPTS, input='p3osxdisplay_composite1.cxx')
-  TargetAdd('p3osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
-  TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
-  TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
-  TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
-  TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
-  TargetAdd('libpandagl.dll', input='p3osxdisplay_composite1.obj')
-  TargetAdd('libpandagl.dll', input='p3osxdisplay_osxGraphicsWindow.obj')
-  if (PkgSkip('PANDAFX')==0):
-    TargetAdd('libpandagl.dll', input='libpandafx.dll')
-  TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
-
-#
 # DIRECTORY: panda/src/wgldisplay/
 #
 
@@ -5247,14 +5221,10 @@ if (not RUNTIME and (GetTarget() in ('windows', 'darwin') or PkgSkip("X11")==0) 
   TargetAdd('p3tinydisplay_ztriangle_3.obj', opts=OPTS, input='ztriangle_3.cxx')
   TargetAdd('p3tinydisplay_ztriangle_4.obj', opts=OPTS, input='ztriangle_4.cxx')
   TargetAdd('p3tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.cxx')
-  if GetTarget() == 'darwin':
-    TargetAdd('p3tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
-    TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_tinyOsxGraphicsWindow.obj')
-    TargetAdd('libp3tinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
-  elif GetTarget() == 'windows':
+  if GetTarget() == 'windows':
     TargetAdd('libp3tinydisplay.dll', input='libp3windisplay.dll')
     TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
-  else:
+  elif GetTarget() != 'darwin':
     TargetAdd('libp3tinydisplay.dll', input='p3x11display_composite1.obj')
     TargetAdd('libp3tinydisplay.dll', opts=['X11'])
   TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_composite1.obj')
