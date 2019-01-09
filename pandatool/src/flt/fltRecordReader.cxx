@@ -139,13 +139,13 @@ advance(bool ok_eof) {
     _datagram = Datagram();
   }
 
-  if (_in.eof()) {
-    _state = S_eof;
-    assert(!flt_error_abort);
-    return FE_end_of_file;
-  }
-
   if (_in.fail()) {
+    if (_in.eof()) {
+      _state = S_eof;
+      assert(!flt_error_abort);
+      return FE_end_of_file;
+    }
+
     _state = S_error;
     assert(!flt_error_abort);
     return FE_read_error;
@@ -170,13 +170,13 @@ advance(bool ok_eof) {
       delete[] buffer;
     }
 
-    if (_in.eof()) {
-      _state = S_eof;
-      assert(!flt_error_abort);
-      return FE_end_of_file;
-    }
-
     if (_in.fail()) {
+      if (_in.eof()) {
+        _state = S_eof;
+        assert(!flt_error_abort);
+        return FE_end_of_file;
+      }
+
       _state = S_error;
       assert(!flt_error_abort);
       return FE_read_error;
@@ -222,11 +222,11 @@ read_next_header() {
   char bytes[header_size];
   _in.read(bytes, header_size);
 
-  if (_in.eof()) {
-    _next_error = FE_end_of_file;
-    return;
-
-  } else if (_in.fail()) {
+  if (_in.fail()) {
+    if (_in.eof()) {
+      _next_error = FE_end_of_file;
+      return;
+    }
     _next_error = FE_read_error;
     return;
   }
