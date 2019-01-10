@@ -129,6 +129,16 @@ read(const Filename &filename) {
   if (assimp_flip_winding_order) {
     flags |= aiProcess_FlipWindingOrder;
   }
+  if (assimp_gen_normals) {
+    if (assimp_smooth_normal_angle == 0.0) {
+      flags |= aiProcess_GenNormals;
+    }
+    else {
+      flags |= aiProcess_GenSmoothNormals;
+      _importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,
+        assimp_smooth_normal_angle);
+    }
+  }
 
   _scene = _importer.ReadFile(_filename.c_str(), flags);
   if (_scene == nullptr) {
