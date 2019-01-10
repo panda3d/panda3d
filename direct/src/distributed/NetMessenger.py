@@ -1,4 +1,3 @@
-
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
 from direct.showbase.Messenger import Messenger
@@ -10,26 +9,6 @@ else:
     from cPickle import dumps, loads
 
 
-# Messages do not need to be in the MESSAGE_TYPES list.
-# This is just an optimization.  If the message is found
-# in this list, it is reduced to an integer index and
-# the message string is not sent.  Otherwise, the message
-# string is sent in the datagram.
-MESSAGE_TYPES=(
-    "avatarOnline",
-    "avatarOffline",
-    "create",
-    "needUberdogCreates",
-    "transferDo",
-)
-
-# This is the reverse look up for the recipient of the
-# datagram:
-MESSAGE_STRINGS={}
-for i in zip(MESSAGE_TYPES, range(1, len(MESSAGE_TYPES)+1)):
-    MESSAGE_STRINGS[i[0]]=i[1]
-
-
 class NetMessenger(Messenger):
     """
     This works very much like the Messenger class except that messages
@@ -38,62 +17,101 @@ class NetMessenger(Messenger):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory('NetMessenger')
 
-    def __init__(self, air, channels):
+    def __init__(self, air, baseChannel=20000, baseMsgType=20000):
         """
         air is the AI Repository.
-        channels is a list of channel IDs (uint32 values)
+        baseChannel is the channel that the first message is sent on.
+        baseMsgType is the MsgType of the same.
         """
         assert self.notify.debugCall()
         Messenger.__init__(self)
         self.air=air
-        self.channels=channels
-        for i in self.channels:
-            self.air.registerForChannel(i)
+        self.baseChannel = baseChannel
+        self.baseMsgType = baseMsgType
+
+        self.__message2type = {}
+        self.__type2message = {}
+        self.__message2channel = {}
 
     def clear(self):
         assert self.notify.debugCall()
-        for i in self.channels:
-            self.air.unRegisterChannel(i)
-        del self.air
-        del self.channels
         Messenger.clear(self)
 
-    def send(self, message, sentArgs=[]):
+    def register(self, code, message):
+        assert self.notify.debugCall()
+        channel = self.baseChannel + code
+        msgType = self.baseMsgType + code
+
+        if message in self.__message2type:
+            self.notify.error('Tried to register message %s twice!' % message)
+            return
+
+        self.__message2type[message] = msgType
+        self.__type2message[msgType] = message
+        self.__message2channel[message] = channel
+
+    def prepare(self, message, sentArgs=[]):
         """
-        Send message to All AI and Uber Dog servers.
+        Prepare the datagram that would get sent in order to send this message
+        to its designated channel.
         """
         assert self.notify.debugCall()
+
+        # Make sure the message is registered:
+        if message not in self.__message2type:
+            self.notify.error('Tried to send unregistered message %s!' % message)
+            return
+
         datagram = PyDatagram()
         # To:
         datagram.addUint8(1)
-        datagram.addChannel(self.channels[0])
+        datagram.addChannel(self.__message2channel[message])
         # From:
         datagram.addChannel(self.air.ourChannel)
-        #if 1: # We send this just because the air expects it:
-        #    # Add an 'A' for AI
-        #    datagram.addUint8(ord('A'))
 
-        messageType=MESSAGE_STRINGS.get(message, 0)
+        messageType=self.__message2type[message]
         datagram.addUint16(messageType)
-        if messageType:
-            datagram.addString(str(dumps(sentArgs)))
-        else:
-            datagram.addString(str(dumps((message, sentArgs))))
-        self.air.send(datagram)
+        datagram.addString(str(dumps(sentArgs)))
 
-    def handle(self, pickleData):
+        return datagram
+
+    def accept(self, message, *args):
+        if message not in self.__message2channel:
+            self.notify.error('Tried to accept unregistered message %s!' % message)
+            return
+
+        anyAccepting = bool(self.whoAccepts(message))
+        if not anyAccepting:
+            self.air.registerForChannel(self.__message2channel[message])
+
+        Messenger.accept(self, message, *args)
+
+    def send(self, message, sentArgs=[]):
         """
-        Send pickleData from the net on the local netMessenger.
-        The internal data in pickleData should have a tuple of
-        (messageString, sendArgsList).
+        Send message to anything that's listening for it.
         """
         assert self.notify.debugCall()
-        messageType=self.air.getMsgType()
-        if messageType:
-            message=MESSAGE_TYPES[messageType-1]
-            sentArgs=loads(pickleData)
-        else:
-            (message, sentArgs) = loads(pickleData)
+
+        datagram = self.prepare(message, sentArgs)
+        self.air.send(datagram)
         Messenger.send(self, message, sentArgs=sentArgs)
 
+    def handle(self, msgType, di):
+        """
+        Send data from the net on the local netMessenger.
+        """
+        assert self.notify.debugCall()
 
+        if msgType not in self.__type2message:
+            self.notify.warning('Received unknown message: %d' % msgType)
+            return
+
+        message = self.__type2message[msgType]
+        sentArgs=loads(di.getString())
+
+        if type(sentArgs) != list:
+            self.notify.warning('Received non-list item in %s message: %r' %
+                                (message, sentArgs))
+            return
+
+        Messenger.send(self, message, sentArgs=sentArgs)
