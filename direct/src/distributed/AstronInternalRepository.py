@@ -1,14 +1,15 @@
-from pandac.PandaModules import *
-from MsgTypes import *
+import collections
+
+from panda3d.core import *
 from direct.showbase import ShowBase # __builtin__.config
 from direct.task.TaskManagerGlobal import * # taskMgr
 from direct.directnotify import DirectNotifyGlobal
-from ConnectionRepository import ConnectionRepository
-from PyDatagram import PyDatagram
-from PyDatagramIterator import PyDatagramIterator
-from AstronDatabaseInterface import AstronDatabaseInterface
-from NetMessenger import NetMessenger
-import collections
+from .MsgTypes import *
+from .ConnectionRepository import ConnectionRepository
+from .PyDatagram import PyDatagram
+from .PyDatagramIterator import PyDatagramIterator
+from .AstronDatabaseInterface import AstronDatabaseInterface
+from .NetMessenger import NetMessenger
 
 # Helper functions for logging output:
 def msgpack_length(dg, length, fix, maxfix, tag8, tag16, tag32):
