@@ -183,7 +183,7 @@ decompress(const Filename &source_file) {
     return false;
 
   int ch = _decompress->get();
-  while (!_decompress->eof() && !_decompress->fail()) {
+  while (ch != EOF && !_decompress->fail()) {
     _dest->put(ch);
     ch = _decompress->get();
   }
@@ -207,7 +207,7 @@ decompress(Ramfile &source_and_dest_file) {
   IDecompressStream decompress(&source, false);
 
   int ch = decompress.get();
-  while (!decompress.eof() && !decompress.fail()) {
+  while (ch != EOF && !decompress.fail()) {
     dest.put(ch);
     ch = decompress.get();
   }
