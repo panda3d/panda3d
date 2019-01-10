@@ -526,11 +526,6 @@ def makewheel(version, output_dir, platform=None):
 
     # Update relevant METADATA entries
     METADATA['version'] = version
-    version_classifiers = [
-        "Programming Language :: Python :: {0}".format(*sys.version_info),
-        "Programming Language :: Python :: {0}.{1}".format(*sys.version_info),
-    ]
-    METADATA['classifiers'].extend(version_classifiers)
 
     # Build out the metadata
     details = METADATA["extensions"]["python.details"]
