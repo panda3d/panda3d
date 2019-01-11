@@ -111,6 +111,16 @@ add_compile_options(
   "$<${cxx_exceptions_property}:${cxx_exceptions_on}>"
   "$<$<NOT:${cxx_exceptions_property}>:${cxx_exceptions_off}>")
 
+# We should use -fvisibility=hidden everywhere, as it makes sure we think
+# about what symbols really should be exposed externally.  For more info, see:
+# https://gcc.gnu.org/wiki/Visibility
+if(NOT MSVC)
+  check_cxx_compiler_flag("-fvisibility=hidden" COMPILER_SUPPORTS_FVISIBILITY_HIDDEN)
+  if(COMPILER_SUPPORTS_FVISIBILITY_HIDDEN)
+    add_compile_options("-fvisibility=hidden")
+  endif()
+endif()
+
 # Include global modules needed for configure scripts
 include(PackageConfig)      # Defines package_option
 
