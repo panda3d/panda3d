@@ -61,9 +61,10 @@ function(composite_sources target sources_var)
     # Check if we can safely add this to a composite file.
     get_source_file_property(generated "${source}" GENERATED)
     get_source_file_property(is_header "${source}" HEADER_FILE_ONLY)
+    get_source_file_property(skip_compositing "${source}" SKIP_COMPOSITING)
     get_filename_component(extension "${source}" EXT)
 
-    if(NOT generated AND NOT is_header AND
+    if(NOT generated AND NOT is_header AND NOT skip_compositing AND
         ";${COMPOSITE_SOURCE_EXTENSIONS};" MATCHES ";${extension};")
       # Add it to composite_sources.
       list(APPEND composite_sources ${source})
