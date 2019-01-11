@@ -217,6 +217,9 @@ set(P3PGRAPH_IGATEEXT
   transformState_ext.h
 )
 
+# This is a large file; let's build it separately
+set_source_files_properties(nodePath.cxx PROPERTIES SKIP_COMPOSITING YES)
+
 composite_sources(p3pgraph P3PGRAPH_SOURCES)
 add_component_library(p3pgraph SYMBOL BUILDING_PANDA_PGRAPH
   ${P3PGRAPH_HEADERS} ${P3PGRAPH_SOURCES})

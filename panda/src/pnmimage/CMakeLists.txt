@@ -15,6 +15,7 @@ set(P3PNMIMAGE_HEADERS
 set(P3PNMIMAGE_SOURCES
   config_pnmimage.cxx
   convert_srgb.cxx
+  convert_srgb_sse2.cxx
   pfmFile.cxx
   pnm-image-filter.cxx
   pnmbitio.cxx
@@ -32,12 +33,14 @@ set(P3PNMIMAGE_IGATEEXT
 )
 
 if(HAVE_SSE2)
-  set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES COMPILE_FLAGS -msse2)
+  set_source_files_properties(convert_srgb_sse2.cxx PROPERTIES
+    SKIP_COMPOSITING YES
+    COMPILE_FLAGS -msse2)
 endif()
 
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
 add_component_library(p3pnmimage SYMBOL BUILDING_PANDA_PNMIMAGE
-  ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} convert_srgb_sse2.cxx)
+  ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
 target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL EXTENSIONS ${P3PNMIMAGE_IGATEEXT})
 

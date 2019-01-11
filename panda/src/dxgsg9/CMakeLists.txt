@@ -35,6 +35,9 @@ set(P3DXGSG9_SOURCES
   wdxGraphicsWindow9.cxx
 )
 
+# This is a large file; let's build it separately
+set_source_files_properties(dxGraphicsStateGuardian9.cxx PROPERTIES SKIP_COMPOSITING YES)
+
 composite_sources(p3dxgsg9 P3DXGSG9_SOURCES)
 add_component_library(p3dxgsg9 SYMBOL BUILDING_PANDADX
   ${P3DXGSG9_HEADERS} ${P3DXGSG9_SOURCES})

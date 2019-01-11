@@ -30,7 +30,10 @@ set(P3DTOOLUTIL_HEADERS
 if(APPLE)
   set(P3DTOOLUTIL_HEADERS ${P3DTOOLUTIL_HEADERS}
     filename_assist.mm filename_assist.h)
-  set_source_files_properties(filename_assist.mm filename_assist.h PROPERTIES WRAP_EXCLUDE YES)
+  set_source_files_properties(
+    filename_assist.mm filename_assist.h PROPERTIES
+    WRAP_EXCLUDE YES
+    SKIP_COMPOSITING YES)
 endif()
 
 set(P3DTOOLUTIL_SOURCES

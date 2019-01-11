@@ -37,6 +37,9 @@ set(P3GRUTIL_SOURCES
   rigidBodyCombiner.cxx
 )
 
+# This is a large file; let's build it separately
+set_source_files_properties(multitexReducer.cxx PROPERTIES SKIP_COMPOSITING YES)
+
 composite_sources(p3grutil P3GRUTIL_SOURCES)
 add_component_library(p3grutil SYMBOL BUILDING_PANDA_GRUTIL
   ${P3GRUTIL_HEADERS} ${P3GRUTIL_SOURCES})
