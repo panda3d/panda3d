@@ -438,7 +438,8 @@ def MakeInstallerLinux(version, debversion=None, rpmrelease=1, runtime=False,
 
             # Add the binaries in /usr/bin explicitly to the spec file
             for base in os.listdir(outputdir + "/bin"):
-                txt += "/usr/bin/%s\n" % (base)
+                if not base.startswith("deploy-stub"):
+                    txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
         txt = txt.replace("VERSION", version)
