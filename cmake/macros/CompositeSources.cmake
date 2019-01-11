@@ -23,7 +23,7 @@ set(COMPOSITE_SOURCE_LIMIT "30" CACHE STRING
 known as SCU (single compilation unit).  A high value will speed up the
 build dramatically but will be more memory intensive than a low value.")
 
-set(COMPOSITE_SOURCE_EXTENSIONS "cxx;c;mm" CACHE STRING
+set(COMPOSITE_SOURCE_EXTENSIONS ".cxx;.mm" CACHE STRING
   "Only files of these extensions will be added to composite files.")
 
 set(COMPOSITE_SOURCE_EXCLUSIONS "" CACHE STRING
@@ -61,8 +61,10 @@ function(composite_sources target sources_var)
     # Check if we can safely add this to a composite file.
     get_source_file_property(generated "${source}" GENERATED)
     get_source_file_property(is_header "${source}" HEADER_FILE_ONLY)
+    get_filename_component(extension "${source}" EXT)
 
-    if(NOT generated AND NOT is_header)
+    if(NOT generated AND NOT is_header AND
+        ";${COMPOSITE_SOURCE_EXTENSIONS};" MATCHES ";${extension};")
       # Add it to composite_sources.
       list(APPEND composite_sources ${source})
       list(LENGTH composite_sources num_composite_sources)
