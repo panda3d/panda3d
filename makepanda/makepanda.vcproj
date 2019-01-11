@@ -4572,17 +4572,6 @@
 				<File RelativePath="..\pandatool\src\lwoprogs\lwoScan.h"></File>
 				<File RelativePath="..\pandatool\src\lwoprogs\lwoScan.cxx"></File>
 			</Filter>
-			<Filter Name="cvscopy">
-				<File RelativePath="..\pandatool\src\cvscopy\cvscopy_composite1.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\testCopy.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceDirectory.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\testCopy.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceDirectory.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsCopy.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsCopy.h"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceTree.cxx"></File>
-				<File RelativePath="..\pandatool\src\cvscopy\cvsSourceTree.h"></File>
-			</Filter>
 			<Filter Name="pandatoolbase">
 				<File RelativePath="..\pandatool\src\pandatoolbase\animationConvert.cxx"></File>
 				<File RelativePath="..\pandatool\src\pandatoolbase\pathReplace.I"></File>
@@ -4750,11 +4739,9 @@
 			<Filter Name="fltprogs">
 				<File RelativePath="..\pandatool\src\fltprogs\fltToEgg.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\eggToFlt.cxx"></File>
-				<File RelativePath="..\pandatool\src\fltprogs\fltCopy.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltTrans.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltInfo.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltInfo.cxx"></File>
-				<File RelativePath="..\pandatool\src\fltprogs\fltCopy.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltTrans.cxx"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\fltToEgg.h"></File>
 				<File RelativePath="..\pandatool\src\fltprogs\eggToFlt.h"></File>
@@ -4920,11 +4907,9 @@
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_client.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\blend_test.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_server.h"></File>
-				<File RelativePath="..\pandatool\src\mayaprogs\mayaCopy.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\eggToMaya.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaSavePview.h"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaToEgg_server.cxx"></File>
-				<File RelativePath="..\pandatool\src\mayaprogs\mayaCopy.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\eggToMaya.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\normal_test.cxx"></File>
 				<File RelativePath="..\pandatool\src\mayaprogs\mayaSavePview.cxx"></File>
