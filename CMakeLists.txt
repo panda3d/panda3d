@@ -92,12 +92,19 @@ set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 # As long as we're figuring out compiler flags, figure out the flags for
 # turning C++ exception support on and off
+include(CheckCXXCompilerFlag)
 if(MSVC)
   set(cxx_exceptions_on "/EHsc")
   set(cxx_exceptions_off "/D_HAS_EXCEPTIONS=0")
 else()
-  set(cxx_exceptions_on "-fexceptions")
-  set(cxx_exceptions_off "-fno-exceptions")
+  check_cxx_compiler_flag("-fno-exceptions" COMPILER_SUPPORTS_FEXCEPTIONS)
+  if(COMPILER_SUPPORTS_FEXCEPTIONS)
+    set(cxx_exceptions_on "-fexceptions")
+    set(cxx_exceptions_off "-fno-exceptions")
+  else()
+    set(cxx_exceptions_on)
+    set(cxx_exceptions_off)
+  endif()
 endif()
 set(cxx_exceptions_property "$<BOOL:$<TARGET_PROPERTY:CXX_EXCEPTIONS>>")
 add_compile_options(
