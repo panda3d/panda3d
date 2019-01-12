@@ -54,3 +54,8 @@ notifications:
     on_failure: always
     use_notice: true
     skip_join: false
+  webhooks:
+    urls:
+      - https://www.panda3d.org/webhooks/travis-ci.php
+    on_success: change
+    on_failure: always
