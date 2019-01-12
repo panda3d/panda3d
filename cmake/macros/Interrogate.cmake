@@ -24,6 +24,7 @@ endif()
 set(INTERROGATE_EXCLUDE_REGEXES
   ".*\\.I$"
   ".*\\.N$"
+  ".*\\.c$"
   ".*\\.lxx$"
   ".*\\.yxx$"
   ".*_src\\..*")
