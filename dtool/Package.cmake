@@ -496,10 +496,11 @@ package_option(OPENCV
 
 package_status(OPENCV "OpenCV")
 
-if(OpenCV_VERSION_MAJOR GREATER_EQUAL 3)
+# CMake <3.7 doesn't support GREATER_EQUAL, so this uses NOT LESS instead.
+if(NOT OpenCV_VERSION_MAJOR LESS 3)
   set(OPENCV_VER_3 ON)
-elseif(OpenCV_VERSION_MAJOR GREATER_EQUAL 2 AND
-       OpenCV_VERSION_MINOR GREATER_EQUAL 3)
+elseif(NOT OpenCV_VERSION_MAJOR LESS 2 AND
+       NOT OpenCV_VERSION_MINOR LESS 3)
   set(OPENCV_VER_23 ON)
 endif()
 
