@@ -248,6 +248,13 @@ package_option(VORBIS
   "Enables support for decoding Vorbis-encoded .ogg audio files via libvorbisfile.")
 package_status(VORBIS "Vorbis")
 
+# Opus
+find_package(OpusFile QUIET)
+package_option(OPUS
+  FOUND_AS OPUSFILE
+  "Enables support for decoding .opus audio files via libopusfile.")
+package_status(OPUS "Opus")
+
 #
 # ------------ Audio libraries ------------
 #

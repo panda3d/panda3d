@@ -51,6 +51,9 @@
 /* Define if we have libvorbisfile available. */
 #cmakedefine HAVE_VORBIS
 
+/* Define if we have libopus available. */
+#cmakedefine HAVE_OPUS
+
 /* Define if we have OpenSSL installed.  */
 #cmakedefine HAVE_OPENSSL
 #cmakedefine REPORT_OPENSSL_ERRORS

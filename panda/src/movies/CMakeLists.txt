@@ -46,7 +46,7 @@ composite_sources(p3movies P3MOVIES_SOURCES)
 add_component_library(p3movies SYMBOL BUILDING_PANDA_MOVIES
   ${P3MOVIES_HEADERS} ${P3MOVIES_SOURCES})
 target_link_libraries(p3movies p3pstatclient p3gobj p3pandabase pandaexpress
-  PKG::VORBIS)
+  PKG::VORBIS PKG::OPUS)
 target_interrogate(p3movies ALL)
 
 if(NOT BUILD_METALIBS)
