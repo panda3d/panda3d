@@ -12,6 +12,10 @@
  */
 
 #include "opusAudioCursor.h"
+
+#include "config_movies.h"
+
+#include "opusAudio.h"
 #include "virtualFileSystem.h"
 
 #ifdef HAVE_OPUS
