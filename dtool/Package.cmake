@@ -241,6 +241,13 @@ else()
 endif()
 package_status(FFMPEG "FFmpeg" "${ffmpeg_features}")
 
+# Vorbis
+find_package(VorbisFile QUIET)
+package_option(VORBIS
+  FOUND_AS VORBISFILE
+  "Enables support for decoding Vorbis-encoded .ogg audio files via libvorbisfile.")
+package_status(VORBIS "Vorbis")
+
 #
 # ------------ Audio libraries ------------
 #
