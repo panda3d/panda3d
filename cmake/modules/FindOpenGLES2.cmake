@@ -10,18 +10,12 @@
 #   OPENGLES2_LIBRARY      - the library to link against for OpenGL ES 2.x
 #
 
-if(NOT OPENGLES2_INCLUDE_DIR AND NOT APPLE)
-  find_path(OPENGLES2_INCLUDE_DIR "GLES2/gl2.h")
+find_path(OPENGLES2_INCLUDE_DIR "GLES2/gl2.h")
 
-  mark_as_advanced(OPENGLES2_INCLUDE_DIR)
-endif()
+find_library(OPENGLES2_LIBRARY
+  NAMES "GLESv2")
 
-if(NOT OPENGLES2_LIBRARY AND NOT APPLE)
-  find_library(OPENGLES2_LIBRARY
-    NAMES "GLESv2")
-
-  mark_as_advanced(OPENGLES2_LIBRARY)
-endif()
+mark_as_advanced(OPENGLES2_INCLUDE_DIR OPENGLES2_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(OpenGLES2 DEFAULT_MSG OPENGLES2_INCLUDE_DIR OPENGLES2_LIBRARY)

@@ -14,60 +14,58 @@
 #   FFMPEG_LIBAVUTIL   - the path to the libavutil library binary
 #
 
-if(NOT FFMPEG_INCLUDE_DIR OR NOT FFMPEG_LIBRARY_DIR)
-	# Find the libffmpeg include files
-	find_path(FFMPEG_INCLUDE_DIR
-		NAMES "libavcodec/avcodec.h"
-		PATHS "/usr/include"
-		      "/usr/local/include"
-		      "/sw/include"
-		      "/opt/include"
-		      "/opt/local/include"
-		      "/opt/csw/include"
-		PATH_SUFFIXES "libav" "ffmpeg"
-	)
+# Find the libffmpeg include files
+find_path(FFMPEG_INCLUDE_DIR
+  NAMES "libavcodec/avcodec.h"
+  PATHS "/usr/include"
+        "/usr/local/include"
+        "/sw/include"
+        "/opt/include"
+        "/opt/local/include"
+        "/opt/csw/include"
+  PATH_SUFFIXES "libav" "ffmpeg"
+)
 
-	# Find the libavcodec library
-  find_library(FFMPEG_LIBAVCODEC
-		NAMES "avcodec"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libavcodec library
+find_library(FFMPEG_LIBAVCODEC
+  NAMES "avcodec"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
-	# Find the libavformat library
-  find_library(FFMPEG_LIBAVFORMAT
-		NAMES "avformat"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libavformat library
+find_library(FFMPEG_LIBAVFORMAT
+  NAMES "avformat"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
-	# Find the libavutil library
-  find_library(FFMPEG_LIBAVUTIL
-		NAMES "avutil"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libavutil library
+find_library(FFMPEG_LIBAVUTIL
+  NAMES "avutil"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
-	mark_as_advanced(FFMPEG_INCLUDE_DIR)
-  mark_as_advanced(FFMPEG_LIBAVCODEC)
-  mark_as_advanced(FFMPEG_LIBAVFORMAT)
-  mark_as_advanced(FFMPEG_LIBAVUTIL)
-endif()
+mark_as_advanced(FFMPEG_INCLUDE_DIR)
+mark_as_advanced(FFMPEG_LIBAVCODEC)
+mark_as_advanced(FFMPEG_LIBAVFORMAT)
+mark_as_advanced(FFMPEG_LIBAVUTIL)
 
 # Translate library into library directory
 if(FFMPEG_LIBAVCODEC)

@@ -10,25 +10,15 @@
 #   ARTOOLKIT_LIBRARIES   - the paths to the ARToolKit client libraries
 #
 
-if(NOT ARTOOLKIT_INCLUDE_DIR)
-  find_path(ARTOOLKIT_INCLUDE_DIR "AR/ar.h")
+find_path(ARTOOLKIT_INCLUDE_DIR "AR/ar.h")
 
-  mark_as_advanced(ARTOOLKIT_INCLUDE_DIR)
-endif()
+find_library(ARTOOLKIT_AR_LIBRARY
+  NAMES "AR" "libAR")
 
-if(NOT ARTOOLKIT_AR_LIBRARY)
-  find_library(ARTOOLKIT_AR_LIBRARY
-    NAMES "AR" "libAR")
+find_library(ARTOOLKIT_ARMulti_LIBRARY
+  NAMES "ARMulti" "libARMulti")
 
-  mark_as_advanced(ARTOOLKIT_AR_LIBRARY)
-endif()
-
-if(NOT ARTOOLKIT_ARMulti_LIBRARY)
-  find_library(ARTOOLKIT_ARMulti_LIBRARY
-    NAMES "ARMulti" "libARMulti")
-
-  mark_as_advanced(ARTOOLKIT_ARMulti_LIBRARY)
-endif()
+mark_as_advanced(ARTOOLKIT_INCLUDE_DIR ARTOOLKIT_AR_LIBRARY ARTOOLKIT_ARMulti_LIBRARY)
 
 set(ARTOOLKIT_LIBRARIES)
 if(ARTOOLKIT_AR_LIBRARY)

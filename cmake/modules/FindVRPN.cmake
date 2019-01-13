@@ -10,20 +10,14 @@
 #   VRPN_LIBRARIES   - the path to the VRPN client libraries
 #
 
-if(NOT VRPN_INCLUDE_DIR)
-  find_path(VRPN_INCLUDE_DIR "vrpn_Connection.h")
+find_path(VRPN_INCLUDE_DIR "vrpn_Connection.h")
 
-  mark_as_advanced(VRPN_INCLUDE_DIR)
-endif()
+find_library(VRPN_vrpn_LIBRARY
+  NAMES "vrpn")
 
-if(NOT VRPN_vrpn_LIBRARY)
-  find_library(VRPN_vrpn_LIBRARY
-    NAMES "vrpn")
+mark_as_advanced(VRPN_INCLUDE_DIR VRPN_vrpn_LIBRARY)
 
-  mark_as_advanced(VRPN_vrpn_LIBRARY)
-endif()
-
-if(VRPN_vrpn_LIBRARY AND NOT VRPN_quat_LIBRARY)
+if(VRPN_vrpn_LIBRARY)
   get_filename_component(_vrpn_dir "${VRPN_vrpn_LIBRARY}" DIRECTORY)
   find_library(VRPN_quat_LIBRARY
     NAMES "quat"

@@ -10,34 +10,32 @@
 #   SWRESAMPLE_LIBRARY     - the path to the library binary
 #
 
-if(NOT SWRESAMPLE_INCLUDE_DIR OR NOT SWRESAMPLE_LIBRARY)
-	# Find the libswresample include files
-	find_path(SWRESAMPLE_INCLUDE_DIR
-    NAMES "libswresample/swresample.h"
-		PATHS "/usr/include"
-		      "/usr/local/include"
-		      "/sw/include"
-		      "/opt/include"
-		      "/opt/local/include"
-		      "/opt/csw/include"
-		PATH_SUFFIXES "libav" "ffmpeg"
-	)
+# Find the libswresample include files
+find_path(SWRESAMPLE_INCLUDE_DIR
+  NAMES "libswresample/swresample.h"
+  PATHS "/usr/include"
+        "/usr/local/include"
+        "/sw/include"
+        "/opt/include"
+        "/opt/local/include"
+        "/opt/csw/include"
+  PATH_SUFFIXES "libav" "ffmpeg"
+)
 
-	# Find the libswresample library
-  find_library(SWRESAMPLE_LIBRARY
-		NAMES "swresample"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libswresample library
+find_library(SWRESAMPLE_LIBRARY
+  NAMES "swresample"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
-	mark_as_advanced(SWRESAMPLE_INCLUDE_DIR)
-  mark_as_advanced(SWRESAMPLE_LIBRARY)
-endif()
+mark_as_advanced(SWRESAMPLE_INCLUDE_DIR)
+mark_as_advanced(SWRESAMPLE_LIBRARY)
 
 # Translate library into library directory
 if(SWRESAMPLE_LIBRARY)

@@ -10,19 +10,13 @@
 #   ASSIMP_LIBRARY      - the library to link against for Assimp
 #
 
-if(NOT ASSIMP_INCLUDE_DIR)
-  find_path(ASSIMP_INCLUDE_DIR
-    NAMES "assimp/Importer.hpp")
+find_path(ASSIMP_INCLUDE_DIR
+  NAMES "assimp/Importer.hpp")
 
-  mark_as_advanced(ASSIMP_INCLUDE_DIR)
-endif()
+find_library(ASSIMP_LIBRARY
+  NAMES "assimp")
 
-if(NOT ASSIMP_LIBRARY)
-  find_library(ASSIMP_LIBRARY
-    NAMES "assimp")
-
-  mark_as_advanced(ASSIMP_LIBRARY)
-endif()
+mark_as_advanced(ASSIMP_INCLUDE_DIR ASSIMP_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Assimp DEFAULT_MSG ASSIMP_INCLUDE_DIR ASSIMP_LIBRARY)

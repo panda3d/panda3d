@@ -10,18 +10,12 @@
 #   EGL_LIBRARY      - the library to link against for EGL
 #
 
-if(NOT EGL_INCLUDE_DIR)
-  find_path(EGL_INCLUDE_DIR "EGL/egl.h")
+find_path(EGL_INCLUDE_DIR "EGL/egl.h")
 
-  mark_as_advanced(EGL_INCLUDE_DIR)
-endif()
+find_library(EGL_LIBRARY
+  NAMES "EGL")
 
-if(NOT EGL_LIBRARY)
-  find_library(EGL_LIBRARY
-    NAMES "EGL")
-
-  mark_as_advanced(EGL_LIBRARY)
-endif()
+mark_as_advanced(EGL_INCLUDE_DIR EGL_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EGL DEFAULT_MSG EGL_INCLUDE_DIR EGL_LIBRARY)

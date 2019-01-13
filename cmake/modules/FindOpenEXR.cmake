@@ -10,13 +10,11 @@
 #   OPENEXR_LIBRARIES   - the path to the OpenEXR libraries
 #
 
-if(NOT OPENEXR_INCLUDE_DIR)
-  find_path(OPENEXR_INCLUDE_DIR
-    "ImfVersion.h"
-    PATH_SUFFIXES "OpenEXR")
+find_path(OPENEXR_INCLUDE_DIR
+  "ImfVersion.h"
+  PATH_SUFFIXES "OpenEXR")
 
-  mark_as_advanced(OPENEXR_INCLUDE_DIR)
-endif()
+mark_as_advanced(OPENEXR_INCLUDE_DIR)
 
 find_library(OPENEXR_imf_LIBRARY
   NAMES "IlmImf")

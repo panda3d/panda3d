@@ -14,48 +14,46 @@
 #   LIBSQUISH_DEBUG_LIBRARY   - the filepath of the libsquish debug library
 #
 
-if(NOT LIBSQUISH_INCLUDE_DIR OR NOT LIBSQUISH_LIBRARY_DIR)
-	# Find the libsquish include files
-	find_path(LIBSQUISH_INCLUDE_DIR
-		NAMES "squish.h"
-		PATHS "/usr/include"
-		      "/usr/local/include"
-		      "/sw/include"
-		      "/opt/include"
-		      "/opt/local/include"
-		      "/opt/csw/include"
-		PATH_SUFFIXES "" "cppunit"
-	)
+# Find the libsquish include files
+find_path(LIBSQUISH_INCLUDE_DIR
+  NAMES "squish.h"
+  PATHS "/usr/include"
+        "/usr/local/include"
+        "/sw/include"
+        "/opt/include"
+        "/opt/local/include"
+        "/opt/csw/include"
+  PATH_SUFFIXES "" "cppunit"
+)
 
-	# Find the libsquish library built for release
-	find_library(LIBSQUISH_RELEASE_LIBRARY
-		NAMES "squish" "libsquish"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libsquish library built for release
+find_library(LIBSQUISH_RELEASE_LIBRARY
+  NAMES "squish" "libsquish"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
-	# Find the libsquish library built for debug
-	find_library(LIBSQUISH_DEBUG_LIBRARY
-		NAMES "squishd" "libsquishd"
-		PATHS "/usr"
-		      "/usr/local"
-		      "/usr/freeware"
-		      "/sw"
-		      "/opt"
-		      "/opt/csw"
-		PATH_SUFFIXES "lib" "lib32" "lib64"
-	)
+# Find the libsquish library built for debug
+find_library(LIBSQUISH_DEBUG_LIBRARY
+  NAMES "squishd" "libsquishd"
+  PATHS "/usr"
+        "/usr/local"
+        "/usr/freeware"
+        "/sw"
+        "/opt"
+        "/opt/csw"
+  PATH_SUFFIXES "lib" "lib32" "lib64"
+)
 
 
-	mark_as_advanced(LIBSQUISH_INCLUDE_DIR)
-	mark_as_advanced(LIBSQUISH_RELEASE_LIBRARY)
-	mark_as_advanced(LIBSQUISH_DEBUG_LIBRARY)
-endif()
+mark_as_advanced(LIBSQUISH_INCLUDE_DIR)
+mark_as_advanced(LIBSQUISH_RELEASE_LIBRARY)
+mark_as_advanced(LIBSQUISH_DEBUG_LIBRARY)
 
 # Choose library
 if(CMAKE_BUILD_TYPE MATCHES "Debug" AND LIBSQUISH_DEBUG_LIBRARY)

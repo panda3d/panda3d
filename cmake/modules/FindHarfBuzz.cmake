@@ -10,20 +10,14 @@
 #   HARFBUZZ_LIBRARY     - the path to the HarfBuzz library
 #
 
-if(NOT HARFBUZZ_INCLUDE_DIR)
-  find_path(HARFBUZZ_INCLUDE_DIR
-    NAMES "hb.h"
-    PATH_SUFFIXES "harfbuzz")
+find_path(HARFBUZZ_INCLUDE_DIR
+  NAMES "hb.h"
+  PATH_SUFFIXES "harfbuzz")
 
-  mark_as_advanced(HARFBUZZ_INCLUDE_DIR)
-endif()
+find_library(HARFBUZZ_LIBRARY
+  NAMES "harfbuzz")
 
-if(NOT HARFBUZZ_LIBRARY)
-  find_library(HARFBUZZ_LIBRARY
-    NAMES "harfbuzz")
-
-  mark_as_advanced(HARFBUZZ_LIBRARY)
-endif()
+mark_as_advanced(HARFBUZZ_INCLUDE_DIR HARFBUZZ_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HarfBuzz DEFAULT_MSG HARFBUZZ_INCLUDE_DIR HARFBUZZ_LIBRARY)
