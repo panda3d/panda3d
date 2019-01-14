@@ -50,11 +50,11 @@
 }
 
 - (BOOL) windowShouldClose:(id)sender {
-  return _graphicsWindow->handle_close_request();
-}
-
-- (void) windowWillClose:(NSNotification *)notification {
-  _graphicsWindow->handle_close_event();
+  bool should_close = _graphicsWindow->handle_close_request();
+  if (should_close) {
+    _graphicsWindow->handle_close_event();
+  }
+  return should_close;
 }
 
 @end
