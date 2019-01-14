@@ -30,6 +30,7 @@ if(HAVE_RAD_MSS)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT MilesDevel)
+  install(FILES ${P3MILES_HEADERS} COMPONENT MilesDevel DESTINATION include/panda3d)
 
   export_targets(Miles NAMESPACE "Panda3D::Miles::" COMPONENT MilesDevel)
 endif()
@@ -53,6 +54,7 @@ if(HAVE_FMODEX)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT FMODDevel)
+  install(FILES ${P3FMOD_HEADERS} COMPONENT FMODDevel DESTINATION include/panda3d)
 
   export_targets(FMOD NAMESPACE "Panda3D::FMOD::" COMPONENT FMODDevel)
 endif()
@@ -77,6 +79,7 @@ if(HAVE_OPENAL)
     DESTINATION lib
     RUNTIME DESTINATION bin
     ARCHIVE COMPONENT OpenALDevel)
+  install(FILES ${P3OPENAL_HEADERS} COMPONENT OpenALDevel DESTINATION include/panda3d)
 
   export_targets(OpenAL NAMESPACE "Panda3D::OpenAL::" COMPONENT OpenALDevel)
 endif()
