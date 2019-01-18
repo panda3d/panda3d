@@ -1347,7 +1347,8 @@ class bdist_apps(setuptools.Command):
 
         platforms = build_cmd.platforms
         build_base = os.path.abspath(build_cmd.build_base)
-        os.makedirs(self.dist_dir, exist_ok=True)
+        if not os.path.exists(self.dist_dir):
+            os.makedirs(self.dist_dir)
         os.chdir(self.dist_dir)
 
         for platform in platforms:
