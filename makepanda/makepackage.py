@@ -867,6 +867,11 @@ def MakeInstallerAndroid(version, **kwargs):
             line = line.strip()
             if not line:
                 continue
+
+            if ' ' in line:
+                line = line.split(' ', 1)[0]
+
+            # Change .so.1.2 suffix to .so, as needed for loading in .apk
             if '.so.' in line:
                 dep = line.rpartition('.so.')[0] + '.so'
                 oscmd("patchelf --replace-needed %s %s %s" % (line, dep, target), True)
@@ -960,7 +965,7 @@ def MakeInstallerAndroid(version, **kwargs):
     aapt_cmd += " -F %s" % (apk_unaligned)
     aapt_cmd += " -M apkroot/AndroidManifest.xml"
     aapt_cmd += " -A apkroot/assets -S apkroot/res"
-    aapt_cmd += " -I $PREFIX/share/aapt/android.jar"
+    aapt_cmd += " -I %s" % (SDK["ANDROID_JAR"])
     oscmd(aapt_cmd)
 
     # And add all the libraries to it.
@@ -974,7 +979,13 @@ def MakeInstallerAndroid(version, **kwargs):
     oscmd("zipalign -v -p 4 %s %s" % (apk_unaligned, apk_unsigned))
 
     # Finally, sign it using a debug key.  This is generated if it doesn't exist.
-    oscmd("apksigner debug.ks %s panda3d.apk" % (apk_unsigned))
+    if GetHost() == 'android':
+        # Termux version of apksigner automatically generates a debug key.
+        oscmd("apksigner debug.ks %s panda3d.apk" % (apk_unsigned))
+    else:
+        if not os.path.isfile('debug.ks'):
+            oscmd("keytool -genkey -noprompt -dname 'CN=Panda3D,O=Panda3D,C=US' -keystore debug.ks -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 1000")
+        oscmd("apksigner sign --ks debug.ks --ks-pass pass:android --min-sdk-version %s --out panda3d.apk %s" % (SDK["ANDROID_API"], apk_unsigned))
 
     # Clean up.
     oscmd("rm -rf apkroot")

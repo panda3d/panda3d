@@ -2463,22 +2463,40 @@ def SdkLocateAndroid():
     SDK["ANDROID_TRIPLE"] = ANDROID_TRIPLE
 
     if GetHost() == 'android':
+        # Assume we're compiling from termux.
+        prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+        SDK["ANDROID_JAR"] = prefix + "/share/aapt/android.jar"
         return
 
-    # Determine the NDK installation directory.
-    if 'NDK_ROOT' not in os.environ:
-        exit('NDK_ROOT must be set when compiling for Android!')
+    sdk_root = os.environ.get('ANDROID_HOME')
+    if not sdk_root or not os.path.isdir(sdk_root):
+        sdk_root = os.environ.get('ANDROID_SDK_ROOT')
+        if not sdk_root:
+            exit('ANDROID_SDK_ROOT must be set when compiling for Android!')
+        elif not os.path.isdir(sdk_root):
+            exit('Cannot find %s.  Please install Android SDK and set ANDROID_SDK_ROOT or ANDROID_HOME.' % (sdk_root))
 
-    ndk_root = os.environ["NDK_ROOT"]
-    if not os.path.isdir(ndk_root):
-        exit("Cannot find %s.  Please install Android NDK and set NDK_ROOT." % (ndk_root))
+    # Determine the NDK installation directory.
+    if os.environ.get('NDK_ROOT') or os.environ.get('ANDROID_NDK_ROOT'):
+        # We have an explicit setting from an environment variable.
+        ndk_root = os.environ.get('ANDROID_NDK_ROOT')
+        if not ndk_root or not os.path.isdir(ndk_root):
+            ndk_root = os.environ.get('NDK_ROOT')
+            if not ndk_root or not os.path.isdir(ndk_root):
+                exit("Cannot find %s.  Please install Android NDK and set ANDROID_NDK_ROOT." % (ndk_root))
+    else:
+        # Often, it's installed in the ndk-bundle subdirectory of the SDK.
+        ndk_root = os.path.join(sdk_root, 'ndk-bundle')
+
+        if not os.path.isdir(os.path.join(ndk_root, 'toolchains')):
+            exit('Cannot find the Android NDK.  Install it via the SDK manager or set the ANDROID_NDK_ROOT variable if you have installed it in a different location.')
 
     SDK["ANDROID_NDK"] = ndk_root
 
     # Determine the toolchain location.
     prebuilt_dir = os.path.join(ndk_root, 'toolchains', 'llvm', 'prebuilt')
     if not os.path.isdir(prebuilt_dir):
-        exit('Not found: %s' % (prebuilt_dir))
+        exit('Not found: %s (is the Android NDK installed?)' % (prebuilt_dir))
 
     host_tag = GetHost() + '-x86'
     if host_64:
@@ -2527,7 +2545,24 @@ def SdkLocateAndroid():
     # STL that ships with Android.
     support = os.path.join(ndk_root, 'sources', 'android', 'support', 'include')
     IncDirectory("ALWAYS", support.replace('\\', '/'))
-    LibName("ALWAYS", "-landroid_support")
+    if api < 21:
+        LibName("ALWAYS", "-landroid_support")
+
+    # Determine the location of android.jar.
+    SDK["ANDROID_JAR"] = os.path.join(sdk_root, 'platforms', 'android-%s' % (api), 'android.jar')
+
+    # Which build tools versions do we have?  Pick the latest.
+    versions = []
+    for version in os.listdir(os.path.join(sdk_root, "build-tools")):
+        match = re.match('([0-9]+)\\.([0-9]+)\\.([0-9]+)', version)
+        if match:
+            version_tuple = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            versions.append(version_tuple)
+
+    versions.sort()
+    if versions:
+        version = versions[-1]
+        SDK["ANDROID_BUILD_TOOLS"] = os.path.join(sdk_root, "build-tools", "{0}.{1}.{2}".format(*version))
 
 ########################################################################
 ##
@@ -2793,6 +2828,9 @@ def SetupBuildEnvironment(compiler):
     if GetTarget() == 'android' and GetHost() != 'android':
         AddToPathEnv("PATH", os.path.join(SDK["ANDROID_TOOLCHAIN"], "bin"))
 
+        if "ANDROID_BUILD_TOOLS" in SDK:
+            AddToPathEnv("PATH", SDK["ANDROID_BUILD_TOOLS"])
+
     if compiler == "MSVC":
         # Add the visual studio tools to PATH et al.
         SetupVisualStudioEnviron()
@@ -2845,7 +2883,12 @@ def SetupBuildEnvironment(compiler):
             SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
 
         # Now extract the preprocessor's include directories.
-        cmd = GetCXX() + sysroot_flag + " -x c++ -v -E /dev/null"
+        cmd = GetCXX() + " -x c++ -v -E " + os.devnull
+        if "ANDROID_NDK" in SDK:
+            cmd += " --sysroot=%s/sysroot" % (SDK["ANDROID_NDK"].replace('\\', '/'))
+        else:
+            cmd += sysroot_flag
+
         null = open(os.devnull, 'w')
         handle = subprocess.Popen(cmd, stdout=null, stderr=subprocess.PIPE, shell=True)
         scanning = False
@@ -2858,8 +2901,12 @@ def SetupBuildEnvironment(compiler):
                     scanning = True
                 continue
 
-            if not line.startswith(' /'):
-                continue
+            if sys.platform == "win32":
+                if not line.startswith(' '):
+                    continue
+            else:
+                if not line.startswith(' /'):
+                    continue
 
             line = line.strip()
             if line.endswith(" (framework directory)"):
