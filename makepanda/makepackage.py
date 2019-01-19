@@ -5,6 +5,8 @@ from installpanda import *
 import sys
 import os
 import shutil
+import glob
+import re
 
 
 INSTALLER_DEB_FILE = """
