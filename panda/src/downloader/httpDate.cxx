@@ -279,7 +279,7 @@ input(std::istream &in) {
 
   string date;
   ch = in.get();
-  while (!in.fail() && ch != EOF && ch != '"') {
+  while (!in.fail() && ch != '"') {
     date += ch;
     ch = in.get();
   }
