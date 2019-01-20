@@ -593,7 +593,6 @@ remove_all_windows() {
   // appeared to be happening, and this worked around it.
   Windows old_windows;
   old_windows.swap(_windows);
-  Windows::iterator wi;
   for (GraphicsOutput *win : old_windows) {
     nassertv(win != nullptr);
     do_remove_window(win, current_thread);
