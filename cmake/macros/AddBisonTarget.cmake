@@ -21,9 +21,9 @@ function(add_bison_target output_cxx input_yxx)
       set(keyword "PREFIX")
 
     elseif(keyword STREQUAL "PREFIX")
-      set(arguments ${arguments} -p "${arg}")
+      list(APPEND arguments -p "${arg}")
     elseif(keyword STREQUAL "DEFINES")
-      set(arguments ${arguments} --defines="${arg}")
+      list(APPEND arguments --defines="${arg}")
       list(APPEND outputs "${arg}")
 
     else()
@@ -61,7 +61,7 @@ function(add_bison_target output_cxx input_yxx)
       endif()
 
       list(APPEND depends "${prebuilt_file}")
-      set(commands ${commands} COMMAND ${CMAKE_COMMAND} -E copy ${prebuilt_file} ${output})
+      list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy ${prebuilt_file} ${output})
     endforeach()
 
     add_custom_command(

@@ -122,7 +122,7 @@ if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIRS)
     cmake_find_frameworks(Cg)
     if(Cg_FRAMEWORKS)
       foreach(dir ${Cg_FRAMEWORKS})
-        set(CG_INCLUDES ${CG_INCLUDES} ${dir}/Headers ${dir}/PrivateHeaders)
+        list(APPEND CG_INCLUDES ${dir}/Headers ${dir}/PrivateHeaders)
       endforeach(dir)
       unset(Cg_FRAMEWORKS)
 

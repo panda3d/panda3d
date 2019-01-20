@@ -20,12 +20,12 @@ function(add_flex_target output_cxx input_lxx)
     elseif(arg STREQUAL "PREFIX")
       set(keyword "PREFIX")
     elseif(arg STREQUAL "CASE_INSENSITIVE")
-      set(arguments ${arguments} -i)
+      list(APPEND arguments -i)
 
     elseif(keyword STREQUAL "PREFIX")
-      set(arguments ${arguments} -P "${arg}")
+      list(APPEND arguments -P "${arg}")
     elseif(keyword STREQUAL "DEFINES")
-      set(arguments ${arguments} --header-file="${arg}")
+      list(APPEND arguments --header-file="${arg}")
       list(APPEND outputs "${arg}")
 
     else()
@@ -63,7 +63,7 @@ function(add_flex_target output_cxx input_lxx)
       endif()
 
       list(APPEND depends "${prebuilt_file}")
-      set(commands ${commands} COMMAND ${CMAKE_COMMAND} -E copy ${prebuilt_file} ${output})
+      list(APPEND commands COMMAND ${CMAKE_COMMAND} -E copy ${prebuilt_file} ${output})
     endforeach()
 
     add_custom_command(

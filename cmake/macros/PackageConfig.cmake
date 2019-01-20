@@ -288,10 +288,10 @@ function(export_packages filename)
   set(exports "# Exports for Panda3D PKG:: packages\n")
 
   foreach(pkg ${_ALL_PACKAGE_OPTIONS})
-    set(exports "${exports}\n# Create imported target PKG::${pkg}\n")
-    set(exports "${exports}add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")
+    string(APPEND exports "\n# Create imported target PKG::${pkg}\n")
+    string(APPEND exports "add_library(PKG::${pkg} INTERFACE IMPORTED)\n\n")
 
-    set(exports "${exports}set_target_properties(PKG::${pkg} PROPERTIES\n")
+    string(APPEND exports "set_target_properties(PKG::${pkg} PROPERTIES\n")
     foreach(prop
         INTERFACE_COMPILE_DEFINITIONS
         INTERFACE_COMPILE_FEATURES
@@ -304,7 +304,7 @@ function(export_packages filename)
        #INTERFACE_SYSTEM_INCLUDE_DIRECTORIES  # Let the consumer dictate this
         INTERFACE_SOURCES)
       set(prop_ex "$<TARGET_PROPERTY:PKG::${pkg},${prop}>")
-      set(exports "${exports}$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
+      string(APPEND exports "$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
     endforeach(prop)
 
     # Ugh, INTERFACE_LINK_LIBRARIES isn't transitive.  Fine.  Take care of it
@@ -382,9 +382,9 @@ function(export_packages filename)
       endif()
     endwhile(stack)
 
-    set(exports "${exports}  INTERFACE_LINK_LIBRARIES \"${libraries}\"\n")
+    string(APPEND exports "  INTERFACE_LINK_LIBRARIES \"${libraries}\"\n")
 
-    set(exports "${exports})\n")
+    string(APPEND exports ")\n")
   endforeach(pkg)
 
   file(GENERATE OUTPUT "${filename}" CONTENT "${exports}")
