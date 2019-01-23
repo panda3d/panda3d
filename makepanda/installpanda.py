@@ -157,6 +157,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     # Create the directory structure that we will be putting our files in.
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/bin")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/include")
+    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/include/panda3d")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/panda3d")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime-info")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime/packages")
@@ -184,7 +185,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
         WriteFile(destdir+"/etc/Config.prc", Configrc)
         oscmd("cp "+outputdir+"/etc/Confauto.prc "+destdir+"/etc/Confauto.prc")
 
-    oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
+    oscmd("cp -R "+outputdir+"/include/*        "+destdir+prefix+"/include/panda3d/")
     oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/")
     oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/")
@@ -237,8 +238,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
 
     # Change permissions on include directory.
-    os.chmod(destdir + prefix + "/include", 0o755)
-    for root, dirs, files in os.walk(destdir + prefix + "/include"):
+    os.chmod(destdir + prefix + "/include/panda3d", 0o755)
+    for root, dirs, files in os.walk(destdir + prefix + "/include/panda3d"):
         for basename in dirs:
             os.chmod(os.path.join(root, basename), 0o755)
         for basename in files:
