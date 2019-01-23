@@ -18,7 +18,9 @@
 #include "geomPrimitive.h"
 
 /**
- * Defines a series of line strips.
+ * Defines a series of line strips with adjacency information.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ GeomLinestripsAdjacency : public GeomPrimitive {
 PUBLISHED:

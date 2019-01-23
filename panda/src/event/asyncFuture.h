@@ -55,6 +55,8 @@ class ConditionVarFull;
  * coroutine, which only suspends the current task and not the entire thread.
  *
  * This API aims to mirror and be compatible with Python's Future class.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_EVENT AsyncFuture : public TypedReferenceCount {
 PUBLISHED:

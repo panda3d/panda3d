@@ -118,9 +118,11 @@ operator T * () const {
 /**
  * A thread-safe way to access the underlying pointer; will silently return
  * null if the underlying pointer was deleted or null.
- * Note that this may return null even if was_deleted() still returns true,
+ * Note that this may return null even if was_deleted() still returns false,
  * which can occur if the object has reached reference count 0 and is about to
  * be destroyed.
+ *
+ * @since 1.10.0
  */
 template<class T>
 INLINE PointerTo<T> WeakPointerTo<T>::
@@ -397,6 +399,11 @@ operator const T * () const {
 /**
  * A thread-safe way to access the underlying pointer; will silently return
  * null if the underlying pointer was deleted or null.
+ * Note that this may return null even if was_deleted() still returns false,
+ * which can occur if the object has reached reference count 0 and is about to
+ * be destroyed.
+ *
+ * @since 1.10.0
  */
 template<class T>
 INLINE ConstPointerTo<T> WeakConstPointerTo<T>::

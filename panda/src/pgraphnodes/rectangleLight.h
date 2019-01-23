@@ -22,6 +22,8 @@
 /**
  * This is a type of area light that is an axis aligned rectangle, pointing
  * along the Y axis in the positive direction.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_PGRAPHNODES RectangleLight : public LightLensNode {
 PUBLISHED:
