@@ -573,6 +573,8 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
  * Call this if certain state has changed in such a way as to require a rerun
  * of the shader generator.  This should be rare because in most cases, the
  * shader generator will automatically regenerate shaders as necessary.
+ *
+ * @since 1.10.0
  */
 void ShaderGenerator::
 rehash_generated_shaders() {
@@ -614,6 +616,8 @@ rehash_generated_shaders() {
 /**
  * Removes all previously generated shaders, requiring all shaders to be
  * regenerated.  Does not clear cache of compiled shaders.
+ *
+ * @since 1.10.0
  */
 void ShaderGenerator::
 clear_generated_shaders() {
