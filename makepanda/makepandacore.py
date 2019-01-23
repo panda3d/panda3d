@@ -1104,9 +1104,19 @@ def GetOptimizeOption(opts):
 ##
 ########################################################################
 
-def MakeDirectory(path):
-    if os.path.isdir(path): return 0
-    os.mkdir(path)
+def MakeDirectory(path, mode=None, recursive=False):
+    if os.path.isdir(path):
+        return
+
+    if recursive:
+        parent = os.path.dirname(path)
+        if parent and not os.path.isdir(parent):
+            MakeDirectory(parent, mode=mode, recursive=True)
+
+    if mode is not None:
+        os.mkdir(path, mode)
+    else:
+        os.mkdir(path)
 
 def ReadFile(wfile):
     try:
