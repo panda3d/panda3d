@@ -4701,7 +4701,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
 
         if (is_optional) {
           extra_convert
-            << "wchar_t *" << param_name << "_str;\n"
+            << "wchar_t *" << param_name << "_str = nullptr;\n"
             << "if (" << param_name << " != nullptr) {\n"
             << "#if PY_VERSION_HEX >= 0x03030000\n"
             << "  " << param_name << "_str = PyUnicode_AsWideCharString(" << param_name << ", nullptr);\n"
@@ -4748,7 +4748,7 @@ write_function_instance(ostream &out, FunctionRemap *remap,
         if (is_optional) {
           extra_convert
             << "Py_ssize_t " << param_name << "_len;\n"
-            << "wchar_t *" << param_name << "_str;\n"
+            << "wchar_t *" << param_name << "_str = nullptr;\n"
             << "std::wstring " << param_name << "_wstr;\n"
             << "if (" << param_name << " != nullptr) {\n"
             << "#if PY_VERSION_HEX >= 0x03030000\n"
