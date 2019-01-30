@@ -1684,6 +1684,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   text << "}\n";
 
+  if (pgraphnodes_cat.is_spam()) {
+    pgraphnodes_cat.spam() << "Generated shader:\n"
+      << text.str() << "\n";
+  }
+
   // Insert the shader into the shader attrib.
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
