@@ -876,19 +876,25 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  for (size_t i = 0; i < key._lights.size(); ++i) {
-    const ShaderKey::LightInfo &light = key._lights[i];
-    if (light._flags & ShaderKey::LF_has_shadows) {
-      lightcoord_fregs.push_back(alloc_freg());
-      text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
-      text << "\t out float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
-    } else {
-      lightcoord_fregs.push_back(nullptr);
-    }
-  }
   if (key._fog_mode != 0) {
     hpos_freg = alloc_freg();
     text << "\t out float4 l_hpos : " << hpos_freg << ",\n";
+  }
+  for (size_t i = 0; i < key._lights.size(); ++i) {
+    const ShaderKey::LightInfo &light = key._lights[i];
+    if (light._flags & ShaderKey::LF_has_shadows) {
+      if (_ftregs_used >= 8) {
+        // We ran out of TEXCOORD registers.  That means we have to do this
+        // calculation in the fragment shader, which is slower.
+        lightcoord_fregs.push_back(nullptr);
+      } else {
+        lightcoord_fregs.push_back(alloc_freg());
+        text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
+        text << "\t out float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      }
+    } else {
+      lightcoord_fregs.push_back(nullptr);
+    }
   }
   if (key._anim_spec.get_animation_type() == GeomEnums::AT_hardware &&
       key._anim_spec.get_num_transforms() > 0) {
@@ -970,7 +976,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
     if (key._lights[i]._flags & ShaderKey::LF_has_shadows) {
-      text << "\t l_lightcoord" << i << " = mul(mat_shadow_" << i << ", l_eye_position);\n";
+      if (lightcoord_fregs[i] != nullptr) {
+        text << "\t l_lightcoord" << i << " = mul(mat_shadow_" << i << ", l_eye_position);\n";
+      }
     }
   }
   if (key._texture_flags & ShaderKey::TF_map_height) {
@@ -1051,7 +1059,11 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       } else {
         text << "\t uniform sampler2D shadow_" << i << ",\n";
       }
-      text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      if (lightcoord_fregs[i] != nullptr) {
+        text << "\t in float4 l_lightcoord" << i << " : " << lightcoord_fregs[i] << ",\n";
+      } else {
+        text << "\t uniform float4x4 mat_shadow_" << i << ",\n";
+      }
     }
     if (light._flags & ShaderKey::LF_has_specular_color) {
       text << "\t uniform float4 attr_lspec" << i << ",\n";
@@ -1272,6 +1284,15 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   }
   for (size_t i = 0; i < key._lights.size(); ++i) {
     const ShaderKey::LightInfo &light = key._lights[i];
+
+    if (light._flags & ShaderKey::LF_has_shadows) {
+      if (lightcoord_fregs[i] == nullptr) {
+        // We have to do this one in the fragment shader if we ran out of
+        // varyings.
+        text << "\t float4 l_lightcoord" << i << " = mul(mat_shadow_" << i << ", float4(l_eye_position.xyz, 1.0f));\n";
+      }
+    }
+
     if (light._type.is_derived_from(DirectionalLight::get_class_type())) {
       text << "\t // Directional Light " << i << "\n";
       text << "\t lcolor = attr_light" << i << "[0];\n";
