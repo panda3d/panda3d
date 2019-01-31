@@ -37,6 +37,8 @@ WeakReferenceList::
  *
  * The data pointer can be an arbitrary pointer and is passed as only argument
  * to the callback.
+ *
+ * @since 1.10.0
  */
 void WeakReferenceList::
 add_callback(WeakPointerCallback *callback, void *data) {
@@ -61,6 +63,8 @@ add_callback(WeakPointerCallback *callback, void *data) {
  * weak reference-counting pointer), this removes the indicated PointerToVoid
  * structure from the list of such structures that are maintaining a weak
  * pointer to this object.
+ *
+ * @since 1.10.0
  */
 void WeakReferenceList::
 remove_callback(WeakPointerCallback *callback) {
@@ -73,6 +77,8 @@ remove_callback(WeakPointerCallback *callback) {
 /**
  * Called only by the ReferenceCount pointer to indicate that it has been
  * deleted.
+ *
+ * @since 1.10.0
  */
 void WeakReferenceList::
 mark_deleted() {

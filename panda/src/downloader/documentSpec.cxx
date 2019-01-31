@@ -66,7 +66,7 @@ input(std::istream &in) {
     // Scan the tag, up to but not including the closing paren.
     std::string tag;
     in >> ch;
-    while (!in.fail() && !in.eof() && ch != ')') {
+    while (!in.fail() && ch != ')') {
       tag += ch;
       // We want to include embedded whitespace, so we use get().
       ch = in.get();
@@ -81,7 +81,7 @@ input(std::istream &in) {
   // Scan the date, up to but not including the closing bracket.
   if (ch != ']') {
     std::string date;
-    while (!in.fail() && !in.eof() && ch != ']') {
+    while (!in.fail() && ch != ']') {
       date += ch;
       ch = in.get();
     }

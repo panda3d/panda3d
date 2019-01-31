@@ -2,7 +2,7 @@
 Defines Scene Graph tree UI Base
 """
 import wx
-from pandac.PandaModules import *
+from panda3d.core import *
 from .ActionMgr import *
 
 from . import ObjectGlobals as OG
@@ -26,7 +26,7 @@ class SceneGraphUIBase(wx.Panel):
                   size=wx.DefaultSize, style=wx.TR_MULTIPLE|wx.TR_DEFAULT_STYLE,
                   validator=wx.DefaultValidator, name="treeCtrl")
         self.root = self.tree.AddRoot('render')
-        self.tree.SetItemPyData(self.root, "render")
+        self.tree.SetItemData(self.root, "render")
 
         self.shouldShowPandaObjChildren = False
 
@@ -61,7 +61,7 @@ class SceneGraphUIBase(wx.Panel):
             self.tree.Delete(item)
 
     def traversePandaObjects(self, parent, objNodePath):
-        itemId = self.tree.GetItemPyData(parent)
+        itemId = self.tree.GetItemData(parent)
         i = 0
         for child in objNodePath.getChildren():
             if child.hasTag('OBJRoot'):
@@ -78,7 +78,7 @@ class SceneGraphUIBase(wx.Panel):
 
     def addPandaObjectChildren(self, parent):
         # first, find Panda Object's NodePath of the item
-        itemId = self.tree.GetItemPyData(parent)
+        itemId = self.tree.GetItemData(parent)
         if itemId == "render":
            return
         obj = self.editor.objectMgr.findObjectById(itemId)
@@ -96,7 +96,7 @@ class SceneGraphUIBase(wx.Panel):
 
     def removePandaObjectChildren(self, parent):
         # first, find Panda Object's NodePath of the item
-        itemId = self.tree.GetItemPyData(parent)
+        itemId = self.tree.GetItemData(parent)
         if itemId == "render":
            return
         obj = self.editor.objectMgr.findObjectById(itemId)
@@ -142,14 +142,14 @@ class SceneGraphUIBase(wx.Panel):
 
     def traverse(self, parent, itemId):
         # prevent from traversing into self
-        if itemId == self.tree.GetItemPyData(parent):
+        if itemId == self.tree.GetItemData(parent):
            return None
 
         # main loop - serching for an item with an itemId
         item, cookie = self.tree.GetFirstChild(parent)
         while item:
               # if the item was found - return it
-              if itemId == self.tree.GetItemPyData(item):
+              if itemId == self.tree.GetItemData(item):
                  return item
 
               # the tem was not found - checking if it has children
@@ -168,7 +168,7 @@ class SceneGraphUIBase(wx.Panel):
         item, cookie = self.tree.GetFirstChild(parent)
         while item:
            data = self.tree.GetItemText(item)
-           itemId = self.tree.GetItemPyData(item)
+           itemId = self.tree.GetItemData(item)
            newItem = self.tree.AppendItem(newParent, data)
            self.tree.SetItemPyData(newItem, itemId)
 
@@ -186,13 +186,13 @@ class SceneGraphUIBase(wx.Panel):
     def reParent(self, oldParent, newParent, child):
         if newParent is None:
            newParent = self.root
-        itemId = self.tree.GetItemPyData(oldParent)
+        itemId = self.tree.GetItemData(oldParent)
         newItem = self.tree.AppendItem(newParent, child)
         self.tree.SetItemPyData(newItem, itemId)
         self.reParentTree(oldParent, newItem)
 
         obj = self.editor.objectMgr.findObjectById(itemId)
-        itemId = self.tree.GetItemPyData(newParent)
+        itemId = self.tree.GetItemData(newParent)
         if itemId != "render":
           newParentObj = self.editor.objectMgr.findObjectById(itemId)
           self.reParentData(newParentObj[OG.OBJ_NP], obj[OG.OBJ_NP])
@@ -207,7 +207,7 @@ class SceneGraphUIBase(wx.Panel):
            self.addPandaObjectChildren(newpParent)
 
     def isChildOrGrandChild(self, parent, child):
-        childId = self.tree.GetItemPyData(child)
+        childId = self.tree.GetItemData(child)
         return self.traverse(parent, childId)
 
     def changeHierarchy(self, data, x, y):
@@ -226,7 +226,7 @@ class SceneGraphUIBase(wx.Panel):
               return
 
            # undo function setup...
-           action = ActionChangeHierarchy(self.editor, self.tree.GetItemPyData(self.tree.GetItemParent(item)), self.tree.GetItemPyData(item), self.tree.GetItemPyData(dragToItem), data)
+           action = ActionChangeHierarchy(self.editor, self.tree.GetItemData(self.tree.GetItemParent(item)), self.tree.GetItemData(item), self.tree.GetItemData(dragToItem), data)
            self.editor.actionMgr.push(action)
            action()
 
@@ -283,7 +283,7 @@ class SceneGraphUIBase(wx.Panel):
     def onSelected(self, event):
         item = event.GetItem();
         if item:
-           itemId = self.tree.GetItemPyData(item)
+           itemId = self.tree.GetItemData(item)
            if itemId:
               obj = self.editor.objectMgr.findObjectById(itemId);
               if obj:
@@ -313,7 +313,7 @@ class SceneGraphUIBase(wx.Panel):
         if not item.IsOk():
             return
         self.currItem = item
-        itemId = self.tree.GetItemPyData(item)
+        itemId = self.tree.GetItemData(item)
         if not itemId:
             return
         self.currObj = self.editor.objectMgr.findObjectById(itemId);

@@ -210,7 +210,7 @@ record_alternate_name(TypeHandle type, const string &name) {
 #ifdef HAVE_PYTHON
 /**
  * Records the given Python type pointer in the type registry for the benefit
- * of interrogate.
+ * of interrogate, which expects this to contain a Dtool_PyTypedObject.
  */
 void TypeRegistry::
 record_python_type(TypeHandle type, PyObject *python_type) {

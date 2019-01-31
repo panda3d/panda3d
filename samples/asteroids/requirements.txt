@@ -1,2 +1,1 @@
---pre --extra-index-url https://archive.panda3d.org/branches/deploy-ng
 panda3d

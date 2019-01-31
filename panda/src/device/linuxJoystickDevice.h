@@ -23,6 +23,8 @@ class LinuxInputDeviceManager;
 /**
  * This is a type of device that uses the Linux /dev/input/js# API to read
  * data from a game controller.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE LinuxJoystickDevice : public InputDevice {
 PUBLISHED:

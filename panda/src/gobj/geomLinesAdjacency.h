@@ -20,6 +20,8 @@
 /**
  * Defines a series of disconnected line segments with adjacency information,
  * for use with geometry shaders.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ GeomLinesAdjacency : public GeomPrimitive {
 PUBLISHED:

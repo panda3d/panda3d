@@ -7,7 +7,7 @@
 // place to put this.
 
 // Use spaces to separate the major, minor, and sequence numbers here.
-#define PANDA_VERSION 1 10 0
+#define PANDA_VERSION 1 11 0
 
 // This variable will be defined to false in the CVS repository, but
 // scripts that generate source tarballs and/or binary releases for

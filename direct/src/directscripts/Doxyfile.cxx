@@ -432,7 +432,7 @@ EXTRACT_STATIC         = NO
 # for Java sources.
 # The default value is: YES.
 
-EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_CLASSES  = NO
 
 # This flag is only useful for Objective-C code. When set to YES local methods,
 # which are defined in the implementation section but not in the interface are
@@ -802,6 +802,11 @@ EXCLUDE                = dtool/src/parser-inc \
                          panda/src/iphone \
                          panda/src/tinydisplay \
                          panda/src/movies/dr_flac.h \
+                         panda/src/windisplay/winDetectDx.h \
+                         panda/src/wgldisplay/wglext.h \
+                         panda/src/glxdisplay/panda_glxext.h \
+                         pandatool/src/gtk-stats \
+                         dtool/src/dtoolbase/fakestringstream.h \
                          dtool/src/dtoolbase/pdtoa.cxx \
                          dtool/src/dtoolutil/panda_getopt_long.h \
                          dtool/src/dtoolutil/panda_getopt_impl.h \
@@ -840,7 +845,10 @@ EXCLUDE_PATTERNS       = */Opt*-*/* \
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = InterrogateFunctionWrapper::Parameter \
+                         CollisionFloorMesh::TriangleIndices \
+                         tagTOUCHINPUT \
+                         WINDOW_METRICS
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -1018,7 +1026,7 @@ ALPHABETICAL_INDEX     = YES
 # Minimum value: 1, maximum value: 20, default value: 5.
 # This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
 
-COLS_IN_ALPHA_INDEX    = 5
+COLS_IN_ALPHA_INDEX    = 3
 
 # In case all classes in a project start with a common prefix, all classes will
 # be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
@@ -1972,6 +1980,7 @@ INCLUDE_FILE_PATTERNS  =
 
 PREDEFINED             = TVOLATILE= \
                          INLINE=inline \
+                         ALWAYS_INLINE=inline \
                          PUBLISHED=public \
                          protected=private \
                          INLINE_LINMATH=inline \
@@ -1986,7 +1995,8 @@ PREDEFINED             = TVOLATILE= \
                          MAKE_SEQ(x)= \
                          MAKE_SEQ_PROPERTY(x)= \
                          MAKE_MAP_PROPERTY(x)= \
-                         MAKE_MAP_KEYS_SEQ(x)=
+                         MAKE_MAP_KEYS_SEQ(x)= \
+                         RETURNS_ALIGNED(x)=
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

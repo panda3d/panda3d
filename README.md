@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=200" align="right" />
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
 
 Panda3D
 =======
@@ -8,12 +8,12 @@ Panda3D
 Panda3D is a game engine, a framework for 3D rendering and game development for
 Python and C++ programs.  Panda3D is open-source and free for any purpose,
 including commercial ventures, thanks to its
-[liberal license](https://www.panda3d.org/license.php).  To learn more about
-Panda3D's capabilities, visit the [gallery](https://www.panda3d.org/gallery.php)
-and the [feature list](https://www.panda3d.org/features.php).  To learn how to
-use Panda3D, check the [documentation](https://www.panda3d.org/documentation.php)
+[liberal license](https://www.panda3d.org/license/). To learn more about
+Panda3D's capabilities, visit the [gallery](https://www.panda3d.org/gallery/)
+and the [feature list](https://www.panda3d.org/features/).  To learn how to
+use Panda3D, check the [documentation](https://www.panda3d.org/documentation/)
 resources. If you get stuck, ask for help from our active
-[community](https://www.panda3d.org/community.php).
+[community](https://discourse.panda3d.org).
 
 Panda3D is licensed under the Modified BSD License.  See the LICENSE file for
 more details.
@@ -21,7 +21,16 @@ more details.
 Installing Panda3D
 ==================
 
-By far, the easiest way to install the latest development build of Panda3D
+The latest Panda3D SDK can be downloaded from
+[this page](https://www.panda3d.org/download/sdk-1-10-0/).
+If you are familiar with installing Python packages, you can use
+the following comand:
+
+```bash
+pip install panda3d
+```
+
+The easiest way to install the latest development build of Panda3D
 into an existing Python installation is using the following command:
 
 ```bash
@@ -31,9 +40,7 @@ pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
 If this command fails, please make sure your version of pip is up-to-date.
 
 If you prefer to install the full SDK with all tools, the latest development
-builds can be obtained from this page:
-
-https://www.panda3d.org/download.php?sdk&version=devel
+builds can be obtained from [this page](https://www.panda3d.org/download.php?version=devel&sdk).
 
 These are automatically kept up-to-date with the latest GitHub version of Panda.
 
@@ -96,14 +103,14 @@ python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-g
 You will probably see some warnings saying that it's unable to find several
 dependency packages.  You should determine which ones you want to include in
 your build and install the respective development packages.  You may visit
-[this manual page](https://www.panda3d.org/manual/index.php/Dependencies)
+[this manual page](https://www.panda3d.org/manual/?title=Third-party_dependencies_and_license_info)
 for an overview of the various dependencies.
 
 If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
+sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -135,9 +142,8 @@ you may build Panda3D using a command like the following:
 python makepanda/makepanda.py --everything --installer
 ```
 
-In order to make a universal build, pass the --universal flag.  You may also
-target a specific minimum macOS version using the --osxtarget flag followed
-by the release number, eg. 10.6 or 10.7.
+You may target a specific minimum macOS version using the --osxtarget flag
+followed by the release number, eg. 10.7 or 10.9.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the

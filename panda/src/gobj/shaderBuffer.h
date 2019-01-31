@@ -27,6 +27,8 @@ class PreparedGraphicsObjects;
 
 /**
  * This is a generic buffer object that lives in graphics memory.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_GOBJ ShaderBuffer : public TypedWritableReferenceCount, public Namable, public GeomEnums {
 private:
