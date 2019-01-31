@@ -289,8 +289,8 @@ on_input_device_arrival(HANDLE handle) {
 
         // Some devices insert quite some trailing space here.
         wchar_t *wbuffer = (wchar_t *)buffer;
-        size_t wlen = wcslen(wbuffer);
-        while (iswspace(wbuffer[wlen - 1])) {
+        size_t wlen = wcsnlen_s(wbuffer, sizeof(buffer) / sizeof(wchar_t));
+        while (wlen > 0 && iswspace(wbuffer[wlen - 1])) {
           wbuffer[--wlen] = 0;
         }
         TextEncoder encoder;
