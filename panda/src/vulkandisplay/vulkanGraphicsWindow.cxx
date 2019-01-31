@@ -152,8 +152,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_info.framebuffer = buffer._framebuffer;
   begin_info.renderArea.offset.x = 0;
   begin_info.renderArea.offset.y = 0;
-  begin_info.renderArea.extent.width = _size[0];
-  begin_info.renderArea.extent.height = _size[1];
+  begin_info.renderArea.extent.width = _swapchain_size[0];
+  begin_info.renderArea.extent.height = _swapchain_size[1];
   begin_info.clearValueCount = 0;
   begin_info.pClearValues = clears;
 
@@ -285,7 +285,7 @@ begin_flip() {
   VkQueue queue = vkgsg->_queue;
   VkResult err;
 
-  VkResult results[1];
+  VkResult results[1] = {VK_SUCCESS};
   VkPresentInfoKHR present;
   present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   present.pNext = nullptr;
@@ -298,7 +298,14 @@ begin_flip() {
 
   err = vkQueuePresentKHR(queue, &present);
   if (err == VK_ERROR_OUT_OF_DATE_KHR) {
-    std::cerr << "out of date.\n";
+    // It's out of date.  We need to recreate the swap chain.
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Swap chain out of date for VulkanGraphicsWindow " << this << "\n";
+    }
+    _swapchain_size.set(-1, -1);
+    _flip_ready = false;
+    return;
 
   } else if (err == VK_SUBOPTIMAL_KHR) {
     std::cerr << "suboptimal.\n";
@@ -341,6 +348,18 @@ end_flip() {
   VkResult
   err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
                               _image_available, VK_NULL_HANDLE, &_image_index);
+
+  if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+    // It's out of date.  We need to recreate the swap chain.
+    if (vulkandisplay_cat.is_debug()) {
+      vulkandisplay_cat.debug()
+        << "Swap chain out of date for VulkanGraphicsWindow " << this << "\n";
+    }
+    _swapchain_size.set(-1, -1);
+    _flip_ready = false;
+    return;
+  }
+
   nassertv(err == VK_SUCCESS);
 
   if (vulkandisplay_cat.is_spam()) {
