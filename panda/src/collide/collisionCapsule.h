@@ -154,6 +154,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class CollisionBox;
+  friend class CollisionPolygon;
 };
 
 #include "collisionCapsule.I"
