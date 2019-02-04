@@ -1336,37 +1336,6 @@ setup_points(const LPoint3 *begin, const LPoint3 *end) {
 }
 
 /**
- * Converts the indicated point to 3-d space according to the way
- * CollisionPolygons used to be stored in bam files prior to 4.9.
- */
-LPoint3 CollisionPolygon::
-legacy_to_3d(const LVecBase2 &point2d, int axis) const {
-  nassertr(!point2d.is_nan(), LPoint3(0.0f, 0.0f, 0.0f));
-
-  LVector3 normal = get_normal();
-  PN_stdfloat D = get_plane()[3];
-
-  nassertr(!normal.is_nan(), LPoint3(0.0f, 0.0f, 0.0f));
-  nassertr(!cnan(D), LPoint3(0.0f, 0.0f, 0.0f));
-
-  switch (axis) {
-  case 0:  // AT_x:
-    return LPoint3(-(normal[1]*point2d[0] + normal[2]*point2d[1] + D)/normal[0],                    point2d[0], point2d[1]);
-
-  case 1:  // AT_y:
-    return LPoint3(point2d[0],
-                    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],                    point2d[1]);
-
-  case 2:  // AT_z:
-    return LPoint3(point2d[0], point2d[1],
-                    -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
-  }
-
-  nassertr(false, LPoint3(0.0f, 0.0f, 0.0f));
-  return LPoint3(0.0f, 0.0f, 0.0f);
-}
-
-/**
  * Clips the source_points of the polygon by the indicated clipping plane, and
  * modifies new_points to reflect the new set of clipped points (but does not
  * compute the vectors in new_points).
