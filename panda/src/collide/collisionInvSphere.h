@@ -55,6 +55,10 @@ protected:
   test_intersection_from_ray(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_segment(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_capsule(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_box(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 
