@@ -96,6 +96,7 @@
 #include "uvScrollNode.h"
 #include "textureStagePool.h"
 #include "cmath.h"
+#include "lmatrix.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -1814,10 +1815,20 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // A collision group: create collision geometry.
     node = new CollisionNode(egg_group->get_name());
 
+    // Convert all vertices at and below this group to local coords
+    const LMatrix4d global_transform = egg_group->get_node_to_vertex();
+    const LMatrix4d local_transform = egg_group->get_vertex_to_node();
+    egg_group->transform(local_transform);
+
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
 
-    // Transform all of the collision solids into local space.
-    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+    // Un-transform egg group back to global coords
+    egg_group->transform(global_transform);
+
+    // Inform the new CollisionNode of the group's local transform (has already
+    // been applied to node's vertices)
+    CPT(TransformState) node_transform = TransformState::make_mat(LCAST(PN_stdfloat,local_transform));
+    node->set_transform(node_transform);
 
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the traversal.
