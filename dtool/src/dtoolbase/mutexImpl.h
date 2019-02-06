@@ -34,7 +34,7 @@ typedef MutexSpinlockImpl MutexImpl;
 
 #include "mutexWin32Impl.h"
 typedef MutexWin32Impl MutexImpl;
-typedef MutexWin32Impl ReMutexImpl;  // Win32 Mutexes are always reentrant.
+typedef ReMutexWin32Impl ReMutexImpl;
 #define HAVE_REMUTEXIMPL 1
 
 #elif defined(THREAD_POSIX_IMPL)

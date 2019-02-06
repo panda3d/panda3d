@@ -15,9 +15,7 @@
  *
  */
 INLINE ConditionVarWin32Impl::
-ConditionVarWin32Impl(MutexWin32Impl &mutex) {
-  _external_mutex = &mutex._lock;
-
+ConditionVarWin32Impl(MutexWin32Impl &mutex) : _mutex(mutex) {
   // Create an auto-reset event.
   _event_signal = CreateEvent(nullptr, false, false, nullptr);
 }
@@ -35,12 +33,12 @@ INLINE ConditionVarWin32Impl::
  */
 INLINE void ConditionVarWin32Impl::
 wait() {
-  LeaveCriticalSection(_external_mutex);
+  _mutex.unlock();
 
   DWORD result = WaitForSingleObject(_event_signal, INFINITE);
   nassertv(result == WAIT_OBJECT_0);
 
-  EnterCriticalSection(_external_mutex);
+  _mutex.lock();
 }
 
 /**
@@ -48,12 +46,12 @@ wait() {
  */
 INLINE void ConditionVarWin32Impl::
 wait(double timeout) {
-  LeaveCriticalSection(_external_mutex);
+  _mutex.unlock();
 
   DWORD result = WaitForSingleObject(_event_signal, (DWORD)(timeout * 1000.0));
   nassertv(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT);
 
-  EnterCriticalSection(_external_mutex);
+  _mutex.lock();
 }
 
 /**

@@ -15,14 +15,7 @@
  *
  */
 INLINE ConditionVarFullWin32Impl::
-ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
-  _external_mutex = &mutex._lock;
-
-  // Create an auto-reset event and a manual-reset event.
-  _event_signal = CreateEvent(nullptr, false, false, nullptr);
-  _event_broadcast = CreateEvent(nullptr, true, false, nullptr);
-
-  _waiters_count = 0;
+ConditionVarFullWin32Impl(MutexWin32Impl &mutex) : _mutex(mutex) {
 }
 
 /**
@@ -30,8 +23,14 @@ ConditionVarFullWin32Impl(MutexWin32Impl &mutex) {
  */
 INLINE ConditionVarFullWin32Impl::
 ~ConditionVarFullWin32Impl() {
-  CloseHandle(_event_signal);
-  CloseHandle(_event_broadcast);
+  // These fields are only set in the Windows XP implementation, when these
+  // both contain events.
+  if (_cvar[1] != nullptr) {
+    CloseHandle(_cvar[1]);
+  }
+  if (_cvar[2] != nullptr) {
+    CloseHandle(_cvar[2]);
+  }
 }
 
 /**
@@ -39,29 +38,7 @@ INLINE ConditionVarFullWin32Impl::
  */
 INLINE void ConditionVarFullWin32Impl::
 wait() {
-  AtomicAdjust::inc(_waiters_count);
-
-  // It's ok to release the external_mutex here since Win32 manual-reset
-  // events maintain state when used with SetEvent(). This avoids the "lost
-  // wakeup" bug...
-  LeaveCriticalSection(_external_mutex);
-
-  // Wait for either event to become signaled due to notify() being called or
-  // notify_all() being called.
-  int result = WaitForMultipleObjects(2, &_event_signal, FALSE, INFINITE);
-
-  bool nonzero = AtomicAdjust::dec(_waiters_count);
-  bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
-
-  // Some thread called notify_all().
-  if (last_waiter) {
-    // We're the last waiter to be notified or to stop waiting, so reset the
-    // manual event.
-    ResetEvent(_event_broadcast);
-  }
-
-  // Reacquire the <external_mutex>.
-  EnterCriticalSection(_external_mutex);
+  MutexWin32Impl::_funcs._cvar_wait(_cvar, _mutex._lock, INFINITE, 0);
 }
 
 /**
@@ -69,29 +46,7 @@ wait() {
  */
 INLINE void ConditionVarFullWin32Impl::
 wait(double timeout) {
-  AtomicAdjust::inc(_waiters_count);
-
-  // It's ok to release the external_mutex here since Win32 manual-reset
-  // events maintain state when used with SetEvent(). This avoids the "lost
-  // wakeup" bug...
-  LeaveCriticalSection(_external_mutex);
-
-  // Wait for either event to become signaled due to notify() being called or
-  // notify_all() being called.
-  int result = WaitForMultipleObjects(2, &_event_signal, FALSE, (DWORD)(timeout * 1000.0));
-
-  bool nonzero = AtomicAdjust::dec(_waiters_count);
-  bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
-
-  // Some thread called notify_all().
-  if (last_waiter) {
-    // We're the last waiter to be notified or to stop waiting, so reset the
-    // manual event.
-    ResetEvent(_event_broadcast);
-  }
-
-  // Reacquire the <external_mutex>.
-  EnterCriticalSection(_external_mutex);
+  MutexWin32Impl::_funcs._cvar_wait(_cvar, _mutex._lock, (DWORD)(timeout * 1000.0), 0);
 }
 
 /**
@@ -99,11 +54,7 @@ wait(double timeout) {
  */
 INLINE void ConditionVarFullWin32Impl::
 notify() {
-  bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
-
-  if (have_waiters) {
-    SetEvent(_event_signal);
-  }
+  MutexWin32Impl::_funcs._cvar_notify_one(_cvar);
 }
 
 /**
@@ -111,9 +62,5 @@ notify() {
  */
 INLINE void ConditionVarFullWin32Impl::
 notify_all() {
-  bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
-
-  if (have_waiters) {
-    SetEvent(_event_broadcast);
-  }
+  MutexWin32Impl::_funcs._cvar_notify_all(_cvar);
 }

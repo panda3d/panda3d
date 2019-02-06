@@ -44,7 +44,7 @@ public:
   INLINE void notify();
 
 private:
-  CRITICAL_SECTION *_external_mutex;
+  MutexWin32Impl &_mutex;
   HANDLE _event_signal;
 };
 

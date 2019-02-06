@@ -50,10 +50,12 @@ public:
   INLINE void notify_all();
 
 private:
-  CRITICAL_SECTION *_external_mutex;
-  HANDLE _event_signal;
-  HANDLE _event_broadcast;
-  TVOLATILE AtomicAdjust::Integer _waiters_count;
+  MutexWin32Impl &_mutex;
+
+  // On Windows XP, the first field contains a Signal (auto-reset) event,
+  // the second field a broadcast (manual reset) event, third a waiter count.
+  // On Windows Vista and above, the first contains a PCONDITION_VARIABLE.
+  volatile PVOID _cvar[3] = {nullptr, nullptr, nullptr};
 };
 
 #include "conditionVarFullWin32Impl.I"
