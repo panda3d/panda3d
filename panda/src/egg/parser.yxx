@@ -1104,6 +1104,14 @@ vertex_uv_body:
     DCAST(EggVertexUV, egg_stack.back())->set_tangent(LNormald($4, $5, $6));
   }
 }
+        | vertex_uv_body TANGENT '{' real real real real '}'
+{
+  if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
+    eggyywarning("Ignoring repeated tangent");
+  } else {
+    DCAST(EggVertexUV, egg_stack.back())->set_tangent4(LVecBase4d($4, $5, $6, $7));
+  }
+}
         | vertex_uv_body BINORMAL '{' real real real '}'
 {
   if (DCAST(EggVertexUV, egg_stack.back())->has_binormal()) {

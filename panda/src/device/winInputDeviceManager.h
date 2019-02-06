@@ -52,9 +52,11 @@ private:
   pmap<HANDLE, WinRawInputDevice *> _raw_devices;
   pmap<std::string, WinRawInputDevice *> _raw_devices_by_path;
 
+  virtual void update() override;
+
   static LRESULT WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-  typedef CONFIGRET (*pCM_Get_DevNode_Property)(DEVINST, const DEVPROPKEY *, DEVPROPTYPE *, PBYTE, PULONG, ULONG);
+  typedef CONFIGRET (WINAPI *pCM_Get_DevNode_Property)(DEVINST, const DEVPROPKEY *, DEVPROPTYPE *, PBYTE, PULONG, ULONG);
   pCM_Get_DevNode_Property _CM_Get_DevNode_PropertyW;
 
   friend class InputDeviceManager;

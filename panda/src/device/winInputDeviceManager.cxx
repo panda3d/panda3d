@@ -289,8 +289,8 @@ on_input_device_arrival(HANDLE handle) {
 
         // Some devices insert quite some trailing space here.
         wchar_t *wbuffer = (wchar_t *)buffer;
-        size_t wlen = wcslen(wbuffer);
-        while (iswspace(wbuffer[wlen - 1])) {
+        size_t wlen = wcsnlen_s(wbuffer, sizeof(buffer) / sizeof(wchar_t));
+        while (wlen > 0 && iswspace(wbuffer[wlen - 1])) {
           wbuffer[--wlen] = 0;
         }
         TextEncoder encoder;
@@ -388,6 +388,19 @@ on_input_device_removal(HANDLE handle) {
           << "Removed input device " << *device << "\n";
       }
     }
+  }
+}
+
+/**
+ * Polls the system to see if there are any new devices.  In some
+ * implementations this is a no-op.
+ */
+void WinInputDeviceManager::
+update() {
+  MSG msg;
+  while (PeekMessage(&msg, _message_hwnd, WM_INPUT_DEVICE_CHANGE, WM_INPUT, PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
   }
 }
 

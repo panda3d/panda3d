@@ -82,7 +82,7 @@ static const struct DeviceMapping {
   {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
-  // Trust GXT 24
+  // SPEED Link SL-6535-SBK-01
   {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
@@ -521,7 +521,10 @@ init_device() {
           }
           break;
         case ABS_THROTTLE:
-          if (quirks & QB_rudder_from_throttle) {
+           if (_device_class == DeviceClass::gamepad) {
+            // Apparently needed for 8bitdo N30 Pro controller
+            axis = InputDevice::Axis::right_x;
+          } else if (quirks & QB_rudder_from_throttle) {
             axis = InputDevice::Axis::rudder;
           } else {
             axis = InputDevice::Axis::throttle;
