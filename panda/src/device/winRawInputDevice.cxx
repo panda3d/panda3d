@@ -14,12 +14,56 @@
 #include "winRawInputDevice.h"
 #include "gamepadButton.h"
 #include "mouseButton.h"
+#include "buttonRegistry.h"
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
 #include <CfgMgr32.h>
 #include <devpkey.h>
 #include "phidsdi.h"
+
+enum QuirkBits : int {
+  // Has no trigger axes.
+  QB_no_analog_triggers = 1,
+
+  // Throttle goes from -1 to 1 rather than from 0 to 1.
+  QB_centered_throttle = 2,
+
+  // Throttle is reversed.
+  QB_reversed_throttle = 4,
+};
+
+// Some nonstandard gamepads have different button mappings.
+static const struct DeviceMapping {
+  unsigned short vendor;
+  unsigned short product;
+  InputDevice::DeviceClass device_class;
+  int quirks;
+  const char *buttons[16];
+} mapping_presets[] = {
+  // SNES-style USB gamepad
+  {0x0810, 0xe501, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
+    {"face_x", "face_a", "face_b", "face_y", "lshoulder", "rshoulder", "none", "none", "back", "start"}
+  },
+  // SPEED Link SL-6535-SBK-01
+  {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, QB_no_analog_triggers,
+    {"face_y", "face_b", "face_a", "face_x", "lshoulder", "rshoulder", "ltrigger", "rtrigger", "back", "start", "lstick", "rstick"}
+  },
+  // T.Flight Hotas X
+  {0x044f, 0xb108, InputDevice::DeviceClass::flight_stick, QB_centered_throttle | QB_reversed_throttle,
+    {0}
+  },
+  // NVIDIA Shield Controller
+  {0x0955, 0x7214, InputDevice::DeviceClass::gamepad, 0,
+    {"face_a", "face_b", "n", "face_x", "face_y", "rshoulder", "lshoulder", "rshoulder", "e", "f", "g", "start", "h", "lstick", "rstick", "i"}
+  },
+  {0},
+};
+
+// This is our fallback button mapping, used with Xbox 360 and other devices.
+static const char *default_gamepad_mapping[16] = {
+  "face_a", "face_b", "face_x", "face_y", "lshoulder", "rshoulder", "back", "start", "lstick", "rstick"
+};
 
 static pHidP_GetCaps _HidP_GetCaps = nullptr;
 static pHidP_GetButtonCaps _HidP_GetButtonCaps = nullptr;
@@ -102,6 +146,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   _name = std::move(name);
 
+  int quirks = 0;
+  const char *const *gamepad_buttons = default_gamepad_mapping;
+
   switch (info.dwType) {
   case RIM_TYPEMOUSE:
     _device_class = DeviceClass::mouse;
@@ -120,18 +167,13 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
         info.hid.usUsage == HID_USAGE_GENERIC_GAMEPAD) {
       _device_class = DeviceClass::gamepad;
 
-    // Flight sticks
+    // Various game controllers, incl. flight sticks and some gamepads
     } else if (info.hid.usUsagePage == HID_USAGE_PAGE_GENERIC &&
                info.hid.usUsage == HID_USAGE_GENERIC_JOYSTICK) {
       _device_class = DeviceClass::flight_stick;
 
       if (_name == "usb gamepad") {
         // Well, it claims to be a gamepad...
-        _device_class = DeviceClass::gamepad;
-      }
-      //TODO: better solution for this
-      if (_vendor_id == 0x0079 && _product_id == 0x0006) {
-        // Trust GXT 24
         _device_class = DeviceClass::gamepad;
       }
 
@@ -160,6 +202,28 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
 
   default:
     return false;
+  }
+
+  if (_device_class == DeviceClass::gamepad ||
+      _device_class == DeviceClass::flight_stick) {
+    // Do we have a built-in mapping?
+    const DeviceMapping *mapping = mapping_presets;
+    while (mapping->vendor != 0) {
+      if (info.hid.dwVendorId == mapping->vendor &&
+          info.hid.dwProductId == mapping->product) {
+        _device_class = mapping->device_class;
+        gamepad_buttons = mapping->buttons;
+        quirks = mapping->quirks;
+        if (device_cat.is_debug()) {
+          device_cat.debug()
+            << "Using preset mapping for " << mapping->device_class
+            << " with VID=" << std::hex << mapping->vendor
+            << " PID=" << mapping->product << std::dec << "\n";
+        }
+        break;
+      }
+      ++mapping;
+    }
   }
 
   // Initialize hid.dll, which provides the HID parser functions.
@@ -198,38 +262,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       << caps.NumberInputValueCaps << " value caps\n";
   }
 
-  // Do we have a button mapping?
-  static const ButtonHandle gamepad_buttons_common[] = {
-    ButtonHandle::none(),
-    GamepadButton::face_a(),
-    GamepadButton::face_b(),
-    GamepadButton::face_x(),
-    GamepadButton::face_y(),
-    GamepadButton::lshoulder(),
-    GamepadButton::rshoulder(),
-    GamepadButton::start(),
-    GamepadButton::back(),
-    GamepadButton::lstick(),
-    GamepadButton::rstick(),
-  };
-  const ButtonHandle *gamepad_buttons = gamepad_buttons_common;
-  if (_vendor_id == 0x0810 && _product_id == 0xe501) {
-    // SNES-style USB gamepad
-    static const ButtonHandle gamepad_buttons_snes[] = {
-      ButtonHandle::none(),
-      GamepadButton::face_x(),
-      GamepadButton::face_a(),
-      GamepadButton::face_b(),
-      GamepadButton::face_y(),
-      GamepadButton::lshoulder(),
-      GamepadButton::rshoulder(),
-      ButtonHandle::none(),
-      ButtonHandle::none(),
-      GamepadButton::back(),
-      GamepadButton::start(),
-    };
-    gamepad_buttons = gamepad_buttons_snes;
-  }
+  ButtonRegistry *registry = ButtonRegistry::ptr();
 
   // Prepare a mapping of data indices to button/axis indices.
   _indices.resize(caps.NumberInputDataIndices);
@@ -270,7 +303,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       }
     }
 
-    nassertd(cap.Range.DataIndexMin + upper < _indices.size()) continue;
+    nassertd(cap.Range.DataIndexMin + upper < (int)_indices.size()) continue;
 
     // Windows will only tell us which buttons in a report are "on", so we
     // need to keep track of which buttons exist in which report so that we
@@ -285,8 +318,10 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       switch (cap.UsagePage) {
       case HID_USAGE_PAGE_BUTTON:
         if (_device_class == DeviceClass::gamepad) {
-          if (usage < sizeof(gamepad_buttons_common) / sizeof(ButtonHandle)) {
-            handle = gamepad_buttons[usage];
+          if (usage > 0 && usage - 1 < _countof(default_gamepad_mapping)) {
+            if (gamepad_buttons[usage - 1] != nullptr) {
+              handle = registry->find_button(gamepad_buttons[usage - 1]);
+            }
           }
         } else if (_device_class == DeviceClass::flight_stick) {
           if (usage > 0) {
@@ -347,7 +382,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       }
     }
 
-    nassertd(cap.Range.DataIndexMin + upper < _indices.size()) continue;
+    nassertd(cap.Range.DataIndexMin + upper < (int)_indices.size()) continue;
 
     for (int j = 0; j <= upper; ++j) {
       USAGE usage = j + cap.Range.UsageMin;
@@ -386,9 +421,17 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_Z:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::left_trigger;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = Axis::left_trigger;
+            }
           } else if (_device_class == DeviceClass::flight_stick) {
             axis = Axis::throttle;
+            if ((quirks & QB_reversed_throttle) != 0) {
+              std::swap(cap.LogicalMin, cap.LogicalMax);
+            }
+            if ((quirks & QB_centered_throttle) != 0) {
+              is_signed = false;
+            }
           } else {
             axis = Axis::z;
             swap(cap.LogicalMin, cap.LogicalMax);
@@ -411,7 +454,9 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
           break;
         case HID_USAGE_GENERIC_RZ:
           if (_device_class == DeviceClass::gamepad) {
-            axis = Axis::right_trigger;
+            if ((quirks & QB_no_analog_triggers) == 0) {
+              axis = Axis::right_trigger;
+            }
           } else {
             // Flip to match Panda's convention for heading.
             axis = Axis::yaw;
@@ -436,10 +481,7 @@ on_arrival(HANDLE handle, const RID_DEVICE_INFO &info, std::string name) {
       }
 
       int axis_index;
-      if (_vendor_id == 0x044f && _product_id == 0xb108 && axis == Axis::throttle) {
-        // T.Flight Hotas X throttle is reversed and can go backwards.
-        axis_index = add_axis(axis, cap.LogicalMax, cap.LogicalMin, true);
-      } else if (!is_signed) {
+      if (!is_signed) {
         // All axes on the weird XInput-style mappings go from -1 to 1
         axis_index = add_axis(axis, cap.LogicalMin, cap.LogicalMax, true);
       } else {
