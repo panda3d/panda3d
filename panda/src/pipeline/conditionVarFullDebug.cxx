@@ -165,9 +165,9 @@ void ConditionVarFullDebug::
 notify() {
   _mutex._global_lock->lock();
 
-  Thread *current_thread = Thread::get_current_thread();
-
+  /*
   if (!_mutex.do_debug_is_locked()) {
+    Thread *current_thread = Thread::get_current_thread();
     ostringstream ostr;
     ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
@@ -175,8 +175,10 @@ notify() {
     _mutex._global_lock->unlock();
     return;
   }
+  */
 
   if (thread_cat->is_spam()) {
+    Thread *current_thread = Thread::get_current_thread();
     thread_cat.spam()
       << *current_thread << " notifying " << *this << "\n";
   }
@@ -198,9 +200,9 @@ void ConditionVarFullDebug::
 notify_all() {
   _mutex._global_lock->lock();
 
-  Thread *current_thread = Thread::get_current_thread();
-
+  /*
   if (!_mutex.do_debug_is_locked()) {
+    Thread *current_thread = Thread::get_current_thread();
     ostringstream ostr;
     ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
@@ -208,8 +210,10 @@ notify_all() {
     _mutex._global_lock->unlock();
     return;
   }
+  */
 
   if (thread_cat->is_spam()) {
+    Thread *current_thread = Thread::get_current_thread();
     thread_cat.spam()
       << *current_thread << " notifying all " << *this << "\n";
   }
