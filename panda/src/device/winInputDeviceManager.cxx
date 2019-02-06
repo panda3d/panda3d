@@ -392,6 +392,19 @@ on_input_device_removal(HANDLE handle) {
 }
 
 /**
+ * Polls the system to see if there are any new devices.  In some
+ * implementations this is a no-op.
+ */
+void WinInputDeviceManager::
+update() {
+  MSG msg;
+  while (PeekMessage(&msg, _message_hwnd, WM_INPUT_DEVICE_CHANGE, WM_INPUT, PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  }
+}
+
+/**
  * Implementation of the message loop.
  */
 LRESULT WINAPI WinInputDeviceManager::
