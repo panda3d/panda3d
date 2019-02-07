@@ -248,8 +248,17 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(aux_buffers);
   attribs.push_back(NSOpenGLPFAColorSize);
   attribs.push_back(properties.get_color_bits());
+
+  // Set the depth buffer bits to 24 manually when 1 is requested.
+  // This prevents getting a depth buffer of only 16 bits when requesting 1.
   attribs.push_back(NSOpenGLPFADepthSize);
-  attribs.push_back(properties.get_depth_bits());
+  if (properties.get_depth_bits() == 1) {
+    attribs.push_back(24);
+  }
+  else {
+    attribs.push_back(properties.get_depth_bits());
+  }
+
   attribs.push_back(NSOpenGLPFAStencilSize);
   attribs.push_back(properties.get_stencil_bits());
 
