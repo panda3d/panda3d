@@ -84,6 +84,8 @@ static const struct DeviceMapping {
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
   // SPEED Link SL-6535-SBK-01
   {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
+  // 8bitdo N30 Pro Controller
+  {0x2dc8, 0x9001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse
@@ -521,10 +523,7 @@ init_device() {
           }
           break;
         case ABS_THROTTLE:
-           if (_device_class == DeviceClass::gamepad) {
-            // Apparently needed for 8bitdo N30 Pro controller
-            axis = InputDevice::Axis::right_x;
-          } else if (quirks & QB_rudder_from_throttle) {
+          if (quirks & QB_rudder_from_throttle) {
             axis = InputDevice::Axis::rudder;
           } else {
             axis = InputDevice::Axis::throttle;
