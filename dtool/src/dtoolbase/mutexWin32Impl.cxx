@@ -17,13 +17,18 @@
 
 #include "mutexWin32Impl.h"
 
+// The number of spins to do before suspending the thread.
+static const unsigned int spin_count = 4000;
+
+// Only compile the below nonsense if we're not compiling for a Vista minimum.
+#if _WIN32_WINNT < 0x0600
+
 // If this is true, we will use SRWLock on Windows Vista and above instead of
 // our own implementation.
 static const bool prefer_srwlock = true;
 
 // These configure our own Windows XP implementation.
 static const uintptr_t lock_bit = 0x40000000;
-static const unsigned int spin_count = 4000;
 
 // This gets set to spin_count if we are on a multi-core system.
 static unsigned int effective_spin_count = 0;
@@ -262,6 +267,8 @@ cvar_notify_all_xp(volatile PVOID *cvar) {
   }
 }
 
+#endif  // _WIN32_WINNT < 0x0600
+
 /**
  * This is put initially in the _lock slot; it makes sure that the lock
  * functions get initialized the first time someone tries to grab a lock.
@@ -282,17 +289,29 @@ try_lock_initially(volatile PVOID *lock) {
   return MutexWin32Impl::_funcs._try_lock(lock);
 }
 
-#ifndef NDEBUG
 /**
  * This gets put initially in the _unlock slot and should never be called,
  * since the initial lock/try_lock implementation will replace the pointers.
  */
 void __stdcall MutexWin32Impl::
 unlock_initially(volatile PVOID *) {
+#if !defined(NDEBUG) || defined(DEBUG_THREADS)
   std::cerr << "Attempt to release a mutex at static init time before acquiring it!\n";
   assert(false);
-}
 #endif
+}
+
+/**
+ * Same as above for condition variables.
+ */
+static BOOL __stdcall
+cvar_wait_initially(volatile PVOID *cvar, volatile PVOID *lock, DWORD timeout, ULONG) {
+#if !defined(NDEBUG) || defined(DEBUG_THREADS)
+  std::cerr << "Attempt to wait for condition variable at static init time before acquiring mutex!\n";
+  assert(false);
+#endif
+  return FALSE;
+}
 
 /**
  * Does nothing.
@@ -312,7 +331,7 @@ MutexWin32Impl::LockFunctions MutexWin32Impl::_funcs = {
   &noop,
 #endif
 
-  &cvar_wait_xp,
+  &cvar_wait_initially,
 #ifndef NDEBUG
   &MutexWin32Impl::unlock_initially,
   &MutexWin32Impl::unlock_initially,
@@ -332,6 +351,14 @@ init_lock_funcs() {
     return;
   }
 
+#if _WIN32_WINNT >= 0x0600
+  _funcs._lock = (LockFunc)AcquireSRWLockExclusive;
+  _funcs._try_lock = (TryLockFunc)TryAcquireSRWLockExclusive;
+  _funcs._unlock = (LockFunc)ReleaseSRWLockExclusive;
+  _funcs._cvar_wait = (CondWaitFunc)SleepConditionVariableSRW;
+  _funcs._cvar_notify_one = (LockFunc)WakeConditionVariable;
+  _funcs._cvar_notify_all = (LockFunc)WakeAllConditionVariable;
+#else
   // We don't need to be very thread safe here.  This can only ever be called
   // at static init time, when there is still only one thread.
   if (prefer_srwlock) {
@@ -370,6 +397,7 @@ init_lock_funcs() {
   } else {
     effective_spin_count = 0;
   }
+#endif  // _WIN32_WINNT < 0x0600
 }
 
 /**
