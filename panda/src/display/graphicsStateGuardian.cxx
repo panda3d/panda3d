@@ -2823,6 +2823,12 @@ do_issue_light() {
     }
 
   } else {
+    // Don't forget to still enable lighting if we have only an ambient light.
+    if (!_lighting_enabled) {
+      enable_lighting(true);
+      _lighting_enabled = true;
+    }
+
     set_ambient_light(target_light->get_ambient_contribution());
   }
 
