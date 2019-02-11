@@ -158,7 +158,7 @@ install the requisite packages using the system package manager.  To install
 the recommended set of dependencies, you can use this command:
 
 ```bash
-pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish openal opusfile libvorbis libX11 mesa-libs ode bullet assimp openexr
 ```
 
 You will also need to choose which version of Python you want to use.
