@@ -1570,7 +1570,7 @@ def CompileIgate(woutd,wsrc,opts):
         # NOTE: this 1600 value is the version number for VC2010.
         cmd += ' -D_MSC_VER=1600 -D"__declspec(param)=" -D__cdecl -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
-        cmd += ' -D__attribute__\(x\)='
+        cmd += ' -D__attribute__\\(x\\)='
         target_arch = GetTargetArch()
         if target_arch in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
@@ -1675,9 +1675,9 @@ def CompileLib(lib, obj, opts):
                 cmd += " /MACHINE:" + GetTargetArch().upper()
             cmd += ' /OUT:' + BracketNameWithQuotes(lib)
             for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc10"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\ipp\\lib\\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\TBB\\Lib\\ia32\\vc10"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\compiler\\lib\\ia32"'
             oscmd(cmd)
 
     if (COMPILER=="GCC"):
@@ -1783,9 +1783,9 @@ def CompileLink(dll, obj, opts):
                 cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
             cmd += " /NOD:LIBCI.LIB /DEBUG"
             cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc10"'
-            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\ipp\\lib\\ia32"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\TBB\\Lib\\ia32\\vc10"'
+            cmd += ' /LIBPATH:"C:\\Program Files (x86)\\Intel\\Composer XE 2011 SP1\\compiler\\lib\\ia32"'
             if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
             optlevel = GetOptimizeOption(opts)
             if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
@@ -6648,7 +6648,7 @@ if PkgSkip("PYTHON") == 0:
 
     if GetTarget() == 'linux' or GetTarget() == 'freebsd':
         # Setup rpath so libs can be found in the same directory as the deployed game
-        LibName('DEPLOYSTUB', "-Wl,-rpath,\$ORIGIN")
+        LibName('DEPLOYSTUB', "-Wl,-rpath,\\$ORIGIN")
         LibName('DEPLOYSTUB', "-Wl,-z,origin")
         LibName('DEPLOYSTUB', "-rdynamic")
     PyTargetAdd('deploy-stub.exe', input='deploy-stub.obj')
