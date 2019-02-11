@@ -2513,7 +2513,7 @@ class AlphabetCounter:
         index = -1
         while True:
             curChar = self._curCounter[index]
-            if curChar is 'Z':
+            if curChar == 'Z':
                 nextChar = 'A'
                 carry = True
             else:

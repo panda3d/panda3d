@@ -21,7 +21,7 @@ def deCygwinify(path):
 
         dirs = path.split('/')
         if len(dirs) > 2 and len(dirs[1]) == 1:
-            path = '%s:\%s' % (dirs[1], '\\'.join(dirs[2:]))
+            path = '%s:\\%s' % (dirs[1], '\\'.join(dirs[2:]))
 
         else:
             # Otherwise, prepend $PANDA_ROOT and flip the slashes.
