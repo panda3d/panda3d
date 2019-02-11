@@ -13,17 +13,16 @@
 
 #include "configVariableFilename.h"
 #include "executionEnvironment.h"
+#include "mutexImpl.h"
+
+static MutexImpl filename_lock;
 
 /**
  * Recopies the config variable into the Filename for returning its value.
  */
 void ConfigVariableFilename::
 reload_cache() {
-  // NB. MSVC doesn't guarantee that this mutex is initialized in a
-  // thread-safe manner.  But chances are that the first time this is called
-  // is at static init time, when there is no risk of data races.
-  static MutexImpl lock;
-  lock.lock();
+  filename_lock.lock();
 
   // We check again for cache validity since another thread may have beaten
   // us to the punch while we were waiting for the lock.
@@ -34,5 +33,5 @@ reload_cache() {
     _cache = decl->get_filename_value();
     mark_cache_valid(_local_modified);
   }
-  lock.unlock();
+  filename_lock.unlock();
 }
