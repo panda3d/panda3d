@@ -21,7 +21,7 @@ using std::ostream;
 using std::ostringstream;
 
 int MutexDebug::_pstats_count = 0;
-MutexTrueImpl *MutexDebug::_global_lock;
+MutexTrueImpl MutexDebug::_global_lock;
 
 /**
  *
@@ -34,7 +34,7 @@ MutexDebug(const std::string &name, bool allow_recursion, bool lightweight) :
   _locking_thread(nullptr),
   _lock_count(0),
   _deleted_name(nullptr),
-  _cvar_impl(*get_global_lock())
+  _cvar_impl(_global_lock)
 {
 #ifndef SIMPLE_THREADS
   // If we're using real threads, there's no such thing as a lightweight
@@ -87,12 +87,12 @@ output(ostream &out) const {
  */
 void MutexDebug::
 output_with_holder(ostream &out) const {
-  _global_lock->lock();
+  _global_lock.lock();
   output(out);
   if (_locking_thread != nullptr) {
     out << " (held by " << *_locking_thread << ")\n";
   }
-  _global_lock->unlock();
+  _global_lock.unlock();
 }
 
 /**
@@ -102,9 +102,9 @@ output_with_holder(ostream &out) const {
  */
 void MutexDebug::
 increment_pstats() {
-  _global_lock->lock();
+  _global_lock.lock();
   ++_pstats_count;
-  _global_lock->unlock();
+  _global_lock.unlock();
 }
 
 /**
@@ -113,9 +113,9 @@ increment_pstats() {
  */
 void MutexDebug::
 decrement_pstats() {
-  _global_lock->lock();
+  _global_lock.lock();
   --_pstats_count;
-  _global_lock->unlock();
+  _global_lock.unlock();
 }
 
 /**

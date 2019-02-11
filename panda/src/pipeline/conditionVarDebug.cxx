@@ -29,7 +29,7 @@ using std::ostringstream;
 ConditionVarDebug::
 ConditionVarDebug(MutexDebug &mutex) :
   _mutex(mutex),
-  _impl(*mutex.get_global_lock())
+  _impl(mutex._global_lock)
 {
   nassertv(!_mutex._allow_recursion);
 }
@@ -60,7 +60,7 @@ ConditionVarDebug::
  */
 void ConditionVarDebug::
 wait() {
-  _mutex._global_lock->lock();
+  _mutex._global_lock.lock();
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -69,7 +69,7 @@ wait() {
     ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->unlock();
+    _mutex._global_lock.unlock();
     return;
   }
 
@@ -95,7 +95,7 @@ wait() {
       << *current_thread << " awake on " << *this << "\n";
   }
 
-  _mutex._global_lock->unlock();
+  _mutex._global_lock.unlock();
 }
 
 /**
@@ -108,7 +108,7 @@ wait() {
  */
 void ConditionVarDebug::
 wait(double timeout) {
-  _mutex._global_lock->lock();
+  _mutex._global_lock.lock();
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -117,7 +117,7 @@ wait(double timeout) {
     ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->unlock();
+    _mutex._global_lock.unlock();
     return;
   }
 
@@ -144,7 +144,7 @@ wait(double timeout) {
       << *current_thread << " awake on " << *this << "\n";
   }
 
-  _mutex._global_lock->unlock();
+  _mutex._global_lock.unlock();
 }
 
 /**
@@ -158,7 +158,7 @@ wait(double timeout) {
  */
 void ConditionVarDebug::
 notify() {
-  _mutex._global_lock->lock();
+  _mutex._global_lock.lock();
 
   /*
   if (!_mutex.do_debug_is_locked()) {
@@ -167,7 +167,7 @@ notify() {
     ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->unlock();
+    _mutex._global_lock.unlock();
     return;
   }
   */
@@ -179,7 +179,7 @@ notify() {
   }
 
   _impl.notify();
-  _mutex._global_lock->unlock();
+  _mutex._global_lock.unlock();
 }
 
 /**
@@ -190,7 +190,7 @@ notify() {
  */
 void ConditionVarDebug::
 notify_all() {
-  _mutex._global_lock->lock();
+  _mutex._global_lock.lock();
 
   /*
   if (!_mutex.do_debug_is_locked()) {
@@ -199,7 +199,7 @@ notify_all() {
     ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
-    _mutex._global_lock->unlock();
+    _mutex._global_lock.unlock();
     return;
   }
   */
@@ -211,7 +211,7 @@ notify_all() {
   }
 
   _impl.notify_all();
-  _mutex._global_lock->unlock();
+  _mutex._global_lock.unlock();
 }
 
 /**
