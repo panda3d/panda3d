@@ -29,7 +29,7 @@
 #include "pStatCollector.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "conditionVarFull.h"
+#include "conditionVar.h"
 #include "loaderOptions.h"
 #include "string_utils.h"
 #include "cycleData.h"
@@ -1034,7 +1034,7 @@ protected:
   Mutex _lock;
 
   // Used to implement unlocked_reload_ram_image().
-  ConditionVarFull _cvar;  // condition: _reloading is true.
+  ConditionVar _cvar;  // condition: _reloading is true.
   bool _reloading;
 
   // A Texture keeps a list (actually, a map) of all the
