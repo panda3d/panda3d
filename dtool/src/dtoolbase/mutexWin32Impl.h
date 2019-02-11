@@ -74,7 +74,6 @@ private:
   volatile PVOID _lock[2] = {nullptr, nullptr};
 
   friend class ConditionVarWin32Impl;
-  friend class ConditionVarFullWin32Impl;
 };
 
 /**
