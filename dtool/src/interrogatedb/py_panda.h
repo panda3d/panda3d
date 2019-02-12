@@ -38,7 +38,8 @@ using namespace std;
 struct Dtool_PyTypedObject;
 
 // used to stamp dtool instance..
-#define PY_PANDA_SIGNATURE 0xbeaf
+// Check for each new supported version of python that this bit is not used for something else!
+#define PY_PANDA_FLAGS (1L<<22)
 typedef void *(*UpcastFunction)(PyObject *,Dtool_PyTypedObject *);
 typedef void *(*DowncastFunction)(void *, Dtool_PyTypedObject *);
 typedef void *(*CoerceFunction)(PyObject *, void *);
@@ -55,10 +56,6 @@ struct Dtool_PyInstDef {
 
   // Pointer to the underlying C++ object.
   void *_ptr_to_object;
-
-  // This is always set to PY_PANDA_SIGNATURE, so that we can quickly detect
-  // whether an object is a Panda object.
-  unsigned short _signature;
 
   // True if we own the pointer and should delete it or unref it.
   bool _memory_rules;
@@ -95,7 +92,7 @@ struct Dtool_PyTypedObject {
 static PyObject *Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds) {\
   (void) args; (void) kwds;\
   PyObject *self = type->tp_alloc(type, 0);\
-  ((Dtool_PyInstDef *)self)->_signature = PY_PANDA_SIGNATURE;\
+  Py_TYPE(self)->tp_flags |= PY_PANDA_FLAGS;\
   ((Dtool_PyInstDef *)self)->_My_Type = &Dtool_##CLASS_NAME;\
   return self;\
 }
@@ -164,7 +161,7 @@ static void Dtool_FreeInstance_##CLASS_NAME(PyObject *self) {\
 // Use DtoolInstance_Check to check whether a PyObject* is a DtoolInstance.
 #define DtoolInstance_Check(obj) \
   (Py_TYPE(obj)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef) && \
-   ((Dtool_PyInstDef *)obj)->_signature == PY_PANDA_SIGNATURE)
+   ((Py_TYPE(obj)->tp_flags) & PY_PANDA_FLAGS) != 0)
 
 // These macros access the DtoolInstance without error checking.
 #define DtoolInstance_TYPE(obj) (((Dtool_PyInstDef *)obj)->_My_Type)
