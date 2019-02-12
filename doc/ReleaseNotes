@@ -4,6 +4,7 @@ This is a bugfix release intended to fix several issues in 1.10.0.
 
 * Fix crashes when gamepad is plugged in on 32-bit Windows
 * Fix deploy-ng error regarding 'exist_ok' on Python 2
+* Fix Linux install from pip not working with some mesa drivers
 * Fix compatibility issues with upcoming Python 3.8
 * Fix regression with Audio3DManager.setSoundVelocityAuto()
 * Fix issues when awaiting loader.loadModel in Python 3.7

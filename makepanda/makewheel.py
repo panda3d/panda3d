@@ -104,7 +104,7 @@ MANYLINUX_LIBS = [
 
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
-    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2",
+    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
