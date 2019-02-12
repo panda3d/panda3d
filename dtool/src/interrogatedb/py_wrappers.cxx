@@ -1091,7 +1091,11 @@ static PyObject *Dtool_GeneratorWrapper_iternext(PyObject *self) {
  */
 static void
 Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
+#if PY_VERSION_HEX >= 0x03080000
+  PyObject_GC_UnTrack(descr);
+#else
   _PyObject_GC_UNTRACK(descr);
+#endif
   Py_XDECREF(descr->d_type);
   Py_XDECREF(descr->d_name);
 //#if PY_MAJOR_VERSION >= 3
