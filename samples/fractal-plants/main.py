@@ -141,11 +141,14 @@ def drawBody(nodePath, vdata, pos, vecList, radius=1, keepDrawing=True, numVerti
         drawReWriter.addData1f(keepDrawing)
         currAngle += angleSlice
 
+    if startRow == 0:
+        return
+
     drawReader = GeomVertexReader(vdata, "drawFlag")
     drawReader.setRow(startRow - numVertices)
 
     # we cant draw quads directly so we use Tristrips
-    if (startRow != 0) & (drawReader.getData1f() != False):
+    if drawReader.getData1i() != 0:
         lines = GeomTristrips(Geom.UHStatic)
         half = int(numVertices * 0.5)
         for i in range(numVertices):
