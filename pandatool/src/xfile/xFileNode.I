@@ -14,6 +14,16 @@
 /**
  *
  */
+INLINE XFileNode::
+XFileNode(XFile *x_file) :
+  Namable(),
+  _x_file(x_file)
+{
+}
+
+/**
+ *
+ */
 INLINE XFile *XFileNode::
 get_x_file() const {
   return _x_file;
