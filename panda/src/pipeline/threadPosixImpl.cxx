@@ -181,7 +181,7 @@ join() {
 std::string ThreadPosixImpl::
 get_unique_id() const {
   std::ostringstream strm;
-  strm << getpid() << "." << _thread;
+  strm << getpid() << "." << (uintptr_t)_thread;
 
   return strm.str();
 }
