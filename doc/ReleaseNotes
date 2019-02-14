@@ -14,6 +14,7 @@ This is a bugfix release intended to fix several issues in 1.10.0.
 * Depth buffer now defaults to 24-bit on macOS (fixes flickering)
 * Fix no devices being detected on Windows with threading-model
 * Implement collision tests from Capsule and Box into InvSphere
+* Fix odd behavior and occasional crash in QuatInterval
 * Fix SpriteAnim error in particle system
 * Fix ShaderGenerator error when using too many shadowing lights
 * Fix interrogate crash in Python 3 with optional wstring args
