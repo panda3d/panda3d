@@ -18,9 +18,9 @@
 INLINE void MutexDebug::
 lock() {
   TAU_PROFILE("void MutexDebug::acquire()", " ", TAU_USER);
-  _global_lock.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_lock(Thread::get_current_thread());
-  _global_lock.unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -30,9 +30,9 @@ lock() {
 INLINE bool MutexDebug::
 try_lock() {
   TAU_PROFILE("void MutexDebug::try_lock()", " ", TAU_USER);
-  _global_lock.lock();
+  _global_lock->lock();
   bool acquired = ((MutexDebug *)this)->do_try_lock(Thread::get_current_thread());
-  _global_lock.unlock();
+  _global_lock->unlock();
   return acquired;
 }
 
@@ -43,9 +43,9 @@ try_lock() {
 INLINE void MutexDebug::
 unlock() {
   TAU_PROFILE("void MutexDebug::unlock()", " ", TAU_USER);
-  _global_lock.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_unlock();
-  _global_lock.unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -62,9 +62,9 @@ INLINE void MutexDebug::
 acquire(Thread *current_thread) const {
   TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
   nassertv(current_thread == Thread::get_current_thread());
-  _global_lock.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_lock(current_thread);
-  _global_lock.unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -75,9 +75,9 @@ INLINE bool MutexDebug::
 try_acquire(Thread *current_thread) const {
   TAU_PROFILE("void MutexDebug::try_acquire(Thread *)", " ", TAU_USER);
   nassertr(current_thread == Thread::get_current_thread(), false);
-  _global_lock.lock();
+  _global_lock->lock();
   bool acquired = ((MutexDebug *)this)->do_try_lock(current_thread);
-  _global_lock.unlock();
+  _global_lock->unlock();
   return acquired;
 }
 
@@ -114,9 +114,9 @@ elevate_lock() const {
 INLINE void MutexDebug::
 release() const {
   TAU_PROFILE("void MutexDebug::release()", " ", TAU_USER);
-  _global_lock.lock();
+  _global_lock->lock();
   ((MutexDebug *)this)->do_unlock();
-  _global_lock.unlock();
+  _global_lock->unlock();
 }
 
 /**
@@ -128,8 +128,22 @@ release() const {
 INLINE bool MutexDebug::
 debug_is_locked() const {
   TAU_PROFILE("bool MutexDebug::debug_is_locked()", " ", TAU_USER);
-  _global_lock.lock();
+  _global_lock->lock();
   bool is_locked = do_debug_is_locked();
-  _global_lock.unlock();
+  _global_lock->unlock();
   return is_locked;
+}
+
+/**
+ * Ensures the global MutexImpl pointer has been created, and returns its
+ * pointer.  Since this method is called by the MutexDebug constructor, any
+ * other (non-static) methods of MutexDebug may simply assume that the pointer
+ * has already been created.
+ */
+INLINE MutexTrueImpl *MutexDebug::
+get_global_lock() {
+  if (_global_lock == nullptr) {
+    _global_lock = new MutexTrueImpl;
+  }
+  return _global_lock;
 }
