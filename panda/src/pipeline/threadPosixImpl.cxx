@@ -58,6 +58,7 @@ ThreadPosixImpl::
 void ThreadPosixImpl::
 setup_main_thread() {
   _status = S_running;
+  _thread = pthread_self();
 }
 
 /**
