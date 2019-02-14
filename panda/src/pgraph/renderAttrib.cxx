@@ -45,8 +45,6 @@ RenderAttrib() {
  */
 RenderAttrib::
 ~RenderAttrib() {
-  LightReMutexHolder holder(*_attribs_lock);
-
   // unref() should have cleared this.
   nassertv(_saved_entry == -1);
 }
