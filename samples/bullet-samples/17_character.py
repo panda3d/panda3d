@@ -190,7 +190,7 @@ class Game(ShowBase):
         self.characterNP.set_collide_mask(BitMask32.all_on())
         self.world.attach(self.character)
 
-        self.actorNP = Actor('samples/roaming-ralph/models/ralph.egg.pz', 
+        self.actorNP = Actor('samples/roaming-ralph/models/ralph.egg.pz',
             {'run' : 'samples/roaming-ralph/models/ralph-run.egg.pz',
              'walk' : 'samples/roaming-ralph/models/ralph-walk.egg.pz'})
         self.actorNP.reparent_to(self.characterNP)
@@ -200,4 +200,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-

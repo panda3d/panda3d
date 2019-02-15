@@ -111,7 +111,7 @@ class Game(ShowBase):
             n = 8
             p2 = p1 + LVector3(10, 0, 0)
 
-            bodyNode = BulletSoftBodyNode.makeRope(info, p1, p2, n, 1) 
+            bodyNode = BulletSoftBodyNode.makeRope(info, p1, p2, n, 1)
             bodyNode.set_total_mass(50.0)
             bodyNP = self.worldNP.attach_new_node(bodyNode)
             self.world.attach(bodyNode)

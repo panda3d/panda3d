@@ -158,7 +158,7 @@ class Game(ShowBase):
         self.world.attach(np.node())
 
         #np.node().set_ccd_swept_sphere_radius(1.0)
-        #np.node().set_ccd_motion_threshold(1e-7) 
+        #np.node().set_ccd_motion_threshold(1e-7)
 
         # Vehicle
         self.vehicle = BulletVehicle(self.world, np.node())
@@ -213,4 +213,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-

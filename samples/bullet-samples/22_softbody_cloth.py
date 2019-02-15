@@ -137,7 +137,7 @@ class Game(ShowBase):
         p01 = LPoint3(-8,  8, 0)
         p11 = LPoint3( 8,  8, 0)
         bodyNode = BulletSoftBodyNode.make_patch(
-            info, p00, p10, p01, p11, nx, ny, 1+2+4+8, True) 
+            info, p00, p10, p01, p11, nx, ny, 1+2+4+8, True)
 
         material = bodyNode.append_material()
         material.set_linear_stiffness(0.4)
@@ -178,4 +178,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-

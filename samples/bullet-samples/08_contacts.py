@@ -109,7 +109,7 @@ class Game(ShowBase):
         self.box.apply_torque(torque)
 
     def process_contacts(self):
-        if not self.box or not self.sphere: 
+        if not self.box or not self.sphere:
             return
 
         result = self.world.contact_test_pair(self.box, self.sphere)
@@ -210,4 +210,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-

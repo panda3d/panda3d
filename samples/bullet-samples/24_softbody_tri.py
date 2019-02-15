@@ -138,7 +138,7 @@ class Game(ShowBase):
             geomNode = GeomNode('')
             geomNode.add_geom(geom)
 
-            node = BulletSoftBodyNode.make_tri_mesh(info, geom) 
+            node = BulletSoftBodyNode.make_tri_mesh(info, geom)
             node.link_geom(geomNode.modify_geom(0))
 
             node.generate_bending_constraints(2)
@@ -161,4 +161,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-

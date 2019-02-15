@@ -167,4 +167,3 @@ class Game(ShowBase):
 
 game = Game()
 run()
-

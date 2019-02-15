@@ -22,7 +22,7 @@ class HeightfieldVehicle(ShowBase):
     def __init__(self, heightfield_fn="heightfield.png"):
         # Store the heightfield's filename.
         self.heightfield_fn = heightfield_fn
-        
+
         """
         Load some configuration variables, it's important for this to happen
         before ShowBase is initialized
@@ -38,11 +38,11 @@ class HeightfieldVehicle(ShowBase):
             ### model paths
             model-path /usr/share/panda3d
             model-path /home/juzzuj/code/prereq/bullet-samples/bullet-samples
-            """)            
+            """)
         ShowBase.__init__(self)
         base.set_background_color(0.1, 0.1, 0.8, 1)
         base.set_frame_rate_meter(True)
-        
+
         # Increase camera Field Of View and set near and far planes
         base.camLens.set_fov(90)
         base.camLens.set_near_far(0.1, 50000)
@@ -68,7 +68,7 @@ class HeightfieldVehicle(ShowBase):
         self.accept('f3', self.toggle_debug)
         self.accept('f5', self.do_screenshot)
         self.accept('r', self.do_reset)
-        
+
         # Vehicle controls
         inputState.watchWithModifiers('forward', 'w')
         inputState.watchWithModifiers('turnLeft', 'a')
@@ -78,21 +78,21 @@ class HeightfieldVehicle(ShowBase):
         inputState.watchWithModifiers('turnLeft', 'arrow_left')
         inputState.watchWithModifiers('reverse', 'arrow_down')
         inputState.watchWithModifiers('turnRight', 'arrow_right')
-        
+
         self.accept('space', self.reset_vehicle)
-        
+
         # Controls to do with the terrain
         #self.accept('t', self.rise_in_front)
         self.accept('t', self.deform_terrain, ["raise"])
         self.accept('g', self.deform_terrain, ["depress"])
         self.accept('b', self.drop_boxes)
-        
+
         # Some debugging and miscellaneous controls
         self.accept('e', self.query_elevation)
         self.accept('c', self.convert_coordinates)
         self.accept('p', self.save)
         self.accept('h', self.hide_terrain)
-        
+
         # Task
         taskMgr.add(self.update, 'updateWorld')
 
@@ -136,7 +136,7 @@ class HeightfieldVehicle(ShowBase):
         dt = globalClock.get_dt()
         # Pass dt as parameter (we need it for sensible steering calculations)
         self.process_input(dt)
-        
+
         """
         Basically, we want to put our camera where the camera floater is. We
         need the floater's world (=render-relative) position (it's parented to
@@ -147,14 +147,14 @@ class HeightfieldVehicle(ShowBase):
         """
         If the camera floater is under the terrain surface, adjust it, so that
         it stays above the terrain.
-        """         
+        """
         elevation_at_floater_pos = self.query_elevation(floater_pos)
         if elevation_at_floater_pos.z >= floater_pos.z:
             floater_pos.z = elevation_at_floater_pos.z + 1.
         # Now we set our camera's position and make it look at the vehicle.
         base.cam.set_pos(floater_pos)
         base.cam.look_at(self.vehicleNP)
-        
+
         # Let the Bullet library do physics calculations.
         self.world.do_physics(dt, 10, 0.008)
         return task.cont
@@ -162,7 +162,7 @@ class HeightfieldVehicle(ShowBase):
     def process_input(self, dt):
         # Relax steering towards straight
         self.steering *= 1 - self.steering_relax_factor * dt
-        
+
         engine_force = 0.0
         brake_force = 0.0
 
@@ -183,12 +183,12 @@ class HeightfieldVehicle(ShowBase):
             self.steering = max(self.steering, -self.steering_clamp)
 
         # Lower steering intensity for high speeds
-        self.steering *= 1. - (self.vehicle.get_current_speed_km_hour() * 
+        self.steering *= 1. - (self.vehicle.get_current_speed_km_hour() *
                                self.steering_speed_reduction_factor)
 
         # Apply steering to front wheels
         #self.vehicle.get_wheels()[0].set_steering(self.steering)
-        #self.vehicle.get_wheels()[1].set_steering(self.steering)        
+        #self.vehicle.get_wheels()[1].set_steering(self.steering)
         #self.vehicle.wheels[0].steering = self.steering
         #self.vehicle.wheels[1].steering = self.steering
         self.vehicle.set_steering_value(self.steering, 0)
@@ -204,7 +204,7 @@ class HeightfieldVehicle(ShowBase):
         self.vehicle.set_brake(brake_force, 2)
         self.vehicle.set_brake(brake_force, 3)
 
-    def setup(self):        
+    def setup(self):
         # Bullet physics world
         self.worldNP = render.attach_new_node('World')
         self.debugNP = self.worldNP.attach_new_node(BulletDebugNode('Debug'))
@@ -216,12 +216,12 @@ class HeightfieldVehicle(ShowBase):
         # Steering info
         self.steering = 0.0              # degrees
         self.steering_clamp = 45.0       # degrees
-        self.steering_increment = 120.0  # degrees per second        
+        self.steering_increment = 120.0  # degrees per second
         # How fast steering relaxes to straight ahead
         self.steering_relax_factor = 2.0
         # How much steering intensity decreases with higher speeds
         self.steering_speed_reduction_factor = 0.003
-        
+
         # Chassis collision box (note: Bullet uses half-measures)
         shape = BulletBoxShape(LVector3(0.6, 1.4, 0.5))
         ts = TransformState.make_pos(LPoint3(0, 0, 0.5))
@@ -238,7 +238,7 @@ class HeightfieldVehicle(ShowBase):
         # BulletVehicle
         self.vehicle = BulletVehicle(self.world, self.vehicleNP.node())
         self.world.attach(self.vehicle)
-        
+
         # Vehicle model
         self.yugoNP = loader.load_model('models/yugo/yugo.egg')
         self.yugoNP.reparent_to(self.vehicleNP)
@@ -258,7 +258,7 @@ class HeightfieldVehicle(ShowBase):
         np = loader.load_model('models/yugo/yugotireL.egg')
         np.reparent_to(self.worldNP)
         self.add_wheel(LPoint3(-0.70, -1.05, 0.3), False, np)
-        
+
         # Load a skybox
         self.skybox = self.loader.load_model(
             "samples/shader-terrain/models/skybox.bam")
@@ -272,14 +272,14 @@ class HeightfieldVehicle(ShowBase):
         skybox_texture.set_wrap_v(SamplerState.WM_mirror)
         skybox_texture.set_anisotropic_degree(16)
         self.skybox.set_texture(skybox_texture)
-        skybox_shader = Shader.load(Shader.SL_GLSL, 
-            "samples/shader-terrain/skybox.vert.glsl", 
+        skybox_shader = Shader.load(Shader.SL_GLSL,
+            "samples/shader-terrain/skybox.vert.glsl",
             "samples/shader-terrain/skybox.frag.glsl")
         self.skybox.set_shader(skybox_shader)
 
         # Terrain
         self.setup_terrain()
-        
+
     def add_wheel(self, pos, front, np):
         wheel = self.vehicle.create_wheel()
 
@@ -318,19 +318,19 @@ class HeightfieldVehicle(ShowBase):
         self.vehicleNP.node().set_angular_velocity(LVector3(0))
         self.vehicleNP.set_pos(reset_pos)
         self.vehicleNP.set_hpr(LVector3(0))
-        
+
     def drop_boxes(self):
         """
         Puts a stack of boxes at a distance in front of the vehicle.
         The boxes will not necessarily spawn above the terrain and will not
         be cleaned up.
-        """ 
+        """
         model = loader.load_model('models/box.egg')
         model.set_pos(-0.5, -0.5, -0.5)
         model.flatten_light()
         shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
         ahead = self.vehicleNP.get_pos() + self.vehicle.get_forward_vector()*15
-        
+
         for i in range(6):
             node = BulletRigidBodyNode('Box')
             node.set_mass(5.0)
@@ -340,7 +340,7 @@ class HeightfieldVehicle(ShowBase):
             np.set_pos(ahead.x, ahead.y, ahead.z + i*2)
             self.world.attach(node)
             model.copy_to(np)
-        
+
     def query_elevation(self, xy_pos=None):
         """
         Query elevation for xy_pos if present, else for vehicle position.
@@ -348,7 +348,7 @@ class HeightfieldVehicle(ShowBase):
         """
         query_pos = xy_pos or self.vehicleNP.get_pos()
         """
-        This method is accurate and may be useful for placing 
+        This method is accurate and may be useful for placing
         objects on the terrain surface.
         """
         result = self.world.ray_test_closest(
@@ -364,7 +364,7 @@ class HeightfieldVehicle(ShowBase):
             hit_pos = None
             if not xy_pos:
                 print("Could not query elevation at {}".format(xy_pos))
-        
+
         """
         This method is less accurate than the one above.
         Under heavy ray-testing stress (ray tests are performed for all vehicle
@@ -378,9 +378,9 @@ class HeightfieldVehicle(ShowBase):
             print("ShaderTerrainMesh elevation at "
                 "X {:.2f} | Y {:.2f} is {:.3f}".format(
                 stm_pos.x, stm_pos.y, stm_pos.z))
-        
+
         return hit_pos or stm_pos
-    
+
     def setup_terrain(self):
         """
         Terrain info
@@ -396,7 +396,7 @@ class HeightfieldVehicle(ShowBase):
         produce better results.
         """
         use_diamond_subdivision = True
-        
+
         """
         Construct the terrain
         Without scaling, any ShaderTerrainMesh is 1x1x1 units.
@@ -408,9 +408,9 @@ class HeightfieldVehicle(ShowBase):
         """
         heightfield = Texture()
         heightfield.read(self.heightfield_fn)
-        heightfield.set_keep_ram_image(True)        
+        heightfield.set_keep_ram_image(True)
         self.terrain_node.heightfield = heightfield
-        
+
         # Display characteristic values of the heightfield texture
         #minpoint, maxpoint, avg = LPoint3(), LPoint3(), LPoint3()
         #heightfield.calc_min_max(minpoint, maxpoint)
@@ -429,7 +429,7 @@ class HeightfieldVehicle(ShowBase):
             The default is false.
             """
             load_prc_file_data("", "stm-use-hexagonal-layout true")
-        
+
         self.terrain_node.generate()
         """
         Attach the terrain to the main scene and set its scale. With no scale
@@ -442,8 +442,8 @@ class HeightfieldVehicle(ShowBase):
         Set a vertex and a fragment shader on the terrain. The
         ShaderTerrainMesh only works with an applied shader.
         """
-        terrain_shader = Shader.load(Shader.SL_GLSL, 
-            "samples/shader-terrain/terrain.vert.glsl", 
+        terrain_shader = Shader.load(Shader.SL_GLSL,
+            "samples/shader-terrain/terrain.vert.glsl",
             "samples/shader-terrain/terrain.frag.glsl")
         self.terrain.set_shader(terrain_shader)
         self.terrain.set_shader_input("camera", base.camera)
@@ -466,7 +466,7 @@ class HeightfieldVehicle(ShowBase):
         """
         self.StagingPFM = PfmFile()
         self.RotorPFM = PfmFile()
-        
+
         """
         Set up the BulletHeightfieldShape (=collision terrain) and give it
         some sensible physical properties.
@@ -483,7 +483,7 @@ class HeightfieldVehicle(ShowBase):
         HFS_rigidbody.set_restitution(0.3)
         HFS_rigidbody.add_shape(self.HFS)
         self.world.attach(HFS_rigidbody)
-        
+
         HFS_NP = NodePath(HFS_rigidbody)
         HFS_NP.reparent_to(self.worldNP)
         """
@@ -496,10 +496,10 @@ class HeightfieldVehicle(ShowBase):
         HFS_NP.set_pos(self.terrain_pos + self.terrain_scale/2)
         HFS_NP.set_sx(self.terrain_scale.x / heightfield.get_x_size())
         HFS_NP.set_sy(self.terrain_scale.y / heightfield.get_y_size())
-        
+
         # Disables Bullet debug rendering for the terrain, because it is slow.
         #HFS_NP.node().set_debug_enabled(False)
-        
+
         """
         Finally, link the ShaderTerrainMesh and the BulletHeightfieldShape to
         the DynamicHeightfield. From now on changes to the DynamicHeightfield
@@ -527,7 +527,7 @@ class HeightfieldVehicle(ShowBase):
         """
         To create a smooth hill/depression we call PfmFile.pull_spot to create
         a sort of gradient. You can use self.cardmaker_debug to view it.
-        
+
         From the Panda3D API documentation of PfmFile.pull_spot:
         Applies delta * t to the point values within radius (xr, yr)
         distance of (xc, yc). The t value is scaled from 1.0 at the center
@@ -541,17 +541,17 @@ class HeightfieldVehicle(ShowBase):
         yradius = 6.0  # meters
         # Choose an exponent
         exponent = 0.6
-        # Counter-clockwise angle between Y-axis 
+        # Counter-clockwise angle between Y-axis
         angle = self.vehicle.get_forward_vector().signed_angle_deg(
             LVector3.forward(), LVector3.down())
-            
-        # Define all we need to repeatedly deform the terrain using a task.    
+
+        # Define all we need to repeatedly deform the terrain using a task.
         self.spot_params = [delta, xcenter, ycenter, xradius, yradius,
                             exponent, mode]
-                            
+
         # Clear staging area to a size that fits our raised region.
         self.StagingPFM.clear(int(xradius)*2, int(yradius)*2, num_channels=1)
-        
+
         """
         There are two options:
         (1) Rotate our hill/depression to be perpendicular
@@ -564,17 +564,17 @@ class HeightfieldVehicle(ShowBase):
                                   xradius-0.5, yradius-0.5,
                                   xradius, yradius,
                                   exponent)
-        
+
         # Rotate wider side so it's perpendicular to vehicle's trajectory.
         self.RotorPFM.rotate_from(self.StagingPFM, angle)
-        
+
         self.raise_start_time = globalClock.get_real_time()
         taskMgr.do_method_later(0.03, self.deform_perpendicular,
                                 "DeformPerpendicularSpot")
-                                
+
         # Option (2)
         #taskMgr.do_method_later(0.03, self.deform_regular, "RaiseASpot")
-        
+
     def deform_perpendicular(self, task):
         if (globalClock.get_real_time() - self.raise_start_time <
             self.deform_duration):
@@ -586,20 +586,20 @@ class HeightfieldVehicle(ShowBase):
             The values from RotorPFM are added to the ones found in the
             DynamicHeightfield.
             """
-            self.DHF.add_sub_image(self.RotorPFM, 
+            self.DHF.add_sub_image(self.RotorPFM,
                 int(xcenter - self.RotorPFM.get_x_size()/2),
                 int(ycenter - self.RotorPFM.get_y_size()/2),
                 0, 0, self.RotorPFM.get_x_size(), self.RotorPFM.get_y_size(),
                 1.0 if mode == "raise" else -1.0)
-            
+
             # Output images of our PfmFiles.
             #self.RotorPFM.write("dbg_RotorPFM.png")
             #self.StagingPFM.write("dbg_StagingPFM.png")
             return task.again
-        
+
         self.cardmaker_debug()
         return task.done
-        
+
     def deform_regular(self, task):
         if (globalClock.get_real_time() - self.raise_start_time <
             self.deform_duration):
@@ -617,7 +617,6 @@ class HeightfieldVehicle(ShowBase):
         print("W2H: ", W2H)
         H2W = self.terrain_node.heightfield_to_world(LTexCoord(W2H.x, W2H.y))
         print("H2W: ", H2W)
-        
         W2U = self.terrain_node.world_to_uv(vpos)
         print("W2U: ", W2U)
         U2W = self.terrain_node.uv_to_world(LTexCoord(W2U.x, W2U.y))
@@ -672,13 +671,14 @@ class HeightfieldVehicle(ShowBase):
         cm.set_frame(0, width, 0,
             width / normalized_pfm.get_x_size() * normalized_pfm.get_y_size())
         card = base.render2d.attach_new_node(cm.generate())
-        card.set_pos(-1, 0, -1)        
+        card.set_pos(-1, 0, -1)
         card.set_texture(tex)
         # Display max value text
         self.genLabelText(-3,
                           "Max value: {:.3f} == {:.2f}m".format(max_p.x,
                             max_p.x * self.terrain_scale.z),
                           parent="a2dBottomLeft")
-                
+
+
 game = HeightfieldVehicle()
 game.run()

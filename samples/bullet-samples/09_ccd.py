@@ -114,7 +114,7 @@ class Game(ShowBase):
         self.world.attach(bodyNP.node())
 
         # Remove the bullet again after 1 second
-        taskMgr.do_method_later(1, self.do_remove, 'doRemove', 
+        taskMgr.do_method_later(1, self.do_remove, 'doRemove',
             extraArgs=[bodyNP], appendTask=True)
 
     def do_remove(self, bulletNP, task):
@@ -176,4 +176,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-
