@@ -107,8 +107,6 @@ class HeightfieldVehicle(ShowBase):
                             pos=(0.06, -.065 * i), fg=(1, 1, 1, 1),
                             align=TextNode.ALeft)
 
-    # _____HANDLER_____
-
     def cleanup(self):
         self.world = None
         self.worldNP.remove_node()
@@ -132,8 +130,6 @@ class HeightfieldVehicle(ShowBase):
 
     def do_screenshot(self):
         base.screenshot('HeightfieldVehicle')
-
-    # ____TASK___
 
     def update(self, task):
         # Get the time passed since the last frame

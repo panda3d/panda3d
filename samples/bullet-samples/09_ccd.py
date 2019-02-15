@@ -65,8 +65,6 @@ class Game(ShowBase):
         # Physics
         self.setup()
 
-    # _____HANDLER_____
-
     def do_exit(self):
         self.cleanup()
         sys.exit(1)
@@ -122,8 +120,6 @@ class Game(ShowBase):
     def do_remove(self, bulletNP, task):
         self.world.remove(bulletNP.node())
         return task.done
-
-    # ____TASK___
 
     def update(self, task):
         dt = globalClock.get_dt()

@@ -86,8 +86,6 @@ class Game(ShowBase):
         # Physics
         self.setup()
 
-    # _____HANDLER_____
-
     def do_exit(self):
         self.cleanup()
         sys.exit(1)
@@ -118,8 +116,6 @@ class Game(ShowBase):
         #self.character.get_shape().set_local_scale(LVector3(1, 1, sz))
         #self.characterNP.set_scale(LVector3(1, 1, sz) * 0.3048)
         #self.characterNP.set_pos(0, 0, -1 * sz)
-
-    # ____TASK___
 
     def process_input(self, dt):
         speed = LVector3(0, 0, 0)

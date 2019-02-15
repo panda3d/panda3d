@@ -78,8 +78,6 @@ class Game(ShowBase):
         # Physics
         self.setup()
 
-    # _____HANDLER_____
-
     def do_exit(self):
         self.cleanup()
         sys.exit(1)
@@ -96,8 +94,6 @@ class Game(ShowBase):
 
     def do_screenshot(self):
         base.screenshot('Bullet')
-
-    # ____TASK___
 
     def process_input(self, dt):
         force = LVector3(0, 0, 0)
@@ -300,4 +296,3 @@ class Game(ShowBase):
 
 game = Game()
 game.run()
-
