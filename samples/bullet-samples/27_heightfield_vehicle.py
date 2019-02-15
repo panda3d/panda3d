@@ -19,7 +19,6 @@ from panda3d.bullet import BulletVehicle
 
 
 class HeightfieldVehicle(ShowBase):
-
     def __init__(self, heightfield_fn="heightfield.png"):
         # Store the heightfield's filename.
         self.heightfield_fn = heightfield_fn

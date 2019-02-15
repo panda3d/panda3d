@@ -31,7 +31,6 @@ from panda3d.bullet import ZUp
 
 
 class Game(ShowBase):
-
     def __init__(self):
         """
         Load some configuration variables, it's important for this to happen

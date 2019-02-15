@@ -26,7 +26,6 @@ from panda3d.bullet import BulletDebugNode
 
 
 class Game(ShowBase):
-
     def __init__(self):
         ShowBase.__init__(self)
         base.set_background_color(0.1, 0.1, 0.8, 1)
