@@ -26,6 +26,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -183,6 +184,7 @@ class Game(ShowBase):
         #visNode.add_geom(geom)
         #visNP = softNP.attach_new_node(visNode)
         #node.link_geom(geom)
+
 
 game = Game()
 game.run()

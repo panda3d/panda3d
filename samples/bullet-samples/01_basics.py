@@ -27,6 +27,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -174,6 +175,7 @@ class Game(ShowBase):
         # Bullet nodes should survive a flatten operation!
         #self.worldNP.flatten_strong()
         #render.ls()
+
 
 game = Game()
 game.run()

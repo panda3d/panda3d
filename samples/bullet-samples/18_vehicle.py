@@ -21,6 +21,7 @@ from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import BulletVehicle
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -210,6 +211,7 @@ class Game(ShowBase):
         wheel.set_wheels_damping_compression(4.4)
         wheel.set_friction_slip(100.0);
         wheel.set_roll_influence(0.1)
+
 
 game = Game()
 game.run()

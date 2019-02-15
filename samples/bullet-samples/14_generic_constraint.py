@@ -20,6 +20,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGenericConstraint
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -190,6 +191,7 @@ class Game(ShowBase):
         generic.set_angular_limit(2, -120, 120)
 
         self.world.attach(generic)
+
 
 game = Game()
 game.run()

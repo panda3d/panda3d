@@ -22,6 +22,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -190,6 +191,7 @@ class Game(ShowBase):
         np.set_collide_mask(BitMask32(0x0f))
 
         self.world.attach(np.node())
+
 
 game = Game()
 game.run()

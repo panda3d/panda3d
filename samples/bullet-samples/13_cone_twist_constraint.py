@@ -20,6 +20,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletConeTwistConstraint
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -184,6 +185,7 @@ class Game(ShowBase):
         cone.set_debug_draw_size(2.0)
         cone.set_limit(30, 45, 170, softness=1.0, bias=0.3, relaxation=8.0)
         self.world.attach(cone)
+
 
 game = Game()
 game.run()

@@ -24,6 +24,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -173,6 +174,7 @@ class Game(ShowBase):
                 visNP = loader.load_model('models/box.egg')
                 visNP.clear_model_nodes()
                 visNP.reparent_to(bodyNP)
+
 
 game = Game()
 game.run()

@@ -24,6 +24,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -168,6 +169,7 @@ class Game(ShowBase):
         # TODO:
         # self.ghostNP = self.worldNP.attach_new_node(BulletGhostNode('ghost'))
         # self.ghostNP.reparent_to(self.boxNP)
+
 
 game = Game()
 game.run()

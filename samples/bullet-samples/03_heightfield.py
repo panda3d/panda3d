@@ -24,6 +24,7 @@ from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import BulletHeightfieldShape
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -182,6 +183,7 @@ class Game(ShowBase):
         rootNP.set_pos(-offset, -offset, -height / 2.0)
 
         self.terrain.generate()
+
 
 game = Game()
 game.run()

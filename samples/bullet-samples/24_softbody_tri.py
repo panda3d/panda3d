@@ -24,6 +24,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -158,6 +159,7 @@ class Game(ShowBase):
         make_SB(LPoint3(-3, 0, 4), (0, 0, 0))
         make_SB(LPoint3(0, 0, 4), (0, 90, 90))
         make_SB(LPoint3(3, 0, 4), (0, 0, 0))
+
 
 game = Game()
 game.run()

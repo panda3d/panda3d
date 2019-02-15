@@ -33,6 +33,7 @@ from panda3d.bullet import XUp
 from panda3d.bullet import YUp
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -293,6 +294,7 @@ class Game(ShowBase):
         np.set_collide_mask(BitMask32.all_on())
 
         self.world.attach(np.node())
+
 
 game = Game()
 game.run()

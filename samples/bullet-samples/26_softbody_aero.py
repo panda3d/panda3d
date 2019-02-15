@@ -27,6 +27,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -164,6 +165,7 @@ class Game(ShowBase):
             tex = loader.load_texture('models/panda.jpg')
             npV.set_texture(tex)
             BulletHelper.make_texcoords_for_patch(geom, 6, 6)
+
 
 game = Game()
 game.run()

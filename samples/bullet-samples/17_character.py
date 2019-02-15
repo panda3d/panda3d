@@ -29,6 +29,7 @@ from panda3d.bullet import BulletTriangleMesh
 from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -197,6 +198,7 @@ class Game(ShowBase):
         self.actorNP.set_scale(0.3048) # 1ft = 0.3048m
         self.actorNP.setH(180)
         self.actorNP.set_pos(0, 0, -1)
+
 
 game = Game()
 game.run()

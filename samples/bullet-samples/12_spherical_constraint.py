@@ -20,6 +20,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletSphericalConstraint
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -185,6 +186,7 @@ class Game(ShowBase):
         joint = BulletSphericalConstraint(bodyA, bodyB, pivotA, pivotB)
         joint.set_debug_draw_size(2.0)
         self.world.attach(joint)
+
 
 game = Game()
 game.run()

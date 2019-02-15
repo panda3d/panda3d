@@ -25,6 +25,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletSphereShape
 from panda3d.bullet import BulletRigidBodyNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -207,6 +208,7 @@ class Game(ShowBase):
         #self.accept('bullet-contact-added', self.on_contact_added)
         #self.accept('bullet-contact-destroyed', self.on_contact_destroyed)
         #self.box.notify_collisions(True)
+
 
 game = Game()
 game.run()

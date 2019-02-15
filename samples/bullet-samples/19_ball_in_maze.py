@@ -23,6 +23,7 @@ from panda3d.bullet import BulletGhostNode
 from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import BulletHelper
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -189,6 +190,7 @@ class Game(ShowBase):
                          toData = self.ballNP.get_z() - .9, duration = .2)),
                 Wait(1),
                 Func(self.start_game)).start()
+
 
 game = Game()
 game.run()

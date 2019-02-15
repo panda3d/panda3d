@@ -24,6 +24,7 @@ from panda3d.bullet import BulletDebugNode
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -167,6 +168,7 @@ class Game(ShowBase):
         visNP.reparent_to(boxNP)
 
         #render.ls()
+
 
 game = Game()
 game.run()

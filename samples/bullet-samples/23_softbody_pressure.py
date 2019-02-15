@@ -25,6 +25,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -173,6 +174,7 @@ class Game(ShowBase):
         npV = np.attach_new_node(nodeV)
 
         #npV.show_bounds()
+
 
 game = Game()
 game.run()

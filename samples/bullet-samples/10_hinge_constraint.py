@@ -20,6 +20,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletHingeConstraint
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -186,6 +187,7 @@ class Game(ShowBase):
         hinge.set_debug_draw_size(2.0)
         hinge.set_limit(-90, 120, softness=0.9, bias=0.3, relaxation=1.0)
         self.world.attach(hinge)
+
 
 game = Game()
 game.run()

@@ -20,6 +20,7 @@ from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletSliderConstraint
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -187,6 +188,7 @@ class Game(ShowBase):
         slider.set_lower_angular_limit(-60)
         slider.set_upper_angular_limit(60)
         self.world.attach(slider)
+
 
 game = Game()
 game.run()

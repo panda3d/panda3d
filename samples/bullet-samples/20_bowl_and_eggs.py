@@ -23,6 +23,7 @@ from panda3d.bullet import BulletTriangleMesh
 from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import ZUp
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -183,6 +184,7 @@ class Game(ShowBase):
             visNP.reparent_to(bodyNP)
 
             self.eggNPs.append(bodyNP)
+
 
 game = Game()
 game.run()

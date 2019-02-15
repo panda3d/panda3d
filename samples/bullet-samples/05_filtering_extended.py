@@ -22,6 +22,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -182,6 +183,7 @@ class Game(ShowBase):
 
         self.world.set_group_collision_flag(1, 1, False)
         self.world.set_group_collision_flag(1, 2, True)
+
 
 game = Game()
 game.run()

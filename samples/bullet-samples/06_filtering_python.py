@@ -22,6 +22,7 @@ from panda3d.bullet import BulletBoxShape
 from panda3d.bullet import BulletRigidBodyNode
 from panda3d.bullet import BulletDebugNode
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -162,6 +163,7 @@ class Game(ShowBase):
         x1 = cb_data.get_node_0().get_python_tag('foo')
         x2 = cb_data.get_node_1().get_python_tag('foo')
         cb_data.set_collide(x1 + x2 > 0)
+
 
 game = Game()
 game.run()

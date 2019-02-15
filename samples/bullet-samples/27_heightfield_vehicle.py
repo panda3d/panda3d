@@ -17,6 +17,7 @@ from panda3d.bullet import BulletWorld, BulletDebugNode, BulletRigidBodyNode
 from panda3d.bullet import BulletHeightfieldShape, BulletBoxShape
 from panda3d.bullet import BulletVehicle
 
+
 class HeightfieldVehicle(ShowBase):
 
     def __init__(self, heightfield_fn="heightfield.png"):

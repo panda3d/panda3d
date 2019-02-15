@@ -30,6 +30,7 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import BulletSoftBodyNode
 from panda3d.bullet import BulletSoftBodyConfig
 
+
 class Game(ShowBase):
 
     def __init__(self):
@@ -175,6 +176,7 @@ class Game(ShowBase):
         #visNode.set_num_v_subdiv(2)
         #visNP = self.worldNP.attach_new_node(visNode)
         #visNP.setTwoSided(True)
+
 
 game = Game()
 game.run()
