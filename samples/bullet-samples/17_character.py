@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 
 from direct.actor.Actor import Actor

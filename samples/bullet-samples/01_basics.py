@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 #from panda3d.core import load_prc_file_data
 #load_prc_file_data('', 'bullet-additional-damping true')
 #load_prc_file_data('', 'bullet-additional-damping-linear-factor 0.005')

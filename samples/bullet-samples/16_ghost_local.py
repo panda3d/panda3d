@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 This sample is incomplete; do not expect to gain much insight from this.
 """
