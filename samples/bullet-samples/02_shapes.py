@@ -126,11 +126,11 @@ class Game(ShowBase):
         self.world = None
         self.worldNP.remove_node()
 
-        #def doAdded(self, node1, node2):
-        #  print 'added:', node1.getName(), node2.getName()
+        #def do_added(self, node1, node2):
+        #  print('added:', node1.getName(), node2.getName())
 
-        #def doDestroyed(self, node1, node2):
-        #  print 'destroyed:', node1.getName(), node2.getName()
+        #def do_destroyed(self, node1, node2):
+        #  print('destroyed:', node1.getName(), node2.getName())
 
     def setup(self):
         self.worldNP = render.attach_new_node('World')
@@ -171,8 +171,8 @@ class Game(ShowBase):
         self.boxNP = np # For applying force & torque
 
         #np.node().notifyCollisions(True)
-        #self.accept('bullet-contact-added', self.doAdded)
-        #self.accept('bullet-contact-destroyed', self.doRemoved)
+        #self.accept('bullet-contact-added', self.do_added)
+        #self.accept('bullet-contact-destroyed', self.do_destroyed)
 
         # Sphere (dynamic)
         shape = BulletSphereShape(0.6)
