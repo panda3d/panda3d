@@ -10,8 +10,6 @@ from panda3d.core import load_prc_file_data
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import LVector3
-from panda3d.core import LVector4
-from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
 from panda3d.core import Filename
@@ -50,12 +48,12 @@ class Game(ShowBase):
 
         # Light
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(1, 1, -1))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((1, 1, -1))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -112,7 +110,7 @@ class Game(ShowBase):
     def do_crouch(self):
         self.crouching = not self.crouching
         sz = self.crouching and 0.6 or 1.0
-        self.characterNP.set_scale(LVector3(1, 1, sz))
+        self.characterNP.set_scale((1, 1, sz))
         #self.character.get_shape().set_local_scale(LVector3(1, 1, sz))
         #self.characterNP.set_scale(LVector3(1, 1, sz) * 0.3048)
         #self.characterNP.set_pos(0, 0, -1 * sz)
@@ -149,11 +147,11 @@ class Game(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Ground
-        shape = BulletPlaneShape(LVector3(0, 0, 1), 0)
+        shape = BulletPlaneShape((0, 0, 1), 0)
 
         #img = PNMImage(Filename('models/elevation.png'))
         #shape = BulletHeightfieldShape(img, 1.0, ZUp)
@@ -166,7 +164,7 @@ class Game(ShowBase):
         self.world.attach(np.node())
 
         # Box
-        shape = BulletBoxShape(LVector3(1.0, 3.0, 0.3))
+        shape = BulletBoxShape((1.0, 3.0, 0.3))
 
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Box'))
         np.node().set_mass(10.0)
@@ -190,9 +188,9 @@ class Game(ShowBase):
         self.characterNP.set_collide_mask(BitMask32.all_on())
         self.world.attach(self.character)
 
-        self.actorNP = Actor('samples/roaming-ralph/models/ralph.egg.pz',
-            {'run' : 'samples/roaming-ralph/models/ralph-run.egg.pz',
-             'walk' : 'samples/roaming-ralph/models/ralph-walk.egg.pz'})
+        self.actorNP = Actor('../roaming-ralph/models/ralph.egg.pz',
+            {'run' : '../roaming-ralph/models/ralph-run.egg.pz',
+             'walk' : '../roaming-ralph/models/ralph-walk.egg.pz'})
         self.actorNP.reparent_to(self.characterNP)
         self.actorNP.set_scale(0.3048) # 1ft = 0.3048m
         self.actorNP.setH(180)

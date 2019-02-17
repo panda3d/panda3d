@@ -13,9 +13,6 @@ from direct.interval.FunctionInterval import Wait
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import Material
-from panda3d.core import LVector3
-from panda3d.core import LVector4
-from panda3d.core import LPoint3
 
 from panda3d.bullet import BulletWorld
 from panda3d.bullet import BulletRigidBodyNode
@@ -49,12 +46,12 @@ class Game(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Setup scene 2: Ball
         #visNP = loader.load_model('models/ball.egg')
-        visNP = loader.load_model('samples/ball-in-maze/models/ball.egg.pz')
+        visNP = loader.load_model('../ball-in-maze/models/ball.egg.pz')
         visNP.clear_model_nodes()
 
         bodyNPs = BulletHelper.from_collision_solids(visNP, True)
@@ -90,16 +87,16 @@ class Game(ShowBase):
 
         # Lighting and material for the ball
         ambientLight = AmbientLight('ambientLight')
-        ambientLight.set_color(LVector4(0.55, 0.55, 0.55, 1))
+        ambientLight.set_color((0.55, 0.55, 0.55, 1))
         directionalLight = DirectionalLight('directionalLight')
-        directionalLight.set_direction(LVector3(0, 0, -1))
-        directionalLight.set_color(LVector4(0.375, 0.375, 0.375, 1))
-        directionalLight.set_specular_color(LVector4(1, 1, 1, 1))
+        directionalLight.set_direction((0, 0, -1))
+        directionalLight.set_color((0.375, 0.375, 0.375, 1))
+        directionalLight.set_specular_color((1, 1, 1, 1))
         self.ballNP.set_light(render.attach_new_node(ambientLight))
         self.ballNP.set_light(render.attach_new_node(directionalLight))
 
         m = Material()
-        m.set_specular(LVector4(1,1,1,1))
+        m.set_specular((1,1,1,1))
         m.set_shininess(96)
         self.ballNP.set_material(m, 1)
 
@@ -120,8 +117,8 @@ class Game(ShowBase):
 
     def start_game(self):
         self.ballNP.set_pos(4, -4, 1)
-        self.ballNP.node().set_linear_velocity(LVector3(0, 0, 0))
-        self.ballNP.node().set_angular_velocity(LVector3(0, 0, 0))
+        self.ballNP.node().set_linear_velocity((0, 0, 0))
+        self.ballNP.node().set_angular_velocity((0, 0, 0))
 
         # Mouse
         p = base.win.get_properties()
@@ -155,7 +152,7 @@ class Game(ShowBase):
         # Get mouse position and tilt maze
         if base.mouseWatcherNode.hasMouse():
             mpos = base.mouseWatcherNode.get_mouse()
-            hpr = LVector3(0, mpos.y * -10, mpos.x * 10)
+            hpr = (0, mpos.y * -10, mpos.x * 10)
 
             # Maze visual node
             self.mazeNP.set_hpr(hpr)

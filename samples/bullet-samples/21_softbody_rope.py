@@ -8,7 +8,6 @@ from direct.showbase.InputStateGlobal import inputState
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import LVector3
-from panda3d.core import LVector4
 from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
@@ -36,12 +35,12 @@ class Game(ShowBase):
 
         # Light
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(5, 0, -2))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((5, 0, -2))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -96,7 +95,7 @@ class Game(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Soft body world information
@@ -104,7 +103,7 @@ class Game(ShowBase):
         info.set_air_density(1.2)
         info.set_water_density(0)
         info.set_water_offset(0)
-        info.set_water_normal(LVector3(0, 0, 0))
+        info.set_water_normal((0, 0, 0))
 
         # Softbody
         def make(p1):
@@ -148,7 +147,7 @@ class Game(ShowBase):
         np2 = make(LPoint3(-2,  1, 8))
 
         # Box
-        shape = BulletBoxShape(LVector3(2, 2, 6))
+        shape = BulletBoxShape((2, 2, 6))
 
         boxNP = self.worldNP.attach_new_node(BulletRigidBodyNode('Box'))
         boxNP.node().set_mass(50.0)

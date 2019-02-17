@@ -10,7 +10,6 @@ from direct.showbase.InputStateGlobal import inputState
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
 from panda3d.core import LVector3
-from panda3d.core import LVector4
 from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
@@ -34,12 +33,12 @@ class Game(ShowBase):
 
         # Light
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(1, 1, -1))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((1, 1, -1))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -120,12 +119,12 @@ class Game(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
         self.world.set_filter_callback(PythonCallbackObject(self.filter))
 
         # Ground
-        shape = BulletPlaneShape(LVector3(0, 0, 1), -1)
+        shape = BulletPlaneShape((0, 0, 1), -1)
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Ground'))
         np.node().add_shape(shape)
         np.set_pos(0, 0, -1)
@@ -133,7 +132,7 @@ class Game(ShowBase):
         self.world.attach(np.node())
 
         # Box 1
-        shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
+        shape = BulletBoxShape((0.5, 0.5, 0.5))
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Box-1'))
         np.node().set_mass(1.0)
         np.node().add_shape(shape)
@@ -143,7 +142,7 @@ class Game(ShowBase):
         self.boxNP = np
 
         # Box 2
-        shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
+        shape = BulletBoxShape((0.5, 0.5, 0.5))
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Box-2'))
         np.node().set_mass(1.0)
         np.node().add_shape(shape)

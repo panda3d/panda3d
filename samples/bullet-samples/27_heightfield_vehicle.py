@@ -8,7 +8,7 @@ from direct.gui.OnscreenText import OnscreenText
 
 from panda3d.core import NodePath, load_prc_file_data, look_at, PStatClient
 from panda3d.core import AmbientLight, DirectionalLight, TransformState
-from panda3d.core import LPoint3, LVector3, LVector4, LTexCoord
+from panda3d.core import LPoint3, LVector3, LTexCoord
 from panda3d.core import DynamicHeightfield, PfmFile, PNMImage
 from panda3d.core import ShaderTerrainMesh, Shader, Texture, SamplerState
 from panda3d.core import PfmVizzer, CardMaker, TextNode
@@ -49,12 +49,12 @@ class HeightfieldVehicle(ShowBase):
 
         # Lights
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(1, 1, -1))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((1, 1, -1))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -142,8 +142,7 @@ class HeightfieldVehicle(ShowBase):
         need the floater's world (=render-relative) position (it's parented to
         the vehicle)
         """
-        floater_pos = render.get_relative_point(self.camera_floater,
-                                                LVector3(0))
+        floater_pos = render.get_relative_point(self.camera_floater, (0, 0, 0))
         """
         If the camera floater is under the terrain surface, adjust it, so that
         it stays above the terrain.
@@ -209,7 +208,7 @@ class HeightfieldVehicle(ShowBase):
         self.worldNP = render.attach_new_node('World')
         self.debugNP = self.worldNP.attach_new_node(BulletDebugNode('Debug'))
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Vehicle
@@ -223,8 +222,8 @@ class HeightfieldVehicle(ShowBase):
         self.steering_speed_reduction_factor = 0.003
 
         # Chassis collision box (note: Bullet uses half-measures)
-        shape = BulletBoxShape(LVector3(0.6, 1.4, 0.5))
-        ts = TransformState.make_pos(LPoint3(0, 0, 0.5))
+        shape = BulletBoxShape((0.6, 1.4, 0.5))
+        ts = TransformState.make_pos((0, 0, 0.5))
         self.vehicleNP = self.worldNP.attach_new_node(
             BulletRigidBodyNode('Vehicle'))
         self.vehicleNP.node().add_shape(shape, ts)
@@ -287,8 +286,8 @@ class HeightfieldVehicle(ShowBase):
         wheel.set_chassis_connection_point_cs(pos)
         wheel.set_front_wheel(front)
 
-        wheel.set_wheel_direction_cs(LVector3(0, 0, -1))
-        wheel.set_wheel_axle_cs(LVector3(1, 0, 0))
+        wheel.set_wheel_direction_cs((0, 0, -1))
+        wheel.set_wheel_axle_cs((1, 0, 0))
         wheel.set_wheel_radius(0.25)
         wheel.set_max_suspension_travel_cm(40.0)
 
@@ -314,10 +313,10 @@ class HeightfieldVehicle(ShowBase):
         reset_pos = self.vehicleNP.get_pos()
         reset_pos.z += 3
         self.vehicleNP.node().clear_forces()
-        self.vehicleNP.node().set_linear_velocity(LVector3(0))
-        self.vehicleNP.node().set_angular_velocity(LVector3(0))
+        self.vehicleNP.node().set_linear_velocity((0, 0, 0))
+        self.vehicleNP.node().set_angular_velocity((0, 0, 0))
         self.vehicleNP.set_pos(reset_pos)
-        self.vehicleNP.set_hpr(LVector3(0))
+        self.vehicleNP.set_hpr((0, 0, 0))
 
     def drop_boxes(self):
         """
@@ -328,7 +327,7 @@ class HeightfieldVehicle(ShowBase):
         model = loader.load_model('models/box.egg')
         model.set_pos(-0.5, -0.5, -0.5)
         model.flatten_light()
-        shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
+        shape = BulletBoxShape((0.5, 0.5, 0.5))
         ahead = self.vehicleNP.get_pos() + self.vehicle.get_forward_vector()*15
 
         for i in range(6):
@@ -535,7 +534,7 @@ class HeightfieldVehicle(ShowBase):
         exponent. Returns the number of points affected.
         """
         # Delta to apply to the point values in DynamicHeightfield array.
-        delta = LVector4(0.001)
+        delta = (0.001)
         # Make the raised spot elliptical.
         xradius = 10.0  # meters
         yradius = 6.0  # meters

@@ -7,8 +7,6 @@ from direct.showbase.InputStateGlobal import inputState
 
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
-from panda3d.core import LVector3
-from panda3d.core import LVector4
 from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
@@ -32,12 +30,12 @@ class Game(ShowBase):
 
         # Light
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(1, 1, -1))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((1, 1, -1))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -141,11 +139,11 @@ class Game(ShowBase):
         self.debugNP.node().show_normals(False)
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Box A
-        shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
+        shape = BulletBoxShape((0.5, 0.5, 0.5))
 
         bodyA = BulletRigidBodyNode('Box A')
         bodyNP = self.worldNP.attach_new_node(bodyA)
@@ -160,7 +158,7 @@ class Game(ShowBase):
         self.world.attach(bodyA)
 
         # Box B
-        shape = BulletBoxShape(LVector3(0.5, 0.5, 0.5))
+        shape = BulletBoxShape((0.5, 0.5, 0.5))
 
         bodyB = BulletRigidBodyNode('Box B')
         bodyNP = self.worldNP.attach_new_node(bodyB)
@@ -177,8 +175,8 @@ class Game(ShowBase):
         self.world.attach(bodyB)
 
         # Slider
-        frameA = TransformState.make_pos_hpr(LPoint3(2, 0, 0), LVector3(0, 0, 45))
-        frameB = TransformState.make_pos_hpr(LPoint3(0, -3, 0), LVector3(0, 0, 0))
+        frameA = TransformState.make_pos_hpr((2, 0, 0), (0, 0, 45))
+        frameB = TransformState.make_pos_hpr((0, -3, 0), (0, 0, 0))
 
         slider = BulletSliderConstraint(bodyA, bodyB, frameA, frameB, True)
         slider.set_debug_draw_size(2.0)

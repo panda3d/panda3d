@@ -7,9 +7,6 @@ from direct.showbase.InputStateGlobal import inputState
 
 from panda3d.core import AmbientLight
 from panda3d.core import DirectionalLight
-from panda3d.core import LVector3
-from panda3d.core import LVector4
-from panda3d.core import LPoint3
 from panda3d.core import TransformState
 from panda3d.core import BitMask32
 
@@ -33,12 +30,12 @@ class Game(ShowBase):
 
         # Light
         alight = AmbientLight('ambientLight')
-        alight.set_color(LVector4(0.5, 0.5, 0.5, 1))
+        alight.set_color((0.5, 0.5, 0.5, 1))
         alightNP = render.attach_new_node(alight)
 
         dlight = DirectionalLight('directionalLight')
-        dlight.set_direction(LVector3(1, 1, -1))
-        dlight.set_color(LVector4(0.7, 0.7, 0.7, 1))
+        dlight.set_direction((1, 1, -1))
+        dlight.set_color((0.7, 0.7, 0.7, 1))
         dlightNP = render.attach_new_node(dlight)
 
         render.clear_light()
@@ -132,11 +129,11 @@ class Game(ShowBase):
         self.debugNP.show()
 
         self.world = BulletWorld()
-        self.world.set_gravity(LVector3(0, 0, -9.81))
+        self.world.set_gravity((0, 0, -9.81))
         self.world.set_debug_node(self.debugNP.node())
 
         # Plane
-        shape = BulletPlaneShape(LVector3(0, 0, 1), 0)
+        shape = BulletPlaneShape((0, 0, 1), 0)
 
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Ground'))
         np.node().add_shape(shape)
@@ -146,8 +143,8 @@ class Game(ShowBase):
         self.world.attach(np.node())
 
         # Chassis
-        shape = BulletBoxShape(LVector3(0.6, 1.4, 0.5))
-        ts = TransformState.make_pos(LPoint3(0, 0, 0.5))
+        shape = BulletBoxShape((0.6, 1.4, 0.5))
+        ts = TransformState.make_pos((0, 0, 0.5))
 
         np = self.worldNP.attach_new_node(BulletRigidBodyNode('Vehicle'))
         np.node().add_shape(shape, ts)
@@ -171,22 +168,22 @@ class Game(ShowBase):
         # Right front wheel
         np = loader.load_model('models/yugo/yugotireR.egg')
         np.reparent_to(self.worldNP)
-        self.add_wheel(LPoint3( 0.70,  1.05, 0.3), True, np)
+        self.add_wheel(( 0.70,  1.05, 0.3), True, np)
 
         # Left front wheel
         np = loader.load_model('models/yugo/yugotireL.egg')
         np.reparent_to(self.worldNP)
-        self.add_wheel(LPoint3(-0.70,  1.05, 0.3), True, np)
+        self.add_wheel((-0.70,  1.05, 0.3), True, np)
 
         # Right rear wheel
         np = loader.load_model('models/yugo/yugotireR.egg')
         np.reparent_to(self.worldNP)
-        self.add_wheel(LPoint3( 0.70, -1.05, 0.3), False, np)
+        self.add_wheel(( 0.70, -1.05, 0.3), False, np)
 
         # Left rear wheel
         np = loader.load_model('models/yugo/yugotireL.egg')
         np.reparent_to(self.worldNP)
-        self.add_wheel(LPoint3(-0.70, -1.05, 0.3), False, np)
+        self.add_wheel((-0.70, -1.05, 0.3), False, np)
 
         # Steering info
         self.steering = 0.0            # degree
@@ -200,8 +197,8 @@ class Game(ShowBase):
         wheel.set_chassis_connection_point_cs(pos)
         wheel.set_front_wheel(front)
 
-        wheel.set_wheel_direction_cs(LVector3(0, 0, -1))
-        wheel.set_wheel_axle_cs(LVector3(1, 0, 0))
+        wheel.set_wheel_direction_cs((0, 0, -1))
+        wheel.set_wheel_axle_cs((1, 0, 0))
         wheel.set_wheel_radius(0.25)
         wheel.set_max_suspension_travel_cm(40.0)
 
