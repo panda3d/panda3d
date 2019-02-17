@@ -35,9 +35,6 @@ class HeightfieldVehicle(ShowBase):
             notify-level-grutil debug
             notify-level-shader_terrain debug
             notify-level-bullet debug
-            ### model paths
-            model-path /usr/share/panda3d
-            model-path /home/juzzuj/code/prereq/bullet-samples/bullet-samples
             """)
         ShowBase.__init__(self)
         base.set_background_color(0.1, 0.1, 0.8, 1)
