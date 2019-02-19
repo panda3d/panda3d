@@ -1860,6 +1860,12 @@ write_module_class(ostream &out, Object *obj) {
           } else {
             return_flags |= RF_pyobject;
           }
+          bool all_nonconst = true;
+          for (FunctionRemap *remap : def._remaps) {
+            if (remap->_const_method) {
+              all_nonconst = false;
+            }
+          }
           out << "//////////////////\n";
           out << "// A wrapper function to satisfy Python's internal calling conventions.\n";
           out << "// " << ClassName << " slot " << rfi->second._answer_location << " -> " << fname << "\n";
@@ -1872,9 +1878,16 @@ write_module_class(ostream &out, Object *obj) {
             // This is for things like __sub__, which Python likes to call on
             // the wrong-type objects.
             out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
-            out << "  if (local_this == nullptr) {\n";
+            if (all_nonconst) {
+              out << "  if (local_this == nullptr || DtoolInstance_IS_CONST(self)) {\n";
+            } else {
+              out << "  if (local_this == nullptr) {\n";
+            }
             out << "    Py_INCREF(Py_NotImplemented);\n";
             out << "    return Py_NotImplemented;\n";
+          } else if (all_nonconst) {
+            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+            out << "    return nullptr;\n";
           } else {
             out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
             out << "    return nullptr;\n";
@@ -1883,7 +1896,7 @@ write_module_class(ostream &out, Object *obj) {
 
           string expected_params;
           write_function_forset(out, def._remaps, 1, 1, expected_params, 2, true, true,
-                                AT_single_arg, return_flags, false);
+                                AT_single_arg, return_flags, false, !all_nonconst);
 
           if (rfi->second._wrapper_type != WT_one_param) {
             out << "  Py_INCREF(Py_NotImplemented);\n";
