@@ -30,7 +30,7 @@ PUBLISHED:
   INLINE ParamNodePath(NodePath &&node_path) noexcept;
 
   INLINE virtual TypeHandle get_value_type() const;
-  INLINE const NodePath &get_value() const;
+  INLINE NodePath get_value() const;
 
   virtual void output(std::ostream &out) const;
 

@@ -314,7 +314,7 @@ get_shader_input(const std::string &id) const {
  * Returns the ShaderInput as a nodepath.  Assertion fails if there is none,
  * or if it is not a nodepath.
  */
-const NodePath &ShaderAttrib::
+NodePath ShaderAttrib::
 get_shader_input_nodepath(const InternalName *id) const {
   static NodePath resfail;
   Inputs::const_iterator i = _inputs.find(id);
