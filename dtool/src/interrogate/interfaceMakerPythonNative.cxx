@@ -7526,6 +7526,12 @@ is_remap_legal(FunctionRemap *remap) {
     }
   }
 
+  // Don't export global operators.
+  if (!remap->_has_this &&
+      remap->_cppfunc->get_simple_name().compare(0, 9, "operator ") == 0) {
+    return false;
+  }
+
   // ok all looks ok.
   return true;
 }
