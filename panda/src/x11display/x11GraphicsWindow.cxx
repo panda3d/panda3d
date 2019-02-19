@@ -1976,6 +1976,8 @@ get_keyboard_map() const {
   // XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
   ButtonMap *map = new ButtonMap;
 
+  LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
+
   for (int k = 9; k <= 135; ++k) {
     ButtonHandle raw_button = map_raw_button(k);
     if (raw_button == ButtonHandle::none()) {
