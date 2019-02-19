@@ -22,6 +22,7 @@
 #include "transformState.h"
 #include "lens.h"
 #include "pointerTo.h"
+#include "geometricBoundingVolume.h"
 
 class DisplayRegion;
 
@@ -59,6 +60,9 @@ PUBLISHED:
   INLINE const NodePath &get_cull_center() const;
   INLINE PT(BoundingVolume) get_cull_bounds() const;
 
+  INLINE void set_view_frustum(PT(GeometricBoundingVolume) view_frustum);
+  INLINE GeometricBoundingVolume *get_view_frustum() const;
+
   INLINE void set_initial_state(const RenderState *initial_state);
   INLINE const RenderState *get_initial_state() const;
 
@@ -88,6 +92,7 @@ private:
   CPT(TransformState) _world_transform;
   CPT(TransformState) _cs_transform;
   CPT(TransformState) _cs_world_transform;
+  PT(GeometricBoundingVolume) _view_frustum;
 
 public:
   static TypeHandle get_class_type() {

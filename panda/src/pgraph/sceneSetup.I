@@ -183,6 +183,23 @@ get_cull_bounds() const {
 }
 
 /**
+ * Returns the camera's cull bounds transformed to world space, or null if
+ * view frustum culling is disabled.
+ */
+INLINE void SceneSetup::
+set_view_frustum(PT(GeometricBoundingVolume) view_frustum) {
+  _view_frustum = std::move(view_frustum);
+}
+
+/**
+ * Returns the initial state as set by a previous call to set_initial_state().
+ */
+INLINE GeometricBoundingVolume *SceneSetup::
+get_view_frustum() const {
+  return _view_frustum;
+}
+
+/**
  * Sets the initial state which is applied to all nodes in the scene, as if it
  * were set at the top of the scene graph.
  */
