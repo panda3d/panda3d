@@ -14,8 +14,40 @@
 #include "paramNodePath.h"
 #include "dcast.h"
 #include "pandaNode.h"
+#include "light.h"
 
 TypeHandle ParamNodePath::_type_handle;
+
+/**
+ * Creates a new ParamNodePath storing the given node path object.
+ */
+ParamNodePath::
+ParamNodePath(NodePath node_path) :
+  _node_path(std::move(node_path))
+{
+  // The reason to construct a ParamNodePath is often to apply a light to a
+  // shader input, so we want to keep track of the fact that the light is in
+  // use.
+  if (!_node_path.is_empty()) {
+    Light *light = _node_path.node()->as_light();
+    if (light != nullptr) {
+      light->attrib_ref();
+    }
+  }
+}
+
+/**
+ *
+ */
+ParamNodePath::
+~ParamNodePath() {
+  if (!_node_path.is_empty()) {
+    Light *light = _node_path.node()->as_light();
+    if (light != nullptr) {
+      light->attrib_unref();
+    }
+  }
+}
 
 /**
  *
@@ -68,6 +100,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     _node_path = NodePath(DCAST(PandaNode, p_list[pi++]));
   }
 
+  if (!_node_path.is_empty()) {
+    Light *light = _node_path.node()->as_light();
+    if (light != nullptr) {
+      light->attrib_ref();
+    }
+  }
+
   return pi;
 }
 
@@ -95,6 +134,14 @@ make_from_bam(const FactoryParams &params) {
 void ParamNodePath::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ParamValueBase::fillin(scan, manager);
+
+  if (!_node_path.is_empty()) {
+    Light *light = _node_path.node()->as_light();
+    if (light != nullptr) {
+      light->attrib_unref();
+    }
+    _node_path.clear();
+  }
 
   if (manager->get_file_minor_ver() >= 40) {
     _node_path.fillin(scan, manager);
