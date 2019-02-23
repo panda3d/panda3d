@@ -12,89 +12,94 @@
 #
 # The following components are available for importing:
 #
-#   Core   - The core Panda3D libraries; this component is always included.
+#   Core      - The core Panda3D libraries; this component is always included.
 #
-#            Panda3D::Core::panda
-#            Panda3D::Core::pandaexpress
-#            etc.
-#
-#
-#   Python - Python targets, which can be used for linking against the Python
-#            extension modules directly.  Note that this also imports the
-#            Python bindings for other requested components that have them.
-#
-#            Panda3D::Python::panda3d.core
-#            Panda3D::Python::panda3d.physics
-#            etc.
+#               Panda3D::Core::panda
+#               Panda3D::Core::pandaexpress
+#               etc.
 #
 #
-#   Tools  - Various tools used in asset manipulation and debugging.
+#   Python    - Python targets, which can be used for linking against the Python
+#               extension modules directly.  Note that this also imports the
+#               Python bindings for other requested components that have them.
 #
-#            Panda3D::Tools::egg2bam
-#            Panda3D::Tools::egg-optchar
-#            Panda3D::Tools::pview
-#            etc.
-#
-#
-#   Direct - Panda's "direct" Python framework; C++ support library.
-#
-#            Panda3D::Direct::p3direct
+#               Panda3D::Python::panda3d.core
+#               Panda3D::Python::panda3d.physics
+#               etc.
 #
 #
-#   Egg    - Support for the Egg file format.
+#   Tools     - Various tools used in asset manipulation and debugging.
 #
-#            Panda3D::Egg::pandaegg
-#
-#
-#   Bullet - Support for Bullet physics.
-#
-#            Panda3D::Bullet::p3bullet
+#               Panda3D::Tools::egg2bam
+#               Panda3D::Tools::egg-optchar
+#               Panda3D::Tools::pview
+#               etc.
 #
 #
-#   ODE    - Support for the ODE physics engine.
+#   Direct    - Panda's "direct" Python framework; C++ support library.
 #
-#            Panda3D::ODE::p3ode
-#
-#
-#   FFmpeg - Support for FFmpeg media format loading.
-#
-#            Panda3D::FFmpeg::p3ffmpeg
+#               Panda3D::Direct::p3direct
 #
 #
-#   OpenAL - Support for OpenAL audio output.
+#   Framework - Panda's "p3framework" C++ framework.
 #
-#            Panda3D::OpenAL::p3openal_audio
-#
-#
-#   FMOD   - Support for FMOD audio output.
-#
-#            Panda3D::OpenAL::p3fmod_audio
+#               Panda3D::Framework::p3framework
 #
 #
-#   OpenGL - Support for OpenGL rendering.
+#   Egg       - Support for the Egg file format.
 #
-#            Panda3D::OpenGL::pandagl
-#
-#
-#   DX9    - Support for Direct3D 9 rendering.
-#
-#            Panda3D::DX9::pandadx9
+#               Panda3D::Egg::pandaegg
 #
 #
-#   GLES   - Support for OpenGL ES rendering.
+#   Bullet    - Support for Bullet physics.
 #
-#            Panda3D::GLES::pandagles
-#            Panda3D::GLES::pandagles2
-#
-#
-#   Vision - Support for vision processing.
-#
-#            Panda3D::Vision::p3vision
+#               Panda3D::Bullet::p3bullet
 #
 #
-#   VRPN   - Support for connecting to a VRPN virtual reality server.
+#   ODE       - Support for the ODE physics engine.
 #
-#            Panda3D::VRPN::p3vrpn
+#               Panda3D::ODE::p3ode
+#
+#
+#   FFmpeg    - Support for FFmpeg media format loading.
+#
+#               Panda3D::FFmpeg::p3ffmpeg
+#
+#
+#   OpenAL    - Support for OpenAL audio output.
+#
+#               Panda3D::OpenAL::p3openal_audio
+#
+#
+#   FMOD      - Support for FMOD audio output.
+#
+#               Panda3D::OpenAL::p3fmod_audio
+#
+#
+#   OpenGL    - Support for OpenGL rendering.
+#
+#               Panda3D::OpenGL::pandagl
+#
+#
+#   DX9       - Support for Direct3D 9 rendering.
+#
+#               Panda3D::DX9::pandadx9
+#
+#
+#   GLES      - Support for OpenGL ES rendering.
+#
+#               Panda3D::GLES::pandagles
+#               Panda3D::GLES::pandagles2
+#
+#
+#   Vision    - Support for vision processing.
+#
+#               Panda3D::Vision::p3vision
+#
+#
+#   VRPN      - Support for connecting to a VRPN virtual reality server.
+#
+#               Panda3D::VRPN::p3vrpn
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 3.0)
    message(FATAL_ERROR "CMake >= 3.0.2 required")
@@ -106,7 +111,7 @@ include("${_panda_config_prefix}/Panda3DPackages.cmake")
 
 set(_panda_components
   Core Python Tools
-  Direct Egg
+  Direct Framework Egg
   Bullet ODE
   FFmpeg
   OpenAL FMOD

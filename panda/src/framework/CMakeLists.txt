@@ -52,8 +52,10 @@ set_target_properties(p3framework PROPERTIES DEFINE_SYMBOL BUILDING_FRAMEWORK)
 target_link_libraries(p3framework ${P3FRAMEWORK_LINK_TARGETS})
 
 install(TARGETS p3framework
-  EXPORT Core COMPONENT Core
+  EXPORT Framework COMPONENT Framework
   DESTINATION lib
   RUNTIME DESTINATION bin
-  ARCHIVE COMPONENT CoreDevel)
-install(FILES ${P3FRAMEWORK_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+  ARCHIVE COMPONENT FrameworkDevel)
+install(FILES ${P3FRAMEWORK_HEADERS} COMPONENT FrameworkDevel DESTINATION include/panda3d)
+
+export_targets(Framework COMPONENT FrameworkDevel)
