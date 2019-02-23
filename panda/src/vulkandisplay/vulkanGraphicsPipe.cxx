@@ -59,19 +59,22 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   PFN_vkEnumerateInstanceVersion pvkEnumerateInstanceVersion =
     (PFN_vkEnumerateInstanceVersion)vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion");
   if (pvkEnumerateInstanceVersion != nullptr) {
-    vkEnumerateInstanceVersion(&inst_version);
+    pvkEnumerateInstanceVersion(&inst_version);
   }
 
   // Query supported instance extensions.
-  uint32_t num_inst_extensions;
+  uint32_t num_inst_extensions = 0;
   vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, nullptr);
 
-  VkExtensionProperties *inst_extensions = (VkExtensionProperties *)
-    alloca(sizeof(VkExtensionProperties) * num_inst_extensions);
+  VkExtensionProperties *inst_extensions = nullptr;
+  if (num_inst_extensions > 0) {
+    inst_extensions = (VkExtensionProperties *)
+      alloca(sizeof(VkExtensionProperties) * num_inst_extensions);
 
-  vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, inst_extensions);
-  for (uint32_t i = 0; i < num_inst_extensions; ++i) {
-    _instance_extensions[std::string(inst_extensions[i].extensionName)] = inst_extensions[i].specVersion;
+    vkEnumerateInstanceExtensionProperties(nullptr, &num_inst_extensions, inst_extensions);
+    for (uint32_t i = 0; i < num_inst_extensions; ++i) {
+      _instance_extensions[std::string(inst_extensions[i].extensionName)] = inst_extensions[i].specVersion;
+    }
   }
 
   const char *const layers[] = {
