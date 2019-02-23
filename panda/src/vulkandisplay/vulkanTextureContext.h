@@ -41,18 +41,18 @@ public:
   VkFormat _format;
   VkExtent3D _extent;
   int _mipmap_begin, _mipmap_end;
-  uint32_t _mip_levels;
-  uint32_t _array_layers;
+  uint32_t _mip_levels = 1;
+  uint32_t _array_layers = 1;
   VkImageAspectFlags _aspect_mask;
   bool _generate_mipmaps;
   bool _pack_bgr8;
 
-  VkImage _image;
-  VkImageView _image_view;
+  VkImage _image = VK_NULL_HANDLE;
+  VkImageView _image_view = VK_NULL_HANDLE;
   VulkanMemoryBlock _block;
 
-  VkImageLayout _layout;
-  VkAccessFlags _access_mask;
+  VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
+  VkAccessFlags _access_mask = 0;
   VkPipelineStageFlags _stage_mask;
 
 public:

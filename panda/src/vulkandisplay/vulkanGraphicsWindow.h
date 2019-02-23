@@ -82,6 +82,9 @@ private:
   uint32_t _image_index;
   VkImageLayout _final_layout;
 
+  VulkanTextureContext *_ms_color_tc = nullptr;
+  VkSampleCountFlagBits _ms_count = VK_SAMPLE_COUNT_1_BIT;
+
   VulkanTextureContext *_depth_stencil_tc;
   VkFormat _depth_stencil_format;
   VkImageAspectFlags _depth_stencil_aspect_mask;

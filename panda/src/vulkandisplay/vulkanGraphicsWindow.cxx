@@ -34,6 +34,7 @@ VulkanGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _image_available(VK_NULL_HANDLE),
   _render_complete(VK_NULL_HANDLE),
   _current_clear_mask(-1),
+  _ms_color_tc(nullptr),
   _depth_stencil_tc(nullptr),
   _image_index(0)
 {
@@ -133,7 +134,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
+  VulkanTextureContext *color_tc;
   buffer._tc->set_active(true);
+
+  // If we have multisamples, we render to a different image, which we then
+  // resolve into the swap chain image.
+  if (_ms_color_tc != nullptr) {
+    _ms_color_tc->set_active(true);
+    color_tc = _ms_color_tc;
+  } else {
+    color_tc = buffer._tc;
+  }
 
   /*if (mode == FM_render) {
     clear_cube_map_selection();
@@ -160,7 +171,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (!get_clear_color_active()) {
     // If we aren't clearing (which is a bad idea - please clear the window)
     // then we need to transition it to a consistent state..
-    if (buffer._tc->_layout == VK_IMAGE_LAYOUT_UNDEFINED) {
+    if (color_tc->_layout == VK_IMAGE_LAYOUT_UNDEFINED) {
       // If the attachment is set to LOAD, we need to clear it for the first
       // time if we don't want the validation layer to yell at us.
       // We clear it to an arbitrary arbitrary color.  We'll just pick the
@@ -168,25 +179,25 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
       // Actually, doing this causes the validation layer to yell even louder
       // because the image has no VK_IMAGE_USAGE_TRANSFER_DST_BIT.
-      //buffer._tc->clear_color_image(cmd, clears[0].color);
+      //color_tc->clear_color_image(cmd, clears[0].color);
     }
 
-    buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
+    color_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
   } else {
     // This transition will be made when the first subpass is started.
-    buffer._tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    buffer._tc->_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    buffer._tc->_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    color_tc->_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    color_tc->_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     LColor clear_color = get_clear_color();
-    clears[begin_info.clearValueCount].color.float32[0] = clear_color[0];
-    clears[begin_info.clearValueCount].color.float32[1] = clear_color[1];
-    clears[begin_info.clearValueCount].color.float32[2] = clear_color[2];
-    clears[begin_info.clearValueCount].color.float32[3] = clear_color[3];
-    ++begin_info.clearValueCount;
+    clears[0].color.float32[0] = clear_color[0];
+    clears[0].color.float32[1] = clear_color[1];
+    clears[0].color.float32[2] = clear_color[2];
+    clears[0].color.float32[3] = clear_color[3];
+    begin_info.clearValueCount = 1;
   }
 
   if (_depth_stencil_tc != nullptr) {
@@ -207,15 +218,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
 
     if (get_clear_depth_active() || get_clear_stencil_active()) {
-      clears[begin_info.clearValueCount].depthStencil.depth = get_clear_depth();
-      clears[begin_info.clearValueCount].depthStencil.stencil = get_clear_stencil();
-      ++begin_info.clearValueCount;
+      clears[1].depthStencil.depth = get_clear_depth();
+      clears[1].depthStencil.stencil = get_clear_stencil();
+      begin_info.clearValueCount = 2;
     }
   }
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
   vkgsg->_render_pass = _render_pass;
-  vkgsg->_fb_color_tc = buffer._tc;
+  vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
   vkgsg->_wait_semaphore = _image_available;
   vkgsg->_signal_semaphore = _render_complete;
@@ -446,6 +457,27 @@ open_window() {
     return false;
   }
 
+  // Choose a sample count.
+  if (_fb_properties.get_multisamples() > 1) {
+    const VkPhysicalDeviceLimits &limits = vkpipe->_gpu_properties.limits;
+
+    VkSampleCountFlags supported = limits.framebufferColorSampleCounts;
+    if (_fb_properties.get_depth_bits() > 0) {
+      supported &= limits.framebufferDepthSampleCounts;
+    }
+    if (_fb_properties.get_stencil_bits() > 0) {
+      supported &= limits.framebufferStencilSampleCounts;
+    }
+
+    // Round up requested bits to next power of two, and flood down.
+    VkSampleCountFlags accepted = ::flood_bits_down((uint32_t)(_fb_properties.get_multisamples() - 1) << 1u);
+
+    // Select the highest overlapping bit.
+    _ms_count = (VkSampleCountFlagBits)(1u << ::get_highest_on_bit(accepted & supported));
+  } else {
+    _ms_count = VK_SAMPLE_COUNT_1_BIT;
+  }
+
   // Make sure we have a GSG, which manages a VkDevice.
   VulkanGraphicsStateGuardian *vkgsg;
   uint32_t queue_family_index = 0;
@@ -459,11 +491,16 @@ open_window() {
     }
 
     // There is no old gsg.  Create a new one.
-    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index);
+    vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index, _ms_count);
     _gsg = vkgsg;
   } else {
     //TODO: check that the GSG's queue can present to our surface.
     DCAST_INTO_R(vkgsg, _gsg.p(), false);
+
+    if (vkgsg == nullptr || vkgsg->_multisample_count != _ms_count) {
+      vkgsg = new VulkanGraphicsStateGuardian(_engine, vkpipe, nullptr, queue_family_index, _ms_count);
+      _gsg = vkgsg;
+    }
   }
 
   if (!vkgsg->is_valid()) {
@@ -570,6 +607,8 @@ open_window() {
     _depth_stencil_aspect_mask = 0;
   }
 
+  _fb_properties.set_multisamples(_ms_count);
+
   // Don't create the swapchain yet if we haven't yet gotten the configure
   // notify event, since we don't know the final size yet.
 #ifdef HAVE_X11
@@ -613,57 +652,7 @@ setup_render_pass() {
     }
   }
 
-  // Now we want to create a render pass, and for that we need to describe the
-  // framebuffer attachments as well as any subpasses we'd like to use.
-  VkAttachmentDescription attachments[2];
-  attachments[0].flags = 0;
-  attachments[0].format = _surface_format.format;
-  attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-  attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-  attachments[0].finalLayout = _final_layout;
-
-  attachments[1].flags = 0;
-  attachments[1].format = _depth_stencil_format;
-  attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-  attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  attachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-  attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-  if (get_clear_color_active()) {
-    // We don't care about the current contents.
-    attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  } else {
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-  }
-
-  if (get_clear_depth_active()) {
-    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  }
-
-  if (get_clear_stencil_active()) {
-    attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  }
-
-  if (get_clear_depth_active() && get_clear_stencil_active()) {
-    // We don't care about the current contents.
-    attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  }
-
-  VkAttachmentReference color_reference;
-  color_reference.attachment = 0;
-  color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-  VkAttachmentReference depth_reference;
-  depth_reference.attachment = 1;
-  depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+  VkAttachmentReference color_reference, depth_reference, resolve_reference;
 
   VkSubpassDescription subpass;
   subpass.flags = 0;
@@ -673,15 +662,93 @@ setup_render_pass() {
   subpass.colorAttachmentCount = 1;
   subpass.pColorAttachments = &color_reference;
   subpass.pResolveAttachments = nullptr;
-  subpass.pDepthStencilAttachment = _depth_stencil_format ? &depth_reference : nullptr;
+  subpass.pDepthStencilAttachment = nullptr;
   subpass.preserveAttachmentCount = 0;
   subpass.pPreserveAttachments = nullptr;
+
+  // Now we want to create a render pass, and for that we need to describe the
+  // framebuffer attachments as well as any subpasses we'd like to use.
+  VkAttachmentDescription attachments[3];
+  attachments[0].flags = 0;
+  attachments[0].format = _surface_format.format;
+  attachments[0].samples = _ms_count;
+  attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+  attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+  attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  attachments[0].finalLayout = _final_layout;
+
+  if (_ms_count > VK_SAMPLE_COUNT_1_BIT) {
+    // If multisampling, we don't present this, but resolve it.
+    attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  }
+
+  if (get_clear_color_active()) {
+    // We don't care about the current contents.
+    attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  } else {
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+  }
+
+  color_reference.attachment = 0;
+  color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+  size_t i = 1;
+  if (_depth_stencil_format) {
+    attachments[i].flags = 0;
+    attachments[i].format = _depth_stencil_format;
+    attachments[i].samples = _ms_count;
+    attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[i].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    attachments[i].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    if (get_clear_depth_active()) {
+      attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+
+    if (get_clear_stencil_active()) {
+      attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    }
+
+    if (get_clear_depth_active() && get_clear_stencil_active()) {
+      // We don't care about the current contents.
+      attachments[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+
+    depth_reference.attachment = i;
+    depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    subpass.pDepthStencilAttachment = &depth_reference;
+    ++i;
+  }
+
+  // Also create an attachment reference for the resolve target.
+  if (_ms_count > VK_SAMPLE_COUNT_1_BIT) {
+    attachments[i].flags = 0;
+    attachments[i].format = _surface_format.format;
+    attachments[i].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachments[i].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[i].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[i].finalLayout = _final_layout;
+
+    resolve_reference.attachment = i;
+    resolve_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    subpass.pResolveAttachments = &resolve_reference;
+    ++i;
+  }
 
   VkRenderPassCreateInfo pass_info;
   pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   pass_info.pNext = nullptr;
   pass_info.flags = 0;
-  pass_info.attachmentCount = _depth_stencil_format ? 2 : 1;
+  pass_info.attachmentCount = i;
   pass_info.pAttachments = attachments;
   pass_info.subpassCount = 1;
   pass_info.pSubpasses = &subpass;
@@ -723,10 +790,7 @@ destroy_swapchain() {
   }
 
   // Destroy the resources held for each link in the swap chain.
-  SwapBuffers::iterator it;
-  for (it = _swap_buffers.begin(); it != _swap_buffers.end(); ++it) {
-    SwapBuffer &buffer = *it;
-
+  for (SwapBuffer &buffer : _swap_buffers) {
     // Destroy the framebuffers that use the swapchain images.
     vkDestroyFramebuffer(device, buffer._framebuffer, nullptr);
     vkDestroyImageView(device, buffer._tc->_image_view, nullptr);
@@ -735,6 +799,21 @@ destroy_swapchain() {
     delete buffer._tc;
   }
   _swap_buffers.clear();
+
+  if (_ms_color_tc != nullptr) {
+    if (_ms_color_tc->_image_view != VK_NULL_HANDLE) {
+      vkDestroyImageView(device, _ms_color_tc->_image_view, nullptr);
+      _ms_color_tc->_image_view = VK_NULL_HANDLE;
+    }
+
+    if (_ms_color_tc->_image != VK_NULL_HANDLE) {
+      vkDestroyImage(device, _ms_color_tc->_image, nullptr);
+      _ms_color_tc->_image = VK_NULL_HANDLE;
+    }
+
+    delete _ms_color_tc;
+    _ms_color_tc = nullptr;
+  }
 
   if (_depth_stencil_tc != nullptr) {
     if (_depth_stencil_tc->_image_view != VK_NULL_HANDLE) {
@@ -857,15 +936,17 @@ create_swapchain() {
   VkImage *images = (VkImage *)alloca(sizeof(VkImage) * num_images);
   vkGetSwapchainImagesKHR(device, _swapchain, &num_images, images);
 
+  VkExtent3D extent = {swapchain_info.imageExtent.width,
+                       swapchain_info.imageExtent.height,
+                       1};
+
   PreparedGraphicsObjects *pgo = vkgsg->get_prepared_objects();
   // Now create an image view for each image.
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
     buffer._tc = new VulkanTextureContext(pgo, images[i], swapchain_info.imageFormat);
     buffer._tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
-    buffer._tc->_extent.width = swapchain_info.imageExtent.width;
-    buffer._tc->_extent.height = swapchain_info.imageExtent.height;
-    buffer._tc->_extent.depth = 1;
+    buffer._tc->_extent = extent;
     buffer._tc->_mip_levels = 1;
     buffer._tc->_array_layers = 1;
 
@@ -895,58 +976,23 @@ create_swapchain() {
 
   // Now create a depth image.
   _depth_stencil_tc = nullptr;
-  bool have_ds = (_depth_stencil_format != VK_FORMAT_UNDEFINED);
+  if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
+    _depth_stencil_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
+      _depth_stencil_format, extent, 1, 1, _ms_count,
+      VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-  if (have_ds) {
-    VkImageCreateInfo depth_img_info;
-    depth_img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    depth_img_info.pNext = nullptr;
-    depth_img_info.flags = 0;
-    depth_img_info.imageType = VK_IMAGE_TYPE_2D;
-    depth_img_info.format = _depth_stencil_format;
-    depth_img_info.extent.width = swapchain_info.imageExtent.width;
-    depth_img_info.extent.height = swapchain_info.imageExtent.height;
-    depth_img_info.extent.depth = 1;
-    depth_img_info.mipLevels = 1;
-    depth_img_info.arrayLayers = 1;
-    depth_img_info.samples = VK_SAMPLE_COUNT_1_BIT;
-    depth_img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-    depth_img_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    depth_img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    depth_img_info.queueFamilyIndexCount = 0;
-    depth_img_info.pQueueFamilyIndices = nullptr;
-    depth_img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    VkImage depth_stencil_image;
-    err = vkCreateImage(device, &depth_img_info, nullptr, &depth_stencil_image);
-    if (err) {
-      vulkan_error(err, "Failed to create depth image");
+    if (_depth_stencil_tc == nullptr) {
       return false;
     }
-
-    // Get the memory requirements, and find an appropriate heap to alloc in.
-    VkMemoryRequirements mem_reqs;
-    vkGetImageMemoryRequirements(device, depth_stencil_image, &mem_reqs);
-
-    VulkanMemoryBlock block;
-    if (!vkgsg->allocate_memory(block, mem_reqs, 0, false)) {
-      vulkandisplay_cat.error() << "Failed to allocate texture memory for depth image.\n";
-      return false;
-    }
-
-    // Bind memory to image.
-    if (!block.bind_image(depth_stencil_image)) {
-      vulkan_error(err, "Failed to bind memory to depth image");
-      return false;
-    }
+    _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
 
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.pNext = nullptr;
     view_info.flags = 0;
-    view_info.image = depth_stencil_image;
+    view_info.image = _depth_stencil_tc->_image;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    view_info.format = depth_img_info.format;
+    view_info.format = _depth_stencil_format;
     view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -961,26 +1007,60 @@ create_swapchain() {
       view_info.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
 
-    VkImageView depth_stencil_view;
-    err = vkCreateImageView(device, &view_info, nullptr, &depth_stencil_view);
+    err = vkCreateImageView(device, &view_info, nullptr, &_depth_stencil_tc->_image_view);
     if (err) {
       vulkan_error(err, "Failed to create image view for depth/stencil");
       return false;
     }
+  }
 
-    _depth_stencil_tc = new VulkanTextureContext(pgo, depth_stencil_image, view_info.format);
-    _depth_stencil_tc->_extent = depth_img_info.extent;
-    _depth_stencil_tc->_mip_levels = depth_img_info.mipLevels;
-    _depth_stencil_tc->_array_layers = depth_img_info.arrayLayers;
-    _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
-    _depth_stencil_tc->_image_view = depth_stencil_view;
-    _depth_stencil_tc->_block = std::move(block);
+  // Create a multisample color image.
+  _ms_color_tc = nullptr;
+  if (_ms_count != VK_SAMPLE_COUNT_1_BIT) {
+    _ms_color_tc = vkgsg->create_image(VK_IMAGE_TYPE_2D,
+      swapchain_info.imageFormat, extent, 1, 1, _ms_count,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
+    if (_ms_color_tc == nullptr) {
+      return false;
+    }
+    _ms_color_tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    VkImageViewCreateInfo view_info;
+    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.pNext = nullptr;
+    view_info.flags = 0;
+    view_info.image = _ms_color_tc->_image;
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.format = _ms_color_tc->_format;
+    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view_info.subresourceRange.baseMipLevel = 0;
+    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.baseArrayLayer = 0;
+    view_info.subresourceRange.layerCount = 1;
+
+    err = vkCreateImageView(device, &view_info, nullptr, &_ms_color_tc->_image_view);
+    if (err) {
+      vulkan_error(err, "Failed to create image view for depth/stencil");
+      return false;
+    }
   }
 
   // Now finally create a framebuffer for each link in the swap chain.
-  VkImageView attach_views[2];
-  if (have_ds) {
+  VkImageView attach_views[3];
+  uint32_t num_views = 1;
+
+  if (_ms_color_tc != nullptr) {
+    attach_views[0] = _ms_color_tc->_image_view;
+    ++num_views;
+  }
+  if (_depth_stencil_tc != nullptr) {
     attach_views[1] = _depth_stencil_tc->_image_view;
+    ++num_views;
   }
 
   VkFramebufferCreateInfo fb_info;
@@ -988,7 +1068,7 @@ create_swapchain() {
   fb_info.pNext = nullptr;
   fb_info.flags = 0;
   fb_info.renderPass = _render_pass;
-  fb_info.attachmentCount = 1 + (int)have_ds;
+  fb_info.attachmentCount = num_views;
   fb_info.pAttachments = attach_views;
   fb_info.width = swapchain_info.imageExtent.width;
   fb_info.height = swapchain_info.imageExtent.height;
@@ -996,7 +1076,11 @@ create_swapchain() {
 
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
-    attach_views[0] = buffer._tc->_image_view;
+    if (_ms_color_tc != nullptr) {
+      attach_views[num_views - 1] = buffer._tc->_image_view;
+    } else {
+      attach_views[0] = buffer._tc->_image_view;
+    }
     err = vkCreateFramebuffer(device, &fb_info, nullptr, &buffer._framebuffer);
     if (err) {
       vulkan_error(err, "Failed to create framebuffer");

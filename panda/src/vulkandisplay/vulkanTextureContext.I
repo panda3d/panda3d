@@ -18,11 +18,7 @@
 INLINE VulkanTextureContext::
 VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture, int view) :
   TextureContext(pgo, texture, view),
-  _image(VK_NULL_HANDLE),
-  _image_view(VK_NULL_HANDLE),
   _pack_bgr8(false),
-  _layout(VK_IMAGE_LAYOUT_UNDEFINED),
-  _access_mask(0),
     //TODO: it is not clear to me what we should set srcStageMask to here.
   _stage_mask(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) {
 }
@@ -36,10 +32,7 @@ VulkanTextureContext(PreparedGraphicsObjects *pgo, VkImage image, VkFormat forma
   TextureContext(pgo, nullptr, 0),
   _format(format),
   _image(image),
-  _image_view(VK_NULL_HANDLE),
   _pack_bgr8(false),
-  _layout(VK_IMAGE_LAYOUT_UNDEFINED),
-  _access_mask(0),
   //TODO: it is not clear to me what we should set srcStageMask to here.
   _stage_mask(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) {
 }

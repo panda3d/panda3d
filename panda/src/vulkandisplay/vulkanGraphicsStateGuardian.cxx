@@ -94,12 +94,14 @@ TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 VulkanGraphicsStateGuardian::
 VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                             VulkanGraphicsStateGuardian *share_with,
-                            uint32_t queue_family_index) :
+                            uint32_t queue_family_index,
+                            VkSampleCountFlagBits multisample_count) :
   GraphicsStateGuardian(CS_default, engine, pipe),
   _device(VK_NULL_HANDLE),
   _queue(VK_NULL_HANDLE),
   _dma_queue(VK_NULL_HANDLE),
   _graphics_queue_family_index(queue_family_index),
+  _multisample_count(multisample_count),
   _cmd_pool(VK_NULL_HANDLE),
   _cmd(VK_NULL_HANDLE),
   _transfer_cmd(VK_NULL_HANDLE),
@@ -319,7 +321,7 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   _copy_texture_inverted = true;
 
   // Similarly with these capabilities flags.
-  _supports_multisample = true;
+  _supports_multisample = (multisample_count > VK_SAMPLE_COUNT_1_BIT);
   _supports_generate_mipmap = false;
   _supports_depth_texture = true;
   _supports_depth_stencil = true;
@@ -1738,7 +1740,7 @@ clear(DrawableRegion *clearable) {
   nassertv(clearable->is_any_clear_active());
 
   VkClearAttachment attachments[2];
-  int ai = 0;
+  uint32_t ai = 0;
 
   if (clearable->get_clear_color_active() &&
       _current_properties->get_color_bits() > 0) {
@@ -1777,7 +1779,9 @@ clear(DrawableRegion *clearable) {
     rects[i].layerCount = 1;
   }
 
-  vkCmdClearAttachments(_cmd, ai, attachments, _viewports.size(), rects);
+  if (ai > 0) {
+    vkCmdClearAttachments(_cmd, ai, attachments, _viewports.size(), rects);
+  }
 }
 
 /**
@@ -2563,6 +2567,65 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
 }
 
 /**
+ * Shared code for creating an image and allocating memory for it.
+ * @return a VulkanTextureContext on success.
+ */
+VulkanTextureContext *VulkanGraphicsStateGuardian::
+create_image(VkImageType type, VkFormat format, const VkExtent3D &extent,
+             uint32_t levels, uint32_t layers, VkSampleCountFlagBits samples,
+             VkImageUsageFlags usage) {
+  VkImageCreateInfo img_info;
+  img_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  img_info.pNext = nullptr;
+  img_info.flags = 0;
+  img_info.imageType = type;
+  img_info.format = format;
+  img_info.extent = extent;
+  img_info.mipLevels = levels;
+  img_info.arrayLayers = layers;
+  img_info.samples = samples;
+  img_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+  img_info.usage = usage;
+  img_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  img_info.queueFamilyIndexCount = 0;
+  img_info.pQueueFamilyIndices = nullptr;
+  img_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+  VkImage image;
+  VkResult err = vkCreateImage(_device, &img_info, nullptr, &image);
+  if (err) {
+    vulkan_error(err, "Failed to create image");
+    return nullptr;
+  }
+
+  // Get the memory requirements, and find an appropriate heap to alloc in.
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(_device, image, &mem_reqs);
+
+  VulkanMemoryBlock block;
+  if (!allocate_memory(block, mem_reqs, 0, false)) {
+    vulkandisplay_cat.error()
+      << "Failed to allocate " << mem_reqs.size << " bytes for image.\n";
+    vkDestroyImage(_device, image, nullptr);
+    return nullptr;
+  }
+
+  // Bind memory to image.
+  if (!block.bind_image(image)) {
+    vulkan_error(err, "Failed to bind memory to multisample color image");
+    vkDestroyImage(_device, image, nullptr);
+    return nullptr;
+  }
+
+  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects(), image, format);
+  tc->_extent = extent;
+  tc->_mip_levels = levels;
+  tc->_array_layers = layers;
+  tc->_block = std::move(block);
+  return tc;
+}
+
+/**
  * Creates a new semaphore on this device.
  */
 VkSemaphore VulkanGraphicsStateGuardian::
@@ -2838,7 +2901,7 @@ make_pipeline(VulkanShaderContext *sc, const RenderState *state,
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ms_info.pNext = nullptr;
   ms_info.flags = 0;
-  ms_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  ms_info.rasterizationSamples = _multisample_count;
   ms_info.sampleShadingEnable = VK_FALSE;
   ms_info.minSampleShading = 0.0;
   ms_info.pSampleMask = nullptr;

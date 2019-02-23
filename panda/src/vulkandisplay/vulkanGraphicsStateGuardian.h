@@ -30,7 +30,8 @@ class VulkanGraphicsStateGuardian final : public GraphicsStateGuardian {
 public:
   VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
                               VulkanGraphicsStateGuardian *share_with,
-                              uint32_t queue_family_index);
+                              uint32_t queue_family_index,
+                              VkSampleCountFlagBits multisample_count=VK_SAMPLE_COUNT_1_BIT);
   virtual ~VulkanGraphicsStateGuardian();
 
   virtual void close_gsg();
@@ -132,6 +133,10 @@ private:
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
+  VulkanTextureContext *create_image(VkImageType type, VkFormat format,
+                                     const VkExtent3D &extent, uint32_t levels,
+                                     uint32_t layers, VkSampleCountFlagBits samples,
+                                     VkImageUsageFlags usage);
 
   VkSemaphore create_semaphore();
 
@@ -172,6 +177,7 @@ private:
   VkQueue _queue;
   VkQueue _dma_queue;
   uint32_t _graphics_queue_family_index;
+  VkSampleCountFlagBits _multisample_count;
   VkFence _fence;
   VkCommandPool _cmd_pool;
   VkCommandBuffer _cmd;
