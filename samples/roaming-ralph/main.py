@@ -41,9 +41,6 @@ class RoamingRalphDemo(ShowBase):
         # Set up the window, camera, etc.
         ShowBase.__init__(self)
 
-        # Set the background color to black
-        self.win.setClearColor((0, 0, 0, 1))
-
         # This is used to store which keys are currently pressed.
         self.keyMap = {
             "left": 0,
@@ -79,6 +76,9 @@ class RoamingRalphDemo(ShowBase):
 
         self.environ = loader.loadModel("models/world")
         self.environ.reparentTo(render)
+
+        # We do not have a skybox, so we will just use a sky blue background color
+        self.setBackgroundColor(0.53, 0.80, 0.92, 1)
 
         # Create the main character, Ralph
 
