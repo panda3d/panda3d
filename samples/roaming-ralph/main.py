@@ -12,6 +12,7 @@
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
+from panda3d.core import CollisionHandlerPusher, CollisionCapsule
 from panda3d.core import Filename, AmbientLight, DirectionalLight
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
 from panda3d.core import CollideMask
@@ -80,7 +81,7 @@ class RoamingRalphDemo(ShowBase):
                             "walk": "models/ralph-walk"})
         self.ralph.reparentTo(render)
         self.ralph.setScale(.2)
-        self.ralph.setPos(ralphStartPos + (0, 0, 0.5))
+        self.ralph.setPos(ralphStartPos + (0, 0, 1.5))
 
         # Create a floater object, which floats 2 units above ralph.  We
         # use this as a target for the camera to look at.
@@ -112,25 +113,25 @@ class RoamingRalphDemo(ShowBase):
         self.disableMouse()
         self.camera.setPos(self.ralph.getX(), self.ralph.getY() + 10, 2)
 
-        # We will detect the height of the terrain by creating a collision
-        # ray and casting it downward toward the terrain.  One ray will
-        # start above ralph's head, and the other will start above the camera.
-        # A ray may hit the terrain, or it may hit a rock or a tree.  If it
-        # hits the terrain, we can detect the height.  If it hits anything
-        # else, we rule that the move is illegal.
         self.cTrav = CollisionTraverser()
 
-        self.ralphGroundRay = CollisionRay()
-        self.ralphGroundRay.setOrigin(0, 0, 9)
-        self.ralphGroundRay.setDirection(0, 0, -1)
-        self.ralphGroundCol = CollisionNode('ralphRay')
-        self.ralphGroundCol.addSolid(self.ralphGroundRay)
-        self.ralphGroundCol.setFromCollideMask(CollideMask.bit(0))
-        self.ralphGroundCol.setIntoCollideMask(CollideMask.allOff())
-        self.ralphGroundColNp = self.ralph.attachNewNode(self.ralphGroundCol)
-        self.ralphGroundHandler = CollisionHandlerQueue()
-        self.cTrav.addCollider(self.ralphGroundColNp, self.ralphGroundHandler)
+        # Use a CollisionHandlerPusher to handle collisions between Ralph and
+        # the environment. Ralph will be "pushed" out of collisions, which has the
+        # appearance of preventing collisions.
+        self.ralphCol = CollisionNode('ralph')
+        capsuleRadius = 1
+        capsuleStart = (0, 0, capsuleRadius)
+        capsuleEnd = (0, 0, 4)
+        self.ralphCol.addSolid(CollisionCapsule(capsuleStart, capsuleEnd, capsuleRadius))
+        self.ralphColNp = self.ralph.attachNewNode(self.ralphCol)
+        self.ralphPusher = CollisionHandlerPusher()
+        self.ralphPusher.addCollider(self.ralphColNp, self.ralph)
+        self.cTrav.addCollider(self.ralphColNp, self.ralphPusher)
 
+        # We will detect the height of the terrain by creating a collision
+        # ray and casting it downward toward the terrain, starting above the
+        # camera. A ray may hit the terrain, or it may hit a rock or a tree.
+        # If it hits the terrain, we can detect the height.
         self.camGroundRay = CollisionRay()
         self.camGroundRay.setOrigin(0, 0, 9)
         self.camGroundRay.setDirection(0, 0, -1)
@@ -143,7 +144,7 @@ class RoamingRalphDemo(ShowBase):
         self.cTrav.addCollider(self.camGroundColNp, self.camGroundHandler)
 
         # Uncomment this line to see the collision rays
-        #self.ralphGroundColNp.show()
+        #self.ralphColNp.show()
         #self.camGroundColNp.show()
 
         # Uncomment this line to show a visual representation of the
@@ -227,20 +228,11 @@ class RoamingRalphDemo(ShowBase):
         # this for us, if we assign a CollisionTraverser to self.cTrav.
         #self.cTrav.traverse(render)
 
-        # Adjust ralph's Z coordinate.  If ralph's ray hit terrain,
-        # update his Z. If it hit anything else, or didn't hit anything, put
-        # him back where he was last frame.
+        # Add some "gravity" to Ralph
+        self.ralph.setZ(self.ralph.getZ() -  2.5 * dt)
 
-        entries = list(self.ralphGroundHandler.getEntries())
-        entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
-
-        if len(entries) > 0 and entries[0].getIntoNode().getName() == "terrain":
-            self.ralph.setZ(entries[0].getSurfacePoint(render).getZ())
-        else:
-            self.ralph.setPos(startpos)
-
-        # Keep the camera at one foot above the terrain,
-        # or two feet above ralph, whichever is greater.
+        # Keep the camera at one unit above the terrain,
+        # or two units above ralph, whichever is greater.
 
         entries = list(self.camGroundHandler.getEntries())
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
