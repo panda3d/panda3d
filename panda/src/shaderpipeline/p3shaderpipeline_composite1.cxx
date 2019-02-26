@@ -1,0 +1,6 @@
+#include "config_shaderpipeline.cxx"
+#include "shaderModule.cxx"
+#include "shaderModuleGlsl.cxx"
+#include "shaderCompiler.cxx"
+#include "shaderCompilerGlslPreProc.cxx"
+#include "shaderCompilerRegistry.cxx"

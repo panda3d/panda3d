@@ -3266,6 +3266,7 @@ CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
+CopyAllHeaders('panda/src/shaderpipeline')
 CopyAllHeaders('panda/src/display')
 CopyAllHeaders('panda/src/chan')
 CopyAllHeaders('panda/src/char')
@@ -4000,6 +4001,18 @@ if (not RUNTIME):
     OPTS=['DIR:panda/src/display']
     TargetAdd('subprocessWindowBuffer.obj', opts=OPTS, input='subprocessWindowBuffer.cxx')
     TargetAdd('libp3subprocbuffer.ilb', input='subprocessWindowBuffer.obj')
+#
+# DIRECTORY: panda/src/shaderpipeline/
+#
+
+if (not RUNTIME):
+  OPTS=['DIR:panda/src/shaderpipeline', 'BUILDING:PANDA']
+  TargetAdd('p3shaderpipeline_composite1.obj', opts=OPTS, input='p3shaderpipeline_composite1.cxx')
+
+  OPTS=['DIR:panda/src/shaderpipeline']
+  IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
+  TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3shaderpipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3shaderpipeline', 'SRCDIR:panda/src/shaderpipeline'])
 
 #
 # DIRECTORY: panda/src/chan/
@@ -4212,6 +4225,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3pgraph_composite4.obj')
   TargetAdd('libpanda.dll', input='p3cull_composite1.obj')
   TargetAdd('libpanda.dll', input='p3cull_composite2.obj')
+  TargetAdd('libpanda.dll', input='p3shaderpipeline_composite1.obj')
   TargetAdd('libpanda.dll', input='p3movies_composite1.obj')
   TargetAdd('libpanda.dll', input='p3grutil_multitexReducer.obj')
   TargetAdd('libpanda.dll', input='p3grutil_composite1.obj')
@@ -4285,6 +4299,7 @@ if (not RUNTIME):
   PyTargetAdd('core_module.obj', input='libp3pgraphnodes.in')
   PyTargetAdd('core_module.obj', input='libp3pgraph.in')
   PyTargetAdd('core_module.obj', input='libp3cull.in')
+  PyTargetAdd('core_module.obj', input='libp3shaderpipeline.in')
   PyTargetAdd('core_module.obj', input='libp3grutil.in')
   PyTargetAdd('core_module.obj', input='libp3chan.in')
   PyTargetAdd('core_module.obj', input='libp3pstatclient.in')
@@ -4343,6 +4358,7 @@ if (not RUNTIME):
   PyTargetAdd('core.pyd', input='libp3pipeline_igate.obj')
   PyTargetAdd('core.pyd', input='libp3event_igate.obj')
   PyTargetAdd('core.pyd', input='libp3gobj_igate.obj')
+  PyTargetAdd('core.pyd', input='libp3shaderpipeline_igate.obj')
   PyTargetAdd('core.pyd', input='libp3gsgbase_igate.obj')
   PyTargetAdd('core.pyd', input='libp3linmath_igate.obj')
   PyTargetAdd('core.pyd', input='libp3mathutil_igate.obj')
