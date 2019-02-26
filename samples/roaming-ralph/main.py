@@ -46,7 +46,13 @@ class RoamingRalphDemo(ShowBase):
 
         # This is used to store which keys are currently pressed.
         self.keyMap = {
-            "left": 0, "right": 0, "forward": 0, "cam-left": 0, "cam-right": 0}
+            "left": 0,
+            "right": 0,
+            "forward": 0,
+            "backward": 0,
+            "cam-left": 0,
+            "cam-right": 0,
+        }
 
         # Post the instructions
         self.title = addTitle(
@@ -55,8 +61,9 @@ class RoamingRalphDemo(ShowBase):
         self.inst2 = addInstructions(0.12, "[Left Arrow]: Rotate Ralph Left")
         self.inst3 = addInstructions(0.18, "[Right Arrow]: Rotate Ralph Right")
         self.inst4 = addInstructions(0.24, "[Up Arrow]: Run Ralph Forward")
-        self.inst6 = addInstructions(0.30, "[A]: Rotate Camera Left")
-        self.inst7 = addInstructions(0.36, "[S]: Rotate Camera Right")
+        self.inst4 = addInstructions(0.30, "[Down Arrow]: Run Ralph Backward")
+        self.inst6 = addInstructions(0.36, "[A]: Rotate Camera Left")
+        self.inst7 = addInstructions(0.42, "[S]: Rotate Camera Right")
 
         # Set up the environment
         #
@@ -96,11 +103,13 @@ class RoamingRalphDemo(ShowBase):
         self.accept("arrow_left", self.setKey, ["left", True])
         self.accept("arrow_right", self.setKey, ["right", True])
         self.accept("arrow_up", self.setKey, ["forward", True])
+        self.accept("arrow_down", self.setKey, ["backward", True])
         self.accept("a", self.setKey, ["cam-left", True])
         self.accept("s", self.setKey, ["cam-right", True])
         self.accept("arrow_left-up", self.setKey, ["left", False])
         self.accept("arrow_right-up", self.setKey, ["right", False])
         self.accept("arrow_up-up", self.setKey, ["forward", False])
+        self.accept("arrow_down-up", self.setKey, ["backward", False])
         self.accept("a-up", self.setKey, ["cam-left", False])
         self.accept("s-up", self.setKey, ["cam-right", False])
 
@@ -195,11 +204,13 @@ class RoamingRalphDemo(ShowBase):
             self.ralph.setH(self.ralph.getH() - 300 * dt)
         if self.keyMap["forward"]:
             self.ralph.setY(self.ralph, -25 * dt)
+        if self.keyMap["backward"]:
+            self.ralph.setY(self.ralph, +25 * dt)
 
         # If ralph is moving, loop the run animation.
         # If he is standing still, stop the animation.
 
-        if self.keyMap["forward"] or self.keyMap["left"] or self.keyMap["right"]:
+        if self.keyMap["forward"] or self.keyMap["backward"] or self.keyMap["left"] or self.keyMap["right"]:
             if self.isMoving is False:
                 self.ralph.loop("run")
                 self.isMoving = True
