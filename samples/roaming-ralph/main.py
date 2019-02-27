@@ -134,6 +134,7 @@ class RoamingRalphDemo(ShowBase):
         self.ralphCol.addSolid(CollisionCapsule(capsuleStart, capsuleEnd, capsuleRadius))
         self.ralphColNp = self.ralph.attachNewNode(self.ralphCol)
         self.ralphPusher = CollisionHandlerPusher()
+        self.ralphPusher.horizontal = True
         self.ralphPusher.addCollider(self.ralphColNp, self.ralph)
         self.cTrav.addCollider(self.ralphColNp, self.ralphPusher)
 
