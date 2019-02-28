@@ -59,3 +59,5 @@ notifications:
       - https://www.panda3d.org/webhooks/travis-ci.php
     on_success: change
     on_failure: always
+after_success:
+  - coveralls
