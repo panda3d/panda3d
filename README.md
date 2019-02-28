@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![Build Status](https://travis-ci.org/JoelStienlet/panda3d.svg?branch=master)](https://travis-ci.org/JoelStienlet/panda3d)
 [![Coverage Status](https://coveralls.io/repos/github/JoelStienlet/panda3d/badge.svg?branch=master)](https://coveralls.io/github/JoelStienlet/panda3d?branch=master)
 
 <img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
