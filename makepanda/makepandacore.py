@@ -78,6 +78,7 @@ MSVCVERSIONINFO = {
     (12,0): {"vsversion":(12,0), "vsname":"Visual Studio 2013"},
     (14,0): {"vsversion":(14,0), "vsname":"Visual Studio 2015"},
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
+    (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
 }
 
 ########################################################################
