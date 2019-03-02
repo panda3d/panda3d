@@ -397,11 +397,13 @@ on_input_device_removal(HANDLE handle) {
  */
 void WinInputDeviceManager::
 update() {
+  /*
   MSG msg;
   while (PeekMessage(&msg, _message_hwnd, WM_INPUT_DEVICE_CHANGE, WM_INPUT, PM_REMOVE)) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+  */
 }
 
 /**
