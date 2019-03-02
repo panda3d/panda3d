@@ -142,8 +142,7 @@ class RoamingRalphDemo(ShowBase):
         # ray and casting it downward toward the terrain.  One ray will
         # start above ralph's head, and the other will start above the camera.
         # A ray may hit the terrain, or it may hit a rock or a tree.  If it
-        # hits the terrain, we can detect the height.  If it hits anything
-        # else, we rule that the move is illegal.
+        # hits the terrain, we can detect the height.
         self.ralphGroundRay = CollisionRay()
         self.ralphGroundRay.setOrigin(0, 0, 9)
         self.ralphGroundRay.setDirection(0, 0, -1)
@@ -205,11 +204,6 @@ class RoamingRalphDemo(ShowBase):
         if self.keyMap["cam-right"]:
             self.camera.setX(self.camera, +20 * dt)
 
-        # save ralph's initial position so that we can restore it,
-        # in case he falls off the map or runs into something.
-
-        startpos = self.ralph.getPos()
-
         # If a move-key is pressed, move ralph in the specified direction.
 
         if self.keyMap["left"]:
@@ -254,16 +248,13 @@ class RoamingRalphDemo(ShowBase):
         #self.cTrav.traverse(render)
 
         # Adjust ralph's Z coordinate.  If ralph's ray hit terrain,
-        # update his Z. If it hit anything else, or didn't hit anything, put
-        # him back where he was last frame.
+        # update his Z
 
         entries = list(self.ralphGroundHandler.getEntries())
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
 
         if len(entries) > 0 and entries[0].getIntoNode().getName() == "terrain":
             self.ralph.setZ(entries[0].getSurfacePoint(render).getZ())
-        else:
-            self.ralph.setPos(startpos)
 
         # Keep the camera at one unit above the terrain,
         # or two units above ralph, whichever is greater.
