@@ -1690,7 +1690,6 @@ write_module_class(ostream &out, Object *obj) {
             SlottedFunctionDef def;
             def._answer_location = true_key;
             def._wrapper_type = slotted_def._wrapper_type;
-            def._min_version = 0x03000000;
             def._wrapper_name = func->_name + "_" + true_key;
             slots[true_key] = def;
           }
