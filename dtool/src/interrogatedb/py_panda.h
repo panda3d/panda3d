@@ -238,6 +238,8 @@ EXPCL_PYPANDA PyObject *_Dtool_Return(PyObject *value);
 #define Dtool_Return(value) _Dtool_Return(value)
 #endif
 
+ALWAYS_INLINE void Dtool_Assign_PyObject(PyObject *&ptr, PyObject *value);
+
 /**
  * Wrapper around Python 3.4's enum library, which does not have a C API.
  */

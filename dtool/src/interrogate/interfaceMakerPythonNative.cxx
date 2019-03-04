@@ -5979,7 +5979,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "}\n";
     }
 
-    return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
+      indent(out, indent_level) << "Py_XINCREF(return_value);\n";
+    } else {
+      return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    }
     return_expr = remap->_return_type->temporary_to_return(return_expr);
   }
 
