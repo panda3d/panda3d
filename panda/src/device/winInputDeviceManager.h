@@ -41,6 +41,9 @@ public:
   void on_input_device_arrival(HANDLE handle);
   void on_input_device_removal(HANDLE handle);
 
+  HWND setup_message_loop();
+  void destroy_message_loop();
+
 private:
   // There are always exactly four of these in existence.
   XInputDevice _xinput_device0;
