@@ -43,7 +43,7 @@ class BulletPersistentManifold;
 class BulletShape;
 class BulletSoftBodyWorldInfo;
 
-extern PT(CallbackObject) bullet_contact_added_callback;
+extern EXPCL_PANDABULLET PT(CallbackObject) bullet_contact_added_callback;
 
 /**
  *

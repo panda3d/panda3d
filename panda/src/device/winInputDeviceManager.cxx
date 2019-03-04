@@ -17,6 +17,22 @@
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
+#ifdef HAVE_THREADS
+/**
+ *
+ */
+class InputThread : public Thread {
+public:
+  InputThread(WinInputDeviceManager *manager) :
+    Thread("input", "input"), _manager(manager) {}
+
+private:
+  virtual void thread_main();
+
+  WinInputDeviceManager *_manager;
+};
+#endif
+
 /**
  * Initializes the input device manager by scanning which devices are currently
  * connected and setting up any platform-dependent structures necessary for
@@ -37,7 +53,7 @@ WinInputDeviceManager() :
   _xinput_device2.local_object();
   _xinput_device3.local_object();
 
-// This function is only available in Vista and later, so we use a wrapper.
+  // This function is only available in Vista and later, so we use a wrapper.
   HMODULE module = LoadLibraryA("cfgmgr32.dll");
   if (module) {
     _CM_Get_DevNode_PropertyW = (pCM_Get_DevNode_Property)GetProcAddress(module, "CM_Get_DevNode_PropertyW");
@@ -45,83 +61,16 @@ WinInputDeviceManager() :
     _CM_Get_DevNode_PropertyW = nullptr;
   }
 
-  // Now create a message-only window for the raw input.
-  WNDCLASSEX wc = {};
-  wc.cbSize = sizeof(WNDCLASSEX);
-  wc.lpfnWndProc = window_proc;
-  wc.hInstance = GetModuleHandle(nullptr);
-  wc.lpszClassName = "InputDeviceManager";
-  if (!RegisterClassEx(&wc)) {
-    device_cat.warning()
-      << "Failed to register message-only window class.\n";
-    return;
-   }
-
-  _message_hwnd = CreateWindowEx(0, wc.lpszClassName, "InputDeviceManager", 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
-  if (!_message_hwnd) {
-    device_cat.warning()
-      << "Failed to create message-only window.\n";
-    return;
-  }
-
-  // Now listen for raw input devices using the created message loop.
-  RAWINPUTDEVICE rid[3];
-  rid[0].usUsagePage = 1;
-  rid[0].usUsage = 4; // Joysticks
-  rid[0].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
-  rid[0].hwndTarget = _message_hwnd;
-  rid[1].usUsagePage = 1;
-  rid[1].usUsage = 5; // Gamepads
-  rid[1].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
-  rid[1].hwndTarget = _message_hwnd;
-  rid[2].usUsagePage = 1;
-  rid[2].usUsage = 8; // Multi-axis controllers (including 3D mice)
-  rid[2].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
-  rid[2].hwndTarget = _message_hwnd;
-  if (!RegisterRawInputDevices(rid, 3, sizeof(RAWINPUTDEVICE))) {
-    device_cat.warning()
-      << "Failed to register raw input devices.\n";
-  }
-
-  // Do we have any XInput devices plugged in now?
-  int num_xinput = 0;
-  HANDLE xinput_handle;
-  RAWINPUTDEVICELIST devices[64];
-  UINT num_devices = 64;
-  num_devices = GetRawInputDeviceList(devices, &num_devices, sizeof(RAWINPUTDEVICELIST));
-  if (num_devices == (UINT)-1) {
-    return;
-  }
-  for (UINT i = 0; i < num_devices; ++i) {
-    if (devices[i].dwType != RIM_TYPEHID) {
-      continue;
-    }
-    HANDLE handle = devices[i].hDevice;
-    UINT size;
-    if (GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, nullptr, &size) != 0) {
-      continue;
-    }
-
-    char *path = (char *)alloca(size);
-    if (path == nullptr ||
-        GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, (void *)path, &size) < 0) {
-      continue;
-    }
-
-    if (strstr(path, "&IG_") != nullptr) {
-      xinput_handle = handle;
-      ++num_xinput;
-    }
-  }
-  if (num_xinput == 1) {
-    // There's only one XInput device, so we know which one it is.
-    on_input_device_arrival(xinput_handle);
-  } else if (num_xinput > 0) {
-    // Just poll all the XInput devices.
-    _xinput_device0.detect(this);
-    _xinput_device1.detect(this);
-    _xinput_device2.detect(this);
-    _xinput_device3.detect(this);
+  // If we have threading enabled, start a thread with a message-only window
+  // loop to listen for input events.
+#ifdef HAVE_THREADS
+  if (Thread::is_threading_supported()) {
+    PT(Thread) thread = new InputThread(this);
+    thread->start(TP_normal, false);
+  } else
+#endif
+  {
+    setup_message_loop();
   }
 }
 
@@ -131,8 +80,17 @@ WinInputDeviceManager() :
 WinInputDeviceManager::
 ~WinInputDeviceManager() {
   if (_message_hwnd != nullptr) {
-    DestroyWindow(_message_hwnd);
-    _message_hwnd = nullptr;
+#ifdef HAVE_THREADS
+    if (Thread::is_threading_supported()) {
+      HWND hwnd = _message_hwnd;
+      if (hwnd) {
+        SendMessage(hwnd, WM_QUIT, 0, 0);
+      }
+    } else
+#endif
+    {
+      destroy_message_loop();
+    }
   }
 }
 
@@ -397,10 +355,110 @@ on_input_device_removal(HANDLE handle) {
  */
 void WinInputDeviceManager::
 update() {
-  MSG msg;
-  while (PeekMessage(&msg, _message_hwnd, WM_INPUT_DEVICE_CHANGE, WM_INPUT, PM_REMOVE)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
+}
+
+/**
+ * Sets up a Windows message loop.  Should be called from the thread that will
+ * be handling the messages.
+ */
+HWND WinInputDeviceManager::
+setup_message_loop() {
+  _message_hwnd = 0;
+
+  // Now create a message-only window for the raw input.
+  WNDCLASSEX wc = {};
+  wc.cbSize = sizeof(WNDCLASSEX);
+  wc.lpfnWndProc = window_proc;
+  wc.hInstance = GetModuleHandle(nullptr);
+  wc.lpszClassName = "InputDeviceManager";
+  if (!RegisterClassEx(&wc)) {
+    device_cat.warning()
+      << "Failed to register message-only window class for input device detection.\n";
+  } else {
+    _message_hwnd = CreateWindowEx(0, wc.lpszClassName, "InputDeviceManager", 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
+    if (!_message_hwnd) {
+      device_cat.warning()
+        << "Failed to create message-only window for input device detection.\n";
+    }
+  }
+
+  // Now listen for raw input devices using the created message loop.
+  RAWINPUTDEVICE rid[3];
+  rid[0].usUsagePage = 1;
+  rid[0].usUsage = 4; // Joysticks
+  rid[0].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
+  rid[0].hwndTarget = _message_hwnd;
+  rid[1].usUsagePage = 1;
+  rid[1].usUsage = 5; // Gamepads
+  rid[1].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
+  rid[1].hwndTarget = _message_hwnd;
+  rid[2].usUsagePage = 1;
+  rid[2].usUsage = 8; // Multi-axis controllers (including 3D mice)
+  rid[2].dwFlags = RIDEV_DEVNOTIFY | RIDEV_INPUTSINK;
+  rid[2].hwndTarget = _message_hwnd;
+  if (!RegisterRawInputDevices(rid, 3, sizeof(RAWINPUTDEVICE))) {
+    device_cat.warning()
+      << "Failed to register raw input devices.\n";
+  }
+
+  // Do we have any XInput devices plugged in now?
+  int num_xinput = 0;
+  HANDLE xinput_handle;
+  RAWINPUTDEVICELIST devices[64];
+  UINT num_devices = 64;
+  num_devices = GetRawInputDeviceList(devices, &num_devices, sizeof(RAWINPUTDEVICELIST));
+  if (num_devices == (UINT)-1) {
+    num_devices = 0;
+  }
+  for (UINT i = 0; i < num_devices; ++i) {
+    if (devices[i].dwType != RIM_TYPEHID) {
+      continue;
+    }
+    HANDLE handle = devices[i].hDevice;
+    UINT size;
+    if (GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, nullptr, &size) != 0) {
+      continue;
+    }
+
+    char *path = (char *)alloca(size);
+    if (path == nullptr ||
+        GetRawInputDeviceInfoA(handle, RIDI_DEVICENAME, (void *)path, &size) < 0) {
+      continue;
+    }
+
+    if (strstr(path, "&IG_") != nullptr) {
+      xinput_handle = handle;
+      ++num_xinput;
+    }
+  }
+  if (num_xinput == 1) {
+    // There's only one XInput device, so we know which one it is.
+    on_input_device_arrival(xinput_handle);
+  } else if (num_xinput > 0) {
+    // Just poll all the XInput devices.
+    _xinput_device0.detect(this);
+    _xinput_device1.detect(this);
+    _xinput_device2.detect(this);
+    _xinput_device3.detect(this);
+  }
+
+  return _message_hwnd;
+}
+
+/**
+ * Tears down the message loop.  Should be called from the thread that called
+ * setup_message_loop().
+ */
+void WinInputDeviceManager::
+destroy_message_loop() {
+  HWND hwnd = nullptr;
+  {
+    LightMutexHolder holder(_lock);
+    std::swap(_message_hwnd, hwnd);
+  }
+
+  if (hwnd) {
+    DestroyWindow(hwnd);
   }
 }
 
@@ -441,5 +499,37 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
   return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
+
+#ifdef HAVE_THREADS
+/**
+ * Thread entry point for the input listener thread.
+ */
+void InputThread::
+thread_main() {
+  WinInputDeviceManager *manager = _manager;
+  HWND hwnd = manager->setup_message_loop();
+  if (!hwnd) {
+    return;
+  }
+
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Started input device listener thread.\n";
+  }
+
+  MSG msg;
+  while (GetMessage(&msg, nullptr, 0, 0) > 0) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  }
+
+  if (device_cat.is_debug()) {
+    device_cat.debug()
+      << "Stopping input device listener thread.\n";
+  }
+
+  manager->destroy_message_loop();
+}
+#endif  // HAVE_THREADS
 
 #endif

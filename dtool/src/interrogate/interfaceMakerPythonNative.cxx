@@ -1690,7 +1690,6 @@ write_module_class(ostream &out, Object *obj) {
             SlottedFunctionDef def;
             def._answer_location = true_key;
             def._wrapper_type = slotted_def._wrapper_type;
-            def._min_version = 0x03000000;
             def._wrapper_name = func->_name + "_" + true_key;
             slots[true_key] = def;
           }
@@ -5993,7 +5992,11 @@ write_function_instance(ostream &out, FunctionRemap *remap,
       indent(out, indent_level) << "}\n";
     }
 
-    return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    if (TypeManager::is_pointer_to_PyObject(remap->_return_type->get_orig_type())) {
+      indent(out, indent_level) << "Py_XINCREF(return_value);\n";
+    } else {
+      return_expr = manage_return_value(out, indent_level, remap, "return_value");
+    }
     return_expr = remap->_return_type->temporary_to_return(return_expr);
   }
 
