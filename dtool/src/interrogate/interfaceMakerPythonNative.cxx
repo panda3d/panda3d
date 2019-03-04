@@ -1885,7 +1885,9 @@ write_module_class(ostream &out, Object *obj) {
             out << "    Py_INCREF(Py_NotImplemented);\n";
             out << "    return Py_NotImplemented;\n";
           } else if (all_nonconst) {
-            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
+            out << "  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_"
+                << ClassName << ", (void **)&local_this, \"" << ClassName
+                << "." << methodNameFromCppName(fname, "", false) << "\")) {\n";
             out << "    return nullptr;\n";
           } else {
             out << "  if (!Dtool_Call_ExtractThisPointer(self, Dtool_" << ClassName << ", (void **)&local_this)) {\n";
