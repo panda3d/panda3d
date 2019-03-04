@@ -96,22 +96,21 @@ class ParticlePanel(AppShell):
 
         ## MENUBAR ENTRIES ##
         # FILE MENU
-        # Get a handle on the file menu so commands can be inserted
-        # before quit item
-        fileMenu = self.menuBar.component('File-menu')
-        # MRM: Need to add load and save effects methods
-        fileMenu.insert_command(
-            fileMenu.index('Quit'),
-            label = 'Load Params',
-            command = self.loadParticleEffectFromFile)
-        fileMenu.insert_command(
-            fileMenu.index('Quit'),
-            label = 'Save Params',
-            command = self.saveParticleEffectToFile)
-        fileMenu.insert_command(
-            fileMenu.index('Quit'),
-            label = 'Print Params',
-            command = lambda s = self: s.particles.printParams())
+        # Get a handle on the file menu, and delete the Quit item that AppShell
+        # created so we can add it back after adding the other items.
+        self.menuBar.deletemenuitems('File', 0, 0)
+        self.menuBar.addmenuitem('File', 'command',
+                                 label='Load Params',
+                                 command=self.loadParticleEffectFromFile)
+        self.menuBar.addmenuitem('File', 'command',
+                                 label='Save Params',
+                                 command=self.saveParticleEffectToFile)
+        self.menuBar.addmenuitem('File', 'command',
+                                 label='Print Params',
+                                 command=lambda s=self:s.particles.printParams())
+        self.menuBar.addmenuitem('File', 'command', 'Quit this application',
+                                 label='Quit',
+                                 command=self.quit)
 
         # PARTICLE MANAGER MENU
         self.menuBar.addmenu('ParticleMgr', 'ParticleMgr Operations')
