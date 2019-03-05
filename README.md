@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
 <img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
 
@@ -229,3 +231,25 @@ models that are necessary for the developers to reproduce the issue.
 
 If you're not sure whether you've encountered a bug, feel free to ask about
 it in the forums or the IRC channel first.
+
+Supporting the Project
+======================
+
+If you would like to support the project financially, visit
+[our campaign on OpenCollective](https://opencollective.com/panda3d).  Your
+contributions help us accelerate the development of Panda3D.
+
+For the list of backers, see the [BACKERS.md](BACKERS.md) file or visit the
+[Sponsors page](https://www.panda3d.org/sponsors) on our web site.  Thank you
+to everyone who has donated!
+
+<a href="https://opencollective.com/panda3d" target="_blank">
+  <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />
+</a>
+
+### Gold Sponsors
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/0/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/0/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/1/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/1/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/2/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/2/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/3/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/3/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/4/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/4/website)
