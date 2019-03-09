@@ -786,8 +786,8 @@ class TexMemWatcher(DirectObject):
             # Look for a single rectangular hole to hold this piece.
             tp = self.findHole(tr.area, tr.w, tr.h)
             if tp:
-                texCmp = cmp(tr.w, tr.h)
-                holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
+                texCmp = (tr.w > tr.h) - (tr.w < tr.h)
+                holeCmp = ((tp.p[1] - tp.p[0]) > (tp.p[3] - tp.p[2])) - ((tp.p[1] - tp.p[0]) < (tp.p[3] - tp.p[2])) 
                 if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
                     tp.rotated = True
                 tr.placements = [tp]
@@ -803,10 +803,10 @@ class TexMemWatcher(DirectObject):
             # in.
             tpList = self.findHolePieces(tr.area)
             if tpList:
-                texCmp = cmp(tr.w, tr.h)
+                texCmp = (tr.w > tr.h) - (tr.w < tr.h)
                 tr.placements = tpList
                 for tp in tpList:
-                    holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
+                    holeCmp = ((tp.p[1] - tp.p[0]) > (tp.p[3] - tp.p[2])) - ((tp.p[1] - tp.p[0]) < (tp.p[3] - tp.p[2])) 
                     if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
                         tp.rotated = True
                     tp.setBitmasks(self.bitmasks)
@@ -1099,7 +1099,7 @@ class TexRecord:
         self.size = size
         x = self.tex.getXSize()
         y = self.tex.getYSize()
-        r = float(y) / float(x)
+        r = max(float(y), 1) / max(float(x), 1)
 
         # Card size, in unscaled texel units.
         self.tw = math.sqrt(self.size) / math.sqrt(r)
@@ -1233,7 +1233,7 @@ class TexPlacement:
         l, r, b, t = self.p
         mask = BitArray.range(l, r - l)
 
-        for yi in range(b, t):
+        for yi in range(int(b), int(t)):
             assert (bitmasks[yi] & mask).isZero()
             bitmasks[yi] |= mask
 
