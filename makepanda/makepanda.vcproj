@@ -2206,7 +2206,6 @@
 				<File RelativePath="..\panda\src\express\typedReferenceCount.h"></File>
 				<File RelativePath="..\panda\src\express\virtualFileMountSystem.I"></File>
 				<File RelativePath="..\panda\src\express\nodePointerTo.I"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.I"></File>
 				<File RelativePath="..\panda\src\express\hashVal.I"></File>
 				<File RelativePath="..\panda\src\express\pta_float.cxx"></File>
 				<File RelativePath="..\panda\src\express\weakPointerTo.h"></File>
@@ -2215,10 +2214,8 @@
 				<File RelativePath="..\panda\src\express\pointerToArrayBase.I"></File>
 				<File RelativePath="..\panda\src\express\datagramIterator.I"></File>
 				<File RelativePath="..\panda\src\express\vector_uchar.h"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.h"></File>
 				<File RelativePath="..\panda\src\express\datagramIterator.h"></File>
 				<File RelativePath="..\panda\src\express\threadSafePointerTo.cxx"></File>
-				<File RelativePath="..\panda\src\express\profileTimer.cxx"></File>
 				<File RelativePath="..\panda\src\express\datagramGenerator.cxx"></File>
 				<File RelativePath="..\panda\src\express\hashGeneratorBase.h"></File>
 				<File RelativePath="..\panda\src\express\patchfile.cxx"></File>
