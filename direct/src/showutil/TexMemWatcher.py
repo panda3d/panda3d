@@ -786,8 +786,9 @@ class TexMemWatcher(DirectObject):
             # Look for a single rectangular hole to hold this piece.
             tp = self.findHole(tr.area, tr.w, tr.h)
             if tp:
-                texCmp = cmp(tr.w, tr.h)
-                holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
+                texCmp = (tr.w > tr.h) - (tr.w < tr.h)
+                holeCmp = ((tp.p[1] - tp.p[0]) > (tp.p[3] - tp.p[2])) \
+                        - ((tp.p[1] - tp.p[0]) < (tp.p[3] - tp.p[2]))
                 if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
                     tp.rotated = True
                 tr.placements = [tp]
@@ -803,10 +804,11 @@ class TexMemWatcher(DirectObject):
             # in.
             tpList = self.findHolePieces(tr.area)
             if tpList:
-                texCmp = cmp(tr.w, tr.h)
+                texCmp = (tr.w > tr.h) - (tr.w < tr.h)
                 tr.placements = tpList
                 for tp in tpList:
-                    holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
+                    holeCmp = ((tp.p[1] - tp.p[0]) > (tp.p[3] - tp.p[2])) \
+                            - ((tp.p[1] - tp.p[0]) < (tp.p[3] - tp.p[2]))
                     if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
                         tp.rotated = True
                     tp.setBitmasks(self.bitmasks)
@@ -858,11 +860,11 @@ class TexMemWatcher(DirectObject):
             # we have to squish it?
             if tw < w:
                 # We'd have to make it taller.
-                nh = min(area / tw, th)
+                nh = min(area // tw, th)
                 th = nh
             elif th < h:
                 # We'd have to make it narrower.
-                nw = min(area / th, tw)
+                nw = min(area // th, tw)
                 tw = nw
             else:
                 # Hey, we don't have to squish it after all!  Just
@@ -912,7 +914,7 @@ class TexMemWatcher(DirectObject):
             tpArea = (r - l) * (t - b)
             if tpArea >= area:
                 # we're done.
-                shorten = (tpArea - area) / (r - l)
+                shorten = (tpArea - area) // (r - l)
                 t -= shorten
                 tp.p = (l, r, b, t)
                 tp.area = (r - l) * (t - b)

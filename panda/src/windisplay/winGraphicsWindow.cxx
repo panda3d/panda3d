@@ -979,12 +979,12 @@ make_style(const WindowProperties &properties) {
 
   DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  if (_properties.get_fullscreen()) {
+  if (properties.get_fullscreen()) {
     window_style |= WS_SYSMENU;
-  } else if (!_properties.get_undecorated()) {
+  } else if (!properties.get_undecorated()) {
     window_style |= (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
 
-    if (!_properties.get_fixed_size()) {
+    if (!properties.get_fixed_size()) {
       window_style |= (WS_SIZEBOX | WS_MAXIMIZEBOX);
     } else {
       window_style |= WS_BORDER;
