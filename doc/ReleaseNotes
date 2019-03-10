@@ -1,3 +1,28 @@
+------------------------  RELEASE 1.10.2  -----------------------
+
+This release fixes several more bugs, including a few regressions
+in 1.10.2.  Upgrading is highly recommended.
+
+* Fix regression on Windows causing freezes and instability
+* Fix a memory leak issue in Python applications
+* Fix crash reading unaligned float4 column in GeomVertexReader
+* Fixes for switching to fullscreen at runtime on Windows and Linux
+* Fix incorrect display mode listing in some Linux distributions
+* Fix threading crash on Linux when using get_keyboard_map()
+* Support "from __future__ import division" for Panda types
+* Support building with Visual Studio 2019 in makepanda
+* Work around Assimp crash when loading multiple .ply models
+* On Windows, a Python 3-compatible version of Pmw is included
+* Fix ParticlePanel spam when hovering over File menu items
+* TexMemWatcher has been fixed for Python 3
+* Prevent macOS window getting stuck after base.destroy()
+* Fix assertion setting mass before shape with Bullet debug build
+* Don't error if DirectScrolledFrame is destroyed twice
+* Fix reference count corruption accessing task.__dict__
+* Fix writing to SequenceNode frame_rate property
+* Fix collider sort not copied when copying CollisionNode
+* Add OpenCollective backer file
+
 ------------------------  RELEASE 1.10.1  -----------------------
 
 This is a bugfix release intended to fix several issues in 1.10.0.
