@@ -1,7 +1,7 @@
 ------------------------  RELEASE 1.10.2  -----------------------
 
 This release fixes several more bugs, including a few regressions
-in 1.10.2.  Upgrading is highly recommended.
+in 1.10.1.  Upgrading is highly recommended.
 
 * Fix regression on Windows causing freezes and instability
 * Fix a memory leak issue in Python applications
