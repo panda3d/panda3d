@@ -32,11 +32,60 @@ typedef struct _XcursorImages XcursorImages;
 
 typedef unsigned short Rotation;
 typedef unsigned short SizeID;
+typedef unsigned long XRRModeFlags;
+typedef XID RROutput;
+typedef XID RRCrtc;
+typedef XID RRMode;
+
 typedef struct _XRRScreenConfiguration XRRScreenConfiguration;
 typedef struct {
   int width, height;
   int mwidth, mheight;
 } XRRScreenSize;
+
+typedef struct _XRRModeInfo {
+  RRMode id;
+  unsigned int width;
+  unsigned int height;
+  unsigned long dotClock;
+  unsigned int hSyncStart;
+  unsigned int hSyncEnd;
+  unsigned int hTotal;
+  unsigned int hSkew;
+  unsigned int vSyncStart;
+  unsigned int vSyncEnd;
+  unsigned int vTotal;
+  char *name;
+  unsigned int nameLength;
+  XRRModeFlags modeFlags;
+} XRRModeInfo;
+
+typedef struct _XRRScreenResources {
+  Time timestamp;
+  Time configTimestamp;
+  int ncrtc;
+  RRCrtc *crtcs;
+  int noutput;
+  RROutput *outputs;
+  int nmode;
+  XRRModeInfo *modes;
+} XRRScreenResources;
+
+typedef struct _XRRCrtcInfo {
+  Time timestamp;
+  int x, y;
+  unsigned int width, height;
+  RRMode mode;
+  Rotation rotation;
+  int noutput;
+  RROutput *outputs;
+  Rotation rotations;
+  int npossible;
+  RROutput *possible;
+} XRRCrtcInfo;
+
+typedef void (*pfn_XRRFreeScreenResources)(XRRScreenResources *resources);
+typedef void (*pfn_XRRFreeCrtcInfo)(XRRCrtcInfo *crtcInfo);
 
 class FrameBufferProperties;
 
@@ -63,6 +112,12 @@ public:
   static INLINE int disable_x_error_messages();
   static INLINE int enable_x_error_messages();
   static INLINE int get_x_error_count();
+
+  std::unique_ptr<XRRScreenResources, pfn_XRRFreeScreenResources> get_screen_resources() const;
+  std::unique_ptr<XRRCrtcInfo, pfn_XRRFreeCrtcInfo> get_crtc_info(XRRScreenResources *res, RRCrtc crtc) const;
+
+  RRCrtc find_fullscreen_crtc(const LPoint2i &point,
+                              int &x, int &y, int &width, int &height);
 
 public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
@@ -100,6 +155,7 @@ public:
   pfn_XcursorImageDestroy _XcursorImageDestroy;
 
   typedef Bool (*pfn_XRRQueryExtension)(X11_Display *, int*, int*);
+  typedef Status (*pfn_XRRQueryVersion)(X11_Display *, int*, int*);
   typedef XRRScreenSize *(*pfn_XRRSizes)(X11_Display*, int, int*);
   typedef short *(*pfn_XRRRates)(X11_Display*, int, int, int*);
   typedef XRRScreenConfiguration *(*pfn_XRRGetScreenInfo)(X11_Display*, X11_Window);
@@ -125,6 +181,14 @@ protected:
   typedef Bool (*pfn_XF86DGAQueryVersion)(X11_Display *, int*, int*);
   typedef Status (*pfn_XF86DGADirectVideo)(X11_Display *, int, int);
   pfn_XF86DGADirectVideo _XF86DGADirectVideo;
+
+  typedef XRRScreenResources *(*pfn_XRRGetScreenResources)(X11_Display*, X11_Window);
+  typedef XRRCrtcInfo *(*pfn_XRRGetCrtcInfo)(X11_Display *dpy, XRRScreenResources *resources, RRCrtc crtc);
+
+  pfn_XRRGetScreenResources _XRRGetScreenResourcesCurrent;
+  pfn_XRRFreeScreenResources _XRRFreeScreenResources;
+  pfn_XRRGetCrtcInfo _XRRGetCrtcInfo;
+  pfn_XRRFreeCrtcInfo _XRRFreeCrtcInfo;
 
 private:
   void make_hidden_cursor();
