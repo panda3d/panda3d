@@ -12,7 +12,9 @@
  */
 
 #include "collisionInvSphere.h"
+
 #include "collisionSphere.h"
+#include "collisionCapsule.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
