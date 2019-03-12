@@ -171,14 +171,14 @@ set_pitch_control(PN_stdfloat pitch) {
  * Factory method for creating wheels for this vehicle instance.
  */
 BulletWheel BulletVehicle::
-create_wheel() {
+create_wheel(PN_stdfloat suspension_rest_length) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   btVector3 pos(0.0, 0.0, 0.0);
   btVector3 direction = get_axis(_vehicle->getUpAxis());
   btVector3 axle = get_axis(_vehicle->getRightAxis());
 
-  btScalar suspension(0.4);
+  btScalar suspension(suspension_rest_length);
   btScalar radius(0.3);
 
   btWheelInfo &info = _vehicle->addWheel(pos, direction, axle, suspension, radius, _tuning._, false);

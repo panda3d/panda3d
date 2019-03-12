@@ -106,6 +106,8 @@ set_end_hpr(const LQuaternion &quat) {
  * if either set_end_quat() or set_end_hpr() is also called.  This parameter
  * is optional; if unspecified, the value will be taken from the node's actual
  * rotation at the time the lerp is performed.
+ *
+ * The given quaternion needs to be normalized.
  */
 INLINE void CLerpNodePathInterval::
 set_start_quat(const LQuaternion &quat) {
@@ -143,6 +145,8 @@ set_end_quat(const LVecBase3 &hpr) {
  * This replaces a previous call to set_end_hpr().  If neither set_end_quat()
  * nor set_end_hpr() is called, the node's rotation will not be affected by
  * the lerp.
+ *
+ * The given quaternion needs to be normalized.
  */
 INLINE void CLerpNodePathInterval::
 set_end_quat(const LQuaternion &quat) {

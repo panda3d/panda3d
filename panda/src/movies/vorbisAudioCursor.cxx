@@ -12,6 +12,10 @@
  */
 
 #include "vorbisAudioCursor.h"
+
+#include "config_movies.h"
+
+#include "vorbisAudio.h"
 #include "virtualFileSystem.h"
 
 #ifdef HAVE_VORBIS

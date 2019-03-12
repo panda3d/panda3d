@@ -82,8 +82,10 @@ static const struct DeviceMapping {
   {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
   {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
-  // Trust GXT 24
+  // SPEED Link SL-6535-SBK-01
   {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
+  // 8bitdo N30 Pro Controller
+  {0x2dc8, 0x9001, InputDevice::DeviceClass::gamepad, QB_rstick_from_z},
   // 3Dconnexion Space Traveller 3D Mouse
   {0x046d, 0xc623, InputDevice::DeviceClass::spatial_mouse, 0},
   // 3Dconnexion Space Pilot 3D Mouse

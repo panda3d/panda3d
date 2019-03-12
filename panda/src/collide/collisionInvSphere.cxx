@@ -12,7 +12,9 @@
  */
 
 #include "collisionInvSphere.h"
+
 #include "collisionSphere.h"
+#include "collisionCapsule.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
@@ -284,6 +286,119 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     normal.normalize();
     new_entry->set_surface_normal(-normal);
   }
+
+  return new_entry;
+}
+
+/**
+ *
+ */
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
+  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
+
+  LVector3 from_radius_v =
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = from_radius_v.length();
+
+  LPoint3 center = get_center();
+  PN_stdfloat radius = get_radius();
+
+  // Check which one of the points lies furthest inside the sphere.
+  PN_stdfloat dist_a = (from_a - center).length();
+  PN_stdfloat dist_b = (from_b - center).length();
+  if (dist_b > dist_a) {
+    // Store the furthest point into from_a/dist_a.
+    dist_a = dist_b;
+    from_a = from_b;
+  }
+
+  // from_a now contains the furthest point.  Is it inside?
+  if (dist_a < radius - from_radius) {
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  LVector3 normal = center - from_a;
+  normal.normalize();
+  new_entry->set_surface_point(get_center() - normal * radius);
+  new_entry->set_interior_point(from_a - normal * from_radius);
+
+  if (has_effective_normal() && capsule->get_respect_effective_normal()) {
+    new_entry->set_surface_normal(get_effective_normal());
+  } else {
+    new_entry->set_surface_normal(normal);
+  }
+
+  return new_entry;
+}
+
+/**
+ * Double dispatch point for box as a FROM object
+ */
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3 center = get_center();
+  PN_stdfloat radius_sq = get_radius();
+  radius_sq *= radius_sq;
+
+  // Just figure out which box point is furthest from the center.  If it
+  // exceeds the radius, the furthest point wins.
+
+  PN_stdfloat max_dist_sq = -1.0;
+  LPoint3 deepest_vertex;
+
+  for (int i = 0; i < 8; ++i) {
+    LPoint3 point = wrt_mat.xform_point(box->get_point(i));
+
+    PN_stdfloat dist_sq = (point - center).length_squared();
+    if (dist_sq > max_dist_sq) {
+      deepest_vertex = point;
+      max_dist_sq = dist_sq;
+    }
+  }
+
+  if (max_dist_sq < radius_sq) {
+    // The point furthest away from the center is still inside the sphere.
+    // Therefore, no collision.
+    return nullptr;
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  // The interior point is just the deepest cube vertex.
+  new_entry->set_interior_point(deepest_vertex);
+
+  // Now extrapolate the surface point and normal from that.
+  LVector3 normal = center - deepest_vertex;
+  normal.normalize();
+  new_entry->set_surface_point(center - normal * get_radius());
+  new_entry->set_surface_normal(
+    (has_effective_normal() && box->get_respect_effective_normal())
+    ? get_effective_normal() : normal);
 
   return new_entry;
 }

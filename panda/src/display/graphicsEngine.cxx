@@ -48,6 +48,7 @@
 #include "displayRegionDrawCallbackData.h"
 #include "callbackGraphicsWindow.h"
 #include "depthTestAttrib.h"
+#include "unionBoundingVolume.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -593,7 +594,6 @@ remove_all_windows() {
   // appeared to be happening, and this worked around it.
   Windows old_windows;
   old_windows.swap(_windows);
-  Windows::iterator wi;
   for (GraphicsOutput *win : old_windows) {
     nassertv(win != nullptr);
     do_remove_window(win, current_thread);
@@ -1309,32 +1309,6 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
   CullTraverser *trav = dr->get_cull_traverser();
   trav->set_cull_handler(cull_handler);
   trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
-
-  trav->set_view_frustum(nullptr);
-  if (view_frustum_cull) {
-    // If we're to be performing view-frustum culling, determine the bounding
-    // volume associated with the current viewing frustum.
-
-    // First, we have to get the current viewing frustum, which comes from the
-    // lens.
-    PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
-
-    if (bv != nullptr && !bv->is_infinite() &&
-        bv->as_geometric_bounding_volume() != nullptr) {
-      // Transform it into the appropriate coordinate space.
-      PT(GeometricBoundingVolume) local_frustum;
-      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
-      nassertv(!local_frustum.is_null());
-
-      NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
-      CPT(TransformState) cull_center_transform =
-        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
-      local_frustum->xform(cull_center_transform->get_mat());
-
-      trav->set_view_frustum(local_frustum);
-    }
-  }
-
   trav->traverse(scene_setup->get_scene_root());
   trav->end_traverse();
 }
@@ -1546,6 +1520,11 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
   typedef pmap<CullKey, DisplayRegion *> AlreadyCulled;
   AlreadyCulled already_culled;
 
+  // We cull shadow passes last; whether we cull them depends on whether their
+  // respective frusta are in view of a "normal" camera.
+  pvector<PT(SceneSetup)> shadow_passes;
+  pmap<NodePath, UnionBoundingVolume> non_shadow_bounds;
+
   size_t wlist_size = wlist.size();
   for (size_t wi = 0; wi < wlist_size; ++wi) {
     GraphicsOutput *win = wlist[wi];
@@ -1570,6 +1549,27 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
             key._gsg = gsg;
             key._camera = dr_reader.get_camera();
             key._lens_index = dr_reader.get_lens_index();
+          }
+
+          // If this is a shadow pass, postpone culling it until we've culled
+          // all the other passes, and collected their bounding volumes.
+          Light *light = nullptr;
+          if (!key._camera.is_empty()) {
+            light = key._camera.node()->as_light();
+          }
+          if (light != nullptr) {
+            shadow_passes.push_back(std::move(scene_setup));
+            continue;
+          }
+          else if (!shadow_passes.empty()) {
+            NodePath scene_root = scene_setup->get_scene_root();
+            const GeometricBoundingVolume *gbv = scene_setup->get_view_frustum();
+            UnionBoundingVolume &bounds = non_shadow_bounds[scene_root];
+            if (gbv == nullptr || gbv->is_infinite()) {
+              bounds.set_infinite();
+            } else {
+              bounds.add_component(gbv);
+            }
           }
 
           AlreadyCulled::iterator aci = already_culled.insert(AlreadyCulled::value_type(std::move(key), nullptr)).first;
@@ -1598,10 +1598,45 @@ cull_to_bins(GraphicsEngine::Windows wlist, Thread *current_thread) {
           }
 
           // Save the results for next frame.
-          dr->set_cull_result(std::move(cull_result), MOVE(scene_setup), current_thread);
+          dr->set_cull_result(std::move(cull_result), std::move(scene_setup), current_thread);
         }
       }
     }
+  }
+
+  // Now cull all the shadow passes if their cull bounds are in view.
+  // We don't bother checking the AlreadyCulled list, because we know there is
+  // only one output per GSG+light combination.
+  for (PT(SceneSetup) &scene_setup : shadow_passes) {
+    DisplayRegion *dr = scene_setup->get_display_region();
+    GraphicsOutput *win = dr->get_window();
+    PStatTimer timer(win->get_cull_window_pcollector(), current_thread);
+
+    PT(CullResult) cull_result;
+
+    // Are the cull bounds in view of another camera?
+    GeometricBoundingVolume *frustum = scene_setup->get_view_frustum();
+    if (frustum == nullptr ||
+        non_shadow_bounds[scene_setup->get_scene_root()].contains(frustum)) {
+      GraphicsStateGuardian *gsg = win->get_gsg();
+      cull_result = dr->get_cull_result(current_thread);
+      if (cull_result != nullptr) {
+        cull_result = cull_result->make_next();
+      } else {
+        // This DisplayRegion has no cull results; draw it.
+        cull_result = new CullResult(gsg, dr->get_draw_region_pcollector());
+      }
+      cull_to_bins(win, gsg, dr, scene_setup, cull_result, current_thread);
+    }
+    else if (display_cat.is_spam()) {
+      display_cat.spam()
+        << *scene_setup->get_camera_node()
+        << " frustum is not in view, skipping shadow pass\n";
+    }
+
+    // Even save the results if null, to tell the draw pass that we don't want
+    // to draw this at all.
+    dr->set_cull_result(std::move(cull_result), std::move(scene_setup), current_thread);
   }
 }
 
@@ -2008,6 +2043,29 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 
   CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
+
+  if (view_frustum_cull) {
+    // If we're to be performing view-frustum culling, determine the bounding
+    // volume associated with the current viewing frustum.
+
+    // First, we have to get the current viewing frustum, which comes from the
+    // lens.
+    PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
+
+    if (bv != nullptr && !bv->is_infinite() &&
+        bv->as_geometric_bounding_volume() != nullptr) {
+      // Transform it into the appropriate coordinate space.
+      PT(GeometricBoundingVolume) local_frustum;
+      local_frustum = bv->make_copy()->as_geometric_bounding_volume();
+      nassertr(!local_frustum.is_null(), nullptr);
+
+      CPT(TransformState) cull_center_transform =
+        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
+      local_frustum->xform(cull_center_transform->get_mat());
+
+      scene_setup->set_view_frustum(local_frustum);
+    }
+  }
 
   return scene_setup;
 }

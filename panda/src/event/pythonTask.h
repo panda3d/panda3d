@@ -55,7 +55,7 @@ public:
 PUBLISHED:
   int __setattr__(PyObject *self, PyObject *attr, PyObject *v);
   int __delattr__(PyObject *self, PyObject *attr);
-  PyObject *__getattr__(PyObject *attr) const;
+  PyObject *__getattribute__(PyObject *self, PyObject *attr) const;
 
   int __traverse__(visitproc visit, void *arg);
   int __clear__();

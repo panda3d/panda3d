@@ -892,6 +892,8 @@ make_patches_in_place() {
  *
  * Don't call this in a downstream thread unless you don't mind it blowing
  * away other changes you might have recently made in an upstream thread.
+ *
+ * @since 1.10.0
  */
 void Geom::
 make_adjacency_in_place() {

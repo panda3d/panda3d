@@ -24,6 +24,8 @@ class OpusAudioCursor;
 /**
  * Interfaces with the libopusfile library to implement decoding of Opus
  * audio files.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES OpusAudio : public MovieAudio {
 PUBLISHED:

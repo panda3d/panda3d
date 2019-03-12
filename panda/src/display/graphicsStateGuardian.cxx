@@ -301,9 +301,9 @@ GraphicsStateGuardian::
   // Note that if uniquify-states is false, we can't iterate over all the
   // states, and some GSGs will linger.  Let's hope this isn't a problem.
   LightReMutexHolder holder(*RenderState::_states_lock);
-  size_t size = RenderState::_states->get_num_entries();
+  size_t size = RenderState::_states.get_num_entries();
   for (size_t si = 0; si < size; ++si) {
-    const RenderState *state = RenderState::_states->get_key(si);
+    const RenderState *state = RenderState::_states.get_key(si);
     state->_mungers.remove(_id);
     state->_munged_states.remove(_id);
   }
@@ -2823,6 +2823,12 @@ do_issue_light() {
     }
 
   } else {
+    // Don't forget to still enable lighting if we have only an ambient light.
+    if (!_lighting_enabled) {
+      enable_lighting(true);
+      _lighting_enabled = true;
+    }
+
     set_ambient_light(target_light->get_ambient_contribution());
   }
 

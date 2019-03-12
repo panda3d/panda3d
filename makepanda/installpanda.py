@@ -62,7 +62,7 @@ def WriteMimeXMLFile(fname, info):
         fhandle.write("\t<mime-type type=\"%s\">\n" % (mime))
         fhandle.write("\t\t<comment xml:lang=\"en\">%s</comment>\n" % (desc))
         fhandle.write("\t\t<glob pattern=\"*.%s\"/>\n" % (ext))
-        fhandle.write("\t</mime-type>\s")
+        fhandle.write("\t</mime-type>\n")
     fhandle.write("</mime-info>\n")
     fhandle.close()
 
@@ -155,24 +155,29 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     libdir = prefix + "/" + libdir
 
     # Create the directory structure that we will be putting our files in.
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/bin")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/include")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/panda3d")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime-info")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime/packages")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/application-registry")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/applications")
-    oscmd("mkdir -m 0755 -p "+destdir+libdir+"/panda3d")
+    # Don't use os.makedirs or mkdir -p; neither properly set permissions for
+    # created intermediate directories.
+    MakeDirectory(destdir+prefix+"/bin", mode=0o755, recursive=True)
+    MakeDirectory(destdir+prefix+"/include", mode=0o755)
+    MakeDirectory(destdir+prefix+"/include/panda3d", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/panda3d", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/mime-info", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/mime", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/mime/packages", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/application-registry", mode=0o755)
+    MakeDirectory(destdir+prefix+"/share/applications", mode=0o755)
+    MakeDirectory(destdir+libdir+"/panda3d", mode=0o755, recursive=True)
 
     for python_version in python_versions:
-        oscmd("mkdir -m 0755 -p "+destdir+python_version["purelib"])
-        oscmd("mkdir -m 0755 -p "+destdir+python_version["platlib"]+"/panda3d")
+        MakeDirectory(destdir+python_version["purelib"], mode=0o755, recursive=True)
+        MakeDirectory(destdir+python_version["platlib"]+"/panda3d", mode=0o755, recursive=True)
 
     if (sys.platform.startswith("freebsd")):
-        oscmd("mkdir -m 0755 -p "+destdir+prefix+"/etc")
-        oscmd("mkdir -m 0755 -p "+destdir+"/usr/local/libdata/ldconfig")
+        MakeDirectory(destdir+prefix+"/etc", mode=0o755)
+        MakeDirectory(destdir+"/usr/local/libdata/ldconfig", mode=0o755, recursive=True)
     else:
-        oscmd("mkdir -m 0755 -p "+destdir+"/etc/ld.so.conf.d")
+        MakeDirectory(destdir+"/etc/ld.so.conf.d", mode=0o755, recursive=True)
 
     # Write the Config.prc file.
     Configrc = ReadFile(outputdir+"/etc/Config.prc")
@@ -184,7 +189,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
         WriteFile(destdir+"/etc/Config.prc", Configrc)
         oscmd("cp "+outputdir+"/etc/Confauto.prc "+destdir+"/etc/Confauto.prc")
 
-    oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
+    oscmd("cp -R "+outputdir+"/include/*        "+destdir+prefix+"/include/panda3d/")
     oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/")
     oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/")
     if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/")
@@ -237,8 +242,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
     DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
 
     # Change permissions on include directory.
-    os.chmod(destdir + prefix + "/include", 0o755)
-    for root, dirs, files in os.walk(destdir + prefix + "/include"):
+    os.chmod(destdir + prefix + "/include/panda3d", 0o755)
+    for root, dirs, files in os.walk(destdir + prefix + "/include/panda3d"):
         for basename in dirs:
             os.chmod(os.path.join(root, basename), 0o755)
         for basename in files:

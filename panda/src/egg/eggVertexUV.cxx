@@ -145,7 +145,10 @@ write(std::ostream &out, int indent_level) const {
     } else {
       indent(out, indent_level+2) << get_uv() << "\n";
     }
-    if (has_tangent()) {
+    if (has_tangent4()) {
+      indent(out, indent_level + 2)
+        << "<Tangent> { " << get_tangent4() << " }\n";
+    } else if (has_tangent()) {
       indent(out, indent_level + 2)
         << "<Tangent> { " << get_tangent() << " }\n";
     }

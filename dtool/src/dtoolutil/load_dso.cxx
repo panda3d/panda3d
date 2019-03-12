@@ -132,6 +132,9 @@ void *
 load_dso(const DSearchPath &path, const Filename &filename) {
   Filename abspath = resolve_dso(path, filename);
   if (!abspath.is_regular_file()) {
+    // Make sure the error flag is cleared, to prevent a subsequent call to
+    // load_dso_error() from returning a previously stored error.
+    dlerror();
     return nullptr;
   }
   string os_specific = abspath.to_os_specific();

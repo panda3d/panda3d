@@ -397,17 +397,25 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     // It's not possible to assign arrays in C++, we have to copy them.
-    CPPArrayType *array_type = _parameters[_first_true_parameter]._remap->get_orig_type()->as_array_type();
+    bool paren_close = false;
+    CPPType *param_type = _parameters[_first_true_parameter]._remap->get_orig_type();
+    CPPArrayType *array_type = param_type->as_array_type();
     if (array_type != nullptr) {
       call << "std::copy(" << expr << ", " << expr << " + " << *array_type->_bounds << ", ";
-    } else {
+      paren_close = true;
+    }
+    else if (TypeManager::is_pointer_to_PyObject(param_type)) {
+      call << "Dtool_Assign_PyObject(" << expr << ", ";
+      paren_close = true;
+    }
+    else {
       call << expr << " = ";
     }
 
     _parameters[_first_true_parameter]._remap->pass_parameter(call,
                     get_parameter_expr(_first_true_parameter, pexprs));
 
-    if (array_type != nullptr) {
+    if (paren_close) {
       call << ')';
     }
 
@@ -770,6 +778,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // fully defined here, particularly if the class is defined in some other
     // library.
     _return_value_destructor = builder.get_destructor_for(return_meat_type);
+  }
+
+  if (_type == T_getter && TypeManager::is_pointer_to_PyObject(return_type)) {
+    _manage_reference_count = true;
+    _return_value_needs_management = true;
   }
 
   // Check for a special meaning by name and signature.

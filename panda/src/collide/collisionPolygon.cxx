@@ -12,9 +12,11 @@
  */
 
 #include "collisionPolygon.h"
+
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "collisionSphere.h"
+#include "collisionCapsule.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
 #include "collisionSegment.h"
@@ -844,6 +846,142 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
 
 /**
  * This is part of the double-dispatch implementation of test_intersection().
+ * It is called when the "from" object is a capsule.
+ */
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_capsule(const CollisionEntry &entry) const {
+  if (_points.size() < 3) {
+    return nullptr;
+  }
+
+  const CollisionCapsule *capsule;
+  DCAST_INTO_R(capsule, entry.get_from(), nullptr);
+
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
+
+  LPoint3 from_a = capsule->get_point_a() * plane_mat;
+  LPoint3 from_b = capsule->get_point_b() * plane_mat;
+
+  LVector3 from_radius_v =
+    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius_sq = from_radius_v.length_squared();
+
+  // Check if the capsule is colliding with the plane at all.
+  // Are the points on the same side of the plane?
+  if ((from_a[1] > 0) == (from_b[1] > 0)) {
+    // Yes, so calculate the distance of the closest point.
+    PN_stdfloat dist = min(cabs(from_a[1]), cabs(from_b[1]));
+    if (dist * dist > from_radius_sq) {
+      return nullptr;
+    }
+  }
+
+  // Order from_a and from_b so that from_a has the deepest point.
+  bool swapped = (from_a[1] < from_b[1]);
+  if (swapped) {
+    std::swap(from_a, from_b);
+  }
+
+  LPoint3 surface_point, interior_point;
+
+  // Is the projection of from_a onto the plane inside the polygon?
+  LPoint2 from_a_proj(from_a[0], from_a[2]);
+  if (point_is_inside(from_a_proj, _points)) {
+    // Yes, and we already checked the vertical separation earlier on, so we
+    // know that the capsule is touching the polygon near from_a.
+    LPoint3 deepest = (swapped ? capsule->get_point_b() : capsule->get_point_a()) * wrt_mat;
+    PN_stdfloat from_radius = csqrt(from_radius_sq);
+    surface_point = get_plane().project(deepest);
+    interior_point = deepest - get_normal() * from_radius;
+  }
+  else {
+    LVector3 from_direction = from_b - from_a;
+
+    // Find the point in the capsule's inner segment with the closest distance
+    // to the polygon's edges.  We effectively test a sphere around that point.
+    PN_stdfloat min_dist_sq = make_inf((PN_stdfloat)0);
+    LPoint3 poly_point;
+    LPoint3 line_point;
+
+    LPoint2 last_point = _points.back()._p;
+    for (const PointDef &pd : _points) {
+      LVector2 dir = last_point - pd._p;
+      last_point = pd._p;
+
+      double t1, t2;
+      CollisionCapsule::calc_closest_segment_points(t1, t2,
+          LPoint3(pd._p[0], 0, pd._p[1]), LVector3(dir[0], 0, dir[1]),
+          from_a, from_direction);
+
+      LPoint3 point1(pd._p[0] + dir[0] * t1, 0, pd._p[1] + dir[1] * t1);
+      LPoint3 point2 = from_a + from_direction * t2;
+      PN_stdfloat dist_sq = (point2 - point1).length_squared();
+      if (dist_sq < min_dist_sq) {
+        min_dist_sq = dist_sq;
+        poly_point = point1;
+        line_point = point2;
+      }
+    }
+
+    // Project the closest point on the segment onto the polygon.  Is this point
+    // inside the polygon?
+    LPoint2 line_point_proj(line_point[0], line_point[2]);
+    if (point_is_inside(line_point_proj, _points)) {
+      // Yes, and we already checked the vertical separation earlier on, so we
+      // know that the capsule is touching the polygon here.
+      LMatrix4 to_3d_mat;
+      rederive_to_3d_mat(to_3d_mat);
+
+      surface_point = to_3d(line_point_proj, to_3d_mat);
+
+      LPoint3 interior;
+      if (IS_NEARLY_EQUAL(from_a[1], from_b[1])) {
+        // It's parallel to the polygon; we can use any point on the segment we
+        // want, so we might as well use the point we determined to be closest.
+        interior = line_point;
+      } else {
+        // Use the deepest point.  FIXME: we need something better.  This
+        // pushes the capsule out way too much.
+        interior = from_a;
+      }
+      interior[1] += csqrt(from_radius_sq);
+      interior_point = interior * to_3d_mat;
+    }
+    else if (min_dist_sq < from_radius_sq) {
+      // No, but it is colliding with an edge.
+      LMatrix4 to_3d_mat;
+      rederive_to_3d_mat(to_3d_mat);
+
+      surface_point = poly_point * to_3d_mat;
+
+      // Make sure we calculate an interior point that lies below the polygon.
+      LVector3 dir = line_point * to_3d_mat - surface_point;
+      dir.normalize();
+      interior_point = surface_point - dir * (csqrt(from_radius_sq) - csqrt(min_dist_sq));
+    }
+    else {
+      // It is outside the polygon altogether.
+      return nullptr;
+    }
+  }
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+  LVector3 normal = (has_effective_normal() && capsule->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(surface_point);
+  new_entry->set_interior_point(interior_point);
+
+  return new_entry;
+}
+
+/**
+ * This is part of the double-dispatch implementation of test_intersection().
  * It is called when the "from" object is a box.
  */
 PT(CollisionEntry) CollisionPolygon::
@@ -1333,37 +1471,6 @@ setup_points(const LPoint3 *begin, const LPoint3 *end) {
 #endif
 
   compute_vectors(_points);
-}
-
-/**
- * Converts the indicated point to 3-d space according to the way
- * CollisionPolygons used to be stored in bam files prior to 4.9.
- */
-LPoint3 CollisionPolygon::
-legacy_to_3d(const LVecBase2 &point2d, int axis) const {
-  nassertr(!point2d.is_nan(), LPoint3(0.0f, 0.0f, 0.0f));
-
-  LVector3 normal = get_normal();
-  PN_stdfloat D = get_plane()[3];
-
-  nassertr(!normal.is_nan(), LPoint3(0.0f, 0.0f, 0.0f));
-  nassertr(!cnan(D), LPoint3(0.0f, 0.0f, 0.0f));
-
-  switch (axis) {
-  case 0:  // AT_x:
-    return LPoint3(-(normal[1]*point2d[0] + normal[2]*point2d[1] + D)/normal[0],                    point2d[0], point2d[1]);
-
-  case 1:  // AT_y:
-    return LPoint3(point2d[0],
-                    -(normal[0]*point2d[0] + normal[2]*point2d[1] + D)/normal[1],                    point2d[1]);
-
-  case 2:  // AT_z:
-    return LPoint3(point2d[0], point2d[1],
-                    -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
-  }
-
-  nassertr(false, LPoint3(0.0f, 0.0f, 0.0f));
-  return LPoint3(0.0f, 0.0f, 0.0f);
 }
 
 /**

@@ -215,6 +215,8 @@ make_patches() const {
 /**
  * Returns a new Geom with each primitive converted into a corresponding
  * version with adjacency information.
+ *
+ * @since 1.10.0
  */
 INLINE PT(Geom) Geom::
 make_adjacency() const {

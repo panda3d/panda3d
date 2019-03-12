@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/panda3d/panda3d.svg?branch=master)](https://travis-ci.org/panda3d/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/backers/badge.svg)](https://opencollective.com/panda3d)
+[![OpenCollective](https://opencollective.com/panda3d/sponsors/badge.svg)](https://opencollective.com/panda3d)
 
-<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=200" align="right" />
+<img src="https://avatars2.githubusercontent.com/u/590956?v=3&s=500" align="right" width="200"/>
 
 Panda3D
 =======
@@ -8,12 +10,12 @@ Panda3D
 Panda3D is a game engine, a framework for 3D rendering and game development for
 Python and C++ programs.  Panda3D is open-source and free for any purpose,
 including commercial ventures, thanks to its
-[liberal license](https://www.panda3d.org/license.php).  To learn more about
-Panda3D's capabilities, visit the [gallery](https://www.panda3d.org/gallery.php)
-and the [feature list](https://www.panda3d.org/features.php).  To learn how to
-use Panda3D, check the [documentation](https://www.panda3d.org/documentation.php)
+[liberal license](https://www.panda3d.org/license/). To learn more about
+Panda3D's capabilities, visit the [gallery](https://www.panda3d.org/gallery/)
+and the [feature list](https://www.panda3d.org/features/).  To learn how to
+use Panda3D, check the [documentation](https://www.panda3d.org/documentation/)
 resources. If you get stuck, ask for help from our active
-[community](https://www.panda3d.org/community.php).
+[community](https://discourse.panda3d.org).
 
 Panda3D is licensed under the Modified BSD License.  See the LICENSE file for
 more details.
@@ -21,7 +23,16 @@ more details.
 Installing Panda3D
 ==================
 
-By far, the easiest way to install the latest development build of Panda3D
+The latest Panda3D SDK can be downloaded from
+[this page](https://www.panda3d.org/download/sdk-1-10-1/).
+If you are familiar with installing Python packages, you can use
+the following comand:
+
+```bash
+pip install panda3d
+```
+
+The easiest way to install the latest development build of Panda3D
 into an existing Python installation is using the following command:
 
 ```bash
@@ -31,9 +42,7 @@ pip install --pre --extra-index-url https://archive.panda3d.org/ panda3d
 If this command fails, please make sure your version of pip is up-to-date.
 
 If you prefer to install the full SDK with all tools, the latest development
-builds can be obtained from this page:
-
-https://www.panda3d.org/download.php?sdk&version=devel
+builds can be obtained from [this page](https://www.panda3d.org/download.php?version=devel&sdk).
 
 These are automatically kept up-to-date with the latest GitHub version of Panda.
 
@@ -55,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win64.zip
-https://www.panda3d.org/download/panda3d-1.10.0/panda3d-1.10.0-tools-win32.zip
+https://www.panda3d.org/download/panda3d-1.10.2/panda3d-1.10.2-tools-win64.zip
+https://www.panda3d.org/download/panda3d-1.10.2/panda3d-1.10.2-tools-win32.zip
 
 After acquiring these dependencies, you may simply build Panda3D from the
 command prompt using the following command.  (Change `14.1` to `14` if you are
@@ -96,14 +105,14 @@ python makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-g
 You will probably see some warnings saying that it's unable to find several
 dependency packages.  You should determine which ones you want to include in
 your build and install the respective development packages.  You may visit
-[this manual page](https://www.panda3d.org/manual/index.php/Dependencies)
+[this manual page](https://www.panda3d.org/manual/?title=Third-party_dependencies_and_license_info)
 for an overview of the various dependencies.
 
 If you are on Ubuntu, this command should cover the most frequently
 used third-party packages:
 
 ```bash
-sudo apt-get install build-essential pkg-config python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
+sudo apt-get install build-essential pkg-config fakeroot python-dev libpng-dev libjpeg-dev libtiff-dev zlib1g-dev libssl-dev libx11-dev libgl1-mesa-dev libxrandr-dev libxxf86dga-dev libxcursor-dev bison flex libfreetype6-dev libvorbis-dev libeigen3-dev libopenal-dev libode-dev libbullet-dev nvidia-cg-toolkit libgtk2.0-dev libassimp-dev libopenexr-dev
 ```
 
 Once Panda3D has built, you can either install the .deb or .rpm package that
@@ -126,7 +135,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.9.4/panda3d-1.9.4-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.2/panda3d-1.10.2-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -135,9 +144,8 @@ you may build Panda3D using a command like the following:
 python makepanda/makepanda.py --everything --installer
 ```
 
-In order to make a universal build, pass the --universal flag.  You may also
-target a specific minimum macOS version using the --osxtarget flag followed
-by the release number, eg. 10.6 or 10.7.
+You may target a specific minimum macOS version using the --osxtarget flag
+followed by the release number, eg. 10.7 or 10.9.
 
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
@@ -151,7 +159,7 @@ install the requisite packages using the system package manager.  To install
 the recommended set of dependencies, you can use this command:
 
 ```bash
-pkg install pkgconf png jpeg-turbo tiff freetype2 eigen squish openal opusfile libvorbis libX11 libGL ode bullet assimp openexr
+pkg install pkgconf bison png jpeg-turbo tiff freetype2 harfbuzz eigen squish openal opusfile libvorbis libX11 mesa-libs ode bullet assimp openexr
 ```
 
 You will also need to choose which version of Python you want to use.
@@ -222,3 +230,25 @@ models that are necessary for the developers to reproduce the issue.
 
 If you're not sure whether you've encountered a bug, feel free to ask about
 it in the forums or the IRC channel first.
+
+Supporting the Project
+======================
+
+If you would like to support the project financially, visit
+[our campaign on OpenCollective](https://opencollective.com/panda3d).  Your
+contributions help us accelerate the development of Panda3D.
+
+For the list of backers, see the [BACKERS.md](BACKERS.md) file or visit the
+[Sponsors page](https://www.panda3d.org/sponsors) on our web site.  Thank you
+to everyone who has donated!
+
+<a href="https://opencollective.com/panda3d" target="_blank">
+  <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />
+</a>
+
+### Gold Sponsors
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/0/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/0/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/1/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/1/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/2/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/2/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/3/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/3/website)
+[![](https://opencollective.com/panda3d/tiers/gold-sponsor/4/avatar.svg?avatarHeight=128)](https://opencollective.com/panda3d/tiers/gold-sponsor/4/website)

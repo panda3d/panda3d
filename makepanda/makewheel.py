@@ -104,7 +104,7 @@ MANYLINUX_LIBS = [
 
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
-    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2",
+    "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
@@ -143,6 +143,32 @@ METADATA = {
     },
     "classifiers": GetMetadataValue('classifiers'),
 }
+
+DESCRIPTION = """
+The Panda3D free 3D game engine
+===============================
+
+Panda3D is a powerful 3D engine written in C++, with a complete set of Python
+bindings. Unlike other engines, these bindings are automatically generated,
+meaning that they are always up-to-date and complete: all functions of the
+engine can be controlled from Python. All major Panda3D applications have been
+written in Python, this is the intended way of using the engine.
+
+Panda3D now supports automatic shader generation, which now means you can use
+normal maps, gloss maps, glow maps, HDR, cartoon shading, and the like without
+having to write any shaders.
+
+Panda3D is a modern engine supporting advanced features such as shaders,
+stencil, and render-to-texture. Panda3D is unusual in that it emphasizes a
+short learning curve, rapid development, and extreme stability and robustness.
+Panda3D is free software that runs under Windows, Linux, or macOS.
+
+The Panda3D team is very concerned with making the engine accessible to new
+users. We provide a detailed manual, a complete API reference, and a large
+collection of sample programs to help you get started. We have active forums,
+with many helpful users, and the developers are regularly online to answer
+questions.
+"""
 
 PANDA3D_TOOLS_INIT = """import os, sys
 import panda3d
@@ -526,11 +552,6 @@ def makewheel(version, output_dir, platform=None):
 
     # Update relevant METADATA entries
     METADATA['version'] = version
-    version_classifiers = [
-        "Programming Language :: Python :: {0}".format(*sys.version_info),
-        "Programming Language :: Python :: {0}.{1}".format(*sys.version_info),
-    ]
-    METADATA['classifiers'].extend(version_classifiers)
 
     # Build out the metadata
     details = METADATA["extensions"]["python.details"]
@@ -548,6 +569,8 @@ def makewheel(version, output_dir, platform=None):
         "Author-email: {0}\n".format(email),
         "Platform: {0}\n".format(platform),
     ] + ["Classifier: {0}\n".format(c) for c in METADATA['classifiers']])
+
+    metadata += '\n' + DESCRIPTION.strip() + '\n'
 
     # Zip it up and name it the right thing
     whl = WheelFile('panda3d', version, platform)

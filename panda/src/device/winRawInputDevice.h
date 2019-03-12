@@ -25,6 +25,8 @@ class WinInputDeviceManager;
 /**
  * This implementation of InputDevice uses the Win32 raw input API and the HID
  * parser library to support a wide range of devices.
+ *
+ * @since 1.10.0
  */
 class EXPCL_PANDA_DEVICE WinRawInputDevice final : public InputDevice {
 public:

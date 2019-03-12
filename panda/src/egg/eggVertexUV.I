@@ -100,6 +100,14 @@ has_tangent() const {
 /**
  *
  */
+INLINE bool EggVertexUV::
+has_tangent4() const {
+  return (_flags & F_has_tangent4) != 0;
+}
+
+/**
+ *
+ */
 INLINE const LNormald &EggVertexUV::
 get_tangent() const {
   nassertr(has_tangent(), _tangent);
@@ -109,10 +117,39 @@ get_tangent() const {
 /**
  *
  */
+INLINE LVecBase4d EggVertexUV::
+get_tangent4() const {
+  LVecBase4d tangent4(_tangent, 1.0);
+  nassertr_always(has_tangent(), tangent4);
+  if (_flags & F_flip_computed_binormal) {
+    tangent4[3] = -1.0;
+  }
+  return tangent4;
+}
+
+/**
+ *
+ */
 INLINE void EggVertexUV::
 set_tangent(const LNormald &tangent) {
   _tangent = tangent;
   _flags |= F_has_tangent;
+  _flags &= ~(F_has_tangent4 | F_flip_computed_binormal);
+}
+
+/**
+ * Sets the tangent vector, along with a fourth parameter that is multiplied
+ * with the result of cross(normal, tangent) when computing the binormal.
+ */
+INLINE void EggVertexUV::
+set_tangent4(const LVecBase4d &tangent) {
+  _tangent = tangent.get_xyz();
+  _flags |= F_has_tangent4 | F_has_tangent;
+  if (tangent[3] < 0.0) {
+    _flags |= F_flip_computed_binormal;
+  } else {
+    _flags &= ~F_flip_computed_binormal;
+  }
 }
 
 /**

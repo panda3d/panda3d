@@ -47,6 +47,7 @@ static void Dtool_WrapperBase_dealloc(PyObject *self) {
   Dtool_WrapperBase *wrap = (Dtool_WrapperBase *)self;
   nassertv(wrap);
   Py_XDECREF(wrap->_self);
+  Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *Dtool_WrapperBase_repr(PyObject *self) {
@@ -1091,7 +1092,11 @@ static PyObject *Dtool_GeneratorWrapper_iternext(PyObject *self) {
  */
 static void
 Dtool_StaticProperty_dealloc(PyDescrObject *descr) {
+#if PY_VERSION_HEX >= 0x03080000
+  PyObject_GC_UnTrack(descr);
+#else
   _PyObject_GC_UNTRACK(descr);
+#endif
   Py_XDECREF(descr->d_type);
   Py_XDECREF(descr->d_name);
 //#if PY_MAJOR_VERSION >= 3

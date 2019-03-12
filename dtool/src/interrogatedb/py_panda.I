@@ -91,6 +91,19 @@ INLINE PyObject *DtoolInstance_RichComparePointers(PyObject *v1, PyObject *v2, i
 }
 
 /**
+ * Utility function for assigning a PyObject pointer while managing refcounts.
+ */
+ALWAYS_INLINE void
+Dtool_Assign_PyObject(PyObject *&ptr, PyObject *value) {
+  PyObject *prev_value = ptr;
+  if (prev_value != value) {
+    Py_XINCREF(value);
+    ptr = value;
+    Py_XDECREF(prev_value);
+  }
+}
+
+/**
  * Converts the enum value to a C long.
  */
 INLINE long Dtool_EnumValue_AsLong(PyObject *value) {
