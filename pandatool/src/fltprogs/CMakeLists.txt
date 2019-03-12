@@ -6,10 +6,6 @@ add_executable(flt-trans fltTrans.cxx fltTrans.h)
 target_link_libraries(flt-trans p3progbase p3flt)
 install(TARGETS flt-trans EXPORT Tools COMPONENT Tools DESTINATION bin)
 
-add_executable(fltcopy fltCopy.cxx fltCopy.h)
-target_link_libraries(fltcopy p3progbase p3cvscopy p3flt)
-install(TARGETS fltcopy EXPORT Tools COMPONENT Tools DESTINATION bin)
-
 if(HAVE_EGG)
 
   add_executable(egg2flt eggToFlt.cxx eggToFlt.h)

@@ -36,7 +36,6 @@ set(P3EXPRESS_HEADERS
   pointerToArrayBase.I pointerToArrayBase.h
   pointerToBase.I pointerToBase.h
   pointerToVoid.I pointerToVoid.h
-  profileTimer.I profileTimer.h
   pta_int.h
   pta_uchar.h pta_double.h pta_float.h
   pta_stdfloat.h
@@ -94,7 +93,6 @@ set(P3EXPRESS_SOURCES
   pointerToArray.cxx
   pointerToBase.cxx
   pointerToVoid.cxx
-  profileTimer.cxx
   pta_int.cxx
   pta_uchar.cxx pta_double.cxx pta_float.cxx
   ramfile.cxx

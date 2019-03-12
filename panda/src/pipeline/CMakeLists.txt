@@ -5,9 +5,7 @@ set(P3PIPELINE_HEADERS
   conditionVarDebug.h conditionVarDebug.I
   conditionVarDirect.h conditionVarDirect.I
   conditionVarDummyImpl.h conditionVarDummyImpl.I
-  conditionVarFull.h conditionVarFull.I
-  conditionVarFullDebug.h conditionVarFullDebug.I
-  conditionVarFullDirect.h conditionVarFullDirect.I
+  conditionVarFull.h
   conditionVarImpl.h
   conditionVarSimpleImpl.h conditionVarSimpleImpl.I
   conditionVarSpinlockImpl.h conditionVarSpinlockImpl.I
@@ -61,9 +59,6 @@ set(P3PIPELINE_SOURCES
   conditionVarDebug.cxx
   conditionVarDirect.cxx
   conditionVarDummyImpl.cxx
-  conditionVarFull.cxx
-  conditionVarFullDebug.cxx
-  conditionVarFullDirect.cxx
   conditionVarSimpleImpl.cxx
   conditionVarSpinlockImpl.cxx
   conditionVarPosixImpl.cxx
@@ -110,12 +105,10 @@ set(P3PIPELINE_SOURCES
 if(WIN32)
   set(P3PIPELINE_HEADERS
     ${P3PIPELINE_HEADERS}
-    conditionVarFullWin32Impl.h conditionVarFullWin32Impl.I
     conditionVarWin32Impl.h conditionVarWin32Impl.I
     threadWin32Impl.h threadWin32Impl.I)
   set(P3PIPELINE_SOURCES
     ${P3PIPELINE_SOURCES}
-    conditionVarFullWin32Impl.cxx
     conditionVarWin32Impl.cxx
     threadWin32Impl.cxx)
 endif()
