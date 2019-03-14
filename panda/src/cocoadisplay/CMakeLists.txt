@@ -42,5 +42,5 @@ target_link_libraries(p3cocoadisplay
   ${CORE_VIDEO_LIBRARY})
 
 if(NOT BUILD_METALIBS)
-  install(TARGETS p3cocoadisplay EXPORT Core COMPONENT Core DESTINATION lib)
+  install(TARGETS p3cocoadisplay EXPORT OpenGL COMPONENT OpenGL DESTINATION lib)
 endif()
