@@ -48,7 +48,7 @@ do_extrude(const Lens::CData *lens_cdata,
   LPoint3 f = point2d * do_get_film_mat_inv(lens_cdata);
 
   PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
-  PN_stdfloat angle = f[0] * cylindrical_k / focal_length;
+  PN_stdfloat angle = f[0] * ospherical_k / focal_length;
   PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
