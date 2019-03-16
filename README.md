@@ -192,7 +192,7 @@ pkg install python-dev termux-tools ndk-stl ndk-sysroot clang libvorbis-dev libo
 Then, you can build and install the .apk right away using these commands:
 
 ```bash
-python makepanda/makepanda.py --everything --target android-21 --installer
+python makepanda/makepanda.py --everything --target android-21 --no-tiff --installer
 xdg-open panda3d.apk
 ```
 
