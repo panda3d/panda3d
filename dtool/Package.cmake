@@ -202,7 +202,10 @@ else()
 endif()
 
 # FFTW
-find_package(FFTW3 QUIET)
+# FFTW 3.3.7, when built with autotools, doesn't install
+# FFTW3LibraryDepends.cmake, which will crash us if we use CONFIG mode.  BAH!
+# Force MODULE mode to fix that.
+find_package(FFTW3 MODULE QUIET)
 
 package_option(FFTW
   "This enables support for compression of animations in .bam files.
