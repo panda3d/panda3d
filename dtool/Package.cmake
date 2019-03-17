@@ -171,6 +171,13 @@ package_option(ASSIMP
   "Build pandatool with support for loading 3D assets supported by Assimp.")
 package_status(ASSIMP "Assimp")
 
+# FCollada
+find_package(FCollada QUIET)
+package_option(FCOLLADA
+  "Build pandatool with support for loading Collada files using FCollada."
+  IMPORTED_AS FCollada::FCollada)
+package_status(FCOLLADA "FCollada")
+
 
 #
 # ------------ Math libraries ------------
