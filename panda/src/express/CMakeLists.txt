@@ -118,6 +118,11 @@ set(P3EXPRESS_SOURCES
   windowsRegistry.cxx
   zStream.cxx zStreamBuf.cxx)
 
+if(ANDROID)
+  set(P3EXPRESS_SOURCES ${P3EXPRESS_SOURCES}
+    virtualFileMountAndroidAsset.cxx)
+endif()
+
 set(P3EXPRESS_IGATEEXT
   datagram_ext.h
   memoryUsagePointers_ext.cxx
@@ -141,6 +146,10 @@ target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 
 if(WIN32)
   target_link_libraries(p3express advapi32.lib ws2_32.lib)
+endif()
+
+if(ANDROID)
+  target_link_libraries(p3express android)
 endif()
 
 if(NOT BUILD_METALIBS)

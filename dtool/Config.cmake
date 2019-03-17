@@ -12,7 +12,7 @@ include(CMakeDependentOption)
 # The values "UNIX", "WIN32", "MINGW", "MSYS", and "CYGWIN"
 # are automatically provided by CMAKE.  "APPLE" is also provided by
 # CMAKE but may be True on systems that are not OS X.
-if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+if(CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Android")
   set(IS_LINUX 1)
 endif()
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
@@ -378,14 +378,14 @@ set(ANDROID_NDK_HOME "" CACHE STRING
   "The location of the Android NDK directory. ANDROID_NDK_HOME may
 not contain any spaces.")
 
-set(ANDROID_ABI "armeabi" CACHE STRING
-  "Can be be set to armeabi, armeabi-v7a, x86, or mips,
+set(ANDROID_ABI "armeabi-v7a" CACHE STRING
+  "Can be be set to armeabi-v7a, arm64-v8a, x86, or x86_64,
 depending on which architecture should be targeted.")
 set_property(CACHE ANDROID_ABI PROPERTY STRINGS
-  armeabi armeabi-v7a x86 mips)
+  armeabi-v7a arm64-v8a x86 x86_64)
 
-set(ANDROID_STL "gnustl_shared" CACHE STRING "")
-set(ANDROID_PLATFORM "android-9" CACHE STRING "")
+set(ANDROID_STL "c++_shared" CACHE STRING "")
+set(ANDROID_PLATFORM "android-14" CACHE STRING "")
 set(ANDROID_ARCH "arm" CACHE STRING "")
 if(ANDROID_ARCH STREQUAL "arm")
   set(ANDROID_TOOLCHAIN "arm-linux-androideabi")

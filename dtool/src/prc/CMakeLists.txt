@@ -63,6 +63,11 @@ set(P3PRC_SOURCES
   reversedNumericData.cxx
   streamReader.cxx streamWrapper.cxx streamWriter.cxx)
 
+if(ANDROID)
+  set(P3PRC_SOURCES ${P3PRC_SOURCES}
+    androidLogStream.cxx)
+endif()
+
 set(P3PRC_IGATEEXT
   streamReader_ext.cxx
   streamReader_ext.h
@@ -76,6 +81,10 @@ add_component_library(p3prc NOINIT SYMBOL BUILDING_DTOOL_PRC
 target_include_directories(p3prc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 target_link_libraries(p3prc p3dtool PKG::OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
+
+if(ANDROID)
+  target_link_libraries(p3prc log)
+endif()
 
 if(NOT BUILD_METALIBS)
   install(TARGETS p3prc
