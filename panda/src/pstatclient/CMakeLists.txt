@@ -23,7 +23,12 @@ set(P3PSTATCLIENT_SOURCES
 composite_sources(p3pstatclient P3PSTATCLIENT_SOURCES)
 add_component_library(p3pstatclient SYMBOL BUILDING_PANDA_PSTATCLIENT
   ${P3PSTATCLIENT_HEADERS} ${P3PSTATCLIENT_SOURCES})
-target_link_libraries(p3pstatclient p3net p3putil pandaexpress)
+target_link_libraries(p3pstatclient p3putil pandaexpress)
+
+if(HAVE_NET AND WANT_NATIVE_NET)
+  target_link_libraries(p3pstatclient p3net)
+endif()
+
 target_interrogate(p3pstatclient ALL)
 
 if(NOT BUILD_METALIBS)
