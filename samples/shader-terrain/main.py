@@ -20,6 +20,14 @@ class ShaderTerrainDemo(ShowBase):
             textures-power-2 none
             gl-coordinate-system default
             window-title Panda3D ShaderTerrainMesh Demo
+
+            # As an optimization, set this to the maximum number of cameras
+            # or lights that will be rendering the terrain at any given time.
+            stm-max-views 8
+
+            # Further optimize the performance by reducing this to the max
+            # number of chunks that will be visible at any given time.
+            stm-max-chunk-count 2048
         """)
 
         # Initialize the showbase
