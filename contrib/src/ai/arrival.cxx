@@ -13,6 +13,9 @@
 
 #include "arrival.h"
 
+#include "pursue.h"
+#include "seek.h"
+
 Arrival::Arrival(AICharacter *ai_ch, double distance) {
   _ai_char = ai_ch;
 
