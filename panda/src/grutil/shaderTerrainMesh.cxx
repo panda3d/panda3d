@@ -30,6 +30,7 @@
 #include "renderAttrib.h"
 #include "shaderInput.h"
 #include "boundingBox.h"
+#include "boundingSphere.h"
 #include "samplerState.h"
 #include "config_grutil.h"
 #include "typeHandle.h"
@@ -106,8 +107,6 @@ ShaderTerrainMesh::ShaderTerrainMesh() :
   _update_enabled(true),
   _heightfield_tex(nullptr)
 {
-  set_final(true);
-  set_bounds(new OmniBoundingVolume());
 }
 
 /**
@@ -561,6 +560,64 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   _basic_collector.stop();
+}
+
+/**
+ * This is used to support NodePath::calc_tight_bounds().  It is not intended
+ * to be called directly, and it has nothing to do with the normal Panda
+ * bounding-volume computation.
+ *
+ * If the node contains any geometry, this updates min_point and max_point to
+ * enclose its bounding box.  found_any is to be set true if the node has any
+ * geometry at all, or left alone if it has none.  This method may be called
+ * over several nodes, so it may enter with min_point, max_point, and
+ * found_any already set.
+ */
+CPT(TransformState) ShaderTerrainMesh::
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
+                  const TransformState *transform, Thread *current_thread) const {
+  CPT(TransformState) next_transform =
+    PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
+                                 current_thread);
+
+  const LMatrix4 &mat = next_transform->get_mat();
+  LPoint3 terrain_min_point = LPoint3(0, 0, 0) * mat;
+  LPoint3 terrain_max_point = LPoint3(1, 1, 1) * mat;
+  if (!found_any) {
+    min_point = terrain_min_point;
+    max_point = terrain_max_point;
+    found_any = true;
+  } else {
+    min_point = min_point.fmin(terrain_min_point);
+    max_point = max_point.fmax(terrain_max_point);
+  }
+
+  return next_transform;
+}
+
+/**
+ * Returns a newly-allocated BoundingVolume that represents the internal
+ * contents of the node.  Should be overridden by PandaNode classes that
+ * contain something internally.
+ */
+void ShaderTerrainMesh::
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
+                        Thread *current_thread) const {
+
+  BoundingVolume::BoundsType btype = get_bounds_type();
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
+  if (btype == BoundingVolume::BT_sphere) {
+    internal_bounds = new BoundingSphere(LPoint3(0.5, 0.5, 0.5), csqrt(0.75));
+  } else {
+    internal_bounds = new BoundingBox(LPoint3(0, 0, 0), LPoint3(1, 1, 1));
+  }
+
+  internal_vertices = 0;
 }
 
 /**
