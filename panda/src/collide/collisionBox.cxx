@@ -186,6 +186,7 @@ get_test_pcollector() {
  */
 void CollisionBox::
 output(std::ostream &out) const {
+  out << "box, (" << get_min() << ") to (" << get_max() << ")";
 }
 
 /**
