@@ -42,6 +42,7 @@ option(BUILD_DTOOL  "Build the dtool source tree." ON)
 option(BUILD_PANDA  "Build the panda source tree." ON)
 option(BUILD_DIRECT "Build the direct source tree." ON)
 option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
+option(BUILD_CONTRIB "Build the contrib source tree." ON)
 option(BUILD_MODELS "Build/install the built-in models." ON)
 
 # Include Panda3D packages
@@ -59,6 +60,10 @@ endif()
 
 if(BUILD_PANDATOOL)
   add_subdirectory(pandatool "${CMAKE_BINARY_DIR}/pandatool")
+endif()
+
+if(BUILD_CONTRIB)
+  add_subdirectory(contrib "${CMAKE_BINARY_DIR}/contrib")
 endif()
 
 if(BUILD_MODELS)

@@ -41,6 +41,13 @@
 #               Panda3D::Direct::p3direct
 #
 #
+#   Contrib   - Extensions not part of the Panda3D core, but contributed by the
+#               community.
+#
+#               Panda3D::Contrib::p3ai
+#               Panda3D::Contrib::p3rplight
+#
+#
 #   Framework - Panda's "p3framework" C++ framework.
 #
 #               Panda3D::Framework::p3framework
@@ -111,7 +118,7 @@ include("${_panda_config_prefix}/Panda3DPackages.cmake")
 
 set(_panda_components
   Core Python Tools
-  Direct Framework Egg
+  Direct Contrib Framework Egg
   Bullet ODE
   FFmpeg
   OpenAL FMOD
