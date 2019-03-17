@@ -2797,8 +2797,14 @@ def SetupVisualStudioEnviron():
         elif not win_kit.endswith('\\'):
             win_kit += '\\'
 
-        AddToPathEnv("LIB", win_kit + "Lib\\10.0.10150.0\\ucrt\\" + arch)
-        AddToPathEnv("INCLUDE", win_kit + "Include\\10.0.10150.0\\ucrt")
+        for vnum in 10150, 10240, 10586, 14393, 15063, 16299, 17134, 17763:
+            version = "10.0.{0}.0".format(vnum)
+            if os.path.isfile(win_kit + "Include\\" + version + "\\ucrt\\assert.h"):
+                print("Using Universal CRT %s" % (version))
+                break
+
+        AddToPathEnv("LIB", "%s\\Lib\\%s\\ucrt\\%s" % (win_kit, version, arch))
+        AddToPathEnv("INCLUDE", "%s\\Include\\%s\\ucrt" % (win_kit, version))
 
         # Copy the DLLs to the bin directory.
         CopyAllFiles(GetOutputDir() + "/bin/", win_kit + "Redist\\ucrt\\DLLs\\" + arch + "\\")

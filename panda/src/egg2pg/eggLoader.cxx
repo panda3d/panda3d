@@ -1814,10 +1814,11 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // A collision group: create collision geometry.
     node = new CollisionNode(egg_group->get_name());
 
+    // Piggy-back the desired transform to apply onto the node, since we can't
+    // break the ABI in 1.10.
+    node->set_transform(TransformState::make_mat(LCAST(PN_stdfloat, egg_group->get_vertex_to_node())));
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
-
-    // Transform all of the collision solids into local space.
-    node->xform(LCAST(PN_stdfloat, egg_group->get_vertex_to_node()));
+    node->clear_transform();
 
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the traversal.
@@ -2773,7 +2774,7 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
  */
 bool EggLoader::
 make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
-         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+         const LMatrix4 &xform, LPoint3 &min_p, LPoint3 &max_p) {
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != nullptr) {
     // Collect all of the vertices.
@@ -2802,13 +2803,12 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
     }
 
     EggVertex *vertex = (*vi);
-    LVertexd min_pd = vertex->get_pos3();
-    LVertexd max_pd = min_pd;
-    color = vertex->get_color();
+    LPoint3 min_pd = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
+    LPoint3 max_pd = min_pd;
 
     for (++vi; vi != vertices.end(); ++vi) {
       vertex = (*vi);
-      const LVertexd &pos = vertex->get_pos3();
+      LPoint3 pos = LCAST(PN_stdfloat, vertex->get_pos3()) * xform;
       min_pd.set(min(min_pd[0], pos[0]),
                  min(min_pd[1], pos[1]),
                  min(min_pd[2], pos[2]));
@@ -2817,11 +2817,23 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
                  max(max_pd[2], pos[2]));
     }
 
-    min_p = LCAST(PN_stdfloat, min_pd);
-    max_p = LCAST(PN_stdfloat, max_pd);
+    min_p = min_pd;
+    max_p = max_pd;
     return (min_pd != max_pd);
   }
   return false;
+}
+
+/**
+ * Creates a single generic Box corresponding to the polygons associated with
+ * this group.  This box is used by make_collision_box.
+ */
+bool EggLoader::
+make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
+         LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+
+  color.set(1.0, 1.0, 1.0, 1.0);
+  return make_box(egg_group, flags, LMatrix4::ident_mat(), min_p, max_p);
 }
 
 /**
@@ -2904,6 +2916,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
           create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
         if (csplane != nullptr) {
           apply_collision_flags(csplane, flags);
+          csplane->xform(cnode->get_transform()->get_mat());
           cnode->add_solid(csplane);
           return;
         }
@@ -3004,6 +3017,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3017,8 +3031,8 @@ make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
                    EggGroup::CollideFlags flags) {
   LPoint3 min_p;
   LPoint3 max_p;
-  LColor dummycolor;
-  if (make_box(egg_group, flags, min_p, max_p, dummycolor)) {
+  CPT(TransformState) transform = cnode->get_transform();
+  if (make_box(egg_group, flags, transform->get_mat(), min_p, max_p)) {
     CollisionBox *csbox =
       new CollisionBox(min_p, max_p);
     apply_collision_flags(csbox, flags);
@@ -3040,6 +3054,7 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
+    cssphere->xform(cnode->get_transform()->get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3234,6 +3249,7 @@ make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
           new CollisionCapsule(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
                             radius);
         apply_collision_flags(cscapsule, flags);
+        cscapsule->xform(cnode->get_transform()->get_mat());
         cnode->add_solid(cscapsule);
       }
     }
@@ -3395,6 +3411,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
         new CollisionPolygon(vertices_begin, vertices_end);
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
+        cspoly->xform(cnode->get_transform()->get_mat());
         cnode->add_solid(cspoly);
       }
     }
@@ -3485,6 +3502,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
     CollisionFloorMesh::TriangleIndices triangle = *ti;
     csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
   }
+  csfloor->xform(cnode->get_transform()->get_mat());
   cnode->add_solid(csfloor);
 }
 

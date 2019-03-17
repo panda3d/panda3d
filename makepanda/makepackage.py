@@ -748,7 +748,7 @@ def MakeInstallerOSX(version, runtime=False, python_versions=[], **kwargs):
     oscmd('rm -f Panda3D-rw.dmg')
 
 
-def MakeInstallerFreeBSD(version, runtime=False, **kwargs):
+def MakeInstallerFreeBSD(version, runtime=False, python_versions=[], **kwargs):
     outputdir = GetOutputDir()
 
     oscmd("rm -rf targetroot +DESC pkg-plist +MANIFEST")
@@ -758,7 +758,7 @@ def MakeInstallerFreeBSD(version, runtime=False, **kwargs):
     if runtime:
         InstallRuntime(destdir="targetroot", prefix="/usr/local", outputdir=outputdir)
     else:
-        InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir)
+        InstallPanda(destdir="targetroot", prefix="/usr/local", outputdir=outputdir, python_versions=python_versions)
 
     if not os.path.exists("/usr/sbin/pkg"):
         exit("Cannot create an installer without pkg")

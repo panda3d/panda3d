@@ -13,6 +13,8 @@
 
 #include "obstacleAvoidance.h"
 
+#include "aiWorld.h"
+
 ObstacleAvoidance::
 ObstacleAvoidance(AICharacter *ai_char, float feeler_length) {
   _ai_char = ai_char;

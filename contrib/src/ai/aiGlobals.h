@@ -15,7 +15,6 @@
 #define _AI_GLOBALS_H
 
 #include "config_ai.h"
-#include "pandaFramework.h"
 #include "textNode.h"
 #include "pandaSystem.h"
 
