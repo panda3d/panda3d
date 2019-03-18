@@ -105,4 +105,12 @@ file(COPY "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
 install(FILES "${PROJECT_SOURCE_DIR}/cmake/install/Panda3DConfig.cmake"
   DESTINATION "lib/cmake/Panda3D")
 
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${PROJECT_BINARY_DIR}/Panda3DConfigVersion.cmake"
+  VERSION "${PROJECT_VERSION}"
+  COMPATIBILITY AnyNewerVersion)
+install(FILES "${PROJECT_BINARY_DIR}/Panda3DConfigVersion.cmake"
+  DESTINATION "lib/cmake/Panda3D")
+
 export(PACKAGE Panda3D)
