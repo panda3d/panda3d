@@ -20,12 +20,12 @@ function(add_flex_target output_cxx input_lxx)
     elseif(arg STREQUAL "PREFIX")
       set(keyword "PREFIX")
     elseif(arg STREQUAL "CASE_INSENSITIVE")
-      list(APPEND arguments -i)
+      list(APPEND arguments "-i")
 
     elseif(keyword STREQUAL "PREFIX")
-      list(APPEND arguments -P "${arg}")
+      list(APPEND arguments "-P${arg}")
     elseif(keyword STREQUAL "DEFINES")
-      list(APPEND arguments --header-file="${arg}")
+      list(APPEND arguments "--header-file=${arg}")
       list(APPEND outputs "${arg}")
 
     else()
@@ -44,7 +44,7 @@ function(add_flex_target output_cxx input_lxx)
     add_custom_command(
       OUTPUT ${outputs}
       COMMAND ${FLEX_EXECUTABLE}
-        -o "${output_cxx}" ${arguments}
+        "-o${output_cxx}" ${arguments}
         "${input_lxx}"
       MAIN_DEPENDENCY "${input_lxx}"
     )
