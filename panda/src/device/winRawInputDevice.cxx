@@ -15,6 +15,7 @@
 #include "gamepadButton.h"
 #include "mouseButton.h"
 #include "buttonRegistry.h"
+#include "winInputDeviceManager.h"
 
 #if defined(_WIN32) && !defined(CPPPARSER)
 
