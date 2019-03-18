@@ -44,3 +44,5 @@ add_subdirectory(src/win-stats)
 add_subdirectory(src/xfile)
 add_subdirectory(src/xfileegg)
 add_subdirectory(src/xfileprogs)
+
+export_targets(Tools)
