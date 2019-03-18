@@ -26,16 +26,16 @@ set(GTKSTATS_SOURCES
   gtkStatsStripChart.cxx
 )
 
-composite_sources(gtkstats GTKSTATS_SOURCES)
-add_executable(gtkstats ${GTKSTATS_HEADERS} ${GTKSTATS_SOURCES})
-target_link_libraries(gtkstats p3progbase p3pstatserver p3pystub PKG::GTK2)
+composite_sources(gtk-stats GTKSTATS_SOURCES)
+add_executable(gtk-stats ${GTKSTATS_HEADERS} ${GTKSTATS_SOURCES})
+target_link_libraries(gtk-stats p3progbase p3pstatserver PKG::GTK2)
 
-# This program is NOT actually called gtkstats. It's pstats-gtk on Win32 and
+# This program is NOT actually called gtk-stats. It's pstats-gtk on Win32 and
 # pstats everywhere else (as the Win32 GUI is not built).
 if(WIN32)
-  set_target_properties(gtkstats PROPERTIES OUTPUT_NAME "pstats-gtk")
+  set_target_properties(gtk-stats PROPERTIES OUTPUT_NAME "pstats-gtk")
 else()
-  set_target_properties(gtkstats PROPERTIES OUTPUT_NAME "pstats")
+  set_target_properties(gtk-stats PROPERTIES OUTPUT_NAME "pstats")
 endif()
 
-install(TARGETS gtkstats EXPORT Tools COMPONENT Tools DESTINATION bin)
+install(TARGETS gtk-stats EXPORT Tools COMPONENT Tools DESTINATION bin)
