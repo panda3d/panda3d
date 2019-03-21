@@ -26,9 +26,9 @@ public:
   ShaderCompilerGlslPreProc();
 
 PUBLISHED:
-  virtual std::string get_name() const;
-  virtual ShaderLanguages get_languages() const;
-  virtual PT(ShaderModule) compile_now(Shader::ShaderType shader_type, std::string source) const;
+  virtual std::string get_name() const override;
+  virtual ShaderLanguages get_languages() const override;
+  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in) const override;
 
 public:
   static TypeHandle get_class_type() {
@@ -39,10 +39,13 @@ public:
     register_type(_type_handle, "ShaderCompilerGlslPreProc",
                   ShaderCompiler::get_class_type());
   }
-  virtual TypeHandle get_type() const {
+  virtual TypeHandle get_type() const override {
     return get_class_type();
   }
-  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual TypeHandle force_init_type() override {
+    init_type();
+    return get_class_type();
+  }
 
 private:
   static TypeHandle _type_handle;

@@ -84,6 +84,8 @@ set_filename(ShaderType type, const Filename &filename) {
 
 /**
  * Return the Shader's text for the given shader type.
+ *
+ * @deprecated
  */
 INLINE const std::string &Shader::
 get_text(ShaderType type) const {

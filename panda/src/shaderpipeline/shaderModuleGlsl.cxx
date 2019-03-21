@@ -12,11 +12,13 @@
  */
 
 #include "shaderModuleGlsl.h"
+#include "string_utils.h"
+
+TypeHandle ShaderModuleGlsl::_type_handle;
 
 ShaderModuleGlsl::
-ShaderModuleGlsl(Shader::ShaderType shader_type, std::string source) :
-  _shader_type(shader_type),
-  _raw_source(source)
+ShaderModuleGlsl(Stage stage) :
+  ShaderModule(stage)
 {
 }
 
@@ -29,7 +31,24 @@ get_ir() const {
   return this->_raw_source;
 }
 
-Shader::ShaderType ShaderModuleGlsl::
-get_shader_type() const {
-  return this->_shader_type;
+/**
+ * Returns the filename of the included shader with the given source file
+ * index (as recorded in the #line statement in r_preprocess_source).  We use
+ * this to associate error messages with included files.
+ */
+Filename ShaderModuleGlsl::
+get_filename_from_index(int index) const {
+  if (index == 0) {
+    Filename fn = get_source_filename();
+    if (!fn.empty()) {
+      return fn;
+    }
+  } else if (glsl_preprocess && index >= 2048 &&
+             (index - 2048) < (int)_included_files.size()) {
+    return _included_files[(size_t)index - 2048];
+  }
+
+  // Must be a mistake.  Quietly put back the integer.
+  std::string str = format_string(index);
+  return Filename(str);
 }

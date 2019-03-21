@@ -26,6 +26,7 @@
 #include "lightAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "bamCache.h"
+#include "shaderModuleGlsl.h"
 
 using std::dec;
 using std::hex;
@@ -2949,7 +2950,7 @@ update_shader_buffer_bindings(ShaderContext *prev) {
  * This subroutine prints the infolog for a shader.
  */
 void CLP(ShaderContext)::
-glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
+glsl_report_shader_errors(GLuint shader, const ShaderModuleGlsl *module, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -2979,14 +2980,14 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
     if (sscanf(line.c_str(), "ERROR: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
         && prefixlen > 0) {
 
-      Filename fn = _shader->get_filename_from_index(fileno, type);
+      Filename fn = module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << "ERROR: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
 
     } else if (sscanf(line.c_str(), "WARNING: %d:%d: %n", &fileno, &lineno, &prefixlen) == 2
                && prefixlen > 0) {
 
-      Filename fn = _shader->get_filename_from_index(fileno, type);
+      Filename fn = module->get_filename_from_index(fileno);
       GLCAT.warning(false)
         << "WARNING: " << fn << ":" << lineno << ": " << (line.c_str() + prefixlen) << "\n";
 
@@ -2994,7 +2995,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
                && prefixlen > 0) {
 
       // This is the format NVIDIA uses.
-      Filename fn = _shader->get_filename_from_index(fileno, type);
+      Filename fn = module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << fn << "(" << lineno << ") : " << (line.c_str() + prefixlen) << "\n";
 
@@ -3002,7 +3003,7 @@ glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal) {
                && prefixlen > 0) {
 
       // This is the format for Mesa's OpenGL ES 2 implementation.
-      Filename fn = _shader->get_filename_from_index(fileno, type);
+      Filename fn = module->get_filename_from_index(fileno);
       GLCAT.error(false)
         << fn << ":" << lineno << "(" << colno << "): " << (line.c_str() + prefixlen) << "\n";
 
@@ -3045,65 +3046,66 @@ glsl_report_program_errors(GLuint program, bool fatal) {
 }
 
 /**
- *
+ * Compiles the given ShaderModuleGlsl and attaches it to the program.
  */
 bool CLP(ShaderContext)::
-glsl_compile_shader(Shader::ShaderType type) {
-  static const char *types[] = {"", "vertex ", "fragment ", "geometry ",
-      "tessellation control ", "tessellation evaluation ", "compute ", ""};
-
+glsl_compile_shader(const ShaderModule *module) {
+  ShaderModule::Stage stage = module->get_stage();
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "Compiling GLSL " << types[type] << "shader "
-      << _shader->get_filename(type) << "\n";
+      << "Compiling GLSL " << stage << " shader "
+      << module->get_source_filename() << "\n";
   }
 
+  const ShaderModuleGlsl *glsl_module;
+  DCAST_INTO_R(glsl_module, module, false);
+
   GLuint handle = 0;
-  switch (type) {
-    case Shader::ST_vertex:
-      handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
-      break;
-    case Shader::ST_fragment:
-      handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
-      break;
+  switch (stage) {
+  case ShaderModule::Stage::vertex:
+    handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
+    break;
+  case ShaderModule::Stage::fragment:
+    handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
+    break;
 #ifndef OPENGLES
-    case Shader::ST_geometry:
-      if (_glgsg->get_supports_geometry_shaders()) {
-        handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
-      }
-      break;
-    case Shader::ST_tess_control:
-      if (_glgsg->get_supports_tessellation_shaders()) {
-        handle = _glgsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
-      }
-      break;
-    case Shader::ST_tess_evaluation:
-      if (_glgsg->get_supports_tessellation_shaders()) {
-        handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
-      }
-      break;
+  case ShaderModule::Stage::geometry:
+    if (_glgsg->get_supports_geometry_shaders()) {
+      handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
+    }
+    break;
+  case ShaderModule::Stage::tess_control:
+    if (_glgsg->get_supports_tessellation_shaders()) {
+      handle = _glgsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
+    }
+    break;
+  case ShaderModule::Stage::tess_evaluation:
+    if (_glgsg->get_supports_tessellation_shaders()) {
+      handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
+    }
+    break;
 #endif
-    case Shader::ST_compute:
-      if (_glgsg->get_supports_compute_shaders()) {
-        handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
-      }
-      break;
-    default:
-      break;
+  case ShaderModule::Stage::compute:
+    if (_glgsg->get_supports_compute_shaders()) {
+      handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
+    }
+    break;
+  default:
+    break;
   }
   if (!handle) {
     GLCAT.error()
-      << "Could not create a GLSL " << types[type] << "shader.\n";
+      << "Could not create a GLSL " << stage << " shader.\n";
     _glgsg->report_my_gl_errors();
     return false;
   }
 
   if (_glgsg->_use_object_labels) {
-    string name = _shader->get_filename(type);
+    string name = module->get_source_filename();
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
   }
 
-  string text_str = _shader->get_text(type);
+  string text_str = module->get_ir();
   const char* text = text_str.c_str();
   _glgsg->_glShaderSource(handle, 1, &text, nullptr);
   _glgsg->_glCompileShader(handle);
@@ -3112,9 +3114,9 @@ glsl_compile_shader(Shader::ShaderType type) {
 
   if (status != GL_TRUE) {
     GLCAT.error()
-      << "An error occurred while compiling GLSL " << types[type]
-      << "shader " << _shader->get_filename(type) << ":\n";
-    glsl_report_shader_errors(handle, type, true);
+      << "An error occurred while compiling GLSL " << stage
+      << " shader " << module->get_source_filename() << ":\n";
+    glsl_report_shader_errors(handle, glsl_module, true);
     _glgsg->_glDeleteShader(handle);
     _glgsg->report_my_gl_errors();
     return false;
@@ -3124,7 +3126,7 @@ glsl_compile_shader(Shader::ShaderType type) {
   _glsl_shaders.push_back(handle);
 
   // There might be warnings, so report those.
-  glsl_report_shader_errors(handle, type, false);
+  glsl_report_shader_errors(handle, glsl_module, false);
 
   return true;
 }
@@ -3171,39 +3173,8 @@ glsl_compile_and_link() {
 
   bool valid = true;
 
-  if (!_shader->get_text(Shader::ST_vertex).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_vertex);
-  }
-
-  if (!_shader->get_text(Shader::ST_fragment).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_fragment);
-  }
-
-  // OpenGL ES has no geometry shaders.
-#ifndef OPENGLES
-  if (!_shader->get_text(Shader::ST_geometry).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_geometry);
-
-    // XXX Actually, it turns out that this is unavailable in the core version
-    // of geometry shaders.  Probably no need to bother with it.
-
-    // nassertr(_glgsg->_glProgramParameteri != NULL, false); GLint
-    // max_vertices; glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES,
-    // &max_vertices); _glgsg->_glProgramParameteri(_glsl_program,
-    // GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices);
-  }
-#endif
-
-  if (!_shader->get_text(Shader::ST_tess_control).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_tess_control);
-  }
-
-  if (!_shader->get_text(Shader::ST_tess_evaluation).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_tess_evaluation);
-  }
-
-  if (!_shader->get_text(Shader::ST_compute).empty()) {
-    valid &= glsl_compile_shader(Shader::ST_compute);
+  for (const ShaderModule *module : _shader->_modules) {
+    valid &= glsl_compile_shader(module);
   }
 
   // There might be warnings, so report those.  GLSLShaders::const_iterator

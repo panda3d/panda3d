@@ -45,6 +45,6 @@ get_languages() const {
 }
 
 PT(ShaderModule) ShaderCompilerGlslPreProc::
-compile_now(Shader::ShaderType shader_type, std::string source) const {
-  return new ShaderModuleGlsl(shader_type, source);
+compile_now(ShaderModule::Stage stage, std::istream &in) const {
+  return new ShaderModuleGlsl(stage);
 }

@@ -33,10 +33,12 @@ protected:
 public:
   virtual ~ShaderCompiler();
 
+  using Stage = ShaderModule::Stage;
+
 PUBLISHED:
   virtual std::string get_name() const=0;
   virtual ShaderLanguages get_languages() const=0;
-  virtual PT(ShaderModule) compile_now(Shader::ShaderType shader_type, std::string source) const=0;
+  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in) const=0;
 
 public:
   static TypeHandle get_class_type() {

@@ -22,6 +22,7 @@
 #include "config_putil.h"
 #include "bamCache.h"
 #include "string_utils.h"
+#include "shaderModuleGlsl.h"
 
 #ifdef HAVE_CG
 #include <Cg/cg.h>
@@ -2408,33 +2409,33 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     }
 
     if (!sfile._vertex.empty() &&
-        !do_read_source(_text._vertex, sfile._vertex, record)) {
+        !do_read_source(Stage::vertex, sfile._vertex, record)) {
       return false;
     }
     if (!sfile._fragment.empty() &&
-        !do_read_source(_text._fragment, sfile._fragment, record)) {
+        !do_read_source(Stage::fragment, sfile._fragment, record)) {
       return false;
     }
     if (!sfile._geometry.empty() &&
-        !do_read_source(_text._geometry, sfile._geometry, record)) {
+        !do_read_source(Stage::geometry, sfile._geometry, record)) {
       return false;
     }
     if (!sfile._tess_control.empty() &&
-        !do_read_source(_text._tess_control, sfile._tess_control, record)) {
+        !do_read_source(Stage::tess_control, sfile._tess_control, record)) {
       return false;
     }
     if (!sfile._tess_evaluation.empty() &&
-        !do_read_source(_text._tess_evaluation, sfile._tess_evaluation, record)) {
+        !do_read_source(Stage::tess_evaluation, sfile._tess_evaluation, record)) {
       return false;
     }
     if (!sfile._compute.empty() &&
-        !do_read_source(_text._compute, sfile._compute, record)) {
+        !do_read_source(Stage::compute, sfile._compute, record)) {
       return false;
     }
     _filename = sfile;
 
   } else {
-    if (!do_read_source(_text._shared, sfile._shared, record)) {
+    if (!do_read_source(Stage::unspecified, sfile._shared, record)) {
       return false;
     }
     _fullpath = _source_files[0];
@@ -2501,32 +2502,32 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
 
     if (!sbody._vertex.empty() &&
-        !do_load_source(_text._vertex, sbody._vertex, record)) {
+        !do_load_source(Stage::vertex, sbody._vertex, record)) {
       return false;
     }
     if (!sbody._fragment.empty() &&
-        !do_load_source(_text._fragment, sbody._fragment, record)) {
+        !do_load_source(Stage::fragment, sbody._fragment, record)) {
       return false;
     }
     if (!sbody._geometry.empty() &&
-        !do_load_source(_text._geometry, sbody._geometry, record)) {
+        !do_load_source(Stage::geometry, sbody._geometry, record)) {
       return false;
     }
     if (!sbody._tess_control.empty() &&
-        !do_load_source(_text._tess_control, sbody._tess_control, record)) {
+        !do_load_source(Stage::tess_control, sbody._tess_control, record)) {
       return false;
     }
     if (!sbody._tess_evaluation.empty() &&
-        !do_load_source(_text._tess_evaluation, sbody._tess_evaluation, record)) {
+        !do_load_source(Stage::tess_evaluation, sbody._tess_evaluation, record)) {
       return false;
     }
     if (!sbody._compute.empty() &&
-        !do_load_source(_text._compute, sbody._compute, record)) {
+        !do_load_source(Stage::compute, sbody._compute, record)) {
       return false;
     }
 
   } else {
-    if (!do_load_source(_text._shared, sbody._shared, record)) {
+    if (!do_load_source(Stage::unspecified, sbody._shared, record)) {
       return false;
     }
 
@@ -2580,7 +2581,7 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  * it 'invalid'.
  */
 bool Shader::
-do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
+do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
   if (vf == nullptr) {
@@ -2588,6 +2589,10 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
       << "Could not find shader file: " << fn << "\n";
     return false;
   }
+
+  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
+  module->set_source_filename(fn);
+  std::string &into = module->_raw_source;
 
   if (_language == SL_GLSL && glsl_preprocess) {
     istream *source = vf->open_read_file(true);
@@ -2603,7 +2608,7 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
 
     std::set<Filename> open_files;
     ostringstream sstr;
-    if (!r_preprocess_source(sstr, *source, fn, vf->get_filename(), open_files, record)) {
+    if (!r_preprocess_source(module, sstr, *source, fn, vf->get_filename(), open_files, record)) {
       vf->close_read_file(source);
       return false;
     }
@@ -2635,6 +2640,9 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
   // Except add back a newline at the end, which is needed by Intel drivers.
   into += "\n";
 
+  module->_raw_source = into;
+  _modules.push_back(std::move(module));
+
   return true;
 }
 
@@ -2646,13 +2654,16 @@ do_read_source(string &into, const Filename &fn, BamCacheRecord *record) {
  * it 'invalid'.
  */
 bool Shader::
-do_load_source(string &into, const std::string &source, BamCacheRecord *record) {
+do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record) {
+  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
+  std::string &into = module->_raw_source;
+
   if (_language == SL_GLSL && glsl_preprocess) {
     // Preprocess the GLSL file as we read it.
     std::set<Filename> open_files;
     std::ostringstream sstr;
     std::istringstream in(source);
-    if (!r_preprocess_source(sstr, in, Filename("created-shader"), Filename(),
+    if (!r_preprocess_source(module, sstr, in, Filename("created-shader"), Filename(),
                              open_files, record)) {
       return false;
     }
@@ -2670,6 +2681,8 @@ do_load_source(string &into, const std::string &source, BamCacheRecord *record) 
   // Except add back a newline at the end, which is needed by Intel drivers.
   into += "\n";
 
+  _modules.push_back(std::move(module));
+
   return true;
 }
 
@@ -2681,7 +2694,8 @@ do_load_source(string &into, const std::string &source, BamCacheRecord *record) 
  * recursive includes.
  */
 bool Shader::
-r_preprocess_include(ostream &out, const Filename &fn,
+r_preprocess_include(ShaderModuleGlsl *module,
+                     ostream &out, const Filename &fn,
                      const Filename &source_dir,
                      std::set<Filename> &once_files,
                      BamCacheRecord *record, int depth) {
@@ -2731,19 +2745,19 @@ r_preprocess_include(ostream &out, const Filename &fn,
   // than that, unfortunately.  Don't do this for the top-level file, though.
   // We don't want anything to get in before a potential #version directive.
   int fileno = 0;
-  fileno = 2048 + _included_files.size();
+  fileno = 2048 + module->_included_files.size();
 
   // Write it into the vector so that we can substitute it later when we are
   // parsing the GLSL error log.  Don't store the full filename because it
   // would just be too long to display.
-  _included_files.push_back(fn);
+  module->_included_files.push_back(fn);
 
   if (shader_cat.is_debug()) {
     shader_cat.debug()
       << "Preprocessing shader include " << fileno << ": " << fn << "\n";
   }
 
-  bool result = r_preprocess_source(out, *source, fn, full_fn, once_files, record, fileno, depth);
+  bool result = r_preprocess_source(module, out, *source, fn, full_fn, once_files, record, fileno, depth);
   vf->close_read_file(source);
   return result;
 }
@@ -2756,7 +2770,8 @@ r_preprocess_include(ostream &out, const Filename &fn,
  * recursive includes.
  */
 bool Shader::
-r_preprocess_source(ostream &out, istream &in, const Filename &fn,
+r_preprocess_source(ShaderModuleGlsl *module,
+                    ostream &out, istream &in, const Filename &fn,
                     const Filename &full_fn, std::set<Filename> &once_files,
                     BamCacheRecord *record, int fileno, int depth) {
 
@@ -2890,7 +2905,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
         }
 
         // OK, great.  Process the include.
-        if (!r_preprocess_include(out, incfn, source_dir, once_files, record, depth + 1)) {
+        if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
           // An error occurred.  Pass on the failure.
           shader_cat.error(false) << "included at line "
             << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -3021,7 +3036,7 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
 
       // OK, great.  Process the include.
       Filename source_dir = full_fn.get_dirname();
-      if (!r_preprocess_include(out, incfn, source_dir, once_files, record, depth + 1)) {
+      if (!r_preprocess_include(module, out, incfn, source_dir, once_files, record, depth + 1)) {
         // An error occurred.  Pass on the failure.
         shader_cat.error(false) << "included at line "
           << lineno << " of file " << fn << ":\n  " << line << "\n";
@@ -3051,8 +3066,8 @@ r_preprocess_source(ostream &out, istream &in, const Filename &fn,
 
         // Replace the string line number with an integer.  This is something
         // we can substitute later when parsing the GLSL log from the driver.
-        fileno = 2048 + _included_files.size();
-        _included_files.push_back(Filename(filestr));
+        fileno = 2048 + module->_included_files.size();
+        module->_included_files.push_back(Filename(filestr));
 
         out << "#line " << lineno << " " << fileno << " // " << filestr << "\n";
         continue;
@@ -3241,27 +3256,6 @@ Shader::
 }
 
 /**
- * Returns the filename of the included shader with the given source file
- * index (as recorded in the #line statement in r_preprocess_source).  We use
- * this to associate error messages with included files.
- */
-Filename Shader::
-get_filename_from_index(int index, ShaderType type) const {
-  if (index == 0) {
-    Filename fn = get_filename(type);
-    if (!fn.empty()) {
-      return fn;
-    }
-  } else if (glsl_preprocess && index >= 2048 &&
-             (index - 2048) < (int)_included_files.size()) {
-    return _included_files[(size_t)index - 2048];
-  }
-  // Must be a mistake.  Quietly put back the integer.
-  string str = format_string(index);
-  return Filename(str);
-}
-
-/**
  * Loads the shader with the given filename.
  */
 PT(Shader) Shader::
@@ -3287,13 +3281,13 @@ load(const Filename &file, ShaderLanguage lang) {
 
   _load_table[sfile] = shader;
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       return i->second;
     }
     _make_table[shader->_text] = shader;
-  }
+  }*/
   return shader;
 }
 
@@ -3325,13 +3319,13 @@ load(ShaderLanguage lang, const Filename &vertex,
 
   _load_table[sfile] = shader;
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       return i->second;
     }
     _make_table[shader->_text] = shader;
-  }
+  }*/
   return shader;
 }
 
@@ -3389,13 +3383,13 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   }
   _load_table[sfile] = shader;
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       return i->second;
     }
     _make_table[shader->_text] = shader;
-  }
+  }*/
 
   // It makes little sense to cache the shader before compilation, so we keep
   // the record for when we have the compiled the shader.
@@ -3444,7 +3438,7 @@ make(string body, ShaderLanguage lang) {
     return nullptr;
   }
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       shader = i->second;
@@ -3452,7 +3446,7 @@ make(string body, ShaderLanguage lang) {
       _make_table[shader->_text] = shader;
     }
     _make_table[std::move(sbody)] = shader;
-  }
+  }*/
 
   if (dump_generated_shaders) {
     ostringstream fns;
@@ -3506,7 +3500,7 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
     return nullptr;
   }
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       shader = i->second;
@@ -3514,7 +3508,7 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
       _make_table[shader->_text] = shader;
     }
     _make_table[std::move(sbody)] = shader;
-  }
+  }*/
 
   return shader;
 }
@@ -3550,7 +3544,7 @@ make_compute(ShaderLanguage lang, string body) {
     return nullptr;
   }
 
-  if (cache_generated_shaders) {
+  /*if (cache_generated_shaders) {
     ShaderTable::const_iterator i = _make_table.find(shader->_text);
     if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
       shader = i->second;
@@ -3558,7 +3552,7 @@ make_compute(ShaderLanguage lang, string body) {
       _make_table[shader->_text] = shader;
     }
     _make_table[std::move(sbody)] = shader;
-  }
+  }*/
 
   return shader;
 }

@@ -34,6 +34,7 @@
 #include "epvector.h"
 #include "asyncFuture.h"
 #include "bamCacheRecord.h"
+#include "shaderModule.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a whole.  Instead,
@@ -43,11 +44,15 @@ typedef struct _CGprogram   *CGprogram;
 typedef struct _CGparameter *CGparameter;
 #endif
 
+class ShaderModuleGlsl;
+
 /**
 
  */
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
 PUBLISHED:
+  using Stage = ShaderModule::Stage;
+
   enum ShaderLanguage {
     SL_none,
     SL_Cg,
@@ -578,6 +583,9 @@ public:
   bool _error_flag;
   ShaderFile _text;
 
+  typedef pvector<PT(ShaderModule)> Modules;
+  Modules _modules;
+
 protected:
   ShaderFile _filename;
   Filename _fullpath;
@@ -586,7 +594,6 @@ protected:
   ShaderLanguage _language;
 
   typedef pvector<Filename> Filenames;
-  Filenames _included_files;
 
   // Stores full paths, and includes the fullpaths of the shaders themselves
   // as well as the includes.
@@ -619,13 +626,15 @@ private:
 
   bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
   bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
-  bool do_read_source(std::string &into, const Filename &fn, BamCacheRecord *record);
-  bool do_load_source(std::string &into, const std::string &source, BamCacheRecord *record);
-  bool r_preprocess_include(std::ostream &out, const Filename &fn,
+  bool do_read_source(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record);
+  bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
+  bool r_preprocess_include(ShaderModuleGlsl *module,
+                            std::ostream &out, const Filename &fn,
                             const Filename &source_dir,
                             std::set<Filename> &open_files,
                             BamCacheRecord *record, int depth);
-  bool r_preprocess_source(std::ostream &out, std::istream &in,
+  bool r_preprocess_source(ShaderModuleGlsl *module,
+                           std::ostream &out, std::istream &in,
                            const Filename &fn, const Filename &full_fn,
                            std::set<Filename> &open_files,
                            BamCacheRecord *record,
@@ -635,8 +644,6 @@ private:
 
 public:
   ~Shader();
-
-  Filename get_filename_from_index(int index, ShaderType type) const;
 
 public:
   static void register_with_read_factory();
