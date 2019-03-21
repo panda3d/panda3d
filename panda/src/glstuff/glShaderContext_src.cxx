@@ -2462,7 +2462,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
 
       GLint p = bind._id._seqno;
-      max_p = max(max_p, p + 1);
+      max_p = max(max_p, p + bind._elements);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
