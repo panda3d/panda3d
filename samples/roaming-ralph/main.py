@@ -253,8 +253,9 @@ class RoamingRalphDemo(ShowBase):
         entries = list(self.ralphGroundHandler.getEntries())
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
 
-        if len(entries) > 0 and entries[0].getIntoNode().getName() == "terrain":
-            self.ralph.setZ(entries[0].getSurfacePoint(render).getZ())
+        for entry in entries:
+            if entry.getIntoNode().getName() == "terrain":
+                self.ralph.setZ(entry.getSurfacePoint(render).getZ())
 
         # Keep the camera at one unit above the terrain,
         # or two units above ralph, whichever is greater.
@@ -262,8 +263,9 @@ class RoamingRalphDemo(ShowBase):
         entries = list(self.camGroundHandler.getEntries())
         entries.sort(key=lambda x: x.getSurfacePoint(render).getZ())
 
-        if len(entries) > 0 and entries[0].getIntoNode().getName() == "terrain":
-            self.camera.setZ(entries[0].getSurfacePoint(render).getZ() + 1.0)
+        for entry in entries:
+            if entry.getIntoNode().getName() == "terrain":
+                self.camera.setZ(entry.getSurfacePoint(render).getZ() + 1.0)
         if self.camera.getZ() < self.ralph.getZ() + 2.0:
             self.camera.setZ(self.ralph.getZ() + 2.0)
 
