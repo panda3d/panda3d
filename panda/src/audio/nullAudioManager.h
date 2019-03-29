@@ -11,9 +11,7 @@
  * @date 2001-06-06
  * Prior system by: cary
  */
-
-#ifndef __NULL_AUDIO_MANAGER_H__
-#define __NULL_AUDIO_MANAGER_H__
+#pragma once //Modernizing the code
 
 #include "audioManager.h"
 #include "nullAudioSound.h"
@@ -89,4 +87,3 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif /* __NULL_AUDIO_MANAGER_H__ */
