@@ -1489,7 +1489,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     } else if (index == 0) {
       // Apply the default OpenGL lights otherwise.
       // Special exception for light 0, which defaults to white.
-      t.set_row(0, _light_color_scale);
+      t.set_row(0, LVecBase4(1, 1, 1, 1));
     }
     return &t;
   }
@@ -1534,7 +1534,6 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LMatrix4 &t)
     Light *light = node->as_light();
     nassertr(light != nullptr, &LMatrix4::ident_mat());
     LColor c = light->get_color();
-    c.componentwise_mult(_light_color_scale);
     t.set_row(3, c);
     return &t;
 
