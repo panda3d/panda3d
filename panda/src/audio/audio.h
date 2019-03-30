@@ -11,12 +11,12 @@
  * @date 2000-07-06
  */
 
-#ifndef __AUDIO_H__
-#define __AUDIO_H__
+#ifndef AUDIO_H
+#define AUDIO_H
 
 #include "filterProperties.h"
 #include "audioLoadRequest.h"
 #include "audioSound.h"
 #include "audioManager.h"
 
-#endif /* __AUDIO_H__ */
+#endif /* AUDIO_H */

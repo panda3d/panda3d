@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __AUDIOSOUND_H__
-#define __AUDIOSOUND_H__
+#ifndef AUDIOSOUND_H
+#define AUDIOSOUND_H
 
 #include "config_audio.h"
 #include "typedReferenceCount.h"
@@ -160,4 +160,4 @@ operator << (std::ostream &out, const AudioSound &sound) {
 EXPCL_PANDA_AUDIO std::ostream &
 operator << (std::ostream &out, AudioSound::SoundStatus status);
 
-#endif /* __AUDIOSOUND_H__ */
+#endif /* AUDIOSOUND_H */
