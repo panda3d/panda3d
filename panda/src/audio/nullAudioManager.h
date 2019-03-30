@@ -89,5 +89,4 @@ private:
   static TypeHandle _type_handle;
 };
 
-#endif /* NULLAUDIO
-MANAGER_H */
+#endif /* NULLAUDIOMANAGER_H */
