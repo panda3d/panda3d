@@ -222,4 +222,4 @@ operator << (std::ostream &out, const AudioManager &mgr) {
 
 #include "audioManager.I"
 
-#endif /* __AUDIO_MANAGER_H__ */
+#endif /* AUDIOMANAGER_H */
