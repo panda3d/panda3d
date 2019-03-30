@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef NULLAUDIOSOUND_H
-#define NULLAUDIOSOUND_H
+#ifndef __NULL_AUDIO_SOUND_H__
+#define __NULL_AUDIO_SOUND_H__
 
 #include "audioSound.h"
 
