@@ -105,6 +105,12 @@ def render_color_pixel(region, state, vertex_color=None):
     """Renders a fragment using the specified render settings, and returns the
     resulting color value."""
 
+    # Skip auto-shader tests if we don't support Cg shaders.
+    if not region.window.gsg.supports_basic_shaders:
+        sattr = state.get_attrib(core.ShaderAttrib)
+        if sattr and sattr.auto_shader():
+            pytest.skip("Cannot test auto-shader without Cg shader support")
+
     # Set up the scene with a blank card rendering at specified distance.
     scene = core.NodePath("root")
     scene.set_attrib(core.DepthTestAttrib.make(core.RenderAttrib.M_always))
