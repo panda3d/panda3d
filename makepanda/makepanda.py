@@ -591,6 +591,17 @@ if RUNTIME and not HOST_URL:
     # Set this to a nice default.
     HOST_URL = "https://runtime.panda3d.org/"
 
+if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
+    warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
+    print("=========================================================================")
+    print(warn_prefix + "Python 2.7 will reach EOL after December 31, 2019, and will not")
+    print(warn_prefix + "be supported after that date.  Please ensure you are prepared")
+    print(warn_prefix + "by planning your upgrade to Python 3 now.")
+    print("=========================================================================")
+    sys.stdout.flush()
+    # Give the user some time to contemplate their sins
+    time.sleep(6.0)
+
 ########################################################################
 ##
 ## Choose a Compiler.
