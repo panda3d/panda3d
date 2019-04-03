@@ -21,11 +21,3 @@ def test_geom_vertex_reader(geom_node):
 
     assert new_texcoord.get_data2f() == (1, 0)
     assert new_texcoord.get_data2f() == (1, 1)
-
-
-
-
-
-
-
-
