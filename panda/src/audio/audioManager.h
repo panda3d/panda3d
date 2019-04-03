@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __AUDIO_MANAGER_H__
-#define __AUDIO_MANAGER_H__
+#ifndef AUDIOMANAGER_H
+#define AUDIOMANAGER_H
 
 #include "config_audio.h"
 #include "audioSound.h"
@@ -222,4 +222,4 @@ operator << (std::ostream &out, const AudioManager &mgr) {
 
 #include "audioManager.I"
 
-#endif /* __AUDIO_MANAGER_H__ */
+#endif /* AUDIOMANAGER_H */
