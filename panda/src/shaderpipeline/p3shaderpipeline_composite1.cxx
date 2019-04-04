@@ -3,4 +3,5 @@
 #include "shaderModuleGlsl.cxx"
 #include "shaderCompiler.cxx"
 #include "shaderCompilerGlslPreProc.cxx"
+#include "shaderCompilerCg.cxx"
 #include "shaderCompilerRegistry.cxx"
