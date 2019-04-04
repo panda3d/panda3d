@@ -37,3 +37,11 @@ def test_sphere_into_poly():
     # No collision
     entry = make_collision(CollisionSphere(100, 100, 100, 100), poly)[0]
     assert entry is None
+
+def test_plane_into_sphere():
+    # CollisionPlane is not a 'from' object
+    plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0)))
+    poly = CollisionPolygon(Point3(0, 0, 0), Point3(0, 0, 1), Point3(0, 1, 1), Point3(0, 1, 0))
+
+    entry = make_collision(plane, poly)[0]
+    assert entry is None
