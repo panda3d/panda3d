@@ -2177,26 +2177,6 @@ cg_analyze_shader(const ShaderCaps &caps) {
 }
 
 /**
- * Returns the CGprogram of the given shadertype that belongs to this shader.
- */
-CGprogram Shader::
-cg_program_from_shadertype(ShaderType type) {
-  switch (type) {
-  case ST_vertex:
-    return _cg_vprogram;
-
-  case ST_fragment:
-    return _cg_fprogram;
-
-  case ST_geometry:
-    return _cg_gprogram;
-
-  default:
-    return 0;
-  }
-}
-
-/**
  * This routine is used by the ShaderContext constructor to compile the
  * shader.  The CGprogram objects are turned over to the ShaderContext, we no
  * longer own them.

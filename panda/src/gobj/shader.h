@@ -565,8 +565,6 @@ private:
   int _cg_fprofile;
   int _cg_gprofile;
 
-  CGprogram cg_program_from_shadertype(ShaderType type);
-
 public:
   bool cg_compile_for(const ShaderCaps &caps, CGcontext context,
                       CGprogram &combined_program, pvector<CGparameter> &map);
