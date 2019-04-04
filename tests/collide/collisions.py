@@ -3,7 +3,7 @@ from panda3d.core import CollisionTraverser, CollisionHandlerQueue
 from panda3d.core import CollisionSphere, CollisionBox, CollisionPolygon, CollisionCapsule
 from panda3d.core import CollisionLine, CollisionRay, CollisionSegment, CollisionParabola
 from panda3d.core import CollisionPlane
-from panda3d.core import Point3, Vec3, Plane, LParabola, LVecBase3f
+from panda3d.core import Point3, Vec3, Plane, LParabola
 
 
 def make_collision(solid_from, solid_into):

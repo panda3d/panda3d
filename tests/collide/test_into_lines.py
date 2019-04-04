@@ -19,6 +19,6 @@ def test_sphere_into_segment():
 
 
 def test_sphere_into_parabola():
-    parabola = LParabola(LVecBase3f(1, 0, 0), LVecBase3f(0, 1, 0), LVecBase3f(0, 0, 1))
+    parabola = LParabola((1, 0, 0), (0, 1, 0), (0, 0, 1))
     entry = make_collision(CollisionSphere(0, 0, 0, 3), CollisionParabola(parabola, 1, 2))[0]
     assert entry is None
