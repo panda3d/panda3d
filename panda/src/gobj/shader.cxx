@@ -23,6 +23,9 @@
 #include "bamCache.h"
 #include "string_utils.h"
 #include "shaderModuleGlsl.h"
+#include "shaderCompilerRegistry.h"
+#include "shaderCompiler.h"
+#include "shaderCompilerCg.h"
 
 #ifdef HAVE_CG
 #include <Cg/cg.h>
@@ -2442,7 +2445,8 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     // Determine which language the shader is written in.
     if (_language == SL_Cg) {
 #ifdef HAVE_CG
-      cg_get_profile_from_header(_default_caps);
+      ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
+      cg_compiler->get_profile_from_header(_text, _default_caps);
 
       if (!cg_analyze_shader(_default_caps)) {
         shader_cat.error()
@@ -2532,7 +2536,8 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     // Determine which language the shader is written in.
     if (_language == SL_Cg) {
 #ifdef HAVE_CG
-      cg_get_profile_from_header(_default_caps);
+      ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
+      cg_compiler->get_profile_from_header(_text, _default_caps);
 
       if (!cg_analyze_shader(_default_caps)) {
         shader_cat.error()
@@ -3090,134 +3095,14 @@ check_modified() const {
   return false;
 }
 
-#ifdef HAVE_CG
 /**
- * Determines the appropriate active shader profile settings based on any
- * profile directives stored within the shader header
+ * Find a ShaderCompiler in the global registry that makes the supplied language
  */
-void Shader::
-cg_get_profile_from_header(ShaderCaps& caps) {
-  // Note this forces profile based on what is specified in the shader header
-  // string.  Should probably be relying on card caps eventually.
-
-  string buf;
-  parse_init();
-
-  // Assume that if parse doesn't extend after a parse line then we've reached
-  // the end of _text
-  int lastParse;
-
-  do {
-    lastParse = _parse;
-    parse_line(buf, true, true);
-    int profilePos = buf.find("//Cg profile");
-    if (profilePos >= 0) {
-      // Scan the line for known cg2 vertex program profiles
-      if ((int)buf.find("gp4vp") >= 0)
-        caps._active_vprofile = cgGetProfile("gp4vp");
-
-      if ((int)buf.find("gp5vp") >= 0)
-        caps._active_vprofile = cgGetProfile("gp5vp");
-
-      if ((int)buf.find("glslv") >= 0)
-        caps._active_vprofile = cgGetProfile("glslv");
-
-      if ((int)buf.find("arbvp1") >= 0)
-        caps._active_vprofile = cgGetProfile("arbvp1");
-
-      if ((int)buf.find("vp40") >= 0)
-        caps._active_vprofile = cgGetProfile("vp40");
-
-      if ((int)buf.find("vp30") >= 0)
-        caps._active_vprofile = cgGetProfile("vp30");
-
-      if ((int)buf.find("vp20") >= 0)
-        caps._active_vprofile = cgGetProfile("vp20");
-
-      if ((int)buf.find("vs_1_1") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_1_1");
-
-      if ((int)buf.find("vs_2_0") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_2_0");
-
-      if ((int)buf.find("vs_2_x") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_2_x");
-
-      if ((int)buf.find("vs_3_0") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_3_0");
-
-      if ((int)buf.find("vs_4_0") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_4_0");
-
-      if ((int)buf.find("vs_5_0") >= 0)
-        caps._active_vprofile = cgGetProfile("vs_5_0");
-
-      // Scan the line for known cg2 fragment program profiles
-      if ((int)buf.find("gp4fp") >= 0)
-        caps._active_fprofile = cgGetProfile("gp4fp");
-
-      if ((int)buf.find("gp5fp") >= 0)
-        caps._active_fprofile = cgGetProfile("gp5fp");
-
-      if ((int)buf.find("glslf") >= 0)
-        caps._active_fprofile = cgGetProfile("glslf");
-
-      if ((int)buf.find("arbfp1") >= 0)
-        caps._active_fprofile = cgGetProfile("arbfp1");
-
-      if ((int)buf.find("fp40") >= 0)
-        caps._active_fprofile = cgGetProfile("fp40");
-
-      if ((int)buf.find("fp30") >= 0)
-        caps._active_fprofile = cgGetProfile("fp30");
-
-      if ((int)buf.find("fp20") >= 0)
-        caps._active_fprofile = cgGetProfile("fp20");
-
-      if ((int)buf.find("ps_1_1") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_1_1");
-
-      if ((int)buf.find("ps_1_2") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_1_2");
-
-      if ((int)buf.find("ps_1_3") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_1_3");
-
-      if ((int)buf.find("ps_2_0") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_2_0");
-
-      if ((int)buf.find("ps_2_x") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_2_x");
-
-      if ((int)buf.find("ps_3_0") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_3_0");
-
-      if ((int)buf.find("ps_4_0") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_4_0");
-
-      if ((int)buf.find("ps_5_0") >= 0)
-        caps._active_fprofile = cgGetProfile("ps_5_0");
-
-      // Scan the line for known cg2 geometry program profiles
-      if ((int)buf.find("gp4gp") >= 0)
-        caps._active_gprofile = cgGetProfile("gp4gp");
-
-      if ((int)buf.find("gp5gp") >= 0)
-        caps._active_gprofile = cgGetProfile("gp5gp");
-
-      if ((int)buf.find("glslg") >= 0)
-        caps._active_gprofile = cgGetProfile("glslg");
-
-      if ((int)buf.find("gs_4_0") >= 0)
-        caps._active_gprofile = cgGetProfile("gs_4_0");
-
-      if ((int)buf.find("gs_5_0") >= 0)
-        caps._active_gprofile = cgGetProfile("gs_5_0");
-    }
-  } while(_parse > lastParse);
-
+ShaderCompiler *Shader::
+get_compiler(ShaderLanguage lang) const {
+  ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+  return registry->get_compiler_from_language(lang);
 }
-#endif
 
 /**
  * Delete the compiled code, if it exists.

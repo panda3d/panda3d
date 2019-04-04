@@ -45,6 +45,7 @@ typedef struct _CGparameter *CGparameter;
 #endif
 
 class ShaderModuleGlsl;
+class ShaderCompiler;
 
 /**
 
@@ -550,11 +551,6 @@ private:
   void cg_release_resources();
   void cg_report_errors();
 
-  // Determines the appropriate cg profile settings and stores them in the
-  // active shader caps based on any profile settings stored in the shader's
-  // header
-  void cg_get_profile_from_header(ShaderCaps &caps);
-
   ShaderCaps _cg_last_caps;
   static CGcontext  _cg_context;
   CGprogram  _cg_vprogram;
@@ -639,6 +635,7 @@ private:
                            int fileno = 0, int depth = 0);
 
   bool check_modified() const;
+  ShaderCompiler *get_compiler(ShaderLanguage lang) const;
 
 public:
   ~Shader();
