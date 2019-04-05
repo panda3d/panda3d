@@ -4,6 +4,6 @@ import pytest
 
 def test_cursor_check(): 
     movie_path = "../../samples/media-player/PandaSneezes.ogv"
-    get_File = MovieVideo.get(movie_path)
-    cursor_type = MovieVideo.open(get_File)
+    get_file = MovieVideo.get(movie_path)
+    cursor_type = MovieVideo.open(get_file)
     assert cursor_type is not None
