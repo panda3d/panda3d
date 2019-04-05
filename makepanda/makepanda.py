@@ -3003,9 +3003,6 @@ else:
 if (GetTarget() == 'darwin'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$HOME/Library/Caches/Panda3D-%s" % MAJOR_VERSION)
 
-    # OpenAL is not yet working well on OSX for us, so let's do this for now.
-    configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
-
 if GetTarget() == 'windows':
     # Convert to Windows newlines.
     ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')

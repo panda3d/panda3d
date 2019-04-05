@@ -620,14 +620,20 @@ intersects_line(double &t1, double &t2,
 
   double A = dot(delta, delta);
 
-  nassertr(A != 0.0, false);
-
   LVector3 fc = from - get_center();
-  double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
   double radius = get_radius() + inflate_radius;
   double C = fc_d2 - radius * radius;
 
+  if (A == 0.0) {
+    // Degenerate case where delta is zero.  This is effectively a test
+    // against a point (or sphere, for nonzero inflate_radius).
+    t1 = 0.0;
+    t2 = 0.0;
+    return C < 0.0;
+  }
+
+  double B = 2.0f * dot(delta, fc);
   double radical = B*B - 4.0*A*C;
 
   if (IS_NEARLY_ZERO(radical)) {
