@@ -45,7 +45,17 @@ int Shader::_shaders_generated;
 
 #ifdef HAVE_CG
 CGcontext Shader::_cg_context = 0;
+
 #endif
+
+/**
+ * Determine whether the source file hints at being a Cg shader
+ */
+static bool has_cg_header(const std::string &shader_text) {
+  size_t newline_pos = shader_text.find('\n');
+  std::string search_str = shader_text.substr(0, newline_pos);
+  return search_str.rfind("//Cg") != std::string::npos;
+}
 
 /**
  * Generate an error message including a description of the specified
@@ -2423,45 +2433,6 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     }
     _fullpath = _source_files[0];
     _filename = sfile;
-
-    // Determine which language the shader is written in.
-    if (_language == SL_none) {
-      string header;
-      parse_init();
-      parse_line(header, true, true);
-      if (header == "//Cg") {
-        _language = SL_Cg;
-      } else {
-        shader_cat.error()
-          << "Unable to determine shader language of " << sfile._shared << "\n";
-        return false;
-      }
-    } else if (_language == SL_GLSL) {
-      shader_cat.error()
-        << "GLSL shaders must have separate shader bodies!\n";
-      return false;
-    }
-
-    // Determine which language the shader is written in.
-    if (_language == SL_Cg) {
-#ifdef HAVE_CG
-      ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
-      cg_compiler->get_profile_from_header(_text, _default_caps);
-
-      if (!cg_analyze_shader(_default_caps)) {
-        shader_cat.error()
-          << "Shader encountered an error.\n";
-        return false;
-      }
-#else
-      shader_cat.error()
-        << "Tried to load Cg shader, but no Cg support is enabled.\n";
-#endif
-    } else {
-      shader_cat.error()
-        << "Shader is not in a supported shader-language.\n";
-      return false;
-    }
   }
 
   _loaded = true;
@@ -2514,45 +2485,6 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     if (!do_load_source(Stage::unspecified, sbody._shared, record)) {
       return false;
     }
-
-    // Determine which language the shader is written in.
-    if (_language == SL_none) {
-      string header;
-      parse_init();
-      parse_line(header, true, true);
-      if (header == "//Cg") {
-        _language = SL_Cg;
-      } else {
-        shader_cat.error()
-          << "Unable to determine shader language of " << sbody._shared << "\n";
-        return false;
-      }
-    } else if (_language == SL_GLSL) {
-      shader_cat.error()
-        << "GLSL shaders must have separate shader bodies!\n";
-      return false;
-    }
-
-    // Determine which language the shader is written in.
-    if (_language == SL_Cg) {
-#ifdef HAVE_CG
-      ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
-      cg_compiler->get_profile_from_header(_text, _default_caps);
-
-      if (!cg_analyze_shader(_default_caps)) {
-        shader_cat.error()
-          << "Shader encountered an error.\n";
-        return false;
-      }
-#else
-      shader_cat.error()
-        << "Tried to load Cg shader, but no Cg support is enabled.\n";
-#endif
-    } else {
-      shader_cat.error()
-        << "Shader is not in a supported shader-language.\n";
-      return false;
-    }
   }
 
   _loaded = true;
@@ -2579,6 +2511,30 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   module->set_source_filename(fn);
   std::string &into = module->_raw_source;
 
+  if (stage == Stage::unspecified) {
+    // Determine which language the shader is written in.
+    if (_language == SL_none) {
+      if (has_cg_header(into)) {
+        _language = SL_Cg;
+      } else {
+        shader_cat.error()
+          << "Unable to determine shader language of " << fn << "\n";
+        return false;
+      }
+    } else if (_language == SL_GLSL) {
+      shader_cat.error()
+        << "GLSL shaders must have separate shader bodies!\n";
+      return false;
+    }
+
+    if (_language != SL_Cg) {
+      shader_cat.error()
+        << "Shader is not in a supported shader-language.\n";
+      return false;
+    }
+
+  }
+
   if (_language == SL_GLSL && glsl_preprocess) {
     istream *source = vf->open_read_file(true);
     if (source == nullptr) {
@@ -2599,7 +2555,6 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
     }
     vf->close_read_file(source);
     into = sstr.str();
-
   } else {
     shader_cat.info() << "Reading shader file: " << fn << "\n";
 
@@ -2608,6 +2563,23 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
         << "Could not read shader file: " << fn << "\n";
       return false;
     }
+  }
+
+  if (_language == SL_Cg) {
+#ifdef HAVE_CG
+    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
+    cg_compiler->get_profile_from_header(into, _default_caps);
+
+    _text._shared = into;
+    if (!cg_analyze_shader(_default_caps)) {
+      shader_cat.error()
+        << "Shader encountered an error.\n";
+      return false;
+    }
+#else
+    shader_cat.error()
+      << "Tried to load Cg shader, but no Cg support is enabled.\n";
+#endif
   }
 
   if (record != nullptr) {
@@ -2643,6 +2615,30 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
   PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
   std::string &into = module->_raw_source;
 
+  if (stage == Stage::unspecified) {
+    // Determine which language the shader is written in.
+    if (_language == SL_none) {
+      if (has_cg_header(source)) {
+        _language = SL_Cg;
+      } else {
+        shader_cat.error()
+          << "Unable to determine shader language of " << source << "\n";
+        return false;
+      }
+    } else if (_language == SL_GLSL) {
+      shader_cat.error()
+        << "GLSL shaders must have separate shader bodies!\n";
+      return false;
+    }
+
+    if (_language != SL_Cg) {
+      shader_cat.error()
+        << "Shader is not in a supported shader-language.\n";
+      return false;
+    }
+
+  }
+
   if (_language == SL_GLSL && glsl_preprocess) {
     // Preprocess the GLSL file as we read it.
     std::set<Filename> open_files;
@@ -2656,6 +2652,23 @@ do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRec
 
   } else {
     into = source;
+  }
+
+  if (_language == SL_Cg) {
+#ifdef HAVE_CG
+    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
+    cg_compiler->get_profile_from_header(into, _default_caps);
+
+    _text._shared = into;
+    if (!cg_analyze_shader(_default_caps)) {
+      shader_cat.error()
+        << "Shader encountered an error.\n";
+      return false;
+    }
+#else
+    shader_cat.error()
+      << "Tried to load Cg shader, but no Cg support is enabled.\n";
+#endif
   }
 
   // Strip trailing whitespace.

@@ -76,11 +76,10 @@ ShaderCompilerCg() {
  * profile directives stored within the shader header
  */
 void ShaderCompilerCg::
-get_profile_from_header(const Shader::ShaderFile &shader_file, Shader::ShaderCaps &caps) const {
+get_profile_from_header(const std::string &shader_text, Shader::ShaderCaps &caps) const {
   // Note this forces profile based on what is specified in the shader header
   // string.  Should probably be relying on card caps eventually.
 #ifdef HAVE_CG
-  std::string shader_text = shader_file._shared;
   size_t last_profile_pos = 0;
   while ((last_profile_pos = shader_text.find("//Cg profile", last_profile_pos)) != std::string::npos) {
     size_t newline_pos = shader_text.find('\n', last_profile_pos);
@@ -106,6 +105,8 @@ get_profile_from_header(const Shader::ShaderFile &shader_file, Shader::ShaderCap
         caps._active_gprofile = cgGetProfile(profile.c_str());
       }
     }
+
+    last_profile_pos = newline_pos;
   }
 #endif // HAVE_CG
 }

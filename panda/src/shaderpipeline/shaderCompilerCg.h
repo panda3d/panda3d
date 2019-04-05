@@ -26,7 +26,7 @@ class EXPCL_PANDA_SHADERPIPELINE ShaderCompilerCg : public ShaderCompiler {
 public:
   ShaderCompilerCg();
 
-  void get_profile_from_header(const Shader::ShaderFile &shader_file, Shader::ShaderCaps &caps) const;
+  void get_profile_from_header(const std::string &shader_text, Shader::ShaderCaps &caps) const;
 
 PUBLISHED:
   virtual std::string get_name() const override;
