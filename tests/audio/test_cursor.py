@@ -7,4 +7,3 @@ def test_cursor_type():
     file_name_return = MovieAudio.getFilename(reference_file)
     assert file_name_return == movie_path
     assert cursor is not None
-    
