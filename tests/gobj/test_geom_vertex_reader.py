@@ -10,7 +10,7 @@ def test_geom_vertex_reader(geom_node):
     new_color = GeomVertexReader(new_vdata, 'color')
     new_texcoord = GeomVertexReader(new_vdata, 'texcoord')
 
-    assert new_vertex.get_data3f()==(1,0,0)
+    assert new_vertex.get_data3f() == (1, 0, 0)
     assert new_vertex.get_data3f() == (1, 1, 0)
 
     assert new_normal.get_data3f() == (0, 0, 1)
