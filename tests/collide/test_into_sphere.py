@@ -79,6 +79,7 @@ def test_segment_into_sphere():
     entry = make_collision(CollisionSegment((0, 0, 0), (3, 0, 0)), sphere)[0]
     assert entry is None
 
+
 def test_plane_into_sphere():
     # CollisionPlane is not a 'from' object
     plane = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0)))
