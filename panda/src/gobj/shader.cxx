@@ -2499,6 +2499,7 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
+  std::string into;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
   if (vf == nullptr) {
@@ -2507,80 +2508,15 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
     return false;
   }
 
-  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage);
-  module->set_source_filename(fn);
-  std::string &into = module->_raw_source;
+  shader_cat.info() << "Reading shader file: " << fn << "\n";
 
-  if (stage == Stage::unspecified) {
-    // Determine which language the shader is written in.
-    if (_language == SL_none) {
-      if (has_cg_header(into)) {
-        _language = SL_Cg;
-      } else {
-        shader_cat.error()
-          << "Unable to determine shader language of " << fn << "\n";
-        return false;
-      }
-    } else if (_language == SL_GLSL) {
-      shader_cat.error()
-        << "GLSL shaders must have separate shader bodies!\n";
-      return false;
-    }
-
-    if (_language != SL_Cg) {
-      shader_cat.error()
-        << "Shader is not in a supported shader-language.\n";
-      return false;
-    }
-
-  }
-
-  if (_language == SL_GLSL && glsl_preprocess) {
-    istream *source = vf->open_read_file(true);
-    if (source == nullptr) {
-      shader_cat.error()
-        << "Could not open shader file: " << fn << "\n";
-      return false;
-    }
-
-    // Preprocess the GLSL file as we read it.
-    shader_cat.info()
-      << "Preprocessing shader file: " << fn << "\n";
-
-    std::set<Filename> open_files;
-    ostringstream sstr;
-    if (!r_preprocess_source(module, sstr, *source, fn, vf->get_filename(), open_files, record)) {
-      vf->close_read_file(source);
-      return false;
-    }
-    vf->close_read_file(source);
-    into = sstr.str();
-  } else {
-    shader_cat.info() << "Reading shader file: " << fn << "\n";
-
-    if (!vf->read_file(into, true)) {
-      shader_cat.error()
-        << "Could not read shader file: " << fn << "\n";
-      return false;
-    }
-  }
-
-  if (_language == SL_Cg) {
-#ifdef HAVE_CG
-    ShaderCompilerCg *cg_compiler = DCAST(ShaderCompilerCg, get_compiler(SL_Cg));
-    cg_compiler->get_profile_from_header(into, _default_caps);
-
-    _text._shared = into;
-    if (!cg_analyze_shader(_default_caps)) {
-      shader_cat.error()
-        << "Shader encountered an error.\n";
-      return false;
-    }
-#else
+  if (!vf->read_file(into, true)) {
     shader_cat.error()
-      << "Tried to load Cg shader, but no Cg support is enabled.\n";
-#endif
+      << "Could not read shader file: " << fn << "\n";
+    return false;
   }
+
+  do_load_source(stage, into, record);
 
   if (record != nullptr) {
     record->add_dependent_file(vf);
@@ -2589,16 +2525,9 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
   _last_modified = std::max(_last_modified, vf->get_timestamp());
   _source_files.push_back(vf->get_filename());
 
-  // Strip trailing whitespace.
-  while (!into.empty() && isspace(into[into.size() - 1])) {
-    into.resize(into.size() - 1);
-  }
-
-  // Except add back a newline at the end, which is needed by Intel drivers.
-  into += "\n";
-
-  module->_raw_source = into;
-  _modules.push_back(std::move(module));
+  // Update module source filename, should find a better way to do this...
+  PT(ShaderModule) module = _modules.back();
+  module->set_source_filename(fn);
 
   return true;
 }
