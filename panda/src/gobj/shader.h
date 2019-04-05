@@ -492,15 +492,6 @@ public:
   };
 
 public:
-  // These routines help split the shader into sections, for those shader
-  // implementations that need to do so.  Don't use them when you use separate
-  // shader programs.
-  void parse_init();
-  void parse_line(std::string &result, bool rt, bool lt);
-  void parse_upto(std::string &result, std::string pattern, bool include);
-  void parse_rest(std::string &result);
-  bool parse_eof();
-
   void cp_report_error(ShaderArgInfo &arg, const std::string &msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
   bool cp_errchk_parameter_in(ShaderArgInfo &arg);
