@@ -20,7 +20,7 @@
 
 #include "dcast.h"
 
-static const std::vector<std::string> G_VPROFILES= {
+static const std::string vertex_profiles[] = {
   "gp4vp",
   "gp5vp",
   "glslv",
@@ -36,7 +36,7 @@ static const std::vector<std::string> G_VPROFILES= {
   "vs_5_0"
 };
 
-static const std::vector<std::string> G_FPROFILES= {
+static const std::string fragment_profiles[] = {
   "gp4fp",
   "gp5fp",
   "glslf",
@@ -54,7 +54,7 @@ static const std::vector<std::string> G_FPROFILES= {
   "ps_5_0"
 };
 
-static const std::vector<std::string> G_GPROFILES = {
+static const std::string geometry_profiles[] = {
   "gp4gp",
   "gp5gp",
   "glslg",
@@ -82,26 +82,26 @@ get_profile_from_header(const Shader::ShaderFile &shader_file, Shader::ShaderCap
 #ifdef HAVE_CG
   std::string shader_text = shader_file._shared;
   size_t last_profile_pos = 0;
-  while (last_profile_pos = shader_text.find("//Cg profile", last_profile_pos) != std::string::npos) {
+  while ((last_profile_pos = shader_text.find("//Cg profile", last_profile_pos)) != std::string::npos) {
     size_t newline_pos = shader_text.find('\n', last_profile_pos);
     std::string search_str = shader_text.substr(last_profile_pos, newline_pos);
 
     // Scan the line for known cg2 vertex program profiles
-    for (std::string profile : G_VPROFILES) {
+    for (const std::string &profile : vertex_profiles) {
       if (search_str.find(profile) != std::string::npos) {
         caps._active_vprofile = cgGetProfile(profile.c_str());
       }
     }
 
     // Scan the line for known cg2 fragment program profiles
-    for (std::string profile : G_FPROFILES) {
+    for (const std::string &profile : fragment_profiles) {
       if (search_str.find(profile) != std::string::npos) {
         caps._active_fprofile = cgGetProfile(profile.c_str());
       }
     }
 
     // Scan the line for known cg2 geometry program profiles
-    for (std::string profile : G_GPROFILES) {
+    for (const std::string &profile : geometry_profiles) {
       if (search_str.find(profile) != std::string::npos) {
         caps._active_gprofile = cgGetProfile(profile.c_str());
       }
