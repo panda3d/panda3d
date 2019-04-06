@@ -43,32 +43,32 @@ solids_into = [
     ColliderSolid("InvSphere", CollisionInvSphere((0, 0, 0), 2)),
 ]
 solids_from = [
-#    ColliderSolid(
-#        "Sphere",
-#        CollisionSphere((0, 0, 0), 1.5),
-#    ),
-#    ColliderSolid(
-#        "Box",
-#        CollisionBox((-1, -1, -1), (1, 1, 1)),
-#    ),
-#    ColliderSolid(
-#        "Segment",
-#        CollisionSegment((0, 0, 0), (0, 25, 0)),
-#        cam_shot=True, origin=False,
-#    ),
+    ColliderSolid(
+        "Sphere",
+        CollisionSphere((0, 0, 0), 1.5),
+    ),
+    ColliderSolid(
+        "Box",
+        CollisionBox((-1, -1, -1), (1, 1, 1)),
+    ),
+    ColliderSolid(
+        "Capsule",
+        CollisionCapsule((-1, 0, 0), (1, 0, 0), 1),
+    ),
+    ColliderSolid(
+        "Segment",
+        CollisionSegment((0, 0, 0), (0, 25, 0)),
+        cam_shot=True, origin=False,
+    ),
     ColliderSolid(
         "Ray",
         CollisionRay((0, 0, 0), (0, 1, 0)),
         cam_shot=True, origin=False,
     ),
-#    ColliderSolid(
-#        "Line",
-#        CollisionLine((0, 0, 0), (0, 1, 0)),
-#        cam_shot=True, origin=False,
-#    ),
     ColliderSolid(
-        "Capsule",
-        CollisionCapsule((-1, 0, 0), (1, 0, 0), 1),
+        "Line",
+        CollisionLine((0, 0, 0), (0, 1, 0)),
+        cam_shot=True, origin=False,
     ),
 ]
 
@@ -166,35 +166,47 @@ class FromCollider(Collider):
         base.task_mgr.add(self.collide, "collide", sort=15)
         base.task_mgr.add(self.adjust_solid_pos, "adjust solid pos", sort=10)
 
-        #self.last_mpos = Point2(base.mouseWatcherNode.get_mouse())
+        if base.mouseWatcherNode.has_mouse():
+            self.last_mpos = Point2(base.mouseWatcherNode.get_mouse())
+        else:
+            self.last_mpos = None
 
 
     def adjust_solid_pos(self, task):
-        lmb = base.mouseWatcherNode.is_button_down(MouseButton.one())
-        if lmb and self.solids[self.solid_idx].cam_shot:
-            self.np.reparent_to(base.cam)
-            self.np.set_pos(0, 0, 0)
-            mpos = base.mouseWatcherNode.get_mouse()
-            mpos = Point3(mpos.x, mpos.y, 0)
-            cam_space_vec = Point3()
-            base.cam.node().get_lens().extrude_depth(mpos, cam_space_vec)
-            cam_space_vec /= cam_space_vec.length()
-            self.np.look_at(cam_space_vec)
-            self.np.wrt_reparent_to(base.render)
-        elif lmb and not self.solids[self.solid_idx].cam_shot:
-            model_pos = self.np.get_pos(base.cam)
-            frustum_pos = Point3()
-            base.cam.node().get_lens().project(model_pos, frustum_pos)
-            mouse_x = base.mouseWatcherNode.get_mouse_x()
-            mouse_y = base.mouseWatcherNode.get_mouse_y()
-            model_depth = frustum_pos[2]
-            new_frustum_pos = Point3(mouse_x, mouse_y, model_depth)
-            new_model_pos = Point3()
-            base.cam.node().get_lens().extrude_depth(
-                new_frustum_pos,
-                new_model_pos,
-            )
-            self.np.set_pos(base.cam, new_model_pos)
+        if base.mouseWatcherNode.has_mouse():
+            lmb = base.mouseWatcherNode.is_button_down(MouseButton.one())
+            mmb = base.mouseWatcherNode.is_button_down(MouseButton.two())
+            mpos = Point2(base.mouseWatcherNode.get_mouse())
+
+            if lmb and self.solids[self.solid_idx].cam_shot:
+                self.np.reparent_to(base.cam)
+                self.np.set_pos(0, 0, 0)
+                mpos_d = Point3(mpos.x, mpos.y, 0)
+                cam_space_vec = Point3()
+                base.cam.node().get_lens().extrude_depth(mpos_d, cam_space_vec)
+                cam_space_vec /= cam_space_vec.length()
+                self.np.look_at(cam_space_vec)
+                self.np.wrt_reparent_to(base.render)
+            elif lmb and not self.solids[self.solid_idx].cam_shot:
+                model_pos = self.np.get_pos(base.cam)
+                frustum_pos = Point3()
+                base.cam.node().get_lens().project(model_pos, frustum_pos)
+                mouse_x = mpos.x
+                mouse_y = mpos.y
+                model_depth = frustum_pos[2]
+                new_frustum_pos = Point3(mpos.x, mpos.y, model_depth)
+                new_model_pos = Point3()
+                base.cam.node().get_lens().extrude_depth(
+                    new_frustum_pos,
+                    new_model_pos,
+                )
+                self.np.set_pos(base.cam, new_model_pos)
+
+            if mmb and self.last_mpos is not None:
+                mpos_delta = mpos - self.last_mpos
+                hpr_delta = Point3(mpos_delta.x * 180, mpos_delta.y * 180, 0)
+                self.np.set_hpr(base.cam, self.np.get_hpr(base.cam) + hpr_delta)
+            self.last_mpos = mpos
         return task.cont
 
     def switch_solid(self):
