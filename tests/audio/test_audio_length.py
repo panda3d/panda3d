@@ -7,3 +7,4 @@ def test_audio_rate():
     movie_file = MovieAudio.open(reference_file)
     length_audio = MovieAudioCursor.length(movie_file)
     assert length_audio == 2
+    

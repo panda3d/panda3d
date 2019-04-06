@@ -7,4 +7,3 @@ def test_audio_channel():
     movie_file = MovieAudio.open(reference_file)
     channel_num = MovieAudioCursor.audio_channels(movie_file)
     assert channel_num is 1
-
