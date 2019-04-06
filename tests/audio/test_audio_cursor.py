@@ -1,7 +1,7 @@
 from panda3d.core import MovieAudio
 
-def test_cursor_type():
-    movie_path = os.path.join(os.path.dirname(__file__), "impulse.flac"
+def test_cursor():
+    movie_path = "../../samples/media-player/PandaSneezes.ogv"
     reference_file = MovieAudio.get(movie_path)
     cursor = MovieAudio.open(reference_file)
     file_name_return = MovieAudio.getFilename(reference_file)
