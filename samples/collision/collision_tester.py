@@ -39,7 +39,7 @@ solids_into = [
     ColliderSolid("Sphere", CollisionSphere((0, 0, 0), 1.5)),
     ColliderSolid("Capsule", CollisionCapsule((-1, 0, 0), (1, 0, 0), 1)),
     ColliderSolid("Box", CollisionBox((-1, -1, -1), (1, 1, 1))),
-    ColliderSolid("Plane", CollisionPlane(Plane((1, 0, 0), (0, 0, 0)))),
+    ColliderSolid("Plane", CollisionPlane(Plane((0, 0, 1), (0, 0, 0)))),
     ColliderSolid("InvSphere", CollisionInvSphere((0, 0, 0), 2)),
 ]
 solids_from = [
@@ -48,27 +48,27 @@ solids_from = [
 #        CollisionSphere((0, 0, 0), 1.5),
 #    ),
 #    ColliderSolid(
-#        "Capsule",
-#        CollisionCapsule((-1, 0, 0), (1, 0, 0), 1),
-#    ),
-#    ColliderSolid(
 #        "Box",
 #        CollisionBox((-1, -1, -1), (1, 1, 1)),
 #    ),
-    ColliderSolid(
-        "Segment",
-        CollisionSegment((0, 0, 0), (0, 25, 0)),
-        cam_shot=True, origin=False,
-    ),
+#    ColliderSolid(
+#        "Segment",
+#        CollisionSegment((0, 0, 0), (0, 25, 0)),
+#        cam_shot=True, origin=False,
+#    ),
     ColliderSolid(
         "Ray",
         CollisionRay((0, 0, 0), (0, 1, 0)),
         cam_shot=True, origin=False,
     ),
+#    ColliderSolid(
+#        "Line",
+#        CollisionLine((0, 0, 0), (0, 1, 0)),
+#        cam_shot=True, origin=False,
+#    ),
     ColliderSolid(
-        "Line",
-        CollisionLine((0, 0, 0), (0, 1, 0)),
-        cam_shot=True, origin=False,
+        "Capsule",
+        CollisionCapsule((-1, 0, 0), (1, 0, 0), 1),
     ),
 ]
 
@@ -89,7 +89,7 @@ class Base(ShowBase):
         self.accept("mouse3-up", self.set_rotation_mode, [False])
         self.accept("wheel_up", self.move_camera_distance, [-1])
         self.accept("wheel_down", self.move_camera_distance, [1])
-        base.taskMgr.add(self.move_camera, "Move camera")
+        base.taskMgr.add(self.move_camera, "Move camera", sort=10)
 
         self.from_coll = FromCollider(solids_from)
         self.accept("1", self.from_coll.switch_solid)
@@ -163,22 +163,46 @@ class FromCollider(Collider):
         self.traverser.show_collisions(base.render)
         self.queue = CollisionHandlerQueue()
         self.traverser.add_collider(self.coll_np, self.queue)
-        base.task_mgr.add(self.collide, "collide")
-        base.task_mgr.add(self.adjust_solid_pos, "adjust solid pos")
+        base.task_mgr.add(self.collide, "collide", sort=15)
+        base.task_mgr.add(self.adjust_solid_pos, "adjust solid pos", sort=10)
+
+        #self.last_mpos = Point2(base.mouseWatcherNode.get_mouse())
+
 
     def adjust_solid_pos(self, task):
         lmb = base.mouseWatcherNode.is_button_down(MouseButton.one())
         if lmb and self.solids[self.solid_idx].cam_shot:
             self.np.reparent_to(base.cam)
             self.np.set_pos(0, 0, 0)
-            mpos = base.mouseWatcherNode.getMouse()
+            mpos = base.mouseWatcherNode.get_mouse()
             mpos = Point3(mpos.x, mpos.y, 0)
             cam_space_vec = Point3()
             base.cam.node().get_lens().extrude_depth(mpos, cam_space_vec)
             cam_space_vec /= cam_space_vec.length()
             self.np.look_at(cam_space_vec)
             self.np.wrt_reparent_to(base.render)
+        elif lmb and not self.solids[self.solid_idx].cam_shot:
+            model_pos = self.np.get_pos(base.cam)
+            frustum_pos = Point3()
+            base.cam.node().get_lens().project(model_pos, frustum_pos)
+            mouse_x = base.mouseWatcherNode.get_mouse_x()
+            mouse_y = base.mouseWatcherNode.get_mouse_y()
+            model_depth = frustum_pos[2]
+            new_frustum_pos = Point3(mouse_x, mouse_y, model_depth)
+            new_model_pos = Point3()
+            base.cam.node().get_lens().extrude_depth(
+                new_frustum_pos,
+                new_model_pos,
+            )
+            self.np.set_pos(base.cam, new_model_pos)
         return task.cont
+
+    def switch_solid(self):
+        was_cam_shot = self.solids[self.solid_idx].cam_shot
+        super().switch_solid()
+        is_cam_shot = self.solids[self.solid_idx].cam_shot
+        if was_cam_shot and not is_cam_shot:
+            self.np.set_pos(self.np.get_pos() / 2)
 
     def collide(self, task):
         self.traverser.traverse(base.render)
