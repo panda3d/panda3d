@@ -6,6 +6,7 @@ from panda3d.core import KeyboardButton
 from panda3d.core import MouseButton
 from panda3d.core import Point2
 from panda3d.core import Point3
+from panda3d.core import TextNode
 from panda3d.core import CollisionNode
 from panda3d.core import CollisionTraverser
 from panda3d.core import CollisionHandlerQueue
@@ -25,7 +26,14 @@ from panda3d.core import CollisionSphere
 from panda3d.core import CollisionTube
 
 from direct.showbase.ShowBase import ShowBase
+from direct.gui.DirectGui import OnscreenText
 
+
+def hint_text(text, i):
+    return OnscreenText(
+        text=text, pos=(0.06, -.06 * (i + 0.5)), fg=(1, 1, 1, 1),
+        parent=base.a2dTopLeft,align=TextNode.ALeft, scale=.05,
+    )
 
 class ColliderSolid:
     def __init__(self, name, solid, cam_shot=False, origin=True):
@@ -33,6 +41,9 @@ class ColliderSolid:
         self.solid = solid
         self.cam_shot = cam_shot
         self.origin = origin
+
+    def repr(self):
+        return self.name
 
 
 solids_into = [
@@ -91,10 +102,31 @@ class Base(ShowBase):
         self.accept("wheel_down", self.move_camera_distance, [1])
         base.taskMgr.add(self.move_camera, "Move camera", sort=10)
 
+        self.hint_from = hint_text("", 1)
+        self.hint_into = hint_text("", 2)
+        self.hint_lmb = hint_text("LMB: Shoot / move From solid", 3)
+        self.hint_rmb = hint_text("RMB: Move camera", 4)
+        self.hint_mmb = hint_text("MMB: Rotate From CollisionSolid", 5)
+        self.hint_wheel = hint_text("Mouse wheel: Zoom in / out", 6)
+        self.solid_texts = [self.hint_from, self.hint_into]
+        self.accept(
+            "update-from-text",
+            self.update_solid_text,
+            [0, "1: Change From solid ({})"],
+        )
+        self.accept(
+            "update-into-text",
+            self.update_solid_text,
+            [1, "2: Change Into solid ({})"],
+        )
+
         self.from_coll = FromCollider(solids_from)
         self.accept("1", self.from_coll.switch_solid)
         self.into_coll = IntoCollider(solids_into)
         self.accept("2", self.into_coll.switch_solid)
+
+    def update_solid_text(self, idx, hint_text, solid_repr):
+        self.solid_texts[idx].setText(hint_text.format(solid_repr))
 
     def set_rotation_mode(self, mode):
         self.rotation_mode = mode
@@ -165,12 +197,15 @@ class FromCollider(Collider):
         self.traverser.add_collider(self.coll_np, self.queue)
         base.task_mgr.add(self.collide, "collide", sort=15)
         base.task_mgr.add(self.adjust_solid_pos, "adjust solid pos", sort=10)
+        base.messenger.send(
+            "update-from-text",
+            [self.solids[self.solid_idx].name],
+        )
 
         if base.mouseWatcherNode.has_mouse():
             self.last_mpos = Point2(base.mouseWatcherNode.get_mouse())
         else:
             self.last_mpos = None
-
 
     def adjust_solid_pos(self, task):
         if base.mouseWatcherNode.has_mouse():
@@ -215,6 +250,10 @@ class FromCollider(Collider):
         is_cam_shot = self.solids[self.solid_idx].cam_shot
         if was_cam_shot and not is_cam_shot:
             self.np.set_pos(self.np.get_pos() / 2)
+        base.messenger.send(
+            "update-from-text",
+            [self.solids[self.solid_idx].name],
+        )
 
     def collide(self, task):
         self.traverser.traverse(base.render)
@@ -225,6 +264,10 @@ class IntoCollider(Collider):
     def __init__(self, solids):
         Collider.__init__(self, solids)
         self.coll.set_from_collide_mask(0)
+        base.messenger.send(
+            "update-into-text",
+            [self.solids[self.solid_idx].name],
+        )
         #base.task_mgr.add(self.wobble, "wobble")
 
     def wobble(self, task):
@@ -239,6 +282,13 @@ class IntoCollider(Collider):
                 task.time*360/30,
             )
         return task.cont
+
+    def switch_solid(self):
+        super().switch_solid()
+        base.messenger.send(
+            "update-into-text",
+            [self.solids[self.solid_idx].name],
+        )
 
 
 if __name__ == '__main__':
