@@ -270,20 +270,6 @@ class IntoCollider(Collider):
             "update-into-text",
             [self.solids[self.solid_idx].name],
         )
-        #base.task_mgr.add(self.wobble, "wobble")
-
-    def wobble(self, task):
-        if self.wobble_type == STILL:
-            pass
-        elif self.wobble_type == LEFTRIGHT:
-            self.np.set_x(sin((task.time*2*pi)/10) * 5)
-        elif self.wobble_type == ROTATE:
-            self.np.set_hpr(
-                task.time*360/10,
-                task.time*360/20,
-                task.time*360/30,
-            )
-        return task.cont
 
     def switch_solid(self):
         super().switch_solid()
