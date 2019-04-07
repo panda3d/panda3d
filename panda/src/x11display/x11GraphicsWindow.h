@@ -20,6 +20,32 @@
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
 
+class IcoFile {
+public:
+  struct Entry {
+    unsigned int width, height;
+    unsigned int xhot, yhot;
+    uint32_t *pixels;
+  };
+
+  IcoFile(Filename filename);
+  IcoFile(std::istream &str);
+  ~IcoFile(void);
+
+  unsigned int get_nb_of_entries(void) const;
+  Entry const *get_entry(unsigned int i) const;
+  unsigned int find_largest(void) const;
+  unsigned int find_size(unsigned int size) const;
+
+protected:
+  void load_all_entries(std::istream &str);
+  void load_entry(std::istream &str, unsigned int entry_id);
+
+protected:
+  unsigned int _nb_of_entries;
+  Entry *_entries;
+};
+
 /**
  * Interfaces to the X11 window system.
  */
@@ -73,7 +99,6 @@ protected:
 
 private:
   X11_Cursor get_cursor(const Filename &filename);
-  X11_Cursor read_ico(std::istream &ico);
 
 protected:
   X11_Display *_display;
@@ -114,6 +139,12 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  // Window icon. X11 requires that image uses long as element type.
+  Filename _icon_filename;
+  IcoFile *_icon;
+  long *_icon_image;
+  size_t _icon_image_size;
 
   // Since the Panda API requests icons and cursors by filename, we need a
   // table mapping filenames to handles, so we can avoid re-reading the file

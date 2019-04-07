@@ -308,6 +308,7 @@ x11GraphicsPipe(const std::string &display) :
   _net_wm_state_add = XInternAtom(_display, "_NET_WM_STATE_ADD", false);
   _net_wm_state_remove = XInternAtom(_display, "_NET_WM_STATE_REMOVE", false);
   _net_wm_bypass_compositor = XInternAtom(_display, "_NET_WM_BYPASS_COMPOSITOR", false);
+  _net_wm_icon = XInternAtom(_display, "_NET_WM_ICON", false);
 }
 
 /**

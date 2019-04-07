@@ -84,6 +84,291 @@ static int xcursor_seek(XcursorFile *file, long offset, int whence) {
   return str->tellg();
 }
 
+IcoFile::
+IcoFile(Filename filename)
+{
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  Filename resolved(filename);
+  if (vfs->resolve_filename(resolved, get_model_path())) {
+    // Open the file through the virtual file system.
+    istream *str = vfs->open_read_file(resolved, true);
+    if (str != nullptr) {
+      load_all_entries(*str);
+    } else {
+      x11display_cat.warning()
+        << "Could not open icon file " << filename << "\n";
+    }
+  } else {
+    // The filename doesn't exist.
+    x11display_cat.warning()
+      << "Could not find icon filename " << filename << "\n";
+  }
+}
+
+IcoFile::
+IcoFile(istream &str)
+{
+  load_all_entries(str);
+}
+
+IcoFile::
+~IcoFile(void) {
+  for (unsigned int i = 0; i < _nb_of_entries; i++) {
+    delete[] _entries[i].pixels;
+  }
+  delete[] _entries;
+}
+
+void IcoFile::
+load_all_entries(istream &str) {
+  // Local structs, this is just POD, make input easier
+  typedef struct {
+    uint16_t reserved, type, count;
+  } IcoHeader;
+
+  typedef struct {
+    uint8_t width, height, colorCount, reserved;
+    uint16_t xhot, yhot;
+    uint32_t bitmapSize, offset;
+  } IcoEntry;
+
+  IcoHeader header;
+
+  // Get our header, note that ICO = type 1 and CUR = type 2.
+  str.read(reinterpret_cast<char *>(&header), sizeof(IcoHeader));
+  if (str.good() && (header.type == 1 || header.type == 2) && header.count >= 1) {
+    // Read the entry table into memory and load the images
+    _nb_of_entries = header.count;
+    IcoEntry *raw_entries = new IcoEntry[_nb_of_entries];
+    _entries = new Entry[_nb_of_entries];
+    str.read(reinterpret_cast<char *>(raw_entries), _nb_of_entries * sizeof(IcoEntry));
+    if (str.good()) {
+      for (unsigned int i = 0; i < _nb_of_entries; ++i) {
+        str.seekg(raw_entries[i].offset);
+        if (str.good()) {
+          load_entry(str, i);
+        }
+        // If this is an actual CUR not an ICO set up the hotspot properly.
+        if (header.type == 2) {
+          _entries[i].xhot = raw_entries[i].xhot;
+          _entries[i].yhot = raw_entries[i].yhot;
+        } else {
+          _entries[i].xhot = 0;
+          _entries[i].yhot = 0;
+        }
+      }
+    }
+    delete[] raw_entries;
+  }
+}
+
+void IcoFile::
+load_entry(istream &str, unsigned int entry_id) {
+  typedef struct {
+    uint32_t headerSize, width, height;
+    uint16_t planes, bitsPerPixel;
+    uint32_t compression, imageSize, xPixelsPerM, yPixelsPerM, colorsUsed, colorsImportant;
+  } IcoInfoHeader;
+
+  typedef struct {
+    uint8_t blue, green, red, reserved;
+  } IcoColor;
+
+  IcoInfoHeader infoHeader;
+  IcoColor color, *palette = nullptr;
+
+  unsigned int mask, shift;
+  size_t colorCount, bitsPerPixel;
+
+  size_t xorBmpSize, andBmpSize;
+  char *curXor, *curAnd;
+  char *xorBmp = nullptr, *andBmp = nullptr;
+  // Seek to the image in the ICO.
+  if (str.peek() == 0x89) {
+    // Hang on, this is actually a PNG header.
+    PNMImage img;
+    PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
+    if (!img.read(str, "", reg->get_type_from_extension("png"))) {
+      goto cleanup;
+    }
+    img.set_maxval(255);
+    img.make_rgb();
+
+    xel *ptr = img.get_array();
+    xelval *alpha = img.get_alpha_array();
+    size_t num_pixels = (size_t)img.get_x_size() * (size_t)img.get_y_size();
+    _entries[entry_id].width = img.get_x_size();
+    _entries[entry_id].height = img.get_y_size();
+    _entries[entry_id].pixels = new uint32_t[num_pixels];
+    uint32_t *image_pixels = _entries[entry_id].pixels;
+
+    if (alpha != nullptr) {
+      for (size_t p = 0; p < num_pixels; ++p) {
+        *image_pixels++ = (*alpha << 24U) | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
+        ++ptr;
+        ++alpha;
+      }
+    } else {
+      for (size_t p = 0; p < num_pixels; ++p) {
+        *image_pixels++ = 0xff000000U | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
+        ++ptr;
+      }
+    }
+
+  } else {
+    str.read(reinterpret_cast<char *>(&infoHeader), sizeof(IcoInfoHeader));
+    if (!str.good()) goto cleanup;
+    bitsPerPixel = infoHeader.bitsPerPixel;
+
+    if (infoHeader.compression != 0) goto cleanup;
+
+    // Load the color palette, if one exists.
+    if (bitsPerPixel != 24 && bitsPerPixel != 32) {
+      colorCount = 1 << bitsPerPixel;
+      palette = new IcoColor[colorCount];
+      str.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
+      if (!str.good()) goto cleanup;
+    }
+
+    int and_stride = ((infoHeader.width >> 3) + 3) & ~0x03;
+
+    // Read in the pixel data.
+    unsigned int image_width = infoHeader.width;
+    unsigned int image_height = infoHeader.height / 2;
+    xorBmpSize = (image_width * image_height * bitsPerPixel) / 8;
+    andBmpSize = and_stride * image_height;
+    curXor = xorBmp = new char[xorBmpSize];
+    curAnd = andBmp = new char[andBmpSize];
+    str.read(xorBmp, xorBmpSize);
+    if (!str.good()) goto cleanup;
+    str.read(andBmp, andBmpSize);
+    if (!str.good()) goto cleanup;
+
+    //Allocate the image buffer
+    _entries[entry_id].width = image_width;
+    _entries[entry_id].height = image_height;
+    _entries[entry_id].pixels = new uint32_t[image_width * image_height];
+    uint32_t *image_pixels = _entries[entry_id].pixels;
+
+    // Support all the formats that GIMP supports.
+    switch (bitsPerPixel) {
+    case 1:
+    case 4:
+    case 8:
+      // For colors less that a byte wide, shift and mask the palette indices
+      // off each element of the xorBmp and append them to the image.
+      mask = ((1 << bitsPerPixel) - 1);
+      for (int i = image_height - 1; i >= 0; i--) {
+        for (unsigned int j = 0; j < image_width; j += 8 / bitsPerPixel) {
+          for (unsigned int k = 0; k < 8 / bitsPerPixel; k++) {
+            shift = 8 - ((k + 1) * bitsPerPixel);
+            color = palette[(*curXor & (mask << shift)) >> shift];
+            image_pixels[(i * image_width) + j + k] =
+                (color.red << 16) +
+                (color.green << 8) +
+                (color.blue);
+          }
+
+          curXor++;
+        }
+
+        // Set the alpha byte properly according to the andBmp.
+        for (unsigned int j = 0; j < image_width; j += 8) {
+          for (unsigned int k = 0; k < 8; k++) {
+            shift = 7 - k;
+            image_pixels[(i * image_width) + j + k] |=
+              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
+          }
+
+          curAnd++;
+        }
+      }
+      break;
+
+    case 24:
+      // Pack each of the three bytes into a single color, BGR -> 0RGB
+      for (int i = image_height - 1; i >= 0; i--) {
+        for (unsigned int j = 0; j < image_width; j++) {
+          shift = 7 - (j & 0x7);
+          uint32_t alpha = (curAnd[j >> 3] & (1 << shift)) ? 0 : 0xff000000U;
+          image_pixels[(i * image_width) + j] =
+              (uint8_t)curXor[0]
+              | ((uint8_t)curXor[1] << 8u)
+              | ((uint8_t)curXor[2] << 16u)
+              | alpha;
+          curXor += 3;
+        }
+        curAnd += and_stride;
+      }
+      break;
+
+    case 32:
+      // Pack each of the four bytes into a single color, BGRA -> ARGB
+      for (int i = image_height - 1; i >= 0; i--) {
+        for (unsigned int j = 0; j < image_width; j++) {
+          image_pixels[(i * image_width) + j] =
+              (*(curXor + 3) << 24) +
+              (*(curXor + 2) << 16) +
+              (*(curXor + 1) << 8) +
+              (*curXor);
+          curXor += 4;
+        }
+      }
+      break;
+
+    default:
+      // Oops, format is not supported, delete the image
+      delete[] _entries[entry_id].pixels;
+      _entries[entry_id].pixels = nullptr;
+      goto cleanup;
+    }
+  }
+
+cleanup:
+  delete[] palette;
+  delete[] xorBmp;
+  delete[] andBmp;
+}
+
+unsigned int IcoFile::
+get_nb_of_entries(void) const {
+  return _nb_of_entries;
+}
+
+IcoFile::Entry const * IcoFile::
+get_entry(unsigned int i) const {
+  nassertr(i < _nb_of_entries, nullptr);
+  return &_entries[i];
+}
+
+unsigned int IcoFile::
+find_largest(void) const {
+  nassertr(_nb_of_entries > 0, 0);
+  unsigned int entry_id = 0;
+  for (unsigned int i = 1; i < _nb_of_entries; i++) {
+    if (_entries[i].width > _entries[entry_id].width ||
+        _entries[i].height > _entries[entry_id].height)
+      entry_id = i;
+  }
+  return entry_id;
+}
+
+unsigned int IcoFile::
+find_size(unsigned int size) const {
+  nassertr(_nb_of_entries > 0, 0);
+  unsigned int entry_id = 0;
+  for (unsigned int i = 1; i < _nb_of_entries; i++) {
+    if (_entries[i].width == size && _entries[i].height == size) {
+      entry_id = i;
+      break;
+    }
+    if (_entries[i].width > _entries[entry_id].width ||
+        _entries[i].height > _entries[entry_id].height)
+      entry_id = i;
+  }
+  return entry_id;
+}
+
 TypeHandle x11GraphicsWindow::_type_handle;
 
 /**
@@ -107,6 +392,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _ic = (XIC)nullptr;
   _visual_info = nullptr;
   _orig_size_id = -1;
+  _icon_image = nullptr;
+  _icon_image_size = 0;
 
   if (x11_pipe->_have_xrandr) {
     // We may still need these functions after the pipe is already destroyed,
@@ -130,6 +417,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
  */
 x11GraphicsWindow::
 ~x11GraphicsWindow() {
+  delete _icon;
+  delete[] _icon_image;
   if (!_cursor_filenames.empty()) {
     LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
     for (auto item : _cursor_filenames) {
@@ -1190,6 +1479,42 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     wm_hints_p->flags = StateHint;
   }
 
+  // Load the application icon if configured
+  if (properties.has_icon_filename() && !properties.get_icon_filename().empty()) {
+    Filename filename = properties.get_icon_filename();
+    // Load only if the icon file has changed
+    if (filename != _icon_filename) {
+      _icon_filename = filename;
+      delete _icon;
+      delete[] _icon_image;
+      _icon_image = nullptr;
+      _icon_image_size = 0;
+      _icon = new IcoFile(_icon_filename);
+      if (_icon->get_nb_of_entries() > 0) {
+        unsigned int entry_id = _icon->find_largest();
+        IcoFile::Entry const * entry = _icon->get_entry(entry_id);
+        if (entry->pixels != nullptr) {
+          _icon_image_size = entry->width * entry->height;
+          _icon_image = new long[_icon_image_size + 2];
+          _icon_image[0] = entry->width;
+          _icon_image[1] = entry->height;
+          for (unsigned int i = 0; i < _icon_image_size; ++i) {
+            _icon_image[i + 2] = entry->pixels[i];
+          }
+          _icon_image_size += 2;
+        }
+      }
+    }
+  } else {
+    // No more icon is configured, do some clean up
+    _icon_filename = Filename();
+    delete _icon;
+    _icon = nullptr;
+    delete[] _icon_image;
+    _icon_image = nullptr;
+    _icon_image_size = 0;
+  }
+
   // Two competing window manager interfaces have evolved.  One of them allows
   // to set certain properties as a "type"; the other one as a "state".  We'll
   // try to honor both.
@@ -1309,6 +1634,14 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_state,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *)state_data, next_state_data);
+
+
+  // Update the window icon, if any.
+  if (_icon_image != nullptr) {
+    XChangeProperty(_display, _xwindow, x11_pipe->_net_wm_icon,
+                    XA_CARDINAL, 32, PropModeReplace,
+                    (unsigned char*) _icon_image, _icon_image_size);
+  }
 
   if (already_mapped) {
     // We have to request state changes differently when the window has been
@@ -2110,7 +2443,21 @@ get_cursor(const Filename &filename) {
     // Windows .ico or .cur file.
     x11display_cat.debug()
       << "Loading Windows cursor " << filename << "\n";
-    h = read_ico(*str);
+    int def_size = x11_pipe->_xcursor_size;
+    IcoFile cursor(*str);
+    if (cursor.get_nb_of_entries() > 0) {
+      unsigned int entry_id = cursor.find_size(def_size);
+      IcoFile::Entry const * entry = cursor.get_entry(entry_id);
+      if (entry->pixels != nullptr) {
+        XcursorImage *image = x11_pipe->_XcursorImageCreate(entry->width, entry->height);
+        image->xhot = entry->xhot;
+        image->yhot = entry->yhot;
+        for (unsigned int i = 0; i < entry->width * entry->height; ++i) {
+          image->pixels[i] = entry->pixels[i];
+        }
+        h = x11_pipe->_XcursorImageLoadCursor(_display, image);
+      }
+    }
   }
 
   // Delete the istream.
@@ -2123,222 +2470,4 @@ get_cursor(const Filename &filename) {
 
   _cursor_filenames[resolved] = h;
   return h;
-}
-
-/**
- * Reads a Windows .ico or .cur file from the indicated stream and returns it
- * as an X11 Cursor.  If the file cannot be loaded, returns None.
- */
-X11_Cursor x11GraphicsWindow::
-read_ico(istream &ico) {
-  x11GraphicsPipe *x11_pipe;
-  DCAST_INTO_R(x11_pipe, _pipe, None);
-
-  // Local structs, this is just POD, make input easier
-  typedef struct {
-    uint16_t reserved, type, count;
-  } IcoHeader;
-
-  typedef struct {
-    uint8_t width, height, colorCount, reserved;
-    uint16_t xhot, yhot;
-    uint32_t bitmapSize, offset;
-  } IcoEntry;
-
-  typedef struct {
-    uint32_t headerSize, width, height;
-    uint16_t planes, bitsPerPixel;
-    uint32_t compression, imageSize, xPixelsPerM, yPixelsPerM, colorsUsed, colorsImportant;
-  } IcoInfoHeader;
-
-  typedef struct {
-    uint8_t blue, green, red, reserved;
-  } IcoColor;
-
-  int i, entry = 0;
-  unsigned int j, k, mask, shift;
-  size_t colorCount, bitsPerPixel;
-  IcoHeader header;
-  IcoInfoHeader infoHeader;
-  IcoEntry *entries = nullptr;
-  IcoColor color, *palette = nullptr;
-
-  size_t xorBmpSize, andBmpSize;
-  char *curXor, *curAnd;
-  char *xorBmp = nullptr, *andBmp = nullptr;
-  XcursorImage *image = nullptr;
-  X11_Cursor ret = None;
-
-  int def_size = x11_pipe->_xcursor_size;
-
-  // Get our header, note that ICO = type 1 and CUR = type 2.
-  ico.read(reinterpret_cast<char *>(&header), sizeof(IcoHeader));
-  if (!ico.good()) goto cleanup;
-  if (header.type != 1 && header.type != 2) goto cleanup;
-  if (header.count < 1) goto cleanup;
-
-  // Read the entry table into memory, select the largest entry.
-  entries = new IcoEntry[header.count];
-  ico.read(reinterpret_cast<char *>(entries), header.count * sizeof(IcoEntry));
-  if (!ico.good()) goto cleanup;
-  for (i = 1; i < header.count; i++) {
-    if (entries[i].width == def_size && entries[i].height == def_size) {
-      // Wait, this is the default cursor size.  This is perfect.
-      entry = i;
-      break;
-    }
-    if (entries[i].width > entries[entry].width ||
-        entries[i].height > entries[entry].height)
-        entry = i;
-  }
-
-  // Seek to the image in the ICO.
-  ico.seekg(entries[entry].offset);
-  if (!ico.good()) goto cleanup;
-
-  if (ico.peek() == 0x89) {
-    // Hang on, this is actually a PNG header.
-    PNMImage img;
-    PNMFileTypeRegistry *reg = PNMFileTypeRegistry::get_global_ptr();
-    if (!img.read(ico, "", reg->get_type_from_extension("png"))) {
-      goto cleanup;
-    }
-    img.set_maxval(255);
-
-    image = x11_pipe->_XcursorImageCreate(img.get_x_size(), img.get_y_size());
-
-    xel *ptr = img.get_array();
-    xelval *alpha = img.get_alpha_array();
-    size_t num_pixels = (size_t)img.get_x_size() * (size_t)img.get_y_size();
-    unsigned int *dest = image->pixels;
-
-    if (alpha != nullptr) {
-      for (size_t p = 0; p < num_pixels; ++p) {
-        *dest++ = (*alpha << 24U) | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
-        ++ptr;
-        ++alpha;
-      }
-    } else {
-      for (size_t p = 0; p < num_pixels; ++p) {
-        *dest++ = 0xff000000U | (ptr->r << 16U) | (ptr->g << 8U) | (ptr->b);
-        ++ptr;
-      }
-    }
-
-  } else {
-    ico.read(reinterpret_cast<char *>(&infoHeader), sizeof(IcoInfoHeader));
-    if (!ico.good()) goto cleanup;
-    bitsPerPixel = infoHeader.bitsPerPixel;
-
-    if (infoHeader.compression != 0) goto cleanup;
-
-    // Load the color palette, if one exists.
-    if (bitsPerPixel != 24 && bitsPerPixel != 32) {
-      colorCount = 1 << bitsPerPixel;
-      palette = new IcoColor[colorCount];
-      ico.read(reinterpret_cast<char *>(palette), colorCount * sizeof(IcoColor));
-      if (!ico.good()) goto cleanup;
-    }
-
-    int and_stride = ((infoHeader.width >> 3) + 3) & ~0x03;
-
-    // Read in the pixel data.
-    xorBmpSize = (infoHeader.width * (infoHeader.height / 2) * bitsPerPixel) / 8;
-    andBmpSize = and_stride * (infoHeader.height / 2);
-    curXor = xorBmp = new char[xorBmpSize];
-    curAnd = andBmp = new char[andBmpSize];
-    ico.read(xorBmp, xorBmpSize);
-    if (!ico.good()) goto cleanup;
-    ico.read(andBmp, andBmpSize);
-    if (!ico.good()) goto cleanup;
-
-    image = x11_pipe->_XcursorImageCreate(infoHeader.width, infoHeader.height / 2);
-
-    // Support all the formats that GIMP supports.
-    switch (bitsPerPixel) {
-    case 1:
-    case 4:
-    case 8:
-      // For colors less that a byte wide, shift and mask the palette indices
-      // off each element of the xorBmp and append them to the image.
-      mask = ((1 << bitsPerPixel) - 1);
-      for (i = image->height - 1; i >= 0; i--) {
-        for (j = 0; j < image->width; j += 8 / bitsPerPixel) {
-          for (k = 0; k < 8 / bitsPerPixel; k++) {
-            shift = 8 - ((k + 1) * bitsPerPixel);
-            color = palette[(*curXor & (mask << shift)) >> shift];
-            image->pixels[(i * image->width) + j + k] = (color.red << 16) +
-                                                        (color.green << 8) +
-                                                        (color.blue);
-          }
-
-          curXor++;
-        }
-
-        // Set the alpha byte properly according to the andBmp.
-        for (j = 0; j < image->width; j += 8) {
-          for (k = 0; k < 8; k++) {
-            shift = 7 - k;
-            image->pixels[(i * image->width) + j + k] |=
-              ((*curAnd & (1 << shift)) >> shift) ? 0x0 : (0xff << 24);
-          }
-
-          curAnd++;
-        }
-      }
-      break;
-
-    case 24:
-      // Pack each of the three bytes into a single color, BGR -> 0RGB
-      for (i = image->height - 1; i >= 0; i--) {
-        for (j = 0; j < image->width; j++) {
-          shift = 7 - (j & 0x7);
-          uint32_t alpha = (curAnd[j >> 3] & (1 << shift)) ? 0 : 0xff000000U;
-          image->pixels[(i * image->width) + j] = (uint8_t)curXor[0]
-                                                | ((uint8_t)curXor[1] << 8u)
-                                                | ((uint8_t)curXor[2] << 16u)
-                                                | alpha;
-          curXor += 3;
-        }
-        curAnd += and_stride;
-      }
-      break;
-
-    case 32:
-      // Pack each of the four bytes into a single color, BGRA -> ARGB
-      for (i = image->height - 1; i >= 0; i--) {
-        for (j = 0; j < image->width; j++) {
-          image->pixels[(i * image->width) + j] = (*(curXor + 3) << 24) +
-                                                  (*(curXor + 2) << 16) +
-                                                  (*(curXor + 1) << 8) +
-                                                  (*curXor);
-          curXor += 4;
-        }
-      }
-      break;
-
-    default:
-      goto cleanup;
-    }
-  }
-
-  // If this is an actual CUR not an ICO set up the hotspot properly.
-  if (header.type == 2) {
-    image->xhot = entries[entry].xhot;
-    image->yhot = entries[entry].yhot;
-  } else {
-    image->xhot = 0;
-    image->yhot = 0;
-  }
-
-  ret = x11_pipe->_XcursorImageLoadCursor(_display, image);
-
-cleanup:
-  x11_pipe->_XcursorImageDestroy(image);
-  delete[] entries;
-  delete[] palette;
-  delete[] xorBmp;
-  delete[] andBmp;
-
-  return ret;
 }
