@@ -91,7 +91,6 @@ class Base(ShowBase):
         base.disableMouse()
         self.accept("escape", sys.exit)
 
-        # Camera
         self.camera_gimbal = base.render.attach_new_node("Camera gimbal")
         base.camera.reparent_to(self.camera_gimbal)
         base.camera.set_pos(0, -10, 0)
