@@ -6,6 +6,7 @@ from panda3d.core import KeyboardButton
 from panda3d.core import MouseButton
 from panda3d.core import Point2
 from panda3d.core import Point3
+from panda3d.core import Vec3
 from panda3d.core import TextNode
 from panda3d.core import CollisionNode
 from panda3d.core import CollisionTraverser
@@ -239,8 +240,9 @@ class FromCollider(Collider):
 
             if mmb and self.last_mpos is not None:
                 mpos_delta = mpos - self.last_mpos
-                hpr_delta = Point3(mpos_delta.x * 180, mpos_delta.y * 180, 0)
-                self.np.set_hpr(base.cam, self.np.get_hpr(base.cam) + hpr_delta)
+                rot_cam = Vec3(-mpos_delta.y, 0, mpos_delta.x) * 180
+                rot_solid = self.np.get_relative_vector(base.cam, rot_cam)
+                self.np.set_hpr(self.np, rot_solid.z, rot_solid.x, rot_solid.y)
             self.last_mpos = mpos
         return task.cont
 
