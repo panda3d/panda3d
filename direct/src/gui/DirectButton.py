@@ -38,9 +38,10 @@ class DirectButton(DirectFrame):
             # Whether the button continuously runs the command if pressed
             # The default repeat threshold is 0.01
             # The default delay multiplier is 0.5
-            ('repeatCommand',   False,      None),
+            ('repeat',   False,      None),
             ('repeatThreshold', 0.01,       None),
-            ('repeatDelay',     0.5,        None),
+            ('repeatDelay',     1.0,        None),
+            ('repeatDecay',     0.5,        None),
             # Sounds to be used for button events
             ('rolloverSound',   DGG.getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',      DGG.getDefaultClickSound(),    self.setClickSound),
@@ -85,11 +86,11 @@ class DirectButton(DirectFrame):
         if DGG.LMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.one())
             self.bind(DGG.B1CLICK, self.commandFunc)
-            if self['repeatCommand']:
-                self.bind(DGG.B1PRESS, self.repeatCommand, extraArgs=[True])
-                self.bind(DGG.B1RELEASE, self.repeatCommand, extraArgs=[False])
+            if self['repeat']:
+                self.bind(DGG.B1PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B1RELEASE, self.__repeat, extraArgs=[False])
         else:
-            if self['repeatCommand']:
+            if self['repeat']:
                 self.unbind(DGG.B1PRESS)
                 self.unbind(DGG.B1RELEASE)
             self.unbind(DGG.B1CLICK)
@@ -98,11 +99,11 @@ class DirectButton(DirectFrame):
         if DGG.MMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.two())
             self.bind(DGG.B2CLICK, self.commandFunc)
-            if self['repeatCommand']:
-                self.bind(DGG.B2PRESS, self.repeatCommand, extraArgs=[True])
-                self.bind(DGG.B2RELEASE, self.repeatCommand, extraArgs=[False])
+            if self['repeat']:
+                self.bind(DGG.B2PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B2RELEASE, self.__repeat, extraArgs=[False])
         else:
-            if self['repeatCommand']:
+            if self['repeat']:
                 self.unbind(DGG.B2PRESS)
                 self.unbind(DGG.B2RELEASE)
             self.unbind(DGG.B2CLICK)
@@ -111,11 +112,11 @@ class DirectButton(DirectFrame):
         if DGG.RMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.three())
             self.bind(DGG.B3CLICK, self.commandFunc)
-            if self['repeatCommand']:
-                self.bind(DGG.B3PRESS, self.repeatCommand, extraArgs=[True])
-                self.bind(DGG.B3RELEASE, self.repeatCommand, extraArgs=[False])
+            if self['repeat']:
+                self.bind(DGG.B3PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B3RELEASE, self.__repeat, extraArgs=[False])
         else:
-            if self['repeatCommand']:
+            if self['repeat']:
                 self.unbind(DGG.B3PRESS)
                 self.unbind(DGG.B3RELEASE)
             self.unbind(DGG.B3CLICK)
@@ -126,20 +127,20 @@ class DirectButton(DirectFrame):
             # Pass any extra args to command
             self['command'](*self['extraArgs'])
 
-    def repeatCommand(self, state, event):
-        if state:
-            task = self.addTask(self.repeatCommandFunc, self.uniqueName('repeatCommandFunc'), extraArgs=[event], appendTask=True)
-            task.delayTime = 1.0
+    def __repeat(self, state, event):
+        if state and not taskMgr.hasTaskNamed(self.uniqueName('__repeatFunc')):
+            task = self.addTask(self.__repeatFunc, self.uniqueName('__repeatFunc'), extraArgs=[event], appendTask=True)
+            task.delayTime = self['repeatDelay']
             task.prevTime = 0.0
         elif not state:
-            self.removeTask(self.uniqueName('repeatCommandFunc'))
+            self.removeTask(self.uniqueName('__repeatFunc'))
 
-    def repeatCommandFunc(self, event, task):
+    def __repeatFunc(self, event, task):
         if task.time - task.prevTime < task.delayTime:
             return task.cont
         else:
             self.commandFunc(event)
-            task.delayTime = max(self['repeatThreshold'], task.delayTime * self['repeatDelay'])
+            task.delayTime = max(self['repeatThreshold'], task.delayTime * self['repeatDecay'])
             task.prevTime = task.time
             return task.cont
 
