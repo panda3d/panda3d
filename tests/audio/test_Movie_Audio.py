@@ -7,7 +7,6 @@ def test_audio_rate(): #tests for audio rate
     movie_path = os.path.join(os.path.dirname(__file__), "impulse.flac")
     reference_file = MovieAudio.get(movie_path)
     movie_file = MovieAudio.open(reference_file)
-    #rate_audio = MovieAudioCursor.audioRate(movie_file)
     assert movie_file.audioRate() == 48000
 
 def test_missing_file(audiomgr): #test whether file is loaded in properly
