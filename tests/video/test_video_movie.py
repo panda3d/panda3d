@@ -19,5 +19,5 @@ def test_video_size():
     movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
     reference_file = MovieVideo.get(movie_path)	    
     cursor = reference_file.open()
-    assert MovieVideoCursor.size_x(cursor) == 560 #found the height and width using mkvinfo
-    assert MovieVideoCursor.size_y(cursor) == 320
+    assert cursor.size_x() == 560 #found the height and width using mkvinfo
+    assert cursor.size_y() == 320
