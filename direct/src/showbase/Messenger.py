@@ -624,8 +624,9 @@ class Messenger:
             for key in list(acceptorDict.keys()):
                 function, extraArgs, persistent = acceptorDict[key]
                 object = self._getObject(key)
-                if (type(object) == types.InstanceType):
-                    className = object.__class__.__name__
+                objectClass = getattr(object, '__class__', None)
+                if objectClass:
+                    className = objectClass.__name__
                 else:
                     className = "Not a class"
                 functionName = function.__name__
