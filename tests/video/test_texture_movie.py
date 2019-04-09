@@ -6,7 +6,7 @@ def test_texture_loop_count():
     movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
     reference_file = MovieVideo.get(movie_path)	    
     reference_texture = MovieTexture(reference_file)
-    assert reference_texture.getLoopCount() == 1
+    assert reference_texture.get_loop_count() == 1
 
 #This test checks isPlaying() and stop() functionality
 def test_video_is_playing(): 

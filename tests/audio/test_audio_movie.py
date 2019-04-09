@@ -7,7 +7,7 @@ def test_audio_rate(): #tests for audio rate
     movie_path = os.path.join(os.path.dirname(__file__), "impulse.flac")
     reference_file = MovieAudio.get(movie_path)
     movie_file = reference_file.open()
-    assert movie_file.audioRate() == 48000
+    assert movie_file.audio_rate() == 48000
 
 def test_audio_length(): #test for testing audio length
     movie_path = os.path.join(os.path.dirname(__file__), "impulse.flac")
