@@ -659,6 +659,10 @@ rebuild_bitplanes() {
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
+
+    // Mark the GSG as supporting multisampling, so that it will respect an
+    // AntialiasAttrib with mode M_multisample.
+    glgsg->_supports_multisample = true;
   } else {
     glDisable(GL_MULTISAMPLE);
   }
