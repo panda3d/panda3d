@@ -26,4 +26,6 @@ def test_play_rate():
     movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing 
     reference_file = MovieVideo.get(movie_path)	    
     reference_texture = MovieTexture(reference_file)
-    assert MovieTexture.get_play_rate(reference_texture) == 1
+    assert reference_texture.get_play_rate() == 1
+    reference_texture.set_play_rate(2)
+    assert reference_texture.get_play_rate() == 2
