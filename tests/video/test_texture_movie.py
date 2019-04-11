@@ -20,3 +20,10 @@ def test_video_is_playing(): #This test checks isPlaying() and stop() functional
     assert reference_texture.is_playing() is True 
     reference_texture.stop()
     assert reference_texture.is_playing() is False
+
+def test_play_rate():
+    movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+    movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing 
+    reference_file = MovieVideo.get(movie_path)	    
+    reference_texture = MovieTexture(reference_file)
+    assert MovieTexture.get_play_rate(reference_texture) == 1
