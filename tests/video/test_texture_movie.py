@@ -15,7 +15,6 @@ def check_ffmpeg():
     reference_texture.play() # plays the reference textture
     system = PandaSystem.get_global_ptr()
     has_ffmpeg = 'FFmpeg' in system.systems #checks whether ffmpeg is loaded
-    assert has_ffmpeg is True
     reference_texture.stop()
     if has_ffmpeg is True:
         return True
