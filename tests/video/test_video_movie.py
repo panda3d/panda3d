@@ -18,6 +18,8 @@ def check_ffmpeg():
     reference_texture.stop()
     if has_ffmpeg is True:
         return True
+    else:
+        return False
 
 @pytest.mark.skipif(check_ffmpeg() is False, reason="skip when ffmpeg is not available")
 class Test_Video_Movie():
