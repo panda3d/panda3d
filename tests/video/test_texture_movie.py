@@ -5,17 +5,14 @@ import os
 import pytest
 from panda3d.core import PandaSystem
 from panda3d.core import MovieTexture
-from panda3d.core import MovieVideo
 
 def check_ffmpeg():
-    movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+    movie_path = os.path.join(os.path.dirname(__file__), "small.mp4")
     movie_path = Filename.from_os_specific(movie_path) #platform independent path
-    reference_file = MovieVideo.get(movie_path)	    
-    reference_texture = MovieTexture(reference_file)
-    reference_texture.play() # plays the reference textture
+    reference_file = MovieVideo.get(movie_path)
+    reference_file.open()
     system = PandaSystem.get_global_ptr()
     has_ffmpeg = 'FFmpeg' in system.systems #checks whether ffmpeg is loaded
-    reference_texture.stop()
     if has_ffmpeg is True:
         return True
     else:
@@ -24,14 +21,14 @@ def check_ffmpeg():
 @pytest.mark.skipif(check_ffmpeg() is False, reason="skip when ffmpeg is not available")
 class Test_Texture_Movie():
     def test_texture_loop_count(self): 
-        movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+        movie_path = os.path.join(os.path.dirname(__file__), "small.mp4")
         movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing
         reference_file = MovieVideo.get(movie_path)	    
         reference_texture = MovieTexture(reference_file)
         assert reference_texture.get_loop_count() == 1
 
     def test_video_is_playing(self): #This test checks isPlaying() and stop() functionality
-        movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+        movie_path = os.path.join(os.path.dirname(__file__), "small.mp4")
         movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing
         reference_file = MovieVideo.get(movie_path)	    
         reference_texture = MovieTexture(reference_file)
@@ -41,7 +38,7 @@ class Test_Texture_Movie():
         assert reference_texture.is_playing() is False
 
     def test_play_rate(self):
-        movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+        movie_path = os.path.join(os.path.dirname(__file__), "small.mp4")
         movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing 
         reference_file = MovieVideo.get(movie_path)	    
         reference_texture = MovieTexture(reference_file)
@@ -50,8 +47,8 @@ class Test_Texture_Movie():
         assert reference_texture.get_play_rate() == 2
 
     def test_video_texture_length(self):
-        movie_path = os.path.join(os.path.dirname(__file__), "small.webm")
+        movie_path = os.path.join(os.path.dirname(__file__), "small.mp4")
         movie_path = Filename.from_os_specific(movie_path) # enables Platform independent testing 
         reference_file = MovieVideo.get(movie_path)	    
         reference_texture = MovieTexture(reference_file)
-        assert reference_texture.get_video_length() == 05.56800 #got info from mkvinfo
+        assert reference_texture.get_video_length() == 05.312 #got info from mkvinfo
