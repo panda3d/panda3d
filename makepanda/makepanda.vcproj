@@ -2147,7 +2147,6 @@
 				<File RelativePath="..\panda\src\express\test_types.cxx"></File>
 				<File RelativePath="..\panda\src\express\weakPointerTo.I"></File>
 				<File RelativePath="..\panda\src\express\pta_int.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.I"></File>
 				<File RelativePath="..\panda\src\express\namable.I"></File>
 				<File RelativePath="..\panda\src\express\vector_float.cxx"></File>
 				<File RelativePath="..\panda\src\express\pointerTo.h"></File>
@@ -2174,7 +2173,6 @@
 				<File RelativePath="..\panda\src\express\datagramGenerator.h"></File>
 				<File RelativePath="..\panda\src\express\weakPointerToVoid.h"></File>
 				<File RelativePath="..\panda\src\express\datagram.I"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.h"></File>
 				<File RelativePath="..\panda\src\express\weakPointerCallback.h"></File>
 				<File RelativePath="..\panda\src\express\datagram.h"></File>
 				<File RelativePath="..\panda\src\express\textEncoder.h"></File>
@@ -2215,7 +2213,6 @@
 				<File RelativePath="..\panda\src\express\datagramIterator.I"></File>
 				<File RelativePath="..\panda\src\express\vector_uchar.h"></File>
 				<File RelativePath="..\panda\src\express\datagramIterator.h"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.cxx"></File>
 				<File RelativePath="..\panda\src\express\datagramGenerator.cxx"></File>
 				<File RelativePath="..\panda\src\express\hashGeneratorBase.h"></File>
 				<File RelativePath="..\panda\src\express\patchfile.cxx"></File>
@@ -2259,7 +2256,6 @@
 				<File RelativePath="..\panda\src\express\namable.cxx"></File>
 				<File RelativePath="..\panda\src\express\trueClock.I"></File>
 				<File RelativePath="..\panda\src\express\config_express.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.cxx"></File>
 				<File RelativePath="..\panda\src\express\pointerToVoid.I"></File>
 				<File RelativePath="..\panda\src\express\vector_uchar.cxx"></File>
 				<File RelativePath="..\panda\src\express\vector_float.h"></File>
@@ -2286,7 +2282,6 @@
 				<File RelativePath="..\panda\src\express\datagramGenerator.I"></File>
 				<File RelativePath="..\panda\src\express\compress_string.cxx"></File>
 				<File RelativePath="..\panda\src\express\subStreamBuf.cxx"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerToBase.h"></File>
 				<File RelativePath="..\panda\src\express\pointerToArrayBase.cxx"></File>
 				<File RelativePath="..\panda\src\express\express_composite.cxx"></File>
 				<File RelativePath="..\panda\src\express\virtualFileComposite.I"></File>
@@ -2294,7 +2289,6 @@
 				<File RelativePath="..\panda\src\express\multifile.I"></File>
 				<File RelativePath="..\panda\src\express\virtualFile.I"></File>
 				<File RelativePath="..\panda\src\express\patchfile.I"></File>
-				<File RelativePath="..\panda\src\express\threadSafePointerTo.I"></File>
 				<File RelativePath="..\panda\src\express\virtualFileList.h"></File>
 			</Filter>
 			<Filter Name="iphonedisplay">

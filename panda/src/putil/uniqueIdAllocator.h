@@ -43,6 +43,8 @@ PUBLISHED:
   uint32_t allocate();
   void initial_reserve_id(uint32_t id);
 
+  bool is_allocated(uint32_t index);
+
   void free(uint32_t index);
   PN_stdfloat fraction_used() const;
 

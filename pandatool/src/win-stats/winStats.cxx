@@ -16,6 +16,9 @@
 #include "winStatsServer.h"
 #include "config_pstatclient.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 static const char *toplevel_class_name = "pstats";

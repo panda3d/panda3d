@@ -554,6 +554,17 @@ if RUNTIME and not HOST_URL:
     # Set this to a nice default.
     HOST_URL = "https://runtime.panda3d.org/"
 
+if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
+    warn_prefix = "%sWARNING:%s " % (GetColor("red"), GetColor())
+    print("=========================================================================")
+    print(warn_prefix + "Python 2.7 will reach EOL after December 31, 2019, and will not")
+    print(warn_prefix + "be supported after that date.  Please ensure you are prepared")
+    print(warn_prefix + "by planning your upgrade to Python 3 now.")
+    print("=========================================================================")
+    sys.stdout.flush()
+    # Give the user some time to contemplate their sins
+    time.sleep(6.0)
+
 ########################################################################
 ##
 ## Choose a Compiler.
@@ -3003,9 +3014,6 @@ else:
 if (GetTarget() == 'darwin'):
     configprc = configprc.replace("$XDG_CACHE_HOME/panda3d", "$HOME/Library/Caches/Panda3D-%s" % MAJOR_VERSION)
 
-    # OpenAL is not yet working well on OSX for us, so let's do this for now.
-    configprc = configprc.replace("p3openal_audio", "p3fmod_audio")
-
 if GetTarget() == 'windows':
     # Convert to Windows newlines.
     ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc, newline='\r\n')
@@ -4709,7 +4717,7 @@ if not RUNTIME and not PkgSkip("EGG"):
   TargetAdd('p3egg2pg_composite2.obj', opts=OPTS, input='p3egg2pg_composite2.cxx')
 
   OPTS=['DIR:panda/src/egg2pg']
-  IGATEFILES=['load_egg_file.h']
+  IGATEFILES=['load_egg_file.h', 'save_egg_file.h']
   TargetAdd('libp3egg2pg.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3egg2pg.in', opts=['IMOD:panda3d.egg', 'ILIB:libp3egg2pg', 'SRCDIR:panda/src/egg2pg'])
 
@@ -5156,7 +5164,7 @@ if (not RUNTIME and GetTarget() == 'android'):
     TargetAdd('libppython.dll', input='libp3framework.dll')
     TargetAdd('libppython.dll', input='libp3android.dll')
     TargetAdd('libppython.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libppython.dll', opts=['MODULE', 'ANDROID'])
+    TargetAdd('libppython.dll', opts=['MODULE', 'ANDROID', 'PYTHON'])
 
 #
 # DIRECTORY: panda/src/androiddisplay/

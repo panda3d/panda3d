@@ -101,7 +101,7 @@ get_plane(int n) const {
 INLINE_MATHUTIL void BoundingBox::
 set_min_max(const LPoint3 &min, const LPoint3 &max) {
   nassertv(!min.is_nan() && !max.is_nan());
-  nassertv(_min[0] <= _max[0] && _min[1] <= _max[1] && _min[2] <= _max[2]);
+  nassertv(min[0] <= max[0] && min[1] <= max[1] && min[2] <= max[2]);
   _min = min;
   _max = max;
   _flags = 0;

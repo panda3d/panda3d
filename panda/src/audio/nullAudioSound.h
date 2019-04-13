@@ -12,8 +12,8 @@
  * Prior system by: cary
  */
 
-#ifndef __NULL_AUDIO_SOUND_H__
-#define __NULL_AUDIO_SOUND_H__
+#ifndef NULLAUDIOSOUND_H
+#define NULLAUDIOSOUND_H
 
 #include "audioSound.h"
 
@@ -91,4 +91,4 @@ private:
   friend class NullAudioManager;
 };
 
-#endif /* __NULL_AUDIO_SOUND_H__ */
+#endif /* NULLAUDIOSOUND_H */
