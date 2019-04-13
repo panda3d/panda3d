@@ -103,9 +103,9 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
         pytest.fail("{0} GLSL assertions triggered:\n{1}".format(count, formatted))
 
 
-def run_glsl_compile_check(gsg, *shader_paths, expect_fail=False):
+def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
     """Compile supplied GLSL shader paths and check for errors"""
-    shader = core.Shader.load(core.Shader.SL_GLSL, *shader_paths)
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
     assert shader is not None
 
     shader.prepare_now(gsg.prepared_objects, gsg)
