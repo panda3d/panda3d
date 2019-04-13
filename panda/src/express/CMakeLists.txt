@@ -44,8 +44,6 @@ set(P3EXPRESS_HEADERS
   subStream.I subStream.h subStreamBuf.h
   subfileInfo.h subfileInfo.I
   temporaryFile.h temporaryFile.I
-  threadSafePointerTo.I threadSafePointerTo.h
-  threadSafePointerToBase.I threadSafePointerToBase.h
   trueClock.I trueClock.h
   typedReferenceCount.I typedReferenceCount.h typedef.h
   virtualFileList.I virtualFileList.h
@@ -100,8 +98,6 @@ set(P3EXPRESS_SOURCES
   subStream.cxx subStreamBuf.cxx
   subfileInfo.cxx
   temporaryFile.cxx
-  threadSafePointerTo.cxx
-  threadSafePointerToBase.cxx
   trueClock.cxx
   typedReferenceCount.cxx
   virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx
