@@ -1,4 +1,5 @@
 from panda3d import core
+import os
 import struct
 import pytest
 from _pytest.outcomes import Failed
@@ -100,6 +101,19 @@ def run_glsl_test(gsg, body, preamble="", inputs={}, version=150, exts=set()):
             else:
                 formatted += '    ' + line + '\n'
         pytest.fail("{0} GLSL assertions triggered:\n{1}".format(count, formatted))
+
+
+def run_glsl_compile_check(gsg, *shader_paths, expect_fail=False):
+    """Compile supplied GLSL shader paths and check for errors"""
+    shader = core.Shader.load(core.Shader.SL_GLSL, *shader_paths)
+    assert shader is not None
+
+    shader.prepare_now(gsg.prepared_objects, gsg)
+    assert shader.is_prepared(gsg.prepared_objects)
+    if expect_fail:
+        assert shader.get_error_flag()
+    else:
+        assert not shader.get_error_flag()
 
 
 def test_glsl_test(gsg):
@@ -329,3 +343,27 @@ def test_glsl_write_extract_image_buffer(gsg):
 
     assert struct.unpack('I', tex1.get_ram_image()) == (123,)
     assert struct.unpack('i', tex2.get_ram_image()) == (-456,)
+
+
+def test_glsl_compile_error(gsg):
+    """Test getting compile errors from bad shaders"""
+    shaders_dir = os.path.dirname(__file__)
+    vert_path = os.path.join(shaders_dir, 'glsl_bad.vert')
+    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=True)
+
+
+def test_glsl_from_file(gsg):
+    """Test compiling GLSL shaders from files"""
+    shaders_dir = os.path.dirname(__file__)
+    vert_path = os.path.join(shaders_dir, 'glsl_simple.vert')
+    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
+
+
+def test_glsl_includes(gsg):
+    """Test preprocessing includes in GLSL shaders"""
+    shaders_dir = os.path.dirname(__file__)
+    vert_path = os.path.join(shaders_dir, 'glsl_include.vert')
+    frag_path = os.path.join(shaders_dir, 'glsl_simple.frag')
+    run_glsl_compile_check(gsg, vert_path, frag_path)
