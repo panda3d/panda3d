@@ -589,7 +589,13 @@ set_properties_now(WindowProperties &properties) {
       // OK, first figure out which CRTC the window is on.  It may be on more
       // than one, actually, so grab a point in the center in order to figure
       // out which one it's more-or-less mostly on.
-      LPoint2i center = _properties.get_origin() + _properties.get_size() / 2;
+      LPoint2i center(0, 0);
+      if (_properties.has_origin()) {
+        center = _properties.get_origin();
+        if (_properties.has_size()) {
+          center += _properties.get_size() / 2;
+        }
+      }
       int x, y, width, height;
       x11_pipe->find_fullscreen_crtc(center, x, y, width, height);
 
@@ -628,7 +634,7 @@ set_properties_now(WindowProperties &properties) {
         // We may need to change the screen resolution.  The code below is
         // suboptimal; in the future, we probably want to only touch the CRTC
         // that the window is on.
-        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow);
+        XRRScreenConfiguration *conf = _XRRGetScreenInfo(_display, _xwindow ? _xwindow : x11_pipe->get_root());
         SizeID old_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         SizeID new_size_id = (SizeID) -1;
         int num_sizes = 0;
@@ -1009,34 +1015,6 @@ open_window() {
 
   // Make sure we are not making X11 calls from other threads.
   LightReMutexHolder holder(x11GraphicsPipe::_x_mutex);
-
-  if (_properties.get_fullscreen() && x11_pipe->_have_xrandr) {
-    XRRScreenConfiguration* conf = _XRRGetScreenInfo(_display, x11_pipe->get_root());
-    if (_orig_size_id == (SizeID) -1) {
-      _orig_size_id = x11_pipe->_XRRConfigCurrentConfiguration(conf, &_orig_rotation);
-    }
-    int num_sizes, new_size_id = -1;
-    XRRScreenSize *xrrs;
-    xrrs = x11_pipe->_XRRSizes(_display, 0, &num_sizes);
-    for (int i = 0; i < num_sizes; ++i) {
-      if (xrrs[i].width == _properties.get_x_size() &&
-          xrrs[i].height == _properties.get_y_size()) {
-        new_size_id = i;
-      }
-    }
-    if (new_size_id == -1) {
-      x11display_cat.error()
-        << "Videocard has no supported display resolutions at specified res ("
-        << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
-      _orig_size_id = -1;
-      return false;
-    }
-    if (new_size_id != _orig_size_id) {
-      _XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
-    } else {
-      _orig_size_id = -1;
-    }
-  }
 
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
