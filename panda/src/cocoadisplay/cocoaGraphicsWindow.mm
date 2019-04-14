@@ -1618,7 +1618,7 @@ handle_key_event(NSEvent *event) {
   if ([event type] == NSKeyDown) {
     // Translate it to a unicode character for keystrokes.  I would use
     // interpretKeyEvents and insertText, but that doesn't handle dead keys.
-    TISInputSourceRef input_source = TISCopyCurrentKeyboardInputSource();
+    TISInputSourceRef input_source = TISCopyCurrentKeyboardLayoutInputSource();
     CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
     const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
@@ -1827,7 +1827,7 @@ get_keyboard_map() const {
   const UCKeyboardLayout *layout;
 
   // Get the current keyboard layout data.
-  input_source = TISCopyCurrentKeyboardInputSource();
+  input_source = TISCopyCurrentKeyboardLayoutInputSource();
   layout_data = (CFDataRef) TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
   layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
