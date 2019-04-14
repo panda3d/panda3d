@@ -39,3 +39,8 @@ def test_get_mode(clockobj):
     assert clockobj.get_mode() == 6 #M_Integer
     clockobj.set_mode(7)
     assert clockobj.get_mode() == 7  #M_Integer_Limited
+
+def test_get_long_time(clockobj):
+    current_time = clockobj.get_long_time()
+    time.sleep(2)
+    assert current_time != clockobj.get_long_time()
