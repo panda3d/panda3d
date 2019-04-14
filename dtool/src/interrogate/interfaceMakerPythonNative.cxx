@@ -431,6 +431,12 @@ get_slotted_function_def(Object *obj, Function *func, FunctionRemap *remap,
     return true;
   }
 
+  if (method_name == "operator |=") {
+    def._answer_location = "nb_inplace_or";
+    def._wrapper_type = WT_inplace_binary_operator;
+    return true;
+  }
+
   if (method_name == "__ipow__") {
     def._answer_location = "nb_inplace_power";
     def._wrapper_type = WT_inplace_ternary_operator;
