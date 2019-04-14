@@ -35,7 +35,22 @@ def test_sparse_array_clear():
 
 
 def test_sparse_array_clear_range():
-    """Tests SparseArray behavior for clear_range()."""
+    # Not using parametrize because there are too many values for that.
+    for mask in range(0x7f):
+        for begin in range(8):
+            for size in range(8):
+                b = core.BitArray(mask)
+                s = core.SparseArray(b)
+
+                s.clear_range(begin, size)
+                b.clear_range(begin, size)
+
+                assert core.BitArray(s) == b
+                assert s == core.SparseArray(b)
+
+
+def test_sparse_array_set_clear_ranges():
+    """Tests SparseArray behavior for setting and clearing ranges."""
 
     # test clear_range with single overlapping on-range
     # (clear_range extends beyond highest on-bit)
