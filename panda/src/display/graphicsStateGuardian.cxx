@@ -1902,6 +1902,14 @@ fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec) {
 }
 
 /**
+ *
+ */
+bool GraphicsStateGuardian::
+fetch_ptr_parameter(const Shader::ShaderPtrSpec& spec, Shader::ShaderPtrData &data) {
+  return _target_shader->get_shader_input_ptr(spec._arg, data);
+}
+
+/**
  * Makes the specified DisplayRegion current.  All future drawing and clear
  * operations will be constrained within the given DisplayRegion.
  */
