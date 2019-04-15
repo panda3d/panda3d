@@ -1,4 +1,5 @@
 import time
+import pytest
 
 def test_get_frame_time(clockobj):
     current_time = clockobj.get_frame_time()
@@ -12,8 +13,8 @@ def test_jump_frame_time(clockobj):
 
 def test_get_real_time(clockobj):
     current_time = clockobj.get_real_time()
-    time.sleep(2)
-    assert current_time != clockobj.get_real_time()
+    time.sleep(2.0)
+    assert clockobj.get_real_time() - current_time == pytest.approx(2.0, 0.1)
 
 def test_get_dt(clockobj):
     clockobj.tick()
@@ -42,5 +43,5 @@ def test_get_mode(clockobj):
 
 def test_get_long_time(clockobj):
     current_time = clockobj.get_long_time()
-    time.sleep(2)
-    assert current_time != clockobj.get_long_time()
+    time.sleep(2.0)
+    assert clockobj.get_long_time() - current_time == pytest.approx(2.0, 0.1)
