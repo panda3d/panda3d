@@ -2364,7 +2364,6 @@ DTOOL_CONFIG=[
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_MAYA",                      '1',                      '1'),
-    ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
