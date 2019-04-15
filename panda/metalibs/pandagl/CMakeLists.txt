@@ -17,15 +17,11 @@ elseif(HAVE_COCOA)
   set(PANDAGL_PIPE_TYPE "CocoaGraphicsPipe")
   set(PANDAGL_PIPE_INCLUDE "cocoaGraphicsPipe.h")
 
-elseif(HAVE_CARBON)
-  list(APPEND PANDAGL_LINK_TARGETS p3osxdisplay)
-  set(PANDAGL_PIPE_TYPE "osxGraphicsPipe")
-
 else()
   message("") # Add extra line before error
   message(SEND_ERROR
     "When compiling with OpenGL (HAVE_GL), at least one of:
-  HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
+  HAVE_WGL, HAVE_COCOA, or HAVE_GLX must be defined.")
 
 endif()
 

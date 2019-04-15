@@ -477,8 +477,6 @@ endif()
 
 cmake_dependent_option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON
   "APPLE" OFF)
-cmake_dependent_option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." OFF
-  "APPLE" OFF)
 
 #
 # Miscellaneous settings

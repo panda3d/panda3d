@@ -370,7 +370,6 @@
 
 /* Define to compile for Cocoa or Carbon on Mac OS X. */
 #cmakedefine HAVE_COCOA
-#cmakedefine HAVE_CARBON
 
 /* Platform-identifying defines. */
 #cmakedefine IS_OSX
