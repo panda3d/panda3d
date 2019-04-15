@@ -400,7 +400,9 @@ package_option(GL
 package_status(GL "OpenGL")
 
 # OpenGL ES 1
-find_package(OpenGLES1 QUIET)
+if(NOT APPLE) # Apple X11 ships the GLES headers but they're broken
+  find_package(OpenGLES1 QUIET)
+endif()
 
 package_option(GLES1
   "Enable support for OpenGL ES 1.x rendering APIs."
@@ -409,7 +411,9 @@ package_option(GLES1
 package_status(GLES1 "OpenGL ES 1.x")
 
 # OpenGL ES 2
-find_package(OpenGLES2 QUIET)
+if(NOT APPLE) # Apple X11 ships the GLES headers but they're broken
+  find_package(OpenGLES2 QUIET)
+endif()
 
 package_option(GLES2
   "Enable support for OpenGL ES 2.x rendering APIs."
