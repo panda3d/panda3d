@@ -8,10 +8,10 @@ add_subdirectory(src/contribbase)
 add_subdirectory(src/rplight)
 
 if(HAVE_PYTHON)
-  add_python_module(ai p3ai
+  add_python_module(panda3d.ai p3ai
     IMPORT panda3d.core COMPONENT ContribPython)
 
-  add_python_module(_rplight p3rplight
+  add_python_module(panda3d._rplight p3rplight
     IMPORT panda3d.core COMPONENT ContribPython)
 endif()
 

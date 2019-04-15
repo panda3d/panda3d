@@ -292,6 +292,8 @@ function(add_python_module module)
     set(link_targets ${targets})
   endif()
 
+  string(REGEX REPLACE "^.*\\." "" modname "${module}")
+
   foreach(target ${targets})
     get_target_property(workdir_abs "${target}" TARGET_BINDIR)
     if(NOT workdir_abs)
@@ -303,7 +305,7 @@ function(add_python_module module)
 
     interrogate_sources(${target}
       "${workdir_abs}/${target}_igate.cxx" "${workdir_abs}/${target}.in"
-      "-python-native;-module;panda3d.${module}")
+      "-python-native;-module;${module}")
 
     get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
     list(APPEND infiles_rel "${workdir_rel}/${target}.in")
@@ -316,16 +318,16 @@ function(add_python_module module)
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
     COMMAND host_interrogate_module
       -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
-      -module ${module} -library ${module}
+      -module ${modname} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles_rel}
     DEPENDS host_interrogate_module ${infiles_abs}
     COMMENT "Generating module ${module}")
 
-  add_python_target(panda3d.${module} COMPONENT "${component}" EXPORT "${component}"
+  add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
     "${module}_module.cxx" ${sources_abs} ${extensions})
-  target_link_libraries(panda3d.${module} ${link_targets})
+  target_link_libraries(${module} ${link_targets})
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
     # CMake <3.11 doesn't allow generator expressions on source files, so we
@@ -334,7 +336,7 @@ function(add_python_module module)
     foreach(source ${sources_abs})
       get_source_file_property(compile_definitions "${source}" COMPILE_DEFINITIONS)
       if(compile_definitions)
-        set_property(TARGET panda3d.${module} APPEND PROPERTY
+        set_property(TARGET ${module} APPEND PROPERTY
           COMPILE_DEFINITIONS ${compile_definitions})
 
         set_source_files_properties("${source}" PROPERTIES COMPILE_DEFINITIONS "")
@@ -345,10 +347,3 @@ function(add_python_module module)
   list(APPEND ALL_INTERROGATE_MODULES "${module}")
   set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
 endfunction(add_python_module)
-
-
-if(INTERROGATE_PYTHON_INTERFACE AND BUILD_SHARED_LIBS)
-  # The Interrogate path needs to be installed to the architecture-dependent
-  # Python directory.
-  install_python_package("${PROJECT_BINARY_DIR}/panda3d" ARCH)
-endif()

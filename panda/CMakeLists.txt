@@ -103,37 +103,41 @@ if(HAVE_FREETYPE)
   list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
 endif()
 
-if(HAVE_PYTHON)
-  add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
+if(INTERROGATE_PYTHON_INTERFACE)
+  add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
+
+  if(BUILD_SHARED_LIBS)
+    install_python_package("${PROJECT_BINARY_DIR}/panda3d" ARCH)
+  endif()
 
   if(HAVE_BULLET)
-    add_python_module(bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
+    add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
 
     export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
   endif()
 
   if(HAVE_EGG)
-    add_python_module(egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
+    add_python_module(panda3d.egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
 
     export_targets(EggPython NAMESPACE "Panda3D::Python::" COMPONENT EggDevel)
   endif()
 
-  add_python_module(physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
+  add_python_module(panda3d.physics p3physics p3particlesystem LINK pandaphysics IMPORT panda3d.core)
 
   if(HAVE_ODE)
-    add_python_module(ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
+    add_python_module(panda3d.ode p3ode IMPORT panda3d.core COMPONENT ODEPython)
 
     export_targets(ODEPython NAMESPACE "Panda3D::Python::" COMPONENT ODEDevel)
   endif()
 
   if(HAVE_OPENCV OR HAVE_ARTOOLKIT)
-    add_python_module(vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
+    add_python_module(panda3d.vision p3vision IMPORT panda3d.core COMPONENT VisionPython)
 
     export_targets(VisionPython NAMESPACE "Panda3D::Python::" COMPONENT VisionDevel)
   endif()
 
   if(HAVE_VRPN)
-    add_python_module(vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
+    add_python_module(panda3d.vrpn p3vrpn IMPORT panda3d.core COMPONENT VRPNPython)
 
     export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
   endif()

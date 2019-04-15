@@ -37,7 +37,7 @@ install(TARGETS p3direct
 if(HAVE_PYTHON)
   # Now for the Python side of everything
 
-  add_python_module(direct
+  add_python_module(panda3d.direct
     p3dcparser p3deadrec p3distributed p3interval
     p3motiontrail p3showbase LINK p3direct IMPORT panda3d.core COMPONENT Direct)
 
