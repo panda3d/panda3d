@@ -1,12 +1,3 @@
-//
-// panda.prc.in
-//
-// This file defines the script to auto-generate panda.prc at
-// CMake time.  This is intended to fill in some of the default
-// parameters, in particular the default display types.
-//
-
-#output 20_panda.prc notouch
 #### Generated automatically by CMake ${CMAKE_VERSION} from panda.prc.in.
 ################################# DO NOT EDIT ###########################
 
@@ -16,6 +7,7 @@ model-path $THIS_PRC_DIR/../share/panda3d/models
 
 # Let's set up a default window size of 800x600.  The user can
 # override this in his or her personal prc file.
+win-origin -2 -2
 win-size 800 600
 
 # Define the display types that have been compiled in.  Panda will
@@ -41,6 +33,10 @@ audio-library-name ${AUDIO_LIBRARY_NAME}
 
 load-file-type egg pandaegg
 default-model-extension .egg
+
+# Enable the model-cache, but only for models, not textures.
+model-cache-dir $XDG_CACHE_HOME/panda3d
+model-cache-textures #f
 
 
 # These entries work very similar to load-file-type, except they are
