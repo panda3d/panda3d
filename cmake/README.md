@@ -3,17 +3,10 @@ Building with CMake
 
 The quickest way to build and install panda with CMake is to run:
 ```sh
-cmake .
-make
-[sudo] make install
-```
-
-Instead, it is recommended to create a separate directory to build Panda3D:
-```sh
-mkdir build
-cd build/
+mkdir build && cd build
 cmake ..
 make
+[sudo] make install
 ```
 
 To configure CMake, it is recommended to use cmake-gui (`cmake-gui .`),
