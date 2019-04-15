@@ -47,15 +47,6 @@ NonlinearImager::
 }
 
 /**
- * This version of this method is deprecated and will soon be removed.  Use
- * the version that takes two parameters instead.
- */
-int NonlinearImager::
-add_screen(ProjectionScreen *screen) {
-  return add_screen(NodePath(screen), screen->get_name());
-}
-
-/**
  * Adds a new ProjectionScreen to the list of screens that will be processed
  * by the NonlinearImager.  Each ProjectionScreen represents a view into the
  * world.  It must be based on a linear camera (or whatever kind of camera is

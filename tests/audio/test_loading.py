@@ -1,4 +1,5 @@
-def test_missing_file(audiomgr): #test whether file is loaded in properly
-    filename = "/not/a/valid/file.ogg"
-    sound = audiomgr.get_sound(filename)
+import pytest
+
+def test_missing_file(audiomgr):
+    sound = audiomgr.get_sound('/not/a/valid/file.ogg')
     assert str(sound).startswith('NullAudioSound')
