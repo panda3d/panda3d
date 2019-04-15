@@ -109,7 +109,7 @@
 #               Panda3D::VRPN::p3vrpn
 
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 3.0)
-   message(FATAL_ERROR "CMake >= 3.0.2 required")
+  message(FATAL_ERROR "CMake >= 3.0.2 required")
 endif()
 
 get_filename_component(_panda_config_prefix "${CMAKE_CURRENT_LIST_FILE}" PATH)

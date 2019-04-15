@@ -69,22 +69,18 @@ endif()
 if(BUILD_MODELS)
   # We don't really "build" the models, just pzip them
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/models/maps/"
-    DESTINATION "${PROJECT_BINARY_DIR}/models/maps"
-  )
+    DESTINATION "${PROJECT_BINARY_DIR}/models/maps")
   run_pzip(models
     "${CMAKE_CURRENT_SOURCE_DIR}/models/"
     "${PROJECT_BINARY_DIR}/models"
-    *.egg
-  )
+    *.egg)
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
     DESTINATION "${PROJECT_BINARY_DIR}/models"
-    FILES_MATCHING PATTERN *.rgb PATTERN *.png PATTERN *.jpg PATTERN *.wav
-  )
+    FILES_MATCHING PATTERN *.rgb PATTERN *.png PATTERN *.jpg PATTERN *.wav)
   run_pzip(dmodels
     "${CMAKE_CURRENT_SOURCE_DIR}/dmodels/src/"
     "${PROJECT_BINARY_DIR}/models"
-    *.egg
-  )
+    *.egg)
   install(DIRECTORY "${PROJECT_BINARY_DIR}/models"
     COMPONENT Models DESTINATION share/panda3d)
 endif()

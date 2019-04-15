@@ -9,6 +9,7 @@ set(P3PNMTEXT_HEADERS
   pnmTextGlyph.h pnmTextGlyph.I
   pnmTextMaker.h pnmTextMaker.I
 )
+
 set(P3PNMTEXT_SOURCES
   config_pnmtext.cxx
   freetypeFace.cxx

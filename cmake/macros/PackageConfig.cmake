@@ -18,6 +18,7 @@
 #                  [IMPORTED_AS CMake::Imported::Target [...]]
 #                  [FOUND_AS find_name]
 #                  [LICENSE license])
+#
 # Examples:
 #   package_option(LIBNAME "Enables LIBNAME support." DEFAULT OFF)
 #
@@ -38,6 +39,7 @@
 # Function: package_status
 # Usage:
 #   package_status(package_name "Package description" ["Config summary"])
+#
 # Examples:
 #   package_status(OpenAL "OpenAL Audio Output")
 #   package_status(ROCKET "Rocket" "without Python bindings")
@@ -127,9 +129,12 @@ function(package_option name)
         # If the license isn't in the accept listed, don't use the package
         if(${license_index} EQUAL "-1")
           set(default OFF)
+
         else()
           set(default "${${found_as}_FOUND}")
+
         endif()
+
       endif()
 
     elseif(IS_MINSIZE_BUILD)
@@ -151,9 +156,11 @@ function(package_option name)
   if(";${_ALL_PACKAGE_OPTIONS};" MATCHES ";${name};")
     message(SEND_ERROR "package_option(${name}) was called twice.
                         This is a bug in the cmake build scripts.")
+
   else()
     list(APPEND _ALL_PACKAGE_OPTIONS "${name}")
     set(_ALL_PACKAGE_OPTIONS "${_ALL_PACKAGE_OPTIONS}" CACHE INTERNAL "Internal variable")
+
   endif()
 
   set(PANDA_PACKAGE_DEFAULT_${name} "${default}" PARENT_SCOPE)
@@ -205,6 +212,7 @@ function(package_option name)
       else()
         set(includes "${${found_as}_INCLUDE_DIR}")
       endif()
+
       if(${found_as}_LIBRARIES)
         set(libs ${${found_as}_LIBRARIES})
       else()
@@ -240,9 +248,11 @@ function(package_status name desc)
   if(";${_ALL_CONFIG_PACKAGES};" MATCHES ";${name};")
     message(SEND_ERROR "package_status(${name}) was called twice.
                         This is a bug in the cmake build scripts.")
+
   else()
     list(APPEND _ALL_CONFIG_PACKAGES "${name}")
     set(_ALL_CONFIG_PACKAGES "${_ALL_CONFIG_PACKAGES}" CACHE INTERNAL "Internal variable")
+
   endif()
 
   set(PANDA_PACKAGE_DESC_${name} "${desc}" PARENT_SCOPE)
@@ -265,6 +275,7 @@ function(show_packages)
       else()
         message("+ ${desc}")
       endif()
+
     else()
       if(NOT ${package}_FOUND)
         set(reason "not found")
@@ -273,7 +284,9 @@ function(show_packages)
       else()
         set(reason "disabled")
       endif()
+
       message("- ${desc} (${reason})")
+
     endif()
   endforeach()
 endfunction()
@@ -303,8 +316,10 @@ function(export_packages filename)
         INTERFACE_POSITION_INDEPENDENT_CODE
        #INTERFACE_SYSTEM_INCLUDE_DIRECTORIES  # Let the consumer dictate this
         INTERFACE_SOURCES)
+
       set(prop_ex "$<TARGET_PROPERTY:PKG::${pkg},${prop}>")
       string(APPEND exports "$<$<BOOL:${prop_ex}>:  ${prop} \"${prop_ex}\"\n>")
+
     endforeach(prop)
 
     # Ugh, INTERFACE_LINK_LIBRARIES isn't transitive.  Fine.  Take care of it
@@ -357,8 +372,10 @@ function(export_packages filename)
                 if(configs MATCHES ".*;.*")
                   set(_bling "$<1:$>") # genex-escaped $
                   list(APPEND libraries "${_bling}<${_bling}<CONFIG:${config}>:${imported_location}>")
+
                 else()
                   list(APPEND libraries ${imported_location})
+
                 endif()
               endif()
             endforeach(config)
@@ -377,8 +394,10 @@ function(export_packages filename)
       elseif("${head}" MATCHES "\\$<TARGET_NAME:\([^>]+\)>")
         string(REGEX REPLACE ".*\\$<TARGET_NAME:\([^>]+\)>.*" "\\1" match "${head}")
         list(APPEND stack "${match}")
+
       else()
         list(APPEND libraries "${head}")
+
       endif()
     endwhile(stack)
 
@@ -444,6 +463,7 @@ macro(find_package name)
   if(";${ARGN};" MATCHES ";(CONFIG|MODULE|NO_MODULE);")
     # Caller explicitly asking for a certain mode; so be it.
     _find_package(${ARGV})
+
   else()
     string(TOUPPER "${name}" __pkgname_upper)
 
@@ -452,9 +472,11 @@ macro(find_package name)
     if(NOT ${name}_FOUND)
       # CONFIG didn't work, fall back to MODULE
       _find_package("${name}" MODULE ${ARGN})
+
     else()
       # Case-sensitivity
       set(${__pkgname_upper}_FOUND 1)
+
     endif()
   endif()
 endmacro(find_package)

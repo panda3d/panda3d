@@ -43,9 +43,7 @@ function(composite_sources target sources_var)
   # Don't composite if in the list of exclusions, and don't bother compositing
   # with too few sources
   list (FIND COMPOSITE_SOURCE_EXCLUSIONS ${target} _index)
-  if(num_sources LESS 2
-    OR ${COMPOSITE_SOURCE_LIMIT} LESS 2
-    OR ${_index} GREATER -1)
+  if(num_sources LESS 2 OR ${COMPOSITE_SOURCE_LIMIT} LESS 2 OR ${_index} GREATER -1)
     return()
   endif()
 
@@ -71,7 +69,6 @@ function(composite_sources target sources_var)
       list(LENGTH composite_sources num_composite_sources)
 
       if(num_sources EQUAL 0 OR NOT num_composite_sources LESS ${COMPOSITE_SOURCE_LIMIT})
-
         # It's pointless to make a composite source from just one file.
         if(num_composite_sources GREATER 1)
 
@@ -109,4 +106,5 @@ function(composite_sources target sources_var)
   # The new files are added to the existing files, which means the old files
   # are still there, but they won't be compiled due to the HEADER_FILE_ONLY setting.
   set(${sources_var} ${orig_sources} ${composite_files} PARENT_SCOPE)
+
 endfunction(composite_sources)

@@ -1,5 +1,3 @@
-configure_file(prc_parameters.h.in prc_parameters.h)
-
 set(P3PRC_HEADERS
   androidLogStream.h
   bigEndian.h
@@ -33,7 +31,8 @@ set(P3PRC_HEADERS
   streamReader.I streamReader.h
   streamWrapper.I streamWrapper.h
   streamWriter.I streamWriter.h
-  ${CMAKE_CURRENT_BINARY_DIR}/prc_parameters.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/prc_parameters.h
+)
 
 set(P3PRC_SOURCES
   config_prc.cxx
@@ -61,7 +60,10 @@ set(P3PRC_SOURCES
   notifySeverity.cxx
   prcKeyRegistry.cxx
   reversedNumericData.cxx
-  streamReader.cxx streamWrapper.cxx streamWriter.cxx)
+  streamReader.cxx streamWrapper.cxx streamWriter.cxx
+)
+
+configure_file(prc_parameters.h.in prc_parameters.h)
 
 if(ANDROID)
   set(P3PRC_SOURCES ${P3PRC_SOURCES}
@@ -72,10 +74,10 @@ set(P3PRC_IGATEEXT
   streamReader_ext.cxx
   streamReader_ext.h
   streamWriter_ext.cxx
-  streamWriter_ext.h)
+  streamWriter_ext.h
+)
 
 composite_sources(p3prc P3PRC_SOURCES)
-
 add_component_library(p3prc NOINIT SYMBOL BUILDING_DTOOL_PRC
   ${P3PRC_HEADERS} ${P3PRC_SOURCES})
 target_include_directories(p3prc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)

@@ -184,13 +184,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3GOBJ_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_gobj
-  #define LOCAL_LIBS \
-#    p3gobj p3putil
-
-  #define SOURCES \
-#    test_gobj.cxx
-
-#end test_bin_target

@@ -2,18 +2,15 @@
 set(AUX_DISPLAYS)
 
 if(HAVE_GL)
-  set(AUX_DISPLAYS "${AUX_DISPLAYS}
-aux-display pandagl")
+  set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display pandagl")
 endif()
 
 if(HAVE_DX9)
-  set(AUX_DISPLAYS "${AUX_DISPLAYS}
-aux-display pandadx9")
+  set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display pandadx9")
 endif()
 
 if(HAVE_TINYDISPLAY)
-  set(AUX_DISPLAYS "${AUX_DISPLAYS}
-aux-display p3tinydisplay")
+  set(AUX_DISPLAYS "${AUX_DISPLAYS}\naux-display p3tinydisplay")
 endif()
 
 if(HAVE_RAD_MSS)

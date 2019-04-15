@@ -2,9 +2,6 @@ if(NOT HAVE_EGG)
   return()
 endif()
 
-add_bison_target(parser.cxx parser.yxx DEFINES parser.h PREFIX eggyy)
-add_flex_target(lexer.cxx lexer.lxx CASE_INSENSITIVE PREFIX eggyy)
-
 set(P3EGG_HEADERS
   config_egg.h eggAnimData.I eggAnimData.h
   eggAnimPreload.I eggAnimPreload.h
@@ -97,9 +94,9 @@ set(P3EGG_IGATEEXT
 )
 
 # These cannot be interrogated, and are excluded from the composites.
-set(P3EGG_PARSER_SOURCES
-  parser.cxx
-  lexer.cxx)
+add_bison_target(parser.cxx parser.yxx DEFINES parser.h PREFIX eggyy)
+add_flex_target(lexer.cxx lexer.lxx CASE_INSENSITIVE PREFIX eggyy)
+set(P3EGG_PARSER_SOURCES parser.cxx lexer.cxx)
 
 composite_sources(p3egg P3EGG_SOURCES)
 add_component_library(p3egg SYMBOL BUILDING_PANDA_EGG

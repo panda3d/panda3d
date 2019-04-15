@@ -5,9 +5,11 @@ endif()
 if(ANDROID)
   set(GLES1_PIPE_TYPE "AndroidGraphicsPipe")
   set(GLES1_PIPE_INCLUDE "androidGraphicsPipe.h")
+
 else()
   set(GLES1_PIPE_TYPE "eglGraphicsPipe")
   set(GLES1_PIPE_INCLUDE "eglGraphicsPipe.h")
+
 endif()
 
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "GLESDevel")

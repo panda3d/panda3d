@@ -30,6 +30,7 @@ set(P3DTOOLUTIL_HEADERS
 if(APPLE)
   set(P3DTOOLUTIL_HEADERS ${P3DTOOLUTIL_HEADERS}
     filename_assist.mm filename_assist.h)
+
   set_source_files_properties(
     filename_assist.mm filename_assist.h PROPERTIES
     WRAP_EXCLUDE YES
@@ -70,7 +71,6 @@ set(P3DTOOLUTIL_IGATEEXT
 )
 
 composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
-
 add_component_library(p3dtoolutil SYMBOL BUILDING_DTOOL_DTOOLUTIL
   ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
 target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})

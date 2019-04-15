@@ -7,21 +7,26 @@ set(PANDAGL_LINK_TARGETS p3glgsg p3glstuff)
 if(HAVE_GLX)
   list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay p3x11display)
   set(PANDAGL_PIPE_TYPE "glxGraphicsPipe")
+
 elseif(HAVE_WGL)
   list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay p3windisplay)
   set(PANDAGL_PIPE_TYPE "wglGraphicsPipe")
+
 elseif(HAVE_COCOA)
   list(APPEND PANDAGL_LINK_TARGETS p3cocoadisplay)
   set(PANDAGL_PIPE_TYPE "CocoaGraphicsPipe")
   set(PANDAGL_PIPE_INCLUDE "cocoaGraphicsPipe.h")
+
 elseif(HAVE_CARBON)
   list(APPEND PANDAGL_LINK_TARGETS p3osxdisplay)
   set(PANDAGL_PIPE_TYPE "osxGraphicsPipe")
+
 else()
   message("") # Add extra line before error
   message(SEND_ERROR
     "When compiling with OpenGL (HAVE_GL), at least one of:
   HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
+
 endif()
 
 if(NOT PANDAGL_PIPE_INCLUDE)

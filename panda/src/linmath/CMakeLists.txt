@@ -60,14 +60,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3LINMATH_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_math
-  #define LOCAL_LIBS \
-#    p3linmath
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-  #define SOURCES \
-#    test_math.cxx
-
-#end test_bin_target

@@ -4,11 +4,13 @@ endif()
 
 set(P3GLES2GSG_HEADERS
   config_gles2gsg.h
-  gles2gsg.h)
+  gles2gsg.h
+)
 
 set(P3GLES2GSG_SOURCES
   config_gles2gsg.cxx
-  gles2gsg.cxx)
+  gles2gsg.cxx
+)
 
 composite_sources(p3gles2gsg P3GLES2GSG_SOURCES)
 add_component_library(p3gles2gsg SYMBOL BUILDING_PANDAGLES2

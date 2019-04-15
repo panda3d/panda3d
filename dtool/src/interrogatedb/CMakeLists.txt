@@ -34,7 +34,6 @@ set(P3IGATERUNTIME_HEADERS
 )
 
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
-
 add_component_library(p3interrogatedb NOINIT SYMBOL BUILDING_INTERROGATEDB
   ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
 target_link_libraries(p3interrogatedb p3prc p3dconfig p3dtool)
@@ -68,9 +67,9 @@ add_custom_command(
     -srcdir "${CMAKE_CURRENT_SOURCE_DIR}"
     -oc "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx"
     ${P3INTERROGATEDB_IGATE}
+
   DEPENDS host_interrogate ${P3INTERROGATEDB_IGATE}
-  COMMENT "Interrogating interrogatedb"
-)
+  COMMENT "Interrogating interrogatedb")
 
 add_python_target(panda3d.interrogatedb
   "${CMAKE_CURRENT_BINARY_DIR}/interrogatedb_module.cxx")

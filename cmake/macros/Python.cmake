@@ -31,13 +31,17 @@ function(add_python_target target)
   foreach(arg ${ARGN})
     if(arg STREQUAL "COMPONENT")
       set(keyword "component")
+
     elseif(arg STREQUAL "EXPORT")
       set(keyword "export")
+
     elseif(keyword)
       set(${keyword} "${arg}")
       unset(keyword)
+
     else()
       list(APPEND sources "${arg}")
+
     endif()
   endforeach(arg)
 
@@ -57,12 +61,14 @@ function(add_python_target target)
     if(PYTHON_ARCH_INSTALL_DIR)
       install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/${slash_namespace}")
     endif()
+
   else()
     set_target_properties(${target} PROPERTIES
       OUTPUT_NAME "${basename}"
       PREFIX "libpy.${namespace}.")
 
     install(TARGETS ${target} EXPORT "${export}" COMPONENT "${component}" DESTINATION lib)
+
   endif()
 
   set(keywords OVERWRITE ARCH)
@@ -97,15 +103,20 @@ function(install_python_package path)
   foreach(arg ${ARGN})
     if(arg STREQUAL "ARCH")
       set(type "ARCH")
+
     elseif(arg STREQUAL "LIB")
       set(type "LIB")
+
     elseif(arg STREQUAL "COMPONENT")
       set(component_keyword ON)
+
     elseif(component_keyword)
       set(component "${arg}")
       set(component_keyword OFF)
+
     else()
       message(FATAL_ERROR "install_python_package got unexpected argument: ${ARGN}")
+
     endif()
   endforeach(arg)
 
@@ -163,12 +174,16 @@ function(ensure_python_init path)
   foreach(arg ${ARGN})
     if(arg STREQUAL "ARCH")
       set(arch ON)
+
     elseif(arg STREQUAL "ROOT")
       set(root ON)
+
     elseif(arg STREQUAL "OVERWRITE")
       set(overwrite ON)
+
     else()
       message(FATAL_ERROR "ensure_python_init got unexpected argument: ${arg}")
+
     endif()
   endforeach(arg)
 
@@ -217,6 +232,7 @@ def _fixup_path():
 _fixup_path()
 del _fixup_path
 ")
+
   endif()
 
   if(root AND WIN32 AND NOT CYGWIN)
@@ -244,6 +260,7 @@ def _fixup_dlls():
 _fixup_dlls()
 del _fixup_dlls
 ")
+
   endif()
 
 endfunction(ensure_python_init)

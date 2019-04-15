@@ -16,33 +16,20 @@ if(NOT BUILD_SHARED_LIBS)
   # If we're statically linking, we need to explicitly link with
   # at least one of the available renderers.
   if(HAVE_GL)
-    set(P3FRAMEWORK_LINK_TARGETS
-      ${P3FRAMEWORK_LINK_TARGETS}
-      pandagl
-    )
+    list(APPEND P3FRAMEWORK_LINK_TARGETS pandagl)
   elseif(HAVE_DX9)
-    set(P3FRAMEWORK_LINK_TARGETS
-      ${P3FRAMEWORK_LINK_TARGETS}
-      pandadx9
-    )
+    list(APPEND P3FRAMEWORK_LINK_TARGETS pandadx9)
   elseif(HAVE_TINYDISPLAY)
-    set(P3FRAMEWORK_LINK_TARGETS
-      ${P3FRAMEWORK_LINK_TARGETS}
-      p3tinydisplay
-    )
+    list(APPEND P3FRAMEWORK_LINK_TARGETS p3tinydisplay)
   else()
-    message(WARNING
-      "No renderer library available to link to p3framework."
-    )
+    message(WARNING "No renderer library available to link to p3framework.")
   endif()
 
   # And we might like to have the p3egg loader available.
   if(HAVE_EGG)
-    set(P3FRAMEWORK_LINK_TARGETS
-      ${P3FRAMEWORK_LINK_TARGETS}
-      pandaegg
-    )
+    list(APPEND P3FRAMEWORK_LINK_TARGETS pandaegg)
   endif()
+
 endif()
 
 composite_sources(p3framework P3FRAMEWORK_SOURCES)

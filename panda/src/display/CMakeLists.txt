@@ -116,16 +116,5 @@ if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)
   add_library(p3subprocbuffer
     subprocessWindowBuffer.h
     subprocessWindowBuffer.I
-    subprocessWindowBuffer.cxx
-  )
+    subprocessWindowBuffer.cxx)
 endif()
-
-#begin test_bin_target
-  #define TARGET test_display
-  #define LOCAL_LIBS \
-#    p3display p3putil
-
-  #define SOURCES \
-#    test_display.cxx
-
-#end test_bin_target

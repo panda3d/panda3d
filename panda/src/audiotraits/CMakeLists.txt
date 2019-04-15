@@ -7,18 +7,20 @@ endif()
 
 if(HAVE_RAD_MSS)
   set(P3MILES_HEADERS
-      config_milesAudio.h
-      milesAudioManager.h
-      milesAudioSound.I milesAudioSound.h
-      milesAudioSample.I milesAudioSample.h
-      milesAudioSequence.I milesAudioSequence.h
-      milesAudioStream.I milesAudioStream.h
-      globalMilesManager.I globalMilesManager.h)
+    config_milesAudio.h
+    milesAudioManager.h
+    milesAudioSound.I milesAudioSound.h
+    milesAudioSample.I milesAudioSample.h
+    milesAudioSequence.I milesAudioSequence.h
+    milesAudioStream.I milesAudioStream.h
+    globalMilesManager.I globalMilesManager.h
+  )
 
   set(P3MILES_SOURCES
-      config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx
-      milesAudioStream.cxx globalMilesManager.cxx milesAudioSample.cxx
-      milesAudioSequence.cxx)
+    config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx
+    milesAudioStream.cxx globalMilesManager.cxx milesAudioSample.cxx
+    milesAudioSequence.cxx
+  )
 
   composite_sources(p3miles_audio P3MILES_SOURCES)
   add_library(p3miles_audio ${P3MILES_HEADERS} ${P3MILES_SOURCES})
@@ -37,12 +39,14 @@ endif()
 
 if(HAVE_FMODEX)
   set(P3FMOD_HEADERS
-      config_fmodAudio.h
-      fmodAudioManager.h
-      fmodAudioSound.I fmodAudioSound.h)
+    config_fmodAudio.h
+    fmodAudioManager.h
+    fmodAudioSound.I fmodAudioSound.h
+  )
 
   set(P3FMOD_SOURCES
-      config_fmodAudio.cxx fmodAudioManager.cxx fmodAudioSound.cxx)
+    config_fmodAudio.cxx fmodAudioManager.cxx fmodAudioSound.cxx
+  )
 
   composite_sources(p3fmod_audio P3FMOD_SOURCES)
   add_library(p3fmod_audio ${P3FMOD_HEADERS} ${P3FMOD_SOURCES})
@@ -61,12 +65,14 @@ endif()
 
 if(HAVE_OPENAL)
   set(P3OPENAL_HEADERS
-      config_openalAudio.h
-      openalAudioManager.h
-      openalAudioSound.I openalAudioSound.h)
+    config_openalAudio.h
+    openalAudioManager.h
+    openalAudioSound.I openalAudioSound.h
+  )
 
   set(P3OPENAL_SOURCES
-      config_openalAudio.cxx openalAudioManager.cxx openalAudioSound.cxx)
+    config_openalAudio.cxx openalAudioManager.cxx openalAudioSound.cxx
+  )
 
 
   composite_sources(p3openal_audio P3OPENAL_SOURCES)

@@ -1,10 +1,12 @@
 set(P3MOTIONTRAIL_HEADERS
-    config_motiontrail.h
-    cMotionTrail.h)
+  config_motiontrail.h
+  cMotionTrail.h
+)
 
 set(P3MOTIONTRAIL_SOURCES
-    config_motiontrail.cxx
-    cMotionTrail.cxx)
+  config_motiontrail.cxx
+  cMotionTrail.cxx
+)
 
 add_component_library(p3motiontrail SYMBOL BUILDING_DIRECT_MOTIONTRAIL
   ${P3MOTIONTRAIL_HEADERS} ${P3MOTIONTRAIL_SOURCES})

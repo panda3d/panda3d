@@ -17,17 +17,20 @@ function(add_bison_target output_cxx input_yxx)
   foreach(arg ${ARGN})
     if(arg STREQUAL "DEFINES")
       set(keyword "DEFINES")
+
     elseif(arg STREQUAL "PREFIX")
       set(keyword "PREFIX")
 
     elseif(keyword STREQUAL "PREFIX")
       list(APPEND arguments -p "${arg}")
+
     elseif(keyword STREQUAL "DEFINES")
       list(APPEND arguments --defines="${arg}")
       list(APPEND outputs "${arg}")
 
     else()
       message(SEND_ERROR "Unexpected argument ${arg} to add_bison_target")
+
     endif()
   endforeach()
 
@@ -67,7 +70,6 @@ function(add_bison_target output_cxx input_yxx)
     add_custom_command(
       OUTPUT ${outputs}
       ${commands}
-      DEPENDS ${depends}
-    )
+      DEPENDS ${depends})
   endif()
 endfunction(add_bison_target)

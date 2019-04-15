@@ -12,6 +12,7 @@ set(P3TFORM_HEADERS
   trackball.h
   transform2sg.h
 )
+
 set(P3TFORM_SOURCES
   buttonThrower.cxx
   config_tform.cxx

@@ -53,7 +53,8 @@ set(P3BULLET_HEADERS
   bulletTriangleMeshShape.I bulletTriangleMeshShape.h
   bulletVehicle.I bulletVehicle.h
   bulletWheel.I bulletWheel.h
-  bulletWorld.I bulletWorld.h)
+  bulletWorld.I bulletWorld.h
+)
 
 set(P3BULLET_SOURCES
   config_bullet.cxx
@@ -104,7 +105,8 @@ set(P3BULLET_SOURCES
   bulletTriangleMeshShape.cxx
   bulletVehicle.cxx
   bulletWheel.cxx
-  bulletWorld.cxx)
+  bulletWorld.cxx
+)
 
 composite_sources(p3bullet P3BULLET_SOURCES)
 add_library(p3bullet ${P3BULLET_SOURCES} ${P3BULLET_HEADERS})

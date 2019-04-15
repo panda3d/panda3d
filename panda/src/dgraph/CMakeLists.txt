@@ -4,6 +4,7 @@ set(P3DGRAPH_HEADERS
   dataNode.I dataNode.h
   dataNodeTransmit.I dataNodeTransmit.h
 )
+
 set(P3DGRAPH_SOURCES
   config_dgraph.cxx
   dataGraphTraverser.cxx

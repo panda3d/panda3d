@@ -62,7 +62,8 @@ set(P3EXPRESS_HEADERS
   weakPointerToVoid.I weakPointerToVoid.h
   weakReferenceList.I weakReferenceList.h
   windowsRegistry.h
-  zStream.I zStream.h zStreamBuf.h)
+  zStream.I zStream.h zStreamBuf.h
+)
 
 set(P3EXPRESS_SOURCES
   buffer.cxx checksumHashGenerator.cxx
@@ -112,11 +113,11 @@ set(P3EXPRESS_SOURCES
   weakPointerToVoid.cxx
   weakReferenceList.cxx
   windowsRegistry.cxx
-  zStream.cxx zStreamBuf.cxx)
+  zStream.cxx zStreamBuf.cxx
+)
 
 if(ANDROID)
-  set(P3EXPRESS_SOURCES ${P3EXPRESS_SOURCES}
-    virtualFileMountAndroidAsset.cxx)
+  list(APPEND P3EXPRESS_SOURCES virtualFileMountAndroidAsset.cxx)
 endif()
 
 set(P3EXPRESS_IGATEEXT
@@ -129,13 +130,12 @@ set(P3EXPRESS_IGATEEXT
   virtualFileSystem_ext.cxx
   virtualFileSystem_ext.h
   virtualFile_ext.cxx
-  virtualFile_ext.h)
+  virtualFile_ext.h
+)
 
 composite_sources(p3express P3EXPRESS_SOURCES)
-
 add_component_library(p3express SYMBOL BUILDING_PANDA_EXPRESS
   ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
-
 target_link_libraries(p3express p3pandabase p3dtoolconfig p3dtool
   PKG::TAR PKG::ZLIB PKG::OPENSSL)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
@@ -156,17 +156,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3EXPRESS_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#add_executable(p3expressTestTypes test_types.cxx)
-#target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
-#add_test(p3express_test_types p3expressTestTypes)
-
-#add_executable(p3expressTestOrderedVector test_ordered_vector.cxx)
-#target_link_libraries(p3expressTestOrderedVector p3putil p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
-#add_test(p3express_test_ordered_vector p3expressTestOrderedVector)
-
-if(HAVE_ZLIB)
-  #add_executable(p3expressTestZstream test_zstream.cxx)
-  #target_link_libraries(p3expressTestZstream p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
-  #add_test(p3express_test_zstream p3expressTestZstream)
-endif()

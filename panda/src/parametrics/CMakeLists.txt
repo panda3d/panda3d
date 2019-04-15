@@ -16,6 +16,7 @@ set(P3PARAMETRICS_HEADERS
   ropeNode.I ropeNode.h
   sheetNode.I sheetNode.h
 )
+
 set(P3PARAMETRICS_SOURCES
   config_parametrics.cxx cubicCurveseg.cxx
   curveFitter.cxx hermiteCurve.cxx
@@ -47,13 +48,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3PARAMETRICS_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_parametrics
-  #define LOCAL_LIBS
-#    p3parametrics
-
-  #define SOURCES
-#    test_parametrics.cxx
-
-#end test_bin_target

@@ -24,13 +24,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3GSGBASE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_gsgbase
-  #define LOCAL_LIBS
-#    p3gsgbase
-
-  #define SOURCES
-#    test_gsgbase.cxx
-
-#end test_bin_target

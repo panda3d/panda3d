@@ -1,6 +1,3 @@
-add_bison_target(vrmlParser.cxx vrmlParser.yxx DEFINES vrmlParser.h PREFIX vrmlyy)
-add_flex_target(vrmlLexer.cxx vrmlLexer.lxx CASE_INSENSITIVE PREFIX vrmlyy)
-
 set(P3VRML_HEADERS
   parse_vrml.h
   standard_nodes.h
@@ -21,6 +18,9 @@ set(P3VRML_PARSER_SOURCES
   vrmlParser.cxx
   vrmlLexer.cxx
 )
+
+add_bison_target(vrmlParser.cxx vrmlParser.yxx DEFINES vrmlParser.h PREFIX vrmlyy)
+add_flex_target(vrmlLexer.cxx vrmlLexer.lxx CASE_INSENSITIVE PREFIX vrmlyy)
 
 composite_sources(p3vrml P3VRML_SOURCES)
 add_library(p3vrml STATIC ${P3VRML_HEADERS} ${P3VRML_SOURCES} ${P3VRML_PARSER_SOURCES})

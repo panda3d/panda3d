@@ -8,6 +8,7 @@ set(P3RECORDER_HEADERS
   recorderTable.h recorderTable.I
   socketStreamRecorder.h socketStreamRecorder.I
 )
+
 set(P3RECORDER_SOURCES
   config_recorder.cxx
   mouseRecorder.cxx

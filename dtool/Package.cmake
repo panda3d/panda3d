@@ -12,6 +12,7 @@ if(Python_FOUND)
   set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
   set(PYTHON_INCLUDE_DIRS ${Python_INCLUDE_DIRS})
   set(PYTHON_VERSION_STRING ${Python_VERSION})
+
 else()
   find_package(PythonInterp ${WANT_PYTHON_VERSION} QUIET)
   find_package(PythonLibs ${PYTHON_VERSION_STRING} QUIET)
@@ -23,6 +24,7 @@ else()
       set(PYTHON_VERSION_STRING ${PYTHONLIBS_VERSION_STRING})
     endif()
   endif()
+
 endif()
 
 package_option(PYTHON
@@ -36,6 +38,7 @@ if(HAVE_PYTHON)
   if(WIN32 AND NOT CYGWIN)
     set(_LIB_DIR ".")
     set(_ARCH_DIR ".")
+
   elseif(PYTHON_EXECUTABLE)
     execute_process(
       COMMAND ${PYTHON_EXECUTABLE}
@@ -47,11 +50,12 @@ if(HAVE_PYTHON)
         -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(True))"
       OUTPUT_VARIABLE _ARCH_DIR
       OUTPUT_STRIP_TRAILING_WHITESPACE)
+
   else()
     set(_LIB_DIR "")
     set(_ARCH_DIR "")
-  endif()
 
+  endif()
 
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
@@ -78,6 +82,7 @@ if(HAVE_PYTHON)
 
   set(PYTHON_EXTENSION_SUFFIX "${_EXT_SUFFIX}" CACHE STRING
     "Suffix for Python binary extension modules.")
+
 endif()
 
 
@@ -119,25 +124,33 @@ package_status(ZLIB "zlib")
 
 # JPEG
 find_package(JPEG QUIET)
+
 package_option(JPEG DEFAULT ON "Enable support for loading .jpg images.")
+
 package_status(JPEG "libjpeg")
 
 # PNG
 find_package(PNG QUIET)
+
 package_option(PNG
   DEFAULT ON
   "Enable support for loading .png images."
   IMPORTED_AS PNG::PNG)
+
 package_status(PNG "libpng")
 
 # TIFF
 find_package(TIFF QUIET)
+
 package_option(TIFF "Enable support for loading .tif images.")
+
 package_status(TIFF "libtiff")
 
 # OpenEXR
 find_package(OpenEXR QUIET)
+
 package_option(OPENEXR "Enable support for loading .exr images.")
+
 package_status(OPENEXR "OpenEXR")
 
 # libsquish
@@ -156,8 +169,10 @@ package_status(SQUISH "libsquish")
 
 # libtar
 find_package(Tar QUIET)
+
 package_option(TAR
   "This is used to optimize patch generation against tar files.")
+
 package_status(TAR "libtar")
 
 
@@ -167,15 +182,19 @@ package_status(TAR "libtar")
 
 # Assimp
 find_package(Assimp QUIET)
+
 package_option(ASSIMP
   "Build pandatool with support for loading 3D assets supported by Assimp.")
+
 package_status(ASSIMP "Assimp")
 
 # FCollada
 find_package(FCollada QUIET)
+
 package_option(FCOLLADA
   "Build pandatool with support for loading Collada files using FCollada."
   IMPORTED_AS FCollada::FCollada)
+
 package_status(FCOLLADA "FCollada")
 
 
@@ -253,16 +272,20 @@ package_status(FFMPEG "FFmpeg" "${ffmpeg_features}")
 
 # Vorbis
 find_package(VorbisFile QUIET)
+
 package_option(VORBIS
   FOUND_AS VORBISFILE
   "Enables support for decoding Vorbis-encoded .ogg audio files via libvorbisfile.")
+
 package_status(VORBIS "Vorbis")
 
 # Opus
 find_package(OpusFile QUIET)
+
 package_option(OPUS
   FOUND_AS OPUSFILE
   "Enables support for decoding .opus audio files via libopusfile.")
+
 package_status(OPUS "Opus")
 
 #
@@ -271,31 +294,37 @@ package_status(OPUS "Opus")
 
 # Miles Sound System
 find_package(Miles QUIET)
+
 package_option(RAD_MSS
   "This enables support for audio output via the Miles Sound System,
   by RAD Game Tools. This requires a commercial license to use, so you'll know
   if you need to enable this option."
   FOUND_AS Miles
   LICENSE "Miles")
+
 package_status(RAD_MSS "Miles Sound System")
 
 # FMOD Ex
 find_package(FMODEx QUIET)
+
 package_option(FMODEX
   "This enables support for the FMOD Ex sound library,
   from Firelight Technologies. This audio library is free for non-commercial
   use."
   LICENSE "FMOD")
+
 package_status(FMODEX "FMOD Ex sound library")
 
 # OpenAL
 find_package(OpenAL QUIET)
+
 package_option(OPENAL
   "This enables support for audio output via OpenAL. Some platforms, such as
   macOS, provide their own OpenAL implementation, which Panda3D can use. But,
   on most platforms this will imply OpenAL Soft, which is LGPL licensed."
   IMPORTED_AS OpenAL::OpenAL
   LICENSE "LGPL")
+
 package_status(OPENAL "OpenAL sound library")
 
 if(OPENAL_FOUND AND APPLE)
@@ -335,7 +364,9 @@ package_status(HARFBUZZ "HarfBuzz")
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
+
 package_option(GTK2)
+
 package_status(GTK2 "gtk+-2")
 
 
@@ -513,9 +544,11 @@ package_status(OPENCV "OpenCV")
 # CMake <3.7 doesn't support GREATER_EQUAL, so this uses NOT LESS instead.
 if(NOT OpenCV_VERSION_MAJOR LESS 3)
   set(OPENCV_VER_3 ON)
+
 elseif(NOT OpenCV_VERSION_MAJOR LESS 2 AND
        NOT OpenCV_VERSION_MINOR LESS 3)
   set(OPENCV_VER_23 ON)
+
 endif()
 
 # ARToolKit

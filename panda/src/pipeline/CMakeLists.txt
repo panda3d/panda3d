@@ -51,7 +51,8 @@ set(P3PIPELINE_HEADERS
   threadSimpleImpl.h threadSimpleImpl.I
   threadPosixImpl.h threadPosixImpl.I
   threadSimpleManager.h threadSimpleManager.I
-  threadPriority.h)
+  threadPriority.h
+)
 
 set(P3PIPELINE_SOURCES
   contextSwitch.c
@@ -100,22 +101,22 @@ set(P3PIPELINE_SOURCES
   threadPosixImpl.cxx
   threadSimpleImpl.cxx
   threadSimpleManager.cxx
-  threadPriority.cxx)
+  threadPriority.cxx
+)
 
 if(WIN32)
-  set(P3PIPELINE_HEADERS
-    ${P3PIPELINE_HEADERS}
+  list(APPEND P3PIPELINE_HEADERS
     conditionVarWin32Impl.h conditionVarWin32Impl.I
     threadWin32Impl.h threadWin32Impl.I)
-  set(P3PIPELINE_SOURCES
-    ${P3PIPELINE_SOURCES}
+  list(APPEND P3PIPELINE_SOURCES
     conditionVarWin32Impl.cxx
     threadWin32Impl.cxx)
 endif()
 
 set(P3PIPELINE_IGATEEXT
   pythonThread.cxx
-  pythonThread.h)
+  pythonThread.h
+)
 
 composite_sources(p3pipeline P3PIPELINE_SOURCES)
 add_component_library(p3pipeline SYMBOL BUILDING_PANDA_PIPELINE

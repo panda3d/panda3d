@@ -17,6 +17,7 @@ set(P3GRUTIL_HEADERS
   pfmVizzer.I pfmVizzer.h
   rigidBodyCombiner.I rigidBodyCombiner.h
 )
+
 set(P3GRUTIL_SOURCES
   cardMaker.cxx
   movieTexture.cxx

@@ -4,6 +4,7 @@ function(run_pzip target_name source destination glob)
     file(COPY "${source}"
       DESTINATION "${destination}"
       FILES_MATCHING PATTERN "${glob}")
+
     return()
   endif()
 
@@ -31,4 +32,5 @@ function(run_pzip target_name source destination glob)
   add_custom_target(${target_name} ALL
     DEPENDS ${dstfiles}
     WORKING_DIRECTORY "${destination}")
+
 endfunction(run_pzip)

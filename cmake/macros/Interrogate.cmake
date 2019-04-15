@@ -27,7 +27,8 @@ set(INTERROGATE_EXCLUDE_REGEXES
   ".*\\.c$"
   ".*\\.lxx$"
   ".*\\.yxx$"
-  ".*_src\\..*")
+  ".*_src\\..*"
+)
 
 if(WIN32)
   list(APPEND IGATE_FLAGS -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
@@ -57,12 +58,16 @@ function(target_interrogate target)
   foreach(arg ${ARGN})
     if(arg STREQUAL "ALL")
       set(want_all ON)
+
     elseif(arg STREQUAL "EXTENSIONS")
       set(extensions_keyword ON)
+
     elseif(extensions_keyword)
       list(APPEND extensions "${arg}")
+
     else()
       list(APPEND sources "${arg}")
+
     endif()
   endforeach()
 
@@ -77,7 +82,6 @@ function(target_interrogate target)
   # Now let's get everything's absolute path, so that it can be passed
   # through a property while still preserving the reference.
   set(absolute_sources)
-  set(absolute_extensions)
   foreach(source ${sources})
     get_source_file_property(exclude "${source}" WRAP_EXCLUDE)
     if(NOT exclude)
@@ -85,15 +89,17 @@ function(target_interrogate target)
       list(APPEND absolute_sources ${location})
     endif()
   endforeach(source)
+
+  set(absolute_extensions)
   foreach(extension ${extensions})
     get_source_file_property(location "${extension}" LOCATION)
     list(APPEND absolute_extensions ${location})
   endforeach(extension)
 
-  set_target_properties("${target}" PROPERTIES IGATE_SOURCES
-    "${absolute_sources}")
-  set_target_properties("${target}" PROPERTIES IGATE_EXTENSIONS
-    "${absolute_extensions}")
+  set_target_properties("${target}" PROPERTIES
+    IGATE_SOURCES "${absolute_sources}")
+  set_target_properties("${target}" PROPERTIES
+    IGATE_EXTENSIONS "${absolute_extensions}")
 
   # CMake has no property for determining the source directory where the
   # target was originally added. interrogate_sources makes use of this
@@ -227,9 +233,9 @@ function(interrogate_sources target output database language_flags)
       -S "${PYTHON_INCLUDE_DIRS}"
       ${include_flags}
       ${scan_sources}
+
     DEPENDS host_interrogate ${sources} ${extensions} ${nfiles}
-    COMMENT "Interrogating ${target}"
-  )
+    COMMENT "Interrogating ${target}")
 
   # Propagate the target's compile definitions to the output file
   set_source_files_properties("${output}" PROPERTIES
@@ -263,17 +269,22 @@ function(add_python_module module)
   foreach(arg ${ARGN})
     if(arg STREQUAL "LINK" OR arg STREQUAL "IMPORT" OR arg STREQUAL "COMPONENT")
       set(keyword "${arg}")
+
     elseif(keyword STREQUAL "LINK")
       list(APPEND link_targets "${arg}")
       set(keyword)
+
     elseif(keyword STREQUAL "IMPORT")
       list(APPEND import_flags "-import" "${arg}")
       set(keyword)
+
     elseif(keyword STREQUAL "COMPONENT")
       set(component "${arg}")
       set(keyword)
+
     else()
       list(APPEND targets "${arg}")
+
     endif()
   endforeach(arg)
 
@@ -310,8 +321,7 @@ function(add_python_module module)
       ${INTERROGATE_MODULE_OPTIONS}
       ${IMOD_FLAGS} ${infiles_rel}
     DEPENDS host_interrogate_module ${infiles_abs}
-    COMMENT "Generating module ${module}"
-  )
+    COMMENT "Generating module ${module}")
 
   add_python_target(panda3d.${module} COMPONENT "${component}" EXPORT "${component}"
     "${module}_module.cxx" ${sources_abs} ${extensions})

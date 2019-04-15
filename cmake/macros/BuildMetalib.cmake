@@ -51,6 +51,7 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
           set(is_component 0)
           set(name_of_component "")
           set(name_of_non_component "${library}")
+
         else()
           set(is_component "$<TARGET_PROPERTY:${library},IS_COMPONENT>")
 
@@ -60,17 +61,20 @@ if(CMAKE_VERSION VERSION_LESS "3.12")
 
           set(name_of_component "$<${is_component}:$<TARGET_NAME:${library}>>")
           set(name_of_non_component "$<$<NOT:${is_component}>:$<TARGET_NAME:${library}>>")
+
         endif()
 
         # Libraries are only linked transitively if they aren't components.
         set_property(TARGET "${target}" APPEND PROPERTY
           INTERFACE_LINK_LIBRARIES "${name_of_non_component}")
+
       else()
         # This is a file path to an out-of-tree library - this needs to be
         # recorded so that the metalib can link them. (They aren't needed at
         # all for the object libraries themselves, so they don't have to work
         # transitively.)
         set_property(TARGET "${target}" APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${library}")
+
       endif()
 
     endforeach(library)
@@ -106,9 +110,12 @@ function(add_component_library target_name)
 
   if(target_name MATCHES "^p3.*")
     string(SUBSTRING "${target_name}" 2 -1 name_without_prefix)
+
   else()
     set(name_without_prefix "${target_name}")
+
   endif()
+
   set(init_func "init_lib${name_without_prefix}")
   set(init_header "config_${name_without_prefix}.h")
 
@@ -118,23 +125,30 @@ function(add_component_library target_name)
     if(source STREQUAL "SYMBOL")
       set(symbol_keyword ON)
       set(init_keyword 0)
+
     elseif(source STREQUAL "INIT")
       set(symbol_keyword OFF)
       set(init_keyword 2)
+
     elseif(source STREQUAL "NOINIT")
       set(init_func)
       set(init_header)
+
     elseif(symbol_keyword)
       set(symbol_keyword OFF)
       set(symbol "${source}")
+
     elseif(init_keyword EQUAL 2)
       set(init_func "${source}")
       set(init_keyword 1)
+
     elseif(init_keyword EQUAL 1)
       set(init_header "${source}")
       set(init_keyword 0)
+
     else()
       list(APPEND sources "${source}")
+
     endif()
   endforeach()
 
@@ -148,14 +162,17 @@ function(add_component_library target_name)
     endforeach(source)
 
     add_library("${target_name}" OBJECT ${sources})
+
   else()
     add_library("${target_name}" ${sources})
+
   endif()
 
   set_target_properties("${target_name}" PROPERTIES 
     IS_COMPONENT ON
     INIT_FUNCTION "${init_func}"
     INIT_HEADER "${init_header}")
+
   if(symbol)
     set_property(TARGET "${target_name}" PROPERTY DEFINE_SYMBOL "${symbol}")
 
@@ -169,13 +186,16 @@ function(add_component_library target_name)
         INTERFACE_COMPILE_DEFINITIONS "$<$<BOOL:$<TARGET_PROPERTY:IS_COMPONENT>>:${symbol}>")
     endif()
   endif()
+
   if(BUILD_METALIBS)
     # Apparently neither is CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE?
-    set_property(TARGET "${target_name}" PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}")
+    set_property(TARGET "${target_name}" PROPERTY
+      INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}")
 
     # If we're building dynamic libraries, the object library needs to be -fPIC
     if(BUILD_SHARED_LIBS)
-      set_property(TARGET "${target_name}" PROPERTY POSITION_INDEPENDENT_CODE ON)
+      set_property(TARGET "${target_name}" PROPERTY
+        POSITION_INDEPENDENT_CODE ON)
     endif()
   endif()
 
@@ -210,47 +230,59 @@ function(add_metalib target_name)
   set(component_init_headers)
   set(components)
   set(sources)
+
   foreach(arg ${ARGN})
     if(arg STREQUAL "COMPONENTS")
       set(components_keyword ON)
       set(include_keyword OFF)
       set(init_keyword 0)
       set(export_keyword 0)
+
     elseif(arg STREQUAL "INCLUDE")
       set(include_keyword ON)
       set(components_keyword OFF)
       set(init_keyword 0)
       set(export_keyword 0)
+
     elseif(arg STREQUAL "INIT")
       set(init_keyword 2)
       set(components_keyword OFF)
       set(include_keyword OFF)
       set(export_keyword 0)
+
     elseif(arg STREQUAL "EXPORT")
       if(NOT init_func)
         message(FATAL_ERROR "EXPORT cannot be used before INIT")
       endif()
+
       set(export_keyword 3)
       set(components_keyword OFF)
       set(include_keyword OFF)
       set(init_keyword 0)
+
     elseif(components_keyword)
       list(APPEND components "${arg}")
+
     elseif(include_keyword)
       set(component_init_headers
         "${component_init_headers}#include \"${arg}\"\n")
+
     elseif(init_keyword EQUAL 2)
       set(init_func "${arg}")
       set(init_keyword 1)
+
     elseif(init_keyword EQUAL 1)
       set(init_header "${arg}")
       set(init_keyword 0)
+
     elseif(export_keyword EQUAL 3)
       set(_export_type "${arg}")
       set(export_keyword 2)
+
     elseif(export_keyword EQUAL 2)
       set(_export_name "${arg}")
       set(export_keyword 1)
+
     elseif(export_keyword EQUAL 1)
       set(export_declarations
         "${export_declarations}\nextern \"C\" IMPORT_CLASS ${_export_type} ${_export_name}();")
@@ -259,8 +291,10 @@ function(add_metalib target_name)
       unset(_export_type)
       unset(_export_name)
       set(export_keyword 0)
+
     else()
       list(APPEND sources "${arg}")
+
     endif()
   endforeach()
 
@@ -292,6 +326,7 @@ function(add_metalib target_name)
       set(component_init_headers
         "${component_init_headers}#include \"${component_init_header}\"\n")
     endif()
+
     if(component_init_func)
       set(component_init_funcs
         "${component_init_funcs}  ${component_init_func}();\n")
@@ -303,6 +338,7 @@ function(add_metalib target_name)
 
       # Private defines: Just reference using a generator expression
       list(APPEND private_defines "$<TARGET_PROPERTY:${component},COMPILE_DEFINITIONS>")
+
       # Interface defines: Copy those, but filter out generator expressions
       # referencing a component library
       get_target_property(component_defines "${component}" INTERFACE_COMPILE_DEFINITIONS)
@@ -324,12 +360,15 @@ function(add_metalib target_name)
       foreach(component_include ${component_includes})
         if(component_include MATCHES "${component_genex_regex}")
           # Ignore component references
+
         elseif(component_include MATCHES "^${PROJECT_SOURCE_DIR}")
           # Include path within project; should only be included when building
           list(APPEND includes "$<BUILD_INTERFACE:${component_include}>")
+
         else()
           # Anything else gets included
           list(APPEND includes "${component_include}")
+
         endif()
       endforeach(component_include)
 
@@ -339,20 +378,26 @@ function(add_metalib target_name)
       foreach(component_library ${component_libraries})
         if(NOT component_library)
           # NOTFOUND - guess there are no INTERFACE_LINK_LIBRARIES
+
         elseif(component_library MATCHES "${component_genex_regex}")
           # Ignore component references
+
         elseif(component_library MATCHES ".*(${piped_components}).*")
           # Component library, ignore
+
         else()
           # Anything else gets included
           list(APPEND libs "${component_library}")
+
         endif()
       endforeach(component_library)
 
       # Consume this component's objects
       list(APPEND sources "$<TARGET_OBJECTS:${component}>")
-    else()
+
+    else() # NOT BUILD_METALIBS
       list(APPEND libs "${component}")
+
     endif()
   endforeach()
 
@@ -360,10 +405,12 @@ function(add_metalib target_name)
     set(init_source_path "${CMAKE_CURRENT_BINARY_DIR}/init_${target_name}.cxx")
     set(init_header_path "${CMAKE_CURRENT_BINARY_DIR}/${init_header}")
 
-    configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/metalib_init.cxx.in" "${init_source_path}")
+    configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/metalib_init.cxx.in"
+      "${init_source_path}")
     list(APPEND sources "${init_source_path}")
 
-    configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/metalib_init.h.in" "${init_header_path}")
+    configure_file("${PROJECT_SOURCE_DIR}/cmake/templates/metalib_init.h.in"
+      "${init_header_path}")
     install(FILES "${init_header_path}" DESTINATION include/panda3d)
   endif()
 

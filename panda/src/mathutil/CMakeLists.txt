@@ -74,26 +74,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3MATHUTIL_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_mathutil
-  #define LOCAL_LIBS \
-#    p3mathutil p3pipeline
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-  #define SOURCES \
-#    test_mathutil.cxx
-
-#end test_bin_target
-
-
-#begin test_bin_target
-  #define TARGET test_tri
-  #define LOCAL_LIBS \
-#    p3mathutil p3pipeline
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-  #define SOURCES \
-#    test_tri.cxx
-
-#end test_bin_target

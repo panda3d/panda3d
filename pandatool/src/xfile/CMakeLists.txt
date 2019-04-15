@@ -1,6 +1,3 @@
-add_bison_target(xParser.cxx xParser.yxx DEFINES xParser.h PREFIX xyy)
-add_flex_target(xLexer.cxx xLexer.lxx CASE_INSENSITIVE PREFIX xyy)
-
 set(P3XFILE_HEADERS
   config_xfile.h
   standard_templates.h
@@ -47,6 +44,9 @@ set(P3XFILE_PARSER_SOURCES
   xParser.cxx
   xLexer.cxx
 )
+
+add_bison_target(xParser.cxx xParser.yxx DEFINES xParser.h PREFIX xyy)
+add_flex_target(xLexer.cxx xLexer.lxx CASE_INSENSITIVE PREFIX xyy)
 
 composite_sources(p3xfile P3XFILE_SOURCES)
 add_library(p3xfile STATIC ${P3XFILE_HEADERS} ${P3XFILE_SOURCES} ${P3XFILE_PARSER_SOURCES})

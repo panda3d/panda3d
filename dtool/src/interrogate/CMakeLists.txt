@@ -59,7 +59,6 @@ set(INTERROGATE_PREAMBLE_PYTHON_NATIVE
 )
 
 composite_sources(interrogate INTERROGATE_SOURCES)
-
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
 target_link_libraries(interrogate p3cppParser p3dtoolconfig p3pystub
   PKG::OPENSSL)
@@ -93,7 +92,9 @@ endif()
 if(WANT_INTERROGATE)
   install(TARGETS interrogate interrogate_module EXPORT Core COMPONENT CoreDevel DESTINATION bin)
   install(FILES ${INTERROGATE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
+
 else()
   set_target_properties(interrogate interrogate_module
     PROPERTIES EXCLUDE_FROM_ALL ON)
+
 endif()

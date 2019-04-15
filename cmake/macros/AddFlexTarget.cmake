@@ -17,19 +17,23 @@ function(add_flex_target output_cxx input_lxx)
   foreach(arg ${ARGN})
     if(arg STREQUAL "DEFINES")
       set(keyword "DEFINES")
+
     elseif(arg STREQUAL "PREFIX")
       set(keyword "PREFIX")
+
     elseif(arg STREQUAL "CASE_INSENSITIVE")
       list(APPEND arguments "-i")
 
     elseif(keyword STREQUAL "PREFIX")
       list(APPEND arguments "-P${arg}")
+
     elseif(keyword STREQUAL "DEFINES")
       list(APPEND arguments "--header-file=${arg}")
       list(APPEND outputs "${arg}")
 
     else()
       message(SEND_ERROR "Unexpected argument ${arg} to add_flex_target")
+
     endif()
   endforeach()
 
@@ -46,8 +50,7 @@ function(add_flex_target output_cxx input_lxx)
       COMMAND ${FLEX_EXECUTABLE}
         "-o${output_cxx}" ${arguments}
         "${input_lxx}"
-      MAIN_DEPENDENCY "${input_lxx}"
-    )
+      MAIN_DEPENDENCY "${input_lxx}")
 
   else()
     # Look for prebuilt versions of the outputs.
@@ -69,7 +72,6 @@ function(add_flex_target output_cxx input_lxx)
     add_custom_command(
       OUTPUT ${outputs}
       ${commands}
-      DEPENDS ${depends}
-    )
+      DEPENDS ${depends})
   endif()
 endfunction(add_flex_target)

@@ -98,5 +98,6 @@ if(PANDA_OFFICIAL_VERSION)
 else()
   set(P3D_PLUGIN_DLL_DOT_VERSION "${P3D_PLUGIN_VERSION}.0")
 endif()
+
 # The same thing as a comma-delimited quad.
 string(REPLACE "." "," P3D_PLUGIN_DLL_COMMA_VERSION "${P3D_PLUGIN_DLL_DOT_VERSION}")

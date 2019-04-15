@@ -234,15 +234,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3PGRAPH_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-
-#begin test_bin_target
-  #define TARGET test_pgraph
-
-  #define SOURCES
-   # test_pgraph.cxx
-
-  #define LOCAL_LIBS $[LOCAL_LIBS] p3pgraph
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-#end test_bin_target

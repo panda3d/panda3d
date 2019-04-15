@@ -95,6 +95,7 @@ if(IS_LINUX)
   set(HAVE_PROC_SELF_ENVIRON 1)
   set(HAVE_PROC_SELF_CMDLINE 1)
 endif()
+
 if(IS_FREEBSD)
   set(HAVE_PROC_CURPROC_FILE 1)
   set(HAVE_PROC_CURPROC_MAP 1)
@@ -146,10 +147,12 @@ if(BUILD_SHARED_LIBS)
   set(LINK_ALL_STATIC OFF)
   set(MODULE_TYPE "MODULE"
     CACHE INTERNAL "" FORCE)
+
 else()
   set(LINK_ALL_STATIC ON)
   set(MODULE_TYPE "STATIC"
     CACHE INTERNAL "" FORCE)
+
 endif()
 
 # Now go through all the packages and report whether we have them.
@@ -170,8 +173,10 @@ if(HAVE_THREADS)
   else()
     message("Compilation will include nonpipelined threading support.")
   endif()
+
 else()
   message("Configuring Panda without threading support.")
+
 endif()
 
 message("")

@@ -1,5 +1,3 @@
-add_bison_target(cppBison.cxx cppBison.yxx DEFINES cppBison.h PREFIX cppyy)
-
 set(P3CPPPARSER_HEADERS
   cppArrayType.h cppBison.yxx cppBisonDefs.h
   cppClassTemplateParameter.h cppCommentBlock.h
@@ -37,8 +35,9 @@ set(P3CPPPARSER_SOURCES
   cppUsing.cxx cppVisibility.cxx
 )
 
-composite_sources(p3cppParser P3CPPPARSER_SOURCES)
+add_bison_target(cppBison.cxx cppBison.yxx DEFINES cppBison.h PREFIX cppyy)
 
+composite_sources(p3cppParser P3CPPPARSER_SOURCES)
 add_library(p3cppParser STATIC ${P3CPPPARSER_HEADERS} ${P3CPPPARSER_SOURCES})
 target_link_libraries(p3cppParser p3dtool)
 

@@ -18,6 +18,7 @@ set(P3PGUI_HEADERS
   pgVirtualFrame.I pgVirtualFrame.h
   pgWaitBar.I pgWaitBar.h
 )
+
 set(P3PGUI_SOURCES
   config_pgui.cxx
   pgButton.cxx
@@ -53,21 +54,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3PGUI_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_pgentry
-
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-  #define LOCAL_LIBS \
-#    p3framework p3putil p3collide p3pgraph p3chan p3text \
-#    p3pnmimage p3pnmimagetypes p3event p3gobj p3display \
-#    p3mathutil p3putil p3express p3dgraph p3device p3tform \
-#    p3linmath p3pstatclient panda
-
-  #define UNIX_SYS_LIBS m
-
-  #define SOURCES \
-#    test_pgentry.cxx
-
-#end test_bin_target

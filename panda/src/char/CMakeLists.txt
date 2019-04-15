@@ -8,6 +8,7 @@ set(P3CHAR_HEADERS
   config_char.h
   jointVertexTransform.I jointVertexTransform.h
 )
+
 set(P3CHAR_SOURCES
   character.cxx
   characterJoint.cxx characterJointBundle.cxx

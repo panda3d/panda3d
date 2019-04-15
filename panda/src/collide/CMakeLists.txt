@@ -31,6 +31,7 @@ set(P3COLLIDE_HEADERS
   collisionVisualizer.I collisionVisualizer.h
   config_collide.h
 )
+
 set(P3COLLIDE_SOURCES
   collisionBox.cxx
   collisionCapsule.cxx
@@ -78,14 +79,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3COLLIDE_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-#begin test_bin_target
-  #define TARGET test_collide
-  #define LOCAL_LIBS
-#    p3collide
-  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
-
-  #define SOURCES
-#    test_collide.cxx
-
-#end test_bin_target
