@@ -108,13 +108,3 @@ if(NOT BUILD_METALIBS)
     ARCHIVE COMPONENT CoreDevel)
 endif()
 install(FILES ${P3DISPLAY_HEADERS} COMPONENT CoreDevel DESTINATION include/panda3d)
-
-if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)
-  # We build a static library of just these files, so the plugin can
-  # link with it in direct/src/plugin, without pulling in the rest of
-  # Panda.
-  add_library(p3subprocbuffer
-    subprocessWindowBuffer.h
-    subprocessWindowBuffer.I
-    subprocessWindowBuffer.cxx)
-endif()

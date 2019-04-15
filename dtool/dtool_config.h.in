@@ -30,17 +30,8 @@
 /* Define to use doubles for most numbers, intead of single-precision floats. */
 #cmakedefine STDFLOAT_DOUBLE
 
-/* Define if we have Maya available. */
-#cmakedefine HAVE_MAYA
-
-/* Define if we have libRocket available and built with the Rocket Debugger. */
-#cmakedefine HAVE_ROCKET_DEBUGGER
-
 /* Define if we have built libRocket available and built with Python support. */
 #cmakedefine HAVE_ROCKET_PYTHON
-
-/* Define if we have SoftImage available. */
-#cmakedefine HAVE_SOFTIMAGE
 
 /* Define if we have FCollada available. */
 #cmakedefine HAVE_FCOLLADA
@@ -90,14 +81,8 @@
 /* Define if we have libsquish installed.  */
 #cmakedefine HAVE_SQUISH
 
-/* Define if we have Berkeley DB installed.  */
-#cmakedefine HAVE_BDB
-
 /* Define if we have CG installed.  */
 #cmakedefine HAVE_CG
-
-/* Define for dxerr.h instead of dxerr9.h. */
-#cmakedefine USE_GENERIC_DXERR_LIBRARY
 
 /* Define if we have zlib installed.  */
 #cmakedefine HAVE_ZLIB
@@ -116,12 +101,6 @@
 #cmakedefine HAVE_FFMPEG
 #cmakedefine HAVE_SWSCALE
 #cmakedefine HAVE_SWRESAMPLE
-
-/* Define if we have GLX installed and want to build for GLX.  */
-#cmakedefine HAVE_GLX
-
-/* Define if we have Windows-GL installed and want to build for Wgl.  */
-#cmakedefine HAVE_WGL
 
 /* Define if we have DirectX installed and want to build for DX.  */
 #cmakedefine HAVE_DX9
@@ -208,11 +187,6 @@
    dtool/src/prc/prc_parameters.h.pp, instead of here.  Only those prc
    variables that must be visible outside of the prc directory are
    exported here. */
-
-/* The filename that specifies the public keys to import into
-   config. */
-#cmakedefine PRC_PUBLIC_KEYS_FILENAME
-#cmakedefine PRC_PUBLIC_KEYS_INCLUDE
 
 /* Define if you want to save the descriptions for ConfigVariables. */
 #cmakedefine PRC_SAVE_DESCRIPTIONS
@@ -304,9 +278,6 @@
 /* Define if you have the <limits.h> header file.  */
 #cmakedefine PHAVE_LIMITS_H
 
-/* Define if you have the <minmax.h> header file.  */
-#cmakedefine PHAVE_MINMAX_H
-
 /* Define if you have the <sstream> header file.  */
 #cmakedefine PHAVE_SSTREAM
 
@@ -356,20 +327,8 @@
 // If we are to build the native net interfaces.
 #cmakedefine WANT_NATIVE_NET
 
-/* Turn off warnings for using scanf and such */
-#if 0
-	#cmakedefine _CRT_SECURE_NO_WARNINGS
-        #pragma warning( disable : 4996 4275 4267 4099 4049 4013 4005 )
-#endif
-
 /* Static linkage instead of the normal dynamic linkage? */
 #cmakedefine LINK_ALL_STATIC
-
-/* Define to compile the plugin code. */
-#cmakedefine HAVE_P3D_PLUGIN
-
-/* Define to compile for Cocoa or Carbon on Mac OS X. */
-#cmakedefine HAVE_COCOA
 
 /* Platform-identifying defines. */
 #cmakedefine IS_OSX

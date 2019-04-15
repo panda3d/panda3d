@@ -71,11 +71,3 @@
    distributable package may be downloaded, or empty string if there
    is no associated package. */
 #define PANDA_PACKAGE_HOST_URL "@PANDA_PACKAGE_HOST_URL@"
-
-#if HAVE_P3D_PLUGIN
-/* Similar definitions for the plugin versioning, if in use. */
-#define P3D_PLUGIN_MAJOR_VERSION @P3D_PLUGIN_MAJOR_VERSION@
-#define P3D_PLUGIN_MINOR_VERSION @P3D_PLUGIN_MINOR_VERSION@
-#define P3D_PLUGIN_SEQUENCE_VERSION @P3D_PLUGIN_SEQUENCE_VERSION@
-#define P3D_COREAPI_VERSION_STR "@P3D_COREAPI_VERSION_STR@"
-#endif

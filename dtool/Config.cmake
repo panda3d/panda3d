@@ -237,9 +237,6 @@ mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
 #
 
 
-option(HAVE_P3D_PLUGIN
-  "You may define this to build or develop the plugin." OFF)
-
 option(HAVE_P3D_RTDIST
   "You may define this to build or develop the Panda3D rtdist,
 the environment packaged up for distribution with the plugin."
