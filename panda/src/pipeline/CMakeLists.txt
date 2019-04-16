@@ -125,6 +125,14 @@ target_link_libraries(p3pipeline pandaexpress
   PKG::THREADS)
 target_interrogate(p3pipeline ALL EXTENSIONS ${P3PIPELINE_IGATEEXT})
 
+if(PHAVE_UCONTEXT_H)
+  target_compile_definitions(p3pipeline PRIVATE PHAVE_UCONTEXT_H)
+endif()
+
+if(OS_SIMPLE_THREADS)
+  target_compile_definitions(p3pipeline PRIVATE OS_SIMPLE_THREADS)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3pipeline
     EXPORT Core COMPONENT Core

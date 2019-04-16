@@ -8,6 +8,10 @@ if(HAVE_EGG)
   target_link_libraries(egg2bam p3eggbase p3progbase panda)
   install(TARGETS egg2bam EXPORT Tools COMPONENT Tools DESTINATION bin)
 
+  if(HAVE_SQUISH)
+    target_compile_definitions(egg2bam PRIVATE HAVE_SQUISH)
+  endif()
+
   add_executable(bam2egg bamToEgg.cxx bamToEgg.h)
   target_link_libraries(bam2egg p3converter p3eggbase p3progbase panda)
   install(TARGETS bam2egg EXPORT Tools COMPONENT Tools DESTINATION bin)

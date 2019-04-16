@@ -39,6 +39,10 @@ elseif(OPENCV_VER_23)
   set_target_properties(p3vision PROPERTIES COMPILE_DEFINITIONS "OPENCV_VER_23")
 endif()
 
+if(HAVE_FFMPEG)
+  target_compile_definitions(p3vision PRIVATE HAVE_FFMPEG)
+endif()
+
 install(TARGETS p3vision
   EXPORT Vision COMPONENT Vision
   DESTINATION lib

@@ -21,6 +21,7 @@ target_link_libraries(p3ptloader PRIVATE
 
 if(HAVE_FCOLLADA)
   target_link_libraries(p3ptloader PRIVATE p3daeegg)
+  target_compile_definitions(p3ptloader PRIVATE HAVE_FCOLLADA)
 endif()
 
 install(TARGETS p3ptloader EXPORT Tools COMPONENT Tools DESTINATION ${MODULE_DESTINATION})

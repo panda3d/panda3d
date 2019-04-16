@@ -43,6 +43,10 @@ if(HAVE_FREETYPE)
 endif()
 target_interrogate(p3text ALL)
 
+if(HAVE_HARFBUZZ)
+  target_compile_definitions(p3text PRIVATE HAVE_HARFBUZZ)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3text
     EXPORT Core COMPONENT Core

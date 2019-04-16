@@ -26,6 +26,14 @@ set_target_properties(p3ffmpeg PROPERTIES DEFINE_SYMBOL BUILDING_FFMPEG)
 target_link_libraries(p3ffmpeg panda
   PKG::FFMPEG PKG::SWSCALE PKG::SWRESAMPLE)
 
+if(HAVE_SWSCALE)
+  target_compile_definitions(p3ffmpeg PRIVATE HAVE_SWSCALE)
+endif()
+
+if(HAVE_SWRESAMPLE)
+  target_compile_definitions(p3ffmpeg PRIVATE HAVE_SWRESAMPLE)
+endif()
+
 install(TARGETS p3ffmpeg
   EXPORT FFmpeg COMPONENT FFmpeg
   DESTINATION lib

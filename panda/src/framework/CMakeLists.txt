@@ -38,6 +38,19 @@ add_library(p3framework ${P3FRAMEWORK_HEADERS} ${P3FRAMEWORK_SOURCES})
 set_target_properties(p3framework PROPERTIES DEFINE_SYMBOL BUILDING_FRAMEWORK)
 target_link_libraries(p3framework ${P3FRAMEWORK_LINK_TARGETS})
 
+foreach(var
+    HAVE_GL
+    HAVE_TINYDISPLAY
+    HAVE_DX9
+    HAVE_EGG
+)
+
+  if(${var})
+    target_compile_definitions(p3framework PRIVATE ${var})
+  endif()
+
+endforeach(var)
+
 install(TARGETS p3framework
   EXPORT Framework COMPONENT Framework
   DESTINATION lib

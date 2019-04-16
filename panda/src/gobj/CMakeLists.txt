@@ -176,6 +176,14 @@ target_link_libraries(p3gobj p3gsgbase p3pnmimage
   PKG::ZLIB PKG::SQUISH PKG::CG)
 target_interrogate(p3gobj ALL EXTENSIONS ${P3GOBJ_IGATEEXT})
 
+if(HAVE_SQUISH)
+  target_compile_definitions(p3gobj PRIVATE HAVE_SQUISH)
+endif()
+
+if(PHAVE_LOCKF)
+  target_compile_definitions(p3gobj PRIVATE PHAVE_LOCKF)
+endif()
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3gobj
     EXPORT Core COMPONENT Core

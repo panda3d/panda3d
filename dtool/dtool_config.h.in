@@ -21,9 +21,6 @@
 /* Define if we have Freetype 2.0 or better available. */
 #cmakedefine HAVE_FREETYPE
 
-/* Define if we have HarfBuzz available. */
-#cmakedefine HAVE_HARFBUZZ
-
 /* Define if we want to compile in a default font. */
 #cmakedefine COMPILE_IN_DEFAULT_FONT
 
@@ -32,9 +29,6 @@
 
 /* Define if we have built libRocket available and built with Python support. */
 #cmakedefine HAVE_ROCKET_PYTHON
-
-/* Define if we have FCollada available. */
-#cmakedefine HAVE_FCOLLADA
 
 /* Define if we have ARToolKit available. */
 #cmakedefine HAVE_ARTOOLKIT
@@ -47,7 +41,6 @@
 
 /* Define if we have OpenSSL installed.  */
 #cmakedefine HAVE_OPENSSL
-#cmakedefine REPORT_OPENSSL_ERRORS
 
 /* Define if we have libjpeg installed.  */
 #cmakedefine HAVE_JPEG
@@ -75,12 +68,6 @@
 /* Define if we have libtar installed.  */
 #cmakedefine HAVE_TAR
 
-/* Define if we have libfftw3 installed.  */
-#cmakedefine HAVE_FFTW
-
-/* Define if we have libsquish installed.  */
-#cmakedefine HAVE_SQUISH
-
 /* Define if we have CG installed.  */
 #cmakedefine HAVE_CG
 
@@ -88,29 +75,15 @@
 #cmakedefine HAVE_ZLIB
 
 /* Define if we have OpenGL installed and want to build for GL.  */
-#cmakedefine HAVE_GL
-#ifdef HAVE_GL
 #cmakedefine MIN_GL_VERSION_MAJOR
 #cmakedefine MIN_GL_VERSION_MINOR
-#endif
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 #cmakedefine HAVE_OPENCV
 
-/* Define if we have FFMPEG installed and want to build for FFMPEG.  */
-#cmakedefine HAVE_FFMPEG
-#cmakedefine HAVE_SWSCALE
-#cmakedefine HAVE_SWRESAMPLE
-
-/* Define if we have DirectX installed and want to build for DX.  */
-#cmakedefine HAVE_DX9
-
 /* The choice of generic vs. the specific dxerr library largely
    depends on which SDK you have installed. */
 #cmakedefine USE_GENERIC_DXERR_LIBRARY
-
-/* Define if we want to build tinydisplay. */
-#cmakedefine HAVE_TINYDISPLAY
 
 /* Define if we have the SDL library. */
 #cmakedefine HAVE_SDL
@@ -124,10 +97,6 @@
 /* Define if we want to use fast, user-space simulated threads.  */
 #cmakedefine SIMPLE_THREADS
 
-/* Define if SIMPLE_THREADS should be implemented with the OS-provided
-   threading layer (if available). */
-#cmakedefine OS_SIMPLE_THREADS
-
 /* Define to enable deadlock detection, mutex recursion checks, etc. */
 #cmakedefine DEBUG_THREADS
 
@@ -139,9 +108,6 @@
 
 /* Define if we want to compile the net code.  */
 #cmakedefine HAVE_NET
-
-/* Define if we want to compile the egg code.  */
-#cmakedefine HAVE_EGG
 
 /* Define if we want to compile the audio code.  */
 #cmakedefine HAVE_AUDIO
@@ -196,9 +162,6 @@
    byte first (like Motorola and SPARC, unlike Intel and VAX).  */
 #cmakedefine WORDS_BIGENDIAN
 
-/* Define if we have a lockf() function. */
-#cmakedefine PHAVE_LOCKF
-
 /* Define if we can trust the compiler not to insert extra bytes in
    structs between base structs and derived structs. */
 #cmakedefine SIMPLE_STRUCT_POINTERS
@@ -209,9 +172,6 @@
 /* Define if we have STL hash_map etc. available  */
 #cmakedefine HAVE_STL_HASH
 
-/* Define if gettimeofday() takes only one parameter. */
-#cmakedefine GETTIMEOFDAY_ONE_PARAM
-
 /* Define if you have the getopt function.  */
 #cmakedefine HAVE_GETOPT
 
@@ -221,35 +181,9 @@
 /* Define if getopt appears in getopt.h.  */
 #cmakedefine PHAVE_GETOPT_H
 
-/* Define if you have ioctl(TIOCGWINSZ) to determine terminal width. */
-#cmakedefine IOCTL_TERMINAL_WIDTH
-
 /* Do the system headers define key ios typedefs like ios::openmode
    and ios::fmtflags? */
 #cmakedefine HAVE_IOS_TYPEDEFS
-
-/* Define if the C++ iostream library defines ios::binary.  */
-#cmakedefine HAVE_IOS_BINARY
-
-/* Can we safely call getenv() at static init time? */
-#cmakedefine STATIC_INIT_GETENV
-
-/* Can we read the file /proc/self/[*] to determine our
-   environment variables at static init time? */
-#cmakedefine HAVE_PROC_SELF_EXE
-#cmakedefine HAVE_PROC_SELF_MAPS
-#cmakedefine HAVE_PROC_SELF_ENVIRON
-#cmakedefine HAVE_PROC_SELF_CMDLINE
-#cmakedefine HAVE_PROC_CURPROC_FILE
-#cmakedefine HAVE_PROC_CURPROC_MAP
-#cmakedefine HAVE_PROC_CURPROC_CMDLINE
-
-/* Do we have a global pair of argc/argv variables that we can read at
-   static init time?  Should we prototype them?  What are they called? */
-#cmakedefine HAVE_GLOBAL_ARGV
-#cmakedefine PROTOTYPE_GLOBAL_ARGV
-#cmakedefine GLOBAL_ARGV
-#cmakedefine GLOBAL_ARGC
 
 /* Define if you have the <io.h> header file.  */
 #cmakedefine PHAVE_IO_H
@@ -292,19 +226,6 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #cmakedefine PHAVE_UNISTD_H
-
-/* Define if you have the <utime.h> header file.  */
-#cmakedefine PHAVE_UTIME_H
-
-/* Define if you have the <glob.h> header file.  */
-#cmakedefine PHAVE_GLOB_H
-
-/* Define if you have the <dirent.h> header file.  */
-#cmakedefine PHAVE_DIRENT_H
-
-/* Do we have <ucontext.h> (and therefore makecontext() /
-   swapcontext())? */
-#cmakedefine PHAVE_UCONTEXT_H
 
 /* Do we have <linux/input.h> ? This enables us to use raw mouse input. */
 #cmakedefine PHAVE_LINUX_INPUT_H

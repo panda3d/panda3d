@@ -83,6 +83,38 @@ if(APPLE)
   target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
 endif()
 
+# These are all used by executionEnvironment.cxx/filename.cxx
+foreach(var
+    # executionEnvironment.cxx:
+    HAVE_GLOBAL_ARGV
+    PROTOTYPE_GLOBAL_ARGV
+    GLOBAL_ARGV
+    GLOBAL_ARGC
+
+    HAVE_PROC_CURPROC_CMDLINE
+    HAVE_PROC_CURPROC_FILE
+    HAVE_PROC_CURPROC_MAP
+    HAVE_PROC_SELF_CMDLINE
+    HAVE_PROC_SELF_ENVIRON
+    HAVE_PROC_SELF_EXE
+    HAVE_PROC_SELF_MAPS
+
+    STATIC_INIT_GETENV
+
+    # filename.cxx:
+    HAVE_IOS_BINARY
+    PHAVE_DIRENT_H
+    PHAVE_GLOB_H
+    PHAVE_LOCKF
+    PHAVE_UTIME_H
+)
+
+  if(${var})
+    target_compile_definitions(p3dtoolutil PRIVATE "${var}=${${var}}")
+  endif()
+
+endforeach(var)
+
 if(NOT BUILD_METALIBS)
   install(TARGETS p3dtoolutil
     EXPORT Core COMPONENT Core

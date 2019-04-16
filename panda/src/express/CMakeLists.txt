@@ -140,6 +140,14 @@ target_link_libraries(p3express p3pandabase p3dtoolconfig p3dtool
   PKG::TAR PKG::ZLIB PKG::OPENSSL)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 
+if(REPORT_OPENSSL_ERRORS)
+  target_compile_definitions(p3express PRIVATE REPORT_OPENSSL_ERRORS)
+endif()
+
+if(GETTIMEOFDAY_ONE_PARAM)
+  target_compile_definitions(p3express PRIVATE GETTIMEOFDAY_ONE_PARAM)
+endif()
+
 if(WIN32)
   target_link_libraries(p3express advapi32.lib ws2_32.lib)
 endif()
