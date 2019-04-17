@@ -64,20 +64,15 @@ target_link_libraries(interrogate p3cppParser p3dtoolconfig p3pystub
   PKG::OPENSSL)
 
 # Python preamble for interrogate_module
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
-  "extern const char interrogate_preamble_python_native[];\n")
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
-  "const char interrogate_preamble_python_native[] = (\n")
-foreach(preamble_file ${INTERROGATE_PREAMBLE_PYTHON_NATIVE})
-  file(READ ${preamble_file} preamble_content)
-  string(REPLACE "\\" "\\\\" preamble_content "${preamble_content}")
-  string(REPLACE "\"" "\\\"" preamble_content "${preamble_content}")
-  string(REPLACE "\n" "\\n" preamble_content "${preamble_content}")
-  file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
-    "  \"${preamble_content}\"\n")
-endforeach(preamble_file)
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
-  ");\n")
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx
+  COMMAND ${CMAKE_COMMAND}
+    -D OUTPUT_FILE="${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx"
+    -D INPUT_FILES="${INTERROGATE_PREAMBLE_PYTHON_NATIVE}"
+    -D SYMBOL_NAME="interrogate_preamble_python_native"
+    -P ${PROJECT_SOURCE_DIR}/cmake/scripts/ConcatenateToCXX.cmake
+  DEPENDS ${INTERROGATE_PREAMBLE_PYTHON_NATIVE}
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_executable(interrogate_module interrogate_module.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/interrogate_preamble_python_native.cxx)
