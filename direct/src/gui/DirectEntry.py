@@ -215,7 +215,7 @@ class DirectEntry(DirectFrame):
         self._autoCapitalize()
 
     def _autoCapitalize(self):
-        name = self.get().decode('utf-8')
+        name = self.get()
         # capitalize each word, allowing for things like McMutton
         capName = ''
         # track each individual word to detect prefixes like Mc
@@ -254,7 +254,7 @@ class DirectEntry(DirectFrame):
                 wordSoFar += character
                 wasNonWordChar = False
             capName += character
-        self.enterText(capName.encode('utf-8'))
+        self.enterText(capName)
 
     def focusOutCommandFunc(self):
         if self['focusOutCommand']:
