@@ -72,7 +72,7 @@ print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core ins
   foreach(module ${ALL_INTERROGATE_MODULES})
     file(APPEND "${PROJECT_BINARY_DIR}/pandac/PandaModules.py" "
 try:
-    from panda3d.${module} import *
+    from ${module} import *
 except ImportError as err:
     if not (\"No module named\" in str(err) and \"${module}\" in str(err)):
         raise
