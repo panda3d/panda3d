@@ -113,7 +113,7 @@ function(target_interrogate target)
   # Also store where the build files are kept, so the Interrogate output can go
   # there as well.
   set_target_properties("${target}" PROPERTIES
-    TARGET_BINDIR "${CMAKE_CURRENT_BINARY_DIR}")
+    TARGET_BINDIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
 
 endfunction(target_interrogate)
 
@@ -212,10 +212,12 @@ function(interrogate_sources target output database language_flags)
   set(define_flags "$<JOIN:\t$<SEMICOLON>$<TARGET_PROPERTY:${target},COMPILE_DEFINITIONS>,\t-D>")
 
   # If this is a release build that has NDEBUG defined, we need that too:
-  string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
-  if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
-    list(APPEND define_flags "-DNDEBUG")
-  endif()
+  foreach(build_type ${CMAKE_CONFIGURATION_TYPES} ${CMAKE_BUILD_TYPE})
+    string(TOUPPER "${build_type}" build_type)
+    if(CMAKE_CXX_FLAGS_${build_type} MATCHES ".*NDEBUG.*")
+      list(APPEND define_flags "$<$<CONFIG:${build_type}>:-DNDEBUG>")
+    endif()
+  endforeach(build_type)
 
   add_custom_command(
     OUTPUT "${output}" "${database}"
@@ -298,13 +300,14 @@ function(add_python_module module)
     get_target_property(workdir_abs "${target}" TARGET_BINDIR)
     if(NOT workdir_abs)
       # No TARGET_BINDIR was set, so we'll just use our current directory:
-      set(workdir_abs "${CMAKE_CURRENT_BINARY_DIR}")
+      set(workdir_abs "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     endif()
     # Keep command lines short
     file(RELATIVE_PATH workdir_rel "${CMAKE_CURRENT_BINARY_DIR}" "${workdir_abs}")
 
     interrogate_sources(${target}
-      "${workdir_abs}/${target}_igate.cxx" "${workdir_abs}/${target}.in"
+      "${workdir_abs}/${target}_igate.cxx"
+      "${workdir_abs}/${target}.in"
       "-python-native;-module;${module}")
 
     get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
@@ -315,9 +318,9 @@ function(add_python_module module)
   endforeach(target)
 
   add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
     COMMAND host_interrogate_module
-      -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
+      -oc "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${module}_module.cxx"
       -module ${modname} -library ${modname}
       ${import_flags}
       ${INTERROGATE_MODULE_OPTIONS}
@@ -326,7 +329,7 @@ function(add_python_module module)
     COMMENT "Generating module ${module}")
 
   add_python_target(${module} COMPONENT "${component}" EXPORT "${component}"
-    "${module}_module.cxx" ${sources_abs} ${extensions})
+    "${CMAKE_CFG_INTDIR}/${module}_module.cxx" ${sources_abs} ${extensions})
   target_link_libraries(${module} ${link_targets})
 
   if(CMAKE_VERSION VERSION_LESS "3.11")
