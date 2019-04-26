@@ -1,5 +1,5 @@
 function(run_pzip target_name source destination glob)
-  if(NOT TARGET pzip)
+  if(NOT TARGET host_pzip)
     # If pzip isn't built, we just copy instead.
     file(COPY "${source}"
       DESTINATION "${destination}"
@@ -22,9 +22,9 @@ function(run_pzip target_name source destination glob)
     list(APPEND dstfiles "${destination}/${dstfile}")
 
     add_custom_command(OUTPUT "${destination}/${dstfile}"
-      COMMAND pzip -c > "${dstfile}" < "${srcfile}"
+      COMMAND host_pzip -c > "${dstfile}" < "${srcfile}"
       WORKING_DIRECTORY "${destination}"
-      DEPENDS pzip
+      DEPENDS host_pzip
       COMMENT "")
 
   endforeach(filename)

@@ -38,6 +38,10 @@ if(HAVE_ZLIB)
   add_executable(pzip pzip.cxx)
   target_link_libraries(pzip panda)
 
+  if(NOT CMAKE_CROSSCOMPILING)
+    add_executable(host_pzip ALIAS pzip)
+  endif()
+
   add_executable(punzip punzip.cxx)
   target_link_libraries(punzip panda)
 
