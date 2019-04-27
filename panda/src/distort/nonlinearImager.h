@@ -82,7 +82,8 @@ class EXPCL_PANDAFX NonlinearImager {
 PUBLISHED:
   NonlinearImager();
   ~NonlinearImager();
-
+  
+  int add_screen(ProjectionScreen *screen);
   int add_screen(const NodePath &screen, const std::string &name);
   int find_screen(const NodePath &screen) const;
   void remove_screen(int index);

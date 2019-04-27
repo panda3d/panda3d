@@ -61,10 +61,10 @@ LinuxInputDeviceManager() {
 
     // We'll want to sort the devices by index, since the order may be
     // meaningful (eg. for the Xbox wireless receiver).
-    std::sort(indices.begin(), indices.end());
-    if(indices.empty()){
+    if(indices.empty()){ //Check if indices are empty
       return;
     }
+    std::sort(indices.begin(), indices.end());
     _evdev_devices.resize(indices.back() + 1, nullptr);
 
     for (size_t index : indices) {
