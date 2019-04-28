@@ -199,6 +199,22 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
     break;
 
   case SEEK_CUR:
+    // Vorbis uses a seek with offset 0 to determine whether seeking is
+    // supported, but this is not good enough.  We seek to the end and back.
+    if (offset == 0) {
+      std::streambuf *buf = stream->rdbuf();
+      std::streampos pos = buf->pubseekoff(0, std::ios::cur, std::ios::in);
+      if (pos < 0) {
+        return -1;
+      }
+      if (buf->pubseekoff(0, std::ios::end, std::ios::in) >= 0) {
+        // It worked; seek back to the previous location.
+        buf->pubseekpos(pos, std::ios::in);
+        return 0;
+      } else {
+        return -1;
+      }
+    }
     stream->seekg(offset, std::ios::cur);
     break;
 
