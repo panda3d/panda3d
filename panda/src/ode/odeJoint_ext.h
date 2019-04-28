@@ -30,7 +30,7 @@
 template<>
 class Extension<OdeJoint> : public ExtensionBase<OdeJoint> {
 public:
-  void attach(const OdeBody *body1, const OdeBody *body2);
+  void attach(PyObject *body1, PyObject *body2);
 
   PyObject *convert() const;
 };
