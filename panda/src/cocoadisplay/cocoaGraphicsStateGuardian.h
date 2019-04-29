@@ -26,7 +26,7 @@
  * A tiny specialization on GLGraphicsStateGuardian to add some Cocoa-specific
  * information.
  */
-class CocoaGraphicsStateGuardian : public GLGraphicsStateGuardian {
+class EXPCL_PANDA_COCOADISPLAY CocoaGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties,
