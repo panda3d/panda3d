@@ -107,11 +107,11 @@ append(DatagramIterator *src, int n) {
  * but it may be convenient to deal with samples in python.
  */
 void UserDataAudio::
-append(const std::string &str) {
+append(const vector_uchar &str) {
   nassertv(!_aborted);
   int samples = str.size() / (2 * _desired_channels);
   int words = samples * _desired_channels;
-  for (int i=0; i<words; i++) {
+  for (int i = 0; i < words; ++i) {
     int c1 = ((unsigned char)str[i*2+0]);
     int c2 = ((unsigned char)str[i*2+1]);
     int16_t n = (c1 | (c2 << 8));
