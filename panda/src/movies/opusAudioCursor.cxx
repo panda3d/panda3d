@@ -117,16 +117,7 @@ opus_int64 cb_tell(void *stream) {
   return in->tellg();
 }
 
-int cb_close(void *stream) {
-  istream *in = (istream *)stream;
-  nassertr(in != nullptr, EOF);
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->close_read_file(in);
-  return 0;
-}
-
-static const OpusFileCallbacks callbacks = {cb_read, cb_seek, cb_tell, cb_close};
+static const OpusFileCallbacks callbacks = {cb_read, cb_seek, cb_tell, nullptr};
 
 TypeHandle OpusAudioCursor::_type_handle;
 
@@ -138,6 +129,7 @@ OpusAudioCursor::
 OpusAudioCursor(OpusAudio *src, istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
+  _stream(stream),
   _link(0)
 {
   nassertv(stream != nullptr);
@@ -175,6 +167,11 @@ OpusAudioCursor::
     op_free(_op);
     _op = nullptr;
   }
+
+  if (_stream != nullptr) {
+    VirtualFileSystem::close_read_file(_stream);
+    _stream = nullptr;
+  }
 }
 
 /**
@@ -190,7 +187,32 @@ seek(double t) {
   t = std::max(t, 0.0);
 
   // Use op_time_seek_lap if cross-lapping is enabled.
-  int error = op_pcm_seek(_op, (ogg_int64_t)(t * 48000.0));
+  ogg_int64_t sample = (ogg_int64_t)(t * 48000.0);
+  int error = op_pcm_seek(_op, sample);
+
+  // Special case for seeking to the beginning; if normal seek fails, we may
+  // be able to explicitly seek to the beginning of the file and call op_open
+  // again.  This allows looping compressed .opus files.
+  if (error == OP_ENOSEEK && sample == 0) {
+    if (_stream->rdbuf()->pubseekpos(0, std::ios::in) == 0) {
+      OggOpusFile *op = op_open_callbacks((void *)_stream, &callbacks, nullptr, 0, nullptr);
+      if (op != nullptr) {
+        op_free(_op);
+        _op = op;
+      } else {
+        movies_cat.error()
+          << "Failed to reopen Opus file to seek to beginning.\n";
+        return;
+      }
+
+      // Reset this field for good measure, just in case this changed.
+      _audio_channels = op_channel_count(_op, -1);
+
+      _last_seek = 0.0;
+      _samples_read = 0;
+      return;
+    }
+  }
   if (error != 0) {
     movies_cat.error()
       << "Seek failed (error " << error << ").  Opus stream may not be seekable.\n";

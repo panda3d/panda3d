@@ -45,7 +45,7 @@ public:
 
 protected:
   OggOpusFile *_op;
-
+  std::istream *_stream;
   int _link;
 
 public:
