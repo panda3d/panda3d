@@ -83,7 +83,7 @@ PUBLISHED:
   INLINE void set_feedback(bool flag = true);
   INLINE OdeJointFeedback *get_feedback();
 
-  EXTENSION(void attach(const OdeBody *body1, const OdeBody *body2));
+  EXTENSION(void attach(PyObject *body1, PyObject *body2));
   void attach_bodies(const OdeBody &body1, const OdeBody &body2);
   void attach_body(const OdeBody &body, int index);
   void detach();
