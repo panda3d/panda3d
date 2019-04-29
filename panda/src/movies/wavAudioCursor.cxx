@@ -294,27 +294,61 @@ seek(double t) {
   t = std::max(t, 0.0);
   std::streampos pos = _data_start + (std::streampos) std::min((size_t) (t * _byte_rate), _data_size);
 
+  std::streambuf *buf = _stream->rdbuf();
+
   if (_can_seek_fast) {
-    _stream->seekg(pos);
-    if (_stream->tellg() != pos) {
+    if (buf->pubseekpos(pos, std::ios::in) != pos) {
       // Clearly, we can't seek fast.  Fall back to the case below.
       _can_seek_fast = false;
     }
   }
 
-  if (!_can_seek_fast) {
-    std::streampos current = _stream->tellg();
+  // Get the current position of the cursor in the file.
+  std::streampos current = buf->pubseekoff(0, std::ios::cur, std::ios::in);
 
+  if (!_can_seek_fast) {
     if (pos > current) {
       // It is ahead of our current position.  Skip ahead.
-      _reader.skip_bytes(pos - current);
+      _stream->ignore(pos - current);
+      current = pos;
 
     } else if (pos < current) {
-      // We'll have to reopen the file.  TODO
+      // Can we seek to the beginning?  Some streams, such as ZStream, let us
+      // rewind the stream.
+      if (buf->pubseekpos(0, std::ios::in) == 0) {
+        if (pos > _data_start && movies_cat.is_info()) {
+          Filename fn = get_source()->get_filename();
+          movies_cat.info()
+            << "Unable to seek backwards in " << fn.get_basename()
+            << "; seeking to beginning and skipping " << pos << " bytes.\n";
+        }
+        _stream->ignore(pos);
+        current = pos;
+      } else {
+        // No; close and reopen the file.
+        Filename fn = get_source()->get_filename();
+        movies_cat.warning()
+          << "Unable to seek backwards in " << fn.get_basename()
+          << "; reopening and skipping " << pos << " bytes.\n";
+
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+        std::istream *stream = vfs->open_read_file(get_source()->get_filename(), true);
+        if (stream != nullptr) {
+          vfs->close_read_file(_stream);
+          stream->ignore(pos);
+          _stream = stream;
+          _reader = StreamReader(stream, false);
+          current = pos;
+        } else {
+          movies_cat.error()
+            << "Unable to reopen " << fn << ".\n";
+          _can_seek = false;
+        }
+      }
     }
   }
 
-  _data_pos = _stream->tellg() - _data_start;
+  _data_pos = (size_t)current - _data_start;
   _last_seek = _data_pos / _byte_rate;
   _samples_read = 0;
 }
