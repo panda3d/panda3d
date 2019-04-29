@@ -141,7 +141,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void VorbisAudioCursor::
+int VorbisAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
 
@@ -186,6 +186,7 @@ read_samples(int n, int16_t *data) {
   }
 
   _samples_read += n;
+  return n;
 }
 
 /**

@@ -41,7 +41,7 @@ class EXPCL_PANDA_MOVIES UserDataAudio : public MovieAudio {
   void done(); // A promise not to write any more samples.
 
  private:
-  void read_samples(int n, int16_t *data);
+  int read_samples(int n, int16_t *data);
   void update_cursor();
   int _desired_rate;
   int _desired_channels;

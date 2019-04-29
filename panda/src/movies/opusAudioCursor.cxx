@@ -228,7 +228,7 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void OpusAudioCursor::
+int OpusAudioCursor::
 read_samples(int n, int16_t *data) {
   int16_t *end = data + (n * _audio_channels);
 
@@ -262,7 +262,9 @@ read_samples(int n, int16_t *data) {
   // Fill the rest of the buffer with silence.
   if (data < end) {
     memset(data, 0, (unsigned char *)end - (unsigned char *)data);
+    n -= (end - data) / _audio_channels;
   }
+  return n;
 }
 
 #endif // HAVE_OPUS

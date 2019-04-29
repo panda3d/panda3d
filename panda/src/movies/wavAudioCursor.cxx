@@ -358,13 +358,13 @@ seek(double t) {
  * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
  * audio will be interleaved.
  */
-void WavAudioCursor::
+int WavAudioCursor::
 read_samples(int n, int16_t *data) {
   int desired = n * _audio_channels;
   int read_samples = std::min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
 
   if (read_samples <= 0) {
-    return;
+    return 0;
   }
 
   switch (_format) {
@@ -455,8 +455,10 @@ read_samples(int n, int16_t *data) {
   // Fill the rest of the buffer with silence.
   if (read_samples < desired) {
     memset(data + read_samples, 0, (desired - read_samples) * 2);
+    n = read_samples / _audio_channels;
   }
 
   _data_pos = _stream->tellg() - _data_start;
-  _samples_read += read_samples / _audio_channels;
+  _samples_read += n;
+  return n;
 }

@@ -51,7 +51,7 @@ PUBLISHED:
   std::string read_samples(int n);
 
 public:
-  virtual void read_samples(int n, int16_t *data);
+  virtual int read_samples(int n, int16_t *data);
 
 protected:
   PT(MovieAudio) _source;
