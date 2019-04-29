@@ -442,7 +442,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     int channels = stream->audio_channels();
     int samples = (int)(stream->length() * stream->audio_rate());
     int16_t *data = new int16_t[samples * channels];
-    stream->read_samples(samples, data);
+    samples = stream->read_samples(samples, data);
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
