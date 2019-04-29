@@ -158,6 +158,9 @@ read_samples(int n, int16_t *data) {
       buffer += read_bytes;
       length -= read_bytes;
     } else {
+      if (read_bytes == 0 && _length == 1.0E10) {
+        _length = ov_time_tell(&_ov);
+      }
       break;
     }
 

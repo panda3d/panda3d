@@ -240,6 +240,9 @@ read_samples(int n, int16_t *data) {
       data += read_samples * _audio_channels;
       _samples_read += read_samples;
     } else {
+      if (read_samples == 0 && _length == 1.0E10) {
+        _length = op_pcm_tell(_op) / 48000.0;
+      }
       break;
     }
 
