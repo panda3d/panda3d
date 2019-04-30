@@ -42,21 +42,7 @@ if(HAVE_PYTHON)
     p3motiontrail p3showbase LINK p3direct IMPORT panda3d.core COMPONENT Direct)
 
   # Copy Python source files into the build directory
-  set(DIRECT_INSTALL_DIRECTORIES
-      actor cluster controls directbase directdevices directnotify directscripts
-      directtools directutil dist distributed extensions_native filter
-      fsm gui interval leveleditor motiontrail p3d particles physics
-      showbase showutil stdpy task tkpanels tkwidgets wxwidgets)
-
-  foreach(dir ${DIRECT_INSTALL_DIRECTORIES})
-    file(COPY
-      DIRECTORY "src/${dir}"
-      DESTINATION "${PROJECT_BINARY_DIR}/direct"
-      FILES_MATCHING PATTERN "*.py")
-  endforeach()
-
-  # Install all files
-  install_python_package("${PROJECT_BINARY_DIR}/direct" LIB COMPONENT Direct)
+  install_python_package(direct SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src" LIB COMPONENT Direct)
 
   # This bit is to generate the 'pandac' compatibility shim. It's deprecated now,
   # but in older versions of Panda3D, one would use
@@ -64,13 +50,13 @@ if(HAVE_PYTHON)
   # instead of
   # from panda3d.FOO import *
   # Generate PandaModules:
-  file(WRITE "${PROJECT_BINARY_DIR}/pandac/PandaModules.py"
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py"
     "\"This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead.\"
 
 print(\"Warning: pandac.PandaModules is deprecated, import from panda3d.core instead\")\n")
 
   foreach(module ${ALL_INTERROGATE_MODULES})
-    file(APPEND "${PROJECT_BINARY_DIR}/pandac/PandaModules.py" "
+    file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/pandac/PandaModules.py" "
 try:
     from ${module} import *
 except ImportError as err:
@@ -80,7 +66,7 @@ except ImportError as err:
   endforeach()
 
   # Now install ourselves:
-  install_python_package("${PROJECT_BINARY_DIR}/pandac" LIB COMPONENT Direct)
+  install_python_package(pandac SOURCE "${CMAKE_CURRENT_BINARY_DIR}/pandac" LIB COMPONENT Direct)
 endif()
 
 # "Direct" component contains both the Python stuff and the non-Python stuff,

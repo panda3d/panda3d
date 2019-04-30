@@ -80,9 +80,12 @@ function(add_python_target target)
 endfunction(add_python_target)
 
 #
-# Function: install_python_package(path [ARCH/LIB] [COMPONENT component])
+# Function: install_python_package(name [SOURCE path] [ARCH/LIB] [COMPONENT component])
 #
-# Installs the Python package which was built at `path`.
+# Installs the Python package `name` (which may have its source at `path`).
+#
+# The package is copied to (or created in) the build directory so that the user
+# may import it before the install step.
 #
 # Note that this handles more than just installation; it will also invoke
 # Python's compileall utility to pregenerate .pyc/.pyo files.  This will only
@@ -96,10 +99,11 @@ endfunction(add_python_target)
 # documentation for more information on what this does).  The default is
 # "Python".
 #
-function(install_python_package path)
+function(install_python_package package_name)
   set(type "LIB")
+  unset(keyword)
   set(component "Python")
-  set(component_keyword OFF)
+  unset(src_path)
   foreach(arg ${ARGN})
     if(arg STREQUAL "ARCH")
       set(type "ARCH")
@@ -108,11 +112,18 @@ function(install_python_package path)
       set(type "LIB")
 
     elseif(arg STREQUAL "COMPONENT")
-      set(component_keyword ON)
+      set(keyword "${arg}")
 
-    elseif(component_keyword)
+    elseif(keyword STREQUAL "COMPONENT")
       set(component "${arg}")
-      set(component_keyword OFF)
+      unset(keyword)
+
+    elseif(arg STREQUAL "SOURCE")
+      set(keyword "${arg}")
+
+    elseif(keyword STREQUAL "SOURCE")
+      set(src_path "${arg}")
+      unset(keyword)
 
     else()
       message(FATAL_ERROR "install_python_package got unexpected argument: ${ARGN}")
@@ -120,26 +131,21 @@ function(install_python_package path)
     endif()
   endforeach(arg)
 
-  get_filename_component(package_name "${path}" NAME)
-  set(custom_target "bytecompile_${package_name}")
+  set(path "${PROJECT_BINARY_DIR}/${package_name}")
 
-  file(RELATIVE_PATH relpath "${PROJECT_BINARY_DIR}" "${path}")
-
-  if(PYTHON_EXECUTABLE)
-    add_custom_target(${custom_target} ALL)
-    add_custom_command(
-      TARGET ${custom_target}
-      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
-      COMMAND "${PYTHON_EXECUTABLE}" -m compileall -q "${relpath}")
-    add_custom_command(
-      TARGET ${custom_target}
-      WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
-      COMMAND "${PYTHON_EXECUTABLE}" -OO -m compileall -q "${relpath}")
+  set(args -D "OUTPUT_DIR=${path}")
+  if(src_path)
+    list(APPEND args -D "SOURCE_DIR=${src_path}")
   endif()
+  if(PYTHON_EXECUTABLE)
+    list(APPEND args -D "PYTHON_EXECUTABLES=${PYTHON_EXECUTABLE}")
+  endif()
+  add_custom_target(${package_name} ALL
+    COMMAND ${CMAKE_COMMAND}
+      ${args}
+      -P "${CMAKE_SOURCE_DIR}/cmake/scripts/CopyPython.cmake")
 
-  ensure_python_init("${path}")
-
-  set(dir ${PYTHON_${type}_INSTALL_DIR})
+  set(dir "${PYTHON_${type}_INSTALL_DIR}")
   if(dir)
     install(DIRECTORY "${path}" DESTINATION "${dir}"
       COMPONENT "${component}"

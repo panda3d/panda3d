@@ -107,7 +107,7 @@ if(INTERROGATE_PYTHON_INTERFACE)
   add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
 
   if(BUILD_SHARED_LIBS)
-    install_python_package("${PROJECT_BINARY_DIR}/panda3d" ARCH)
+    install_python_package(panda3d ARCH)
   endif()
 
   if(HAVE_BULLET)
