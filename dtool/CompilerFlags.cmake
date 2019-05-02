@@ -29,9 +29,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Set up the output directory structure, mimicking that of makepanda
 set(CMAKE_BINARY_DIR "${CMAKE_BINARY_DIR}/cmake")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib")
 set(MODULE_DESTINATION "lib")
 
 # Runtime code assumes that dynamic modules have a "lib" prefix; Windows
@@ -44,11 +44,28 @@ if(WIN32)
   set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
 
   # On Windows, modules (DLLs) are located in bin; lib is just for .lib files
-  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin")
   if(BUILD_SHARED_LIBS)
     set(MODULE_DESTINATION "bin")
   endif()
 endif()
+
+# Since we're using CMAKE_CFG_INTDIR to put everything in a
+# configuration-specific subdirectory when building on a multi-config
+# generator, we need to suppress the usual configuration name appending
+# behavior of CMake. In CMake 3.4+, it will suppress this behavior
+# automatically if the *_OUTPUT_DIRECTORY property contains a generator
+# expresssion, but:
+# a) As of this writing we support as early as CMake 3.0.2
+# b) ${CMAKE_CFG_INTDIR} doesn't actually expand to a generator expression
+#
+# So, to solve both of these, let's just do this:
+foreach(_type RUNTIME ARCHIVE LIBRARY)
+  foreach(_config ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_config}" _config)
+    set(CMAKE_${_type}_OUTPUT_DIRECTORY_${_config} "${CMAKE_${_type}_OUTPUT_DIRECTORY}")
+  endforeach(_config)
+endforeach(_type)
 
 # Set warning levels
 if(MSVC)

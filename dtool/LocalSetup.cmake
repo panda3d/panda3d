@@ -193,8 +193,8 @@ else()
   set(intdir "${CMAKE_BUILD_TYPE}")
 endif()
 
-configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_config.h")
-install(FILES "${PROJECT_BINARY_DIR}/include/${intdir}/dtool_config.h"
+configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h")
+install(FILES "${PROJECT_BINARY_DIR}/${intdir}/include/dtool_config.h"
   COMPONENT CoreDevel
   DESTINATION include/panda3d)
 
