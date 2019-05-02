@@ -1009,6 +1009,8 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
+        LibName("IOKIT", "-framework IOKit")
+        LibName("QUARTZ", "-framework Quartz")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
@@ -4203,7 +4205,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'JPEG', 'PNG', 'HARFBUZZ',
       'TIFF', 'OPENEXR', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
       'SQUISH', 'NVIDIACG', 'VORBIS', 'OPUS', 'WINUSER', 'WINMM', 'WINGDI', 'IPHLPAPI',
-      'SETUPAPI']
+      'SETUPAPI', 'IOKIT']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
@@ -4842,7 +4844,7 @@ if (GetTarget() == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not
   if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON'])
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA', 'CARBON', 'QUARTZ'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
