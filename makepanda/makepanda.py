@@ -1017,6 +1017,14 @@ if (COMPILER=="GCC"):
         # Fix for a bug in OSX Leopard:
         LibName("GL", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
+        # Temporary exceptions to removal of this flag
+        if not PkgSkip("ROCKET"):
+            LibName("ROCKET", "-undefined dynamic_lookup")
+        if not PkgSkip("FFMPEG"):
+            LibName("FFMPEG", "-undefined dynamic_lookup")
+        if not PkgSkip("ASSIMP"):
+            LibName("ASSIMP", "-undefined dynamic_lookup")
+
     if GetTarget() == 'android':
         LibName("ALWAYS", '-llog')
         LibName("ANDROID", '-landroid')
@@ -1142,6 +1150,7 @@ def BracketNameWithQuotes(name):
     # Workaround for OSX bug - compiler doesn't like those flags quoted.
     if (name.startswith("-framework")): return name
     if (name.startswith("-dylib_file")): return name
+    if (name.startswith("-undefined ")): return name
 
     # Don't add quotes when it's not necessary.
     if " " not in name: return name
@@ -1815,9 +1824,11 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -Wl,--allow-shlib-undefined'
         else:
             if (GetTarget() == "darwin"):
-                cmd = cxx + ' -undefined dynamic_lookup'
-                if ("BUNDLE" in opts or GetOrigExt(dll) == ".pyd"):
-                    cmd += ' -bundle '
+                cmd = cxx
+                if GetOrigExt(dll) == ".pyd":
+                    cmd += ' -bundle -undefined dynamic_lookup'
+                elif "BUNDLE" in opts:
+                    cmd += ' -bundle'
                 else:
                     install_name = '@loader_path/../lib/' + os.path.basename(dll)
                     cmd += ' -dynamiclib -install_name ' + install_name
