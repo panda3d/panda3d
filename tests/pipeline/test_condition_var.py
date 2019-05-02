@@ -123,12 +123,16 @@ def test_cvar_notify_all_threads(num_threads):
             break
 
     assert state['waiting'] == num_threads
-    m.release()
 
     # OK, now signal it, and yield.  All threads must unblock.
     cv.notify_all()
-    yield_thread()
-    m.acquire()
+    for i in range(1000):
+        m.release()
+        yield_thread()
+        m.acquire()
+        if state['waiting'] == 0:
+            break
+
     assert state['waiting'] == 0
     m.release()
 
