@@ -276,7 +276,7 @@ class AnimPanel(AppShell):
             title = 'Load Animation',
             parent = self.component('hull')
             )
-        if (animFilename == ''):
+        if not animFilename:
             # no file selected, canceled
             return
 
@@ -372,8 +372,9 @@ class AnimPanel(AppShell):
     def destroy(self):
         # First clean up
         taskMgr.remove(self.id + '_UpdateTask')
-        self.destroyCallBack()
-        self.destroyCallBack = None
+        if self.destroyCallBack is not None:
+            self.destroyCallBack()
+            self.destroyCallBack = None
         AppShell.destroy(self)
 
 class ActorControl(Pmw.MegaWidget):
