@@ -51,6 +51,8 @@ PUBLISHED:
   INLINE bool get_respect_prev_transform() const;
   MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform,
                                         set_respect_prev_transform);
+  MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform,
+                                        set_respect_prev_transform);
 
   void add_collider(const NodePath &collider, CollisionHandler *handler);
   bool remove_collider(const NodePath &collider);

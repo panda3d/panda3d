@@ -315,7 +315,7 @@ seek(double t) {
     } else if (pos < current) {
       // Can we seek to the beginning?  Some streams, such as ZStream, let us
       // rewind the stream.
-      if (buf->pubseekpos(0, std::ios::in) == 0) {
+      if (buf->pubseekpos(0, std::ios::in) == (std::streampos)0) {
         if (pos > _data_start && movies_cat.is_info()) {
           Filename fn = get_source()->get_filename();
           movies_cat.info()

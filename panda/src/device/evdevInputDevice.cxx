@@ -62,6 +62,9 @@ enum QuirkBits {
   // We only connect it if it is reporting any events, because when Steam is
   // running, the Steam controller is muted in favour of a dummy Xbox device.
   QB_steam_controller = 32,
+
+  // Axes on the right stick are swapped, using x for y and vice versa.
+  QB_right_axes_swapped = 64,
 };
 
 static const struct DeviceMapping {
@@ -81,7 +84,7 @@ static const struct DeviceMapping {
   // Steam Controller (wireless)
   {0x28de, 0x1142, InputDevice::DeviceClass::unknown, QB_steam_controller},
   // Jess Tech Colour Rumble Pad
-  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, 0},
+  {0x0f30, 0x0111, InputDevice::DeviceClass::gamepad, QB_rstick_from_z | QB_right_axes_swapped},
   // SPEED Link SL-6535-SBK-01
   {0x0079, 0x0006, InputDevice::DeviceClass::gamepad, 0},
   // 8bitdo N30 Pro Controller
@@ -488,7 +491,11 @@ init_device() {
           break;
         case ABS_Z:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_x;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_y;
+            } else {
+              axis = InputDevice::Axis::right_x;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::left_trigger;
             have_analog_triggers = true;
@@ -514,7 +521,11 @@ init_device() {
           break;
         case ABS_RZ:
           if (quirks & QB_rstick_from_z) {
-            axis = InputDevice::Axis::right_y;
+            if (quirks & QB_right_axes_swapped) {
+              axis = InputDevice::Axis::right_x;
+            } else {
+              axis = InputDevice::Axis::right_y;
+            }
           } else if (_device_class == DeviceClass::gamepad) {
             axis = InputDevice::Axis::right_trigger;
             have_analog_triggers = true;

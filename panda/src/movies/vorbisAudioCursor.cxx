@@ -104,7 +104,7 @@ seek(double t) {
   if (result == OV_ENOSEEK && t == 0.0) {
     std::istream *stream = (std::istream *)_ov.datasource;
 
-    if (stream->rdbuf()->pubseekpos(0, std::ios::in) == 0) {
+    if (stream->rdbuf()->pubseekpos(0, std::ios::in) == (std::streampos)0) {
       // Back up the callbacks, then destroy the stream, making sure to first
       // unset the datasource so that it won't close the file.
       ov_callbacks callbacks = _ov.callbacks;
