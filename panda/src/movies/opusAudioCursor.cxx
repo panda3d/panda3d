@@ -194,7 +194,7 @@ seek(double t) {
   // be able to explicitly seek to the beginning of the file and call op_open
   // again.  This allows looping compressed .opus files.
   if (error == OP_ENOSEEK && sample == 0) {
-    if (_stream->rdbuf()->pubseekpos(0, std::ios::in) == 0) {
+    if (_stream->rdbuf()->pubseekpos(0, std::ios::in) == (std::streampos)0) {
       OggOpusFile *op = op_open_callbacks((void *)_stream, &callbacks, nullptr, 0, nullptr);
       if (op != nullptr) {
         op_free(_op);
