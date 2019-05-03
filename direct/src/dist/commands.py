@@ -13,6 +13,7 @@ import stat
 import struct
 import imp
 import string
+import time
 
 import setuptools
 import distutils.log
@@ -29,6 +30,15 @@ if 'basestring' not in globals():
 if sys.version_info < (3, 0):
     # Python 3 defines these subtypes of IOError, but Python 2 doesn't.
     FileNotFoundError = IOError
+
+    # Warn the user.  They might be using Python 2 by accident.
+    print("=================================================================")
+    print("WARNING: You are using Python 2, which will soon be discontinued.")
+    print("WARNING: Please use Python 3 for best results and continued")
+    print("WARNING: support after the EOL date of December 31st, 2019.")
+    print("=================================================================")
+    sys.stdout.flush()
+    time.sleep(4.0)
 
 
 def _parse_list(input):
