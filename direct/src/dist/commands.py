@@ -239,7 +239,9 @@ class build_apps(setuptools.Command):
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
-        self.pypi_extra_indexes = []
+        self.pypi_extra_indexes = [
+            'https://archive.panda3d.org/thirdparty',
+        ]
         self.file_handlers = {}
         self.exclude_dependencies = [
             # Windows
