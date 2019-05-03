@@ -49,6 +49,7 @@ public:
 
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void keystroke(const MouseWatcherParameter &param, bool background);
+  virtual void paste(const MouseWatcherParameter &param, bool background);
   virtual void candidate(const MouseWatcherParameter &param, bool background);
 
   virtual void accept(const MouseWatcherParameter &param);
@@ -140,6 +141,8 @@ PUBLISHED:
 
 
 private:
+  bool do_add_character(wchar_t keycode);
+
   void slot_text_def(int state);
   void update_text();
   void update_cursor();

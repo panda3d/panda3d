@@ -342,6 +342,16 @@ get_keystroke_prefix() {
 }
 
 /**
+ * Returns the prefix that is used to define the paste event for all
+ * PGItems.  The paste event is the concatenation of this string followed
+ * by a hyphen and get_id().
+ */
+INLINE std::string PGItem::
+get_paste_prefix() {
+  return "paste-";
+}
+
+/**
  * Returns the event name that will be thrown when the item is active and the
  * mouse enters its frame, but not any nested frames.
  */
@@ -446,6 +456,16 @@ INLINE std::string PGItem::
 get_keystroke_event() const {
   LightReMutexHolder holder(_lock);
   return get_keystroke_prefix() + get_id();
+}
+
+/**
+ * Returns the event name that will be thrown when the item is active and text
+ * is pasted.
+ */
+INLINE std::string PGItem::
+get_paste_event() const {
+  LightReMutexHolder holder(_lock);
+  return get_paste_prefix() + get_id();
 }
 
 /**

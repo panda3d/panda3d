@@ -60,6 +60,12 @@ output(std::ostream &out) const {
   case T_raw_up:
     out << "raw button " << _button << " up";
     break;
+
+  case T_paste:
+    out << "paste "
+        << TextEncoder::encode_wtext(_candidate_string,
+                                     TextEncoder::get_default_encoding());
+    break;
   }
 }
 
@@ -96,8 +102,14 @@ write_datagram(Datagram &dg) const {
     dg.add_uint16(_highlight_start);
     dg.add_uint16(_highlight_end);
     dg.add_uint16(_cursor_pos);
+    break;
 
   case T_move:
+    break;
+
+  case T_paste:
+    dg.add_string(TextEncoder::encode_wtext(_candidate_string,
+                                            TextEncoder::get_default_encoding()));
     break;
   }
 }
@@ -128,8 +140,14 @@ read_datagram(DatagramIterator &scan) {
     _highlight_start = scan.get_uint16();
     _highlight_end = scan.get_uint16();
     _cursor_pos = scan.get_uint16();
+    break;
 
   case T_move:
+    break;
+
+  case T_paste:
+    _candidate_string = TextEncoder::decode_text(scan.get_string(),
+                                                 TextEncoder::get_default_encoding());
     break;
   }
 }

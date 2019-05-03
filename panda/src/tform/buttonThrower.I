@@ -114,6 +114,24 @@ get_keystroke_event() const {
 }
 
 /**
+ * Specifies the event that is generated (if any) for each paste event that is
+ * received.
+ */
+INLINE void ButtonThrower::
+set_paste_event(const std::string &paste_event) {
+  _paste_event = paste_event;
+}
+
+/**
+ * Returns the paste_event that has been set on this ButtonThrower.  See
+ * set_paste_event().
+ */
+INLINE const std::string &ButtonThrower::
+get_paste_event() const {
+  return _paste_event;
+}
+
+/**
  * Specifies the event that is generated (if any) for each IME candidate
  * string event received.  Events of this nature are received only when the
  * user is entering data using a Microsoft Input Method Editor, typically used

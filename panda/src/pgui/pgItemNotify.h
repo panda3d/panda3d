@@ -44,6 +44,7 @@ protected:
   virtual void item_release(PGItem *item, const MouseWatcherParameter &param);
   virtual void item_keystroke(PGItem *item, const MouseWatcherParameter &param);
   virtual void item_candidate(PGItem *item, const MouseWatcherParameter &param);
+  virtual void item_paste(PGItem *item, const MouseWatcherParameter &param);
   virtual void item_move(PGItem *item, const MouseWatcherParameter &param);
 
 protected:

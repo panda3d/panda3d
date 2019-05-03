@@ -181,6 +181,7 @@ protected:
   void press(ButtonHandle button, bool keyrepeat);
   void release(ButtonHandle button);
   void keystroke(int keycode);
+  void paste(const std::wstring &text);
   void candidate(const std::wstring &candidate, size_t highlight_start,
                  size_t highlight_end, size_t cursor_pos);
 

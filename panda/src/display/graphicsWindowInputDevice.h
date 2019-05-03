@@ -45,6 +45,7 @@ PUBLISHED:
   void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
 
   void keystroke(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
+  void paste(const std::wstring &text);
   void candidate(const std::wstring &candidate_string, size_t highlight_start,
                  size_t highlight_end, size_t cursor_pos);
 

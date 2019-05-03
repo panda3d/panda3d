@@ -94,12 +94,14 @@ public:
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void release(const MouseWatcherParameter &param, bool background);
   virtual void keystroke(const MouseWatcherParameter &param, bool background);
+  virtual void paste(const MouseWatcherParameter &param, bool background);
   virtual void candidate(const MouseWatcherParameter &param, bool background);
   virtual void move(const MouseWatcherParameter &param);
 
   static void background_press(const MouseWatcherParameter &param);
   static void background_release(const MouseWatcherParameter &param);
   static void background_keystroke(const MouseWatcherParameter &param);
+  static void background_paste(const MouseWatcherParameter &param);
   static void background_candidate(const MouseWatcherParameter &param);
 
   INLINE void set_notify(PGItemNotify *notify);
@@ -151,6 +153,7 @@ PUBLISHED:
   INLINE static std::string get_repeat_prefix();
   INLINE static std::string get_release_prefix();
   INLINE static std::string get_keystroke_prefix();
+  INLINE static std::string get_paste_prefix();
 
   INLINE std::string get_enter_event() const;
   INLINE std::string get_exit_event() const;
@@ -162,6 +165,7 @@ PUBLISHED:
   INLINE std::string get_repeat_event(const ButtonHandle &button) const;
   INLINE std::string get_release_event(const ButtonHandle &button) const;
   INLINE std::string get_keystroke_event() const;
+  INLINE std::string get_paste_event() const;
 
   INLINE LMatrix4 get_frame_inv_xform() const;
 

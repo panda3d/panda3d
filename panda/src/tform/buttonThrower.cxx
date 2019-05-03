@@ -288,6 +288,10 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
   case ButtonEvent::T_raw_up:
     event_name = _raw_button_up_event;
     break;
+
+  case ButtonEvent::T_paste:
+    event_name = _paste_event;
+    break;
   }
   if (event_name.empty()) {
     // This general event is not configured.
@@ -316,6 +320,10 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
     break;
 
   case ButtonEvent::T_candidate:
+    event->add_parameter(button_event._candidate_string);
+    break;
+
+  case ButtonEvent::T_paste:
     event->add_parameter(button_event._candidate_string);
     break;
 

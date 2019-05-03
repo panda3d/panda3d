@@ -45,6 +45,8 @@ PUBLISHED:
   INLINE const std::string &get_button_repeat_event() const;
   INLINE void set_keystroke_event(const std::string &keystroke_event);
   INLINE const std::string &get_keystroke_event() const;
+  INLINE void set_paste_event(const std::string &paste_event);
+  INLINE const std::string &get_paste_event() const;
   INLINE void set_candidate_event(const std::string &candidate_event);
   INLINE const std::string &get_candidate_event() const;
   INLINE void set_move_event(const std::string &move_event);
@@ -57,6 +59,7 @@ PUBLISHED:
   MAKE_PROPERTY(button_up_event, get_button_up_event, set_button_up_event);
   MAKE_PROPERTY(button_repeat_event, get_button_repeat_event, set_button_repeat_event);
   MAKE_PROPERTY(keystroke_event, get_keystroke_event, set_keystroke_event);
+  MAKE_PROPERTY(paste_event, get_paste_event, set_paste_event);
   MAKE_PROPERTY(candidate_event, get_candidate_event, set_candidate_event);
   MAKE_PROPERTY(move_event, get_move_event, set_move_event);
   MAKE_PROPERTY(raw_button_down_event, get_raw_button_down_event, set_raw_button_down_event);
@@ -106,6 +109,7 @@ private:
   std::string _button_up_event;
   std::string _button_repeat_event;
   std::string _keystroke_event;
+  std::string _paste_event;
   std::string _candidate_event;
   std::string _move_event;
   std::string _raw_button_up_event;

@@ -726,6 +726,24 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 }
 
 /**
+ * This is a callback hook function, called whenever the user pastes text.
+ */
+void PGItem::
+paste(const MouseWatcherParameter &param, bool background) {
+  LightReMutexHolder holder(_lock);
+  if (pgui_cat.is_debug()) {
+    pgui_cat.debug()
+      << *this << "::paste(" << param << ", " << background << ")\n";
+  }
+
+  if (!background) {
+    if (has_notify()) {
+      get_notify()->item_paste(this, param);
+    }
+  }
+}
+
+/**
  * This is a callback hook function, called whenever the user highlights an
  * option in the IME window.
  */
@@ -800,6 +818,20 @@ background_keystroke(const MouseWatcherParameter &param) {
     PGItem *item = *fi;
     if (!item->get_focus()) {
       item->keystroke(param, true);
+    }
+  }
+}
+
+/**
+ * Calls paste() on all the PGItems with background focus.
+ */
+void PGItem::
+background_paste(const MouseWatcherParameter &param) {
+  BackgroundFocus::const_iterator fi;
+  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
+    PGItem *item = *fi;
+    if (!item->get_focus()) {
+      item->paste(param, true);
     }
   }
 }

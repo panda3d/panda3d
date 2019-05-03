@@ -110,6 +110,17 @@ keystroke(int keycode, double time) {
 }
 
 /**
+ * Records that the indicated string has been pasted.
+ */
+void GraphicsWindowInputDevice::
+paste(const std::wstring &text) {
+  LightMutexHolder holder(_lock);
+  ButtonEvent event(text, 0, 0, 0);
+  event._type = ButtonEvent::T_paste;
+  _button_events->add_event(std::move(event));
+}
+
+/**
  * Records that the indicated candidate string has been highlighted.  This is
  * used to implement IME support for typing in international languages,
  * especially Chinese/Japanese/Korean.

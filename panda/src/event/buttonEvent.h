@@ -82,6 +82,10 @@ public:
     // (qwerty) keyboard layout.
     T_raw_down,
     T_raw_up,
+
+    // This event can be sent by the operating system to indicate that text is
+    // pasted into the window.
+    T_paste,
   };
 
   INLINE ButtonEvent();

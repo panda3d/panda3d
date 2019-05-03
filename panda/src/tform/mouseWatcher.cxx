@@ -1057,6 +1057,46 @@ keystroke(int keycode) {
 }
 
 /**
+ * Records that the indicated string has been pasted.
+ */
+void MouseWatcher::
+paste(const std::wstring &text) {
+  nassertv(_lock.debug_is_locked());
+
+  MouseWatcherParameter param;
+  param.set_candidate(text, 0, 0, 0);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  // Make sure there are no duplicates in the regions vector.
+  if (!_sorted) {
+    ((MouseWatcher *)this)->do_sort_regions();
+  }
+
+  // Pastes go to all those regions that want keyboard events, exactly like
+  // keystrokes, above.
+
+  for (MouseWatcherRegion *region : _regions) {
+    if (region->get_keyboard()) {
+      param.set_outside(region != _preferred_region);
+      region->paste(param);
+    }
+  }
+
+  // Also check all of our sub-groups.
+  for (MouseWatcherGroup *group : _groups) {
+    group->sort_regions();
+
+    for (MouseWatcherRegion *region : group->_regions) {
+      if (region->get_keyboard()) {
+        param.set_outside(region != _preferred_region);
+        region->paste(param);
+      }
+    }
+  }
+}
+
+/**
  * Records that the indicated candidate string has been highlighted in the
  * IME.
  */
@@ -1415,6 +1455,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
       case ButtonEvent::T_raw_down:
       case ButtonEvent::T_raw_up:
         // These are passed through.
+        new_button_events.add_event(be);
+        break;
+
+      case ButtonEvent::T_paste:
+        activity = true;
+        paste(be._candidate_string);
         new_button_events.add_event(be);
         break;
       }

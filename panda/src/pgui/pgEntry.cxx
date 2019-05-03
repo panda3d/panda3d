@@ -324,93 +324,50 @@ keystroke(const MouseWatcherParameter &param, bool background) {
       if (!isascii(keycode) || isprint(keycode)) {
         // A normal visible character.  Add a new character to the text entry,
         // if there's room.
-        if (!_candidate_wtext.empty()) {
-          _candidate_wtext = wstring();
-          _text_geom_stale = true;
-        }
-        wstring new_char(1, (wchar_t)keycode);
-
-        if (get_max_chars() > 0 && _text.get_num_characters() >= get_max_chars()) {
-          // In max_chars mode, we consider it an overflow after we have
-          // exceeded a fixed number of characters, irrespective of the
-          // formatted width of those characters.
-          overflow(param);
-
+        if (do_add_character(keycode)) {
+          type(param);
         } else {
-          _cursor_position = min(_cursor_position, _text.get_num_characters());
-          bool too_long = !_text.set_wsubstr(new_char, _cursor_position, 0);
-          bool overflow_mode = get_overflow_mode() && _num_lines == 1;
-          if(overflow_mode){
-            too_long = false;
-          }
-          if (_obscure_mode) {
-            too_long = !_obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
-          } else {
-            if (!too_long && (_text.get_num_rows() == _num_lines) && !overflow_mode) {
-              // If we've filled up all of the available lines, we must also
-              // ensure that the last line is not too long (it might be,
-              // because of additional whitespace on the end).
-              int r = _num_lines - 1;
-              int c = _text.get_num_cols(r);
-              PN_stdfloat last_line_width =
-                _text.get_xpos(r, c) - _text.get_xpos(r, 0);
-              too_long = (last_line_width > _max_width);
-            }
-
-            if (!too_long && keycode == ' ' && !overflow_mode) {
-              // Even if we haven't filled up all of the available lines, we
-              // should reject a space that's typed at the end of the current
-              // line if it would make that line exceed the maximum width,
-              // just so we don't allow an infinite number of spaces to
-              // accumulate.
-              int r, c;
-              _text.calc_r_c(r, c, _cursor_position);
-              if (_text.get_num_cols(r) == c + 1) {
-                // The user is typing at the end of the line.  But we must
-                // allow at least one space at the end of the line, so we only
-                // make any of the following checks if there are already
-                // multiple spaces at the end of the line.
-                if (c - 1 >= 0 && _text.get_character(r, c - 1) == ' ') {
-                  // Ok, the user is putting multiple spaces on the end of a
-                  // line; we need to make sure the line does not grow too
-                  // wide.  Measure the line's width.
-                  PN_stdfloat current_line_width =
-                    _text.get_xpos(r, c + 1) - _text.get_xpos(r, 0);
-                  if (current_line_width > _max_width) {
-                    // We have to reject the space, but we don't treat it as
-                    // an overflow condition.
-                    _text.set_wsubstr(wstring(), _cursor_position, 1);
-                    // If the user is typing over existing space characters,
-                    // we act as if the right-arrow key were pressed instead,
-                    // and advance the cursor to the next position.
-                    // Otherwise, we just quietly eat the space character.
-                    if (_cursor_position < _text.get_num_characters() &&
-                        _text.get_character(_cursor_position) == ' ') {
-                      _cursor_position++;
-                      _cursor_stale = true;
-                    }
-                    return;
-                  }
-                }
-              }
-            }
-          }
-
-          if (too_long) {
-            _text.set_wsubstr(wstring(), _cursor_position, 1);
-            overflow(param);
-
-          } else {
-            _cursor_position += new_char.length();
-            _cursor_stale = true;
-            _text_geom_stale = true;
-            type(param);
-          }
+          overflow(param);
         }
       }
     }
   }
   PGItem::keystroke(param, background);
+}
+
+/**
+ * This is a callback hook function, called whenever the user pastes text.
+ */
+void PGEntry::
+paste(const MouseWatcherParameter &param, bool background) {
+  LightReMutexHolder holder(_lock);
+  if (get_active()) {
+    if (param.has_candidate()) {
+      // Make sure _text is initialized properly.
+      update_text();
+
+      bool typed_any = false;
+      wstring str = param.get_candidate_string();
+      for (wchar_t keycode : str) {
+        if (do_add_character(keycode)) {
+          typed_any = true;
+        } else {
+          if (typed_any) {
+            // Send type event first.
+            type(param);
+            typed_any = false;
+          }
+          overflow(param);
+          break;
+        }
+      }
+
+      if (typed_any) {
+        type(param);
+      }
+    }
+  }
+  PGItem::paste(param, background);
 }
 
 /**
@@ -712,6 +669,97 @@ is_wtext() const {
   }
 
   return false;
+}
+
+/**
+ * Adds a character to the entry.  Returns true if it was added, false if
+ * there was an overflow.  Assumes the lock is held.
+ */
+bool PGEntry::
+do_add_character(wchar_t keycode) {
+  if (!_candidate_wtext.empty()) {
+    _candidate_wtext = wstring();
+    _text_geom_stale = true;
+  }
+  wstring new_char(1, (wchar_t)keycode);
+
+  if (get_max_chars() > 0 && _text.get_num_characters() >= get_max_chars()) {
+    // In max_chars mode, we consider it an overflow after we have
+    // exceeded a fixed number of characters, irrespective of the
+    // formatted width of those characters.
+    return false;
+
+  } else {
+    _cursor_position = min(_cursor_position, _text.get_num_characters());
+    bool too_long = !_text.set_wsubstr(new_char, _cursor_position, 0);
+    bool overflow_mode = get_overflow_mode() && _num_lines == 1;
+    if(overflow_mode){
+      too_long = false;
+    }
+    if (_obscure_mode) {
+      too_long = !_obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
+    } else {
+      if (!too_long && (_text.get_num_rows() == _num_lines) && !overflow_mode) {
+        // If we've filled up all of the available lines, we must also
+        // ensure that the last line is not too long (it might be,
+        // because of additional whitespace on the end).
+        int r = _num_lines - 1;
+        int c = _text.get_num_cols(r);
+        PN_stdfloat last_line_width =
+          _text.get_xpos(r, c) - _text.get_xpos(r, 0);
+        too_long = (last_line_width > _max_width);
+      }
+
+      if (!too_long && keycode == ' ' && !overflow_mode) {
+        // Even if we haven't filled up all of the available lines, we
+        // should reject a space that's typed at the end of the current
+        // line if it would make that line exceed the maximum width,
+        // just so we don't allow an infinite number of spaces to
+        // accumulate.
+        int r, c;
+        _text.calc_r_c(r, c, _cursor_position);
+        if (_text.get_num_cols(r) == c + 1) {
+          // The user is typing at the end of the line.  But we must
+          // allow at least one space at the end of the line, so we only
+          // make any of the following checks if there are already
+          // multiple spaces at the end of the line.
+          if (c - 1 >= 0 && _text.get_character(r, c - 1) == ' ') {
+            // Ok, the user is putting multiple spaces on the end of a
+            // line; we need to make sure the line does not grow too
+            // wide.  Measure the line's width.
+            PN_stdfloat current_line_width =
+              _text.get_xpos(r, c + 1) - _text.get_xpos(r, 0);
+            if (current_line_width > _max_width) {
+              // We have to reject the space, but we don't treat it as
+              // an overflow condition.
+              _text.set_wsubstr(wstring(), _cursor_position, 1);
+              // If the user is typing over existing space characters,
+              // we act as if the right-arrow key were pressed instead,
+              // and advance the cursor to the next position.
+              // Otherwise, we just quietly eat the space character.
+              if (_cursor_position < _text.get_num_characters() &&
+                  _text.get_character(_cursor_position) == ' ') {
+                _cursor_position++;
+                _cursor_stale = true;
+              }
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    if (too_long) {
+      _text.set_wsubstr(wstring(), _cursor_position, 1);
+      return false;
+
+    } else {
+      _cursor_position += new_char.length();
+      _cursor_stale = true;
+      _text_geom_stale = true;
+      return true;
+    }
+  }
 }
 
 /**

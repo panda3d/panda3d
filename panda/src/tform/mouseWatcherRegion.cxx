@@ -99,6 +99,14 @@ keystroke(const MouseWatcherParameter &) {
 }
 
 /**
+ * This is a callback hook function, called whenever something is pasted by
+ * the user.
+ */
+void MouseWatcherRegion::
+paste(const MouseWatcherParameter &) {
+}
+
+/**
  * This is a callback hook function, called whenever an IME candidate is
  * highlighted by the user.
  */

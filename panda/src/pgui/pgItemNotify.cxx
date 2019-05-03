@@ -129,6 +129,14 @@ item_candidate(PGItem *, const MouseWatcherParameter &) {
 }
 
 /**
+ * Called whenever the "paste" event is triggered on a watched PGItem.
+ * See PGItem::paste().
+ */
+void PGItemNotify::
+item_paste(PGItem *, const MouseWatcherParameter &) {
+}
+
+/**
  * Called whenever the "move" event is triggered on a watched PGItem.  See
  * PGItem::move().
  */
