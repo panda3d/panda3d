@@ -597,8 +597,31 @@ reset() {
   query_glsl_version();
 
 #ifndef OPENGLES
-  bool core_profile = is_at_least_gl_version(3, 2) &&
-                      !has_extension("GL_ARB_compatibility");
+  // Determine whether this OpenGL context has compatibility features.
+  bool core_profile = false;
+
+  if (_gl_version_major >= 3) {
+    if (_gl_version_major > 3 || _gl_version_minor >= 2) {
+      // OpenGL 3.2 has a built-in way to check this.
+      GLint profile_mask = 0;
+      glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile_mask);
+
+      if (profile_mask & GL_CONTEXT_CORE_PROFILE_BIT) {
+        core_profile = true;
+      } else if (profile_mask & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) {
+        core_profile = false;
+      } else {
+        core_profile = !has_extension("GL_ARB_compatibility");
+      }
+    } else {
+      // OpenGL 3.0/3.1.
+      GLint flags = 0;
+      glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+      if (flags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) {
+        core_profile = true;
+      }
+    }
+  }
 
   if (GLCAT.is_debug()) {
     if (core_profile) {
