@@ -832,7 +832,8 @@ class ShowBase(DirectObject.DirectObject):
         if self.win is None:
             mainWindow = True
             self.win = win
-            self.bufferViewer.win = win
+            if hasattr(self, 'bufferViewer'):
+                self.bufferViewer.win = win
 
         self.winList.append(win)
 
